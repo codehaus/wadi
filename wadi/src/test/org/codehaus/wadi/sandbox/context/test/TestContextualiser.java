@@ -157,11 +157,33 @@ public class TestContextualiser extends TestCase {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 
+		SharedJDBCContextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), collapser, new NeverEvicter(), _ds, _table);
+		{
+			// place a "baz" item into database
+			String id="baz";
+			Motable emotable=new MyContext(id);
+			emotable.setCreationTime(3);
+			emotable.setLastAccessedTime(4);
+			emotable.setMaxInactiveInterval(5);
+			Immoter immoter=db.getDemoter(id, emotable);
+			Emoter emoter=new ChainedEmoter(){public String getInfo(){return "ether";}}; // sessions are coming from us..
+			Utils.mote(emoter, immoter, emotable, id);
+		}
+
 		Map d=new HashMap();
-		LocalDiscContextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), ss, new File("/tmp"));
-		Motable bar=disc.getImmoter().nextMotable("bar", null);
-		bar.setBytes(new MyContext("bar").getBytes());
-		d.put("bar", bar);
+		LocalDiscContextualiser disc=new LocalDiscContextualiser(db, collapser, d, new NeverEvicter(), ss, new File("/tmp"));
+		{
+			// place a "bar" item onto local disc
+			String id="bar";
+			Motable emotable=new MyContext(id);
+			emotable.setCreationTime(0);
+			emotable.setLastAccessedTime(1);
+			emotable.setMaxInactiveInterval(2);
+			Immoter immoter=disc.getDemoter(id, emotable);
+			Emoter emoter=new ChainedEmoter(){public String getInfo(){return "ether";}}; // sessions are coming from us..
+			Utils.mote(emoter, immoter, emotable, id);
+		}
+		assertTrue(d.containsKey("bar"));
 		assertTrue(d.size()==1);
 		
 		Map m=new HashMap();
@@ -172,13 +194,24 @@ public class TestContextualiser extends TestCase {
 		FilterChain fc=new MyFilterChain();
 		memory.contextualise(null,null,fc,"foo", null, null, false);
 		memory.contextualise(null,null,fc,"bar", null, null, false);
+		memory.contextualise(null,null,fc,"baz", null, null, false);
 		assertTrue(d.size()==0);
-		assertTrue(m.size()==2);
+		assertTrue(m.size()==3);
 		
-		MyContext tmp=(MyContext)m.get("bar");
-		assertTrue(tmp!=null);
-		assertTrue("bar".equals(tmp._val));
-	}
+		MyContext bar=(MyContext)m.get("bar");
+		assertTrue(bar!=null);
+		assertTrue("bar".equals(bar._val));
+		assertTrue(bar.getCreationTime()==0);
+		assertTrue(bar.getLastAccessedTime()==1);
+		assertTrue(bar.getMaxInactiveInterval()==2);
+
+		MyContext baz=(MyContext)m.get("baz");
+		assertTrue(baz!=null);
+		assertTrue("baz".equals(baz._val));
+		assertTrue(baz.getCreationTime()==3);
+		assertTrue(baz.getLastAccessedTime()==4);
+		assertTrue(baz.getMaxInactiveInterval()==5);
+}
 
 	class MyPromotingContextualiser implements Contextualiser {
 		int _counter=0;
