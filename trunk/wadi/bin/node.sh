@@ -48,6 +48,6 @@ if [ tomcat = "$container" ]
 then
     cd $TOMCAT_HOME/bin
     properties="-Djava.endorsed.dirs=$TOMCAT_HOME/common/endorsed -Dcatalina.base=$TOMCAT_HOME -Dcatalina.home=$TOMCAT_HOME -Djava.io.tmpdir=$TOMCAT_HOME/temp $properties"
-    classpath=`find $TOMCAT_HOME $WADI_HOME/lib $WADI_HOME/WEB-INF/lib $JETTY_HOME/lib/org.mortbay.jetty.jar $JAVA_HOME/lib/tools.jar -name "*.jar" | tr '\n' ':'`:$WADI_HOME/WEB-INF/classes
+    classpath=`find $TOMCAT_HOME/. $WADI_HOME/lib $WADI_HOME/WEB-INF/lib $JETTY_HOME/lib/org.mortbay.jetty.jar $JAVA_HOME/lib/tools.jar -name "*.jar" | tr '\n' ':'`:$WADI_HOME/WEB-INF/classes
     exec $XTERM $JAVA $properties -cp $classpath -enablesystemassertions org.apache.catalina.startup.Bootstrap -config $WADI_HOME/conf/tomcat.xml start
 fi
