@@ -17,7 +17,9 @@
 
 package org.codehaus.wadi.test;
 
+import javax.jms.JMSException;
 import javax.jms.Session;
+import javax.jms.Connection;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
@@ -26,11 +28,14 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
+import org.codehaus.activecluster.ClusterException;
 import org.codehaus.activecluster.ClusterFactory;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.activecluster.ClusterEvent;
 import org.codehaus.activecluster.ClusterListener;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Test ActiveCluster, ActiveMQ, with an eye to putting WADI on top of
@@ -43,24 +48,32 @@ public class
   TestCluster
   extends TestCase
 {
-  protected Log         _log=LogFactory.getLog(TestCluster.class);
+  protected Log _log=LogFactory.getLog(TestCluster.class);
 
   public TestCluster(String name)
-  {
-    super(name);
-  }
+    {
+      super(name);
+    }
+
+  protected ActiveMQConnectionFactory connFactory;
+  protected Cluster cluster;
 
   protected void
     setUp()
     throws Exception
-  {
-  }
+    {
+      connFactory = new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");
+      cluster = createCluster();
+      cluster.start();
+    }
 
   protected void
     tearDown()
-    throws InterruptedException
-  {
-  }
+    throws JMSException
+    {
+      cluster.stop();
+      connFactory.stop();
+    }
 
   //----------------------------------------
 
@@ -70,35 +83,41 @@ public class
     public void
       onNodeAdd(ClusterEvent ce)
     {
-      _log.info("node added");
+      _log.info("node added: " + ce.getNode());
     }
 
     public void
       onNodeRemove(ClusterEvent ce)
     {
-      _log.info("node removed");
+      _log.info("node removed: " + ce.getNode());
     }
 
     public void
       onNodeUpdate(ClusterEvent ce)
     {
-      _log.info("node updated");
+      _log.info("node updated: " + ce.getNode());
     }
   }
 
   public void
     testCluster()
     throws Exception
-  {
-    TopicConnectionFactory tcf=new ActiveMQConnectionFactory();
-    TopicConnection tc=tcf.createTopicConnection();
-    TopicSession ts=tc.createTopicSession(true, Session.AUTO_ACKNOWLEDGE);
-    Topic topic=ts.createTopic("wadi-global");
+    {
+      cluster.addClusterListener(new MyClusterListener());
 
-    ClusterFactory dcf=new DefaultClusterFactory(tc);
-    Cluster cluster=dcf.createCluster(topic);
-    cluster.addClusterListener(new MyClusterListener());
+      Map map = new HashMap();
+      map.put("text", "testing123");
+      cluster.getLocalNode().setState(map);
 
-    assertTrue(true);
+      _log.info("nodes: " + cluster.getNodes());
+      Thread.sleep(10000);
+      assertTrue(true);
+    }
+
+  protected Cluster createCluster() throws JMSException, ClusterException {
+    Connection connection = connFactory.createConnection();
+    DefaultClusterFactory factory = new DefaultClusterFactory(connection);
+    return factory.createCluster("ORG.CODEHAUS.ACTIVEMQ.TEST.CLUSTER");
   }
 }
+
