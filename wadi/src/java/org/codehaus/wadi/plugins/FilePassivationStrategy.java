@@ -32,8 +32,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.shared.HttpSessionImpl;
 import org.codehaus.wadi.shared.PassivationStrategy;
-import org.codehaus.wadi.shared.SerializableContent;
-
 
 // TODO - should use NIO all the way through. Sessions should be
 // written into a byte[] that is just stuck on the Channel etc... This

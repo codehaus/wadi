@@ -17,8 +17,6 @@
 
 package org.codehaus.wadi.shared;
 
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.Enumeration;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSessionContext;

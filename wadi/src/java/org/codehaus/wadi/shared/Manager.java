@@ -17,7 +17,6 @@
 
 package org.codehaus.wadi.shared;
 
-import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import java.io.File;
