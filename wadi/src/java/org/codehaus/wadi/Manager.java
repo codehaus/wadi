@@ -71,7 +71,7 @@ import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
 
 // when we become cluster aware the node performing GC of evicted
 // sessions should be elected according to a round-robin policy
-// (perhaps) so that it is not always the same node ding it. A does it
+// (perhaps) so that it is not always the same node doing it. A does it
 // once, then passes the baton to B etc... This is probably a job for
 // Geronimo's clustering layer.
 
@@ -410,7 +410,10 @@ public abstract class
       _cluster.addClusterListener(new MembershipListener());
 
       _migrationService.setManager(this);
-      _migrationService.getServer().start();
+      MigrationService.Server server=_migrationService.getServer();
+      server.setHttpSessionImplFactory(_implFactory);
+      server.setHttpSessionImplMap(_local);
+      server.start();
 
       _cluster.start(); // should include webapp context
     }

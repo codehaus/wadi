@@ -31,7 +31,6 @@ import javax.jms.Destination;
 public interface
   MigrationService
 {
-
   public StreamingStrategy getStreamingStrategy();
   public void setStreamingStrategy(StreamingStrategy strategy);
 
@@ -75,11 +74,16 @@ public interface
 
   public interface
     Server
-    {
-      public void start() throws Exception;
-      public void stop() throws Exception;
+  {
+    public void start() throws Exception;
+    public void stop() throws Exception;
 
-      public Destination getDestination();
-    }
+    public Destination getDestination();
+
+    public HttpSessionImplFactory getHttpSessionImplFactory();
+    public void setHttpSessionImplFactory(HttpSessionImplFactory factory);
+
+    public Map getHttpSessionImplMap();
+    public void setHttpSessionImplMap(Map sessions);
+  }
 }
-

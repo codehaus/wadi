@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.wadi.AsyncToSyncAdaptor;
 import org.codehaus.wadi.HttpSessionImpl;
+import org.codehaus.wadi.HttpSessionImplFactory;
 import org.codehaus.wadi.Executable;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.StreamingStrategy;
@@ -68,108 +69,116 @@ public class
   {
     public boolean
       emmigrate(Map local, Collection candidates, long timeout, Destination dst)
-      {
-	return true;
-      }
+    {
+      return true;
+    }
 
     public boolean
       immigrate(Map local, String realId, HttpSessionImpl placeholder, long timeout, Destination dst)
-      {
-	return false;
-      }
+    {
+      return false;
+    }
   }
 
   public class
     Server
     implements org.codehaus.wadi.MigrationService.Server
+  {
+    protected Destination _destination;
+
+    public Destination getDestination(){return _destination;}
+
+    protected HttpSessionImplFactory _factory;
+    public HttpSessionImplFactory getHttpSessionImplFactory(){return _factory;}
+    public void setHttpSessionImplFactory(HttpSessionImplFactory factory){_factory=factory;}
+
+    protected Map _sessions;
+    public Map getHttpSessionImplMap(){return _sessions;}
+    public void setHttpSessionImplMap(Map sessions){_sessions=sessions;}
+
+    protected MessageConsumer   _clusterConsumer;
+    protected MessageConsumer   _nodeConsumer;
+    protected InvokableListener _listener;
+
+    public void
+      start()
+      throws JMSException
     {
-      protected Destination _destination;
+      _listener=new InvokableListener(_manager);
+      Cluster cluster=_manager.getCluster();
+      (_clusterConsumer=cluster.createConsumer(cluster.getDestination(), null, true)).setMessageListener(_listener);
+      (_nodeConsumer   =cluster.createConsumer(cluster.getLocalNode().getDestination())).setMessageListener(_listener);
+    }
 
-      public Destination getDestination(){return _destination;}
+    public void
+      stop()
+      throws JMSException
+    {
+      _clusterConsumer.close();
+      _clusterConsumer=null;
+      _nodeConsumer.close();
+      _nodeConsumer=null;
+      _listener=null;
+    }
 
-      protected MessageConsumer   _clusterConsumer;
-      protected MessageConsumer   _nodeConsumer;
-      protected InvokableListener _listener;
+    class InvokableListener
+      implements MessageListener, Runnable
+    {
+      protected Manager _manager;
 
-      public void
-	start()
-	throws JMSException
-	{
-	  _listener=new InvokableListener(_manager);
-	  Cluster cluster=_manager.getCluster();
-	  (_clusterConsumer=cluster.createConsumer(cluster.getDestination(), null, true)).setMessageListener(_listener);
-	  (_nodeConsumer   =cluster.createConsumer(cluster.getLocalNode().getDestination())).setMessageListener(_listener);
-	}
-
-      public void
-	stop()
-	throws JMSException
-	{
-	  _clusterConsumer.close();
-	  _clusterConsumer=null;
-	  _nodeConsumer.close();
-	  _nodeConsumer=null;
-	  _listener=null;
-	}
-
-      class InvokableListener
-	implements MessageListener, Runnable
+      public
+	InvokableListener(Manager manager)
       {
-	protected Manager _manager;
+	_manager=manager;
+      }
 
-	public
-	  InvokableListener(Manager manager)
+      protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor(); // TODO
+
+      protected Message _message;
+
+      public void
+	onMessage(Message message)
+      {
+	_message=message;
+	new Thread(this, "MessageListener").start();
+      }
+
+      public void
+	run()
+      {
+	Message message=_message;
+	_log.info("message arriving: "+Thread.currentThread());
+	try
 	{
-	  _manager=manager;
-	}
-
-	protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor(); // TODO
-
-	protected Message _message;
-
-	public void
-	  onMessage(Message message)
-	{
-	  _message=message;
-	  new Thread(this, "MessageListener").start();
-	}
-
-	public void
-	  run()
-	{
-	  Message message=_message;
-	  _log.info("message arriving: "+Thread.currentThread());
-	  try
+	  ObjectMessage om=null;
+	  Object tmp=null;
+	  Executable invocable=null;
+	  if (message instanceof ObjectMessage &&
+	      (om=(ObjectMessage)message)!=null &&
+	      (tmp=om.getObject())!=null &&
+	      tmp instanceof Executable &&
+	      (invocable=(Executable)tmp)!=null)
 	  {
-	    ObjectMessage om=null;
-	    Object tmp=null;
-	    Executable invocable=null;
-	    if (message instanceof ObjectMessage &&
-		(om=(ObjectMessage)message)!=null &&
-		(tmp=om.getObject())!=null &&
-		tmp instanceof Executable &&
-		(invocable=(Executable)tmp)!=null)
+	    _log.info("message arrived: "+invocable);
+	    try
 	    {
-	      _log.info("message arrived: "+invocable);
-	      try
-	      {
-		invocable.invoke(_manager, om);
-	      }
-	      catch (Throwable t)
-	      {
-		_log.warn("unexpected problem responding to message:"+invocable, t);
-	      }
+	      invocable.invoke(_manager, om);
 	    }
-	    else
+	    catch (Throwable t)
 	    {
-	      _log.warn("null message or unrecognised message type:"+message);
+	      _log.warn("unexpected problem responding to message:"+invocable, t);
 	    }
 	  }
-	  catch (JMSException e)
+	  else
 	  {
-	    _log.warn("unexpected problem unpacking message:"+message);
+	    _log.warn("null message or unrecognised message type:"+message);
 	  }
+	}
+	catch (JMSException e)
+	{
+	  _log.warn("unexpected problem unpacking message:"+message);
 	}
       }
     }
+  }
 }
