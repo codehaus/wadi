@@ -7,6 +7,7 @@
  <Set name="ConnectionFactory">
   <New class="org.codehaus.activemq.ActiveMQConnectionFactory">
    <Arg type="String">multicast://224.1.2.3:5123</Arg>
+<!--   <Arg type="String">tcp://localhost:61616</Arg> -->
   </New>
  </Set>
 
