@@ -22,10 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.codehaus.wadi.shared.Manager;
 import org.codehaus.wadi.shared.RoutingStrategy;
 
-// TODO - this class needs to be better integrated with the
-// IdGenerator API so that, in cases where the id is of fixed length,
-// we can take advantage of the fact.
-
 /**
  * An integration strategy for maintaining session affinity through
  * cooperation with a load balancer that does not use routing info
@@ -37,9 +33,12 @@ public class
   NoRoutingStrategy
   implements RoutingStrategy
 {
-  public String strip(String session) {return session;}
-  public String augment(String session) {return session;}
-  public String getInfo() {return null;}
-  public boolean reroute(HttpServletRequest req, HttpServletResponse res, Manager manager, String id) {return false;}
-  public boolean reroute(HttpServletRequest req, HttpServletResponse res, Manager manager, String id, String route) {return false;}
+  public String strip(String id) {return id;}
+  public String augment(String id) {return id;}
+  public String getInfo() {return "";}
+  public boolean canReroute() {return false;}
+  public boolean rerouteCookie(HttpServletRequest req, HttpServletResponse res, Manager manager, String id) {return false;}
+  public boolean rerouteCookie(HttpServletRequest req, HttpServletResponse res, Manager manager, String id, String route) {return false;}
+  public boolean rerouteURL(){return false;}
+  public boolean rerouteURL(String route){return false;}
 }
