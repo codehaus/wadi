@@ -54,6 +54,7 @@ import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.ProxyingException;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
+import org.codehaus.wadi.sandbox.impl.AbsoluteEvicter;
 import org.codehaus.wadi.sandbox.impl.AlwaysEvicter;
 import org.codehaus.wadi.sandbox.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
@@ -63,12 +64,14 @@ import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.impl.ProxyRelocationStrategy;
+import org.codehaus.wadi.sandbox.impl.RWLock;
 import org.codehaus.wadi.sandbox.impl.SerialContextualiser;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCContextualiser;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCMotable;
 import org.codehaus.wadi.sandbox.impl.SimpleEvictable;
 import org.codehaus.wadi.sandbox.impl.SwitchableEvicter;
 import org.codehaus.wadi.sandbox.impl.TimeToLiveEvicter;
+import org.codehaus.wadi.sandbox.impl.TimedOutEvicter;
 import org.codehaus.wadi.sandbox.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
@@ -476,5 +479,24 @@ public class TestContextualiser extends TestCase {
 		cluster0=null;
 		clusterFactory=null;
 		connectionFactory=null;
+	}
+	
+	public void testInvalidation() throws Exception {
+	    StreamingStrategy streamer=new SimpleStreamingStrategy();
+	    Collapser collapser=new HashingCollapser(1, 2000);
+		Map d=new HashMap();
+		LocalDiscContextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), new TimedOutEvicter(), d, collapser, streamer, new File("/tmp"));
+		Map m=new HashMap();
+		MemoryContextualiser memory=new MemoryContextualiser(disc, new AbsoluteEvicter(30*60*1000), m, streamer, new MyContextPool());
+		Context foo=new MyContext("foo", "foo");
+		m.put("foo", foo);
+		assertTrue(m.size()==1);
+		
+		foo.setInvalidated(true);
+		RWLock.setPriority(RWLock.INVALIDATION_PRIORITY);
+		memory.evict(foo.getId(), foo, System.currentTimeMillis());
+		RWLock.setPriority(RWLock.NO_PRIORITY);
+		assertTrue(m.size()==0); // should not be in memory
+		assertTrue(d.size()==0); // should not be on disc - should have fallen though - since invalidated
 	}
 }

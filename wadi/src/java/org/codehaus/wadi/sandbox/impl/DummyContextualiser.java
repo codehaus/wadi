@@ -56,11 +56,22 @@ public class DummyContextualiser implements Contextualiser {
 	}
 
 	public void evict(){}
-	public Evicter getEvicter(){return null;}
+	
+	protected final Evicter _evicter=new NeverEvicter();
+	public Evicter getEvicter(){return _evicter;}
 
 	public boolean isLocal(){return false;}
 
-	public Immoter getDemoter(String id, Motable motable) {
-		return null;
+	public class DummyImmoter implements Immoter {
+		public Motable nextMotable(String id, Motable emotable){return null;}
+		public String getInfo(){return "dummy";}
+
+		public boolean prepare(String id, Motable emotable, Motable immotable) {return true;}
+		public void commit(String id, Motable immotable) {}
+		public void rollback(String id, Motable immotable) {}
+		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {}
 	}
+	
+	protected final Immoter _immoter=new DummyImmoter();
+	public Immoter getDemoter(String id, Motable motable) {return _immoter;}
 }

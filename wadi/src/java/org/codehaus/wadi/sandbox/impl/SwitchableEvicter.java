@@ -34,5 +34,4 @@ public class SwitchableEvicter implements Evicter {
 
 	public boolean evict(String id, Evictable evictable) {return evict(id, evictable, 0);}
 	public boolean evict(String id, Evictable evictable, long time) {return _switch;}
-
 }

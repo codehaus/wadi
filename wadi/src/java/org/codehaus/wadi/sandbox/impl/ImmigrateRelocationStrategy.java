@@ -159,31 +159,34 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 	}
 
 	public void onMessage(ObjectMessage om, ImmigrationRequest request) throws JMSException {
-		String id=request.getId();
-		_log.info("receiving immigration request: "+id);
-		if (_top==null) {
-			_log.warn("no Contextualiser set - cannot respond to ImmigrationRequests");
-		} else {
-			try {
-				MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-				// reverse direction...
-				settingsInOut.to=om.getJMSReplyTo();
-				settingsInOut.from=_location.getDestination();
-				settingsInOut.correlationId=om.getJMSCorrelationID();
-				_log.info("receiving immigration request: "+id+" : "+settingsInOut);
-//				long handShakePeriod=request.getHandOverPeriod();
-				// TODO - the peekTimeout should be specified by the remote node...
-				//FilterChain fc=new MigrationResponseFilterChain(id, settingsInOut, handShakePeriod);
-				Immoter promoter=new ImmigrationImmoter(settingsInOut);
-		//		boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException;
-				//_top.contextualise(null,null,fc,id, null, null, true);
-				Sync promotionLock=new NullSync(); // TODO - is this right?...
-				_top.contextualise(null,null,null,id, promoter, promotionLock, true);
-				} catch (Exception e) {
-				_log.warn("problem handling immigration request: "+id, e);
-			}
-			// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
-		}
+	    String id=request.getId();
+	    _log.info("receiving immigration request: "+id);
+	    if (_top==null) {
+	        _log.warn("no Contextualiser set - cannot respond to ImmigrationRequests");
+	    } else {
+	        try {
+	            MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+	            // reverse direction...
+	            settingsInOut.to=om.getJMSReplyTo();
+	            settingsInOut.from=_location.getDestination();
+	            settingsInOut.correlationId=om.getJMSCorrelationID();
+	            _log.info("receiving immigration request: "+id+" : "+settingsInOut);
+	            //				long handShakePeriod=request.getHandOverPeriod();
+	            // TODO - the peekTimeout should be specified by the remote node...
+	            //FilterChain fc=new MigrationResponseFilterChain(id, settingsInOut, handShakePeriod);
+	            Immoter promoter=new ImmigrationImmoter(settingsInOut);
+	            //		boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException;
+	            //_top.contextualise(null,null,fc,id, null, null, true);
+	            Sync promotionLock=new NullSync(); // TODO - is this right?...
+	            RWLock.setPriority(RWLock.EMMIGRATION_PRIORITY);
+	            _top.contextualise(null,null,null,id, promoter, promotionLock, true);
+	        } catch (Exception e) {
+	            _log.warn("problem handling immigration request: "+id, e);
+	        } finally {
+	            RWLock.setPriority(RWLock.NO_PRIORITY);
+	        }
+	        // TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
+	    }
 	}
 
 	/**
