@@ -3,6 +3,7 @@
   xmlns:j="jelly:core"
   xmlns:define="jelly:define"
   xmlns:ant="jelly:ant"
+  xmlns:maven="jelly:maven"
   xmlns:aspectj="jelly:aspectj"
   xmlns:clover="jelly:clover"
   >
@@ -21,62 +22,43 @@
 
   <!-- aspectj, it could be easier... -->
 
-  <postGoal name="clover:on">
-    <ant:echo>### starting coverage phase</ant:echo>
-    <j:set var="cloverOn" value="true"/>
-  </postGoal>
-
-  <postGoal name="clover:off">
-    <ant:echo>### ending coverage phase</ant:echo>
-    <j:set var="cloverOn" value=""/>
+  <postGoal name="clean">
+    <delete dir="${maven.build.dest}.javac"/>
+    <delete dir="${maven.test.dest}.javac"/>
+    <delete dir="${maven.clover.build.classes}.javac"/>
   </postGoal>
 
   <preGoal name="java:compile">
-    <j:if test="${cloverOn != 'true'}">
-      <ant:echo>### cleaning for build phase</ant:echo>
-      <ant:delete dir="${maven.build.dest}"/>
-      <ant:mkdir dir="${maven.build.dest}"/>
-      <ant:delete dir="${maven.build.dest}.javac"/>
-    </j:if>
+    <j:set var="wadi.maven.build.dest" value="${maven.build.dest}"/>
+    <maven:set plugin="maven-java-plugin" property="maven.build.dest" value="${wadi.maven.build.dest}.javac"/>
+    <ant:echo>### switching output dir ${wadi.maven.build.dest} to ${wadi.maven.build.dest}.javac</ant:echo>
+    <ant:mkdir dir="${wadi.maven.build.dest}.javac"/>
   </preGoal>
 
   <postGoal name="java:compile">
-    <j:if test="${cloverOn != 'true'}">
-      <ant:echo>### starting build phase</ant:echo>
-      <j:set var="wadi.dest" value="${pom.getPluginContext('maven-test-plugin').getVariable('maven.build.dest')}"/>
-      <attainGoal name="aspectj:compile-and-weave"/>
-    </j:if>
+    <maven:set plugin="maven-java-plugin" property="maven.build.dest" value="${wadi.maven.build.dest}"/>
+    <ant:echo>### switching output dir ${wadi.maven.build.dest}.javac back to ${wadi.maven.build.dest}</ant:echo>
+    <j:set var="wadi.dest" value="${wadi.maven.build.dest}"/>
+    <attainGoal name="aspectj:compile-and-weave"/>
   </postGoal>
 
   <preGoal name="test:compile">
-    <j:if test="${cloverOn != 'true'}">
-      <ant:echo>### cleaning for test phase</ant:echo>
-      <ant:delete dir="${maven.test.dest}"/>
-      <ant:mkdir dir="${maven.test.dest}"/>
-      <ant:delete dir="${maven.test.dest}.javac"/>
-    </j:if>
+    <j:set var="wadi.maven.test.dest" value="${maven.test.dest}"/>
+    <maven:set plugin="maven-test-plugin" property="maven.test.dest" value="${wadi.maven.test.dest}.javac"/>
+    <ant:echo>### switching output dir ${wadi.maven.test.dest} to ${wadi.maven.test.dest}.javac</ant:echo>
+    <ant:mkdir dir="${wadi.maven.test.dest}.javac"/>
   </preGoal>
 
   <postGoal name="test:compile">
-    <j:if test="${cloverOn != 'true'}">
-      <ant:echo>### starting test phase</ant:echo>
-      <j:set var="wadi.dest" value="${pom.getPluginContext('maven-test-plugin').getVariable('maven.test.dest')}"/>
-      <attainGoal name="aspectj:compile-and-weave"/>
-    </j:if>
-    <j:if test="${cloverOn == 'true'}">
-      <ant:echo>### adding aspects to coverage test</ant:echo>
-      <j:set var="wadi.dest" value="${pom.getPluginContext('maven-test-plugin').getVariable('maven.build.dest')}"/>
-      <attainGoal name="aspectj:compile-and-weave"/>
-    </j:if>
+    <maven:set plugin="maven-test-plugin" property="maven.test.dest" value="${wadi.maven.test.dest}"/>
+    <ant:echo>### switching output dir ${wadi.maven.test.dest}.javac back to ${wadi.maven.test.dest}</ant:echo>
+    <j:set var="wadi.dest" value="${wadi.maven.test.dest}"/>
+    <attainGoal name="aspectj:compile-and-weave"/>
   </postGoal>
 
   <goal name="aspectj:compile-and-weave" prereqs="aspectj:init">
-
-    <ant:echo>### moving  ${wadi.dest} aside</ant:echo>
-    <ant:move toDir="${wadi.dest}.javac">
-      <ant:fileset dir="${wadi.dest}"/>
-    </ant:move>
     <ant:echo>### compiling and weaving to ${wadi.dest}</ant:echo>
+    <delete dir="${wadi.dest}"/>
     <ant:iajc
       destdir="${wadi.dest}"
       debug="true"
@@ -89,9 +71,10 @@
       </ant:sourceroots>
       <ant:classpath>
 	<ant:path refid="maven.dependency.classpath"/>
-	<ant:pathelement path="${maven.build.dest}.javac"/>
+	<ant:pathelement path="${wadi.maven.build.dest}.javac"/>
       </ant:classpath>
       <ant:inpath>
+	<ant:pathelement path="${wadi.maven.build.dest}.javac"/>
 	<ant:pathelement path="${wadi.dest}.javac"/>
       </ant:inpath>
     </ant:iajc>
