@@ -48,7 +48,8 @@ public class
   public    String                       getMimeType(String file)                              {return null;}
   public    Set                          getResourcePaths(String path)                         {return null;}
   public    URL                          getResource(String path) throws MalformedURLException {return null;}
-  public    InputStream                  getResourceAsStream(String path)                      {return getClass().getClassLoader().getResourceAsStream(path);}
+  //  public    InputStream                  getResourceAsStream(String path)                      {return getClass().getClassLoader().getResourceAsStream(path);}
+  public    InputStream                  getResourceAsStream(String path)                      {return Thread.currentThread().getContextClassLoader().getResourceAsStream(path);}
   public    RequestDispatcher            getRequestDispatcher(String path)                     {return null;}
   public    RequestDispatcher            getNamedDispatcher(String name)                       {return null;}
   public    Servlet                      getServlet(String name) throws ServletException       {return null;}

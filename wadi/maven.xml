@@ -8,6 +8,10 @@
   xmlns:clover="jelly:clover"
   >
 
+#    <ant:echo>### augmenting classpath</ant:echo>
+#    <path id="war.path" location="${basedir}/."/>
+#    <maven:addPath id="maven.dependency.classpath" refid="war.path"/>
+
   <goal name="default" prereqs="clean, test"/>
 
   <goal name="dc" prereqs="clean, site:deploy, jar:deploy-snapshot"/>
