@@ -17,7 +17,6 @@
 
 package org.codehaus.wadi.shared;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;

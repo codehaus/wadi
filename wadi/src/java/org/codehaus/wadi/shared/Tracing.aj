@@ -20,7 +20,6 @@ package org.codehaus.wadi.shared;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.Signature;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * Tracing utility - development use ONLY
