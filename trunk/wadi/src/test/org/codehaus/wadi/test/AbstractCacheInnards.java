@@ -18,11 +18,6 @@
 
 package org.codehaus.wadi.test;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -98,8 +93,6 @@ public abstract class
     _streamingStrategy =streamingStrategy;
     _cache             =cache;
     _evictionPolicy    =evictionPolicy;
-
-    _log.info("created: "+this);
   }
 
   //----------------------------------------
@@ -207,7 +200,7 @@ public abstract class
 
     _CacheEntry(Object key, Object value, long ttl)
     {
-      storeValue(_key=key, value);
+      addValue(_key=key, value);
       _ttl=ttl;
     }
 
@@ -300,5 +293,6 @@ public abstract class
   public abstract String toString();
   protected abstract Object loadValue(Object key);
   protected abstract boolean storeValue(Object key, Object value);
+  protected abstract boolean addValue(Object key, Object value);
   protected abstract boolean removeValue(Object key);
 }

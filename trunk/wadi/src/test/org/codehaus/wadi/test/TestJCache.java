@@ -240,7 +240,7 @@ public class
       {
 	Connection c=ds.getConnection();
 	Statement s=c.createStatement();
-	s.execute("create table "+table+" (MyKey varchar, MyValue java_object)");
+	s.execute("create table "+table+"(MyKey varchar, MyValue java_object)");
 	s.close();
 	c.close();
       }
