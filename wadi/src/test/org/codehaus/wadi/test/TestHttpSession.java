@@ -32,9 +32,9 @@ import javax.servlet.http.HttpSessionListener;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.jetty.HttpSessionImpl;
 import org.codehaus.wadi.jetty.Manager;
 import org.codehaus.wadi.plugins.FilePassivationStrategy;
-import org.codehaus.wadi.shared.HttpSessionImpl;
 import org.codehaus.wadi.shared.ObjectInputStream;
 
 //----------------------------------------
@@ -701,9 +701,7 @@ public class TestHttpSession
     String id="test-httpsession";
     impl1.init(null, id, System.currentTimeMillis(), 30*60, 30*60);
     impl1.setWadiManager(_manager);
-    HttpSession s1=new org.codehaus.wadi.jetty.HttpSession(impl1);
-    impl1.setFacade(s1);
-
+    HttpSession s1=impl1.getFacade();
     List events=ActivationListener._events;
     events.clear();
 
@@ -726,8 +724,7 @@ public class TestHttpSession
 
     HttpSessionImpl impl2=(HttpSessionImpl)fmp.activate(id);
     impl2.setWadiManager(_manager);
-    HttpSession s2=new org.codehaus.wadi.jetty.HttpSession(impl2);
-    impl2.setFacade(s2);
+    HttpSession s2=impl2.getFacade();
     // listener should not have yet been activated (we do it lazily)
     assertTrue(events.size()==0);
     impl2.getAttribute(key);

@@ -156,7 +156,7 @@ public class
 
 	// initialise dependant resources...
 	_socket=new ServerSocket(_port, _backlog, _address);
-	//	_socket.setSoTimeout(_timeout);
+	_socket.setSoTimeout(_timeout);
 	_port=_socket.getLocalPort();
 
 	// start...
@@ -184,7 +184,7 @@ public class
     {
       _log.debug("stopping: "+_socket);
       _running=false;
-      try {new Socket(_address, _port).close();} catch (Throwable ignore) {}
+      //      try {new Socket(_address, _port).close();} catch (Throwable ignore) {}
       try
       {
 	_thread.join();

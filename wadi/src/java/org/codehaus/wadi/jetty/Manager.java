@@ -24,10 +24,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.codehaus.wadi.plugins.TotalEvictionPolicy;
 import org.codehaus.wadi.shared.EvictionPolicy;
 import org.codehaus.wadi.shared.Filter;
-import org.codehaus.wadi.shared.HttpSessionImpl;
 import org.mortbay.jetty.servlet.ServletHandler;
-import org.mortbay.jetty.servlet.WebApplicationContext;
 import org.mortbay.jetty.servlet.WebApplicationHandler;
+import org.mortbay.jetty.servlet.WebApplicationContext;
 
 //TODO - remember max number of sessions in map
 
@@ -44,7 +43,7 @@ public class
     getHttpSession(String id)
   {
     HttpSessionImpl impl=(HttpSessionImpl)get(getRoutingStrategy().strip(getBucketName(), id));
-    HttpSession session=impl==null?null:(HttpSession)impl.getFacade();
+    org.codehaus.wadi.jetty.HttpSession session=impl==null?null:(org.codehaus.wadi.jetty.HttpSession)impl.getFacade();
 
     javax.servlet.http.HttpSession answer=(session==null?null:(session.getInvalidated()?null:session)); // TODO - or should session just be removed from map as soon as it is invalidated..
     return answer;
@@ -53,7 +52,7 @@ public class
   public javax.servlet.http.HttpSession
     newHttpSession()
   {
-    return (javax.servlet.http.HttpSession)sessionCreate();
+    return ((HttpSessionImpl)getReadySessionPool().take()).getFacade();
   }
 
   protected boolean _reuseIds=false; // TODO - make this explicit
@@ -61,10 +60,26 @@ public class
   public javax.servlet.http.HttpSession
     newHttpSession(HttpServletRequest request)
   {
-    HttpSession session=(HttpSession)sessionCreate();
+    HttpSessionImpl impl=(HttpSessionImpl)getReadySessionPool().take();
     if (_reuseIds)
-      session.setId(request.getRequestedSessionId()); // TODO - wasted session id allocation
-    return session;
+      impl.setId(request.getRequestedSessionId()); // TODO - wasted session id allocation
+    return impl.getFacade();
+  }
+
+  protected org.codehaus.wadi.shared.Manager.SessionPool _blankSessionPool=new BlankSessionPool();
+  protected org.codehaus.wadi.shared.Manager.SessionPool getBlankSessionPool(){return _blankSessionPool;}
+  protected void setBlankSessionPool(org.codehaus.wadi.shared.Manager.SessionPool pool){_blankSessionPool=pool;}
+
+  /**
+   * A logical pool of uninitialised session impls. Consumes from the
+   * ReadyPool and is Consumed by it as session impls are recycled.
+   *
+   */
+  class BlankSessionPool
+    extends org.codehaus.wadi.shared.Manager.SessionPool
+  {
+    public Object take(){return new HttpSessionImpl();}
+    public void put(Object o){}	// just let it go
   }
 
   //-----------//
@@ -115,7 +130,6 @@ public class
     _handler.defineFilter(filterName, Filter.class.getName());
     _handler.mapPathToFilter("/*", filterName); // TODO - improve mapping, all 'stateful' servlets/filters
 
-    _log.warn("CLASS: "+_handler.getHttpContext().getClass().getName());
     _context=(WebApplicationContext)_handler.getHttpContext();
     boolean distributable=_context.isDistributable();
     if (distributable && !_distributable)
@@ -173,7 +187,7 @@ public class
 
   // why does the session manager need to be serialisable ?
 
-  protected org.codehaus.wadi.shared.HttpSession createFacade(org.codehaus.wadi.shared.HttpSessionImpl impl){return new HttpSession((org.codehaus.wadi.shared.HttpSessionImpl)impl);}
+  protected org.codehaus.wadi.shared.HttpSession createFacade(org.codehaus.wadi.shared.HttpSessionImpl impl){return new org.codehaus.wadi.jetty.HttpSession((org.codehaus.wadi.jetty.HttpSessionImpl)impl);}
 
   //----------------------------------------
 
@@ -224,8 +238,4 @@ public class
   public int getHttpPort(){return Integer.parseInt(System.getProperty("http.port"));} // TODO - temporary hack...
 
   public ServletContext getServletContext(){return _handler.getServletContext();}
-
-  //----------------------------------------
-
-  public org.codehaus.wadi.shared.HttpSession newFacade(HttpSessionImpl impl) {return new HttpSession(impl);}
 }

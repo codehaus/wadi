@@ -479,21 +479,6 @@ public abstract class
     _log.trace("housekeeping ended");
   }
 
-  protected void
-    sessionExpire()
-  {
-  }
-
-  protected void
-    sessionInvalidate()
-  {
-  }
-
-  protected void
-    sessionEvict()
-  {
-  }
-
   //----------------------------------------
   // session lifecycle...
   //----------------------------------------
@@ -524,21 +509,8 @@ public abstract class
     public Object peek(){return null;}
   }
 
-  /**
-   * A logical pool of uninitialised session impls. Consumes from the
-   * ReadyPool and is Consumed by it as session impls are recycled.
-   *
-   */
-  class BlankSessionPool
-    extends org.codehaus.wadi.shared.Manager.SessionPool
-  {
-    public Object take(){return new HttpSessionImpl();}
-    public void put(Object o){}	// just let it go
-  }
-
-  protected SessionPool _blankSessionPool=new BlankSessionPool();
-  protected SessionPool getBlankSessionPool(){return _blankSessionPool;}
-  protected void setBlankSessionPool(SessionPool pool){_blankSessionPool=pool;}
+  protected abstract SessionPool getBlankSessionPool();
+  protected abstract void setBlankSessionPool(SessionPool pool);
 
   protected IdGenerator _idGenerator;
   public IdGenerator getIdGenerator(){return _idGenerator;}
@@ -986,17 +958,4 @@ public abstract class
   // passivated, migrated to us, migrated from us ? or simply how many
   // serialisations and deserialisations to store or other node we
   // have done. Also how many request relocations...
-
-  // eviction vs migration ?
-
-  public abstract HttpSession newFacade(HttpSessionImpl impl);
-
-  public HttpSession
-    sessionCreate()
-  {
-    HttpSessionImpl impl=(HttpSessionImpl)getReadySessionPool().take();
-    HttpSession facade=newFacade(impl);	// delegate type decision to subclass
-    impl.setFacade(facade);
-    return facade;
-  }
 }
