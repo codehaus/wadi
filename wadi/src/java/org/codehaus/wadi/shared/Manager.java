@@ -39,7 +39,7 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.plugins.FilePassivationStrategy;
-import org.codehaus.wadi.plugins.JkRoutingStrategy;
+import org.codehaus.wadi.plugins.NoRoutingStrategy;
 import org.codehaus.wadi.plugins.RelativeEvictionPolicy;
 import org.codehaus.wadi.plugins.TomcatIdGenerator;
 
@@ -329,6 +329,8 @@ public abstract class
     if (_evictionPolicy==null) _evictionPolicy=new RelativeEvictionPolicy(0.5F);
     //default id generation strategy
     if (_idGenerator==null) _idGenerator=new TomcatIdGenerator();
+    // default routing strategy
+    if (_routingStrategy==null) _routingStrategy=new NoRoutingStrategy();
 
     if (_autoLocationAddress==null) setAutoLocationAddress("228.5.6.7");
 
@@ -739,7 +741,7 @@ public abstract class
   public String getBucketName(){return _bucketName;}
   public void setBucketName(String bucketName){_bucketName=bucketName;}
 
-  protected RoutingStrategy _routingStrategy=new JkRoutingStrategy();
+  protected RoutingStrategy _routingStrategy;
   public RoutingStrategy getRoutingStrategy(){return _routingStrategy;}
   public void setRoutingStrategy(RoutingStrategy routingStrategy){_routingStrategy=routingStrategy;}
 
