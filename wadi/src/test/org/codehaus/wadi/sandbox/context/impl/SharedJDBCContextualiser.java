@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
@@ -51,8 +52,8 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	/**
 	 * @param next
 	 */
-	public SharedJDBCContextualiser(Contextualiser next, Evicter evicter, DataSource ds, String table, StreamingStrategy ss) {
-		super(next);
+	public SharedJDBCContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, DataSource ds, String table, StreamingStrategy ss) {
+		super(next, collapser);
 		_evicter=evicter;
 		_ds=ds;
 		_table=table;

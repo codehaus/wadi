@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
 
@@ -30,8 +31,8 @@ public abstract class AbstractMappedContextualiser extends
 	/**
 	 * @param next
 	 */
-	public AbstractMappedContextualiser(Contextualiser next, Map map, Evicter evicter) {
-		super(next);
+	public AbstractMappedContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter) {
+		super(next, collapser);
 		_map=map;
 		_evicter=evicter;
 	}

@@ -13,10 +13,10 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Promoter;
 
-import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
@@ -28,13 +28,15 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public abstract class AbstractChainedContextualiser implements Contextualiser {
 
 	protected final Contextualiser _next;
+	protected final Collapser _collapser;
 
 	/**
 	 * 
 	 */
-	public AbstractChainedContextualiser(Contextualiser next) {
+	public AbstractChainedContextualiser(Contextualiser next, Collapser collapser) {
 		super();
 		_next=next;
+		_collapser=collapser;
 	}
 	
 	/* (non-Javadoc)
@@ -45,23 +47,30 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 		if (contextualiseLocally(req, res, chain, id, promoter, promotionMutex))
 			return true;
 		else {
-			if (promotionMutex==null) {
-				promotionMutex=new ReentrantLock(); // TODO - timeout ? - concurrency ? need Collapser again...
-			}
+			boolean success=false;
+			boolean acquired=false;			
 			try {
-				promotionMutex.acquire();
+				if (promotionMutex==null) {
+					promotionMutex=_collapser.getLock(id);
+					promotionMutex.acquire();
+					acquired=true;
+				}
 				// by the time we get the lock, another thread may have already promoted this context - try again locally...
-				if (contextualiseLocally(req, res, chain, id, promoter, promotionMutex)) // mutex released here if successful
-					return true;
-				else {
-						Promoter p=getPromoter(promoter);
-						boolean success=_next.contextualise(req, res, chain, id, p, promotionMutex);
-						if (!success) promotionMutex.release();
+				if ((success=contextualiseLocally(req, res, chain, id, promoter, promotionMutex))) {// mutex released here if successful
+					return success;
+				} else {
+					Promoter p=getPromoter(promoter);
+					if ((success=_next.contextualise(req, res, chain, id, p, promotionMutex))) // mutex released here if successful
 						return success;
 				}
 			} catch (InterruptedException e) {
 				throw new ServletException("timed out collapsing requests for context: "+id, e);
+			} finally {
+				if (promotionMutex!=null && acquired && !success)
+					promotionMutex.release();
 			}
+			
+			return success;
 		}
 	}
 	
