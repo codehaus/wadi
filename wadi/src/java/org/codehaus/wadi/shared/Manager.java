@@ -1212,6 +1212,8 @@ public abstract class
       _manager=manager;
     }
 
+    protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor("foo"); // TODO
+
     public void
       onMessage(Message message)
     {
@@ -1229,6 +1231,9 @@ public abstract class
 	  try
 	  {
 	    command.run(om, _manager);
+
+	    if (command instanceof AsyncToSyncAdaptor.SyncCommand)
+	      _adaptor.receive((AsyncToSyncAdaptor.SyncCommand)command);
 	  }
 	  catch (Throwable t)
 	  {
