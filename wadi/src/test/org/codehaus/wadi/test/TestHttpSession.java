@@ -109,9 +109,9 @@ public class TestHttpSession
     public void
       sessionDidActivate(HttpSessionEvent e)
     {
-    	e.getSession().getId();
-    	_events.add(new Pair("sessionDidActivate",e));
-	_log.trace("ACTIVATING");
+      e.getSession().getId();
+      _events.add(new Pair("sessionDidActivate",e));
+      _log.trace("ACTIVATING");
     }
 
     public void
@@ -166,84 +166,84 @@ public class TestHttpSession
     assertTrue(_events.size()==0);
   }
 
-//   public void
-//     testDestroyHttpSession()
-//     throws Exception
-//   {
-// _log.info("[0] foo");
-//     int interval=10;//TODO - dodgy test - how can it be improved...?
-//     int oldInterval= _manager.getHouseKeepingInterval();
-//     _manager.stop();
-// _log.info("[1] foo");
-//     _manager.setHouseKeepingInterval(interval); // seconds
-//     _manager.removeEventListener(_listener);
-//     _manager.addEventListener(_listener);
-// _log.info("[1.2] foo");
-//     _manager.start();
-// _log.info("[2] foo");
-//     // set up test
-//     HttpSession session=_manager.newHttpSession();
-// _log.info("[2.1] foo");
-//     String key="foo";
-// _log.info("[2.2] foo");
-//     Object val=new Listener();
-// _log.info("[2.3] foo");
-//     session.setAttribute(key, val);
-// _log.info("[2.4] foo");
-//     _events.clear();
-// _log.info("[2.5] foo");
+  //   public void
+  //     testDestroyHttpSession()
+  //     throws Exception
+  //   {
+  // _log.info("[0] foo");
+  //     int interval=10;//TODO - dodgy test - how can it be improved...?
+  //     int oldInterval= _manager.getHouseKeepingInterval();
+  //     _manager.stop();
+  // _log.info("[1] foo");
+  //     _manager.setHouseKeepingInterval(interval); // seconds
+  //     _manager.removeEventListener(_listener);
+  //     _manager.addEventListener(_listener);
+  // _log.info("[1.2] foo");
+  //     _manager.start();
+  // _log.info("[2] foo");
+  //     // set up test
+  //     HttpSession session=_manager.newHttpSession();
+  // _log.info("[2.1] foo");
+  //     String key="foo";
+  // _log.info("[2.2] foo");
+  //     Object val=new Listener();
+  // _log.info("[2.3] foo");
+  //     session.setAttribute(key, val);
+  // _log.info("[2.4] foo");
+  //     _events.clear();
+  // _log.info("[2.5] foo");
 
-//     // destroy session
-//     session.invalidate();
-// _log.info("[2.6] foo");
-//     Thread.sleep(2000*interval); //2*interval - millis
-// _log.info("[2.7] foo");
+  //     // destroy session
+  //     session.invalidate();
+  // _log.info("[2.6] foo");
+  //     Thread.sleep(2000*interval); //2*interval - millis
+  // _log.info("[2.7] foo");
 
-//     {
-// _log.info("[2.8] foo");
-//       Pair pair=(Pair)_events.remove(0);
-// _log.info("[2.8.1] foo");
-//       assertTrue(pair!=null);
-// _log.info("[2.8.2] foo");
-//       assertTrue(pair.getType().equals("sessionDestroyed"));
-// _log.info("[2.8.3] foo");
-//       HttpSessionEvent e=pair.getEvent();
-// _log.info("[2.8.4] foo");
-//       assertTrue(session==e.getSession());
-// _log.info("[2.9] foo");
-//     }
-//     {
-// _log.info("[2.10] foo");
-//       Pair pair=(Pair)_events.remove(0);
-//       assertTrue(pair!=null);
-//       assertTrue(pair.getType().equals("valueUnbound"));
-//       HttpSessionEvent e=pair.getEvent();
-//       assertTrue(session==e.getSession());
-//       HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
-//       assertTrue(be.getName()==key);
-//       assertTrue(be.getValue()==val);
-// _log.info("[2.11] foo");
-//     }
-//     {
-// _log.info("[2.12] foo");
-//       Pair pair=(Pair)_events.remove(0);
-//       assertTrue(pair!=null);
-//       assertTrue(pair.getType().equals("attributeRemoved"));
-//       HttpSessionEvent e=pair.getEvent();
-//       assertTrue(session==e.getSession());
-//       HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
-//       assertTrue(be.getName()==key);
-//       assertTrue(be.getValue()==val);
-// _log.info("[2.13] foo");
-//     }
-//     assertTrue(_events.size()==0);
+  //     {
+  // _log.info("[2.8] foo");
+  //       Pair pair=(Pair)_events.remove(0);
+  // _log.info("[2.8.1] foo");
+  //       assertTrue(pair!=null);
+  // _log.info("[2.8.2] foo");
+  //       assertTrue(pair.getType().equals("sessionDestroyed"));
+  // _log.info("[2.8.3] foo");
+  //       HttpSessionEvent e=pair.getEvent();
+  // _log.info("[2.8.4] foo");
+  //       assertTrue(session==e.getSession());
+  // _log.info("[2.9] foo");
+  //     }
+  //     {
+  // _log.info("[2.10] foo");
+  //       Pair pair=(Pair)_events.remove(0);
+  //       assertTrue(pair!=null);
+  //       assertTrue(pair.getType().equals("valueUnbound"));
+  //       HttpSessionEvent e=pair.getEvent();
+  //       assertTrue(session==e.getSession());
+  //       HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
+  //       assertTrue(be.getName()==key);
+  //       assertTrue(be.getValue()==val);
+  // _log.info("[2.11] foo");
+  //     }
+  //     {
+  // _log.info("[2.12] foo");
+  //       Pair pair=(Pair)_events.remove(0);
+  //       assertTrue(pair!=null);
+  //       assertTrue(pair.getType().equals("attributeRemoved"));
+  //       HttpSessionEvent e=pair.getEvent();
+  //       assertTrue(session==e.getSession());
+  //       HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
+  //       assertTrue(be.getName()==key);
+  //       assertTrue(be.getValue()==val);
+  // _log.info("[2.13] foo");
+  //     }
+  //     assertTrue(_events.size()==0);
 
-//     _manager.stop();
-// _log.info("[3] foo");
-//     _manager.setHouseKeepingInterval(oldInterval);
-//     _manager.start();
-// _log.info("[4] foo");
-//   }
+  //     _manager.stop();
+  // _log.info("[3] foo");
+  //     _manager.setHouseKeepingInterval(oldInterval);
+  //     _manager.start();
+  // _log.info("[4] foo");
+  //   }
 
   public void
     testSetAttribute()
@@ -753,24 +753,28 @@ public class TestHttpSession
 //     throws Exception
 //   {
 //     _manager.stop();
-//     _manager.removeEventListener(_listener); // otherwise we get lots of events :-)
+//     _manager.removeEventListener(_listener); //  otherwise we get lots of events :-)
 //     _manager.start();
 
-//     // put some code in here to figure out how much mem they use...
+//     //  put some code in here to figure out how much mem they use...
 //     long start=System.currentTimeMillis();
-//     int numSessions=100;//000;
+//     int numSessions=100;	//000;
 //     HttpSession[] sessions=new HttpSession[numSessions];
 
 //     for (int i=0;i<numSessions;i++)
 //     {
 //       sessions[i]=_manager.newHttpSession();
+//       // session impls are locked, since they are assumed to still be
+//       // in use by the thread that created them...
 //       sessions[i].setAttribute("foo", "bar");
 //     }
 
 //     for (int i=0;i<numSessions;i++)
 //     {
+//       String id=sessions[i].getId();
 //       sessions[i].invalidate();
 //       sessions[i]=null;
+//       _manager.remove(id);
 //     }
 
 //     sessions=null;

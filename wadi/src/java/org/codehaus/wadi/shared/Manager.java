@@ -356,7 +356,7 @@ public abstract class
     stop()
       throws Exception
   {
-  	_log.debug("stopping");
+    _log.debug("stopping");
     _running=false;
     _locationServer.stop();
     _locationServer=null;

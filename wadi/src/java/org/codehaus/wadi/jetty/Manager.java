@@ -174,6 +174,7 @@ public class
     _evictionPolicy=new TotalEvictionPolicy();
     housekeeper();
     _evictionPolicy=oldEvictionPolicy;
+    _local.clear();
   }
 
   //--------------//
