@@ -202,7 +202,7 @@ public class TestCluster extends TestCase {
 		c.setEmigrationQueue(queue);
 		for (int i=0; i<numContexts; i++) {
 			String id="session-"+i;
-			Motable emotable=new MyContext(id);
+			Motable emotable=new MyContext(id, id);
 			Immoter immoter=c.getDemoter(id, emotable);
 			Emoter emoter=new EtherEmoter();
 			Utils.mote(emoter, immoter, emotable, id);
