@@ -1212,7 +1212,7 @@ public abstract class
       _manager=manager;
     }
 
-    protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor("foo"); // TODO
+    protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor(); // TODO
 
     public void
       onMessage(Message message)
@@ -1232,8 +1232,8 @@ public abstract class
 	  {
 	    command.run(om, _manager);
 
-	    if (command instanceof AsyncToSyncAdaptor.SyncCommand)
-	      _adaptor.receive((AsyncToSyncAdaptor.SyncCommand)command);
+	    //	    if (command instanceof AsyncToSyncAdaptor.SyncCommand)
+	    //_adaptor.receive((AsyncToSyncAdaptor.SyncCommand)command);
 	  }
 	  catch (Throwable t)
 	  {

@@ -40,44 +40,15 @@ public class
 {
   protected final Log _log     = LogFactory.getLog(getClass());
   protected final Map _entries =Collections.synchronizedMap(new HashMap());
-  protected final String _name;
 
-  public AsyncToSyncAdaptor(String name){_name=name;}
-
-  protected int _nextId  =0;
-
-  public static abstract class
-    SyncCommand
-    implements Command
-    {
-      protected long _rvTimeout=2000L;
-      protected String _rvId=null;
-
-      public String getRvId() {
-	return _rvId;
-      }
-      public void setRvId(String id) {
-	_rvId = id;
-      }
-      public long getRvTimeout() {
-	return _rvTimeout;
-      }
-      public void setRvTimeout(long _timeout) {
-	this._rvTimeout = _timeout;
-      }
-    }
-
-  interface Sender {public void send(SyncCommand cc);}
+  public interface Sender {public void send(Object command);}
 
   public Object
-    send(SyncCommand command, Sender sender, long timeout)
+    send(Object command, String id, long timeout, Sender sender)
     {
       int participants=2;
       Rendezvous rv=new Rendezvous(participants);
-      String id=_name+"-"+_nextId++;
       _entries.put(id, rv);
-      command.setRvId(id);
-      command.setRvTimeout(timeout);
 
       sender.send(command);
 
@@ -107,10 +78,8 @@ public class
     }
 
   public Object
-    receive(SyncCommand command)
+    receive(Object command, String id, long timeout)
     {
-      long timeout=command.getRvTimeout();
-      String id=command.getRvId();
       Rendezvous rv=(Rendezvous)_entries.get(id);
       Object result=null;
 
