@@ -13,6 +13,9 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
+
 
 /**
  * @author jules
@@ -26,6 +29,6 @@ public interface Contextualiser {
 	
 	// I'd like to add Manager to param list, but it bloats dependency tree - can we get along without it ?
 	// FilterChain.doFilter() throws IOException, ServletException...
-	boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Contextualiser previous) throws IOException, ServletException;
+	boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync overlap) throws IOException, ServletException;
 
 }

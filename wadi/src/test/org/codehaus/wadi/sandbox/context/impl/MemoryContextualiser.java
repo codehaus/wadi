@@ -19,6 +19,9 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.Promoter;
+
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * @author jules
@@ -40,18 +43,48 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
 	public boolean contextualiseLocally(ServletRequest req, ServletResponse res,
-			FilterChain chain, String id, Contextualiser previous) throws IOException, ServletException {
+			FilterChain chain, String id, Promoter promoter, Sync overlap) throws IOException, ServletException {
 		Context c=(Context)_map.get(id);
-		
 		if (c==null) {
-			_log.info("delegating: "+id);
 			return false;
 		} else {
-			_log.info("contextualising: "+id);
-			// we should lock the Context for period of its processing...
-			chain.doFilter(req, res);
+			Sync shared=c.getSharedLock();
+			try {
+				shared.acquire();
+				// now that we know the Context has been promoted to this point and is going nowhere we can allow other threads that were trying to find it proceed...
+				overlap.release();
+				contextualise(req, res, chain, id);
+			} catch (InterruptedException e) {
+				throw new ServletException("timed out acquiring context", e);
+			} finally {
+				shared.release(); // should we release here ?
+			}
 			return true;
 		}
 	}
+	
+	protected void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id)  throws IOException, ServletException {
+		_log.info("contextualising: "+id);
+		chain.doFilter(req, res);
+	}
+	
+	class MemoryPromoter implements Promoter {
+		
+		public void promoteAndContextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Context context, Sync overlap)
+		throws IOException, ServletException {
+			try {
+				// TODO - revisit and think about unrolling on exception...
+				Sync shared=context.getSharedLock();
+				shared.acquire(); // now this is locked into the container until we use/release it
+				overlap.release(); // now available to other 'loading' threads
+				contextualise(req, res, chain, id);
+				shared.release();
+			} catch (InterruptedException e) {
+				throw new ServletException("problem promoting context: "+id, e);
+			}
+		}
+	}
 
+	protected Promoter _promoter=new MemoryPromoter();
+	public Promoter getPromoter(Promoter promoter) {return _promoter;}
 }
