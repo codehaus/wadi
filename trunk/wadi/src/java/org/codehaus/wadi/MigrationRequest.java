@@ -61,48 +61,50 @@ public abstract class MigrationRequest
     else
     {
       boolean acquired=false;
-      Object result=null;
       try
       {
+	impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY);
 	if ((acquired=impl.getContainerLock().attempt(_timeout)))
+	{
 	  if (impl.getRealId()==null)
 	  {
-	    _log.warn(_id+": session disappeared whilst we were waiting for migration lock ("+_timeout+" millis)");
-// 	    _log.warn(_id+": forwarding message back to cluster with spoofed ReplyTo");
-// 	    try
-// 	    {
-// 	      Cluster cluster=service.getManager().getCluster();
-// 	      ObjectMessage message = cluster.createObjectMessage();
-// 	      message.setJMSReplyTo(source);
-// 	      message.setJMSCorrelationID(correlationID);
-// 	      message.setObject(this);
-// 	      cluster.send(service.getManager().getCluster().getDestination(), message);
-// 	    }
-// 	    catch (JMSException e)
-// 	    {
-// 	      _log.warn("problem forwarding migration request", e);
-// 	    }
+	    _log.warn(_id+": session disappeared whilst we were waiting for emmigration lock ("+_timeout+" millis) - forwarding");
+ 	    try
+ 	    {
+ 	      Cluster cluster=service.getManager().getCluster();
+ 	      ObjectMessage message = cluster.createObjectMessage();
+ 	      message.setJMSReplyTo(source);
+ 	      message.setJMSCorrelationID(correlationID);
+ 	      message.setObject(this);
+ 	      cluster.send(service.getManager().getCluster().getDestination(), message);
+ 	    }
+ 	    catch (JMSException e)
+ 	    {
+ 	      _log.warn("problem forwarding migration request", e);
+ 	    }
 	  }
 	  else
-	    result=doit(service, impl, correlationID, source);
+	  {
+	    if (doit(service, impl, correlationID, source)==Boolean.TRUE)
+	    {
+	      service.getManager().releaseImpl(impl);
+	      _log.trace(_id+": emmigration acknowledged and committed");
+	    }
+	    else
+	    {
+	      _log.warn(_id+": emmigration failed - rolled back");
+	    }
+	  }
+	}
 	else
-	  _log.warn(impl.getRealId()+": unable to acquire exclusive access within timeframe");
+	  _log.warn(_id+": unable to acquire emmigration lock within "+_timeout+" millis");
       }
       catch (InterruptedException e)
       {
-	_log.warn("could not get container lock on session for emmigration", e);
+	_log.warn(_id+": interrupted whilst trying to acquire emmigration lock", e);
       }
       finally
       {
-	if (result==Boolean.TRUE)
-	{
-	  service.getManager().releaseImpl(impl);
-	  _log.trace(_id+": emmigration acknowledged and committed");
-	}
-	else
-	{
-	  _log.warn(_id+": emmigration failed - rolled back");
-	}
 	if (acquired)
 	  impl.getContainerLock().release();
       }

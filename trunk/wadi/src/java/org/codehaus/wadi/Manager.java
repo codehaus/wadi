@@ -259,7 +259,7 @@ public abstract class
     }
     else
     {
-      _log.warn(realId+": failed to immigrate session - tidying up");
+      _log.info(realId+": failed to immigrate session - tidying up");
 
       _local.remove(realId);
       if (locked)
