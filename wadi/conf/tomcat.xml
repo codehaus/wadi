@@ -76,7 +76,7 @@
 	xmlNamespaceAware="false"
 	>
 
-	<Context path="/wadi" docBase="/home/jules/wadi">
+	<Context path="/wadi" docBase="/home/jules/zeuglodon/cvs/wadi/wadi">
 
 	  <Manager className="org.codehaus.wadi.tomcat.Manager"/>
 
