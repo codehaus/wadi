@@ -27,6 +27,7 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.servlet.ServletHttpContext;
+import org.mortbay.jetty.servlet.WebApplicationContext;
 
 import junit.framework.TestCase;
 
@@ -102,6 +103,8 @@ public abstract class TestServlet extends TestCase {
 		_listener.setPort(port);
 		_server.addListener(_listener);
 		
+		Map contexts=new HashMap();
+		
 		// walk through entries first time setting up and starting server
 		for (Iterator i=_map.entrySet().iterator(); i.hasNext();)
 		{
@@ -110,6 +113,11 @@ public abstract class TestServlet extends TestCase {
 			List components=(List)e.getValue();
 
 			ServletHttpContext c=(ServletHttpContext)_server.getContext(context);
+//			WebApplicationContext wac=(WebApplicationContext)contexts.get(context);
+//			if (wac==null)
+//				contexts.put(context, new WebApplicationContext());
+			
+			
 			
 			for (Iterator j=components.iterator(); j.hasNext();){
 				Object[] tuple=(Object[])j.next();
