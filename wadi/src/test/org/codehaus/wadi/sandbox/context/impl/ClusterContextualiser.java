@@ -143,7 +143,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
 			settingsInOut.correlationId=om.getJMSCorrelationID();
 			_log.info("received EmmigrationRequest: "+id);
-//			_top.demote(id, MOTABLE);
+			_top.demote(id, er.getMotable());
 			_dispatcher.sendMessage(new EmmigrationAcknowledgement(id), settingsInOut);
 		} catch (Exception e) {
 			_log.warn("problem handling migration request: "+id, e);
@@ -155,17 +155,18 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#demote(java.lang.String, org.codehaus.wadi.sandbox.context.Motable)
 	 */
-	public void demote(String id, Motable val) {		
+	public void demote(String id, Motable motable) {		
 		if (_emmigrationQueue==null) {
 			// pass straight through...
-			_next.demote(id, val);
+			_next.demote(id, motable);
 		} else {
 			// push out to another node in the cluster
 			MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
 			settingsInOut.to=_emmigrationQueue;
 			settingsInOut.correlationId=id;
 			settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
-			EmmigrationAcknowledgement ea=(EmmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emmigrationRvMap, new EmmigrationRequest(id, null), settingsInOut, 3000);
+			EmmigrationRequest er=new EmmigrationRequest(id, motable);
+			EmmigrationAcknowledgement ea=(EmmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emmigrationRvMap, er, settingsInOut, 3000);
 			_log.info("received EmmigrationAcknowledgement: "+ea.getId()+" ["+settingsInOut.to+"]");
 			// we should :
 			// remove the session our side - demotion API needs to work like promotion API

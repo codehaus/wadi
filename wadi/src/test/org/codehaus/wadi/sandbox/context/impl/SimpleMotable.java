@@ -14,9 +14,7 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package org.codehaus.wadi.sandbox.context.test;
-
-import java.io.Serializable;
+package org.codehaus.wadi.sandbox.context.impl;
 
 import org.codehaus.wadi.sandbox.context.Motable;
 
@@ -27,20 +25,11 @@ import org.codehaus.wadi.sandbox.context.Motable;
  * @version $Revision$
  */
 
-public class DummyMotable implements Motable, Serializable {
+public class SimpleMotable implements Motable {
 
-	protected String _content;
-	
-	public DummyMotable(String content) {
-		_content=content;
-	}
-	
-	public String getContent(){return _content;}
-	
-	// Evictable
+	protected byte[] _bytes;
+	public byte[] getBytes() throws Exception {return _bytes;}
+	public void setBytes(byte[] bytes) throws Exception {_bytes=bytes;}
+
 	public long getExpiryTime() {return 0;}
-
-	// Motable
-	public byte[] getBytes(){return _content.getBytes();}
-	public void setBytes(byte[] bytes){_content=new String();};
 }
