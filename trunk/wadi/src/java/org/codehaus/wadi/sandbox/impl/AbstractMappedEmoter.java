@@ -45,5 +45,6 @@ public abstract class AbstractMappedEmoter extends AbstractChainedEmoter {
 
 	public void rollback(String id, Motable emotable) {
 		_map.put(id, emotable); // replace ref into cache
+	    super.rollback(id, emotable);
 	}
 }

@@ -39,7 +39,6 @@ import org.codehaus.activecluster.Cluster;
 import org.codehaus.activecluster.ClusterFactory;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
-import org.codehaus.wadi.impl.GZIPStreamingStrategy;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.HttpProxy;
 import org.codehaus.wadi.sandbox.Immoter;
@@ -183,8 +182,8 @@ public class TestRelocation extends TestCase {
 		}
 
 	public void testMigrateInsecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
-		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
+		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, _servlet0.getClusterMap()));
+		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, _servlet1.getClusterMap()));
 		testInsecureRelocation(true);
 		}
 
@@ -321,8 +320,8 @@ public class TestRelocation extends TestCase {
 		}
 
 	public void testMigrateSecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
-		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
+		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, _servlet0.getClusterMap()));
+		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, _servlet1.getClusterMap()));
 		testSecureRelocation(true);
 		}
 
@@ -406,8 +405,8 @@ public class TestRelocation extends TestCase {
 		}
 
 	public void testMigrateStatelessContextualiser() throws Exception {
-		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
-		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
+		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, _servlet0.getClusterMap()));
+		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, _servlet1.getClusterMap()));
 		testStatelessContextualiser(true);
 		}
 

@@ -52,9 +52,11 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	protected final Emoter _emoter;
 	protected final Emoter _evictionEmoter;
 
-	public MemoryContextualiser(Contextualiser next, Map map, Evicter evicter, StreamingStrategy streamer, ContextPool pool) {
-		super(next, map, evicter);
+	public MemoryContextualiser(Contextualiser next, Evicter evicter, Map map, StreamingStrategy streamer, ContextPool pool) {
+		super(next, evicter, map);
 		_pool=pool;
+		
+		// TODO - streamer should be used inside Motables get/setBytes() methods  but that means a ref in every session :-(
 		_streamer=streamer;
 
 		_immoter=new MemoryImmoter(_map);
@@ -94,6 +96,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 
 	        if (promotionLock!=null) promotionLock.release();
 
+	        // should we wrap req with a session-aware wrapper ?
 	        chain.doFilter(req, res);
 	        return true;
 	    } finally {

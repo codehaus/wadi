@@ -36,8 +36,8 @@ public abstract class AbstractCollapsingContextualiser extends AbstractMappedCon
 
     protected final Collapser _collapser;
     
-    public AbstractCollapsingContextualiser(Contextualiser next, Map map, Evicter evicter, Collapser collapser) {
-        super(next, map, evicter);
+    public AbstractCollapsingContextualiser(Contextualiser next, Evicter evicter, Map map, Collapser collapser) {
+        super(next, evicter, map);
         _collapser=collapser;
     }
     
