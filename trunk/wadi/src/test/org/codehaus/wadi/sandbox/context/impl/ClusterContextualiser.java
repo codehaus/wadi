@@ -78,14 +78,14 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  */
 public class ClusterContextualiser extends AbstractMappedContextualiser {
 
-	protected final Cluster         _cluster;
-	protected final MessageConsumer _consumer;
-	protected final MessageListener _listener;
-	protected final Map             _searches=new HashMap(); // do we need more concurrency ?
-	protected final long            _timeout;
-	protected final Location        _location;
-	protected final long            _proxyHandOverPeriod;
-	protected final ProxyStrategy   _proxyer;
+	protected final Cluster           _cluster;
+	protected final MessageConsumer   _consumer;
+	protected final MessageListener   _listener;
+	protected final Map               _searches=new HashMap(); // do we need more concurrency ?
+	protected final long              _timeout;
+	protected final Location          _location;
+	protected final long              _proxyHandOverPeriod;
+	protected final ProxyStrategy     _proxyer;
 	protected final MigrationStrategy _migrater;
 
 	protected Contextualiser _top;
@@ -358,9 +358,9 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		return location;
 	}
 	
-	protected boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, Location location) {
+	protected boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, Location location) throws IOException {
 		boolean success=false;
-		if ((success=_proxyer.proxy(hreq, hres, id, promotionLock, location)))
+		if (!(success=_proxyer.proxy(hreq, hres, id, promotionLock, location)))
 			success=_migrater.migrateAndPromote(hreq, hres, chain, id, promoter, promotionLock, location);
 		
 		return success;

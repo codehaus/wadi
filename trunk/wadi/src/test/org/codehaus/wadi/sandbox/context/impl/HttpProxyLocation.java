@@ -16,6 +16,7 @@
 */
 package org.codehaus.wadi.sandbox.context.impl;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +26,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.context.HttpProxy;
 import org.codehaus.wadi.sandbox.context.Location;
+import org.codehaus.wadi.sandbox.context.ProxyingException;
+import org.codehaus.wadi.sandbox.context.RecoverableException;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -47,14 +50,23 @@ public class HttpProxyLocation implements Location {
 		_proxy=proxy;
 	}
 	
-	public boolean proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) {
+	public boolean proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) throws IOException {
 		boolean success=false;
+		boolean failure=false;
 		try {
-			success=_proxy.proxy(_location, req, res);
-		} catch (Exception e) {
-			_log.error("request relocation failed: "+_location, e); // TODO - some cases here are resolvable...
-		} finally {
-			promotionLock.release();
+			_proxy.proxy(_location, req, res);
+			success=true;
+		} catch (RecoverableException e) {
+			_log.warn("recoverable problem proxying request to: "+_location, e);
+		} catch (ProxyingException e) {
+			// anything else can be considered Irrecoverable...
+			failure=true;
+			_log.error("problem proxying request to: "+_location, e);
+			throw new IOException("problem proxying request to: "+_location);
+		}
+		finally {
+			if (success || failure) // successful proxy, or irrecoverable problem...
+				promotionLock.release();
 		}
 		
 		return success;

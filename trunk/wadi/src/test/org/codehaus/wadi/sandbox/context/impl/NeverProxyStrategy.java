@@ -16,6 +16,8 @@
 */
 package org.codehaus.wadi.sandbox.context.impl;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -36,7 +38,7 @@ public class NeverProxyStrategy implements ProxyStrategy {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.ProxyStrategy#proxy(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String, EDU.oswego.cs.dl.util.concurrent.Sync, org.codehaus.wadi.sandbox.context.Location)
 	 */
-	public boolean proxy(HttpServletRequest hreq, HttpServletResponse hres, String id, Sync promotionLock, Location location) {
+	public boolean proxy(HttpServletRequest hreq, HttpServletResponse hres, String id, Sync promotionLock, Location location) throws IOException {
 		return false;
 	}
 }

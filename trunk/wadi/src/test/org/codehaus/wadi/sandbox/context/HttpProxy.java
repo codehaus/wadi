@@ -22,6 +22,7 @@ import java.net.InetSocketAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+
 /**
  * defines the API used for relocating requests to other nodes..
  *
@@ -34,7 +35,7 @@ public interface HttpProxy extends Serializable {
 	 * @param location - host and port to which to proxy req/res
 	 * @param req - the request
 	 * @param res - the response
-	 * @return - true if req/res was proxied successfully (even if remote processing was unsuccessful)
+	 * @throws ProxyingException TODO
 	 */
-	public boolean proxy(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res);
+	public void proxy(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res) throws ProxyingException;
 }

@@ -33,6 +33,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.context.IrrecoverableException;
+import org.codehaus.wadi.sandbox.context.ProxyingException;
+import org.codehaus.wadi.sandbox.context.RecoverableException;
 
 // My choice of proxy - still suboptimal - servlet spec imposes a very clumsy API
 // for copying the headers out of the HttpServletRequest (a proprietary solution 
@@ -60,10 +63,8 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 	 * @see javax.servlet.Servlet#service(javax.servlet.ServletRequest,
 	 *      javax.servlet.ServletResponse)
 	 */
-	public boolean proxy(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res) {
+	public void proxy(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res) throws ProxyingException {
 
-		boolean success=true;
-		
 		String uri=getRequestURI(req);
 		String qs=req.getQueryString();
 		if (qs!=null) {
@@ -74,8 +75,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		try {
 			url=new URL("http", location.getAddress().getHostAddress(), location.getPort(), uri);
 		} catch (MalformedURLException e) {
-			_log.warn("bad proxy url", e);
-			return false; // I don't expect this to happen... - probably not recoverable
+			throw new IrrecoverableException("bad proxy url", e);
 		}
 		
 		long startTime=System.currentTimeMillis();
@@ -86,12 +86,9 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 			 huc=(HttpURLConnection)url.openConnection(); // IOException
 			 huc.setRequestMethod(m); // ProtocolException
 		} catch (ProtocolException e) {
-			// this method is not supported by URL class... - we should probably check before trying...
-			_log.warn("unsupported Http method: "+m, e);
-			return false;
+			throw new IrrecoverableException("unsupported HTTP method: "+m, e);
 		} catch (IOException e) {
-			_log.warn("could not open proxy connection", e);
-			return false; // probably recoverable - flush location cache and try again - BadLocation...
+			throw new RecoverableException("could not open proxy connection", e);
 		}
 
 		huc.setAllowUserInteraction(false);	
@@ -192,8 +189,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 					toServer=huc.getOutputStream(); // IOException
 					client2ServerTotal=copy(fromClient, toServer, 8192);
 				} catch (IOException e) {
-					success=false;
-					_log.info("problem proxying client request to server", e);
+					new IrrecoverableException("problem proxying client request to server", e);
 				} finally {
 					if (toServer!=null) {
 						try {
@@ -210,8 +206,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		try {
 			huc.connect(); // IOException
 		} catch (IOException e) {
-			_log.error("could not connect to proxy target", e);
-			return false; // probably recoverable - flush location and start again...
+			throw new RecoverableException("could not connect to proxy target", e);
 		}
 
 		InputStream fromServer=null;
@@ -222,8 +217,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 			try {
 				fromServer = huc.getInputStream(); // IOException
 			} catch (IOException e) {
-				success=false;
-				_log.info("problem acquiring client output", e);
+				throw new IrrecoverableException("problem acquiring client output", e);
 			}
 		} else {
 			code=502;
@@ -232,8 +226,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 				code=huc.getResponseCode(); // IOException
 				message=huc.getResponseMessage(); // IOException
 			} catch (IOException e) {
-				success=false;
-				_log.info("problem acquiring http server response code/message", e);
+				throw new IrrecoverableException("problem acquiring http server response code/message", e);
 			} finally {
 				res.setStatus(code, message);
 			}
@@ -243,8 +236,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 				try {
 					fromServer=huc.getInputStream(); // IOException
 				} catch (IOException e) {
-					success=false;
-					_log.info("problem acquiring http client output", e);
+					throw new IrrecoverableException("problem acquiring http client output", e);
 				}
 			} else {
 				// 4XX:client, 5XX:server error...
@@ -296,8 +288,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 					OutputStream toClient=res.getOutputStream();// IOException
 					server2ClientTotal+=copy(fromServer, toClient, 8192);// IOException
 				} catch (IOException e) {
-					success=false;
-					_log.info("problem proxying server response back to client", e);
+					throw new IrrecoverableException("problem proxying server response back to client", e);
 				} finally {
 					try {
 						fromServer.close();
@@ -314,7 +305,5 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		long endTime=System.currentTimeMillis();
 		long elapsed=endTime-startTime;
 		_log.info("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:"+url);
-		
-		return success;
 	}
 }
