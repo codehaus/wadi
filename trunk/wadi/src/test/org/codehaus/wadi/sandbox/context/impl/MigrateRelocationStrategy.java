@@ -109,6 +109,8 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 		} catch (ClassNotFoundException e) {
 			_log.warn("perhaps all app classes are not deployed, or we need to load the class via e.g. jndi ?", e);
 			return false;
+		} catch (IOException e) {
+			_log.warn("problem unmarshalling session", e);
 		}
 		
 		_log.info("sending migration ack: "+id);

@@ -53,22 +53,22 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	protected final Log _log = LogFactory.getLog(getClass());
-	protected final File _dir;
-	protected final StreamingStrategy _streamingStrategy;
+	protected final StreamingStrategy _streamer;
 	protected final ContextPool _pool;
+	protected final File _dir;
 
 	/**
 	 *
 	 */
-	public LocalDiscContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, File dir, StreamingStrategy streamingStrategy, ContextPool pool) {
+	public LocalDiscContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, StreamingStrategy streamer, ContextPool pool, File dir) {
 		super(next, collapser, map, evicter);
+		_streamer=streamer;
+		_pool=pool;
 	    assert dir.exists();
 	    assert dir.isDirectory();
 	    assert dir.canRead();
 	    assert dir.canWrite();
 		_dir=dir;
-		_streamingStrategy=streamingStrategy;
-		_pool=pool;
 	}
 
 	/* (non-Javadoc)
@@ -124,8 +124,8 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 			try {
 				_log.info("demoting (to local disc): "+key);
 				SerializableContent sc=(SerializableContent)val;
-				File file=new File(_dir, key.toString()+"."+_streamingStrategy.getSuffix());
-				ObjectOutput oos=_streamingStrategy.getOutputStream(new FileOutputStream(file));
+				File file=new File(_dir, key.toString()+"."+_streamer.getSuffix());
+				ObjectOutput oos=_streamer.getOutputStream(new FileOutputStream(file));
 				sc.writeContent(oos);
 				oos.flush();
 				oos.close();
@@ -177,7 +177,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 		ObjectInput oi=null;
 		boolean success=false;
 		try {
-			oi=_streamingStrategy.getInputStream(new FileInputStream(file));
+			oi=_streamer.getInputStream(new FileInputStream(file));
 			context.readContent(oi);
 			_log.info("loaded (local disc): "+file);
 			success=true;

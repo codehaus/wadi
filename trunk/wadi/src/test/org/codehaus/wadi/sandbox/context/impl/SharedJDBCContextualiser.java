@@ -53,21 +53,20 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
-	protected final Log _log = LogFactory.getLog(getClass());
-
+	protected final Log _log=LogFactory.getLog(getClass());
 	protected final Evicter _evicter;
+	protected final StreamingStrategy _streamer;
 	protected final DataSource _ds;
 	protected final String _table;
-	protected final StreamingStrategy _ss;
 	/**
 	 * @param next
 	 */
-	public SharedJDBCContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, DataSource ds, String table, StreamingStrategy ss) {
+	public SharedJDBCContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, StreamingStrategy streamer, DataSource ds, String table) {
 		super(next, collapser);
 		_evicter=evicter;
+		_streamer=streamer;
 		_ds=ds;
 		_table=table;
-		_ss=ss;
 	}
 
 	/* (non-Javadoc)
@@ -88,7 +87,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 			ResultSet rs=s.executeQuery("SELECT MyValue FROM "+_table+" WHERE MyKey='"+id+"'");
 			if (rs.next()) {
 				Context sc=promoter.nextContext();
-		    	ObjectInput oi=_ss.getInputStream(new ByteArrayInputStream((byte[])rs.getObject(1)));
+		    	ObjectInput oi=_streamer.getInputStream(new ByteArrayInputStream((byte[])rs.getObject(1)));
 		    	sc.readContent(oi);
 		    	oi.close();
 
@@ -142,7 +141,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	      Connection c=_ds.getConnection();
 	      PreparedStatement ps=c.prepareStatement("INSERT INTO "+_table+" (MyKey, MyValue) VALUES ('"+key.toString()+"', ?)");
 	      ByteArrayOutputStream baos=new ByteArrayOutputStream();
-	      ObjectOutput oos=_ss.getOutputStream(baos);
+	      ObjectOutput oos=_streamer.getOutputStream(baos);
 	      sc.writeContent(oos);
 	      oos.flush();
 	      oos.close();

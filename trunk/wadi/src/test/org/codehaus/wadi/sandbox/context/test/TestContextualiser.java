@@ -45,6 +45,7 @@ import org.codehaus.activecluster.ClusterFactory;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.impl.GZIPStreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Context;
@@ -209,10 +210,10 @@ public class TestContextualiser extends TestCase {
 	    oo.close();
 	    assertTrue(f.exists());
 		d.put("bar", new LocalDiscContextualiser.LocalDiscMotable(0, f));
-		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), new File("/tmp"), ss, new MyContextPool());
+		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), ss, new MyContextPool(), new File("/tmp"));
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo"));
-		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new NeverEvicter(), new MyContextPool());
+		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new NeverEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
 
 		FilterChain fc=new MyFilterChain();
 //		Collapser collapser=new HashingCollapser();
@@ -303,7 +304,7 @@ public class TestContextualiser extends TestCase {
 	}
 
 	public void testPromotion(Contextualiser c, int n) throws Exception {
-		Contextualiser mc=new MemoryContextualiser(c, new HashingCollapser(10, 2000), new HashMap(), new NeverEvicter(), new MyContextPool());
+		Contextualiser mc=new MemoryContextualiser(c, new HashingCollapser(10, 2000), new HashMap(), new NeverEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
 		FilterChain fc=new MyFilterChain();
 
 		for (int i=0; i<n; i++)
@@ -322,7 +323,7 @@ public class TestContextualiser extends TestCase {
 	}
 
 	public void testCollapsing(Contextualiser c, int n) throws Exception {
-		Contextualiser mc=new MemoryContextualiser(c, new HashingCollapser(10, 2000), new HashMap(), new NeverEvicter(), new MyContextPool());
+		Contextualiser mc=new MemoryContextualiser(c, new HashingCollapser(10, 2000), new HashMap(), new NeverEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
 		FilterChain fc=new MyFilterChain();
 
 		Runnable r=new MyRunnable(mc, fc, "baz");
@@ -348,10 +349,10 @@ public class TestContextualiser extends TestCase {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 		Map d=new HashMap();
-		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), new File("/tmp"), ss, new MyContextPool());
+		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), ss, new MyContextPool(), new File("/tmp"));
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo"));
-		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new AlwaysEvicter(), new MyContextPool());
+		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new AlwaysEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
 
 		FilterChain fc=new MyFilterChain();
 
@@ -386,12 +387,12 @@ public class TestContextualiser extends TestCase {
 	public void testEviction3() throws Exception {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
-		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), collapser, new NeverEvicter(), _ds, _table, ss);
+		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), collapser, new NeverEvicter(), ss, _ds, _table);
 		Map d=new HashMap();
-		Contextualiser disc=new LocalDiscContextualiser(db, collapser, d, new MyEvicter(0), new File("/tmp"), ss, new MyContextPool());
+		Contextualiser disc=new LocalDiscContextualiser(db, collapser, d, new MyEvicter(0), ss, new MyContextPool(), new File("/tmp"));
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo", System.currentTimeMillis()+2000)); // times out 2 seconds from now...
-		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new MyEvicter(1000), new MyContextPool());
+		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new MyEvicter(1000), new GZIPStreamingStrategy(), new MyContextPool());
 
 		FilterChain fc=new MyFilterChain();
 
@@ -449,7 +450,7 @@ public class TestContextualiser extends TestCase {
 		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), relocater0);
 		Map m0=new HashMap();
 		m0.put("foo", new MyContext());
-		Contextualiser memory0=new MemoryContextualiser(clstr0, collapser0, m0, new NeverEvicter(), new MyContextPool());
+		Contextualiser memory0=new MemoryContextualiser(clstr0, collapser0, m0, new NeverEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
 		relocater0.setTop(memory0);
 
 		Collapser collapser1=new HashingCollapser(10, 2000);
@@ -459,7 +460,7 @@ public class TestContextualiser extends TestCase {
 		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), relocater1);
 		Map m1=new HashMap();
 		m1.put("bar", new MyContext());
-		Contextualiser memory1=new MemoryContextualiser(clstr1, collapser1, m1, new NeverEvicter(), new MyContextPool());
+		Contextualiser memory1=new MemoryContextualiser(clstr1, collapser1, m1, new NeverEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
 		relocater1.setTop(memory1);
 
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...

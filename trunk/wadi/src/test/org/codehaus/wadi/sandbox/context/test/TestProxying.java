@@ -41,7 +41,7 @@ import org.codehaus.activecluster.ClusterFactory;
 import org.codehaus.activecluster.ClusterListener;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.impl.GZIPStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.HttpProxy;
 import org.codehaus.wadi.sandbox.context.Location;
@@ -220,8 +220,8 @@ public class TestProxying extends TestCase {
 		}
 	
 	public void testMigrateInsecureProxy() throws Exception {
-		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new SimpleStreamingStrategy()));
-		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new SimpleStreamingStrategy()));
+		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new GZIPStreamingStrategy()));
+		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new GZIPStreamingStrategy()));
 		testInsecureProxy(true);
 		}
 		
@@ -348,8 +348,8 @@ public class TestProxying extends TestCase {
 		}
 	
 	public void testMigrateSecureProxy() throws Exception {
-		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new SimpleStreamingStrategy()));
-		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new SimpleStreamingStrategy()));
+		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new GZIPStreamingStrategy()));
+		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new GZIPStreamingStrategy()));
 		testSecureProxy(true);
 		}
 		
@@ -439,8 +439,8 @@ public class TestProxying extends TestCase {
 		}
 	
 	public void testMigrateStatelessContextualiser() throws Exception {
-		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new SimpleStreamingStrategy()));
-		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new SimpleStreamingStrategy()));
+		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new GZIPStreamingStrategy()));
+		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new GZIPStreamingStrategy()));
 		testStatelessContextualiser(true);
 		}
 		

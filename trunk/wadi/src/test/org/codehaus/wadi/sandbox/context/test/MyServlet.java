@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
+import org.codehaus.wadi.impl.GZIPStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.ContextPool;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
@@ -68,7 +69,7 @@ public class MyServlet implements Servlet {
 		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);
 		_statelessContextualiser=new StatelessContextualiser(_clusterContextualiser, methods, true, uris, false);
 		_memoryMap=new HashMap();
-		_memoryContextualiser=new MemoryContextualiser(_statelessContextualiser, _collapser, _memoryMap, new NeverEvicter(), contextPool);
+		_memoryContextualiser=new MemoryContextualiser(_statelessContextualiser, _collapser, _memoryMap, new NeverEvicter(), new GZIPStreamingStrategy(), contextPool);
 		relocater.setTop(_memoryContextualiser);
 	}
 	
