@@ -17,32 +17,13 @@
 
 package org.codehaus.wadi.shared;
 
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.io.Serializable;
+
 import javax.jms.ObjectMessage;
 
-public class
-    EmmigrationResponse
-    implements Command
+public interface
+  Invocable
+  extends Serializable
 {
-  protected SerializableLog _log=new SerializableLog(getClass());
-  protected String          _id;
-  protected HttpSessionImpl _impl;
-  protected long            _timeout;
-
-  public
-    EmmigrationResponse(String id, long timeout, HttpSessionImpl impl)
-  {
-    _id      =id;
-    _timeout =timeout;
-    _impl    =impl;
-  }
-
-  public void
-    run(ObjectMessage message, Manager manager)
-  {
-    _log.info("here is the session: "+"xxx");
-  }
+  public void invoke(Manager manager, ObjectMessage message);
 }
-

@@ -19,13 +19,27 @@ package org.codehaus.wadi.shared;
 
 import javax.jms.ObjectMessage;
 
-
 public class
-    DummyCommand
-    implements Command
+    MigrationResponse
+    implements Invocable
+{
+  protected SerializableLog _log=new SerializableLog(getClass());
+  protected String          _id;
+  protected HttpSessionImpl _impl;
+  protected long            _timeout;
+
+  public
+    MigrationResponse(String id, long timeout, HttpSessionImpl impl)
   {
-    public void run(ObjectMessage message, Manager manager)
-    {
-      System.out.println("DummyMessage arrived!!");
-    }
+    _id      =id;
+    _timeout =timeout;
+    _impl    =impl;
   }
+
+  public void
+    invoke(Manager manager, ObjectMessage message)
+  {
+    _log.info("here is the session: "+"xxx");
+  }
+}
+
