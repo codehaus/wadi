@@ -166,11 +166,11 @@ public class TestContextualiser extends TestCase {
 		}
 	}
 	
-	class MyXContextualiser implements Contextualiser {
+	class MyActiveContextualiser implements Contextualiser {
 		int _counter=0;
 		MyContext _context;
 
-		public MyXContextualiser(String context) {
+		public MyActiveContextualiser(String context) {
 			_context=new MyContext(context);
 		}
 		
@@ -223,14 +223,14 @@ public class TestContextualiser extends TestCase {
 	}
 	
 	public void testPromotion() throws Exception {
-		int n=2;
+		int n=10;
 		MyPromotingContextualiser mpc=new MyPromotingContextualiser("baz");
 		testPromotion(mpc, n);	
 		assertTrue(mpc._counter==1);
 		
-		MyXContextualiser mxc=new MyXContextualiser("baz");
-		testPromotion(mxc, n);	
-		assertTrue(mxc._counter==n);
+		MyActiveContextualiser mac=new MyActiveContextualiser("baz");
+		testPromotion(mac, n);	
+		assertTrue(mac._counter==n);
 	}
 	
 	public void testCollapsing(Contextualiser c, int n) throws Exception {
@@ -252,7 +252,7 @@ public class TestContextualiser extends TestCase {
 		testCollapsing(mpc, n);
 		assertTrue(mpc._counter==1);
 		
-		MyXContextualiser mxc=new MyXContextualiser("baz");
+		MyActiveContextualiser mxc=new MyActiveContextualiser("baz");
 		testCollapsing(mxc, n);
 		assertTrue(mxc._counter==n);
 		}
