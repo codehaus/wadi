@@ -56,8 +56,8 @@ public class
       {
 	if (_address==null)
 	{
-	  //	  _address=InetAddress.getLocalHost();
-	  _address=InetAddress.getByName("localhost");
+	  _address=InetAddress.getLocalHost();
+	  //_address=InetAddress.getByName("localhost");
 	}
 
 	socket=new Socket(remoteAddress, remotePort, _address, _port);
@@ -148,8 +148,8 @@ public class
       {
 	if (_address==null)
 	{
-	  //	  _address=InetAddress.getLocalHost();
-	  _address=InetAddress.getByName("localhost");
+	  _address=InetAddress.getLocalHost();
+	  //_address=InetAddress.getByName("localhost");
 	}
 
 	_log.debug("starting: "+_address+":"+(_port==0?"<anonymous>":""+_port));
