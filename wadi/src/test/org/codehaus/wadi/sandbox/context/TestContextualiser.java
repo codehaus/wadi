@@ -44,7 +44,7 @@ import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.context.impl.LocalDiscContextualiser;
-import org.codehaus.wadi.sandbox.context.impl.LocationQuery;
+import org.codehaus.wadi.sandbox.context.impl.LocationRequest;
 import org.codehaus.wadi.sandbox.context.impl.LocationResponse;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
@@ -422,11 +422,11 @@ public class TestContextualiser extends TestCase {
 				if (message instanceof ObjectMessage &&
 					(om=(ObjectMessage)message)!=null &&
 					(tmp=om.getObject())!=null &&
-					tmp instanceof LocationQuery &&
-					(id=((LocationQuery)tmp).getId())!=null &&
+					tmp instanceof LocationRequest &&
+					(id=((LocationRequest)tmp).getId())!=null &&
 					_id.equals(id)) {
 					// send a LocationResponse
-					_log.info("sending location response for: "+_id);
+					_log.info("sending location response: "+_id);
 					LocationResponse response=new LocationResponse(_location, Collections.singleton(id));
 					ObjectMessage res=_cluster.createObjectMessage();
 					res.setJMSReplyTo(message.getJMSReplyTo());

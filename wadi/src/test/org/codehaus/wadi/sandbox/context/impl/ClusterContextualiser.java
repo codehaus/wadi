@@ -7,11 +7,13 @@
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -58,53 +60,79 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	protected final MessageListener _listener;
 	protected final Map             _searches=new HashMap(); // do we need more concurrency ?
 	protected final long            _timeout;
+	protected final Location        _location;
 	
 	class LocationListener implements MessageListener {
 		public void onMessage(Message message) {
 			ObjectMessage om=null;
 			Object tmp=null;
-			LocationResponse locations=null;
+			LocationResponse response=null;
+			LocationRequest request=null;
 			
 			try {
-				// filter/validate message
-				if (message instanceof ObjectMessage &&
-					(om=(ObjectMessage)message)!=null &&
-					(tmp=om.getObject())!=null &&
-					tmp instanceof LocationResponse &&
-					(locations=(LocationResponse)tmp)!=null) {
-					// unpack message content into local cache...
-					Location location=locations.getLocation();
-					Set ids=locations.getIds();
-					
-					// notify waiting threads...
-					String correlationId=message.getJMSCorrelationID();
-					synchronized (_searches) {
-						Rendezvous rv=(Rendezvous)_searches.get(correlationId);
-						if (rv!=null) {
-							do {
-								try {
-									rv.attemptRendezvous(location, _timeout);
-								} catch (TimeoutException toe) {
-									_log.info("rendez-vous timed out: "+correlationId, toe);
-								} catch (InterruptedException ignore) {
-									_log.info("rendez-vous interruption ignored: "+correlationId);
-								}
-							} while (Thread.interrupted());
-						}
-					}
-					
-					// update cache
-					for (Iterator i=ids.iterator(); i.hasNext();) {
-						String id=(String)i.next();
-						_map.put(id, location);
-					}
-					_log.info("updated cache for: "+ids);
-				}			
+				if (message instanceof ObjectMessage && (om=(ObjectMessage)message)!=null && (tmp=om.getObject())!=null) {
+					if (tmp instanceof LocationRequest && (request=(LocationRequest)tmp)!=null) 
+						onLocationRequestMessage(om, request);
+					else if (tmp instanceof LocationResponse && (response=(LocationResponse)tmp)!=null)
+						onLocationResponseMessage(om, response);
+				}
 				// should we try evicting entried before inserting them - or is this just a waste of time...
 				// TODO - maybe call evict ?
 			} catch (JMSException e) {
-				_log.warn("bad message received: ", e);
+				_log.error("problem processing location message", e);
 			}
+		}
+		
+		public void onLocationRequestMessage(ObjectMessage message, LocationRequest request) throws JMSException {
+			String id=request.getId();
+			_log.info("receiving location request: "+id);
+			// TODO - somehow we have to query local contextualisers for this session, causing its promotion if it is present and send a message back if so...
+			Destination destination=message.getJMSReplyTo();
+			String correlationId=message.getJMSCorrelationID();
+			boolean present=false;
+			if (present) {
+				LocationResponse response=new LocationResponse(_location, Collections.singleton(id));
+				try {
+					ObjectMessage m=_cluster.createObjectMessage();
+					m.setJMSReplyTo(destination);
+					m.setJMSCorrelationID(correlationId);
+					m.setObject(response);
+					_cluster.send(destination, m);
+				} catch (JMSException e) {
+					_log.error("problem sending location response: "+id, e);
+				}
+			}
+		}
+		
+		public void onLocationResponseMessage(ObjectMessage message, LocationResponse response) throws JMSException {
+			// unpack message content into local cache...
+			Location location=response.getLocation();
+			Set ids=response.getIds();
+			_log.info("receiving location response: "+ids);
+			
+			// notify waiting threads...
+			String correlationId=message.getJMSCorrelationID();
+			synchronized (_searches) {
+				Rendezvous rv=(Rendezvous)_searches.get(correlationId);
+				if (rv!=null) {
+					do {
+						try {
+							rv.attemptRendezvous(location, _timeout);
+						} catch (TimeoutException toe) {
+							_log.info("rendez-vous timed out: "+correlationId, toe);
+						} catch (InterruptedException ignore) {
+							_log.info("rendez-vous interruption ignored: "+correlationId);
+						}
+					} while (Thread.interrupted()); // TODO - should really subtract from timeout each time...
+				}
+			}
+			
+			// update cache
+			for (Iterator i=ids.iterator(); i.hasNext();) {
+				String id=(String)i.next();
+				_map.put(id, location);
+			}
+			_log.info("updated cache for: "+ids);
 		}
 	}
 	
@@ -122,6 +150,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		_listener=new LocationListener();
 	    _consumer.setMessageListener(_listener);// should be called in start() - we need a stop() too - to remove listeners...
 	    _timeout=timeout;
+	    // TODO
+	    _location=null; // should be a Location allowing proxying back to this node...
 	}
 
 	/* (non-Javadoc)
@@ -149,12 +179,12 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			
 			try {
 				// broadcast location query to whole cluster
-				LocationQuery query=new LocationQuery(id);
+				LocationRequest query=new LocationRequest(id);
 				ObjectMessage message=_cluster.createObjectMessage();
 				message.setJMSReplyTo(_cluster.getDestination());
 				message.setJMSCorrelationID(correlationId);
 				message.setObject(query);
-				_log.info("sending location query for: "+id);
+				_log.info("sending location request: "+id);
 				_cluster.send(_cluster.getDestination(), message);
 				
 				// rendez-vous with response/timeout...
