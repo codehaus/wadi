@@ -53,7 +53,7 @@ public class
   implements ReadWriteLock
 {
   protected Log _log=LogFactory.getLog(getClass());
-  protected TreeMap _sortedWaitingWriters=new TreeMap(new Comparator()
+  protected TreeMap _waitingWriters=new TreeMap(new Comparator()
     {
       public int
 	compare(Object o1, Object o2)
@@ -66,8 +66,6 @@ public class
   protected Thread activeWriter_ = null;
   protected Object _activeWriterLock = null;
   protected long waitingReaders_ = 0;
-  protected long waitingWriters_ = 0;
-
 
   protected final ReaderLock readerLock_ = new ReaderLock();
   protected final WriterLock writerLock_ = new WriterLock();
@@ -84,16 +82,12 @@ public class
 
   protected synchronized void cancelledWaitingReader() { --waitingReaders_; }
 
-  protected synchronized void
+  protected void
     cancelledWaitingWriter(Object lock)
     {
-      --waitingWriters_;
       Object tmp=null;
       Thread t=Thread.currentThread();
-      synchronized(_sortedWaitingWriters)
-      {
-	tmp=_sortedWaitingWriters.remove(t);
-      }
+      synchronized(_waitingWriters) {tmp=_waitingWriters.remove(t);}
       assert tmp==lock;
     }
 
@@ -138,15 +132,12 @@ public class
     return pass;
   }
 
-  protected synchronized boolean startWriteFromNewWriter(Object lock) {
+  protected synchronized boolean startWriteFromNewWriter(Object lock) {	// TODO - does this need to be synchronized ?
     boolean pass = startWrite(lock);
     if (!pass)
     {
-      ++waitingWriters_;
-      synchronized(_sortedWaitingWriters)
-      {
-	_sortedWaitingWriters.put(Thread.currentThread(), lock);
-      }
+      Thread t=Thread.currentThread();
+      synchronized(_waitingWriters) {_waitingWriters.put(t, lock);}
     }
     return pass;
   }
@@ -157,28 +148,24 @@ public class
     return pass;
   }
 
-  protected synchronized boolean startWriteFromWaitingWriter() {
+  protected synchronized boolean startWriteFromWaitingWriter() { // TODO - does this need to be synchronized ?
     Object lock=null;
-    synchronized(_sortedWaitingWriters){lock=_sortedWaitingWriters.get(Thread.currentThread());}
+    Thread t=Thread.currentThread();
+    synchronized(_waitingWriters){lock=_waitingWriters.get(t);}
     boolean pass = startWrite(lock);
     if (pass)
-    {
-      --waitingWriters_;
-      Thread t=Thread.currentThread();
-      synchronized(_sortedWaitingWriters)
-      {
-	_sortedWaitingWriters.remove(t);
-      }
-    }
+      synchronized(_waitingWriters) {_waitingWriters.remove(t);}
     return pass;
   }
+
+  protected int getWaitingWriterCount(){synchronized(_waitingWriters){return _waitingWriters.size();}}
 
   /**
    * Called upon termination of a read.
    * Returns the object to signal to wake up a waiter, or null if no such
    **/
   protected synchronized Signaller endRead() {
-    if (--activeReaders_ == 0 && waitingWriters_ > 0)
+    if (--activeReaders_ == 0 && getWaitingWriterCount() > 0)
       return writerLock_;
     else
       return null;
@@ -193,7 +180,7 @@ public class
     activeWriter_ = null;
     if (waitingReaders_ > 0 && allowReader())
       return readerLock_;
-    else if (waitingWriters_ > 0)
+    else if (getWaitingWriterCount() > 0)
       return writerLock_;
     else
       return null;
@@ -333,10 +320,10 @@ public class
       signalFirstWaiter()
     {
       Object lock=null;
-      synchronized (_sortedWaitingWriters)
+      synchronized (_waitingWriters)
       {
-	Thread t=(Thread)_sortedWaitingWriters.firstKey();
-	lock=_sortedWaitingWriters.get(t);	// is there no better way?
+	Thread t=(Thread)_waitingWriters.firstKey();
+	lock=_waitingWriters.get(t);	// is there no better way?
       }
       synchronized(lock){lock.notify();};
     }
