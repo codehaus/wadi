@@ -62,6 +62,7 @@ import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.impl.ProxyRelocationStrategy;
+import org.codehaus.wadi.sandbox.impl.SerialContextualiser;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCContextualiser;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCMotable;
 import org.codehaus.wadi.sandbox.impl.SimpleEvictable;
@@ -69,6 +70,7 @@ import org.codehaus.wadi.sandbox.impl.SwitchableEvicter;
 import org.codehaus.wadi.sandbox.impl.TimeToLiveEvicter;
 import org.codehaus.wadi.sandbox.impl.Utils;
 
+import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 import junit.framework.TestCase;
@@ -185,8 +187,10 @@ public class TestContextualiser extends TestCase {
 		assertTrue(d.containsKey("bar"));
 		assertTrue(d.size()==1);
 
+		Contextualiser serial=new SerialContextualiser(disc, collapser);
+
 		Map m=new HashMap();
-		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new NeverEvicter(), ss, new MyContextPool());
+		Contextualiser memory=new MemoryContextualiser(serial, collapser, m, new NeverEvicter(), ss, new MyContextPool());
 		m.put("foo", new MyContext("foo", "foo"));
 		assertTrue(m.size()==1);
 
@@ -292,7 +296,7 @@ public class TestContextualiser extends TestCase {
 
 		public void run() {
 			try {
-				_contextualiser.contextualise(null, null, _chain, _id, null, null, false);
+				_contextualiser.contextualise(null, null, _chain, _id, null, new NullSync(), false);
 			} catch (Exception e) {
 				_log.error("unexpected problem", e);
 				assertTrue(false);
@@ -305,7 +309,7 @@ public class TestContextualiser extends TestCase {
 		FilterChain fc=new MyFilterChain();
 
 		for (int i=0; i<n; i++)
-			mc.contextualise(null,null,fc,"baz", null, null, false);
+			mc.contextualise(null,null,fc,"baz", null, new NullSync(), false);
 	}
 
 	public void testPromotion() throws Exception {
@@ -347,9 +351,10 @@ public class TestContextualiser extends TestCase {
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 		Map d=new HashMap();
 		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), ss, new File("/tmp"));
+		Contextualiser serial=new SerialContextualiser(disc, collapser);
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo", "foo"));
-		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new AlwaysEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
+		Contextualiser memory=new MemoryContextualiser(serial, collapser, m, new AlwaysEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
 
 		FilterChain fc=new MyFilterChain();
 
@@ -369,11 +374,12 @@ public class TestContextualiser extends TestCase {
 		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), collapser, new NeverEvicter(), _ds, _table);
 		Map d=new HashMap();
 		Contextualiser disc=new LocalDiscContextualiser(db, collapser, d, new TimeToLiveEvicter(0), ss, new File("/tmp"));
+		Contextualiser serial=new SerialContextualiser(disc, collapser);
 		Map m=new HashMap();
 		Context tmp=new MyContext("foo", "foo");
 		tmp.setMaxInactiveInterval(2);
 		m.put("foo", tmp); // times out 2 seconds from now...
-		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new TimeToLiveEvicter(1000), new GZIPStreamingStrategy(), new MyContextPool());
+		Contextualiser memory=new MemoryContextualiser(serial, collapser, m, new TimeToLiveEvicter(1000), new GZIPStreamingStrategy(), new MyContextPool());
 
 		FilterChain fc=new MyFilterChain();
 

@@ -44,6 +44,7 @@ import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.impl.NeverEvicter;
+import org.codehaus.wadi.sandbox.impl.SerialContextualiser;
 import org.codehaus.wadi.sandbox.impl.StatelessContextualiser;
 import org.codehaus.wadi.sandbox.impl.SwitchableEvicter;
 
@@ -58,6 +59,7 @@ public class MyServlet implements Servlet {
 	protected final RelocationStrategy _relocater;
 	protected final ClusterContextualiser _clusterContextualiser;
 	protected final StatelessContextualiser _statelessContextualiser;
+	protected final SerialContextualiser _serialContextualiser;
 	protected final MemoryContextualiser _memoryContextualiser;
 	protected final Location _location;
 
@@ -75,8 +77,9 @@ public class MyServlet implements Servlet {
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
 		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);
 		_statelessContextualiser=new StatelessContextualiser(_clusterContextualiser, methods, true, uris, false);
+		_serialContextualiser=new SerialContextualiser(_statelessContextualiser, _collapser);
 		_memoryMap=new HashMap();
-		_memoryContextualiser=new MemoryContextualiser(_statelessContextualiser, _collapser, _memoryMap, new NeverEvicter(), new SimpleStreamingStrategy(), contextPool);
+		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, _collapser, _memoryMap, new NeverEvicter(), new SimpleStreamingStrategy(), contextPool);
 		relocater.setTop(_memoryContextualiser);
 	}
 

@@ -62,7 +62,7 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 			return false; // we cannot proceed without the session...
 
 		if (immoter!=null)
-			return contextualiseElsewhere(hreq, hres, chain, id, immoter, promotionLock, emotable);
+			return promote(hreq, hres, chain, id, immoter, promotionLock, emotable);
 
 		return contextualiseLocally(hreq, hres, chain, id, promotionLock, emotable);
 	}
