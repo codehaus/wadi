@@ -22,6 +22,9 @@ import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
 
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
+
 /**
  * A collection of useful static functions
  *
@@ -62,4 +65,43 @@ public class Utils {
 			return null;
 		}
 	}
+	
+	/**
+	 * Ignore any interruptions whilst acquiring a lock.
+	 * 
+	 * @param sync - the lock
+	 * @throws TimeoutException - some Syncs (TimeoutSync) may timeout during acquisition
+	 */
+	public static void acquireUninterrupted(Sync sync) throws TimeoutException {
+	    do {
+	        try {
+	            sync.acquire();
+	        } catch (TimeoutException e) {
+	            Thread.interrupted(); // TODO - not sure if we need to clear the interrupted flag ?
+	            throw e; // a TimeoutException isa InterruptedException
+	        } catch (InterruptedException e) {
+	            _log.trace("unexpected interruption - ignoring", e);
+	        }
+	    } while (Thread.interrupted());
+	}
+	
+	/**
+	 * If a lock is free, acquire it, ignoring any interruptions, else fail.
+	 * 
+	 * @param sync - the lock
+	 * @return - whether or not the lock was acquired
+	 */
+	public static boolean attemptUninterrupted(Sync sync) {
+	    boolean acquired=false;
+	    do {
+	        try {
+	            acquired=sync.attempt(0);
+	        } catch (InterruptedException e) {
+	            _log.trace("unexpected interruption - ignoring", e);
+	        }
+	    } while (Thread.interrupted());
+	    return acquired;
+	}
+	
+
 }

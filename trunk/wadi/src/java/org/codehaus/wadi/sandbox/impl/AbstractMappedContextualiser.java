@@ -87,17 +87,8 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 	        if (_evicter.evict(id, emotable, time)) { // first test without lock - cheap
 	            Sync lock=getEvictionLock(id, emotable);
 	            boolean acquired=false;
-	            do {
-	                try {
-	                    lock.attempt(0);
-	                    acquired=true;
-	                } catch (InterruptedException ie) {
-	                    _log.warn("unexpected interruption - continuing", ie);
-	                }
-	            } while (Thread.interrupted());
-	            
 	            try {
-	                if (acquired && _evicter.evict(id, emotable, time)) { // second confirmatory test with lock
+	                if ((acquired=Utils.attemptUninterrupted(lock)) && _evicter.evict(id, emotable, time)) { // second confirmatory test with lock
 	                    Immoter immoter=_next.getDemoter(id, emotable);
 	                    Emoter emoter=getEvictionEmoter();
 	                    Utils.mote(emoter, immoter, emotable, id);

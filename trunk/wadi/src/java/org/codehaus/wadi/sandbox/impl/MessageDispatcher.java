@@ -129,7 +129,7 @@ public class MessageDispatcher implements MessageListener {
 			synchronized (_rvMap) {
 				Rendezvous rv=(Rendezvous)_rvMap.get(correlationId);
 				if (rv!=null) {
-					do {
+					do { // should we move this pattern into Utils ?
 						try {
 							rv.attemptRendezvous(om, _timeout);
 						} catch (TimeoutException toe) {
