@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi;
+package org.codehaus.wadi.impl.sync;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import java.io.IOException;
@@ -29,6 +29,8 @@ import java.net.SocketTimeoutException;
 import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.HttpSessionImpl;
+import org.codehaus.wadi.StreamingStrategy;
 
 // TODO - maybe use NIO as discussed with Jeremy.
 // TODO - could our connection be to a filedescriptor instead of another node ?

@@ -55,6 +55,7 @@ import org.codehaus.wadi.impl.RelativeEvictionPolicy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.impl.TotalEvictionPolicy;
+import org.codehaus.wadi.impl.sync.MigrationService;
 import org.codehaus.wadi.HttpSession;
 import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
 
@@ -342,7 +343,7 @@ public abstract class
 
   protected String _configurationResource="WEB-INF/wadi-web.xml";
 
-  protected org.codehaus.wadi.NewMigrationService _ms=new org.codehaus.wadi.impl.async.MigrationService();
+  protected org.codehaus.wadi.MigrationService _ms=new org.codehaus.wadi.impl.async.MigrationService();
 
   public synchronized void
     start()
@@ -936,7 +937,7 @@ public abstract class
   // Migration
 
   MigrationService.Server _migrationServer;
-  AsyncToSyncAdaptor      _adaptor=new AsyncToSyncAdaptor();
+  protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor();
 
   //----------------------------------------
   // Migration
@@ -1182,7 +1183,21 @@ public abstract class
     _cluster.send(node.getDestination(), om);
   }
 
-  class MembershipListener
+  /**
+ * @param _adaptor The _adaptor to set.
+ */
+public void setAsyncToSyncAdaptor(AsyncToSyncAdaptor _adaptor) {
+	this._adaptor = _adaptor;
+}
+
+/**
+ * @return Returns the _adaptor.
+ */
+public AsyncToSyncAdaptor getAsyncToSyncAdaptor() {
+	return _adaptor;
+}
+
+class MembershipListener
     implements ClusterListener
   {
     public void onNodeAdd(ClusterEvent event){_log.info("node add");}

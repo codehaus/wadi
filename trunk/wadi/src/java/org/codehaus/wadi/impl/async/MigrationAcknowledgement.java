@@ -15,11 +15,14 @@
 *  limitations under the License.
 */
 
-package org.codehaus.wadi;
+package org.codehaus.wadi.impl.async;
 
 import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Invocable;
+import org.codehaus.wadi.Manager;
+
 import javax.jms.JMSException;
 
 public class
@@ -44,7 +47,7 @@ public class
   {
     try
     {
-      manager._adaptor.receive(_ok?Boolean.TRUE:Boolean.FALSE, message.getJMSCorrelationID(), _timeout);
+      manager.getAsyncToSyncAdaptor().receive(_ok?Boolean.TRUE:Boolean.FALSE, message.getJMSCorrelationID(), _timeout);
     }
     catch (JMSException e)
     {

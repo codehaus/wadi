@@ -15,7 +15,7 @@
 *  limitations under the License.
 */
 
-package org.codehaus.wadi;
+package org.codehaus.wadi.impl.async;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -25,6 +25,10 @@ import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
+import org.codehaus.wadi.HttpSessionImpl;
+import org.codehaus.wadi.Invocable;
+import org.codehaus.wadi.Manager;
+import org.codehaus.wadi.ObjectInputStream;
 
 public class
   MigrationResponse
@@ -55,7 +59,7 @@ public class
       HttpSessionImpl impl=manager.getLocalSession(_id);
       impl.readContent(ois);
       ois.close();
-      manager._adaptor.receive(impl, in.getJMSCorrelationID(), _timeout);
+      manager.getAsyncToSyncAdaptor().receive(impl, in.getJMSCorrelationID(), _timeout);
       ok=true;
     }
     catch (IOException e)
