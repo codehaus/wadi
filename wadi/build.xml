@@ -186,8 +186,7 @@
       <sysproperty key="http.port" value="8084"/>
       <sysproperty key="ajp.port" value="8011"/>
       <sysproperty key="wadi.home" value="${wadi.home}"/>
-      <sysproperty key="wadi.colour" value="green"/>
-
+      <sysproperty key="wadi.colour" value="blue"/>
       <sysproperty key="bucket.name" value="web0"/>
 
       <sysproperty key="java.endorsed.dirs" value="${tomcat.home}/common/endorsed"/>
@@ -271,8 +270,8 @@
     <java fork="yes" classname="junit.textui.TestRunner" taskname="junit" failonerror="true">
       <arg value="org.codehaus.wadi.test.TestSerialisation"/>
       <arg value="org.codehaus.wadi.test.TestDiscoveryService"/>
-      <arg value="org.codehaus.wadi.test.TestConcurrency"/>
       <arg value="org.codehaus.wadi.test.TestMigrationService"/>
+      <arg value="org.codehaus.wadi.test.TestConcurrency"/>
       <arg value="org.codehaus.wadi.test.TestHttpSession"/>
       <classpath refid="wadi.classpath"/>
       <!--
