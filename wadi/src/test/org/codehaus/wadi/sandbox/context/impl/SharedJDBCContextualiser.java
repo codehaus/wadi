@@ -69,8 +69,8 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#contextualiseLocally(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync)
 	 */
 	public boolean contextualiseLocally(ServletRequest req, ServletResponse res,
-			FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
-
+			FilterChain chain, String id, Promoter promoter, Sync promotionMutex, long peekTimeout) throws IOException, ServletException {
+		// ignore peekTimeout - we are not local
 		Context context=null;
 		try {
 			Connection c=_ds.getConnection();
@@ -154,4 +154,6 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	      _log.error("eviction (database) failed: "+key, e);
 	    }
 	}
+	
+	public boolean isLocal(){return false;}
 }
