@@ -43,6 +43,6 @@ public class
   public Object
     doit(MigrationService service, HttpSessionImpl impl, String correlationID, Destination source)
   {
-    return ((StreamedMigrationService.Client)service.getClient()).emmigrateSession(this, impl, correlationID, _destination);
+    return ((StreamedMigrationService.Client)service.getClient()).emmigrateSingleSession(this, impl, correlationID, _destination);
   }
 }
