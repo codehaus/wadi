@@ -70,6 +70,8 @@ import org.codehaus.wadi.sandbox.context.HttpProxy;
  */
 public abstract class AbstractHttpProxy implements HttpProxy {
 
+	public static final String _WADI_IsSecure="WADI-IsSecure";
+	
 	// proxyable
 	protected Pattern _proxyableSchemes=Pattern.compile("HTTP", Pattern.CASE_INSENSITIVE);
 

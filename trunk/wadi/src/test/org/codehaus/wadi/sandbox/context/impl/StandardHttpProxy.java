@@ -83,84 +83,108 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 				connectionHdr = null; // TODO  ??
 		}
 		
-		// copy headers
-		boolean xForwardedFor = false;
-		boolean hasContent = false;
-		int contentLength=0;
-		Enumeration enm = req.getHeaderNames();
-		while (enm.hasMoreElements()) {
-			// TODO could be better than this! - using javax.servlet ?
-			String hdr = (String) enm.nextElement();
-			String lhdr = hdr.toLowerCase();
-
-			if (_DontProxyHeaders.contains(lhdr))
-				continue;
-			if (connectionHdr != null && connectionHdr.indexOf(lhdr) >= 0)
-				continue;
-
-			if ("content-length".equals(lhdr)) {
-				try {
-					contentLength=req.getIntHeader(hdr);
-					hasContent=contentLength>0;
-				} catch (NumberFormatException e) {
-					_log.info("bad Content-Length header value: "+req.getHeader(hdr), e);
-				}
-			}
+		// copy headers - inefficient, but we are constrained by servlet API
+		{
+			for (Enumeration e=req.getHeaderNames(); e.hasMoreElements();) {
+				String hdr = (String) e.nextElement();
+				String lhdr = hdr.toLowerCase();
 				
-			if ("content-type".equals(lhdr)) {
-				hasContent=true;
-			}
-			
-			Enumeration vals = req.getHeaders(hdr);
-			while (vals.hasMoreElements()) {
-				String val = (String) vals.nextElement();
-				if (val != null) {
-					uc.addRequestProperty(hdr, val);
-					//_log.debug("req " + hdr + ": " + val);
-					xForwardedFor |= "X-Forwarded-For".equalsIgnoreCase(hdr); // why is this not in the outer loop ?
-				}
-			}
-		}
-		
-		// Proxy headers
-		uc.setRequestProperty("Via", "1.1 (WADI)");
-		if (!xForwardedFor)
-			uc.addRequestProperty("X-Forwarded-For", req.getRemoteAddr());
-
-		// a little bit of cache control
-		String cache_control = req.getHeader("Cache-Control");
-		if (cache_control != null && (cache_control.indexOf("no-cache") >= 0 || cache_control.indexOf("no-store") >= 0))
-			uc.setUseCaches(false);
-
-		// customize Connection
-		uc.setDoInput(true);
-
-		int client2ServerTotal=0;
-		if (hasContent) {
-			uc.setDoOutput(true);
-			
-			OutputStream toServer=null;
-			try {
-				InputStream fromClient=req.getInputStream(); // IOException
-				toServer=uc.getOutputStream(); // IOException
-				client2ServerTotal=copy(fromClient, toServer, 8192);
-			} catch (IOException e) {
-				_log.info("problem proxying client request to server", e);
-			} finally {
-				if (toServer!=null) {
-					try {
-						toServer.close(); // IOException
-					} catch (IOException e) {
-						_log.info("problem closing server request stream", e);
+				if (_DontProxyHeaders.contains(lhdr))
+					continue;
+				if (connectionHdr != null && connectionHdr.indexOf(lhdr) >= 0) // what is going on here ?
+					continue;
+				// HTTP/1.1 proxies MUST parse the Connection header field before a message is forwarded and, for each connection-token in this field, remove any header field(s) from the message with the same name as the connection-token. Connection options are signaled by the presence of a connection-token in the Connection header field, not by any corresponding additional header field(s), since the additional header field may not be sent if there are no parameters associated with that connection option		
+				if (_WADI_IsSecure.equals(hdr)) // don't worry about case - we should be the only one messing with this header...
+					continue; // strip this out - we may be being spoofed
+				
+				for (Enumeration f=req.getHeaders(hdr); f.hasMoreElements();) {
+					String val=(String)f.nextElement();
+					if (val!=null) {
+						uc.addRequestProperty(hdr, val);
 					}
 				}
 			}
 		}
+		
+		// content ?
+		boolean hasContent=false;
+		{
+			int contentLength=0;
+			String tmp=uc.getRequestProperty("Content-Length");
+			if (tmp!=null) {
+				try {
+					contentLength=Integer.parseInt(tmp);
+				} catch (NumberFormatException ignore) {
+					// ignore
+				}
+			}
+			
+			if (contentLength>0)
+				hasContent=true;
+			else
+				hasContent=(uc.getRequestProperty("Content-Type")!=null);
+		}
+		
+		// proxy
+		{
+			uc.addRequestProperty("Via", "1.1 "+req.getLocalName()+":"+req.getLocalPort()+" \"WADI\""); // TODO - should we be giving out personal details ?
+			uc.addRequestProperty("X-Forwarded-For", req.getRemoteAddr()); // adds last link in request chain...
+			// String tmp=uc.getRequestProperty("Max-Forwards"); // TODO - do we really need to bother with this ?
+		}
+		
+		// cache-control
+		{
+			String cacheControl=uc.getRequestProperty("Cache-Control");
+			if (cacheControl!=null && (cacheControl.indexOf("no-cache")>=0 || cacheControl.indexOf("no-store")>=0))
+				uc.setUseCaches(false);
+		}
+		
+		// confidentiality
+		{
+			if (req.isSecure())
+				uc.addRequestProperty(_WADI_IsSecure, req.getLocalAddr().toString());
+			
+			// at the other end, if this header is present we must :
+			
+			// wrap the request so that req.isSecure()=true, before processing...
+			// mask the header - so it is never seen by the app.
+			
+			// the code for the other end should live in this class.
+			
+			// this code should also confirm that it not being spoofed by confirming that req.getRemoteAddress() is a cluster member...
+		}
+		// customize Connection
+		uc.setDoInput(true);
 
-		// Connect - TODO - should we really leave it this late before trying to connect ?
+		// client->server
+		int client2ServerTotal=0;
+		{
+			if (hasContent) {
+				uc.setDoOutput(true);
+				
+				OutputStream toServer=null;
+				try {
+					InputStream fromClient=req.getInputStream(); // IOException
+					toServer=uc.getOutputStream(); // IOException
+					client2ServerTotal=copy(fromClient, toServer, 8192);
+				} catch (IOException e) {
+					_log.info("problem proxying client request to server", e);
+				} finally {
+					if (toServer!=null) {
+						try {
+							toServer.close(); // IOException
+						} catch (IOException e) {
+							_log.info("problem closing server request stream", e);
+						}
+					}
+				}
+			}
+		}
+		
+		// Connect
 		uc.connect(); // IOException
 
-		InputStream fromServer = null;
+		InputStream fromServer=null;
 
 		// handler status codes etc.
 		int code=0;
@@ -229,26 +253,28 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 			}
 		}
 		
-		res.addHeader("Via", "1.1 (WADI)");
-
-		// copy server->client
+		// do we need another Via header in the response...
+		
+		// server->client
 		int server2ClientTotal=0;
-		if (fromServer!=null) {
-			try {
-				OutputStream toClient=res.getOutputStream();// IOException
-				server2ClientTotal+=copy(fromServer, toClient, 8192);// IOException
-			} catch (IOException e) {
-				_log.info("problem proxying server response back to client", e);
-			} finally {
+		{
+			if (fromServer!=null) {
 				try {
-					fromServer.close();
+					OutputStream toClient=res.getOutputStream();// IOException
+					server2ClientTotal+=copy(fromServer, toClient, 8192);// IOException
 				} catch (IOException e) {
-					// well - we did our best...
-					_log.info("problem closing server response stream", e);
+					_log.info("problem proxying server response back to client", e);
+				} finally {
+					try {
+						fromServer.close();
+					} catch (IOException e) {
+						// well - we did our best...
+						_log.info("problem closing server response stream", e);
+					}
 				}
 			}
 		}
-
+		
 		long endTime=System.currentTimeMillis();
 		long elapsed=endTime-startTime;
 		_log.info("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:"+url);
