@@ -47,7 +47,6 @@ public class SerialContextualiser implements Contextualiser {
 	
 	protected final Contextualiser _next;
 	protected final Collapser _collapser;
-	protected final Evicter _evicter=new NeverEvicter();
 	protected final Sync _dummyLock=new NullSync();
 	
 	public SerialContextualiser(Contextualiser next, Collapser collapser) {
@@ -79,7 +78,7 @@ public class SerialContextualiser implements Contextualiser {
 	}
 	
 	public void evict() {}
-	public Evicter getEvicter() {return _evicter;}
+	public Evicter getEvicter() {return _next.getEvicter();}
 	public boolean isLocal() {return _next.isLocal();}
 	public Immoter getDemoter(String id, Motable motable) {return _next.getDemoter(id, motable);}
 }
