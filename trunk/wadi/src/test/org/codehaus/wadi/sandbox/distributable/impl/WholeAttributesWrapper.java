@@ -28,15 +28,17 @@ public class WholeAttributesWrapper implements Attributes {
     
     protected final Dirtier _dirtier;
     protected final StreamingStrategy _streamer;
-    protected final boolean _saveMemory;
-
+    protected final boolean _evictObjectRepASAP;
+    protected final boolean _evictByteRepASAP;
+    
     protected Attributes _objectRep;
     protected byte[] _byteRep;
     
-    public WholeAttributesWrapper(Attributes attributes, Dirtier dirtier, StreamingStrategy streamer, boolean saveMemory) {
+    public WholeAttributesWrapper(Attributes attributes, Dirtier dirtier, StreamingStrategy streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
         _dirtier=dirtier;
         _streamer=streamer;
-        _saveMemory=saveMemory;
+        _evictObjectRepASAP=evictObjectRepASAP;
+        _evictByteRepASAP=evictByteRepASAP;
 
         _objectRep=attributes;
         _byteRep=null;
@@ -46,7 +48,7 @@ public class WholeAttributesWrapper implements Attributes {
         if (null==_objectRep) {
             // convert byte[] to Object rep
             _objectRep=(Attributes)Utils.safeByteArrayToObject(_byteRep, _streamer);
-            if (_saveMemory) _byteRep=null;
+            if (_evictByteRepASAP) _byteRep=null;
         }
         return _objectRep;
     }
@@ -55,7 +57,7 @@ public class WholeAttributesWrapper implements Attributes {
         if (null==_byteRep) {
             // convert Object to byte[] rep
             _byteRep=Utils.safeObjectToByteArray(_objectRep, _streamer);
-            if (_saveMemory) _objectRep=null;
+            if (_evictObjectRepASAP) _objectRep=null;
         }
         return _byteRep;
     }
