@@ -101,12 +101,13 @@ public abstract class
   }
 
   /**
-   * returns a Map of String:Collection - id:set-of-peers representing
+   * returns a Map of String:Collection (id:set-of-peers) representing
    * all cells into which the passed list of Peers should be
-   * organised. k is the number of Peers in each Cell.
+   * organised. K is the number of Peers in each Cell.
    *
-   * @param e a <code>Collection</code> value
-   * @param k an <code>int</code> value
+   * @param localPeer a <code>Peer</code> value
+   * @param peers a <code>Collection</code> value
+   * @param peersPerCell an <code>int</code> value
    * @return a <code>Map</code> value
    */
   public abstract Map combineMap(Peer localPeer, Collection peers, int peersPerCell);

@@ -24,7 +24,7 @@ import org.codehaus.wadi.HttpSessionImpl;
 
 /**
  * Evict after a period of inactivity equivalent to a fraction
- * (expressed as a float) of maxInactiveActivity - e.g. 0.5 with a
+ * (expressed as a float) of maxInactiveActivity. E.g. 0.5 with a
  * maxInactiveActivity of 1 hour would evict after 1/2 an hour of
  * inactivity.
  *

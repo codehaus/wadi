@@ -50,7 +50,6 @@ public interface
   /**
    * Return the routing info for this node
    *
-   * @param id a <code>String</code> value
    * @return a <code>String</code> value
    */
   String getInfo();

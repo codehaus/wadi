@@ -37,7 +37,8 @@ public interface
    * Move a session from internal to external storage, making
    * relevant notifications with correct ClassLoader.
    *
-   * @param s a <code>Session</code> value
+   * @param impl a <code>HttpSessionImpl</code> value
+   * @return a <code>boolean</code> value
    */
   boolean passivate(HttpSessionImpl impl);
 

@@ -30,7 +30,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * A simple facade for an AbstractHttpSessionImpl to which there is no
- * public way to navigate from this class. i.e. a secure HttpSession
+ * public way to navigate from this class. I.e. a secure HttpSession
  * implementation to pass out to the user.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
