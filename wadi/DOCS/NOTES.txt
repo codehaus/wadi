@@ -472,3 +472,8 @@ does identity need to live in a session ?
 does validity need to live in a session - is an invalid session simply
 not one that doesn't exist?
 
+----------------------------------------
+
+now that facade is set in HttpSessionImpl.readObject ensure that it is
+not being done unecessarily elsewhere.
+

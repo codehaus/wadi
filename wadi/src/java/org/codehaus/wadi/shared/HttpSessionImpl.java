@@ -172,6 +172,7 @@ public abstract class
   {
     in.defaultReadObject();
     _rwlock=new ReaderPreferenceReadWriteLock();
+    _facade=createFacade();
   }
 
   public void setId(String id){_id=id;}
