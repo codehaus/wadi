@@ -302,10 +302,10 @@ public abstract class
 
     if (!successfulMigration)
     {
-      _adaptor.send(
-		    new EmmigrationCommand(realId, _migrationServer.getAddress(), _migrationServer.getPort()),
+      long timeout=2000L;
+      _adaptor.send(new EmmigrationCommand(realId, _migrationServer.getAddress(), _migrationServer.getPort(), timeout),
 		    realId,	// is this enough - TODO
-		    2000L,	// parameterise - TODO
+		    timeout,	// parameterise - TODO
 		    new EmmigrationSender(this)
 		    );
 
