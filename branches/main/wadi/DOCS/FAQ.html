@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>WADI - Web Application Distribution Infrastructure</title>
+  </head>
+
+  <body>
+    <h1>WADI - Web Application Distribution Infrastructure</h1>
+
+    <h2>What is WADI?</h2>
+
+    WADI is a J2EE component that manages and ensures the scalable and
+    transparent high availability of Web container state.
+
+    <p/>
+
+      Such state is stored in an HttpSession. This is the server-side
+      repository of client conversational state and the only resource
+      to be distributed in a &lt;distributable/&gt; Web Application.
+
+    <p/>
+
+      Unfortunately, the management of distributable HttpSessions
+      tends to be very much an afterthought in both the current
+      Servlet specification and existing Open Source implementations.
+
+    <p/>
+
+      WADI's goal is to identify and explain the shortcomings present
+      in current offerings and to provide an implementation which
+      draws upon this crystallisation of the current state of play to
+      provide a highly flexible toolkit capable of delivering a number
+      of different solutions in a complex problem space.
+
+    <p/>
+
+      WADI is able to achieve this, because the project is focussed,
+      not on the delivery of a complete, working web-container, but
+      simply upon the problem of distributed state management.
+
+    <p/>
+
+      Ultimately, WADI will live or die upon its ability to justify
+      its architecture in terms of the constraints placed upon it by
+      the Servlet and Java language specifications and to deliver a
+      production-ready implementation of this in a format that is
+      sufficiently performant, flexible, functional and available as
+      to be worth the investment, over and above just taking a vanilla
+      web-container out of the box, that the user will have to make to
+      put it to use.
+
+    <p/>
+
+      You are the Jury. Your verdict is final!
+
+    <h2>With what Web Containers does WADI integrate?</h2>
+
+    Currently, only Jetty, although a Tomcat integration has been
+    planned from the outset and is well under way.
+
+    <h2>How is it integrated?</h2>
+
+    WADI comprises two main components, A portable HttpSession
+    implementation and an HttpSession Manager. The Manager has
+    implementations that plug into Jetty and Tomcat, replacing their
+    existing HttpSession Managers. HttpSessions will be able to be
+    exchanged between instances of any WADI-enabled web-container.
+
+    <h2>What functionality does WADI bring to the table?</h2>
+
+    Managing distributed state is a complex affair. Rather than
+    mandate a particular direction, WADI attempts to abstract the
+    basic patterns of use into Policy interfaces. A number of
+    different such Policy plugins, governing e.g. eviction, migration,
+    Id generation etc, ship with WADI, and the user is encouraged to
+    write their own implementations and submit them to the project to
+    fill any functional gaps.
+
+    <p/>
+
+      Currently WADI can:
+
+    <p/>
+      In a non-distributed environment:
+    <ul>
+      <li>
+	Perform the full set of duties of a standard session manager.
+      </li>
+    </ul>
+
+    <p/>
+    In a distributed environment:
+    <ul>
+      <li>
+	Persist sessions via a pluggable MigrationPolicy between web
+	container start/stop cycles. All the correct notifications
+	will be triggered upon HttpSessionActivationListeners.
+      </li>
+      <li>
+	Select, according to a user supplied EvictionPolicy, sessions
+	for Passivation and using the above MigrationPolicy, move them
+	into shared storage, from which they may be re-activated, in a
+	race-safe environment, by any web-container instance that
+	shares the store. Once again, the correct notifications will
+	be made to session Listeners.
+      </li>
+      <li>
+	Reference based semantics (See WADI Paper - LINK TODO) may be
+	completely maintained in a distributed environment. We believe
+	this is the only Open Source Session Manager to be able to do
+	this reliably. i.e., any legacy webapp, provided that it
+	stores client state exclusively in the corresponding http
+	session, may be deployed in distributed mode with no further
+	code changes.
+      </li>
+    </ul>
+
+    <p/>
+      In the future we expect WADI to be able to:
+
+    <ul>
+      <li>
+	draw on existing functionality to provide performant and
+	flexible high availibility and scalability of it's managed
+	state, via a variety of pluggable backends.
+      </li>
+      <li>
+	because of it's flexibility, WADI should provide a platform
+	with which a number of mission critical third party product
+	integrations (e.g. http load-balancers) will be able to be
+	tightly integrated, resolving many of the existing problems in
+	providing clustered web-tier state management.
+      </li>
+    </ul>
+
+    <h2>Why would I even want to store important information in the Web tier ?</h2>
+
+    Strictly speaking, data associated with presentation lives in the
+    web tier whilst data associated with the business should be stored
+    in the EJB tier.
+
+    <p/>
+
+      State management in the EJB tier is more tightly specified,
+      simpler and generally better implemented than the equivalent
+      functionality in the web-tier, so the tendancy has been to push
+      all important data in this direction, when high availibility and
+      fail-over are a major concern.
+
+    <p/>
+
+      Unfortunately, even designs such as the above cannot get away
+      from the fact that the web-client requires a single handle on
+      the conversational state held in some J2EE tier and that the
+      only such handle provided by the J2EE specifications is that
+      which binds a url parameter/session cookie to a web session. So
+      whilst you can store all data in the EJB tier, unless you want
+      to start learning proprietary tricks to associate an EJB handle
+      with a web client, you have no option but to put your EJB into
+      the relevant web session and pray that it survives whatever gets
+      thrown at it.
+
+    <p/>
+
+      This is obviously an unsatisfactory state of affairs, and WADI's
+      aim is to restore confidence in the reliability of web sessions
+      in general and to clearly demonstrate, that with a little
+      thought, in a number of cases, a distributed web session may be
+      implemented more efficiently and reliably than the corresponding
+      stateful EJB session.
+
+    <hr>
+    <address><a href="mailto:jules@coredevelopers.net">Jules Gosnell</a></address>
+<!-- Created: Thu Feb 26 21:49:47 GMT 2004 -->
+<!-- hhmts start -->
+Last modified: Thu Feb 26 23:32:21 GMT 2004
+<!-- hhmts end -->
+  </body>
+</html>
