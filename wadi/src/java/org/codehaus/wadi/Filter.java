@@ -111,7 +111,6 @@ public class
 	// TODO - at the moment, nothing, but later we should consider
 	// whether we want to run this request here - it may create a
 	// session - or somewhere else...
-	;
       }
       else
       {
