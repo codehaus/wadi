@@ -19,7 +19,6 @@ package org.codehaus.wadi.shared;
 
 import EDU.oswego.cs.dl.util.concurrent.CyclicBarrier;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;

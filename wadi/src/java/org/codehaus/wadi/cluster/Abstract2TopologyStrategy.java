@@ -18,9 +18,7 @@
 package org.codehaus.wadi.cluster;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.codehaus.activecluster.Cluster;
