@@ -19,6 +19,7 @@ lib/commons-logging-1.0.3.jar:\
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.activecluster=warn \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.activemq=warn \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=debug \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.cluster=debug \
 -Dorg.apache.commons.logging.simplelog.showShortLogname=true \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
 \

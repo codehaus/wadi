@@ -25,9 +25,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.activecluster.ClusterException;
+import org.codehaus.activecluster.ClusterFactory;
 import org.codehaus.activecluster.ClusterListener;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
+import org.codehaus.wadi.cluster.RingTopologyStrategy;
 import org.codehaus.wadi.cluster.NChooseKTopologyStrategy;
 import org.codehaus.wadi.cluster.TopologyStrategy;
 
@@ -41,14 +43,14 @@ public class
 {
   protected Cluster                   _cluster;
   protected ActiveMQConnectionFactory _connFactory = new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");
-  protected String                    _id;
+  protected String                    _nodeId;
   protected TopologyStrategy          _topology;
   protected int                       _cellSize=2;
 
   public
     ClusterDemo(String id, int cellSize)
   {
-    _id=id;
+    _nodeId=id;
     _cellSize=cellSize;
   }
 
@@ -56,11 +58,16 @@ public class
     start()
     throws JMSException, ClusterException
   {
-    _cluster = createCluster();
+    String clusterId="ORG.CODEHAUS.WADI.TEST.CLUSTER";
+    Connection connection = _connFactory.createConnection();
+    ClusterFactory factory = new DefaultClusterFactory(connection);
+    //    factory.setInactiveTime(20000); // 20 secs ?
+    _cluster= factory.createCluster(clusterId);
     Map state=new HashMap();
-    state.put("id", _id);
+    state.put("id", _nodeId);
     _cluster.getLocalNode().setState(state);
-    _topology=new NChooseKTopologyStrategy(_id, _cluster, _cellSize);
+    //    _topology=new NChooseKTopologyStrategy(_nodeId, clusterId, _cluster, factory, _cellSize);
+    _topology=new RingTopologyStrategy(_nodeId, clusterId, _cluster, factory, _cellSize);
     _topology.start();
     _cluster.addClusterListener(_topology);
     _cluster.start();
@@ -73,16 +80,6 @@ public class
     _cluster.stop();
     _topology.stop();
     _connFactory.stop();
-  }
-
-  protected Cluster
-    createCluster()
-    throws JMSException, ClusterException
-  {
-    Connection connection = _connFactory.createConnection();
-    DefaultClusterFactory factory = new DefaultClusterFactory(connection);
-    return factory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
-
   }
 
   //----------------------------------------
