@@ -243,8 +243,6 @@ public class
 
   public String getSessionUrlParamName(){return "jsessionid";};
 
-  public boolean isServing(InetAddress address, int port){return true;}	// TODO
-
   public int getHttpPort(){return Integer.parseInt(System.getProperty("http.port"));} // TODO - temporary hack...
 
   public HttpSessionContext getSessionContext() {return null;}
