@@ -104,7 +104,7 @@ public abstract class
     }
 
     class InvokableListener
-      implements MessageListener, Runnable
+      implements MessageListener
     {
       protected Manager _manager;
 
@@ -114,50 +114,57 @@ public abstract class
 	_manager=manager;
       }
 
-      protected Message _message;
-
       public void
 	onMessage(Message message)
       {
-	_message=message;
-	new Thread(this, "MessageListener").start();
+	new Thread(new Runner(message), "MessageListener").start();
       }
 
-      public void
-	run()
+      class Runner
+	implements Runnable
       {
-	Message message=_message;
-	try
+	protected Message _message;
+
+	Runner(Message message)
 	{
-	  ObjectMessage om=null;
-	  Object tmp=null;
-	  Executable invocable=null;
-	  if (message instanceof ObjectMessage &&
-	      (om=(ObjectMessage)message)!=null &&
-	      (tmp=om.getObject())!=null &&
-	      tmp instanceof Executable &&
-	      (invocable=(Executable)tmp)!=null)
-	  {
-	    try
-	    {
-	      invocable.invoke(AbstractMigrationService.this, om.getJMSReplyTo(), om.getJMSCorrelationID());
-	    }
-	    catch (Throwable t)
-	    {
-	      _log.warn("unexpected problem responding to message:"+invocable, t);
-	    }
-	  }
-	  else
-	  {
-	    _log.warn("null message or unrecognised message type:"+message);
-	  }
+	  _message=message;
 	}
-	catch (JMSException e)
+
+	public void
+	  run()
 	{
-	  _log.warn("unexpected problem unpacking message:"+message);
+	  Message message=_message;
+	  try
+	  {
+	    ObjectMessage om=null;
+	    Object tmp=null;
+	    Executable invocable=null;
+	    if (message instanceof ObjectMessage &&
+		(om=(ObjectMessage)message)!=null &&
+		(tmp=om.getObject())!=null &&
+		tmp instanceof Executable &&
+		(invocable=(Executable)tmp)!=null)
+	    {
+	      try
+	      {
+		invocable.invoke(AbstractMigrationService.this, om.getJMSReplyTo(), om.getJMSCorrelationID());
+	      }
+	      catch (Throwable t)
+	      {
+		_log.warn("unexpected problem responding to message:"+invocable, t);
+	      }
+	    }
+	    else
+	    {
+	      _log.warn("null message or unrecognised message type:"+message);
+	    }
+	  }
+	  catch (JMSException e)
+	  {
+	    _log.warn("unexpected problem unpacking message:"+message);
+	  }
 	}
       }
     }
   }
-
 }

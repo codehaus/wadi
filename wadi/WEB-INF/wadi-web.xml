@@ -36,10 +36,12 @@
  </Set>
 -->
 
- <Set name="MigrationService">
-  <New class="org.codehaus.wadi.impl.StreamedMigrationService"/>
-<!--  <New class="org.codehaus.wadi.impl.MessagedMigrationService"/> -->
- </Set>
+  <Set name="MigrationService">
+    <New class="org.codehaus.wadi.impl.StreamedMigrationService">
+      <!--  <New class="org.codehaus.wadi.impl.MessagedMigrationService"/> -->
+      <Set name="Timeout">5000</Set>
+    </New>
+  </Set>
 
   <!-- used to stream sessions between peers -->
   <Set name="StreamingStrategy">

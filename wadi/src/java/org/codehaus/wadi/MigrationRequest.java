@@ -64,24 +64,26 @@ public abstract class MigrationRequest
       try
       {
 	impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY);
+	long start=System.currentTimeMillis();
 	if ((acquired=impl.getContainerLock().attempt(_timeout)))
 	{
+	  long elapsed=System.currentTimeMillis()-start;
 	  if (impl.getRealId()==null)
 	  {
-	    _log.warn(_id+": session disappeared whilst we were waiting for emmigration lock ("+_timeout+" millis) - forwarding");
- 	    try
- 	    {
- 	      Cluster cluster=service.getManager().getCluster();
- 	      ObjectMessage message = cluster.createObjectMessage();
- 	      message.setJMSReplyTo(source);
- 	      message.setJMSCorrelationID(correlationID);
- 	      message.setObject(this);
- 	      cluster.send(service.getManager().getCluster().getDestination(), message);
- 	    }
- 	    catch (JMSException e)
- 	    {
- 	      _log.warn("problem forwarding migration request", e);
- 	    }
+	    _log.warn(_id+": session disappeared whilst we were waiting for emmigration lock ("+elapsed+"/"+_timeout+" millis elapsed) - forwarding");
+//  	    try
+//  	    {
+//  	      Cluster cluster=service.getManager().getCluster();
+//  	      ObjectMessage message = cluster.createObjectMessage();
+//  	      message.setJMSReplyTo(source);
+//  	      message.setJMSCorrelationID(correlationID);
+//  	      message.setObject(this);
+//  	      cluster.send(service.getManager().getCluster().getDestination(), message);
+//  	    }
+//  	    catch (JMSException e)
+//  	    {
+//  	      _log.warn("problem forwarding migration request", e);
+//  	    }
 	  }
 	  else
 	  {

@@ -1,8 +1,11 @@
     <%@ page language="java" contentType="text/html" session="true" %>
       <%@ page import="java.util.Date" %>
       <%@ page import="java.util.Enumeration" %>
+      <%@ page import="org.apache.commons.logging.Log" %>
+      <%@ page import="org.apache.commons.logging.LogFactory" %>
       <%
-      System.out.println("FIND: "+session.getId());
+      Log log=LogFactory.getLog(getClass());
+      log.trace("FIND: "+session.getId());
       String colour=System.getProperty("wadi.colour");
       %>
       <HTML>

@@ -98,7 +98,7 @@ public class
       Object result=null;
 
       if (rv==null)
-	_log.warn(correlationId+"/"+hashCode()+" missed rendez-vous - waiting thread must have timed out");
+	_log.warn(correlationId+"/"+hashCode()+" missed rendez-vous - waiting thread must have timed out ("+timeout+" millis)");
       else
 	try
 	{
@@ -110,7 +110,7 @@ public class
 	}
 	catch (TimeoutException e)
 	{
-	  _log.warn("rendez-vous timed out", e);
+	  _log.warn("rendez-vous timed out ("+timeout+" millis)", e);
 	}
 	catch (InterruptedException e)
 	{
@@ -118,7 +118,7 @@ public class
 	}
 	catch (BrokenBarrierException e)
 	{
-	  _log.warn("Broken barrier - we must have arrived too late for rendez-vous", e);
+	  _log.warn("Broken barrier - we must have arrived too late for rendez-vous ("+timeout+" millis)", e);
 	}
 
       return result;
