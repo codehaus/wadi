@@ -134,7 +134,7 @@ public abstract class
     public void
       start()
     {
-      _log.trace("starting: "+_address+":"+_port);
+      _log.debug("starting: "+_address+":"+_port);
       try
       {
 	_socket=new MulticastSocket(_port); // 49152-65535
@@ -148,14 +148,17 @@ public abstract class
       }
 
       _running=true;
-      (_thread=new Thread(){public void run(){Server.this.run();}}).start();
-    }
+      (_thread=new Thread(getClass().getName()){public void run(){Server.this.run();}}).start();
+      _log.debug("started: "+_address+":"+_port);
+      }
 
     public void
       stop()
     {
+      _log.debug("stopping: "+_address+":"+_port);
       _running=false;
-      _thread.interrupt();
+      	// nasty hack but how else do we break the socket out of receive()...
+      	new Client(_address, _port, 0).run("quit");//TODO - we need a proper quit protocol...
       try
       {
 	_thread.join();
@@ -178,7 +181,7 @@ public abstract class
       _socket.close();
       _socket=null;
 
-      _log.warn("stopped: "+_address+":"+_port);
+      _log.debug("stopped: "+_address+":"+_port);
     }
 
     public void
