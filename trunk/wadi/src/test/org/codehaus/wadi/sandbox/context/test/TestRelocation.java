@@ -68,7 +68,7 @@ import junit.framework.TestCase;
  * @version $Revision$
  */
 
-public class TestProxying extends TestCase {
+public class TestRelocation extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
 	
 	protected Node _node0;
@@ -180,7 +180,7 @@ public class TestProxying extends TestCase {
 		_relocater1=new SwitchableRelocationStrategy();
 		_servlet1=new MyServlet("1", _cluster1, new MyContextPool(), _relocater1);
 		_filter1=new MyFilter("1", _servlet1);
-		(_node1=new JettyNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
+		(_node1=new TomcatNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
 	    _log.info("STARTING NOW!");
 	}
@@ -201,7 +201,7 @@ public class TestProxying extends TestCase {
 	 * Constructor for TestMigration.
 	 * @param name
 	 */
-	public TestProxying(String name) {
+	public TestRelocation(String name) {
 		super(name);
 	}
 
@@ -213,19 +213,19 @@ public class TestProxying extends TestCase {
 		return method.getStatusCode();
 	}
 	
-	public void testProxyInsecureProxy() throws Exception {
+	public void testProxyInsecureRelocation() throws Exception {
 		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, 3000));
 		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, 3000));
-		testInsecureProxy(false);
+		testInsecureRelocation(false);
 		}
 	
-	public void testMigrateInsecureProxy() throws Exception {
+	public void testMigrateInsecureRelocation() throws Exception {
 		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new GZIPStreamingStrategy()));
 		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new GZIPStreamingStrategy()));
-		testInsecureProxy(true);
+		testInsecureRelocation(true);
 		}
 		
-	public void testInsecureProxy(boolean migrating) throws Exception {
+	public void testInsecureRelocation(boolean migrating) throws Exception {
 		HttpClient client=new HttpClient();
 		HttpMethod method0=new GetMethod("http://localhost:8080");
 		HttpMethod method1=new GetMethod("http://localhost:8081");
@@ -341,19 +341,19 @@ public class TestProxying extends TestCase {
 		}
 	}
 	
-	public void testProxySecureProxy() throws Exception {
+	public void testProxySecureRelocation() throws Exception {
 		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, 3000));
 		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, 3000));
-		testSecureProxy(false);
+		testSecureRelocation(false);
 		}
 	
-	public void testMigrateSecureProxy() throws Exception {
+	public void testMigrateSecureRelocation() throws Exception {
 		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new GZIPStreamingStrategy()));
 		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new GZIPStreamingStrategy()));
-		testSecureProxy(true);
+		testSecureRelocation(true);
 		}
 		
-	public void testSecureProxy(boolean migrating) throws Exception {
+	public void testSecureRelocation(boolean migrating) throws Exception {
 	    HttpClient client=new HttpClient();
 		HttpMethod method0=new GetMethod("http://localhost:8080");
 		HttpMethod method1=new GetMethod("http://localhost:8081");
@@ -432,7 +432,7 @@ public class TestProxying extends TestCase {
 		}
 	};
 	
-	public void testProxyStatelessContextualiser() throws Exception {
+	public void testRelocationStatelessContextualiser() throws Exception {
 		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, 3000));
 		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, 3000));
 		testStatelessContextualiser(false);

@@ -29,7 +29,6 @@
 	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/common/lib/naming-resources.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/server/lib/commons-digester.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/server/lib/tomcat-coyote.jar"/>
-	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/bin/jmx.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/common/lib/naming-common.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/server/lib/tomcat-http11.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/geronimo-spec-j2ee-management-1.0-rc2.jar"/>
@@ -39,5 +38,6 @@
 	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/server/lib/catalina-optional.jar"/>
 	<classpathentry sourcepath="/usr/local/java/commons-httpclient-2.0.2/src/java" kind="lib" path="WEB-INF/lib/commons-httpclient-2.0.2.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/activemq-2.2-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/usr/local/java/mx4j-3.0.1/lib/mx4j.jar"/>
 	<classpathentry kind="output" path="WEB-INF-classes"/>
 </classpath>
