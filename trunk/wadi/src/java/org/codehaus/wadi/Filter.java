@@ -89,8 +89,6 @@ public class
     doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
     throws IOException, ServletException
   {
-    _manager.setInside(true);	// entering container...
-
     if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse))
     {
       _log.warn("not an HttpServlet req/res pair - therefore stateless - ignored by WADI");
@@ -100,6 +98,9 @@ public class
 
     HttpServletRequest req=(HttpServletRequest)request;
     HttpServletResponse res=(HttpServletResponse)response;
+
+    _manager.setInside(true);	// entering container...
+
     String id=req.getRequestedSessionId();
     HttpSessionImpl impl=null;
 
@@ -115,12 +116,54 @@ public class
       else
       {
 	String realId=_manager.getRoutingStrategy().strip(id);
-	// Ensure that Manager.get() is called before entry (this may
-	// have already happened) - this will pull in and lock our
-	// session even if remote.
-	if((impl=_manager.get(realId))==null)
+
+	impl=_manager.getLocalSession(realId);
+	if (impl!=null)
 	{
-	  if (!_manager.getDistributable())
+	  try
+	  {
+	    impl.getApplicationLock().acquire(); // TODO - timeout
+	    HttpSession facade=(HttpSession)impl.getFacade();
+	    if (facade==null || !facade.isValid())
+	    {
+	      impl.getApplicationLock().release();
+	      impl=null;
+	      _log.warn(realId+": local session emmigrated before it could be locked into container");
+	      // what do we do now :-)
+	    }
+	  }
+	  catch (InterruptedException e)
+	  {
+	    _log.warn("unable to acquire rlock on local session");
+	  }
+	}
+
+	if (impl==null)
+	{
+	  if (_manager.getDistributable())
+	    {
+	      impl=_manager.getRemoteSession(realId); // gets and releases lock :-(
+	      if (impl!=null)
+	      {
+		try
+		{
+		  impl.getApplicationLock().acquire(); // TODO - timeout
+
+		  if (!((HttpSession)impl.getFacade()).isValid())
+		  {
+		    impl.getApplicationLock().release();
+		    impl=null;
+		    _log.warn(realId+": immigrated session emmigrated again before it could be locked into container");
+		    // what do we do now :-)
+		  }
+		}
+		catch (InterruptedException e)
+		{
+		  _log.warn("unable to acquire rlock on immigrated session");
+		}
+	      }
+	    }
+	  else
 	  {
 	    // we cannot relocate the session to this request, so we
 	    // must relocate the request to the session...
@@ -131,29 +174,29 @@ public class
 	      return;
 	    }
 	  }
-	  else
-	  {
-	    _log.warn(realId+": session id cannot be mapped");
-	  }
-	}
-	else if (((HttpSession)impl.getFacade()).isValid())
-	{
-	  // restick lb to this node if necessary...
-	  if (req.isRequestedSessionIdFromCookie())
-	    _manager.getRoutingStrategy().rerouteCookie(req, res, _manager, id);
-	  else if (req.isRequestedSessionIdFromURL())
-	    _manager.getRoutingStrategy().rerouteURL();	// NYI
-	}
-	else
-	{
-	  _log.warn(realId+": session id maps to invalid session");
 	}
 
-	// if id is non-null, but session does not exist locally -
-	// consider relocating session or request....
+	if(impl==null)
+	  _log.warn(realId+": session id cannot be mapped");
+	else
+	{
+	  if (((HttpSession)impl.getFacade()).isValid())
+	  {
+	    // restick lb to this node if necessary...
+	    if (req.isRequestedSessionIdFromCookie())
+	      _manager.getRoutingStrategy().rerouteCookie(req, res, _manager, id);
+	    else if (req.isRequestedSessionIdFromURL())
+	      _manager.getRoutingStrategy().rerouteURL();	// NYI
+	  }
+	  else
+	  {
+	    _log.warn(realId+": session id maps to invalid session");
+	  }
+	}
       }
-      // we need to ensure that a shared lock has been taken on the
-      // session before proceeding...
+
+      if (impl!=null)
+	impl.setLastAccessedTime(System.currentTimeMillis());
 
       chain.doFilter(request, response);
     }
@@ -205,8 +248,8 @@ public class
 	      if (_log.isTraceEnabled()) _log.trace(newRealId+": new outgoing session");
 	}
       }
-      _manager.setFirstGet(true); // ready for next time through...
 
+      // a little bit fragile with all this stuff above...
       _manager.setInside(false); // leaving container...
     }
   }

@@ -160,75 +160,36 @@ public abstract class
       return false;
   }
 
-  protected ThreadLocal _firstGet=new ThreadLocal()
-    {
-      protected synchronized Object initialValue() {return Boolean.TRUE;}
-    };
-
-  public void setFirstGet(boolean b){_firstGet.set(b?Boolean.TRUE:Boolean.FALSE);}
-  public boolean getFirstGet(){return ((Boolean)_firstGet.get()).booleanValue();}
-
   public HttpSessionImpl
     get(String realId)
   {
     if (!getInside())
     {
-      _log.warn(realId+": looked up from outside the container");
+      _log.trace(realId+": looked up from outside the container");
       return null;		// this WILL become a dummy...
     }
-
-    HttpSessionImpl impl=getLocalSession(realId);
-
-    if (getFirstGet())
-    {
-      setFirstGet(false);
-
-      if (impl==null && getDistributable())
-	impl=getRemoteSession(realId);
-
-      // FIXME - the lock is taken, released then taken again - just
-      // take it once... this bit needs refactoring
-
-      // we should be able to get rid of the FirstGet field and move
-      // the fetching of a remote session and setting of
-      // lastAccessedTime into the filter - which is where we want it
-      // if we are going to avoid pulling in the session for stateless
-      // interactions...
-
-      // we could hand a dummy session to Jetty, so that we can
-      // capture LAT in a threadlocal and then set it on the session
-      // if/when we have it to hand in the filter...
-
-      // there is a gap here between finding the session and getting
-      // the lock....
-
-      if (impl!=null)
-	try
-	{
-	  Sync lock=impl.getApplicationLock();
-	  lock.acquire(); // locked for duration of request...
-	  if (impl.getRealId()==null)
-	  {
-	    lock.release();
-	    impl=null;
-	  }
-	}
-	catch (InterruptedException e)
-	{
-	  _log.warn("unexpected interruption", e);
-	}
-
-    }
-
-    return impl;
+    else
+      return getLocalSession(realId);
   }
 
+  /**
+   * returns an UNLOCKED session
+   *
+   * @param realId a <code>String</code> value
+   * @return a <code>HttpSessionImpl</code> value
+   */
   public HttpSessionImpl
     getLocalSession(String realId)
   {
     return (HttpSessionImpl)_local.get(realId);
   }
 
+  /**
+   * returns a LOCKED session
+   *
+   * @param realId a <code>String</code> value
+   * @return a <code>HttpSessionImpl</code> value
+   */
   protected HttpSessionImpl
     getRemoteSession(String realId)
   {
@@ -289,7 +250,9 @@ public abstract class
 
       assert impl.getRealId()!=null;
       if (locked)
-	impl.getContainerLock().release();
+      	impl.getContainerLock().release();
+      // TODO - this lock needs to become an app lock, without another
+      // container ock jumping in between...  ???
     }
     else
     {
@@ -1147,6 +1110,6 @@ public abstract class
   //----------------------------------------
 
   protected ThreadLocal _inside=new ThreadLocal() {protected synchronized Object initialValue() {return Boolean.FALSE;}};
-  public void setInside(boolean b){_inside.set(b?Boolean.TRUE:Boolean.FALSE);_log.info(Thread.currentThread().getName()+":"+(b?"entering":"leaving"));}
+  public void setInside(boolean b){_inside.set(b?Boolean.TRUE:Boolean.FALSE);}
   public boolean getInside(){return ((Boolean)_inside.get()).booleanValue();}
 }
