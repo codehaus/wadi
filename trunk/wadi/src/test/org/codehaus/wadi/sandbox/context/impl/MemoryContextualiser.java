@@ -84,14 +84,14 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 		public boolean prepare(String id, Context context) {
 			try {
 				context.getSharedLock().acquire();
-				_log.info("promoting (to memory): "+id);
-				_log.info("insert (memory): "+id);
-				_map.put(id, context);
-				return true;
 			} catch (InterruptedException e) {
 				_log.warn("promotion abandoned: "+id, e);
 				return false;
 			}			
+			_log.info("promoting (to memory): "+id);
+			_log.info("insert (memory): "+id);
+			_map.put(id, context);
+			return true;
 		}
 		
 		public void commit(String id, Context context) {
@@ -106,7 +106,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 			try {
 				MemoryContextualiser.this.contextualise(req, res, chain, id);
 			} finally {
-			context.getSharedLock().release();
+				context.getSharedLock().release();
 			}
 		}
 	}
