@@ -317,7 +317,7 @@ public abstract class
       throws Exception
   {
   	_log.debug("starting");
-    _log.info("WADI v1.0 - Web Application Distribution Infrastructure (wadi.codehaus.org)");
+    _log.info("WADI v1.0 - Web Application Distribution Infrastructure (http://wadi.codehaus.org)");
     // TODO - is putting ourselves in an attribute a security risk ?
     getServletContext().setAttribute(Manager.class.getName(), this);
     _loader=Thread.currentThread().getContextClassLoader();
