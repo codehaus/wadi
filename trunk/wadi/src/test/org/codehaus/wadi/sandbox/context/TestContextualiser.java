@@ -17,7 +17,6 @@ import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.context.impl.DummyCollapser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.context.impl.LocalDiscContextualiser;
@@ -111,29 +110,29 @@ public class TestContextualiser extends TestCase {
 	public void testContextualiser() throws Exception {
 		Map d=new HashMap();
 		d.put("bar", new MyContext("bar"));
-		Contextualiser disc=new LocalDiscContextualiser(new DummyCollapser(), new DummyContextualiser(), d);
+		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), d);
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo"));
-		Contextualiser memory=new MemoryContextualiser(new HashingCollapser(10, 3000), disc, m);
+		Contextualiser memory=new MemoryContextualiser(disc, m);
 		
 		FilterChain fc=new MyFilterChain();
+//		Collapser collapser=new HashingCollapser();
 		memory.contextualise(null,null,fc,"foo", null, new Mutex());
 		memory.contextualise(null,null,fc,"bar", null, new Mutex());
 	}
 	
-	class MyContextualiser implements Contextualiser {
+	class MyPromotingContextualiser implements Contextualiser {
 		int _counter=0;
+		MyContext _context;
+
+		public MyPromotingContextualiser(String context) {
+			_context=new MyContext(context);
+		}
+		
 		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync overlap) throws IOException, ServletException {
-			try {
-				_counter++;
-				Thread.sleep(1000);
-				assertTrue(_counter==1);
-				overlap.release(); // other 'loading' threads may run now
-				Thread.sleep(1000);
-				_counter--;
-			} catch (InterruptedException ignore) {
-			}
-			return false;
+			_counter++;
+			promoter.promoteAndContextualise(req, res, chain, id, _context, overlap);
+			return true;
 		}
 	}
 	
@@ -141,7 +140,7 @@ public class TestContextualiser extends TestCase {
 		Contextualiser _contextualiser;
 		FilterChain    _chain;
 		String         _id;
-		Mutex           _loadMutex;
+		Mutex          _loadMutex;
 		
 		MyRunnable(Contextualiser contextualiser, FilterChain chain, String id, Mutex loadMutex) {
 			_contextualiser=contextualiser;
@@ -159,21 +158,33 @@ public class TestContextualiser extends TestCase {
 		}
 	}
 	
-	// this is very slow at the moment - because promotion is not implemented - so everything times out - TBD
-	public void maybetestCollapsing() throws Exception {
-		Contextualiser c=new MemoryContextualiser(new HashingCollapser(1, 3000), new MyContextualiser(), new HashMap());
-		FilterChain fc=new MyFilterChain();
-		
+	public void testPromotion() throws Exception {
+		MyPromotingContextualiser mpc=new MyPromotingContextualiser("baz");
+		Contextualiser c=new MemoryContextualiser(mpc, new HashMap());
+		FilterChain fc=new MyFilterChain();		
 		Mutex loadMutex=new Mutex();
 		
-		for (int i=0; i<100; i++)
-			c.contextualise(null,null,fc,"foo", null, loadMutex);
+		for (int i=0; i<2; i++)
+			c.contextualise(null,null,fc,"baz", null, loadMutex);
+		
+		assertTrue(mpc._counter==1);
+	}
 	
-		Runnable r=new MyRunnable(c, fc, "foo", loadMutex);
+	public void testCollapsing() throws Exception {
+		MyPromotingContextualiser mpc=new MyPromotingContextualiser("baz");
+		Contextualiser c=new MemoryContextualiser(mpc, new HashMap());
+		FilterChain fc=new MyFilterChain();
+		Mutex loadMutex=new Mutex();
+
+		Runnable r=new MyRunnable(c, fc, "baz", loadMutex);
 		Thread[] threads=new Thread[100];
 		for (int i=0; i<100; i++)
 			(threads[i]=new Thread(r)).start();
 		for (int i=0; i<100; i++)
 			threads[i].join();
+		
+		assertTrue(mpc._counter==1);
 		}
+	
+	// same thing as above - but high concurrency to test thread collapsing...
 }

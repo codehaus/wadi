@@ -16,7 +16,6 @@ import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Promoter;
@@ -35,8 +34,8 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	/**
 	 * 
 	 */
-	public MemoryContextualiser(Collapser collapser, Contextualiser next, Map map) {
-		super(collapser, next, map);
+	public MemoryContextualiser(Contextualiser next, Map map) {
+		super(next, map);
 	}
 
 	/* (non-Javadoc)
@@ -76,6 +75,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 				// TODO - revisit and think about unrolling on exception...
 				Sync shared=context.getSharedLock();
 				shared.acquire(); // now this is locked into the container until we use/release it
+				_map.put(id, context);
 				overlap.release(); // now available to other 'loading' threads
 				contextualise(req, res, chain, id);
 				shared.release();

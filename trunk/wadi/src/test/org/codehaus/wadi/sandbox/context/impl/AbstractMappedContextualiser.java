@@ -8,7 +8,6 @@ package org.codehaus.wadi.sandbox.context.impl;
 
 import java.util.Map;
 
-import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 
 /**
@@ -24,8 +23,8 @@ public abstract class AbstractMappedContextualiser extends
 	/**
 	 * @param next
 	 */
-	public AbstractMappedContextualiser(Collapser collapser, Contextualiser next, Map map) {
-		super(collapser, next);
+	public AbstractMappedContextualiser(Contextualiser next, Map map) {
+		super(next);
 		_map=map;
 	}
 	
