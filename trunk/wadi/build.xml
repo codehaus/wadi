@@ -10,25 +10,24 @@
   <property name="jetty.home" value="${env.JETTY_HOME}"/>
   <property name="tomcat.home" value="${env.TOMCAT_HOME}"/>
 
-  <path id="shared.classpath">
+  <!--=========================================================================-->
+
+  <path id="wadi.classpath">
     <!-- compile time -->
     <pathelement path="./lib/commons-logging-1.0.3.jar"/>
     <pathelement path="./lib/gt2-main.jar"/>
     <pathelement path="./lib/junit.jar"/>
+    <!-- Jetty -->
+    <pathelement location="${jetty.home}/lib/javax.servlet.jar"/>
+    <pathelement location="${jetty.home}/lib/org.mortbay.jetty.jar"/>
+    <!-- Tomcat -->
+    <pathelement location="${tomcat.home}/server/lib/catalina.jar"/>
     <!-- run time -->
     <pathelement path="./WEB-INF/classes"/>
-    <fileset dir="WEB-INF/lib"/>
+    <fileset dir="./WEB-INF/lib"/>
   </path>
 
-  <target name="shared.init">
-  </target>
-
-  <target name="clean">
-    <delete dir="WEB-INF/classes"/>
-    <mkdir dir="WEB-INF/classes"/>
-    <delete dir="javadoc"/>
-    <delete dir="target"/>
-  </target>
+  <!--=========================================================================-->
 
   <taskdef resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties">
     <classpath>
@@ -45,84 +44,21 @@
     </classpath>
   </taskdef>
 
-  <!-- Jetty -->
+  <!--=========================================================================-->
 
-  <path id="jetty.classpath">
-    <path refid="shared.classpath"/>
-    <pathelement location="${jetty.home}/lib/javax.servlet.jar"/>
-    <pathelement location="${jetty.home}/lib/org.mortbay.jetty.jar"/>
-  </path>
-
-  <target name="jetty.init" depends="shared.init">
+  <target name="init">
+    <echo message="tomcat.home=${tomcat.home}"/>
     <echo message="jetty.home=${jetty.home}"/>
   </target>
 
-  <target name="jetty.compile" depends="jetty.init">
-    <iajc
-      destdir="WEB-INF/classes"
-      debug="true"
-      verbose="true"
-      time="true"
-      source="1.4"
-      >
-      <classpath refid="jetty.classpath"/>
-      <sourceroots>
-	<pathelement path="src"/>
-      </sourceroots>
-    </iajc>
-  </target>
-
-  <!--=========================================================================-->
-
-  <!-- Tomcat -->
-
-  <path id="tomcat.classpath">
-    <path refid="shared.classpath"/>
-    <pathelement location="${tomcat.home}/server/lib/catalina.jar"/>
-  </path>
-
-  <target name="tomcat.init" depends="shared.init">
-    <echo message="tomcat.home=${tomcat.home}"/>
-  </target>
-
-  <target name="tomcat.compile" depends="tomcat.init">
-    <iajc
-      destdir="WEB-INF/classes"
-      debug="true"
-      verbose="true"
-      time="true"
-      source="1.4"
-      >
-      <classpath refid="tomcat.classpath"/>
-      <sourceroots>
-	<pathelement path="src"/>
-      </sourceroots>
-    </iajc>
-  </target>
-
-  <!--=========================================================================-->
-
-  <target name="compile" depends="clean,jetty.init,tomcat.init">
-    <iajc
-      destdir="WEB-INF/classes"
-      debug="true"
-      verbose="true"
-      time="true"
-      source="1.4"
-      >
-      <classpath refid="jetty.classpath"/>
-      <classpath refid="tomcat.classpath"/>
-      <sourceroots>
-	<pathelement path="src"/>
-      </sourceroots>
-    </iajc>
-  </target>
-
-  <!--=========================================================================-->
-
-  <target name="war" depends="clean,jetty.init,tomcat.init">
+  <target name="clean">
     <delete dir="WEB-INF/classes"/>
     <mkdir dir="WEB-INF/classes"/>
+    <delete dir="javadoc"/>
+    <delete dir="target"/>
+  </target>
+
+  <target name="compile" depends="clean,init">
     <iajc
       destdir="WEB-INF/classes"
       debug="true"
@@ -130,21 +66,12 @@
       time="true"
       source="1.4"
       >
-      <classpath refid="jetty.classpath"/>
-      <classpath refid="tomcat.classpath"/>
+      <classpath refid="wadi.classpath"/>
       <sourceroots>
-	<pathelement path="src"/>
+	<pathelement path="src/java"/>
+	<pathelement path="src/test"/>
       </sourceroots>
     </iajc>
-    <property name="wadi.war" value="${jetty.home}/webapps/wadi.war"/>
-    <delete file="${wadi.war}"/>
-    <delete dir="/tmp/Jetty__8080__wadi"/>
-    <jar destfile="${wadi.war}">
-      <zipfileset dir="WEB-INF" prefix="WEB-INF" excludes="**/RCS/**"/>
-      <zipfileset dir="lib" prefix="WEB-INF/lib" excludes="**/RCS/**"/>
-      <zipfileset file="${aspectj.home}/lib/aspectjrt.jar" prefix="WEB-INF/lib"/>
-      <fileset dir="jsp" excludes="**/RCS/**"/>
-    </jar>
   </target>
 
   <!--=========================================================================-->
@@ -181,7 +108,7 @@
 	  <include name="lib/gt2-main.jar"/>
 	</fileset>
       </classpath>
-      <arg value="${basedir}/jetty.xml"/>
+      <arg value="${basedir}/conf/jetty.xml"/>
     </java>
   </target>
 
@@ -218,36 +145,6 @@
     </java>
   </target>
 
-  <target name="jetty.3" depends="">
-    <java
-      fork="yes"
-      dir="${jetty.home}"
-      classname="org.mortbay.start.Main"
-      taskname="jetty.1"
-      failonerror="true"
-      >
-      <sysproperty key="jetty.port" value="8082"/>
-      <sysproperty key="bucket.name" value="web3"/>
-      <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Jdk14Logger"/>
-      <sysproperty key="java.util.logging.config.file" value="${basedir}/lib/logging.properties"/>
-     <assertions>
-	<enable/>
-      </assertions>
-      <classpath>
-	<fileset dir="${jetty.home}">
-	  <include name="start.jar"/>
-	  <include name="lib/javax.servlet.jar"/>
-	  <include name="lib/org.mortbay.jetty.jar"/>
-	</fileset>
-	<fileset dir="${basedir}">
-	  <include name="lib/commons-logging-1.0.3.jar"/>
-	  <include name="lib/gt2-main.jar"/>
-	</fileset>
-      </classpath>
-      <arg value="${basedir}/containers/jetty.1.xml"/>
-    </java>
-  </target>
-
   <target name="tomcat.0">
     <echo message="tomcat.home=${tomcat.home}"/>
     <java
@@ -262,7 +159,7 @@
       <sysproperty key="catalina.home" value="${tomcat.home}"/>
       <sysproperty key="java.io.tmpdir" value="${tomcat.home}/temp"/>
       <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Jdk14Logger"/>
-      <sysproperty key="java.util.logging.config.file" value="/home/jules/wadi/lib/logging.properties"/>
+      <sysproperty key="java.util.logging.config.file" value="${basedir}/lib/logging.properties"/>
       <assertions>
 	<enable/>
       </assertions>
@@ -277,7 +174,7 @@
 	</fileset>
       </classpath>
       <arg value="-config"/>
-      <arg value="/home/jules/wadi/tomcat.xml"/>
+      <arg value="${basedir}/conf/tomcat.xml"/>
       <arg value="start"/>
     </java>
   </target>
@@ -355,6 +252,7 @@
 
   <!--=========================================================================-->
 
+  <!-- can't get this to work - anyone ? -->
   <target name="ajdoc">
     <ajdoc
       sourcepath="src"

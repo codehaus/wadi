@@ -1,4 +1,5 @@
 2004-04-18  Jules Gosnell  <jules@coredevelopers.net>
 
 	*  (Repository): initial checkin
+	*  (Repository): fixed up Ant build and paths in conf files
 
