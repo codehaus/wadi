@@ -23,9 +23,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.sandbox.context.impl.AlwaysEvicter;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.LocalDiscContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
+import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
 
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
@@ -48,6 +50,7 @@ public class TestContextualiser extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
+		_log.info("starting ...");
 	}
 
 	/*
@@ -55,6 +58,7 @@ public class TestContextualiser extends TestCase {
 	 */
 	protected void tearDown() throws Exception {
 		super.tearDown();
+		_log.info("...stopped");
 	}
 
 	/**
@@ -93,15 +97,27 @@ public class TestContextualiser extends TestCase {
 	class MyContext implements Context {
 		String _val;
 		ReadWriteLock _lock=new ReaderPreferenceReadWriteLock();
+		long _expiryTime;
+
+		MyContext(String val) {
+			this(val, System.currentTimeMillis()+(30*1000));
+		}
 		
-		MyContext(String val) { 
+		MyContext(String val, long expiryTime) {
 			_val=val;
+			_expiryTime=expiryTime;
 		}
 		
-		MyContext() {
-		}
+		MyContext() {}
 		
 		public Sync getSharedLock(){return _lock.readLock();}
+		public Sync getExclusiveLock(){return _lock.writeLock();}
+
+		// Motable...
+		
+		public long getExpiryTime(){return _expiryTime;}
+		
+		// SerializableContext...
 		
 		public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
 			_val=(String)oi.readObject();
@@ -128,7 +144,7 @@ public class TestContextualiser extends TestCase {
 	  }
 	}
 	
-	public void testContextualiser() throws Exception {
+	public void testConceptualiser() throws Exception {
 		Map d=new HashMap();
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 		File f=File.createTempFile("wadi.", "."+ss.getSuffix());
@@ -138,11 +154,11 @@ public class TestContextualiser extends TestCase {
 	    oo.flush();
 	    oo.close();
 	    assertTrue(f.exists());
-		d.put("bar", f);
-		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), d, ss);
+		d.put("bar", new LocalDiscContextualiser.LocalDiscMotable(0, f));
+		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), d, new NeverEvicter(), new File("/tmp"), ss);
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo"));
-		Contextualiser memory=new MemoryContextualiser(disc, m, new MyContextPool());
+		Contextualiser memory=new MemoryContextualiser(disc, m, new NeverEvicter(), new MyContextPool());
 		
 		FilterChain fc=new MyFilterChain();
 //		Collapser collapser=new HashingCollapser();
@@ -164,6 +180,9 @@ public class TestContextualiser extends TestCase {
 			promoter.promoteAndContextualise(req, res, chain, id, _context, promotionMutex);
 			return true;
 		}
+		
+		public void demote(String key, Motable val){}
+		public void evict(){}
 	}
 	
 	class MyActiveContextualiser implements Contextualiser {
@@ -189,6 +208,9 @@ public class TestContextualiser extends TestCase {
 				throw new ServletException("problem processing request for: "+id, e);
 			}
 		}
+
+		public void demote(String key, Motable val){}
+		public void evict(){}
 	}
 	
 	class MyRunnable implements Runnable {
@@ -214,7 +236,7 @@ public class TestContextualiser extends TestCase {
 	}
 	
 	public void testPromotion(Contextualiser c, int n) throws Exception {
-		Contextualiser mc=new MemoryContextualiser(c, new HashMap(), new MyContextPool());
+		Contextualiser mc=new MemoryContextualiser(c, new HashMap(), new NeverEvicter(), new MyContextPool());
 		FilterChain fc=new MyFilterChain();		
 		Mutex promotionMutex=new Mutex();
 		
@@ -234,7 +256,7 @@ public class TestContextualiser extends TestCase {
 	}
 	
 	public void testCollapsing(Contextualiser c, int n) throws Exception {
-		Contextualiser mc=new MemoryContextualiser(c, new HashMap(), new MyContextPool());
+		Contextualiser mc=new MemoryContextualiser(c, new HashMap(), new NeverEvicter(), new MyContextPool());
 		FilterChain fc=new MyFilterChain();
 		Mutex promotionMutex=new Mutex();
 
@@ -256,4 +278,24 @@ public class TestContextualiser extends TestCase {
 		testCollapsing(mxc, n);
 		assertTrue(mxc._counter==n);
 		}
+	
+	public void testEviction() throws Exception {
+		Map d=new HashMap();
+		StreamingStrategy ss=new SimpleStreamingStrategy();
+		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), d, new NeverEvicter(), new File("/tmp"), ss);
+		Map m=new HashMap();
+		m.put("foo", new MyContext("foo"));
+		Contextualiser memory=new MemoryContextualiser(disc, m, new AlwaysEvicter(), new MyContextPool());
+		
+		FilterChain fc=new MyFilterChain();
+
+		assertTrue(!d.containsKey("foo"));
+		assertTrue(m.containsKey("foo"));
+		memory.evict();
+		assertTrue(d.containsKey("foo"));
+		assertTrue(!m.containsKey("foo"));
+		memory.contextualise(null,null,fc,"foo", null, new Mutex());
+		assertTrue(!d.containsKey("foo"));
+		assertTrue(m.containsKey("foo"));
+	}
 }

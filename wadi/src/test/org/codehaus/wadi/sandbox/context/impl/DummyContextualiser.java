@@ -14,6 +14,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.Promoter;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -42,4 +43,7 @@ public class DummyContextualiser implements Contextualiser {
 			throws IOException, ServletException {
 		return false;
 	}
+	
+	public void evict(){}
+	public void demote(String key, Motable val){}
 }

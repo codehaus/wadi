@@ -31,4 +31,6 @@ public interface Contextualiser {
 	// FilterChain.doFilter() throws IOException, ServletException...
 	boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException;
 
+	void evict();
+	void demote(String key, Motable val);
 }
