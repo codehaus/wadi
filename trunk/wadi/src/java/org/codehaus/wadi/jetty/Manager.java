@@ -21,7 +21,7 @@ import java.io.Serializable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionContext;
 import org.codehaus.wadi.Filter;
-import org.mortbay.jetty.servlet.FilterHolder;
+import org.mortbay.jetty.servlet.Dispatcher;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.SessionManager;
 import org.mortbay.jetty.servlet.WebApplicationContext;
@@ -117,7 +117,7 @@ public class
     String filterName="WadiFilter";
     _handler.defineFilter(filterName, Filter.class.getName());
     _handler.addFilterPathMapping("/*", filterName,
-				  FilterHolder.__REQUEST | FilterHolder.__FORWARD | FilterHolder.__INCLUDE | FilterHolder.__ERROR
+				  Dispatcher.__REQUEST | Dispatcher.__FORWARD | Dispatcher.__INCLUDE | Dispatcher.__ERROR
 				  ); // TODO - improve mapping, all 'stateful' servlets/filters
 
     _context=(WebApplicationContext)_handler.getHttpContext();
