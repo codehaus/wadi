@@ -6,12 +6,18 @@
  */
 package org.codehaus.wadi.test.cache;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.test.cache.impl.InactiveEvicter;
 import org.codehaus.wadi.test.cache.impl.InvalidEvicter;
 import org.codehaus.wadi.test.cache.impl.JDBCCache;
@@ -30,7 +36,7 @@ import junit.framework.TestCase;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class TestCache extends TestCase {
-	protected Log _log = LogFactory.getLog(TestCache.class);
+	protected static Log _log = LogFactory.getLog(TestCache.class);
 	
 	/*
 	 * @see TestCase#setUp()
@@ -81,15 +87,35 @@ public class TestCache extends TestCase {
 		protected int _mii;
 		public int getMaxInactiveInterval() {return _mii;}
 		public void setMaxInactiveInterval(int mii) {_mii=mii;}
+		
+		
+		public void readContent(ObjectInput is)
+		    throws IOException, ClassNotFoundException {
+			_content=(String)is.readObject();
+		  }
+
+		public void writeContent(ObjectOutput os)
+		    throws IOException, ClassNotFoundException {
+			os.writeObject(_content);
+		  }
 		}
 	
 	
 	public void testCacheStack()
+	throws Exception
 	{
-		// TODO - insert Replicated and DB cache tiers here...
+	    // ugly - is there a better way - createTempDir ?
+	    File f=File.createTempFile("TestJCache-", "", new File("/tmp"));
+	    String name=f.toString();
+	    f.delete();
+	    File dir=new File(name);
+	    _log.info("dir="+dir);
+	    assertTrue(dir.mkdirs());
+	    
+	    // TODO - insert Replicated and DB cache tiers here...
 		Cache database=new JDBCCache(new NeverEvicter(), null);
 		Cache cluster=new ClusterCache(new InvalidEvicter(), database);
-		Cache disc=new LocalDiscCache(new MaxInactiveIntervalEvicter(), cluster);
+		Cache disc=new LocalDiscCache(dir, new SimpleStreamingStrategy(), new MaxInactiveIntervalEvicter(), cluster);
 		Cache cache=new MemoryCache(new InactiveEvicter(), disc);
 		
 		String key="xxx";

@@ -6,6 +6,14 @@
  */
 package org.codehaus.wadi.test.cache.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
+import org.codehaus.wadi.SerializableContent;
+import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.test.cache.Cache;
 import org.codehaus.wadi.test.cache.RequestProcessor;
 
@@ -25,13 +33,92 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
  */
 public class LocalDiscCache extends AbstractMappedCache {
 
-	public LocalDiscCache(Evicter evicter, Cache subcache) {
+	protected File _dir;
+	protected StreamingStrategy _streamingStrategy;
+	
+	public LocalDiscCache(File dir, StreamingStrategy streamingStrategy, Evicter evicter, Cache subcache) {
 		super(new ConcurrentHashMap(), evicter, subcache);
+	    assert dir.exists();
+	    assert dir.isDirectory();
+	    assert dir.canRead();
+	    assert dir.canWrite();
+	    _dir=dir;
+	    _streamingStrategy=streamingStrategy;
 	}
 	
-	public RequestProcessor put(String key, RequestProcessor val){return (RequestProcessor)_map.put(key, val);}
-	public RequestProcessor peek(String key) {return (RequestProcessor)_map.get(key);}
-	public RequestProcessor remove(String key) {return (RequestProcessor)_map.remove(key);}
+	public RequestProcessor put(String key, RequestProcessor val) {
+		   boolean success=false;
+
+		    try
+		    {
+		      SerializableContent sc=(SerializableContent)val;
+		      File file=new File(_dir, key.toString()+"."+_streamingStrategy.getSuffix());
+		      ObjectOutput oos=_streamingStrategy.getOutputStream(new FileOutputStream(file));
+		      sc.writeContent(oos);
+		      oos.flush();
+		      oos.close();
+
+		      // do we need to worry about ttl ?
+		      //	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
+		      //	file.setLastModified(willTimeOutAt);
+
+		      _log.info("stored (local disc): "+key+" : "+val);
+		      success=true;
+		    }
+		    catch (Exception e)
+		    {
+		      _log.error("store (local disc) failed: "+key, e);
+		    }
+
+		    //return success;
+		return (RequestProcessor)_map.put(key, val);
+		}
+	
+	public RequestProcessor peek(String key) {
+//	    Object value=null;
+//
+//	    File file=new File(_dir, key.toString()+"."+_streamingStrategy.getSuffix());
+//	    if (file.exists())
+//	    {
+//	      try
+//	      {
+//		// SerializableContent sc=_valuePool.take();
+//	      	SerializableContent sc=new RequestProcessor(); // what are we going to do here - we need to decide how type chages as it is pro/demoted up stack...
+//		ObjectInput oi=_streamingStrategy.getInputStream(new FileInputStream(file));
+//		sc.readContent(oi);
+//		oi.close();
+//
+//		value=sc;
+//		_log.info("loaded (local disc): "+key+" : "+value);
+//	      }
+//	      catch (Exception e)
+//	      {
+//		_log.error("load (local disc) failed: "+key, e);
+//	      }
+//	    }
+//
+//	    //return value;
+		return (RequestProcessor)_map.get(key);
+		}
+	
+	public RequestProcessor remove(String key) { // Aaargh - we don't want to return a value here - too costly... or can we get away with just two methods in a store ?
+//		   boolean success=false;
+//
+//		    try
+//		    {
+//		      File file=new File(_dir, key.toString()+"."+_streamingStrategy.getSuffix());
+//		      file.delete();
+//		      _log.info("removed (local disc): "+key);
+//		      success=true;
+//		    }
+//		    catch (Exception e)
+//		    {
+//		      _log.error("removal (local disc) failed: "+key, e);
+//		    }
+//
+//		    return success;
+		    return (RequestProcessor)_map.remove(key);
+		}
 
 	public boolean isOffNode() {return false;}
 }

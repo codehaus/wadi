@@ -6,6 +6,10 @@
  */
 package org.codehaus.wadi.test.cache.impl;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -33,4 +37,14 @@ public class StatelessRequestProcessor implements RequestProcessor {
 
 	public int getMaxInactiveInterval() {return 0;}//TODO
 	public void setMaxInactiveInterval(int mii) {} //TODO
+	
+	public void readContent(ObjectInput is)
+	    throws IOException, ClassNotFoundException {
+		// TODO
+	  }
+
+	public void writeContent(ObjectOutput os)
+	    throws IOException, ClassNotFoundException {
+		// TODO
+	  }
 	}
