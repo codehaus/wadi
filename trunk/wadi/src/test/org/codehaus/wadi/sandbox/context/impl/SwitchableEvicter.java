@@ -16,8 +16,8 @@
 */
 package org.codehaus.wadi.sandbox.context.impl;
 
+import org.codehaus.wadi.sandbox.context.Evictable;
 import org.codehaus.wadi.sandbox.context.Evicter;
-import org.codehaus.wadi.sandbox.context.Motable;
 
 
 /**
@@ -32,6 +32,7 @@ public class SwitchableEvicter implements Evicter {
 	public boolean getSwitch(){return _switch;}
 	public void setSwitch(boolean shwitch){_switch=shwitch;}
 	
-	public boolean evict(String id, Motable motable) {return _switch;}
+	public boolean evict(String id, Evictable evictable) {return _switch;}
+	public boolean evict(String id, Evictable evictable, long time) {return _switch;}
 	
 }

@@ -17,11 +17,12 @@
 package org.codehaus.wadi.sandbox.context;
 
 /**
- * TODO - JavaDoc this type
+ * An API for deciding whether or not to evict a given Evictable
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public interface Evicter {
-	boolean evict(String id, Motable motable);
+	boolean evict(String id, Evictable evictable);
+	boolean evict(String id, Evictable evictable, long time);
 }

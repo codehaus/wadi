@@ -44,9 +44,9 @@ public abstract class SimpleEvictable implements Evictable {
 	public int  getMaxInactiveInterval(){return _maxInactiveInterval;}
 	public void setMaxInactiveInterval(int maxInactiveInterval){_maxInactiveInterval=maxInactiveInterval;}
 	
-	public boolean getValid() {
-		return _lastAccessedTime+(_maxInactiveInterval*1000)>=System.currentTimeMillis(); // TODO - is this expensive ?
-	}
+	public long getTimeToLive(long time) {return (_maxInactiveInterval*1000)-(time-_lastAccessedTime);}
+	
+	public boolean getValid() {return getTimeToLive(System.currentTimeMillis())>0;} // TODO - This doesn't really fit here but...
 	
 	public void copy(Evictable evictable) throws Exception {
 		_creationTime=evictable.getCreationTime();

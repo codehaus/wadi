@@ -16,8 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.context.impl;
 
+import org.codehaus.wadi.sandbox.context.Evictable;
 import org.codehaus.wadi.sandbox.context.Evicter;
-import org.codehaus.wadi.sandbox.context.Motable;
 
 /**
  * An Evicter which always evicts
@@ -27,11 +27,7 @@ import org.codehaus.wadi.sandbox.context.Motable;
  */
 public class AlwaysEvicter implements Evicter {
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.Evicter#evict(java.lang.String, org.codehaus.wadi.sandbox.context.Motable)
-	 */
-	public boolean evict(String id, Motable motable) {
-		return true;
-	}
+	public boolean evict(String id, Evictable evictable) {return true;}
+	public boolean evict(String id, Evictable evictable, long time) {return true;}
 
 }

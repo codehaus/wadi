@@ -16,30 +16,22 @@
 */
 package org.codehaus.wadi.sandbox.context.impl;
 
+import org.codehaus.wadi.sandbox.context.Evictable;
 import org.codehaus.wadi.sandbox.context.Evicter;
-import org.codehaus.wadi.sandbox.context.Motable;
 
 /**
- * An Evicter which evicts Motables with less than a certain time to live remaining
+ * An Evicter which evicts Evictables with less than a certain time to live remaining
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class TimeToLiveEvicter implements Evicter{
-	long _ttl;
+public class TimeToLiveEvicter implements Evicter {
+	protected final long _ttl;
 
 	public TimeToLiveEvicter(long ttl) {
 		_ttl=ttl;
 	}
 
-	public boolean evict(String id, Motable m) {
-		long expiry=m.getLastAccessedTime()+(m.getMaxInactiveInterval()*1000);
-		long current=System.currentTimeMillis();
-		long remaining=expiry-current;
-		boolean evict=(remaining<=_ttl);
-
-		//_log.info((!evict?"not ":"")+"evicting: "+id);
-
-		return evict;
-	}
+	public boolean evict(String id, Evictable evictable) {return evictable.getTimeToLive(System.currentTimeMillis())<=_ttl;}
+	public boolean evict(String id, Evictable evictable, long time) {return evictable.getTimeToLive(time)<=_ttl;}
 }

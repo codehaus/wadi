@@ -17,7 +17,8 @@
 package org.codehaus.wadi.sandbox.context;
 
 /**
- * TODO - JavaDoc this type
+ * API for objects that may be inspected to determine whether they should
+ * be timed out after certain period of inactivity.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -30,6 +31,9 @@ public interface Evictable {
 	public void setLastAccessedTime(long lastAccessedTime);
 	public int  getMaxInactiveInterval();
 	public void setMaxInactiveInterval(int maxInactiveInterval);
+	
+	public long getTimeToLive(long time);
+	
 	public boolean getValid();
 	//public void setValid(boolean valid);
 }
