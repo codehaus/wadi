@@ -95,6 +95,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 					if (SharedJDBCMotable.load(connection, _table, emotable)==null)
 						return false;
 				} catch (Exception e) {
+					_log.error("could not establish database connection", e);
 					return false;
 				}
 				return true;
@@ -142,7 +143,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	public class SharedJDBCImmoter extends AbstractImmoter {	
 		
 		public Motable nextMotable(String id, Motable emotable) {
-			Motable motable=new SharedJDBCMotable();
+			Motable motable=new SharedJDBCMotable(); // TODO - could be a thread local... - used then discarded immediately
 			motable.setId(id);			
 			return motable;
 		}

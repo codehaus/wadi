@@ -54,7 +54,6 @@ import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.ProxyingException;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.AlwaysEvicter;
-import org.codehaus.wadi.sandbox.context.impl.ChainedEmoter;
 import org.codehaus.wadi.sandbox.context.impl.ProxyRelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
@@ -75,7 +74,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 import junit.framework.TestCase;
 
 /**
- * TODO - JavaDoc this type
+ * Test various Contualisers, evicters etc...
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -166,7 +165,7 @@ public class TestContextualiser extends TestCase {
 			emotable.setLastAccessedTime(4);
 			emotable.setMaxInactiveInterval(5);
 			Immoter immoter=db.getDemoter(id, emotable);
-			Emoter emoter=new ChainedEmoter(){public String getInfo(){return "ether";}}; // sessions are coming from us..
+			Emoter emoter=new EtherEmoter();
 			Utils.mote(emoter, immoter, emotable, id);
 		}
 
@@ -180,7 +179,7 @@ public class TestContextualiser extends TestCase {
 			emotable.setLastAccessedTime(1);
 			emotable.setMaxInactiveInterval(2);
 			Immoter immoter=disc.getDemoter(id, emotable);
-			Emoter emoter=new ChainedEmoter(){public String getInfo(){return "ether";}}; // sessions are coming from us..
+			Emoter emoter=new EtherEmoter();
 			Utils.mote(emoter, immoter, emotable, id);
 		}
 		assertTrue(d.containsKey("bar"));
@@ -225,13 +224,7 @@ public class TestContextualiser extends TestCase {
 			_counter++;
 			
 			Motable emotable=_context;
-			Emoter emoter=new ChainedEmoter() {
-				public void commit(String id, Motable emotable) {
-					super.commit(id, emotable);
-//					_log.info("deletion (ether): "+id);
-				}
-				public String getInfo(){return "ether";}
-			};
+			Emoter emoter=new EtherEmoter();
 			Motable immotable=Utils.mote(emoter, immoter, emotable, id);
 			if (immotable!=null) {
 				promotionLock.release();
