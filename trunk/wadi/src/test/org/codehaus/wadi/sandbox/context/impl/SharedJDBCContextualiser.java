@@ -87,6 +87,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		      }
 
 		    if (context!=null) {			
+		    	_log.info("promoting (from database): "+id);
 		    	promoter.promoteAndContextualise(req, res, chain, id, context, promotionMutex); // inject result into our caller - now available to new threads
 
 			    // perhaps this should be wrapped up in a callback object and passed up to the promoter with the promotionMutex - otherwise file is not removed until after request has run...
@@ -121,6 +122,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	public void demote(String key, Motable val) {
 	    try
 	    {
+	    	_log.info("demoting (to database): "+key);
 	      SerializableContent sc=(SerializableContent)val;
 
 	      Connection c=_ds.getConnection();
