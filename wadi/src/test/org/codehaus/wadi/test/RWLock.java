@@ -113,12 +113,6 @@ public class RWLock implements ReadWriteLock {
     return pass;
   }
 
-  protected synchronized boolean startWriteFromWaitingWriter() {
-    boolean pass = startWrite();
-    if (pass) --waitingWriters_;
-    return pass;
-  }
-
   /**
    * Called upon termination of a read.
    * Returns the object to signal to wake up a waiter, or null if no such
@@ -251,7 +245,12 @@ public class RWLock implements ReadWriteLock {
           for (;;) {
             try {
               WriterLock.this.wait();
-              if (startWriteFromWaitingWriter())
+	      boolean pass2;
+	      synchronized(RWLock.this){
+		pass2 = startWrite();
+		if (pass2) --waitingWriters_;
+	      }
+              if (pass2)
                 return;
             }
             catch(InterruptedException ex){
@@ -305,7 +304,12 @@ public class RWLock implements ReadWriteLock {
 		ie = ex;
 		break;
 	      }
-	      if (startWriteFromWaitingWriter())
+	      boolean pass2;
+	      synchronized(RWLock.this){
+		pass2 = startWrite();
+		if (pass2) --waitingWriters_;
+	      }
+	      if (pass2)
 		return true;
 	      else {
 		waitTime = msecs - (System.currentTimeMillis() - start);
