@@ -28,15 +28,18 @@ import org.codehaus.wadi.HttpSessionImpl;
 import org.codehaus.wadi.MigrationService;
 
 public class
-MigrationRequest
-extends org.codehaus.wadi.MigrationRequest
+  MigrationRequest
+  extends org.codehaus.wadi.MigrationRequest
 {
-	public
-	MigrationRequest(String id, Destination destination, long timeout)
-	{
-		super(id, destination, timeout);
-	}
-	
-	public void invoke(MigrationService service, ObjectMessage in){}
-}
+  public
+    MigrationRequest(String id, Destination destination, long timeout)
+  {
+    super(id, destination, timeout);
+  }
 
+  public void
+    invoke(MigrationService service, ObjectMessage in)
+  {
+    // NYI
+  }
+}

@@ -17,31 +17,29 @@
 
 package org.codehaus.wadi;
 
-
 import javax.jms.Destination;
 import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public abstract class MigrationRequest
-implements Executable
+  implements Executable
 {
-	public abstract void invoke(MigrationService service, ObjectMessage message);
-	
-	protected static final Log _log = LogFactory.getLog(MigrationRequest.class);
-	protected final String _id;
-	protected final Destination _destination;
-	protected final long _timeout;
-	
-	public
-	MigrationRequest(String id, Destination destination, long timeout)
-	{
-		_id      =id;
-		_destination=destination;
-		_timeout =timeout;
-	}
-	
-	public String toString() {
-		return "<MigrationRequest:"+_id+">";
-	}
+  protected static final Log  _log = LogFactory.getLog(MigrationRequest.class);
+
+  protected final String      _id;
+  protected final Destination _destination;
+  protected final long        _timeout;
+
+  public
+    MigrationRequest(String id, Destination destination, long timeout)
+  {
+    _id          =id;
+    _destination =destination;
+    _timeout     =timeout;
+  }
+
+  public abstract void invoke(MigrationService service, ObjectMessage message);
+
+  public String toString() {return "<MigrationRequest:"+_id+">";}
 }
