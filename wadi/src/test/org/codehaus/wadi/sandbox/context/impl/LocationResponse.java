@@ -17,14 +17,14 @@ import org.codehaus.wadi.sandbox.context.Location;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class Locations implements Serializable {
+public class LocationResponse implements Serializable {
 
 	protected final Location _location;
 	protected final Set _ids;
 	/**
 	 * 
 	 */
-	public Locations(Location location, Set ids) {
+	public LocationResponse(Location location, Set ids) {
 		super();
 		_location=location;
 		_ids=ids;
