@@ -241,10 +241,10 @@ public class RWLock implements ReadWriteLock {
 
       Thread t=Thread.currentThread();
 
-      InterruptedException ie = null;
 
-      boolean isActiveWriter=false;;
       Object lock=null;
+      boolean isActiveWriter=false;
+
       synchronized (RWLock.this)
       {
 	if (activeReaders_==0 && activeWriter_==null)
@@ -255,6 +255,8 @@ public class RWLock implements ReadWriteLock {
 	else
 	  _writerQueue.put(t, lock=new Object()); // queue this writer with a unique lock
       }
+
+      InterruptedException ie = null;
 
       if (!isActiveWriter)
       {
@@ -289,9 +291,6 @@ public class RWLock implements ReadWriteLock {
 
       if (ie != null)
       {
-        // Fall through outside synch on interrupt.
-        //  On exception, we may need to signal readers.
-        //  It is not worth checking here whether it is strictly necessary.
         readerLock_.signalWaiters();
         throw ie;
       }
@@ -314,77 +313,83 @@ public class RWLock implements ReadWriteLock {
       Thread t=Thread.currentThread();
 
       InterruptedException ie = null;
-      synchronized(WriterLock.this)
+      boolean isActiveWriter=false;
+      Object lock=null;
+
+      if (msecs <= 0)		// return with an answer immediately
       {
-        if (msecs <= 0)
+	synchronized (RWLock.this)
 	{
-	  synchronized (RWLock.this)
+	  if (activeReaders_==0 && activeWriter_==null)
 	  {
-	    boolean allowWrite = (activeWriter_ == null && activeReaders_ == 0);
-	    if (allowWrite)
-	      activeWriter_ = t;
-
-	    return allowWrite;
+	    activeWriter_ = t;
+	    isActiveWriter=true;
 	  }
+
+	  return isActiveWriter;
 	}
-        else
+      }
+      else
+      {
+	synchronized (RWLock.this)
 	{
-	  boolean pass;
-	  synchronized (RWLock.this)
+	  if (activeReaders_==0 && activeWriter_==null)
 	  {
-	    pass = (activeWriter_ == null && activeReaders_ == 0);
-	    if (pass)
-	      activeWriter_ = t;
-	    else
-	      _writerQueue.put(t, new Object()); // queue this writer with a unique lock
+	    activeWriter_ = t;
+	    isActiveWriter=true;
 	  }
-
-	  if (pass)
-	    return true;
 	  else
+	    _writerQueue.put(t, lock=new Object()); // queue this writer with a unique lock
+	}
+
+	if (isActiveWriter)
+	  return true;
+	else
+	{
+	  long waitTime = msecs;
+	  long start = System.currentTimeMillis();
+	  while (true)
 	  {
-	    long waitTime = msecs;
-	    long start = System.currentTimeMillis();
-	    for (;;)
+	    try
 	    {
-	      try
+	      synchronized (lock){lock.wait();}
+	    }
+	    catch(InterruptedException ex)
+	    {
+	      synchronized(RWLock.this)
 	      {
-		WriterLock.this.wait(waitTime);
+		_writerQueue.remove(t); // writer interrupted whilst in queue
+		Object tmp=_writerQueue.remove(_writerQueue.firstKey());
+		synchronized (tmp) {tmp.notify();}
+	      };
+	      ie = ex;
+	      break;
+	    }
+
+	    synchronized(RWLock.this)
+	    {
+	      if (activeWriter_==null && activeWriter_==null)
+	      {
+		activeWriter_ = t;
+		isActiveWriter=true;
+		_writerQueue.remove(t); // promoted to active writer
 	      }
-	      catch(InterruptedException ex)
+	    }
+
+	    if (isActiveWriter)
+	      return true;
+	    else
+	    {
+	      waitTime = msecs - (System.currentTimeMillis() - start);
+	      if (waitTime <= 0)
 	      {
 		synchronized(RWLock.this)
 		{
-		  _writerQueue.remove(t); // writer interrupted whilst in queue
+		  _writerQueue.remove(t); // writer timed out and left queue
+		  Object tmp=_writerQueue.remove(_writerQueue.firstKey());
+		  synchronized (tmp) {tmp.notify();}
 		};
-		notifyNextWriter();
-		ie = ex;
 		break;
-	      }
-	      boolean pass2;
-	      synchronized(RWLock.this)
-	      {
-		pass2 = (activeWriter_ == null && activeReaders_ == 0);
-		if (pass2)
-		{
-		  activeWriter_ = t;
-		  _writerQueue.remove(t); // promoted to active writer
-		}
-	      }
-	      if (pass2)
-		return true;
-	      else
-	      {
-		waitTime = msecs - (System.currentTimeMillis() - start);
-		if (waitTime <= 0)
-		{
-		  synchronized(RWLock.this)
-		  {
-		    _writerQueue.remove(t); // writer timed out and left queue
-		  };
-		  notifyNextWriter();
-		  break;
-		}
 	      }
 	    }
 	  }
