@@ -220,7 +220,7 @@ public abstract class
 	}
 	catch (InterruptedException e)
 	{
-	  _log.warn("unable to acquire wlock on placeholder session");
+	  _log.warn("interrupted whilst acquiring wlock on placeholder session");
 	}
 
 	_local.put(realId, impl);
@@ -329,7 +329,7 @@ public abstract class
   //   public void stop() throws LifecycleException {}
 
 
-  protected String _configurationResource="WEB-INF/wadi-web.xml";
+  protected String _configurationResource="/WEB-INF/wadi-web.xml";
 
   public synchronized void
     start()
@@ -433,7 +433,7 @@ public abstract class
       // created/[e/i]mmigrated whilst this is going on. sessions with
       // current requests will remain in container :-(. We need a fix in
       // Filter which will relocate all incoming requests...
-      if (_log.isDebugEnabled()) _log.debug("emmigrated "+(oldSize-newSize)+"/"+oldSize+" sessions");
+      if (_log.isInfoEnabled()) _log.info("emmigrated "+(oldSize-newSize)+"/"+oldSize+" sessions");
       _evictionPolicy=oldEvictionPolicy;
     }
 

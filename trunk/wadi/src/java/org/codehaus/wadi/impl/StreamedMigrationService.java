@@ -446,8 +446,8 @@ public class
 
 	    if (impl==null)
 	    {
-	      if (_log.isWarnEnabled())
-		_log.warn(id+": immigration unsuccessful - missed rendezvous");
+	      if (_log.isInfoEnabled())
+		_log.info(id+": immigration unsuccessful - missed rendezvous");
 
 	      // TODO - it's inefficient to bother reading in the rest
 	      // of the message if we have missed our rendezvous - but
