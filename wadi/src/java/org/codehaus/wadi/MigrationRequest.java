@@ -61,7 +61,7 @@ public abstract class MigrationRequest
       {
 	impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY);
 	long start=System.currentTimeMillis();
-	if ((acquired=impl.getContainerLock().attempt(_timeout)))
+	if (true==(acquired=impl.getContainerLock().attempt(_timeout)))
 	{
 	  long elapsed=System.currentTimeMillis()-start;
 	  if (impl.getRealId()==null)

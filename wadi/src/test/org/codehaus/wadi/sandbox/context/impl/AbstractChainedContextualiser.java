@@ -55,7 +55,7 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres,
 			FilterChain chain, String id, Promoter promoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
 		boolean success=false;
-		if ((success=contextualiseLocally(hreq, hres, chain, id, promoter, promotionLock))) {
+		if (true==(success=contextualiseLocally(hreq, hres, chain, id, promoter, promotionLock))) {
 			return success;
 		} else if (!(localOnly && !_next.isLocal())) {
 			boolean acquired=false;
@@ -65,13 +65,13 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 					promotionLock.acquire();
 					acquired=true;
 					// by the time we get the lock, another thread may have already promoted this context - try again locally...
-					if ((success=contextualiseLocally(hreq, hres, chain, id, promoter, promotionLock))) {// mutex released here if successful
+					if (true==(success=contextualiseLocally(hreq, hres, chain, id, promoter, promotionLock))) {// mutex released here if successful
 						return success;
 					}
 				}
 
 				Promoter p=getPromoter(promoter);
-				if ((success=_next.contextualise(hreq, hres, chain, id, p, promotionLock, localOnly))) // mutex released here if successful
+				if (true==(success=_next.contextualise(hreq, hres, chain, id, p, promotionLock, localOnly))) // mutex released here if successful
 					return success;
 
 			} catch (InterruptedException e) {

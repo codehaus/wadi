@@ -54,8 +54,6 @@ public class
       return null;
     }
 
-    Destination dest=null;
-
     Cluster cluster=service.getManager().getCluster();
     return service.getAsyncToSyncAdaptor().send(cluster,
 						new MessagedMigrationResponse(_id, _timeout, buffer),

@@ -111,7 +111,7 @@ class
 
     try
     {
-      SerializableContent sc=(SerializableContent)value;
+ //     SerializableContent sc=(SerializableContent)value;
 
       Connection c=_ds.getConnection();
       PreparedStatement ps=c.prepareStatement("UPDATE "+_table+" SET MyValue=? WHERE MyKey='"+key.toString()+"'");
@@ -179,7 +179,7 @@ class
     {
       Connection c=_ds.getConnection();
       Statement s=c.createStatement();
-      int r=s.executeUpdate("DELETE FROM "+_table+" WHERE MyKey='"+key+"'");
+      s.executeUpdate("DELETE FROM "+_table+" WHERE MyKey='"+key+"'");
       s.close();
       c.close();
 
