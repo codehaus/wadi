@@ -21,7 +21,7 @@ public class MaxInactiveIntervalEvicter implements Evicter {
 	 */
 	public boolean evict(String key, RequestProcessor val) {
 		// TODO Auto-generated method stub
-		return false;
+		return val.getTimeToLive()<=0;
 	}
 
 }

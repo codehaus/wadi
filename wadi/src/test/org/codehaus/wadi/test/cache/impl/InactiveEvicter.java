@@ -9,7 +9,6 @@ package org.codehaus.wadi.test.cache.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.test.cache.RequestProcessor;
-import org.codehaus.wadi.test.cache.TestCache;
 import org.codehaus.wadi.test.cache.Cache.Evicter;
 
 /**

@@ -20,12 +20,12 @@ import org.codehaus.wadi.test.cache.RequestProcessor;
 public abstract class AbstractCache implements Cache {
 	protected Log _log = LogFactory.getLog(getClass());
 	
-	protected Joiner _joiner;
 	protected Evicter _evicter;
+	protected Cache _subcache;
 	
-	public AbstractCache(Joiner joiner, Evicter evicter) {
-		_joiner=joiner;
+	public AbstractCache(Evicter evicter, Cache subcache) {
 		_evicter=evicter;
+		_subcache=subcache;
 	}
 	
 	/* (non-Javadoc)
@@ -37,30 +37,37 @@ public abstract class AbstractCache implements Cache {
 	 * @see org.codehaus.wadi.test.cache.Cache#get(java.lang.String)
 	 */
 	public RequestProcessor get(String key) {
-//		RequestProcessor val=peek(key);
-//		return val==null?_joiner.load(key):val;
-		
-		RequestProcessor val=peek(key);
-		
-		if (val==null) {
-			key=key.intern(); // all threads will now have same ref for key
-			synchronized (key) {
-				// we may have been waiting a while - check load() has not already occurred..
-				if ((val=peek(key))==null)
-				{
-					// if val is not bound no load() has occurred - since an unsuccessful load
-					// will return some form of RP for a dead session...
-					val=_joiner.load(key);
-					put(key, val);
-					_log.info("promoting: "+key);
-					// we need to remove it from the lower cache as well...
-					return val;
-				}
+		RequestProcessor val=peek(key);	
+		if (val==null)
+			val=promote(key, _subcache);
+		return val;
+	}
+
+	// TODO - optimise and further abstract so transactional caches can do their things etc..
+	protected RequestProcessor promote(String key, Cache subcache) {
+		RequestProcessor val=null;
+		key=key.intern(); // all threads will now have same ref for key
+		synchronized (key) {
+			// we may have been waiting a while - check load() has not already occurred..
+			if ((val=peek(key))==null)
+			{
+				// if val is not bound no load() has occurred - since an unsuccessful load
+				// will return some form of RP for a dead session...
+				val=subcache.get(key);
+				put(key, val);
+				_subcache.remove(key);
+				_log.info("promoted: "+key+ " from "+subcache);
 			}
 		}
 		return val;
 	}
-
+	
+//	protected RequestProcessor demote(String key, RequestProcessor val, Cache subcache) {
+//		remove(key);
+//		subcache.put(key, val);
+//		return val;
+//	}
+	
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.test.cache.Cache#peek(java.lang.String)
 	 */
