@@ -22,13 +22,7 @@ package org.codehaus.wadi.sandbox.context;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Motable {
-	public long getExpiryTime();
-
-//	public long getCreationTime(); // final
-//	public long getLastAccessedTime();
-//	public void setLastAccessedTime(long l);
-//	public int  getMaxInactiveInterval();
-//	public void setMaxInactiveInterval(int i);
-//	
+public interface Motable extends Evictable {
+	public byte[] getBytes() throws Exception;
+	public void setBytes(byte[] bytes) throws Exception;
 }

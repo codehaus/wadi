@@ -30,13 +30,10 @@ import javax.servlet.ServletResponse;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Promoter {
-
-	Context nextContext();
-
-	boolean prepare(String id, Context context);
-	void commit(String id, Context context);
-	void rollback(String id, Context context);
-
-	void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Context context) throws IOException, ServletException;
+public interface Promoter {	
+	Motable nextMotable();
+	boolean prepare(String id, Motable p);
+	void commit(String id, Motable p);
+	void rollback(String id, Motable p);
+	void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Motable p) throws IOException, ServletException;
 }

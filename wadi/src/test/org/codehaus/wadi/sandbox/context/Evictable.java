@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi.sandbox.context;
 
-import java.io.IOException;
-
 /**
  * TODO - JavaDoc this type
  *
@@ -25,9 +23,14 @@ import java.io.IOException;
  * @version $Revision$
  */
 
-public interface ByteArray {
-	public byte[] getBytes() throws IOException, ClassNotFoundException;
+public interface Evictable {
+	public long getExpiryTime();
 
-	public void setBytes(byte[] bytes) throws IOException,
-			ClassNotFoundException;
+//	public long getCreationTime(); // final
+//	public long getLastAccessedTime();
+//	public void setLastAccessedTime(long l);
+//	public int  getMaxInactiveInterval();
+//	public void setMaxInactiveInterval(int i);
+//	
+
 }
