@@ -19,6 +19,7 @@ package org.codehaus.wadi;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -357,7 +358,16 @@ public abstract class
     // load config
     try
     {
-      InputStream is=_servletContext.getResourceAsStream(_configurationResource);
+      // hack to get around the fact that dd is only found on maven's
+      // first test run and subsequently does not get picked up due to
+      // some classloader wierdness - revisit - TODO
+      InputStream is=null;
+      String config=System.getProperty("wadi.config");
+      if (config!=null)
+	is=new FileInputStream(config);
+      else
+	is=_servletContext.getResourceAsStream(_configurationResource);
+
       if (is!=null)
       {
 	new XmlConfiguration(is).configure(this);
