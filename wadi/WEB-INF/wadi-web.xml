@@ -2,26 +2,34 @@
 
 <!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure 1.2//EN" "http://jetty.mortbay.org/configure_1_2.dtd">
 
-<Configure class="org.codehaus.wadi.tomcat.Manager">
+<Configure class="org.codehaus.wadi.shared.Manager">
+
   <Set name="Distributable">true</Set>
+
   <Set name="MaxInactiveInterval">600</Set><!-- destroy after N secs of inactivity -->
+
   <Set name="PassivationStrategy">
     <New class="org.codehaus.wadi.plugins.FilePassivationStrategy">
       <Arg><SystemProperty name="wadi.home"/>/tmp</Arg><!-- put evicted sessions in this dir -->
     </New>
   </Set>
+
   <Set name="EvictionPolicy">
     <New class="org.codehaus.wadi.plugins.AbsoluteEvictionPolicy">
       <Arg type="int">30</Arg><!-- evict after N secs of inactivity -->
     </New>
   </Set>
+
   <Set name="IdGenerator">
     <New class="org.codehaus.wadi.plugins.TomcatIdGenerator"/>
   </Set>
+
   <!--
   <Set name="RoutingStrategy">
   <New class="org.codehaus.wadi.plugins.JkRoutingStrategy"/>
   </Set>
   -->
+
   <Set name="BucketName"><SystemProperty name="bucket.name"/></Set>
+
 </Configure>
