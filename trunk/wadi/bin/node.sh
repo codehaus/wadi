@@ -21,6 +21,15 @@ JAVA=$JAVA_HOME/bin/java
 properties=`sed -e '/#.*/d' -e 's/${wadi.home}/$WADI_HOME/g' -e 's/\(.*\)/-D\1/g' $WADI_HOME/conf/node.$instance.properties | tr '\n' ' '`
 properties=`eval "echo $properties"`
 
+properties="$properties \
+-Dwadi.home=$WADI_HOME \
+-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog \
+-Dorg.apache.commons.logging.LogFactory=org.apache.commons.logging.impl.LogFactoryImpl \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=trace \
+-Dorg.apache.commons.logging.simplelog.showShortLogname=true \
+-Dorg.apache.commons.logging.simplelog.showdatetime=true \
+"
+
 if [ jettyold = "$container" ]
 then
     cd $JETTY_HOME
