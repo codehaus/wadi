@@ -17,9 +17,6 @@
 
 package org.codehaus.wadi.shared;
 
-import java.util.List;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionBindingEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

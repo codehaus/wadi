@@ -19,14 +19,10 @@ package org.codehaus.wadi.tomcat;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.beans.PropertyChangeSupport;
-import java.lang.reflect.Method;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
-import org.apache.catalina.Container;
-import org.apache.catalina.DefaultContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.catalina.core.StandardContext;
