@@ -15,14 +15,23 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.shared;
+package org.codehaus.wadi.plugins;
 
-public interface
-  SerializableContent
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import org.codehaus.wadi.shared.StreamingStrategy;
+
+public class
+  SimpleStreamingStrategy
+  implements StreamingStrategy
 {
-  void readContent(java.io.ObjectInput is)
-    throws java.io.IOException, ClassNotFoundException;
-
-  void writeContent(java.io.ObjectOutput os)
-    throws java.io.IOException, ClassNotFoundException;
+  public ObjectInput getInputStream(InputStream is) throws IOException {return new ObjectInputStream(is);};
+  public ObjectOutput getOutputStream(OutputStream os) throws IOException {return new ObjectOutputStream(os);};
+  public String getSuffix(){return "ser";}
 }
+

@@ -17,12 +17,17 @@
 
 package org.codehaus.wadi.shared;
 
-public interface
-  SerializableContent
-{
-  void readContent(java.io.ObjectInput is)
-    throws java.io.IOException, ClassNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
 
-  void writeContent(java.io.ObjectOutput os)
-    throws java.io.IOException, ClassNotFoundException;
+public interface
+  StreamingStrategy
+{
+  ObjectInput getInputStream(InputStream is) throws IOException;
+  ObjectOutput getOutputStream(OutputStream os) throws IOException;
+  String getSuffix();
 }
+
