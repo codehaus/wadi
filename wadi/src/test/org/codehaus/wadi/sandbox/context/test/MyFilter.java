@@ -46,14 +46,21 @@ public class MyFilter implements Filter {
 	
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 	throws ServletException, IOException {
+		if (req instanceof HttpServletRequest) {
 		HttpServletRequest hreq=(HttpServletRequest)req;
 		HttpServletResponse hres=(HttpServletResponse)res;
 		String sessionId=hreq.getRequestedSessionId();
-		_log.info("Filter.doFilter("+((sessionId==null)?"":sessionId)+")"+(req.isSecure()?" - SECURE":""));
+		_log.info("Filter.doFilter("+((sessionId==null)?"":sessionId)+")"+(hreq.isSecure()?" - SECURE":""));
 		boolean found=_servlet.getContextualiser().contextualise(hreq, hres, chain, sessionId, null, null, _localOnly);
 		
+		// only here for testing...
 		if (!found)
-			((HttpServletResponse)res).sendError(410, "could not locate session: "+sessionId);
+			hres.sendError(410, "could not locate session: "+sessionId);
+		
+		} else {
+			// not http - therefore stateless...
+			chain.doFilter(req, res);
+		}
 	}
 	
 	public void destroy() {}
