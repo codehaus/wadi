@@ -264,6 +264,14 @@
 
     <dependency>
       <groupId>geronimo-spec</groupId>
+      <artifactId>geronimo-spec-j2ee-management</artifactId>
+      <version>1.0-M1</version>
+      <url>http://geronimo.apache.org</url>
+      <javadoc>http://geronimo.apache.org/specs/j2ee-management/apidocs</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-jms</artifactId>
       <version>1.0-M1</version>
       <url>http://geronimo.apache.org</url>
