@@ -244,23 +244,23 @@ public class
 	  }
 	  catch (UnknownHostException e)
 	  {
-	    _log.warn("could not reply to source of request", e);
+	    _log.warn(id+": could not reply to source of request", e);
 	  }
 	  catch (IOException e)
 	  {
-	    _log.warn("migration connection broken - rolling back", e);
+	    _log.warn(id+": emmigration connection broken - rolling back", e);
 	    ok=false;
 	  }
 	  catch (ClassNotFoundException e)
 	  {
-	    _log.warn("migration class mismatch - version/security problem? - rolling back", e);
+	    _log.warn(id+": emmigration class mismatch - version/security problem? - rolling back", e);
 	    ok=false;
 	  }
 	  finally
 	  {
 	    if (socket!=null)
 	    {
-	      try{socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
+	      try{socket.close();}catch(Exception e){_log.warn(id+": problem closing socket",e);}
 	      socket=null;
 	    }
 	  }
@@ -424,7 +424,7 @@ public class
       public void
 	immigrateSingleSession(ObjectInput is, ObjectOutput os, Destination peer)
       {
-	boolean ok=false;
+	boolean ok=true;
 	String id=null;
 	HttpSessionImpl impl=null;
 
@@ -440,15 +440,24 @@ public class
 
 	    if (impl==null)
 	    {
-	      if (_log.isTraceEnabled())
-		_log.trace(id+": immigration unsuccessful - missed rendezvous");
-	      return;
-	    }
+	      if (_log.isWarnEnabled())
+		_log.warn(id+": immigration unsuccessful - missed rendezvous");
 
-	    if (_log.isDebugEnabled()) _log.debug(id+": immigration (peer: "+peer+")");
+	      // TODO - it's inefficient to bother reading in the rest
+	      // of the message if we have missed our rendezvous - but
+	      // possibly simpler than other solutions and should be
+	      // exceptional...
+
+	      ok=false;
+	      impl=_manager.getHttpSessionImplFactory().create();
+	      // return;
+	    }
+	    else
+	      if (_log.isDebugEnabled())
+		_log.debug(id+": immigration (peer: "+peer+")");
 
 	    impl.readContent(is);
-	    os.writeBoolean(true);
+	    os.writeBoolean(ok);
 	    os.flush();
 	    ok=is.readBoolean();
 	  }

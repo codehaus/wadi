@@ -1,7 +1,11 @@
     <%@ page language="java" contentType="text/html" session="true" %>
     <%@ page import="java.util.Date" %>
+      <%
+      System.out.println("DESTROY: "+session.getId());
+      String colour=System.getProperty("wadi.colour");
+      %>
       <HTML>
-	<BODY>
+	<BODY BGCOLOR="<%= colour %>">
 	  <H2>Session Destruction</H2>
 
 	  <pre>id:            <%= request.getSession(false).getId() %></pre>

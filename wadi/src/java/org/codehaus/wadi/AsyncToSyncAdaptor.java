@@ -68,7 +68,7 @@ public class
       }
       catch (TimeoutException e)
       {
-	_log.debug(correlationId+"/"+hashCode()+": "+"timed out at rendez-vous - no answer within required timeframe: "+Thread.currentThread());
+	_log.debug(correlationId+"/"+hashCode()+": "+"timed out at rendez-vous - no answer within "+timeout+" millis: "+Thread.currentThread());
       }
       catch (InterruptedException e)
       {
