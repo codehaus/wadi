@@ -43,7 +43,7 @@ public class
   TestCluster
   extends TestCase
 {
-  protected Log         _log=LogFactory.getLog(TestHttpSession.class);
+  protected Log         _log=LogFactory.getLog(TestCluster.class);
 
   public TestCluster(String name)
   {
