@@ -261,7 +261,8 @@ public class TomcatIdGenerator
 	  }
 	  long t2=System.currentTimeMillis();
 	  if( (t2-t1) > 100 )
-	    log.debug(sm.getString("managerBase.seeding", randomClass) + " " + (t2-t1));
+	    if (log.isTraceEnabled())
+	      log.trace(sm.getString("managerBase.seeding", randomClass) + " " + (t2-t1));
 	}
       }
     }
@@ -278,8 +279,8 @@ public class TomcatIdGenerator
 	if( ! f.exists() ) return null;
 	randomIS= new DataInputStream( new FileInputStream(f));
 	randomIS.readLong();
-	if( log.isDebugEnabled() )
-	  log.debug( "Opening " + devRandomSource );
+	if( log.isTraceEnabled() )
+	  log.trace( "Opening " + devRandomSource );
 	return randomIS;
       } catch (IOException ex){
 	return null;
@@ -302,7 +303,7 @@ public class TomcatIdGenerator
    */
   public void setRandomFile( String s ) {
     // as a hack, you can use a static file - and genarate the same
-    // session ids ( good for strange debugging )
+    // session ids ( good for strange traceging )
     if (System.getSecurityManager() != null){
       randomIS = (DataInputStream)AccessController.doPrivileged(new PrivilegedSetRandomFile());
     } else {
@@ -312,8 +313,8 @@ public class TomcatIdGenerator
 	if( ! f.exists() ) return;
 	randomIS= new DataInputStream( new FileInputStream(f));
 	randomIS.readLong();
-	if( log.isDebugEnabled() )
-	  log.debug( "Opening " + devRandomSource );
+	if( log.isTraceEnabled() )
+	  log.trace( "Opening " + devRandomSource );
       } catch( IOException ex ) {
 	randomIS=null;
       }
@@ -355,8 +356,8 @@ public class TomcatIdGenerator
 
     if (this.digest == null) {
       long t1=System.currentTimeMillis();
-      if (log.isDebugEnabled())
-	log.debug(sm.getString("managerBase.getting", algorithm));
+      if (log.isTraceEnabled())
+	log.trace(sm.getString("managerBase.getting", algorithm));
       try {
 	this.digest = MessageDigest.getInstance(algorithm);
       } catch (NoSuchAlgorithmException e) {
@@ -369,11 +370,11 @@ public class TomcatIdGenerator
 	  this.digest = null;
 	}
       }
-      if (log.isDebugEnabled())
-	log.debug(sm.getString("managerBase.gotten"));
+      if (log.isTraceEnabled())
+	log.trace(sm.getString("managerBase.gotten"));
       long t2=System.currentTimeMillis();
-      if( log.isDebugEnabled() )
-	log.debug("getDigest() " + (t2-t1));
+      if( log.isTraceEnabled() )
+	log.trace("getDigest() " + (t2-t1));
     }
 
     return (this.digest);
@@ -391,7 +392,8 @@ public class TomcatIdGenerator
 	if( len==bytes.length ) {
 	  return;
 	}
-	log.debug("Got " + len + " " + bytes.length );
+	if (log.isTraceEnabled())
+	  log.trace("Got " + len + " " + bytes.length );
       } catch( Exception ex ) {
       }
       devRandomSource=null;
