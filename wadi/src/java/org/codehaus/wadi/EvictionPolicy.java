@@ -32,7 +32,8 @@ public interface
    * Decide whether a session should be evicted/migrated out of the
    * container to save resources.
    *
-   * @param s a <code>Session</code> value
+   * @param currentTimeMillis a <code>long</code> value
+   * @param impl a <code>HttpSessionImpl</code> value
    * @return a <code>boolean</code> value
    */
   boolean evictable(long currentTimeMillis, HttpSessionImpl impl);

@@ -23,7 +23,7 @@ import org.codehaus.wadi.EvictionPolicy;
 import org.codehaus.wadi.HttpSessionImpl;
 
 /**
- * Evict after an absolute time period - e.g. after 1 minute of inactivity.
+ * Evict after an absolute time period. E.g. after 1 minute of inactivity.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
