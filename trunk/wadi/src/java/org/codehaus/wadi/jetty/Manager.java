@@ -21,10 +21,11 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSessionContext;
 import org.codehaus.wadi.shared.Filter;
 import org.mortbay.jetty.servlet.ServletHandler;
-import org.mortbay.jetty.servlet.WebApplicationHandler;
 import org.mortbay.jetty.servlet.WebApplicationContext;
+import org.mortbay.jetty.servlet.WebApplicationHandler;
 
 //TODO - remember max number of sessions in map
 
@@ -211,7 +212,7 @@ public class
   public int getHttpPort(){return Integer.parseInt(System.getProperty("http.port"));} // TODO - temporary hack...
 
   public ServletContext getServletContext(){return _handler.getServletContext();}
-
+  public HttpSessionContext getSessionContext() {return org.mortbay.jetty.servlet.SessionContext.NULL_IMPL;}
 
   protected org.codehaus.wadi.shared.HttpSessionImpl createImpl(){return new HttpSessionImpl();}
   protected void destroyImpl(org.codehaus.wadi.shared.HttpSessionImpl impl){} // TODO - cache later
