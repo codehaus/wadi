@@ -32,9 +32,9 @@ properties="$properties \
 -Dactivemq.persistenceAdapter=org.codehaus.activemq.store.vm.VMPersistenceAdapter \
 -Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog \
 -Dorg.apache.commons.logging.LogFactory=org.apache.commons.logging.impl.LogFactoryImpl \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.activecluster=trace \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.activemq=trace \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=trace \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.activecluster=info \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.activemq=info \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=debug \
 -Dorg.apache.commons.logging.simplelog.showShortLogname=true \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
 "

@@ -44,7 +44,7 @@ public class
   protected final Map _entries = Collections.synchronizedMap(new HashMap());
 
   public Object
-    send(Cluster cluster, Serializable action, String correlationId, long timeout, Destination src, Destination dst)
+    send(Cluster cluster, Serializable action, String correlationId, long timeout, Destination src, Destination dst, Object datum)
     {
       int participants=2;
       Rendezvous rv=new Rendezvous(participants);
@@ -62,7 +62,7 @@ public class
 	cluster.send(dst, message);
 
 	long timeStarted=System.currentTimeMillis();
-	result=rv.attemptRendezvous(null, timeout);
+	result=rv.attemptRendezvous(datum, timeout);
 	long timeTaken=System.currentTimeMillis()-timeStarted;
 	_log.info(correlationId+"/"+hashCode()+": starter completed rendez-vous successfully in "+timeTaken+" millis - "+result);
       }

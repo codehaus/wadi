@@ -54,10 +54,10 @@ public abstract class MigrationRequest
       Object result=null;
       try
       {
-	impl.getContainerLock().attempt(_timeout);
-	acquired=true;
-
-	result=doit(service, impl, correlationID, source);
+	if ((acquired=impl.getContainerLock().attempt(_timeout)))
+	  result=doit(service, impl, correlationID, source);
+	else
+	  _log.warn(impl.getRealId()+": unable to acquire exclusive access within timeframe");
       }
       catch (InterruptedException e)
       {
