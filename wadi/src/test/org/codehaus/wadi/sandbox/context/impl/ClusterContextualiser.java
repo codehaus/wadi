@@ -154,6 +154,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 				message.setJMSReplyTo(_cluster.getDestination());
 				message.setJMSCorrelationID(correlationId);
 				message.setObject(query);
+				_log.info("sending location query for: "+id);
 				_cluster.send(_cluster.getDestination(), message);
 				
 				// rendez-vous with response/timeout...
