@@ -91,6 +91,10 @@ public class
 	  Thread.interrupted();
 	  _log.trace("housekeeper thread interrupted");
  	}
+ 	catch (Throwable t)
+	{
+	  _log.warn("housekeeping problem", t);
+	}
       }
       _log.debug("ending housekeeping thread");
     }
@@ -222,4 +226,5 @@ public class
 
 
   protected org.codehaus.wadi.shared.HttpSessionImpl createImpl(){return new HttpSessionImpl();}
+  protected void destroyImpl(org.codehaus.wadi.shared.HttpSessionImpl impl){} // TODO - cache later
 }
