@@ -26,7 +26,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.activecluster.ClusterException;
 import org.codehaus.activecluster.ClusterFactory;
-import org.codehaus.activecluster.ClusterListener;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.cluster.RingTopologyStrategy;

@@ -18,18 +18,12 @@
 package org.codehaus.wadi.test;
 
 import javax.jms.JMSException;
-import javax.jms.Session;
 import javax.jms.Connection;
-import javax.jms.Topic;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.TopicSession;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.activecluster.ClusterException;
-import org.codehaus.activecluster.ClusterFactory;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.activecluster.ClusterEvent;

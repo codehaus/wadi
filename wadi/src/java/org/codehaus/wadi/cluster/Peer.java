@@ -18,8 +18,6 @@
 package org.codehaus.wadi.cluster;
 
 import javax.jms.Destination;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Node;
 
 public class

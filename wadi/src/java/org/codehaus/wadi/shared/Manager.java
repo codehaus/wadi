@@ -18,7 +18,6 @@
 package org.codehaus.wadi.shared;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
-import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -26,7 +25,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EventListener;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
