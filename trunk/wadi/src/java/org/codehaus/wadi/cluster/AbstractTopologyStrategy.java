@@ -27,6 +27,20 @@ import org.codehaus.activecluster.ClusterEvent;
 import org.codehaus.activecluster.LocalNode;
 import org.codehaus.activecluster.Node;
 
+
+// not sure how many layers to this API yet:
+
+// 1 converts nodes to Peers
+
+// 1 calls combine and then works out relevant joining/leaving cells -
+// and later creates/destroys them...
+
+// it should be possible to override the above with a more
+// efficient/specific algorithm which calculates which cells should be
+// created/destroyed directly....
+
+// and more...
+
 public abstract class
   AbstractTopologyStrategy
   implements TopologyStrategy
