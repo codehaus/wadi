@@ -57,8 +57,7 @@ public class
     throws JMSException, ClusterException
   {
     String clusterId="ORG.CODEHAUS.WADI.TEST.CLUSTER";
-    Connection connection = _connFactory.createConnection();
-    ClusterFactory factory = new DefaultClusterFactory(connection);
+    ClusterFactory factory = new DefaultClusterFactory(_connFactory);
     //    factory.setInactiveTime(20000); // 20 secs ?
     _cluster= factory.createCluster(clusterId);
     Map state=new HashMap();
