@@ -418,7 +418,7 @@ public abstract class
     if (_connectionFactory!=null)
     {
       (_connection=_connectionFactory.createConnection()).start();
-      _clusterFactory=new DefaultClusterFactory(getConnection());
+      _clusterFactory=new DefaultClusterFactory(_connectionFactory);
       _cluster=_clusterFactory.createCluster("org.codehaus.wadi#cluster");
       _cluster.addClusterListener(new MembershipListener());
 

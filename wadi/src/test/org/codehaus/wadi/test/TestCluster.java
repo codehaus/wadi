@@ -64,8 +64,7 @@ public class
     testResponsePassed=false;
 
     _connectionFactory = new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");
-    _connection        = _connectionFactory.createConnection();
-    _clusterFactory    = new DefaultClusterFactory(_connection);
+    _clusterFactory    = new DefaultClusterFactory(_connectionFactory);
     _cluster0           = _clusterFactory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
     _cluster1           = _clusterFactory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
 
