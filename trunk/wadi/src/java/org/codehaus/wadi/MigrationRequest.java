@@ -63,9 +63,12 @@ public class
       //       list.add(impl);		// must be mutable
       //       client.emmigrate(manager._local, list, _timeout, _address, _port, manager.getStreamingStrategy(), true);
 
+      boolean acquired=false;
+      Object result=null;
       try
       {
 	impl.getContainerLock().attempt(_timeout);
+	acquired=true;
 	ByteArrayOutputStream baos=new ByteArrayOutputStream();
 	ObjectOutputStream    oos =new ObjectOutputStream(baos);
 	impl.writeContent(oos);
@@ -77,13 +80,12 @@ public class
 	try
 	{
 	  Cluster cluster=manager.getCluster();
-	  Object result=manager._adaptor.send(cluster,
-					      new MigrationResponse(_id, _timeout, buffer),
-					      _id+"-response",
-					      _timeout,
-					      cluster.getLocalNode().getDestination(),
-					      in.getJMSReplyTo());
-	  // TODO - check result
+	  result=manager._adaptor.send(cluster,
+				       new MigrationResponse(_id, _timeout, buffer),
+				       in.getJMSCorrelationID(),
+				       _timeout,
+				       cluster.getLocalNode().getDestination(),
+				       in.getJMSReplyTo());
 	}
 	catch (JMSException e)
 	{
@@ -101,6 +103,20 @@ public class
       catch (ClassNotFoundException e)
       {
 	_log.warn("ClassLoading problems marshalling session for emmigration", e);
+      }
+      finally
+      {
+	if (acquired)
+	  impl.getContainerLock().release();
+      }
+      if (result==Boolean.TRUE)
+      {
+	manager.releaseImpl(impl);
+	_log.info(_id+": emmigration acknowledged and committed");
+      }
+      else
+      {
+	_log.info(_id+": emmigration failed - rolled back - we still own session");
       }
     }
   }

@@ -44,12 +44,12 @@ public class
   protected final Map _entries = Collections.synchronizedMap(new HashMap());
 
   public Object
-    send(Cluster cluster, Serializable command, String id, long timeout, Destination src, Destination dst)
+    send(Cluster cluster, Serializable command, String correlationId, long timeout, Destination src, Destination dst)
     {
       int participants=2;
       Rendezvous rv=new Rendezvous(participants);
-      _entries.put(id, rv);
-      _log.trace(""+hashCode()+": "+"preparing rendez-vous: "+id+" - "+_entries);
+      _entries.put(correlationId, rv);
+      _log.trace(correlationId+"/"+hashCode()+": "+"preparing rendez-vous - "+_entries);
 
       Object result=null;
 
@@ -57,14 +57,18 @@ public class
       {
 	ObjectMessage message = cluster.createObjectMessage();
 	message.setJMSReplyTo(src);
+	message.setJMSCorrelationID(correlationId); // FIXME - this is new, should be old key
 	message.setObject(command);
 	cluster.send(dst, message);
 
+	long timeStarted=System.currentTimeMillis();
 	result=rv.attemptRendezvous(null, timeout);
+	long timeTaken=System.currentTimeMillis()-timeStarted;
+	_log.info(correlationId+"/"+hashCode()+": starter completed rendez-vous successfully in "+timeTaken+" millis - "+result);
       }
       catch (TimeoutException e)
       {
-	_log.debug(""+hashCode()+": "+"timed out at rendez-vous - no answer within required timeframe: "+Thread.currentThread());
+	_log.debug(correlationId+"/"+hashCode()+": "+"timed out at rendez-vous - no answer within required timeframe: "+Thread.currentThread());
       }
       catch (InterruptedException e)
       {
@@ -80,26 +84,28 @@ public class
       }
       finally
       {
-	_entries.remove(id);
+	_entries.remove(correlationId);
       }
 
       return result;
     }
 
   public Object
-    receive(Object datum, String id, long timeout)
+    receive(Object datum, String correlationId, long timeout)
     {
-      _log.trace(""+hashCode()+": "+"attending rendez-vous: "+id+" - "+_entries);
-      Rendezvous rv=(Rendezvous)_entries.get(id);
+      _log.trace(correlationId+"/"+hashCode()+": "+"attending rendez-vous - "+_entries);
+      Rendezvous rv=(Rendezvous)_entries.get(correlationId);
       Object result=null;
 
       if (rv==null)
-	_log.warn("missed rendez-vous "+id+" - waiting thread must have timed out");
+	_log.warn(correlationId+"/"+hashCode()+" missed rendez-vous - waiting thread must have timed out");
       else
 	try
 	{
+	  long timeStarted=System.currentTimeMillis();
 	  result=rv.attemptRendezvous(datum, timeout);
-	  _log.trace(""+hashCode()+": "+"rendez-vous successful: "+datum);
+	  long timeTaken=System.currentTimeMillis()-timeStarted;
+	  _log.info(correlationId+"/"+hashCode()+": finisher completed rendez-vous successfully in "+timeTaken+" millis - "+datum);
 	}
 	catch (TimeoutException e)
 	{

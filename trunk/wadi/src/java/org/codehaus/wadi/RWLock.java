@@ -42,6 +42,8 @@ package org.codehaus.wadi;
 // Doug's code is under whatever license he chose, mine is under ASF2
 
 import EDU.oswego.cs.dl.util.concurrent.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * A read-write lock. Writers are preferred. Writers are organised
@@ -52,6 +54,7 @@ import EDU.oswego.cs.dl.util.concurrent.*;
  * @version $Revision$
  */
 public class RWLock implements ReadWriteLock {
+  protected static final Log _log=LogFactory.getLog(RWLock.class);
 
   protected int         _maxPriority=Thread.MAX_PRIORITY;
   protected ThreadLocal _priority=new ThreadLocal(){protected synchronized Object initialValue() {return new Integer(0);}};
@@ -294,6 +297,7 @@ public class RWLock implements ReadWriteLock {
     }
 
     public void acquire() throws InterruptedException {
+      _log.info(Thread.currentThread().toString()+" acquiring W-lock "+hashCode());
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
       int p=getPriority();
@@ -325,6 +329,7 @@ public class RWLock implements ReadWriteLock {
     }
 
     public void release(){
+      _log.info(Thread.currentThread().toString()+" releasing W-lock "+hashCode());
       Signaller s = endWrite();
       if (s != null) s.signalWaiters();
     }
@@ -348,6 +353,7 @@ public class RWLock implements ReadWriteLock {
     }
 
     public boolean attempt(long msecs) throws InterruptedException {
+      _log.info(Thread.currentThread().toString()+" attempting W-lock "+hashCode());
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
       int p=getPriority();
@@ -395,6 +401,7 @@ public class RWLock implements ReadWriteLock {
     overlap()
     throws InterruptedException
   {
+    _log.info(Thread.currentThread().toString()+" overlapping W-lock "+writerLock_.hashCode());
     synchronized (RWLock.this)
     {
       Signaller s=endRead();
