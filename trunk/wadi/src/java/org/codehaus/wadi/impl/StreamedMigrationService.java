@@ -22,6 +22,7 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -225,6 +226,9 @@ public class
 	// send the code to deal with this transmission
 	os.writeObject(new SingleSessionImmigrationProcessor());
 	os.flush();
+	// send the session id, so it can be readied
+	os.writeObject(impl.getRealId());
+	os.flush();
 	// send the session content...
 	impl.writeContent(os);
 	os.flush();
@@ -390,7 +394,7 @@ public class
 	  ObjectOutput oo=new ObjectOutputStream(_socket.getOutputStream());
 	  ObjectInput  oi=new ObjectInputStream(_socket.getInputStream());
 
-	  ((Processor)oi.readObject()).process(oi, oo);
+	  ((Processor)oi.readObject()).process(oi, oo, getHttpSessionImplMap());
 	}
 	catch (IOException e)
 	{
@@ -408,29 +412,48 @@ public class
     }
   }
 
-    abstract class
+    static abstract class
       Processor
+	  implements Serializable
     {
-      public abstract void process(ObjectInput oi, ObjectOutput oo);
+      public abstract void process(ObjectInput oi, ObjectOutput oo, Map sessions);
     }
 
-    class
+    static class
       SingleSessionImmigrationProcessor
+	  extends Processor
     {
       public void
-	process(ObjectInput is, ObjectOutput os)
+	process(ObjectInput is, ObjectOutput os, Map sessions)
       {
-	_log.info("SOMETHING ARRIVED");
+      	boolean ok=false;
+	try
+	{
+	String id=(String)is.readObject();
+	HttpSessionImpl impl=(HttpSessionImpl)sessions.get(id);
+	impl.readContent(is);
+	os.writeBoolean(true);
+	os.flush();
+	ok=is.readBoolean();
+    }
+catch (IOException e)
+{
+	System.out.println("session migration connection broken - rolling back"+ e);
+}
+catch (ClassNotFoundException e)
+{
+	System.out.println("session migration class mismatch - version/security problem? - rolling back"+e);
+	}
+      }
+    static class
+      MultipleSessionImmigrationProcessor
+	  extends Processor
+    {
+      public void
+	process(ObjectInput oi, ObjectOutput oo, Map sessions)
+      {
+
       }
     }
-
-    class
-      MultipleSessionImmigrationProcessor
-    {
-      public void
-	process(ObjectInput oi, ObjectOutput oo)
-      {
-
-      }
     }
 }

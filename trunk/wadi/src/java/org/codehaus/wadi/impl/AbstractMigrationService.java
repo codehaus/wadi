@@ -49,7 +49,7 @@ public abstract class
   protected AsyncToSyncAdaptor _adaptor = new AsyncToSyncAdaptor();
   public AsyncToSyncAdaptor getAsyncToSyncAdaptor(){return _adaptor;}
 
-  protected StreamingStrategy _streamingStrategy;
+  protected StreamingStrategy _streamingStrategy=new SimpleStreamingStrategy();
   public StreamingStrategy getStreamingStrategy(){return _streamingStrategy;}
   public void setStreamingStrategy(StreamingStrategy strategy){_streamingStrategy=strategy;}
 
