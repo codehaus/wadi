@@ -21,7 +21,7 @@ import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Executable;
-import org.codehaus.wadi.Manager;
+import org.codehaus.wadi.MigrationService;
 
 import javax.jms.JMSException;
 
@@ -43,11 +43,11 @@ public class
   }
 
   public void
-    invoke(Manager manager, ObjectMessage message)
+    invoke(MigrationService service, ObjectMessage message)
   {
     try
     {
-      manager.getAsyncToSyncAdaptor().receive(_ok?Boolean.TRUE:Boolean.FALSE, message.getJMSCorrelationID(), _timeout);
+      service.getAsyncToSyncAdaptor().receive(_ok?Boolean.TRUE:Boolean.FALSE, message.getJMSCorrelationID(), _timeout);
     }
     catch (JMSException e)
     {

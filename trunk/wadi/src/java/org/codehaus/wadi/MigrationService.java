@@ -31,12 +31,16 @@ import javax.jms.Destination;
 public interface
   MigrationService
 {
+  public Map getHttpSessionImplMap();
+  public void setHttpSessionImplMap(Map sessions);
+
   public StreamingStrategy getStreamingStrategy();
   public void setStreamingStrategy(StreamingStrategy strategy);
 
   public Manager getManager();
   public void setManager(Manager manager);
 
+  public AsyncToSyncAdaptor getAsyncToSyncAdaptor(); // Hmm...
 
   public Server getServer();
   public Client getClient();
@@ -49,27 +53,25 @@ public interface
      * Migrate a group of sessions from this node to another, The
      * other node is not expecting the transmission.
      *
-     * @param local a <code>Map</code> value
      * @param candidates a <code>Collection</code> value
      * @param timeout a <code>long</code> value
      * @param dst a <code>Destination</code> value
      * @return a <code>boolean</code> value
      */
-    public boolean emmigrate(Map local, Collection candidates, long timeout, Destination dst);
+    public boolean emmigrate(Collection candidates, long timeout, Destination dst);
 
     /**
      * Locate a remote session by id and cause it to be migrated from
      * its current location to this node. This node is expecting the
      * transmission.
      *
-     * @param local a <code>Map</code> value
      * @param realId a <code>String</code> value
      * @param placeholder a <code>HttpSessionImpl</code> value
      * @param timeout a <code>long</code> value
      * @param dst a <code>Destination</code> value
      * @return a <code>boolean</code> value
      */
-    public boolean immigrate(Map local, String realId, HttpSessionImpl placeholder, long timeout, Destination dst);
+    public boolean immigrate(String realId, HttpSessionImpl placeholder, long timeout, Destination dst);
   }
 
   public interface
@@ -83,7 +85,5 @@ public interface
     public HttpSessionImplFactory getHttpSessionImplFactory();
     public void setHttpSessionImplFactory(HttpSessionImplFactory factory);
 
-    public Map getHttpSessionImplMap();
-    public void setHttpSessionImplMap(Map sessions);
   }
 }

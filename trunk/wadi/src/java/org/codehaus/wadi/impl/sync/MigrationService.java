@@ -23,6 +23,7 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -35,6 +36,7 @@ import java.util.Iterator;
 import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.AsyncToSyncAdaptor;
 import org.codehaus.wadi.HttpSessionImpl;
 import org.codehaus.wadi.HttpSessionImplFactory;
 import org.codehaus.wadi.Manager;
@@ -55,10 +57,17 @@ public class
   MigrationService
   implements org.codehaus.wadi.MigrationService
 {
+  protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor();
+  public AsyncToSyncAdaptor getAsyncToSyncAdaptor(){return _adaptor;}
+
   protected StreamingStrategy _streamingStrategy;
   protected Manager           _manager;
   protected Client            _client=new Client();
   protected Server            _server=new Server();
+
+  protected Map _sessions;
+  public Map getHttpSessionImplMap(){return _sessions;}
+  public void setHttpSessionImplMap(Map sessions){_sessions=sessions;}
 
   public StreamingStrategy getStreamingStrategy(){return _streamingStrategy;}
   public void setStreamingStrategy(StreamingStrategy strategy){_streamingStrategy=strategy;}
@@ -76,8 +85,8 @@ public class
    * passed around opaquely.
    *
    */
-  class Destination
-    implements javax.jms.Destination
+  static class Destination
+    implements javax.jms.Destination, Serializable
   {
     InetAddress _address;
     int         _port;
@@ -93,14 +102,14 @@ public class
     protected InetAddress _address; // null seems to work fine as default interface
 
     public boolean
-      emmigrate(Map local, Collection candidates, long timeout, javax.jms.Destination dst)
+      emmigrate(Collection candidates, long timeout, javax.jms.Destination dst)
     {
       _log.error("NYI");
       return false;
     }
 
     public boolean
-      immigrate(Map local, String realId, HttpSessionImpl placeholder, long timeout, javax.jms.Destination dst)
+      immigrate(String realId, HttpSessionImpl placeholder, long timeout, javax.jms.Destination dst)
     {
       _log.error("NYI");
       return false;
@@ -230,10 +239,6 @@ public class
     protected HttpSessionImplFactory _factory;
     public HttpSessionImplFactory getHttpSessionImplFactory(){return _factory;}
     public void setHttpSessionImplFactory(HttpSessionImplFactory factory){_factory=factory;}
-
-    protected Map _sessions;
-    public Map getHttpSessionImplMap(){return _sessions;}
-    public void setHttpSessionImplMap(Map sessions){_sessions=sessions;}
 
     public void
       start()
@@ -406,7 +411,7 @@ public class
 	  impl.getContainerLock().release();
 
 	  if (sync && candidates.size()==1)
-	    _manager.getAsyncToSyncAdaptor().receive(impl, impl.getRealId(), 2000L); // parameterise - TODO
+	    _adaptor.receive(impl, impl.getRealId(), 2000L); // parameterise - TODO
 
 	}
 

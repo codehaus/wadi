@@ -57,7 +57,7 @@ public class
       {
 	ObjectMessage message = cluster.createObjectMessage();
 	message.setJMSReplyTo(src);
-	message.setJMSCorrelationID(correlationId); // FIXME - this is new, should be old key
+	message.setJMSCorrelationID(correlationId);
 	message.setObject(command);
 	cluster.send(dst, message);
 

@@ -27,7 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.wadi.HttpSessionImpl;
 import org.codehaus.wadi.Executable;
-import org.codehaus.wadi.Manager;
+import org.codehaus.wadi.MigrationService;
 import org.codehaus.wadi.ObjectInputStream;
 
 public class
@@ -48,7 +48,7 @@ public class
   }
 
   public void
-    invoke(Manager manager, ObjectMessage in)
+    invoke(MigrationService service, ObjectMessage in)
   {
     boolean ok=false;
 
@@ -56,10 +56,10 @@ public class
     {
       ByteArrayInputStream bais=new ByteArrayInputStream(_impl);
       ObjectInputStream    ois =new ObjectInputStream(bais);
-      HttpSessionImpl impl=manager.getLocalSession(_id);
+      HttpSessionImpl      impl=(HttpSessionImpl)service.getHttpSessionImplMap().get(_id);
       impl.readContent(ois);
       ois.close();
-      manager.getAsyncToSyncAdaptor().receive(impl, in.getJMSCorrelationID(), _timeout);
+      service.getAsyncToSyncAdaptor().receive(impl, in.getJMSCorrelationID(), _timeout);
       ok=true;
     }
     catch (IOException e)
@@ -80,7 +80,7 @@ public class
     String correlationID=null;
     try
     {
-      Cluster cluster=manager.getCluster();
+      Cluster cluster=service.getManager().getCluster();
       ObjectMessage out=cluster.createObjectMessage();
       src=cluster.getLocalNode().getDestination();
       correlationID=in.getJMSCorrelationID();

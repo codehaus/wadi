@@ -40,6 +40,7 @@ public class
 {
   protected final Log _log=LogFactory.getLog(getClass());
 
+  protected MigrationService        _service;
   protected MigrationService.Server _server;
   protected MigrationService.Client _client;
 
@@ -55,63 +56,63 @@ public class
       super(name);
     }
 
-//   protected void
-//     setUp()
-//     throws Exception
-//     {
-//       _log.info("starting test");
-//       InetAddress address=InetAddress.getByName("228.5.6.7");
-//       int port=6789;
-//       int timeout=5000;		// 5 secs
-//       _client=new MigrationService.Client();
-//       _server=new MigrationService.Server(null, _factory, _serverSessions, _streamingStrategy); // HELP - TODO
-//       _server.start();
-//     }
+   protected void
+     setUp()
+     throws Exception
+     {
+       _log.info("starting test");
+       InetAddress address=InetAddress.getByName("228.5.6.7");
+       int port=6789;
+       int timeout=5000;		// 5 secs
+       _service=new org.codehaus.wadi.impl.async.MigrationService();
+       _service.setHttpSessionImplMap(_serverSessions);
+       _client=_service.getClient();
+       _server=_service.getServer();
+       _server.setHttpSessionImplFactory(_factory);
+       _server.start();
+     }
 
-//   protected void
-//     tearDown()
-//     throws InterruptedException
-//     {
-//       _server.stop();
-//       _server=null;
-//       _client=null;
-//       _log.info("stopping test");
-//     }
+   protected void
+     tearDown()
+     throws Exception
+     {
+       _server.stop();
+       _server=null;
+       _client=null;
+       _log.info("stopping test");
+     }
 
-//   //----------------------------------------
+   //----------------------------------------
 
-//   public void
-//     testMigration()
-//     throws Exception
-//     {
+   public void
+     testMigration()
+     throws Exception
+     {
 
-//       org.codehaus.wadi.HttpSessionImpl session=new org.codehaus.wadi.tomcat.HttpSessionImpl();
-//       session.setId(""+System.currentTimeMillis());
-//       String id=session.getRealId();
-//       if (_log.isInfoEnabled()) _log.info("session: "+id);
-//       _clientSessions.put(id, session);
+       org.codehaus.wadi.HttpSessionImpl session=new org.codehaus.wadi.tomcat.HttpSessionImpl();
+       session.setId(""+System.currentTimeMillis());
+       String id=session.getRealId();
+       if (_log.isInfoEnabled()) _log.info("session: "+id);
+       _clientSessions.put(id, session);
 
-//       int serverPort=_server.getPort();
-//       InetAddress serverAddress=_server.getAddress();
-//       if (_log.isInfoEnabled()) _log.info("server: "+serverAddress+":"+serverPort);
+       if (_log.isInfoEnabled()) _log.info("server: "+_server.getDestination());
 
-
-//       assertTrue(_serverSessions.size()==0);
-//       assertTrue(_clientSessions.size()==1);
-//       assertTrue(_clientSessions.containsKey(id));
-//       if (_log.isInfoEnabled())
-//       {
-// 	_log.info("_clientSessions: "+_clientSessions);
-// 	_log.info("_serverSessions: "+_serverSessions);
-//       }
-//       _client.emmigrate(_clientSessions, _clientSessions.values(), 5000L, serverAddress, serverPort, _streamingStrategy, false);
-//       assertTrue(_clientSessions.size()==0);
-//       assertTrue(_serverSessions.size()==1);
-//       assertTrue(_serverSessions.containsKey(id));
-//       if (_log.isInfoEnabled())
-//       {
-// 	_log.info("_clientSessions: "+_clientSessions);
-// 	_log.info("_serverSessions: "+_serverSessions);
-//       }
-//     }
+       assertTrue(_serverSessions.size()==0);
+       assertTrue(_clientSessions.size()==1);
+       assertTrue(_clientSessions.containsKey(id));
+       if (_log.isInfoEnabled())
+       {
+ 	_log.info("_clientSessions: "+_clientSessions);
+ 	_log.info("_serverSessions: "+_serverSessions);
+       }
+       _client.emmigrate(_clientSessions.values(), 5000L, _server.getDestination());
+       assertTrue(_clientSessions.size()==0);
+       assertTrue(_serverSessions.size()==1);
+       assertTrue(_serverSessions.containsKey(id));
+       if (_log.isInfoEnabled())
+       {
+ 	_log.info("_clientSessions: "+_clientSessions);
+ 	_log.info("_serverSessions: "+_serverSessions);
+       }
+     }
 }
