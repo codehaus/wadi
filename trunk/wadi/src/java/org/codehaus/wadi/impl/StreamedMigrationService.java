@@ -424,7 +424,7 @@ public class
 	  try
 	  {
 	    id=(String)is.readObject();
-	    impl=(HttpSessionImpl)_sessions.get(id);
+	    impl=(HttpSessionImpl)_sessions.get(id);// FIXME - after losing a race this impl is sometimes null...
 	    impl.readContent(is);
 	    os.writeBoolean(true);
 	    os.flush();
