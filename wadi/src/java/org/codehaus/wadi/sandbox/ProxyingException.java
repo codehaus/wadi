@@ -17,7 +17,7 @@
 package org.codehaus.wadi.sandbox;
 
 /**
- * TODO - JavaDoc this type
+ * Superclass of Exceptions thrown by HTTP proxying code.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

@@ -26,7 +26,8 @@ import org.codehaus.wadi.sandbox.Securable;
 import org.mortbay.http.HttpListener;
 
 /**
- * TODO - JavaDoc this type
+ * A Jetty Listener, which defines a type of Connection on which we may set a flag to indicate whether
+ * it should be considered secure.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

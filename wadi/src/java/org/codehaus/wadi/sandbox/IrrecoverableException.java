@@ -17,7 +17,7 @@
 package org.codehaus.wadi.sandbox;
 
 /**
- * TODO - JavaDoc this type
+ * Indicates an exceptional case which is not recoverable.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
