@@ -17,12 +17,11 @@
 
 package org.codehaus.wadi.test;
 
+import java.net.InetAddress;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.shared.DiscoveryService;
-
-import java.net.InetAddress;
 
 public class
   TestDiscoveryService

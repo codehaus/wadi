@@ -40,18 +40,6 @@ public class
 
   //----------------------------------------
 
-  public void
-    testManager()
-    throws Exception
-  {
-    Manager sm=new Manager();
-
-    sm.start();
-    sm.stop();
-  }
-
-  //----------------------------------------
-
   protected long
     testMap(Map map)
   {

@@ -464,3 +464,11 @@ it can forcibly evict another session to make space
 it can look for another that has space and proxy the request to it -
 but will end up being a long-term go-between in this conversation -
 not a good idea.
+
+----------------------------------------
+
+does identity need to live in a session ?
+
+does validity need to live in a session - is an invalid session simply
+not one that doesn't exist?
+

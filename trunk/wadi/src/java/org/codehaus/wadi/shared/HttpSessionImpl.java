@@ -148,7 +148,6 @@ public abstract class
   {
     super();
     _rwlock=new ReaderPreferenceReadWriteLock();
-    _log.info("HttpSessionImpl ctor..."); // TODO
   }
 
   public Sync getApplicationLock()  {return _rwlock.readLock();} // allows concurrent app threads
