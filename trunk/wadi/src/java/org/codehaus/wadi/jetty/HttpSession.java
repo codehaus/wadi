@@ -25,4 +25,11 @@ public class
   implements org.mortbay.jetty.servlet.SessionManager.Session
 {
   HttpSession(HttpSessionImpl impl) {super(impl);}
+
+  //-------//
+  // Jetty //
+  //-------//
+
+  // moved to super...
+  //  public boolean isValid(){return _valid;}
 }

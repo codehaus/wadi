@@ -244,7 +244,7 @@ public abstract class
 	if (impl!=null)
 	{
 	  impl.setWadiManager(this);
-	  impl.setFacade(createFacade(impl));
+	  //	  impl.setFacade(createFacade(impl));
 	  _local.put(id, impl);
 	}
 
@@ -446,7 +446,7 @@ public abstract class
 	// we are free to do as we will :-)
 	try
 	{
-	  if (((org.codehaus.wadi.shared.HttpSession)impl.getFacade()).getInvalidated()) // explicitly invalidated
+	  if (!((org.codehaus.wadi.shared.HttpSession)impl.getFacade()).isValid()) // explicitly invalidated
 	  {
 	    _log.trace(impl.getId()+" : marking as invalidation candidate (explicit invalidation)");
 	    getReadySessionPool().put(impl);
@@ -456,7 +456,7 @@ public abstract class
 	  if (impl.hasTimedOut(currentTime))	// implicitly invalidated via time-out
 	  {
 	    _log.trace(impl.getId()+" : marking as invalidation candidate (implicit time out)");
-	    ((org.codehaus.wadi.shared.HttpSession)impl.getFacade()).setInvalidated(true);
+	    ((org.codehaus.wadi.shared.HttpSession)impl.getFacade()).invalidate(); // TODO - don't do this...
 	    getReadySessionPool().put(impl);
 	    continue;
 	  }
@@ -690,7 +690,7 @@ public abstract class
     _log.debug("invoking delta: "+id+" -> "+method);
   }
 
-  protected abstract HttpSession createFacade(HttpSessionImpl impl);
+  //  protected abstract HttpSession createFacade(HttpSessionImpl impl);
 
   public void
     notifyRequestEnd(String id)
@@ -912,7 +912,7 @@ public abstract class
       // from _local. It must be temporarily switched back to valid
       // status so that it can be passed back into application space
       // as part of the destruction notification protocol...
-      session.setInvalidated(false);
+      session.setValid(true);
 
       if ("2.4".equals(getSpecificationVersion()))
 	notifySessionDestroyed(session);
@@ -928,7 +928,7 @@ public abstract class
       if ("2.3".equals(getSpecificationVersion())) // TODO - 2.2? etc...
 	notifySessionDestroyed(session);
 
-      session.setInvalidated(true);
+      session.setValid(false);
       impl.destroy();
       getBlankSessionPool().put(impl);
     }

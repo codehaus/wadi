@@ -35,6 +35,8 @@ public abstract class
   extends AbstractHttpSessionImpl
   implements Serializable
 {
+  public abstract javax.servlet.http.HttpSession newFacade();
+
   public void setCreationTime(long time){_creationTime=time;}
   protected static final Log _log=LogFactory.getLog(HttpSessionImpl.class);
 
@@ -113,7 +115,6 @@ public abstract class
     _lastAccessedTime          =_creationTime;
     _maxInactiveInterval       =maxInactiveInterval;
     _actualMaxInactiveInterval =actualMaxInactiveInterval;
-    _facade                    =createFacade();
   }
 
   public void
@@ -148,6 +149,7 @@ public abstract class
   {
     super();
     _rwlock=new ReaderPreferenceReadWriteLock();
+    _facade=newFacade();
   }
 
   public Sync getApplicationLock()  {return _rwlock.readLock();} // allows concurrent app threads
@@ -172,11 +174,9 @@ public abstract class
   {
     in.defaultReadObject();
     _rwlock=new ReaderPreferenceReadWriteLock();
-    _facade=createFacade();
+    _facade=newFacade();
   }
 
   public void setId(String id){_id=id;}
-
-  public abstract HttpSession createFacade();
 }
 

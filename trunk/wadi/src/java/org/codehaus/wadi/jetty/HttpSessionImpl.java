@@ -15,11 +15,22 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.tomcat;
+package org.codehaus.wadi.jetty;
+
+import java.io.Serializable;
 
 public class
-  HttpSession
-  extends org.codehaus.wadi.shared.HttpSession
+  HttpSessionImpl
+  extends org.codehaus.wadi.shared.HttpSessionImpl
+  implements Serializable
 {
-  HttpSession(HttpSessionImpl impl) {super(impl);}
+  //--------//
+  // shared //
+  //--------//
+
+  public javax.servlet.http.HttpSession newFacade(){return new HttpSession(this);}
+
+  //-------//
+  // jetty //
+  //-------//
 }

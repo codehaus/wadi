@@ -37,7 +37,7 @@ import org.apache.commons.logging.LogFactory;
 // why, with all the existing schemes for notification, does TC need
 // yet another one?
 
-public aspect
+public privileged aspect
   SessionNotification
 {
   protected static final Log _log=LogFactory.getLog(SessionNotification.class);
@@ -52,24 +52,25 @@ public aspect
     : notifySessionCreated(manager, listener, event)
   {
     _log.trace("notifySessionCreated pointcut");
-    notify((HttpSession)event.getSession(), Session.SESSION_CREATED_EVENT);
+    notify(event.getSession(), Session.SESSION_CREATED_EVENT);
   }
 
   after(Manager manager, HttpSessionListener listener, HttpSessionEvent event)
     : notifySessionDestroyed(manager, listener, event)
   {
     _log.trace("notifySessionDestroyed pointcut");
-    notify((HttpSession)event.getSession(), Session.SESSION_DESTROYED_EVENT);
+    notify(event.getSession(), Session.SESSION_DESTROYED_EVENT);
   }
 
   void
-    notify(HttpSession session, String name)
+    notify(javax.servlet.http.HttpSession session, String name)
   {
-    List listeners=session.getSessionListeners();
+    HttpSessionImpl impl=(HttpSessionImpl)((HttpSession)session)._impl; // TODO - hacky
+    List listeners=impl.getSessionListeners();
     int n=listeners.size();
     if (n>0)
     {
-      SessionEvent event=new SessionEvent(session, name, null);
+      SessionEvent event=new SessionEvent(impl, name, null);
       // tomcat makes a copy and performs the notification outside
       // the synchronized block - does anyone really register with
       // an individual session ?

@@ -40,7 +40,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class
   HttpSession
-  implements javax.servlet.http.HttpSession, Serializable
+  implements javax.servlet.http.HttpSession
 {
   protected static final Log _log=LogFactory.getLog(HttpSession.class);
 
@@ -62,60 +62,7 @@ public class
   public String[]           getValueNames()          {return _impl.getAttributeNameStringArray();}
   public boolean            isNew()                  {return _impl.isNew();}
 
-  // Setters
-  public void setMaxInactiveInterval(int i)        {_impl.setMaxInactiveInterval(i);}
-  public void setAttribute(String key, Object val) {if (val==null){_impl.removeAttribute(key,false);}else{_impl.setAttribute(key, val, false);}}
-  public void putValue(String key, Object val)     {setAttribute(key, val);}
-  public void removeAttribute(String key)          {_impl.removeAttribute(key, false);}
-  public void removeValue(String key)              {removeAttribute(key);}
-
-  protected boolean _invalidated;
-  public boolean getInvalidated(){return _invalidated;}
-  public void setInvalidated(boolean flag) {_invalidated=flag;}
-
-  public void
-    invalidate()
-  {
-    _log.trace(_impl.getId()+" : explicitly invalidating");
-    setInvalidated(true);
-  }
-
-  // extra methods... package scope...
-
-  void setLastAccessedTime(long t){_impl.setLastAccessedTime(t);}
-
-  // when an HttpSession comes across the wire it needs to
-  // reinitialise the backptr that it's impl holds...
-
-  // TODO - why ?
-  private synchronized void
-    readObject(java.io.ObjectInputStream in)
-      throws IOException, ClassNotFoundException
-  {
-    in.defaultReadObject();
-    _impl.setFacade(this);
-  }
-
-  public String
-    toString()
-  {
-    return "<"+getClass().getName()+": "+_impl+">";
-  }
-
-  public boolean isValid()
-  {return !_invalidated;}
-
-  public void access()
-  {_impl.setLastAccessedTime(System.currentTimeMillis());}
-
-  // TODO - not sure if this is the right way to go, but we need it now...
-//   protected String _bucketName;
-//   public String getBucketName(){return _bucketName;}
-//   public void setBucketName(String bucketName){_bucketName=bucketName;}
-
-  // can this be moved into some policy ?
-
-  public String
+  public String			// TODO - yeugh !
     getId()
     {
       String session=_impl.getId();
@@ -125,6 +72,48 @@ public class
       else
 	return _impl.getWadiManager().getRoutingStrategy().augment(bucket, session); // TODO - cache...
     }
+
+  // Setters
+  public void setMaxInactiveInterval(int i)        {_impl.setMaxInactiveInterval(i);}
+  public void setAttribute(String key, Object val) {if (val==null){_impl.removeAttribute(key,false);}else{_impl.setAttribute(key, val, false);}}
+  public void putValue(String key, Object val)     {setAttribute(key, val);}
+  public void removeAttribute(String key)          {_impl.removeAttribute(key, false);}
+  public void removeValue(String key)              {removeAttribute(key);}
+
+  protected boolean _valid=true;
+
+  public void
+    invalidate()
+  {
+    _log.trace(_impl.getId()+" : explicitly invalidating");
+    _valid=false;
+  }
+
+  // we should get rid of all of these...
+
+  public boolean isValid(){return _valid;}
+
+  // extra methods... package scope...
+
+  void setValid(boolean valid){_valid=valid;}
+  void setLastAccessedTime(long t){_impl.setLastAccessedTime(t);}
+
+  // when an HttpSession comes across the wire it needs to
+  // reinitialise the backptr that it's impl holds...
+
+  public String
+    toString()
+  {
+    return "<"+getClass().getName()+": "+_impl+">";
+  }
+
+  public void access()
+  {_impl.setLastAccessedTime(System.currentTimeMillis());}
+
+  // TODO - not sure if this is the right way to go, but we need it now...
+//   protected String _bucketName;
+//   public String getBucketName(){return _bucketName;}
+//   public void setBucketName(String bucketName){_bucketName=bucketName;}
 
   // TODO - I don't like adding this to API - but for impls that have
   // come off the wire I don't see much choice...
