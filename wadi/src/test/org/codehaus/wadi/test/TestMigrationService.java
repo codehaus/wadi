@@ -24,6 +24,7 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.shared.MigrationService;
+import org.codehaus.wadi.plugins.SimpleStreamingStrategy;
 
 public class
   TestMigrationService
@@ -52,7 +53,7 @@ public class
       int port=6789;
       int timeout=5000;		// 5 secs
       _client=new MigrationService.Client();
-      _server=new MigrationService.Server(_serverSessions, _serverLocks);
+      _server=new MigrationService.Server(_serverSessions, _serverLocks, new SimpleStreamingStrategy());
       _server.start();
     }
 
@@ -93,7 +94,7 @@ public class
       assertTrue(!clientSessions.containsKey(id));
       assertTrue(clientLocks.size()==0);
       _log.info("_serverSessions: "+_serverSessions+", clientSessions:"+clientSessions);
-      _client.run(clientSessions, clientLocks, id, new org.codehaus.wadi.jetty.HttpSessionImpl(), serverAddress, serverPort);
+      _client.run(clientSessions, clientLocks, id, new org.codehaus.wadi.jetty.HttpSessionImpl(), serverAddress, serverPort, new SimpleStreamingStrategy());
       assertTrue(_serverSessions.size()==0);
       assertTrue(!_serverSessions.containsKey(id));
       assertTrue(_serverLocks.size()==0);

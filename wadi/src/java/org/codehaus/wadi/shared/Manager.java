@@ -44,6 +44,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.plugins.FilePassivationStrategy;
 import org.codehaus.wadi.plugins.NoRoutingStrategy;
 import org.codehaus.wadi.plugins.RelativeEvictionPolicy;
+import org.codehaus.wadi.plugins.SimpleStreamingStrategy;
 import org.codehaus.wadi.plugins.TomcatIdGenerator;
 import org.codehaus.wadi.plugins.TotalEvictionPolicy;
 import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
@@ -266,7 +267,7 @@ public abstract class
   	{
   	  ManagerProxy proxy=locate(id);
   	  if (proxy!=null)
-  	    successfulMigration=proxy.relocateSession(_local, _migrating, id, impl);
+  	    successfulMigration=proxy.relocateSession(_local, _migrating, id, impl, _streamingStrategy);
   	}
 
 	if (successfulMigration)
@@ -386,6 +387,8 @@ public abstract class
 
     // default migration policy
     if (_passivationStrategy==null) _passivationStrategy=new FilePassivationStrategy(new File("/tmp/wadi"));
+    if (_streamingStrategy==null) _streamingStrategy=new SimpleStreamingStrategy();
+    if (_passivationStrategy.getStreamingStrategy()==null) _passivationStrategy.setStreamingStrategy(_streamingStrategy);
     // default eviction policy
     if (_evictionPolicy==null) _evictionPolicy=new RelativeEvictionPolicy(0.5F);
     //default id generation strategy
@@ -403,7 +406,7 @@ public abstract class
 				       );
     _locationClient=new LocationClient(getAutoLocationAddress(), getAutoLocationPort(), 5000L);
     _locationServer.start();
-    _migrationServer=new MigrationService.Server(_local, _migrating);
+    _migrationServer=new MigrationService.Server(_local, _migrating, _streamingStrategy);
     _migrationServer.start();
     _running=true;
     _log.debug("started");
@@ -664,7 +667,7 @@ public abstract class
     int n=_sessionListeners.size();
     if (n>0)
     {
-      _log.debug(session.getId()+" : notifying session creation");
+      _log.trace(session.getId()+" : notifying session creation");
       HttpSessionEvent event = new HttpSessionEvent(session);
 
       for(int i=0;i<n;i++)
@@ -680,7 +683,7 @@ public abstract class
     int n=_sessionListeners.size();
     if (n>0)
     {
-      _log.debug(session.getId()+" : notifying session destruction");
+      _log.trace(session.getId()+" : notifying session destruction");
       HttpSessionEvent event = new HttpSessionEvent(session);
 
       for(int i=0;i<n;i++)
@@ -696,7 +699,7 @@ public abstract class
       int n=_attributeListeners.size();
       if (n>0)
       {
-	_log.debug(session.getId()+" : notifying attribute addition : "+key+" : null --> "+val);
+	_log.trace(session.getId()+" : notifying attribute addition : "+key+" : null --> "+val);
 
 	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, val);
 	for(int i=0;i<n;i++)
@@ -712,7 +715,7 @@ public abstract class
       int n=_attributeListeners.size();
       if (n>0)
       {
-	_log.debug(session.getId()+" : notifying attribute replacement : "+key+" : "+oldVal+" --> "+newVal);
+	_log.trace(session.getId()+" : notifying attribute replacement : "+key+" : "+oldVal+" --> "+newVal);
 	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, oldVal);
 
 	for(int i=0;i<n;i++)
@@ -728,7 +731,7 @@ public abstract class
       int n=_attributeListeners.size();
       if (n>0)
       {
-	_log.debug(session.getId()+" : notifying attribute removal : "+key+" : "+val+" --> null");
+	_log.trace(session.getId()+" : notifying attribute removal : "+key+" : "+val+" --> null");
 	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, val);
 
 	for(int i=0;i<n;i++)
@@ -1097,4 +1100,8 @@ public abstract class
 
   boolean _reuseSessionIds=false;
   public boolean getReuseSessionIds(){return _reuseSessionIds;}
+
+  protected StreamingStrategy _streamingStrategy;
+  public StreamingStrategy getStreamingStrategy(){return _streamingStrategy;}
+  public void setStreamingStrategy(StreamingStrategy streamingStrategy){_streamingStrategy=streamingStrategy;}
 }

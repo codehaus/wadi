@@ -6,9 +6,16 @@
 
   <Set name="MaxInactiveInterval">600</Set><!-- destroy after N secs of inactivity -->
 
+  <Set name="StreamingStrategy">
+    <New class="org.codehaus.wadi.plugins.SimpleStreamingStrategy"/>
+  </Set>
+
   <Set name="PassivationStrategy">
     <New class="org.codehaus.wadi.plugins.FilePassivationStrategy">
       <Arg><SystemProperty name="wadi.home"/>/tmp</Arg><!-- put evicted sessions in this dir -->
+      <Set name="StreamingStrategy">
+	<New class="org.codehaus.wadi.plugins.GZIPStreamingStrategy"/>
+      </Set>
     </New>
   </Set>
 

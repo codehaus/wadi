@@ -49,9 +49,9 @@ public class
   protected final Log _log=LogFactory.getLog(getClass());
 
   public boolean
-    relocateSession(Map sessions, Map locks, String id, HttpSessionImpl impl)
+    relocateSession(Map sessions, Map locks, String id, HttpSessionImpl impl, StreamingStrategy streamingStrategy)
   {
-    return migrateSessionFrom(sessions, locks, id, impl);
+    return migrateSessionFrom(sessions, locks, id, impl, streamingStrategy);
   }
 
   //----------------------------------------
@@ -61,9 +61,9 @@ public class
   protected final MigrationService.Client _migrationClient;
 
   protected boolean
-    migrateSessionFrom(Map sessions, Map locks, String id, HttpSessionImpl impl)
+    migrateSessionFrom(Map sessions, Map locks, String id, HttpSessionImpl impl, StreamingStrategy streamingStrategy)
   {
-    return _migrationClient.run(sessions, locks, id, impl, _migrationAddress, _migrationPort);
+    return _migrationClient.run(sessions, locks, id, impl, _migrationAddress, _migrationPort, streamingStrategy);
   }
 
   //----------------------------------------

@@ -19,8 +19,8 @@ package org.codehaus.wadi.shared;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
@@ -47,7 +47,7 @@ public class
 
     // TODO - LOCKING INCOMPLETE HERE - NEEDS FIXING...
     public boolean
-      run(Map sessions, Map locks, String id, HttpSessionImpl session, InetAddress remoteAddress, int remotePort)
+      run(Map sessions, Map locks, String id, HttpSessionImpl session, InetAddress remoteAddress, int remotePort, StreamingStrategy streamingStrategy)
     {
       Sync lock=null;
       boolean acquired=false;
@@ -65,8 +65,8 @@ public class
 	socket=new Socket(remoteAddress, remotePort, _address, _port);
 	// TODO - do we need a timeout ? - YES
 	_log.trace(socket+" -> "+remoteAddress+":"+remotePort);
-	ObjectOutputStream os=new ObjectOutputStream(socket.getOutputStream());
-	ObjectInputStream  is=new ObjectInputStream(socket.getInputStream());
+	ObjectOutput os=streamingStrategy.getOutputStream(socket.getOutputStream());
+	ObjectInput  is=streamingStrategy.getInputStream(socket.getInputStream());
 	// acquire container lock on session id
 	// send migration request to session source
 	os.writeObject("migrate");
@@ -143,10 +143,13 @@ public class
     public InetAddress getAddress(){return _address;}
     public void setAddress(InetAddress address){_address=address;}
 
-    public Server(Map sessions, Map locks)
+    protected StreamingStrategy _streamingStrategy;
+
+    public Server(Map sessions, Map locks, StreamingStrategy streamingStrategy)
     {
       _sessions=sessions;
       _locks=locks;
+      _streamingStrategy=streamingStrategy;
     }
 
     public void
@@ -255,8 +258,8 @@ public class
       boolean ok=true;
       try
       {
-	ObjectOutputStream os=new ObjectOutputStream(socket.getOutputStream());
-	ObjectInputStream  is=new ObjectInputStream(socket.getInputStream());
+	ObjectOutput os=_streamingStrategy.getOutputStream(socket.getOutputStream());
+	ObjectInput  is=_streamingStrategy.getInputStream(socket.getInputStream());
 	// receive migration request from target
 	String method=(String)is.readObject();
 	// method==migrate
