@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="WADI" default="test">
+<project name="WADI" default="tomcat.0">
 
   <!--=========================================================================-->
 
@@ -22,6 +22,7 @@
     <pathelement location="${jetty.home}/lib/org.mortbay.jetty.jar"/>
     <!-- Tomcat -->
     <pathelement location="${tomcat.home}/server/lib/catalina.jar"/>
+    <pathelement location="${tomcat.home}/common/lib/jmx.jar"/>
     <!-- run time -->
     <pathelement path="./WEB-INF/classes"/>
     <fileset dir="./WEB-INF/lib"/>
@@ -145,7 +146,7 @@
     </java>
   </target>
 
-  <target name="tomcat.0">
+  <target name="tomcat.0" depends="compile">
     <echo message="tomcat.home=${tomcat.home}"/>
     <java
       fork="yes"
