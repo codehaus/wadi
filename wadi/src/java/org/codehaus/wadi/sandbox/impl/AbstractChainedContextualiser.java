@@ -68,41 +68,13 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
 	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
-		boolean success=false;
-		if (true==(success=contextualiseLocally(hreq, hres, chain, id, immoter, promotionLock))) {
-			return success;
-		} else if (!(localOnly && !_next.isLocal())) {
-			boolean acquired=false;
-			try {
-				if (promotionLock==null) {
-					promotionLock=_collapser.getLock(id);
-					promotionLock.acquire();
-					acquired=true;
-					// by the time we get the lock, another thread may have already promoted this context - try again locally...
-					if (true==(success=contextualiseLocally(hreq, hres, chain, id, immoter, promotionLock))) {// mutex released here if successful
-						return success;
-					}
-				}
-
-				Immoter p=getPromoter(immoter);
-				if (true==(success=_next.contextualise(hreq, hres, chain, id, p, promotionLock, localOnly))) // mutex released here if successful
-					return success;
-
-			} catch (InterruptedException e) {
-				throw new ServletException("timed out collapsing requests for context: "+id, e);
-			} finally {
-				if (promotionLock!=null && acquired && !success)
-					promotionLock.release();
-			}
-		}
-
-		return success;
+	    return (contextualiseLocally(hreq, hres, chain, id, immoter, promotionLock) ||
+	            ((!(localOnly && !_next.isLocal())) && _next.contextualise(hreq, hres, chain, id, getPromoter(immoter), promotionLock, localOnly)));
 	}
 
-	public abstract boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres,
-			FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException;
+	public abstract boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException;
 
-	public boolean contextualiseElsewhere(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Motable emotable) throws IOException, ServletException {
+	public boolean promote(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Motable emotable) throws IOException, ServletException {
 		Emoter emoter=getEmoter();
 		Motable immotable=Utils.mote(emoter, immoter, emotable, id);
 		if (immotable!=null) {

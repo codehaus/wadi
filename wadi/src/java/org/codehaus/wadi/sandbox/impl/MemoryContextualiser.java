@@ -75,13 +75,9 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 		try {
 			shared.acquire();
 			acquired=true;
-			// now that we know the Context has been promoted to this point and is going nowhere we can allow other threads that were trying to find it proceed...
-
-			if (promotionLock!=null)
-				promotionLock.release();
 
 			if (immoter!=null)
-				return contextualiseElsewhere(hreq, hres, chain, id, immoter, promotionLock, emotable);
+				return promote(hreq, hres, chain, id, immoter, promotionLock, emotable);
 
 			return contextualiseLocally(hreq, hres, chain, id, promotionLock, emotable);
 
@@ -131,82 +127,57 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 
 	// TODO - merge with MappedEmoter soon
 	class MemoryEmoter implements Emoter {
-
-		public boolean prepare(String id, Motable emotable, Motable immotable) {
-			// TODO - acquire exclusive lock
-			_map.remove(id);
-			return true;
-		}
-
-		public void commit(String id, Motable emotable) {
-			emotable.tidy();
-			//_log.info("removal (memory): "+id);
-			// TODO - release exclusive lock
-		}
-
-		public void rollback(String id, Motable emotable) {
-			_map.put(id, emotable);
-			// TODO - locking ?
-		}
-
-		public String getInfo() {
-			return "memory";
-		}
+	    
+	    public boolean prepare(String id, Motable emotable, Motable immotable) {
+	        // TODO - acquire exclusive lock
+	        _map.remove(id);
+	        return true;
+	    }
+	    
+	    public void commit(String id, Motable emotable) {
+	        emotable.tidy();
+	        //_log.info("removal (memory): "+id);
+	        // TODO - release exclusive lock
+	    }
+	    
+	    public void rollback(String id, Motable emotable) {
+	        _map.put(id, emotable);
+	        // TODO - locking ?
+	    }
+	    
+	    public String getInfo() {
+	        return "memory";
+	    }
 	}
-
+	
 	class MemoryImmoter extends AbstractImmoter {
-
-		public Motable nextMotable(String id, Motable emotable) {
-			return _pool.take();
-		}
-
-
-		// TODO - I don't think this is ever called...
-		public boolean prepare(String id, Motable motable, Sync lock) {
-			do {
-				try {
-					// TODO - we only want this lock if we can guarantee that we will also contextualise...
-					lock.acquire();
-					// TODO - we should ensure that session is still valid
-					return super.prepare(id, motable, null);
-				} catch (TimeoutException e) {
-					_log.error("could not acquire shared lock: "+id);
-					return false;
-				} catch (InterruptedException e) {
-					_log.debug("interrupted whilst trying for shared lock: "+id, e);
-					// go around again
-				}
-			} while (Thread.interrupted());
-
-			_log.error("THIS CODE SHOULD NOT BE EXECUTED");
-			return false; // keep Eclipse compiler happy
-		}
-
-		public void commit(String id, Motable immotable) {
-			_map.put(id, immotable); // assumes that Map does own syncing...
-			//_log.info("insertion (memory): "+id);
-		}
-
-		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
-			Context context=(Context)immotable;
-			try {
-				MemoryContextualiser.this.contextualiseLocally(hreq, hres, chain, id, new NullSync(), immotable); // TODO - promotionLock ?
-			} finally {
-				context.getSharedLock().release();
-			}
-		}
-
-		public String getInfo() {
-			return "memory";
-		}
+	    
+	    public Motable nextMotable(String id, Motable emotable) {
+	        return _pool.take();
+	    }
+	    
+	    public void commit(String id, Motable immotable) {
+	        _map.put(id, immotable); // assumes that Map does own syncing...
+	    }
+	    
+	    public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
+	        Context context=(Context)immotable;
+	        try {
+	            MemoryContextualiser.this.contextualiseLocally(hreq, hres, chain, id, new NullSync(), immotable); // TODO - promotionLock ?
+	        } finally {
+	            context.getSharedLock().release();
+	        }
+	    }
+	    
+	    public String getInfo() {
+	        return "memory";
+	    }
 	}
 
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
 
-	// Override - should this always be the case ?
 	public Immoter getPromoter(Immoter immoter) {
-		// do NOT pass through, we want to promote sessions into this store
-		return _immoter;
+		return immoter==null?_immoter:immoter;
 	}
 }

@@ -72,7 +72,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		if (immoter!=null) {
 			Motable emotable=new SharedJDBCMotable();
 			emotable.setId(id);
-			return contextualiseElsewhere(hreq, hres, chain, id, immoter, promotionLock, emotable);
+			return promote(hreq, hres, chain, id, immoter, promotionLock, emotable);
 		} else
 			return false;
 		// TODO - consider how to contextualise locally... should be implemented in ChainedContextualiser, as should this..
