@@ -34,14 +34,16 @@ public class Utils {
 	
 	public static Motable mote(Emoter emoter, Immoter immoter, Motable emotable, String id) {
 		Motable immotable=immoter.nextMotable(id, emotable);
-		if (immoter.prepare(id, emotable, immotable) && emoter.prepare(id, emotable, immotable)) {
+		boolean i=false;
+		boolean e=false;
+		if ((immoter.prepare(id, emotable, immotable) && (i=true)) && ((e=emoter.prepare(id, emotable, immotable) && (e=true)))) {
 			immoter.commit(id, immotable);
 			emoter.commit(id, emotable);
 			_log.info("sucessful motion: "+id+" : "+emoter.getInfo()+" -> "+immoter.getInfo());
 			return immotable;
 		} else {
-			emoter.rollback(id, emotable);
-			immoter.rollback(id, immotable);
+			if (e) emoter.rollback(id, emotable);
+			if (i) immoter.rollback(id, immotable);
 			_log.warn("unsucessful motion: "+id+" : "+emoter.getInfo()+" -> "+immoter.getInfo());
 			return null;
 		}
