@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.test;
+package org.codehaus.wadi.sandbox.impl;
 
 import java.util.Timer;
 
@@ -28,8 +28,8 @@ import javax.jms.Topic;
 import org.codehaus.activecluster.LocalNode;
 import org.codehaus.activecluster.impl.DefaultCluster;
 
-public class MyCluster extends DefaultCluster {
-    public MyCluster(final LocalNode localNode, Topic dataTopic, Topic destination, Connection connection, Session session, MessageProducer producer, Timer timer, long inactiveTime) throws JMSException {
+public class CustomCluster extends DefaultCluster {
+    public CustomCluster(final LocalNode localNode, Topic dataTopic, Topic destination, Connection connection, Session session, MessageProducer producer, Timer timer, long inactiveTime) throws JMSException {
     	super(localNode, dataTopic, destination, connection, session, producer, timer, inactiveTime);
     }
 

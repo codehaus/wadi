@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+// TODO - a Disc-based equivalent...
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -30,7 +32,9 @@ import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
 
 /**
- * A Contextualiser which stores its Contexts in a shared database via JDBC
+ * A Contextualiser which stores its Contexts in a shared database via JDBC.
+ * On shutdown of the cluster's last node, all extant sessions will be demoted to here.
+ * On startup of the cluster's first node, all sessions stored here will be promoted upwards.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

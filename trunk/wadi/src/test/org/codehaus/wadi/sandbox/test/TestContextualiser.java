@@ -35,9 +35,7 @@ import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
-import org.codehaus.activecluster.Cluster;
 import org.codehaus.activecluster.ClusterFactory;
-import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.GZIPStreamingStrategy;
@@ -57,6 +55,8 @@ import org.codehaus.wadi.sandbox.RelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.AbsoluteEvicter;
 import org.codehaus.wadi.sandbox.impl.AlwaysEvicter;
 import org.codehaus.wadi.sandbox.impl.ClusterContextualiser;
+import org.codehaus.wadi.sandbox.impl.CustomCluster;
+import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.LocalDiscContextualiser;
@@ -69,7 +69,6 @@ import org.codehaus.wadi.sandbox.impl.SerialContextualiser;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCContextualiser;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCMotable;
 import org.codehaus.wadi.sandbox.impl.SimpleEvictable;
-import org.codehaus.wadi.sandbox.impl.SwitchableEvicter;
 import org.codehaus.wadi.sandbox.impl.TimeToLiveEvicter;
 import org.codehaus.wadi.sandbox.impl.TimedOutEvicter;
 import org.codehaus.wadi.sandbox.impl.Utils;
@@ -425,10 +424,10 @@ public class TestContextualiser extends TestCase {
 
 	public void testCluster() throws Exception {
 		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
-		ClusterFactory clusterFactory       = new DefaultClusterFactory(connectionFactory);
+		ClusterFactory clusterFactory       = new CustomClusterFactory(connectionFactory);
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
-		Cluster cluster0                    = clusterFactory.createCluster(clusterName);
-		Cluster cluster1                    = clusterFactory.createCluster(clusterName);
+		CustomCluster cluster0              = (CustomCluster)clusterFactory.createCluster(clusterName);
+		CustomCluster cluster1              = (CustomCluster)clusterFactory.createCluster(clusterName);
 
 		cluster0.start();
 		cluster1.start();
@@ -440,7 +439,7 @@ public class TestContextualiser extends TestCase {
 		MessageDispatcher dispatcher0=new MessageDispatcher(cluster0);
 		RelocationStrategy relocater0=new ProxyRelocationStrategy(dispatcher0, location, 2000, 3000);
 		Collapser collapser0=new HashingCollapser(10, 2000);
-		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), new SwitchableEvicter(), c0, collapser0, dispatcher0, relocater0, location);
+		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), new SwitchableEvicter(), c0, collapser0, cluster0, dispatcher0, relocater0, location);
 		Map m0=new HashMap();
 		m0.put("foo", new MyContext());
 		Contextualiser memory0=new MemoryContextualiser(clstr0, new NeverEvicter(), m0, new GZIPStreamingStrategy(), new MyContextPool());
@@ -450,7 +449,7 @@ public class TestContextualiser extends TestCase {
 		MessageDispatcher dispatcher1=new MessageDispatcher(cluster1);
 		RelocationStrategy relocater1=new ProxyRelocationStrategy(dispatcher1, location, 2000, 3000);
 		Collapser collapser1=new HashingCollapser(10, 2000);
-		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), new SwitchableEvicter(), c1, collapser1, dispatcher1, relocater1, null);
+		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), new SwitchableEvicter(), c1, collapser1, cluster1, dispatcher1, relocater1, null);
 		Map m1=new HashMap();
 		m1.put("bar", new MyContext());
 		Contextualiser memory1=new MemoryContextualiser(clstr1, new NeverEvicter(), m1, new GZIPStreamingStrategy(), new MyContextPool());
@@ -502,7 +501,11 @@ public class TestContextualiser extends TestCase {
     
     public void testStack() throws Exception {
         _log.info("putting complete stack together...");
-        Contextualiser stack=new SimpleContextualiserStack(new MyContextPool(), _ds);
+        SimpleContextualiserStack stack=new SimpleContextualiserStack(new MyContextPool(), _ds);
+        stack.start();
+        Thread.sleep(2000);
+        stack.stop();
+        Thread.sleep(2000);
         _log.info("...done");
     }
 }

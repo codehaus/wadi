@@ -46,11 +46,11 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 public class MessageDispatcher implements MessageListener {
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final Map _map=new HashMap();
-	protected final Cluster _cluster;
+	protected final CustomCluster _cluster;
 	protected final MessageConsumer _clusterConsumer;
 	protected final MessageConsumer _nodeConsumer;
 
-	public MessageDispatcher(Cluster cluster) throws JMSException {
+	public MessageDispatcher(CustomCluster cluster) throws JMSException {
 		_cluster=cluster;
 		boolean excludeSelf;
 		excludeSelf=true;
@@ -257,7 +257,7 @@ public class MessageDispatcher implements MessageListener {
 		return response;
 	}
 
-	public Cluster getCluster(){return _cluster;}
+	public CustomCluster getCluster(){return _cluster;}
 
 	public void addDestination(Destination destination) throws JMSException {
 	    boolean excludeSelf=true;
