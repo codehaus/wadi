@@ -52,6 +52,7 @@ public class
       Sync lock=null;
       boolean acquired=false;
       Socket socket=null;
+      boolean ok=true;
 
       try
       {
@@ -71,6 +72,12 @@ public class
 	os.writeObject("migrate");
 	os.writeObject(id);
 	os.flush();
+	ok=is.readBoolean();
+	if (!ok)
+	{
+	  _log.warn("failed to immigrate session - perhaps it has moved node or been invalidated?");
+	  return false;
+	}
 	// demarshall session off wire
 	session.readContent(is);
 	// send commit message
@@ -79,7 +86,7 @@ public class
 	// insert session
 	sessions.put(id, session); // TODO - needs wrapping in facade etc..
 	// receive commit message
-	boolean ok=is.readBoolean();
+	ok=is.readBoolean();
 	assert ok;
 	_log.debug(session.getId()+": immigration (peer: "+remoteAddress+":"+remotePort+")");
 	return ok;
@@ -245,6 +252,7 @@ public class
     {
       Sync lock=null;
       boolean acquired=false;
+      boolean ok=true;
       try
       {
 	ObjectOutputStream os=new ObjectOutputStream(socket.getOutputStream());
@@ -253,13 +261,29 @@ public class
 	String method=(String)is.readObject();
 	// method==migrate
 	String id=(String)is.readObject();
-	// acquire container lock on session id
-	// marshall session onto wire
 	HttpSessionImpl impl=(HttpSessionImpl)_sessions.get(id); // TODO - what if session is not there ?
+	// acquire container lock on session id
+	impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY);
+	lock=impl.getContainerLock();
+	acquired=lock.attempt(100);		// should we have a time out here ?
+	String newId=impl.getId();
+	if (newId==null || !newId.equals(id))
+	{
+	  // the session has gone elsewhere whilst we were waiting for
+	  // the lock...
+	  ok=false;
+	}
+	os.writeBoolean(ok);
+	if (!ok)
+	{
+	  _log.warn("failed to emmigrate session - perhaps it has moved node or been invalidated?");
+	  return;
+	}
+	// marshall session onto wire
 	impl.writeContent(os);
 	os.flush();
 	// receive commit message
-	boolean ok=is.readBoolean();
+	ok=is.readBoolean();
 	assert ok;
 	// remove session
 	_sessions.remove(id); // TODO - recycle
@@ -273,6 +297,10 @@ public class
 	_log.warn("problem migrating session", e);
       }
       catch (ClassNotFoundException e)
+      {
+	_log.warn("problem migrating session", e);
+      }
+      catch (InterruptedException e)
       {
 	_log.warn("problem migrating session", e);
       }

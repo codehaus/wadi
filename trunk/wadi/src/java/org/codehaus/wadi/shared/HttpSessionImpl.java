@@ -17,8 +17,6 @@
 
 package org.codehaus.wadi.shared;
 
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 import java.io.Serializable;
@@ -144,7 +142,15 @@ public abstract class
   // the container is active. It should be broken out either into a
   // session impl subclass, or perhaps a separate LockManager...
 
-  protected final transient ReadWriteLock _rwlock=new ReaderPreferenceReadWriteLock();
+  public final static int INVALIDATION_PRIORITY=4;
+  public final static int TIMEOUT_PRIORITY=3;
+  public final static int EMMIGRATION_PRIORITY=2;
+  public final static int EVICTION_PRIORITY=1;
+  public final static int NO_PRIORITY=0;
+
+  protected final int MAX_PRIORITY=INVALIDATION_PRIORITY;
+
+  protected final transient RWLock _rwlock=new RWLock(MAX_PRIORITY);
 
   // TODO- if I try to initialise these fields outside a ctor,
   // deserialisation results in them being empty - why ?
@@ -156,6 +162,7 @@ public abstract class
 
   public Sync getApplicationLock()  {return _rwlock.readLock();} // allows concurrent app threads
   public Sync getContainerLock() {return _rwlock.writeLock();} // container threads exclude all others
+  public RWLock getRWLock() {return _rwlock;}
 
   public boolean
     hasTimedOut(long currentTimeMillis)

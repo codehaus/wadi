@@ -206,7 +206,7 @@ public class
 //       // WLock, so there is no time for the housekeeping thread to
 //       // squeeze in and prevent us from signalling the end of a
 //       // request group... how do we ensure that this does not happen ?
-//       if (writeLock!=null && _manager.getUsingRequestGroups() && writeLock.attempt(0))
+//       if (writeLock!=null && _manager.getUsingRequestGroups() && writeLock.attempt(-1))
 //       {
 // 	// if so, and we are working at request-group granularity,
 // 	// then this is the end of a request group....

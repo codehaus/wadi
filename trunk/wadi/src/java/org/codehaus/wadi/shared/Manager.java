@@ -487,6 +487,8 @@ public abstract class
    *
    */
 
+  public boolean setPriority(RWLock lock, int priority){lock.setPriority(priority);return true;}
+
   public void
     housekeeper()		// pass in eviction decision parameters
     throws InterruptedException
@@ -503,7 +505,7 @@ public abstract class
     for (Iterator i=_local.values().iterator(); i.hasNext();)
     {
       HttpSessionImpl impl=(HttpSessionImpl)i.next();
-
+      RWLock lock=impl.getRWLock();
       // check, with shared access, for a number of reasons why a
       // session should be moved out of local store, then if it
       // should, take an exclusive lock and do so... - if we cannot
@@ -511,9 +513,9 @@ public abstract class
       boolean hasTimedOut=false;
       boolean shouldBeEvicted=false;
 
-      if (((hasTimedOut=impl.hasTimedOut(currentTime)) ||
-	   (shouldBeEvicted=(canEvict && _evictionPolicy.evictable(currentTime, impl)))) &&
-	  impl.getContainerLock().attempt(0))
+      if ((((hasTimedOut=impl.hasTimedOut(currentTime)) && setPriority(lock, HttpSessionImpl.TIMEOUT_PRIORITY)) ||
+	   ((shouldBeEvicted=(canEvict && _evictionPolicy.evictable(currentTime, impl))) && setPriority(lock, HttpSessionImpl.EVICTION_PRIORITY))) &&
+	  impl.getContainerLock().attempt(-1))
       {
 	try
 	{
@@ -1011,39 +1013,6 @@ public abstract class
     }
 
     _local.put(impl.getId(), impl);
-  }
-
-  // N.B. called by application-space thread - this must release its
-  // shared lock first in order that we can try for an exclusive
-  // lock...
-  public void
-    invalidateImpl(HttpSessionImpl impl)
-  {
-    Sync lock=impl.getContainerLock();
-    String id=impl.getId();
-
-    boolean acquired=false;
-    try
-    {
-      _log.trace("acquiring exclusive lock for session invalidation");
-      lock.acquire();
-      _log.trace("lock acquired");
-      acquired=true;
-      // notification MUST be done synchronously on the request thread
-      // because Servlet-2.4 insists that it is given BEFORE
-      // invalidation!
-      releaseImpl(impl);
-      _log.debug(id+": invalidated");
-    }
-    catch (InterruptedException e)
-    {
-      _log.warn("interrupted during invalidation - session not invalidated", e);
-    }
-    finally
-    {
-      if (acquired)
-	lock.release();
-    }
   }
 
   protected void

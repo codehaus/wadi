@@ -80,19 +80,54 @@ public class
 
   protected boolean _valid=true;
 
+  // N.B. called by application-space thread - this must release its
+  // shared lock first in order that we can try for an exclusive
+  // lock...
   public void
     invalidate()
   {
     HttpSessionImpl impl=((HttpSessionImpl)_impl);
-    _log.trace(impl.getId()+" : explicitly invalidating");
-    impl.getApplicationLock().release();
-    // TODO - there will be a race here between our thread acquiring
-    // an exclusive lock and the possibility of the housekeeping
-    // thread getting in and timing out or evicting this session in
-    // the interim - we can prevent this by ensuring that the session
-    // looks fresh...
-    impl.setLastAccessedTime(System.currentTimeMillis()+(1000*60*10)); // T+10 mins
-    impl.getWadiManager().invalidateImpl(impl);
+    String id=impl.getId();
+
+    RWLock lock=impl.getRWLock();
+    boolean acquired=false;
+
+    try
+    {
+      lock.setPriority(HttpSessionImpl.INVALIDATION_PRIORITY);
+      lock.overlap();
+      acquired=true;
+
+      String newId=impl.getId();
+      if (newId!=null && newId.equals(id))
+      {
+	// no other invalidation thread beat us to it...
+
+	// notification MUST be done synchronously on the request thread
+	// because Servlet-2.4 insists that it is given BEFORE
+	// invalidation!
+	impl.getWadiManager().releaseImpl(impl);
+	_log.debug(id+": invalidated");
+      }
+      else
+      {
+	// another invalidation thread beat us to it - but the net
+	// effect is the same...
+	_log.warn("lost invalidation race");
+      }
+    }
+    catch (InterruptedException e)
+    {
+      _log.warn("interrupted during invalidation - session not invalidated", e);
+    }
+    finally
+    {
+      if (acquired)
+	lock.writeLock().release();
+
+      lock.setPriority(HttpSessionImpl.NO_PRIORITY);
+    }
+
     _impl=null;
   }
 
