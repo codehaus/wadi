@@ -59,6 +59,7 @@ import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.context.impl.StandardHttpProxy;
+import org.codehaus.wadi.sandbox.context.impl.SwitchableEvicter;
 import org.codehaus.wadi.sandbox.context.impl.Utils;
 
 import junit.framework.TestCase;
@@ -129,7 +130,7 @@ public class TestCluster extends TestCase {
 			_location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), isa, proxy);
 			//_relocater=new SwitchableRelocationStrategy();
 			_relocater=null;
-			_bottom=new ClusterContextualiser(new DummyContextualiser(), _collapser, _cmap, _evicter, _dispatcher, _relocater, _location);
+			_bottom=new ClusterContextualiser(new DummyContextualiser(), _collapser, _cmap, new SwitchableEvicter(), _dispatcher, _relocater, _location);
 			_top=new MemoryContextualiser(_bottom, _collapser, _mmap, _evicter, new SimpleStreamingStrategy(), new MyContextPool());
 			_bottom.setTop(_top);
 		}

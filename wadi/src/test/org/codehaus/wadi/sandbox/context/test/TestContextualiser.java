@@ -67,6 +67,7 @@ import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.context.impl.SharedJDBCContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.SimpleEvictable;
+import org.codehaus.wadi.sandbox.context.impl.SwitchableEvicter;
 import org.codehaus.wadi.sandbox.context.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -220,6 +221,7 @@ public class TestContextualiser extends TestCase {
 		}
 
 		public void evict(){}
+		public Evicter getEvicter(){return null;}
 
 		public boolean isLocal(){return false;}
 		
@@ -253,6 +255,8 @@ public class TestContextualiser extends TestCase {
 		}
 
 		public void evict(){}
+		public Evicter getEvicter(){return null;}
+		
 		public boolean isLocal(){return false;}
 		
 		public Immoter getDemoter(String id, Motable motable) {
@@ -427,7 +431,7 @@ public class TestContextualiser extends TestCase {
 		Map c0=new HashMap();
 		MessageDispatcher dispatcher0=new MessageDispatcher(cluster0);
 		RelocationStrategy relocater0=new ProxyRelocationStrategy(dispatcher0, location, 2000, 3000);
-		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), dispatcher0, relocater0, location);
+		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new SwitchableEvicter(), dispatcher0, relocater0, location);
 		Map m0=new HashMap();
 		m0.put("foo", new MyContext());
 		Contextualiser memory0=new MemoryContextualiser(clstr0, collapser0, m0, new NeverEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
@@ -437,7 +441,7 @@ public class TestContextualiser extends TestCase {
 		Map c1=new HashMap();
 		MessageDispatcher dispatcher1=new MessageDispatcher(cluster1);
 		RelocationStrategy relocater1=new ProxyRelocationStrategy(dispatcher1, location, 2000, 3000);
-		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), dispatcher1, relocater1, null);
+		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new SwitchableEvicter(), dispatcher1, relocater1, null);
 		Map m1=new HashMap();
 		m1.put("bar", new MyContext());
 		Contextualiser memory1=new MemoryContextualiser(clstr1, collapser1, m1, new NeverEvicter(), new GZIPStreamingStrategy(), new MyContextPool());

@@ -51,13 +51,16 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	protected final Log _log = LogFactory.getLog(getClass());
 	protected final ContextPool _pool;
 	protected final StreamingStrategy _streamer;
+	protected final Immoter _immoter;
+	protected final Emoter _emoter;
 
 	public MemoryContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, StreamingStrategy streamer, ContextPool pool) {
 		super(next, collapser, map, evicter);
 		_pool=pool;
 		_streamer=streamer;
 		
-		_emoter=new MemoryEmoter(); // overwrite - yeugh ! - fix when we have a LifeCycle
+		_immoter=new MemoryImmoter();
+		_emoter=new MemoryEmoter();
 	}
 
 	public boolean isLocal(){return true;}
@@ -198,18 +201,11 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 		}
 	}
 
-	protected Immoter _immoter=new MemoryImmoter();
+	public Immoter getImmoter(){return _immoter;}
+	public Emoter getEmoter(){return _emoter;}
 	
 	public Immoter getPromoter(Immoter immoter) {
 		// do NOT pass through, we want to promote sessions into this store
 		return _immoter;
-		}
-
-	public Immoter getDemoter(String id, Motable motable) {
-		if (_evicter.evict(id, motable)) {
-			return _next.getDemoter(id, motable);
-		} else {
-			return _immoter;
-		}
 	}
 }

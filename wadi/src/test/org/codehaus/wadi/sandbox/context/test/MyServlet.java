@@ -47,6 +47,7 @@ import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.context.impl.StatelessContextualiser;
+import org.codehaus.wadi.sandbox.context.impl.SwitchableEvicter;
 
 public class MyServlet implements Servlet {
 	protected ServletConfig _config;
@@ -71,7 +72,7 @@ public class MyServlet implements Servlet {
 		_dispatcher=dispatcher;
 		_relocater=relocater;
 		_location=location;
-		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), _dispatcher, _relocater, _location);
+		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new SwitchableEvicter(), _dispatcher, _relocater, _location);
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
 		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);
@@ -122,6 +123,7 @@ public class MyServlet implements Servlet {
 	
 	public Map getClusterMap(){return _clusterMap;}
 	public Map getMemoryMap(){return _memoryMap;}
+
 	class MyEvicter implements Evicter{
 		long _remaining;
 	
