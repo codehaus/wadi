@@ -405,15 +405,19 @@ public abstract class
     // TODO - activecluster stuff - replace with config ASAP...
     if (_connectionFactory!=null)
     {
+      _log.info("CLUSTERING!");
       (_connection=_connectionFactory.createConnection()).start();
       _clusterFactory=new DefaultClusterFactory(getConnection());
       _cluster=_clusterFactory.createCluster("org.codehaus.wadi#cluster");
+      _log.info("CLUSTERING!: "+_cluster);
       _cluster.addClusterListener(new MembershipListener());
       InvokableListener listener=new InvokableListener(this);
       _cluster.createConsumer(_cluster.getDestination(), null, true).setMessageListener(listener);
       _cluster.createConsumer(_cluster.getLocalNode().getDestination()).setMessageListener(listener);
       _cluster.start(); // should include webapp context
     }
+    else
+      _log.info("NOT CLUSTERING!");
 
     _log.debug("started");
   }
@@ -1040,9 +1044,9 @@ public abstract class
   // it would be nice to know the actual number of bytes moved an hour
   // etc...
 
-  protected HttpSessionImpl acquireImpl(Manager manager){return acquireImpl(manager, null);}
+  public HttpSessionImpl acquireImpl(Manager manager){return acquireImpl(manager, null);}
 
-  protected HttpSessionImpl
+  public HttpSessionImpl
     acquireImpl(Manager manager, String realId)
   {
     if (realId==null)
@@ -1129,6 +1133,7 @@ public abstract class
   protected void destroyImpl(HttpSessionImpl impl){_implFactory.destroy(impl);}
 
   boolean _reuseSessionIds=false;
+  public void setReuseSessionIds(boolean reuseSessionIds){_reuseSessionIds=reuseSessionIds;}
   public boolean getReuseSessionIds(){return _reuseSessionIds;}
 
   protected StreamingStrategy _streamingStrategy;
