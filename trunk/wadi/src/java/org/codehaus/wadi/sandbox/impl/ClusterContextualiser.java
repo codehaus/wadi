@@ -84,7 +84,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	    _relocater=relocater;
 	    _location=location;
 
-	    _immoter=new ClusterImmoter();
+	    _immoter=new EmigrationImmoter();
 	    _emoter=null; // TODO - I think this should be something like the ImmigrationEmoter
 	    // it pulls a names Session out of the cluster and emotes it from this Contextualiser...
 	    // this makes it awkward to split session and request relocation into different strategies,
@@ -103,13 +103,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	public Contextualiser getTop() {return _top;}
 	public void setTop(Contextualiser top) {_top=top;}
 
-	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
+	public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
 		return _relocater.relocate(hreq, hres, chain, id, immoter, promotionLock, _map);
-	}
-
-	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Sync promotionLock, Motable motable) throws IOException, ServletException {
-		// this should delegate...
-		throw new RuntimeException("NYI");
 	}
 
 	// be careful here - there are two things going on, a map of cached locations, which needs management
@@ -154,7 +149,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$
 	 */
-	class ClusterImmoter implements Immoter {
+	class EmigrationImmoter implements Immoter {
 		public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}
 
 		public boolean prepare(String id, Motable emotable, Motable immotable) {

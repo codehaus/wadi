@@ -66,16 +66,12 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		return new SharedJDBCImmoter();
 	}
 
-	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
-		if (immoter!=null) {
-			Motable emotable=new SharedJDBCMotable();
-			emotable.setId(id);
-			return promote(hreq, hres, chain, id, immoter, promotionLock, emotable); // promotionLock should be released here...
-		} else
-			return false;
-		// TODO - consider how to contextualise locally... should be implemented in ChainedContextualiser, as should this..
+	public Motable get(String id) {
+	    Motable motable=new SharedJDBCMotable();
+		motable.setId(id);
+		return motable;
 	}
-
+	
 	public void evict() {
 		// TODO - NYI
 	}
@@ -183,10 +179,6 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 			} catch (SQLException e) {
 				_log.error("could not rollback database connection", e);
 			}
-		}
-
-		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
-		    throw new RuntimeException("this should never happen");
 		}
 
 		public String getInfo() {

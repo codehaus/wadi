@@ -41,13 +41,22 @@ import org.codehaus.wadi.sandbox.SessionRelocationStrategy;
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+// TODO
+// It should be possible to merge :
+//   ImmigrationRequest-ImmigrationResponse-ImmigrationAcknowledgement
+// and
+//   EmigrationRequest-EmigrationAcknowledgement
+// into e.g.
+//   ImmigrationRequest-EmigrationRequest-EmigrationAcknowledgement
+//
+// This would save a fair amount of code...
+
 /**
  * Relocate the state, bringing it underneath the incoming request - immigration
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-
 public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final MessageDispatcher _dispatcher;
@@ -175,6 +184,13 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 		}
 	}
 
+	/**
+	 * Manage the immotion of a session into the Cluster tier and thence its Immigration 
+	 * (in response to an ImmigrationRequest) thence to another node.
+	 *
+	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+	 * @version $Revision$
+	 */
 	class ImmigrationImmoter implements Immoter {
 		protected final Log _log=LogFactory.getLog(getClass());
 
