@@ -18,28 +18,28 @@
 package org.codehaus.wadi.impl;
 
 import javax.jms.Destination;
-import org.codehaus.wadi.MigrationService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.HttpSessionImpl;
+import org.codehaus.wadi.MigrationService;
 
 public class
   StreamedMigrationRequest
   extends org.codehaus.wadi.MigrationRequest
 {
   protected final static Log _log=LogFactory.getLog(StreamedMigrationRequest.class);
-  protected final Destination _destination;
+  protected final InetSocketAddressDestination _destination;
 
   public
     StreamedMigrationRequest(String id, Destination destination, long timeout)
   {
     super(id, timeout);
-    _destination=destination;
-    _log.info("ctor");
+    _destination=(InetSocketAddressDestination)destination;
   }
 
-  public void
-    invoke(MigrationService service, Destination source, String correlationID)
+  public Object
+    doit(MigrationService service, HttpSessionImpl impl, String correlationID, Destination source)
   {
-    _log.info("invoke - NYI");
+    return ((StreamedMigrationService.Client)service.getClient()).emmigrate(this, impl, correlationID, source);
   }
 }

@@ -134,7 +134,6 @@
       <arg value="org.codehaus.wadi.test.TestMigrationService"/>
       <arg value="org.codehaus.wadi.test.TestCluster"/>
       <arg value="org.codehaus.wadi.test.TestManagers"/>
-      <arg value="org.codehaus.wadi.test.TestDiscoveryService"/>
       <classpath refid="wadi.classpath"/>
       <!--
       -->

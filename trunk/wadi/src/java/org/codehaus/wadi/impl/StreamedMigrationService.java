@@ -49,354 +49,364 @@ import org.codehaus.wadi.MigrationService;
  * @version $Revision$
  */
 public class
-StreamedMigrationService
-extends AbstractMigrationService
+  StreamedMigrationService
+  extends AbstractMigrationService
 {
-	protected Client _client=new Client();
-	protected Server _server=new Server();
-	
-	public MigrationService.Server getServer(){return _server;}
-	public MigrationService.Client getClient(){return _client;}
-	
-	public class
-	Client
-	extends AbstractMigrationService.Client
+  protected Client _client=new Client();
+  protected Server _server=new Server();
+
+  public MigrationService.Server getServer(){return _server;}
+  public MigrationService.Client getClient(){return _client;}
+
+  public class
+    Client
+    extends AbstractMigrationService.Client
+  {
+    protected int         _port=0;	// any port
+    protected InetAddress _address; // null seems to work fine as default interface
+
+    public void setAddress(InetAddress address){_address=address;}
+    public void setPort(int port){_port=port;}
+
+    public boolean
+      emmigrate(Collection candidates, long timeout, Destination dst)
+    {
+      _log.error("NYI");
+      return false;
+    }
+
+    public boolean
+      immigrate(String realId, HttpSessionImpl placeholder, long timeout, Destination dst)
+    {
+      Destination src=_server.getDestination();
+      String correlationId=realId+"-"+src.toString();
+      _log.trace("sending MigrationRequest to:"+dst);
+      Object result=_adaptor.send(_manager.getCluster(),
+				  new StreamedMigrationRequest(realId, src, timeout),
+				  correlationId,
+				  timeout,
+				  null,
+				  dst);
+
+      return (placeholder==result);
+    };
+
+    public Object
+      emmigrate(StreamedMigrationRequest request, HttpSessionImpl impl, String correlationID, Destination source)
+    {
+      _log.info("UNDER CONSTRUCTION");
+      return null;
+    }
+
+    public boolean
+      emmigrate(Map map, Collection candidates, long timeout, Destination destination, boolean sync)
+    {
+      Socket socket=null;
+      boolean ok=true;
+      int locked=0;		// in case we are interrupted whilst locking candidates
+      boolean commit=false;
+      int numSessions=0;
+
+      try
+      {
+	// only try to migrate those candidates that we can lock -
+	// i.e. are not in use...
+	for (Iterator i=candidates.iterator(); i.hasNext(); locked++)
 	{
-		protected int         _port=0;	// any port
-		protected InetAddress _address; // null seems to work fine as default interface
-		
-		public boolean
-		emmigrate(Collection candidates, long timeout, javax.jms.Destination dst)
-		{
-			_log.error("NYI");
-			return false;
-		}
-		
-		public boolean
-		immigrate(String realId, HttpSessionImpl placeholder, long timeout, javax.jms.Destination dst)
-		{
-			javax.jms.Destination src=_server.getDestination();
-			String correlationId=realId+"-"+src.toString();
-			_log.trace("sending MigrationRequest to:"+dst);
-			Object result=_adaptor.send(_manager.getCluster(),
-					new StreamedMigrationRequest(realId, src, timeout),
-					correlationId,
-					timeout,
-					null,
-					dst);
-			
-			return (placeholder==result);
-		};
-		
-		public boolean
-		emmigrate(Map map, Collection candidates, long timeout, Destination destination, boolean sync)
-		{
-			Socket socket=null;
-			boolean ok=true;
-			int locked=0;		// in case we are interrupted whilst locking candidates
-			boolean commit=false;
-			int numSessions=0;
-			
-			try
-			{
-				// only try to migrate those candidates that we can lock -
-				// i.e. are not in use...
-				for (Iterator i=candidates.iterator(); i.hasNext(); locked++)
-				{
-					HttpSessionImpl impl=(HttpSessionImpl)i.next();
-					impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY);
-					if (!impl.getContainerLock().attempt(timeout)) // InterruptedException here
-						i.remove();
-				}
-				
-				numSessions=candidates.size();
-				if (numSessions>0)
-				{
-					if (_address==null)
-					{
-						_address=InetAddress.getLocalHost();
-						//_address=InetAddress.getByName("localhost");
-					}
-					
-					InetSocketAddressDestination dest=(InetSocketAddressDestination)destination;
-					socket=new Socket(dest.getAddress(), dest.getPort(), _address, _port);
-					// TODO - do we need a timeout ? - YES
-					if (_log.isTraceEnabled()) _log.trace(socket+" -> "+destination);
-					ObjectOutput os=new ObjectOutputStream(socket.getOutputStream());
-					ObjectInput  is=new ObjectInputStream(socket.getInputStream());
-					//	  ObjectOutput ss=_streamingStrategy.getOutputStream(socket.getOutputStream());
-					ObjectOutput ss=os;
-					
-					// (1) send PREPARE()
-					os.writeBoolean(sync);
-					os.writeInt(numSessions);
-					os.flush();
-					for (Iterator i=candidates.iterator(); i.hasNext(); )
-						((HttpSessionImpl)i.next()).writeContent(ss); // ClassNotFoundException here
-					ss.flush();
-					
-					// (2) receive return code from PREPARE()
-					ok=is.readBoolean(); // protocol may later allow partial success
-					if (ok) map.values().removeAll(candidates); // release session ownership this end
-					
-					// (3) send COMMIT()
-					os.writeBoolean(ok);
-					os.flush();
-				}
-				
-				commit=ok;
-			}
-			catch (ClassNotFoundException e)
-			{
-				_log.warn("unexpected problem emmigrating sessions - this should not happen - no emmigration will have occurred", e);
-			}
-			catch (InterruptedException e)
-			{
-				_log.warn("unexpected problem emmigrating sessions - thread interrupted - no emmigration will have occurred", e);
-			}
-			catch (UnknownHostException e)
-			{
-				_log.warn("unexpected problem emmigrating sessions - could not resolve target interface - no emmigration will have occurred", e);
-			}
-			catch (IOException e)
-			{
-				_log.warn("unexpected problem emmigrating sessions to "+destination+"- target node or comms failure ? - no emmigration will have occurred", e);
-			}
-			// what about timeout...
-			finally
-			{
-				if (commit)
-				{
-					// should I print out all session ids - so we have a record ?
-					if (_log.isDebugEnabled())
-						_log.debug(numSessions+" emmigration[s] (peer: "+destination+")");
-				}
-				else
-				{
-					// rollback...
-					for (Iterator i=candidates.iterator(); i.hasNext(); )
-					{
-						HttpSessionImpl impl=(HttpSessionImpl)i.next();
-						_log.info("SESSION:"+impl);
-						map.put(impl.getRealId(), impl);
-					}
-				}
-				
-				// release impls' locks
-				for (Iterator i=candidates.iterator(); i.hasNext() && locked>0; locked--)
-					((HttpSessionImpl)i.next()).getContainerLock().release();
-				
-				if (socket!=null)
-				{
-					try{socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
-					socket=null;
-				}
-			}
-			
-			return ok;
-		}
+	  HttpSessionImpl impl=(HttpSessionImpl)i.next();
+	  impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY);
+	  if (!impl.getContainerLock().attempt(timeout)) // InterruptedException here
+	    i.remove();
 	}
-	
-	public class
-	Server
-	extends AbstractMigrationService.Server
-	implements Runnable
+
+	numSessions=candidates.size();
+	if (numSessions>0)
 	{
-		protected boolean                      _running;
-		protected Thread                       _thread;
-		protected InetSocketAddressDestination _destination;
-		protected int                          _backlog=16; // TODO - is this a useful default
-		protected ServerSocket                 _socket;
-		protected int                          _timeout=2000;
-		
-		public void
-		start()
-		throws JMSException
-		{
-			super.start();
-			
-			if (_destination==null) _destination=new InetSocketAddressDestination();
-			try
-			{
-				if (_destination.getAddress()==null)
-				{
-					_destination.setAddress(InetAddress.getLocalHost());
-					//_address=InetAddress.getByName("localhost");
-				}
-				
-				if (_log.isDebugEnabled()) _log.debug("starting: "+_destination);
-				
-				// initialise dependant resources...
-				_socket=new ServerSocket(_destination.getPort(), _backlog, _destination.getAddress());
-				_socket.setSoTimeout(_timeout);
-				_destination.setPort(_socket.getLocalPort());
-				
-				// start...
-				_running=true;
-				_thread=new Thread(this);
-				_thread.start();
-				if (_log.isDebugEnabled()) _log.debug("started: "+_socket);
-				return;
-			}
-			catch (UnknownHostException e)
-			{
-				_log.warn("unexpected problem resolving listening interface", e);
-			}
-			catch (IOException e)
-			{
-				_log.warn("unexpected problem creating server socket", e);
-			}
-			
-			// we shouldn't get to here...
-			_log.warn("did not start");
-		}
-		
-		public void
-		stop()
-		throws JMSException
-		{
-			super.stop();
-			
-			if (_log.isDebugEnabled()) _log.debug("stopping: "+_socket);
-			_running=false;
-			//      try {new Socket(_address, _port).close();} catch (Throwable ignore) {}
-			try
-			{
-				_thread.join();
-				_thread=null;
-				_socket.close();
-				_socket=null;
-				// we need to join all our subthreads :-(
-				if (_log.isDebugEnabled()) _log.debug("stopped: "+_destination);
-			}
-			catch (InterruptedException e)
-			{
-				_log.warn("unexpectedly interrupted whilst stopping");
-				// TODO - interrupted()?
-			}
-			catch (IOException e)
-			{
-				_log.warn("could not close server socket");
-			}
-		}
-		
-		public void
-		run()
-		{
-			try
-			{
-				while (_running)
-				{
-					try
-					{
-						if (_timeout==0) Thread.yield();
-						new Thread(new Migration(_socket.accept())).start();
-						// TODO - remember threads started and join them on stop() ?
-						// run this request on current thread, starting a new one to listen()
-					}
-					catch (SocketTimeoutException ignore)
-					{
-						// ignore
-					}
-				}
-			}
-			catch (IOException e)
-			{
-				_log.warn("unexpected io problem - stopping");
-			}
-		}
-		
-		public class
-		Migration
-		implements Runnable
-		{
-			protected final Socket _socket;
-			public Migration(Socket socket){_socket=socket;}
-			public void run(){immigrate(_socket);}
-		}
-		
-		public void
-		immigrate(Socket socket)
-		{
-			boolean ok=true;
-			boolean commit=false;
-			int numSessions=0;
-			Collection candidates=new ArrayList(numSessions);
-			boolean sync=false;
-			
-			try
-			{
-				ObjectOutput os=new ObjectOutputStream(socket.getOutputStream());
-				ObjectInput  is=new ObjectInputStream(socket.getInputStream());
-				//	ObjectInput  ss=_streamingStrategy.getInputStream(socket.getInputStream());
-				ObjectInput ss=is;
-				
-				
-				// (1) receive PREPARE()
-				sync=is.readBoolean();
-				numSessions=is.readInt(); // how many sessions ?
-				for (int i=numSessions; i>0; i--)
-				{
-					HttpSessionImpl impl=_factory.create();
-					impl.readContent(ss); // demarshall session off wire
-					impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY); // TODO - does priority matter here?
-					impl.getContainerLock().acquire();
-					impl.setWadiManager(_manager);
-					_sessions.put(impl.getRealId(), impl);
-					candidates.add(impl);
-				}
-				
-				// (2) send return code from PREPARE()
-				os.writeBoolean(true);
-				os.flush();
-				
-				// (3) receive COMMIT()
-				ok=is.readBoolean();
-				
-				commit=ok;
-			}
-			catch (ClassNotFoundException e)
-			{
-				_log.warn("unexpected problem immigrating sessions - this should not happen - no immigration will have occurred", e);
-			}
-			catch (InterruptedException e)
-			{
-				_log.warn("unexpected problem immigrating sessions - thread interrupted - no immigration will have occurred", e);
-			}
-			catch (IOException e)
-			{
-				_log.warn("unexpected problem immigrating sessions - target node or comms failure ? - no immigration will have occurred", e);
-			}
-			finally
-			{
-				if (commit)
-				{
-					if (_log.isDebugEnabled())
-						_log.debug(numSessions+" immigration[s] (peer: "+socket.getRemoteSocketAddress()+":"+socket.getPort()+")");
-				}
-				else
-				{
-					// rollback...
-					_sessions.values().removeAll(candidates);
-					_log.warn("failed to immigrate "+numSessions+" sessions - rolled back");
-				}
-				
-				for (Iterator i=candidates.iterator(); i.hasNext(); )
-				{
-					HttpSessionImpl impl=(HttpSessionImpl)i.next();
-					impl.getContainerLock().release();
-					
-					if (sync && candidates.size()==1)
-						_adaptor.receive(impl, impl.getRealId(), 2000L); // parameterise - TODO
-					
-				}
-				
-				try{socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
-			}
-			
-		}
-		
-		public void setDestination(javax.jms.Destination destination) {_destination=(InetSocketAddressDestination)destination;}
-		public javax.jms.Destination getDestination() {return _destination;}
+	  if (_address==null)
+	  {
+	    _address=InetAddress.getLocalHost();
+	    //_address=InetAddress.getByName("localhost");
+	  }
+
+	  InetSocketAddressDestination dest=(InetSocketAddressDestination)destination;
+	  socket=new Socket(dest.getAddress(), dest.getPort(), _address, _port);
+	  // TODO - do we need a timeout ? - YES
+	  if (_log.isTraceEnabled()) _log.trace(socket+" -> "+destination);
+	  ObjectOutput os=new ObjectOutputStream(socket.getOutputStream());
+	  ObjectInput  is=new ObjectInputStream(socket.getInputStream());
+	  //	  ObjectOutput ss=_streamingStrategy.getOutputStream(socket.getOutputStream());
+	  ObjectOutput ss=os;
+
+	  // (1) send PREPARE()
+	  os.writeBoolean(sync);
+	  os.writeInt(numSessions);
+	  os.flush();
+	  for (Iterator i=candidates.iterator(); i.hasNext(); )
+	    ((HttpSessionImpl)i.next()).writeContent(ss); // ClassNotFoundException here
+	  ss.flush();
+
+	  // (2) receive return code from PREPARE()
+	  ok=is.readBoolean(); // protocol may later allow partial success
+	  if (ok) map.values().removeAll(candidates); // release session ownership this end
+
+	  // (3) send COMMIT()
+	  os.writeBoolean(ok);
+	  os.flush();
 	}
+
+	commit=ok;
+      }
+      catch (ClassNotFoundException e)
+      {
+	_log.warn("unexpected problem emmigrating sessions - this should not happen - no emmigration will have occurred", e);
+      }
+      catch (InterruptedException e)
+      {
+	_log.warn("unexpected problem emmigrating sessions - thread interrupted - no emmigration will have occurred", e);
+      }
+      catch (UnknownHostException e)
+      {
+	_log.warn("unexpected problem emmigrating sessions - could not resolve target interface - no emmigration will have occurred", e);
+      }
+      catch (IOException e)
+      {
+	_log.warn("unexpected problem emmigrating sessions to "+destination+"- target node or comms failure ? - no emmigration will have occurred", e);
+      }
+      // what about timeout...
+      finally
+      {
+	if (commit)
+	{
+	  // should I print out all session ids - so we have a record ?
+	  if (_log.isDebugEnabled())
+	    _log.debug(numSessions+" emmigration[s] (peer: "+destination+")");
+	}
+	else
+	{
+	  // rollback...
+	  for (Iterator i=candidates.iterator(); i.hasNext(); )
+	  {
+	    HttpSessionImpl impl=(HttpSessionImpl)i.next();
+	    _log.info("SESSION:"+impl);
+	    map.put(impl.getRealId(), impl);
+	  }
+	}
+
+	// release impls' locks
+	for (Iterator i=candidates.iterator(); i.hasNext() && locked>0; locked--)
+	  ((HttpSessionImpl)i.next()).getContainerLock().release();
+
+	if (socket!=null)
+	{
+	  try{socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
+	  socket=null;
+	}
+      }
+
+      return ok;
+    }
+  }
+
+  public class
+    Server
+    extends AbstractMigrationService.Server
+    implements Runnable
+  {
+    protected boolean                      _running;
+    protected Thread                       _thread;
+    protected InetSocketAddressDestination _destination;
+    protected int                          _backlog=16; // TODO - is this a useful default
+    protected ServerSocket                 _socket;
+    protected int                          _timeout=2000;
+
+    public void setDestination(Destination destination) {_destination=(InetSocketAddressDestination)destination;}
+    public Destination getDestination() {return _destination;}
+
+    public void
+      start()
+      throws JMSException
+    {
+      super.start();
+
+      if (_destination==null) _destination=new InetSocketAddressDestination();
+      try
+      {
+	if (_destination.getAddress()==null)
+	{
+	  _destination.setAddress(InetAddress.getLocalHost());
+	  //_address=InetAddress.getByName("localhost");
+	}
+
+	if (_log.isDebugEnabled()) _log.debug("starting: "+_destination);
+
+	// initialise dependant resources...
+	_socket=new ServerSocket(_destination.getPort(), _backlog, _destination.getAddress());
+	_socket.setSoTimeout(_timeout);
+	_destination.setPort(_socket.getLocalPort());
+
+	// start...
+	_running=true;
+	_thread=new Thread(this);
+	_thread.start();
+	if (_log.isDebugEnabled()) _log.debug("started: "+_socket);
+	return;
+      }
+      catch (UnknownHostException e)
+      {
+	_log.warn("unexpected problem resolving listening interface", e);
+      }
+      catch (IOException e)
+      {
+	_log.warn("unexpected problem creating server socket", e);
+      }
+
+      // we shouldn't get to here...
+      _log.warn("did not start");
+    }
+
+    public void
+      stop()
+      throws JMSException
+    {
+      super.stop();
+
+      if (_log.isDebugEnabled()) _log.debug("stopping: "+_socket);
+      _running=false;
+      //      try {new Socket(_address, _port).close();} catch (Throwable ignore) {}
+      try
+      {
+	_thread.join();
+	_thread=null;
+	_socket.close();
+	_socket=null;
+	// we need to join all our subthreads :-(
+	if (_log.isDebugEnabled()) _log.debug("stopped: "+_destination);
+      }
+      catch (InterruptedException e)
+      {
+	_log.warn("unexpectedly interrupted whilst stopping");
+	// TODO - interrupted()?
+      }
+      catch (IOException e)
+      {
+	_log.warn("could not close server socket");
+      }
+    }
+
+    public void
+      run()
+    {
+      try
+      {
+	while (_running)
+	{
+	  try
+	  {
+	    if (_timeout==0) Thread.yield();
+	    new Thread(new Migration(_socket.accept())).start();
+	    // TODO - remember threads started and join them on stop() ?
+	    // run this request on current thread, starting a new one to listen()
+	  }
+	  catch (SocketTimeoutException ignore)
+	  {
+	    // ignore
+	  }
+	}
+      }
+      catch (IOException e)
+      {
+	_log.warn("unexpected io problem - stopping");
+      }
+    }
+
+    public class
+      Migration
+      implements Runnable
+    {
+      protected final Socket _socket;
+      public Migration(Socket socket){_socket=socket;}
+      public void run(){immigrate(_socket);}
+    }
+
+    public void
+      immigrate(Socket socket)
+    {
+      boolean ok=true;
+      boolean commit=false;
+      int numSessions=0;
+      Collection candidates=new ArrayList(numSessions);
+      boolean sync=false;
+
+      try
+      {
+	ObjectOutput os=new ObjectOutputStream(socket.getOutputStream());
+	ObjectInput  is=new ObjectInputStream(socket.getInputStream());
+	//	ObjectInput  ss=_streamingStrategy.getInputStream(socket.getInputStream());
+	ObjectInput ss=is;
+
+
+	// (1) receive PREPARE()
+	sync=is.readBoolean();
+	numSessions=is.readInt(); // how many sessions ?
+	for (int i=numSessions; i>0; i--)
+	{
+	  HttpSessionImpl impl=_factory.create();
+	  impl.readContent(ss); // demarshall session off wire
+	  impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY); // TODO - does priority matter here?
+	  impl.getContainerLock().acquire();
+	  impl.setWadiManager(_manager);
+	  _sessions.put(impl.getRealId(), impl);
+	  candidates.add(impl);
+	}
+
+	// (2) send return code from PREPARE()
+	os.writeBoolean(true);
+	os.flush();
+
+	// (3) receive COMMIT()
+	ok=is.readBoolean();
+
+	commit=ok;
+      }
+      catch (ClassNotFoundException e)
+      {
+	_log.warn("unexpected problem immigrating sessions - this should not happen - no immigration will have occurred", e);
+      }
+      catch (InterruptedException e)
+      {
+	_log.warn("unexpected problem immigrating sessions - thread interrupted - no immigration will have occurred", e);
+      }
+      catch (IOException e)
+      {
+	_log.warn("unexpected problem immigrating sessions - target node or comms failure ? - no immigration will have occurred", e);
+      }
+      finally
+      {
+	if (commit)
+	{
+	  if (_log.isDebugEnabled())
+	    _log.debug(numSessions+" immigration[s] (peer: "+socket.getRemoteSocketAddress()+":"+socket.getPort()+")");
+	}
+	else
+	{
+	  // rollback...
+	  _sessions.values().removeAll(candidates);
+	  _log.warn("failed to immigrate "+numSessions+" sessions - rolled back");
+	}
+
+	for (Iterator i=candidates.iterator(); i.hasNext(); )
+	{
+	  HttpSessionImpl impl=(HttpSessionImpl)i.next();
+	  impl.getContainerLock().release();
+
+	  if (sync && candidates.size()==1)
+	    _adaptor.receive(impl, impl.getRealId(), 2000L); // parameterise - TODO
+
+	}
+
+	try{socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
+      }
+
+    }
+  }
 }
