@@ -27,6 +27,7 @@ import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import org.apache.catalina.Container;
@@ -165,6 +166,9 @@ public class
   protected static final Test _sessionListenerTest=new Test(){ public boolean test(Object o){return o instanceof HttpSessionListener;} };
   protected static final Test _attributeListenerTest=new Test(){ public boolean test(Object o){return o instanceof HttpSessionAttributeListener;} };
 
+  // TODO - put following two classes into an aspect...
+  protected void fireContainerEvent(String name, Object listener){} // TODO
+
   class
     ContextLifecycleListener
     implements LifecycleListener
@@ -276,128 +280,4 @@ public class
   public int getHttpPort(){return 8080;} // TODO - temporary hack...
 
   public ServletContext getServletContext(){return ((Context)_container).getServletContext();}
-
-  //   //--------------------
-  //   // session events
-  //   //--------------------
-
-  //   // borrowed from tomcat...
-
-  //     /**
-  //      * Fire container events if the Context implementation is the
-  //      * <code>org.apache.catalina.core.StandardContext</code>.
-  //      *
-  //      * @param context Context for which to fire events
-  //      * @param type Event type
-  //      * @param data Event data
-  //      *
-  //      * @exception Exception occurred during event firing
-  //      */
-  //   protected void fireContainerEvent(Context context,
-  //                                     String type, Object data)
-  //     throws Exception
-  //     {
-
-  //       if (!"org.apache.catalina.core.StandardContext".equals
-  // 	  (context.getClass().getName())) {
-  // 	return; // Container events are not supported
-  //       }
-  //       // NOTE:  Race condition is harmless, so do not synchronize
-  //       if (containerEventMethod == null) {
-  // 	containerEventMethod =
-  // 	  context.getClass().getMethod("fireContainerEvent",
-  // 				       containerEventTypes);
-  //       }
-  //       Object containerEventParams[] = new Object[2];
-  //       containerEventParams[0] = type;
-  //       containerEventParams[1] = data;
-  //       containerEventMethod.invoke(context, containerEventParams);
-  //     }
-
-  //   /**
-  //    * Notify all session event listeners that a particular event has
-  //    * occurred for this Session.  The default implementation performs
-  //    * this notification synchronously using the calling thread.
-  //    *
-  //    * @param type Event type
-  //    * @param data Event data
-  //    */
-  //   public void
-  //     fireSessionEvent(String type, Object data)
-  //     {
-  //       if (listeners.size() < 1)
-  // 	return;
-  //       SessionEvent event = new SessionEvent(this, type, data);
-  //       SessionListener list[] = new SessionListener[0];
-  //       synchronized (listeners)
-  //       {
-  // 	list = (SessionListener[]) listeners.toArray(list);
-  //       }
-
-  //       for (int i = 0; i < list.length; i++)
-  // 	((SessionListener) list[i]).sessionEvent(event);
-  //     }
-
-  //   public void
-  //     notifySessionCreated(javax.servlet.http.HttpSession session)
-  //     {
-  //       // Notify interested session event listeners
-  //       fireSessionEvent(Session.SESSION_CREATED_EVENT, null);
-
-  //       // Notify interested application event listeners
-  //       Context context=(Context)manager.getContainer();
-  //       Object listeners[]=context.getApplicationLifecycleListeners();
-  //       if (listeners!=null)
-  //       {
-  // 	HttpSessionEvent event = new HttpSessionEvent(getSession());
-  // 	for (int i = 0; i < listeners.length; i++)
-  // 	{
-  // 	  Object tmp=listeners[i];
-  // 	  if ((tmp instanceof HttpSessionListener))
-  // 	    notifySessionCreated((HttpSessionListener)tmp, event);
-  // 	}
-  //       }
-  //     }
-
-  //   public void
-  //     notifySessionCreated(HttpSessionListener listener, HttpSessionEvent event)
-  //     {
-  //       // WTF !!
-  //       try
-  //       {
-  // 	fireContainerEvent(context, "beforeSessionCreated", listener);
-  // 	super.notifySessionCreated(listener, event);
-  // 	fireContainerEvent(context, "afterSessionCreated", listener);
-  //       }
-  //       catch (Throwable t)
-  //       {
-  // 	try
-  // 	{
-  // 	  fireContainerEvent(context, "afterSessionCreated", listener);
-  // 	}
-  // 	catch (Exception e)
-  // 	{
-  // 	  ;
-  // 	}
-  // 	// FIXME - should we do anything besides log these?
-  // 	log(sm.getString("standardSession.sessionEvent"), t);
-  //       }
-  //     }
-
-  //   public void
-  //     notifySessionDestroyed(javax.servlet.http.HttpSession session)
-  //   {
-  //     int n=_sessionListeners.size();
-  //     if (n>0)
-  //     {
-  //       _log.debug(session.getId()+" : notifying session destruction");
-  //       HttpSessionEvent event = new HttpSessionEvent(session);
-
-  //       for(int i=0;i<n;i++)
-  // 	((HttpSessionListener)_sessionListeners.get(i)).sessionDestroyed(event);
-
-  //       event=null;
-  //     }
-  //   }
-
 }
