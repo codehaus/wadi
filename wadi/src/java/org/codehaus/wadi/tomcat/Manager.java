@@ -20,7 +20,6 @@ package org.codehaus.wadi.tomcat;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
