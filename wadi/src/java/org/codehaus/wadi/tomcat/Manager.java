@@ -150,39 +150,24 @@ public class
   protected static final Test _sessionListenerTest=new Test(){ public boolean test(Object o){return o instanceof HttpSessionListener;} };
   protected static final Test _attributeListenerTest=new Test(){ public boolean test(Object o){return o instanceof HttpSessionAttributeListener;} };
 
-  // TODO - put following two classes into an aspect...
-  protected void fireContainerEvent(String name, Object listener){} // TODO
-
-  class
-    ContextLifecycleListener
-    implements LifecycleListener
+  protected void
+    copySubset(Object[] src, List tgt, Test test)
   {
-    public void
-      lifecycleEvent(LifecycleEvent event)
-    {
-      String type=event.getType();
-      if (type.equals(Lifecycle.AFTER_START_EVENT))
+    if (src!=null)
+      for (int i=0; i<src.length; i++)
       {
-	Context context=((Context)_container);
-	copySubset(context.getApplicationLifecycleListeners(), _sessionListeners,   _sessionListenerTest);
-	copySubset(context.getApplicationEventListeners(),     _attributeListeners, _attributeListenerTest);
- 	_log.info(""+_sessionListeners.size()+"/"+context.getApplicationLifecycleListeners().length+" session listeners added");
-	_log.info(""+_attributeListeners.size()+"/"+context.getApplicationEventListeners().length+" attribute listeners added");
-	((ContainerBase)context).removeLifecycleListener(this);
-      }
-    }
-
-    public void
-      copySubset(Object[] src, List tgt, Test test)
-    {
-      if (src!=null)
-	for (int i=0; i<src.length; i++)
-	{
 	  Object tmp=src[i];
 	  if (test.test(tmp))
 	    tgt.add(tmp);
-	}
-    }
+      }
+  }
+
+  protected void
+    initialiseListeners()
+  {
+    Context context=((Context)_container);
+    copySubset(context.getApplicationLifecycleListeners(), _sessionListeners,   _sessionListenerTest);
+    copySubset(context.getApplicationEventListeners(),     _attributeListeners, _attributeListenerTest);
   }
 
   public synchronized void
@@ -213,11 +198,6 @@ public class
     fm.setFilterName(filterName);
     fm.setURLPattern("/*");
     context.addFilterMap(fm);
-
-    // used to bootstrap our Session and Attribute Listeners lists,
-    // since they are not set up in our context at the point that it
-    // starts us...
-    ((ContainerBase)context).addLifecycleListener(new ContextLifecycleListener());
 
     // is this a distributable webapp ?
     boolean distributable=context.getDistributable();
@@ -288,4 +268,16 @@ public class
 
   protected org.codehaus.wadi.shared.HttpSessionImpl createImpl(){return new HttpSessionImpl();}
   protected void destroyImpl(org.codehaus.wadi.shared.HttpSessionImpl impl){} // TODO - cache later
+
+  public void
+    setFilter(Filter filter)
+  {
+    super.setFilter(filter);
+
+    // this is a hack - but the last plae where we get a chance to do
+    // something during TC's startup routine - we have to wait until
+    // this point, because TC does not instantiate these listeners
+    // until after starting the session manager...
+    initialiseListeners();
+  }
 }

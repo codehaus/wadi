@@ -1104,4 +1104,7 @@ public abstract class
   protected StreamingStrategy _streamingStrategy;
   public StreamingStrategy getStreamingStrategy(){return _streamingStrategy;}
   public void setStreamingStrategy(StreamingStrategy streamingStrategy){_streamingStrategy=streamingStrategy;}
+
+  protected Filter _filter;
+  public void setFilter(Filter filter){_filter=filter;}
 }
