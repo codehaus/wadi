@@ -20,6 +20,7 @@ package org.codehaus.wadi.shared;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -224,5 +225,7 @@ public abstract class
   }
 
   public void setId(String id){_id=id;}
-}
 
+  protected transient SynchronizedBoolean _beingInvalidated=new SynchronizedBoolean(false);
+  public SynchronizedBoolean getBeingInvalidated(){return _beingInvalidated;}
+}
