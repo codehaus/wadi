@@ -154,8 +154,9 @@ public class
   public static boolean
     proxy(String hostname, int port, HttpServletRequest request, HttpServletResponse response)
     {
-      HttpMethod method=null;
+      if (_log.isDebugEnabled())_log.debug(request.getRequestedSessionId()+": proxying ("+hostname+":"+port+")");
 
+      HttpMethod method=null;
       String m=request.getMethod();
 
       if (_log.isTraceEnabled()) _log.trace("method="+m);
@@ -175,7 +176,6 @@ public class
       if (request.isRequestedSessionIdFromURL())
 	cpath+=";jsessionid="+request.getRequestedSessionId();
 
-      if (_log.isInfoEnabled()) _log.info("cpath::"+cpath);
       method.setPath(cpath);
       method.setQueryString(request.getQueryString());
 
@@ -209,7 +209,8 @@ public class
  	{
  	  javax.servlet.http.Cookie c=cookies[i];
  	  String domain=c.getDomain();
-	  if (domain==null) domain="192.168.0.2"; // TODO - tmp test
+	  if (domain==null) domain=hostname; // TODO - tmp test
+	  	  //	  domain=null;
  	  String path=c.getPath();
 	  if (path==null) path=request.getContextPath(); // fix for Jetty
  	  if (_log.isTraceEnabled()) _log.trace("PATH: value="+path+" length="+(path==null?0:path.length()));
