@@ -43,20 +43,20 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
-import org.codehaus.activecluster.ClusterListener;
 import org.codehaus.activecluster.ClusterEvent;
 import org.codehaus.activecluster.ClusterFactory;
+import org.codehaus.activecluster.ClusterListener;
 import org.codehaus.activecluster.Node;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
+import org.codehaus.wadi.HttpSession;
+import org.codehaus.wadi.MigrationService;
 import org.codehaus.wadi.impl.FilePassivationStrategy;
 import org.codehaus.wadi.impl.NoRoutingStrategy;
 import org.codehaus.wadi.impl.RelativeEvictionPolicy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.impl.TotalEvictionPolicy;
-import org.codehaus.wadi.impl.sync.MigrationService;
-import org.codehaus.wadi.HttpSession;
 import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
 
 // TODO - replace some form of location discovery protocol
@@ -324,6 +324,10 @@ public abstract class
   public PassivationStrategy getPassivationStrategy(){return _passivationStrategy;}
   public void setPassivationStrategy(PassivationStrategy policy){_passivationStrategy=policy;}
 
+  protected MigrationService _migrationService;
+  public MigrationService getMigrationService(){return _migrationService;}
+  public void setMigrationService(MigrationService migrationService){_migrationService=migrationService;}
+
   //-----------//
   // Lifecycle //
   //-----------//
@@ -342,8 +346,6 @@ public abstract class
 
 
   protected String _configurationResource="WEB-INF/wadi-web.xml";
-
-  protected org.codehaus.wadi.MigrationService _ms=new org.codehaus.wadi.impl.async.MigrationService();
 
   public synchronized void
     start()
@@ -375,6 +377,7 @@ public abstract class
     //      System.setSecurityManager(new SecurityManager(System.getSecurityManager()));// TODO
 
     // default migration policy
+    if (_migrationService==null) _migrationService=new org.codehaus.wadi.impl.async.MigrationService();
     if (_passivationStrategy==null) _passivationStrategy=new FilePassivationStrategy(new File("/tmp/wadi"));
     if (_streamingStrategy==null) _streamingStrategy=new SimpleStreamingStrategy();
     if (_passivationStrategy.getStreamingStrategy()==null) _passivationStrategy.setStreamingStrategy(_streamingStrategy);
@@ -387,6 +390,7 @@ public abstract class
 
     if (_autoLocationAddress==null) setAutoLocationAddress("228.5.6.7");
 
+    // this needs to be a pluggable part of the sync.MigrationService
     _locationServer=new LocationServer(getAutoLocationAddress(),
 				       getAutoLocationPort(),
 				       5000L,	// 5 seconds
@@ -395,7 +399,7 @@ public abstract class
 				       );
     _locationClient=new LocationClient(getAutoLocationAddress(), getAutoLocationPort(), 5000L);
     _locationServer.start();
-    _migrationServer=new MigrationService.Server(this, _implFactory, _local, _streamingStrategy);
+    _migrationServer=new org.codehaus.wadi.impl.sync.MigrationService.Server(this, _implFactory, _local, _streamingStrategy);
     _migrationServer.start();
     _running=true;
 
@@ -407,8 +411,8 @@ public abstract class
       _cluster=_clusterFactory.createCluster("org.codehaus.wadi#cluster");
       _cluster.addClusterListener(new MembershipListener());
 
-      _ms.setManager(this);
-      _ms.getServer().start();
+      _migrationService.setManager(this);
+      _migrationService.getServer().start();
 
       _cluster.start(); // should include webapp context
     }
@@ -454,7 +458,7 @@ public abstract class
     // running until afterwards for the moment...
     _locationServer.stop();
     _locationServer=null;
-    _ms.getServer().stop();
+    _migrationService.getServer().stop();
     _migrationServer.stop();
     _migrationServer=null;
 
@@ -936,7 +940,7 @@ public abstract class
   //----------------------------------------
   // Migration
 
-  MigrationService.Server _migrationServer;
+  org.codehaus.wadi.impl.sync.MigrationService.Server _migrationServer;
   protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor();
 
   //----------------------------------------

@@ -36,6 +36,10 @@
  </Set>
 -->
 
+ <Set name="MigrationService">
+  <New class="org.codehaus.wadi.impl.async.MigrationService"/>
+ </Set>
+
   <!-- used to stream sessions between peers -->
   <Set name="StreamingStrategy">
     <New class="org.codehaus.wadi.impl.SimpleStreamingStrategy"/><!-- no compression -->
