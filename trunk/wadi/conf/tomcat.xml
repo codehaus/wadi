@@ -77,7 +77,7 @@
 	>
 
 	<Context path="/wadi" docBase="${wadi.home}">
-	  <Manager className="org.codehaus.wadi.tomcat.Manager" distributable="true" configFile="${wadi.home}/WEB-INF/tomcat-web.xml">
+	  <Manager className="org.codehaus.wadi.tomcat.Manager">
 	    <PassivationStrategy className="org.codehaus.wadi.plugins.FilePassivationStrategy">
 	    </PassivationStrategy>
           </Manager>

@@ -132,7 +132,9 @@ public class
     _handler.mapPathToFilter("/*", filterName); // TODO - improve mapping, all 'stateful' servlets/filters
 
     _context=(WebApplicationContext)_handler.getHttpContext();
-    setDistributable(_context.isDistributable());
+    boolean distributable=_context.isDistributable();
+    if (distributable && !_distributable)
+      setDistributable(distributable);
   }
 
   public synchronized void
