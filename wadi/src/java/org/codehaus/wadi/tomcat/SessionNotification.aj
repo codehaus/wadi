@@ -19,30 +19,70 @@ package org.codehaus.wadi.tomcat;
 
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Method;
+import java.util.List;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
 import org.apache.catalina.Container;
 import org.apache.catalina.DefaultContext;
+import org.apache.catalina.Session;
+import org.apache.catalina.SessionEvent;
+import org.apache.catalina.SessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-
-// used by:
-
-// Session: creation, destruction
 
 // corresponds to calls to fireSessionEvent in
 // org.apache.catalina.session.StandardSession
 
+// why is the session rather than the manager sending out
+// notifications of its construction and destriction? - How am I meant
+// to register interest in its construction before it is constructued
+// :-)
+
+// why, with all the existing schemes for notification, does TC need
+// yet another one?
 
 public aspect
   SessionNotification
 {
   protected static final Log _log=LogFactory.getLog(SessionNotification.class);
 
-  pointcut notify(HttpSession session)
-    : execution(void HttpSession.nowhere(HttpSession)) && target(session);
+  pointcut notifySessionCreated(Manager manager, HttpSessionListener listener, HttpSessionEvent event)
+    : (execution(void org.codehaus.wadi.shared.Manager.notifySessionCreated(HttpSessionListener, HttpSessionEvent)) && args(listener, event) && target(manager));
+
+  pointcut notifySessionDestroyed(Manager manager, HttpSessionListener listener, HttpSessionEvent event)
+    : (execution(void org.codehaus.wadi.shared.Manager.notifySessionDestroyed(HttpSessionListener, HttpSessionEvent)) && args(listener, event) && target(manager));
+
+  before(Manager manager, HttpSessionListener listener, HttpSessionEvent event)
+    : notifySessionCreated(manager, listener, event)
+  {
+    _log.trace("notifySessionCreated pointcut");
+    notify((HttpSession)event.getSession(), Session.SESSION_CREATED_EVENT);
+  }
+
+  after(Manager manager, HttpSessionListener listener, HttpSessionEvent event)
+    : notifySessionDestroyed(manager, listener, event)
+  {
+    _log.trace("notifySessionDestroyed pointcut");
+    notify((HttpSession)event.getSession(), Session.SESSION_DESTROYED_EVENT);
+  }
 
   void
-    around(HttpSession session)
-    : notify(session)
-  {}
+    notify(HttpSession session, String name)
+  {
+    List listeners=session.getSessionListeners();
+    int n=listeners.size();
+    if (n>0)
+    {
+      SessionEvent event=new SessionEvent(session, name, null);
+      // tomcat makes a copy and performs the notification outside
+      // the synchronized block - does anyone really register with
+      // an individual session ?
+      synchronized (listeners)
+      {
+	for (int i = 0; i<n; i++)
+	  ((SessionListener) listeners.get(i)).sessionEvent(event);
+      }
+      event=null;
+    }
+  }
 }
