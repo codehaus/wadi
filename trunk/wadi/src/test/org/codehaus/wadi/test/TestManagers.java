@@ -215,7 +215,11 @@ public class
 	  javax.servlet.http.HttpSession session=jetty.getHttpSession(id);
 	  assertTrue(session.getId()==id); // must be ==/same object
 	  assertTrue(jetty.getSessionDestructionCounter()==0);
+	  assertTrue(jetty.getSessionInvalidationCounter()==0);
+	  assertTrue(jetty.getSessionExpirationCounter()==0);
 	  session.invalidate();
+	  assertTrue(jetty.getSessionInvalidationCounter()==1);
+	  assertTrue(jetty.getSessionExpirationCounter()==0);
 	  session=null;
 	  session=jetty.getHttpSession(id); // invalid sessions should not be returned...
 	  assertTrue(session==null);
@@ -251,8 +255,12 @@ public class
 	  }
 	  assertTrue(session.getId()==id); // must be ==/same object
 	  assertTrue(tomcat.getSessionDestructionCounter()==0);
+	  assertTrue(tomcat.getSessionInvalidationCounter()==0);
+	  assertTrue(tomcat.getSessionExpirationCounter()==0);
 	  session.invalidate();
+	  assertTrue(tomcat.getSessionInvalidationCounter()==1);
 	  assertTrue(tomcat.getSessionDestructionCounter()==1);
+	  assertTrue(tomcat.getSessionExpirationCounter()==0);
 	}
       };
     runInvocation(_tomcatFilter, _tomcat, i, req, res);

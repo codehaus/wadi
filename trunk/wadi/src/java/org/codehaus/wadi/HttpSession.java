@@ -99,8 +99,11 @@ public class
 	// notification MUST be done synchronously on the request thread
 	// because Servlet-2.4 insists that it is given BEFORE
 	// invalidation!
-	impl.getWadiManager().releaseImpl(impl);
+	Manager mgr=impl.getWadiManager();
+	mgr.releaseImpl(impl);
+	mgr._sessionInvalidationCounter++;
 	setValid(false);		// do we need this flag ?
+
 	if (_log.isDebugEnabled()) _log.debug(id+": invalidation");
       }
       else
