@@ -73,10 +73,10 @@ public class
     doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
     throws IOException, ServletException
     {
-//	HttpServletRequest req=new RequestWrapper((HttpServletRequest)request);
-//	HttpServletResponse res=new ResponseWrapper((HttpServletResponse)response);
-	HttpServletRequest req=(HttpServletRequest)request;
-	HttpServletResponse res=(HttpServletResponse)response;
+      //	HttpServletRequest req=new RequestWrapper((HttpServletRequest)request);
+      //	HttpServletResponse res=new ResponseWrapper((HttpServletResponse)response);
+      HttpServletRequest req=(HttpServletRequest)request;
+      HttpServletResponse res=(HttpServletResponse)response;
       String sessionId=req.getRequestedSessionId();
       if (sessionId==null)
       {
@@ -84,7 +84,7 @@ public class
 	// request is not taking part in a session - do we want to
 	// risk it creating a new one here, or should we proxy it to a
 	// node that is carrying fewer sessions than we are...? - TODO
-	process(req, res, chain, sessionId, null, null);
+	process(req, res, chain, sessionId);
       }
       else
       {
@@ -93,6 +93,50 @@ public class
 	_log.trace("internal session id: "+sessionId);
 	// request claims to be associated with a session...
 	HttpSessionImpl impl=(HttpSessionImpl)_manager.get(sessionId);
+
+	if (impl!=null)
+	{
+	  // tricky logic here - we have to deal with the case where
+	  // the session is local when the request tries to acquire a
+	  // shared lock, but it has to wait on an exclusive lock that
+	  // may move the session elsewhere or destroy it. By the time
+	  // the request thread succeeds in acquiring access to the
+	  // session it has gone...
+	  _log.trace(sessionId+": may be local");
+	  Sync appLock=impl.getApplicationLock();
+	  boolean acquired=false;
+	  if (appLock!=null)
+	    try
+	    {
+	      appLock.acquire();
+	      acquired=true;
+	      org.codehaus.wadi.shared.HttpSession facade=(org.codehaus.wadi.shared.HttpSession)impl.getFacade();
+	      if (facade!=null && facade.isValid())	// hasn't moved whilst we were getting lock...
+	      {
+		_log.trace(sessionId+": still here");
+		chain.doFilter(req, res);
+	      }
+	      else
+	      {
+		_log.info(sessionId+": was local but emmigrated or was destroyed before we could gain access");
+		impl=null;
+	      }
+	    }
+	    catch (InterruptedException e)
+	    {
+	      _log.warn("unexpected interruption", e);
+	      Thread.interrupted();
+	      org.codehaus.wadi.shared.HttpSession facade=(org.codehaus.wadi.shared.HttpSession)impl.getFacade();
+	      if (facade==null || !facade.isValid())
+		impl=null;
+	    }
+	    finally
+	    {
+	      if (acquired)
+		impl.getApplicationLock().release();
+	    }
+	}
+
 	if (impl==null)
 	{
 	  _log.trace(sessionId+": not local or passivated");
@@ -116,20 +160,15 @@ public class
 	    // another node carrying fewer sessions, or strip off
 	    // session id and redirect (somehow) back up to lb to make
 	    // decision for us...
-	    process(req, res, chain, sessionId, null, null);
+	    process(req, res, chain, sessionId);
 	  }
-	}
-	else
-	{
-	  _log.trace(sessionId+": is local");
-	  process(req, res, chain, sessionId, impl.getApplicationLock(), impl.getContainerLock());
 	}
       }
     }
 
   public void
     process(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
-	    String sessionId, Sync readLock, Sync writeLock)
+	    String sessionId)
     throws IOException, ServletException
   {
     //    assert Thread.currentThread().getName().startsWith("PoolThread-"); // TODO - Jetty only
@@ -141,33 +180,19 @@ public class
 
     try
     {
-      if (readLock!=null)
-	readLock.acquire();
-
       chain.doFilter(request, response);
-    }
-    catch (InterruptedException e)
-    {
-      _log.warn("unexpected interruption", e);
-      Thread.interrupted();
-      return;
     }
     finally
     {
-      if(readLock!=null)
-	readLock.release();
-      else
+      // the session may have just been created - if so we need to
+      // look it up and release the read lock...
+      javax.servlet.http.HttpSession session=request.getSession();
+      if (session!=null)
       {
-	// the session may have just been created - if so we need to
-	// look it up and release the read lock...
-	javax.servlet.http.HttpSession session=request.getSession();
-	if (session!=null)
-	{
-	  HttpSessionImpl impl=(HttpSessionImpl)_manager.get(_manager.getRoutingStrategy().strip(_manager.getBucketName(), session.getId()));
-	  _log.trace(sessionId+"; just created - releasing");
-	  if (impl!=null)
-	    impl.getApplicationLock().release();
-	}
+	HttpSessionImpl impl=(HttpSessionImpl)_manager.get(_manager.getRoutingStrategy().strip(_manager.getBucketName(), session.getId()));
+	_log.trace(sessionId+"; just created - releasing");
+	if (impl!=null)
+	  impl.getApplicationLock().release();
       }
     }
 
