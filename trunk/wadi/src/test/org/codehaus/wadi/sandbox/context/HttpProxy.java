@@ -29,7 +29,16 @@ import javax.servlet.http.HttpServletResponse;
  * @version $Revision$
  */
 public interface HttpProxy extends Serializable {
+
 	public boolean canProxy(HttpServletRequest req);
 	public boolean isStateful(HttpServletRequest hreq);
-	public void proxy(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res);
+	
+	/**
+	 * @param location - host and port to proxy req/res to
+	 * @param req - the request
+	 * @param res - the response
+	 * @return - true if req/res was proxied successfully (even if remote processing was unsuccessful)
+	 * @throws Exception - if something went wrong locally e.g. we could not establish a connection
+	 */
+	public boolean proxy(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res) throws Exception;
 }

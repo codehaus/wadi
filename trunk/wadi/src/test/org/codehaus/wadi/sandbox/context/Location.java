@@ -36,5 +36,5 @@ public interface Location extends Motable, Serializable {
 	 * @param promotionLock - used to collapse concurrent threads seeking same context into one stack descent
 	 * @return - null if no migration has occurred (in which case the promotionLock has been released), or an immigrating Context (in which case the promotionLock should be released as soon as it has been promoted).
 	 */
-	public Context proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock);
+	public boolean proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock);
 }
