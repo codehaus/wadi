@@ -52,25 +52,21 @@ public class SerialContextualiser extends AbstractThinContextualiser {
 	}
 	
 	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
-		Sync lock=_collapser.getLock(id);
-		boolean acquired=false;
-		boolean released=false;
-		try {
-			do {
-				try {
-					lock.acquire();
-					acquired=true;
-				} catch (TimeoutException e) {
-					_log.error("unexpected timeout - proceding without lock", e);
-				} catch (InterruptedException e) {
-					_log.warn("unexpected interruption", e);
-				}
-			} while (Thread.interrupted());
-			
-			// lock is to be released as soon as context is available to subsequent contextualisations...
-			return (released=_next.contextualise(hreq, hres, chain, id, immoter, acquired?lock:_dummyLock, localOnly));
-		} finally {
-			if (acquired && !released) lock.release();
-		}
+	    Sync lock=_collapser.getLock(id);
+	    boolean acquired=false;
+	    boolean released=false;
+	    try {
+	        try {
+	            Utils.acquireUninterrupted(lock);
+	            acquired=true;
+	        } catch (TimeoutException e) {
+	            _log.error("unexpected timeout - proceding without lock", e);
+	        }
+	        
+	        // lock is to be released as soon as context is available to subsequent contextualisations...
+	        return (released=_next.contextualise(hreq, hres, chain, id, immoter, acquired?lock:_dummyLock, localOnly));
+	    } finally {
+	        if (acquired && !released) lock.release();
+	    }
 	}
 }

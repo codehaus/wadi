@@ -83,19 +83,16 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	    Sync lock=((Context)motable).getSharedLock();
 	    boolean acquired=false;
 	    try{
-	        do {
-	            try {
-	                lock.acquire();
-	                acquired=true;
-	            } catch (TimeoutException e) {
-	                _log.error("unexpected timeout - continuing without lock: "+id, e);
-	            } catch (InterruptedException e) {
-	                _log.warn("unexpected interruption - continuing: "+id, e);
-	            }
-	        } while (Thread.interrupted());
-
+	        try {
+	            Utils.acquireUninterrupted(lock);
+	            acquired=true;
+	        } catch (TimeoutException e) {
+	            _log.error("unexpected timeout - continuing without lock: "+id, e);
+	            // give this some more thought - TODO
+	        }
+	        
 	        if (promotionLock!=null) promotionLock.release();
-
+	        
 	        // should we wrap req with a session-aware wrapper ?
 	        chain.doFilter(req, res);
 	        return true;
@@ -112,16 +109,12 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 
 	    public boolean prepare(String id, Motable emotable, Motable immotable) {
 	        Sync lock=((Context)emotable).getExclusiveLock();
-	        do {
 	            try {
-	                lock.acquire();
+	                Utils.acquireUninterrupted(lock);
 	            } catch (TimeoutException e) {
 	                _log.error("unexpected timeout", e);
 	                return false;
-	            } catch (InterruptedException e) {
-	                _log.warn("unexpected interruption - continuing", e);
 	            }
-	        } while (Thread.interrupted());
 
 	        return super.prepare(id, emotable, immotable);
 	    }
