@@ -20,8 +20,10 @@ package org.codehaus.wadi.shared;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
-
+import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
+import org.codehaus.activecluster.Cluster;
 
 public class
     EmmigrationCommand
@@ -33,13 +35,17 @@ public class
   protected int             _port;
   protected long            _timeout;
 
+  protected Destination     _replyTo;
+
   public
-    EmmigrationCommand(String id, InetAddress address, int port, long timeout)
+    EmmigrationCommand(String id, InetAddress address, int port, long timeout, Destination replyTo)
   {
     _id      =id;
     _address =address;
     _port    =port;
     _timeout =timeout;
+
+    _replyTo=replyTo;
   }
 
   public void
@@ -49,10 +55,33 @@ public class
 
     if ((impl=(HttpSessionImpl)manager._local.get(_id))!=null)
     {
+      Destination dest=null;
+      try {dest=message.getJMSReplyTo();} catch (JMSException e) {_log.warn("JMSReplyTo not set on emmigration request", e);}
+      _log.info("reply to: "+dest);
+      dest=_replyTo;
+      _log.info("reply to: "+dest);
+
       MigrationService.Client client=new MigrationService.Client();
       Collection list=new ArrayList(1);
       list.add(impl);		// must be mutable
       client.emmigrate(manager._local, list, _timeout, _address, _port, manager.getStreamingStrategy(), true);
+
+      EmmigrationResponse er=new EmmigrationResponse(_id, _timeout, null);
+
+      Cluster cluster=manager.getCluster();
+
+      try
+      {
+	ObjectMessage om = cluster.createObjectMessage();
+	om.setJMSReplyTo(cluster.getLocalNode().getDestination());
+	om.setObject(er);
+	cluster.send(dest, om);
+	_log.info("sent emmigration response to: "+dest);
+      }
+      catch (JMSException e)
+      {
+	_log.warn("could not send emmigration response to: "+dest, e);
+      }
     }
     else
     {
