@@ -57,12 +57,10 @@ import org.codehaus.wadi.impl.RelativeEvictionPolicy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.impl.TotalEvictionPolicy;
-//import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.core.io.InputStreamResource;
 
 // TODO - replace some form of location discovery protocol
 
@@ -373,7 +371,7 @@ public abstract class
 	Manager me=(Manager)dlbf.getBean("ConfiguredManager");
 	assert me==this;
 
-	if (_log.isTraceEnabled()) _log.trace("configured from WADI descriptor: "+_configurationResource);
+	_log.info("configured from WADI descriptor: "+_configurationResource);
       }
       else
 	_log.warn("could not find WADI descriptor: "+_configurationResource);
