@@ -477,3 +477,8 @@ not one that doesn't exist?
 now that facade is set in HttpSessionImpl.readObject ensure that it is
 not being done unecessarily elsewhere.
 
+----------------------------------------
+
+we need a good joinpoint to hang session creation and destruction
+related aspects from - how about a session commission/decommission
+method pair.

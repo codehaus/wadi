@@ -41,7 +41,7 @@ public aspect
       {
 	try
 	{
-	  notifyAttributeRemoved(ahsi.getWadiManager().getAttributeListeners(), ahsi.getFacade(), key, oldVal);
+	  ahsi.getWadiManager().notifySessionAttributeRemoved(ahsi.getFacade(), key, oldVal);
 	}
 	catch (Throwable t)
 	{
@@ -67,9 +67,9 @@ public aspect
       {
 	// send attribute notifications
 	if (oldVal!=null)
-	  notifyAttributeReplaced(ahsi.getWadiManager().getAttributeListeners(), facade, key, oldVal, val);
+	  ahsi.getWadiManager().notifySessionAttributeReplaced(facade, key, oldVal, val);
 	else
-	  notifyAttributeAdded(ahsi.getWadiManager().getAttributeListeners(), facade, key, val);
+	  ahsi.getWadiManager().notifySessionAttributeAdded(facade, key, val);
       }
       catch (Throwable t)
       {
@@ -77,55 +77,5 @@ public aspect
       }
 
       return returnVal?oldVal:null;
-    }
-
-  // notification
-
-  protected void
-    notifyAttributeAdded(List listeners, javax.servlet.http.HttpSession session, String key, Object val)
-    {
-      int n=listeners.size();
-      if (n>0)
-      {
-	_log.debug(session.getId()+" : notifying attribute addition : "+key+" : null --> "+val);
-
-	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, val);
-	for(int i=0;i<n;i++)
-	  ((HttpSessionAttributeListener) listeners.get(i)).attributeAdded(event);
-
-	event=null;
-      }
-    }
-
-  protected void
-    notifyAttributeReplaced(List listeners, javax.servlet.http.HttpSession session, String key, Object oldVal, Object newVal)
-    {
-      int n=listeners.size();
-      if (n>0)
-      {
-	_log.debug(session.getId()+" : notifying attribute replacement : "+key+" : "+oldVal+" --> "+newVal);
-	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, oldVal);
-
-	for(int i=0;i<n;i++)
-	  ((HttpSessionAttributeListener) listeners.get(i)).attributeReplaced(event);
-
-	event=null;
-      }
-    }
-
-  protected void
-    notifyAttributeRemoved(List listeners, javax.servlet.http.HttpSession session, String key, Object val)
-    {
-      int n=listeners.size();
-      if (n>0)
-      {
-	_log.debug(session.getId()+" : notifying attribute removal : "+key+" : "+val+" --> null");
-	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, val);
-
-	for(int i=0;i<n;i++)
-	  ((HttpSessionAttributeListener) listeners.get(i)).attributeRemoved(event);
-
-	event=null;
-      }
     }
 }

@@ -34,6 +34,7 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
@@ -557,8 +558,6 @@ public abstract class
   // session events
   //--------------------
 
-  // should this all be delegated to the event raising interceptor....
-
   public void
     notifySessionCreated(javax.servlet.http.HttpSession session)
   {
@@ -569,7 +568,7 @@ public abstract class
       HttpSessionEvent event = new HttpSessionEvent(session);
 
       for(int i=0;i<n;i++)
-	((HttpSessionListener)_sessionListeners.get(i)) .sessionCreated(event);
+	notifySessionCreated((HttpSessionListener)_sessionListeners.get(i), event);
 
       event=null;
     }
@@ -585,11 +584,66 @@ public abstract class
       HttpSessionEvent event = new HttpSessionEvent(session);
 
       for(int i=0;i<n;i++)
-	((HttpSessionListener)_sessionListeners.get(i)).sessionDestroyed(event);
+	notifySessionDestroyed((HttpSessionListener)_sessionListeners.get(i), event);
 
       event=null;
     }
   }
+
+  protected void
+    notifySessionAttributeAdded(javax.servlet.http.HttpSession session, String key, Object val)
+    {
+      int n=_attributeListeners.size();
+      if (n>0)
+      {
+	_log.debug(session.getId()+" : notifying attribute addition : "+key+" : null --> "+val);
+
+	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, val);
+	for(int i=0;i<n;i++)
+	  notifySessionAttributeAdded((HttpSessionAttributeListener)_attributeListeners.get(i), event);
+
+	event=null;
+      }
+    }
+
+  protected void
+    notifySessionAttributeReplaced(javax.servlet.http.HttpSession session, String key, Object oldVal, Object newVal)
+    {
+      int n=_attributeListeners.size();
+      if (n>0)
+      {
+	_log.debug(session.getId()+" : notifying attribute replacement : "+key+" : "+oldVal+" --> "+newVal);
+	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, oldVal);
+
+	for(int i=0;i<n;i++)
+	  notifySessionAttributeReplaced((HttpSessionAttributeListener)_attributeListeners.get(i), event);
+
+	event=null;
+      }
+    }
+
+  protected void
+    notifySessionAttributeRemoved(javax.servlet.http.HttpSession session, String key, Object val)
+    {
+      int n=_attributeListeners.size();
+      if (n>0)
+      {
+	_log.debug(session.getId()+" : notifying attribute removal : "+key+" : "+val+" --> null");
+	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, val);
+
+	for(int i=0;i<n;i++)
+	  notifySessionAttributeRemoved((HttpSessionAttributeListener)_attributeListeners.get(i), event);
+
+	event=null;
+      }
+    }
+
+  // these are split out so that they may be easily aspected (event notifications for tomcat...
+  public void notifySessionCreated(HttpSessionListener listener, HttpSessionEvent event){listener.sessionCreated(event);}
+  public void notifySessionDestroyed(HttpSessionListener listener, HttpSessionEvent event){listener.sessionDestroyed(event);}
+  public void notifySessionAttributeAdded(HttpSessionAttributeListener listener, HttpSessionBindingEvent event){listener.attributeAdded(event);}
+  public void notifySessionAttributeRemoved(HttpSessionAttributeListener listener, HttpSessionBindingEvent event){listener.attributeRemoved(event);}
+  public void notifySessionAttributeReplaced(HttpSessionAttributeListener listener, HttpSessionBindingEvent event){listener.attributeReplaced(event);}
 
   // this should be abstracted into a ReplicatingManager...
 

@@ -18,6 +18,8 @@
 package org.codehaus.wadi.tomcat;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.catalina.Container;
 import org.apache.catalina.DefaultContext;
 import org.apache.commons.logging.Log;
@@ -25,20 +27,16 @@ import org.apache.commons.logging.LogFactory;
 
 // TODO - this aspect relies on a corresponding getter for each setter
 // to which it is attached - no getter, no dice. (can we use a
-// compile-time aspect to insistthis getter exists?)
-
-// TODO - because this is dynamic (in the way it calculates bean
-// getter and event names from the setter name), it is not the fastest
-// way to do this, but these setters should be called so infrequently
-// that this is not important...
+// compile-time aspect to insist this getter exists?)
 
 // TODO - it is ugly and prone to fossilisation to define aspects like
 // this. In future this should be done by xdoclet - investigate how
 // barter.sf.net achieves same result...
 
-// TODO - it should be possible to precache all the string
-// manipulation into a lookup table, along with method/field objects
-// etc, so no allocation is done during normal running.
+// NB - although, from looking at Tomcat code it seems that we should
+// also support this for HttpSession.setAuthType() and setPrincipal(),
+// I can see no reason to do this as there appears to be no mechanism
+// for registering a listener for these events...
 
 public aspect
   PropertyNotification
@@ -50,23 +48,56 @@ public aspect
     || execution(void Manager.setDefaultContext(DefaultContext)) && target(manager)
     || execution(void Manager.setSessionIdLength(int)) && target(manager);
 
+
+  static class
+    JumpEntry
+  {
+    String _name;
+    Method _getter;
+
+    JumpEntry(Class clazz, String name)
+      throws NoSuchMethodException
+    {
+      _name=name;
+      String suffix=_name.substring(0,1).toUpperCase()+_name.substring(1);
+      _getter=clazz.getMethod("get"+suffix, null);
+    }
+
+    Method getGetter(){return _getter;}
+    String getName(){return _name;}
+  }
+
+  static final Map _jumpTable=new HashMap();
+  static
+  {
+    try
+    {
+      _jumpTable.put("setContainer"       , new JumpEntry(Manager.class, "container"));
+      _jumpTable.put("setDefaultContext"  , new JumpEntry(Manager.class, "defaultContext"));
+      _jumpTable.put("setSessionIdLength" , new JumpEntry(Manager.class, "sessionIdLength"));
+    }
+    catch (Exception e)
+    {
+      _log.error("jump table initialisation failed", e);
+    }
+  }
+
   void
     around(Manager manager)
     : setter(manager)
     {
-      String setter=thisJoinPointStaticPart.getSignature().getName();
+      JumpEntry je=(JumpEntry)_jumpTable.get(thisJoinPointStaticPart.getSignature().getName());
 
       try
       {
-	String getter="g"+setter.substring(1);
-	Method m=manager.getClass().getMethod(getter, null);
-	Object oldValue=m.invoke(manager, null);
+	Method getter=je.getGetter();
+	Object oldValue=getter.invoke(manager, null);
 	proceed(manager);
-	Object newValue=m.invoke(manager, null);
+	Object newValue=getter.invoke(manager, null);
 	// it's probably less work to invoke the getter again, than to
 	// construct thisJoinPoint and call getArgs()[0] on it.
-	String name=setter.substring(3,4).toLowerCase()+setter.substring(4);
-	_log.trace(name+" setter called");
+	String name=je.getName();
+	_log.trace("bound property modified: "+name);
 	manager._propertyChangeListeners.firePropertyChange(name, oldValue, newValue);
       }
       catch (Exception e)
