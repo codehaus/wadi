@@ -392,5 +392,10 @@ public class RWLock implements ReadWriteLock {
     }
   }
 
+  public String
+    toString()
+  {
+    return "<RWLock:"+this.hashCode()+":activeReaders:"+activeReaders_+", waitingReaders:"+waitingReaders_+", activeWriter:"+(activeWriter_!=null)+", waitingWriters:"+waitingWriters_+">";
+  }
 }
 
