@@ -134,7 +134,6 @@ public class
 	file=new File(_dir, id+_suffix);
 	FileOutputStream fos=new FileOutputStream(file);
 	lock=fos.getChannel().lock();
-	_log.trace(file.toString()+": passivating : "+impl);
 	ObjectOutputStream oos=new ObjectOutputStream(fos);
 	impl.writeContent(oos);
 	oos.flush();
@@ -142,6 +141,7 @@ public class
 
 	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
 	file.setLastModified(willTimeOutAt);
+	_log.debug(id+": emmigration (to file: "+file.toString()+")");
 	return true;
       }
       catch (Exception e)
@@ -185,7 +185,7 @@ public class
 	    ObjectInputStream ois=new ObjectInputStream(fis);
 	    impl.readContent(ois);
 	    ois.close();
-	    _log.trace(file.toString()+": activating : "+impl);
+	    _log.debug(impl.getId()+": immigration (from file: "+file.toString()+")");
 	    return true;
 	  }
 	  finally
