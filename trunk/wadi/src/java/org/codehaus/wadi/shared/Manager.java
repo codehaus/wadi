@@ -17,9 +17,11 @@
 
 package org.codehaus.wadi.shared;
 
+import EDU.oswego.cs.dl.util.concurrent.CyclicBarrier;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 import java.io.File;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -29,6 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -391,7 +394,7 @@ public abstract class
     _cluster.createConsumer(_cluster.getLocalNode().getDestination()).setMessageListener(listener);
     _cluster.start(); // should include webapp context
 
-    sendCommandToCluster(new DummyCommand());
+    sendCommandToCluster(new ImmigrateCommand("xxx"));
 
     _log.debug("started");
   }
@@ -409,9 +412,9 @@ public abstract class
     _log.debug("stopping");
     _running=false;
 
-    sendCommandToCluster(new DummyCommand());
+    sendCommandToCluster(new ImmigrateCommand("yyy"));
 
-    // assume that impls havestopped their housekeeping thread/process
+    // assume that impls have stopped their housekeeping thread/process
     // by now...
 
     if (getDistributable() && _passivationStrategy!=null)
@@ -1091,8 +1094,9 @@ public abstract class
     destroyImpl(impl);
   }
 
-  protected abstract HttpSessionImpl createImpl();
-  protected abstract void destroyImpl(HttpSessionImpl impl);
+  protected HttpSessionImplFactory _implFactory;
+  protected HttpSessionImpl createImpl(){return _implFactory.create();}
+  protected void destroyImpl(HttpSessionImpl impl){_implFactory.destroy(impl);}
 
   boolean _reuseSessionIds=false;
   public boolean getReuseSessionIds(){return _reuseSessionIds;}
@@ -1122,21 +1126,59 @@ public abstract class
   public void setConnectionFactory(ActiveMQConnectionFactory connectionFactory){_connectionFactory=connectionFactory;}
   public ActiveMQConnectionFactory getConnectionFactory(){return _connectionFactory;}
 
-  interface Command extends Runnable, java.io.Serializable
+  protected Map _conversations=new HashMap();
+
+//   public boolean
+//     immigrate(HttpSessionImpl impl, String id)
+//     {
+//       boolean success=false;
+//       long timeout=3*1000L;
+//       CyclicBarrier cb=new CyclicBarrier(2);
+//       _conversations.put(id, cb);
+//       sendCommandToCluster(new ImmigrateCommand(id));
+
+//       try
+//       cb.attemptBarrier(timeout);
+
+//       return success;
+//     }
+
+  interface Command extends Serializable
   {
-    public void setManager(Manager manager);
+    public void run(ObjectMessage message, Manager manager);
   };
 
   public static class
     DummyCommand
     implements Command
   {
-    public void run()
+    public void run(ObjectMessage message, Manager manager)
     {
       System.out.println("DummyMessage arrived!!");
     }
+  }
 
-    public void setManager(Manager manager){}
+  public static class
+    ImmigrateCommand
+    implements Command
+  {
+    protected String _id;
+
+    public
+      ImmigrateCommand(String id)
+      {
+	_id=id;
+      }
+
+    public void
+      run(ObjectMessage message, Manager manager)
+    {
+      HttpSessionImpl impl=null;
+      if ((impl=(HttpSessionImpl)manager._local.get(_id))!=null)
+	System.out.println("Session "+_id+" lives here!!");
+      else
+	System.out.println("Session "+_id+" does not live here!!");
+    }
   }
 
   protected void
@@ -1184,8 +1226,7 @@ public abstract class
 	{
 	  try
 	  {
-	    command.setManager(_manager); // inject manager
-	    command.run();
+	    command.run(om, _manager);
 	  }
 	  catch (Throwable t)
 	  {

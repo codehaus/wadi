@@ -177,6 +177,8 @@ public class
     start()
       throws LifecycleException
   {
+    _implFactory=new HttpSessionImplFactory();
+
     try
     {
       super.start();
