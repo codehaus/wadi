@@ -18,10 +18,11 @@
  NAME="org.mortbay:jetty=demo"
  CODE="org.mortbay.jetty.jmx.ServerMBean"
  ARCHIVE="org.mortbay.jetty.jmx.jar" >
- <ARG type="java.lang.String" value="/space1/jules/jetty/Jetty/etc/demo.xml">
+ <ARG type="java.lang.String" value="etc/demo.xml">
 </MLET>
 -->
 
+<!-- what can we do about the need for an absolute path here ? -->
 <MLET
  NAME="org.mortbay:jetty=demo"
  CODE="org.mortbay.jetty.jmx.ServerMBean"

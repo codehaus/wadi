@@ -9,6 +9,7 @@
   <property name="aspectj.home" value="${env.ASPECTJ_HOME}"/>
   <property name="jetty.home" value="${env.JETTY_HOME}"/>
   <property name="tomcat.home" value="${env.TOMCAT_HOME}"/>
+  <property name="java.home" value="${env.JAVA_HOME}"/>
   <property name="wadi.home" value="${basedir}"/>
 
   <!--=========================================================================-->
@@ -51,8 +52,11 @@
   <!--=========================================================================-->
 
   <target name="init">
+    <echo message="wadi.home=${wadi.home}"/>
     <echo message="tomcat.home=${tomcat.home}"/>
     <echo message="jetty.home=${jetty.home}"/>
+    <echo message="aspectj.home=${aspectj.home}"/>
+    <echo message="java.home=${java.home}"/>
   </target>
 
   <target name="clean">
@@ -157,6 +161,9 @@
 	<fileset dir="${wadi.home}">
 	  <include name="lib/commons-logging-1.0.3.jar"/>
 	  <include name="lib/gt2-main.jar"/>
+	</fileset>
+	<fileset dir="${java.home}/.."><!-- this is actually the JRE -->
+	  <include name="lib/tools.jar"/>
 	</fileset>
       </classpath>
       <arg line="file://${wadi.home}/conf/jetty.mlet"/>
