@@ -129,8 +129,8 @@ public class TestCluster extends TestCase {
 			_location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), isa, proxy);
 			//_relocater=new SwitchableRelocationStrategy();
 			_relocater=null;
-			_bottom=new ClusterContextualiser(new DummyContextualiser(), _cmap, new SwitchableEvicter(), _collapser, _dispatcher, _relocater, _location);
-			_top=new MemoryContextualiser(_bottom, _mmap, _evicter, new SimpleStreamingStrategy(), new MyContextPool());
+			_bottom=new ClusterContextualiser(new DummyContextualiser(), new SwitchableEvicter(), _cmap, _collapser, _dispatcher, _relocater, _location);
+			_top=new MemoryContextualiser(_bottom, _evicter, _mmap, new SimpleStreamingStrategy(), new MyContextPool());
 			_bottom.setTop(_top);
 		}
 

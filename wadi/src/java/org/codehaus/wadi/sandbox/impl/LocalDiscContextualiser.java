@@ -43,8 +43,8 @@ public class LocalDiscContextualiser extends AbstractCollapsingContextualiser {
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public LocalDiscContextualiser(Contextualiser next, Map map, Evicter evicter, Collapser collapser, StreamingStrategy streamer, File dir) {
-	    super(next, map, evicter, collapser);
+	public LocalDiscContextualiser(Contextualiser next, Evicter evicter, Map map, Collapser collapser, StreamingStrategy streamer, File dir) {
+	    super(next, evicter, map, collapser);
 	    _streamer=streamer;
 	    assert dir.exists();
 	    assert dir.isDirectory();

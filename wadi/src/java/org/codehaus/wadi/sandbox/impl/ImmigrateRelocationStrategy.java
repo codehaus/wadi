@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Immoter;
@@ -40,6 +39,7 @@ import org.codehaus.wadi.sandbox.SessionRelocationStrategy;
 
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 
 // TODO
 // It should be possible to merge :
@@ -62,17 +62,15 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 	protected final MessageDispatcher _dispatcher;
 	protected final long _timeout;
 	protected final Location _location;
-	protected final StreamingStrategy _streamer;
 	protected final Map _locationMap;
 
 	protected final Map _resRvMap=new HashMap();
 	protected final Map _ackRvMap=new HashMap();
 
-	public ImmigrateRelocationStrategy(MessageDispatcher dispatcher, Location location, long timeout, StreamingStrategy ss, Map locationMap) {
+	public ImmigrateRelocationStrategy(MessageDispatcher dispatcher, Location location, long timeout, Map locationMap) {
 		_dispatcher=dispatcher;
 		_timeout=timeout;
 		_location=location;
-		_streamer=ss;
 		_locationMap=locationMap;
 
 		_dispatcher.register(this, "onMessage");

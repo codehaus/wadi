@@ -75,12 +75,12 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 
 	/**
 	 * @param next
-	 * @param map
 	 * @param evicter
+	 * @param map
 	 * @param location TODO
 	 */
-	public ClusterContextualiser(Contextualiser next, Map map, SwitchableEvicter evicter, Collapser collapser, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) throws JMSException {
-		super(next, map, evicter, collapser);
+	public ClusterContextualiser(Contextualiser next, SwitchableEvicter evicter, Map map, Collapser collapser, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) throws JMSException {
+		super(next, evicter, map, collapser);
 		_dispatcher=dispatcher;
 	    _relocater=relocater;
 	    _location=location;
