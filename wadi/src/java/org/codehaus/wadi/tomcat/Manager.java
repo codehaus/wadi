@@ -288,4 +288,26 @@ public class
   public void notifySessionAttributeAdded(HttpSessionAttributeListener listener, HttpSessionBindingEvent event){super.notifySessionAttributeAdded(listener, event);}
   public void notifySessionAttributeRemoved(HttpSessionAttributeListener listener, HttpSessionBindingEvent event){super.notifySessionAttributeRemoved(listener, event);}
   public void notifySessionAttributeReplaced(HttpSessionAttributeListener listener, HttpSessionBindingEvent event){super.notifySessionAttributeReplaced(listener, event);}
+
+  // needed for 5.0.24
+  // can do
+  public int getActiveSessions(){return _local.size();}
+
+  // can do
+  public int getExpiredSessions(){return getSessionExpirationCounter();}
+  public void setExpiredSessions(int n){setSessionExpirationCounter(n);}
+
+  // can do - total number of sessions created by this manager...
+  public void setSessionCounter(int n){setSessionCounter(n);}
+  public int getSessionCounter(){return getSessionCreationCounter();}
+
+  // this is tricky as well as we will rarely reject new sessions...
+  public int getRejectedSessions(){return getSessionRejectionCounter();}
+  public void setRejectedSessions(int n){setSessionRejectionCounter(n);}
+
+  // I guess they are valid if we are using the AbsoluteEvictionPolicy
+  // - otherwise we will just have to fake it :-)
+  public void setMaxActive(int maxActive){}
+  public int getMaxActive(){return 100000;}
+
 }
