@@ -19,3 +19,5 @@ echo JAVA_HOME=$JAVA_HOME
 echo MAVEN_HOME=$MAVEN_HOME
 
 exec $MAVEN_HOME/bin/maven --emacs --nobanner $@
+
+#./maven.sh -o -Dmaven.test.skip=true clean war
