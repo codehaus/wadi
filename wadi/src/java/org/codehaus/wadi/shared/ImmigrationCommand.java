@@ -23,9 +23,6 @@ import java.util.Collection;
 
 import javax.jms.ObjectMessage;
 
-import org.codehaus.wadi.shared.NewMigrationService.Client;
-
-
 public class
     ImmigrationCommand
     implements Command
