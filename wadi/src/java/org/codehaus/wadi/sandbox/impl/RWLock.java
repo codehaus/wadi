@@ -16,9 +16,6 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 // maybe collapse with superclass when sandbox is merged into mainline.
 
 /**

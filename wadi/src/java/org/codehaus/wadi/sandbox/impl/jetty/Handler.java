@@ -16,13 +16,11 @@
  */
 package org.codehaus.wadi.sandbox.impl.jetty;
 
-import java.io.IOException;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Securable;
-import org.mortbay.http.HttpException;
 import org.mortbay.http.HttpRequest;
 import org.mortbay.http.HttpResponse;
 import org.mortbay.http.handler.AbstractHttpHandler;
@@ -44,7 +42,7 @@ public class Handler extends AbstractHttpHandler {
 		_trustedIps=trustedIps;
 	}
 
-	public void handle(String pathInContext, String pathParams, HttpRequest request, HttpResponse response) throws HttpException, IOException {
+	public void handle(String pathInContext, String pathParams, HttpRequest request, HttpResponse response) {
 		// request must have been :
 		//  proxied by WADI
 		String field=request.getField("Via");

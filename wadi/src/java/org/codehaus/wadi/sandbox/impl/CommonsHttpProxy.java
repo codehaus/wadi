@@ -261,11 +261,12 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		
 		// handler status codes etc.
 		int code=502;
-		String message="Bad Gateway: could not read server response code or message";
+//		String message="Bad Gateway: could not read server response code or message";
 		
 		code=hm.getStatusCode(); // IOException
-		message=hm.getStatusText(); // IOException
-		hres.setStatus(code, message);
+//		message=hm.getStatusText(); // IOException
+		hres.setStatus(code);
+//		hres.setStatus(code, message); - deprecated...
 		
 		try {
 			fromServer=hm.getResponseBodyAsStream(); // IOException

@@ -239,14 +239,15 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 			}
 		} else {
 			code=502;
-			String message="Bad Gateway: could not read server response code or message";
+//			String message="Bad Gateway: could not read server response code or message";
 			try {
 				code=huc.getResponseCode(); // IOException
-				message=huc.getResponseMessage(); // IOException
+//				message=huc.getResponseMessage(); // IOException
 			} catch (IOException e) {
 				throw new IrrecoverableException("problem acquiring http server response code/message", e);
 			} finally {
-				res.setStatus(code, message);
+//				res.setStatus(code, message); - deprecated
+			    	res.setStatus(code);
 			}
 
 			if (code<400) {

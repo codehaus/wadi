@@ -49,6 +49,9 @@ public abstract class AbstractImmoter implements Immoter {
 	}
 
 	public void commit(String id, Motable immotable) {
+	    // This method is provided as a placeholder. Subclasses can call super.rollback().
+	    // If we want to add anything here later, we can.
+	    // It is NOT intended that this form some sort of default behaviour !
 	}
 
 	public void rollback(String id, Motable immotable) {
@@ -59,6 +62,7 @@ public abstract class AbstractImmoter implements Immoter {
 		}
 	}
 	
+	// keep the throws clause - we are defining a method signature for our subtypes
 	public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
 	// most Contextualisers cannot contextualise locally...
 	}

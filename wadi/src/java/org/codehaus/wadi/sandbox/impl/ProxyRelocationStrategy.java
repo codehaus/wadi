@@ -155,7 +155,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 		}
 	}
 
-	public void onMessage(ObjectMessage message, LocationRequest request) throws JMSException {
+	public void onMessage(ObjectMessage message, LocationRequest request) {
 		String id=request.getId();
 		_log.info("receiving location request: "+id);
 		if (_top==null) {
@@ -193,9 +193,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 		}
 
 		public void
-		doFilter(ServletRequest request, ServletResponse response)
-		throws IOException, ServletException
-		{
+		doFilter(ServletRequest request, ServletResponse response) {
 			_log.info("sending location response: "+_id);
 			LocationResponse lr=new LocationResponse(_location, Collections.singleton(_id));
 			try {

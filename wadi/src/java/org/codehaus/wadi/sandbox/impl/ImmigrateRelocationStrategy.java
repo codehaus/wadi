@@ -151,6 +151,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 		}
 
 		public void rollback(String id, Motable motable) {
+		    throw new RuntimeException("NYI");
 		}
 
 		public String getInfo() {
@@ -158,7 +159,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 		}
 	}
 
-	public void onMessage(ObjectMessage om, ImmigrationRequest request) throws JMSException {
+	public void onMessage(ObjectMessage om, ImmigrationRequest request) {
 	    String id=request.getId();
 	    _log.info("receiving immigration request: "+id);
 	    if (_top==null) {
@@ -239,7 +240,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 			// this probably has to by NYI... - nasty...
 		}
 
-		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
+		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) {
 			// does nothing - contextualisation will happen when the session arrives...
 		}
 

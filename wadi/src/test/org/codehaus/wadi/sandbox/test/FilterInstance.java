@@ -38,7 +38,7 @@ public class FilterInstance implements Filter {
 	protected FilterConfig _config;
 	protected Filter _instance;
 
-	public void init(FilterConfig config) throws ServletException {
+	public void init(FilterConfig config) {
 		_config=config;
 	}
 

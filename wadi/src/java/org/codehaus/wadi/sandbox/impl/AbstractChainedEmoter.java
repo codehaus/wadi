@@ -37,5 +37,8 @@ public abstract class AbstractChainedEmoter implements Emoter {
 	}
 
 	public void rollback(String id, Motable emotable) {
+	    // This method is provided as a placeholder. Subclasses can call super.rollback().
+	    // If we want to add anything here later, we can.
+	    // It is NOT intended that this form some sort of default behaviour !
 	}
 }

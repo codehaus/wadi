@@ -22,7 +22,6 @@ import java.net.InetSocketAddress;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -51,7 +50,7 @@ public class ProxyServlet implements Servlet {
 
 	protected HttpProxy _proxy=new StandardHttpProxy("jsessionid");
 
-	public void init(ServletConfig config) throws ServletException {
+	public void init(ServletConfig config) {
 		_config = config;
 		_context = config.getServletContext();
 	}
@@ -60,8 +59,7 @@ public class ProxyServlet implements Servlet {
 		return _config;
 	}
 
-	public void service(ServletRequest req, ServletResponse res)
-	throws ServletException, IOException {
+	public void service(ServletRequest req, ServletResponse res) {
 
 		HttpServletRequest hreq=(HttpServletRequest)req;
 		HttpServletResponse hres=(HttpServletResponse)res;
@@ -96,21 +94,33 @@ public class ProxyServlet implements Servlet {
 	}
 
 	public void destroy() {
+	    _context=null;
+	    _config=null;
 	}
 
 	public static class RemoteDetailsServlet implements Servlet {
-		protected final Log _log = LogFactory.getLog(getClass());
-		public void init(ServletConfig config) throws ServletException {}
-		public ServletConfig getServletConfig() {return null;}
-		public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
-			HttpServletRequest hreq=(HttpServletRequest)req;
-			_log.info("Via: "+hreq.getHeader("Via"));
-			_log.info("Max-Forwards: "+hreq.getHeader("Max-Forwards"));
-			_log.info("X-Forwarded-For: "+hreq.getHeader("X-Forwarded-For"));
-			_log.info("remote location was: "+req.getRemoteAddr()+"/"+req.getRemoteHost()+":"+req.getRemotePort());
-		}
-		public String getServletInfo() {return null;}
-		public void destroy() {}
+
+	    protected final Log _log = LogFactory.getLog(getClass());
+
+	    public void init(ServletConfig config) {
+	        // nothing to do
+	    }
+
+	    public ServletConfig getServletConfig() {return null;}
+
+	    public void service(ServletRequest req, ServletResponse res) {
+	        HttpServletRequest hreq=(HttpServletRequest)req;
+	        _log.info("Via: "+hreq.getHeader("Via"));
+	        _log.info("Max-Forwards: "+hreq.getHeader("Max-Forwards"));
+	        _log.info("X-Forwarded-For: "+hreq.getHeader("X-Forwarded-For"));
+	        _log.info("remote location was: "+req.getRemoteAddr()+"/"+req.getRemoteHost()+":"+req.getRemotePort());
+	    }
+
+	    public String getServletInfo() {return null;}
+
+	    public void destroy() {
+	        // nothing to do
+	    }
 	}
 
 	public static void main(String[] args) throws Exception {

@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.sandbox.test;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -24,14 +23,12 @@ import java.util.regex.Pattern;
 import javax.jms.JMSException;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.ContextPool;
@@ -85,7 +82,7 @@ public class MyServlet implements Servlet {
 
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}
 
-	public void init(ServletConfig config) throws ServletException {
+	public void init(ServletConfig config) {
 		_config = config;
 		_log.info("Servlet.init()");
 	}
@@ -94,8 +91,7 @@ public class MyServlet implements Servlet {
 		return _config;
 	}
 
-	public void service(ServletRequest req, ServletResponse res)
-			throws ServletException, IOException {
+	public void service(ServletRequest req, ServletResponse res) {
 		String sessionId=((HttpServletRequest)req).getRequestedSessionId();
 		_log.info("Servlet.service("+((sessionId==null)?"":sessionId)+")");
 
