@@ -46,7 +46,9 @@
     <li>Jetty 5</li>
     </ul>
 
-    <p>WADI will be the subject of a BOF at JavaOne this year.</p>
+    <p>WADI will be the subject of <a
+    href="http://www.javaone04.com/catalog/catalog/sessionDetail.jsp?hd=true&#38;SESSION_ID=10549&#38;form=searchform">BOF-2180</a>
+    at JavaOne this year.</p>
 
     <p>WADI is a new project and this site is very much under
     development - please be patient with us</p>
@@ -63,7 +65,7 @@
   <repository>
     <connection>scm:cvs:pserver:anonymous@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi</connection>
     <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi</developerConnection>
-    <url>http://cvs.wadi.codehaus.org/cvsweb.cgi/wadi/</url>
+    <url>http://cvs.wadi.codehaus.org/wadi/</url>
   </repository>
 
   <mailingLists>
@@ -100,17 +102,23 @@
 
     <nagEmailAddress>jules@coredevelopers.net</nagEmailAddress>
 
-    <sourceDirectory>src/java</sourceDirectory>
-    <aspectSourceDirectory>src/java</aspectSourceDirectory>
     <sourceDirectory>src/test</sourceDirectory>
     <aspectSourceDirectory>src/test</aspectSourceDirectory>
+    <sourceDirectory>src/java</sourceDirectory>
+    <aspectSourceDirectory>src/java</aspectSourceDirectory>
 
     <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
 
     <unitTest>
       <includes>
-        <include>**/TestHttpSession.java</include>
+        <include>**/Test*.java</include>
       </includes>
+      <excludes>
+        <exclude>**/TestLocationClient.java</exclude>
+        <exclude>**/TestLocationServer.java</exclude>
+        <exclude>**/TestMulticastServer.java</exclude>
+        <exclude>**/TestUnicastClient.java</exclude>
+      </excludes>
     </unitTest>
 
 <!-- NYI -->
@@ -220,6 +228,7 @@
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-servlet</artifactId>
       <version>1.0-M1</version>
+      <url>http://geronimo.apache.org</url>
     </dependency>
 
     <dependency><!-- why isn't there a Geronimo JMX spec jar?  -->
