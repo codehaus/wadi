@@ -1099,7 +1099,7 @@ public abstract class
     session.setValid(false);
   }
 
-  protected void
+  public void
     releaseImpl(HttpSessionImpl impl)
   {
     String realId=impl.getRealId();

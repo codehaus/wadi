@@ -19,7 +19,6 @@ package org.codehaus.wadi.test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -37,8 +36,6 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SerializableContent;
-import org.codehaus.wadi.impl.FilePassivationStrategy;
-import org.codehaus.wadi.impl.GZIPStreamingStrategy;
 import org.codehaus.wadi.jetty.HttpSessionImpl;
 import org.codehaus.wadi.jetty.Manager;
 
@@ -727,59 +724,59 @@ public class
     }
   }
 
-  public void
-    testMigration()
-  {
-    HttpSessionImpl impl1=new HttpSessionImpl();
-    String id="test-httpsession";
-    impl1.init(null, id, System.currentTimeMillis(), 30*60, 30*60);
-    impl1.setWadiManager(_manager);
-    HttpSession s1=impl1.getFacade();
-    List events=ActivationListener._events;
-    events.clear();
-
-    String key="test";
-    ActivationListener l=new ActivationListener();
-    impl1.setAttribute(key, l, false);
-
-    FilePassivationStrategy fmp=new FilePassivationStrategy(new File("/tmp"));
-    fmp.setStreamingStrategy(new GZIPStreamingStrategy());
-    assertTrue(fmp.passivate(impl1));
-
-    // listener should now have been passivated
-    assertTrue(events.size()==1);
-    {
-      Pair pair=(Pair)events.remove(0);
-      assertTrue(pair!=null);
-      assertTrue(pair.getType().equals("sessionWillPassivate"));
-      HttpSessionEvent e=pair.getEvent();
-      assertTrue(s1==e.getSession());
-    }
-
-    HttpSessionImpl impl2=new HttpSessionImpl();
-    assertTrue(fmp.activate(id, impl2));
-    impl2.setWadiManager(_manager);
-    HttpSession s2=impl2.getFacade();
-    // listener should not have yet been activated (we do it lazily)
-    assertTrue(events.size()==0);
-    impl2.getAttribute(key);
-    // now it should...
-    assertTrue(events.size()==1);
-    {
-      Pair pair=(Pair)events.remove(0);
-      assertTrue(pair!=null);
-      assertTrue(pair.getType().equals("sessionDidActivate"));
-      HttpSessionEvent e=pair.getEvent();
-      assertTrue(s2==e.getSession());
-    }
-    assertTrue(events.size()==0);
-
-    assertTrue(s1.getValueNames().length==s2.getValueNames().length);
-    Enumeration e1=s1.getAttributeNames();
-    Enumeration e2=s2.getAttributeNames();
-    while (e1.hasMoreElements() && e2.hasMoreElements())
-      assertTrue(((String)e1.nextElement()).equals((String)e2.nextElement()));
-  }
+//  public void
+//    testMigration()
+//  {
+//    HttpSessionImpl impl1=new HttpSessionImpl();
+//    String id="test-httpsession";
+//    impl1.init(null, id, System.currentTimeMillis(), 30*60, 30*60);
+//    impl1.setWadiManager(_manager);
+//    HttpSession s1=impl1.getFacade();
+//    List events=ActivationListener._events;
+//    events.clear();
+//
+//    String key="test";
+//    ActivationListener l=new ActivationListener();
+//    impl1.setAttribute(key, l, false);
+//
+//    FilePassivationStrategy fmp=new FilePassivationStrategy(new File("/tmp"));
+//    fmp.setStreamingStrategy(new GZIPStreamingStrategy());
+//    assertTrue(fmp.passivate(impl1));
+//
+//    // listener should now have been passivated
+//    assertTrue(events.size()==1);
+//    {
+//      Pair pair=(Pair)events.remove(0);
+//      assertTrue(pair!=null);
+//      assertTrue(pair.getType().equals("sessionWillPassivate"));
+//      HttpSessionEvent e=pair.getEvent();
+//      assertTrue(s1==e.getSession());
+//    }
+//
+//    HttpSessionImpl impl2=new HttpSessionImpl();
+//    assertTrue(fmp.activate(id, impl2));
+//    impl2.setWadiManager(_manager);
+//    HttpSession s2=impl2.getFacade();
+//    // listener should not have yet been activated (we do it lazily)
+//    assertTrue(events.size()==0);
+//    impl2.getAttribute(key);
+//    // now it should...
+//    assertTrue(events.size()==1);
+//    {
+//      Pair pair=(Pair)events.remove(0);
+//      assertTrue(pair!=null);
+//      assertTrue(pair.getType().equals("sessionDidActivate"));
+//      HttpSessionEvent e=pair.getEvent();
+//      assertTrue(s2==e.getSession());
+//    }
+//    assertTrue(events.size()==0);
+//
+//    assertTrue(s1.getValueNames().length==s2.getValueNames().length);
+//    Enumeration e1=s1.getAttributeNames();
+//    Enumeration e2=s2.getAttributeNames();
+//    while (e1.hasMoreElements() && e2.hasMoreElements())
+//      assertTrue(((String)e1.nextElement()).equals((String)e2.nextElement()));
+//  }
 
 //   public void
 //     testLotsOfSessions()

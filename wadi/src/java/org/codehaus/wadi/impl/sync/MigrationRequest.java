@@ -15,33 +15,28 @@
 *  limitations under the License.
 */
 
-package org.codehaus.wadi;
+package org.codehaus.wadi.impl.sync;
 
-
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.codehaus.activecluster.Cluster;
+import org.codehaus.wadi.HttpSessionImpl;
+import org.codehaus.wadi.MigrationService;
 
-public abstract class MigrationRequest
-implements Executable
+public class
+MigrationRequest
+extends org.codehaus.wadi.MigrationRequest
 {
-	public abstract void invoke(MigrationService service, ObjectMessage message);
-	
-	protected static final Log _log = LogFactory.getLog(MigrationRequest.class);
-	protected final String _id;
-	protected final Destination _destination;
-	protected final long _timeout;
-	
 	public
 	MigrationRequest(String id, Destination destination, long timeout)
 	{
-		_id      =id;
-		_destination=destination;
-		_timeout =timeout;
+		super(id, destination, timeout);
 	}
 	
-	public String toString() {
-		return "<MigrationRequest:"+_id+">";
-	}
+	public void invoke(MigrationService service, ObjectMessage in){}
 }
+

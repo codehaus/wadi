@@ -86,7 +86,7 @@ public class
       Destination src=_server.getDestination();
       String correlationId=realId+"-"+src.toString();
       Object result=_adaptor.send(_manager.getCluster(),
-				  new org.codehaus.wadi.MigrationRequest(realId, src, timeout),
+				  new org.codehaus.wadi.impl.async.MigrationRequest(realId, src, timeout),
 				  correlationId,
 				  timeout,
 				  src,
