@@ -17,71 +17,57 @@
 
 package org.codehaus.wadi.tomcat;
 
+import java.lang.reflect.Method;
+import org.apache.catalina.Container;
+import org.apache.catalina.DefaultContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-// TODO - there are lots more properties that should generate
-// notifications on change... - this is really just a proof of concept
-// - is there a more generic way that we can do this - it's pretty
-// tiresome :-(
+// TODO - this aspect relies on a corresponding getter for each setter
+// to which it is attached - no getter, no dice. (can we use a
+// compile-time aspect to insistthis getter exists?)
 
-// TC carries so much notification baggage in its code that it seemed
-// to be begging to have it Aspected out...
+// TODO - because this is dynamic (in the way it calculates bean
+// getter and event names from the setter name), it is not the fastest
+// way to do this, but these setters should be called so infrequently
+// that this is not important...
+
+// TODO - it is ugly and prone to fossilisation to define aspects like
+// this. In future this should be done by xdoclet - investigate how
+// barter.sf.net achieves same result...
 
 public aspect
   PropertyNotification
 {
   protected static final Log _log=LogFactory.getLog(PropertyNotification.class);
 
-  pointcut setContainer(Manager manager) : execution(void Manager.setContainer(..)) && target(manager);
+  pointcut setter(Manager manager)
+    : execution(void Manager.setContainer(Container)) && target(manager)
+    || execution(void Manager.setDefaultContext(DefaultContext)) && target(manager)
+    || execution(void Manager.setSessionIdLength(int)) && target(manager);
 
   void
     around(Manager manager)
-    : setContainer(manager)
+    : setter(manager)
     {
       String setter=thisJoinPointStaticPart.getSignature().getName();
-      String getter="g"+setter.substring(1);
-      String name=setter.substring(3,4).toLowerCase()+setter.substring(4);
 
       try
       {
-	Object oldValue=manager.getClass().getMethod(getter, null).invoke(manager, null);
+	String getter="g"+setter.substring(1);
+	Method m=manager.getClass().getMethod(getter, null);
+	Object oldValue=m.invoke(manager, null);
 	proceed(manager);
-	Object newValue=manager.getClass().getMethod(getter, null).invoke(manager, null);
-	notify(manager, name, oldValue, newValue);
+	Object newValue=m.invoke(manager, null);
+	// it's probably less work to invoke the getter again, than to
+	// construct thisJoinPoint and call getArgs()[0] on it.
+	String name=setter.substring(3,4).toLowerCase()+setter.substring(4);
+	_log.trace(name+" setter called");
+	manager._propertyChangeListeners.firePropertyChange(name, oldValue, newValue);
       }
       catch (Exception e)
       {
 	_log.warn("invocation error", e);
       }
-    }
-
-  pointcut setDefaultContext(Manager manager) : execution(void Manager.setDefaultContext(..)) && target(manager);
-
-  void
-    around(Manager manager)
-    : setDefaultContext(manager)
-    {
-      Object oldValue=manager._defaultContext;
-      proceed(manager);
-      notify(manager, "defaultContext", oldValue, manager._defaultContext);
-    }
-
-  pointcut setSessionIdLength(Manager manager) : execution(void Manager.setSessionIdLength(..)) && target(manager);
-
-  void
-    around(Manager manager)
-    : setSessionIdLength(manager)
-    {
-      int oldValue=manager._sessionIdLength;
-      proceed(manager);
-      notify(manager, "sessionIdLength", new Integer(oldValue), new Integer(manager._sessionIdLength));
-    }
-
-    public void
-      notify(Manager manager, String name, Object oldValue, Object newValue)
-    {
-      _log.trace(name+" setter called");
-      manager._propertyChangeListeners.firePropertyChange(name, oldValue, newValue);
     }
 }
