@@ -41,5 +41,11 @@ public class
   {
     _log.info("here is the session: "+"xxx");
   }
+
+  public String
+    toString()
+    {
+      return "<MigrationResponse:"+_id+">";
+    }
 }
 

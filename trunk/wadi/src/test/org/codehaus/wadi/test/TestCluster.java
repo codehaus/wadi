@@ -70,7 +70,9 @@ public class
     _cluster1           = _clusterFactory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
 
     _cluster0.start();
+    _log.info("started node0: "+_cluster0.getLocalNode().getDestination());
     _cluster1.start();
+    _log.info("started node1: "+_cluster1.getLocalNode().getDestination());
   }
 
   protected void
@@ -174,9 +176,9 @@ public class
 	    tmp instanceof Invocation &&
 	    (invocation=(Invocation)tmp)!=null)
 	{
-	  _log.info("invoking message");
+	  _log.info("invoking message on: "+_cluster.getLocalNode());
 	  invocation.invoke(_cluster, om);
-	  _log.info("message successfully invoked");
+	  _log.info("message successfully invoked on: "+_cluster.getLocalNode());
 	}
 	else
 	{
@@ -231,10 +233,17 @@ public class
     public void
       invoke(Cluster cluster, ObjectMessage om)
     {
-      System.out.println("response arrived");
-      // set a flag to test later
-      TestCluster.testResponsePassed=true;
-      System.out.println("response processed");
+      try
+      {
+	System.out.println("response arrived from: "+om.getJMSReplyTo());
+	// set a flag to test later
+	TestCluster.testResponsePassed=true;
+	System.out.println("response processed on: "+cluster.getLocalNode().getDestination());
+      }
+      catch (JMSException e)
+      {
+	System.err.println("problem processing response");
+      }
     }
   }
 
@@ -247,7 +256,7 @@ public class
     try
     {
       // 1->n messages (includes self)
-      _cluster0.createConsumer(_cluster0.getDestination()).setMessageListener(listener0);
+      _cluster0.createConsumer(_cluster0.getDestination(), null, true).setMessageListener(listener0);
       // 1->1 messages
       _cluster0.createConsumer(_cluster0.getLocalNode().getDestination()).setMessageListener(listener0);
     }
@@ -268,15 +277,7 @@ public class
       _log.warn("problem sending request", e);
     }
 
-    try
-    {
-      Thread.sleep(3000);
-    }
-    catch (InterruptedException e)
-    {
-      // won't happen
-      _log.warn("thread interrupted", e);
-    }
+    try {Thread.sleep(3000);} catch (InterruptedException e) {_log.warn("thread interrupted", e);}
 
     assertTrue(testResponsePassed);
 

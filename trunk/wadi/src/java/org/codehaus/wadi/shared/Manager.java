@@ -31,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.jms.Connection;
+import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -954,7 +955,10 @@ public abstract class
    */
   public abstract int getHttpPort();
 
-  public abstract ServletContext getServletContext();
+  protected ServletContext _servletContext;
+  public ServletContext getServletContext(){return _servletContext;}
+  public void setServletContext(ServletContext servletContext){_servletContext=servletContext;}
+
   public abstract HttpSessionContext getSessionContext();
 
   // stats - TODO - since these are ints and updates are atomic we
@@ -1148,8 +1152,10 @@ public abstract class
     throws Exception
   {
     ObjectMessage om = _cluster.createObjectMessage();
-    om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-    _log.info("setting ReplyTo: "+_cluster.getLocalNode().getDestination());
+    //Destination dst=_cluster.getDestination();
+    Destination dst=_cluster.getLocalNode().getDestination();
+    om.setJMSReplyTo(dst);
+    _log.info("setting ReplyTo: "+dst);
     om.setObject(command);
     _cluster.send(_cluster.getDestination(), om);
   }
@@ -1159,8 +1165,9 @@ public abstract class
     throws Exception
   {
     ObjectMessage om = _cluster.createObjectMessage();
-    om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-    _log.info("setting ReplyTo: "+_cluster.getLocalNode().getDestination());
+    Destination dst=_cluster.getLocalNode().getDestination();
+    om.setJMSReplyTo(dst);
+    _log.info("setting ReplyTo: "+dst);
     om.setObject(command);
     _cluster.send(node.getDestination(), om);
   }

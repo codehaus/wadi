@@ -119,7 +119,7 @@ public class
   {
     if (!_initialized)
     {
-      _handler=(WebApplicationHandler)handler;
+      setServletHandler(handler);
       String filterName="WadiFilter";
       _handler.defineFilter(filterName, Filter.class.getName());
       _handler.mapPathToFilter("/*", filterName); // TODO - improve mapping, all 'stateful' servlets/filters
@@ -134,6 +134,13 @@ public class
     else
       _log.warn("multiple initialisation");
   }
+
+  public void
+    setServletHandler(ServletHandler servletHandler)
+    {
+      _handler=(WebApplicationHandler)servletHandler;
+      _servletContext=_handler.getServletContext();
+    }
 
   public synchronized void
     start()
@@ -198,7 +205,7 @@ public class
   public String
     getSessionCookiePath(HttpServletRequest req)
   {
-    String path=_handler.getServletContext().getInitParameter(__SessionPath);
+    String path=_servletContext.getInitParameter(__SessionPath);
 
     if (path==null)
       path=req.getContextPath();
@@ -214,7 +221,7 @@ public class
    *
    * @return a <code>String</code> value
    */
-  public String getSessionCookieDomain(){return _handler.getServletContext().getInitParameter(__SessionDomain);}
+  public String getSessionCookieDomain(){return _servletContext.getInitParameter(__SessionDomain);}
 
   /**
    * return the key used for the session url path parameter
@@ -228,6 +235,5 @@ public class
 
   public int getHttpPort(){return Integer.parseInt(System.getProperty("http.port"));} // TODO - temporary hack...
 
-  public ServletContext getServletContext(){return _handler.getServletContext();}
   public HttpSessionContext getSessionContext() {return org.mortbay.jetty.servlet.SessionContext.NULL_IMPL;}
 }
