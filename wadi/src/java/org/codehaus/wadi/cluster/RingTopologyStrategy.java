@@ -37,7 +37,7 @@ public class
     }
 
   public Map
-    combine(Collection e, int k)
+    combine(Peer local, Collection e, int k)
     {
       int l=e.size();
 
@@ -55,8 +55,8 @@ public class
 	  for (int j=0; j<k; j++)
 	    comb.add(array[(i+j)%l]);
 
-	  String id=Cell.id(comb);
-	  combs.put(id, comb);
+	  if (comb.contains(local)) // TODO - could be more efficient...
+	    combs.put(Cell.id(comb), comb);
 	}
       }
 

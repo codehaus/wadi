@@ -1,4 +1,3 @@
-
 /**
  *
  * Copyright 2003-2004 The Apache Software Foundation
@@ -38,7 +37,7 @@ public class
     }
 
   public Map
-    combine(Collection e, int k)
+    combine(Peer local, Collection e, int k)
     {
       Map combs=new TreeMap();
 
@@ -54,12 +53,13 @@ public class
 	  String id=p.getId();
 	  Set comb=new TreeSet();
 	  comb.add(p);
-	  combs.put(id, comb);
+	  if (comb.contains(local)) // TODO - could be more efficient...
+	    combs.put(id, comb);
 	}
       }
       else
       {
-	Map subCombs=combine(e, k-1);
+	Map subCombs=combine(local, e, k-1);
 	for (Iterator i=subCombs.values().iterator(); i.hasNext(); )
 	{
 	  Set subComb=(Set)i.next();
@@ -70,8 +70,9 @@ public class
 	    {
 	      Set comb=new TreeSet(subComb);
 	      comb.add(p);
-	      String id=Cell.id(comb);
-	      combs.put(id, comb);
+
+	      if (comb.contains(local)) // TODO - could be more efficient...
+		combs.put(Cell.id(comb), comb);
 	    }
 	  }
 	}
