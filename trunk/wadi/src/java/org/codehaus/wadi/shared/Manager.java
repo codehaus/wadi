@@ -133,20 +133,20 @@ public abstract class
   protected final Map _local=new ConcurrentReaderHashMap();
 
   public HttpSessionImpl
-    put(String id, HttpSessionImpl session)
+    put(String realId, HttpSessionImpl session)
   {
-    return (HttpSessionImpl)_local.put(id, session);
+    return (HttpSessionImpl)_local.put(realId, session);
   }
 
   protected final Map _migrating  =new HashMap();
 
   public boolean
-    owns(String id)
+    owns(String realId)
   {
-    if (_local.containsKey(id))
+    if (_local.containsKey(realId))
       return true;
     else
-      synchronized(_migrating){return _migrating.containsKey(id);} // TODO - we should probably wait for lock here...
+      synchronized(_migrating){return _migrating.containsKey(realId);} // TODO - we should probably wait for lock here...
   }
 
   protected ThreadLocal _firstGet=new ThreadLocal()
@@ -158,10 +158,9 @@ public abstract class
   public boolean getFirstGet(){return ((Boolean)_firstGet.get()).booleanValue();}
 
   public HttpSessionImpl
-    get(String oldId)
+    get(String realId)
   {
-    String id=_routingStrategy.strip(oldId);
-    HttpSessionImpl impl=getLocalSession(id);
+    HttpSessionImpl impl=getLocalSession(realId);
 
     if (getFirstGet())
     {
@@ -180,20 +179,20 @@ public abstract class
       // TODO - how do we synchronise this on a per-session basis - a
       // HashMap of locks - yeugh!
       if (impl==null)
-	impl=getRemoteSession(id); // this will take the r-lock
+	impl=getRemoteSession(realId); // this will take the r-lock
     }
 
     return impl;
   }
 
   protected HttpSessionImpl
-    getLocalSession(String id)
+    getLocalSession(String realId)
   {
-    return (HttpSessionImpl)_local.get(id);
+    return (HttpSessionImpl)_local.get(realId);
   }
 
   protected HttpSessionImpl
-    getRemoteSession(String id)
+    getRemoteSession(String realId)
   {
     HttpSessionImpl impl=null;
 
@@ -217,12 +216,12 @@ public abstract class
 	// unecessary contention on this lock, then again within it,
 	// in case this session has been successfully migrated to this
 	// node since we last tested...
-	if ((impl=getLocalSession(id))!=null)
+	if ((impl=getLocalSession(realId))!=null)
 	  return impl;
 
-	if ((oldMigrationLock=(Mutex)_migrating.get(id))==null)
+	if ((oldMigrationLock=(Mutex)_migrating.get(realId))==null)
 	{
-	  _migrating.put(id, newMigrationLock);
+	  _migrating.put(realId, newMigrationLock);
 	}
 	else
 	{
@@ -243,7 +242,7 @@ public abstract class
 	try
 	{
 	  oldMigrationLock.acquire();	// wait for current migration to finish
-	  return getLocalSession(id); // return resulting session
+	  return getLocalSession(realId); // return resulting session
 	}
 	catch (InterruptedException e)
 	{
@@ -264,23 +263,23 @@ public abstract class
 	// If a passivation store has been enabled, we may find the
 	// session in it and load it....
 	if (_passivationStrategy!=null)
-	  successfulMigration=_passivationStrategy.activate(id, impl);
+	  successfulMigration=_passivationStrategy.activate(realId, impl);
 
 	// If a migration policy has been enabled, we may request it
 	// from another node.
 
 	if (!successfulMigration)
   	{
-  	  ManagerProxy proxy=locate(id);
+  	  ManagerProxy proxy=locate(realId);
   	  if (proxy!=null)
-  	    successfulMigration=proxy.relocateSession(_local, _migrating, id, impl, _streamingStrategy);
+  	    successfulMigration=proxy.relocateSession(_local, _migrating, realId, impl, _streamingStrategy);
   	}
 
 	if (successfulMigration)
 	{
 	  // make newly acquired session impl available to container...
 	  assert impl!=null;
-	  assert impl.getId()!=null;
+	  assert impl.getRealId()!=null;
 	  _acquireImpl(impl);
 	}
 	else
@@ -294,7 +293,7 @@ public abstract class
 
 	// the migration is complete and the session is now local -
 	// remove the lock and release it - see finally{}
-	_migrating.remove(id);	// protect properly from UnknownHostException
+	_migrating.remove(realId);	// protect properly from UnknownHostException
       }
     }
     catch (InterruptedException e)
@@ -310,10 +309,10 @@ public abstract class
   }
 
   public HttpSessionImpl
-    remove(String id)
+    remove(String realId)
   {
     // could we be trying to remove a session that is passivated....
-    return (HttpSessionImpl)_local.remove(id);
+    return (HttpSessionImpl)_local.remove(realId);
   }
 
   public Collection
@@ -556,22 +555,23 @@ public abstract class
       {
 	try
 	{
+	  String realId=impl.getRealId();
 	  if (hasTimedOut)	// implicitly invalidated via time-out
 	  {
-	    if (_log.isTraceEnabled()) _log.trace(impl.getId()+" : removing (implicit time out)");
-	    if (_log.isDebugEnabled()) _log.debug(impl.getId()+" : timed out");
+	    if (_log.isTraceEnabled()) _log.trace(realId+" : removing (implicit time out)");
+	    if (_log.isDebugEnabled()) _log.debug(realId+" : timed out");
 	    releaseImpl(impl);
 	    continue;
 	  }
 
 	  if (shouldBeEvicted)
 	  {
-	    if (_log.isTraceEnabled()) _log.trace(impl.getId()+" : removing (migrating to long-term store)");
+	    if (_log.isTraceEnabled()) _log.trace(realId+" : removing (migrating to long-term store)");
 	    // should this be done asynchronously via another Channel ?
 	    if (_passivationStrategy.passivate(impl))
 	    {
 	      // TODO - we cannot use releaseImpl() as it will fire unecessary notifications...
-	      _local.remove(impl.getId());
+	      _local.remove(realId);
 	      impl.destroy();
 	      // TODO - how do we recycle the impl ?
 	    }
@@ -586,7 +586,7 @@ public abstract class
       }
       else if (!nottried)
       {
-	if (_log.isInfoEnabled()) _log.info("tried but failed for lock on:"+impl.getId()+" - "+impl.getRWLock());
+	if (_log.isInfoEnabled()) _log.info("tried but failed for lock on:"+impl.getRealId()+" - "+impl.getRWLock());
       }
     }
     _log.trace("housekeeping ended");
@@ -668,12 +668,12 @@ public abstract class
   //--------------------
 
   public void
-    notifySessionCreated(javax.servlet.http.HttpSession session)
+    notifySessionCreated(String realId, javax.servlet.http.HttpSession session)
   {
     int n=_sessionListeners.size();
     if (n>0)
     {
-      if (_log.isTraceEnabled()) _log.trace(session.getId()+" : notifying session creation");
+      if (_log.isTraceEnabled()) _log.trace(realId+" : notifying session creation");
       HttpSessionEvent event = new HttpSessionEvent(session);
 
       for(int i=0;i<n;i++)
@@ -684,12 +684,12 @@ public abstract class
   }
 
   public void
-    notifySessionDestroyed(javax.servlet.http.HttpSession session)
+    notifySessionDestroyed(String realId, javax.servlet.http.HttpSession session)
   {
     int n=_sessionListeners.size();
     if (n>0)
     {
-      if (_log.isTraceEnabled()) _log.trace(session.getId()+" : notifying session destruction");
+      if (_log.isTraceEnabled()) _log.trace(realId+" : notifying session destruction");
       HttpSessionEvent event = new HttpSessionEvent(session);
 
       for(int i=0;i<n;i++)
@@ -700,12 +700,12 @@ public abstract class
   }
 
   protected void
-    notifySessionAttributeAdded(javax.servlet.http.HttpSession session, String key, Object val)
+    notifySessionAttributeAdded(String realId, javax.servlet.http.HttpSession session, String key, Object val)
     {
       int n=_attributeListeners.size();
       if (n>0)
       {
-	if (_log.isTraceEnabled()) _log.trace(session.getId()+" : notifying attribute addition : "+key+" : null --> "+val);
+	if (_log.isTraceEnabled()) _log.trace(realId+" : notifying attribute addition : "+key+" : null --> "+val);
 
 	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, val);
 	for(int i=0;i<n;i++)
@@ -716,12 +716,12 @@ public abstract class
     }
 
   protected void
-    notifySessionAttributeReplaced(javax.servlet.http.HttpSession session, String key, Object oldVal, Object newVal)
+    notifySessionAttributeReplaced(String realId, javax.servlet.http.HttpSession session, String key, Object oldVal, Object newVal)
     {
       int n=_attributeListeners.size();
       if (n>0)
       {
-	if (_log.isTraceEnabled()) _log.trace(session.getId()+" : notifying attribute replacement : "+key+" : "+oldVal+" --> "+newVal);
+	if (_log.isTraceEnabled()) _log.trace(realId+" : notifying attribute replacement : "+key+" : "+oldVal+" --> "+newVal);
 	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, oldVal);
 
 	for(int i=0;i<n;i++)
@@ -732,12 +732,12 @@ public abstract class
     }
 
   protected void
-    notifySessionAttributeRemoved(javax.servlet.http.HttpSession session, String key, Object val)
+    notifySessionAttributeRemoved(String realId, javax.servlet.http.HttpSession session, String key, Object val)
     {
       int n=_attributeListeners.size();
       if (n>0)
       {
-	if (_log.isTraceEnabled()) _log.trace(session.getId()+" : notifying attribute removal : "+key+" : "+val+" --> null");
+	if (_log.isTraceEnabled()) _log.trace(realId+" : notifying attribute removal : "+key+" : "+val+" --> null");
 	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, val);
 
 	for(int i=0;i<n;i++)
@@ -757,9 +757,9 @@ public abstract class
   // this should be abstracted into a ReplicatingManager...
 
   public void
-    replicate(String id, Method method, Object[] args)
+    replicate(String realId, Method method, Object[] args)
   {
-    if (_log.isDebugEnabled()) _log.debug("replicating delta: "+id+" -> "+method);
+    if (_log.isDebugEnabled()) _log.debug("replicating delta: "+realId+" -> "+method);
 
     // this method should be invoked on a dynamic proxy which
     // represents the cluster to which the deltas are being sent...
@@ -769,28 +769,28 @@ public abstract class
   }
 
   public void
-    invoke(String id, Method method, Object[] args)
+    invoke(String realId, Method method, Object[] args)
   {
     // look up a session and invoke the given method and args upon
     // it...
-    if (_log.isDebugEnabled()) _log.debug("invoking delta: "+id+" -> "+method);
+    if (_log.isDebugEnabled()) _log.debug("invoking delta: "+realId+" -> "+method);
   }
 
   //  protected abstract HttpSession createFacade(HttpSessionImpl impl);
 
-  public void
-    notifyRequestEnd(String id)
-  {
-    if (_log.isTraceEnabled()) _log.trace(id+": request end");
-  }
+//   public void
+//     notifyRequestEnd(String id)
+//   {
+//     if (_log.isTraceEnabled()) _log.trace(id+": request end");
+//   }
 
-  public void
-    notifyRequestGroupEnd(String id)
-  {
-    if (_log.isTraceEnabled()) _log.trace(id+": request group end");
-  }
+//   public void
+//     notifyRequestGroupEnd(String id)
+//   {
+//     if (_log.isTraceEnabled()) _log.trace(id+": request group end");
+//   }
 
-  public boolean getUsingRequestGroups(){return true;}
+//   public boolean getUsingRequestGroups(){return true;}
 
   //----------------------------------------
   // autolocation API
@@ -829,20 +829,19 @@ public abstract class
   protected LocationClient _locationClient;
 
   public ManagerProxy
-    locate(String oldId)
+    locate(String realId)
   {
-    String id=getRoutingStrategy().strip(oldId);
-    String location=_locationClient.run("org.codehaus.wadi"+","+ "locate"+","+id);
+    String location=_locationClient.run("org.codehaus.wadi"+","+ "locate"+","+realId);
 
     if (location==null)
     {
-      if (_log.isWarnEnabled()) _log.warn(id+": could not locate session - perhaps dead ?");
+      if (_log.isWarnEnabled()) _log.warn(realId+": could not locate session - perhaps dead ?");
       return null;
     }
 
     try
     {
-      return new ManagerProxy(id, location);
+      return new ManagerProxy(realId, location);
     }
     catch (Exception  e)
     {
@@ -1019,16 +1018,16 @@ public abstract class
   protected HttpSessionImpl acquireImpl(Manager manager){return acquireImpl(manager, null);}
 
   protected HttpSessionImpl
-    acquireImpl(Manager manager, String id)
+    acquireImpl(Manager manager, String realId)
   {
-    if (id==null)
-      id=(String)getIdGenerator().take();
+    if (realId==null)
+      realId=(String)getIdGenerator().take();
 
     HttpSessionImpl impl=createImpl();
-    impl.init(Manager.this, id, System.currentTimeMillis(), _maxInactiveInterval, _maxInactiveInterval); // TODO need actual...
+    impl.init(Manager.this, realId, System.currentTimeMillis(), _maxInactiveInterval, _maxInactiveInterval); // TODO need actual...
     _acquireImpl(impl);
-    notifySessionCreated(impl.getFacade());
-    if (_log.isDebugEnabled()) _log.debug(impl.getId()+": creation");
+    notifySessionCreated(realId, impl.getFacade());
+    if (_log.isDebugEnabled()) _log.debug(realId+": creation");
     return impl;
   }
 
@@ -1050,13 +1049,14 @@ public abstract class
       _log.warn("unable to acquire rlock on new session");
     }
 
-    _local.put(impl.getId(), impl);
+    _local.put(impl.getRealId(), impl);
   }
 
   protected void
     _notify(HttpSessionImpl impl)
   {
     HttpSession session=(HttpSession)impl.getFacade();
+    String realId=impl.getRealId();
 
     // The session is marked as invalid until it has been removed
     // from _local. It must be temporarily switched back to valid
@@ -1065,7 +1065,7 @@ public abstract class
     session.setValid(true);
 
     if ("2.4".equals(getSpecificationVersion()))
-      notifySessionDestroyed(session);
+      notifySessionDestroyed(realId, session);
 
     // TODO - if we could get an iter directly from the attr map, we
     // could do this much faster... - IMPORTANT...
@@ -1076,7 +1076,7 @@ public abstract class
     names=null;
 
     if ("2.3".equals(getSpecificationVersion())) // TODO - 2.2? etc...
-      notifySessionDestroyed(session);
+      notifySessionDestroyed(realId, session);
 
     session.setValid(false);
   }
@@ -1084,9 +1084,9 @@ public abstract class
   protected void
     releaseImpl(HttpSessionImpl impl)
   {
-    String id=impl.getId();
-    _local.remove(id);
-    if (_log.isDebugEnabled()) _log.debug(id+": destruction");
+    String realId=impl.getRealId();
+    _local.remove(realId);
+    if (_log.isDebugEnabled()) _log.debug(realId+": destruction");
     _notify(impl);
     _releaseImpl(impl);
   }

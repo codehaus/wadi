@@ -94,7 +94,7 @@ public class
   // redirection - use if session id encoded in url
   protected final InetAddress _lbAddress; // TODO - we should be able to get this from request ?
   protected final int         _lbPort; // TODO - we should be able to get this from request ?
-  protected final String      _bucketName;
+  protected final String      _route;
 
   protected boolean
     redirectRequestTo(HttpServletRequest req, HttpServletResponse res, Manager manager)
@@ -241,7 +241,7 @@ public class
     _migrationClient  = new MigrationService.Client(); // TODO - should be static ?
     _lbAddress        = null;	// TODO - NYI
     _lbPort           = 0;	// TODO - NYI
-    _bucketName       = args[7]; // TODO - NYI
+    _route            = (args.length>7)?args[7]:null; // TODO - NYI
 
     // should also contain e.g. acceptingSessions?,
     // acceptingRequests?, howManyMoreSessions ? etc...

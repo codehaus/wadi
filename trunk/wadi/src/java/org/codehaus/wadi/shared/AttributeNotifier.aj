@@ -44,7 +44,7 @@ public aspect
       {
 	try
 	{
-	  ahsi.getWadiManager().notifySessionAttributeRemoved(ahsi.getFacade(), key, oldVal);
+	  ahsi.getWadiManager().notifySessionAttributeRemoved(ahsi.getRealId(), ahsi.getFacade(), key, oldVal);
 	}
 	catch (Throwable t)
 	{
@@ -63,6 +63,8 @@ public aspect
     : setAttribute(ahsi, key, val, returnVal)
     {
       Object oldVal=proceed(ahsi, key, val, true);
+      String realId=ahsi.getRealId();
+      Manager manager=ahsi.getWadiManager();
       javax.servlet.http.HttpSession facade=ahsi.getFacade();
 
       // send binding notifications
@@ -70,9 +72,9 @@ public aspect
       {
 	// send attribute notifications
 	if (oldVal!=null)
-	  ahsi.getWadiManager().notifySessionAttributeReplaced(facade, key, oldVal, val);
+	  manager.notifySessionAttributeReplaced(realId, facade, key, oldVal, val);
 	else
-	  ahsi.getWadiManager().notifySessionAttributeAdded(facade, key, val);
+	  manager.notifySessionAttributeAdded(realId, facade, key, val);
       }
       catch (Throwable t)
       {

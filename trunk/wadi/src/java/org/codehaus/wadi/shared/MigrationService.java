@@ -95,7 +95,7 @@ public class
 	// receive commit message
 	ok=is.readBoolean();
 	assert ok;
-	if (_log.isDebugEnabled()) _log.debug(session.getId()+": immigration (peer: "+remoteAddress+":"+remotePort+")");
+	if (_log.isDebugEnabled()) _log.debug(session.getRealId()+": immigration (peer: "+remoteAddress+":"+remotePort+")");
 	return ok;
       }
       catch (UnknownHostException e)
@@ -278,7 +278,7 @@ public class
 	  impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY);
 	  lock=impl.getContainerLock();
 	  acquired=lock.attempt(100);		// should we have a time out here ?
-	  String newId=impl.getId();
+	  String newId=impl.getRealId();
 	  if (newId==null || !newId.equals(id))
 	  {
 	    // the session has gone elsewhere whilst we were waiting for
@@ -310,7 +310,7 @@ public class
 	// send commit message
 	os.writeBoolean(ok);
 	os.flush();
-	if (_log.isDebugEnabled()) _log.debug(impl.getId()+": emmigration (peer: "+socket.getInetAddress()+":"+socket.getPort()+")");
+	if (_log.isDebugEnabled()) _log.debug(impl.getRealId()+": emmigration (peer: "+socket.getInetAddress()+":"+socket.getPort()+")");
       }
       catch (IOException e)
       {

@@ -65,7 +65,7 @@ public class
   public javax.servlet.http.HttpSession
     newHttpSession(HttpServletRequest request)
   {
-    return acquireImpl(this, _reuseIds?request.getRequestedSessionId():null).getFacade();
+    return acquireImpl(this, _reuseIds?getRoutingStrategy().strip(request.getRequestedSessionId()):null).getFacade();
   }
 
   //-----------//

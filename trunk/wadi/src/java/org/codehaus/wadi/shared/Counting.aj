@@ -35,11 +35,11 @@ public aspect
   private static final Log _log=LogFactory.getLog(Replicating.class);
 
   pointcut creation(Manager manager) :
-  execution(void Manager.notifySessionCreated(javax.servlet.http.HttpSession)) && target(manager);
+  execution(void Manager.notifySessionCreated(String, javax.servlet.http.HttpSession)) && target(manager);
   after(Manager manager) : creation(manager) {manager._sessionCreationCounter++;}
 
   pointcut destruction(Manager manager) :
-  execution(void Manager.notifySessionDestroyed(javax.servlet.http.HttpSession)) && target(manager);
+  execution(void Manager.notifySessionDestroyed(String, javax.servlet.http.HttpSession)) && target(manager);
   after(Manager manager) : destruction(manager) {manager._sessionDestructionCounter++;}
 
   // TODO-very ropey - do it better - invalidation should call through the Manager
