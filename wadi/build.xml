@@ -105,6 +105,7 @@
       <sysproperty key="STOP.PORT" value="8079"/>
       <sysproperty key="http.port" value="8080"/>
       <sysproperty key="ajp.port" value="8009"/>
+      <sysproperty key="wadi.colour" value="red"/>
       <sysproperty key="bucket.name" value="web0"/>
       <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Jdk14Logger"/>
       <sysproperty key="java.util.logging.config.file" value="${wadi.home}/lib/logging.properties"/>
@@ -138,6 +139,7 @@
       <sysproperty key="STOP.PORT" value="8081"/>
       <sysproperty key="http.port" value="8083"/><!-- mx4j console is on 8082 -->
       <sysproperty key="ajp.port" value="8010"/>
+      <sysproperty key="wadi.colour" value="yellow"/>
       <sysproperty key="bucket.name" value="web1"/>
       <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Jdk14Logger"/>
       <sysproperty key="java.util.logging.config.file" value="${wadi.home}/lib/logging.properties"/>
@@ -182,9 +184,10 @@
       failonerror="true"
       >
       <!-- experimental -->
-      <sysproperty key="http.port" value="8080"/>
-      <sysproperty key="ajp.port" value="8009"/>
+      <sysproperty key="http.port" value="8084"/>
+      <sysproperty key="ajp.port" value="8011"/>
       <sysproperty key="wadi.home" value="${wadi.home}"/>
+      <sysproperty key="wadi.colour" value="green"/>
 
       <sysproperty key="bucket.name" value="web0"/>
 

@@ -1,8 +1,11 @@
     <%@ page language="java" contentType="text/html" session="true" %>
       <%@ page import="java.util.Date" %>
       <%@ page import="java.util.Enumeration" %>
+      <%
+      String colour=System.getProperty("wadi.colour");
+      %>
       <HTML>
-	<BODY>
+	<BODY BGCOLOR="<%= colour %>">
 	  <H2>Session Creation</H2>
 
 	  <pre>id:            <%= session.getId() %></pre>
@@ -12,18 +15,15 @@
 	  <p/>
 	    <table>
 	      <%
-	      session.setAttribute(""+session.getLastAccessedTime(), new Date(session.getLastAccessedTime()));
+	      session.setAttribute(""+session.getLastAccessedTime(), colour);
 	      for (Enumeration e=session.getAttributeNames(); e.hasMoreElements();)
 	      {
 	      String key=(String)e.nextElement();
 	      %>
 	      <tr>
-		<th>
-		  <%= key %>
+		<th bgcolor="<%= session.getAttribute(key) %>">
+		  <%=  new Date(Long.parseLong(key)) %>
 		</th>
-		<td>
-		  <%= session.getAttribute(key) %>
-		</td>
 	      </tr>
 	      <%
 	      }
