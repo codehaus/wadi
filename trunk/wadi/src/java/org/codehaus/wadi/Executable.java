@@ -23,7 +23,7 @@ import javax.jms.ObjectMessage;
 
 
 public interface
-  Invocable
+  Executable
   extends Serializable
 {
   public void invoke(Manager manager, ObjectMessage message);

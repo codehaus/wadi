@@ -20,14 +20,14 @@ package org.codehaus.wadi.impl.async;
 import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Invocable;
+import org.codehaus.wadi.Executable;
 import org.codehaus.wadi.Manager;
 
 import javax.jms.JMSException;
 
 public class
     MigrationAcknowledgement
-    implements Invocable
+    implements Executable
 {
   protected static final Log _log=LogFactory.getLog(MigrationAcknowledgement.class);
   protected final String     _id;

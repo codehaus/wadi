@@ -1159,7 +1159,7 @@ public abstract class
   protected Map _conversations=new HashMap();
 
   protected void
-    sendCommandToCluster(Invocable command)
+    sendCommandToCluster(Executable command)
     throws Exception
   {
     ObjectMessage om = _cluster.createObjectMessage();
@@ -1172,7 +1172,7 @@ public abstract class
   }
 
   protected void
-    sendCommandToNode(Node node, Invocable command)
+    sendCommandToNode(Node node, Executable command)
     throws Exception
   {
     ObjectMessage om = _cluster.createObjectMessage();

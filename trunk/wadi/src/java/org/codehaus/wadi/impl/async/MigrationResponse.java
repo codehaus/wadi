@@ -26,13 +26,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.wadi.HttpSessionImpl;
-import org.codehaus.wadi.Invocable;
+import org.codehaus.wadi.Executable;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ObjectInputStream;
 
 public class
   MigrationResponse
-  implements Invocable
+  implements Executable
 {
   protected static final Log _log=LogFactory.getLog(MigrationResponse.class);
   protected final String     _id;
