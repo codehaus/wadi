@@ -17,6 +17,7 @@ import javax.servlet.ServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.context.Context;
+import org.codehaus.wadi.sandbox.context.ContextPool;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Promoter;
 
@@ -30,12 +31,14 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class MemoryContextualiser extends AbstractMappedContextualiser {
 	protected final Log _log = LogFactory.getLog(getClass());
+	protected final ContextPool _pool;
 	
 	/**
 	 * 
 	 */
-	public MemoryContextualiser(Contextualiser next, Map map) {
+	public MemoryContextualiser(Contextualiser next, Map map, ContextPool pool) {
 		super(next, map);
+		_pool=pool;
 	}
 
 	/* (non-Javadoc)
@@ -82,6 +85,10 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 			} catch (InterruptedException e) {
 				throw new ServletException("problem promoting context: "+id, e);
 			}
+		}
+		
+		public Context nextContext() {
+			return _pool.take();
 		}
 	}
 

@@ -17,6 +17,8 @@
 
 package org.codehaus.wadi;
 
+import java.io.IOException;
+
 /**
  * Abstracts out the ability of an object to serialise just its
  * content - not itself.
@@ -28,8 +30,8 @@ public interface
   SerializableContent
 {
   void readContent(java.io.ObjectInput is)
-    throws java.io.IOException, ClassNotFoundException;
+    throws IOException, ClassNotFoundException;
 
   void writeContent(java.io.ObjectOutput os)
-    throws java.io.IOException, ClassNotFoundException;
+    throws IOException, ClassNotFoundException;
 }

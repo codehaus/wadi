@@ -6,7 +6,11 @@
  */
 package org.codehaus.wadi.sandbox.context;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +21,8 @@ import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.LocalDiscContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
@@ -92,11 +98,26 @@ public class TestContextualiser extends TestCase {
 			_val=val;
 		}
 		
+		MyContext() {
+		}
+		
 		public Sync getSharedLock(){return _lock.readLock();}
+		
+		public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+			_val=(String)oi.readObject();
+		}
+		
+		public void writeContent(ObjectOutput oo) throws IOException, ClassNotFoundException {
+			oo.writeObject(_val);
+		}
 	}
 	
-	class
-	  MyFilterChain
+	class MyContextPool implements ContextPool {
+		public void put(Context context){}
+		public Context take(){return new MyContext();}
+	}
+	
+	class MyFilterChain
 	  implements FilterChain
 	{
 	  public void
@@ -109,16 +130,25 @@ public class TestContextualiser extends TestCase {
 	
 	public void testContextualiser() throws Exception {
 		Map d=new HashMap();
-		d.put("bar", new MyContext("bar"));
-		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), d);
+		StreamingStrategy ss=new SimpleStreamingStrategy();
+		File f=File.createTempFile("wadi.", "."+ss.getSuffix());
+		_log.info("file: "+f);
+	    ObjectOutput oo=ss.getOutputStream(new FileOutputStream(f));
+	    new MyContext("bar").writeContent(oo);
+	    oo.flush();
+	    oo.close();
+	    assertTrue(f.exists());
+		d.put("bar", f);
+		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), d, ss);
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo"));
-		Contextualiser memory=new MemoryContextualiser(disc, m);
+		Contextualiser memory=new MemoryContextualiser(disc, m, new MyContextPool());
 		
 		FilterChain fc=new MyFilterChain();
 //		Collapser collapser=new HashingCollapser();
 		memory.contextualise(null,null,fc,"foo", null, new Mutex());
 		memory.contextualise(null,null,fc,"bar", null, new Mutex());
+		assertTrue(!f.exists());
 	}
 	
 	class MyPromotingContextualiser implements Contextualiser {
@@ -184,7 +214,7 @@ public class TestContextualiser extends TestCase {
 	}
 	
 	public void testPromotion(Contextualiser c, int n) throws Exception {
-		Contextualiser mc=new MemoryContextualiser(c, new HashMap());
+		Contextualiser mc=new MemoryContextualiser(c, new HashMap(), new MyContextPool());
 		FilterChain fc=new MyFilterChain();		
 		Mutex promotionMutex=new Mutex();
 		
@@ -204,7 +234,7 @@ public class TestContextualiser extends TestCase {
 	}
 	
 	public void testCollapsing(Contextualiser c, int n) throws Exception {
-		Contextualiser mc=new MemoryContextualiser(c, new HashMap());
+		Contextualiser mc=new MemoryContextualiser(c, new HashMap(), new MyContextPool());
 		FilterChain fc=new MyFilterChain();
 		Mutex promotionMutex=new Mutex();
 
