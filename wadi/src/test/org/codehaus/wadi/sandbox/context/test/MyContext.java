@@ -40,9 +40,9 @@ public class MyContext extends AbstractMotable implements Context {
 	protected String _val;
 	protected transient ReadWriteLock _lock;
 
-	MyContext(String val) {
+	MyContext(String id, String val) {
 		this();
-		_id=val;
+		_id=id;
 		_val=val;
 	}
 

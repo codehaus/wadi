@@ -160,7 +160,7 @@ public class TestContextualiser extends TestCase {
 		{
 			// place a "baz" item into database
 			String id="baz";
-			Motable emotable=new MyContext(id);
+			Motable emotable=new MyContext(id, id);
 			emotable.setCreationTime(3);
 			emotable.setLastAccessedTime(4);
 			emotable.setMaxInactiveInterval(5);
@@ -174,7 +174,7 @@ public class TestContextualiser extends TestCase {
 		{
 			// place a "bar" item onto local disc
 			String id="bar";
-			Motable emotable=new MyContext(id);
+			Motable emotable=new MyContext(id, id);
 			emotable.setCreationTime(0);
 			emotable.setLastAccessedTime(1);
 			emotable.setMaxInactiveInterval(2);
@@ -187,7 +187,7 @@ public class TestContextualiser extends TestCase {
 		
 		Map m=new HashMap();
 		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new NeverEvicter(), ss, new MyContextPool());
-		m.put("foo", new MyContext("foo"));
+		m.put("foo", new MyContext("foo", "foo"));
 		assertTrue(m.size()==1);
 
 		FilterChain fc=new MyFilterChain();
@@ -217,7 +217,7 @@ public class TestContextualiser extends TestCase {
 		MyContext _context;
 
 		public MyPromotingContextualiser(String context) {
-			_context=new MyContext(context);
+			_context=new MyContext(context, context);
 		}
 
 		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
@@ -250,7 +250,7 @@ public class TestContextualiser extends TestCase {
 		MyContext _context;
 
 		public MyActiveContextualiser(String context) {
-			_context=new MyContext(context);
+			_context=new MyContext(context, context);
 		}
 
 		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
@@ -348,7 +348,7 @@ public class TestContextualiser extends TestCase {
 		Map d=new HashMap();
 		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), ss, new File("/tmp"));
 		Map m=new HashMap();
-		m.put("foo", new MyContext("foo"));
+		m.put("foo", new MyContext("foo", "foo"));
 		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new AlwaysEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
 
 		FilterChain fc=new MyFilterChain();
@@ -370,7 +370,7 @@ public class TestContextualiser extends TestCase {
 		Map d=new HashMap();
 		Contextualiser disc=new LocalDiscContextualiser(db, collapser, d, new TimeToLiveEvicter(0), ss, new File("/tmp"));
 		Map m=new HashMap();
-		Context tmp=new MyContext("foo");
+		Context tmp=new MyContext("foo", "foo");
 		tmp.setMaxInactiveInterval(2);
 		m.put("foo", tmp); // times out 2 seconds from now...
 		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new TimeToLiveEvicter(1000), new GZIPStreamingStrategy(), new MyContextPool());

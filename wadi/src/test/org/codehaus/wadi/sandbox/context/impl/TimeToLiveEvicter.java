@@ -32,6 +32,6 @@ public class TimeToLiveEvicter implements Evicter {
 		_ttl=ttl;
 	}
 
-	public boolean evict(String id, Evictable evictable) {return evictable.getTimeToLive(System.currentTimeMillis())<=_ttl;}
+	public boolean evict(String id, Evictable evictable) {return evict(id, evictable, System.currentTimeMillis());}
 	public boolean evict(String id, Evictable evictable, long time) {return evictable.getTimeToLive(time)<=_ttl;}
 }
