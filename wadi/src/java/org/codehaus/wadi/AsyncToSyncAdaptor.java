@@ -98,8 +98,12 @@ public class
       Object result=null;
 
       if (rv==null)
-	_log.warn(correlationId+"/"+hashCode()+" missed rendez-vous - waiting thread must have timed out ("+timeout+" millis)");
+      {
+	if (_log.isInfoEnabled())
+	  _log.info(correlationId+"/"+hashCode()+" missed rendez-vous - waiting thread must have timed out ("+timeout+" millis)");
+      }
       else
+      {
 	try
 	{
 	  long timeStarted=System.currentTimeMillis();
@@ -120,6 +124,7 @@ public class
 	{
 	  _log.warn("Broken barrier - we must have arrived too late for rendez-vous ("+timeout+" millis)", e);
 	}
+      }
 
       return result;
     }
