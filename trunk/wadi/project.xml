@@ -270,7 +270,7 @@
       <javadoc>http://geronimo.apache.org/specs/jms/apidocs/index.html</javadoc>
     </dependency>
 
-    <dependency><!-- why isn't there a Geronimo JMX spec jar?  -->
+    <dependency>
       <groupId>mx4j</groupId>
       <artifactId>mx4j-jmx</artifactId>
       <version>2.0.1</version>
@@ -278,10 +278,10 @@
       <javadoc>http://mx4j.sourceforge.net/docs/api/index.html</javadoc>
     </dependency>
 
-    <dependency><!-- I have to replace this with a newer version -->
+    <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jetty</artifactId>
-      <version>5.0.RC0</version>
+      <version>5.0.RC2</version>
       <url>http://jetty.mortbay.org/jetty/index.html</url>
       <javadoc>http://jetty.mortbay.org/javadoc/index.html</javadoc>
     </dependency>
@@ -289,7 +289,7 @@
     <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jmx</artifactId>
-      <version>5.0.RC0</version>
+      <version>5.0.RC2</version>
       <url>http://jetty.mortbay.org/jetty/index.html</url>
       <javadoc>http://jetty.mortbay.org/javadoc/index.html</javadoc>
     </dependency>
@@ -306,6 +306,7 @@
       <groupId>activemq</groupId>
       <artifactId>activemq</artifactId>
       <version>1.0-SNAPSHOT</version>
+      <url>http://activemq.codehaus.org</url>
       <javadoc>http://activemq.codehaus.org/maven/apidocs</javadoc>
       <properties>
 	<war.bundle>true</war.bundle>
@@ -316,6 +317,7 @@
       <groupId>activecluster</groupId>
       <artifactId>activecluster</artifactId>
       <version>1.0-SNAPSHOT</version>
+      <url>http://activecluster.codehaus.org</url>
       <javadoc>http://activecluster.codehaus.org/maven/apidocs</javadoc>
       <properties>
 	<war.bundle>true</war.bundle>
