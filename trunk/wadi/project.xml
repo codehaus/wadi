@@ -22,19 +22,35 @@
   <gumpRepositoryId>wadi</gumpRepositoryId>
 
   <description>
-    WADI is an acronym of 'Web Application Distribution
-    Infrastructure'. WADI's aim is to resolve many of the problems of
-    dealing with state in the clustered J2EE Web Tier. This involves
-    technologies such as HttpSession Migration (inter-node and
-    node-store-node), HttpRequest relocation, in-vm HttpSession state
-    replication, simple HttpSession semantics and a guaranteed
-    resolution to application vs container space concurrency issues
-    within the HttpSession.
+   <![CDATA[
+    <p>WADI is an acronym of 'Web Application Distribution
+    Infrastructure'.</p>
 
-    WADI can currently be plugged into the latest Tomcat 5 and Jetty 5
-    releases.
+    <p>WADI's aim is to resolve many of the problems of dealing with
+    state in the clustered J2EE Web Tier. This involves technologies
+    such as :</p>
 
-    WADI will be the subject of a BOF at JavaOne this year.
+    <ul>
+    <li>HttpSession Migration (inter-node and node-store-node)</li>
+    <li>HttpRequest relocation (by redirection and proxying)</li>
+    <li>in-vm HttpSession state replication (NYI)</li>
+    <li>simple HttpSession semantics and a guaranteed resolution to
+    application vs container space concurrency issues within the
+    HttpSession</li>
+    </ul>
+
+    <p>WADI can currently be plugged into the following J2EE web
+    containers:</p>
+    <ul>
+    <li>Tomcat 5</li>
+    <li>Jetty 5</li>
+    </ul>
+
+    <p>WADI will be the subject of a BOF at JavaOne this year.</p>
+
+    <p>WADI is a new project and this site is very much under
+    development - please be patient with us</p>
+    ]]>
   </description>
 
   <url>http://wadi.codehaus.org/</url>
@@ -156,6 +172,7 @@
       <properties>
         <classloader>root</classloader>
       </properties>
+      <url>http://www.eclipse.org/aspectj/</url>
     </dependency>
 
     <dependency>
@@ -165,50 +182,72 @@
       <properties>
         <classloader>root</classloader>
       </properties>
+      <url>http://www.eclipse.org/aspectj/</url>
     </dependency>
 
     <dependency>
       <id>junit</id>
       <version>3.8.1</version>
+      <url>http://www.junit.org/index.htm</url>
     </dependency>
 
     <dependency>
       <groupId>concurrent</groupId>
       <artifactId>concurrent</artifactId>
-      <version>1.3.2</version>
+      <version>1.3.3</version>
+      <url>http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html</url>
     </dependency>
 
     <dependency>
       <id>commons-logging</id>
       <version>1.0.3</version>
+      <url>http://jakarta.apache.org/commons/logging/</url>
     </dependency>
 
     <dependency>
       <id>commons-httpclient</id>
       <version>2.0</version>
+      <url>http://jakarta.apache.org/commons/httpclient/</url>
     </dependency>
 
     <dependency>
       <id>geronimo-spec+servlet</id>
       <version>DEV</version>
+      <url>http://incubator.apache.org/geronimo/</url>
     </dependency>
 
     <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jetty</artifactId>
       <version>5.0.beta0</version>
+      <url>http://jetty.mortbay.org/jetty/index.html</url>
     </dependency>
 
     <dependency>
       <groupId>tomcat</groupId>
       <artifactId>catalina</artifactId>
       <version>5.0.18</version>
+      <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/index.html</url>
     </dependency>
 
   </dependencies>
 
   <reports>
+    <report>maven-jdepend-plugin</report>
+    <report>maven-checkstyle-plugin</report>
+    <report>maven-changes-plugin</report>
+    <report>maven-changelog-plugin</report>
+    <report>maven-file-activity-plugin</report>
+    <report>maven-developer-activity-plugin</report>
+    <report>maven-javadoc-plugin</report>
+    <report>maven-jxr-plugin</report>
+    <report>maven-junit-report-plugin</report>
+    <report>maven-tasklist-plugin</report>
+    <report>maven-jellydoc-plugin</report>
+    <report>maven-pmd-plugin</report>
+    <report>maven-simian-plugin</report>
     <report>maven-faq-plugin</report>
+    <report>maven-multiproject-plugin</report>
   </reports>
 
 </project>
