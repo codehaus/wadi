@@ -51,8 +51,8 @@ import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.ClusterContextualiser;
-import org.codehaus.wadi.sandbox.impl.DummyCollapser;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
+import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
@@ -113,7 +113,7 @@ public class TestCluster extends TestCase {
 		protected final MessageDispatcher _dispatcher;
 		protected final Location _location;
 		protected final RelocationStrategy _relocater;
-		protected final Collapser _collapser=new DummyCollapser();
+		protected final Collapser _collapser=new HashingCollapser(10, 2000);
 		protected final Map _cmap=new HashMap();
 		protected final Map _mmap=new HashMap();
 		protected final Evicter _evicter=new NeverEvicter();
@@ -129,7 +129,7 @@ public class TestCluster extends TestCase {
 			_location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), isa, proxy);
 			//_relocater=new SwitchableRelocationStrategy();
 			_relocater=null;
-			_bottom=new ClusterContextualiser(new DummyContextualiser(), _cmap, new SwitchableEvicter(), _dispatcher, _relocater, _location);
+			_bottom=new ClusterContextualiser(new DummyContextualiser(), _cmap, new SwitchableEvicter(), _collapser, _dispatcher, _relocater, _location);
 			_top=new MemoryContextualiser(_bottom, _mmap, _evicter, new SimpleStreamingStrategy(), new MyContextPool());
 			_bottom.setTop(_top);
 		}
