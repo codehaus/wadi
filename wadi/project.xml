@@ -165,7 +165,7 @@
     <dependency>
       <groupId>aspectj</groupId>
       <artifactId>aspectjrt</artifactId>
-      <version>1.2rc1</version>
+      <version>1.2</version>
       <properties>
         <classloader>root</classloader>
       </properties>
@@ -178,7 +178,7 @@
     <dependency><!-- when will ibiblio be updated ? -->
       <groupId>aspectj</groupId>
       <artifactId>aspectjtools</artifactId>
-      <version>1.2rc1</version>
+      <version>1.2</version>
       <properties>
         <classloader>root</classloader>
       </properties>
