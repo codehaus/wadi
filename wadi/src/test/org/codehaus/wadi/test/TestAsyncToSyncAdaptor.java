@@ -17,19 +17,13 @@
 
 package org.codehaus.wadi.test;
 
-import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.Map;
 import javax.jms.ObjectMessage;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.jetty.HttpSessionImplFactory;
-import org.codehaus.wadi.plugins.SimpleStreamingStrategy;
 import org.codehaus.wadi.shared.AsyncToSyncAdaptor;
 import org.codehaus.wadi.shared.Command;
 import org.codehaus.wadi.shared.Manager;
-import org.codehaus.wadi.shared.StreamingStrategy;
 
 /**
  * Test the Migration Service
