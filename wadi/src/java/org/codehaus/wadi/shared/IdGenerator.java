@@ -26,7 +26,11 @@ import EDU.oswego.cs.dl.util.concurrent.Takable;
  */
 public interface IdGenerator
 extends Takable
- {
-	public abstract Object take();
-	public abstract Object poll(long millis);
+{
+  public abstract Object take();
+  public abstract Object poll(long millis);
+
+//   public String getId(String id, String route);
+//   public String getIdId(String both);
+//   public String getIdRoute(String both);
 }

@@ -19,6 +19,10 @@ package org.codehaus.wadi.plugins;
 
 import org.codehaus.wadi.shared.RoutingStrategy;
 
+// TODO - this class needs to be better integrated with the
+// IdGenerator API so that, in cases where the id is of fixed length,
+// we can take advantage of the fact.
+
 /**
  * An integration strategy for maintaining session affinity through
  * cooperation with Apache/mod_jk.
@@ -54,4 +58,10 @@ public class
   {
     return bucket==null?session:session+"."+bucket; // TODO - can we be more efficient ?
   }
+
+  public String get(String id){return _nodeId;}
+
+  protected String _nodeId;
+  public String getNodeId(){return _nodeId;}
+  public void setNodeId(String nodeId){_nodeId=nodeId;}
 }

@@ -317,7 +317,7 @@ public abstract class
       throws Exception
   {
   	_log.debug("starting");
-    _log.info("WADI v1.0 - Web Application Distribution Infrastructure (jules@coredevelopers.net)");
+    _log.info("WADI v1.0 - Web Application Distribution Infrastructure (wadi.codehaus.org)");
     // TODO - is putting ourselves in an attribute a security risk ?
     getServletContext().setAttribute(Manager.class.getName(), this);
     _loader=Thread.currentThread().getContextClassLoader();
@@ -340,7 +340,6 @@ public abstract class
 				       );
     _locationClient=new LocationClient(getAutoLocationAddress(), getAutoLocationPort(), 5000L);
     _locationServer.start();
-
     _migrationServer.start();
     _running=true;
     _log.debug("started");
@@ -360,6 +359,8 @@ public abstract class
     _running=false;
     _locationServer.stop();
     _locationServer=null;
+    _migrationServer.stop();
+    _migrationServer=null;
 
     // what about housekeeping thread ?
 

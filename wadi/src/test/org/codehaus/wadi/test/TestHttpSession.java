@@ -118,6 +118,7 @@ public class TestHttpSession
     throws Exception
   {
     _manager=new Manager();
+    _manager.setBucketName("foo"); // TODO: we should be able to work without this...
     org.mortbay.jetty.servlet.WebApplicationHandler handler=new org.mortbay.jetty.servlet.WebApplicationHandler();
     handler.initialize(new org.mortbay.http.HttpContext());
     handler.start();
@@ -647,6 +648,7 @@ public class TestHttpSession
     }
 
     HttpSession s1=(HttpSession)ObjectInputStream.demarshall(buffer);
+    ((org.codehaus.wadi.shared.HttpSession)s1).setWadiManager(_manager); // TODO - yeugh!
     // listener should not have yet been activated (we do it lazily)
     assertTrue(events.size()==0);
     s1.getAttribute(key);

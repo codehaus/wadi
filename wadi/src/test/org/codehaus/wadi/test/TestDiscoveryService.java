@@ -28,40 +28,48 @@ public class
   TestDiscoveryService
   extends TestCase
 {
-	protected Log _log=LogFactory.getLog(TestHttpSession.class);
-	protected DiscoveryService.Server _server;
-	protected DiscoveryService.Client _client;
+  protected Log                     _log=LogFactory.getLog(TestHttpSession.class);
+  protected DiscoveryService.Server _server;
+  protected DiscoveryService.Client _client;
+  protected long                    _time=System.currentTimeMillis();
+  protected String                  _request="request-"+_time;
+  protected String                  _response=_request+"-response-"+_time;
 
   public TestDiscoveryService(String name) {super(name);}
 
-    protected void
+  protected void
     setUp()
     throws Exception
-  {
-    _log.info("starting test");
-    _server=new DiscoveryService.Server(InetAddress.getByName("228.5.6.7"), 6789)
+    {
+      _log.info("starting test");
+      InetAddress address=InetAddress.getByName("228.5.6.7");
+      int port=6789;
+      int timeout=5000;		// 5 secs
+      _client=new DiscoveryService.Client(address, port, timeout);
+      _server=new DiscoveryService.Server(address, port)
 	{
-    	public String process(String request)
-    	{
-    		_log.info("received request: "+request);
-    		return request;
-    	}
+	  public String process(String request)
+	  {
+	    assertTrue(request.equals(_request));
+	    return _response;
+	  }
 	};
-	_server.start();
-  }
+      _server.start();
+    }
 
   protected void
     tearDown()
     throws InterruptedException
-  {
-  	_server.stop();
-  	_server=null;
-  	_log.info("stopping test");
-  }
+    {
+      _server.stop();
+      _server=null;
+      _log.info("stopping test");
+    }
 
   public void
-    testCreateHttpSession()
-  {
-    assertTrue(true);
-  }
+    testRoundTrip()
+    {
+      String response=_client.run(_request);
+      assertTrue(response.equals(_response));
+    }
 }

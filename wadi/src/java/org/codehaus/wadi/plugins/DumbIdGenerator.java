@@ -25,4 +25,26 @@ public class DumbIdGenerator
     protected int _tmpHack=0;
     public synchronized Object take(){return System.currentTimeMillis()+"."+_tmpHack++;}
     public synchronized Object poll(long millis){return take();}
+
+    // this could be moved into a SeparatingByChar strategy
+
+//     public String
+//       getId(String idId, String idRoute)
+//     {
+//       return idId+"."+idRoute;
+//     }
+
+//   public String
+//     getIdId(String id)
+//     {
+//       int index=id.indexOf('.');
+//       return index<0?id:id.substring(0,index);
+//     }
+
+//   public String
+//     getIdRoute(String id)
+//     {
+//       int index=id.indexOf('.');
+//       return index<0?null:id.substring(index+1,id.length());
+//     }
   }

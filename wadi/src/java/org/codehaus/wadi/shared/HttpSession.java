@@ -119,10 +119,18 @@ public class
     getId()
     {
       String session=_impl.getId();
-      String bucket=_impl.getWadiManager().getBucketName();
+      String bucket=_impl.getWadiManager().getBucketName(); // TODO - 'orrible
       if (bucket==null)
 	return session;
       else
 	return _impl.getWadiManager().getRoutingStrategy().augment(bucket, session); // TODO - cache...
+    }
+
+  // TODO - I don't like adding this to API - but for impls that have
+  // come off the wire I don't see much choice...
+  public void
+    setWadiManager(Manager manager)
+    {
+      _impl.setWadiManager(manager);
     }
 }
