@@ -17,9 +17,6 @@
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.Serializable;
-import java.util.Set;
-
-import org.codehaus.wadi.sandbox.context.Context;
 
 /**
  * TODO - JavaDoc this type
