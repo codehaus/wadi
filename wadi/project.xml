@@ -31,12 +31,13 @@
     such as :</p>
 
     <ul>
-    <li>HttpSession Migration (inter-node and node-store-node)</li>
-    <li>HttpRequest relocation (by redirection and proxying)</li>
-    <li>in-vm HttpSession state replication (NYI)</li>
-    <li>simple HttpSession semantics and a guaranteed resolution to
+    <li>Simple HttpSession semantics and a guaranteed resolution to
     application vs container space concurrency issues within the
     HttpSession</li>
+    <li>HttpSession Migration (inter-node and node-store-node)</li>
+    <li>HttpRequest relocation (by redirection and proxying)</li>
+    <li>NYI - pluggable HttpSession state replication strategies - in-vm, db, file etc..</li>
+    <li>NYI - pluggable self-partitioning, self-healing clustering substrate.</li>
     </ul>
 
     <p>WADI can currently be plugged into the following J2EE web
@@ -45,10 +46,6 @@
     <li>Tomcat 5</li>
     <li>Jetty 5</li>
     </ul>
-
-    <p>WADI will be the subject of <a
-    href="">BOF-2180</a>
-    at JavaOne this year.</p>
 
     <p>WADI is a new project and this site is very much under
     development - please be patient with us</p>
