@@ -137,7 +137,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 		
 		public void commit(String id, Motable emotable) {
 			emotable.tidy();
-			_log.info("removal (memory): "+id);
+			//_log.info("removal (memory): "+id);
 			// TODO - release exclusive lock
 		}
 		
@@ -181,7 +181,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 		
 		public void commit(String id, Motable immotable) {
 			_map.put(id, immotable); // assumes that Map does own syncing...
-			_log.info("insertion (memory): "+id);
+			//_log.info("insertion (memory): "+id);
 		}
 		
 		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {

@@ -112,7 +112,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		}
 		
 		public void commit(String id, Motable immotable) {
-			_log.info("insertion (database): "+id);
+			//_log.info("insertion (database): "+id);
 		}
 		
 		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
