@@ -949,16 +949,6 @@ public abstract class
 
   public abstract String getSessionUrlParamName();
 
-
-  /**
-   * Is this <address:port> one that we are serving on?
-   *
-   * @param address an <code>InetAddress</code> value
-   * @param port an <code>int</code> value
-   * @return a <code>boolean</code> value
-   */
-  public abstract boolean isServing(InetAddress address, int port);
-
   /**
    * return the/a port on which this container is listening for http
    * requests, this will be used by our location server to reply to
