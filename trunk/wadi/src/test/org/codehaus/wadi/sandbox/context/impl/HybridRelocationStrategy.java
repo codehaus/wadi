@@ -24,6 +24,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 
@@ -50,5 +51,6 @@ public class HybridRelocationStrategy implements RelocationStrategy {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
+	
+	public void setTop(Contextualiser top){}
 }

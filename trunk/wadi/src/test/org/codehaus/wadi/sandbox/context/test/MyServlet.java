@@ -38,6 +38,7 @@ import org.codehaus.wadi.sandbox.context.ContextPool;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.HttpProxy;
+import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.RequestRelocationStrategy;
@@ -61,23 +62,23 @@ public class MyServlet implements Servlet {
 	protected final StatelessContextualiser _statelessContextualiser;
 	protected final MemoryContextualiser _memoryContextualiser;
 	
-	public MyServlet(String name, Cluster cluster, InetSocketAddress location, ContextPool contextPool, HttpProxy proxy) throws Exception {
+	public MyServlet(String name, Cluster cluster, InetSocketAddress isa, ContextPool contextPool, HttpProxy proxy) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 		_cluster=cluster;
 		_cluster.start();
 		_collapser=new HashingCollapser(10, 2000);
 		_clusterMap=new HashMap();
 		MessageDispatcher dispatcher=new MessageDispatcher(_cluster);
-		RelocationStrategy relocater=new RequestRelocationStrategy(cluster, dispatcher, 3000, 2000);
-		HttpProxyLocation hpl=new HttpProxyLocation(cluster.getLocalNode().getDestination(), location, proxy);
-		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), _cluster, 2000, 3000, hpl, dispatcher, relocater);
+		Location location=new HttpProxyLocation(cluster.getLocalNode().getDestination(), isa, proxy);
+		RelocationStrategy relocater=new RequestRelocationStrategy(cluster, dispatcher, 3000, 2000, location);
+		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), relocater);
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
 		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);
 		_statelessContextualiser=new StatelessContextualiser(_clusterContextualiser, methods, true, uris, false);
 		_memoryMap=new HashMap();
 		_memoryContextualiser=new MemoryContextualiser(_statelessContextualiser, _collapser, _memoryMap, new NeverEvicter(), contextPool);
-		_clusterContextualiser.setContextualiser(_memoryContextualiser);
+		relocater.setTop(_memoryContextualiser);
 	}
 	
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}

@@ -17,19 +17,26 @@
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.ObjectMessage;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
+import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.ProxyingException;
@@ -52,14 +59,20 @@ public class RequestRelocationStrategy implements RelocationStrategy {
 	protected final long _timeout;
 	protected final Map _rvMap=new HashMap();
 	protected final Cluster _cluster;
+	protected final Location _location;
+	protected Contextualiser _top;
 	
-	public RequestRelocationStrategy(Cluster cluster, MessageDispatcher dispatcher, long proxyHandOverPeriod, long timeout) {
+	public void setTop(Contextualiser top){_top=top;}
+	
+	public RequestRelocationStrategy(Cluster cluster, MessageDispatcher dispatcher, long proxyHandOverPeriod, long timeout, Location location) {
 		_dispatcher=dispatcher;
 		_proxyHandOverPeriod=proxyHandOverPeriod;
 		_timeout=timeout;
 		_cluster=cluster;
+		_location=location;
 		
-		_dispatcher.register(LocationResponse.class, _rvMap, _timeout);
+		_dispatcher.register(this, "onMessage"); // dispatch LocationRequest messages onto our onMessage() method
+		_dispatcher.register(LocationResponse.class, _rvMap, _timeout); // dispatch LocationResponse classes via synchronous rendez-vous
 	}
 	
 	protected Location locate(String id, Map locationMap) {
@@ -138,6 +151,73 @@ public class RequestRelocationStrategy implements RelocationStrategy {
 			// TODO - is this correct ?
 			promotionLock.release();
 			return true;
+		}
+	}
+	
+	public void onMessage(ObjectMessage message, LocationRequest request) throws JMSException {
+		String id=request.getId();
+		_log.info("receiving location request: "+id);
+		if (_top==null) {
+			_log.warn("no Contextualiser set - cannot respond to LocationRequests");
+		} else {
+			try {
+				Destination replyTo=message.getJMSReplyTo();
+				String correlationId=message.getJMSCorrelationID();
+				long handShakePeriod=request.getHandOverPeriod();
+				// TODO - the peekTimeout should be specified by the remote node...
+				FilterChain fc=new LocationResponseFilterChain(replyTo, correlationId, _location, id, handShakePeriod);
+				_top.contextualise(null,null,fc,id, null, null, true);
+			} catch (Exception e) {
+				_log.warn("problem handling location request: "+id);
+			}
+			// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
+		}
+	}
+	
+	class LocationResponseFilterChain
+	implements FilterChain
+	{
+		protected final Destination _replyTo;
+		protected final String _correlationId;
+		protected final Location _location;
+		protected final String _id;
+		protected final long _handOverPeriod;
+
+		LocationResponseFilterChain(Destination replyTo, String correlationId, Location location, String id, long handOverPeriod) {
+			_replyTo=replyTo;
+			_correlationId=correlationId;
+			_location=location;
+			_id=id;
+			_handOverPeriod=handOverPeriod;
+		}
+
+		public void
+		doFilter(ServletRequest request, ServletResponse response)
+		throws IOException, ServletException
+		{
+			_log.info("sending location response: "+_id);
+			LocationResponse lr=new LocationResponse(_location, Collections.singleton(_id));
+			try {
+				ObjectMessage m=_cluster.createObjectMessage();
+				m.setJMSReplyTo(_replyTo);
+				m.setJMSCorrelationID(_correlationId);
+				m.setObject(lr);
+				_cluster.send(_replyTo, m);
+
+				// Now wait for a while so that the session is locked into this container, giving the other node a chance to proxy to this location and still find it here...
+				// instead of just waiting a set period, we could use a Rendezvous object with a timeout - more complexity - consider...
+				try {
+					_log.info("waiting for proxy ("+_handOverPeriod+" millis)...: "+_id);
+					Thread.sleep(_handOverPeriod);
+					_log.info("...waiting over: "+_id);
+				} catch (InterruptedException ignore) {
+					// ignore
+					// TODO - should we loop here until timeout is up ?
+				}
+
+			} catch (JMSException e) {
+				_log.error("problem sending location response: "+_id, e);
+			}
 		}
 	}
 }

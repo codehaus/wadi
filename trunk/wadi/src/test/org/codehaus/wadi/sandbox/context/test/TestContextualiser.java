@@ -441,25 +441,26 @@ public class TestContextualiser extends TestCase {
 		//-------------------
 		// do the test
 
+		Location location=new MyLocation();
 		Collapser collapser0=new HashingCollapser(10, 2000);
 		Map c0=new HashMap();
 		MessageDispatcher dispatcher0=new MessageDispatcher(cluster0);
-		RelocationStrategy relocater0=new RequestRelocationStrategy(cluster0, dispatcher0, 3000, 2000);
-		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000, 3000, new MyLocation(), dispatcher0, relocater0);
+		RelocationStrategy relocater0=new RequestRelocationStrategy(cluster0, dispatcher0, 3000, 2000, location);
+		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), relocater0);
 		Map m0=new HashMap();
 		m0.put("foo", new MyContext());
 		Contextualiser memory0=new MemoryContextualiser(clstr0, collapser0, m0, new NeverEvicter(), new MyContextPool());
-		clstr0.setContextualiser(memory0);
+		relocater0.setTop(memory0);
 
 		Collapser collapser1=new HashingCollapser(10, 2000);
 		Map c1=new HashMap();
 		MessageDispatcher dispatcher1=new MessageDispatcher(cluster1);
-		RelocationStrategy relocater1=new RequestRelocationStrategy(cluster1, dispatcher1, 3000, 2000);
-		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000, 3000, new MyLocation(), dispatcher1, relocater1);
+		RelocationStrategy relocater1=new RequestRelocationStrategy(cluster1, dispatcher1, 3000, 2000, location);
+		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), relocater1);
 		Map m1=new HashMap();
 		m1.put("bar", new MyContext());
 		Contextualiser memory1=new MemoryContextualiser(clstr1, collapser1, m1, new NeverEvicter(), new MyContextPool());
-		clstr1.setContextualiser(memory1);
+		relocater1.setTop(memory1);
 
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
 	    _log.info("STARTING NOW!");
