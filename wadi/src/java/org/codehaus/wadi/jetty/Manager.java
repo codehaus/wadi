@@ -140,6 +140,30 @@ public class
     stop()
       throws InterruptedException
   {
+    // must be done after super.stop() as this alters the _running
+    // flag.
+    _running=false;
+    _housekeeper.interrupt();
+    _housekeeper.join();
+    _housekeeper=null;
+
+    // now we need to alter the eviction decision policy, so that
+    // every session is invalidate or passivated, then run the
+    // housekeeper again....
+    EvictionPolicy oldEvictionPolicy=_evictionPolicy;
+    _evictionPolicy=new TotalEvictionPolicy();
+    int oldSize=_local.size();
+    housekeeper();
+    int newSize=_local.size();
+    // this is inaccurate - currently sessions may also still be
+    // created/[e/i]mmigrated whilst this is going on. sessions with
+    // current requests will remain in container :-(. We need a fix in
+    // Filter which will relocate all incoming requests...
+
+    // this fnality needs to move into shared/Manager...
+    _log.debug("migrated "+(oldSize-newSize)+"/"+oldSize+" sessions to long-term storage");
+    _evictionPolicy=oldEvictionPolicy;
+
     try
     {
       super.stop();
@@ -149,21 +173,6 @@ public class
       _log.warn("unexpected", e); // TODO - this should disappear
     }
 
-    // must be done after super.stop() as this alters the _running
-    // flag.
-    _housekeeper.interrupt();
-    _housekeeper.join();
-    _housekeeper=null;
-
-    // now we need to alter the eviction decision policy, so that
-    // every session is invalidate or passivated, then run the
-    // housekeeper again.... TODO
-    //    _evictionPolicy=new SimpleEvictionPolicy(0F); // cut off at 0- i.e. migrate all sessions...
-    EvictionPolicy oldEvictionPolicy=_evictionPolicy;
-    _evictionPolicy=new TotalEvictionPolicy();
-    housekeeper();
-    _evictionPolicy=oldEvictionPolicy;
-    _local.clear();
   }
 
   //--------------//
