@@ -50,8 +50,6 @@ import org.codehaus.activecluster.ClusterListener;
 import org.codehaus.activecluster.Node;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
-import org.codehaus.wadi.HttpSession;
-import org.codehaus.wadi.MigrationService;
 import org.codehaus.wadi.impl.FilePassivationStrategy;
 import org.codehaus.wadi.impl.NoRoutingStrategy;
 import org.codehaus.wadi.impl.RelativeEvictionPolicy;
