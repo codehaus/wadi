@@ -18,7 +18,6 @@
 package org.codehaus.wadi.jetty;
 
 import java.io.Serializable;
-import java.net.InetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionContext;
 import org.codehaus.wadi.Filter;
