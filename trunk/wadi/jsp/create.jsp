@@ -14,7 +14,7 @@
       if (id!=null)
        url+=";jsessionid="+id;
 
-      int period=(int)(Math.random()*120);
+      int period=(int)(Math.random()*25);
       %>
 
       <meta http-equiv="refresh" content="<%= period %>;url=<%= url %>"/>
@@ -34,7 +34,8 @@
 	    <table>
 	      <%
 	      session.setAttribute(""+session.getLastAccessedTime(), colour);
-	      for (Enumeration e=session.getAttributeNames(); e.hasMoreElements();)
+	      int j=0;
+	      for (Enumeration e=session.getAttributeNames(); e.hasMoreElements() && j<15;j++)
 	      {
 	      String key=(String)e.nextElement();
 	      %>
