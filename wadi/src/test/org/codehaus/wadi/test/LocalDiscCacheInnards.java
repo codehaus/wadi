@@ -21,34 +21,19 @@ package org.codehaus.wadi.test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import javax.cache.Cache;
 import javax.cache.CacheEntry;
 import javax.cache.CacheException;
-import javax.cache.CacheLoader;
-import javax.cache.EvictionStrategy;
-import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
-import ri.cache.BasicCache;
-import ri.cache.eviction.LRUChainEvictionStrategy;
-import ri.cache.eviction.NullEvictionStrategy;
-import ri.cache.loader.AbstractCacheLoader;
-import ri.cache.loader.FromCacheLoader;
-import ri.cache.loader.NullCacheLoader;
 
 //----------------------------------------
 
