@@ -22,11 +22,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.sql.Connection;
+import java.sql.Statement;
 import javax.cache.Cache;
 import javax.cache.CacheEntry;
+import javax.sql.DataSource;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import ri.cache.BasicCache;
@@ -180,28 +184,81 @@ public class
     public boolean evict(CacheEntry ce){return false;}
   }
 
+  protected void
+    testJCache(Cache c)
+  {
+    boolean success=false;
+
+    try
+    {
+      String key="key-1";
+      Value val=new Value("value-1");
+
+      c.put(key, val);
+      _log.info(c.get(key));
+      c.remove(key);
+
+      c.evict();
+      c.get("key-2");
+
+      success=true;
+    }
+    catch (Exception e)
+    {
+      _log.error("test failed", e);
+    }
+
+    assertTrue(success);
+  }
+
   public void
     testLocalDiscCache()
+    throws Exception
+  {
+    File dir=new File("/tmp");
+    Cache shared=new BasicCache();
+    CacheInnards ci=new LocalDiscCacheInnards(dir, new Pool(), new SimpleStreamingStrategy(), shared, new NoEvictionPolicy());
+    Cache ld=new BasicCache(ci, ci);
+
+    testJCache(ld);
+  }
+
+  // once we have a working DB-based cache we can back the file-based
+  // on onto it, so expiring sessions are demoted to persistant
+  // storage...
+  public void
+    testDB()
     throws Exception
   {
     boolean success=false;
 
     try
     {
-      File dir=new File("/tmp");
+      DataSource ds=new AxionDataSource("jdbc:axiondb:testdb");
+      String table="MyTable";
+
+      {
+	Connection c=ds.getConnection();
+	Statement s=c.createStatement();
+	s.execute("create table "+table+" (MyKey varchar, MyValue java_object)");
+	s.close();
+	c.close();
+      }
+
       Cache shared=new BasicCache();
-      CacheInnards ci=new LocalDiscCacheInnards(dir, new Pool(), new SimpleStreamingStrategy(), shared, new NoEvictionPolicy());
+      CacheInnards ci=new SharedDBCacheInnards(ds, table, new Pool(), new SimpleStreamingStrategy(), shared, new NoEvictionPolicy());
       Cache ld=new BasicCache(ci, ci);
 
-      String key="key-1";
-      Value val=new Value("value-1");
+      testJCache(ld);
 
-      ld.put(key, val);
-      _log.info(ld.get(key));
-      ld.remove(key);
-
-      ld.evict();
-      ld.get("key-2");
+      {
+	Connection c=ds.getConnection();
+	Statement s=c.createStatement();
+	s.execute("drop table "+table);
+	s.execute("SHUTDOWN");
+	s.close();
+	c.close();
+      }
 
       success=true;
     }
