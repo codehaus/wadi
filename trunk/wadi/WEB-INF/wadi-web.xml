@@ -4,6 +4,37 @@
 
 <Configure class="org.codehaus.wadi.shared.Manager">
 
+ <Set name="ConnectionFactory">
+  <New class="org.codehaus.activemq.ActiveMQConnectionFactory">
+   <Arg type="String">multicast://224.1.2.3:5123</Arg>
+  </New>
+ </Set>
+
+<!--
+ <Set name="Connection">
+  <Call name="getConnectionFactory">
+   <Call name="createConnection"/>
+  </Call>
+ </Set>
+-->
+
+<!-- ActiveCluster Cluster component -->
+<!--
+ <Set name="ClusterFactory">
+  <New class="org.codehaus.activecluster.impl.DefaultClusterFactory">
+   <Arg>
+   </Arg>
+  </New>
+ </Set>
+-->
+
+<!--
+ <Set name="Cluster">
+  <Arg>
+  </Arg>
+ </Set>
+-->
+
   <!-- used to stream sessions between peers -->
   <Set name="StreamingStrategy">
     <New class="org.codehaus.wadi.plugins.SimpleStreamingStrategy"/><!-- no compression -->
