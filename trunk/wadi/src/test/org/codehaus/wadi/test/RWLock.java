@@ -104,6 +104,8 @@ public class
     return allowRead;
   }
 
+  // Is anyone else writing or reading ? if not we become current
+  // writer and return true - else return false...
   protected synchronized boolean startWrite(Object lock) {
 
     // The allowWrite expression cannot be modified without
@@ -132,7 +134,9 @@ public class
     return pass;
   }
 
-  protected synchronized boolean startWriteFromNewWriter(Object lock) {	// TODO - does this need to be synchronized ?
+  // either start writing immediately (return true), or be put into
+  // writer queue (return false).
+  protected synchronized boolean startWriteFromNewWriter(Object lock) {
     boolean pass = startWrite(lock);
     if (!pass)
     {
@@ -148,7 +152,9 @@ public class
     return pass;
   }
 
-  protected synchronized boolean startWriteFromWaitingWriter() { // TODO - does this need to be synchronized ?
+  // we have just been notified. we are to become the current writer -
+  // as long as the situation has not changed in the meantime...
+  protected synchronized boolean startWriteFromWaitingWriter() {
     Object lock=null;
     Thread t=Thread.currentThread();
     synchronized(_waitingWriters){lock=_waitingWriters.get(t);}
