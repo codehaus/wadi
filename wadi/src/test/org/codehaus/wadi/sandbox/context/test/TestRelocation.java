@@ -42,13 +42,13 @@ import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.impl.GZIPStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.HttpProxy;
+import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Location;
-import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.CommonsHttpProxy;
 import org.codehaus.wadi.sandbox.context.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
-import org.codehaus.wadi.sandbox.context.impl.MigrateRelocationStrategy;
+import org.codehaus.wadi.sandbox.context.impl.ImmigrateRelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.ProxyRelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.StandardHttpProxy;
 
@@ -94,8 +94,8 @@ public class TestRelocation extends TestCase {
 	  	
 	  	// RelocationStrategy
 	  	
-		public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {
-			return _delegate.relocate(hreq, hres, chain, id, promoter, promotionLock, locationMap);
+		public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {
+			return _delegate.relocate(hreq, hres, chain, id, immoter, promotionLock, locationMap);
 		}
 
 		public void setTop(Contextualiser top) {
@@ -106,7 +106,7 @@ public class TestRelocation extends TestCase {
 	}
 	  
 	  class DummyRelocationStrategy implements RelocationStrategy {
-		public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {return false;}
+		public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {return false;}
 		protected Contextualiser _top;
 		public void setTop(Contextualiser top) {_top=top;}
 		public Contextualiser getTop(){return _top;}
@@ -182,8 +182,8 @@ public class TestRelocation extends TestCase {
 		}
 	
 	public void testMigrateInsecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
-		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
+		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
+		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
 		testInsecureRelocation(true);
 		}
 		
@@ -244,6 +244,7 @@ public class TestRelocation extends TestCase {
 		if (migrating) {
 			assertTrue(m0.size()==2);
 			Thread.sleep(1000); // can take a while for ACK to be processed
+			_log.info("M1="+m1);
 			assertTrue(m1.size()==0);
 			assertTrue(c0.size()==0); // n0 has all the sessions, so needn't remember any further locations...
 			assertTrue(c1.size()==1); // bar migrated from n1 to n0, so n1 needs to remember the new location...
@@ -314,8 +315,8 @@ public class TestRelocation extends TestCase {
 		}
 	
 	public void testMigrateSecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
-		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
+		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
+		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
 		testSecureRelocation(true);
 		}
 		
@@ -399,8 +400,8 @@ public class TestRelocation extends TestCase {
 		}
 	
 	public void testMigrateStatelessContextualiser() throws Exception {
-		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
-		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
+		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
+		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
 		testStatelessContextualiser(true);
 		}
 		

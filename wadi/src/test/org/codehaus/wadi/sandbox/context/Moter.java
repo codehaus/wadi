@@ -14,33 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.context.impl;
+package org.codehaus.wadi.sandbox.context;
 
-import java.io.Serializable;
-
-import javax.jms.Destination;
 
 /**
- * Sent to notify Cluster memebers of a new Queue from which they should take and acknowledge
- * Context emmigrations...
+ * Basic API for Motion (promotion and demotion) of Motables
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class EmmigrationEndedNotification implements Serializable {
-	protected Destination _emmigrationQueue;
-
-	/**
-	 *
-	 */
-	public EmmigrationEndedNotification(Destination emmigrationQueue) {
-		super();
-		_emmigrationQueue=emmigrationQueue;
-	}
-
-	public EmmigrationEndedNotification() {
-		// for use when demarshalling...
-	}
-
-	public Destination getDestination(){return _emmigrationQueue;}
+public interface Moter {	
+	boolean prepare(String id, Motable emotable, Motable immotable);
+	void commit(String id, Motable p);
+	void rollback(String id, Motable p);
+	
+	String getInfo();
 }

@@ -16,19 +16,30 @@
 */
 package org.codehaus.wadi.sandbox.context.impl;
 
+import java.io.Serializable;
+
+import org.codehaus.wadi.sandbox.context.Motable;
+
 /**
- * A very Simple implementation of Motable, with the Bytes field represented as a byte[]
+ * Implement all of Motable except for the Bytes field. This is the field most likely to have different representations.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 
-public class SimpleMotable extends AbstractMotable {
-	protected byte[] _bytes;
-	public byte[] getBytes() {return _bytes;}
-	public void setBytes(byte[] bytes){_bytes=bytes;}
+public abstract class AbstractMotable extends SimpleEvictable implements Motable, Serializable {
 
-	public void tidy(){_bytes=null;}
+	public void copy(Motable motable) throws Exception {
+		super.copy(motable); // Evictable fields
+		_id=motable.getId();
+		setBytes(motable.getBytes());
+	}
+	
+	protected String _id;
+	public String getId(){return _id;}
+	public void setId(String id){_id=id;}
+
+	// N.B. implementation of Bytes field is left abstract...
 }
 	
 

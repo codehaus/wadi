@@ -22,8 +22,6 @@ import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,11 +32,14 @@ import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.ContextPool;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.Emoter;
 import org.codehaus.wadi.sandbox.context.Evicter;
+import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Motable;
-import org.codehaus.wadi.sandbox.context.Promoter;
 
+import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 /**
  * TODO - JavaDoc this type
@@ -55,129 +56,160 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 		super(next, collapser, map, evicter);
 		_pool=pool;
 		_streamer=streamer;
+		
+		_emoter=new MemoryEmoter(); // overwrite - yeugh ! - fix when we have a LifeCycle
 	}
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
-	 */
-	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres,
-			FilterChain chain, String id, Promoter promoter, Sync promotionLock) throws IOException, ServletException {
-		Context c=(Context)_map.get(id);
-		if (c==null) {
-			return false;
-		} else {
-			Sync shared=c.getSharedLock();
-			try {
-				shared.acquire();
-				// now that we know the Context has been promoted to this point and is going nowhere we can allow other threads that were trying to find it proceed...
-				if (promotionLock!=null) {
-					promotionLock.release();
-				}
-				if (promoter!=null) {
-					// promote
-					try {
-						Motable motable=promoter.nextMotable();
-						motable.setBytes(c.getBytes());
-						_log.info("promoting (from memory): "+id);
-						if (promoter.prepare(id, motable)) {
-							_map.remove(id); // locking ?
-							promoter.commit(id, motable);
-							promotionLock.release();
-							promoter.contextualise(hreq, hres, chain, id, motable);
-						} else {
-							promoter.rollback(id, motable);
-						}
-					} catch (Exception e) {
-						_log.warn("could not promote session: "+id);
-					}
-				} else {
-					// contextualise
-					contextualise(hreq, hres, chain, id);
-				}
-			} catch (InterruptedException e) {
-				throw new ServletException("timed out acquiring context", e);
-			} finally {
+	public boolean isLocal(){return true;}
+
+	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
+		Motable emotable=(Motable)_map.get(id);
+		if (emotable==null)
+			return false; // we cannot proceed without the session...
+		
+		Sync shared=((Context)emotable).getSharedLock();
+		boolean acquired=false;
+		try {
+			shared.acquire();
+			acquired=true;
+			// now that we know the Context has been promoted to this point and is going nowhere we can allow other threads that were trying to find it proceed...
+			
+			if (promotionLock!=null)
+				promotionLock.release();
+			
+			if (immoter!=null)
+				return contextualiseElsewhere(hreq, hres, chain, id, immoter, promotionLock, emotable);
+			
+			return contextualiseLocally(hreq, hres, chain, id, promotionLock, emotable);
+			
+		} catch (InterruptedException e) {
+			throw new ServletException("timed out acquiring context", e); // TODO - good idea ?
+		} finally {
+			if (acquired)
 				shared.release(); // should we release here ?
-			}
-			return true;
 		}
 	}
 
-	protected void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id)  throws IOException, ServletException {
+	// TODO - c.f. AbstractMappedContextualiser.evict()
+	public void evict() {
+		// TODO - lock the map - move expensive stuff out of lock...
+		for (Iterator i=_map.entrySet().iterator(); i.hasNext(); ) {
+			Map.Entry e=(Map.Entry)i.next();
+			String id=(String)e.getKey();
+			Motable emotable=(Motable)e.getValue();
+			if (_evicter.evict(id, emotable)) { // first test without lock - cheap
+				Sync lock=((Context)emotable).getExclusiveLock();
+				boolean acquired=false;
+				// this should be a while loop
+				try {
+					if (lock.attempt(0) && _evicter.evict(id, emotable)) { // then confirm with exclusive lock
+						acquired=true;
+						Immoter immoter=_next.getDemoter(id, emotable);
+						Emoter emoter=getEmoter();
+						_log.info("demoting : "+emotable);
+						Utils.mote(emoter, immoter, emotable, id);
+					}
+				} catch (InterruptedException ie) {
+					// should be done in a loop...
+					_log.warn("unexpected interruption to eviction - ignoring", ie);
+				} finally {
+					if (acquired)
+						lock.release();
+				}
+			}
+		}
+	}
+
+	public boolean contextualiseLocally(HttpServletRequest req, HttpServletResponse res, FilterChain chain, String id, Sync promotionLock, Motable motable)  throws IOException, ServletException {
 		_log.info("contextualising: "+id);
 		chain.doFilter(req, res);
+		return true;
 	}
 
-	class MemoryPromoter implements Promoter {
-
-		public Motable nextMotable() {return _pool.take();}
-
-		public boolean prepare(String id, Motable motable) {
-			Context context=(Context)motable;
-			try {
-				context.getSharedLock().acquire();
-			} catch (InterruptedException e) {
-				_log.warn("promotion abandoned: "+id, e);
-				return false;
-			}
-			_log.info("promoting (to memory): "+id);
-			_log.info("insert (memory): "+id);
-			_map.put(id, context);
+	// TODO - merge with MappedEmoter soon
+	class MemoryEmoter implements Emoter {
+		
+		public boolean prepare(String id, Motable emotable, Motable immotable) {
+			// TODO - acquire exclusive lock
+			_map.remove(id);
 			return true;
 		}
-
-		public void commit(String id, Motable motable) {
-			}
-
-		public void rollback(String id, Motable p) {
-			_log.info("remove (memory): "+id);
-			_map.remove(id);
+		
+		public void commit(String id, Motable emotable) {
+			emotable.tidy();
+			_log.info("removal (memory): "+id);
+			// TODO - release exclusive lock
 		}
-
-		public void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Motable motable) throws IOException, ServletException {
-			Context context=(Context)motable;
+		
+		public void rollback(String id, Motable emotable) {
+			_map.put(id, emotable);
+			// TODO - locking ?
+		}
+		
+		public String getInfo() {
+			return "memory";
+		}		
+	}
+	
+	class MemoryImmoter extends AbstractImmoter {
+		
+		public Motable nextMotable(String id, Motable emotable) {
+			return _pool.take();
+		}
+		
+		
+		// TODO - I don't think this is ever called...
+		public boolean prepare(String id, Motable motable, Sync lock) {
+			do {
+				try {
+					// TODO - we only want this lock if we can guarantee that we will also contextualise...
+					lock.acquire();
+					// TODO - we should ensure that session is still valid
+					return super.prepare(id, motable, null);
+				} catch (TimeoutException e) {
+					_log.error("could not acquire shared lock: "+id);
+					return false;
+				} catch (InterruptedException e) {
+					_log.debug("interrupted whilst trying for shared lock: "+id, e);
+					// go around again
+				}
+			} while (Thread.interrupted());
+			
+			_log.error("THIS CODE SHOULD NOT BE EXECUTED");
+			return false; // keep Eclipse compiler happy
+		}
+		
+		public void commit(String id, Motable immotable) {
+			_map.put(id, immotable); // assumes that Map does own syncing...
+			_log.info("insertion (memory): "+id);
+		}
+		
+		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
+			Context context=(Context)immotable;
 			try {
-				MemoryContextualiser.this.contextualise(req, res, chain, id);
+				MemoryContextualiser.this.contextualiseLocally(hreq, hres, chain, id, new NullSync(), immotable); // TODO - promotionLock ?
 			} finally {
 				context.getSharedLock().release();
 			}
 		}
+		
+		public String getInfo() {
+			return "memory";
+		}
 	}
 
-	protected Promoter _promoter=new MemoryPromoter();
-	public Promoter getPromoter(Promoter promoter) {return _promoter;}
+	protected Immoter _immoter=new MemoryImmoter();
+	
+	public Immoter getPromoter(Immoter immoter) {
+		// do NOT pass through, we want to promote sessions into this store
+		return _immoter;
+		}
 
-	public void demote(String key, Motable val) {
-		if (_evicter.evict(key, val)) {
-			_next.demote(key, val);
+	public Immoter getDemoter(String id, Motable motable) {
+		if (_evicter.evict(id, motable)) {
+			return _next.getDemoter(id, motable);
 		} else {
-			_log.info("insert (memory): "+key);
-			_map.put(key, val);
+			return _immoter;
 		}
 	}
-
-	public void evict() {
-		for (Iterator i=_map.entrySet().iterator(); i.hasNext(); ) {
-			Map.Entry e=(Map.Entry)i.next();
-			String key=(String)e.getKey();
-			Context val=(Context)e.getValue();
-			if (_evicter.evict(key, val)) { // first test without lock - cheap
-				Sync exclusive=val.getExclusiveLock();
-				try {
-					if (exclusive.attempt(0) && _evicter.evict(key, val)) { // then confirm with exclusive lock
-						// do we need the promotion lock ? don't think so - TODO
-						_log.info("demoting (from memory): "+key);
-						_next.demote(key, val);
-						i.remove();
-						_log.info("remove (memory): "+key);
-						exclusive.release();
-					}
-				} catch (InterruptedException ie) {
-					_log.warn("unexpected interruption to eviction - ignoring", ie);
-				}
-			}
-		}
-	}
-
-	public boolean isLocal(){return true;}
 }

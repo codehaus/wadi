@@ -24,8 +24,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Motable;
-import org.codehaus.wadi.sandbox.context.Promoter;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -49,12 +49,15 @@ public class DummyContextualiser implements Contextualiser {
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
 	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres,
-			FilterChain chain, String id, Promoter promoter, Sync promotionLock, boolean localOnly)
+			FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly)
 			throws IOException, ServletException {
 		return false;
 	}
 
 	public void evict(){}
-	public void demote(String key, Motable val){}
 	public boolean isLocal(){return false;}
+	
+	public Immoter getDemoter(String id, Motable motable) {
+		return null;
+	}
 }

@@ -18,8 +18,6 @@ package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.sandbox.context.Location;
-
 /**
  * A query for the location of the session with the enclosed ID - The response
  * should be a LocationResponse object sent whence this request arrived.
@@ -27,23 +25,20 @@ import org.codehaus.wadi.sandbox.context.Location;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class MigrationAcknowledgement implements Serializable {
+public class EmigrationAcknowledgement implements Serializable {
 	protected String _id;
-	protected Location _location;
 
 	/**
 	 *
 	 */
-	public MigrationAcknowledgement(String id, Location location) {
+	public EmigrationAcknowledgement(String id) {
 		super();
 		_id=id;
-		_location=location;
 	}
 
-	public MigrationAcknowledgement() {
+	public EmigrationAcknowledgement() {
 		// for use when demarshalling...
 	}
 
 	public String getId(){return _id;}
-	public Location getLocation(){return _location;}
 }

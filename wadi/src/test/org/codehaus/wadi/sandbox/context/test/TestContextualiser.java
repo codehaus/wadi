@@ -50,13 +50,16 @@ import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.ContextPool;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.Emoter;
 import org.codehaus.wadi.sandbox.context.Evicter;
+import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.Motable;
-import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.ProxyingException;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.AlwaysEvicter;
+import org.codehaus.wadi.sandbox.context.impl.ChainedEmoter;
+import org.codehaus.wadi.sandbox.context.impl.LocalDiscMotable;
 import org.codehaus.wadi.sandbox.context.impl.ProxyRelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
@@ -66,6 +69,8 @@ import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.context.impl.SharedJDBCContextualiser;
+import org.codehaus.wadi.sandbox.context.impl.SimpleEvictable;
+import org.codehaus.wadi.sandbox.context.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -163,26 +168,29 @@ public class TestContextualiser extends TestCase {
 
 	public void testConceptualiser() throws Exception {
 		Collapser collapser=new HashingCollapser(10, 2000);
-		Map d=new HashMap();
 		StreamingStrategy ss=new SimpleStreamingStrategy();
-		File f=File.createTempFile("wadi.", "."+ss.getSuffix());
-		_log.info("file: "+f);
-	    ObjectOutput oo=ss.getOutputStream(new FileOutputStream(f));
-	    new MyContext("bar").writeContent(oo);
-	    oo.flush();
-	    oo.close();
-	    assertTrue(f.exists());
-		d.put("bar", new LocalDiscContextualiser.LocalDiscMotable(0, f));
-		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), ss, new File("/tmp"));
+
+		Map d=new HashMap();
+		LocalDiscContextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), ss, new File("/tmp"));
+		Motable bar=disc.getImmoter().nextMotable("bar", null);
+		bar.setBytes(new MyContext("bar").getBytes());
+		d.put("bar", bar);
+		assertTrue(d.size()==1);
+		
 		Map m=new HashMap();
+		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new NeverEvicter(), ss, new MyContextPool());
 		m.put("foo", new MyContext("foo"));
-		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new NeverEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
+		assertTrue(m.size()==1);
 
 		FilterChain fc=new MyFilterChain();
-//		Collapser collapser=new HashingCollapser();
 		memory.contextualise(null,null,fc,"foo", null, null, false);
 		memory.contextualise(null,null,fc,"bar", null, null, false);
-		assertTrue(!f.exists());
+		assertTrue(d.size()==0);
+		assertTrue(m.size()==2);
+		
+		MyContext tmp=(MyContext)m.get("bar");
+		assertTrue(tmp!=null);
+		assertTrue("bar".equals(tmp._val));
 	}
 
 	class MyPromotingContextualiser implements Contextualiser {
@@ -193,37 +201,34 @@ public class TestContextualiser extends TestCase {
 			_context=new MyContext(context);
 		}
 
-		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
+		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
 			_counter++;
 			
-			try {
-				Motable p=promoter.nextMotable();
-				assertTrue(_context!=null);
-				try {
-					_context.setBytes(p.getBytes());
-				} catch (ClassNotFoundException e) {
-					_log.warn("could not promote context", e);
+			Motable emotable=_context;
+			Emoter emoter=new ChainedEmoter() {
+				public void commit(String id, Motable emotable) {
+					super.commit(id, emotable);
+					_log.info("deletion (ether): "+id);
 				}
-				if (promoter.prepare(id, p)) {
-					_context=null;
-					promoter.commit(id, p);
-					promotionLock.release();
-					promoter.contextualise(hreq, hres, chain, id, p);
-					return true;
-				} else {
-					promoter.rollback(id, p);
-					return false;
-				}
-			} catch (Exception e) {
-				_log.warn("unexpected problem", e);
+				public String getInfo(){return "ether";}
+			};
+			Motable immotable=Utils.mote(emoter, immoter, emotable, id);
+			if (immotable!=null) {
+				promotionLock.release();
+				immoter.contextualise(hreq, hres, chain, id, immotable);
+				return true;				
+			} else {
 				return false;
 			}
 		}
 
-		public void demote(String key, Motable val){}
 		public void evict(){}
 
 		public boolean isLocal(){return false;}
+		
+		public Immoter getDemoter(String id, Motable motable) {
+			return null;
+		}
 	}
 
 	class MyActiveContextualiser implements Contextualiser {
@@ -234,7 +239,7 @@ public class TestContextualiser extends TestCase {
 			_context=new MyContext(context);
 		}
 
-		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
+		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
 			_counter++;
 			Context context=_context;
 			Sync shared=context.getSharedLock();
@@ -250,9 +255,12 @@ public class TestContextualiser extends TestCase {
 			}
 		}
 
-		public void demote(String key, Motable val){}
 		public void evict(){}
 		public boolean isLocal(){return false;}
+		
+		public Immoter getDemoter(String id, Motable motable) {
+			return null;
+		}
 	}
 
 	class MyRunnable implements Runnable {
@@ -347,7 +355,7 @@ public class TestContextualiser extends TestCase {
 		}
 
 		public boolean evict(String id, Motable m) {
-			long expiry=m.getExpiryTime();
+			long expiry=m.getLastAccessedTime()+(m.getMaxInactiveInterval()*1000);
 			long current=System.currentTimeMillis();
 			long left=expiry-current;
 			boolean evict=(left<=_remaining);
@@ -360,11 +368,13 @@ public class TestContextualiser extends TestCase {
 	public void testEviction3() throws Exception {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
-		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), collapser, new NeverEvicter(), ss, _ds, _table);
+		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), collapser, new NeverEvicter(), _ds, _table);
 		Map d=new HashMap();
 		Contextualiser disc=new LocalDiscContextualiser(db, collapser, d, new MyEvicter(0), ss, new File("/tmp"));
 		Map m=new HashMap();
-		m.put("foo", new MyContext("foo", System.currentTimeMillis()+2000)); // times out 2 seconds from now...
+		Context tmp=new MyContext("foo");
+		tmp.setMaxInactiveInterval(2);
+		m.put("foo", tmp); // times out 2 seconds from now...
 		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new MyEvicter(1000), new GZIPStreamingStrategy(), new MyContextPool());
 
 		FilterChain fc=new MyFilterChain();
@@ -394,8 +404,8 @@ public class TestContextualiser extends TestCase {
 //		assertTrue(((MyContext)m.get("foo"))._val.equals("foo"));
 	}
 
-	static class MyLocation implements Location, Serializable {
-		public long getExpiryTime(){return 0;}
+	static class MyLocation extends SimpleEvictable implements Location, Serializable {
+
 		public void proxy(HttpServletRequest hreq, HttpServletResponse hres) throws ProxyingException {
 			System.out.println("PROXYING");
 		}

@@ -40,12 +40,12 @@ public interface RelocationStrategy {
 	 * @param hres
 	 * @param chain
 	 * @param id
-	 * @param promoter
+	 * @param immoter
 	 * @param promotionLock
 	 * @param locationMap
 	 * @return
 	 */
-	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, Map locationMap) throws IOException, ServletException;
+	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException;
 	public void setTop(Contextualiser top);
 	public Contextualiser getTop();
 }

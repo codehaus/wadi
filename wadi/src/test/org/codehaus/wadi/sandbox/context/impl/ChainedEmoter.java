@@ -14,33 +14,32 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package org.codehaus.wadi.sandbox.context.test;
+package org.codehaus.wadi.sandbox.context.impl;
 
-import java.io.Serializable;
-
+import org.codehaus.wadi.sandbox.context.Emoter;
 import org.codehaus.wadi.sandbox.context.Motable;
 
+
 /**
- * TODO - JavaDoc this type
+ * A basic Emoter for ChainedContextualisers
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-
-public class DummyMotable implements Motable, Serializable {
-
-	protected String _content;
+public class ChainedEmoter implements Emoter {
 	
-	public DummyMotable(String content) {
-		_content=content;
+	public boolean prepare(String id, Motable emotable, Motable immotable) {
+		return true;
 	}
 	
-	public String getContent(){return _content;}
+	public void commit(String id, Motable emotable) {
+		emotable.tidy(); // remove copy in store
+	}
 	
-	// Evictable
-	public long getExpiryTime() {return 0;}
-
-	// Motable
-	public byte[] getBytes(){return _content.getBytes();}
-	public void setBytes(byte[] bytes){_content=new String();};
+	public void rollback(String id, Motable emotable) {
+	}
+	
+	public String getInfo() {
+		return "chained";
+	}
 }

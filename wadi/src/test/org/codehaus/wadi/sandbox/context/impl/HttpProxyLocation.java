@@ -35,7 +35,7 @@ import org.codehaus.wadi.sandbox.context.ProxyingException;
  * @version $Revision$
  */
 
-public class HttpProxyLocation implements Location {
+public class HttpProxyLocation extends SimpleEvictable implements Location {
 	protected final static Log _log = LogFactory.getLog(HttpProxyLocation.class);
 	
 	protected InetSocketAddress _location;
@@ -51,8 +51,6 @@ public class HttpProxyLocation implements Location {
 	public void proxy(HttpServletRequest hreq, HttpServletResponse hres) throws ProxyingException {
 		_proxy.proxy(_location, hreq, hres);
 	}
-
-	public long getExpiryTime(){ return 0;}// TODO - NYI
 	
 	public String toString() {return "<HttpProxyLocation:"+_location+">";} // we could include proxy strategy here...
 	

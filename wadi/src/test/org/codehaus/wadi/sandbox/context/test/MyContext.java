@@ -20,43 +20,37 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Context;
+import org.codehaus.wadi.sandbox.context.impl.AbstractMotable;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 
-public class MyContext implements Context {
+public class MyContext extends AbstractMotable implements Context {
 	protected static Log _log = LogFactory.getLog(MyContext.class);
 	
-	String _val;
-	ReadWriteLock _lock=new ReaderPreferenceReadWriteLock();
-	long _expiryTime;
+	protected String _val;
+	protected transient ReadWriteLock _lock;
 
 	MyContext(String val) {
-		this(val, System.currentTimeMillis()+(30*1000));
-	}
-
-	MyContext(String val, long expiryTime) {
+		this();
 		_val=val;
-		_expiryTime=expiryTime;
 	}
 
-	MyContext() {}
+	MyContext() {
+		_lock=new ReaderPreferenceReadWriteLock();
+		}
 
 	public Sync getSharedLock(){return _lock.readLock();}
 	public Sync getExclusiveLock(){return _lock.writeLock();}
-
-	// Motable...
-
-	public long getExpiryTime(){return _expiryTime;}
 
 	// SerializableContext...
 
@@ -86,6 +80,10 @@ public class MyContext implements Context {
 	}
 	
 	public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {
-		readContent(new ObjectInputStream(new ByteArrayInputStream(bytes)));
+		readContent(new SimpleStreamingStrategy().getInputStream(new ByteArrayInputStream(bytes)));
+	}
+	
+	public void tidy() {
+		_val=null;
 	}
 }
