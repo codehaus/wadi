@@ -54,7 +54,7 @@ public class
 
     // TODO - LOCKING INCOMPLETE HERE - NEEDS FIXING...
     public boolean
-      run(Map sessions, Map locks, String id, HttpSessionImpl session, InetAddress remoteAddress, int remotePort, StreamingStrategy streamingStrategy)
+      run(String id, HttpSessionImpl session, InetAddress remoteAddress, int remotePort, StreamingStrategy streamingStrategy)
     {
       Sync lock=null;
       boolean acquired=false;
@@ -74,7 +74,6 @@ public class
 	if (_log.isTraceEnabled()) _log.trace(socket+" -> "+remoteAddress+":"+remotePort);
 	ObjectOutput os=streamingStrategy.getOutputStream(socket.getOutputStream());
 	ObjectInput  is=streamingStrategy.getInputStream(socket.getInputStream());
-	// acquire container lock on session id
 	// send migration request to session source
 	os.writeObject("migrate");
 	os.writeObject(id);
@@ -90,8 +89,6 @@ public class
 	// send commit message
 	os.writeBoolean(true);
 	os.flush();
-	// insert session
-	sessions.put(id, session); // TODO - needs wrapping in facade etc..
 	// receive commit message
 	ok=is.readBoolean();
 	assert ok;
@@ -141,7 +138,6 @@ public class
     protected ServerSocket _socket;
     protected int          _timeout=2000;
 
-    protected final Map _locks;
     protected final Map _sessions;
 
     public int getPort(){return _port;}
@@ -152,10 +148,9 @@ public class
 
     protected StreamingStrategy _streamingStrategy;
 
-    public Server(Map sessions, Map locks, StreamingStrategy streamingStrategy)
+    public Server(Map sessions, StreamingStrategy streamingStrategy)
     {
       _sessions=sessions;
-      _locks=locks;
       _streamingStrategy=streamingStrategy;
     }
 

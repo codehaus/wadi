@@ -131,6 +131,7 @@ public abstract class
   //-----//
 
   protected final Map _local=new ConcurrentReaderHashMap();
+  protected final Object _localLock=new Object();
 
   public HttpSessionImpl
     put(String realId, HttpSessionImpl session)
@@ -138,15 +139,14 @@ public abstract class
     return (HttpSessionImpl)_local.put(realId, session);
   }
 
-  protected final Map _migrating  =new HashMap();
-
+  // is this useful if we don't take a lock at the same time?
   public boolean
     owns(String realId)
   {
     if (_local.containsKey(realId))
       return true;
     else
-      synchronized(_migrating){return _migrating.containsKey(realId);} // TODO - we should probably wait for lock here...
+      return false;
   }
 
   protected ThreadLocal _firstGet=new ThreadLocal()
@@ -166,6 +166,12 @@ public abstract class
     {
       setFirstGet(false);
 
+      if (impl==null && getDistributable())
+	impl=getRemoteSession(realId);
+
+      // there is a gap here between finding the session and getting
+      // the lock....
+
       if (impl!=null)
 	try
 	{
@@ -176,10 +182,6 @@ public abstract class
 	  _log.warn("unexpected interruption", e);
 	}
 
-      // TODO - how do we synchronise this on a per-session basis - a
-      // HashMap of locks - yeugh!
-      if (impl==null && getDistributable())
-	impl=getRemoteSession(realId); // this will take the r-lock
     }
 
     return impl;
@@ -195,114 +197,71 @@ public abstract class
     getRemoteSession(String realId)
   {
     HttpSessionImpl impl=null;
+    boolean locked=false;
 
-    // maybe session is remote and requires migrating here from disc or another jvm?
-    Mutex oldMigrationLock=null; // in case another thread has already initiated migration
-    Mutex newMigrationLock=new Mutex(); // in case we initiate migration - may not be used :-(
-    try
+    synchronized (_localLock)
     {
-      newMigrationLock.acquire(); // do this outsode synchronized{}
-
-      // this first block checks that the session is not already
-      // local, or in the process of being migrated to this node. If
-      // not, it places a lock, indicating that a migration is now
-      // underway, in case other threads come looking for the same
-      // session. This lock will be released when the migration is
-      // finished.
-      synchronized (_migrating)
+      if ((impl=getLocalSession(realId))!=null)
       {
-	// we will have already checked to see if session is local,
-	// but not within this lock. We test outside to reduce
-	// unecessary contention on this lock, then again within it,
-	// in case this session has been successfully migrated to this
-	// node since we last tested...
-	if ((impl=getLocalSession(realId))!=null)
-	  return impl;
-
-	if ((oldMigrationLock=(Mutex)_migrating.get(realId))==null)
-	{
-	  _migrating.put(realId, newMigrationLock);
-	}
-	else
-	{
-	  // migration is already under way...
-	}
-      }
-
-      // the second block either waits for an existing migration to
-      // finish, or implements a new migration, depending on the
-      // result of the first block.
-      if (oldMigrationLock!=null)
-      {
-	// There is already a migration underway. The lock will be
-	// released by the migration thread when the migration is
-	// complete. We will wait for this to occur, then try finding
-	// the session again.
-
-	try
-	{
-	  oldMigrationLock.acquire();	// wait for current migration to finish
-	  return getLocalSession(realId); // return resulting session
-	}
-	catch (InterruptedException e)
-	{
-	  _log.warn("unexpected interruption whilst waiting for existing migration to finish", e);
-	  return null;
-	}
-	finally
-	{
-	  oldMigrationLock.release();
-	}
+	// session already local - return it...
+	return impl;
       }
       else
       {
-	// We are initiating a migration.
-	boolean successfulMigration=false;
+	// session is remote/dead - we will try to migrate it
+	// here. Take a non-exclusive lock on an empty session and
+	// insert into local table as a placeholder.
 	impl=createImpl();
-
-	// If a passivation store has been enabled, we may find the
-	// session in it and load it....
-	if (_passivationStrategy!=null)
-	  successfulMigration=_passivationStrategy.activate(realId, impl);
-
-	// If a migration policy has been enabled, we may request it
-	// from another node.
-
-	if (!successfulMigration)
-  	{
-  	  ManagerProxy proxy=locate(realId);
-  	  if (proxy!=null)
-  	    successfulMigration=proxy.relocateSession(_local, _migrating, realId, impl, _streamingStrategy);
-  	}
-
-	if (successfulMigration)
+	impl.setWadiManager(this);
+	try
 	{
-	  // make newly acquired session impl available to container...
-	  assert impl!=null;
-	  assert impl.getRealId()!=null;
-	  _acquireImpl(impl);
+	  impl.getContainerLock().acquire();
+	  locked=true;
 	}
-	else
+	catch (InterruptedException e)
 	{
-	  // we were not able to migrate the session to this node -
-	  // tidy up the impl into which we were hoping to migrate
-	  // it...
-	  _releaseImpl(impl);
-	  impl=null;
+	  _log.warn("unable to acquire wlock on placeholder session");
 	}
 
-	// the migration is complete and the session is now local -
-	// remove the lock and release it - see finally{}
-	_migrating.remove(realId);	// protect properly from UnknownHostException
+	_local.put(realId, impl);
       }
     }
-    catch (InterruptedException e)
+
+    // if we get to here we know that session is remote/dead and that
+    // it is up to us to find it and migrate it here...
+
+    // We are initiating a migration.
+    boolean successfulMigration=false;
+
+    // If a passivation store has been enabled, we may find the
+    // session in it and load it....
+    if (_passivationStrategy!=null)
+      successfulMigration=_passivationStrategy.activate(realId, impl);
+
+    // If a migration policy has been enabled, we may request it
+    // from another node.
+
+    if (!successfulMigration)
     {
-      _log.warn("unexpected interruption acquiring new migration lock");
+      ManagerProxy proxy=locate(realId);
+      if (proxy!=null)
+	successfulMigration=proxy.relocateSession(realId, impl, _streamingStrategy);
     }
-    finally
+
+    if (successfulMigration)
     {
-      newMigrationLock.release(); // migration complete (if it occurred)
+      assert impl.getRealId()!=null;
+      if (locked)
+	impl.getContainerLock().release();
+    }
+    else
+    {
+      _log.warn(realId+": failed to acquire remote session - tidying up");
+      _local.remove(realId);
+      if (locked)
+	impl.getContainerLock().release();
+      _releaseImpl(impl);
+      impl=null;
     }
 
     return impl;
@@ -411,7 +370,7 @@ public abstract class
 				       );
     _locationClient=new LocationClient(getAutoLocationAddress(), getAutoLocationPort(), 5000L);
     _locationServer.start();
-    _migrationServer=new MigrationService.Server(_local, _migrating, _streamingStrategy);
+    _migrationServer=new MigrationService.Server(_local, _streamingStrategy);
     _migrationServer.start();
     _running=true;
     _log.debug("started");
@@ -889,10 +848,12 @@ public abstract class
 
       String params[]=request.split(",");
 
+      HttpSessionImpl impl=null;
       if (params.length==3 &&
 	  params[0].equals("org.codehaus.wadi") &&
 	  params[1].equals("locate") &&
-	  _local.containsKey(params[2]))
+	  (impl=(HttpSessionImpl)_local.get(params[2]))!=null &&
+	  impl.getRealId()!=null) // may exist, but be placeholder for incoming or remains of outgoing session...
       {
 	response=
 	  "org.codehaus.wadi"+","+
@@ -1029,14 +990,14 @@ public abstract class
 
     HttpSessionImpl impl=createImpl();
     impl.init(Manager.this, realId, System.currentTimeMillis(), _maxInactiveInterval, _maxInactiveInterval); // TODO need actual...
-    _acquireImpl(impl);
+    _acquireImpl(realId, impl);
     notifySessionCreated(realId, impl.getFacade());
     if (_log.isDebugEnabled()) _log.debug(realId+": creation");
     return impl;
   }
 
   protected void
-    _acquireImpl(HttpSessionImpl impl)
+    _acquireImpl(String realId, HttpSessionImpl impl)
   {
     impl.setWadiManager(this);
     // v. important - before we go public, take the rlock to indicate a request thread is busy in this session
@@ -1053,7 +1014,7 @@ public abstract class
       _log.warn("unable to acquire rlock on new session");
     }
 
-    _local.put(impl.getRealId(), impl);
+    _local.put(realId, impl);
   }
 
   protected void
