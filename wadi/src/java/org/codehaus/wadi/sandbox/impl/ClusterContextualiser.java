@@ -28,7 +28,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Immoter;
@@ -75,13 +74,12 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 
 	/**
 	 * @param next
-	 * @param collapser
 	 * @param map
 	 * @param evicter
 	 * @param location TODO
 	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, SwitchableEvicter evicter, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) throws JMSException {
-		super(next, collapser, map, evicter);
+	public ClusterContextualiser(Contextualiser next, Map map, SwitchableEvicter evicter, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) throws JMSException {
+		super(next, map, evicter);
 		_dispatcher=dispatcher;
 	    _relocater=relocater;
 	    _location=location;

@@ -72,14 +72,14 @@ public class MyServlet implements Servlet {
 		_dispatcher=dispatcher;
 		_relocater=relocater;
 		_location=location;
-		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new SwitchableEvicter(), _dispatcher, _relocater, _location);
+		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _clusterMap, new SwitchableEvicter(), _dispatcher, _relocater, _location);
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
 		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);
 		_statelessContextualiser=new StatelessContextualiser(_clusterContextualiser, methods, true, uris, false);
 		_serialContextualiser=new SerialContextualiser(_statelessContextualiser, _collapser);
 		_memoryMap=new HashMap();
-		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, _collapser, _memoryMap, new NeverEvicter(), new SimpleStreamingStrategy(), contextPool);
+		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, _memoryMap, new NeverEvicter(), new SimpleStreamingStrategy(), contextPool);
 		relocater.setTop(_memoryContextualiser);
 	}
 

@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Context;
 import org.codehaus.wadi.sandbox.ContextPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
@@ -54,8 +53,8 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public MemoryContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, StreamingStrategy streamer, ContextPool pool) {
-		super(next, collapser, map, evicter);
+	public MemoryContextualiser(Contextualiser next, Map map, Evicter evicter, StreamingStrategy streamer, ContextPool pool) {
+		super(next, map, evicter);
 		_pool=pool;
 		_streamer=streamer;
 

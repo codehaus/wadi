@@ -54,9 +54,8 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class StatelessContextualiser implements Contextualiser {
+public class StatelessContextualiser extends AbstractThinContextualiser {
 
-	protected final Contextualiser _next;
 	protected final Pattern _methods; // =Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE); // TODO - |HEAD|PUT|DELETE ?
 	protected final boolean _methodFlag; //true
 	protected final Pattern _uris; //=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)", Pattern.CASE_INSENSITIVE); // TODO - CSS, ...?
@@ -70,8 +69,7 @@ public class StatelessContextualiser implements Contextualiser {
 	 * @param uriFlag - Does this Pattern match stateful (true) or stateless (false) URIs
 	 */
 	public StatelessContextualiser(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag) {
-		super();
-		_next=next;
+		super(next);
 		_methods=methods;
 		_methodFlag=methodFlag;
 		_uris=uris;
@@ -110,15 +108,6 @@ public class StatelessContextualiser implements Contextualiser {
 			}
 			return true;
 		}
-	}
-
-	public void evict() {}
-	public Evicter getEvicter(){return null;}
-
-	public boolean isLocal() {return _next.isLocal();}
-
-	public Immoter getDemoter(String id, Motable motable) {
-		return _next.getDemoter(id, motable);
 	}
 
 	/**
