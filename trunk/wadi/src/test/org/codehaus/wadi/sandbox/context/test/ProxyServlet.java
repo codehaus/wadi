@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.context;
+package org.codehaus.wadi.sandbox.context.test;
 
 import java.io.IOException;
 import java.net.URL;
@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.context.HttpProxy;
 import org.codehaus.wadi.sandbox.context.impl.StandardHttpProxy;
 import org.mortbay.http.SocketListener;
 import org.mortbay.jetty.Server;

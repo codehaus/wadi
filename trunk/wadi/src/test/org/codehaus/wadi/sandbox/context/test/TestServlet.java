@@ -14,9 +14,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.context;
+package org.codehaus.wadi.sandbox.context.test;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,11 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,41 +42,6 @@ import junit.framework.TestCase;
  * @version $Revision$
  */
 public abstract class TestServlet extends TestCase {
-	public static class ServletWrapper implements Servlet {
-
-		protected ServletConfig _config;
-		protected ServletContext _context;
-		protected Servlet _servlet;
-
-		public void init(ServletConfig config) throws ServletException {
-			_config = config;
-			_context = config.getServletContext();
-		}
-
-		public ServletConfig getServletConfig() {
-			return _config;
-		}
-
-		public void service(ServletRequest req, ServletResponse res)
-				throws ServletException, IOException {
-			_servlet.service(req, res);
-		}
-
-		public String getServletInfo() {
-			return "Test Servlet";
-		}
-
-		public void destroy() {
-		}
-
-		public void setServlet(Servlet servlet) throws ServletException {
-			_servlet=servlet;
-			_servlet.init(_config);
-		}
-
-		public Servlet getServlet(){return _servlet;}
-	}
-
 	protected Log _log = LogFactory.getLog(TestServlet.class);
 	protected Server _server=new Server();
 	protected SocketListener _listener=new SocketListener();
@@ -130,7 +89,7 @@ public abstract class TestServlet extends TestCase {
 
 			for (Iterator j=components.iterator(); j.hasNext();){
 				Object[] tuple=(Object[])j.next();
-				c.addServlet((String)tuple[0], (String)tuple[1], ServletWrapper.class.getName());
+				c.addServlet((String)tuple[0], (String)tuple[1], ServletInstance.class.getName());
 			}
 
 			ServletHandler handler=(ServletHandler)c.getHandler(ServletHandler.class);
@@ -152,8 +111,8 @@ public abstract class TestServlet extends TestCase {
 				Object[] tuple=(Object[])j.next();
 				ServletHolder holder=handler.getServletHolder((String)tuple[0]);
 				Servlet servlet=holder.getServlet();
-				ServletWrapper tps=(ServletWrapper)servlet;
-				tps.setServlet((Servlet)tuple[2]);
+				ServletInstance tps=(ServletInstance)servlet;
+				tps.setInstance((Servlet)tuple[2]);
 				}
 		}
 	}

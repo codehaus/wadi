@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.context;
+package org.codehaus.wadi.sandbox.context.test;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,6 +43,14 @@ import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.sandbox.context.Collapser;
+import org.codehaus.wadi.sandbox.context.Context;
+import org.codehaus.wadi.sandbox.context.ContextPool;
+import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.Evicter;
+import org.codehaus.wadi.sandbox.context.Location;
+import org.codehaus.wadi.sandbox.context.Motable;
+import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.impl.AlwaysEvicter;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
