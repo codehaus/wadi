@@ -19,6 +19,8 @@ package org.codehaus.wadi.sandbox.context.impl;
 import java.io.Serializable;
 import java.util.Set;
 
+import org.codehaus.wadi.sandbox.context.Context;
+
 /**
  * TODO - JavaDoc this type
  *
@@ -26,12 +28,14 @@ import java.util.Set;
  * @version $Revision$
  */
 public class MigrationResponse implements Serializable {
-	protected final Set _ids;
-
-	public MigrationResponse(Set ids) {
+	protected final String _id;
+	protected final byte[] _bytes;
+	public MigrationResponse(String id, byte[] bytes) {
 		super();
-		_ids=ids;
+		_id=id;
+		_bytes=bytes;
 	}
 
-	public Set getIds(){return _ids;}
+	public String getId(){return _id;}
+	public byte[] getBytes(){return _bytes;}	
 }
