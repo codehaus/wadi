@@ -25,6 +25,7 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Filter;
+import org.codehaus.wadi.Manager;
 
 /**
  *
@@ -54,14 +55,12 @@ public class
     {
       javax.servlet.ServletContext servletContext=new ServletContext();
       javax.servlet.FilterConfig filterConfig=new FilterConfig(servletContext);
-      servletContext.setAttribute(org.codehaus.wadi.Manager.class.getName(), _jetty);
-      _jettyFilter.init(filterConfig);
       _jetty.setServletContext(servletContext);
       _jetty.start();
-      servletContext.setAttribute(org.codehaus.wadi.Manager.class.getName(), _tomcat);
       _jettyFilter.init(filterConfig);
       _tomcat.setServletContext(servletContext);
       _tomcat.start();
+      _tomcatFilter.init(filterConfig);
     }
 
   protected void
@@ -97,7 +96,10 @@ public class
       }
       {
 	_log.info("[1]");
-	String id=_jetty.newHttpSession(new HttpServletRequest(_jetty, "xxx")).getId();
+	HttpServletRequest req=new HttpServletRequest();
+	req.setManager(_jetty);
+	req.setSessionId("xxx");
+	String id=_jetty.newHttpSession(req).getId();
 	javax.servlet.http.HttpSession session=_jetty.getHttpSession(id);
 	assertTrue(session.getId()==id); // must be ==/same object
 	// what do we do about locking issues ?
@@ -172,8 +174,12 @@ public class
       }
       {
 	_log.info("[11]");
-	_log.info("cookie path= "+_jetty.getSessionCookiePath(new HttpServletRequest(_jetty, "xxx")));
-	_log.info("cookie path= "+_tomcat.getSessionCookiePath(new HttpServletRequest(_tomcat, "xxx")));
+	HttpServletRequest req=new HttpServletRequest();
+	req.setSessionId("xxx");
+	req.setManager(_jetty);
+	_log.info("cookie path= "+_jetty.getSessionCookiePath(req));
+	req.setManager(_tomcat);
+	_log.info("cookie path= "+_tomcat.getSessionCookiePath(req));
 
 	// since it is up to the container what these return, there is
 	// not much point in checking the value - they are just here
@@ -203,19 +209,35 @@ public class
       //       }
     }
 
-  interface Invocation
-  {
-    void run(HttpServletRequest req);
-  }
-
   public void
-    runInvocation(Invocation i)
+    runInvocation(Filter filter, Manager manager, Invocation i, HttpServletRequest request, HttpServletResponse response)
   {
+    FilterChain chain=new FilterChain(manager, i);
+    try
+    {
+      filter.doFilter(request, response, chain);
+    }
+    catch (Exception e)
+    {
+      _log.warn("unexpected problem", e);
+      assertTrue(false);
+    }
   }
 
   public void
     testFilter()
   {
+    HttpServletRequest req=new HttpServletRequest();
+    HttpServletResponse res=new HttpServletResponse();
+    Invocation i=new Invocation(){
+	public void
+	  invoke(Manager manager, javax.servlet.ServletRequest requset, javax.servlet.ServletResponse response)
+	{
+	  _log.info("made it !");
+	}
+      };
 
+    runInvocation(_jettyFilter, _jetty, i, req, res);
+    runInvocation(_tomcatFilter, _tomcat, i, req, res);
   }
 }

@@ -36,15 +36,13 @@ import org.codehaus.wadi.Manager;
 public class HttpServletRequest
   implements javax.servlet.http.HttpServletRequest
 {
-  protected final Manager _manager;
-  protected final String  _id;
+  protected Manager _manager;
+  public void setManager(Manager manager){_manager=manager;}
+  public Manager getManager(){return _manager;}
 
-  public
-    HttpServletRequest(Manager manager, String id)
-  {
-    _manager=manager;
-    _id=id;
-  }
+  protected String _sessionId;
+  public void setSessionId(String sessionId){_sessionId=sessionId;}
+  public String getSessionid(){return _sessionId;}
 
   public HttpSession
     getSession()
@@ -62,7 +60,7 @@ public class HttpServletRequest
   public String
     getRequestedSessionId()
   {
-    return _id;
+    return _sessionId;
   }
 
   public Cookie[]     getCookies()                     {return null;}
