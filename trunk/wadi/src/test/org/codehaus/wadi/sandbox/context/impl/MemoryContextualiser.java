@@ -24,6 +24,8 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,7 +60,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
-	public boolean contextualiseLocally(ServletRequest req, ServletResponse res,
+	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres,
 			FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
 		Context c=(Context)_map.get(id);
 		if (c==null) {
@@ -71,7 +73,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 				if (promotionMutex!=null) {
 					promotionMutex.release();
 				}
-				contextualise(req, res, chain, id);
+				contextualise(hreq, hres, chain, id);
 			} catch (InterruptedException e) {
 				throw new ServletException("timed out acquiring context", e);
 			} finally {

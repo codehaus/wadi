@@ -68,7 +68,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * The promotion mutex is held correctly during the initial Location lookup, so that searches for the same Context are correctly collapsed.
  *
  * ProxyStrategy should be applied before MigrationStrategy - if it succeeds, we don't migrate...
- * 
+ *
  * This class is getting out of hand !
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -240,7 +240,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#contextualiseLocally(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync)
 	 */
-	public boolean contextualiseLocally(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
+	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
 		Location location=null;
 
 		if ((location=(Location)_map.get(id))==null) {
@@ -271,7 +271,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 						// update cache
 						// TODO - do we need to considering NOT putting any location that is the same ours into the map
 						// otherwise we may end up in a tight loop proxying to ourself... - could this happen ?gramps
-						
+
 						for (Iterator i=ids.iterator(); i.hasNext();) {
 							String tmp=(String)i.next();
 							_map.put(tmp, location);
@@ -301,7 +301,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 
 		_log.info("location found (cluster): "+id+" - "+location);
 
-		if ((location.proxy((HttpServletRequest)req, (HttpServletResponse)res, id, promotionMutex))) { // TODO - change whole Contextualiser interface to these types
+		if ((location.proxy(hreq, hres, id, promotionMutex))) { // TODO - change whole Contextualiser interface to these types
 			// request was proxied and contextualised remotely...
 			// promotionMutex was released at earliest opportunity.
 			_log.info("migration has not occurred (contextualised remotely): "+id);

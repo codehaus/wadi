@@ -27,8 +27,8 @@ import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -74,7 +74,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
-	public boolean contextualiseLocally(ServletRequest req, ServletResponse res,
+	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres,
 		FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
 		LocalDiscMotable ldm=(LocalDiscMotable)_map.get(id);
 		if (ldm!=null) {
@@ -92,7 +92,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 				remove(file); // TODO - revisit
 				promoter.commit(id, context);
 				promotionMutex.release();
-				promoter.contextualise(req, res, chain, id, context);
+				promoter.contextualise(hreq, hres, chain, id, context);
 			} else {
 				promoter.rollback(id, context);
 			}
