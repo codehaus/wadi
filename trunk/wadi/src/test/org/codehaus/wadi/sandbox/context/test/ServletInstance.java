@@ -54,8 +54,10 @@ public class ServletInstance implements Servlet {
 	}
 
 	public void destroy() {
-		_instance.destroy();
-		_instance=null;
+		if (_instance!=null) {
+			_instance.destroy();
+			_instance=null;
+		}
 	}
 
 	public void setInstance(Servlet instance) throws ServletException {

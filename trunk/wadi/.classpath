@@ -14,7 +14,6 @@
 	<classpathentry kind="lib" path="/usr/local/java/jetty-5.1.2/lib/org.mortbay.jmx.jar"/>
 	<classpathentry sourcepath="/usr/local/java/jakarta-tomcat-5.0.28-src" kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/server/lib/catalina.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/aspectjrt-1.2.1.jar"/>
-	<classpathentry kind="lib" path="WEB-INF/lib/spring-1.1.3.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/aspectj1.2.1/lib/aspectjtools.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/aspectj1.2.1/lib/aspectjweaver.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/jcache-1.0-dev-2.jar"/>
@@ -36,5 +35,9 @@
 	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/common/lib/naming-common.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/server/lib/tomcat-http11.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/geronimo-spec-j2ee-management-1.0-rc2.jar"/>
+	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/server/lib/commons-beanutils.jar"/>
+	<classpathentry kind="lib" path="WEB-INF/lib/spring-1.1.5.jar"/>
+	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/common/lib/servlet-api.jar"/>
+	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/server/lib/catalina-optional.jar"/>
 	<classpathentry kind="output" path="WEB-INF-classes"/>
 </classpath>

@@ -47,8 +47,10 @@ public class FilterInstance implements Filter {
 	}
 
 	public void destroy() {
-		_instance.destroy();
-		_instance=null;
+		if (_instance!=null) {
+			_instance.destroy();
+			_instance=null;
+		}
 	}
 
 	public void setInstance(Filter instance) throws ServletException {
