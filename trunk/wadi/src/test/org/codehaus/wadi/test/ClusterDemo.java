@@ -65,8 +65,8 @@ public class
     Map state=new HashMap();
     state.put("id", _nodeId);
     _cluster.getLocalNode().setState(state);
-    //    _topology=new NChooseKTopologyStrategy(_nodeId, clusterId, _cluster, factory, _cellSize);
-    _topology=new RingTopologyStrategy(_nodeId, clusterId, _cluster, factory, _cellSize);
+    _topology=new NChooseKTopologyStrategy(_nodeId, clusterId, _cluster, factory, _cellSize);
+    //_topology=new RingTopologyStrategy(_nodeId, clusterId, _cluster, factory, _cellSize);
     _topology.start();
     _cluster.addClusterListener(_topology);
     _cluster.start();
