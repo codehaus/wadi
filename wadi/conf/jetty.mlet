@@ -1,0 +1,30 @@
+
+<MLET
+ NAME="org.mortbay:adaptor=http"
+ CODE="org.mortbay.util.jmx.MX4JHttpAdaptor"
+ ARCHIVE="mx4j-tools.jar" >
+ <ARG type="int" value="8082">
+</MLET>
+
+<MLET
+ NAME="org.mortbay:jetty=admin"
+ CODE="org.mortbay.jetty.jmx.ServerMBean"
+ ARCHIVE="org.mortbay.jetty.jar" >
+ <ARG type="java.lang.String" value="etc/admin.xml">
+</MLET>
+
+<!--
+<MLET
+ NAME="org.mortbay:jetty=demo"
+ CODE="org.mortbay.jetty.jmx.ServerMBean"
+ ARCHIVE="org.mortbay.jetty.jmx.jar" >
+ <ARG type="java.lang.String" value="/space1/jules/jetty/Jetty/etc/demo.xml">
+</MLET>
+-->
+
+<MLET
+ NAME="org.mortbay:jetty=demo"
+ CODE="org.mortbay.jetty.jmx.ServerMBean"
+ ARCHIVE="org.mortbay.jetty.jmx.jar" >
+ <ARG type="java.lang.String" value="/space1/jules/wadi/wadi/conf/jetty.xml">
+</MLET>
