@@ -110,7 +110,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 	public void setTop(Contextualiser top){_top=top;}
 	public Contextualiser getTop(){return _top;}
 
-	class ImmigrationEmoter extends ChainedEmoter {
+	class ImmigrationEmoter extends AbstractChainedEmoter {
 		protected final Log _log=LogFactory.getLog(getClass());
 
 		protected final Map _locationMap;

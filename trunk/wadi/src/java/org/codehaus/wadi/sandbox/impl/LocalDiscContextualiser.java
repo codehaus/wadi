@@ -115,7 +115,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$
 	 */
-	class LocalDiscEmoter extends MappedEmoter {
+	class LocalDiscEmoter extends AbstractMappedEmoter {
 
 		public LocalDiscEmoter(Map map) {super(map);}
 

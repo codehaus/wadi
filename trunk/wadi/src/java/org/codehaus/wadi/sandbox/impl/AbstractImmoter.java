@@ -51,8 +51,4 @@ public abstract class AbstractImmoter implements Immoter {
 			_log.error("problem rolling back insertion: "+id, e);
 		}
 	}
-
-	public String getInfo() {
-		return "abstract";
-	}
 }

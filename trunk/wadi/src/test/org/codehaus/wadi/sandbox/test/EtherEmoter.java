@@ -16,9 +16,9 @@
  */
 package org.codehaus.wadi.sandbox.test;
 
-import org.codehaus.wadi.sandbox.impl.ChainedEmoter;
+import org.codehaus.wadi.sandbox.impl.AbstractChainedEmoter;
 
 
-public class EtherEmoter extends ChainedEmoter {
+public class EtherEmoter extends AbstractChainedEmoter {
 	public String getInfo(){return "ether";}
 }

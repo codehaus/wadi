@@ -84,7 +84,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 
 	public boolean isLocal(){return false;}
 
-	public class SharedJDBCEmoter extends ChainedEmoter {
+	public class SharedJDBCEmoter extends AbstractChainedEmoter {
 
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			if (super.prepare(id, emotable, immotable)) {
