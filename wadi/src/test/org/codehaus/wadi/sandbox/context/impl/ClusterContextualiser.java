@@ -44,9 +44,7 @@ import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.ProxyStrategy;
 
-import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
-import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 // this needs to be split into several parts...
 
@@ -148,15 +146,17 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		_cluster=cluster;
 		boolean excludeSelf=true;
 	    _consumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
-		_listener=new MessageDispatcher();
-		_listener.register(this, "onMessage");
-	    _consumer.setMessageListener(_listener);// should be called in start() - we need a stop() too - to remove listeners...
+		_listener=new MessageDispatcher(_cluster);
+	    _consumer.setMessageListener(_listener);// TODO - should be called in start() - we need a stop() too - to remove listeners...
 	    _timeout=timeout;
 	    _proxyHandOverPeriod=proxyHandOverPeriod;
 	    _location=location;
 	    _proxyer=proxyer;
 	    _migrater=migrater;
-	}
+	    
+		_listener.register(this, "onMessage"); // dispatch matching messages using onMessage() methods
+		_listener.register(LocationResponse.class, _locationResponses, _timeout); // dispatch matching messages via rendez-vous
+		}
 
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#getPromoter(org.codehaus.wadi.sandbox.context.Promoter)
@@ -183,7 +183,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		
 		if (location==null) {
 			// refresh the cache...
-			location=locate(id);
+			location=locate2(id);
 		}
 
 		// if we could not locate the context, we are at the end of the road...
@@ -226,57 +226,22 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	
 	// ClusterContextualiser...
 	
-	protected Location locate(String id) {
-		Location location=null;
+	protected Location locate2(String id) {
+		_log.info("sending location request: "+id);
+		LocationRequest request=new LocationRequest(id, _proxyHandOverPeriod);
+		LocationResponse response=(LocationResponse)_listener.exchangeMessages(id, _locationResponses, request, _cluster.getDestination(), _timeout);
+		Location location=response.getLocation();
+		Set ids=response.getIds();
+		// update cache
+		// TODO - do we need to considering NOT putting any location that is the same ours into the map
+		// otherwise we may end up in a tight loop proxying to ourself... - could this happen ?
 		
-		String correlationId=_cluster.getLocalNode().getDestination().toString()+"-"+id;
-		Rendezvous rv=new Rendezvous(2);
-
-		// set up a rendez-vous...
-		synchronized (_locationResponses) {
-			_locationResponses.put(correlationId, rv);
+		for (Iterator i=ids.iterator(); i.hasNext();) {
+			String tmp=(String)i.next();
+			_map.put(tmp, location);
 		}
-
-		try {
-			// broadcast location query to whole cluster
-			LocationRequest request=new LocationRequest(id, _proxyHandOverPeriod);
-			ObjectMessage message=_cluster.createObjectMessage();
-			message.setJMSReplyTo(_cluster.getDestination());
-			message.setJMSCorrelationID(correlationId);
-			message.setObject(request);
-			_log.info("sending location request: "+id);
-			_cluster.send(_cluster.getDestination(), message);
-
-			// rendez-vous with response/timeout...
-			do {
-				try {
-					LocationResponse response=(LocationResponse)rv.attemptRendezvous(null, _timeout);
-					location=response.getLocation();
-					Set ids=response.getIds();
-					// update cache
-					// TODO - do we need to considering NOT putting any location that is the same ours into the map
-					// otherwise we may end up in a tight loop proxying to ourself... - could this happen ?
-
-					for (Iterator i=ids.iterator(); i.hasNext();) {
-						String tmp=(String)i.next();
-						_map.put(tmp, location);
-					}
-					_log.info("updated cache for: "+ids);
-				} catch (TimeoutException toe) {
-					_log.info("no response to location query within timeout: "+id); // session does not exist
-				} catch (InterruptedException ignore) {
-					_log.info("waiting for location response - interruption ignored: "+id);
-				}
-			} while (Thread.interrupted());
-		} catch (JMSException e) {
-			_log.warn("problem sending session location query: "+id, e);
-		}
-
-		// tidy up rendez-vous
-		synchronized (_locationResponses) {
-			_locationResponses.remove(correlationId);
-		}
-
+		_log.info("updated cache for: "+ids);
+		
 		return location;
 	}
 	
@@ -307,28 +272,6 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 				_log.warn("problem handling location request: "+id);
 			}
 			// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
-		}
-	}
-
-	public void onMessage(ObjectMessage message, LocationResponse response) throws JMSException {
-		// unpack message content into local cache...
-		_log.info("receiving location response: "+response.getIds());
-
-		// notify waiting threads...
-		String correlationId=message.getJMSCorrelationID();
-		synchronized (_locationResponses) {
-			Rendezvous rv=(Rendezvous)_locationResponses.get(correlationId);
-			if (rv!=null) {
-				do {
-					try {
-						rv.attemptRendezvous(response, _timeout);
-					} catch (TimeoutException toe) {
-						_log.info("rendez-vous timed out: "+correlationId, toe);
-					} catch (InterruptedException ignore) {
-						_log.info("rendez-vous interruption ignored: "+correlationId);
-					}
-				} while (Thread.interrupted()); // TODO - should really subtract from timeout each time...
-			}
 		}
 	}
 }
