@@ -19,6 +19,7 @@ package org.codehaus.wadi.shared;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -244,6 +245,8 @@ public abstract class
 	if (successfulMigration)
 	{
 	  // make newly acquired session impl available to container...
+	  assert impl!=null;
+	  assert impl.getId()!=null;
 	  _acquireImpl(impl);
 	}
 	else
@@ -407,6 +410,50 @@ public abstract class
   // housekeeping...
   //----------------------------------------
 
+  public void
+    tidyStore(long currentTime)
+  {
+    if (_passivationStrategy.isElected())
+    {
+      // We are responsible for distributed garbage collection...
+      Collection list=new LinkedList();
+      // load all sessions that have timed out and destroy them...
+      Collection c=_passivationStrategy.findTimedOut(currentTime, list);
+      int n=c.size();
+      if (n>0)
+      {
+	_log.trace("tidying up "+n+" session[s] expired in long-term storage");
+
+	// we could be a lot cleverer here and :
+	// - only reload impls when there is some listener to notify
+	// - reuse the same impl for all of them...
+	for (Iterator i=c.iterator(); i.hasNext();)
+	{
+	  HttpSessionImpl impl=createImpl();
+	  if (_passivationStrategy.activate((String)i.next(), impl))
+	  {
+	    impl.setWadiManager(this);
+	    _notify(impl);	// TODO - these methods all need renaming/factoring etc..
+	    _releaseImpl(impl);
+	  }
+	  else
+	  {
+	    destroyImpl(impl); // put back in cache
+	  }
+	}
+	list.clear();		// could be reused on next iteration...
+      }
+      // we have now served a term - stand down...
+      _passivationStrategy.standDown();
+    }
+    else
+    {
+      // Someone else has been responsible for distributed garbage
+      // collection. It's time we served a term...
+      _passivationStrategy.standUp();
+    }
+  }
+
   // Tomcat will run this as it's backgroundProcess() - I assume with the correct CCL?
   // Jetty's SessionManager will manage it as part of it's lifecycle.
 
@@ -424,50 +471,10 @@ public abstract class
 
     long currentTime=System.currentTimeMillis();
 
-    if (_passivationStrategy!=null)
-    {
-      if (_passivationStrategy.isElected())
-      {
-	// We are responsible for distributed garbage collection...
-	Collection list=new LinkedList();
-	// load all sessions that have timed out and destroy them...
-	Collection c=_passivationStrategy.findTimedOut(currentTime, list);
-	int n=c.size();
-	if (n>0)
-	{
-	  _log.trace("tidying up "+n+" session[s] expired in long-term storage");
-
-	  // we could be a lot cleverer here and :
-	  // - only reload impls when there is some listener to notify
-	  // - reuse the same impl for all of them...
-	  for (Iterator i=c.iterator(); i.hasNext();)
-	  {
-	    HttpSessionImpl impl=createImpl();
-	    if (_passivationStrategy.activate((String)i.next(), impl))
-	    {
-	      impl.setWadiManager(this);
-	      _notify(impl);	// TODO - these methods all need renaming/factoring etc..
-	      _releaseImpl(impl);
-	    }
-	    else
-	    {
-	      destroyImpl(impl); // put back in cache
-	    }
-	  }
-	  list.clear();		// could be reused on next iteration...
-	}
-	// we have now served a term - stand down...
-	_passivationStrategy.standDown();
-      }
-      else
-      {
-	// Someone else has been responsible for distributed garbage
-	// collection. It's time we served a term...
-	_passivationStrategy.standUp();
-      }
-    }
-
     boolean canEvict=_passivationStrategy!=null && _evictionPolicy!=null;
+
+    if (canEvict)
+      tidyStore(currentTime);
 
     for (Iterator i=_local.values().iterator(); i.hasNext();)
     {
@@ -477,24 +484,15 @@ public abstract class
       // session should be moved out of local store, then if it
       // should, take an exclusive lock and do so... - if we cannot
       // get the lock, forget this session, we will do it next time...
-      boolean hasBeenInvalidated=false;
       boolean hasTimedOut=false;
       boolean shouldBeEvicted=false;
 
-      if (((hasBeenInvalidated=!((org.codehaus.wadi.shared.HttpSession)impl.getFacade()).isValid()) ||
-	   (hasTimedOut=impl.hasTimedOut(currentTime)) ||
+      if (((hasTimedOut=impl.hasTimedOut(currentTime)) ||
 	   (shouldBeEvicted=(canEvict && _evictionPolicy.evictable(currentTime, impl)))) &&
 	  impl.getContainerLock().attempt(0))
       {
 	try
 	{
-	  if (hasBeenInvalidated) // explicitly invalidated
-	  {
-	    _log.trace(impl.getId()+" : removing (explicit invalidation)");
-	    releaseImpl(impl);
-	    continue;
-	  }
-
 	  if (hasTimedOut)	// implicitly invalidated via time-out
 	  {
 	    _log.trace(impl.getId()+" : removing (implicit time out)");
@@ -987,6 +985,35 @@ public abstract class
     }
 
     _local.put(impl.getId(), impl);
+  }
+
+  // N.B. called by application-space thread - this must release its
+  // shared lock first in order that we can try for an exclusive
+  // lock...
+  public void
+    invalidateImpl(HttpSessionImpl impl)
+  {
+    Sync lock=impl.getContainerLock();
+
+    boolean acquired=false;
+    try
+    {
+      lock.acquire();
+      acquired=true;
+      // notification MUST be done synchronously on the request thread
+      // because Servlet-2.4 insists that it is given BEFORE
+      // invalidation!
+      releaseImpl(impl);
+    }
+    catch (InterruptedException e)
+    {
+      _log.warn("interrupted during invalidation - session not invalidated", e);
+    }
+    finally
+    {
+      if (acquired)
+	lock.release();
+    }
   }
 
   protected void

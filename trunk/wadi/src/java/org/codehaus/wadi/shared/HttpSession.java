@@ -83,8 +83,17 @@ public class
   public void
     invalidate()
   {
-    _log.trace(_impl.getId()+" : explicitly invalidating");
-    _valid=false;
+    HttpSessionImpl impl=((HttpSessionImpl)_impl);
+    _log.trace(impl.getId()+" : explicitly invalidating");
+    impl.getApplicationLock().release();
+    // TODO - there will be a race here between our thread acquiring
+    // an exclusive lock and the possibility of the housekeeping
+    // thread getting in and timing out or evicting this session in
+    // the interim - we can prevent this by ensuring that the session
+    // looks fresh...
+    impl.setLastAccessedTime(System.currentTimeMillis()+(1000*60*10)); // T+10 mins
+    impl.getWadiManager().invalidateImpl(impl);
+    _impl=null;
   }
 
   // we should get rid of all of these...
