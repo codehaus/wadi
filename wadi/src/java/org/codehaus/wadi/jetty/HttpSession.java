@@ -17,10 +17,15 @@
 
 package org.codehaus.wadi.jetty;
 
+import org.codehaus.wadi.shared.HttpSessionImpl;
+
 public class
   HttpSession
   extends org.codehaus.wadi.shared.HttpSession
   implements org.mortbay.jetty.servlet.SessionManager.Session
 {
-  HttpSession(HttpSessionImpl impl) {super(impl);}
+  public HttpSession(HttpSessionImpl impl) {super(impl);}
+
+  public void setId(String id){getImpl().setId(id);}
+  protected HttpSessionImpl getImpl(){return (HttpSessionImpl)_impl;} // TODO - ugly
 }

@@ -25,9 +25,10 @@ import javax.servlet.http.HttpSession;
 import org.codehaus.wadi.plugins.TotalEvictionPolicy;
 import org.codehaus.wadi.shared.EvictionPolicy;
 import org.codehaus.wadi.shared.Filter;
+import org.codehaus.wadi.shared.HttpSessionImpl;
 import org.mortbay.jetty.servlet.ServletHandler;
-import org.mortbay.jetty.servlet.WebApplicationHandler;
 import org.mortbay.jetty.servlet.WebApplicationContext;
+import org.mortbay.jetty.servlet.WebApplicationHandler;
 
 //TODO - remember max number of sessions in map
 
@@ -53,7 +54,7 @@ public class
   public HttpSession
     newHttpSession()
   {
-    return ((HttpSessionImpl)getReadySessionPool().take()).getFacade();
+    return (HttpSession)sessionCreate();
   }
 
   protected boolean _reuseIds=false; // TODO - make this explicit
@@ -61,10 +62,10 @@ public class
   public HttpSession
     newHttpSession(HttpServletRequest request)
   {
-    HttpSessionImpl impl=(HttpSessionImpl)getReadySessionPool().take();
+    org.codehaus.wadi.jetty.HttpSession session=(org.codehaus.wadi.jetty.HttpSession)sessionCreate();
     if (_reuseIds)
-      impl.setId(request.getRequestedSessionId()); // TODO - wasted session id allocation
-    return impl.getFacade();
+      session.setId(request.getRequestedSessionId()); // TODO - wasted session id allocation
+    return session;
   }
 
   protected org.codehaus.wadi.shared.Manager.SessionPool _blankSessionPool=new BlankSessionPool();
@@ -131,6 +132,7 @@ public class
     _handler.defineFilter(filterName, Filter.class.getName());
     _handler.mapPathToFilter("/*", filterName); // TODO - improve mapping, all 'stateful' servlets/filters
 
+    _log.warn("CLASS: "+_handler.getHttpContext().getClass().getName());
     _context=(WebApplicationContext)_handler.getHttpContext();
     boolean distributable=_context.isDistributable();
     if (distributable && !_distributable)
@@ -188,7 +190,7 @@ public class
 
   // why does the session manager need to be serialisable ?
 
-  protected org.codehaus.wadi.shared.HttpSession createFacade(org.codehaus.wadi.shared.HttpSessionImpl impl){return new org.codehaus.wadi.jetty.HttpSession((org.codehaus.wadi.jetty.HttpSessionImpl)impl);}
+  protected org.codehaus.wadi.shared.HttpSession createFacade(org.codehaus.wadi.shared.HttpSessionImpl impl){return new org.codehaus.wadi.jetty.HttpSession((org.codehaus.wadi.shared.HttpSessionImpl)impl);}
 
   //----------------------------------------
 
@@ -239,4 +241,8 @@ public class
   public int getHttpPort(){return Integer.parseInt(System.getProperty("http.port"));} // TODO - temporary hack...
 
   public ServletContext getServletContext(){return _handler.getServletContext();}
+
+  //----------------------------------------
+
+  public org.codehaus.wadi.shared.HttpSession newFacade(HttpSessionImpl impl) {return new org.codehaus.wadi.jetty.HttpSession(impl);}
 }

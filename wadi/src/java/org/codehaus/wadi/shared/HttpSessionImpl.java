@@ -30,7 +30,7 @@ import javax.servlet.http.HttpSessionContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public abstract class
+public class
   HttpSessionImpl
   extends AbstractHttpSessionImpl
   implements Serializable
@@ -113,7 +113,6 @@ public abstract class
     _lastAccessedTime          =_creationTime;
     _maxInactiveInterval       =maxInactiveInterval;
     _actualMaxInactiveInterval =actualMaxInactiveInterval;
-    _facade                    =createFacade();
   }
 
   public void
@@ -139,7 +138,7 @@ public abstract class
   // the container is active. It should be broken out either into a
   // session impl subclass, or perhaps a separate LockManager...
 
-  protected transient ReadWriteLock _rwlock;
+  protected transient ReadWriteLock _rwlock=new ReaderPreferenceReadWriteLock();
 
   // TODO- if I try to initialise these fields outside a ctor,
   // deserialisation results in them being empty - why ?
@@ -147,7 +146,7 @@ public abstract class
     HttpSessionImpl()
   {
     super();
-    _rwlock=new ReaderPreferenceReadWriteLock();
+    //    _rwlock=new ReaderPreferenceReadWriteLock();
   }
 
   public Sync getApplicationLock()  {return _rwlock.readLock();} // allows concurrent app threads
@@ -165,18 +164,21 @@ public abstract class
     return "<"+getClass().getName()+": "+_attributes+">";
   }
 
-  // why do I have to go to such lengths to initialise these
-  // transient fields ?
-  private void readObject(java.io.ObjectInputStream in)
-    throws java.io.IOException, ClassNotFoundException
-  {
-    in.defaultReadObject();
-    _rwlock=new ReaderPreferenceReadWriteLock();
-    _facade=createFacade();
-  }
+//   // why do I have to go to such lengths to initialise these
+//   // transient fields ?
+//   private void readObject(java.io.ObjectInputStream in)
+//     throws java.io.IOException, ClassNotFoundException
+//   {
+//     in.defaultReadObject();
+//     _rwlock=new ReaderPreferenceReadWriteLock();
+//   }
+
+//   private void writeObject(java.io.ObjectOutputStream out)
+//     throws java.io.IOException, ClassNotFoundException
+//   {
+//     out.defaultWriteObject();
+//   }
 
   public void setId(String id){_id=id;}
-
-  public abstract HttpSession createFacade();
 }
 

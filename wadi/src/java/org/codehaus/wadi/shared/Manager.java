@@ -479,6 +479,21 @@ public abstract class
     _log.trace("housekeeping ended");
   }
 
+  protected void
+    sessionExpire()
+  {
+  }
+
+  protected void
+    sessionInvalidate()
+  {
+  }
+
+  protected void
+    sessionEvict()
+  {
+  }
+
   //----------------------------------------
   // session lifecycle...
   //----------------------------------------
@@ -940,6 +955,10 @@ public abstract class
   protected int _sessionCreationCounter=0;
   public void setSessionCreationCounter(int n){_sessionCreationCounter=n;}
   public int getSessionCreationCounter(){return _sessionCreationCounter;}
+  protected int _sessionDestructionCounter=0;
+  public void setSessionDestructionCounter(int n){_sessionDestructionCounter=n;}
+  public int getSessionDestructionCounter(){return _sessionDestructionCounter;}
+
   protected int _sessionExpirationCounter=0;
   public void setSessionExpirationCounter(int n){_sessionExpirationCounter=n;}
   public int getSessionExpirationCounter(){return _sessionExpirationCounter;}
@@ -954,4 +973,17 @@ public abstract class
   // passivated, migrated to us, migrated from us ? or simply how many
   // serialisations and deserialisations to store or other node we
   // have done. Also how many request relocations...
+
+  // eviction vs migration ?
+
+  public abstract HttpSession newFacade(HttpSessionImpl impl);
+
+  public HttpSession
+    sessionCreate()
+  {
+    HttpSessionImpl impl=(HttpSessionImpl)getReadySessionPool().take();
+    HttpSession facade=newFacade(impl);	// delegate type decision to subclass
+    impl.setFacade(facade);
+    return facade;
+  }
 }

@@ -18,9 +18,14 @@
 package org.codehaus.wadi.tomcat;
 
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.apache.catalina.SessionListener;
+import org.codehaus.wadi.shared.HttpSessionImpl;
 
 // what's the point of having this facade that looks like an
 // HttpSession, if it has all these extra methods on it - should they
@@ -33,36 +38,50 @@ public class
 {
   HttpSession(HttpSessionImpl impl) {super(impl);}
 
-  public List getSessionListeners()                           {return getImpl().getSessionListeners();}
-  public void addSessionListener(SessionListener sl)          {getImpl().addSessionListener(sl);}
-  public void removeSessionListener(SessionListener sl)       {getImpl().removeSessionListener(sl);}
-
-  public org.apache.catalina.Manager getManager()             {return getImpl().getManager();}
-  public void setManager(org.apache.catalina.Manager manager) {getImpl().setManager(manager);}
-
-  public void setNew(boolean isNew)                           {getImpl().setNew(isNew);}
-
-  public Principal getPrincipal()                             {return getImpl().getPrincipal();}
-  public void setPrincipal(Principal principal)               {getImpl().setPrincipal(principal);}
-
-  public Object getNote(String key)                           {return getImpl().getNote(key);}
-  public void setNote(String key , Object note)               {getImpl().setNote(key, note);}
-  public void removeNote(String key)                          {getImpl().removeNote(key);}
-  public Iterator getNoteNames()                              {return getImpl().getNoteNames();}
-
-  public String getAuthType()                                 {return getImpl().getAuthType();}
-  public void setAuthType(String at)                          {getImpl().setAuthType(at);}
-
-  public String getInfo()                                     {return getImpl().getInfo();}
-
-  public javax.servlet.http.HttpSession getSession()          {return getImpl().getSession();} // TODO - DOH!
-
-  public void endAccess()                                     {getImpl().endAccess();}
-  public void expire()                                        {getImpl().expire();}
-  public void recycle()                                       {getImpl().recycle();}
   public void setCreationTime(long t)                         {getImpl().setCreationTime(t);}
   public void setId(String id)                                {getImpl().setId(id);}
-  public void setValid(boolean valid)                         {getImpl().setValid(valid);}
+
+  public javax.servlet.http.HttpSession getSession() {return this;} // TODO - DOH!
 
   protected HttpSessionImpl getImpl(){return (HttpSessionImpl)_impl;} // TODO - ugly
+
+  //------------------
+
+  public String getInfo(){return "org.codehaus.wadi.tomcat.HttpSession v1.0";}
+
+  protected transient String _authType;
+  public String getAuthType(){return _authType;}
+  public void setAuthType(String authType){_authType=authType;}
+
+  protected transient org.apache.catalina.Manager _manager;
+  public org.apache.catalina.Manager getManager(){return _manager;};
+  public void setManager(org.apache.catalina.Manager manager){_manager=manager;}
+
+  protected transient Principal _principal;
+  public Principal getPrincipal(){return _principal;}
+  public void setPrincipal(Principal principal){_principal=principal;}
+
+  protected transient final Map _notes=Collections.synchronizedMap(new HashMap());
+  public Object getNote(String name){return _notes.get(name);}
+  public void setNote(String name, Object value){_notes.put(name, value);}
+  public void removeNote(String name){_notes.remove(name);}
+  public Iterator getNoteNames(){return _notes.keySet().iterator();} // TODO - is iterator thread safe ?
+
+  protected transient List _listeners=Collections.synchronizedList(new ArrayList());
+  public List getSessionListeners(){return _listeners;}
+  public void addSessionListener(SessionListener listener){_listeners.add(listener);}
+  public void removeSessionListener(SessionListener listener){_listeners.remove(listener);}
+
+  public void expire(){}//{_facade.setInvalidated(true);}
+  public void setValid(boolean valid){}//{_facade.setInvalidated(!valid);}
+  public boolean isValid(){return true;}//{return !_facade.getInvalidated();}
+
+  public void recycle(){}	// TODO
+
+  protected transient boolean _new=true;	// TODO - we should be able to do without this...
+  public void setNew(boolean nuw){_new=nuw;}
+
+  public void access(){_impl.setLastAccessedTime(System.currentTimeMillis());}
+
+  public void endAccess(){}	// TODO - what does this do ?
 }

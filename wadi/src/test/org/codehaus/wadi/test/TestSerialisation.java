@@ -15,14 +15,37 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.jetty;
+package org.codehaus.wadi.test;
 
-import java.io.Serializable;
+import junit.framework.TestCase;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class
-  HttpSessionImpl
-  extends org.codehaus.wadi.shared.HttpSessionImpl
-  implements Serializable
+  TestSerialisation
+  extends TestCase
 {
-  public org.codehaus.wadi.shared.HttpSession createFacade(){return new HttpSession(this);}
+  protected Log _log=LogFactory.getLog(TestHttpSession.class);
+
+  public TestSerialisation(String name) {super(name);}
+
+  protected void
+    setUp()
+    throws Exception
+    {
+      _log.info("starting test");
+    }
+
+  protected void
+    tearDown()
+    throws InterruptedException
+    {
+      _log.info("stopping test");
+    }
+
+  public void
+    testRoundTrip()
+    {
+
+    }
 }
