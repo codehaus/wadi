@@ -120,7 +120,10 @@ public class
 	   ((HttpSession)impl.getFacade()).isValid())
 	{
 	  // restick lb to this node if necessary...
-	  _manager.getRoutingStrategy().reroute(req, res, _manager, id);
+	  if (req.isRequestedSessionIdFromCookie())
+	    _manager.getRoutingStrategy().rerouteCookie(req, res, _manager, id);
+	  else if (req.isRequestedSessionIdFromURL())
+	    _manager.getRoutingStrategy().rerouteURL();	// NYI
 	}
 	// if id is non-null, but session does not exist locally -
 	// consider relocating session or request....

@@ -56,6 +56,15 @@ public interface
   String getInfo();
 
   /**
+   * Is this RoutingStrategy sufficiently integrated with its
+   * corresponding load-balancer as to be able to 'stick' subsequent
+   * requests for the same session to this node?
+   *
+   * @return a <code>boolean</code> value
+   */
+  public boolean canReroute();
+
+  /**
    * Reroute to ourselves.
    *
    * @param req a <code>HttpServletRequest</code> value
@@ -64,7 +73,7 @@ public interface
    * @param id a <code>String</code> value
    * @return a <code>boolean</code> value
    */
-  boolean reroute(HttpServletRequest req, HttpServletResponse res, Manager manager, String id);
+  boolean rerouteCookie(HttpServletRequest req, HttpServletResponse res, Manager manager, String id);
 
   /**
    * Alter the value of the session cookie to reflect the route that
@@ -77,5 +86,21 @@ public interface
    * @param route a <code>String</code> value
    * @return a <code>boolean</code> value
    */
-  boolean reroute(HttpServletRequest req, HttpServletResponse res, Manager manager, String id, String route);
+  boolean rerouteCookie(HttpServletRequest req, HttpServletResponse res, Manager manager, String id, String route);
+
+  /**
+   * Reroute to ourselves.
+   *
+   * @return a <code>boolean</code> value
+   */
+  boolean rerouteURL();
+
+  /**
+   * Reroute to target by setting the routing info in the url and
+   * redirecting to the load-balancer.
+   *
+   * @param target a <code>String</code> value
+   * @return a <code>boolean</code> value
+   */
+  boolean rerouteURL(String target);
 }

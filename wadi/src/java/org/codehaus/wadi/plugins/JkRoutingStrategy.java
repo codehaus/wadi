@@ -66,18 +66,24 @@ public class
   }
 
   public boolean
-    reroute(HttpServletRequest req, HttpServletResponse res, Manager manager, String id)
+    canReroute()
   {
-    return reroute(req, res, manager, id, _name);
+    return true;
+  }
+
+  public boolean
+    rerouteCookie(HttpServletRequest req, HttpServletResponse res, Manager manager, String id)
+  {
+    return rerouteCookie(req, res, manager, id, _name);
   };
 
   public boolean
-    reroute(HttpServletRequest req, HttpServletResponse res, Manager manager, String id, String route)
+    rerouteCookie(HttpServletRequest req, HttpServletResponse res, Manager manager, String id, String route)
   {
     int i=id.lastIndexOf(".")+1;
 
     if (i<1)
-      return false;		// id has no routing info to switch
+      return false;		// id has no routing info to switch - perhaps we should add some - TODO ?
     else
     {
       int idlen=id.length();
@@ -99,4 +105,7 @@ public class
       }
     }
   }
+
+  public boolean rerouteURL(){return rerouteURL(_name);}
+  public boolean rerouteURL(String route){_log.warn("rerouting via url NYI:-("); return false;}
 }
