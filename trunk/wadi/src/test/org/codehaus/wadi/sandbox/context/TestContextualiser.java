@@ -414,7 +414,7 @@ public class TestContextualiser extends TestCase {
 		
 		Collapser collapser0=new HashingCollapser(10, 2000);		
 		Map c0=new HashMap();
-		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000, 20000, new MyLocation());
+		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000, 3000, new MyLocation());
 		Map m0=new HashMap();
 		m0.put("foo", new MyContext());
 		Contextualiser memory0=new MemoryContextualiser(clstr0, collapser0, m0, new NeverEvicter(), new MyContextPool());
@@ -422,7 +422,7 @@ public class TestContextualiser extends TestCase {
 		
 		Collapser collapser1=new HashingCollapser(10, 2000);		
 		Map c1=new HashMap();
-		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000, 20000, new MyLocation());
+		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000, 3000, new MyLocation());
 		Map m1=new HashMap();
 		m1.put("bar", new MyContext());
 		Contextualiser memory1=new MemoryContextualiser(clstr1, collapser1, m1, new NeverEvicter(), new MyContextPool());

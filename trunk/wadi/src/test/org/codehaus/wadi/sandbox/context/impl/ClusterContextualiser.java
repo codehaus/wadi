@@ -36,14 +36,6 @@ import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
-//NOTES - 
-
-// how do we attach a listener for location requests that can decide whether an id is present in cache and reply with a location response object ?
-
-// we need to resolve the immigration of sessions after a given number of requests have been proxied successfully...
-
-// we need a way of testing this...
-
 /**
  * @author jules
  * 
@@ -52,6 +44,14 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * given number of successful proxies, the Context will be migrated to this
  * Contextualiser which should promote it so that future requests for it can be
  * run straight off the top of the stack.
+ * 
+ * Node N1 sends LocationRequest to Cluster
+ * Node N2 contextualises this request with a FilterChain that will send a LocationResponse and wait a specified handover period.
+ * Node N1 receives the response, updates its cache and then proxies through the Location to the required resource.
+ * 
+ * The promotion mutex is held correctly during the initial Location lookup, so that searches for the same Context are correctly collapsed.
+ * 
+ * This class is getting out of hand !
  */
 public class ClusterContextualiser extends AbstractMappedContextualiser {
 
@@ -67,7 +67,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	public void setContextualiser(Contextualiser top){_top=top;}
 	public Contextualiser getContextualiser(){return _top;}
 	
-	class PeekFilterChain
+	class LocationResponseFilterChain
 	implements FilterChain
 	{
 		protected final Destination _replyTo;
@@ -76,7 +76,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		protected final String _id;
 		protected final long _handOverPeriod;
 		
-		PeekFilterChain(Destination replyTo, String correlationId, Location location, String id, long handOverPeriod) {
+		LocationResponseFilterChain(Destination replyTo, String correlationId, Location location, String id, long handOverPeriod) {
 			_replyTo=replyTo;
 			_correlationId=correlationId;
 			_location=location;
@@ -98,10 +98,11 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 				_cluster.send(_replyTo, m);
 				
 				// Now wait for a while so that the session is locked into this container, giving the other node a chance to proxy to this location and still find it here...
+				// instead of just waiting a set period, we could use a Rendezvous object with a timeout - more complexity - consider...
 				try {
-					_log.info("waiting for proxy ("+_handOverPeriod+" millis)...");
+					_log.info("waiting for proxy ("+_handOverPeriod+" millis)...: "+_id);
 					Thread.sleep(_handOverPeriod);
-					_log.info("...waiting over");
+					_log.info("...waiting over: "+_id);
 				} catch (InterruptedException ignore) {
 					// ignore
 					// TODO - should we loop here until timeout is up ?
@@ -157,10 +158,10 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 					String correlationId=message.getJMSCorrelationID();
 					long handShakePeriod=request.getHandOverPeriod();
 					// TODO - the peekTimeout should be specified by the remote node...
-					FilterChain fc=new PeekFilterChain(replyTo, correlationId, _location, id, handShakePeriod);
+					FilterChain fc=new LocationResponseFilterChain(replyTo, correlationId, _location, id, handShakePeriod);
 					_top.contextualise(null,null,fc,id, null, null, true);
 				} catch (Exception e) {
-					_log.warn("problem peeking for location request: "+id);
+					_log.warn("problem handling location request: "+id);
 				}
 				// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
 			}
