@@ -21,7 +21,7 @@ import java.net.InetAddress;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.DiscoveryService;
+import org.codehaus.wadi.impl.MulticastDiscoveryService;
 
 /**
  * Test the Discovery Service
@@ -34,8 +34,8 @@ public class
   extends TestCase
 {
   protected Log                     _log=LogFactory.getLog(TestHttpSession.class);
-  protected DiscoveryService.Server _server;
-  protected DiscoveryService.Client _client;
+  protected MulticastDiscoveryService.Server _server;
+  protected MulticastDiscoveryService.Client _client;
   protected long                    _time=System.currentTimeMillis();
   protected String                  _request="request-"+_time;
   protected String                  _response=_request+"-response-"+_time;
@@ -50,8 +50,8 @@ public class
       InetAddress address=InetAddress.getByName("228.5.6.7");
       int port=6789;
       int timeout=5000;		// 5 secs
-      _client=new DiscoveryService.Client(address, port, timeout);
-      _server=new DiscoveryService.Server(address, port)
+      _client=new MulticastDiscoveryService.Client(address, port, timeout);
+      _server=new MulticastDiscoveryService.Server(address, port)
 	{
 	  public String process(String request)
 	  {

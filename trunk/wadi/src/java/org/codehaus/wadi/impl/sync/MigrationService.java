@@ -1,4 +1,3 @@
-
 /**
  *
  * Copyright 2003-2004 The Apache Software Foundation
@@ -110,8 +109,16 @@ public class
     public boolean
       immigrate(String realId, HttpSessionImpl placeholder, long timeout, javax.jms.Destination dst)
     {
-      _log.error("NYI");
-      return false;
+      javax.jms.Destination src=_server.getDestination();
+      String correlationId=realId+"-"+src.toString();
+      Object result=_adaptor.send(_manager.getCluster(),
+				  new org.codehaus.wadi.impl.sync.MigrationRequest(realId, src, timeout),
+				  correlationId,
+				  timeout,
+				  null,
+				  dst);
+
+      return (placeholder==result);
     };
 
     public boolean
