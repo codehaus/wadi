@@ -91,7 +91,7 @@ class Wrapper
     if (_activeValue==null && _passiveValue!=null)
       _activeValue=ObjectInputStream.demarshall(_passiveValue);
 
-    _log.trace(_ahsi.getId()+" : activate: "+_passiveValue+" --> "+_activeValue);
+    if (_log.isTraceEnabled()) _log.trace(_ahsi.getId()+" : activate: "+_passiveValue+" --> "+_activeValue);
 
     _passiveValue=null;		// no longer needed
     _isActive=true;		// ordered before notification to prevent reentry via getValue()
@@ -109,7 +109,7 @@ class Wrapper
     _passiveValue=ObjectInputStream.marshall(_activeValue);
     _isActive=false;
 
-    _log.trace(_ahsi.getId()+" : passivate: "+_activeValue+" --> "+_passiveValue);
+    if (_log.isTraceEnabled()) _log.trace(_ahsi.getId()+" : passivate: "+_activeValue+" --> "+_passiveValue);
   }
 
   // standard serialisation API

@@ -49,7 +49,7 @@ class Shared
   {
     _log.info("writing porter");
     Porter p=new Porter(this);
-    _log.info(""+p);
+    if (_log.isInfoEnabled()) _log.info(""+p);
     return p;
   }
 }
@@ -77,7 +77,7 @@ class Porter
     throws ObjectStreamException
   {
     _log=LogFactory.getLog(getClass());	// why do transient fields not get properly initialised ?
-    _log.info(""+_payload);
+    if (_log.isInfoEnabled()) _log.info(""+_payload);
     try
     {
       return _ctor.newInstance(new Shared[]{this});
@@ -148,16 +148,16 @@ public class
       tc.setPayload(100);
 
       o1=tc;
-      _log.info("outbound instance is: "+o1);
+      if (_log.isInfoEnabled()) _log.info("outbound instance is: "+o1);
       buffer=ObjectInputStream.marshall(o1);
       Porter.setUp(Jetty.class);
       o2=ObjectInputStream.demarshall(buffer);
-      _log.info("inbound instance is: "+o2);
+      if (_log.isInfoEnabled()) _log.info("inbound instance is: "+o2);
 
-      _log.info("outbound instance is: "+o2);
+      if (_log.isInfoEnabled()) _log.info("outbound instance is: "+o2);
       buffer=ObjectInputStream.marshall(o2);
       Porter.setUp(Tomcat.class);
       o1=ObjectInputStream.demarshall(buffer);
-      _log.info("inbound instance is: "+o1);
+      if (_log.isInfoEnabled()) _log.info("inbound instance is: "+o1);
     }
 }

@@ -141,7 +141,7 @@ public class
       for (int i=0;i<=MAX_PRIORITY;i++)
       {
 	final int p=i;
-	_log.info("starting: "+p);
+	if (_log.isInfoEnabled()) _log.info("starting: "+p);
 	Thread t=new Thread()
 	  {
 	    public void run()
@@ -154,7 +154,7 @@ public class
 		else
 		  lock.writeLock().attempt(60000);
 		int priority=lock.getPriority();
-		_log.info("priority: "+priority);
+		if (_log.isInfoEnabled()) _log.info("priority: "+priority);
 		assertTrue(priority<_priority);
 		_priority=priority;
 		lock.writeLock().release();
@@ -177,7 +177,7 @@ public class
       {
 	Thread t=threads[i];
 	t.join();
-	_log.info("joining: "+i);
+	if (_log.isInfoEnabled()) _log.info("joining: "+i);
       }
     }
 

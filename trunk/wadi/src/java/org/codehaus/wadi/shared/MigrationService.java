@@ -71,7 +71,7 @@ public class
 
 	socket=new Socket(remoteAddress, remotePort, _address, _port);
 	// TODO - do we need a timeout ? - YES
-	_log.trace(socket+" -> "+remoteAddress+":"+remotePort);
+	if (_log.isTraceEnabled()) _log.trace(socket+" -> "+remoteAddress+":"+remotePort);
 	ObjectOutput os=streamingStrategy.getOutputStream(socket.getOutputStream());
 	ObjectInput  is=streamingStrategy.getInputStream(socket.getInputStream());
 	// acquire container lock on session id
@@ -95,7 +95,7 @@ public class
 	// receive commit message
 	ok=is.readBoolean();
 	assert ok;
-	_log.debug(session.getId()+": immigration (peer: "+remoteAddress+":"+remotePort+")");
+	if (_log.isDebugEnabled()) _log.debug(session.getId()+": immigration (peer: "+remoteAddress+":"+remotePort+")");
 	return ok;
       }
       catch (UnknownHostException e)
@@ -170,7 +170,7 @@ public class
 	  //_address=InetAddress.getByName("localhost");
 	}
 
-	_log.debug("starting: "+_address+":"+(_port==0?"<anonymous>":""+_port));
+	if (_log.isDebugEnabled()) _log.debug("starting: "+_address+":"+(_port==0?"<anonymous>":""+_port));
 
 	// initialise dependant resources...
 	_socket=new ServerSocket(_port, _backlog, _address);
@@ -181,7 +181,7 @@ public class
 	_running=true;
 	_thread=new Thread(this);
 	_thread.start();
-	_log.debug("started: "+_socket);
+	if (_log.isDebugEnabled()) _log.debug("started: "+_socket);
 	return;
       }
       catch (UnknownHostException e)
@@ -200,7 +200,7 @@ public class
     public void
       stop()
     {
-      _log.debug("stopping: "+_socket);
+      if (_log.isDebugEnabled()) _log.debug("stopping: "+_socket);
       _running=false;
       //      try {new Socket(_address, _port).close();} catch (Throwable ignore) {}
       try
@@ -210,7 +210,7 @@ public class
 	_socket.close();
 	_socket=null;
 	// we need to join all our subthreads :-(
-	_log.debug("stopped: "+_address+":"+_port);
+	if (_log.isDebugEnabled()) _log.debug("stopped: "+_address+":"+_port);
       }
       catch (InterruptedException e)
       {
@@ -300,7 +300,7 @@ public class
 	// send commit message
 	os.writeBoolean(ok);
 	os.flush();
-	_log.debug(impl.getId()+": emmigration (peer: "+socket.getInetAddress()+":"+socket.getPort()+")");
+	if (_log.isDebugEnabled()) _log.debug(impl.getId()+": emmigration (peer: "+socket.getInetAddress()+":"+socket.getPort()+")");
       }
       catch (IOException e)
       {

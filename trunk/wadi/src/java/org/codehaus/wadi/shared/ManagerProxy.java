@@ -137,11 +137,11 @@ public class
 	String oldPrefix=url.getProtocol()+"://"+url.getHost()+(url.getPort()==url.getDefaultPort()?"":(":"+url.getPort()));
 	String newPrefix=url.getProtocol()+"://"+_httpAddress.getHostAddress()+(_httpPort==url.getDefaultPort()?"":(":"+_httpPort));
 
-      _log.trace("old prefix:"+oldPrefix);
-      _log.trace("new prefix:"+newPrefix);
-      _log.trace("old url:"+oldUrl);
+      if (_log.isTraceEnabled()) _log.trace("old prefix:"+oldPrefix);
+      if (_log.isTraceEnabled()) _log.trace("new prefix:"+newPrefix);
+      if (_log.isTraceEnabled()) _log.trace("old url:"+oldUrl);
 	newUrl=newUrl.replaceFirst(oldPrefix, newPrefix);
-      _log.trace("new url:"+newUrl);
+      if (_log.isTraceEnabled()) _log.trace("new url:"+newUrl);
       }
       catch (MalformedURLException e)
       {
@@ -177,14 +177,14 @@ public class
 	    String cookiePath=manager.getSessionCookiePath(req);
 	    if (cookiePath!=null)
 	    {
-	      _log.trace("cookie path="+cookiePath);
+	      if (_log.isTraceEnabled()) _log.trace("cookie path="+cookiePath);
 	      cookie.setPath(cookiePath);
 	    }
 
 	    String cookieDomain=manager.getSessionCookieDomain();
 	    if (cookieDomain!=null)
 	    {
-	      _log.trace("cookie domain="+cookieDomain);
+	      if (_log.isTraceEnabled()) _log.trace("cookie domain="+cookieDomain);
 	      cookie.setDomain(cookieDomain);
 	    }
 
@@ -196,15 +196,15 @@ public class
       }
       else
       {
-	_log.trace("old url="+oldUrl);
+	if (_log.isTraceEnabled()) _log.trace("old url="+oldUrl);
 	newUrl=oldUrl.replaceAll("jsessionid="+oldId, "jsessionid="+newId);
-	_log.trace("new url="+newUrl);
+	if (_log.isTraceEnabled()) _log.trace("new url="+newUrl);
       }
     }
 
     try
     {
-      _log.trace("redirecting: "+oldUrl+" -> "+newUrl);
+      if (_log.isTraceEnabled()) _log.trace("redirecting: "+oldUrl+" -> "+newUrl);
       res.sendRedirect(newUrl);
       return true;
     }

@@ -83,12 +83,12 @@ public class
       org.codehaus.wadi.shared.HttpSessionImpl session=new org.codehaus.wadi.tomcat.HttpSessionImpl();
       session.setId(""+System.currentTimeMillis());
       String id=session.getId();
-      _log.info("session: "+id);
+      if (_log.isInfoEnabled()) _log.info("session: "+id);
       _serverSessions.put(id, session);
 
       int serverPort=_server.getPort();
       InetAddress serverAddress=_server.getAddress();
-      _log.info("server: "+serverAddress+":"+serverPort);
+      if (_log.isInfoEnabled()) _log.info("server: "+serverAddress+":"+serverPort);
 
       Map clientSessions=new HashMap();
       Map clientLocks=new HashMap();
@@ -99,7 +99,7 @@ public class
       assertTrue(clientSessions.size()==0);
       assertTrue(!clientSessions.containsKey(id));
       assertTrue(clientLocks.size()==0);
-      _log.info("_serverSessions: "+_serverSessions+", clientSessions:"+clientSessions);
+      if (_log.isInfoEnabled()) _log.info("_serverSessions: "+_serverSessions+", clientSessions:"+clientSessions);
       _client.run(clientSessions, clientLocks, id, new org.codehaus.wadi.jetty.HttpSessionImpl(), serverAddress, serverPort, new SimpleStreamingStrategy());
       assertTrue(_serverSessions.size()==0);
       assertTrue(!_serverSessions.containsKey(id));
@@ -107,6 +107,6 @@ public class
       assertTrue(clientSessions.size()==1);
       assertTrue(clientSessions.containsKey(id));
       assertTrue(clientLocks.size()==0);
-      _log.info("serverSessions: "+_serverSessions+", clientSessions:"+clientSessions);
+      if (_log.isInfoEnabled()) _log.info("serverSessions: "+_serverSessions+", clientSessions:"+clientSessions);
     }
 }

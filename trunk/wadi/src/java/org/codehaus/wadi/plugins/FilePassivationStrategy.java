@@ -140,12 +140,12 @@ public class
 
 	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
 	file.setLastModified(willTimeOutAt);
-	_log.debug(id+": emmigration (file: "+file.toString()+")");
+	if (_log.isDebugEnabled()) _log.debug(id+": emmigration (file: "+file.toString()+")");
 	return true;
       }
       catch (Exception e)
       {
-	_log.warn(file.toString()+": problem storing passivated session", e);
+	if (_log.isWarnEnabled()) _log.warn(file.toString()+": problem storing passivated session", e);
 	return false;
       }
       finally
@@ -156,7 +156,7 @@ public class
 	}
 	catch (IOException e)
 	{
-	  _log.warn(file.toString()+": problem releasing passivation resource", e);
+	  if (_log.isWarnEnabled()) _log.warn(file.toString()+": problem releasing passivation resource", e);
 	}
       }
     }
@@ -184,7 +184,7 @@ public class
 	    ObjectInput ois=_streamingStrategy.getInputStream(fis);
 	    impl.readContent(ois);
 	    ois.close();
-	    _log.debug(impl.getId()+": immigration (file: "+file.toString()+")");
+	    if (_log.isDebugEnabled()) _log.debug(impl.getId()+": immigration (file: "+file.toString()+")");
 	    return true;
 	  }
 	  finally
@@ -197,7 +197,7 @@ public class
 	    }
 	    catch (IOException e)
 	    {
-	      _log.warn(file.toString()+": problem releasing passivation resource", e);
+	      if (_log.isWarnEnabled()) _log.warn(file.toString()+": problem releasing passivation resource", e);
 	    }
 	  }
 	}
@@ -206,15 +206,15 @@ public class
       {
 	// someone else grabbed it whilst we were thinking about it -
 	// too slow :-)
-	_log.trace(file.toString()+": passivated session not found");
+	if (_log.isTraceEnabled())_log.trace(file.toString()+": passivated session not found");
       }
       catch (IOException e)
       {
-	_log.warn(file.toString()+": problem restoring passivated session", e);
+	if (_log.isWarnEnabled()) _log.warn(file.toString()+": problem restoring passivated session", e);
       }
       catch (ClassNotFoundException e)
       {
-	_log.warn(file.toString()+": could not restore passivated session", e);
+	if (_log.isWarnEnabled()) _log.warn(file.toString()+": could not restore passivated session", e);
       }
 
       return false;
@@ -247,7 +247,7 @@ public class
 	  {
 	    String name=file.getName();
 	    String id=name.substring(0, name.length()-suffixLen);
-	    _log.trace(id+" : file's lastModified indicates expiry: "+timeOutAt+"<="+now);
+	    if (_log.isTraceEnabled()) _log.trace(id+" : file's lastModified indicates expiry: "+timeOutAt+"<="+now);
 	    collection.add(id);
 	  }
 	}
