@@ -83,17 +83,6 @@ public class RWLock implements ReadWriteLock {
     return allowRead;
   }
 
-  protected synchronized boolean startWrite() {
-
-    // The allowWrite expression cannot be modified without
-    // also changing startWrite, so is hard-wired
-
-    boolean allowWrite = (activeWriter_ == null && activeReaders_ == 0);
-    if (allowWrite)  activeWriter_ = Thread.currentThread();
-    return allowWrite;
-   }
-
-
   /*
      Each of these variants is needed to maintain atomicity
      of wait counts during wait loops. They could be
@@ -238,7 +227,10 @@ public class RWLock implements ReadWriteLock {
       synchronized(WriterLock.this) {
 	boolean pass;
 	synchronized (RWLock.this){
-	  pass = startWrite();
+	  synchronized (RWLock.this){
+	    pass = (activeWriter_ == null && activeReaders_ == 0);
+	    if (pass)  activeWriter_ = Thread.currentThread();
+	  }
 	  if (!pass) ++waitingWriters_;
 	}
         if (!pass) {
@@ -247,7 +239,10 @@ public class RWLock implements ReadWriteLock {
               WriterLock.this.wait();
 	      boolean pass2;
 	      synchronized(RWLock.this){
-		pass2 = startWrite();
+		synchronized (RWLock.this){
+		 pass2 = (activeWriter_ == null && activeReaders_ == 0);
+		  if (pass2)  activeWriter_ = Thread.currentThread();
+		}
 		if (pass2) --waitingWriters_;
 	      }
               if (pass2)
@@ -283,12 +278,21 @@ public class RWLock implements ReadWriteLock {
       InterruptedException ie = null;
       synchronized(WriterLock.this) {
         if (msecs <= 0)
-          return startWrite();
+	{
+	  synchronized (RWLock.this){
+	    boolean allowWrite = (activeWriter_ == null && activeReaders_ == 0);
+	    if (allowWrite)  activeWriter_ = Thread.currentThread();
+	    return allowWrite;
+	  }
+	}
         else
 	{
 	  boolean pass;
 	  synchronized (RWLock.this){
-	    pass = startWrite();
+	    synchronized (RWLock.this){
+	      pass = (activeWriter_ == null && activeReaders_ == 0);
+	      if (pass)  activeWriter_ = Thread.currentThread();
+	    }
 	    if (!pass) ++waitingWriters_;
 	  }
 	  if (pass)
@@ -306,7 +310,10 @@ public class RWLock implements ReadWriteLock {
 	      }
 	      boolean pass2;
 	      synchronized(RWLock.this){
-		pass2 = startWrite();
+		synchronized (RWLock.this){
+		  pass2 = (activeWriter_ == null && activeReaders_ == 0);
+		  if (pass2)  activeWriter_ = Thread.currentThread();
+		}
 		if (pass2) --waitingWriters_;
 	      }
 	      if (pass2)
