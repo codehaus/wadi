@@ -45,15 +45,8 @@ import org.codehaus.wadi.shared.Filter;
 import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
 import java.net.URL;
 
-// TODO
-// - all setters need to fire PropertyChange notifications... - should be an aspect
-// - register as a listener on our context
-// - listen for notifications from our Context and react accordingly
-// - throw lifecycle exceptions where necessary
-
-// - need to fire before/afterSessionCreated &
-// before/afterSessionDestroyed events for each HttpSessionListener -
-// and for AttributeListeners !! - what a waste of time...
+// TODO - revisit configuration mechnism when subcomponents types/apis
+// settle down a little more...
 
 public class
   Manager
@@ -96,69 +89,69 @@ public class
 
   public Session
     createEmptySession()
-    {
-      return null; // TODO
-    }
+  {
+    return null; // TODO
+  }
 
   public Session
     createSession()
-    {
-      HttpSessionImpl impl=(HttpSessionImpl)getReadySessionPool().take();
-      impl.setManager(this);
-      HttpSession facade=(HttpSession)impl.getFacade();
-      return facade;
-    }
+  {
+    HttpSessionImpl impl=(HttpSessionImpl)getReadySessionPool().take();
+    impl.setManager(this);
+    HttpSession facade=(HttpSession)impl.getFacade();
+    return facade;
+  }
 
   public void
     add(Session session)
-    {
-      put(session.getId(), (HttpSessionImpl)session);
-    }
+  {
+    put(session.getId(), (HttpSessionImpl)session);
+  }
 
   public void
     remove(Session session)
-    {
-      remove(session.getId());
-    }
+  {
+    remove(session.getId());
+  }
 
   public Session
     findSession(String id)
     throws IOException
+  {
+    HttpSessionImpl impl=(HttpSessionImpl)get(id);
+    if (impl==null)
+      return null;
+    else
     {
-      HttpSessionImpl impl=(HttpSessionImpl)get(id);
-      if (impl==null)
-	return null;
-      else
-      {
-	HttpSession facade=(HttpSession) impl.getFacade();
-	return facade;
-      }
+      HttpSession facade=(HttpSession) impl.getFacade();
+      return facade;
     }
+  }
 
   public Session[]
     findSessions()
-    {
-      // TODO - caching could optimise this process...
-      Collection c=values();
-      Session[] sessions=new Session[c.size()];
-      int j=0;			// why can't this go in the 'for'
-      for (Iterator i=c.iterator();i.hasNext();)
-	sessions[j++]=(Session)i.next();
-      return sessions;
-    }
+  {
+    // TODO - caching could optimise this process...
+    Collection c=values();
+    Session[] sessions=new Session[c.size()];
+    int j=0;			// why can't this go in the 'for'
+    for (Iterator i=c.iterator();i.hasNext();)
+      sessions[j++]=(Session)i.next();
+    return sessions;
+  }
 
   public void
     backgroundProcess()
+  {
+    try
     {
-      try
-      {
-	housekeeper();
-      }
-      catch (InterruptedException e)
-      {
-	_log.warn("interrupted", e);
-      }
+      housekeeper();
     }
+    catch (InterruptedException e)
+    {
+      _log.warn("interrupted", e);
+    }
+  }
 
   public void load() throws ClassNotFoundException, IOException {} // TODO
   public void unload() throws IOException {} // TODO
@@ -177,95 +170,95 @@ public class
   class
     ContextLifecycleListener
     implements LifecycleListener
+  {
+    public void
+      lifecycleEvent(LifecycleEvent event)
     {
-      public void
-	lifecycleEvent(LifecycleEvent event)
+      String type=event.getType();
+      if (type.equals(Lifecycle.AFTER_START_EVENT))
       {
-	String type=event.getType();
-	if (type.equals(Lifecycle.AFTER_START_EVENT))
-	{
-	  Context context=((Context)_container);
-	  copySubset(context.getApplicationLifecycleListeners(), _sessionListeners,   _sessionListenerTest);
-	  copySubset(context.getApplicationEventListeners(),     _attributeListeners, _attributeListenerTest);
-	  ((ContainerBase)context).removeLifecycleListener(this);
-	}
+	Context context=((Context)_container);
+	copySubset(context.getApplicationLifecycleListeners(), _sessionListeners,   _sessionListenerTest);
+	copySubset(context.getApplicationEventListeners(),     _attributeListeners, _attributeListenerTest);
+	((ContainerBase)context).removeLifecycleListener(this);
       }
+    }
 
-      public void
-	copySubset(Object[] src, List tgt, Test test)
-      {
-	if (src!=null)
-	  for (int i=0; i<src.length; i++)
-	  {
-	    Object tmp=src[i];
-	    if (test.test(tmp))
-	      tgt.add(tmp);
-	  }
-      }
+    public void
+      copySubset(Object[] src, List tgt, Test test)
+    {
+      if (src!=null)
+	for (int i=0; i<src.length; i++)
+	{
+	  Object tmp=src[i];
+	  if (test.test(tmp))
+	    tgt.add(tmp);
+	}
+    }
   }
 
   public synchronized void
     start()
       throws LifecycleException
+  {
+    // There does not appear, short of hacking Tomcat classes, to be
+    // any way to extend the server.xml to be able to handle our
+    // stuff - so we will put it all in another file and load it
+    // using a slightly leaner and more flexible mechanism...
+    try
     {
-      try
-      {
-	super.start();
-      }
-      catch (Exception e)
-      {
-	throw new LifecycleException(e);
-      }
-
-      if (_container==null)
-	throw new LifecycleException("container not yet set");
-
-      Context context=((Context)_container);
-
-      // install filter
-      String filterName="WadiFilter";
-      FilterDef fd=new FilterDef();
-      fd.setFilterName(filterName);
-      fd.setFilterClass(Filter.class.getName());
-      context.addFilterDef(fd);
-      FilterMap fm=new FilterMap();
-      fm.setFilterName(filterName);
-      fm.setURLPattern("/*");
-      context.addFilterMap(fm);
-
-      // used to bootstrap our Session and Attribute Listeners lists,
-      // since they are not set up in our context at the point that it
-      // starts us...
-      ((ContainerBase)context).addLifecycleListener(new ContextLifecycleListener());
-
-      // There does not appear, short of hacking Tomcat classes, to be
-      // any way to extend the server.xml to be able to handle our
-      // stuff - so we will put it all in another file and load it
-      // using a slightly leaner and more flexible mechanism...
-      try
-      {
-	if (_configFile!=null)
-	  new XmlConfiguration(new URL("file://"+_configFile)).configure(this);
-      }
-      catch (Exception e)
-      {
-	_log.warn("problem reading "+_configFile, e);
-      }
+      if (_configFile!=null)
+	new XmlConfiguration(new URL("file://"+_configFile)).configure(this);
     }
+    catch (Exception e)
+    {
+      _log.warn("problem reading "+_configFile, e);
+    }
+
+    try
+    {
+      super.start();
+    }
+    catch (Exception e)
+    {
+      throw new LifecycleException(e);
+    }
+
+    if (_container==null)
+      throw new LifecycleException("container not yet set");
+
+    Context context=((Context)_container);
+
+    // install filter
+    String filterName="WadiFilter";
+    FilterDef fd=new FilterDef();
+    fd.setFilterName(filterName);
+    fd.setFilterClass(Filter.class.getName());
+    context.addFilterDef(fd);
+    FilterMap fm=new FilterMap();
+    fm.setFilterName(filterName);
+    fm.setURLPattern("/*");
+    context.addFilterMap(fm);
+
+    // used to bootstrap our Session and Attribute Listeners lists,
+    // since they are not set up in our context at the point that it
+    // starts us...
+    ((ContainerBase)context).addLifecycleListener(new ContextLifecycleListener());
+  }
 
   public synchronized void
     stop()
       throws LifecycleException
+  {
+    try
     {
-      try
-      {
-	super.stop();
-      }
-      catch (Exception e)
-      {
-	throw new LifecycleException(e);
-      }
+      super.stop();
     }
+    catch (Exception e)
+    {
+      throw new LifecycleException(e);
+    }
+  }
 
   protected org.codehaus.wadi.shared.Manager.SessionPool _blankSessionPool=new BlankSessionPool();
   protected org.codehaus.wadi.shared.Manager.SessionPool getBlankSessionPool(){return _blankSessionPool;}
