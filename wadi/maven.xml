@@ -1,12 +1,25 @@
 <project default="java:jar" xmlns:j="jelly:core" xmlns:ant="jelly:ant" xmlns:aspectj="jelly:aspectj">
 
+  <!-- aspectj -->
+  <preGoal name="java:compile">
+    <attainGoal name="aspectj:compile"/>
+  </preGoal>
+
+
+
+
+
+
+
   <goal name="default" prereqs="clean, test"/>
   <goal name="dc" prereqs="clean, site:deploy, jar:deploy-snapshot"/>
 
   <preGoal name="site:deploy">
+<!--
     <attainGoal name="javadoc"/>
     <attainGoal name="java:compile"/>
     <attainGoal name="clover"/>
+-->
   </preGoal>
 
   <goal name="maven-linkcheck-plugin"/>
@@ -20,6 +33,7 @@
   </goal>
   -->
 
+<!--
   <goal name="my-aspectj:init">
     <ant:taskdef resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties">
       <ant:classpath>
@@ -27,9 +41,11 @@
       </ant:classpath>
     </ant:taskdef>
   </goal>
+-->
 
   <!-- ======================================== -->
 
+<!--
   <preGoal name="java:compile">
     <attainGoal name="my-aspectj:java:compile"/>
   </preGoal>
@@ -56,9 +72,10 @@
       </ant:sourceroots>
     </ant:iajc>
   </goal>
-
+-->
   <!-- ======================================== -->
 
+<!--
   <preGoal name="test:compile">
     <attainGoal name="my-aspectj:test:compile"/>
   </preGoal>
@@ -87,6 +104,7 @@
       </ant:sourceroots>
     </ant:iajc>
   </goal>
+-->
 
   <!-- ======================================== -->
 
