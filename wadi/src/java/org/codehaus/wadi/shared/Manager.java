@@ -260,50 +260,10 @@ public abstract class
 
     // If a migration policy has been enabled, we may request it
     // from another node.
-
-//     if (!successfulMigration)
-//     {
-//       CyclicBarrier barrier=new CyclicBarrier(2);
-//       _migrationServer.putBarrier(realId, barrier);
-
-//       try
-//       {
-// 	//	_log.warn("sending migration command: "+realId);
-// 	sendCommandToCluster(new EmmigrationCommand(realId, _migrationServer.getAddress(), _migrationServer.getPort()));
-
-// 	barrier.attemptBarrier(5000L);
-// 	successfulMigration=true;
-
-// 	impl=(HttpSessionImpl)_local.get(realId); // TODO - rationalise
-// 	// migration/activation approaches
-// 	// where impl andlocking is concerned
-//       }
-//       catch (TimeoutException e)
-//       {
-// 	// no-one came back with the session in time - give up :-(
-
-// 	// TODO - consider the full ramifications of Greg's
-// 	// reuseSessionIds here (perhaps someone does have the session
-// 	// but did not get back to us in time...
-
-// 	_log.warn("could not locate/immigrate session: "+realId);
-//       }
-//       catch (InterruptedException e)
-//       {
-// 	_log.warn("unexpected interruption during immigration:: "+realId);
-//       }
-//       catch (Exception e)
-//       {
-// 	_log.warn("unexpected problem occurred during immigration: "+realId);
-//       }
-
-//       _migrationServer.removeBarrier(realId);
-//     }
-
     if (!successfulMigration)
     {
       long timeout=2000L;
-      _adaptor.send(new MigrationRequest(realId, _migrationServer.getAddress(), _migrationServer.getPort(), timeout, _cluster.getLocalNode().getDestination()),
+      _adaptor.send(new MigrationRequest(realId, _migrationServer.getAddress(), _migrationServer.getPort(), timeout),
 		    realId,	// is this enough - TODO
 		    timeout,	// parameterise - TODO
 		    new EmmigrationSender(this)
@@ -446,7 +406,7 @@ public abstract class
     _clusterFactory=new DefaultClusterFactory(getConnection());
     _cluster=_clusterFactory.createCluster("org.codehaus.wadi#cluster");
     _cluster.addClusterListener(new MembershipListener());
-    CommandListener listener=new CommandListener(this);
+    InvokableListener listener=new InvokableListener(this);
     _cluster.createConsumer(_cluster.getDestination(), null, true).setMessageListener(listener);
     _cluster.createConsumer(_cluster.getLocalNode().getDestination()).setMessageListener(listener);
     _cluster.start(); // should include webapp context
@@ -1189,6 +1149,7 @@ public abstract class
   {
     ObjectMessage om = _cluster.createObjectMessage();
     om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+    _log.info("setting ReplyTo: "+_cluster.getLocalNode().getDestination());
     om.setObject(command);
     _cluster.send(_cluster.getDestination(), om);
   }
@@ -1213,13 +1174,13 @@ public abstract class
     public void onNodeFailed(ClusterEvent event){_log.info("node failed");}
   }
 
-  class CommandListener
+  class InvokableListener
     implements MessageListener
   {
     protected Manager _manager;
 
     public
-      CommandListener(Manager manager)
+      InvokableListener(Manager manager)
     {
       _manager=manager;
     }
@@ -1234,21 +1195,21 @@ public abstract class
       {
 	ObjectMessage om=null;
 	Object tmp=null;
-	Invocable command=null;
+	Invocable invocable=null;
 	if (message instanceof ObjectMessage &&
 	    (om=(ObjectMessage)message)!=null &&
 	    (tmp=om.getObject())!=null &&
 	    tmp instanceof Invocable &&
-	    (command=(Invocable)tmp)!=null)
+	    (invocable=(Invocable)tmp)!=null)
 	{
-	  _log.info("message arrived: "+command);
+	  _log.info("message arrived: "+invocable);
 	  try
 	  {
-	    command.invoke(_manager, om);
+	    invocable.invoke(_manager, om);
 	  }
 	  catch (Throwable t)
 	  {
-	    _log.warn("unexpected problem responding to message:"+command, t);
+	    _log.warn("unexpected problem responding to message:"+invocable, t);
 	  }
 	}
 	else

@@ -160,7 +160,7 @@ public class
     public void
       onMessage(Message message)
     {
-      _log.info("messgage received");
+      _log.info("message received");
 
       ObjectMessage om=null;
       Object tmp=null;
@@ -174,13 +174,13 @@ public class
 	    tmp instanceof Invocation &&
 	    (invocation=(Invocation)tmp)!=null)
 	{
-	  _log.info("invoking messgage");
+	  _log.info("invoking message");
 	  invocation.invoke(_cluster, om);
-	  _log.info("messgage successfully invoked");
+	  _log.info("message successfully invoked");
 	}
 	else
 	{
-	  _log.warn("bad messgage: "+message);
+	  _log.warn("bad message: "+message);
 	}
       }
       catch (JMSException e)

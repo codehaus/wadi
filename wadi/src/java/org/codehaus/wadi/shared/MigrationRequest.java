@@ -38,54 +38,47 @@ public class
   protected Destination     _replyTo;
 
   public
-    MigrationRequest(String id, InetAddress address, int port, long timeout, Destination replyTo)
+    MigrationRequest(String id, InetAddress address, int port, long timeout)
   {
     _id      =id;
     _address =address;
     _port    =port;
     _timeout =timeout;
-
-    _replyTo=replyTo;
   }
 
   public void
-    invoke(Manager manager, ObjectMessage message)
+    invoke(Manager manager, ObjectMessage in)
   {
     HttpSessionImpl impl=null;
 
     if ((impl=(HttpSessionImpl)manager._local.get(_id))!=null)
     {
-      Destination dest=null;
-      try {dest=message.getJMSReplyTo();} catch (JMSException e) {_log.warn("JMSReplyTo not set on emmigration request", e);}
-      _log.info("reply to: "+dest);
-      dest=_replyTo;
-      _log.info("reply to: "+dest);
-
       MigrationService.Client client=new MigrationService.Client();
       Collection list=new ArrayList(1);
       list.add(impl);		// must be mutable
       client.emmigrate(manager._local, list, _timeout, _address, _port, manager.getStreamingStrategy(), true);
 
-      MigrationResponse er=new MigrationResponse(_id, _timeout, null);
-
       Cluster cluster=manager.getCluster();
 
+      Destination dest=null;
       try
       {
-	ObjectMessage om = cluster.createObjectMessage();
-	om.setJMSReplyTo(cluster.getLocalNode().getDestination());
-	om.setObject(er);
-	cluster.send(dest, om);
-	_log.info("sent emmigration response to: "+dest);
+	dest=in.getJMSReplyTo();
+	_log.info("sending response to: "+dest);
+	ObjectMessage out = cluster.createObjectMessage();
+	out.setJMSReplyTo(cluster.getLocalNode().getDestination());
+	out.setObject(new MigrationResponse(_id, _timeout, null));
+	cluster.send(dest, out);
+	_log.info("sent response to: "+dest);
       }
       catch (JMSException e)
       {
-	_log.warn("could not send emmigration response to: "+dest, e);
+	_log.warn("could not send migration response to: "+dest, e);
       }
     }
     else
     {
-      if (_log.isTraceEnabled()) _log.trace("session not present: "+_id);
+      if (_log.isTraceEnabled()) _log.info("session not present: "+_id);
     }
   }
 }
