@@ -53,7 +53,7 @@ public abstract class
   {
     Peer localPeer=getLocalPeer();
     localPeer=localPeer!=null?localPeer:p; // TODO - hack - FIXME
-    Map newCells=combine(localPeer, _peers.values(), _k);
+    Map newCells=combine(localPeer, _peers.values(), Math.min(_k,_peers.size()));
 
     _log.info("old peers="+_oldPeers.keySet());
     _log.info("old rel cells="+_oldCells.keySet());
@@ -68,7 +68,7 @@ public abstract class
     leavingCells.keySet().removeAll(newCells.keySet());
     _log.info("leaving cells="+leavingCells.keySet());
 
-    _oldPeers=_peers;
+    _oldPeers=new TreeMap(_peers);
     _oldCells=newCells;
 
     return new Object[]{joiningCells, leavingCells};

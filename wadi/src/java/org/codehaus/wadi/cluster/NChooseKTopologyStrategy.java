@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.activecluster.ClusterFactory;
 
@@ -30,6 +32,8 @@ public class
   NChooseKTopologyStrategy
   extends Abstract2TopologyStrategy
 {
+  protected Log _log=LogFactory.getLog(getClass().getName());
+
   public
     NChooseKTopologyStrategy(String nodeId, String clusterId, Cluster cluster, ClusterFactory factory, int k)
     {
@@ -39,45 +43,55 @@ public class
   public Map
     combine(Peer local, Collection e, int k)
     {
-      Map combs=new TreeMap();
+      Map combs=combine(e, k);
 
-      if (k<1)
-      {
-	return combs;
-      }
-      else if (k==1)
-      {
-	for (Iterator i=e.iterator(); i.hasNext(); )
-	{
-	  Peer p=(Peer)i.next();
-	  String id=p.getId();
-	  Set comb=new TreeSet();
-	  comb.add(p);
-	  if (comb.contains(local)) // TODO - could be more efficient...
-	    combs.put(id, comb);
-	}
-      }
-      else
-      {
-	Map subCombs=combine(local, e, k-1);
-	for (Iterator i=subCombs.values().iterator(); i.hasNext(); )
-	{
-	  Set subComb=(Set)i.next();
-	  for (Iterator j=e.iterator(); j.hasNext(); )
-	  {
-	    Peer p=(Peer)j.next();
-	    if (!subComb.contains(p))
-	    {
-	      Set comb=new TreeSet(subComb);
-	      comb.add(p);
-
-	      if (comb.contains(local)) // TODO - could be more efficient...
-		combs.put(Cell.id(comb), comb);
-	    }
-	  }
-	}
-      }
+      // only return combinations that contain the local node...
+      for (Iterator i=combs.values().iterator(); i.hasNext(); )
+	if (!((Collection)i.next()).contains(local))
+	  i.remove();
 
       return combs;
     }
+
+  protected Map
+    combine(Collection e, int k)
+  {
+    Map combsOut=new TreeMap();
+
+    if (k==1)
+    {
+      for (Iterator i=e.iterator(); i.hasNext(); )
+      {
+	Peer peer=((Peer)i.next());
+	Set comb=new TreeSet();
+	comb.add(peer);
+	//	_log.info("combining [] and "+peer);
+	combsOut.put(Cell.id(comb), comb);
+      }
+    }
+    else
+    {
+      Map combsIn=combine(e, k-1);
+
+      for (Iterator i=combsIn.values().iterator(); i.hasNext(); )
+      {
+	Collection comb=((Collection)i.next());
+	for (Iterator j=e.iterator(); j.hasNext(); )
+	{
+	  Peer peer=((Peer)j.next());
+	  //	  _log.info("combining "+comb+" and "+peer);
+	  if (!comb.contains(peer))
+	  {
+	    Set newComb=new TreeSet(comb);
+	    newComb.add(peer);
+	    String id=Cell.id(newComb);
+	    if (!combsOut.containsKey(id))
+	      combsOut.put(id, newComb);
+	  }
+	}
+      }
+    }
+
+    return combsOut;
+  }
 }

@@ -1,4 +1,3 @@
-
 /**
  *
  * Copyright 2003-2004 The Apache Software Foundation
@@ -40,8 +39,6 @@ public class
     combine(Peer local, Collection e, int k)
     {
       int l=e.size();
-
-      k=Math.min(k,l);
 
       Map combs=new TreeMap();
 
