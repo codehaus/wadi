@@ -10,13 +10,15 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import org.codehaus.wadi.SerializableContent;
+
 /**
  * @author jules
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public interface RequestProcessor {
+public interface RequestProcessor extends SerializableContent {
 	void process(ServletRequest req, ServletResponse res, FilterChain chain);
 	
 	// temporary
