@@ -136,7 +136,7 @@ public class RWLock implements ReadWriteLock {
       --waitingReaders_;
       assert waitingReaders_>-1;
     }
-    
+
     return pass;
   }
 
@@ -195,6 +195,12 @@ public class RWLock implements ReadWriteLock {
   }
 
   protected class ReaderLock extends Signaller implements Sync {
+
+  public String
+    toString()
+  {
+    return "<RWLock.ReaderLock:"+ReaderLock.this.hashCode()+":"+Thread.currentThread()+":activeReaders:"+activeReaders_+", waitingReaders:"+waitingReaders_+">";
+  }
 
     public  void acquire() throws InterruptedException {
       if (Thread.interrupted()) throw new InterruptedException();
@@ -272,6 +278,12 @@ public class RWLock implements ReadWriteLock {
   }
 
   protected class WriterLock extends Signaller implements  Sync {
+
+    public String
+      toString()
+    {
+      return "<RWLock.WriterLock:"+WriterLock.this.hashCode()+":"+Thread.currentThread()+":"+" activeWriter:"+(activeWriter_!=null)+", waitingWriters:"+waitingWriters_+">";
+    }
 
     Lock[] _locks=new Lock[_maxPriority+1];
 
@@ -412,7 +424,7 @@ public class RWLock implements ReadWriteLock {
   public String
     toString()
   {
-    return "<RWLock:"+this.hashCode()+":activeReaders:"+activeReaders_+", waitingReaders:"+waitingReaders_+", activeWriter:"+(activeWriter_!=null)+", waitingWriters:"+waitingWriters_+">";
+    return "<RWLock:"+this.hashCode()+":"+readerLock_+", "+writerLock_+">";
   }
 }
 
