@@ -125,6 +125,45 @@ public class
     _log.info("out2    :"+result2);
     _log.info("control2:"+control2);
     assertTrue(control2.equals(result2));
+
+    // now some timings...
+    e=new TreeSet();
+    k=2;
+    for (int i=0; i<500; i++)
+      e.add(new Peer(""+i));
+
+    long start;
+    long end;
+
+    start=System.currentTimeMillis();
+    ts.combineMap(null, e, k);
+    end=System.currentTimeMillis();
+    _log.info("combineMap Ring x500 :"+(end-start)+" milis");
+
+    start=System.currentTimeMillis();
+    ts.combineMap(null, e, k);
+    end=System.currentTimeMillis();
+    _log.info("combineMap Ring x500 :"+(end-start)+" milis");
+
+    start=System.currentTimeMillis();
+    ts.combineMap(null, e, k);
+    end=System.currentTimeMillis();
+    _log.info("combineMap Ring x500 :"+(end-start)+" milis");
+
+    start=System.currentTimeMillis();
+    ts.combineCollection(null, e, k);
+    end=System.currentTimeMillis();
+    _log.info("combineCollection Ring x500 :"+(end-start)+" milis");
+
+    start=System.currentTimeMillis();
+    ts.combineCollection(null, e, k);
+    end=System.currentTimeMillis();
+    _log.info("combineCollection Ring x500 :"+(end-start)+" milis");
+
+    start=System.currentTimeMillis();
+    ts.combineCollection(null, e, k);
+    end=System.currentTimeMillis();
+    _log.info("combineCollection Ring x500 :"+(end-start)+" milis");
   }
 
   public void
@@ -209,5 +248,45 @@ public class
     _log.info("control2:"+control2);
     _log.info("out2    :"+result2);
     assertTrue(control2.equals(result2));
+
+
+    // now some timings...
+    e=new TreeSet();
+    k=2;
+    for (int i=0; i<5; i++)
+      e.add(new Peer(""+i));
+
+    long start;
+    long end;
+
+    start=System.currentTimeMillis();
+    ts.combineMap(null, e, k);
+    end=System.currentTimeMillis();
+    _log.info("combineMap NChooseK x500 :"+(end-start)+" milis");
+
+    start=System.currentTimeMillis();
+    ts.combineMap(null, e, k);
+    end=System.currentTimeMillis();
+    _log.info("combineMap NChooseK x500 :"+(end-start)+" milis");
+
+    start=System.currentTimeMillis();
+    ts.combineMap(null, e, k);
+    end=System.currentTimeMillis();
+    _log.info("combineMap NChooseK x500 :"+(end-start)+" milis");
+
+    start=System.currentTimeMillis();
+    ts.combineCollection(null, e, k);
+    end=System.currentTimeMillis();
+    _log.info("combineCollection NChooseK x500 :"+(end-start)+" milis");
+
+    start=System.currentTimeMillis();
+    ts.combineCollection(null, e, k);
+    end=System.currentTimeMillis();
+    _log.info("combineCollection NChooseK x500 :"+(end-start)+" milis");
+
+    start=System.currentTimeMillis();
+    ts.combineCollection(null, e, k);
+    end=System.currentTimeMillis();
+    _log.info("combineCollection NChooseK x500 :"+(end-start)+" milis");
   }
 }

@@ -30,7 +30,7 @@ public abstract class
   Abstract2TopologyStrategy
   extends AbstractTopologyStrategy
 {
-  protected Map            _cells=new TreeMap();
+  protected Map            _cells=new TreeMap(); // would a HashMap be faster?
   protected String         _clusterId;
   protected ClusterFactory _factory;
   protected int            _k=1;
@@ -112,5 +112,8 @@ public abstract class
    * @return a <code>Map</code> value
    */
   public abstract Map combineMap(Peer localPeer, Collection peers, int peersPerCell);
-  public abstract Collection combineCollection(Comparable localPeer, Collection peers, int peersPerCell);
+  public abstract Collection combineCollection(Peer localPeer, Collection peers, int peersPerCell);
+
+  public Cell getCell(String id) {return (Cell)_cells.get(id);}
+  public void putCell(String id, Cell cell) {_cells.put(id, cell);}
 }
