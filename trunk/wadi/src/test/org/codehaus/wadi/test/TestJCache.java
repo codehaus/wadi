@@ -115,6 +115,11 @@ import ri.cache.loader.NullCacheLoader;
 // item, so it knows when it is safe and can be promoted/removed ?
 // more thought needed...
 
+// shared vs. remote - how far down stack should we search for state...
+
+// use serialisation adaptor rather than insisting state implements
+// e.g. SerializableContent...
+
 //----------------------------------------
 
 public class
