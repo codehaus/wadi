@@ -347,25 +347,61 @@
    <jar destfile="WEB-INF/lib/wadi-0.9.jar" basedir="WEB-INF/classes"/>
    <delete dir="WEB-INF/classes"/>
    <mkdir dir="WEB-INF/classes"/>
-   <jar destfile="../wadi-0.9.war">
-	<fileset dir=".">
-	  <exclude name="**/*~"/>
-	  <exclude name="**/CVS"/>
-	  <exclude name="**/.cvsignore"/>
-	  <exclude name="*watchdog*"/>
-	  <exclude name="*watchdog*/**"/>
-	  <exclude name="*velocity.log*"/>
-	  <exclude name="target"/>
-	  <exclude name="junit*"/>
-	  <exclude name="tmp"/>
-	  <exclude name="tmp/**"/>
-	  <exclude name="xdocs"/>
-	  <exclude name="xdocs/**"/>
-	  <exclude name="*.log"/>
-	  <exclude name="DOCS"/>
-	  <exclude name="DOCS/**"/>
-	</fileset>
-   </jar>
+    <fileset id="release.bundle" dir=".">
+      <exclude name="**/*~"/>
+      <exclude name="**/CVS"/>
+      <exclude name="**/.cvsignore"/>
+      <exclude name="*watchdog*"/>
+      <exclude name="*watchdog*/**"/>
+      <exclude name="*velocity.log*"/>
+      <exclude name="target"/>
+      <exclude name="junit*"/>
+      <exclude name="tmp"/>
+      <exclude name="tmp/**"/>
+      <exclude name="xdocs"/>
+      <exclude name="xdocs/**"/>
+      <exclude name="*.log"/>
+      <exclude name="DOCS"/>
+      <exclude name="DOCS/**"/>
+    </fileset>
+    <tar destfile="../wadi-0.9.tgz" compression="gzip">
+      <tarfileset prefix="wadi-0.9" dir=".">
+	<exclude name="**/*~"/>
+	<exclude name="**/CVS"/>
+	<exclude name="**/.cvsignore"/>
+	<exclude name="*watchdog*"/>
+	<exclude name="*watchdog*/**"/>
+	<exclude name="*velocity.log*"/>
+	<exclude name="target"/>
+	<exclude name="junit*"/>
+	<exclude name="tmp"/>
+	<exclude name="tmp/**"/>
+	<exclude name="xdocs"/>
+	<exclude name="xdocs/**"/>
+	<exclude name="*.log"/>
+	<exclude name="DOCS"/>
+	<exclude name="DOCS/**"/>
+      </tarfileset>
+    </tar>
+    <zip destfile="../wadi-0.9.zip">
+      <zipfileset prefix="wadi-0.9" dir=".">
+	<exclude name="**/*~"/>
+	<exclude name="**/CVS"/>
+	<exclude name="**/.cvsignore"/>
+	<exclude name="*watchdog*"/>
+	<exclude name="*watchdog*/**"/>
+	<exclude name="*velocity.log*"/>
+	<exclude name="target"/>
+	<exclude name="junit*"/>
+	<exclude name="tmp"/>
+	<exclude name="tmp/**"/>
+	<exclude name="xdocs"/>
+	<exclude name="xdocs/**"/>
+	<exclude name="*.log"/>
+	<exclude name="DOCS"/>
+	<exclude name="DOCS/**"/>
+      </zipfileset>
+   </zip>
  </target>
 
 </project>

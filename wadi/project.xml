@@ -47,7 +47,7 @@
     </ul>
 
     <p>WADI will be the subject of <a
-    href="http://www.javaone04.com/catalog/catalog/sessionDetail.jsp?hd=true&#38;SESSION_ID=10549&#38;form=searchform">BOF-2180</a>
+    href="">BOF-2180</a>
     at JavaOne this year.</p>
 
     <p>WADI is a new project and this site is very much under
@@ -55,6 +55,20 @@
 
     <p>Please browse our <a href="./faq.html">FAQ</a> for further detail.</p>
 
+   <table border="1">
+    <tr>
+     <th>Date</th>
+     <th>Release</th>
+     <th>TGZ</th>
+     <th>ZIP</th>
+    </tr>
+    <tr>
+     <th>13th June 2004</th>
+     <th>0.9</th>
+     <th><a href="http://dist.codehaus.org/wadi/distributions/wadi-0.9.tgz">wadi-0.9.tgz</a> (744404 bytes)</th>
+     <th><a href="http://dist.codehaus.org/wadi/distributions/wadi-0.9.zip">wadi-0.9.zip</a> (807315 bytes)</th>
+    </tr>
+   </table>
     ]]>
   </description>
 

@@ -454,6 +454,53 @@
       </answer>
     </faq>
 
+    <faq id="jk">
+      <question>So tell me about WADI and mod_jk [13/06/04]</question>
+      <answer>
+      <p/>
+      I'm glad you asked...
+      <p/>
+
+      Mod_jk poses particular problems for session maintenance beyond
+      the lifetime of a single vm. Mod_jk implements session affinity
+      via a contract with the webcontainer. Each node has a unique
+      id. This id is appended to any session created on this node
+      i.e. if a session '1234' is created on node 'red', the cookie
+      returned to the browser will have a value of
+      '1234.red'. Mod_jk's workers.properties is used to map the 'red'
+      to a particular host:port combination each time it is seen. This
+      is a very efficient and effective way of achieving affinity,
+      until 'red' disappears. Then the browser is left holding a
+      cookie with no corresponding node. Rather than implementing a
+      contract involving some sort of predictability, e.g. failing
+      over to the next node in the list. Mod_jk will simply treat the
+      session as if it had no affinity and select a 'random' live node
+      and drop the request on it. Subsequent requests will be routed
+      to different nodes, whilst the session cookie still ends in
+      '.red'.
+
+     <p/>
+
+     WADI is able survive this ! If 'red' is shutdown cleanly it will
+     migrate its sessions to shared store. The next request will cause
+     the relevant session to be loaded into its receiving node. This
+     node will then rewrite the routing info at the end of the session
+     id with its own unique id, sticking all subsequent requests to
+     itself. Thus affinity immediately 'fails-over' onto another node,
+     maintaining session availibility at minimum price paid only in
+     the exceptional case.
+
+     <p/>
+
+     We believe that this is an important piece of functionality that
+     we have not seen demonstrated by other open source
+     solutions. Please do this test for yourself both with (you will
+     need to enable the Jk integration in WEB-INF/wadi-web.xml) and
+     without WADI and come back to us with any issues.
+
+      </answer>
+    </faq>
+
     <faq id="aspectj">
       <question>Why AspectJ? - I prefer AspectXYZ [19/04/04]</question>
       <answer>
@@ -561,7 +608,7 @@
 	always welcome :-). These are the ways to have a direct impact
 	on the quality and direction of the project. There will also
 	be a <a
-	href="http://www.javaone04.com/catalog/catalog/sessionDetail.jsp?hd=true&#38;SESSION_ID=10549&#38;form=searchform">WADI
+	href="">WADI
 	BOF (2180)</a> at JavaOne this year, for those of you who are
 	attending.  <p/>
 
@@ -597,7 +644,7 @@
 	  <li>A browser with cookies enabled</li>
 	</ul>
 	<p/>
-	and here's what you do:
+	and here's what you do (run scripts with 'sh' because Ant seems to screw executable bit on files):
 	<p/>
 	<ul>
 	  <li>cd $WADI_HOME/bin</li>
@@ -669,6 +716,29 @@
       </answer>
     </faq>
 
+    <faq id="building">
+      <question>How do I build WADI from src?  [13/06/04]</question>
+      <answer>
+	<ul>
+	  <li>JAVA_HOME set to the root of a 1.4.x J2SDK</li>
+	  <li>ASPECTJ_HOME - I am using 1.2</li>
+	  <li>ANT_HOME - I am using 1.6.1</li>
+	  <li>TOMCAT_HOME set to a recent Tomcat5 binary release - I am using 5.0.26</li>
+	  <li>JETTY_HOME set to the latest Jetty5  binary release - I am using CVS HEAD</li>
+	  <li>WADI_HOME set to the root of your WADI release tree</li>
+	  <li>rm WEB-INF/lib/wadi-0.9.jar</li>
+	  <li>sh ./build.sh clean compile</li>
+	</ul>
+        <p/>
+
+        Classes are compiled straight into WEB-INF/classes. The dev
+        cycle does not waste time building the
+        WEB-INF/lib/wadi-*.jar...
+
+      </answer>
+    </faq>
+
+	<p/>
     <faq id="jmeter">
       <question>I notice a JMeter testplan...?  [09/06/04]</question>
       <answer>

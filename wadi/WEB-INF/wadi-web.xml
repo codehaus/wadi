@@ -40,18 +40,18 @@
 
 <!-- if you are using Apache/mod_jk uncomment this for affinity -->
 <!--
--->
   <Set name="RoutingStrategy">
    <New class="org.codehaus.wadi.plugins.JkRoutingStrategy">
     <Arg><SystemProperty name="wadi.colour"/></Arg>
    </New>
   </Set>
+-->
 
 <!-- else use this... -->
 <!--
+-->
   <Set name="RoutingStrategy">
    <New class="org.codehaus.wadi.plugins.NoRoutingStrategy"/>
   </Set>
--->
 
 </Configure>
