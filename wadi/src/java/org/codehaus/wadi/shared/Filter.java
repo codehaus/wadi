@@ -70,7 +70,7 @@ public class
   }
 
   public void
-    doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+    doFilterOld(ServletRequest request, ServletResponse response, FilterChain chain)
     throws IOException, ServletException
     {
       //	HttpServletRequest req=new RequestWrapper((HttpServletRequest)request);
@@ -186,7 +186,7 @@ public class
     {
       // the session may have just been created - if so we need to
       // look it up and release the read lock...
-      javax.servlet.http.HttpSession session=request.getSession();
+      javax.servlet.http.HttpSession session=request.getSession(false);
       if (session!=null)
       {
 	HttpSessionImpl impl=(HttpSessionImpl)_manager.get(_manager.getRoutingStrategy().strip(_manager.getBucketName(), session.getId()));
@@ -237,5 +237,89 @@ public class
   {
     _distributable=false;
     _manager=null;
+  }
+
+
+  // NEW STUFF
+
+  public void
+    doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+    throws IOException, ServletException
+  {
+    HttpServletRequest req=(HttpServletRequest)request;
+    HttpServletResponse res=(HttpServletResponse)response;
+    String id=req.getRequestedSessionId();
+    HttpSessionImpl impl=null;
+
+    try
+    {
+      if (id==null)
+      {
+	// TODO - at the moment, nothing, but later we should consider
+	// whether we want to run this request here - it may create a
+	// session - or somewhere else...
+	;
+      }
+      else
+      {
+	// Ensure that Manager.get() is called before entry (this may
+	// have already happened) - this will pull in and lock our
+	// session even if remote.
+	if((impl=_manager.get(id))!=null && // KEEP
+	   ((HttpSession)impl.getFacade()).isValid())
+	{
+	  ;
+	}
+	// if id is non-null, but session does not exists locally -
+	// consider relocating session or request....
+      }
+      // we need to ensure that a shared lock has been taken on the
+      // session before proceeding...
+
+      chain.doFilter(request, response);
+    }
+    finally
+    {
+      // ensure that this request's current session's shared lock is
+      // released...
+
+      // we have to look up the session again as it may have been
+      // invalidated and even replaced during the request.
+      javax.servlet.http.HttpSession session=req.getSession(false);
+      if (session==null)
+      {
+	// no valid session - no lock to release...
+	_log.trace("no outgoing session");
+      }
+      else
+      {
+	String newId=session.getId();
+	boolean reuse=_manager.getReuseSessionIds();
+	// we have to release a lock
+	if (id!=null && !reuse && id.equals(newId))
+	{
+	  // an optimisation, hopefully the most common case -
+	  // saves us a lookup that we have already done...
+	  impl.getApplicationLock().release();
+	  _log.trace(newId+": original session maintained throughout request");
+	}
+	else
+	{
+	  // we cannot be sure that the session coming out of the
+	  // request is the same as the one that went in to it, so
+	  // we have to do the lookup again.
+	  impl=_manager.getLocalSession(newId);
+	  // session must still be valid, since we have not yet
+	  // released our lock, so no need to check...
+	  impl.getApplicationLock().release();
+	  if (reuse)
+	    _log.trace(newId+": potential session id reuse - outgoing session may be new");
+	  else
+	    _log.trace(newId+": new outgoing session");
+	}
+      }
+      // in case Jetty or Tomcat is thread-pooling :
+      _manager.setFirstGet(true); // ready for next time through...
+    }
   }
 }
