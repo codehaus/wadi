@@ -45,18 +45,18 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	protected final Log _log=LogFactory.getLog(getClass());
-	protected final DataSource _ds;
+	protected final DataSource _dataSource;
 	protected final String _table;
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public SharedJDBCContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, DataSource ds, String table) {
+	public SharedJDBCContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, DataSource dataSource, String table) {
 		super(next, collapser, evicter);
-		_ds=ds;
+		_dataSource=dataSource;
 		_table=table;
 
 		_immoter=new SharedJDBCImmoter();
-		_emoter=new ChainedEmoter() {public String getInfo(){return "database";}}; // overwrite - yeugh ! - fix when we have a LifeCycle
+		_emoter=new SharedJDBCEmoter();
 	}
 	
 	public Immoter getImmoter(){return _immoter;}
@@ -69,15 +69,13 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 
 	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres,
 			FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
-//			Connection c=_ds.getConnection();
-//			Statement s=c.createStatement();
-			
-			if (immoter!=null) {
-				Motable emotable=new SharedJDBCImmoter().nextMotable(id, null); // TODO - WRONG - tmp hack
-				return contextualiseElsewhere(hreq, hres, chain, id, immoter, promotionLock, emotable);
-			} else
-				return false;
-			// TODO - consider how to contextualise locally... should be implemented in ChainedContextualiser, as should this..
+		if (immoter!=null) {
+			Motable emotable=new SharedJDBCMotable();
+			emotable.setId(id);
+			return contextualiseElsewhere(hreq, hres, chain, id, immoter, promotionLock, emotable);
+		} else
+			return false;
+		// TODO - consider how to contextualise locally... should be implemented in ChainedContextualiser, as should this..
 	}
 	
 	public void evict() {
@@ -86,8 +84,57 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	
 	public boolean isLocal(){return false;}
 	
+	public class SharedJDBCEmoter extends ChainedEmoter {
+		
+		public boolean prepare(String id, Motable emotable, Motable immotable) {
+			if (super.prepare(id, emotable, immotable)) {
+				try {
+					Connection connection=_dataSource.getConnection();
+					((SharedJDBCMotable)emotable).setTable(_table);
+					((SharedJDBCMotable)emotable).setConnection(connection);
+					if (SharedJDBCMotable.load(connection, _table, emotable)==null)
+						return false;
+				} catch (Exception e) {
+					return false;
+				}
+				return true;
+			} else
+				return false;
+		}
+		
+		public void commit(String id, Motable emotable) {
+			super.commit(id, emotable);
+			SharedJDBCMotable sjm=((SharedJDBCMotable)emotable);
+			Connection connection=sjm.getConnection();
+			sjm.setConnection(null);
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				_log.error("could not close database connection", e);
+			}
+		}
+		
+		public void rollback(String id, Motable emotable) {
+			super.rollback(id, emotable);
+			SharedJDBCMotable sjm=((SharedJDBCMotable)emotable);
+			Connection connection=sjm.getConnection();
+			sjm.setConnection(null);
+			try {
+				connection.rollback();
+				connection.close();
+			} catch (SQLException e) {
+				_log.error("could not rollback database connection", e);
+			}
+		}
+		
+		// TODO - abstract common code between this and Imoter...
+			
+		public String getInfo(){return "database";}
+		
+	};
+		
 	/**
-	 * An Immoter that deals in terms of SharedJDBCMotables
+	 * An Emmoter that deals in terms of SharedJDBCMotables
 	 *
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$
@@ -95,17 +142,23 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	public class SharedJDBCImmoter extends AbstractImmoter {	
 		
 		public Motable nextMotable(String id, Motable emotable) {
-			SharedJDBCMotable sjm=new SharedJDBCMotable();
-			sjm.setId(id);
-			sjm.setTable(_table);
-
+			Motable motable=new SharedJDBCMotable();
+			motable.setId(id);			
+			return motable;
+		}
+		
+		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			try {
-				sjm.setConnection(_ds.getConnection());
-			} catch (SQLException e) {
-				_log.error("could not allocate database connection", e);
+				Connection connection=_dataSource.getConnection();
+				SharedJDBCMotable sjm=(SharedJDBCMotable)immotable;
+				sjm.setTable(_table);
+				sjm.setConnection(connection);
+			} catch (Exception e) {
+				_log.error("could not establish database connection", e);
+				return false;
 			}
 			
-			return sjm;
+			return super.prepare(id, emotable, immotable);
 		}
 		
 		public void commit(String id, Motable immotable) {
@@ -129,7 +182,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 				connection.rollback();
 				connection.close();
 			} catch (SQLException e) {
-				_log.error("could not rollbck database connection", e);
+				_log.error("could not rollback database connection", e);
 			}
 		}
 		

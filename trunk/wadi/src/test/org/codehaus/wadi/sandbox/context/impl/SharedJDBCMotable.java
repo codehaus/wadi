@@ -26,6 +26,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.context.Motable;
 
 /**
  * A Motable that represents its Bytes field as a row ina DataBase table.
@@ -40,6 +41,10 @@ public class SharedJDBCMotable extends AbstractMotable {
 	public String getId(){return _id;}
 	public void setId(String id){_id=id;}
 	
+	protected byte[] _bytes;
+	public byte[] getBytes(){return _bytes;}
+	public void setBytes(byte[] bytes){_bytes=bytes;}
+	
 	protected String _table;
 	public String getTable() {return _table;}
 	public void setTable(String table) {_table=table;}
@@ -48,21 +53,27 @@ public class SharedJDBCMotable extends AbstractMotable {
 	public Connection getConnection(){return _connection;}
 	public void setConnection(Connection connection){_connection=connection;}
 	
-	public void tidy() {remove(_connection, _table, _id);}
+	public void tidy() {remove(_connection, _table, this);}
 	
-	// Motable
-	public byte[] getBytes() throws SQLException {return load(_connection, _table, _id);}
-	public void setBytes(byte[] bytes) throws SQLException {store(_connection, _table, _id, bytes);}
-	
-	protected static byte[] load(Connection connection, String table, String id) throws SQLException {
+	public void copy(Motable motable) throws Exception {
+		super.copy(motable);
+		store(_connection, _table, this);
+	}
+
+	protected static Motable load(Connection connection, String table, Motable motable) throws Exception {
+		String id=motable.getId();
 		Statement s=null;
 		try {
 			s=connection.createStatement();
-			ResultSet rs=s.executeQuery("SELECT Bytes FROM "+table+" WHERE Id='"+id+"'");
+			ResultSet rs=s.executeQuery("SELECT CreationTime, LastAccessedTime, MaxInactiveInterval, Bytes FROM "+table+" WHERE Id='"+id+"'");
+			int i=1;
 			if (rs.next()) {
-				byte[] buffer=(byte[])rs.getObject(1);
+				motable.setCreationTime(rs.getLong(i++));
+				motable.setLastAccessedTime(rs.getLong(i++));
+				motable.setMaxInactiveInterval(rs.getInt(i++));
+				motable.setBytes((byte[])rs.getObject(i++));
 				_log.info("loaded (database): "+id);
-				return buffer;
+				return motable;
 			} else {
 				return null;
 			}
@@ -75,11 +86,17 @@ public class SharedJDBCMotable extends AbstractMotable {
 		}
 	}
 	
-	protected static void store(Connection connection, String table, String id, byte[] bytes) throws SQLException {
+	protected static void store(Connection connection, String table, Motable motable) throws Exception {
+		String id=motable.getId();
 		PreparedStatement ps=null;
 		try {
-			ps=connection.prepareStatement("INSERT INTO "+table+" (Id, Bytes) VALUES ('"+id+"', ?)");
-			ps.setObject(1, bytes);
+			ps=connection.prepareStatement("INSERT INTO "+table+" (Id, CreationTime, LastAccessedTime, MaxInactiveInterval, Bytes) VALUES (?, ?, ?, ?, ?)");
+			int i=1;
+			ps.setString(i++, id);
+			ps.setLong(i++, motable.getCreationTime());
+			ps.setLong(i++, motable.getLastAccessedTime());
+			ps.setInt(i++, motable.getMaxInactiveInterval());
+			ps.setObject(i++, motable.getBytes());
 			ps.executeUpdate();
 			_log.info("stored (database): "+id);
 		} catch (SQLException e) {
@@ -91,7 +108,8 @@ public class SharedJDBCMotable extends AbstractMotable {
 		}
 	}
 	
-	protected static void remove(Connection connection, String table, String id) {
+	protected static void remove(Connection connection, String table, Motable motable) {
+		String id=motable.getId();
 		Statement s=null;
 		try {
 			s=connection.createStatement();
