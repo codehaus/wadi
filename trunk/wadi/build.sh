@@ -8,7 +8,8 @@ JETTY_HOME=$HOME/cvs/jetty/Jetty/
 export JETTY_HOME
 
 #TOMCAT_HOME=/usr/java/jakarta-tomcat-5.0.18
-TOMCAT_HOME=/usr/java/jakarta-tomcat-5.0.19
+#TOMCAT_HOME=/usr/java/jakarta-tomcat-5.0.19
+TOMCAT_HOME=/usr/java/jakarta-tomcat-5.0.24
 export TOMCAT_HOME
 
 echo JAVA_HOME=$JAVA_HOME

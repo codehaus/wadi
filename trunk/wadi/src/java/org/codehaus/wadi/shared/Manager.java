@@ -933,4 +933,25 @@ public abstract class
       getBlankSessionPool().put(impl);
     }
   }
+
+  // stats - TODO - since these are ints and updates are atomic we
+  // should not need to sync them?
+
+  protected int _sessionCreationCounter=0;
+  public void setSessionCreationCounter(int n){_sessionCreationCounter=n;}
+  public int getSessionCreationCounter(){return _sessionCreationCounter;}
+  protected int _sessionExpirationCounter=0;
+  public void setSessionExpirationCounter(int n){_sessionExpirationCounter=n;}
+  public int getSessionExpirationCounter(){return _sessionExpirationCounter;}
+  protected int _sessionInvalidationCounter=0;
+  public void setSessionInvalidationCounter(int n){_sessionInvalidationCounter=n;}
+  public int getSessionInvalidationCounter(){return _sessionInvalidationCounter;}
+  protected int _sessionRejectionCounter=0;
+  public void setSessionRejectionCounter(int n){_sessionRejectionCounter=n;}
+  public int getSessionRejectionCounter(){return _sessionRejectionCounter;}
+
+  // I think we also want to know how many sessions are activated,
+  // passivated, migrated to us, migrated from us ? or simply how many
+  // serialisations and deserialisations to store or other node we
+  // have done. Also how many request relocations...
 }
