@@ -258,7 +258,8 @@ public abstract class
     // If a passivation store has been enabled, we may find the
     // session in it and load it....
     if (_passivationStrategy!=null)
-      successfulMigration=_passivationStrategy.activate(realId, impl);
+      if ((successfulMigration=_passivationStrategy.activate(realId, impl)))
+	_sessionLoadCounter++;
 
     // If a migration policy has been enabled, we may request it
     // from another node.
@@ -500,10 +501,12 @@ public abstract class
 	  HttpSessionImpl impl=createImpl();
 	  if (_passivationStrategy.activate((String)i.next(), impl))
 	  {
+	    _sessionLoadCounter++;
 	    impl.setWadiManager(this);
 	    if (_log.isDebugEnabled()) _log.debug(impl.getId()+": expiration (in long-term storage)");
 	    _notify(impl);	// TODO - these methods all need renaming/factoring etc..
 	    _releaseImpl(impl);
+	    _sessionExpirationCounter++;
 	  }
 	  else
 	  {
@@ -583,6 +586,7 @@ public abstract class
 	    // should this be done asynchronously via another Channel ?
 	    if (_passivationStrategy.passivate(impl))
 	    {
+	      _sessionStoreCounter++;
 	      // TODO - we cannot use releaseImpl() as it will fire unecessary notifications...
 	      _local.remove(realId);
 	      impl.destroy();
@@ -683,6 +687,8 @@ public abstract class
   public void
     notifySessionCreated(String realId, javax.servlet.http.HttpSession session)
   {
+    _sessionCreationCounter++;
+
     int n=_sessionListeners.size();
     if (n>0)
     {
@@ -710,6 +716,10 @@ public abstract class
 
       event=null;
     }
+
+    // N.B. This event is a misnomer - 2.4 spec says "Notification
+    // that a session IS ABOUT TO BE invalidated."...(my caps)
+    _sessionDestructionCounter++;
   }
 
   protected void
@@ -969,6 +979,12 @@ public abstract class
   // stats - TODO - since these are ints and updates are atomic we
   // should not need to sync them?
 
+  // IDEA - if we know what percentage of sessions are timing out at
+  // what mii, could we automatically adjust it to be as efficient as
+  // possible - throughout the day?
+
+  public int getSessionCurrentCount(){return _local.size();}
+
   protected int _sessionCreationCounter=0;
   public void setSessionCreationCounter(int n){_sessionCreationCounter=n;}
   public int getSessionCreationCounter(){return _sessionCreationCounter;}
@@ -982,7 +998,7 @@ public abstract class
   protected int _sessionInvalidationCounter=0;
   public void setSessionInvalidationCounter(int n){_sessionInvalidationCounter=n;}
   public int getSessionInvalidationCounter(){return _sessionInvalidationCounter;}
-  protected int _sessionRejectionCounter=0;
+  protected int _sessionRejectionCounter=0; // TODO - NYI
   public void setSessionRejectionCounter(int n){_sessionRejectionCounter=n;}
   public int getSessionRejectionCounter(){return _sessionRejectionCounter;}
 
@@ -992,40 +1008,40 @@ public abstract class
   protected int _sessionStoreCounter;
   public void setSessionStoreCounter(int n){_sessionStoreCounter=n;}
   public int getSessionStoreCounter(){return _sessionStoreCounter;}
-  protected int _sessionSendCounter;
+  protected int _sessionSendCounter; // TODO - NYI
   public void setSessionSendCounter(int n){_sessionSendCounter=n;}
   public int getSessionSendCounter(){return _sessionSendCounter;}
-  protected int _sessionReceivedCounter;
+  protected int _sessionReceivedCounter; // TODO - NYI
   public void setSessionReceivedCounter(int n){_sessionReceivedCounter=n;}
   public int getSessionReceivedCounter(){return _sessionReceivedCounter;}
 
-  protected int _sessionLocalHitCounter;
+  protected int _sessionLocalHitCounter; // TODO - NYI
   public void setSessionLocalHitCounter(int n){_sessionLocalHitCounter=n;}
   public int getSessionLocalHitCounter(){return _sessionLocalHitCounter;}
-  protected int _sessionStoreHitCounter;
+  protected int _sessionStoreHitCounter; // TODO - NYI
   public void setSessionStoreHitCounter(int n){_sessionStoreHitCounter=n;}
   public int getSessionStoreHitCounter(){return _sessionStoreHitCounter;}
-  protected int _sessionRemoteHitCounter;
+  protected int _sessionRemoteHitCounter; // TODO - NYI
   public void setSessionRemoteHitCounter(int n){_sessionRemoteHitCounter=n;}
   public int getSessionRemoteHitCounter(){return _sessionRemoteHitCounter;}
-  protected int _sessionMissCounter;
+  protected int _sessionMissCounter; // TODO - NYI
   public void setSessionMissCounter(int n){_sessionMissCounter=n;}
   public int getSessionMissCounter(){return _sessionMissCounter;}
 
-  protected int _requestAcceptedCounter;
+  protected int _requestAcceptedCounter; // TODO - NYI
   public void setRequestAcceptedCounter(int n){_requestAcceptedCounter=n;}
   public int getRequestAcceptedCounter(){return _requestAcceptedCounter;}
-  protected int _requestRedirectedCounter;
+  protected int _requestRedirectedCounter; // TODO - NYI
   public void setRequestRedirectedCounter(int n){_requestRedirectedCounter=n;}
   public int getRequestRedirectedCounter(){return _requestRedirectedCounter;}
-  protected int _requestProxiedCounter;
+  protected int _requestProxiedCounter;	// TODO - NYI
   public void setRequestProxiedCounter(int n){_requestProxiedCounter=n;}
   public int getRequestProxiedCounter(){return _requestProxiedCounter;}
 
-  protected int _requestStatefulCounter;
+  protected int _requestStatefulCounter; // TODO - NYI
   public void setRequestStatefulCounter(int n){_requestStatefulCounter=n;}
   public int getRequestStatefulCounter(){return _requestStatefulCounter;}
-  protected int _requestStatelessCounter;
+  protected int _requestStatelessCounter; // TODO - NYI
   public void setRequestStatelessCounter(int n){_requestStatelessCounter=n;}
   public int getRequestStatelessCounter(){return _requestStatelessCounter;}
 

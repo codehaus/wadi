@@ -34,20 +34,22 @@ public aspect
 {
   private static final Log _log=LogFactory.getLog(Replicating.class);
 
-  pointcut creation(Manager manager) :
-  execution(void Manager.notifySessionCreated(String, javax.servlet.http.HttpSession)) && target(manager);
-  after(Manager manager) : creation(manager) {manager._sessionCreationCounter++;}
+//   pointcut creation(Manager manager) :
+//   execution(void Manager.notifySessionCreated(String, javax.servlet.http.HttpSession)) && target(manager);
+//   after(Manager manager) : creation(manager) {manager._sessionCreationCounter++;}
 
-  pointcut destruction(Manager manager) :
-  execution(void Manager.notifySessionDestroyed(String, javax.servlet.http.HttpSession)) && target(manager);
-  after(Manager manager) : destruction(manager) {manager._sessionDestructionCounter++;}
+//   pointcut destruction(Manager manager) :
+//   execution(void Manager.notifySessionDestroyed(String, javax.servlet.http.HttpSession)) && target(manager);
+//   after(Manager manager) : destruction(manager) {manager._sessionDestructionCounter++;}
 
-  // TODO-very ropey - do it better - invalidation should call through the Manager
-  pointcut invalidation(HttpSession session, boolean b) :
-  execution(void HttpSession.setInvalidated(boolean)) && target(session) && args(b);
-  after(HttpSession session, boolean b) : invalidation(session, b) {if (b) session._impl.getWadiManager()._sessionInvalidationCounter++;}
+//   // TODO-very ropey - do it better - invalidation should call through the Manager
+//   pointcut invalidation(HttpSession session, boolean b) :
+//   execution(void HttpSession.setInvalidated(boolean)) && target(session) && args(b);
+//   after(HttpSession session, boolean b) : invalidation(session, b) {if (b) session._impl.getWadiManager()._sessionInvalidationCounter++;}
 
   //  pointcut expiration(HttpSession session, boolean b) :
   //  execution(void HttpSession.setInvalidated(boolean)) && target(session) && args(b);
   //  after(HttpSession session, boolean b) : expiration(session, b) {if (b) session._impl.getWadiManager()._sessionExpirationCounter++;}
+
+  REMOVE ME
 }
