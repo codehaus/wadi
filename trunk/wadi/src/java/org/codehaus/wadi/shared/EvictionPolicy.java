@@ -17,6 +17,13 @@
 
 package org.codehaus.wadi.shared;
 
+/**
+ * Abstracts out the decision of when a session should be evicted to
+ * long-term storage.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface
   EvictionPolicy
 {
