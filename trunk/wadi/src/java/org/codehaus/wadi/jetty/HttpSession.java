@@ -24,8 +24,5 @@ public class
   extends org.codehaus.wadi.shared.HttpSession
   implements org.mortbay.jetty.servlet.SessionManager.Session
 {
-  public HttpSession(HttpSessionImpl impl) {super(impl);}
-
-  public void setId(String id){getImpl().setId(id);}
-  protected HttpSessionImpl getImpl(){return (HttpSessionImpl)_impl;} // TODO - ugly
+  HttpSession(HttpSessionImpl impl) {super(impl);}
 }
