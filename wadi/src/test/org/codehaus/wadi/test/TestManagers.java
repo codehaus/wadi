@@ -95,36 +95,6 @@ public class
 	//	session.invalidate();
       }
       {
-	_log.info("[1]");
-	HttpServletRequest req=new HttpServletRequest();
-	req.setManager(_jetty);
-	req.setSessionId("xxx");
-	String id=_jetty.newHttpSession(req).getId();
-	javax.servlet.http.HttpSession session=_jetty.getHttpSession(id);
-	assertTrue(session.getId()==id); // must be ==/same object
-	// what do we do about locking issues ?
-	//	session.invalidate();
-      }
-      _log.info("[2]");
-      {
-	org.apache.catalina.Session session=_tomcat.createSession();
-	_tomcat.add(session);
-	String id=session.getId();
-	session=null;
-	try
-	{
-	  session=_tomcat.findSession(id);
-	}
-	catch (java.io.IOException e)
-	{
-	  // this will cause a failure in the following assertation - no body
-	}
-	assertTrue(session.getId()==id); // must be ==/same object
-
-	// what do we do about locking issues ?
-	//	session.invalidate();
-      }
-      {
 	_log.info("[3]");
 	int i=45*60;
 	_jetty.setHouseKeepingInterval(i);
@@ -229,15 +199,58 @@ public class
   {
     HttpServletRequest req=new HttpServletRequest();
     HttpServletResponse res=new HttpServletResponse();
-    Invocation i=new Invocation(){
+    req.setSessionId("xxx");
+
+    Invocation i=null;
+
+    i=new Invocation(){
 	public void
-	  invoke(Manager manager, javax.servlet.ServletRequest requset, javax.servlet.ServletResponse response)
+	  invoke(Manager manager, javax.servlet.ServletRequest request, javax.servlet.ServletResponse response)
 	{
-	  _log.info("made it !");
+	  org.codehaus.wadi.jetty.Manager jetty=(org.codehaus.wadi.jetty.Manager)manager;
+	  _log.info("[1]");
+	  assertTrue(jetty.getSessionCreationCounter()==0);
+	  String id=jetty.newHttpSession((HttpServletRequest)request).getId();
+	  _log.info("NUM SESSIONS: "+jetty.getSessionCreationCounter());
+	  assertTrue(jetty.getSessionCreationCounter()==1);
+	  javax.servlet.http.HttpSession session=jetty.getHttpSession(id);
+	  assertTrue(session.getId()==id); // must be ==/same object
+	  assertTrue(jetty.getSessionDestructionCounter()==0);
+	  session.invalidate();
+	  assertTrue(jetty.getSessionDestructionCounter()==1);
 	}
       };
-
     runInvocation(_jettyFilter, _jetty, i, req, res);
+    assertTrue(_jetty.getHttpSession("xxx")==null);
+
+
+    i=new Invocation(){
+	public void
+	  invoke(Manager manager, javax.servlet.ServletRequest request, javax.servlet.ServletResponse response)
+	{
+	  org.codehaus.wadi.tomcat.Manager tomcat=(org.codehaus.wadi.tomcat.Manager)manager;
+	  _log.info("[2]");
+	  assertTrue(tomcat.getSessionCreationCounter()==0);
+	  org.apache.catalina.Session session=tomcat.createSession();
+	  assertTrue(tomcat.getSessionCreationCounter()==1);
+	  tomcat.add(session);
+	  String id=session.getId();
+	  session=null;
+	  try
+	  {
+	    session=tomcat.findSession(id);
+	  }
+	  catch (java.io.IOException e)
+	  {
+	    // this will cause a failure in the following assertation - no body
+	  }
+	  assertTrue(session.getId()==id); // must be ==/same object
+	  assertTrue(tomcat.getSessionDestructionCounter()==0);
+	  tomcat.remove(session);
+	  //	  assertTrue(tomcat.getSessionDestructionCounter()==1);
+	}
+      };
     runInvocation(_tomcatFilter, _tomcat, i, req, res);
+    try{assertTrue(_tomcat.findSession("xxx")==null);}catch(IOException e){assertTrue(false);}
   }
 }
