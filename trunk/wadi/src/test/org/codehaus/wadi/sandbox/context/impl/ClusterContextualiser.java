@@ -17,7 +17,6 @@
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,7 +25,6 @@ import java.util.Set;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
@@ -82,7 +80,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	protected final Cluster           _cluster;
 	protected final MessageConsumer   _consumer;
 	protected final MessageListener   _listener;
-	protected final Map               _searches=new HashMap(); // do we need more concurrency ?
+	protected final Map               _locationResponses=new HashMap(); // do we need more concurrency ?
 	protected final long              _timeout;
 	protected final Location          _location;
 	protected final long              _proxyHandOverPeriod;
@@ -140,57 +138,6 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		}
 	}
 
-	class LocationListener implements MessageListener {
-		
-		protected final Map _map=new HashMap();
-		protected final Object _target;
-		
-		public LocationListener(Object target, String methodName) {
-			_target=target;
-			Method[] ms=target.getClass().getMethods();
-			for (int i=ms.length-1; i>=0; i--) {
-				Method m=ms[i];
-				Class[] pts=null;
-				if (methodName.equals(m.getName()) && (pts=m.getParameterTypes()).length==2 && pts[0]==ObjectMessage.class) {
-					//_log.info("caching method: "+m+" for class: "+pts[1]);
-					_map.put(pts[1], m);
-				}
-			}
-		}
-		
-		public void onMessage(Message message) {
-			// Threads should be pooled
-			// any allocs should be cached as ThreadLocals and reused 
-			// we need a way of indicating which messages should be threaded and which not...
-			new LocationListenerThread(message).start();
-		}
-		
-		class LocationListenerThread extends Thread {
-			protected final Message _message;
-			
-			public LocationListenerThread(Message message) {
-				_message=message;
-			}
-			
-			public void run() {
-				ObjectMessage om=null;
-				Object tmp=null;
-				Method m;
-				
-				try {
-					if (_message instanceof ObjectMessage && (om=(ObjectMessage)_message)!=null && (tmp=om.getObject())!=null && (m=(Method)_map.get(tmp.getClass()))!=null) {
-						m.invoke(_target, new Object[]{om, tmp}); // TODO - how do we avoid this alloc ? ThreadPool/ThreadLocal...
-						
-						// if a message is of unrecognised type, we should recurse up its class hierarchy, memoizing the result
-						// if we find a class that matches - TODO - This would enable message subtyping...
-					}
-				} catch (Exception e) {
-					_log.error("problem processing location message", e);
-				}
-			}
-		}
-	}
-
 	/**
 	 * @param next
 	 * @param collapser
@@ -202,7 +149,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		_cluster=cluster;
 		boolean excludeSelf=true;
 	    _consumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
-		_listener=new LocationListener(this, "onMessage");
+		_listener=new MessageDispatcher(this, "onMessage");
 	    _consumer.setMessageListener(_listener);// should be called in start() - we need a stop() too - to remove listeners...
 	    _timeout=timeout;
 	    _proxyHandOverPeriod=proxyHandOverPeriod;
@@ -286,8 +233,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		Rendezvous rv=new Rendezvous(2);
 
 		// set up a rendez-vous...
-		synchronized (_searches) {
-			_searches.put(correlationId, rv);
+		synchronized (_locationResponses) {
+			_locationResponses.put(correlationId, rv);
 		}
 
 		try {
@@ -326,8 +273,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		}
 
 		// tidy up rendez-vous
-		synchronized (_searches) {
-			_searches.remove(correlationId);
+		synchronized (_locationResponses) {
+			_locationResponses.remove(correlationId);
 		}
 
 		return location;
@@ -369,8 +316,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 
 		// notify waiting threads...
 		String correlationId=message.getJMSCorrelationID();
-		synchronized (_searches) {
-			Rendezvous rv=(Rendezvous)_searches.get(correlationId);
+		synchronized (_locationResponses) {
+			Rendezvous rv=(Rendezvous)_locationResponses.get(correlationId);
 			if (rv!=null) {
 				do {
 					try {
