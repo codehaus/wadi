@@ -4,7 +4,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package org.codehaus.wadi.test.cache.impl;
+package org.codehaus.wadi.sandbox.wcache.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,8 +14,8 @@ import java.io.ObjectOutput;
 
 import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.test.cache.Cache;
-import org.codehaus.wadi.test.cache.RequestProcessor;
+import org.codehaus.wadi.sandbox.wcache.Cache;
+import org.codehaus.wadi.sandbox.wcache.RequestProcessor;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 

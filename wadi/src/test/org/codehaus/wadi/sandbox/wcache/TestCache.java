@@ -4,7 +4,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package org.codehaus.wadi.test.cache;
+package org.codehaus.wadi.sandbox.wcache;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,14 +18,14 @@ import javax.servlet.ServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
-import org.codehaus.wadi.test.cache.impl.InactiveEvicter;
-import org.codehaus.wadi.test.cache.impl.InvalidEvicter;
-import org.codehaus.wadi.test.cache.impl.JDBCCache;
-import org.codehaus.wadi.test.cache.impl.LocalDiscCache;
-import org.codehaus.wadi.test.cache.impl.ClusterCache;
-import org.codehaus.wadi.test.cache.impl.MemoryCache;
-import org.codehaus.wadi.test.cache.impl.MaxInactiveIntervalEvicter;
-import org.codehaus.wadi.test.cache.impl.NeverEvicter;
+import org.codehaus.wadi.sandbox.wcache.impl.ClusterCache;
+import org.codehaus.wadi.sandbox.wcache.impl.InactiveEvicter;
+import org.codehaus.wadi.sandbox.wcache.impl.InvalidEvicter;
+import org.codehaus.wadi.sandbox.wcache.impl.JDBCCache;
+import org.codehaus.wadi.sandbox.wcache.impl.LocalDiscCache;
+import org.codehaus.wadi.sandbox.wcache.impl.MaxInactiveIntervalEvicter;
+import org.codehaus.wadi.sandbox.wcache.impl.MemoryCache;
+import org.codehaus.wadi.sandbox.wcache.impl.NeverEvicter;
 
 import junit.framework.TestCase;
 

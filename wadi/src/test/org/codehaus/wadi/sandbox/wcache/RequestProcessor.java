@@ -4,7 +4,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package org.codehaus.wadi.test.cache;
+package org.codehaus.wadi.sandbox.wcache;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletRequest;

@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.sandbox.jcache;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,7 +27,6 @@ import javax.cache.CacheEntry;
 import javax.cache.CacheException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.StreamingStrategy;
 
 //----------------------------------------
@@ -48,23 +47,6 @@ import org.codehaus.wadi.StreamingStrategy;
 // what metadata should live in the CacheEntry and what in the Value ?
 
 // collapse all timing fields together as calculated from each other
-
-//----------------------------------------
-
-interface
-  EvictionPolicy
-{
-  boolean evict(CacheEntry e);
-}
-
-//----------------------------------------
-
-interface
-  SerializableContentPool
-{
-  SerializableContent poll(long msecs);
-  SerializableContent take();
-}
 
 //----------------------------------------
 
