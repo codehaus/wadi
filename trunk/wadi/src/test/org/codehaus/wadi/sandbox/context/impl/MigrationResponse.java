@@ -14,14 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.context;
+package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.Serializable;
+import java.util.Set;
 
-import javax.jms.Destination;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import org.codehaus.wadi.sandbox.context.Location;
 
 /**
  * TODO - JavaDoc this type
@@ -29,13 +27,19 @@ import javax.servlet.http.HttpServletResponse;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Location extends Motable, Serializable {
+public class MigrationResponse implements Serializable {
+
+	protected final Location _location;
+	protected final Set _ids;
 	/**
-	 * @param hreq - the request object from the webcontainer
-	 * @param hres - the response object from the webcontainer
-	 * @throws ProxyingException TODO
+	 *
 	 */
-	public void proxy(HttpServletRequest hreq, HttpServletResponse hres) throws ProxyingException;
-	
-	public Destination getDestination(); 
+	public MigrationResponse(Location location, Set ids) {
+		super();
+		_location=location;
+		_ids=ids;
+	}
+
+	public Location getLocation(){return _location;}
+	public Set getIds(){return _ids;}
 }

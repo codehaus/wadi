@@ -14,28 +14,34 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.context;
+package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.Serializable;
 
-import javax.jms.Destination;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
 /**
- * TODO - JavaDoc this type
+ * A query for the location of the session with the enclosed ID - The response
+ * should be a LocationResponse object sent whence this request arrived.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Location extends Motable, Serializable {
+public class MigrationRequest implements Serializable {
+	protected String _id;
+	protected long _handOverPeriod;
+
 	/**
-	 * @param hreq - the request object from the webcontainer
-	 * @param hres - the response object from the webcontainer
-	 * @throws ProxyingException TODO
+	 *
 	 */
-	public void proxy(HttpServletRequest hreq, HttpServletResponse hres) throws ProxyingException;
-	
-	public Destination getDestination(); 
+	public MigrationRequest(String id, long handOverPeriod) {
+		super();
+		_id=id;
+		_handOverPeriod=handOverPeriod;
+	}
+
+	public MigrationRequest() {
+		// for use when demarshalling...
+	}
+
+	public String getId(){return _id;}
+	public long getHandOverPeriod(){return _handOverPeriod;}
 }

@@ -25,6 +25,7 @@ import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
@@ -39,10 +40,14 @@ public class MessageDispatcher implements MessageListener {
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final Map _map=new HashMap();
 	protected final Cluster _cluster;
-	
-	public MessageDispatcher(Cluster cluster) {
+	protected final MessageConsumer _consumer;
+
+	public MessageDispatcher(Cluster cluster) throws JMSException {
 		_cluster=cluster;
-	}
+		boolean excludeSelf=true;
+	    _consumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
+	    _consumer.setMessageListener(this);
+	    }
 	
 	interface Dispatcher {
 		void dispatch(ObjectMessage om, Serializable obj) throws Exception;
@@ -64,6 +69,10 @@ public class MessageDispatcher implements MessageListener {
 			pair[1]=obj;
 			_method.invoke(_target, pair);
 		}
+		
+		public String toString() {
+			return "<TargetDispatcher: "+_method+" dispatched on: "+_target+">";
+		}
 	}
 	
 	/**
@@ -81,8 +90,10 @@ public class MessageDispatcher implements MessageListener {
 			if (methodName.equals(m.getName()) && (pts=m.getParameterTypes()).length==2 && pts[0]==ObjectMessage.class) {
 				// return type should be void...
 				//_log.info("caching method: "+m+" for class: "+pts[1]);
-				if (_map.put(pts[1], new TargetDispatcher(target, m))!=null) {
-					_log.warn("later registration replaces earlier - multiple dispatch NYI");
+				Dispatcher old;
+				Dispatcher nuw=new TargetDispatcher(target, m);
+				if ((old=(Dispatcher)_map.put(pts[1], nuw))!=null) {
+					_log.warn("later registration replaces earlier - multiple dispatch NYI: "+old+" -> "+nuw);
 				}
 				n++;
 			}
@@ -117,6 +128,10 @@ public class MessageDispatcher implements MessageListener {
 				}
 			}
 		}
+
+		public String toString() {
+			return "<RendezVousDispatcher>";
+		}
 	}
 
 	/**
@@ -149,10 +164,14 @@ public class MessageDispatcher implements MessageListener {
 			Dispatcher d;
 			
 			try {
-				if (_message instanceof ObjectMessage && (om=(ObjectMessage)_message)!=null && (obj=om.getObject())!=null && (d=(Dispatcher)_map.get(obj.getClass()))!=null) {
-					d.dispatch(om, obj);
-					// if a message is of unrecognised type, we should recurse up its class hierarchy, memoizing the result
-					// if we find a class that matches - TODO - This would enable message subtyping...
+				if (_message instanceof ObjectMessage && (om=(ObjectMessage)_message)!=null && (obj=om.getObject())!=null) {
+					if ((d=(Dispatcher)_map.get(obj.getClass()))!=null) {
+						d.dispatch(om, obj);
+						// if a message is of unrecognised type, we should recurse up its class hierarchy, memoizing the result
+						// if we find a class that matches - TODO - This would enable message subtyping...
+					} else {
+						_log.debug("no dispatcher registered for message: "+obj);
+					}
 				}
 			} catch (Exception e) {
 				_log.error("problem processing incoming message", e);

@@ -39,14 +39,15 @@ import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.HttpProxy;
 import org.codehaus.wadi.sandbox.context.Motable;
-import org.codehaus.wadi.sandbox.context.impl.AlwaysProxyStrategy;
+import org.codehaus.wadi.sandbox.context.RelocationStrategy;
+import org.codehaus.wadi.sandbox.context.impl.RequestRelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.context.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
+import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
-import org.codehaus.wadi.sandbox.context.impl.NeverMigrateStrategy;
 import org.codehaus.wadi.sandbox.context.impl.StatelessContextualiser;
 
 public class MyServlet implements Servlet {
@@ -66,7 +67,10 @@ public class MyServlet implements Servlet {
 		_cluster.start();
 		_collapser=new HashingCollapser(10, 2000);
 		_clusterMap=new HashMap();
-		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), _cluster, 2000, 3000, new HttpProxyLocation(location, proxy), new AlwaysProxyStrategy(), new NeverMigrateStrategy());
+		MessageDispatcher dispatcher=new MessageDispatcher(_cluster);
+		RelocationStrategy relocater=new RequestRelocationStrategy(cluster, dispatcher, 3000, 2000);
+		HttpProxyLocation hpl=new HttpProxyLocation(cluster.getLocalNode().getDestination(), location, proxy);
+		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), _cluster, 2000, 3000, hpl, dispatcher, relocater);
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
 		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);

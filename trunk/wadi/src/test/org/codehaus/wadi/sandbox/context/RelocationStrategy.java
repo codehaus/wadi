@@ -14,15 +14,15 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package org.codehaus.wadi.sandbox.context.impl;
+package org.codehaus.wadi.sandbox.context;
+
+import java.io.IOException;
+import java.util.Map;
 
 import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.codehaus.wadi.sandbox.context.Location;
-import org.codehaus.wadi.sandbox.context.MigrationStrategy;
-import org.codehaus.wadi.sandbox.context.Promoter;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -33,14 +33,17 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 
-public class AlwaysMigrateStrategy implements MigrationStrategy {
+public interface RelocationStrategy {
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.MigrationStrategy#migrateAndPromote(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync, org.codehaus.wadi.sandbox.context.Location)
+	/** Either relocate the request to the session by proxying/redirection, or the session to the request, by migration...
+	 * @param hreq
+	 * @param hres
+	 * @param chain
+	 * @param id
+	 * @param promoter
+	 * @param promotionLock
+	 * @param locationMap
+	 * @return
 	 */
-	public boolean migrateAndPromote(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, Location location) {
-		// TODO - put some guts in here...
-		return false;
-	}
-
+	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, Map locationMap) throws IOException, ServletException;
 }

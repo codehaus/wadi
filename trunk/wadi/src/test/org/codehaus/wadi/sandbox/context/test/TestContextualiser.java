@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -53,15 +54,17 @@ import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.Promoter;
+import org.codehaus.wadi.sandbox.context.ProxyingException;
+import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.AlwaysEvicter;
-import org.codehaus.wadi.sandbox.context.impl.AlwaysProxyStrategy;
+import org.codehaus.wadi.sandbox.context.impl.RequestRelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.context.impl.LocalDiscContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
+import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
-import org.codehaus.wadi.sandbox.context.impl.NeverMigrateStrategy;
 import org.codehaus.wadi.sandbox.context.impl.SharedJDBCContextualiser;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
@@ -419,11 +422,11 @@ public class TestContextualiser extends TestCase {
 
 	static class MyLocation implements Location, Serializable {
 		public long getExpiryTime(){return 0;}
-		public boolean proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) throws IOException {
-			promotionLock.release();
-			System.out.println("PROXYING TO: "+id);
-			return true;
+		public void proxy(HttpServletRequest hreq, HttpServletResponse hres) throws ProxyingException {
+			System.out.println("PROXYING");
 		}
+		
+		public Destination getDestination(){return null;}
 	}
 
 	public void testCluster() throws Exception {
@@ -440,7 +443,9 @@ public class TestContextualiser extends TestCase {
 
 		Collapser collapser0=new HashingCollapser(10, 2000);
 		Map c0=new HashMap();
-		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000, 3000, new MyLocation(), new AlwaysProxyStrategy(), new NeverMigrateStrategy());
+		MessageDispatcher dispatcher0=new MessageDispatcher(cluster0);
+		RelocationStrategy relocater0=new RequestRelocationStrategy(cluster0, dispatcher0, 3000, 2000);
+		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000, 3000, new MyLocation(), dispatcher0, relocater0);
 		Map m0=new HashMap();
 		m0.put("foo", new MyContext());
 		Contextualiser memory0=new MemoryContextualiser(clstr0, collapser0, m0, new NeverEvicter(), new MyContextPool());
@@ -448,7 +453,9 @@ public class TestContextualiser extends TestCase {
 
 		Collapser collapser1=new HashingCollapser(10, 2000);
 		Map c1=new HashMap();
-		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000, 3000, new MyLocation(), new AlwaysProxyStrategy(), new NeverMigrateStrategy());
+		MessageDispatcher dispatcher1=new MessageDispatcher(cluster1);
+		RelocationStrategy relocater1=new RequestRelocationStrategy(cluster1, dispatcher1, 3000, 2000);
+		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000, 3000, new MyLocation(), dispatcher1, relocater1);
 		Map m1=new HashMap();
 		m1.put("bar", new MyContext());
 		Contextualiser memory1=new MemoryContextualiser(clstr1, collapser1, m1, new NeverEvicter(), new MyContextPool());
