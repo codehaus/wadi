@@ -31,22 +31,24 @@ import java.util.Enumeration;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 // My choice of proxy - still suboptimal - servlet spec imposes a very clumsy API
 // for copying the headers out of the HttpServletRequest (a proprietary solution 
 // would be faster), but at least the Cookie headers can be copied straight across 
-// (see CommonsHttpProxy).
+// (see CommonsHttpProxy where they cannot...).
 
 // This does not yet support e.g. WebDav methods like PROPFIND etc...
 
-// ProxyStrategy should be applied before MigrationStrategy - if it succeeds, we don't migrate...
-
 /**
- * Enterprise HttpProxy implementation.
+ * HttpProxy implementation based on java.net.HttpURLConnection
  *
  * @author gregw@mortbay.com, jules@coredevelopers.net
- *
  */
 public class StandardHttpProxy extends AbstractHttpProxy {
+
+	protected static final Log _log=LogFactory.getLog(StandardHttpProxy.class);
 
 	public StandardHttpProxy(String sessionPathParamKey) {
 		super(sessionPathParamKey);

@@ -19,15 +19,10 @@ package org.codehaus.wadi.sandbox.context.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
 import java.util.HashSet;
-import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.context.HttpProxy;
 
 //HTTP/1.1 Methods:
@@ -65,7 +60,7 @@ import org.codehaus.wadi.sandbox.context.HttpProxy;
 //is there some way we can run our client2server output stream on a background thread ? perhaps using commons-httpclient...?
 
 /**
- * TODO - JavaDoc this type
+ * Useful support for implementations of the HttpProxy interface
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -73,41 +68,8 @@ import org.codehaus.wadi.sandbox.context.HttpProxy;
 public abstract class AbstractHttpProxy implements HttpProxy {
 
 	public static final String _WADI_IsSecure="WADI-IsSecure";
-	protected final String _sessionPathParamKey;
-	
-	public AbstractHttpProxy(String sessionPathParamKey) {
-		_sessionPathParamKey=sessionPathParamKey;
-	}
-	
-	// proxyable
-	protected Pattern _proxyableSchemes=Pattern.compile("HTTP", Pattern.CASE_INSENSITIVE);
 
-	public boolean canProxy(HttpServletRequest req) {
-		String scheme=req.getScheme();
-		return _proxyableSchemes.matcher(scheme).matches();
-	}
-
-	// stateful
-	protected Pattern _statefulMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE); // TODO - |HEAD|PUT|DELETE
-	protected Pattern _statelessURIs=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)", Pattern.CASE_INSENSITIVE); // TODO - CSS, ...?
-
-	// N.B. it is VERY important that we know what the session id's cookie name is, so that we can spot it in the request...
-	public boolean isStateful(HttpServletRequest hreq) {
-//		if (hreq.getRequestedSessionId()==null) // TODO - do we need this test here...
-//			return false;
-		if (!_statefulMethods.matcher(hreq.getMethod()).matches())
-			return false;
-		if (_statelessURIs.matcher(hreq.getRequestURI()).matches())
-			return false;
-		
-		// we have done our best to eliminate it, but it may be stateful...
-		return true;
-	}
-	
-	protected final Log _log = LogFactory.getLog(getClass());
-
-	protected static final HashSet _DontProxyHeaders = new HashSet();
-	
+	protected static final HashSet _DontProxyHeaders = new HashSet();	
 	static
 	{
 		_DontProxyHeaders.add("proxy-connection");
@@ -121,6 +83,12 @@ public abstract class AbstractHttpProxy implements HttpProxy {
 		_DontProxyHeaders.add("upgrade");
 	}
 
+	protected final String _sessionPathParamKey;
+	
+	public AbstractHttpProxy(String sessionPathParamKey) {
+		_sessionPathParamKey=sessionPathParamKey;
+	}
+	
 	public int copy(InputStream is, OutputStream os, int length) throws IOException {
 		int total=0;
 		byte[] buffer=new byte[length];
@@ -141,9 +109,4 @@ public abstract class AbstractHttpProxy implements HttpProxy {
 		}
 		return uri;
 	}
-
-	// we need to consider error-handling tactics.
-	// If e.g. we can't connect to host, then we should remove location from cache and try again
-	// If e.g. a POST breaks halfway through - it cannot be run again...
-	public abstract boolean proxy(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res) throws Exception;
 }

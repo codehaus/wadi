@@ -52,7 +52,7 @@ public class HttpProxyLocation implements Location {
 		try {
 			success=_proxy.proxy(_location, req, res);
 		} catch (Exception e) {
-			_log.error("request relocation failed: "+_location, e); // TODO - some cases here a resolvable...
+			_log.error("request relocation failed: "+_location, e); // TODO - some cases here are resolvable...
 		} finally {
 			promotionLock.release();
 		}

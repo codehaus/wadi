@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -48,6 +49,12 @@ import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
+// this needs to be split into several parts...
+
+// (1) a request relocation strategy (proxy)
+// (2) a state relocation strategy (migrate) - used if (1) fails
+// a location cache - used by both the above when finding the locarion of state...
+
 /**
  * A cache of Locations. If the Location of a Context is not known, the Cluster
  * may be queried for it. If it is forthcoming, we can proxy to it. After a
@@ -61,6 +68,8 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  *
  * The promotion mutex is held correctly during the initial Location lookup, so that searches for the same Context are correctly collapsed.
  *
+ * ProxyStrategy should be applied before MigrationStrategy - if it succeeds, we don't migrate...
+ * 
  * This class is getting out of hand !
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -326,4 +335,21 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	}
 
 	public boolean isLocal(){return false;}
+	
+	// stateful
+	protected Pattern _statefulMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE); // TODO - |HEAD|PUT|DELETE
+	protected Pattern _statelessURIs=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)", Pattern.CASE_INSENSITIVE); // TODO - CSS, ...?
+
+	// N.B. it is VERY important that we know what the session id's cookie name is, so that we can spot it in the request...
+	public boolean isStateful(HttpServletRequest hreq) {
+//		if (hreq.getRequestedSessionId()==null) // TODO - do we need this test here...
+//			return false;
+		if (!_statefulMethods.matcher(hreq.getMethod()).matches())
+			return false;
+		if (_statelessURIs.matcher(hreq.getRequestURI()).matches())
+			return false;
+		
+		// we have done our best to eliminate it, but it may be stateful...
+		return true;
+	}
 }

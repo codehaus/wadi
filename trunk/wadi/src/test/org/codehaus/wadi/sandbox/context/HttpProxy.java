@@ -23,18 +23,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * TODO - JavaDoc this type
+ * defines the API used for relocating requests to other nodes..
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public interface HttpProxy extends Serializable {
 
-	public boolean canProxy(HttpServletRequest req);
-	public boolean isStateful(HttpServletRequest hreq);
-	
 	/**
-	 * @param location - host and port to proxy req/res to
+	 * @param location - host and port to which to proxy req/res
 	 * @param req - the request
 	 * @param res - the response
 	 * @return - true if req/res was proxied successfully (even if remote processing was unsuccessful)
