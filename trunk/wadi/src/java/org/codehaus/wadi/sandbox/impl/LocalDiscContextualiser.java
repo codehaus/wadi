@@ -60,7 +60,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	    assert dir.canWrite();
 		_dir=dir;
 
-		_immoter=new LocalDiscImmoter();
+		_immoter=new LocalDiscImmoter(_map);
 		_emoter=new LocalDiscEmoter(_map);
 		}
 
@@ -79,8 +79,12 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$
 	 */
-	public class LocalDiscImmoter extends AbstractImmoter {
+	public class LocalDiscImmoter extends AbstractMappedImmoter {
 
+	    public LocalDiscImmoter(Map map) {
+	        super(map);
+	    }
+	    
 		public Motable nextMotable(String id, Motable emotable) {
 			LocalDiscMotable ldm=new LocalDiscMotable();
 			ldm.setId(id);
@@ -90,11 +94,6 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			((LocalDiscMotable)immotable).setFile(new File(_dir, id+"."+_streamer.getSuffix()));
 			return super.prepare(id, emotable, immotable);
-		}
-
-		public void commit(String id, Motable immotable) {
-			super.commit(id, immotable);
-			synchronized (_map){_map.put(id, immotable);}
 		}
 
 		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {

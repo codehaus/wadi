@@ -44,6 +44,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public abstract class AbstractMappedContextualiser extends AbstractChainedContextualiser {
 	protected final Map _map;
+
 	public AbstractMappedContextualiser(Contextualiser next, Map map, Evicter evicter) {
 		super(next, evicter);
 		_map=map;

@@ -20,30 +20,24 @@ import java.util.Map;
 
 import org.codehaus.wadi.sandbox.Motable;
 
-
 /**
- * A basic Emoter for MappedContextualisers
+ * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractMappedEmoter extends AbstractChainedEmoter {
 
-	protected final Map _map;
-
-	public AbstractMappedEmoter(Map map) {
-		_map=map;
-	}
-
-	public boolean prepare(String id, Motable emotable, Motable immotable) {
-		if (super.prepare(id, emotable, immotable)) {
-			_map.remove(id); // remove ref in cache
-			return true;
-		} else
-			return false;
-	}
-
-	public void rollback(String id, Motable emotable) {
-		_map.put(id, emotable); // replace ref into cache
+public abstract class AbstractMappedImmoter extends AbstractImmoter {
+    
+    protected final Map _map;
+    
+    public AbstractMappedImmoter(Map map) {
+        super();
+        _map=map;    
+    }
+    
+	public void commit(String id, Motable immotable) {
+		super.commit(id, immotable);
+		_map.put(id, immotable);
 	}
 }
