@@ -35,7 +35,7 @@ public class
   // shared //
   //--------//
 
-  public javax.servlet.http.HttpSession newFacade(){return new HttpSession(this);}
+  public javax.servlet.http.HttpSession createFacade(){return new HttpSession(this);}
 
   //--------//
   // Tomcat //

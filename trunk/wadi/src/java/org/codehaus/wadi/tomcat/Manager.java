@@ -91,9 +91,7 @@ public class
   public Session
     createSession()
   {
-    HttpSessionImpl impl=(HttpSessionImpl)getReadySessionPool().take();
-    impl.setManager(this);
-    return impl;
+    return (org.codehaus.wadi.tomcat.HttpSessionImpl)acquireImpl(this);
   }
 
   public void
@@ -238,24 +236,6 @@ public class
     }
   }
 
-  protected org.codehaus.wadi.shared.Manager.SessionPool _blankSessionPool=new BlankSessionPool();
-  protected org.codehaus.wadi.shared.Manager.SessionPool getBlankSessionPool(){return _blankSessionPool;}
-  protected void setBlankSessionPool(org.codehaus.wadi.shared.Manager.SessionPool pool){_blankSessionPool=pool;}
-
-  /**
-   * A logical pool of uninitialised session impls. Consumes from the
-   * ReadyPool and is Consumed by it as session impls are recycled.
-   *
-   */
-  class BlankSessionPool
-    extends org.codehaus.wadi.shared.Manager.SessionPool
-  {
-    public Object take(){return new HttpSessionImpl();}
-    public void put(Object o){}	// just let it go
-  }
-
-  //  protected org.codehaus.wadi.shared.HttpSession createFacade(org.codehaus.wadi.shared.HttpSessionImpl impl){assert false; return null;} // TODO
-
   //----------------------------------------
 
   // TODO - these need to be hooked up...
@@ -302,4 +282,5 @@ public class
   public void setMaxActive(int maxActive){}
   public int getMaxActive(){return 100000;}
 
+  protected org.codehaus.wadi.shared.HttpSessionImpl createImpl(){return new HttpSessionImpl();}
 }
