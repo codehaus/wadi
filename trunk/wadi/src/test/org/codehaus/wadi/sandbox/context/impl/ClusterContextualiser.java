@@ -26,6 +26,7 @@ import javax.servlet.ServletResponse;
 
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.wadi.sandbox.context.Collapser;
+import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Location;
@@ -115,6 +116,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	}
 	
 	class LocationListener implements MessageListener {
+		// TODO - should we use a semaphore here to bound the number of threads that we start ?
 		public void onMessage(Message message) {
 			new LocationListenerThread(message).start();
 		}
@@ -276,19 +278,18 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		
 		_log.info("location found (cluster): "+id+" - "+location);
 		
-		// initially we will release the promotion lock here, so that proxying is done concurrently
-		// later we need to decide how to count successful proxies and retrieve a remote session when count is achieved...
-		if (promotionMutex!=null) {
-			promotionMutex.release();
+		Context context=null;
+		if ((context=location.proxy(req, res, id, promotionMutex))==null) {
+			// request was proxied and contextualised remotely...
+			// promotionMutex was released at earliest opportunity.
+			_log.info("migration has not occurred (contextualised remotely): "+id);
+		} else {
+			// the context has migrated from this Location to us...
+			// we must promote it and contextualise the outstanding request.
+			// the promotionMutex has NOT yet been released
+			_log.info("migration has occurred [NYI] (contextualisation will occur locally): "+id);
+			// TODO - lots of code here...
 		}
-		
-		// either:
-		// proxy the request/response to the sessions current location...
-		location.proxy(req,res);
-		// or:
-		// retrieve and promote the session
-		// send out a LocationMessage to cluster
-		// contextualise the request/response
 		
 		return true;
 	}

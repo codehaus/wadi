@@ -395,9 +395,13 @@ public class TestContextualiser extends TestCase {
 //		assertTrue(((MyContext)m.get("foo"))._val.equals("foo"));
 	}
 	
-	static class MyLocation implements Location, Serializable{
+	static class MyLocation implements Location, Serializable {
 		public long getExpiryTime(){return 0;}
-		public void proxy(ServletRequest req, ServletResponse res) {System.out.println("PROXYING!!!");}
+		public Context proxy(ServletRequest req, ServletResponse res, String id, Sync promotionMutex) {
+			promotionMutex.release();
+			System.out.println("PROXYING TO: "+id);
+			return null;
+		}
 	}
 	
 	public void testCluster() throws Exception {
