@@ -29,6 +29,7 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 import org.codehaus.wadi.Manager;
+import org.codehaus.wadi.HttpSessionImpl;
 
 public class HttpServletRequest
   implements javax.servlet.http.HttpServletRequest
@@ -50,8 +51,23 @@ public class HttpServletRequest
   public HttpSession
     getSession(boolean create)
   {
-    //    HttpSession session=_manager.get(id);
-    return null;		// TODO ??
+    String realId=_sessionId;	// may later need stripping...
+
+    if (realId==null)
+      if (create)
+	return _manager.acquireImpl(_manager).getFacade();
+      else
+	return null;
+    else
+    {
+      HttpSessionImpl impl=_manager.get(realId);
+      if (impl==null)
+	if (create)
+	  return _manager.acquireImpl(_manager, realId).getFacade();
+	else
+	  return null;
+      return impl.getFacade();
+    }
   }
 
   public String

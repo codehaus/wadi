@@ -57,9 +57,11 @@ public class
       javax.servlet.FilterConfig filterConfig=new FilterConfig(servletContext);
       _jetty.setServletContext(servletContext);
       _jetty.start();
+      _log.info("Jetty CLUSTER:"+_jetty.getCluster());
       _jettyFilter.init(filterConfig);
       _tomcat.setServletContext(servletContext);
       _tomcat.start();
+      _log.info("Tomcat CLUSTER:"+_tomcat.getCluster());
       _tomcatFilter.init(filterConfig);
     }
 
@@ -71,10 +73,8 @@ public class
       {
 	_tomcat.stop();
 	_tomcatFilter.destroy();
-	_log.info("here 0");
 	_jetty.stop();
 	_jettyFilter.destroy();
-	_log.info("here 1");
       }
       catch (Exception e)
       {
@@ -87,7 +87,6 @@ public class
     testManagers()
     {
       {
-	_log.info("[0]");
 	String id=_jetty.newHttpSession().getId();
 	javax.servlet.http.HttpSession session=_jetty.getHttpSession(id);
 	assertTrue(session.getId()==id); // must be ==/same object
@@ -95,55 +94,46 @@ public class
 	//	session.invalidate();
       }
       {
-	_log.info("[3]");
 	int i=45*60;
 	_jetty.setHouseKeepingInterval(i);
 	assertTrue(_jetty.getHouseKeepingInterval()==i);
       }
       {
-	_log.info("[4]");
 	String n="JSESSIONID";
 	assertTrue(_jetty.getSessionCookieName().equals(n));
 	assertTrue(_tomcat.getSessionCookieName().equals(n));
       }
       {
-	_log.info("[5]");
 	String n="jsessionid";
 	assertTrue(_jetty.getSessionUrlParamName().equals(n));
 	assertTrue(_tomcat.getSessionUrlParamName().equals(n));
       }
       {
-	_log.info("[6]");
 	String d=null;
 	assertTrue(_jetty.getSessionCookieDomain()==d);
 	assertTrue(_tomcat.getSessionCookieDomain()==d);
       }
       {
-	_log.info("[7]");
 	int n=-1;
 	_tomcat.setMaxActive(n);
 	assertTrue(_tomcat.getMaxActive()==n);
       }
       {
-	_log.info("[8]");
 	int n=1000;
 	_tomcat.setRejectedSessions(n);
 	assertTrue(_tomcat.getRejectedSessions()==n);
       }
       {
-	_log.info("[9]");
 	int n=1000;
 	_tomcat.setExpiredSessions(n);
 	assertTrue(_tomcat.getExpiredSessions()==n);
       }
       {
-	_log.info("[10]");
 	int n=1000;
 	_tomcat.setSessionCounter(n);
 	assertTrue(_tomcat.getSessionCounter()==n);
       }
       {
-	_log.info("[11]");
 	HttpServletRequest req=new HttpServletRequest();
 	req.setSessionId("xxx");
 	req.setManager(_jetty);
@@ -156,12 +146,10 @@ public class
 	// for coverage...
       }
       {
-	_log.info("[12]");
 	HttpSessionContext c0=_jetty.getSessionContext();
 	HttpSessionContext c1=_tomcat.getSessionContext();
       }
       {
-	_log.info("[13]");
 	assertTrue(_jetty.getHttpSession("dummy")==null);
 	try
 	{
@@ -182,6 +170,8 @@ public class
   public void
     runInvocation(Filter filter, Manager manager, Invocation i, HttpServletRequest request, HttpServletResponse response)
   {
+    request.setManager(manager);
+    request.getSession();	// emulate access()/setLastAccessedTime()
     FilterChain chain=new FilterChain(manager, i);
     try
     {
@@ -208,7 +198,6 @@ public class
 	  invoke(Manager manager, javax.servlet.ServletRequest request, javax.servlet.ServletResponse response)
 	{
 	  org.codehaus.wadi.jetty.Manager jetty=(org.codehaus.wadi.jetty.Manager)manager;
-	  _log.info("[1]");
 	  assertTrue(jetty.getSessionCreationCounter()==0);
 	  String id=jetty.newHttpSession((HttpServletRequest)request).getId();
 	  assertTrue(jetty.getSessionCreationCounter()==1);
@@ -235,7 +224,6 @@ public class
 	  invoke(Manager manager, javax.servlet.ServletRequest request, javax.servlet.ServletResponse response)
 	{
 	  org.codehaus.wadi.tomcat.Manager tomcat=(org.codehaus.wadi.tomcat.Manager)manager;
-	  _log.info("[2]");
 	  assertTrue(tomcat.getSessionCreationCounter()==0);
 	  org.apache.catalina.Session s=tomcat.createSession();
 	  javax.servlet.http.HttpSession session=s.getSession();
@@ -267,63 +255,42 @@ public class
     try{assertTrue(_tomcat.findSession("xxx")==null);}catch(IOException e){assertTrue(false);}
   }
 
-//   public void
-//     testMigration()
-//   {
-//     HttpServletRequest req=new HttpServletRequest();
-//     HttpServletResponse res=new HttpServletResponse();
-//     req.setSessionId("xxx");
+   public void
+     testMigration()
+   {
+     HttpServletRequest req=new HttpServletRequest();
+     HttpServletResponse res=new HttpServletResponse();
+     Invocation i=null;
 
-//     Invocation i=null;
+     _jetty.setDistributable(true);
+     _log.info("CLUSTER:"+_jetty.getCluster());
+     _tomcat.setDistributable(true);
+     _jetty.setReuseSessionIds(true);
+     req.setSessionId("xxx");
 
-//     i=new Invocation(){
-// 	public void
-// 	  invoke(Manager manager, javax.servlet.ServletRequest request, javax.servlet.ServletResponse response)
-// 	{
-// 	  org.codehaus.wadi.jetty.Manager jetty=(org.codehaus.wadi.jetty.Manager)manager;
-// 	  String id=jetty.newHttpSession((HttpServletRequest)request).getId();
-// 	  assertTrue(jetty.getSessionCreationCounter()==1);
-// 	  javax.servlet.http.HttpSession session=jetty.getHttpSession(id);
-// 	  assertTrue(session.getId()==id); // must be ==/same object
-// 	  assertTrue(jetty.getSessionDestructionCounter()==0);
-// 	  session.invalidate();
-// 	  session=null;
-// 	  session=jetty.getHttpSession(id); // invalid sessions should not be returned...
-// 	  assertTrue(session==null);
-// 	  assertTrue(jetty.getSessionDestructionCounter()==1);
-// 	}
-//       };
-//     runInvocation(_jettyFilter, _jetty, i, req, res);
-//     assertTrue(_jetty.getHttpSession("xxx")==null);
+     i=new Invocation(){
+ 	public void
+ 	  invoke(Manager manager, javax.servlet.ServletRequest request, javax.servlet.ServletResponse response)
+ 	{
+ 	  javax.servlet.http.HttpSession session=((HttpServletRequest)request).getSession(true);
+	  assertTrue(session!=null);
+ 	}
+       };
+     runInvocation(_jettyFilter, _jetty, i, req, res);
 
+     // session 'xxx' now lives in Jetty... - the next request through
+     // Tomcat should force its migration across...
 
-//     i=new Invocation(){
-// 	public void
-// 	  invoke(Manager manager, javax.servlet.ServletRequest request, javax.servlet.ServletResponse response)
-// 	{
-// 	  org.codehaus.wadi.tomcat.Manager tomcat=(org.codehaus.wadi.tomcat.Manager)manager;
-// 	  _log.info("[2]");
-// 	  assertTrue(tomcat.getSessionCreationCounter()==0);
-// 	  org.apache.catalina.Session session=tomcat.createSession();
-// 	  assertTrue(tomcat.getSessionCreationCounter()==1);
-// 	  tomcat.add(session);
-// 	  String id=session.getId();
-// 	  session=null;
-// 	  try
-// 	  {
-// 	    session=tomcat.findSession(id);
-// 	  }
-// 	  catch (java.io.IOException e)
-// 	  {
-// 	    // this will cause a failure in the following assertation - no body
-// 	  }
-// 	  assertTrue(session.getId()==id); // must be ==/same object
-// 	  assertTrue(tomcat.getSessionDestructionCounter()==0);
-// 	  tomcat.remove(session);
-// 	  //	  assertTrue(tomcat.getSessionDestructionCounter()==1);
-// 	}
-//       };
-//     runInvocation(_tomcatFilter, _tomcat, i, req, res);
-//     try{assertTrue(_tomcat.findSession("xxx")==null);}catch(IOException e){assertTrue(false);}
-//   }
+      i=new Invocation(){
+ 	public void
+ 	  invoke(Manager manager, javax.servlet.ServletRequest request, javax.servlet.ServletResponse response)
+	  {
+	    javax.servlet.http.HttpSession session=((HttpServletRequest)request).getSession(true);
+	    assertTrue(session!=null);
+	  }
+        };
+      runInvocation(_tomcatFilter, _tomcat, i, req, res);
+
+      assertTrue(_jetty.get("xxx")==null);
+   }
 }
