@@ -59,16 +59,18 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 	protected final Location _location;
 	protected final Cluster _cluster;
 	protected final StreamingStrategy _ss;
+	protected final Map _locationMap;
 	
 	protected final Map _resRvMap=new HashMap();
 	protected final Map _ackRvMap=new HashMap();
 	
-	public MigrateRelocationStrategy(Cluster cluster, MessageDispatcher dispatcher, Location location, long timeout, StreamingStrategy ss) {
+	public MigrateRelocationStrategy(Cluster cluster, MessageDispatcher dispatcher, Location location, long timeout, StreamingStrategy ss, Map locationMap) {
 		_dispatcher=dispatcher;		
 		_timeout=timeout;
 		_location=location;
 		_cluster=cluster;
 		_ss=ss;
+		_locationMap=locationMap;
 		
 		_dispatcher.register(this, "onMessage");
 		_dispatcher.register(MigrationResponse.class, _resRvMap, _timeout);
@@ -114,7 +116,7 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 		}
 		
 		_log.info("sending migration ack: "+id);
-		MigrationAcknowledgement ack=new MigrationAcknowledgement();
+		MigrationAcknowledgement ack=new MigrationAcknowledgement(id, _location);
 		try {
 			_dispatcher.sendMessage(ack, settingsInOut);
 		} catch (JMSException e) {
@@ -125,6 +127,7 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 		// get session out of response and promote...
 		_log.info("promoting (from cluster): "+id);			
 		if (promoter.prepare(id, context)) {
+			_locationMap.remove(id); // evict old location from cache
 			promoter.commit(id, context);
 			promotionLock.release();
 			promoter.contextualise(hreq, hres, chain, id, context);
@@ -204,7 +207,6 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 					// TODO - who owns the session now - consider a syn link to old owner to negotiate this..
 				}
 				_log.info("received migration ack: "+_id+" : "+_settingsInOut);
-				
 				// if we got to here we need to consider how to promote the session out of the container and release the exclusive lock
 				
 			} catch (Exception e) {
@@ -256,8 +258,11 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 				return false;
 			}
 			_log.info("received migration ack: "+id+" : "+_settingsInOut);
-			
-			// if we got to here we need to consider how to promote the session out of the container and release the exclusive lock
+			// update location cache...
+			Location tmp=ack.getLocation();
+			synchronized (_locationMap) {
+				_locationMap.put(id, tmp);
+			}
 			
 			return true;
 		}
@@ -274,5 +279,4 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 			// does nothing - contextualisation will happen when the session arrives...
 		}
 	}
-
 }

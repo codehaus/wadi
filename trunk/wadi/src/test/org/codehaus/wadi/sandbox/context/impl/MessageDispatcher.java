@@ -223,16 +223,19 @@ public class MessageDispatcher implements MessageListener {
 			// rendez-vous with response/timeout...
 			do {
 				try {
+					long startTime=System.currentTimeMillis();
 					om=(ObjectMessage)rv.attemptRendezvous(null, timeout);
 					response=om.getObject();
 					settingsInOut.to=om.getJMSReplyTo();
 					// om.getJMSDestination() might be the whole cluster, not just this node... - TODO
 					settingsInOut.from=_cluster.getLocalNode().getDestination();
 					assert settingsInOut.correlationId.equals(om.getJMSCorrelationID());
+					long elapsedTime=System.currentTimeMillis()-startTime;
+					_log.debug("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis): "+id); // session does not exist
 				} catch (TimeoutException toe) {
-					_log.info("no response to request within timeout: "+id); // session does not exist
+					_log.warn("no response to request within timeout ("+timeout+" millis): "+id); // session does not exist
 				} catch (InterruptedException ignore) {
-					_log.info("waiting for response - interruption ignored: "+id);
+					_log.warn("waiting for response - interruption ignored: "+id);
 				}
 			} while (Thread.interrupted());
 		} catch (JMSException e) {
