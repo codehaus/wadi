@@ -44,6 +44,12 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class StandardHttpProxy extends AbstractHttpProxy {
 
+	protected final String _sessionCookieName;
+	
+	public StandardHttpProxy(String sessionCookieName) {
+		_sessionCookieName=sessionCookieName;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 *
@@ -54,10 +60,11 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 
 		String uri=req.getRequestURI();
 		
-		if (req.isRequestedSessionIdFromURL()) {
-			// Jetty will include this on getRequestURI() - Tomcat won't...
-			uri+=";jsessionid="+req.getRequestedSessionId();
-			// TODO - ugly temp fix..
+		// Jetty will return path params in this uri. Tomcat won't.
+		// There seems to be no API for retrieving them in any other way - DOH !
+		// Using more then just a jsessionid path param seems to confuse Tomcat anyway...
+		if (req.isRequestedSessionIdFromURL() && !(uri.lastIndexOf(';')>=0)) {
+			uri+=";"+_sessionCookieName+"="+req.getRequestedSessionId();
 		}
 		
 		String qs=req.getQueryString();
