@@ -160,12 +160,14 @@ public class RWLock implements ReadWriteLock {
    **/
   protected synchronized Signaller endRead() {
     if (--activeReaders_ == 0 && waitingWriters_ > 0)
-    {
-      assert activeReaders_>-1;
       return writerLock_;
-    }
     else
+    {
+      if (_log.isTraceEnabled())
+	_log.trace("activeReaders_="+activeReaders_);
+      assert activeReaders_>-1;
       return null;
+    }
   }
 
 
@@ -206,6 +208,8 @@ public class RWLock implements ReadWriteLock {
   }
 
     public  void acquire() throws InterruptedException {
+      if (_log.isTraceEnabled())
+	_log.trace(Thread.currentThread().toString()+" acquiring R-lock "+RWLock.this.hashCode());//, new Exception());
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
       synchronized(this) {
@@ -235,6 +239,8 @@ public class RWLock implements ReadWriteLock {
 
 
     public void release() {
+      if (_log.isTraceEnabled())
+	_log.trace(Thread.currentThread().toString()+" releasing R-lock "+RWLock.this.hashCode());//, new Exception());
       Signaller s = endRead();
       if (s != null) s.signalWaiters();
     }
@@ -243,6 +249,8 @@ public class RWLock implements ReadWriteLock {
     synchronized void signalWaiters() { ReaderLock.this.notifyAll(); }
 
     public boolean attempt(long msecs) throws InterruptedException {
+      if (_log.isTraceEnabled())
+	_log.trace(Thread.currentThread().toString()+" attempting R-lock "+RWLock.this.hashCode());//, new Exception());
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
       synchronized(this) {
@@ -298,7 +306,7 @@ public class RWLock implements ReadWriteLock {
 
     public void acquire() throws InterruptedException {
       if (_log.isTraceEnabled())
-	_log.trace(Thread.currentThread().toString()+" acquiring W-lock "+hashCode());
+	_log.trace(Thread.currentThread().toString()+" acquiring W-lock "+RWLock.this.hashCode());//, new Exception());
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
       int p=getPriority();
@@ -331,7 +339,7 @@ public class RWLock implements ReadWriteLock {
 
     public void release(){
       if (_log.isTraceEnabled())
-	_log.trace(Thread.currentThread().toString()+" releasing W-lock "+hashCode());
+	_log.trace(Thread.currentThread().toString()+" releasing W-lock "+RWLock.this.hashCode());//, new Exception());
       Signaller s = endWrite();
       if (s != null) s.signalWaiters();
     }
@@ -356,7 +364,7 @@ public class RWLock implements ReadWriteLock {
 
     public boolean attempt(long msecs) throws InterruptedException {
       if (_log.isTraceEnabled())
-	_log.trace(Thread.currentThread().toString()+" attempting W-lock "+hashCode());
+	_log.trace(Thread.currentThread().toString()+" attempting W-lock "+RWLock.this.hashCode());//, new Exception());
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
       int p=getPriority();
