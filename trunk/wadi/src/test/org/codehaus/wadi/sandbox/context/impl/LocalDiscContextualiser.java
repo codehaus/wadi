@@ -62,8 +62,8 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 		_dir=dir;
 		
 		_immoter=new LocalDiscImmoter();
-		_emoter=new MappedEmoter(_map) {public String getInfo(){return "local disc";}}; // overwrite - yeugh ! - fix when we have a LifeCycle
-	}
+		_emoter=new LocalDiscEmoter(_map);
+		}
 
 	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Sync promotionLock, Motable motable) throws IOException, ServletException {
 		// TODO - it should be possible to load a Session off disc, use it, then write it back - here...
@@ -86,11 +86,16 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 		public Motable nextMotable(String id, Motable emotable) {
 			LocalDiscMotable ldm=new LocalDiscMotable();
 			ldm.setId(id);
-			ldm.setFile(new File(_dir, id+"."+_streamer.getSuffix()));
 			return ldm;
 		}
 		
+		public boolean prepare(String id, Motable emotable, Motable immotable) {
+			((LocalDiscMotable)immotable).setFile(new File(_dir, id+"."+_streamer.getSuffix()));
+			return super.prepare(id, emotable, immotable);
+		}		
+		
 		public void commit(String id, Motable immotable) {
+			super.commit(id, immotable);
 			synchronized (_map){_map.put(id, immotable);}
 		}
 		
@@ -103,4 +108,53 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 			return "local disc";
 		}
 	}
+	
+	class LocalDiscEmoter extends MappedEmoter {
+		
+		public LocalDiscEmoter(Map map) {super(map);}
+		
+		public boolean prepare(String id, Motable emotable, Motable immotable) {
+			if (super.prepare(id, emotable, immotable)) {
+				try {
+					LocalDiscMotable ldm=(LocalDiscMotable)emotable;
+					ldm.setFile(new File(_dir, id+"."+_streamer.getSuffix()));
+				if (LocalDiscMotable.load(ldm.getFile(), emotable)==null)
+					return false;
+				else
+					return true;
+				} catch (Exception e) {
+					_log.error("could not load item from local file", e);
+					return false;
+				}
+			} else
+				return false;
+		}
+		
+//		public void commit(String id, Motable emotable) {
+//			super.commit(id, emotable);
+//			SharedJDBCMotable sjm=((SharedJDBCMotable)emotable);
+//			Connection connection=sjm.getConnection();
+//			sjm.setConnection(null);
+//			try {
+//				connection.close();
+//			} catch (SQLException e) {
+//				_log.error("could not close database connection", e);
+//			}
+//		}
+//		
+//		public void rollback(String id, Motable emotable) {
+//			super.rollback(id, emotable);
+//			SharedJDBCMotable sjm=((SharedJDBCMotable)emotable);
+//			Connection connection=sjm.getConnection();
+//			sjm.setConnection(null);
+//			try {
+//				connection.rollback();
+//				connection.close();
+//			} catch (SQLException e) {
+//				_log.error("could not rollback database connection", e);
+//			}
+//		}
+		
+		public String getInfo(){return "local disc";}
+	};
 }

@@ -19,11 +19,12 @@ package org.codehaus.wadi.sandbox.context.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.context.Motable;
 
 
 /**
@@ -36,53 +37,62 @@ import org.apache.commons.logging.LogFactory;
 public class LocalDiscMotable extends AbstractMotable {
 	protected static final Log _log = LogFactory.getLog(LocalDiscMotable.class);
 	
-	public LocalDiscMotable(){}
-	
 	protected File _file;
-	//public File getFile() {return _file;}
+	public File getFile() {return _file;}
 	public void setFile(File file){_file=file;}
+	
+	protected byte[] _bytes;
+	public byte[] getBytes(){return _bytes;}
+	public void setBytes(byte[] bytes){_bytes=bytes;}
 	
 	public void tidy() {
 		if (_file!=null && _file.exists())
 			remove(_file);
 	}
 	
-	// Motable
-	public byte[] getBytes() throws IOException {return load(_file);}
-	public void setBytes(byte[] bytes) throws IOException {store(_file, bytes);}
-	
-	protected static byte[] load(File file) throws IOException {
-		int length=(int)file.length(); // length must be OK, or file would not exist
-		FileInputStream fis=null;
+	public void copy(Motable motable) throws Exception {
+		super.copy(motable);
+		store(_file, this);
+	}
+
+	protected static Motable load(File file, Motable motable) throws Exception {
+		ObjectInputStream ois=null;
 		try {
-			fis=new FileInputStream(file);
-			byte[] buffer=new byte[length];
-			fis.read(buffer, 0 ,length);
+			ois=new ObjectInputStream(new FileInputStream(file));
+			motable.setId((String)ois.readObject());
+			motable.setCreationTime(ois.readLong());
+			motable.setLastAccessedTime(ois.readLong());
+			motable.setMaxInactiveInterval(ois.readInt());
+			motable.setBytes((byte[])ois.readObject());
 			_log.info("loaded (local disc): "+file);
-			return buffer;
-		} catch (IOException e) {
+			return motable;
+		} catch (Exception e) {
 			_log.warn("load (local disc) failed: "+file, e);
 			throw e;
 		}
 		finally {
-			if (fis!=null)
-				fis.close();
+			if (ois!=null)
+				ois.close();
 		}
 	}
 	
-	protected static void store(File file, byte[] bytes) throws IOException {
-		OutputStream os=null;
+	protected static void store(File file, Motable motable) throws Exception {
+		ObjectOutputStream oos=null;
 		try {
-			os=new FileOutputStream(file);
-			os.write(bytes);
-			os.flush();
+			oos=new ObjectOutputStream(new FileOutputStream(file));
+			oos.writeObject(motable.getId());
+			oos.writeLong(motable.getCreationTime());
+			oos.writeLong(motable.getLastAccessedTime());
+			oos.writeInt(motable.getMaxInactiveInterval());
+			oos.writeObject(motable.getBytes());
+			oos.flush();
 			_log.info("stored (local disc): "+file);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			_log.warn("store (local disc) failed: "+file, e);
 			throw e;
 		} finally {
-			if (os!=null)
-				os.close();			
+			if (oos!=null)
+				oos.close();			
 		}
 	}
 	
