@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;
@@ -52,8 +51,8 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public LocalDiscContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, StreamingStrategy streamer, File dir) {
-		super(next, collapser, map, evicter);
+	public LocalDiscContextualiser(Contextualiser next, Map map, Evicter evicter, StreamingStrategy streamer, File dir) {
+		super(next, map, evicter);
 		_streamer=streamer;
 	    assert dir.exists();
 	    assert dir.isDirectory();

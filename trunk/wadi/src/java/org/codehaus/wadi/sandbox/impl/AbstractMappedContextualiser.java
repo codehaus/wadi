@@ -25,7 +25,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;
@@ -45,8 +44,8 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public abstract class AbstractMappedContextualiser extends AbstractChainedContextualiser {
 	protected final Map _map;
-	public AbstractMappedContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter) {
-		super(next, collapser, evicter);
+	public AbstractMappedContextualiser(Contextualiser next, Map map, Evicter evicter) {
+		super(next, evicter);
 		_map=map;
 	}
 

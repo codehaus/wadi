@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;
@@ -44,13 +43,11 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 	protected final Log _log=LogFactory.getLog(getClass());
 
 	protected final Contextualiser _next;
-	protected final Collapser _collapser;
 	protected final Evicter _evicter;
 
-	public AbstractChainedContextualiser(Contextualiser next, Collapser collapser, Evicter evicter) {
+	public AbstractChainedContextualiser(Contextualiser next, Evicter evicter) {
 		super();
 		_next=next;
-		_collapser=collapser;
 		_evicter=evicter;
 	}
 

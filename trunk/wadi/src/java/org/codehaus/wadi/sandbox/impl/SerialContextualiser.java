@@ -42,15 +42,14 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @version $Revision$
  */
 
-public class SerialContextualiser implements Contextualiser {
+public class SerialContextualiser extends AbstractThinContextualiser {
 	protected static final Log _log = LogFactory.getLog(AbstractImmoter.class);
 	
-	protected final Contextualiser _next;
 	protected final Collapser _collapser;
 	protected final Sync _dummyLock=new NullSync();
 	
 	public SerialContextualiser(Contextualiser next, Collapser collapser) {
-		_next=next;
+	    super(next);
 		_collapser=collapser;
 	}
 	
@@ -76,9 +75,4 @@ public class SerialContextualiser implements Contextualiser {
 			if (acquired && !released) lock.release();
 		}
 	}
-	
-	public void evict() {}
-	public Evicter getEvicter() {return _next.getEvicter();}
-	public boolean isLocal() {return _next.isLocal();}
-	public Immoter getDemoter(String id, Motable motable) {return _next.getDemoter(id, motable);}
 }
