@@ -110,7 +110,6 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 						acquired=true;
 						Immoter immoter=_next.getDemoter(id, emotable);
 						Emoter emoter=getEmoter();
-						_log.info("demoting : "+emotable);
 						Utils.mote(emoter, immoter, emotable, id);
 					}
 				} catch (InterruptedException ie) {

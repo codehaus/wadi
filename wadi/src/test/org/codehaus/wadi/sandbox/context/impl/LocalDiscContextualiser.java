@@ -109,6 +109,12 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 		}
 	}
 	
+	/**
+	 * An Emmoter that deals in terms of LocalDiscMotables
+	 *
+	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+	 * @version $Revision$
+	 */
 	class LocalDiscEmoter extends MappedEmoter {
 		
 		public LocalDiscEmoter(Map map) {super(map);}
@@ -120,40 +126,15 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 					ldm.setFile(new File(_dir, id+"."+_streamer.getSuffix()));
 				if (LocalDiscMotable.load(ldm.getFile(), emotable)==null)
 					return false;
-				else
-					return true;
 				} catch (Exception e) {
 					_log.error("could not load item from local file", e);
 					return false;
 				}
 			} else
 				return false;
+			
+			return true;
 		}
-		
-//		public void commit(String id, Motable emotable) {
-//			super.commit(id, emotable);
-//			SharedJDBCMotable sjm=((SharedJDBCMotable)emotable);
-//			Connection connection=sjm.getConnection();
-//			sjm.setConnection(null);
-//			try {
-//				connection.close();
-//			} catch (SQLException e) {
-//				_log.error("could not close database connection", e);
-//			}
-//		}
-//		
-//		public void rollback(String id, Motable emotable) {
-//			super.rollback(id, emotable);
-//			SharedJDBCMotable sjm=((SharedJDBCMotable)emotable);
-//			Connection connection=sjm.getConnection();
-//			sjm.setConnection(null);
-//			try {
-//				connection.rollback();
-//				connection.close();
-//			} catch (SQLException e) {
-//				_log.error("could not rollback database connection", e);
-//			}
-//		}
 		
 		public String getInfo(){return "local disc";}
 	};

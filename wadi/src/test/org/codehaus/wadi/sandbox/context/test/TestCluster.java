@@ -50,7 +50,6 @@ import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
-import org.codehaus.wadi.sandbox.context.impl.ChainedEmoter;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyCollapser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
@@ -65,7 +64,7 @@ import org.codehaus.wadi.sandbox.context.impl.Utils;
 import junit.framework.TestCase;
 
 /**
- * TODO - JavaDoc this type
+ * Test the shutdown of a Contextualiser stack as live sessions are distributed to other nodes in the cluster
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -205,7 +204,7 @@ public class TestCluster extends TestCase {
 			String id="session-"+i;
 			Motable emotable=new MyContext(id);
 			Immoter immoter=c.getDemoter(id, emotable);
-			Emoter emoter=new ChainedEmoter(){public String getInfo(){return "ether";}}; // sessions are coming from us..
+			Emoter emoter=new EtherEmoter();
 			Utils.mote(emoter, immoter, emotable, id);
 		}
 		// demote n Contexts into node0
