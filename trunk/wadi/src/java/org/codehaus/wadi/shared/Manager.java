@@ -340,6 +340,7 @@ public abstract class
 				       );
     _locationClient=new LocationClient(getAutoLocationAddress(), getAutoLocationPort(), 5000L);
     _locationServer.start();
+    _migrationServer=new MigrationService.Server(_local, _migrating);
     _migrationServer.start();
     _running=true;
     _log.debug("started");
@@ -745,7 +746,7 @@ public abstract class
   //----------------------------------------
   // Migration
 
-  MigrationService.Server _migrationServer=new MigrationService.Server(_local, _migrating);
+  MigrationService.Server _migrationServer;
 
   //----------------------------------------
   // Migration

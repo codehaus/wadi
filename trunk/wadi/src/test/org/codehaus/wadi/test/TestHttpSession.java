@@ -166,61 +166,84 @@ public class TestHttpSession
     assertTrue(_events.size()==0);
   }
 
-//  public void
-//    testDestroyHttpSession()
-//    throws Exception
-//  {
-//    int interval=10;//TODO - dodgy test - how can it be improved...?
-//    int oldInterval= _manager.getHouseKeepingInterval();
-//    _manager.stop();
-//    _manager.setHouseKeepingInterval(interval); // seconds
-//    _manager.removeEventListener(_listener);
-//    _manager.addEventListener(_listener);
-//    _manager.start();
-//    // set up test
-//    HttpSession session=_manager.newHttpSession();
-//    String key="foo";
-//    Object val=new Listener();
-//    session.setAttribute(key, val);
-//    _events.clear();
-//
-//    // destroy session
-//    session.invalidate();
-//    Thread.sleep(2000*interval); //2*interval - millis
-//
-//    {
-//      Pair pair=(Pair)_events.remove(0);
-//      assertTrue(pair!=null);
-//      assertTrue(pair.getType().equals("sessionDestroyed"));
-//      HttpSessionEvent e=pair.getEvent();
-//      assertTrue(session==e.getSession());
-//    }
-//    {
-//      Pair pair=(Pair)_events.remove(0);
-//      assertTrue(pair!=null);
-//      assertTrue(pair.getType().equals("valueUnbound"));
-//      HttpSessionEvent e=pair.getEvent();
-//      assertTrue(session==e.getSession());
-//      HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
-//      assertTrue(be.getName()==key);
-//      assertTrue(be.getValue()==val);
-//    }
-//    {
-//      Pair pair=(Pair)_events.remove(0);
-//      assertTrue(pair!=null);
-//      assertTrue(pair.getType().equals("attributeRemoved"));
-//      HttpSessionEvent e=pair.getEvent();
-//      assertTrue(session==e.getSession());
-//      HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
-//      assertTrue(be.getName()==key);
-//      assertTrue(be.getValue()==val);
-//    }
-//    assertTrue(_events.size()==0);
-//
-//    _manager.stop();
-//    _manager.setHouseKeepingInterval(oldInterval);
-//    _manager.start();
-//  }
+//   public void
+//     testDestroyHttpSession()
+//     throws Exception
+//   {
+// _log.info("[0] foo");
+//     int interval=10;//TODO - dodgy test - how can it be improved...?
+//     int oldInterval= _manager.getHouseKeepingInterval();
+//     _manager.stop();
+// _log.info("[1] foo");
+//     _manager.setHouseKeepingInterval(interval); // seconds
+//     _manager.removeEventListener(_listener);
+//     _manager.addEventListener(_listener);
+// _log.info("[1.2] foo");
+//     _manager.start();
+// _log.info("[2] foo");
+//     // set up test
+//     HttpSession session=_manager.newHttpSession();
+// _log.info("[2.1] foo");
+//     String key="foo";
+// _log.info("[2.2] foo");
+//     Object val=new Listener();
+// _log.info("[2.3] foo");
+//     session.setAttribute(key, val);
+// _log.info("[2.4] foo");
+//     _events.clear();
+// _log.info("[2.5] foo");
+
+//     // destroy session
+//     session.invalidate();
+// _log.info("[2.6] foo");
+//     Thread.sleep(2000*interval); //2*interval - millis
+// _log.info("[2.7] foo");
+
+//     {
+// _log.info("[2.8] foo");
+//       Pair pair=(Pair)_events.remove(0);
+// _log.info("[2.8.1] foo");
+//       assertTrue(pair!=null);
+// _log.info("[2.8.2] foo");
+//       assertTrue(pair.getType().equals("sessionDestroyed"));
+// _log.info("[2.8.3] foo");
+//       HttpSessionEvent e=pair.getEvent();
+// _log.info("[2.8.4] foo");
+//       assertTrue(session==e.getSession());
+// _log.info("[2.9] foo");
+//     }
+//     {
+// _log.info("[2.10] foo");
+//       Pair pair=(Pair)_events.remove(0);
+//       assertTrue(pair!=null);
+//       assertTrue(pair.getType().equals("valueUnbound"));
+//       HttpSessionEvent e=pair.getEvent();
+//       assertTrue(session==e.getSession());
+//       HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
+//       assertTrue(be.getName()==key);
+//       assertTrue(be.getValue()==val);
+// _log.info("[2.11] foo");
+//     }
+//     {
+// _log.info("[2.12] foo");
+//       Pair pair=(Pair)_events.remove(0);
+//       assertTrue(pair!=null);
+//       assertTrue(pair.getType().equals("attributeRemoved"));
+//       HttpSessionEvent e=pair.getEvent();
+//       assertTrue(session==e.getSession());
+//       HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
+//       assertTrue(be.getName()==key);
+//       assertTrue(be.getValue()==val);
+// _log.info("[2.13] foo");
+//     }
+//     assertTrue(_events.size()==0);
+
+//     _manager.stop();
+// _log.info("[3] foo");
+//     _manager.setHouseKeepingInterval(oldInterval);
+//     _manager.start();
+// _log.info("[4] foo");
+//   }
 
   public void
     testSetAttribute()
@@ -679,6 +702,8 @@ public class TestHttpSession
     HttpSessionImpl impl1=new HttpSessionImpl();
     String id="test-httpsession";
     impl1.init(null, id, System.currentTimeMillis(), 30*60, 30*60);
+    impl1.setWadiManager(_manager);
+    HttpSession s1=impl1.getFacade();
     List events=ActivationListener._events;
     events.clear();
 
@@ -687,20 +712,21 @@ public class TestHttpSession
     impl1.setAttribute(key, l, false);
 
     FilePassivationStrategy fmp=new FilePassivationStrategy(new File("/tmp"));
-    fmp.passivate(impl1);
+    assertTrue(fmp.passivate(impl1));
 
     // listener should now have been passivated
-    _log.info("SIZE: "+events.size());
     assertTrue(events.size()==1);
     {
       Pair pair=(Pair)events.remove(0);
       assertTrue(pair!=null);
       assertTrue(pair.getType().equals("sessionWillPassivate"));
       HttpSessionEvent e=pair.getEvent();
-      assertTrue(impl1==e.getSession());
+      assertTrue(s1==e.getSession());
     }
 
     HttpSessionImpl impl2=(HttpSessionImpl)fmp.activate(id);
+    impl2.setWadiManager(_manager);
+    HttpSession s2=impl2.getFacade();
     // listener should not have yet been activated (we do it lazily)
     assertTrue(events.size()==0);
     impl2.getAttribute(key);
@@ -711,10 +737,15 @@ public class TestHttpSession
       assertTrue(pair!=null);
       assertTrue(pair.getType().equals("sessionDidActivate"));
       HttpSessionEvent e=pair.getEvent();
-      assertTrue(impl1==e.getSession());
+      assertTrue(s2==e.getSession());
     }
+    assertTrue(events.size()==0);
 
-    //    assertTrue(impl1.equals(impl2));
+    assertTrue(s1.getValueNames().length==s2.getValueNames().length);
+    Enumeration e1=s1.getAttributeNames();
+    Enumeration e2=s2.getAttributeNames();
+    while (e1.hasMoreElements() && e2.hasMoreElements())
+      assertTrue(((String)e1.nextElement()).equals((String)e2.nextElement()));
   }
 
 //   public void
