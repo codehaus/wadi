@@ -425,14 +425,19 @@ public abstract class
 	SessionPool pool=getReadySessionPool();
 	Collection list=new LinkedList();
 	// load all sessions that have timed out and destroy them...
-	for (Iterator i=_passivationStrategy.findTimedOut(currentTime, list).iterator(); i.hasNext();)
+	Collection c=_passivationStrategy.findTimedOut(currentTime, list);
+	int n=c.size();
+	if (n>0)
 	{
-	  HttpSessionImpl impl=(HttpSessionImpl)pool.take();
-	  if (_passivationStrategy.activate((String)i.next(), impl))
-	    destroyHttpSession(impl);
+	  _log.trace("tidying up "+n+" sessions expired in long-term storage");
+	  for (Iterator i=c.iterator(); i.hasNext();)
+	  {
+	    HttpSessionImpl impl=(HttpSessionImpl)pool.take();
+	    if (_passivationStrategy.activate((String)i.next(), impl))
+	      destroyHttpSession(impl);
+	  }
+	  list.clear();		// could be reused on next iteration...
 	}
-	list.clear();		// could be reused on next iteration...
-
 	// we have now served a term - stand down...
 	_passivationStrategy.standDown();
       }
