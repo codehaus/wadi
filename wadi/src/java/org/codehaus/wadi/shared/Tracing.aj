@@ -32,7 +32,7 @@ public aspect Tracing
    //call(* EDU.oswego.cs.dl.util.concurrent.Sync.*(..)) ||
    //   call(* Manager.getFirstGet(..)) ||
    //   call(* Manager.setFirstGet(..))
-   call(* FOO.BAR(..))
+   within(Tracing)		// this will never be true
    )
     && !within(Tracing);
 
