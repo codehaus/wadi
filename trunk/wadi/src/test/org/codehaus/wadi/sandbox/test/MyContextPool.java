@@ -21,6 +21,11 @@ import org.codehaus.wadi.sandbox.ContextPool;
 
 
 public class MyContextPool implements ContextPool {
-	public void put(Context context){}
-	public Context take(){return new MyContext();}
+    public void put(Context context) {
+        // we are not going to bother to pool :-)
+    }
+    
+    public Context take() {
+        return new MyContext();
+    }
 }

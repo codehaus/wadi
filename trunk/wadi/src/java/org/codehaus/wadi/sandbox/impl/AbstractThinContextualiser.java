@@ -36,7 +36,9 @@ public abstract class AbstractThinContextualiser implements Contextualiser {
         _next=next;
     }
     
-    public void evict() {}
+    public void evict() {
+        // a 'Thin' Contextualiser caches no state...
+    }
 
     public Evicter getEvicter() {return _next.getEvicter();}
 

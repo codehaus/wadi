@@ -24,4 +24,5 @@ package org.codehaus.wadi.sandbox;
  */
 
 public interface Emoter extends Moter {
+    // no more methods, just a logical type
 }

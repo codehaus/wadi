@@ -119,5 +119,5 @@ public class ExclusiveDiscContextualiser extends AbstractCollapsingContextualise
 		}
 
 		public String getInfo(){return "exclusive disc";}
-	};
+	}
 }

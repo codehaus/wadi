@@ -16,14 +16,12 @@
  */
 package org.codehaus.wadi.sandbox.test;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Enumeration;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -57,26 +55,34 @@ public class TestJetty extends TestCase {
 	protected Servlet _servlet;
 
 	public class TestServlet implements Servlet {
-		public void init(ServletConfig config) throws ServletException {}
-		public ServletConfig getServletConfig() {return null;}
-		public String getServletInfo() {return null;}
-		public void destroy() {}
-
-		public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
-			HttpServletRequest hreq=(HttpServletRequest)req;
-			HttpServletResponse hres=(HttpServletResponse)res;
-			String name=hreq.getPathInfo();
-			name=name.substring(1, name.length());
-			_log.info("invoking: "+name);
-			Class[] argTypes=new Class[]{HttpServletRequest.class, HttpServletResponse.class};
-			Object[] argInstances=new Object[]{hreq, hres};
-			try {
-				TestJetty.class.getMethod(name, argTypes).invoke(TestJetty.this, argInstances);
-			} catch (Exception e) {
-				_log.error(e);
-				assertTrue(false);
-			}
-		}
+	    
+	    public void init(ServletConfig config) { 
+	        // nothing to do 
+	    }
+	    
+	    public ServletConfig getServletConfig() {return null;}
+	    
+	    public String getServletInfo() {return null;}
+	    
+	    public void destroy() {
+	        // nothing to do
+	    }
+	    
+	    public void service(ServletRequest req, ServletResponse res) {
+	        HttpServletRequest hreq=(HttpServletRequest)req;
+	        HttpServletResponse hres=(HttpServletResponse)res;
+	        String name=hreq.getPathInfo();
+	        name=name.substring(1, name.length());
+	        _log.info("invoking: "+name);
+	        Class[] argTypes=new Class[]{HttpServletRequest.class, HttpServletResponse.class};
+	        Object[] argInstances=new Object[]{hreq, hres};
+	        try {
+	            TestJetty.class.getMethod(name, argTypes).invoke(TestJetty.this, argInstances);
+	        } catch (Exception e) {
+	            _log.error(e);
+	            assertTrue(false);
+	        }
+	    }
 	}
 
 	/*

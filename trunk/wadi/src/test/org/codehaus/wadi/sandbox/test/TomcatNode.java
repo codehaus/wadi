@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.sandbox.test;
 
-import java.net.UnknownHostException;
 import java.util.regex.Pattern;
 
 import javax.servlet.Filter;
@@ -26,7 +25,6 @@ import javax.servlet.ServletException;
 import org.apache.catalina.Connector;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
-import org.apache.catalina.LifecycleException;
 import org.apache.catalina.core.FilterConfigHelper;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardWrapper;
@@ -56,7 +54,7 @@ public class TomcatNode implements Node {
 	/**
 	 *
 	 */
-	public TomcatNode(String name, String host, int port, String context, String webApp, Filter filter, Servlet servlet) throws LifecycleException,UnknownHostException {
+	public TomcatNode(String name, String host, int port, String context, String webApp, Filter filter, Servlet servlet) {
 		super();
 		// TODO Auto-generated method stub
 		String home="/usr/local/java/jakarta-tomcat-5.0.28";

@@ -24,5 +24,5 @@ package org.codehaus.wadi.sandbox;
  */
 
 public interface SessionRelocationStrategy extends RelocationStrategy {
-
+    // no new methods, just a logical type
 }

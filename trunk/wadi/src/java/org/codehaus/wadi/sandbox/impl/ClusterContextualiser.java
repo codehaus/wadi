@@ -204,7 +204,7 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 			// TODO - errr... HOW ?
 			}
 
-		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
+		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) {
 			// TODO
 			//contextualiseLocally(hreq, hres, chain, id, new ClusterImmoter(), new NullSync(), motable);
 		}

@@ -105,7 +105,7 @@ public class TestRelocation extends TestCase {
 	}
 
 	  class DummyRelocationStrategy implements RelocationStrategy {
-		public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {return false;}
+		public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) {return false;}
 		protected Contextualiser _top;
 		public void setTop(Contextualiser top) {_top=top;}
 		public Contextualiser getTop(){return _top;}
@@ -396,7 +396,7 @@ public class TestRelocation extends TestCase {
 				_stateful=false;
 			}
 		}
-	};
+	}
 
 	public void testRelocationStatelessContextualiser() throws Exception {
 		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_dispatcher0, _location0, 2000, 3000));

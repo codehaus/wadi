@@ -24,5 +24,5 @@ package org.codehaus.wadi.sandbox;
  */
 
 public interface RequestRelocationStrategy extends RelocationStrategy {
-
+    // no new methods, just a logical type
 }

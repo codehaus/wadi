@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Motable;
 
 /**
- * A Motable that represents its Bytes field as a row in a DataBase table.
+ * A Motable that represents its Bytes field as a row in a Shared DataBase table.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -79,13 +79,13 @@ public class SharedJDBCMotable extends AbstractMotable {
 				if (!motable.checkTimeframe(System.currentTimeMillis()))
 				    _log.warn("loaded session from the future!: "+id);
 				
-				_log.info("loaded (database): "+id);
+				_log.info("loaded (shared database): "+id);
 				return motable;
 			} else {
 				return null;
 			}
 		} catch (SQLException e) {
-			_log.warn("load (database) failed: "+id, e);
+			_log.warn("load (shared database) failed: "+id, e);
 			throw e;
 		} finally {
 			if (s!=null)
@@ -105,9 +105,9 @@ public class SharedJDBCMotable extends AbstractMotable {
 			ps.setInt(i++, motable.getMaxInactiveInterval());
 			ps.setObject(i++, motable.getBytes());
 			ps.executeUpdate();
-			_log.info("stored (database): "+id);
+			_log.info("stored (shared database): "+id);
 		} catch (SQLException e) {
-			_log.error("store (database) failed: "+id, e);
+			_log.error("store (shared database) failed: "+id, e);
 			throw e;
 		} finally {
 			if (ps!=null)
@@ -116,20 +116,22 @@ public class SharedJDBCMotable extends AbstractMotable {
 	}
 
 	protected static void remove(Connection connection, String table, Motable motable) {
-		String id=motable.getId();
-		Statement s=null;
-		try {
-			s=connection.createStatement();
-			s.executeUpdate("DELETE FROM "+table+" WHERE Id='"+id+"'");
-			_log.info("removed (database): "+id);
-		} catch (SQLException e) {
-			_log.error("remove (database) failed: "+id);
-		} finally {
-			try {
-			if (s!=null)
-				s.close();
-			} catch (SQLException e) {}
-		}
+	    String id=motable.getId();
+	    Statement s=null;
+	    try {
+	        s=connection.createStatement();
+	        s.executeUpdate("DELETE FROM "+table+" WHERE Id='"+id+"'");
+	        _log.info("removed (shared database): "+id);
+	    } catch (SQLException e) {
+	        _log.error("remove (shared database) failed: "+id);
+	    } finally {
+	        try {
+	            if (s!=null)
+	                s.close();
+	        } catch (SQLException e) {
+	            _log.warn("problem closing database connection", e);
+	        }
+	    }
 	}
 
 	public static void initialise(DataSource dataSource, String table) throws SQLException {

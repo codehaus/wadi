@@ -37,7 +37,7 @@ public class ServletInstance implements Servlet {
 	protected ServletConfig _config;
 	protected Servlet _instance;
 
-	public void init(ServletConfig config) throws ServletException {
+	public void init(ServletConfig config) {
 		_config=config;
 	}
 

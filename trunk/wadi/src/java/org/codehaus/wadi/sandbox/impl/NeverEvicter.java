@@ -16,13 +16,12 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.sandbox.Evictable;
-import org.codehaus.wadi.sandbox.Evicter;
-
 /**
  * An Evicter which never evicts (except explicitly invalidated sessions).
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class NeverEvicter extends AbstractEvicter {}
+public class NeverEvicter extends AbstractEvicter {
+    // just the same as superclass - just a more comprehensible name...
+}

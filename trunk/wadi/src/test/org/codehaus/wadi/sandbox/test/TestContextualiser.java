@@ -42,7 +42,6 @@ import org.codehaus.wadi.impl.GZIPStreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Context;
-import org.codehaus.wadi.sandbox.ContextPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evictable;
@@ -50,7 +49,6 @@ import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
-import org.codehaus.wadi.sandbox.ProxyingException;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.AbsoluteEvicter;
 import org.codehaus.wadi.sandbox.impl.AlwaysEvicter;
@@ -141,18 +139,11 @@ public class TestContextualiser extends TestCase {
 		// etc...
 	}
 
-	class MyContextPool implements ContextPool {
-		public void put(Context context){}
-		public Context take(){return new MyContext();}
-	}
-
 	class MyFilterChain
 	  implements FilterChain
 	{
 	  public void
-	    doFilter(ServletRequest request, ServletResponse response)
-	    throws IOException, ServletException
-	  {
+	    doFilter(ServletRequest request, ServletResponse response) {
 	    _log.info("invoking FilterChain...");
 	  }
 	}
@@ -220,70 +211,76 @@ public class TestContextualiser extends TestCase {
 }
 
 	class MyPromotingContextualiser implements Contextualiser {
-		int _counter=0;
-		MyContext _context;
-
-		public MyPromotingContextualiser(String context) {
-			_context=new MyContext(context, context);
-		}
-
-		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
-			_counter++;
-
-			Motable emotable=_context;
-			Emoter emoter=new EtherEmoter();
-			Motable immotable=Utils.mote(emoter, immoter, emotable, id);
-			if (immotable!=null) {
-				promotionLock.release();
-				immoter.contextualise(hreq, hres, chain, id, immotable);
-				return true;
-			} else {
-				return false;
-			}
-		}
-
-		public void evict(){}
-		public Evicter getEvicter(){return null;}
-
-		public boolean isLocal(){return false;}
-
-		public Immoter getDemoter(String id, Motable motable) {
-			return null;
-		}
+	    int _counter=0;
+	    MyContext _context;
+	    
+	    public MyPromotingContextualiser(String context) {
+	        _context=new MyContext(context, context);
+	    }
+	    
+	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
+	        _counter++;
+	        
+	        Motable emotable=_context;
+	        Emoter emoter=new EtherEmoter();
+	        Motable immotable=Utils.mote(emoter, immoter, emotable, id);
+	        if (immotable!=null) {
+	            promotionLock.release();
+	            immoter.contextualise(hreq, hres, chain, id, immotable);
+	            return true;
+	        } else {
+	            return false;
+	        }
+	    }
+	    
+	    public void evict() {
+	        // nothing to do...
+	    }
+	    
+	    public Evicter getEvicter(){return null;}
+	    
+	    public boolean isLocal(){return false;}
+	    
+	    public Immoter getDemoter(String id, Motable motable) {
+	        return null;
+	    }
 	}
 
 	class MyActiveContextualiser implements Contextualiser {
-		int _counter=0;
-		MyContext _context;
-
-		public MyActiveContextualiser(String context) {
-			_context=new MyContext(context, context);
-		}
-
-		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
-			_counter++;
-			Context context=_context;
-			Sync shared=context.getSharedLock();
-			try {
-				shared.acquire();
-				promotionLock.release();
-				_log.info("running locally: "+id);
-				chain.doFilter(hreq, hres);
-				shared.release();
-				return true;
-			} catch (InterruptedException e) {
-				throw new ServletException("problem processing request for: "+id, e);
-			}
-		}
-
-		public void evict(){}
-		public Evicter getEvicter(){return null;}
-
-		public boolean isLocal(){return false;}
-
-		public Immoter getDemoter(String id, Motable motable) {
-			return null;
-		}
+	    int _counter=0;
+	    MyContext _context;
+	    
+	    public MyActiveContextualiser(String context) {
+	        _context=new MyContext(context, context);
+	    }
+	    
+	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
+	        _counter++;
+	        Context context=_context;
+	        Sync shared=context.getSharedLock();
+	        try {
+	            shared.acquire();
+	            promotionLock.release();
+	            _log.info("running locally: "+id);
+	            chain.doFilter(hreq, hres);
+	            shared.release();
+	            return true;
+	        } catch (InterruptedException e) {
+	            throw new ServletException("problem processing request for: "+id, e);
+	        }
+	    }
+	    
+	    public void evict() {
+	        // nothing to do...
+	    }
+	    
+	    public Evicter getEvicter(){return null;}
+	    
+	    public boolean isLocal(){return false;}
+	    
+	    public Immoter getDemoter(String id, Motable motable) {
+	        return null;
+	    }
 	}
 
 	class MyRunnable implements Runnable {
@@ -415,7 +412,7 @@ public class TestContextualiser extends TestCase {
 
 	static class MyLocation extends SimpleEvictable implements Location, Serializable {
 
-		public void proxy(HttpServletRequest hreq, HttpServletResponse hres) throws ProxyingException {
+		public void proxy(HttpServletRequest hreq, HttpServletResponse hres) {
 			System.out.println("PROXYING");
 		}
 

@@ -16,10 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import java.io.IOException;
-
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -49,13 +46,13 @@ public class DummyContextualiser implements Contextualiser {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
-	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres,
-			FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly)
-			throws IOException, ServletException {
+	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) {
 		return false;
 	}
 
-	public void evict(){}
+	public void evict(){
+	    // we carry no state...
+	    }
 	
 	protected final Evicter _evicter=new NeverEvicter();
 	public Evicter getEvicter(){return _evicter;}
@@ -67,9 +64,18 @@ public class DummyContextualiser implements Contextualiser {
 		public String getInfo(){return "dummy";}
 
 		public boolean prepare(String id, Motable emotable, Motable immotable) {return true;}
-		public void commit(String id, Motable immotable) {}
-		public void rollback(String id, Motable immotable) {}
-		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {}
+		
+		public void commit(String id, Motable immotable) {
+		    // throw away incoming state...
+		    }
+		
+		public void rollback(String id, Motable immotable) {
+		    // nothing to do...
+		    }
+		
+		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) {
+		    // nothing to do...
+		    }
 	}
 	
 	protected final Immoter _immoter=new DummyImmoter();

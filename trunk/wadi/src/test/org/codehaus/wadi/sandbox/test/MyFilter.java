@@ -40,7 +40,7 @@ public class MyFilter implements Filter {
 		_servlet=servlet;
 	}
 
-	public void init(FilterConfig config) throws ServletException {
+	public void init(FilterConfig config) {
 		_log.info("Filter.init()");
 	}
 
@@ -65,7 +65,9 @@ public class MyFilter implements Filter {
 		}
 	}
 
-	public void destroy() {}
+	public void destroy() {
+	    // can't be bothered...
+	    }
 
 	protected boolean _localOnly=false;
 	public void setLocalOnly(boolean localOnly){_localOnly=localOnly;}
