@@ -189,7 +189,7 @@ public abstract class
   }
 
   public void
-    readContent(java.io.ObjectInputStream is)
+    readContent(java.io.ObjectInput is)
     throws java.io.IOException, ClassNotFoundException
   {
     _id                        =(String)is.readObject();
@@ -208,7 +208,7 @@ public abstract class
   }
 
   public void
-    writeContent(java.io.ObjectOutputStream os)
+    writeContent(java.io.ObjectOutput os)
     throws java.io.IOException, ClassNotFoundException
   {
     os.writeObject(_id);

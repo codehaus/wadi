@@ -22,8 +22,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.shared.HttpSessionImpl;
 import org.codehaus.wadi.shared.PassivationStrategy;
+import org.codehaus.wadi.shared.StreamingStrategy;
 
 // TODO - should use NIO all the way through. Sessions should be
 // written into a byte[] that is just stuck on the Channel etc... This
@@ -95,7 +96,6 @@ public class
   implements PassivationStrategy
 {
   protected final Log      _log    =LogFactory.getLog(getClass());
-  protected final String   _suffix =".ser";
   protected final File     _dir;
   protected final File     _dgcFile;
   protected       FileLock _dgcLock;
@@ -131,10 +131,10 @@ public class
       FileLock lock=null;
       try
       {
-	file=new File(_dir, id+_suffix);
+	file=new File(_dir, id+"."+_streamingStrategy.getSuffix());
 	FileOutputStream fos=new FileOutputStream(file);
 	lock=fos.getChannel().lock();
-	ObjectOutputStream oos=new ObjectOutputStream(fos);
+	ObjectOutput oos=_streamingStrategy.getOutputStream(fos);
 	impl.writeContent(oos);
 	oos.flush();
 	oos.close();
@@ -169,7 +169,7 @@ public class
       RandomAccessFile raf=null;
       try
       {
-	file=new File(_dir, id+_suffix);
+	file=new File(_dir, id+"."+_streamingStrategy.getSuffix());
 	// quick exit - saves expensive allocation and stack unwinding
 	// if file not present..
 	if (!file.exists())
@@ -182,7 +182,7 @@ public class
 	    raf=new RandomAccessFile(file, "rw");
 	    lock=raf.getChannel().lock();
 	    FileInputStream fis=new FileInputStream(file);
-	    ObjectInputStream ois=new ObjectInputStream(fis);
+	    ObjectInput ois=_streamingStrategy.getInputStream(fis);
 	    impl.readContent(ois);
 	    ois.close();
 	    _log.debug(impl.getId()+": immigration (file: "+file.toString()+")");
@@ -234,7 +234,7 @@ public class
     {
       // TODO - if a number of nodes all do this at the same time,
       // things will get tricky - consider...
-      int suffixLen=_suffix.length();
+      int suffixLen=_streamingStrategy.getSuffix().length()+1;
       File[] files=_dir.listFiles();
       if (files!=null)
 	for (int i=0;i<files.length;i++)
@@ -312,4 +312,8 @@ public class
 	_log.warn("problem releasing distributed garbage collection lock", e);
       }
     }
+
+  protected StreamingStrategy _streamingStrategy=new SimpleStreamingStrategy();
+  public StreamingStrategy getStreamingStrategy(){return _streamingStrategy;}
+  public void setStreamingStrategy(StreamingStrategy streamingStrategy){_streamingStrategy=streamingStrategy;}
 }

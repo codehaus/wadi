@@ -69,4 +69,7 @@ public interface
    * Resign from the role of Distributed Garbage Collector.
    */
   void standDown();
+
+  StreamingStrategy getStreamingStrategy();
+  void setStreamingStrategy(StreamingStrategy streamingStrategy);
 }
