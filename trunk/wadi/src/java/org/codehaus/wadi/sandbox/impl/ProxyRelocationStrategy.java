@@ -45,7 +45,7 @@ import org.codehaus.wadi.sandbox.RequestRelocationStrategy;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * Relocate the request to it's state, by proxying it to another node
+ * Relocate the request to its state, by proxying it to another node
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

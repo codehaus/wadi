@@ -31,7 +31,7 @@ import org.codehaus.wadi.sandbox.RequestRelocationStrategy;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * Relocate the request to it's state, by redirecting it to another node.
+ * Relocate the request to its state, by redirecting it to another node.
  * This is only possible if, for example, the load balancer is using routing information
  * to decide which node to dispatch stateful requests to. If this is the case, we may be
  * able rewrite this to achieve our desired effect.

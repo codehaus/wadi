@@ -521,8 +521,8 @@ public abstract class
     }
   }
 
-  // Tomcat will run this as it's backgroundProcess() - I assume with the correct CCL?
-  // Jetty's SessionManager will manage it as part of it's lifecycle.
+  // Tomcat will run this as its backgroundProcess() - I assume with the correct CCL?
+  // Jetty's SessionManager will manage it as part of its lifecycle.
 
   /**
    * Called periodically to do the housekeeping (session invalidation,

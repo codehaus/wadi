@@ -39,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
 
 // TODO - if we were not accepting sessions, we would need to know if
 // an accessible session was local or evicted, so that we could proxy
-// the request and force it's loading in another container...
+// the request and force its loading in another container...
 
 // TODO - if we wanted to spill a few sessions we could wait for them
 // to become free, evict them and then proxy subsequent requests until

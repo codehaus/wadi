@@ -31,7 +31,7 @@ import org.codehaus.wadi.impl.NoRoutingStrategy;
 // TODO - should these be cached ?
 
 // TODO - should this be returned as a serialised object from the
-// remote server or constructed from a String returned as it's
+// remote server or constructed from a String returned as its
 // response ? String is more secure - we are not running code that has
 // come over the wire...
 
