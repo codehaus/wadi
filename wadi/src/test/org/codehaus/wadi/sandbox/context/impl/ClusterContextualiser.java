@@ -262,6 +262,9 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 						location=response.getLocation();
 						Set ids=response.getIds();
 						// update cache
+						// TODO - do we need to considering NOT putting any location that is the same ours into the map
+						// otherwise we may end up in a tight loop proxying to ourself... - could this happen ?gramps
+						
 						for (Iterator i=ids.iterator(); i.hasNext();) {
 							String tmp=(String)i.next();
 							_map.put(tmp, location);
