@@ -19,7 +19,6 @@ package org.codehaus.wadi.tomcat;
 
 import java.security.Principal;
 import java.util.Iterator;
-import org.apache.catalina.Manager;
 import org.apache.catalina.SessionListener;
 
 import java.util.Collections;

@@ -107,7 +107,7 @@ public class
  	catch (InterruptedException e)
  	{
 	  // someone wants us to exit quickly...
-	  Thread.currentThread().interrupted();
+	  Thread.interrupted();
 	  _log.trace("housekeeper thread interrupted");
  	}
       }
