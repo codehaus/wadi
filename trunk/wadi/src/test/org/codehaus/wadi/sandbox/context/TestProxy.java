@@ -102,5 +102,49 @@ public class TestProxy extends TestServlet{
 		// assertTrue(direct.equals(proxied));
 		//		Thread.sleep(60*1000);
 	}
+	
+	public void testRegexps() {
+		HttpProxy proxy=new StandardHttpProxy();
+		
+		org.codehaus.wadi.test.container.HttpServletRequest hreq=new org.codehaus.wadi.test.container.HttpServletRequest();
+		hreq.setScheme("http");
+		assertTrue(proxy.canProxy(hreq));
+		hreq.setScheme("HTTP");
+		assertTrue(proxy.canProxy(hreq));
+		hreq.setScheme("https");
+		assertTrue(!proxy.canProxy(hreq));
+		hreq.setScheme("HTTPS");
+		assertTrue(!proxy.canProxy(hreq));
+		
+//		hreq.setRequestedSessionId(null);
+		hreq.setMethod("GET");
+		hreq.setRequestURI("/foo/bar");
+//		assertTrue(!proxy.isStateful(hreq));
+		
+		hreq.setRequestedSessionId("xxx");
+		assertTrue(proxy.isStateful(hreq));
+		
+		hreq.setMethod("POST");
+		assertTrue(proxy.isStateful(hreq));
+		hreq.setMethod("get");
+		assertTrue(proxy.isStateful(hreq));
+		hreq.setMethod("post");
+		assertTrue(proxy.isStateful(hreq));
+		hreq.setMethod("CONNECT");
+		assertTrue(!proxy.isStateful(hreq));
+		
+		hreq.setMethod("GET");
+		hreq.setRequestURI("/foo/bar.gif");
+		assertTrue(!proxy.isStateful(hreq));
+		
+		hreq.setRequestURI("/search/search.dll.ico");
+		assertTrue(!proxy.isStateful(hreq));
+		hreq.setRequestURI("/cosnell_W0QQfsopZ1QQftsZ2QQsaatcZ3QQsatitleZQ22cosnellQ22.JPEG");
+		assertTrue(!proxy.isStateful(hreq));
+		hreq.setRequestURI("/cgi-bin/honesty-counter.cgi.PNg");
+		assertTrue(!proxy.isStateful(hreq));
+		hreq.setRequestURI("viewad/817-grey.gif");
+		assertTrue(!proxy.isStateful(hreq));
+	}
 
 }

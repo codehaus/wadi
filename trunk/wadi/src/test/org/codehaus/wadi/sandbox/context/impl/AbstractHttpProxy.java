@@ -21,9 +21,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
@@ -70,6 +72,30 @@ import org.codehaus.wadi.sandbox.context.HttpProxy;
  */
 public abstract class AbstractHttpProxy implements HttpProxy {
 
+	// proxyable
+	protected final Pattern _proxyableSchemes=Pattern.compile("HTTP", Pattern.CASE_INSENSITIVE);
+
+	public boolean canProxy(ServletRequest req) {
+		String scheme=req.getScheme();
+		return _proxyableSchemes.matcher(scheme).matches();
+	}
+
+	// stateful
+	protected final Pattern _statefulMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE); // TODO - |HEAD|PUT|DELETE
+	protected final Pattern _statelessURIs=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)", Pattern.CASE_INSENSITIVE); // TODO - CSS, ...?
+
+	public boolean isStateful(HttpServletRequest hreq) {
+//		if (hreq.getRequestedSessionId()==null) // TODO - do we need this test here...
+//			return false;
+		if (!_statefulMethods.matcher(hreq.getMethod()).matches())
+			return false;
+		if (_statelessURIs.matcher(hreq.getRequestURI()).matches())
+			return false;
+		
+		// we have done our best to eliminate it, but it may be stateful...
+		return true;
+	}
+	
 	/**
 	 *
 	 */

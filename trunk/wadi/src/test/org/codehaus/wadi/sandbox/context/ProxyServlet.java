@@ -18,7 +18,6 @@ package org.codehaus.wadi.sandbox.context;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.regex.Pattern;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -59,28 +58,20 @@ public class ProxyServlet implements Servlet {
 		return _config;
 	}
 
-	// proxyable
-	protected final Pattern _schemes=Pattern.compile("http");
-
-	// stateless
-	protected final Pattern _methods=Pattern.compile("GET|POST");
-//	protected final Pattern _paths=Pattern.compile("*");
-
 	public void service(ServletRequest req, ServletResponse res)
 	throws ServletException, IOException {
 
-		String scheme=req.getScheme();
-		if (!_schemes.matcher(scheme).matches()) {
-			_log.warn("scheme not proxyable: "+scheme);
+		HttpServletRequest hreq=(HttpServletRequest)req;
+
+		if (!_proxy.canProxy(req)) {
+			_log.info("request not proxyable: "+hreq.getRequestURL());
+			// so we can't do anything about it...
 			return;
 		}
 
-		HttpServletRequest hreq=(HttpServletRequest)req;
-
-		String method=hreq.getMethod();
-		if (!_methods.matcher(method).matches()) {
-			_log.warn("method not stateful: "+method);
-			return;
+		if (!_proxy.isStateful(hreq)) {
+			_log.warn("request not stateful: "+hreq.getMethod()+" - "+hreq.getRequestURI());
+			// still needs to be proxied as we don't have the webapp here...
 		}
 
 		String uri=hreq.getRequestURI();
@@ -88,9 +79,9 @@ public class ProxyServlet implements Servlet {
 		if (qs!=null) {
 			uri=new StringBuffer(uri).append("?").append(qs).toString();
 		}
-		assert req.getScheme().equalsIgnoreCase("http");
+
 		URL url=new URL(req.getScheme(), req.getServerName(), req.getServerPort(), uri);
-		_proxy.proxy(req, res, url);
+		_proxy.proxy(req, res, url); // TODO - why a URL - expensive...
 	}
 
 	public String getServletInfo() {
