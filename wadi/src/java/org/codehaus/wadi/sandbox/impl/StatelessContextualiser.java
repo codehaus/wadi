@@ -122,12 +122,12 @@ public class StatelessContextualiser implements Contextualiser {
 	}
 
 	/**
-	 * We know request is stateful - if :
-	 *  either Pattern matches stateFULL requests AND match succeeded
-	 *  or Pattern matches stateLESS requests AND matched failed
+	 * We know request is stateful - if, either Pattern matches
+	 * stateFULL requests AND match succeeded, or Pattern matches
+	 * stateLESS requests AND matched failed
 	 *
 	 * @param hreq
-	 * @return
+	 * @return - whether, or not, the request must be assumed stateful
 	 */
 	public boolean isStateful(HttpServletRequest hreq) {
 		// TODO - should the order of matching be configurable ?

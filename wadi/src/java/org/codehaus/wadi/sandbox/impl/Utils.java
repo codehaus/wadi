@@ -33,7 +33,7 @@ public class Utils {
 	protected static final Log _log=LogFactory.getLog(Utils.class);
 
 	/**
-	 * Mote (i.e. move) the data held in a Motable from one Contextualiser to another, such
+	 * Mote (in other words - move) the data held in a Motable from one Contextualiser to another, such
 	 * that if the two Contextualisers store Motables in a persistant fashion, the data is never
 	 * present in less than one of the two.
 	 *
@@ -41,7 +41,7 @@ public class Utils {
 	 * @param immoter - delegate for the target Contextualiser
 	 * @param emotable - data to be moved
 	 * @param id - the id of said data
-	 * @return - the resulting immotable - i.e. the datas new representation in the target Contextualiser
+	 * @return - the resulting immotable - in other words - the data's new representation in the target Contextualiser
 	 */
 	public static Motable mote(Emoter emoter, Immoter immoter, Motable emotable, String id) {
 		long startTime=System.currentTimeMillis();

@@ -31,11 +31,12 @@ import javax.servlet.http.HttpSession;
 /**
  * Since HttpServletRequestWrapper insists on having a valid delegate at
  * all times, we need a dummy to use in our cached ThreadLocal whilst it is
- * not being used... - yeugh !
+ * not being used - yeugh !
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
+
 public class DummyHttpServletRequest implements HttpServletRequest {
 	protected static final RuntimeException _exception=new UnsupportedOperationException();
 

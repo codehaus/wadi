@@ -83,7 +83,7 @@ public class MessageDispatcher implements MessageListener {
 	/**
 	 * @param target - the object on which to dispatch messages
 	 * @param methodName - the name of the overloaded method to call
-	 * @return
+	 * @return - the number of methods registered
 	 */
 	public int register(Object target, String methodName) {
 		// TODO - allow multiple registrations for same message type ?
