@@ -53,10 +53,10 @@ public class TestTomcat extends TestCase {
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
 		_servlet0=new MyServlet("0", clusterFactory.createCluster(clusterName), new InetSocketAddress("localhost", 8080), new MyContextPool());
 		_filter0=new MyFilter("0", _servlet0);
-		(_node0=new TomcatNode("0", "localhost", 8080, "/test", "/*", _filter0, _servlet0)).start();
+		(_node0=new TomcatNode("0", "localhost", 8080, "/test", "/home/jules/workspace/wadi/webapps/test", _filter0, _servlet0)).start();
 //		_servlet1=new MyServlet("1", clusterFactory.createCluster(clusterName), new InetSocketAddress("localhost", 8081), new MyContextPool());
 //		_filter1=new MyFilter("1", _servlet1);
-//		(_node1=new TomcatNode("1", "localhost", 8081, "/test", "/*", _filter1, _servlet1)).start();
+//		(_node1=new TomcatNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
 	    }
 
 	/*
@@ -79,5 +79,7 @@ public class TestTomcat extends TestCase {
 	public void testTomcat() throws Exception {
 		assertTrue(true);
 //	    Thread.sleep(30000);
+		_node0.getFilter();
+		_node0.getServlet();
 	}
 }
