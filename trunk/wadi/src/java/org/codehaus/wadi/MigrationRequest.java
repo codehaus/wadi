@@ -70,7 +70,7 @@ public abstract class MigrationRequest
 	  long elapsed=System.currentTimeMillis()-start;
 	  if (impl.getRealId()==null)
 	  {
-	    _log.warn(_id+": session disappeared whilst we were waiting for emmigration lock ("+elapsed+"/"+_timeout+" millis elapsed) - forwarding");
+	    _log.info(_id+": session disappeared whilst we were waiting for emmigration lock ("+elapsed+"/"+_timeout+" millis elapsed) - forwarding");
 
 	    // 3 possibilities..
 

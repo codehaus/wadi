@@ -21,7 +21,9 @@ import java.io.Serializable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionContext;
 import org.codehaus.wadi.Filter;
+import org.mortbay.jetty.servlet.FilterHolder;
 import org.mortbay.jetty.servlet.ServletHandler;
+import org.mortbay.jetty.servlet.SessionManager;
 import org.mortbay.jetty.servlet.WebApplicationContext;
 import org.mortbay.jetty.servlet.WebApplicationHandler;
 
@@ -36,7 +38,7 @@ import org.mortbay.jetty.servlet.WebApplicationHandler;
 public class
   Manager
   extends org.codehaus.wadi.Manager
-  implements org.mortbay.jetty.servlet.SessionManager, Serializable
+  implements SessionManager, Serializable
 {
   //----------------//
   // SessionManager //
@@ -58,12 +60,10 @@ public class
     return acquireImpl(this).getFacade();
   }
 
-  protected boolean _reuseIds=false; // TODO - make this explicit
-
   public javax.servlet.http.HttpSession
     newHttpSession(HttpServletRequest request)
   {
-    return acquireImpl(this, _reuseIds?getRoutingStrategy().strip(request.getRequestedSessionId()):null).getFacade();
+    return acquireImpl(this, _useRequestedId?getRoutingStrategy().strip(request.getRequestedSessionId()):null).getFacade();
   }
 
   //-----------//
@@ -116,7 +116,9 @@ public class
     setServletHandler(handler);
     String filterName="WadiFilter";
     _handler.defineFilter(filterName, Filter.class.getName());
-    _handler.mapPathToFilter("/*", filterName); // TODO - improve mapping, all 'stateful' servlets/filters
+    _handler.addFilterPathMapping("/*", filterName,
+				  FilterHolder.__REQUEST | FilterHolder.__FORWARD | FilterHolder.__INCLUDE | FilterHolder.__ERROR
+				  ); // TODO - improve mapping, all 'stateful' servlets/filters
 
     _context=(WebApplicationContext)_handler.getHttpContext();
     boolean distributable=_context.isDistributable();
@@ -222,4 +224,50 @@ public class
   public int getHttpPort(){return Integer.parseInt(System.getProperty("http.port"));} // TODO - temporary hack...
 
   public HttpSessionContext getSessionContext() {return org.mortbay.jetty.servlet.SessionContext.NULL_IMPL;}
+
+  // cut-n-pasted from Jetty src - aarg !
+  // Greg uses Apache-2.0 as well - so no licensing issue as yet - TODO
+
+  public javax.servlet.http.Cookie
+    getSessionCookie(javax.servlet.http.HttpSession session,boolean requestIsSecure)
+  {
+    if (_handler.isUsingCookies())
+    {
+      javax.servlet.http.Cookie cookie = _handler.getSessionManager().getHttpOnly()
+	?new org.mortbay.http.HttpOnlyCookie(SessionManager.__SessionCookie,session.getId())
+	:new javax.servlet.http.Cookie(SessionManager.__SessionCookie,session.getId());
+      String domain=_handler.getServletContext().getInitParameter(SessionManager.__SessionDomain);
+      String maxAge=_handler.getServletContext().getInitParameter(SessionManager.__MaxAge);
+      String path=_handler.getServletContext().getInitParameter(SessionManager.__SessionPath);
+      if (path==null)
+	path=getUseRequestedId()?"/":_handler.getHttpContext().getContextPath();
+      if (path==null || path.length()==0)
+	path="/";
+
+      if (domain!=null)
+	cookie.setDomain(domain);
+      if (maxAge!=null)
+	cookie.setMaxAge(Integer.parseInt(maxAge));
+      else
+	cookie.setMaxAge(-1);
+
+      cookie.setSecure(requestIsSecure && getSecureCookies());
+      cookie.setPath(path);
+
+      return cookie;
+    }
+    return null;
+  }
+
+  protected boolean _httpOnly=true;
+  public boolean getHttpOnly() {return _httpOnly;}
+  public void setHttpOnly(boolean httpOnly) {_httpOnly=httpOnly;}
+
+  protected boolean _secureCookies=false;
+  public boolean getSecureCookies() {return _secureCookies;}
+  public void setSecureCookies(boolean secureCookies) {_secureCookies=secureCookies;}
+
+  protected boolean _useRequestedId=false;
+  public boolean getUseRequestedId() {return _useRequestedId;}
+  public void setUseRequestedId(boolean useRequestedId) {_useRequestedId=useRequestedId;}
 }

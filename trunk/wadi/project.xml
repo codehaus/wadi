@@ -188,7 +188,7 @@
     <dependency>
       <groupId>aspectj</groupId>
       <artifactId>aspectjrt</artifactId>
-      <version>1.2</version>
+      <version>1.2.1</version>
       <properties>
         <classloader>root</classloader>
       </properties>
@@ -202,10 +202,10 @@
       </properties>
     </dependency>
 
-    <dependency><!-- when will ibiblio be updated ? -->
+    <dependency>
       <groupId>aspectj</groupId>
       <artifactId>aspectjtools</artifactId>
-      <version>1.2</version>
+      <version>1.2.1</version>
       <properties>
         <classloader>root</classloader>
       </properties>
@@ -223,7 +223,7 @@
     <dependency>
       <groupId>concurrent</groupId>
       <artifactId>concurrent</artifactId>
-      <version>1.3.3</version>
+      <version>1.3.4</version>
       <url>http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html</url>
       <properties>
 	<war.bundle>true</war.bundle>
@@ -236,14 +236,14 @@
 
     <dependency>
       <id>commons-logging</id>
-      <version>1.0.3</version>
+      <version>1.0.4</version>
       <url>http://jakarta.apache.org/commons/logging/</url>
       <javadoc>http://jakarta.apache.org/commons/logging/apidocs</javadoc>
     </dependency>
 
     <dependency>
       <id>commons-httpclient</id>
-      <version>2.0</version>
+      <version>2.0.2</version>
       <url>http://jakarta.apache.org/commons/httpclient/</url>
       <properties>
 	<war.bundle>true</war.bundle>
@@ -257,7 +257,7 @@
     <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-servlet</artifactId>
-      <version>1.0-M1</version>
+      <version>2.4-rc2</version>
       <url>http://geronimo.apache.org</url>
       <javadoc>http://geronimo.apache.org/specs/servlet/apidocs</javadoc>
     </dependency>
@@ -265,7 +265,7 @@
     <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-j2ee-management</artifactId>
-      <version>1.0-M1</version>
+      <version>1.0-rc2</version>
       <url>http://geronimo.apache.org</url>
       <javadoc>http://geronimo.apache.org/specs/j2ee-management/apidocs</javadoc>
     </dependency>
@@ -273,7 +273,7 @@
     <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-jms</artifactId>
-      <version>1.0-M1</version>
+      <version>1.1-rc2</version>
       <url>http://geronimo.apache.org</url>
       <javadoc>http://geronimo.apache.org/specs/jms/apidocs</javadoc>
     </dependency>
@@ -289,7 +289,7 @@
     <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jetty</artifactId>
-      <version>5.0.RC2</version>
+      <version>5.1.1</version>
       <url>http://jetty.mortbay.org/jetty</url>
       <javadoc>http://jetty.mortbay.org/javadoc</javadoc>
     </dependency>
@@ -297,7 +297,7 @@
     <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jmx</artifactId>
-      <version>5.0.RC2</version>
+      <version>5.1.1</version>
       <url>http://jetty.mortbay.org/jetty</url>
       <javadoc>http://jetty.mortbay.org/javadoc</javadoc>
     </dependency>
@@ -313,7 +313,7 @@
     <dependency>
       <groupId>activemq</groupId>
       <artifactId>activemq</artifactId>
-      <version>1.2-SNAPSHOT</version>
+      <version>1.2</version>
       <url>http://activemq.codehaus.org</url>
       <javadoc>http://activemq.codehaus.org/maven/apidocs</javadoc>
       <properties>

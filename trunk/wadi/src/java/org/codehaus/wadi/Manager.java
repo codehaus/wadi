@@ -199,6 +199,10 @@ public abstract class
     // same session into one immigration...
     synchronized (_localLock)
     {
+      // TODO - we need a more efficient locking mechanism here - we
+      // should be able to release the collapsing lock as soon as we
+      // have found the session, without waiting to acquire its
+      // lock...
       if ((impl=getLocalSession(realId))!=null)
       {
 	// session already local - return it...
@@ -211,6 +215,13 @@ public abstract class
 	  return impl;
 	else
 	  return null;
+
+	// TODO - wee need to be able to indicate the difference
+	// between a session that disappeared as we were trying to
+	// gain a lock on it (i.e. we know existed until very
+	// recently) and a session which did not exist locally at the
+	// time of the test (i.e. may not have existed for some time,
+	// if ever). Think...
       }
       else
       {
@@ -219,21 +230,7 @@ public abstract class
 	// into local table as a placeholder.
 	impl=createImpl();
 	impl.setWadiManager(this);
-
-	boolean locked=false;
-	while (!locked)
-	{
-	  try
-	  {
-	    impl.getContainerLock().acquire();
-	    locked=true;
-	  }
-	  catch (InterruptedException e)
-	  {
-	    _log.warn("interrupted whilst acquiring wlock on placeholder session");
-	  }
-	}
-
+	impl.acquireContainerLock();
 	_local.put(realId, impl);
       }
     }
@@ -1119,6 +1116,7 @@ public abstract class
     public void onNodeUpdate(ClusterEvent event){_log.info("node updated");}
     public void onNodeRemoved(ClusterEvent event){_log.info("node removed");}
     public void onNodeFailed(ClusterEvent event){_log.info("node failed");}
+    public void onCoordinatorChanged(ClusterEvent event){_log.info("coordinator changed");}
   }
 
   //----------------------------------------
@@ -1126,4 +1124,10 @@ public abstract class
   protected ThreadLocal _inside=new ThreadLocal() {protected synchronized Object initialValue() {return Boolean.FALSE;}};
   public void setInside(boolean b){_inside.set(b?Boolean.TRUE:Boolean.FALSE);}
   public boolean getInside(){return ((Boolean)_inside.get()).booleanValue();}
+
+  //----------------------------------------
+
+  protected int _immigrationAttemptCount=9;
+  public void setImmigrationAttemptCount(int n){_immigrationAttemptCount=n;}
+  public int getImmigrationAttemptCount(){return _immigrationAttemptCount;}
 }

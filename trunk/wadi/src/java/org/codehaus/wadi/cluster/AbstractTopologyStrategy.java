@@ -96,6 +96,7 @@ public abstract class
     Object[] diffs=combineCollection(p);
   }
 
+  public void onCoordinatorChanged(ClusterEvent ce){} // TODO - what does thi mean ?
   public void onNodeFailed(ClusterEvent event){onNodeRemoved(event);}
   public void
     onNodeRemoved(ClusterEvent event)

@@ -15,7 +15,7 @@ shift
 
 XTERM=`eval "echo $XTERM"`
 
-JAVA_OPTS="-enablesystemassertions $JAVA_OPTS"
+JAVA_OPTS="-Xmx512m -enablesystemassertions $JAVA_OPTS"
 
 WADI_HOME=`pwd`/..
 JAVA=$JAVA_HOME/bin/java
@@ -38,7 +38,8 @@ properties="$properties \
 -Dorg.apache.commons.logging.simplelog.log.org=info \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.activecluster=warn \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.activemq=warn \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=info \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.AsyncToSyncAdaptorXXX=trace \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=error \
 -Dorg.apache.commons.logging.simplelog.showShortLogname=true \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
 "
@@ -46,7 +47,6 @@ properties="$properties \
 if [ jettyold = "$container" ]
 then
     cd $JETTY_HOME
-    exec \
     $XTERM $JAVA $properties -cp $WADI_HOME/WEB-INF/classes $JAVA_OPTS -jar start.jar $WADI_HOME/conf/jetty.xml
 fi
 
@@ -54,7 +54,7 @@ if [ jetty = "$container" ]
 then
     cd $JETTY_HOME
     classpath=`find lib ext $WADI_HOME/WEB-INF/lib -name "*.jar" | tr '\n' ':'`./start.jar:$JAVA_HOME/lib/tools.jar:$WADI_HOME/WEB-INF/classes
-    exec $XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.mortbay.jetty.Server $WADI_HOME/conf/jetty.xml
+    $XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.mortbay.jetty.Server $WADI_HOME/conf/jetty.xml
 fi
 
 if [ tomcat = "$container" ]
@@ -62,5 +62,5 @@ then
     cd $TOMCAT_HOME/bin
     properties="-Djava.endorsed.dirs=$TOMCAT_HOME/common/endorsed -Dcatalina.base=$TOMCAT_HOME -Dcatalina.home=$TOMCAT_HOME -Djava.io.tmpdir=$TOMCAT_HOME/temp $properties"
     classpath=`find $TOMCAT_HOME/. $WADI_HOME/lib $WADI_HOME/WEB-INF/lib $JETTY_HOME/lib/org.mortbay.jetty.jar $JAVA_HOME/lib/tools.jar -name "*.jar" | tr '\n' ':'`:$WADI_HOME/WEB-INF/classes
-    exec $XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.apache.catalina.startup.Bootstrap -config $WADI_HOME/conf/tomcat.xml start
+    $XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.apache.catalina.startup.Bootstrap -config $WADI_HOME/conf/tomcat.xml start
 fi
