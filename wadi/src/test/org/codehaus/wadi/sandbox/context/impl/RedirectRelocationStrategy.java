@@ -26,17 +26,17 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Promoter;
-import org.codehaus.wadi.sandbox.context.RelocationStrategy;
+import org.codehaus.wadi.sandbox.context.RequestRelocationStrategy;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * Combine various RelocationStrategies to produce a cleverer one
+ * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class HybridRelocationStrategy implements RelocationStrategy {
+public class RedirectRelocationStrategy implements RequestRelocationStrategy {
 
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.RelocationStrategy#relocate(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync, java.util.Map)
