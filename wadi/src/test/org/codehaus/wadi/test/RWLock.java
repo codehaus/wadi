@@ -41,31 +41,21 @@ package org.codehaus.wadi.test;
 
 // Doug's code is under whatever license he chose, mine is under ASF2
 
+// TODO
+
+// remember and sort witing writers by priority
+// allow r->w overlap (releasing r included in race for w-lock)
+// switch to r preference
+
 import EDU.oswego.cs.dl.util.concurrent.*;
 
-import java.util.TreeMap;
-import java.util.Comparator;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-public class
-  RWLock
-  implements ReadWriteLock
-{
-  protected Log _log=LogFactory.getLog(getClass());
-  protected TreeMap _waitingWriters=new TreeMap(new Comparator()
-    {
-      public int
-	compare(Object o1, Object o2)
-      {
-	return ((Thread)o2).getPriority()-((Thread)o1).getPriority();
-      }
-    });
+public class RWLock implements ReadWriteLock {
 
   protected long activeReaders_ = 0; 
   protected Thread activeWriter_ = null;
-  protected Object _activeWriterLock = null;
   protected long waitingReaders_ = 0;
+  protected long waitingWriters_ = 0;
+
 
   protected final ReaderLock readerLock_ = new ReaderLock();
   protected final WriterLock writerLock_ = new WriterLock();
@@ -81,20 +71,12 @@ public class
 
 
   protected synchronized void cancelledWaitingReader() { --waitingReaders_; }
-
-  protected void
-    cancelledWaitingWriter(Object lock)
-    {
-      Object tmp=null;
-      Thread t=Thread.currentThread();
-      synchronized(_waitingWriters) {tmp=_waitingWriters.remove(t);}
-      assert tmp==lock;
-    }
+  protected synchronized void cancelledWaitingWriter() { --waitingWriters_; }
 
 
   /** Override this method to change to reader preference **/
   protected boolean allowReader() {
-    return activeWriter_ == null;
+    return activeWriter_ == null && waitingWriters_ == 0;
   }
 
 
@@ -104,19 +86,13 @@ public class
     return allowRead;
   }
 
-  // Is anyone else writing or reading ? if not we become current
-  // writer and return true - else return false...
-  protected synchronized boolean startWrite(Object lock) {
+  protected synchronized boolean startWrite() {
 
     // The allowWrite expression cannot be modified without
     // also changing startWrite, so is hard-wired
 
     boolean allowWrite = (activeWriter_ == null && activeReaders_ == 0);
-    if (allowWrite)
-      {
-	activeWriter_ = Thread.currentThread();
-	_activeWriterLock=lock;
-      }
+    if (allowWrite)  activeWriter_ = Thread.currentThread();
     return allowWrite;
    }
 
@@ -134,15 +110,9 @@ public class
     return pass;
   }
 
-  // either start writing immediately (return true), or be put into
-  // writer queue (return false).
-  protected synchronized boolean startWriteFromNewWriter(Object lock) {
-    boolean pass = startWrite(lock);
-    if (!pass)
-    {
-      Thread t=Thread.currentThread();
-      synchronized(_waitingWriters) {_waitingWriters.put(t, lock);}
-    }
+  protected synchronized boolean startWriteFromNewWriter() {
+    boolean pass = startWrite();
+    if (!pass) ++waitingWriters_;
     return pass;
   }
 
@@ -152,26 +122,18 @@ public class
     return pass;
   }
 
-  // we have just been notified. we are to become the current writer -
-  // as long as the situation has not changed in the meantime...
   protected synchronized boolean startWriteFromWaitingWriter() {
-    Object lock=null;
-    Thread t=Thread.currentThread();
-    synchronized(_waitingWriters){lock=_waitingWriters.get(t);}
-    boolean pass = startWrite(lock);
-    if (pass)
-      synchronized(_waitingWriters) {_waitingWriters.remove(t);}
+    boolean pass = startWrite();
+    if (pass) --waitingWriters_;
     return pass;
   }
-
-  protected int getWaitingWriterCount(){synchronized(_waitingWriters){return _waitingWriters.size();}}
 
   /**
    * Called upon termination of a read.
    * Returns the object to signal to wake up a waiter, or null if no such
    **/
   protected synchronized Signaller endRead() {
-    if (--activeReaders_ == 0 && getWaitingWriterCount() > 0)
+    if (--activeReaders_ == 0 && waitingWriters_ > 0)
       return writerLock_;
     else
       return null;
@@ -186,7 +148,7 @@ public class
     activeWriter_ = null;
     if (waitingReaders_ > 0 && allowReader())
       return readerLock_;
-    else if (getWaitingWriterCount() > 0)
+    else if (waitingWriters_ > 0)
       return writerLock_;
     else
       return null;
@@ -288,24 +250,23 @@ public class
     public void acquire() throws InterruptedException {
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
-      Object lock=new Object();
-      //      synchronized(this) { // TODO - I'm scared that I had to unblock this :-(
-        if (!startWriteFromNewWriter(lock)) {
+      synchronized(this) {
+        if (!startWriteFromNewWriter()) {
           for (;;) {
-            try {
-              synchronized(lock){lock.wait();}
+            try { 
+              WriterLock.this.wait();  
               if (startWriteFromWaitingWriter())
                 return;
             }
             catch(InterruptedException ex){
-              cancelledWaitingWriter(lock);
-	      signalFirstWaiter();
+              cancelledWaitingWriter();
+              WriterLock.this.notify();
               ie = ex;
               break;
             }
           }
         }
-	//      }
+      }
       if (ie != null) {
         // Fall through outside synch on interrupt.
         //  On exception, we may need to signal readers.
@@ -320,37 +281,24 @@ public class
       if (s != null) s.signalWaiters();
     }
 
-    void signalWaiters() {signalFirstWaiter();}	// should be synchronised ?
-
-    void
-      signalFirstWaiter()
-    {
-      Object lock=null;
-      synchronized (_waitingWriters)
-      {
-	Thread t=(Thread)_waitingWriters.firstKey();
-	lock=_waitingWriters.get(t);	// is there no better way?
-      }
-      synchronized(lock){lock.notify();};
-    }
+    synchronized void signalWaiters() { WriterLock.this.notify(); }
 
     public boolean attempt(long msecs) throws InterruptedException { 
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
-      Object lock=new Object();
       synchronized(this) {
         if (msecs <= 0)
-          return startWrite(lock); // lock may never be used
-        else if (startWriteFromNewWriter(lock))
+          return startWrite();
+        else if (startWriteFromNewWriter()) 
           return true;
         else {
           long waitTime = msecs;
           long start = System.currentTimeMillis();
           for (;;) {
-            try { synchronized(lock){lock.wait(waitTime);};  }
+            try { WriterLock.this.wait(waitTime);  }
             catch(InterruptedException ex){
-              cancelledWaitingWriter(lock);
-	      signalFirstWaiter();
+              cancelledWaitingWriter();
+              WriterLock.this.notify();
               ie = ex;
               break;
             }
@@ -359,8 +307,8 @@ public class
             else {
               waitTime = msecs - (System.currentTimeMillis() - start);
               if (waitTime <= 0) {
-                cancelledWaitingWriter(lock);
-		signalFirstWaiter();
+                cancelledWaitingWriter();
+                WriterLock.this.notify();
                 break;
               }
             }
