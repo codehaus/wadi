@@ -58,6 +58,7 @@ public class ObjectInputStream
   }
 
 
+  public
   ObjectInputStream(InputStream is)
     throws IOException
   {

@@ -43,7 +43,7 @@ import org.codehaus.wadi.StreamingStrategy;
  */
 public class
   MigrationService
-  implements org.codehaus.wadi.NewMigrationService
+  implements org.codehaus.wadi.MigrationService
 {
   protected final Log _log=LogFactory.getLog(getClass());
 
@@ -59,12 +59,12 @@ public class
   public void setManager(Manager manager){_manager=manager;}
 
 
-  public org.codehaus.wadi.NewMigrationService.Server getServer(){return _server;}
-  public org.codehaus.wadi.NewMigrationService.Client getClient(){return _client;}
+  public org.codehaus.wadi.MigrationService.Server getServer(){return _server;}
+  public org.codehaus.wadi.MigrationService.Client getClient(){return _client;}
 
   public class
     Client
-    implements org.codehaus.wadi.NewMigrationService.Client
+    implements org.codehaus.wadi.MigrationService.Client
   {
     public boolean
       emmigrate(Map local, Collection candidates, long timeout, Destination dst)
@@ -81,7 +81,7 @@ public class
 
   public class
     Server
-    implements org.codehaus.wadi.NewMigrationService.Server
+    implements org.codehaus.wadi.MigrationService.Server
     {
       protected Destination _destination;
 

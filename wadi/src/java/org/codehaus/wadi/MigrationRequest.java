@@ -27,6 +27,7 @@ import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
+import org.codehaus.wadi.impl.async.MigrationResponse;
 
 public class
   MigrationRequest
@@ -80,7 +81,7 @@ public class
 	try
 	{
 	  Cluster cluster=manager.getCluster();
-	  result=manager._adaptor.send(cluster,
+	  result=manager.getAsyncToSyncAdaptor().send(cluster,
 				       new MigrationResponse(_id, _timeout, buffer),
 				       in.getJMSCorrelationID(),
 				       _timeout,
