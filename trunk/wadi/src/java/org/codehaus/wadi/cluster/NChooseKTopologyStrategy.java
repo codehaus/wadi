@@ -72,9 +72,7 @@ public class
 	    {
 	      Set comb=new TreeSet(subComb);
 	      comb.add(p);
-	      String id="";
-	      for (Iterator n=comb.iterator(); n.hasNext(); )
-		id+=((id.length()==0)?"":"-")+((Peer)n.next()).getId();
+	      String id=Cell.id(comb);
 	      combs.put(id, comb);
 	    }
 	  }
