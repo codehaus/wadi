@@ -42,7 +42,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 /**
- * TODO - JavaDoc this type
+ * A Contextualiser that stores it's state in Memory as Java Objects
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

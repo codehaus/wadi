@@ -25,7 +25,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutSync;
 
 /**
- * TODO - JavaDoc this type
+ * A lock Collapser that collapses according to hash code
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

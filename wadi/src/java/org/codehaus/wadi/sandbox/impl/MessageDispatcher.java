@@ -36,6 +36,13 @@ import org.codehaus.activecluster.Cluster;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
+/**
+ * A Class responsible for the sending of outgoing and dispatching of incoming messages,
+ * along with other functionality, like synchronous message exchange etcetera
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class MessageDispatcher implements MessageListener {
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final Map _map=new HashMap();

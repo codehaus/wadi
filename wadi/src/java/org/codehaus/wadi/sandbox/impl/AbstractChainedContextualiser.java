@@ -35,7 +35,7 @@ import org.codehaus.wadi.sandbox.Motable;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * TODO - JavaDoc this type
+ * Abstract base for Contextualisers that are 'chained' - in other words - arranged in a single linked list
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

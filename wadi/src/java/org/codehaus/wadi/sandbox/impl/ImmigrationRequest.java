@@ -19,7 +19,7 @@ package org.codehaus.wadi.sandbox.impl;
 import java.io.Serializable;
 
 /**
- * A query for the location of the session with the enclosed ID - The response
+ * A message used as a query for the location of the session with the enclosed ID - The response
  * should be a LocationResponse object sent whence this request arrived.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

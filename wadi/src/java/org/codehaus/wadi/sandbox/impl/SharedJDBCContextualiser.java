@@ -38,7 +38,7 @@ import org.codehaus.wadi.sandbox.Motable;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * TODO - JavaDoc this type
+ * A Contextualiser which stores its Contexts in a shared database via JDBC
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
