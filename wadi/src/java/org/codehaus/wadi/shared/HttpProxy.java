@@ -203,9 +203,12 @@ public class
  	{
  	  javax.servlet.http.Cookie c=cookies[i];
  	  String domain=c.getDomain();
+	  if (domain==null) domain="192.168.0.2"; // TODO - tmp test
  	  String path=c.getPath();
- 	  Cookie cookie=new Cookie(domain==null?"localhost":domain, c.getName(), c.getValue(), path==null?"/wadi":path, c.getMaxAge(), c.getSecure()); // TODO - sort out domain
- 	  _log.trace("Cookie: "+c.getDomain()+","+ c.getName()+","+ c.getValue()+","+ c.getPath()+","+ c.getMaxAge()+","+ c.getSecure());
+	  if (path==null) path=request.getContextPath(); // fix for Jetty
+ 	  _log.trace("PATH: value="+path+" length="+(path==null?0:path.length()));
+ 	  Cookie cookie=new Cookie(domain, c.getName(), c.getValue(), path, c.getMaxAge(), c.getSecure()); // TODO - sort out domain
+ 	  _log.trace("Cookie: "+cookie.getDomain()+","+ cookie.getName()+","+ cookie.getValue()+","+ cookie.getPath()+","+ cookie.getExpiryDate()+","+ cookie.getSecure());
  	  state.addCookie(cookie);
  	  _log.trace("Cookie: "+cookie.toString());
  	}
