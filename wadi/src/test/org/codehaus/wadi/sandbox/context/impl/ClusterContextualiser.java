@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -335,21 +334,4 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	}
 
 	public boolean isLocal(){return false;}
-	
-	// stateful
-	protected Pattern _statefulMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE); // TODO - |HEAD|PUT|DELETE
-	protected Pattern _statelessURIs=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)", Pattern.CASE_INSENSITIVE); // TODO - CSS, ...?
-
-	// N.B. it is VERY important that we know what the session id's cookie name is, so that we can spot it in the request...
-	public boolean isStateful(HttpServletRequest hreq) {
-//		if (hreq.getRequestedSessionId()==null) // TODO - do we need this test here...
-//			return false;
-		if (!_statefulMethods.matcher(hreq.getMethod()).matches())
-			return false;
-		if (_statelessURIs.matcher(hreq.getRequestURI()).matches())
-			return false;
-		
-		// we have done our best to eliminate it, but it may be stateful...
-		return true;
-	}
 }

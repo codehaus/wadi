@@ -309,6 +309,8 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 			}
 		}
 		
+		huc.disconnect();
+		
 		long endTime=System.currentTimeMillis();
 		long elapsed=endTime-startTime;
 		_log.info("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:"+url);
