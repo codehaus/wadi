@@ -256,14 +256,16 @@ public class RWLock implements ReadWriteLock {
 		{
 		  activeWriter_ = t;
 		  --waitingWriters_;
+		  return;
 		}
 	      }
-              if (pass2)
-                return;
             }
             catch (InterruptedException ex)
 	    {
-	      synchronized(RWLock.this){--waitingWriters_;}
+	      synchronized (RWLock.this)
+	      {
+		--waitingWriters_;
+	      }
               WriterLock.this.notify();
               ie = ex;
               break;
@@ -289,55 +291,84 @@ public class RWLock implements ReadWriteLock {
 
     synchronized void signalWaiters() { WriterLock.this.notify(); }
 
-    public boolean attempt(long msecs) throws InterruptedException {
-      if (Thread.interrupted()) throw new InterruptedException();
+    public boolean
+      attempt(long msecs)
+      throws InterruptedException
+    {
+      if (Thread.interrupted())
+	throw new InterruptedException();
+
+      Thread t=Thread.currentThread();
+
       InterruptedException ie = null;
-      synchronized(WriterLock.this) {
+      synchronized(WriterLock.this)
+      {
         if (msecs <= 0)
 	{
-	  synchronized (RWLock.this){
+	  synchronized (RWLock.this)
+	  {
 	    boolean allowWrite = (activeWriter_ == null && activeReaders_ == 0);
-	    if (allowWrite)  activeWriter_ = Thread.currentThread();
+	    if (allowWrite)
+	      activeWriter_ = t;
+
 	    return allowWrite;
 	  }
 	}
         else
 	{
 	  boolean pass;
-	  synchronized (RWLock.this){
-	    synchronized (RWLock.this){
-	      pass = (activeWriter_ == null && activeReaders_ == 0);
-	      if (pass)  activeWriter_ = Thread.currentThread();
-	    }
-	    if (!pass) ++waitingWriters_;
+	  synchronized (RWLock.this)
+	  {
+	    pass = (activeWriter_ == null && activeReaders_ == 0);
+	    if (pass)
+	      activeWriter_ = t;
+	    else
+	      ++waitingWriters_;
 	  }
+
 	  if (pass)
 	    return true;
-	  else {
+	  else
+	  {
 	    long waitTime = msecs;
 	    long start = System.currentTimeMillis();
-	    for (;;) {
-	      try { WriterLock.this.wait(waitTime);  }
-	      catch(InterruptedException ex){
-		synchronized(RWLock.this){--waitingWriters_;};
+	    for (;;)
+	    {
+	      try
+	      {
+		WriterLock.this.wait(waitTime);
+	      }
+	      catch(InterruptedException ex)
+	      {
+		synchronized(RWLock.this)
+		{
+		  --waitingWriters_;
+		};
 		WriterLock.this.notify();
 		ie = ex;
 		break;
 	      }
 	      boolean pass2;
-	      synchronized(RWLock.this){
-		synchronized (RWLock.this){
-		  pass2 = (activeWriter_ == null && activeReaders_ == 0);
-		  if (pass2)  activeWriter_ = Thread.currentThread();
+	      synchronized(RWLock.this)
+	      {
+		pass2 = (activeWriter_ == null && activeReaders_ == 0);
+		if (pass2)
+		{
+		  activeWriter_ = t;
+		  --waitingWriters_;
 		}
-		if (pass2) --waitingWriters_;
 	      }
 	      if (pass2)
 		return true;
-	      else {
+	      else
+	      {
 		waitTime = msecs - (System.currentTimeMillis() - start);
-		if (waitTime <= 0) {
-		  synchronized(RWLock.this){--waitingWriters_;};
+		if (waitTime <= 0)
+		{
+		  synchronized(RWLock.this)
+		  {
+		    --waitingWriters_;
+		  };
 		  WriterLock.this.notify();
 		  break;
 		}
@@ -348,8 +379,10 @@ public class RWLock implements ReadWriteLock {
       }
 
       readerLock_.signalWaiters();
-      if (ie != null) throw ie;
-      else return false; // timed out
+      if (ie != null)
+	throw ie;
+      else
+	return false; // timed out
     }
 
   }
