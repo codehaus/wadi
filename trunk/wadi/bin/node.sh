@@ -39,6 +39,7 @@ properties="$properties \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.shared.AsyncToSyncAdaptor=trace \
 -Dorg.apache.commons.logging.simplelog.showShortLogname=true \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
+-Dactivemq.persistenceAdapter=org.codehaus.activemq.store.vm.VMPersistenceAdapter \
 "
 
 if [ jettyold = "$container" ]
