@@ -98,7 +98,7 @@ public class
 	// invalidation!
 	impl.getWadiManager().releaseImpl(impl);
 	setValid(false);		// do we need this flag ?
-	if (_log.isDebugEnabled()) _log.debug(id+": invalidated");
+	if (_log.isDebugEnabled()) _log.debug(id+": invalidation");
       }
       else
       {
