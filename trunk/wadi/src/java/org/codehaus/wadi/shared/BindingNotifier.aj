@@ -84,7 +84,7 @@ public aspect BindingNotifier
     {
       if (val instanceof HttpSessionBindingListener)
       {
-	_log.debug(session.getId()+" : notifying unbinding(\""+key+"\") : "+val);
+	_log.trace(session.getId()+" : notifying unbinding(\""+key+"\") : "+val);
 
 	HttpSessionBindingEvent event=new HttpSessionBindingEvent(session, key, val);
 	((HttpSessionBindingListener)val).valueUnbound(event);
@@ -97,7 +97,7 @@ public aspect BindingNotifier
     {
       if (val instanceof HttpSessionBindingListener)
       {
-	_log.debug(session.getId()+": notifying binding(\""+key+"\") : "+val);
+	_log.trace(session.getId()+": notifying binding(\""+key+"\") : "+val);
 
 	HttpSessionBindingEvent event=new HttpSessionBindingEvent(session, key, val);
 	((HttpSessionBindingListener)val).valueBound(event);

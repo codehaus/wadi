@@ -166,6 +166,8 @@ public class
 	Context context=((Context)_container);
 	copySubset(context.getApplicationLifecycleListeners(), _sessionListeners,   _sessionListenerTest);
 	copySubset(context.getApplicationEventListeners(),     _attributeListeners, _attributeListenerTest);
+ 	_log.info(""+_sessionListeners.size()+"/"+context.getApplicationLifecycleListeners().length+" session listeners added");
+	_log.info(""+_attributeListeners.size()+"/"+context.getApplicationEventListeners().length+" attribute listeners added");
 	((ContainerBase)context).removeLifecycleListener(this);
       }
     }

@@ -313,7 +313,7 @@ public class
       }
     }
 
-  protected StreamingStrategy _streamingStrategy=new SimpleStreamingStrategy();
+  protected StreamingStrategy _streamingStrategy;
   public StreamingStrategy getStreamingStrategy(){return _streamingStrategy;}
   public void setStreamingStrategy(StreamingStrategy streamingStrategy){_streamingStrategy=streamingStrategy;}
 }

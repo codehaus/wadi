@@ -106,18 +106,27 @@ public class
   protected WebApplicationHandler _handler;
   protected WebApplicationContext _context;
 
+  boolean _initialized=false;	// temporary hack - remove when Jetty is fixed...
+
   public synchronized void
     initialize(ServletHandler handler)
   {
-    _handler=(WebApplicationHandler)handler;
-    String filterName="WadiFilter";
-    _handler.defineFilter(filterName, Filter.class.getName());
-    _handler.mapPathToFilter("/*", filterName); // TODO - improve mapping, all 'stateful' servlets/filters
+    if (!_initialized)
+    {
+      _handler=(WebApplicationHandler)handler;
+      String filterName="WadiFilter";
+      _handler.defineFilter(filterName, Filter.class.getName());
+      _handler.mapPathToFilter("/*", filterName); // TODO - improve mapping, all 'stateful' servlets/filters
 
-    _context=(WebApplicationContext)_handler.getHttpContext();
-    boolean distributable=_context.isDistributable();
-    if (distributable && !_distributable)
-      setDistributable(distributable);
+      _context=(WebApplicationContext)_handler.getHttpContext();
+      boolean distributable=_context.isDistributable();
+      if (distributable && !_distributable)
+	setDistributable(distributable);
+
+      _initialized=true;
+    }
+    else
+      _log.warn("multiple initialisation");
   }
 
   public synchronized void
