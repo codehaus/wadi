@@ -1,0 +1,367 @@
+
+Philosophy
+----------
+
+as little work as possible is done on request thread.
+
+session destruction/migration is only done when we know that no
+relevant application threads are running.
+
+no session can be timed-out whilst a relevant application thread is in
+the container.
+
+invalidation is done by simply marking a session to be dealt with by
+the housekeeper.
+
+contention on the id:session map will be severe so we must keep it's
+use to a minimum.
+
+
+
+migrate - move persistant rep to 'shared' area
+replicate - store persistant rep to shared 'disaster-recovery' area
+whole session - replicate whole session to replication area
+delta -  replicate delta to shared area
+
+per-attribute - delta might be add/remove/change attribute
+
+per-session - serialise session into byte[] and diff (optional
+compression) - may get better performance doing this on per-attribute
+basis...
+
+a background thread should go around periodically merging diffs into
+whole session sized storage...
+
+would analogue of isModified flag be of any use - an isModified
+attribute ? - On a per-attrbute basis, this is simply an agreement to
+call set/remove when a change occurs...
+
+
+Migration vs Replication
+
+Migration
+
+JVM -> Store -> JVM
+
+Replication
+
+JVM -> JVM & Store -> JVM & Store
+
+we need 2 stores : 1 for migration and 1 for replication
+
+do they need to cooperate ?
+
+I replicate a session, then evict it. Do I simply throw away the
+reference because I know it is already replicated ? or do I remove all
+replicants and migrate it onto e.g. disc.
+
+Replication:
+
+Object Identity:
+       All sessions
+       single session
+       single attribute
+Safety:
+	Immediate (attribute-based)
+	Request
+	RequestGroup
+Packaging
+	Delta
+	Whole
+
+Migration:
+Object Identity:
+	single session
+	all sessions
+Safety:
+	some factorisable of RequestGroup
+Packaging
+	whole (could we use deltas?)
+
+
+Combinations:
+
+	ObjectIdentity | Safety | Packaging | ???
+
+
+Ideas for Geronimo:
+
+every MBean has an election policy default value is EveryNode -
+i.e. Homogeneous other values are e.g. - OneNodeOnly, RoundRobin
+etc,NumInstances(2)=any 2 nodes, etc... OneNodeOnly=NumInstances(1)...
+
+
+
+
+See FileMigrationPolicy
+
+request enters filter with id
+id table is checked
+
+if session present try for Rlock and req proceeds
+
+if session not present take Wlock and try to activate - when
+activated, release Wlock, take Rlock and proceed.
+
+so when you look up a session, if it isn't in the main table check a
+secondary one, for sessions being activated/located etc.
+
+if we locate and proxy, do we cache the location - not at first.
+
+when search in local store fails take a W lock and try to activate.
+
+If another request comes in before activation is complete, it will
+fall through to secondary table and block before continuing.
+
+If a location enquiry comes in, we can search first the local map and
+then the activation map before responding.
+
+If we don't respond within a given time frame the other container will
+assume the session no longer exists.
+
+
+It would be useful for the session housekeeper to have a garbage
+collection policy. The default policy would simply remove invalid
+sessions. Alternative policies might e.g. move them to an analysis
+area where another program might look at them and figure out why the
+user lost interest in the web site etc...
+
+It looks like, in order to support routing info a la modjk, we will
+need another interceptor to add/remove it from the session id, as and
+when required...
+
+
+
+
+Where to put lock
+
+only facade is looked up by id via impl - so no impl, no facade
+facade API should ONLY be that of HttpSession
+lock needs to exist before and after impl
+
+so:
+
+we need impl placeholders, with no data, just a lock, which can be
+placed into map as and when needed, and turn into a session, cease to
+be one as and when also. - nasty, but much more efficient. - how do we
+do it ?
+
+transit table shared by node2node and node2store migrations
+
+work on
+WADI, Jetty, Tomcat, Resin integrations
+Geronimo/Jetty/Tomcat
+Clustering/JCluster-replacement
+
+High level clustering/election abstractions...
+
+
+distributed gc election protocol broken
+
+
+We can use the Wrapper class to spot when references to stateful
+sessions are migrated to store or elsewhere in the cluster and somehow
+coordinate the same movement for ejb tier state. Ultimately, this may
+not be such a good idea as it will result in cache misses but...
+
+
+If node clocks aren't synched FileMigrationPolicy gcs files at wrong times - ouch !
+
+
+Replication.
+
+Every node holds open a connection to every one of it's buddies,
+each connection has a logical queue
+updates are put onto queues
+queue may be sync/async
+queue may know how to ellyde deltas/complete-sessions
+session should know how to write itself into an internal byte[]
+connection will use NIO to copy this byte[] across connection
+same byte[] should be shared by all queues
+
+if a session is migrated (from storage of another node) to a node it
+will arrive as such a byte[], which can be immediately replicated to
+necessary buddies by being put on their queues, etc.
+
+
+
+A common pattern (IOC)
+
+interface LifeCycle {
+
+public void start();
+public void stop();
+public boolean isRunning();
+}
+
+class Bean implements LifeCycle {
+...
+
+public void setFoo(Type foo){...}
+public void setBar(Type foo){...}
+public void setBaz(Type foo){...}
+
+...
+}
+
+public Type method() {
+
+Bean b=new Bean();
+b.setFoo(x);
+b.setBar(y);
+b.setBaz(z);
+b.start();
+...
+b.stop();
+}
+
+I would like:
+
+an xdoclet tag to identify attributes that can only be set when !isRunning();
+an aspect which will check an assertion on any setter identified in this way.
+the same thing with attributes in 1.5
+
+----------------------------------------
+
+replication.
+
+in case of the loss (planned or catastrophic) of a node, all sessions
+which it hosts must be rehosted immediately or possibly initially
+reconstituted from backup and passivated into shared store...
+
+this revisits the migrate to disc or vm issue?
+
+----------------------------------------
+
+location
+
+the result of a location query should return whether the host node is
+bleeding sessions, if so the session should be migrated off it.
+
+
+----------------------------------------
+
+PROBLEM.
+
+What happens if a request thread arrives whilst we are
+migrating/(passivating) a session?
+
+It waits to acquire an app/read-lock
+We finish and it acquires lock
+It continues into the container and asks for the session.
+It is now too late to proxy it elsewhere, so we will have to migrate the session in underneath it.
+NO GOOD !
+
+before we release the container/write-lock, we need to somehow
+interrupt all the waiting threads and force them to try to look up the
+session again. They will find it is not there and have to consider
+alternatives such as redirection, proxying and migration/activation.
+
+----------------------------------------
+
+shutting down
+
+We could evict all sessions to shared store, whence to be loaded by other nodes.
+
+We could divide sessions equally across cluster and migrate
+concurrently to all nodes.
+
+Bear in mind how this situation will be affected if every
+node/basket/session has a pair of buddies...
+
+----------------------------------------
+
+Refactoring
+
+The location query should really return a client side proxy for the
+session-manager/bucket containing the session in question. That it is
+still contained should be ascertained during the resulting two-way
+conversation.
+
+So maybe the return packet should just contain a serialised proxy ?,
+or simply a string from which we can construct said proxy on the other
+side ?
+
+advantages to string - no serialversionuid, smaller...
+
+----------------------------------------
+
+Servlets & Filters may be marked as 'stateless' - i.e. no session
+interaction.
+
+Non-container code running in a stateless component may not read/write
+the session. Attempts to do so will be met with an Exception. How do
+we handle container code ? setLastAccessedTime will/won't be called ?
+If called - does nothing.
+
+With this optimisation in place, we can avoid locking the session
+table (hopefully) and certainly any unecessary replication or
+contention when serving static resources from e.g. the DefaultServlet
+etc.
+
+----------------------------------------
+
+inbound/outbound lock tables....
+
+refactoring local/activating lock tables....
+
+should be replaced with local/inbound/outbound.
+
+whilst sessions are being migrated into a container (from store or
+another node) they take an inbound lock, whilst bein migrated out of a
+container (to store or another container) they take an outbound lock.
+
+I think we probably need the same arrangement in stores.
+
+Try (but maybe too slow...) :
+
+requests should :
+
+take read lock on outbound table for session id - now no-one can move their session off node
+take read lock on local table for session id - now no-one can garbage collect their session
+check if session is local
+if so is it outbound (wait for outbound lock, then check local again - maybe migration failed)
+if not take inbound readlock
+is session inbound wait
+else release inbound readlock, take inbound writelock and insert locked inbound lock
+try to load session
+release all locks
+
+maybe we don't need the outbound table - the w lock in the session
+would be locked - we wait for it and then try local map again - phew !
+
+----------------------------------------
+
+do we really need to load a session back off disc and activate all
+it's attributes before destroying it?
+
+the attributes were passivated as we saved it - do they need to be
+activated when they are timed out ?
+
+
+----------------------------------------
+
+redirect/cookie/Jetty problem.
+
+If I get hold of the session cookie, rewrite its routing info and
+redirect back to the lb, then browser receives:
+
+Cookie: JSESSIONID=C82EA2883D12C57D1B1F47BE85E8FF71.web0; JSESSIONID=C82EA2883D12C57D1B1F47BE85E8FF71.web1
+
+see headers.txt, instead of just one cookie - it looks like Jetty adds
+the web1 cookie after I have added the web0 one - why ?
+
+Then the browser, firebird, figures out the path for each of them differently !
+
+the first gets /wadi/jsp, the second /wadi... ?
+
+when I logged their paths in Jetty, both were 'null'
+
+----------------------------------------=
+
+eviction lock need not take any locks on first pass
+migration could remove session from table then reinsert on fail
+
+Commands could be nested into two-sided conversations.
+A whole conversation could be sent from one node then progressively unpacked and as passed backwards and forwards
+each command has a commit and rollback method.
