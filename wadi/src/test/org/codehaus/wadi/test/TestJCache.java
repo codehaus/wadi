@@ -212,15 +212,24 @@ public class
   }
 
   public void
-    testLocalDiscCache()
+    testDisc()
     throws Exception
   {
-    File dir=new File("/tmp");
-    Cache shared=new BasicCache();
-    CacheInnards ci=new LocalDiscCacheInnards(dir, new Pool(), new SimpleStreamingStrategy(), shared, new NoEvictionPolicy());
-    Cache ld=new BasicCache(ci, ci);
+    // ugly - is there a better way - createTempDir ?
+    File tmp=File.createTempFile("TestJCache-", "", new File("/tmp"));
+    String name=tmp.toString();
+    tmp.delete();
+    File dir=new File(name);
+    _log.info("dir="+dir);
+    assertTrue(dir.mkdirs());
 
-    testJCache(ld);
+    Cache backing=new BasicCache();
+    CacheInnards ci=new LocalDiscCacheInnards(dir, new Pool(), new SimpleStreamingStrategy(), backing, new NoEvictionPolicy());
+    Cache cache=new BasicCache(ci, ci);
+
+    testJCache(cache);
+
+    dir.delete();
   }
 
   // once we have a working DB-based cache we can back the file-based
@@ -234,22 +243,23 @@ public class
 
     try
     {
-      DataSource ds=new AxionDataSource("jdbc:axiondb:testdb");
+      DataSource ds=new AxionDataSource("jdbc:axiondb:testdb");	// db springs into existance in-vm beneath us
       String table="MyTable";
 
       {
 	Connection c=ds.getConnection();
 	Statement s=c.createStatement();
+	// TODO - should parameterise the column names when code stabilises...
 	s.execute("create table "+table+"(MyKey varchar, MyValue java_object)");
 	s.close();
 	c.close();
       }
 
-      Cache shared=new BasicCache();
-      CacheInnards ci=new SharedDBCacheInnards(ds, table, new Pool(), new SimpleStreamingStrategy(), shared, new NoEvictionPolicy());
-      Cache ld=new BasicCache(ci, ci);
+      Cache backing=new BasicCache();
+      CacheInnards ci=new SharedDBCacheInnards(ds, table, new Pool(), new SimpleStreamingStrategy(), backing, new NoEvictionPolicy());
+      Cache cache=new BasicCache(ci, ci);
 
-      testJCache(ld);
+      testJCache(cache);
 
       {
 	Connection c=ds.getConnection();
