@@ -72,14 +72,19 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 			try {
 				context=load(file, promoter.nextContext());
 			} catch (ClassNotFoundException e) {
-				throw new ServletException("problem loading context (local disc): "+id, e);
+				_log.warn("problem loading context (local disc): "+id, e);
+				return false;
 			}
 			_log.info("promoting (from local disc): "+id);
-			promoter.promoteAndContextualise(req, res, chain, id, context, promotionMutex); // inject result into our caller - now available to new threads
-			// perhaps this should be wrapped up in a callback object and passed up to the promoter with the promotionMutex - otherwise file is not removed until after request has run...
-			// this is important since the session may be written out again BEFORE we actually get around to deleting the file !
-			_map.remove(id);
-			remove(file);
+			if (promoter.prepare(id, context)) {
+				_map.remove(id);
+				remove(file); // TODO - revisit
+				promoter.commit(id, context);
+				promotionMutex.release();
+				promoter.contextualise(req, res, chain, id, context);
+			} else {
+				promoter.rollback(id, context);
+			}
 			return true;
 		} else {
 			return false;

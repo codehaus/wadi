@@ -87,14 +87,18 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		    	_log.info("loaded (database): "+id);
 		      }
 
+			// TODO - revisit...
 		    if (context!=null) {			
 		    	_log.info("promoting (from database): "+id);
-		    	promoter.promoteAndContextualise(req, res, chain, id, context, promotionMutex); // inject result into our caller - now available to new threads
-
-			    // perhaps this should be wrapped up in a callback object and passed up to the promoter with the promotionMutex - otherwise file is not removed until after request has run...
-				// this is important since the session may be written out again BEFORE we actually get around to deleting the file !
-		    	int r=s.executeUpdate("DELETE FROM "+_table+" WHERE MyKey='"+id+"'");
-		    	_log.info("removed (database): "+id);
+		    	if (promoter.prepare(id, context)) {
+			    	int r=s.executeUpdate("DELETE FROM "+_table+" WHERE MyKey='"+id+"'");
+			    	_log.info("removed (database): "+id);
+		    		promoter.commit(id, context);
+		    		promotionMutex.release();
+		    		promoter.contextualise(req, res, chain, id , context);
+		    	} else {
+		    		promoter.rollback(id, context);
+		    	}
 		    }
 		    
 		    s.close();

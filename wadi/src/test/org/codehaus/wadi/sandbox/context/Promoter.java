@@ -13,7 +13,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * @author jules
@@ -22,8 +21,12 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public interface Promoter {
-
-	void promoteAndContextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Context context, Sync overlap) throws IOException, ServletException;
-	
+		
 	Context nextContext();
+	
+	boolean prepare(String id, Context context);
+	void commit(String id, Context context);
+	void rollback(String id, Context context);
+	
+	void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Context context) throws IOException, ServletException;
 }
