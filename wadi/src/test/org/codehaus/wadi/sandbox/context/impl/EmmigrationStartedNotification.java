@@ -27,18 +27,18 @@ import javax.jms.Destination;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ShutDownStartedNotification implements Serializable {
+public class EmmigrationStartedNotification implements Serializable {
 	protected Destination _emmigrationQueue;
 
 	/**
 	 *
 	 */
-	public ShutDownStartedNotification(Destination emmigrationQueue) {
+	public EmmigrationStartedNotification(Destination emmigrationQueue) {
 		super();
 		_emmigrationQueue=emmigrationQueue;
 	}
 
-	public ShutDownStartedNotification() {
+	public EmmigrationStartedNotification() {
 		// for use when demarshalling...
 	}
 

@@ -34,11 +34,7 @@ import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
-import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher.Settings;
-import org.codehaus.wadi.sandbox.context.impl.MigrateRelocationStrategy.MigrationPromoter;
-import org.codehaus.wadi.sandbox.context.test.MyClusterListener;
 
-import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 // this needs to be split into several parts...
@@ -86,6 +82,10 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	    _dispatcher.register(this, "onMessage");
 	    _dispatcher.register(EmmigrationAcknowledgement.class, _emmigrationRvMap, 3000);
 		}
+	
+	protected Contextualiser _top;
+	public Contextualiser getTop() {return _top;}
+	public void setTop(Contextualiser top) {_top=top;}
 
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#getPromoter(org.codehaus.wadi.sandbox.context.Promoter)
@@ -115,21 +115,21 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		// send message inviting everyone to start reading from queue
 		MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
 		settings.to=_dispatcher.getCluster().getDestination();
-		_dispatcher.sendMessage(new ShutDownStartedNotification(_emmigrationQueue), settings);
+		_dispatcher.sendMessage(new EmmigrationStartedNotification(_emmigrationQueue), settings);
 //		Thread.sleep(1000);
 //		_dispatcher.sendMessage(new ShutDownEndedNotification(_emmigrationQueue), settings);
 		// dump subsequent demoted Contexts onto queue
 		}
 	
-	public void onMessage(ObjectMessage om, ShutDownStartedNotification sdsn) throws JMSException {
+	public void onMessage(ObjectMessage om, EmmigrationStartedNotification sdsn) throws JMSException {
 		Destination emmigrationQueue=sdsn.getDestination();
-		_log.info("received ShutDownStartedNotification: "+emmigrationQueue);
+		_log.info("received EmmigrationStartedNotification: "+emmigrationQueue);
 		_dispatcher.addDestination(emmigrationQueue); 
 	}
 	
-	public void onMessage(ObjectMessage om, ShutDownEndedNotification sden) {
+	public void onMessage(ObjectMessage om, EmmigrationEndedNotification sden) {
 		Destination emmigrationQueue=sden.getDestination();
-		_log.info("received ShutDownEndedNotification: "+emmigrationQueue);
+		_log.info("received EmmigrationEndedNotification: "+emmigrationQueue);
 		_dispatcher.removeDestination(emmigrationQueue);
 	}
 	
@@ -143,6 +143,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
 			settingsInOut.correlationId=om.getJMSCorrelationID();
 			_log.info("received EmmigrationRequest: "+id);
+//			_top.demote(id, MOTABLE);
 			_dispatcher.sendMessage(new EmmigrationAcknowledgement(id), settingsInOut);
 		} catch (Exception e) {
 			_log.warn("problem handling migration request: "+id, e);

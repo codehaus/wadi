@@ -14,21 +14,33 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.context;
+package org.codehaus.wadi.sandbox.context.impl;
+
+import java.io.Serializable;
+
+import javax.jms.Destination;
 
 /**
- * Lit. 'able to be moved' - an Object the can be [promoted and] demoted.
+ * Sent to notify Cluster memebers of a new Queue from which they should take and acknowledge
+ * Context emmigrations...
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Motable {
-	public long getExpiryTime();
+public class EmmigrationEndedNotification implements Serializable {
+	protected Destination _emmigrationQueue;
 
-//	public long getCreationTime(); // final
-//	public long getLastAccessedTime();
-//	public void setLastAccessedTime(long l);
-//	public int  getMaxInactiveInterval();
-//	public void setMaxInactiveInterval(int i);
-//	
+	/**
+	 *
+	 */
+	public EmmigrationEndedNotification(Destination emmigrationQueue) {
+		super();
+		_emmigrationQueue=emmigrationQueue;
+	}
+
+	public EmmigrationEndedNotification() {
+		// for use when demarshalling...
+	}
+
+	public Destination getDestination(){return _emmigrationQueue;}
 }
