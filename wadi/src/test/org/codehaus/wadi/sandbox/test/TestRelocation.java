@@ -35,9 +35,7 @@ import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
 import org.codehaus.activecluster.ClusterFactory;
-import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.HttpProxy;
@@ -45,6 +43,8 @@ import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.CommonsHttpProxy;
+import org.codehaus.wadi.sandbox.impl.CustomCluster;
+import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.impl.ImmigrateRelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
@@ -74,8 +74,8 @@ public class TestRelocation extends TestCase {
 	protected MyFilter _filter1;
 	protected MyServlet _servlet0;
 	protected MyServlet _servlet1;
-	protected Cluster _cluster0;
-	protected Cluster _cluster1;
+	protected CustomCluster _cluster0;
+	protected CustomCluster _cluster1;
 	protected Location _location0;
 	protected Location _location1;
 	protected MessageDispatcher _dispatcher0;
@@ -118,11 +118,11 @@ public class TestRelocation extends TestCase {
 		super.setUp();
 		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
 //		ClusterFactory clusterFactory       = new DefaultClusterFactory(connectionFactory,false, Session.AUTO_ACKNOWLEDGE, "ACTIVECLUSTER.DATA.", 50000L);
-		ClusterFactory clusterFactory       = new DefaultClusterFactory(connectionFactory);
+		ClusterFactory clusterFactory       = new CustomClusterFactory(connectionFactory);
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
 
 		InetSocketAddress isa0=new InetSocketAddress("localhost", 8080);
-		_cluster0=clusterFactory.createCluster(clusterName);
+		_cluster0=(CustomCluster)clusterFactory.createCluster(clusterName);
 		_cluster0.addClusterListener(new MyClusterListener());
 		HttpProxy proxy0=new StandardHttpProxy("jsessionid");
 		_dispatcher0=new MessageDispatcher(_cluster0);
@@ -134,7 +134,7 @@ public class TestRelocation extends TestCase {
 		(_node0=new JettyNode("0", "localhost", 8080, "/test", "/home/jules/workspace/wadi/webapps/test", _filter0, _servlet0)).start();
 
 		InetSocketAddress isa1=new InetSocketAddress("localhost", 8081);
-		_cluster1=clusterFactory.createCluster(clusterName);
+		_cluster1=(CustomCluster)clusterFactory.createCluster(clusterName);
 		_cluster1.addClusterListener(new MyClusterListener());
 		HttpProxy proxy1=new CommonsHttpProxy("jsessionid");
 		_dispatcher1=new MessageDispatcher(_cluster1);

@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
+import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
@@ -43,6 +44,15 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 // (1) a request relocation strategy (proxy)
 // (2) a state relocation strategy (migrate) - used if (1) fails
 // a location cache - used by both the above when finding the locarion of state...
+
+// demotion :
+
+// if the last node in the cluster, pass demotions through to e.g. shared DB below us.
+// else, distribute them out to the cluster
+
+// on startup, e.g. db will read in complete complement of sessions and try to promote them
+// how do we promote them to disc, but not to memory ? - perhaps in the configuration as when the node shutdown ?
+// could we remember the ttl and set it up the same, so nothing times out whilst the cluster is down ?
 
 /**
  * A cache of Locations. If the Location of a Context is not known, the Cluster
@@ -67,6 +77,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 
 	protected final HashMap _emigrationRvMap=new HashMap();
+	protected final CustomCluster _cluster;
 	protected final MessageDispatcher _dispatcher;
 	protected final RelocationStrategy _relocater;
 	protected final Location _location;
@@ -79,15 +90,16 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	 * @param map
 	 * @param location TODO
 	 */
-	public ClusterContextualiser(Contextualiser next, SwitchableEvicter evicter, Map map, Collapser collapser, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) throws JMSException {
+	public ClusterContextualiser(Contextualiser next, Evicter evicter, Map map, Collapser collapser, CustomCluster cluster, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) {
 		super(next, evicter, map, collapser);
+		_cluster=cluster;
 		_dispatcher=dispatcher;
 	    _relocater=relocater;
 	    _location=location;
 
 	    _immoter=new EmigrationImmoter();
 	    _emoter=null; // TODO - I think this should be something like the ImmigrationEmoter
-	    // it pulls a names Session out of the cluster and emotes it from this Contextualiser...
+	    // it pulls a named Session out of the cluster and emotes it from this Contextualiser...
 	    // this makes it awkward to split session and request relocation into different strategies,
 	    // so session relocation should be the basic strategy, with request relocation as a pluggable
 	    // optimisation...
@@ -98,6 +110,19 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
+
+	public Immoter getDemoter(String id, Motable motable) {
+	    if (_cluster.getNodes().size()>1) {
+	        // we are not the only node in the cluster - emote the incoming
+	        // motable to another node...
+	        ensureEmmigrationQueue();
+	        return getImmoter();
+	    } else {
+	        // we are the last node standing.
+	        // push the demotee down into the shared store below us...
+	        return _next.getDemoter(id, motable);
+	    }
+	}
 
 	// this field forms part of a circular dependency - so we need a setter rather than ctor param
 	protected Contextualiser _top;
@@ -119,19 +144,25 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	public boolean isLocal(){return false;}
 
 	protected Destination _emigrationQueue;
-
-	public void setEmigrationQueue(Destination emigrationQueue) throws Exception {
-		_emigrationQueue=emigrationQueue;
-		((SwitchableEvicter)_evicter).setSwitch(false);
-		// send message inviting everyone to start reading from queue
-		MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
-		settings.to=_dispatcher.getCluster().getDestination();
-		_dispatcher.sendMessage(new EmigrationStartedNotification(_emigrationQueue), settings);
-//		Thread.sleep(1000);
-//		_dispatcher.sendMessage(new ShutDownEndedNotification(_emigrationQueue), settings);
-		// dump subsequent demoted Contexts onto queue
-		}
-
+	
+	protected synchronized void ensureEmmigrationQueue() {
+	    try {
+	        if (_emigrationQueue==null) {
+		        _log.info("initialising emmigration queue");
+	            _emigrationQueue=_cluster.createQueue("EMIGRATION"); // TODO - better queue name ?
+	            MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
+	            settings.to=_dispatcher.getCluster().getDestination();
+	            _dispatcher.sendMessage(new EmigrationStartedNotification(_emigrationQueue), settings);
+	        }
+	    } catch (JMSException e) {
+	        _log.error("emmigration queue initialisation failed", e);
+	        _emigrationQueue=null;
+	    }
+	    
+	    // TODO - we need a stop() where we can do:
+	    //		_dispatcher.sendMessage(new ShutDownEndedNotification(_emigrationQueue), settings);
+	}
+	
 	public void onMessage(ObjectMessage om, EmigrationStartedNotification sdsn) throws JMSException {
 		Destination emigrationQueue=sdsn.getDestination();
 		//_log.info("received EmigrationStartedNotification: "+emigrationQueue);
@@ -157,7 +188,7 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 			MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
 			settingsInOut.to=_emigrationQueue;
 			settingsInOut.correlationId=id;
-			settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
+			settingsInOut.from=_cluster.getLocalNode().getDestination();
 			EmigrationRequest er=new EmigrationRequest(id, emotable);
 			EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emigrationRvMap, er, settingsInOut, 3000);
 
@@ -236,7 +267,7 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 		}
 	}
 
-	public void onMessage(ObjectMessage om, EmigrationRequest er) throws JMSException {
+	public void onMessage(ObjectMessage om, EmigrationRequest er) {
 		String id=er.getId();
 		Emoter emoter=new ImmigrationEmoter(om, er);
 		Motable emotable=er.getMotable();

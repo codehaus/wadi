@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.test;
+package org.codehaus.wadi.sandbox.impl;
 
 import java.util.Timer;
 
@@ -33,8 +33,8 @@ import org.codehaus.activecluster.impl.ReplicatedLocalNode;
 import org.codehaus.activecluster.impl.StateService;
 import org.codehaus.activecluster.impl.StateServiceStub;
 
-public class MyClusterFactory extends DefaultClusterFactory {
-	public MyClusterFactory(ConnectionFactory connectionFactory) {
+public class CustomClusterFactory extends DefaultClusterFactory {
+	public CustomClusterFactory(ConnectionFactory connectionFactory) {
 		super(connectionFactory);
 	}
 
@@ -53,7 +53,7 @@ public class MyClusterFactory extends DefaultClusterFactory {
         }
         ReplicatedLocalNode localNode=new ReplicatedLocalNode(localInbox, serviceStub);
         Timer timer=new Timer();
-        MyCluster answer=new MyCluster(localNode, dataTopic, groupDestination, connection, session, producer, timer, getInactiveTime());
+        CustomCluster answer=new CustomCluster(localNode, dataTopic, groupDestination, connection, session, producer, timer, getInactiveTime());
         return answer;
     }
 }

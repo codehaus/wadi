@@ -31,7 +31,6 @@ import org.codehaus.wadi.sandbox.impl.AbstractMotable;
 import org.codehaus.wadi.sandbox.impl.RWLock;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 
@@ -60,7 +59,7 @@ public class MyContext extends AbstractMotable implements Context {
 		_val=(String)oi.readObject();
 	}
 
-	public void writeContent(ObjectOutput oo) throws IOException, ClassNotFoundException {
+	public void writeContent(ObjectOutput oo) throws IOException {
 		oo.writeObject(_val);
 	}
 

@@ -29,6 +29,8 @@ import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
 
+// TODO - a JDBC-based equivalent
+
 /**
  * Maps id:File where file contains Context content...
  *

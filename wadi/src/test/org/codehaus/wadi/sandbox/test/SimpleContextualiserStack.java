@@ -16,6 +16,16 @@
  */
 package org.codehaus.wadi.sandbox.test;
 
+// Thoughts - 
+
+// invalidation is tricky - stuff invalidated on disc needs may need to be unmarshalled so that the correct listeners may be notified...
+
+// we need a JDBC passivation store
+
+// can we even store an invalidated session without breaking listener model - consider...
+
+
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -46,6 +56,8 @@ import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.AbsoluteEvicter;
 import org.codehaus.wadi.sandbox.impl.ClusterContextualiser;
+import org.codehaus.wadi.sandbox.impl.CustomCluster;
+import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.HttpProxyLocation;
@@ -57,7 +69,6 @@ import org.codehaus.wadi.sandbox.impl.SerialContextualiser;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCContextualiser;
 import org.codehaus.wadi.sandbox.impl.StandardHttpProxy;
 import org.codehaus.wadi.sandbox.impl.StatelessContextualiser;
-import org.codehaus.wadi.sandbox.impl.SwitchableEvicter;
 import org.codehaus.wadi.sandbox.impl.TimedOutEvicter;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -75,9 +86,9 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final SharedJDBCContextualiser _database;
     
     protected final ConnectionFactory _connectionFactory;
-    protected final MyClusterFactory _clusterFactory;
+    protected final CustomClusterFactory _clusterFactory;
     protected final String _clusterName;
-    protected final MyCluster _clusterCluster;
+    protected final CustomCluster _clusterCluster;
     protected final SwitchableEvicter _clusterEvicter;
     protected final Map _clusterMap;
     protected final MessageDispatcher _clusterDispatcher;
@@ -115,9 +126,10 @@ public class SimpleContextualiserStack implements Contextualiser {
         _database=new SharedJDBCContextualiser(_dummy, _databaseEvicter, _databaseDataSource, _databaseTable);
 
         _connectionFactory=new ActiveMQConnectionFactory("peer://WADI-TEST");
-        _clusterFactory=new MyClusterFactory(_connectionFactory);
+        _clusterFactory=new CustomClusterFactory(_connectionFactory);
         _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
-        _clusterCluster=(MyCluster)_clusterFactory.createCluster(_clusterName);
+        _clusterCluster=(CustomCluster)_clusterFactory.createCluster(_clusterName);
+        _clusterCluster.start();
         InetSocketAddress isa=new InetSocketAddress("localhost", 8080);
         HttpProxy proxy=new StandardHttpProxy("jsessionid");
         _clusterLocation=new HttpProxyLocation(_clusterCluster.getLocalNode().getDestination(), isa, proxy);
@@ -125,7 +137,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterMap=new HashMap();
         _clusterEvicter=new SwitchableEvicter();
         _clusterDispatcher=new MessageDispatcher(_clusterCluster);
-        _cluster=new ClusterContextualiser(_database, _clusterEvicter, _clusterMap, _collapser, _clusterDispatcher, _clusterRelocater, _clusterLocation);
+        _cluster=new ClusterContextualiser(_database, _clusterEvicter, _clusterMap, _collapser, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation);
  
         _statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
         _statelessMethodFlag=true;
@@ -168,5 +180,13 @@ public class SimpleContextualiserStack implements Contextualiser {
 
     public Immoter getDemoter(String id, Motable motable) {
         return _memory.getDemoter(id, motable);
+    }
+    
+    public void start() throws JMSException {
+        _clusterCluster.start();
+    }
+
+    public void stop() throws JMSException {
+        _clusterCluster.stop();
     }
 }

@@ -39,6 +39,7 @@ import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.ClusterContextualiser;
+import org.codehaus.wadi.sandbox.impl.CustomCluster;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
@@ -46,12 +47,11 @@ import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.impl.SerialContextualiser;
 import org.codehaus.wadi.sandbox.impl.StatelessContextualiser;
-import org.codehaus.wadi.sandbox.impl.SwitchableEvicter;
 
 public class MyServlet implements Servlet {
 	protected ServletConfig _config;
 	protected final Log _log;
-	protected final Cluster _cluster;
+	protected final CustomCluster _cluster;
 	protected final Collapser _collapser;
 	protected final Map _clusterMap;
 	protected final Map _memoryMap;
@@ -63,7 +63,7 @@ public class MyServlet implements Servlet {
 	protected final MemoryContextualiser _memoryContextualiser;
 	protected final Location _location;
 
-	public MyServlet(String name, Cluster cluster, ContextPool contextPool, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) throws Exception {
+	public MyServlet(String name, CustomCluster cluster, ContextPool contextPool, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 		_cluster=cluster;
 		_cluster.start();
@@ -72,7 +72,7 @@ public class MyServlet implements Servlet {
 		_dispatcher=dispatcher;
 		_relocater=relocater;
 		_location=location;
-		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), new SwitchableEvicter(), _clusterMap, _collapser, _dispatcher, _relocater, _location);
+		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), new SwitchableEvicter(), _clusterMap, _collapser, _cluster, _dispatcher, _relocater, _location);
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
 		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);
