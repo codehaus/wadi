@@ -17,7 +17,6 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.FilterChain;
@@ -36,7 +35,6 @@ import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
 
-import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
@@ -66,6 +64,19 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 
 	public boolean isLocal(){return true;}
 
+	// TODO - sometime figure out how to make this a wrapper around AbstractMappedContextualiser.handle() instead of a replacement...
+	public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
+	    Motable emotable=get(id);
+	    if (emotable==null)
+	        return false; // we cannot proceed without the session...
+	    
+	    if (immoter!=null) {
+	        return promote(hreq, hres, chain, id, immoter, promotionLock, emotable); // promotionLock will be released here...
+	    } else {
+	        return contextualiseLocally(hreq, hres, chain, id, promotionLock, emotable);
+	    }
+	}
+	
 	public boolean contextualiseLocally(HttpServletRequest req, HttpServletResponse res, FilterChain chain, String id, Sync promotionLock, Motable motable)  throws IOException, ServletException {
 	    Sync lock=((Context)motable).getSharedLock();
 	    boolean acquired=false;
@@ -75,11 +86,13 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	                lock.acquire();
 	                acquired=true;
 	            } catch (TimeoutException e) {
-	                _log.error("unexpected timeout - continuing without lock", e);
+	                _log.error("unexpected timeout - continuing without lock: "+id, e);
 	            } catch (InterruptedException e) {
-	                _log.warn("unexpected interruption - continuing", e);
+	                _log.warn("unexpected interruption - continuing: "+id, e);
 	            }
 	        } while (Thread.interrupted());
+	        
+	        if (promotionLock!=null) promotionLock.release();
 	        
 	        chain.doFilter(req, res);
 	        return true;
@@ -136,7 +149,9 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	    }
 	    
 	    public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
-	        contextualiseLocally(hreq, hres, chain, id, new NullSync(), immotable); // TODO - promotionLock ?
+	        // motable has just been promoted and promotionLock released, so we
+	        // pass in a null promotionLock...
+	        contextualiseLocally(hreq, hres, chain, id, null, immotable);
 	    }
 	    
 	    public String getInfo() {

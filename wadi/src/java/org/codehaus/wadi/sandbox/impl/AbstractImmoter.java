@@ -16,6 +16,13 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.io.IOException;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Immoter;
@@ -50,5 +57,9 @@ public abstract class AbstractImmoter implements Immoter {
 		} catch (Exception e) {
 			_log.error("problem rolling back insertion: "+id, e);
 		}
+	}
+	
+	public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
+	// most Contextualisers cannot contextualise locally...
 	}
 }

@@ -58,18 +58,20 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 		return new StringBuffer(_stringPrefix).append(_map.size()).append(_stringSuffix).toString();
 	}
 
-	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
-		Motable emotable=(Motable)_map.get(id);
-		if (emotable==null)
-			return false; // we cannot proceed without the session...
+	public Motable get(String id) {return (Motable)_map.get(id);}
 
-		if (immoter!=null)
-			return promote(hreq, hres, chain, id, immoter, promotionLock, emotable); // promotionLock will be released here...
-
-		return contextualiseLocally(hreq, hres, chain, id, promotionLock, emotable);
+	// TODO - sometime figure out how to make this a wrapper around AbstractChainedContextualiser.handle() instead of a replacement...
+	public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
+	    Motable emotable=get(id);
+	    if (emotable==null)
+	        return false; // we cannot proceed without the session...
+	    
+	    if (immoter!=null) {
+	        return promote(hreq, hres, chain, id, immoter, promotionLock, emotable); // promotionLock will be released here...
+	    } else {
+	        return false;
+	    }
 	}
-
-	public abstract boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Sync promotionLock, Motable motable) throws IOException, ServletException;
 
 	protected final Sync _dummyLock=new NullSync();
 	public Sync getEvictionLock(String id, Motable motable){return _dummyLock;} // TODO - should this be the promotionLock ?

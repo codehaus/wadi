@@ -34,7 +34,6 @@ import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
 
-import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
@@ -52,22 +51,18 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	protected final Emoter _emoter;
 
 	public LocalDiscContextualiser(Contextualiser next, Map map, Evicter evicter, StreamingStrategy streamer, File dir) {
-		super(next, map, evicter);
-		_streamer=streamer;
+	    super(next, map, evicter);
+	    _streamer=streamer;
 	    assert dir.exists();
 	    assert dir.isDirectory();
 	    assert dir.canRead();
 	    assert dir.canWrite();
-		_dir=dir;
-
-		_immoter=new LocalDiscImmoter(_map);
-		_emoter=new LocalDiscEmoter(_map);
-		}
-
-	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Sync promotionLock, Motable motable) throws IOException, ServletException {
-		throw new RuntimeException("this should never happen");
+	    _dir=dir;
+	    
+	    _immoter=new LocalDiscImmoter(_map);
+	    _emoter=new LocalDiscEmoter(_map);
 	}
-
+	
 	public boolean isLocal(){return true;}
 
 	public Immoter getImmoter(){return _immoter;}
@@ -94,11 +89,6 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			((LocalDiscMotable)immotable).setFile(new File(_dir, id+"."+_streamer.getSuffix()));
 			return super.prepare(id, emotable, immotable);
-		}
-
-		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
-			// TODO - we need to pass through a promotionLock
-			contextualiseLocally(hreq, hres, chain, id, new NullSync(), immotable);
 		}
 
 		public String getInfo() {
