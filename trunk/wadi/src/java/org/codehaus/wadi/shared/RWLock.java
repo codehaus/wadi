@@ -80,8 +80,8 @@ public class RWLock implements ReadWriteLock {
   */
 
 
-  protected synchronized void cancelledWaitingReader() { --waitingReaders_; }
-  protected synchronized void cancelledWaitingWriter(Lock l) { --waitingWriters_; l._count--;}
+  protected synchronized void cancelledWaitingReader() { --waitingReaders_; assert waitingReaders_>-1;}
+  protected synchronized void cancelledWaitingWriter(Lock l) { --waitingWriters_; l._count--; assert waitingWriters_>-1;}
 
 
   protected boolean allowReader() {
@@ -131,7 +131,12 @@ public class RWLock implements ReadWriteLock {
 
   protected synchronized boolean startReadFromWaitingReader() {
     boolean pass = startRead();
-    if (pass) --waitingReaders_;
+    if (pass)
+    {
+      --waitingReaders_;
+      assert waitingReaders_>-1;
+    }
+    
     return pass;
   }
 
@@ -140,6 +145,7 @@ public class RWLock implements ReadWriteLock {
     if (pass)
     {
       --waitingWriters_;
+      assert waitingWriters_>-1;
       l._count--;
     }
     return pass;
@@ -151,7 +157,10 @@ public class RWLock implements ReadWriteLock {
    **/
   protected synchronized Signaller endRead() {
     if (--activeReaders_ == 0 && waitingWriters_ > 0)
+    {
+      assert activeReaders_>-1;
       return writerLock_;
+    }
     else
       return null;
   }
