@@ -73,6 +73,9 @@ public aspect
       // tomcat makes a copy and performs the notification outside
       // the synchronized block - does anyone really register with
       // an individual session ?
+
+      // we should consider using a RW lock and taking the R-lock
+      // here...
       synchronized (listeners)
       {
 	for (int i = 0; i<n; i++)
