@@ -630,6 +630,7 @@ public class TestHttpSession
     session.getId();
     session.invalidate();
     try{session.getId();assertTrue(false);}catch(IllegalStateException e){}
+    try{session.invalidate();assertTrue(false);}catch(IllegalStateException e){}
   }
 
   public void
