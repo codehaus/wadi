@@ -89,6 +89,7 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 	            boolean acquired=false;
 	            try {
 	                if ((acquired=Utils.attemptUninterrupted(lock)) && _evicter.evict(id, emotable, time)) { // second confirmatory test with lock
+	                    // TODO - how do we figure out whether, now we have the lock, the Context has not already moved as the result of some other operation ?
 	                    Immoter immoter=_next.getDemoter(id, emotable);
 	                    Emoter emoter=getEvictionEmoter();
 	                    Utils.mote(emoter, immoter, emotable, id);

@@ -46,7 +46,14 @@ public abstract class SimpleEvictable implements Evictable {
 
 	public long getTimeToLive(long time) {return (_maxInactiveInterval*1000)-(time-_lastAccessedTime);}
 
-	public boolean getValid() {return getTimeToLive(System.currentTimeMillis())>0;} // TODO - This doesn't really fit here but...
+	public boolean getTimedOut() {return getTimedOut(System.currentTimeMillis());}
+	public boolean getTimedOut(long time) {return getTimeToLive(time)<=0;}
+	
+	protected boolean _invalidated;
+	public boolean getInvalidated(){return _invalidated;}
+	public void setInvalidated(boolean invalidated){_invalidated=invalidated;}
+	
+	public boolean getValid() {return !getInvalidated() && !getTimedOut();}
 
 	public void copy(Evictable evictable) throws Exception {
 		_creationTime=evictable.getCreationTime();

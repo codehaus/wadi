@@ -93,6 +93,10 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	        
 	        if (promotionLock!=null) promotionLock.release();
 	        
+	        if (motable.getInvalidated()) {
+	            _log.trace("context disappeared whilst we were wating for lock: "+id);
+	        }
+	        
 	        // should we wrap req with a session-aware wrapper ?
 	        chain.doFilter(req, res);
 	        return true;
@@ -109,13 +113,16 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 
 	    public boolean prepare(String id, Motable emotable, Motable immotable) {
 	        Sync lock=((Context)emotable).getExclusiveLock();
-	            try {
-	                Utils.acquireUninterrupted(lock);
-	            } catch (TimeoutException e) {
-	                _log.error("unexpected timeout", e);
-	                return false;
-	            }
-
+	        try {
+	            Utils.acquireUninterrupted(lock);
+	        } catch (TimeoutException e) {
+	            _log.error("unexpected timeout", e);
+	            return false;
+	        }
+	        
+	        if (emotable.getInvalidated())
+	            return false; // we lost race to motable and it has gone...
+	        
 	        return super.prepare(id, emotable, immotable);
 	    }
 
