@@ -149,6 +149,7 @@
       <sysproperty key="activemq.persistenceAdapter" value="org.codehaus.activemq.store.vm.VMPersistenceAdapter"/>
       <sysproperty key="org.mortbay.xml.XmlParser.NotValidating" value="true"/>
       <sysproperty key="wadi.home" value="${wadi.home}"/>
+      <sysproperty key="wadi.config" value="${wadi.home}/WEB-INF/wadi-web.xml"/>
     </java>
     <!--
     <junit>
