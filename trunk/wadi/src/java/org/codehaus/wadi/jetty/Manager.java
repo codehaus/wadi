@@ -155,7 +155,7 @@ public class
       throws InterruptedException
   {
     _running=false;		// super.stop() does this - but we need it here :-(
-    _housekeeper.interrupt();
+    //    _housekeeper.interrupt(); - try without this
     _housekeeper.join();
     _housekeeper=null;
 
