@@ -19,19 +19,27 @@ package org.codehaus.wadi.sandbox.context.impl;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Motable;
 
-
 /**
- * An Evicter which can be externally switched between Always and Never style behaviour
+ * An Evicter which evicts Motables with less than a certain time to live remaining
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class SwitchableEvicter implements Evicter {
+public class TimeToLiveEvicter implements Evicter{
+	long _remaining;
 
-	protected boolean _switch=true;
-	public boolean getSwitch(){return _switch;}
-	public void setSwitch(boolean shwitch){_switch=shwitch;}
-	
-	public boolean evict(String id, Motable motable) {return _switch;}
-	
+	public TimeToLiveEvicter(long remaining) {
+		_remaining=remaining;
+	}
+
+	public boolean evict(String id, Motable m) {
+		long expiry=m.getLastAccessedTime()+(m.getMaxInactiveInterval()*1000);
+		long current=System.currentTimeMillis();
+		long left=expiry-current;
+		boolean evict=(left<=_remaining);
+
+		//_log.info((!evict?"not ":"")+"evicting: "+id);
+
+		return evict;
+	}
 }

@@ -23,5 +23,5 @@ package org.codehaus.wadi.sandbox.context;
  * @version $Revision$
  */
 public interface Evicter {
-	boolean evict(String key, Motable val);
+	boolean evict(String id, Motable motable);
 }

@@ -19,19 +19,17 @@ package org.codehaus.wadi.sandbox.context.impl;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Motable;
 
-
 /**
- * An Evicter which can be externally switched between Always and Never style behaviour
+ * An Evicter which evicts invalid Motables
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class SwitchableEvicter implements Evicter {
 
-	protected boolean _switch=true;
-	public boolean getSwitch(){return _switch;}
-	public void setSwitch(boolean shwitch){_switch=shwitch;}
-	
-	public boolean evict(String id, Motable motable) {return _switch;}
-	
+public class InvalidEvicter implements Evicter {
+
+	public boolean evict(String id, Motable motable) {
+		return !motable.getValid();
+	}
+
 }

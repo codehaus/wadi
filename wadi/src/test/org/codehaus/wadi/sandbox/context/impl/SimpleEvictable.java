@@ -44,6 +44,10 @@ public abstract class SimpleEvictable implements Evictable {
 	public int  getMaxInactiveInterval(){return _maxInactiveInterval;}
 	public void setMaxInactiveInterval(int maxInactiveInterval){_maxInactiveInterval=maxInactiveInterval;}
 	
+	public boolean getValid() {
+		return _lastAccessedTime+(_maxInactiveInterval*1000)>=System.currentTimeMillis(); // TODO - is this expensive ?
+	}
+	
 	public void copy(Evictable evictable) throws Exception {
 		_creationTime=evictable.getCreationTime();
 		_lastAccessedTime=evictable.getLastAccessedTime();

@@ -20,7 +20,7 @@ import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Motable;
 
 /**
- * TODO - JavaDoc this type
+ * An Evicter which always evicts
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -30,7 +30,7 @@ public class AlwaysEvicter implements Evicter {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Evicter#evict(java.lang.String, org.codehaus.wadi.sandbox.context.Motable)
 	 */
-	public boolean evict(String key, Motable val) {
+	public boolean evict(String id, Motable motable) {
 		return true;
 	}
 
