@@ -85,6 +85,8 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 			try {
 				context.getSharedLock().acquire();
 				_log.info("promoting (to memory): "+id);
+				_log.info("insert (memory): "+id);
+				_map.put(id, context);
 				return true;
 			} catch (InterruptedException e) {
 				_log.warn("promotion abandoned: "+id, e);
@@ -93,11 +95,11 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 		}
 		
 		public void commit(String id, Context context) {
-			_log.info("insert (memory): "+id);
-			_map.put(id, context);
 			}
 		
 		public void rollback(String id, Context context) {
+			_log.info("remove (memory): "+id);
+			_map.remove(id);
 		}
 		
 		public void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Context context) throws IOException, ServletException {
