@@ -988,7 +988,7 @@ public abstract class
     impl.init(Manager.this, id, System.currentTimeMillis(), _maxInactiveInterval, _maxInactiveInterval); // TODO need actual...
     _acquireImpl(impl);
     notifySessionCreated(impl.getFacade());
-    _log.debug(impl.getId()+": created");
+    _log.debug(impl.getId()+": creation");
     return impl;
   }
 

@@ -81,7 +81,7 @@ public class
 	// receive commit message
 	boolean ok=is.readBoolean();
 	assert ok;
-	_log.debug(session.getId()+": immigration (from peer)");
+	_log.debug(session.getId()+": immigration (peer: "+remoteAddress+":"+remotePort+")");
 	return ok;
       }
       catch (UnknownHostException e)
@@ -266,7 +266,7 @@ public class
 	// send commit message
 	os.writeBoolean(ok);
 	os.flush();
-	_log.debug(impl.getId()+": emmigration (to peer)");
+	_log.debug(impl.getId()+": emmigration (peer: "+socket.getInetAddress()+":"+socket.getPort()+")");
       }
       catch (IOException e)
       {
