@@ -111,7 +111,7 @@ public abstract class
     _log.trace(id+": initialising");
     _wadiManager               =manager;
     _id                        =id;
-    _creationTime              =creationTime-1;// think about this... - see isNew() - TODO
+    _creationTime              =creationTime;
     _lastAccessedTime          =_creationTime;
     _maxInactiveInterval       =maxInactiveInterval;
     _actualMaxInactiveInterval =actualMaxInactiveInterval;
