@@ -558,8 +558,8 @@ public abstract class
 	  String realId=impl.getRealId();
 	  if (hasTimedOut)	// implicitly invalidated via time-out
 	  {
+	    if (_log.isDebugEnabled()) _log.debug(realId+" : expiration");
 	    if (_log.isTraceEnabled()) _log.trace(realId+" : removing (implicit time out)");
-	    if (_log.isDebugEnabled()) _log.debug(realId+" : timed out");
 	    releaseImpl(impl);
 	    continue;
 	  }
@@ -1086,7 +1086,6 @@ public abstract class
   {
     String realId=impl.getRealId();
     _local.remove(realId);
-    if (_log.isDebugEnabled()) _log.debug(realId+": destruction");
     _notify(impl);
     _releaseImpl(impl);
   }
