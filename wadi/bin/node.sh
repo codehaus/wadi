@@ -36,6 +36,7 @@ properties="$properties \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.activecluster=info \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.activemq=info \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=debug \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.shared.AsyncToSyncAdaptor=trace \
 -Dorg.apache.commons.logging.simplelog.showShortLogname=true \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
 "

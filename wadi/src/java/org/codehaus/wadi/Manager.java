@@ -404,14 +404,17 @@ public abstract class
     _running=true;
 
     // TODO - activecluster stuff - replace with config ASAP...
-    (_connection=_connectionFactory.createConnection()).start();
-    _clusterFactory=new DefaultClusterFactory(getConnection());
-    _cluster=_clusterFactory.createCluster("org.codehaus.wadi#cluster");
-    _cluster.addClusterListener(new MembershipListener());
-    InvokableListener listener=new InvokableListener(this);
-    _cluster.createConsumer(_cluster.getDestination(), null, true).setMessageListener(listener);
-    _cluster.createConsumer(_cluster.getLocalNode().getDestination()).setMessageListener(listener);
-    _cluster.start(); // should include webapp context
+    if (_connectionFactory!=null)
+    {
+      (_connection=_connectionFactory.createConnection()).start();
+      _clusterFactory=new DefaultClusterFactory(getConnection());
+      _cluster=_clusterFactory.createCluster("org.codehaus.wadi#cluster");
+      _cluster.addClusterListener(new MembershipListener());
+      InvokableListener listener=new InvokableListener(this);
+      _cluster.createConsumer(_cluster.getDestination(), null, true).setMessageListener(listener);
+      _cluster.createConsumer(_cluster.getLocalNode().getDestination()).setMessageListener(listener);
+      _cluster.start(); // should include webapp context
+    }
 
     _log.debug("started");
   }
@@ -462,10 +465,13 @@ public abstract class
     //    System.setSecurityManager(((SecurityManager)System.getSecurityManager()).getDelegate());
     _loader=null;
 
-    _cluster.stop();
-    _clusterFactory=null;
-    _connectionFactory.stop();
-    _connectionFactory=null;
+    if (_connectionFactory!=null)
+    {
+      _cluster.stop();
+      _clusterFactory=null;
+      _connectionFactory.stop();
+      _connectionFactory=null;
+    }
 
     _log.debug("stopped");
   }
