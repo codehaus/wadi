@@ -22,6 +22,11 @@
 	<Set name="IdGenerator">
 	  <New class="org.codehaus.wadi.plugins.TomcatIdGenerator"/>
 	</Set>
+<!--
+	<Set name="RoutingStrategy">
+	  <New class="org.codehaus.wadi.plugins.JkRoutingStrategy"/>
+	</Set>
+-->
 	<Set name="BucketName"><SystemProperty name="bucket.name"/></Set>
       </New>
     </Set>
