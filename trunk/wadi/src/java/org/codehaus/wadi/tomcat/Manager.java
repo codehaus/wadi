@@ -42,6 +42,9 @@ import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.util.LifecycleSupport;
 import org.codehaus.wadi.shared.Filter;
 
+import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
+import java.net.URL;
+
 // TODO
 // - all setters need to fire PropertyChange notifications... - should be an aspect
 // - register as a listener on our context
@@ -75,6 +78,10 @@ public class
   protected DefaultContext _defaultContext;
   public DefaultContext getDefaultContext(){return _defaultContext;}
   public void setDefaultContext(DefaultContext defaultContext){_defaultContext=defaultContext;}
+
+  protected String _configFile;
+  public String getConfigFile(){return _configFile;}
+  public void setConfigFile(String configFile){_configFile=configFile;}
 
   // actual notifications are done by aspects...
   protected PropertyChangeSupport _propertyChangeListeners=new PropertyChangeSupport(this);
@@ -230,6 +237,20 @@ public class
       // since they are not set up in our context at the point that it
       // starts us...
       ((ContainerBase)context).addLifecycleListener(new ContextLifecycleListener());
+
+      // There does not appear, short of hacking Tomcat classes, to be
+      // any way to extend the server.xml to be able to handle our
+      // stuff - so we will put it all in another file and load it
+      // using a slightly leaner and more flexible mechanism...
+      try
+      {
+	if (_configFile!=null)
+	  new XmlConfiguration(new URL("file://"+_configFile)).configure(this);
+      }
+      catch (Exception e)
+      {
+	_log.warn("problem reading "+_configFile, e);
+      }
     }
 
   public synchronized void

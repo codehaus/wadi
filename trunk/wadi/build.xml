@@ -23,6 +23,7 @@
     <!-- Tomcat -->
     <pathelement location="${tomcat.home}/server/lib/catalina.jar"/>
     <pathelement location="${tomcat.home}/common/lib/jmx.jar"/>
+    <pathelement location="${tomcat.home}/server/lib/commons-digester.jar"/>
     <!-- run time -->
     <pathelement path="./WEB-INF/classes"/>
     <fileset dir="./WEB-INF/lib"/>
@@ -176,6 +177,7 @@
 	<fileset dir="${tomcat.home}">
 	  <include name="**/*.jar"/>
 	</fileset>
+	<pathelement location="${jetty.home}/lib/org.mortbay.jetty.jar"/><!-- am I mad -->
 	<pathelement path="./WEB-INF/classes"/>
 	<fileset dir="${basedir}">
 	  <include name="lib/*.jar"/>
