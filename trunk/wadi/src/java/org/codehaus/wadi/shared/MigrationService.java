@@ -284,6 +284,7 @@ public class
 	  ok=false;
 	}
 	os.writeBoolean(ok);
+	os.flush();
 	if (!ok)
 	{
 	  _log.warn("failed to emmigrate session - perhaps it has moved node or been invalidated?");

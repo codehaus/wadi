@@ -29,7 +29,7 @@ import java.util.zip.ZipOutputStream;
 import org.codehaus.wadi.shared.StreamingStrategy;
 
 /**
- * Pluggable support for Zip-ing sessions as they are exchanged with
+ * Pluggable support for [un]Zip-ing sessions as they are exchanged with
  * peers or long-term storage mechanisms.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

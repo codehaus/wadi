@@ -367,7 +367,7 @@ public abstract class
       throws Exception
   {
     _log.debug("starting");
-    _log.info("WADI-1.0rc1 - Web Application Distribution Infrastructure (http://wadi.codehaus.org)");
+    _log.info("WADI-0.9 - Web Application Distribution Infrastructure (http://wadi.codehaus.org)");
 
     ServletContext ctx=getServletContext();
 

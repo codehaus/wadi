@@ -91,9 +91,9 @@
 
   <versions>
     <version>
-      <id>1.0-beta-1</id>
-      <name>1.0-beta-1</name>
-      <tag>1.0-beta-1</tag>
+      <id>0.9</id>
+      <name>first-cut</name>
+      <tag>WADI_0_9</tag>
     </version>
   </versions>
   <branches></branches>

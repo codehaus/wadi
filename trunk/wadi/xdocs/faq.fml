@@ -91,31 +91,117 @@
     </faq>
 
     <faq id="goals">
-      <question>What are WADI's goals? [20/04/04]</question>
+      <question>What are WADI's goals? [08/06/04]</question>
       <answer>
 
 	We can crystallise WADI's goals into two stages:
 
 	<ul>
-	<li>to be able to walk into your web farm and ctl-c a node
-	without losing any httpsessions.</li>
-	<li>to be able to walk into your web farm and 'kill -9' a node
-	without losing any httpsessions.</li>
+	  <li>
+	    To be able to walk into your web farm and 'ctl-c' any
+	    webcontainer node without losing any HttpSessions
+	    (i.e. customers).
+	  </li>
+
+	  <li>
+	    To be able to walk into the same web farm and 'kill -9'
+	    any webcontainer node without losing any HttpSessions
+	    (i.e. customers).
+	  </li>
 	</ul>
 
-	WADI is a collection of pluggable components which,
-	ultimately, aim to provide a complete solution to all the
-	common problems encountered in managing user state in the
-	J2EE web tier. Particular issues addressed are/will be:
+	<p/>
+
+	The first of these two cases is important because it allows
+	easy maintenance of existing h/w or s/w. This may seem a
+	trivial requirement, but many existing solutions are
+	time-consuming and/or error-prone (involving draining sessions
+	off target nodes over long periods etc.), to the point that
+	many sites simply accept that maintenance will impact quality
+	of service.
+
+	The second of these two cases deals with a more exceptional
+	case - the catastrophic failure of a webcontainer node. As
+	online competition for business increases, systems are being
+	required to provide higher-availibility. This can be critical
+	in particular areas. The ability to preserve web-tier state
+	beyond the failure of its node is correspondingly an
+	increasing requirement.
+
+      </answer>
+    </faq>
+
+    <faq id="goals">
+      <question>What resolutions to these goals does WADI propose? [08/06/04]</question>
+      <answer>
+
+	WADI addresses its problem space through dividing and
+	conquering. The goals above have been broken down into the
+	following feature set.
 
 	<ul>
-	  <li>A reliable solution to application and container space HttpSession concurrency issues</li>
-	  <li>Ensuring that HttpRequest and HttpSession meet somewhere in the cluster for correct processing</li>
-	  <li>Persistent HttpSessions - saved to store whilst web container is down</li>
-	  <li>Reversible eviction of aging HttpSessions to long term storage</li>
-	  <li>HttpSession migration directly between cluster nodes</li>
-	  <li>Bulletproof HttpSessions - through state replication</li>
-	  <li>A simple and reliable semantic which encompasses all the above</li>
+	  <li>
+	    Perform the full set of duties associated with a standard,
+	    non-distributable session manager.
+	  </li>
+
+	  <li>
+	    A reliable solution to application and container space
+	    HttpSession concurrency issues - so that the container may
+	    safely serialise a session if/when the need arises.
+	  </li>
+
+	  <li>
+	    The ability to migrate sessions to/from a pluggable shared
+	    long-term storage mechanism allows WADI to preserve JVM
+	    resources by evicting infrequently used sessions during a
+	    node's lifetime and to ensure their availibility to its
+	    peers after its shutdown.
+	  </li>
+
+	  <li>
+	    Further pluggable strategies allow the user to control
+	    e.g. compression algorithms used in such migration. These
+	    could be extended to perform other types of transformation
+	    - e.g. encryption, for sites where security is a priority.
+	  </li>
+
+	  <li>
+	    WADI is able to relocate sessions by migration directly
+	    between peer nodes in the cluster. If a request arrives at
+	    a node that does not have the corresponding session, it
+	    can locate it and request its immigration underneath the
+	    incoming request.
+	  </li>
+
+	  <li>
+	    Pluggable load-balancer integrations allow WADI to
+	    leverage specific mechanisms to control/predict on which
+	    node user requests will fall.
+	  </li>
+
+	  <li>
+	    WADI is also able to relocate requests between peers. It
+	    uses redirection (load-balancer permitting) or
+	    proxying. If a request arrives at a node that does not
+	    have the corresponding session, it can locate it and
+	    send the request on to the correct node..
+	  </li>
+
+	  <li>
+	    Bulletproof HttpSessions - through state replication -
+	    This is the second phase of WADI development, currently
+	    unimplemented. We will be drawing on the experience of
+	    having already twice implemented such mechanisms for
+	    Jetty. Work in this area is expected to startsoon.
+	  </li>
+
+	  <li>
+	    All of the above in a manner completely compatible with
+	    the current J2EE Servlet Specification (2.4), thus
+	    preserving the users investment in the J2EE platform and
+	    avoiding vendor lockin.
+	  </li>
 	</ul>
 
 	HttpSessions have taken a back seat in terms of reliability
@@ -123,6 +209,7 @@
 	time. With the proliferation of web farms and increasing
 	reliability and performance requirements in the web tier, WADI
 	will address these issues.
+
       </answer>
     </faq>
 
@@ -189,81 +276,6 @@
       </answer>
     </faq>
 
-    <faq id="fnality">
-      <question>What functionality does WADI bring to the table? [19/04/04]</question>
-      <answer>
-	Managing distributed state is a complex affair. Rather than
-	mandate a particular direction, WADI attempts to abstract the
-	basic patterns of use into Policy interfaces. A number of
-	different such Policy plugins, governing e.g. eviction,
-	migration, Id generation etc, ship with WADI, and the user is
-	encouraged to write their own implementations and submit them
-	to the project to fill any functional gaps.
-
-	<p/>
-
-	Currently WADI can:
-
-	<p/>
-	In a non-distributed environment:
-	<ul>
-	  <li>
-	    Perform the full set of duties of a standard session
-	    manager.
-	  </li>
-	</ul>
-
-	<p/>
-	In a distributed environment:
-	<ul>
-	  <li>
-	    Persist sessions via a pluggable MigrationPolicy between
-	    web container start/stop cycles. All the correct
-	    notifications will be triggered upon
-	    HttpSessionActivationListeners.
-	  </li>
-	  <li>
-	    Select, according to a user supplied EvictionPolicy,
-	    sessions for Passivation and using the above
-	    MigrationPolicy, move them into shared storage, from which
-	    they may be re-activated, in a race-safe environment, by
-	    any web-container instance that shares the store. Once
-	    again, the correct notifications will be made to session
-	    Listeners.
-	  </li>
-	  <li>
-	    Reference based semantics (See WADI Paper - LINK TODO) may
-	    be completely maintained in a distributed environment. We
-	    believe this is the only Open Source Session Manager to be
-	    able to do this reliably. i.e., any legacy webapp,
-	    provided that it stores client state exclusively in the
-	    corresponding http session, may be deployed in distributed
-	    mode with no further code changes.
-	  </li>
-	</ul>
-
-	<p/>
-	In the future we expect WADI to be able to:
-
-	<ul>
-	  <li>
-	    draw on existing functionality to provide performant and
-	    flexible high availibility and scalability of it's managed
-	    state, via a variety of pluggable backends.
-	  </li>
-	  <li>
-	    because of it's flexibility, WADI should provide a
-	    platform with which a number of mission critical third
-	    party product integrations (e.g. http load-balancers) will
-	    be able to be tightly integrated, resolving many of the
-	    existing problems in providing clustered web-tier state
-	    management.
-	  </li>
-	</ul>
-
-      </answer>
-    </faq>
-
     <faq id="why">
       <question>Why would I even want to store important information in the Web tier? [19/04/04]</question>
       <answer>
@@ -317,7 +329,7 @@
     </faq>
 
     <faq id="competition">
-      <question>How does it differentiate itself from the competition? [19/04/04]</question>
+      <question>How does it differentiate itself from the competition? [08/06/04]</question>
       <answer>
 
 	The competition is HttpSession implementations in the open
@@ -327,8 +339,8 @@
 	replication, but are marked as 'experimental' or have unclear
 	semantics, or are non-performant.I haven't found a single
 	implementation which addresses all the issues which WADI
-	chooses to - otherwise I would have contributed to that
-	project.
+	chooses to in one package - otherwise I would have contributed
+	to that project.
 
       </answer>
     </faq>
@@ -358,7 +370,7 @@
     </faq>
 
     <faq id="status">
-      <question>What is WADI's current status? [01/06/04]</question>
+      <question>What is WADI's current status? [08/06/04]</question>
       <answer>
 
 	Changing daily :-)
@@ -366,13 +378,13 @@
 	<p/>
 
 	WADI started as a 'proof of concept' project, but is moving
-	rapidly towards production readiness. We will be looking for
-	beta-testers soon.
+	rapidly towards production readiness. We will be releasing
+	very shortly.
 
 	<p/>
 
-	Functionality in Tomcat and Jetty should now be equivalent, so
-	all further WADI development is now being done on a
+	Functionality in Tomcat and Jetty is now be equivalent, so all
+	further WADI development is now being done on a
 	webcontainer-independant platform.
 
       </answer>
@@ -386,15 +398,6 @@
 	surrounding concurrency, migration and session/request
 	relocation. Once these have been resolved, the next large piece of
 	functionality will be state replication.
-
-	<p/>
-
-	The last piece of this puzzle, currently being worked upon, is
-	a ReadWrite Lock that orders writers according to thread
-	priority and allows the overlapping of r and w locks -
-	efectively allowing a reader to state its intention to upgrade
-	to a writer and, whilst not being guaranteed that it will win
-	the ensuing race, at least being given a place in it.
 
       </answer>
     </faq>
@@ -456,10 +459,12 @@
       <question>What's going on with the build system - Ant or Maven? [19/04/04]</question>
       <answer>
 
-	WADI started life as an Ant project. We are now moving over to
-	Maven. Unfortunately, the way that the maven-aspectj-plugin
-	does things is rather dissimilar to the way we were doing
-	things in Ant. We hope to resolve this issue soon.
+	WADI started on an Ant build system and is in the process of
+	migrating to Maven. This required a changes to Maven's
+	aspectj-plugin, which is not yet in a release, so Maven is
+	currently only used to build the website. We hope to soon
+	remedy this. In the meantime, please use the build.sh script
+	to build from source.
 
 	<p/>
 
@@ -479,139 +484,59 @@
 
 	<ul>
 	  <li>WADI has been tested on recent versions of Tomcat5 - e.g. 5.0.25</li>
-	  <li>ensure that wadi-0.9.jar is on Tomcat's classpath</li>
+	  <li>Ensure that wadi-0.9.jar is on Tomcat's classpath</li>
 	  <li>
-	configure your app in your server.xml with e.g.
-	<pre>
-	<Context path="/<context-path>" docBase="<path-to-webapp-on-disc>">
-	  <Manager className="org.codehaus.wadi.tomcat.Manager"/>
-	</Context>
-	</pre>
-	</li>
-	  <li>add the <distributable/> tag to <webapp>/WEB-INF/web.xml</li>
-	  <li>add the example wadi-web.xml (in conf) to <webapp>/WEB-INF</li>
+	    Configure your app in your server.xml with e.g.
+	    <pre>
+	      &lt;Context path="/&lt;context-path&gt;" docBase="&lt;path-to-webapp-on-disc&gt;"&gt;
+	      &lt;Manager className="org.codehaus.wadi.tomcat.Manager"/&gt;
+	      &lt;/Context&gt;
+	    </pre>
+	  </li>
+	  <li>add the &lt;distributable/&gt; tag to &lt;webapp&gt;/WEB-INF/web.xml</li>
+	  <li>add the example wadi-web.xml (in conf) to &lt;webapp&gt;/WEB-INF</li>
 	  <li>start tomcat in the usual way</li>
 	</ul>
 
+	<p/>
 	Jetty:
 	<p/>
 
 	<ul>
 	  <li>WADI will work on Jetty-5.0 or Jetty CVS HEAD</li>
-	  <li>ensure that wadi-0.9.jar is on Jetty's classpath or in <webapp>/WEB-INF/lib</li>
+	  <li>ensure that wadi-0.9.jar is on Jetty's classpath or in &lt;webapp&gt;/WEB-INF/lib</li>
 	  <li>
-	configure your app in your jetty.xml with e.g.
-	<pre>
-  <Call name="addWebApplication">
-    <Arg>/<context-path></Arg>
-    <Arg><path-to-webapp-on-disc></Arg>
-  </Call>
-	</pre>
-	</li>
-	  <li>add the <distributable/> tag to <webapp>/WEB-INF/web.xml</li>
-	  <li>add the example jetty-web.xml (in conf) to <webapp>/WEB-INF</li>
-	  <li>add the example wadi-web.xml (in conf) to <webapp>/WEB-INF</li>
+	    configure your app in your jetty.xml with e.g.
+	    <pre>
+	      &lt;Call name="addWebApplication"&gt;
+	      &lt;Arg&gt;/&lt;context-path&gt;&lt;/Arg&gt;
+	      &lt;Arg&gt;&lt;path-to-webapp-on-disc&gt;&lt;/Arg&gt;
+	      &lt;/Call&gt;
+	    </pre>
+	  </li>
+	  <li>add the &lt;distributable/&gt; tag to &lt;webapp&gt;/WEB-INF/web.xml</li>
+	  <li>add the example jetty-web.xml (in conf) to &lt;webapp&gt;/WEB-INF</li>
+	  <li>add the example wadi-web.xml (in conf) to &lt;webapp&gt;/WEB-INF</li>
 	  <li>start Jetty in the usual way</li>
 	</ul>
-
-
-      </answer>
-    </faq>
-
-    <faq id="starting">
-      <question>How do I get started? [19/04/04]</question>
-      <answer>
-
-	For the moment we will do this using Ant:
-
-	<p/>
-
-	You'll need the following env vars set up in your shell
-	(apologies to MS users - I'm sure you'll work it out).
-
-	<ul>
-	  <li>JAVA_HOME</li>
-	  <li>ASPECTJ_HOME</li>
-	  <li>JETTY_HOME</li>
-	  <li>TOMCAT_HOME</li>
-	</ul>
-
-      </answer>
-    </faq>
-
-    <faq id="tomcat">
-      <question>How do I run the Tomcat integration? [19/04/04]</question>
-      <answer>
-
-	On Un*x:
-
-	<pre>build.sh tomcat.0</pre>
-
-	This will run the Tomcat in $TOMCAT_HOME with the
-	configuration <a href="http://cvs.wadi.codehaus.org/cvsweb.cgi/wadi/conf/tomcat.xml?rev=1.2;content-type=text%2Fx-cvsweb-markup">tomcat.xml</a> which
-	installs a context /wadi and sets up WADI as the HttpSession
-	Manager for this context. Although WADI classes are present in
-	WEB-INF/classes, it appears that they must be put on Tomcat's
-	classpath before starting it.
-
-      </answer>
-    </faq>
-
-    <faq id="jetty">
-      <question>How do I run the Jetty integration? [19/04/04]</question>
-      <answer>
-
-	On Un*x:
-
-	<pre>build.sh jetty.0</pre>
-
-	This will run the Jetty in $JETTY_HOME with the configuration
-	<a href="http://cvs.wadi.codehaus.org/cvsweb.cgi/wadi/conf/jetty.xml?rev=1.2;content-type=text%2Fx-cvsweb-markup;only_with_tag=MAIN">jetty.xml</a>. This runs a stripped
-	down Jetty, into which it installs the WADI webapp at
-	/wadi. It then uses the WEB-INF/jetty-web.xml to set up WADI
-	as the HttpSession Manager. WADI classes are loaded from
-	WEB-INF/classes by the webapp's ClassLoader. i.e. The webapp
-	is in control of how its state is managed, rather than the
-	deployer.
-
-      </answer>
-    </faq>
-
-    <faq id="war">
-      <question>Why is WADI packaged as a WAR? [19/04/04]</question>
-      <answer>
-
-	This is simply an artifact of how it is developed. Having it
-	compile directly into an unpacked WAR means that the test
-	webapp may be deployed immediately WADI has been built,
-	omitting a tedious 'packaging' step. This speeds the
-	development iteration.
-
-	<p/>
-
-	It is intended that, ultimately, WADI will be packaged into a
-	single wadi.jar. For Jetty I would expect this to be put in
-	WEB-INF/lib whereas for Tomcat, somewhere like
-	$TOMCAT_HOME/server/common.
-
       </answer>
     </faq>
 
     <faq id="logging">
-      <question>What is WADI using for Logging infrastructure? [19/04/04]</question>
+      <question>What is WADI using for Logging infrastructure? [08/06/04]</question>
       <answer>
 
-	WADI uses commons-logging, and in the current development
-	configuration this is implemented via J2SE1.4 native
-	logging. However, just to confuse matters, because I find the
-	double line output format of this system unreadable, I have
-	plugged in an Open Source logging formatter (gt2-main.jar)
-	which has nicer output.
+	WADI uses commons-logging, and this is backed onto
+	org.apache.commons.logging.impl.SimpleLog logging. We chose
+	this over Jdk1.4 logging, because this seems to swallow all
+	its input afterstarting Runtimme.ShutdownHook(). Logging what
+	happens during shutdown is important to WADI and SimpleLog
+	seems to do this with no problems.
 
 	<p/>
 
-	I didn't just use log4j, because I wanted to preserve a TRACE
-	level, which it does not support out-of-the-box.
+	We didn't use the log4j backend, because we wanted to preserve
+	a TRACE level, which it does not support out-of-the-box.
 
       </answer>
     </faq>

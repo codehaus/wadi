@@ -504,4 +504,27 @@ wadi-web.xml needs FAQ-ing
 
 What happens when Jetty or Tomcat are run via JMX :-)
 
+-----------------------------------------
 
+for Tomcat (maybe Jetty as well)
+
+
+if get() comes in from above filter, we know it is request thread and maybe first time
+filter will wrap request and put aspect around get so that it arrives with ref to req object in threadlocal
+req obj will have field for current session
+
+req objects session methods will be aspected to keep this up to date
+
+so any session fetch/create/invalidate will update relevant request
+obj.
+
+on leaving through filter current session will be picked out of request wrapper and unlocked...
+
+
+
+In Jetty, we may not need to wrap request as every get/create will have req passed as param...
+
+what about invalidate ?, how do we ensure that req is kept up to date...
+invalidation goes through manager which must notify relevant request wrappers ?
+
+-----------------------------------------
