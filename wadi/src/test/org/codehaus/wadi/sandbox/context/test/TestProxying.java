@@ -21,6 +21,8 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 
 import javax.jms.ConnectionFactory;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -46,7 +48,7 @@ import junit.framework.TestCase;
  * @version $Revision$
  */
 
-public class TestMigration extends TestCase {
+public class TestProxying extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
 	
 	protected Node _node0;
@@ -71,13 +73,18 @@ public class TestMigration extends TestCase {
 		_servlet1=new MyServlet("1", clusterFactory.createCluster(clusterName), new InetSocketAddress("localhost", 8081), new MyContextPool(), new CommonsHttpProxy("jsessionid"));
 		_filter1=new MyFilter("1", _servlet1);
 		(_node1=new TomcatNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
+	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
+	    _log.info("STARTING NOW!");
 	}
 	
 	/*
 	 * @see TestCase#tearDown()
 	 */
 	protected void tearDown() throws Exception {
-		_node1.stop();
+	    _log.info("STOPPING NOW!");
+	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
+
+	    _node1.stop();
 		_node0.stop();
 		super.tearDown();
 	}
@@ -86,7 +93,7 @@ public class TestMigration extends TestCase {
 	 * Constructor for TestMigration.
 	 * @param name
 	 */
-	public TestMigration(String name) {
+	public TestProxying(String name) {
 		super(name);
 	}
 
@@ -97,10 +104,7 @@ public class TestMigration extends TestCase {
 		return method.getStatusCode();
 	}
 	
-	public void testMigration() throws Exception {
-	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
-	    _log.info("STARTING NOW!");
-
+	public void testInsecureProxy() throws Exception {
 	    HttpClient client=new HttpClient();
 		HttpMethod method0=new GetMethod("http://localhost:8080");
 		HttpMethod method1=new GetMethod("http://localhost:8081");
@@ -174,9 +178,31 @@ public class TestMigration extends TestCase {
 		assertTrue(m1.size()==1);
 		assertTrue(c0.size()==1);
 		assertTrue(c1.size()==1);
+	}
+	
+	public void testSecureProxy() throws Exception {
+	    HttpClient client=new HttpClient();
+		HttpMethod method0=new GetMethod("http://localhost:8080");
+		HttpMethod method1=new GetMethod("http://localhost:8081");
+
+		Map m0=_servlet0.getMemoryMap();
+		Map m1=_servlet1.getMemoryMap();
+		Map c0=_servlet0.getClusterMap();
+		Map c1=_servlet1.getClusterMap();
 		
-		c0.clear();
-		c1.clear();
+		assertTrue(m0.isEmpty());
+		assertTrue(m1.isEmpty());
+		assertTrue(c0.isEmpty());
+		assertTrue(c1.isEmpty());
+		
+		m0.put("foo", new MyContext());
+		m1.put("bar", new MyContext());
+
+		assertTrue(m0.size()==1);
+		assertTrue(m1.size()==1);
+		assertTrue(c0.isEmpty());
+		assertTrue(c1.isEmpty());
+		
 		assertTrue(!_node0.getSecure());
 		// won't run locally
 		assertTrue(get(client, method0, "/test/confidential;jsessionid=foo")==403); // forbidden
@@ -202,20 +228,80 @@ public class TestMigration extends TestCase {
 		assertTrue(get(client, method1, "/test/confidential;jsessionid=bar")==200);
 		// will run remotely - proxy should preserve confidentiality on remote server...
 		assertTrue(get(client, method1, "/test/confidential;jsessionid=foo")==200);
-
-		// next test should be that we can somehow migrate sessions across, in place of proxying...
+	}
+	
+	// next test should be that we can somehow migrate sessions across, in place of proxying...
+	
+	// TODO:
+	// consider merging two classes
+	// consider having MigrationConceptualiser at top of stack (to promote sessions to other nodes)
+	// Consider a MigrationContextualiser in place of the Location tier, which only migrates
+	// and a HybridContextualiser, which sometimes proxies and sometimes migrates...
+	// consider moving back to a more jcache like architecture, where the CacheKey is a compound - Req, Chain, etc...
+	// lookup returns a FilterChain to be run.... (problem - pause between lookup and locking - think about it).
+	// if we have located a session and set up a timeout, this should be released after the first proxy to it...
+	// 8080, 8081 should only be encoded once...
+    
+	static class Test implements MyServlet.Test {
+		protected int _count=0;
+		public int getCount(){return _count;}
+		public void setCount(int count){_count=count;}
 		
-		// TODO:
-		// consider merging two classes
-		// consider having MigrationConceptualiser at top of stack (to promote sessions to other nodes)
-		// Consider a MigrationContextualiser in place of the Location tier, which only migrates
-		// and a HybridContextualiser, which sometimes proxies and sometimes migrates...
-		// consider moving back to a more jcache like architecture, where the CacheKey is a compound - Req, Chain, etc...
-		// lookup returns a FilterChain to be run.... (problem - pause between lookup and locking - think about it).
-		// if we have located a session and set up a timeout, this should be released after the first proxy to it...
-		// 8080, 8081 should only be encoded once...
+		protected boolean _stateful;
+		public boolean isStateful(){return _stateful;}
 
-	    _log.info("STOPPING NOW!");
-	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
-	    }	
+		public void test(ServletRequest req, ServletResponse res){
+			_count++;
+			boolean stateful;
+			try {
+				((javax.servlet.http.HttpServletRequest)req).getSession();
+				_stateful=true;
+			} catch (UnsupportedOperationException ignore){
+				_stateful=false;
+			}
+		}
+	};
+	
+	public void testStatelessContextualiser() throws Exception {
+	    HttpClient client=new HttpClient();
+		HttpMethod method0=new GetMethod("http://localhost:8080");
+		HttpMethod method1=new GetMethod("http://localhost:8081");
+
+		
+		Map m0=_servlet0.getMemoryMap();
+		Map m1=_servlet1.getMemoryMap();
+
+		m0.put("foo", new MyContext());
+		m1.put("bar", new MyContext());
+
+		Test test;
+		
+		// this won't be proxied, because we can prove that it is stateless...
+		test=new Test();
+		_servlet0.setTest(test);
+		assertTrue(get(client, method0, "/test/static.html;jsessionid=bar")==200);
+		assertTrue(test.getCount()==1 && !test.isStateful());
+		_servlet0.setTest(null);
+		
+		// this will be proxied, because we cannot prove that it is stateless...
+		test=new Test();
+		_servlet1.setTest(test);
+		assertTrue(get(client, method0, "/test/dynamic.dyn;jsessionid=bar")==200);
+		assertTrue(test.getCount()==1 && test.isStateful());
+		_servlet1.setTest(null);
+		
+		// this won't be proxied, because we can prove that it is stateless...
+		test=new Test();
+		_servlet1.setTest(test);
+		assertTrue(get(client, method1, "/test/static.html;jsessionid=foo")==200);
+		assertTrue(test.getCount()==1 && !test.isStateful());
+		_servlet1.setTest(null);
+
+		// this will be proxied, because we cannot prove that it is stateless...
+		test=new Test();
+		_servlet0.setTest(test);
+		assertTrue(get(client, method1, "/test/dynamic.jsp;jsessionid=foo")==200);
+		assertTrue(test.getCount()==1 && test.isStateful());
+		_servlet0.setTest(null);
+	}
 }
