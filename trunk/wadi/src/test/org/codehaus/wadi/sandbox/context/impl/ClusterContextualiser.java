@@ -61,11 +61,57 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	protected final Map             _searches=new HashMap(); // do we need more concurrency ?
 	protected final long            _timeout;
 	protected final Location        _location;
-	protected final long            _peekTimeout;
+	protected final long            _proxyHandOverPeriod;
 	
 	protected Contextualiser _top;
 	public void setContextualiser(Contextualiser top){_top=top;}
 	public Contextualiser getContextualiser(){return _top;}
+	
+	class PeekFilterChain
+	implements FilterChain
+	{
+		protected final Destination _replyTo;
+		protected final String _correlationId;
+		protected final Location _location;
+		protected final String _id;
+		protected final long _handOverPeriod;
+		
+		PeekFilterChain(Destination replyTo, String correlationId, Location location, String id, long handOverPeriod) {
+			_replyTo=replyTo;
+			_correlationId=correlationId;
+			_location=location;
+			_id=id;
+			_handOverPeriod=handOverPeriod;
+		}
+		
+		public void
+		doFilter(ServletRequest request, ServletResponse response)
+		throws IOException, ServletException
+		{
+			_log.info("sending location response: "+_id);
+			LocationResponse lr=new LocationResponse(_location, Collections.singleton(_id));
+			try {
+				ObjectMessage m=_cluster.createObjectMessage();
+				m.setJMSReplyTo(_replyTo);
+				m.setJMSCorrelationID(_correlationId);
+				m.setObject(lr);
+				_cluster.send(_replyTo, m);
+				
+				// Now wait for a while so that the session is locked into this container, giving the other node a chance to proxy to this location and still find it here...
+				try {
+					_log.info("waiting for proxy ("+_handOverPeriod+" millis)...");
+					Thread.sleep(_handOverPeriod);
+					_log.info("...waiting over");
+				} catch (InterruptedException ignore) {
+					// ignore
+					// TODO - should we loop here until timeout is up ?
+				}
+				
+			} catch (JMSException e) {
+				_log.error("problem sending location response: "+_id, e);
+			}
+		}
+	}
 	
 	class LocationListener implements MessageListener {
 		public void onMessage(Message message) {
@@ -73,6 +119,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			Object tmp=null;
 			LocationResponse response=null;
 			LocationRequest request=null;
+			
+			// TODO - these need to be threaded, so that they can run concurrently
 			
 			try {
 				if (message instanceof ObjectMessage && (om=(ObjectMessage)message)!=null && (tmp=om.getObject())!=null) {
@@ -91,33 +139,20 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		public void onLocationRequestMessage(ObjectMessage message, LocationRequest request) throws JMSException {
 			String id=request.getId();
 			_log.info("receiving location request: "+id);
-
-			boolean present=false;
 			if (_top==null) {
 				_log.warn("no Contextualiser set - cannot respond to LocationRequests");
 			} else {
 				try {
-					present=_top.contextualise(null,null,null,id, null, null, _peekTimeout);
-					_log.info("peeked for "+id+" - "+present);
+					Destination replyTo=message.getJMSReplyTo();
+					String correlationId=message.getJMSCorrelationID();
+					long handShakePeriod=request.getHandOverPeriod();
+					// TODO - the peekTimeout should be specified by the remote node...
+					FilterChain fc=new PeekFilterChain(replyTo, correlationId, _location, id, handShakePeriod);
+					_top.contextualise(null,null,fc,id, null, null, true);
 				} catch (Exception e) {
 					_log.warn("problem peeking for location request: "+id);
 				}
 				// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
-			}
-			
-			if (present) {
-				Destination destination=message.getJMSReplyTo();
-				String correlationId=message.getJMSCorrelationID();
-				LocationResponse response=new LocationResponse(_location, Collections.singleton(id));
-				try {
-					ObjectMessage m=_cluster.createObjectMessage();
-					m.setJMSReplyTo(destination);
-					m.setJMSCorrelationID(correlationId);
-					m.setObject(response);
-					_cluster.send(destination, m);
-				} catch (JMSException e) {
-					_log.error("problem sending location response: "+id, e);
-				}
 			}
 		}
 		
@@ -159,7 +194,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 * @param map
 	 * @param evicter
 	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, Cluster cluster, long timeout, long peekTimeout, Location location) throws JMSException {
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, Cluster cluster, long timeout, long proxyHandOverPeriod, Location location) throws JMSException {
 		super(next, collapser, map, evicter);
 		_cluster=cluster;
 		boolean excludeSelf=true;
@@ -167,7 +202,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		_listener=new LocationListener();
 	    _consumer.setMessageListener(_listener);// should be called in start() - we need a stop() too - to remove listeners...
 	    _timeout=timeout;
-	    _peekTimeout=peekTimeout==0?1:peekTimeout; // must not be 0
+	    _proxyHandOverPeriod=proxyHandOverPeriod;
 	    _location=location;
 	}
 
@@ -181,8 +216,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#contextualiseLocally(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync)
 	 */
-	public boolean contextualiseLocally(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, long peekTimeout) throws IOException, ServletException {
-		// ignore peekTimeout - we are not local
+	public boolean contextualiseLocally(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
 		Location location=null;
 		
 		if ((location=(Location)_map.get(id))==null) {
@@ -196,7 +230,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			
 			try {
 				// broadcast location query to whole cluster
-				LocationRequest query=new LocationRequest(id);
+				LocationRequest query=new LocationRequest(id, _proxyHandOverPeriod);
 				ObjectMessage message=_cluster.createObjectMessage();
 				message.setJMSReplyTo(_cluster.getDestination());
 				message.setJMSCorrelationID(correlationId);

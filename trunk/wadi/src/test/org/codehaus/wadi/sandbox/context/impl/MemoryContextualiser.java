@@ -49,8 +49,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
 	public boolean contextualiseLocally(ServletRequest req, ServletResponse res,
-			FilterChain chain, String id, Promoter promoter, Sync promotionMutex, long peekTimeout) throws IOException, ServletException {
-		boolean peeking=(peekTimeout!=0);
+			FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
 		Context c=(Context)_map.get(id);
 		if (c==null) {
 			return false;
@@ -59,17 +58,10 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 			try {
 				shared.acquire();
 				// now that we know the Context has been promoted to this point and is going nowhere we can allow other threads that were trying to find it proceed...
-				if (promotionMutex!=null)
+				if (promotionMutex!=null) {
 					promotionMutex.release();
-				if (peeking) {
-					try {
-						Thread.sleep(peekTimeout);
-					} catch (InterruptedException ignore) {
-						// ignore
-					}
-				} else {
-					contextualise(req, res, chain, id);
 				}
+				contextualise(req, res, chain, id);
 			} catch (InterruptedException e) {
 				throw new ServletException("timed out acquiring context", e);
 			} finally {

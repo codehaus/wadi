@@ -16,13 +16,15 @@ import java.io.Serializable;
  */
 public class LocationRequest implements Serializable {
 	protected String _id;
+	protected long _handOverPeriod;
 
 	/**
 	 * 
 	 */
-	public LocationRequest(String id) {
+	public LocationRequest(String id, long handOverPeriod) {
 		super();
 		_id=id;
+		_handOverPeriod=handOverPeriod;
 	}
 	
 	public LocationRequest() {
@@ -30,4 +32,5 @@ public class LocationRequest implements Serializable {
 	}
 	
 	public String getId(){return _id;}
+	public long getHandOverPeriod(){return _handOverPeriod;}
 }

@@ -39,7 +39,7 @@ public class DummyContextualiser implements Contextualiser {
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
 	public boolean contextualise(ServletRequest req, ServletResponse res,
-			FilterChain chain, String id, Promoter promoter, Sync promotionMutex, long peekTimeout)
+			FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly)
 			throws IOException, ServletException {
 		return false;
 	}
