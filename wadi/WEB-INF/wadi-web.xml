@@ -1,96 +1,95 @@
 <?xml version="1.0"  encoding="ISO-8859-1"?>
 
-<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure 1.2//EN" "http://jetty.mortbay.org/configure_1_2.dtd">
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
-<Configure class="org.codehaus.wadi.Manager">
+<beans>
 
- <Set name="ConnectionFactory">
-  <New class="org.codehaus.activemq.ActiveMQConnectionFactory">
-   <Arg type="String">multicast://224.1.2.3:5123</Arg>
-<!--   <Arg type="String">tcp://localhost:61616</Arg> -->
-  </New>
- </Set>
+  <bean
+    id="ConnectionFactory"
+    class="org.codehaus.activemq.ActiveMQConnectionFactory"
+    >
+    <constructor-arg><value>multicast://224.1.2.3:5123</value></constructor-arg>
+    <!-- <constructor-arg><value>tcp://localhost:61616</value></constructor-arg> -->
+  </bean>
 
-<!--
- <Set name="Connection">
-  <Call name="getConnectionFactory">
-   <Call name="createConnection"/>
-  </Call>
- </Set>
--->
+  <bean
+    id="ManagerFactory"
+    class="org.codehaus.wadi.SpringManagerFactory"
+    >
+    <constructor-arg><ref bean="Manager"/></constructor-arg>
+  </bean>
 
-<!-- ActiveCluster Cluster component -->
-<!--
- <Set name="ClusterFactory">
-  <New class="org.codehaus.activecluster.impl.DefaultClusterFactory">
-   <Arg>
-   </Arg>
-  </New>
- </Set>
--->
+  <bean
+    id="ConfiguredManager"
+    factory-bean="ManagerFactory"
+    factory-method="getManager"
+    >
 
-<!--
- <Set name="Cluster">
-  <Arg>
-  </Arg>
- </Set>
--->
+    <!-- how did we create our connection to the cluster ? -->
+    <property name="connectionFactory">
+      <ref bean="ConnectionFactory"/>
+    </property><!-- not needed now ? -->
 
-  <Set name="MigrationService">
-    <New class="org.codehaus.wadi.impl.StreamedMigrationService">
-      <!--  <New class="org.codehaus.wadi.impl.MessagedMigrationService"/> -->
-      <Set name="Timeout">5000</Set>
-    </New>
-  </Set>
+    <!-- Our connection to the cluster -->
+    <property name="connection">
+      <bean
+	name="dummy"
+	factory-bean="ConnectionFactory"
+	factory-method="createConnection"
+	>
+      </bean>
+    </property>
 
-  <!-- used to stream sessions between peers -->
-  <Set name="StreamingStrategy">
-    <New class="org.codehaus.wadi.impl.SimpleStreamingStrategy"/><!-- no compression -->
-  </Set>
+    <!-- How should session migration be implemented ? -->
+    <property name="migrationService">
+      <!--
+      <bean class="org.codehaus.wadi.impl.MessagedMigrationService" />
+      -->
+      <bean class="org.codehaus.wadi.impl.StreamedMigrationService">
+	<property name="timeout"><value>5000</value></property>
+      </bean>
+    </property>
 
-  <!-- used to select long-term storage mechanism -->
-  <Set name="PassivationStrategy">
+    <!-- used to stream sessions between peers -->
+    <property name="streamingStrategy">
+      <bean class="org.codehaus.wadi.impl.SimpleStreamingStrategy"/>
+    </property>
 
-    <New class="org.codehaus.wadi.impl.FilePassivationStrategy"><!-- File based persistance -->
-      <Arg><SystemProperty name="wadi.home"/>/tmp</Arg><!-- put evicted sessions ${wadi.home}/tmp -->
+    <!-- used to select long-term storage mechanism -->
+    <property name="passivationStrategy">
+      <bean class="org.codehaus.wadi.impl.FilePassivationStrategy" >
+	<constructor-arg><value>${wadi.home}/tmp</value></constructor-arg>
+	<!-- used to stream sessions to/from storage -->
+	<property name="streamingStrategy">
+	  <bean class="org.codehaus.wadi.impl.GZIPStreamingStrategy"/>
+	</property>
+      </bean>
+    </property>
 
-      <!-- evicted sessions will be gzipped -->
-      <Set name="StreamingStrategy">
-	<New class="org.codehaus.wadi.impl.GZIPStreamingStrategy"/>
-      </Set>
-    </New>
-  </Set>
+    <!-- used to decide when to evict a session -->
+    <property name="evictionPolicy">
+      <bean class="org.codehaus.wadi.impl.AbsoluteEvictionPolicy">
+	<constructor-arg index="0"><value>300</value></constructor-arg><!-- evict after 5 mins of inactivity -->
+      </bean>
+    </property>
 
-  <!-- used to decide when to evict a session -->
-  <Set name="EvictionPolicy">
-    <New class="org.codehaus.wadi.impl.AbsoluteEvictionPolicy">
-      <Arg type="int">300</Arg><!-- evict after 5 mins of inactivity -->
-    </New>
-  </Set>
+    <!-- used to decide how session ids should be generated -->
+    <property name="idGenerator">
+      <bean class="org.codehaus.wadi.impl.TomcatIdGenerator"/>
+    </property>
 
-  <!-- used to decide how session ids should be generated -->
-  <Set name="IdGenerator">
-    <New class="org.codehaus.wadi.impl.TomcatIdGenerator"/><!-- use Tomcat style IDs -->
-  </Set>
+    <!-- manage coordination with load-balancer -->
+    <property name="routingStrategy">
+      <!-- if you are using Apache/mod_jk uncomment this for affinity -->
+      <!--
+      <bean class="org.codehaus.wadi.impl.JkRoutingStrategy">
+      <constructor-arg><value>${wadi.colour}</value></constructor-arg>
+      </bean>
+      -->
+      <!-- else use this... -->
+      <bean class="org.codehaus.wadi.impl.NoRoutingStrategy"/>
+    </property>
 
-  <!-- Multicast address:port over which session location protocol runs -->
-  <Set name="AutoLocationAddress">228.5.6.7</Set>
-  <Set name="AutoLocationPort">6789</Set>
+  </bean>
 
-<!-- if you are using Apache/mod_jk uncomment this for affinity -->
-<!--
-  <Set name="RoutingStrategy">
-   <New class="org.codehaus.wadi.impl.JkRoutingStrategy">
-    <Arg><SystemProperty name="wadi.colour"/></Arg>
-   </New>
-  </Set>
--->
-
-<!-- else use this... -->
-<!--
--->
-  <Set name="RoutingStrategy">
-   <New class="org.codehaus.wadi.impl.NoRoutingStrategy"/>
-  </Set>
-
-</Configure>
+</beans>
