@@ -29,6 +29,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.catalina.deploy.MessageDestination;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
@@ -43,6 +44,7 @@ import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
+import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.context.impl.StatelessContextualiser;
 
@@ -53,17 +55,21 @@ public class MyServlet implements Servlet {
 	protected final Collapser _collapser;
 	protected final Map _clusterMap;
 	protected final Map _memoryMap;
+	protected final MessageDispatcher _dispatcher;
+	protected final RelocationStrategy _relocater;
 	protected final ClusterContextualiser _clusterContextualiser;
 	protected final StatelessContextualiser _statelessContextualiser;
 	protected final MemoryContextualiser _memoryContextualiser;
 	
-	public MyServlet(String name, Cluster cluster, ContextPool contextPool, RelocationStrategy relocater) throws Exception {
+	public MyServlet(String name, Cluster cluster, ContextPool contextPool, MessageDispatcher dispatcher, RelocationStrategy relocater) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 		_cluster=cluster;
 		_cluster.start();
 		_collapser=new HashingCollapser(10, 2000);
 		_clusterMap=new HashMap();
-		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), relocater);
+		_dispatcher=dispatcher;
+		_relocater=relocater;
+		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), _dispatcher, _relocater);
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
 		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);

@@ -35,7 +35,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.Promoter;
@@ -57,18 +56,16 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 	protected final long _proxyHandOverPeriod;
 	protected final long _timeout;
 	protected final Map _rvMap=new HashMap();
-	protected final Cluster _cluster;
 	protected final Location _location;
 	protected Contextualiser _top;
 	
 	public void setTop(Contextualiser top){_top=top;}
 	public Contextualiser getTop(){return _top;}
 	
-	public ProxyRelocationStrategy(Cluster cluster, MessageDispatcher dispatcher, Location location, long timeout, long proxyHandOverPeriod) {
+	public ProxyRelocationStrategy(MessageDispatcher dispatcher, Location location, long timeout, long proxyHandOverPeriod) {
 		_dispatcher=dispatcher;
 		_proxyHandOverPeriod=proxyHandOverPeriod;
 		_timeout=timeout;
-		_cluster=cluster;
 		_location=location;
 		
 		_dispatcher.register(this, "onMessage"); // dispatch LocationRequest messages onto our onMessage() method
@@ -79,7 +76,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 		_log.info("sending location request: "+id);
 		MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
 		settingsInOut.from=_location.getDestination();
-		settingsInOut.to=_cluster.getDestination();
+		settingsInOut.to=_dispatcher.getCluster().getDestination();
 		settingsInOut.correlationId=id; // TODO - better correlation id
 		LocationRequest request=new LocationRequest(id, _proxyHandOverPeriod);
 		LocationResponse response=(LocationResponse)_dispatcher.exchangeMessages(id, _rvMap, request, settingsInOut, _timeout);
@@ -202,11 +199,11 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 			_log.info("sending location response: "+_id);
 			LocationResponse lr=new LocationResponse(_location, Collections.singleton(_id));
 			try {
-				ObjectMessage m=_cluster.createObjectMessage();
+				ObjectMessage m=_dispatcher.getCluster().createObjectMessage();
 				m.setJMSReplyTo(_replyTo);
 				m.setJMSCorrelationID(_correlationId);
 				m.setObject(lr);
-				_cluster.send(_replyTo, m);
+				_dispatcher.getCluster().send(_replyTo, m);
 
 				// Now wait for a while so that the session is locked into this container, giving the other node a chance to proxy to this location and still find it here...
 				// instead of just waiting a set period, we could use a Rendezvous object with a timeout - more complexity - consider...

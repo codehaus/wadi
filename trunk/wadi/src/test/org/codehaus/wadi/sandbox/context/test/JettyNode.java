@@ -58,6 +58,7 @@ public class JettyNode implements Node {
 	protected final HttpHandler _whandler;
 	
 	public JettyNode(String name, String host, int port, String context, String webApp, Filter filter, Servlet servlet) throws Exception,IOException, UnknownHostException {
+		System.setProperty("org.mortbay.xml.XmlParser.NotValidating", "true");
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 
 		_context=_server.addWebApplication(context, webApp);

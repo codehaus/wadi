@@ -17,9 +17,12 @@
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
+import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.ObjectMessage;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -31,7 +34,11 @@ import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
+import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher.Settings;
+import org.codehaus.wadi.sandbox.context.impl.MigrateRelocationStrategy.MigrationPromoter;
+import org.codehaus.wadi.sandbox.context.test.MyClusterListener;
 
+import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 // this needs to be split into several parts...
@@ -62,6 +69,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class ClusterContextualiser extends AbstractMappedContextualiser {
 
+	protected final MessageDispatcher _dispatcher;
 	protected final RelocationStrategy _relocater;
 
 	/**
@@ -70,9 +78,13 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 * @param map
 	 * @param evicter
 	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, RelocationStrategy relocater) throws JMSException {
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, MessageDispatcher dispatcher, RelocationStrategy relocater) throws JMSException {
 		super(next, collapser, map, evicter);
+		_dispatcher=dispatcher;
 	    _relocater=relocater;
+	    
+	    _dispatcher.register(this, "onMessage");
+	    _dispatcher.register(EmmigrationAcknowledgement.class, _emmigrationRvMap, 3000);
 		}
 
 	/* (non-Javadoc)
@@ -96,13 +108,69 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		// how long do we wish to maintain cached Locations ?
 	}
 
+	protected Destination _emmigrationQueue;
+
+	public void setEmmigrationQueue(Destination emmigrationQueue) throws Exception {
+		_emmigrationQueue=emmigrationQueue;
+		// send message inviting everyone to start reading from queue
+		MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
+		settings.to=_dispatcher.getCluster().getDestination();
+		_dispatcher.sendMessage(new ShutDownStartedNotification(_emmigrationQueue), settings);
+//		Thread.sleep(1000);
+//		_dispatcher.sendMessage(new ShutDownEndedNotification(_emmigrationQueue), settings);
+		// dump subsequent demoted Contexts onto queue
+		}
+	
+	public void onMessage(ObjectMessage om, ShutDownStartedNotification sdsn) throws JMSException {
+		Destination emmigrationQueue=sdsn.getDestination();
+		_log.info("received ShutDownStartedNotification: "+emmigrationQueue);
+		_dispatcher.addDestination(emmigrationQueue); 
+	}
+	
+	public void onMessage(ObjectMessage om, ShutDownEndedNotification sden) {
+		Destination emmigrationQueue=sden.getDestination();
+		_log.info("received ShutDownEndedNotification: "+emmigrationQueue);
+		_dispatcher.removeDestination(emmigrationQueue);
+	}
+	
+	public void onMessage(ObjectMessage om, EmmigrationRequest er) throws JMSException {
+		String id=er.getId();
+		_log.info("receiving migration request: "+id);
+		try {
+			MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+			// reverse direction...
+			settingsInOut.to=om.getJMSReplyTo();
+			settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
+			settingsInOut.correlationId=om.getJMSCorrelationID();
+			_log.info("received EmmigrationRequest: "+id);
+			_dispatcher.sendMessage(new EmmigrationAcknowledgement(id), settingsInOut);
+		} catch (Exception e) {
+			_log.warn("problem handling migration request: "+id, e);
+		}
+		// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
+	}
+	
+	protected final HashMap _emmigrationRvMap=new HashMap();
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#demote(java.lang.String, org.codehaus.wadi.sandbox.context.Motable)
 	 */
-	public void demote(String key, Motable val) {
-		// push stuff out to cluster - i.e. emmigrate - tricky...
-		// for the moment - just push to the tier below us...
-		_next.demote(key, val);
+	public void demote(String id, Motable val) {		
+		if (_emmigrationQueue==null) {
+			// pass straight through...
+			_next.demote(id, val);
+		} else {
+			// push out to another node in the cluster
+			MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+			settingsInOut.to=_emmigrationQueue;
+			settingsInOut.correlationId=id;
+			settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
+			EmmigrationAcknowledgement ea=(EmmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emmigrationRvMap, new EmmigrationRequest(id, null), settingsInOut, 3000);
+			_log.info("received EmmigrationAcknowledgement: "+ea.getId()+" ["+settingsInOut.to+"]");
+			// we should :
+			// remove the session our side - demotion API needs to work like promotion API
+			// cache location of emmigrating session...
+			// TODO
+		}
 	}
 
 	public boolean isLocal(){return false;}

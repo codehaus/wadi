@@ -249,4 +249,16 @@ public class MessageDispatcher implements MessageListener {
 		
 		return response;
 	}
+	
+	public Cluster getCluster(){return _cluster;}
+	
+	public void addDestination(Destination destination) throws JMSException {
+	    boolean excludeSelf=true;
+	    MessageConsumer mc=_cluster.createConsumer(destination, null, excludeSelf);
+	    mc.setMessageListener(this);
+	}
+	
+	public void removeDestination(Destination destination) {
+		// NYI - TODO
+	}
 }
