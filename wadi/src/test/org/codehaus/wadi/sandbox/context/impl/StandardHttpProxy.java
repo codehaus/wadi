@@ -22,12 +22,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -50,28 +49,34 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 	 * @see javax.servlet.Servlet#service(javax.servlet.ServletRequest,
 	 *      javax.servlet.ServletResponse)
 	 */
-	public void proxy2(ServletRequest req, ServletResponse res, URL url) throws IOException	{
-		HttpServletRequest hreq = (HttpServletRequest) req;
-		HttpServletResponse hres = (HttpServletResponse) res;
+	public void proxy2(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res) throws IOException	{
 
+		String uri=req.getRequestURI();
+		String qs=req.getQueryString();
+		if (qs!=null) {
+			uri=new StringBuffer(uri).append("?").append(qs).toString();
+		}
+
+		URL url=new URL(req.getScheme(), location.getAddress().getHostAddress(), location.getPort(), uri);
+		
 		long startTime=System.currentTimeMillis();
 
 		URLConnection uc=url.openConnection(); // IOException
 
 		uc.setAllowUserInteraction(false);
 
-		// Set method
+		// Set method - TODO - are we ever going to make a non-HttpURLConnection ?
 		HttpURLConnection huc=null;
 		if (uc instanceof HttpURLConnection) {
 			huc = (HttpURLConnection) uc;
-			String method=hreq.getMethod();
+			String method=req.getMethod();
 			huc.setRequestMethod(method);
 			huc.setInstanceFollowRedirects(false);
 		}
 
 		// check connection header
 		// TODO - this might need some more time: see http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
-		String connectionHdr = hreq.getHeader("Connection"); // TODO - what if there are multiple values ?
+		String connectionHdr = req.getHeader("Connection"); // TODO - what if there are multiple values ?
 		if (connectionHdr != null) {
 			connectionHdr = connectionHdr.toLowerCase();
 			if (connectionHdr.equals("keep-alive")|| connectionHdr.equals("close"))
@@ -82,7 +87,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		boolean xForwardedFor = false;
 		boolean hasContent = false;
 		int contentLength=0;
-		Enumeration enm = hreq.getHeaderNames();
+		Enumeration enm = req.getHeaderNames();
 		while (enm.hasMoreElements()) {
 			// TODO could be better than this! - using javax.servlet ?
 			String hdr = (String) enm.nextElement();
@@ -95,10 +100,10 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 
 			if ("content-length".equals(lhdr)) {
 				try {
-					contentLength=hreq.getIntHeader(hdr);
+					contentLength=req.getIntHeader(hdr);
 					hasContent=contentLength>0;
 				} catch (NumberFormatException e) {
-					_log.info("bad Content-Length header value: "+hreq.getHeader(hdr), e);
+					_log.info("bad Content-Length header value: "+req.getHeader(hdr), e);
 				}
 			}
 				
@@ -106,7 +111,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 				hasContent=true;
 			}
 			
-			Enumeration vals = hreq.getHeaders(hdr);
+			Enumeration vals = req.getHeaders(hdr);
 			while (vals.hasMoreElements()) {
 				String val = (String) vals.nextElement();
 				if (val != null) {
@@ -120,10 +125,10 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		// Proxy headers
 		uc.setRequestProperty("Via", "1.1 (WADI)");
 		if (!xForwardedFor)
-			uc.addRequestProperty("X-Forwarded-For", hreq.getRemoteAddr());
+			uc.addRequestProperty("X-Forwarded-For", req.getRemoteAddr());
 
 		// a little bit of cache control
-		String cache_control = hreq.getHeader("Cache-Control");
+		String cache_control = req.getHeader("Cache-Control");
 		if (cache_control != null && (cache_control.indexOf("no-cache") >= 0 || cache_control.indexOf("no-store") >= 0))
 			uc.setUseCaches(false);
 
@@ -136,7 +141,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 			
 			OutputStream toServer=null;
 			try {
-				InputStream fromClient=hreq.getInputStream(); // IOException
+				InputStream fromClient=req.getInputStream(); // IOException
 				toServer=uc.getOutputStream(); // IOException
 				client2ServerTotal=copy(fromClient, toServer, 8192);
 			} catch (IOException e) {
@@ -174,7 +179,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 			} catch (IOException e) {
 				_log.info("problem acquiring http server response code/message", e);
 			} finally {
-				hres.setStatus(code, message);
+				res.setStatus(code, message);
 			}
 
 			if (code<400) {
@@ -192,8 +197,8 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		}
 
 		// clear response defaults.
-		hres.setHeader("Date", null);
-		hres.setHeader("Server", null);
+		res.setHeader("Date", null);
+		res.setHeader("Server", null);
 
 		// set response headers
 		if (false) {
@@ -203,7 +208,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 			while (hdr != null || val != null) {
 				String lhdr = (hdr != null) ? hdr.toLowerCase() : null;
 				if (hdr != null && val != null && !_DontProxyHeaders.contains(lhdr))
-					hres.addHeader(hdr, val);
+					res.addHeader(hdr, val);
 				
 				//_log.debug("res " + hdr + ": " + val);
 				
@@ -219,18 +224,18 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 				key=key.toLowerCase();
 				String val=uc.getHeaderField(i);
 				if (val!=null && !_DontProxyHeaders.contains(key)) {
-					hres.addHeader(key, val);
+					res.addHeader(key, val);
 				}
 			}
 		}
 		
-		hres.addHeader("Via", "1.1 (WADI)");
+		res.addHeader("Via", "1.1 (WADI)");
 
 		// copy server->client
 		int server2ClientTotal=0;
 		if (fromServer!=null) {
 			try {
-				OutputStream toClient=hres.getOutputStream();// IOException
+				OutputStream toClient=res.getOutputStream();// IOException
 				server2ClientTotal+=copy(fromServer, toClient, 8192);// IOException
 			} catch (IOException e) {
 				_log.info("problem proxying server response back to client", e);

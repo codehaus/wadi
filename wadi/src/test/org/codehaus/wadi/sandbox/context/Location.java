@@ -18,8 +18,8 @@ package org.codehaus.wadi.sandbox.context;
 
 import java.io.Serializable;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -36,5 +36,5 @@ public interface Location extends Motable, Serializable {
 	 * @param promotionLock - used to collapse concurrent threads seeking same context into one stack descent
 	 * @return - null if no migration has occurred (in which case the promotionLock has been released), or an immigrating Context (in which case the promotionLock should be released as soon as it has been promoted).
 	 */
-	public Context proxy(ServletRequest req, ServletResponse res, String id, Sync promotionLock);
+	public Context proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock);
 }

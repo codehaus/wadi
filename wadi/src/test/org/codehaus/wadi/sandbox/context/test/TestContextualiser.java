@@ -32,6 +32,8 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
@@ -415,7 +417,7 @@ public class TestContextualiser extends TestCase {
 
 	static class MyLocation implements Location, Serializable {
 		public long getExpiryTime(){return 0;}
-		public Context proxy(ServletRequest req, ServletResponse res, String id, Sync promotionMutex) {
+		public Context proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionMutex) {
 			promotionMutex.release();
 			System.out.println("PROXYING TO: "+id);
 			return null;

@@ -33,6 +33,8 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.wadi.sandbox.context.Collapser;
@@ -290,7 +292,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		_log.info("location found (cluster): "+id+" - "+location);
 
 		Context context=null;
-		if ((context=location.proxy(req, res, id, promotionMutex))==null) {
+		if ((context=location.proxy((HttpServletRequest)req, (HttpServletResponse)res, id, promotionMutex))==null) { // TODO - change whole Contextualiser interface to these types
 			// request was proxied and contextualised remotely...
 			// promotionMutex was released at earliest opportunity.
 			_log.info("migration has not occurred (contextualised remotely): "+id);

@@ -17,12 +17,9 @@
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,29 +39,19 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public class HttpProxyLocation implements Location {
 	protected final static Log _log = LogFactory.getLog(HttpProxyLocation.class);
 	
-	protected HttpProxy _proxy=new StandardHttpProxy();
 	protected InetSocketAddress _location;
+	protected HttpProxy _proxy;
 	
-	public HttpProxyLocation(InetSocketAddress location) {
+	public HttpProxyLocation(InetSocketAddress location, HttpProxy proxy) {
 		super();
 		_location=location;
+		_proxy=proxy;
 	}
 	
 	// TODO - serial proxying at the moment - until I decide how to make it concurrent...
-	public Context proxy(ServletRequest req, ServletResponse res, String id, Sync promotionLock) {
-		HttpServletRequest hreq=(HttpServletRequest)req;
-		String uri=hreq.getRequestURI();
-		String qs=hreq.getQueryString();
-		if (qs!=null) {
-			uri=new StringBuffer(uri).append("?").append(qs).toString();
-		}
-
+	public Context proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) {
 		try {
-			URL url=new URL(req.getScheme(), _location.getHostName(), _location.getPort(), uri);
-			_log.info("proxying to: "+url);
-			_proxy.proxy(req, res, url); // TODO - why a URL - expensive...
-		} catch (MalformedURLException e) {
-			_log.error(e);
+			_proxy.proxy(_location, req, res);
 		} finally {
 			promotionLock.release();
 		}

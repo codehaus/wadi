@@ -17,7 +17,7 @@
 package org.codehaus.wadi.sandbox.context.test;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.InetSocketAddress;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -27,6 +27,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -40,13 +41,16 @@ import org.codehaus.wadi.sandbox.context.impl.StandardHttpProxy;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
+
+// This test will always fail, since we can now only proxy to the same URI as we are on ourselves....
 public class TestProxy extends TestServlet{
 
 	public class ProxyServlet extends HttpServlet {
-		public void service(ServletRequest req, ServletResponse res)
-				throws ServletException, IOException {
-			_log.info("session-id: "+((HttpServletRequest)req).getRequestedSessionId());
-			new StandardHttpProxy().proxy(req, res, new URL("http://localhost:8080/test/admin"));
+		public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+			HttpServletRequest hreq=(HttpServletRequest)req;
+			HttpServletResponse hres=(HttpServletResponse)res;
+			_log.info("session-id: "+hreq.getRequestedSessionId());
+			new StandardHttpProxy().proxy(new InetSocketAddress("localhost", 8080), hreq, hres);
 		}
 	}
 
@@ -56,7 +60,9 @@ public class TestProxy extends TestServlet{
 
 		public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 				throws ServletException, IOException {
-			new StandardHttpProxy().proxy(req, res, new URL("http://localhost:8080/test/admin"));
+			HttpServletRequest hreq=(HttpServletRequest)req;
+			HttpServletResponse hres=(HttpServletResponse)res;
+			new StandardHttpProxy().proxy(new InetSocketAddress("localhost", 8080), hreq, hres);
 		}
 
 		public void destroy(){
