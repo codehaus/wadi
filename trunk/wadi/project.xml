@@ -289,7 +289,7 @@
     <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jetty</artifactId>
-      <version>5.1.1</version>
+      <version>SNAPSHOT</version><!-- until 5.1.2 appears -->
       <url>http://jetty.mortbay.org/jetty</url>
       <javadoc>http://jetty.mortbay.org/javadoc</javadoc>
     </dependency>
@@ -313,7 +313,7 @@
     <dependency>
       <groupId>activemq</groupId>
       <artifactId>activemq</artifactId>
-      <version>1.2</version>
+      <version>1.4</version>
       <url>http://activemq.codehaus.org</url>
       <javadoc>http://activemq.codehaus.org/maven/apidocs</javadoc>
       <properties>
