@@ -73,7 +73,7 @@ public abstract class
   public void
     stop()
   {
-    onNodeRemove(new ClusterEvent(_cluster, _localNode, ClusterEvent.REMOVE_NODE));
+    onNodeRemoved(new ClusterEvent(_cluster, _localNode, ClusterEvent.REMOVE_NODE));
     _localNode=null;
     _localPeer=null;
   }
@@ -96,8 +96,9 @@ public abstract class
     Object[] diffs=combineCollection(p);
   }
 
+  public void onNodeFailed(ClusterEvent event){onNodeRemoved(event);}
   public void
-    onNodeRemove(ClusterEvent event)
+    onNodeRemoved(ClusterEvent event)
   {
     Node node=event.getNode();
     String id=(String)node.getState().get("id");
