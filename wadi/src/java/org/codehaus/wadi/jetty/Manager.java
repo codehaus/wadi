@@ -45,7 +45,7 @@ public class
     HttpSessionImpl impl=(HttpSessionImpl)get(getRoutingStrategy().strip(getBucketName(), id));
     org.codehaus.wadi.jetty.HttpSession session=impl==null?null:(org.codehaus.wadi.jetty.HttpSession)impl.getFacade();
 
-    javax.servlet.http.HttpSession answer=(session==null?null:(session.getInvalidated()?null:session)); // TODO - or should session just be removed from map as soon as it is invalidated..
+    javax.servlet.http.HttpSession answer=(session==null?null:(session.isValid()?session:null)); // TODO - or should session just be removed from map as soon as it is invalidated..
     return answer;
   }
 
@@ -187,7 +187,7 @@ public class
 
   // why does the session manager need to be serialisable ?
 
-  protected org.codehaus.wadi.shared.HttpSession createFacade(org.codehaus.wadi.shared.HttpSessionImpl impl){return new org.codehaus.wadi.jetty.HttpSession((org.codehaus.wadi.jetty.HttpSessionImpl)impl);}
+  //  protected org.codehaus.wadi.shared.HttpSession createFacade(org.codehaus.wadi.shared.HttpSessionImpl impl){return new org.codehaus.wadi.jetty.HttpSession((org.codehaus.wadi.jetty.HttpSessionImpl)impl);}
 
   //----------------------------------------
 

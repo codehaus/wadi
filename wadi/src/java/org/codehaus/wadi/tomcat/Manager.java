@@ -44,7 +44,7 @@ import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.util.LifecycleSupport;
 import org.codehaus.wadi.shared.Filter;
 
-// TODO - revisit configuration mechnism when subcomponents types/apis
+// TODO - revisit configuration mechanism when subcomponents types/apis
 // settle down a little more...
 
 public class
@@ -93,34 +93,26 @@ public class
   {
     HttpSessionImpl impl=(HttpSessionImpl)getReadySessionPool().take();
     impl.setManager(this);
-    HttpSession facade=(HttpSession)impl.getFacade();
-    return facade;
+    return impl;
   }
 
   public void
-    add(Session session)
+    add(Session impl)
   {
-    put(session.getId(), (HttpSessionImpl)session);
+    put(impl.getId(), (HttpSessionImpl)impl);
   }
 
   public void
-    remove(Session session)
+    remove(Session impl)
   {
-    remove(session.getId());
+    remove(impl.getId());
   }
 
   public Session
     findSession(String id)
     throws IOException
   {
-    HttpSessionImpl impl=(HttpSessionImpl)get(id);
-    if (impl==null)
-      return null;
-    else
-    {
-      HttpSession facade=(HttpSession) impl.getFacade();
-      return facade;
-    }
+    return (HttpSessionImpl)get(id);
   }
 
   public Session[]
@@ -262,7 +254,7 @@ public class
     public void put(Object o){}	// just let it go
   }
 
-  protected org.codehaus.wadi.shared.HttpSession createFacade(org.codehaus.wadi.shared.HttpSessionImpl impl){return new org.codehaus.wadi.tomcat.HttpSession((org.codehaus.wadi.tomcat.HttpSessionImpl)impl);}
+  //  protected org.codehaus.wadi.shared.HttpSession createFacade(org.codehaus.wadi.shared.HttpSessionImpl impl){assert false; return null;} // TODO
 
   //----------------------------------------
 

@@ -35,7 +35,7 @@ privileged public aspect
   before(HttpSession session)
     : validate(session)
     {
-      if (session._invalidated)
+      if (!session._valid)
       {
 	// this session has been explicitly invalidated by application
 	// code...
