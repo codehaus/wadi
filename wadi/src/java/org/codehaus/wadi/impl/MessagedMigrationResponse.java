@@ -35,9 +35,9 @@ public class
   implements Executable
 {
   protected static final Log _log=LogFactory.getLog(MessagedMigrationResponse.class);
-  protected final String     _id;
-  protected final byte[]     _impl;
-  protected final long       _timeout;
+  protected String     _id;
+  protected byte[]     _impl;
+  protected long       _timeout;
 
   public
     MessagedMigrationResponse(String id, long timeout, byte[] impl)
@@ -96,5 +96,28 @@ public class
     {
       return "<MigrationResponse:"+_id+">";
     }
+
+  // this is how I want to manage serialisation for this message - but
+  // I don't have the HttpSessionImpl factory to hand at the point
+  // that I am demarshalled, so do not know which type of session to
+  // read the incoming session content into :-(
+
+//   private void readObject(java.io.ObjectInputStream is)
+//     throws java.io.IOException, ClassNotFoundException
+//   {
+//     _log.info("demarshalling");
+//     _id=(String)is.readObject();
+//     _timeout=is.readLong();
+//     _impl.readContent(is);
+//   }
+
+//   private void writeObject(java.io.ObjectOutputStream os)
+//     throws java.io.IOException
+//   {
+//     _log.info("marshalling");
+//     os.writeObject(_id);
+//     os.writeLong(_timeout);
+//     _impl.writeContent(os);
+//   }
 }
 
