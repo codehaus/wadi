@@ -31,7 +31,6 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import org.apache.commons.logging.Log;
@@ -321,6 +320,7 @@ public class
 	  }
 	  catch (SocketTimeoutException ignore)
 	  {
+	    // ignore
 	  }
 	}
       }

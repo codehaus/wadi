@@ -209,6 +209,7 @@ public abstract class
 	    }
 	    catch (SocketTimeoutException ignore)
 	    {
+	      // ignore
 	    }
 	    catch (IOException e)
 	    {

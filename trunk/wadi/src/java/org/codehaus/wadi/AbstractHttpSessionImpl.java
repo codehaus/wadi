@@ -23,8 +23,6 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSessionContext;
 
-import org.codehaus.wadi.Manager;
-
 interface
   HttpSessionGetters
 {

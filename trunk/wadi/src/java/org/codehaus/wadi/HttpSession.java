@@ -22,9 +22,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSessionContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.HttpSessionImpl;
-import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.RWLock;
 
 // TODO - we will probably need the following:
 // JettySession, JettyDistributableSession, TomcatSession,
