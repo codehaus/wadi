@@ -142,26 +142,7 @@ public class
 	{
 	  if (_manager.getDistributable())
 	    {
-	      impl=_manager.getRemoteSession(realId); // gets and releases lock :-(
-	      if (impl!=null)
-	      {
-		try
-		{
-		  impl.getApplicationLock().acquire(); // TODO - timeout
-
-		  if (!((HttpSession)impl.getFacade()).isValid())
-		  {
-		    impl.getApplicationLock().release();
-		    impl=null;
-		    _log.warn(realId+": immigrated session emmigrated again before it could be locked into container");
-		    // what do we do now :-)
-		  }
-		}
-		catch (InterruptedException e)
-		{
-		  _log.warn("unable to acquire rlock on immigrated session");
-		}
-	      }
+	      impl=_manager.getRemoteSession(realId); // returns already app-locked...
 	    }
 	  else
 	  {

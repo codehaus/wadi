@@ -440,10 +440,33 @@ public class RWLock implements ReadWriteLock {
     }
   }
 
+  // we are a writer and we want to become a reader (i.e. allow other
+  // readers) without another writer jumping in during the
+  // change-over. Writer preference breaks down here, but this is a
+  // useful ability....
+  public synchronized void
+    downgrade()
+      throws IllegalStateException
+  {
+    // test that we are indeed the current writer....
+    if (activeWriter_!=Thread.currentThread())
+      throw new IllegalStateException("upgrading thread is not current writer");
+    else
+    {
+      // cease being the active writer
+      activeWriter_=null;
+      // become an active reader
+      assert activeReaders_==0;	// we were writing so there should be no active readers...
+      activeReaders_++;
+      // wake waiting readers
+      if (waitingReaders_>0)
+	readerLock_.signalWaiters();
+    }
+  }
+
   public String
     toString()
   {
     return "<RWLock:"+this.hashCode()+":"+readerLock_+", "+writerLock_+">";
   }
 }
-

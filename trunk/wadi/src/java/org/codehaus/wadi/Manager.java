@@ -206,8 +206,8 @@ public abstract class
       else
       {
 	// session is remote/dead - we will try to migrate it
-	// here. Take a non-exclusive lock on an empty session and
-	// insert into local table as a placeholder.
+	// here. Take an exclusive lock on an empty session and insert
+	// into local table as a placeholder.
 	impl=createImpl();
 	impl.setWadiManager(this);
 	try
@@ -249,10 +249,13 @@ public abstract class
       //      _log.info("successfully immigrated: "+impl);
 
       assert impl.getRealId()!=null;
+      // this lock needs to become an app lock, without another
+      // container lock jumping in between...
       if (locked)
-      	impl.getContainerLock().release();
-      // TODO - this lock needs to become an app lock, without another
-      // container ock jumping in between...  ???
+      {
+      	impl.getRWLock().downgrade();
+	locked=false;
+      }
     }
     else
     {
@@ -1029,7 +1032,7 @@ public abstract class
     _releaseImpl(impl);
   }
 
-  protected void
+  public void
     _releaseImpl(HttpSessionImpl impl)
   {
     impl.setWadiManager(null);

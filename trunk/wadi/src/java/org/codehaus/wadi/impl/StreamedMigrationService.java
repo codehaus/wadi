@@ -78,15 +78,22 @@ public class
 	  Destination src=_server.getDestination();
 	  String correlationId=realId+"-"+src.toString();
 	  _log.trace("sending MigrationRequest to:"+dst);
-	  Object result=_adaptor.send(_manager.getCluster(),
-				      new StreamedMigrationRequest(realId, src, timeout),
-				      correlationId,
-				      timeout,
-				      null,
-				      dst,
-				      placeholder);
+	  Object sync=_adaptor.send(_manager.getCluster(),
+				    new StreamedMigrationRequest(realId, src, timeout),
+				    correlationId,
+				    timeout,
+				    null,
+				    dst,
+				    placeholder);
 
-	  return (placeholder==result);
+	  if (sync!=null)
+	    // we wait until we can get this lock before continuing...
+	    synchronized (sync)
+	    {
+	      return placeholder.getRealId()!=null;
+	    }
+	  else
+	    return false;
 	};
 
       public boolean
@@ -282,149 +289,164 @@ public class
       public void
 	start()
 	throws JMSException
+      {
+	super.start();
+
+	if (_destination==null) _destination=new InetSocketAddressDestination();
+	try
 	{
-	  super.start();
-
-	  if (_destination==null) _destination=new InetSocketAddressDestination();
-	  try
+	  if (_destination.getAddress()==null)
 	  {
-	    if (_destination.getAddress()==null)
-	    {
-	      _destination.setAddress(InetAddress.getLocalHost());
-	      //_address=InetAddress.getByName("localhost");
-	    }
-
-	    if (_log.isDebugEnabled()) _log.debug("starting: "+_destination);
-
-	    // initialise dependant resources...
-	    _socket=new ServerSocket(_destination.getPort(), _backlog, _destination.getAddress());
-	    _socket.setSoTimeout(_timeout);
-	    _destination.setPort(_socket.getLocalPort());
-
-	    // start...
-	    _running=true;
-	    _thread=new Thread(this);
-	    _thread.start();
-	    if (_log.isDebugEnabled()) _log.debug("started: "+_socket);
-	    return;
-	  }
-	  catch (UnknownHostException e)
-	  {
-	    _log.warn("unexpected problem resolving listening interface", e);
-	  }
-	  catch (IOException e)
-	  {
-	    _log.warn("unexpected problem creating server socket", e);
+	    _destination.setAddress(InetAddress.getLocalHost());
+	    //_address=InetAddress.getByName("localhost");
 	  }
 
-	  // we shouldn't get to here...
-	  _log.warn("did not start");
+	  if (_log.isDebugEnabled()) _log.debug("starting: "+_destination);
+
+	  // initialise dependant resources...
+	  _socket=new ServerSocket(_destination.getPort(), _backlog, _destination.getAddress());
+	  _socket.setSoTimeout(_timeout);
+	  _destination.setPort(_socket.getLocalPort());
+
+	  // start...
+	  _running=true;
+	  _thread=new Thread(this);
+	  _thread.start();
+	  if (_log.isDebugEnabled()) _log.debug("started: "+_socket);
+	  return;
 	}
+	catch (UnknownHostException e)
+	{
+	  _log.warn("unexpected problem resolving listening interface", e);
+	}
+	catch (IOException e)
+	{
+	  _log.warn("unexpected problem creating server socket", e);
+	}
+
+	// we shouldn't get to here...
+	_log.warn("did not start");
+      }
 
       public void
 	stop()
 	throws JMSException
-	{
-	  super.stop();
+      {
+	super.stop();
 
-	  if (_log.isDebugEnabled()) _log.debug("stopping: "+_socket);
-	  _running=false;
-	  //      try {new Socket(_address, _port).close();} catch (Throwable ignore) {}
-	  try
-	  {
-	    _thread.join();
-	    _thread=null;
-	    _socket.close();
-	    _socket=null;
-	    // we need to join all our subthreads :-(
-	    if (_log.isDebugEnabled()) _log.debug("stopped: "+_destination);
-	  }
-	  catch (InterruptedException e)
-	  {
-	    _log.warn("unexpectedly interrupted whilst stopping");
-	    // TODO - interrupted()?
-	  }
-	  catch (IOException e)
-	  {
-	    _log.warn("could not close server socket");
-	  }
+	if (_log.isDebugEnabled()) _log.debug("stopping: "+_socket);
+	_running=false;
+	//      try {new Socket(_address, _port).close();} catch (Throwable ignore) {}
+	try
+	{
+	  _thread.join();
+	  _thread=null;
+	  _socket.close();
+	  _socket=null;
+	  // we need to join all our subthreads :-(
+	  if (_log.isDebugEnabled()) _log.debug("stopped: "+_destination);
 	}
+	catch (InterruptedException e)
+	{
+	  _log.warn("unexpectedly interrupted whilst stopping");
+	  // TODO - interrupted()?
+	}
+	catch (IOException e)
+	{
+	  _log.warn("could not close server socket");
+	}
+      }
 
       public void
 	run()
+      {
+	try
 	{
-	  try
+	  while (_running)
 	  {
-	    while (_running)
+	    try
 	    {
-	      try
-	      {
-		if (_timeout==0) Thread.yield();
-		new Thread(new Consumer(_socket.accept())).start();
-		// TODO - remember threads started and join them on stop() ?
-		// run this request on current thread, starting a new one to listen()
-	      }
-	      catch (SocketTimeoutException ignore)
-	      {
-		// ignore
-	      }
+	      if (_timeout==0) Thread.yield();
+	      new Thread(new Consumer(_socket.accept())).start();
+	      // TODO - remember threads started and join them on stop() ?
+	      // run this request on current thread, starting a new one to listen()
+	    }
+	    catch (SocketTimeoutException ignore)
+	    {
+	      // ignore
 	    }
 	  }
-	  catch (IOException e)
-	  {
-	    _log.warn("unexpected io problem - stopping");
-	  }
 	}
+	catch (IOException e)
+	{
+	  _log.warn("unexpected io problem - stopping");
+	}
+      }
 
       public class
 	Consumer
 	implements Runnable
+      {
+	protected final Socket _socket;
+	public Consumer(Socket socket){_socket=socket;}
+
+	public void
+	  run()
 	{
-	  protected final Socket _socket;
-	  public Consumer(Socket socket){_socket=socket;}
+	  try
+	  {
+	    ObjectOutput oo=new ObjectOutputStream(_socket.getOutputStream());
+	    ObjectInput  oi=new ObjectInputStream(_socket.getInputStream());
 
-	  public void
-	    run()
-	    {
-	      try
-	      {
-		ObjectOutput oo=new ObjectOutputStream(_socket.getOutputStream());
-		ObjectInput  oi=new ObjectInputStream(_socket.getInputStream());
+	    InetSocketAddressDestination peer=new InetSocketAddressDestination();
+	    peer.setAddress(_socket.getInetAddress());
+	    peer.setPort(_socket.getPort());
+	    ((Processor)oi.readObject()).process(Server.this, oi, oo, peer);
 
-		InetSocketAddressDestination peer=new InetSocketAddressDestination();
-		peer.setAddress(_socket.getInetAddress());
-		peer.setPort(_socket.getPort());
-		((Processor)oi.readObject()).process(Server.this, oi, oo, peer);
-
-		oo.close();
-		oi.close();
-	      }
-	      catch (IOException e)
-	      {
-		_log.warn("session immigration connection broken - aborting", e);
-	      }
-	      catch (ClassNotFoundException e)
-	      {
-		_log.warn("unknown session immigration processor - version/security problem?", e);
-	      }
-	      finally
-	      {
-		try{_socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
-	      }
-	    }
+	    oo.close();
+	    oi.close();
+	  }
+	  catch (IOException e)
+	  {
+	    _log.warn("session immigration connection broken - aborting", e);
+	  }
+	  catch (ClassNotFoundException e)
+	  {
+	    _log.warn("unknown session immigration processor - version/security problem?", e);
+	  }
+	  finally
+	  {
+	    try{_socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
+	  }
 	}
+      }
 
       public void
 	immigrateSingleSession(ObjectInput is, ObjectOutput os, Destination peer)
-	{
-	  boolean ok=false;
-	  String id=null;
-	  HttpSessionImpl impl=null;
+      {
+	boolean ok=false;
+	String id=null;
+	HttpSessionImpl impl=null;
 
+	Object sync=new Object();
+	synchronized (sync)
+	{
 	  try
 	  {
 	    id=(String)is.readObject();
-	    impl=(HttpSessionImpl)_sessions.get(id);// FIXME - after losing a race this impl is sometimes null...
+
+	    String correlationID=id+"-"+getDestination(); // no need to pass it - we can work it out
+	    impl=(HttpSessionImpl)_adaptor.receive(sync, correlationID, _timeout);
+
+	    if (impl==null)
+	    {
+	      if (_log.isTraceEnabled())
+		_log.trace(id+": immigration unsuccessful - missed rendezvous");
+	      return;
+	    }
+
+	    if (_log.isDebugEnabled()) _log.debug(id+": immigration (peer: "+peer+")");
+
 	    impl.readContent(is);
 	    os.writeBoolean(true);
 	    os.flush();
@@ -438,22 +460,12 @@ public class
 	  {
 	    _log.warn("session immigration class mismatch - version/security problem? - rolling back", e);
 	  }
-	  finally
-	  {
-	    String correlationID=id+"-"+getDestination(); // no need to pass it - we can work it out
-	    if (ok && _adaptor.receive(impl, correlationID, _timeout)==impl)
-	    {
-	      if (_log.isDebugEnabled()) _log.debug(id+": immigration (peer: "+peer+")");
-	    }
-	    else
-	    {
-	      _log.trace(id+": immigration unsuccessful - rolling back");
-	      // since we do not attend rendez-vous, initiating thread
-	      // will roll back..
-	    }
-	  }
-	}
-    }
+
+	  if (!ok && impl!=null)
+	    _manager._releaseImpl(impl);
+	} // sync complete, now originating thread will continue...
+      }
+  }
 
   static abstract class
     Processor
