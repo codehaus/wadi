@@ -520,6 +520,7 @@ public abstract class
 	  if (hasTimedOut)	// implicitly invalidated via time-out
 	  {
 	    _log.trace(impl.getId()+" : removing (implicit time out)");
+	    _log.debug(impl.getId()+" : timed out");
 	    releaseImpl(impl);
 	    continue;
 	  }
@@ -987,6 +988,7 @@ public abstract class
     impl.init(Manager.this, id, System.currentTimeMillis(), _maxInactiveInterval, _maxInactiveInterval); // TODO need actual...
     _acquireImpl(impl);
     notifySessionCreated(impl.getFacade());
+    _log.debug(impl.getId()+": created");
     return impl;
   }
 
@@ -1018,6 +1020,7 @@ public abstract class
     invalidateImpl(HttpSessionImpl impl)
   {
     Sync lock=impl.getContainerLock();
+    String id=impl.getId();
 
     boolean acquired=false;
     try
@@ -1030,6 +1033,7 @@ public abstract class
       // because Servlet-2.4 insists that it is given BEFORE
       // invalidation!
       releaseImpl(impl);
+      _log.debug(id+": invalidated");
     }
     catch (InterruptedException e)
     {

@@ -45,6 +45,7 @@ public class
     protected int         _port=0;	// any port
     protected InetAddress _address; // null seems to work fine as default interface
 
+    // TODO - LOCKING INCOMPLETE HERE - NEEDS FIXING...
     public boolean
       run(Map sessions, Map locks, String id, HttpSessionImpl session, InetAddress remoteAddress, int remotePort)
     {
@@ -72,7 +73,6 @@ public class
 	os.flush();
 	// demarshall session off wire
 	session.readContent(is);
-	_log.trace("received migrated session: "+session);
 	// send commit message
 	os.writeBoolean(true);
 	os.flush();
@@ -81,6 +81,7 @@ public class
 	// receive commit message
 	boolean ok=is.readBoolean();
 	assert ok;
+	_log.debug(session.getId()+": immigration (from peer)");
 	return ok;
       }
       catch (UnknownHostException e)
@@ -255,7 +256,6 @@ public class
 	// acquire container lock on session id
 	// marshall session onto wire
 	HttpSessionImpl impl=(HttpSessionImpl)_sessions.get(id); // TODO - what if session is not there ?
-	_log.trace("sending migrating session: "+impl);
 	impl.writeContent(os);
 	os.flush();
 	// receive commit message
@@ -266,6 +266,7 @@ public class
 	// send commit message
 	os.writeBoolean(ok);
 	os.flush();
+	_log.debug(impl.getId()+": emmigration (to peer)");
       }
       catch (IOException e)
       {
