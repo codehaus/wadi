@@ -76,26 +76,36 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	}
 	
 	class MemoryPromoter implements Promoter {
-		
-		public void promoteAndContextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Context context, Sync promotionMutex)
-		throws IOException, ServletException {
-			try {
-				// TODO - revisit and think about unrolling on exception...
-				Sync shared=context.getSharedLock();
-				shared.acquire(); // now this is locked into the container until we use/release it
-				_log.info("promoting (to memory): "+id);
-				_log.info("insert (memory): "+id);
-				_map.put(id, context);
-				promotionMutex.release(); // now available to other 'loading' threads
-				contextualise(req, res, chain, id);
-				shared.release();
-			} catch (InterruptedException e) {
-				throw new ServletException("problem promoting context: "+id, e);
-			}
-		}
-		
+
 		public Context nextContext() {
 			return _pool.take();
+		}
+		
+		public boolean prepare(String id, Context context) {
+			try {
+				context.getSharedLock().acquire();
+				_log.info("promoting (to memory): "+id);
+				return true;
+			} catch (InterruptedException e) {
+				_log.warn("promotion abandoned: "+id, e);
+				return false;
+			}			
+		}
+		
+		public void commit(String id, Context context) {
+			_log.info("insert (memory): "+id);
+			_map.put(id, context);
+			}
+		
+		public void rollback(String id, Context context) {
+		}
+		
+		public void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Context context) throws IOException, ServletException {
+			try {
+				MemoryContextualiser.this.contextualise(req, res, chain, id);
+			} finally {
+			context.getSharedLock().release();
+			}
 		}
 	}
 

@@ -200,7 +200,18 @@ public class TestContextualiser extends TestCase {
 		
 		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
 			_counter++;
-			promoter.promoteAndContextualise(req, res, chain, id, _context, promotionMutex);
+			
+			MyContext context=_context;
+			assertTrue(_context!=null);
+			if (promoter.prepare(id, context)) {
+				_context=null;
+				promoter.commit(id, context);
+				promotionMutex.release();
+				promoter.contextualise(req, res, chain, id, context);
+			} else {
+				_context=context;
+				promoter.rollback(id, context);
+			}
 			return true;
 		}
 		
@@ -252,7 +263,8 @@ public class TestContextualiser extends TestCase {
 		public void run() {
 			try {
 				_contextualiser.contextualise(null, null, _chain, _id, null, _promotionMutex);
-			} catch (Exception ignore) {
+			} catch (Exception e) {
+				_log.error("unexpected problem", e);
 				assertTrue(false);
 			}
 		}
