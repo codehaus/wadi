@@ -1,0 +1,270 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>WADI FAQ</title>
+  </head>
+
+  <body>
+    <h1>WADI FAQ</h1>
+
+    <ul>
+      <li>What is WADI?</li>
+      <li>On what platform[s] does it run?</li>
+      <li>Why should I need it?</li>
+      <li>How does it differentiate itself from the competition?</li>
+      <li>With which J2EE containers is it integrated?</li>
+      <li>How is this integration achieved?</li>
+      <li>Why AspectJ?</li>
+      <li>What is WADIs current status?</li>
+      <li>Where is it going ?</li>
+      <li>This is interesting stuff - how do I get involved?</li>
+      <li>How do I run the Tomcat integration?</li>
+      <li>How do I run the Jetty integration?</li>
+      <li>Why is WADI packaged as a WAR?</li>
+      <li>How is WADI put together?</li>
+      <li>How do you deal with concurrency in a webapp's HttpSessions?</li>
+      <li>Tell me what you mean by HttpSession and HttpRequest relocation</li>
+      <li>etc...</li>
+      <li></li>
+      <li></li>
+    </ul>
+
+    <hr/>
+
+    <h3>What is WADI?</h3>
+
+    WADI is an acronym for Web Application Distribution
+    Infrastructure. WADI is a collection of pluggable components
+    which, ultimately, aim to provide a complete solution to all the
+    common problems encountered in managing user state in the J2EE web
+    tier. Particular issues addressed are/will be:
+
+    <ul>
+      <li>Transparent paging of HttpSessions to/from long term storage under load</li>
+      <li>HttpSession preservation between web container lifecycles</li>
+      <li>HttpSession migration both to long term storage and between cluster nodes</li>
+      <li>Guaranteeing that HttpRequest and HttpSession are correctly colocated for processing</li>
+      <li>Bulletproof HttpSessions - through state replication</li>
+      <li>A simple and reliable semantic which encompasses all the above</li>
+    </ul>
+
+    HttpSessions have taken a back seat in terms of reliability and
+    effort put into their implementation to EJBs for some time. With
+    the proliferation of web farms and increasing reliability and
+    performance requirements in the web tier, I felt it was time to
+    address this issue.
+
+    <h3>On what platform[s] does it run?</h3>
+
+    J2SE 1.4.x. WADI [will] use[s] 1.4.x functionality such as
+    'assert' and NIO. It may be possible to restrict these to a subset
+    of WADI plugins in order to port the core to 1.3.x. This is an
+    issue that will be considered when/if the demand should arise.
+
+    <h3>Why should I need it?</h3>
+
+    If you have a requirement to store presentation state in your J2EE
+    web tier and this state is of value and you are not keen on
+    shoehorning it into the business tier in order to achieve its
+    persistance and distribution, then you should be looking at WADI.
+
+    <h3>How does it differentiate itself from the competition?</h3>
+
+    The competition is HttpSession implementations in the open source
+    world. At the time of writing, and to the best of my knowledge,
+    these begin to address the same issues as WADI, in terms of
+    e.g. paging HttpSessions to/from disc, or state replication, but
+    are marked as 'experimental' or have unclear semantics, or are
+    non-performant.I haven't found a single implementationn which
+    addresses all the issues which WADI chooses to - otherwise I would
+    have contributed to that project.
+
+    <h3>With which J2EE containers is it integrated?</h3>
+
+    WADI currently plugs into Tomcat 5 and Jetty 5, in the form of an
+    HttpSession Manager and a Filter. Any other web container that is
+    flexible enough to allow the substitution of its HttpSession
+    Manager with another 3rd party implementation should present a
+    fairly straightforward integration target for WADI. Filters are a
+    standard J2EE component, so will be pluggable into any compliant
+    or compatible implementation.  <p/> In as far as WADI is
+    integrated with the two web containers mentioned above, it may be
+    considered integrated with application servers which embed them
+    (notably e.g. Geronimo, Jonas and JBoss). Particular attention
+    will be paid to the Geronimo integration, for reasons given below.
+
+    <h3>How is this integration achieved?</h3>
+
+    The Filter end of WADI keeps track of which HttpRequests are
+    visiting which HttpSessions, enabling WADI to know when it may
+    interact with an HttpSession (e.g. for migration) without
+    involving itself in concurrency issues with application-space
+    threads. The Filter is also able to relocate requests, by various
+    pluggable mechanisms, from one node to another, before the
+    HttpRequest enters application code.
+
+    The HttpSession Manager is responsible for HttpSession creation,
+    destruction, pooling, location and migration.
+
+    <h3>Why AspectJ?</h3>
+
+    The complex and flexible requirements of middleware particularly
+    lend themselves to AOP. The previous incarnation of WADI, the
+    Jetty HttpSession replication implementation, used a system of
+    deploytime aggregated custom 'interceptors' to compose its
+    HttpSession container on the fly. The move to AspectJ is intended
+    to preserve that investment of time in the decomposition of the
+    HttpSession container into its various aspects whilst paying
+    minimum price at runtime for what is now a statically-typed,
+    compile time abstraction. At the time of the project's inception a
+    number of AOP technologies were investigated. AspectJ was chosen
+    as being the most runtime efficient and mature of this
+    selection. Note that the investment is in figuring out how to
+    break a system down into aspects, rather than implementing it
+    using any particular proprietary aspect technology. If a more
+    suitable AOP implementation comes along we foresee no problem in
+    porting WADI to it.
+
+    <h3>What is WADIs current status?</h3>
+
+    Changing daily :-)
+
+    <p/>
+
+      WADI started as a 'proof of concept' project, but is moving
+      rapidly towards production readiness. We will be looking for
+      beta-testers soon.
+
+    <h3>Where is it going ?</h3>
+
+    Currently we are concentrating on resolving all the issues
+    surrounding concurrency, migration and session/request
+    relocation. Once these have been resolved, the next large piece of
+    functionality will be state replication. WADI started life as a
+    design for a component of the Apache Geronimo project. It was then
+    realised that a standalone implementation would be of great
+    benefit to the large community that use a J2EE web tier, but not
+    the full J2EE stack. We expect WADI to start consuming Geronimo
+    services for some of it's higher level activities including
+    clustering and replication. A tight integration into Geronimo is
+    on the cards.
+
+    <h3>This is interesting stuff - how do I get involved?</h3>
+
+    Check out WADI from cvs or download a snapshot (when we get them
+    going) and play with it in Tomcat or Jetty. Report problems on the
+    mailing list or codehaus Jira and join in the discussion on the
+    mailing list and irc (when we have one).Bug fixes are always
+    welcome :-). These are the ways to have a direct impact on the
+    quality and direction of the project. There will also be a WADI
+    BOF at JavaOne this year, for those of you who are attending -
+    more details to follow.
+
+    <h3>How do I run the Tomcat integration?</h3>
+
+    <pre>ant tomcat.0</pre>
+
+    <h3>How do I run the Jetty integration?</h3>
+
+    <pre>ant jetty.0</pre>
+
+    <h3>Why is WADI packaged as a WAR?</h3>
+
+    This is simply an artifact of how it is developed. Having it
+    compile directly into a WAR means that the test webapp may be
+    deployed immediately WADI has been built, omitting a tedious
+    'packaging' step. This speeds the development iteration.
+    <p/>
+    Since WADI is a webapp, anyone wishing to deploy a WADI-enabled
+    webapp may use WADI itself as an example deployment.
+
+    <h3>How is WADI put together?</h3>
+
+    WADI installs as an HttpSession Manager for a particular
+    Context/WebApp. This Manager then installs (programmatically) a
+    Filter at the front of the webapp's Filter stack.
+    <p/>
+
+      The Manager may be considered to be the webapp's HttpSession
+      factory. It is in control of HttpSession creation and
+      destruction and provides its own HttpSession
+      implementation. Both Tomcat and Jetty (fortunately) have well
+      defined internal Manager and HttpSession
+      APIs. org.codehaus.wadi.shared provides core classes which
+      implement standard and WADI functionality as well as interfaces
+      defining pluggable strategies and
+      policies. org.codehaus.wadi.tomcat and org.codehaus.wadi.jetty
+      extend these classes with the necessary glue to fit them into
+      the targer webcontainer. Finally, org.codehaus.wadi.plugins
+      provides concrete implementations of these pluggable APIs,
+      e.g. HttpSession and HttpRequest relocation mechanisms.
+
+      <p/>
+
+      WADI does not set out to tell you how to distribute your
+      webapp. We believe that there are many different ways that you
+      might wish to do this. WADI simply provides a framework and
+      (eventually) every conceivable ability that you might
+      require. Useful default behaviour is supplied, but it is
+      expected that this will be customised with the use of the
+      supplied plugins.
+
+    <h3>How do you deal with concurrency in a webapp's HttpSessions?</h3>
+
+    The servlet spec specifically mandates that implementations should
+    allow multiple concurrent request threads to pass through an
+    HttpSession. It omits describing any synchronisation protocol
+    around the HttpSession that the container and application might
+    use in order to coordinate their activities. This has presented a
+    problem for a number of Manager implementations that I have looked
+    at. Many chose simply to ignore the problem.
+
+    <p/>
+
+      This problem becomes far more pressing as the number of
+      activities that the Manager may wish to perform on an active
+      HttpSession increases in frequency or complexity. WADI, for
+      instance, needs to be able to guarantee that no application
+      threads are altering an HttpSession's content whilst the Manager
+      is trying to serialise the HttpSession as part of a relocation
+      (migration) to long term store or another node.
+
+    <p/>
+
+      Synchronising around the HttpSession would not actually solve
+      our problem. If we wish to relocate an HttpSession to another
+      node, we must prevent, once we have made this decision any
+      further requests for this session on this node from entering
+      application code here during the relocation.
+
+    <p/>
+
+      WADI's Filter looks at each incoming request. If it references a
+      local HttpSession it tries to acquire a non-exclusive lock in
+      that HttpSession (non-exclusive so that many concurrent request
+      threads may run). When the Manager wishes to e.g. relocate the
+      HttpSession it will try to acquire an exclusive lock in the
+      HttpSession. In this way application and container-space threads
+      are properly coordinated.
+
+    <h3>Tell me what you mean by HttpSession and HttpRequest relocation</h3>
+
+    Introducing state into a cluster thoroughly complicates
+    matters. It becomes important that client request and server-side
+    state meet each other somewhere in the cluster for correct
+    processing. Location becomes all important. WADI has the ability
+    to relocate both HttpSessions, by migrating them from node to node
+    (or to long term store) and to relocate HttpRequests by
+    redirection and proxying. Various pluggable strategies and
+    policies allow the user to define how and when this will be done.
+
+    <h3>etc...</h3>
+
+    <hr/>
+    <address><a href="mailto:jules@coredevelopers.net">Jules Gosnell</a></address>
+<!-- Created: Wed Apr 14 08:32:47 BST 2004 -->
+<!-- hhmts start -->
+Last modified: Thu Apr 15 09:11:56 BST 2004
+<!-- hhmts end -->
+  </body>
+</html>
