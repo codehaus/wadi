@@ -601,10 +601,10 @@
 	<p/>
 	<ul>
 	  <li>cd $WADI_HOME/bin</li>
-	  <li>./node.sh xterm jetty red&amp;</li>
-	  <li>./node.sh xterm jetty green&amp;</li>
-	  <li>./node.sh xterm tomcat blue&amp;</li>
-	  <li>./node.sh xterm tomcat yellow&amp;</li>
+	  <li>sh ./node.sh xterm jetty red&amp;</li>
+	  <li>sh ./node.sh xterm jetty green&amp;</li>
+	  <li>sh ./node.sh xterm tomcat blue&amp;</li>
+	  <li>sh ./node.sh xterm tomcat yellow&amp;</li>
 	  <li>look in the corresponding props files in $WADI_HOME/conf for details of server ports and set up your lb to balance over all 4 nodes</li>
 	  <li>$WADI_HOME/conf contains example configs for Apache/mod_jk and Pound</li>
 	  <li>hit http://&lt;your-lb&gt;/wadi/jsp with your browser</li>
@@ -613,7 +613,7 @@
 	and here is what you should see:-)
 	<p/>
 	<ul>
-	  <li>9 frames, each containing a table with a single cell</li>
+	  <li>After a delay (JSPs  compiling) 9 frames, each containing a table with a single cell</li>
 	  <li>The table corresponds to your session</li>
 	  <li>The colour of the cell corresponds to the server from which the frameset was served - at which point it was inserted into the session</li>
 	  <li>The colour of the frame corresponds to the server from which it was served</li>
@@ -626,7 +626,7 @@
 	here's what is actually happening;
 	<p/>
 	<ul>
-	  <li>we are emulating a worst case scenario - an exceptional occurrence - no affinity</li>
+	  <li>we are emulating a worst case scenario - an exceptional occurrence - a breakdown in session affinity</li>
 	  <li>each frameset will try to view the same session on a number of different servers</li>
 	  <li>only a single copy of the session exists, which is being moved around under the requests, ensuring their correct processing</li>
 	  <li>the table is a visual history of where the frameset has been served from</li>
@@ -638,7 +638,11 @@
 	you would ever want to happen in production. You would enable
 	session affinity between load-balancer and webcontainers,
 	cutting out all the IO required to move the session from one
-	node to another.
+	node to another. But you would rest safe in the knowledge that
+	if affinity was temporarily lost through e.g. the
+	loss/shutdown of a node, or maintenance in the lb tier, WADI
+	would catch and deal with this exceptional case, maintaining
+	service to your customers.
 
 	<p/>
 
