@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project default="javadoc">
+
+  <target name="javadoc">
+    <javadoc
+      destdir="javadoc"
+      access="package"
+      source="1.4"
+      use="true"
+      notree="false"
+      nonavbar="false"
+      noindex="false"
+      splitindex="true"
+      author="true"
+      version="true"
+      nodeprecatedlist="false"
+      nodeprecated="false"
+      packagenames="org.codehaus.wadi.jetty,org.codehaus.wadi.shared,org.codehaus.wadi.plugins,org.codehaus.wadi.tomcat,org.codehaus.wadi.test"
+      sourcepath="src/test:src/java"
+      classpath="WEB-INF/lib/aspectjrt.jar:WEB-INF/lib/concurrent-1.3.2.jar:lib/commons-logging-1.0.3.jar:lib/junit.jar:lib/gt2-main.jar:/usr/java/jakarta-tomcat-5.0.19/common/lib/jmx.jar:/home/jules/cvs/jetty/Jetty/lib/org.mortbay.jmx.jar:/home/jules/cvs/jetty/Jetty/lib/javax.servlet.jar:WEB-INF/lib/commons-httpclient-2.0.jar:WEB-INF/classes:/usr/java/jakarta-tomcat-5.0.19/server/lib/catalina.jar:/home/jules/cvs/jetty/Jetty/lib/org.mortbay.jetty.jar:/home/jules/eclipse/plugins/org.aspectj.ajde_1.1.8/aspectjrt.jar"
+      />
+  </target>
+
+</project>
