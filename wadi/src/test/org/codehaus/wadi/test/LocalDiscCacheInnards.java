@@ -23,13 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import javax.cache.Cache;
-import javax.cache.CacheEntry;
-import javax.cache.CacheException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SerializableContent;
@@ -132,6 +126,12 @@ public class
     return success;
   }
 
+  protected boolean
+  	addValue(Object key, Object value)
+  {
+  	return storeValue(key, value);
+  }
+  
   protected boolean
     removeValue(Object key)
   {

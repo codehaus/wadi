@@ -18,17 +18,15 @@
 
 package org.codehaus.wadi.test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import javax.cache.Cache;
-import javax.cache.CacheEntry;
-import javax.cache.CacheException;
 import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,8 +37,6 @@ import org.codehaus.wadi.StreamingStrategy;
 
 // first, and very rudimentary, shot at a DB-backed JCache - lots of
 // work to do here...
-
-// classloading ?
 
 // shouldn't be caching keys...
 
@@ -88,9 +84,13 @@ class
       ResultSet rs=s.executeQuery("SELECT MyValue FROM "+_table+" WHERE MyKey='"+key+"'");
       if (rs.next())
       {
-	SerializableContent sc=(SerializableContent)rs.getObject(1);
-	value=sc;
-	_log.info("loaded (database): "+key+" : "+value);
+    	SerializableContent sc=_valuePool.take();
+    	ObjectInput oi=_streamingStrategy.getInputStream(new ByteArrayInputStream((byte[])rs.getObject(1)));
+    	sc.readContent(oi);
+    	oi.close();
+
+    	value=sc;
+    	_log.info("loaded (database): "+key+" : "+value);
       }
 
       s.close();
@@ -114,7 +114,7 @@ class
       SerializableContent sc=(SerializableContent)value;
 
       Connection c=_ds.getConnection();
-      PreparedStatement ps=c.prepareStatement("UPDATE "+_table+" SET MyValue=? WHERE MyKey='"+key+"'");
+      PreparedStatement ps=c.prepareStatement("UPDATE "+_table+" SET MyValue=? WHERE MyKey='"+key.toString()+"'");
       ps.setObject(1, value);
       ps.executeUpdate();
       ps.close();
@@ -135,6 +135,41 @@ class
     return success;
   }
 
+  protected boolean
+  	addValue(Object key, Object value)
+  {
+    boolean success=false;
+
+    try
+    {
+      SerializableContent sc=(SerializableContent)value;
+
+      Connection c=_ds.getConnection();
+      PreparedStatement ps=c.prepareStatement("INSERT INTO "+_table+" (MyKey, MyValue) VALUES ('"+key.toString()+"', ?)");
+      ByteArrayOutputStream baos=new ByteArrayOutputStream();
+      ObjectOutput oos=_streamingStrategy.getOutputStream(baos);
+      sc.writeContent(oos);
+      oos.flush();
+      oos.close();
+      ps.setObject(1, baos.toByteArray());
+      ps.executeUpdate();
+      ps.close();
+      c.close();
+
+      // do we need to worry about ttl ?
+      //	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
+      //	file.setLastModified(willTimeOutAt);
+
+      _log.info("stored (database): "+key+" : "+value);
+      success=true;
+    }
+    catch (Exception e)
+    {
+      _log.error("eviction (database) failed: "+key, e);
+    }
+
+    return success;
+  }
   protected boolean
     removeValue(Object key)
   {
