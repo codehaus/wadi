@@ -44,7 +44,10 @@ import org.mortbay.jetty.servlet.WebApplicationHandler;
 import junit.framework.TestCase;
 
 /**
- * TODO - JavaDoc this type
+ * Unit Tests requiring a pair of Jetty's. Each one is set up with a Filter and Servlet placeholder.
+ * These are injected with actual Filter and Servlet instances before the running of each test. This
+ * allows the tests to set up the innards of these components, make http requests to them and then inspect
+ * their innards for the expected changes,
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -63,13 +66,15 @@ public class TestMigration extends TestCase {
 		
 		public Node(String host, int port, String context, String pathSpec) throws UnknownHostException {
 			// filter
-			_filterHolder=new FilterHolder(_handler, "WadiFilter", FilterInstance.class.getName());
+			String filterName="Filter";
+			_filterHolder=new FilterHolder(_handler, filterName, FilterInstance.class.getName());
 			_handler.addFilterHolder(_filterHolder);
-			_handler.addFilterPathMapping("/*", "WadiFilter", FilterHolder.__REQUEST);
+			_handler.addFilterPathMapping(pathSpec, filterName, FilterHolder.__REQUEST);
 			//servlet
-			_servletHolder=new ServletHolder(_handler, "WadiServlet", ServletInstance.class.getName());
+			String servletName="Servlet";
+			_servletHolder=new ServletHolder(_handler, servletName, ServletInstance.class.getName());
 			_handler.addServletHolder(_servletHolder);
-			_handler.mapPathToServlet(pathSpec, "WadiServlet");
+			_handler.mapPathToServlet(pathSpec, servletName);
 			// handler
 			_context.addHandler(_handler);
 			// context
@@ -165,11 +170,7 @@ public class TestMigration extends TestCase {
 	public TestMigration(String name) {
 		super(name);
 	}
-	
-	public void node() {
-		
-	}
-	
+
 	public String get(HttpClient client, HttpMethod method, String path) throws IOException, HttpException {
 		method.recycle();
 		method.setPath(path);
@@ -182,8 +183,6 @@ public class TestMigration extends TestCase {
 		HttpMethod method=new GetMethod("http://localhost:8080");
 		String result=get(client, method, "/test");
 		_log.info("-"+result+"-");
-		//assertTrue(result=="");
-		
-		//Thread.sleep(60000);
+		assertTrue(result.equals(""));
 	}	
 }
