@@ -19,10 +19,13 @@ package org.codehaus.wadi.sandbox.distributable.test;
 import java.io.IOException;
 import java.io.Serializable;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.distributable.Dirtier;
+import org.codehaus.wadi.sandbox.distributable.impl.ReadWriteDirtier;
 import org.codehaus.wadi.sandbox.distributable.impl.WholeAttributesWrapper;
 import org.codehaus.wadi.sandbox.distributable.impl.WriteDirtier;
 import org.codehaus.wadi.sandbox.impl.SimpleAttributes;
@@ -37,21 +40,22 @@ import junit.framework.TestCase;
  */
 
 public class TestDistribution extends TestCase {
-
+	protected Log _log = LogFactory.getLog(getClass());
+    
     /*
      * @see TestCase#setUp()
      */
     protected void setUp() throws Exception {
         super.setUp();
     }
-
+    
     /*
      * @see TestCase#tearDown()
      */
     protected void tearDown() throws Exception {
         super.tearDown();
     }
-
+    
     /**
      * Constructor for TestDistribution.
      * @param name
@@ -59,33 +63,70 @@ public class TestDistribution extends TestCase {
     public TestDistribution(String name) {
         super(name);
     }
-
-    	public static int _serialisations=0;
-    	public static int _deserialisations=0;
-
-        public static class Counter implements Serializable {
-
+    
+    public static int _serialisations=0;
+    public static int _deserialisations=0;
+    
+    public static class Counter implements Serializable {
+        
+        double _random=Math.random();
+        
+        public boolean equals(Object that) {
+            return (that==this) || ((that instanceof Counter) && ((Counter)that)._random==this._random);
+        }
+        
         private void writeObject(java.io.ObjectOutputStream out) throws IOException {
             _serialisations++;
             out.defaultWriteObject();
         }
-
+        
         private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
             in.defaultReadObject();
             _deserialisations++;
         }
     }
-
-    public void testSerialisation() throws Exception {
+    
+    public void testAttributesWrapper() throws Exception {
         Dirtier dirtier=new WriteDirtier();
         StreamingStrategy streamer=new SimpleStreamingStrategy();
-        boolean saveMemory=false;
-        Attributes wrapper=new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, saveMemory);
+        boolean evictObjectRepASAP=false;
+        boolean evictByteRepASAP=false;
+
+        evictObjectRepASAP=false;
+        evictByteRepASAP=false;
+        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
+        evictObjectRepASAP=true;
+        evictByteRepASAP=false;
+        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
+        evictObjectRepASAP=false;
+        evictByteRepASAP=true;
+        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
+        evictObjectRepASAP=true;
+        evictByteRepASAP=true;
+        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
+        
+//        dirtier=new ReadWriteDirtier();
+//        evictObjectRepASAP=false;
+//        evictByteRepASAP=false;
+//        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
+//        evictObjectRepASAP=true;
+//       evictByteRepASAP=false;
+//        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
+//        evictObjectRepASAP=false;
+//        evictByteRepASAP=true;
+//        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
+//        evictObjectRepASAP=true;
+//        evictByteRepASAP=true;
+//        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
+    }
+    
+    public void testSerialisation(Attributes wrapper, boolean evictObjectRepASAP, boolean evictByteRepASAP, boolean readIsDirty) throws Exception {
         String key="foo";
         Counter val=new Counter();
-	int serialisations=0;
-	int deserialisations=0;
-
+        int serialisations=0;
+        _serialisations=serialisations;
+        int deserialisations=0;
+        _deserialisations=deserialisations;
         // check initial state
         assertTrue(_serialisations==serialisations);
         assertTrue(_deserialisations==deserialisations);
@@ -97,7 +138,7 @@ public class TestDistribution extends TestCase {
         assertTrue(val==wrapper.get(key));
         // try serialising container - should serialise content..
         byte[] bytes=wrapper.getBytes();
-	serialisations++;
+        serialisations++;
         assertTrue(_serialisations==serialisations);
         assertTrue(_deserialisations==deserialisations);
         // serialise container again - should used cached serialised content
@@ -105,33 +146,43 @@ public class TestDistribution extends TestCase {
         assertTrue(_serialisations==serialisations);
         assertTrue(_deserialisations==deserialisations);
         // can we still retrieve the original reference ?
-        assertTrue(val==wrapper.get(key));
+        if (evictObjectRepASAP) {
+            assertTrue(val.equals(wrapper.get(key)));
+            deserialisations++;
+        } else {
+            assertTrue(val==wrapper.get(key));
+        }
         // did this last operation affect effect the content ?
         assertTrue(_serialisations==serialisations);
         assertTrue(_deserialisations==deserialisations);
         // serialise the container again - should still not alter contents ...
         bytes=wrapper.getBytes();
+        if (evictObjectRepASAP && evictByteRepASAP)
+            serialisations++;
         assertTrue(_serialisations==serialisations);
         assertTrue(_deserialisations==deserialisations);
         // reinsert content, should invalidate serialised cache...
         wrapper.put(key, val);
         assertTrue(val==wrapper.get(key));
+        if (evictObjectRepASAP && evictByteRepASAP)
+            deserialisations++;
         assertTrue(_serialisations==serialisations);
+        _log.info(""+_deserialisations+"=="+deserialisations);
         assertTrue(_deserialisations==deserialisations);
         bytes=wrapper.getBytes();
-	serialisations++;
+        serialisations++;
         assertTrue(_serialisations==serialisations);
         assertTrue(_deserialisations==deserialisations);
-
+        
         // Looks good - now let's try deserialising...
-
+        
         // populate the container - should not change old content state...
         wrapper.setBytes(bytes);
         assertTrue(_serialisations==serialisations);
         assertTrue(_deserialisations==deserialisations);
         // retrieve content - should cause deserialisation
         val=(Counter)wrapper.get(key);
-	deserialisations++;
+        deserialisations++;
         assertTrue(_serialisations==serialisations);
         assertTrue(_deserialisations==deserialisations);
         // retrieve content again - should be found in cache - no deserialisation...
@@ -140,6 +191,9 @@ public class TestDistribution extends TestCase {
         assertTrue(_deserialisations==deserialisations);
         // reinitialise content - should invalidate object cache...
         bytes=wrapper.getBytes();
+        if (evictByteRepASAP) {
+            serialisations++;
+        }
         assertTrue(_serialisations==serialisations);
         assertTrue(_deserialisations==deserialisations);
         wrapper.setBytes(bytes);
@@ -147,10 +201,10 @@ public class TestDistribution extends TestCase {
         assertTrue(_deserialisations==deserialisations);
         // reretrieve content - should cause fresh deserialisation
         val=(Counter)wrapper.get(key);
-	deserialisations++;
+        deserialisations++;
         assertTrue(_serialisations==serialisations);
         assertTrue(_deserialisations==deserialisations);
-
+        
         // TODO:
         // cool - lots more to do...
         // add a second counter
