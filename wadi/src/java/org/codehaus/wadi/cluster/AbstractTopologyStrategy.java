@@ -24,22 +24,25 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.activecluster.ClusterEvent;
+import org.codehaus.activecluster.LocalNode;
 import org.codehaus.activecluster.Node;
 
 public abstract class
   AbstractTopologyStrategy
   implements TopologyStrategy
 {
-  //  protected Log _log=LogFactory.getLog(getClass().getName()+"#"+_id);
-  protected Log _log=LogFactory.getLog(getClass().getName());
-  protected Map _peers=new TreeMap();
-
-  protected Cluster _cluster;
-  protected Peer    _localPeer;
+  protected Log       _log=LogFactory.getLog(getClass().getName());
+  protected Map       _peers=new TreeMap();
+  protected String    _id;
+  protected Cluster   _cluster;
+  protected Peer      _localPeer;
+  protected LocalNode _localNode;
 
   public
-    AbstractTopologyStrategy(Cluster cluster)
+    AbstractTopologyStrategy(String id, Cluster cluster)
   {
+    _id=id;
+    _log=LogFactory.getLog(getClass().getName()+"#"+_id);
     _cluster=cluster;
   }
 
@@ -48,15 +51,16 @@ public abstract class
   public void
     start()
   {
-    Node localNode=_cluster.getLocalNode();
-    onNodeAdd(new ClusterEvent(_cluster, localNode, ClusterEvent.ADD_NODE));
-    _localPeer=(Peer)_peers.get(localNode.getState().get("id"));
+    _localNode=_cluster.getLocalNode();
+    onNodeAdd(new ClusterEvent(_cluster, _localNode, ClusterEvent.ADD_NODE));
+    _localPeer=(Peer)_peers.get(_id);
   }
 
   public void
     stop()
   {
-    onNodeRemove(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.REMOVE_NODE));
+    onNodeRemove(new ClusterEvent(_cluster, _localNode, ClusterEvent.REMOVE_NODE));
+    _localNode=null;
     _localPeer=null;
   }
 
@@ -78,25 +82,6 @@ public abstract class
     add(p);
   }
 
-  // do we need this yet ?
-  public void
-    onNodeUpdate(ClusterEvent event)
-  {
-    Node node=event.getNode();
-    String id=(String)(node.getState().get("id"));
-    Peer p=null;
-    Collection peers=null;
-    synchronized (_peers)
-    {
-      p=(Peer)_peers.get(id);
-      peers=_peers.values();
-    }
-    p.setNode(node);	// important - this is the update...
-
-    _log.info("updating: " + p);
-    _log.info("nodes   : " + peers);
-  }
-
   public void
     onNodeRemove(ClusterEvent event)
   {
@@ -116,7 +101,25 @@ public abstract class
     remove(p);
   }
 
+  // do we need this yet ?
+  public void
+    onNodeUpdate(ClusterEvent event)
+  {
+    Node node=event.getNode();
+    String id=(String)(node.getState().get("id"));
+    Peer p=null;
+    Collection peers=null;
+    synchronized (_peers)
+    {
+      p=(Peer)_peers.get(id);
+      peers=_peers.values();
+    }
+    p.setNode(node);	// important - this is the update...
+
+    _log.info("updating: " + p);
+    _log.info("nodes   : " + peers);
+  }
+
   public abstract void add(Peer p);
   public abstract void remove(Peer p);
 }
-

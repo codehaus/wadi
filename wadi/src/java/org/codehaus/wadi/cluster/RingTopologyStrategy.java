@@ -29,14 +29,14 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
 
 public class
-  NChooseKTopologyStrategy
+  RingTopologyStrategy
   extends AbstractTopologyStrategy
 {
   protected int _k=1;
   protected Map _cells=new TreeMap();
 
   public
-    NChooseKTopologyStrategy(String id, Cluster cluster, int k)
+    RingTopologyStrategy(String id, Cluster cluster, int k)
   {
     super(id, cluster);
     _k=k;
@@ -127,24 +127,14 @@ public class
     }
     else
     {
-      Map subCombs=combine(e, k-1);
-      for (Iterator i=subCombs.values().iterator(); i.hasNext(); )
-      {
-	Set subComb=(Set)i.next();
-	for (Iterator j=e.iterator(); j.hasNext(); )
-	{
-	  Peer p=(Peer)j.next();
-	  if (!subComb.contains(p))
-	  {
-	    Set comb=new TreeSet(subComb);
-	    comb.add(p);
-	    String id="";
-	    for (Iterator n=comb.iterator(); n.hasNext(); )
-	      id+=((id.length()==0)?"":"-")+((Peer)n.next()).getId();
-	    combs.put(id, comb);
-	  }
-	}
-      }
+      // NYI
+
+      // Arrange Cells in an overlapping ring...
+
+      // This is a clumsy topology because every join will result in
+      // at least one cell destruction. Cell destruction is BAD
+      // because the state that was held in the cell will have to be
+      // rehomed - this will involve IO.
     }
 
     return combs;
