@@ -194,7 +194,6 @@ public abstract class
     getRemoteSession(String realId)
   {
     HttpSessionImpl impl=null;
-    boolean locked=false;
 
     // this is to collapse multiple incoming threads looking for the
     // same session into one immigration...
@@ -204,7 +203,14 @@ public abstract class
       {
 	// session already local - return it...
 	_log.debug(realId+": collapsing secondary immigration...");
-	return impl;
+
+	impl.acquireApplicationLock();
+
+	HttpSession facade=(HttpSession)impl.getFacade();
+	if (facade!=null && facade.isValid())
+	  return impl;
+	else
+	  return null;
       }
       else
       {
@@ -213,20 +219,46 @@ public abstract class
 	// into local table as a placeholder.
 	impl=createImpl();
 	impl.setWadiManager(this);
-	try
+
+	boolean locked=false;
+	while (!locked)
 	{
-	  impl.getContainerLock().acquire();
-	  locked=true;
-	}
-	catch (InterruptedException e)
-	{
-	  _log.warn("interrupted whilst acquiring wlock on placeholder session");
+	  try
+	  {
+	    impl.getContainerLock().acquire();
+	    locked=true;
+	  }
+	  catch (InterruptedException e)
+	  {
+	    _log.warn("interrupted whilst acquiring wlock on placeholder session");
+	  }
 	}
 
 	_local.put(realId, impl);
       }
     }
 
+    if (getRemoteSession(realId, impl))
+    {
+      impl.getRWLock().downgrade();
+    }
+    else
+    {
+      // tidy up
+      _log.info(realId+": failed to immigrate session - tidying up");
+
+      _local.remove(realId);
+      impl.getContainerLock().release();
+      _releaseImpl(impl);
+      impl=null;
+    }
+
+    return impl;
+  }
+
+  protected boolean
+    getRemoteSession(String realId, HttpSessionImpl impl)
+  {
     // if we get to here we know that session is remote/dead and that
     // it is up to us to find it and migrate it here...
 
@@ -247,31 +279,7 @@ public abstract class
       successfulMigration=_migrationService.getClient().immigrateSingleSession(realId, impl, timeout, _cluster.getDestination());
     }
 
-    if (successfulMigration)
-    {
-      //      _log.info("successfully immigrated: "+impl);
-
-      assert impl.getRealId()!=null;
-      // this lock needs to become an app lock, without another
-      // container lock jumping in between...
-      if (locked)
-      {
-      	impl.getRWLock().downgrade();
-	locked=false;
-      }
-    }
-    else
-    {
-      _log.info(realId+": failed to immigrate session - tidying up");
-
-      _local.remove(realId);
-      if (locked)
-	impl.getContainerLock().release();
-      _releaseImpl(impl);
-      impl=null;
-    }
-
-    return impl;
+    return successfulMigration;
   }
 
   public HttpSessionImpl
@@ -829,8 +837,8 @@ public abstract class
   public ManagerProxy
     locate(String realId)
   {
- //   String location=_migrationService.getClient.immigrate(realId, null, timeout);
-  	String location=null;
+    //   String location=_migrationService.getClient.immigrate(realId, null, timeout);
+    String location=null;
 
     if (location==null)
     {

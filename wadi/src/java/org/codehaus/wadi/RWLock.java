@@ -46,9 +46,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * A read-write lock. Writers are preferred. Writers are organised
+ * A read-write lock. Writers are preferred. Writers are ordered
  * according to 'priority'. A Reader may overlap release of its read
- * lock with its application for a write lock.
+ * lock with its application for a write lock. A Writer may downgrade,
+ * becoming a Reader.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -450,7 +451,7 @@ public class RWLock implements ReadWriteLock {
   {
     // test that we are indeed the current writer....
     if (activeWriter_!=Thread.currentThread())
-      throw new IllegalStateException("upgrading thread is not current writer");
+      throw new IllegalStateException("downgrading thread is not current writer");
     else
     {
       // cease being the active writer

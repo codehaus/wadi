@@ -122,6 +122,7 @@ public class
 	{
 	  boolean acquired=false;
 	  while (acquired==false)
+	  {
 	    try
 	    {
 	      impl.getApplicationLock().acquire(); // TODO - timeout
@@ -134,22 +135,25 @@ public class
 	      // complete correctly....
 	      _log.trace(realId+": interrupted whilst acquiring application lock");
 	    }
+	  }
 
-	    HttpSession facade=(HttpSession)impl.getFacade();
-	    if (facade==null || !facade.isValid())
-	    {
-	      impl.getApplicationLock().release();
-	      impl=null;
-	      _log.debug(realId+": session disappeared before it could be locked into container");
-	    }
+	  HttpSession facade=(HttpSession)impl.getFacade();
+	  if (facade==null || !facade.isValid())
+	  {
+	    impl.getApplicationLock().release();
+	    impl=null;
+	    _log.debug(realId+": session disappeared before it could be locked into container");
+	  }
 	}
 
 	if (impl==null)
 	{
 	  if (_manager.getDistributable())
-	    {
-	      impl=_manager.getRemoteSession(realId); // returns already app-locked...
-	    }
+	  {
+	    _log.debug(realId+": getRemoteSession()");
+	    impl=_manager.getRemoteSession(realId); // returns already app-locked...
+	    if (impl==null) _log.warn(realId+": SESSION IMMIGRATION FAILED");
+	  }
 	  else
 	  {
 	    // we cannot relocate the session to this request, so we
@@ -178,7 +182,9 @@ public class
 	  }
 	  else
 	  {
-	    _log.debug(realId+": session id maps to invalid session");
+	    _log.debug("facade: "+facade);
+	    _log.debug("facade,isValid(): "+(facade!=null?facade.isValid():false));
+	    _log.debug(realId+": maps to invalid session");
 	  }
 	}
       }
