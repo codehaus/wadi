@@ -102,6 +102,10 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 		// take out session, prepare to promote it...
 
 		Motable emotable=response.getMotable();
+		
+		if (!emotable.checkTimeframe(System.currentTimeMillis()))
+		    _log.warn("immigrating session has come from the future!: "+emotable.getId());
+		
 		Emoter emoter=new ImmigrationEmoter(_locationMap, settingsInOut);
 		Motable immotable=Utils.mote(emoter, immoter, emotable, id);
 		if (immotable!=null) {

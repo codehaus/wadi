@@ -31,7 +31,7 @@ public interface Evictable {
 	public void setLastAccessedTime(long lastAccessedTime);
 	public int  getMaxInactiveInterval();
 	public void setMaxInactiveInterval(int maxInactiveInterval);
-
+	public boolean isNew();
 	public long getTimeToLive(long time);
 
 	public boolean getTimedOut(); // implicitly invalid via timeout
@@ -40,4 +40,6 @@ public interface Evictable {
 	public void setInvalidated(boolean invalidate);
 	
 	public boolean getValid(); // invalid, either implicitly or explicitly
+	
+	public boolean checkTimeframe(long currentTime);
 }

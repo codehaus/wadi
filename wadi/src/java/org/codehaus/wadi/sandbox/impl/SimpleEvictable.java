@@ -40,10 +40,14 @@ public abstract class SimpleEvictable implements Evictable {
 	public long getLastAccessedTime(){return _lastAccessedTime;}
 	public void setLastAccessedTime(long lastAccessedTime){_lastAccessedTime=lastAccessedTime;}
 
+	public boolean isNew(){return _lastAccessedTime==_creationTime;} // assumes lastAccessedTime is only updated once per request...
+	
 	protected int _maxInactiveInterval;
 	public int  getMaxInactiveInterval(){return _maxInactiveInterval;}
 	public void setMaxInactiveInterval(int maxInactiveInterval){_maxInactiveInterval=maxInactiveInterval;}
 
+	public boolean checkTimeframe(long currentTime) {return !(_creationTime>currentTime || _lastAccessedTime>currentTime);}
+	
 	public long getTimeToLive(long time) {return _maxInactiveInterval<0?Long.MAX_VALUE:(_maxInactiveInterval*1000)-(time-_lastAccessedTime);}
 
 	public boolean getTimedOut() {return getTimedOut(System.currentTimeMillis());}

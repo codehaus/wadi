@@ -65,6 +65,10 @@ public class LocalDiscMotable extends AbstractMotable {
 			motable.setLastAccessedTime(ois.readLong());
 			motable.setMaxInactiveInterval(ois.readInt());
 			motable.setBytes((byte[])ois.readObject());
+
+			if (!motable.checkTimeframe(System.currentTimeMillis()))
+			    _log.warn("loaded session from the future!: "+motable.getId());
+
 			_log.info("loaded (local disc): "+file);
 			return motable;
 		} catch (Exception e) {
