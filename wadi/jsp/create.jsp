@@ -14,7 +14,7 @@
       if (id!=null)
        url+=";jsessionid="+id;
 
-      int period=(int)(Math.random()*90);
+      int period=(int)(Math.random()*120);
       %>
 
       <meta http-equiv="refresh" content="<%= period %>;url=<%= url %>"/>
