@@ -27,6 +27,7 @@
     <pathelement location="${tomcat.home}/common/lib/jmx.jar"/><!-- 5.0.19 -->
     <pathelement location="${tomcat.home}/bin/jmx.jar"/><!-- 5.0.24 -->
     <pathelement location="${tomcat.home}/server/lib/commons-digester.jar"/>
+    <pathelement location="${tomcat.home}/common/lib/servlet-api.jar"/><!-- 5.0.27 -->
     <!-- run time -->
     <pathelement path="./WEB-INF/classes"/>
     <fileset dir="./WEB-INF/lib"/>

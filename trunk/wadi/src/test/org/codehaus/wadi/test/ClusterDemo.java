@@ -183,7 +183,7 @@ public class
 	  }
 
 	  _log.info("adding: " + p);
-	  _log.info("nodes : " + peers);
+	  //	  _log.info("nodes : " + peers);
 
 	  add(p);
 	}
@@ -221,7 +221,7 @@ public class
 	  }
 
 	  _log.info("removing: " + p);
-	  _log.info("nodes   : " + peers);
+	  //	  _log.info("nodes   : " + peers);
 
 	  remove(p);
 	}
@@ -275,13 +275,19 @@ public class
 
       public void
 	add(Peer p)
-	{
-	  Peer localPeer=getLocalPeer();
-	  localPeer=localPeer!=null?localPeer:p; // TODO - hack - FIXME
-	  Map relCells=relevant(_oldCells, combine(_peers.values(), _k), localPeer);
+      {
+	Peer localPeer=getLocalPeer();
+	localPeer=localPeer!=null?localPeer:p; // TODO - hack - FIXME
+	Map newCells=combine(_peers.values(), _k);
+	Map relCells=relevant(_oldCells, newCells, localPeer);
 
-	  _log.info("relevant cells are: "+relCells.keySet());
-	}
+	int n=relCells.size();
+
+	if (n>0)
+	  _log.info("gaining: "+n+" cell[s] - "+relCells.keySet());
+
+	_oldCells=newCells;
+      }
 
 
       /**
@@ -308,19 +314,24 @@ public class
 	    if (!((Set)i.next()).contains(localPeer))
 	      i.remove();
 
-	  _log.info("relevant new cells: "+newCells.size()+" cells - "+newCells.keySet());
-
-	  _oldCells=newCells;
-
 	  return diffCells;
 	}
 
       public void
 	remove(Peer p)
-	{
-	  Map combinations=combine(_peers.values(), _k);
-	  _log.info("recombining: "+combinations.size()+" cells - "+combinations.keySet());
-	}
+      {
+	Peer localPeer=getLocalPeer();
+	localPeer=localPeer!=null?localPeer:p; // TODO - hack - FIXME
+	Map newCells=combine(_peers.values(), _k);
+	Map relCells=relevant(newCells, _oldCells, localPeer);
+
+	int n=relCells.size();
+
+	if (n>0)
+	  _log.info("losing: "+n+" cell[s] - "+relCells.keySet());
+
+	_oldCells=newCells;
+      }
 
       public Map
 	combine(Collection e, int k)
