@@ -262,7 +262,7 @@ public abstract class
       try
       {
 	//	_log.warn("sending migration command: "+realId);
-	sendCommandToCluster(new ImmigrationCommand(realId, _migrationServer.getAddress(), _migrationServer.getPort()));
+	sendCommandToCluster(new EmmigrationCommand(realId, _migrationServer.getAddress(), _migrationServer.getPort()));
 
 	barrier.attemptBarrier(5000L);
 	successfulMigration=true;

@@ -24,7 +24,7 @@ import java.util.Collection;
 import javax.jms.ObjectMessage;
 
 public class
-    ImmigrationCommand
+    EmmigrationCommand
     implements Command
   {
     protected SerializableLog _log=new SerializableLog(getClass());
@@ -33,7 +33,7 @@ public class
     protected int _port;
 
     public
-      ImmigrationCommand(String id, InetAddress address, int port)
+      EmmigrationCommand(String id, InetAddress address, int port)
       {
 	_id=id;
 	_address=address;
