@@ -11,7 +11,7 @@
 	<Set name="HouseKeepingInterval">40</Set><!-- run housekeeping tasks every N secs -->
 	<Set name="PassivationStrategy">
 	  <New class="org.codehaus.wadi.plugins.FilePassivationStrategy">
-	    <Arg>/home/jules/zeuglodon/wadi/tmp</Arg><!-- put evicted sessions in this dir -->
+	    <Arg><SystemProperty name="wadi.home"/>/tmp</Arg><!-- put evicted sessions in this dir -->
 	  </New>
 	</Set>
 	<Set name="EvictionPolicy">
