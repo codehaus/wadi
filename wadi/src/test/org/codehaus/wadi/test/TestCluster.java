@@ -116,6 +116,12 @@ public class
     {
       _log.info("node updated: " + ce.getNode());
     }
+
+    public void
+      onCoordinatorChanged(ClusterEvent ce)
+    {
+      _log.info("coordinator changed: " + ce.getNode());
+    }
   }
 
   public void

@@ -11,13 +11,13 @@
   <property name="tomcat.home" value="${env.TOMCAT_HOME}"/>
   <property name="java.home" value="${env.JAVA_HOME}"/>
   <property name="wadi.home" value="${basedir}"/>
+  <property name="wadi.version" value="0.91"/>
 
   <!--=========================================================================-->
 
   <path id="wadi.classpath">
     <!-- compile time -->
-    <pathelement path="./lib/commons-logging-1.0.3.jar"/>
-    <pathelement path="./lib/junit.jar"/>
+    <fileset dir="./lib"/>
     <!-- Jetty -->
     <pathelement location="${jetty.home}/lib/javax.servlet.jar"/>
     <pathelement location="${jetty.home}/lib/org.mortbay.jetty.jar"/>
@@ -27,7 +27,6 @@
     <pathelement location="${tomcat.home}/common/lib/jmx.jar"/><!-- 5.0.19 -->
     <pathelement location="${tomcat.home}/bin/jmx.jar"/><!-- 5.0.24 -->
     <pathelement location="${tomcat.home}/server/lib/commons-digester.jar"/>
-    <pathelement location="${tomcat.home}/common/lib/servlet-api.jar"/><!-- 5.0.27 -->
     <!-- run time -->
     <pathelement path="."/>
     <pathelement path="./WEB-INF/classes"/>
@@ -68,6 +67,12 @@
     <delete dir="WEB-INF/classes.test"/>
     <delete dir="javadoc"/>
     <delete dir="target"/>
+    <delete>
+      <fileset dir="${wadi.home}">
+	<include name="junit*.properties"/>
+      </fileset>
+    </delete>
+    <delete file="jmeter.log"/>
   </target>
 
   <target name="iajc" depends="init">
@@ -209,7 +214,7 @@
 
   <!-- package up a release - rudimentary at the moment - can probably be automated... -->
   <target name="release" depends="javac">
-   <jar destfile="WEB-INF/lib/wadi-0.9.jar" basedir="WEB-INF/classes"/>
+   <jar destfile="WEB-INF/lib/wadi-${wadi.version}.jar" basedir="WEB-INF/classes"/>
    <delete dir="WEB-INF/classes"/>
    <mkdir dir="WEB-INF/classes"/>
     <fileset id="release.bundle" dir=".">
@@ -229,8 +234,8 @@
       <exclude name="DOCS"/>
       <exclude name="DOCS/**"/>
     </fileset>
-    <tar destfile="../wadi-0.9.tgz" compression="gzip">
-      <tarfileset prefix="wadi-0.9" dir=".">
+    <tar destfile="../wadi-${wadi.version}.tgz" compression="gzip">
+      <tarfileset prefix="wadi-${wadi.version}" dir=".">
 	<exclude name="**/*~"/>
 	<exclude name="**/CVS"/>
 	<exclude name="**/.cvsignore"/>
@@ -248,8 +253,8 @@
 	<exclude name="DOCS/**"/>
       </tarfileset>
     </tar>
-    <zip destfile="../wadi-0.9.zip">
-      <zipfileset prefix="wadi-0.9" dir=".">
+    <zip destfile="../wadi-${wadi.version}.zip">
+      <zipfileset prefix="wadi-${wadi.version}" dir=".">
 	<exclude name="**/*~"/>
 	<exclude name="**/CVS"/>
 	<exclude name="**/.cvsignore"/>

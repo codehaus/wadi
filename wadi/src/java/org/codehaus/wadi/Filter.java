@@ -151,7 +151,12 @@ public class
 	  if (_manager.getDistributable())
 	  {
 	    _log.debug(realId+": getRemoteSession()");
-	    impl=_manager.getRemoteSession(realId); // returns already app-locked...
+
+	    for (int n=_manager.getImmigrationAttemptCount();
+		 n>0 && (impl=_manager.getRemoteSession(realId))==null;	// returns already app-locked...
+		 n--)
+	      _log.info("immigration unsuccessful - retrying ["+n+"]");
+
 	    if (impl==null) _log.warn(realId+": SESSION IMMIGRATION FAILED");
 	  }
 	  else
@@ -168,7 +173,7 @@ public class
 	}
 
 	if(impl==null)
-	  _log.warn(realId+": session id cannot be mapped");
+	  _log.error(realId+": session id cannot be mapped");
 	else
 	{
 	  HttpSession facade=(HttpSession)impl.getFacade();

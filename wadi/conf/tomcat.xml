@@ -28,7 +28,7 @@
 
     <Connector
       port="${http.port}"
-      maxThreads="100"
+      maxThreads="1000"
       minSpareThreads="25"
       maxSpareThreads="75"
       enableLookups="false"
@@ -41,7 +41,7 @@
 
     <Connector
       port="${ajp.port}"
-      maxThreads="100"
+      maxThreads="1000"
       minSpareThreads="25"
       maxSpareThreads="75"
       enableLookups="false"
