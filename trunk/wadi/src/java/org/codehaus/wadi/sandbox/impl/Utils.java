@@ -16,8 +16,13 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
@@ -103,5 +108,33 @@ public class Utils {
 	    return acquired;
 	}
 	
+	public static Object byteArrayToObject(byte[] bytes, StreamingStrategy streamer) throws IOException, ClassNotFoundException {
+	    ByteArrayInputStream bais=new ByteArrayInputStream(bytes);
+	    return streamer.getInputStream(bais).readObject(); // TODO - ClassLoading ?
+	}
+	
+	public static Object safeByteArrayToObject(byte[] bytes, StreamingStrategy streamer) {
+	    try {
+	        return byteArrayToObject(bytes, streamer);
+	    } catch (Exception e) {
+	        _log.error("unexpected problem whilst unmarshalling", e);
+	        return null;
+	    }
+	}
+	
+	public static byte[] objectToByteArray(Object object, StreamingStrategy streamer) throws IOException {
+	    ByteArrayOutputStream baos=new ByteArrayOutputStream();
+	    streamer.getOutputStream(baos).writeObject(object);
+	    return baos.toByteArray();
+	}
+
+	public static byte[] safeObjectToByteArray(Object object, StreamingStrategy streamer) {
+	    try {
+	        return objectToByteArray(object, streamer);
+	    } catch (Exception e) {
+	        _log.error("unexpected problem whilst marshalling", e);
+	        return null;
+	    }
+	}
 
 }
