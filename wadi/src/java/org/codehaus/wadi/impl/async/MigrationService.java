@@ -32,7 +32,6 @@ import org.codehaus.wadi.AsyncToSyncAdaptor;
 import org.codehaus.wadi.HttpSessionImpl;
 import org.codehaus.wadi.Invocable;
 import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.NewMigrationService;
 import org.codehaus.wadi.StreamingStrategy;
 
 /**
@@ -98,7 +97,6 @@ public class
 	{
 	  _listener=new InvokableListener(_manager);
 	  Cluster cluster=_manager.getCluster();
-	  _listener=_listener;
 	  (_clusterConsumer=cluster.createConsumer(cluster.getDestination(), null, true)).setMessageListener(_listener);
 	  (_nodeConsumer   =cluster.createConsumer(cluster.getLocalNode().getDestination())).setMessageListener(_listener);
 	}
