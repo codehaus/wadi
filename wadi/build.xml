@@ -64,6 +64,8 @@
   <target name="clean">
     <delete dir="WEB-INF/classes.javac"/>
     <delete dir="WEB-INF/classes"/>
+    <delete dir="WEB-INF/classes.test.javac"/>
+    <delete dir="WEB-INF/classes.test"/>
     <delete dir="javadoc"/>
     <delete dir="target"/>
   </target>
