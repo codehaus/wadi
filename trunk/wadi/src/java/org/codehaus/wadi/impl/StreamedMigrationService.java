@@ -91,13 +91,6 @@ public class
       return (placeholder==result);
     };
 
-    public Object
-      emmigrate(StreamedMigrationRequest request, HttpSessionImpl impl, String correlationID, Destination source)
-    {
-      _log.info("UNDER CONSTRUCTION");
-      return null;
-    }
-
     public boolean
       emmigrate(Map map, Collection candidates, long timeout, Destination destination, boolean sync)
     {
@@ -205,6 +198,69 @@ public class
 
       return ok;
     }
+
+    //----------------------------------------
+
+    public Object
+      emmigrateSession(StreamedMigrationRequest request, HttpSessionImpl impl, String correlationID, Destination source)
+    {
+      Socket socket=null;
+      boolean ok=true;
+
+      InetSocketAddressDestination dest=(InetSocketAddressDestination)source;
+
+      try
+      {
+	if (_address==null)
+	{
+	  _address=InetAddress.getLocalHost();
+	  //_address=InetAddress.getByName("localhost");
+	}
+
+	socket=new Socket(dest.getAddress(), dest.getPort(), _address, _port);
+	// TODO - do we need a timeout ? - YES
+	if (_log.isTraceEnabled()) _log.trace(socket+" -> "+dest);
+	ObjectOutput os=_streamingStrategy.getOutputStream(socket.getOutputStream());
+	ObjectInput  is=_streamingStrategy.getInputStream(socket.getInputStream());
+	// send the code to deal with this transmission
+	os.writeObject(new SingleSessionImmigrationProcessor());
+	os.flush();
+	// send the session content...
+	impl.writeContent(os);
+	os.flush();
+	// read remote status...
+	ok=is.readBoolean();
+	// write our own status
+	os.writeBoolean(ok);
+	if (_log.isDebugEnabled()) _log.debug(impl.getRealId()+": emmigration (peer: "+dest+")");
+      }
+      catch (UnknownHostException e)
+      {
+	_log.warn("could not reply to source of request", e);
+      }
+      catch (IOException e)
+      {
+	_log.warn("migration connection broken - rolling back", e);
+	ok=false;
+      }
+      catch (ClassNotFoundException e)
+      {
+	_log.warn("migration class mismatch - version/security problem? - rolling back", e);
+	ok=false;
+      }
+      finally
+      {
+	if (socket!=null)
+	{
+	  try{socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
+	  socket=null;
+	}
+      }
+
+      return ok?Boolean.TRUE:Boolean.FALSE;
+    }
+
+    //----------------------------------------
   }
 
   public class
@@ -303,7 +359,7 @@ public class
 	  try
 	  {
 	    if (_timeout==0) Thread.yield();
-	    new Thread(new Migration(_socket.accept())).start();
+	    new Thread(new Consumer(_socket.accept())).start();
 	    // TODO - remember threads started and join them on stop() ?
 	    // run this request on current thread, starting a new one to listen()
 	  }
@@ -320,93 +376,61 @@ public class
     }
 
     public class
-      Migration
+      Consumer
       implements Runnable
     {
       protected final Socket _socket;
-      public Migration(Socket socket){_socket=socket;}
-      public void run(){immigrate(_socket);}
-    }
+      public Consumer(Socket socket){_socket=socket;}
 
-    public void
-      immigrate(Socket socket)
-    {
-      boolean ok=true;
-      boolean commit=false;
-      int numSessions=0;
-      Collection candidates=new ArrayList(numSessions);
-      boolean sync=false;
-
-      try
+      public void
+	run()
       {
-	ObjectOutput os=new ObjectOutputStream(socket.getOutputStream());
-	ObjectInput  is=new ObjectInputStream(socket.getInputStream());
-	//	ObjectInput  ss=_streamingStrategy.getInputStream(socket.getInputStream());
-	ObjectInput ss=is;
-
-
-	// (1) receive PREPARE()
-	sync=is.readBoolean();
-	numSessions=is.readInt(); // how many sessions ?
-	for (int i=numSessions; i>0; i--)
+	try
 	{
-	  HttpSessionImpl impl=_factory.create();
-	  impl.readContent(ss); // demarshall session off wire
-	  impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY); // TODO - does priority matter here?
-	  impl.getContainerLock().acquire();
-	  impl.setWadiManager(_manager);
-	  _sessions.put(impl.getRealId(), impl);
-	  candidates.add(impl);
+	  ObjectOutput oo=new ObjectOutputStream(_socket.getOutputStream());
+	  ObjectInput  oi=new ObjectInputStream(_socket.getInputStream());
+
+	  ((Processor)oi.readObject()).process(oi, oo);
 	}
-
-	// (2) send return code from PREPARE()
-	os.writeBoolean(true);
-	os.flush();
-
-	// (3) receive COMMIT()
-	ok=is.readBoolean();
-
-	commit=ok;
-      }
-      catch (ClassNotFoundException e)
-      {
-	_log.warn("unexpected problem immigrating sessions - this should not happen - no immigration will have occurred", e);
-      }
-      catch (InterruptedException e)
-      {
-	_log.warn("unexpected problem immigrating sessions - thread interrupted - no immigration will have occurred", e);
-      }
-      catch (IOException e)
-      {
-	_log.warn("unexpected problem immigrating sessions - target node or comms failure ? - no immigration will have occurred", e);
-      }
-      finally
-      {
-	if (commit)
+	catch (IOException e)
 	{
-	  if (_log.isDebugEnabled())
-	    _log.debug(numSessions+" immigration[s] (peer: "+socket.getRemoteSocketAddress()+":"+socket.getPort()+")");
+	  _log.warn("session migration connection broken - aborting", e);
 	}
-	else
+	catch (ClassNotFoundException e)
 	{
-	  // rollback...
-	  _sessions.values().removeAll(candidates);
-	  _log.warn("failed to immigrate "+numSessions+" sessions - rolled back");
+	  _log.warn("unknown session migration processor - version/security problem?", e);
 	}
-
-	for (Iterator i=candidates.iterator(); i.hasNext(); )
+	finally
 	{
-	  HttpSessionImpl impl=(HttpSessionImpl)i.next();
-	  impl.getContainerLock().release();
-
-	  if (sync && candidates.size()==1)
-	    _adaptor.receive(impl, impl.getRealId(), 2000L); // parameterise - TODO
-
+	  try{_socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
 	}
-
-	try{socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
       }
-
     }
   }
+
+    abstract class
+      Processor
+    {
+      public abstract void process(ObjectInput oi, ObjectOutput oo);
+    }
+
+    class
+      SingleSessionImmigrationProcessor
+    {
+      public void
+	process(ObjectInput is, ObjectOutput os)
+      {
+	_log.info("SOMETHING ARRIVED");
+      }
+    }
+
+    class
+      MultipleSessionImmigrationProcessor
+    {
+      public void
+	process(ObjectInput oi, ObjectOutput oo)
+      {
+
+      }
+    }
 }
