@@ -17,19 +17,22 @@
 
 package org.codehaus.wadi.test;
 
-import javax.jms.JMSException;
+import java.util.HashMap;
+import java.util.Map;
 import javax.jms.Connection;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
+import org.codehaus.activecluster.ClusterEvent;
 import org.codehaus.activecluster.ClusterException;
+import org.codehaus.activecluster.ClusterListener;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
-import org.codehaus.activecluster.ClusterEvent;
-import org.codehaus.activecluster.ClusterListener;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Test ActiveCluster, ActiveMQ, with an eye to putting WADI on top of
@@ -45,29 +48,45 @@ public class
   protected Log _log=LogFactory.getLog(TestCluster.class);
 
   public TestCluster(String name)
-    {
-      super(name);
-    }
+  {
+    super(name);
+  }
 
-  protected ActiveMQConnectionFactory connFactory;
-  protected Cluster cluster;
+  protected ActiveMQConnectionFactory _connectionFactory;
+  protected Connection                _connection;
+  protected DefaultClusterFactory     _clusterFactory;
+  protected Cluster                   _cluster0;
+  protected Cluster                   _cluster1;
 
   protected void
     setUp()
     throws Exception
-    {
-      connFactory = new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");
-      cluster = createCluster();
-      cluster.start();
-    }
+  {
+    testResponsePassed=false;
+
+    _connectionFactory = new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");
+    _connection        = _connectionFactory.createConnection();
+    _clusterFactory    = new DefaultClusterFactory(_connection);
+    _cluster0           = _clusterFactory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
+    _cluster1           = _clusterFactory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
+
+    _cluster0.start();
+    _cluster1.start();
+  }
 
   protected void
     tearDown()
     throws JMSException
-    {
-      cluster.stop();
-      connFactory.stop();
-    }
+  {
+    //      _cluster1.stop();
+    _cluster1=null;
+    //      _cluster0.stop();
+    _cluster0=null;
+    _clusterFactory=null;
+    //      _connection.stop();
+    _connection=null;
+    //      _connectionFactory.stop();
+  }
 
   //----------------------------------------
 
@@ -102,22 +121,216 @@ public class
   public void
     testCluster()
     throws Exception
+  {
+    _cluster0.addClusterListener(new MyClusterListener());
+
+    Map map = new HashMap();
+    map.put("text", "testing123");
+    _cluster0.getLocalNode().setState(map);
+
+    _log.info("nodes: " + _cluster0.getNodes());
+    Thread.sleep(10000);
+    assertTrue(true);
+  }
+
+  /**
+   * An invokable piece of work.
+   *
+   */
+  static interface Invocation extends java.io.Serializable
+  {
+    public void invoke(Cluster cluster, ObjectMessage om);
+  }
+
+  /**
+   * Listen for messages, if they contain Invocations, invoke() them.
+   *
+   */
+  class
+    InvocationListener
+    implements MessageListener
+  {
+    protected Cluster _cluster;
+
+    public
+      InvocationListener(Cluster cluster)
     {
-      cluster.addClusterListener(new MyClusterListener());
-
-      Map map = new HashMap();
-      map.put("text", "testing123");
-      cluster.getLocalNode().setState(map);
-
-      _log.info("nodes: " + cluster.getNodes());
-      Thread.sleep(10000);
-      assertTrue(true);
+      _cluster=cluster;
     }
 
-  protected Cluster createCluster() throws JMSException, ClusterException {
-    Connection connection = connFactory.createConnection();
-    DefaultClusterFactory factory = new DefaultClusterFactory(connection);
-    return factory.createCluster("ORG.CODEHAUS.ACTIVEMQ.TEST.CLUSTER");
+    public void
+      onMessage(Message message)
+    {
+      _log.info("messgage received");
+
+      ObjectMessage om=null;
+      Object tmp=null;
+      Invocation invocation=null;
+
+      try
+      {
+	if (message instanceof ObjectMessage &&
+	    (om=(ObjectMessage)message)!=null &&
+	    (tmp=om.getObject())!=null &&
+	    tmp instanceof Invocation &&
+	    (invocation=(Invocation)tmp)!=null)
+	{
+	  _log.info("invoking messgage");
+	  invocation.invoke(_cluster, om);
+	  _log.info("messgage successfully invoked");
+	}
+	else
+	{
+	  _log.warn("bad messgage: "+message);
+	}
+      }
+      catch (JMSException e)
+      {
+	_log.warn("unexpected problem", e);
+      }
+    }
+  }
+
+  /**
+   *   A request for a piece of work which involves sending a response
+   *   back to the original requester.
+   *
+   */
+  static class Request
+    implements Invocation
+  {
+    public void
+      invoke(Cluster cluster, ObjectMessage om2)
+    {
+      try
+      {
+	System.out.println("request received");
+	ObjectMessage om = cluster.createObjectMessage();
+	om.setJMSReplyTo(cluster.getLocalNode().getDestination());
+	om.setObject(new Response());
+	System.out.println("sending response");
+	cluster.send(om2.getJMSReplyTo(), om);
+	System.out.println("request processed");
+      }
+      catch (JMSException e)
+      {
+	System.err.println("problem sending response");
+	e.printStackTrace();
+      }
+    }
+  }
+
+  static boolean testResponsePassed=false;
+
+  /**
+   * A response containing a piece of work.
+   *
+   */
+  static class Response
+    implements Invocation
+  {
+    public void
+      invoke(Cluster cluster, ObjectMessage om)
+    {
+      System.out.println("response arrived");
+      // set a flag to test later
+      TestCluster.testResponsePassed=true;
+      System.out.println("response processed");
+    }
+  }
+
+  public void
+    testResponse1()
+  {
+
+    MessageListener listener0=new InvocationListener(_cluster0);
+
+    try
+    {
+      // 1->n messages (includes self)
+      _cluster0.createConsumer(_cluster0.getDestination()).setMessageListener(listener0);
+      // 1->1 messages
+      _cluster0.createConsumer(_cluster0.getLocalNode().getDestination()).setMessageListener(listener0);
+    }
+    catch (JMSException e)
+    {
+      _log.warn("could not attach listeners", e);
+    }
+
+    try
+    {
+      ObjectMessage om = _cluster0.createObjectMessage();
+      om.setJMSReplyTo(_cluster0.getLocalNode().getDestination());
+      om.setObject(new Request());
+      _cluster0.send(_cluster0.getDestination(), om);
+    }
+    catch (JMSException e)
+    {
+      _log.warn("problem sending request", e);
+    }
+
+    try
+    {
+      Thread.sleep(3000);
+    }
+    catch (InterruptedException e)
+    {
+      // won't happen
+      _log.warn("thread interrupted", e);
+    }
+
+    assertTrue(testResponsePassed);
+
+    _log.info("request/response to self OK");
+  }
+
+  public void
+    testResponse2()
+  {
+
+    MessageListener listener0=new InvocationListener(_cluster0);
+    MessageListener listener1=new InvocationListener(_cluster1);
+
+    try
+    {
+      // 1->(n-1) messages (excludes self)
+      _cluster0.createConsumer(_cluster0.getDestination(), null, true).setMessageListener(listener0);
+      // 1->1 messages
+      _cluster0.createConsumer(_cluster0.getLocalNode().getDestination()).setMessageListener(listener0);
+      // 1->(n-1) messages (excludes self)
+      _cluster1.createConsumer(_cluster1.getDestination(), null, true).setMessageListener(listener1);
+      // 1->1 messages
+      _cluster1.createConsumer(_cluster1.getLocalNode().getDestination()).setMessageListener(listener1);
+    }
+    catch (JMSException e)
+    {
+      _log.warn("could not attach listeners", e);
+    }
+
+    try
+    {
+      ObjectMessage om = _cluster0.createObjectMessage();
+      om.setJMSReplyTo(_cluster0.getLocalNode().getDestination());
+      om.setObject(new Request());
+      _cluster0.send(_cluster0.getDestination(), om);
+    }
+    catch (JMSException e)
+    {
+      _log.warn("problem sending request", e);
+    }
+
+    try
+    {
+      Thread.sleep(3000);
+    }
+    catch (InterruptedException e)
+    {
+      // won't happen
+      _log.warn("thread interrupted", e);
+    }
+
+    assertTrue(testResponsePassed);
+
+    _log.info("request/response between two different nodes OK");
   }
 }
-

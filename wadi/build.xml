@@ -273,10 +273,10 @@
       <arg value="org.codehaus.wadi.test.TestDiscoveryService"/>
       <arg value="org.codehaus.wadi.test.TestConcurrency"/>
       <arg value="org.codehaus.wadi.test.TestHttpSession"/>
-      <arg value="org.codehaus.wadi.test.TestCluster"/>
       <arg value="org.codehaus.wadi.test.TestTopologies"/>
-      <arg value="org.codehaus.wadi.test.TestMigrationService"/>
       <arg value="org.codehaus.wadi.test.TestAsyncToSyncAdaptor"/>
+      <arg value="org.codehaus.wadi.test.TestMigrationService"/>
+      <arg value="org.codehaus.wadi.test.TestCluster"/>
       <classpath refid="wadi.classpath"/>
       <!--
       -->

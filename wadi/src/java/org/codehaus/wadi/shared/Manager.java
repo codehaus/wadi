@@ -303,7 +303,7 @@ public abstract class
     if (!successfulMigration)
     {
       long timeout=2000L;
-      _adaptor.send(new EmmigrationCommand(realId, _migrationServer.getAddress(), _migrationServer.getPort(), timeout),
+      _adaptor.send(new EmmigrationCommand(realId, _migrationServer.getAddress(), _migrationServer.getPort(), timeout, _cluster.getLocalNode().getDestination()),
 		    realId,	// is this enough - TODO
 		    timeout,	// parameterise - TODO
 		    new EmmigrationSender(this)
@@ -1183,26 +1183,12 @@ public abstract class
 
   protected Map _conversations=new HashMap();
 
-//   public boolean
-//     immigrate(HttpSessionImpl impl, String id)
-//     {
-//       boolean success=false;
-//       long timeout=3*1000L;
-//       CyclicBarrier cb=new CyclicBarrier(2);
-//       _conversations.put(id, cb);
-//       sendCommandToCluster(new ImmigrateCommand(id));
-
-//       try
-//       cb.attemptBarrier(timeout);
-
-//       return success;
-//     }
-
   protected void
     sendCommandToCluster(Command command)
     throws Exception
   {
     ObjectMessage om = _cluster.createObjectMessage();
+    om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
     om.setObject(command);
     _cluster.send(_cluster.getDestination(), om);
   }
@@ -1212,6 +1198,8 @@ public abstract class
     throws Exception
   {
     ObjectMessage om = _cluster.createObjectMessage();
+    om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+    _log.info("setting ReplyTo: "+_cluster.getLocalNode().getDestination());
     om.setObject(command);
     _cluster.send(node.getDestination(), om);
   }
@@ -1241,6 +1229,7 @@ public abstract class
     public void
       onMessage(Message message)
     {
+      _log.info("message arrived");
       try
       {
 	ObjectMessage om=null;
@@ -1252,12 +1241,10 @@ public abstract class
 	    tmp instanceof Command &&
 	    (command=(Command)tmp)!=null)
 	{
+	  _log.info("message arrived: "+command);
 	  try
 	  {
 	    command.run(om, _manager);
-
-	    //	    if (command instanceof AsyncToSyncAdaptor.SyncCommand)
-	    //_adaptor.receive((AsyncToSyncAdaptor.SyncCommand)command);
 	  }
 	  catch (Throwable t)
 	  {
