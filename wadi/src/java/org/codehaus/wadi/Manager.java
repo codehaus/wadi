@@ -338,82 +338,82 @@ public abstract class
   protected String _configurationResource="/WEB-INF/wadi-web.xml";
 
   public synchronized void
-    start()
-      throws Exception
+  start()
+  throws Exception
   {
-    _log.debug("starting");
-    _log.info("WADI-0.9 - Web Application Distribution Infrastructure (http://wadi.codehaus.org)");
-
-    // load config
-    try
-    {
-      // hack to get around the fact that dd is only found on maven's
-      // first test run and subsequently does not get picked up due to
-      // some classloader wierdness - revisit - TODO
-      InputStream is=null;
-      String config=System.getProperty("wadi.config");
-      if (config!=null)
-	is=new FileInputStream((_configurationResource=config));
-      else
-	is=_servletContext.getResourceAsStream(_configurationResource);
-
-      if (is!=null)
+      _log.debug("starting");
+      _log.info("WADI-0.9 - Web Application Distribution Infrastructure (http://wadi.codehaus.org)");
+      
+      // load config
+      try
       {
-	DefaultListableBeanFactory dlbf=new DefaultListableBeanFactory();
-	PropertyPlaceholderConfigurer cfg = new PropertyPlaceholderConfigurer();
-	dlbf.registerSingleton("Manager", this);
-	new XmlBeanDefinitionReader(dlbf).loadBeanDefinitions(new InputStreamResource(is));
-	cfg.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
-	cfg.postProcessBeanFactory(dlbf);
-
-	Manager me=(Manager)dlbf.getBean("ConfiguredManager");
-	assert me==this;
-
-	_log.info("configured from WADI descriptor: "+_configurationResource);
+          // hack to get around the fact that dd is only found on maven's
+          // first test run and subsequently does not get picked up due to
+          // some classloader wierdness - revisit - TODO
+          InputStream is=null;
+          String config=System.getProperty("wadi.config");
+          if (config!=null)
+              is=new FileInputStream((_configurationResource=config));
+          else
+              is=_servletContext.getResourceAsStream(_configurationResource);
+          
+          if (is!=null)
+          {
+              DefaultListableBeanFactory dlbf=new DefaultListableBeanFactory();
+              PropertyPlaceholderConfigurer cfg = new PropertyPlaceholderConfigurer();
+              dlbf.registerSingleton("Manager", this);
+              new XmlBeanDefinitionReader(dlbf).loadBeanDefinitions(new InputStreamResource(is));
+              cfg.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
+              cfg.postProcessBeanFactory(dlbf);
+              
+              Manager me=(Manager)dlbf.getBean("ConfiguredManager");
+              assert me==this;
+              
+              _log.info("configured from WADI descriptor: "+_configurationResource);
+          }
+          else
+              _log.warn("could not find WADI descriptor: "+_configurationResource);
       }
-      else
-	_log.warn("could not find WADI descriptor: "+_configurationResource);
-    }
-    catch (Exception e)
-    {
-      if (_log.isWarnEnabled()) _log.warn("problem configuring from: "+_configurationResource, e);
-    }
-
-    // TODO - is putting ourselves in an attribute a security risk ?
-    _servletContext.setAttribute(Manager.class.getName(), this);
-    _loader=Thread.currentThread().getContextClassLoader();
-    //      System.setSecurityManager(new SecurityManager(System.getSecurityManager()));// TODO
-
-    // default migration policy
-    if (_migrationService==null) _migrationService=new org.codehaus.wadi.impl.MessagedMigrationService();
-    if (_passivationStrategy==null) _passivationStrategy=new FilePassivationStrategy(new File("/tmp/wadi"));
-    if (_streamingStrategy==null) _streamingStrategy=new SimpleStreamingStrategy();
-    if (_passivationStrategy.getStreamingStrategy()==null) _passivationStrategy.setStreamingStrategy(_streamingStrategy);
-    // default eviction policy
-    if (_evictionPolicy==null) _evictionPolicy=new RelativeEvictionPolicy(0.5F);
-    //default id generation strategy
-    if (_idGenerator==null) _idGenerator=new TomcatIdGenerator();
-    // default routing strategy
-    if (_routingStrategy==null) _routingStrategy=new NoRoutingStrategy();
-
-    // TODO - activecluster stuff - replace with config ASAP...
-    if (_connectionFactory!=null)
-    {
-      (_connection=_connectionFactory.createConnection()).start();
-      _clusterFactory=new DefaultClusterFactory(_connectionFactory);
-      _cluster=_clusterFactory.createCluster("org.codehaus.wadi#cluster");
-      _cluster.addClusterListener(new MembershipListener());
-
-      _migrationService.setManager(this);
-      _migrationService.setHttpSessionImplMap(_local);
-      MigrationService.Server server=_migrationService.getServer();
-      server.setHttpSessionImplFactory(_implFactory);
-      server.start();
-
-      _cluster.start(); // should include webapp context
-    }
-
-    _log.debug("started");
+      catch (Exception e)
+      {
+          if (_log.isWarnEnabled()) _log.warn("problem configuring from: "+_configurationResource, e);
+      }
+      
+      // TODO - is putting ourselves in an attribute a security risk ?
+      _servletContext.setAttribute(Manager.class.getName(), this);
+      _loader=Thread.currentThread().getContextClassLoader();
+      //      System.setSecurityManager(new SecurityManager(System.getSecurityManager()));// TODO
+      
+      // default migration policy
+      if (_migrationService==null) _migrationService=new org.codehaus.wadi.impl.MessagedMigrationService();
+      if (_passivationStrategy==null) _passivationStrategy=new FilePassivationStrategy(new File("/tmp/wadi"));
+      if (_streamingStrategy==null) _streamingStrategy=new SimpleStreamingStrategy();
+      if (_passivationStrategy.getStreamingStrategy()==null) _passivationStrategy.setStreamingStrategy(_streamingStrategy);
+      // default eviction policy
+      if (_evictionPolicy==null) _evictionPolicy=new RelativeEvictionPolicy(0.5F);
+      //default id generation strategy
+      if (_idGenerator==null) _idGenerator=new TomcatIdGenerator();
+      // default routing strategy
+      if (_routingStrategy==null) _routingStrategy=new NoRoutingStrategy();
+      
+      // TODO - activecluster stuff - replace with config ASAP...
+      if (_connectionFactory!=null)
+      {
+          (_connection=_connectionFactory.createConnection()).start();
+          _clusterFactory=new DefaultClusterFactory(_connectionFactory);
+          _cluster=_clusterFactory.createCluster("org.codehaus.wadi#cluster");
+          _cluster.addClusterListener(new MembershipListener());
+          
+          _migrationService.setManager(this);
+          _migrationService.setHttpSessionImplMap(_local);
+          MigrationService.Server server=_migrationService.getServer();
+          server.setHttpSessionImplFactory(_implFactory);
+          server.start();
+          
+          _cluster.start(); // should include webapp context
+      }
+      
+      _log.debug("started");
   }
 
   public synchronized boolean
@@ -465,6 +465,7 @@ public abstract class
       _clusterFactory=null;
       _connectionFactory.stop();
       _connectionFactory=null;
+      Thread.sleep(2000);
     }
 
     _log.debug("stopped");

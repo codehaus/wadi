@@ -185,15 +185,25 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 		public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}
 
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
-			MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-			settingsInOut.to=_emigrationQueue;
-			settingsInOut.correlationId=id;
-			settingsInOut.from=_cluster.getLocalNode().getDestination();
-			EmigrationRequest er=new EmigrationRequest(id, emotable);
-			EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emigrationRvMap, er, settingsInOut, 3000);
-
-			_map.put(id, ea.getLocation()); // cache new Location of Session
-			return ea!=null;
+		    MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+		    settingsInOut.to=_emigrationQueue;
+		    settingsInOut.correlationId=id;
+		    settingsInOut.from=_cluster.getLocalNode().getDestination();
+		    try {
+		        immotable.copy(emotable);
+		        EmigrationRequest er=new EmigrationRequest(id, immotable);
+		        EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emigrationRvMap, er, settingsInOut, 3000);
+		        
+		        if (ea==null) {
+		            return false;
+		        } else {
+		            _map.put(id, ea.getLocation()); // cache new Location of Session
+		            return true;
+		        }
+		    } catch (Exception e) {
+		        _log.warn("problem sending emigration request: "+id, e);
+		        return false;
+		    }
 		}
 
 		public void commit(String id, Motable immotable) {

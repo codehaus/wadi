@@ -41,6 +41,16 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
 	
 	public void tidy(){setInvalidated(true);}
 
+	public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id) {
+	    init(creationTime, lastAccessedTime, maxInactiveInterval, invalidated);
+	    _id=id;
+	}
+	
+	public void destroy() {
+	    super.destroy();
+	    _id=null;
+	}
+	
 	// N.B. implementation of Bytes field is left abstract...
 }
 

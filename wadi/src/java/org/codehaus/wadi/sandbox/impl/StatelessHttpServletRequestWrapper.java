@@ -29,4 +29,5 @@ public class StatelessHttpServletRequestWrapper extends HttpServletRequestWrappe
 	public HttpSession getSession(){return getSession(true);}
 	public HttpSession getSession(boolean create){throw new UnsupportedOperationException();}
 
+	// TODO - consider session cookie related methods as well..
 }

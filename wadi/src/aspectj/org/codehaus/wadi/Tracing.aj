@@ -50,7 +50,7 @@ public aspect
   {
     Signature sig = thisJoinPointStaticPart.getSignature();
     Object[] args = thisJoinPoint.getArgs();
-    String pkg=sig.getDeclaringType().getName();
+//    String pkg=sig.getDeclaringType().getName();
     String name=sig.getName();
     String a="";
     for (int i=0;i<args.length;i++)

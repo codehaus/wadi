@@ -20,34 +20,6 @@ package org.codehaus.wadi;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSessionContext;
-
-interface
-  HttpSessionGetters
-{
-  public long               getCreationTime();
-  public String             getId();
-  public String             getRealId();
-  public long               getLastAccessedTime();
-  public ServletContext     getServletContext();
-  public int                getMaxInactiveInterval();
-  public HttpSessionContext getSessionContext();
-  public Object             getAttribute(String key);
-  public Enumeration        getAttributeNameEnumeration();
-  public String[]           getAttributeNameStringArray();
-  public boolean            isNew();
-}
-
-interface
-  HttpSessionSetters
-{
-  public void               setLastAccessedTime(long l);
-  public void               setMaxInactiveInterval(int i);
-  public Object             setAttribute(String key, Object val, boolean returnVal);
-  public Object             removeAttribute(String key, boolean returnVal);
-  //  public void               invalidate();
-}
 
 /**
  * Abstract base for HttpSession implementations
@@ -59,8 +31,6 @@ public abstract class
   AbstractHttpSessionImpl
   implements HttpSessionGetters, HttpSessionSetters, java.io.Serializable
 {
-  public AbstractHttpSessionImpl(){}
-
   protected transient javax.servlet.http.HttpSession _facade;
   public javax.servlet.http.HttpSession getFacade(){return _facade;}
   public void setFacade(javax.servlet.http.HttpSession facade){_facade=facade;}
