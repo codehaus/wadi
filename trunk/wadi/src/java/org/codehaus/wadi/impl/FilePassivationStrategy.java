@@ -136,6 +136,7 @@ public class
 	ObjectOutput oos=_streamingStrategy.getOutputStream(fos);
 	impl.writeContent(oos);
 	oos.flush();
+	if (lock!=null) lock.release();
 	oos.close();
 
 	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
@@ -147,17 +148,6 @@ public class
       {
 	if (_log.isWarnEnabled()) _log.warn(file.toString()+": problem storing passivated session", e);
 	return false;
-      }
-      finally
-      {
-	try
-	{
-	  if (lock!=null) lock.release();
-	}
-	catch (IOException e)
-	{
-	  if (_log.isWarnEnabled()) _log.warn(file.toString()+": problem releasing passivation resource", e);
-	}
       }
     }
 
