@@ -175,16 +175,31 @@ public class TestMigration extends TestCase {
 		
 		c0.clear();
 		c1.clear();
+		assertTrue(!_node0.getSecure());
 		// won't run locally
 		assertTrue(get(client, method0, "/test/confidential;jsessionid=foo")==403); // forbidden
 		// won't run remotely
 		assertTrue(get(client, method0, "/test/confidential;jsessionid=bar")==403); // forbidden
-		_node0.setSecure(true);
 		
+		_node0.setSecure(true);	
+		assertTrue(_node0.getSecure());
 		// will run locally - since we have declared the Listener secure
 		assertTrue(get(client, method0, "/test/confidential;jsessionid=foo")==200);
 		// will run remotely - proxy should preserve confidentiality on remote server...
 		assertTrue(get(client, method0, "/test/confidential;jsessionid=bar")==200);
+
+		assertTrue(!_node1.getSecure());
+		// won't run locally
+		assertTrue(get(client, method1, "/test/confidential;jsessionid=bar")==403); // forbidden
+		// won't run remotely
+		assertTrue(get(client, method1, "/test/confidential;jsessionid=foo")==403); // forbidden
+
+		_node1.setSecure(true);	
+		assertTrue(_node1.getSecure());
+		// will run locally - since we have declared the Listener secure
+		assertTrue(get(client, method1, "/test/confidential;jsessionid=bar")==200);
+		// will run remotely - proxy should preserve confidentiality on remote server...
+		assertTrue(get(client, method1, "/test/confidential;jsessionid=foo")==200);
 
 		// next test should be that we can somehow migrate sessions across, in place of proxying...
 		

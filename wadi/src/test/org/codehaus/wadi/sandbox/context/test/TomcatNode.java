@@ -84,6 +84,7 @@ public class TomcatNode implements Node {
 
 	    // Assemble and install a default HTTP connector
 	    _connector=_server.createConnector((String)null, port, false);
+	    _connector.setRedirectPort(0);
 	    _server.addConnector(_connector);
 	    
 	    _filter=filter;
@@ -131,6 +132,6 @@ public class TomcatNode implements Node {
 	}
 
 	// Securable - NYI
-	public boolean getSecure(){return false;}
-	public void setSecure(boolean secure){}
+	public boolean getSecure(){return _connector.getSecure();}
+	public void setSecure(boolean secure){_connector.setSecure(secure);}
 }
