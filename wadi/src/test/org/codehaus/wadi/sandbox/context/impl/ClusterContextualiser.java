@@ -26,7 +26,6 @@ import java.util.Set;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -79,7 +78,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 
 	protected final Cluster           _cluster;
 	protected final MessageConsumer   _consumer;
-	protected final MessageListener   _listener;
+	protected final MessageDispatcher _listener;
 	protected final Map               _locationResponses=new HashMap(); // do we need more concurrency ?
 	protected final long              _timeout;
 	protected final Location          _location;
@@ -149,7 +148,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		_cluster=cluster;
 		boolean excludeSelf=true;
 	    _consumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
-		_listener=new MessageDispatcher(this, "onMessage");
+		_listener=new MessageDispatcher();
+		_listener.register(this, "onMessage");
 	    _consumer.setMessageListener(_listener);// should be called in start() - we need a stop() too - to remove listeners...
 	    _timeout=timeout;
 	    _proxyHandOverPeriod=proxyHandOverPeriod;

@@ -28,13 +28,25 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class MessageDispatcher implements MessageListener {
-	protected final Log    _log=LogFactory.getLog(getClass());
-	protected final Map    _map=new HashMap();
-	protected final Object _target;
+	protected final Log _log=LogFactory.getLog(getClass());
+	protected final Map _map=new HashMap();
+	
+	class Datum {
+		protected final Object _target;
+		protected final Method _method;
+		
+		public Datum(Object target, Method method) {
+			_target=target;
+			_method=method;
+		}
+		
+		public Object getTarget(){return _target;}
+		public Method getMethod(){return _method;}
+	}
 	
 	// cache target.<methodName>(ObjectMessage, <SomeClass>) methods for use with message dispatch...
-	public MessageDispatcher(Object target, String methodName) {
-		_target=target;
+	public int register(Object target, String methodName) {
+		int n=0;
 		Method[] ms=target.getClass().getMethods();
 		for (int i=ms.length-1; i>=0; i--) {
 			Method m=ms[i];
@@ -42,9 +54,11 @@ public class MessageDispatcher implements MessageListener {
 			if (methodName.equals(m.getName()) && (pts=m.getParameterTypes()).length==2 && pts[0]==ObjectMessage.class) {
 				// return type should be void...
 				//_log.info("caching method: "+m+" for class: "+pts[1]);
-				_map.put(pts[1], m);
+				_map.put(pts[1], new Datum(target, m));
+				n++;
 			}
 		}
+		return n;
 	}
 	
 	public void onMessage(Message message) {
@@ -66,14 +80,14 @@ public class MessageDispatcher implements MessageListener {
 		public void run() {
 			ObjectMessage om=null;
 			Object obj=null;
-			Method m;
+			Datum d;
 			
 			try {
-				if (_message instanceof ObjectMessage && (om=(ObjectMessage)_message)!=null && (obj=om.getObject())!=null && (m=(Method)_map.get(obj.getClass()))!=null) {
+				if (_message instanceof ObjectMessage && (om=(ObjectMessage)_message)!=null && (obj=om.getObject())!=null && (d=(Datum)_map.get(obj.getClass()))!=null) {
 					Object[] pair=(Object[])_pair.get();
 					pair[0]=om;
 					pair[1]=obj;
-					m.invoke(_target, pair);
+					d.getMethod().invoke(d.getTarget(), pair);
 					// if a message is of unrecognised type, we should recurse up its class hierarchy, memoizing the result
 					// if we find a class that matches - TODO - This would enable message subtyping...
 				}
