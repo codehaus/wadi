@@ -21,6 +21,7 @@ import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import org.codehaus.wadi.plugins.FilePassivationStrategy;
 import org.codehaus.wadi.plugins.NoRoutingStrategy;
 import org.codehaus.wadi.plugins.RelativeEvictionPolicy;
 import org.codehaus.wadi.plugins.TomcatIdGenerator;
+import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
 
 // TODO - replace some form of location discovery protocol
 
@@ -313,14 +315,35 @@ public abstract class
   //   public void start() throws LifecycleException {}
   //   public void stop() throws LifecycleException {}
 
+
+  protected String _configurationResource="WEB-INF/wadi-web.xml";
+
   public synchronized void
     start()
       throws Exception
   {
-  	_log.debug("starting");
-    _log.info("WADI v1.0 - Web Application Distribution Infrastructure (http://wadi.codehaus.org)");
+    _log.debug("starting");
+    _log.info("WADI-1.0rc1 - Web Application Distribution Infrastructure (http://wadi.codehaus.org)");
+
+    ServletContext ctx=getServletContext();
+
+    // load config
+    try
+    {
+      InputStream is=ctx.getResourceAsStream(_configurationResource);
+      if (is!=null)
+      {
+	new XmlConfiguration(is).configure(this);
+	_log.trace("configured from: "+_configurationResource);
+      }
+    }
+    catch (Exception e)
+    {
+      _log.warn("problem configuring from: "+_configurationResource, e);
+    }
+
     // TODO - is putting ourselves in an attribute a security risk ?
-    getServletContext().setAttribute(Manager.class.getName(), this);
+    ctx.setAttribute(Manager.class.getName(), this);
     _loader=Thread.currentThread().getContextClassLoader();
     //      System.setSecurityManager(new SecurityManager(System.getSecurityManager()));// TODO
 

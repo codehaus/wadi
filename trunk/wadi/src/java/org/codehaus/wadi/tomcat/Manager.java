@@ -42,9 +42,6 @@ import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.util.LifecycleSupport;
 import org.codehaus.wadi.shared.Filter;
 
-import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
-import java.net.URL;
-
 // TODO - revisit configuration mechnism when subcomponents types/apis
 // settle down a little more...
 
@@ -201,20 +198,6 @@ public class
     start()
       throws LifecycleException
   {
-    // There does not appear, short of hacking Tomcat classes, to be
-    // any way to extend the server.xml to be able to handle our
-    // stuff - so we will put it all in another file and load it
-    // using a slightly leaner and more flexible mechanism...
-    try
-    {
-      if (_configFile!=null)
-	new XmlConfiguration(new URL("file://"+_configFile)).configure(this);
-    }
-    catch (Exception e)
-    {
-      _log.warn("problem reading "+_configFile, e);
-    }
-
     try
     {
       super.start();
