@@ -27,126 +27,60 @@ import java.util.TreeSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
+import org.codehaus.activecluster.ClusterFactory;
 
 public class
   NChooseKTopologyStrategy
-  extends AbstractTopologyStrategy
+  extends Abstract2TopologyStrategy
 {
-  protected int _k=1;
-  protected Map _cells=new TreeMap();
-
   public
-    NChooseKTopologyStrategy(String id, Cluster cluster, int k)
-  {
-    super(id, cluster);
-    _k=k;
-  }
-
-  protected Collection _oldPeers=new TreeSet();
-  protected Map        _oldCells=new TreeMap();
-
-  public void
-    add(Peer p)
-  {
-    Peer localPeer=getLocalPeer();
-    localPeer=localPeer!=null?localPeer:p; // TODO - hack - FIXME
-    Map newCells=combine(_peers.values(), _k);
-    Map relCells=relevant(_oldCells, newCells, localPeer);
-
-    int n=relCells.size();
-
-    if (n>0)
-      _log.info("gaining: "+n+" cell[s] - "+relCells.keySet());
-
-    _oldCells=newCells;
-  }
-
-
-  /**
-   * A Cell is relevant if it is joining/leaving and contains the
-   * LocalPeer...
-   *
-   * @param oldCells a <code>Map</code> value
-   * @param newCells a <code>Map</code> value
-   * @param localPeer a <code>Peer</code> value
-   */
-  public Map
-    relevant(Map oldCells, Map newCells, Peer localPeer)
-  {
-    // 1st, figure out the difference between the old and new
-    // topologies for whole cluster...
-
-    Map diffCells=new TreeMap(newCells);
-    diffCells.keySet().removeAll(oldCells.keySet());
-
-    // 2nd, figure out which of these cells this peer is
-    // involved in - these are the ones that are relevant...
-
-    for (Iterator i=diffCells.values().iterator(); i.hasNext();)
-      if (!((Set)i.next()).contains(localPeer))
-	i.remove();
-
-    return diffCells;
-  }
-
-  public void
-    remove(Peer p)
-  {
-    Peer localPeer=getLocalPeer();
-    localPeer=localPeer!=null?localPeer:p; // TODO - hack - FIXME
-    Map newCells=combine(_peers.values(), _k);
-    Map relCells=relevant(newCells, _oldCells, localPeer);
-
-    int n=relCells.size();
-
-    if (n>0)
-      _log.info("losing: "+n+" cell[s] - "+relCells.keySet());
-
-    _oldCells=newCells;
-  }
+    NChooseKTopologyStrategy(String nodeId, String clusterId, Cluster cluster, ClusterFactory factory, int k)
+    {
+      super(nodeId, clusterId, cluster, factory, k);
+    }
 
   public Map
     combine(Collection e, int k)
-  {
-    Map combs=new TreeMap();
+    {
+      Map combs=new TreeMap();
 
-    if (k<1)
-    {
-      return combs;
-    }
-    else if (k==1)
-    {
-      for (Iterator i=e.iterator(); i.hasNext(); )
+      if (k<1)
       {
-	Peer p=(Peer)i.next();
-	String id=p.getId();
-	Set comb=new TreeSet();
-	comb.add(p);
-	combs.put(id, comb);
+	return combs;
       }
-    }
-    else
-    {
-      Map subCombs=combine(e, k-1);
-      for (Iterator i=subCombs.values().iterator(); i.hasNext(); )
+      else if (k==1)
       {
-	Set subComb=(Set)i.next();
-	for (Iterator j=e.iterator(); j.hasNext(); )
+	for (Iterator i=e.iterator(); i.hasNext(); )
 	{
-	  Peer p=(Peer)j.next();
-	  if (!subComb.contains(p))
+	  Peer p=(Peer)i.next();
+	  String id=p.getId();
+	  Set comb=new TreeSet();
+	  comb.add(p);
+	  combs.put(id, comb);
+	}
+      }
+      else
+      {
+	Map subCombs=combine(e, k-1);
+	for (Iterator i=subCombs.values().iterator(); i.hasNext(); )
+	{
+	  Set subComb=(Set)i.next();
+	  for (Iterator j=e.iterator(); j.hasNext(); )
 	  {
-	    Set comb=new TreeSet(subComb);
-	    comb.add(p);
-	    String id="";
-	    for (Iterator n=comb.iterator(); n.hasNext(); )
-	      id+=((id.length()==0)?"":"-")+((Peer)n.next()).getId();
-	    combs.put(id, comb);
+	    Peer p=(Peer)j.next();
+	    if (!subComb.contains(p))
+	    {
+	      Set comb=new TreeSet(subComb);
+	      comb.add(p);
+	      String id="";
+	      for (Iterator n=comb.iterator(); n.hasNext(); )
+		id+=((id.length()==0)?"":"-")+((Peer)n.next()).getId();
+	      combs.put(id, comb);
+	    }
 	  }
 	}
       }
-    }
 
-    return combs;
-  }
+      return combs;
+    }
 }

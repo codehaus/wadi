@@ -20,29 +20,65 @@ package org.codehaus.wadi.cluster;
 import java.util.Collection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.activecluster.Cluster;
+import org.codehaus.activecluster.ClusterFactory;
 
 public class
   Cell
 {
-  protected Log        _log=LogFactory.getLog(getClass());
-  protected String     _id;
-  protected Collection _peers;
+  protected Log            _log=LogFactory.getLog(getClass());
+  protected ClusterFactory _factory;
+  protected String         _id;
+  protected String         _clusterId;
+  protected Collection     _peers;
+  protected Cluster        _cluster;
 
-  public Cell(String id, Collection peers)
+  public
+    Cell(String id, String clusterId, Collection peers, ClusterFactory factory)
   {
     _id=id;
+    _clusterId=clusterId;
     _peers=peers;
+    _factory=factory;
+    _cluster=null;
   }
 
   public void
     start()
   {
     _log.info("starting: "+_id);
+
+//     try
+//     {
+//       _cluster=_factory.createCluster(_clusterId+"."+_id);
+//     }
+//     catch (Exception e)
+//     {
+//       _log.warn("unexpected problem starting Cell: "+_id, e);
+//     }
   }
 
   public void
     stop()
   {
     _log.info("stopping: "+_id);
+
+//     try
+//     {
+//       _cluster.stop();
+//       _cluster=null;
+//     }
+//     catch (Exception e)
+//     {
+//       _log.warn("unexpected problem stopping Cell: "+_id, e);
+//     }
   }
+
+  public String
+    toString()
+  {
+    return "<Cell:"+_id+">";
+  }
+
+  public String getId(){return _id;}
 }
