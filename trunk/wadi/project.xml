@@ -126,7 +126,7 @@
 
     <unitTest>
       <includes>
-        <include>**/FTest*.java</include>
+        <include>**/Test*.java</include>
       </includes>
       <excludes>
         <exclude>**/TestLocationClient.java</exclude>
@@ -197,6 +197,9 @@
 	<war.bundle>true</war.bundle>
       </properties>
       <javadoc>http://dev.eclipse.org/viewcvs/indextech.cgi/~checkout~/aspectj-home/doc/api</javadoc>
+      <properties>
+	<war.bundle>true</war.bundle>
+      </properties>
     </dependency>
 
     <dependency><!-- when will ibiblio be updated ? -->
@@ -226,6 +229,9 @@
 	<war.bundle>true</war.bundle>
       </properties>
       <javadoc>http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html</javadoc>
+      <properties>
+	<war.bundle>true</war.bundle>
+      </properties>
     </dependency>
 
     <dependency>
@@ -243,6 +249,9 @@
 	<war.bundle>true</war.bundle>
       </properties>
       <javadoc>http://jakarta.apache.org/commons/httpclient/apidocs/index.htm</javadoc>
+      <properties>
+	<war.bundle>true</war.bundle>
+      </properties>
     </dependency>
 
     <dependency>
@@ -298,6 +307,9 @@
       <artifactId>activemq</artifactId>
       <version>1.0-SNAPSHOT</version>
       <javadoc>http://activemq.codehaus.org/maven/apidocs</javadoc>
+      <properties>
+	<war.bundle>true</war.bundle>
+      </properties>
     </dependency>
 
     <dependency>
@@ -305,6 +317,9 @@
       <artifactId>activecluster</artifactId>
       <version>1.0-SNAPSHOT</version>
       <javadoc>http://activecluster.codehaus.org/maven/apidocs</javadoc>
+      <properties>
+	<war.bundle>true</war.bundle>
+      </properties>
     </dependency>
 
   </dependencies>

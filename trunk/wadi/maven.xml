@@ -1,11 +1,12 @@
-<project default="java:jar" xmlns:j="jelly:core" xmlns:ant="jelly:ant" xmlns:aspectj="jelly:aspectj">
+<project
+  default="java:jar"
+  xmlns:j="jelly:core"
+  xmlns:define="jelly:define"
+  xmlns:ant="jelly:ant"
+  xmlns:aspectj="jelly:aspectj"
+  xmlns:clover="jelly:clover"
+  >
 
-  <!-- aspectj -->
-<!--
-  <preGoal name="java:compile">
-    <attainGoal name="aspectj:compile"/>
-  </preGoal>
--->
 
   <goal name="default" prereqs="clean, test"/>
   <goal name="dc" prereqs="clean, site:deploy, jar:deploy-snapshot"/>
@@ -28,6 +29,86 @@
   <attainGoal name="xdoc"/>
   </goal>
   -->
+
+  <!-- ======================================== -->
+
+  <!-- aspectj, it could be easier... -->
+
+  <postGoal name="clover:on">
+    <ant:echo>### starting coverage phase</ant:echo>
+    <j:set var="cloverOn" value="true"/>
+  </postGoal>
+
+  <postGoal name="clover:off">
+    <ant:echo>### ending coverage phase</ant:echo>
+    <j:set var="cloverOn" value=""/>
+  </postGoal>
+
+  <preGoal name="java:compile">
+    <j:if test="${cloverOn != 'true'}">
+      <ant:echo>### cleaning for build phase</ant:echo>
+      <ant:delete dir="${maven.build.dest}"/>
+      <ant:mkdir dir="${maven.build.dest}"/>
+      <ant:delete dir="${maven.build.dest}.javac"/>
+    </j:if>
+  </preGoal>
+
+  <postGoal name="java:compile">
+    <j:if test="${cloverOn != 'true'}">
+      <ant:echo>### starting build phase</ant:echo>
+      <j:set var="wadi.dest" value="${pom.getPluginContext('maven-test-plugin').getVariable('maven.build.dest')}"/>
+      <attainGoal name="aspectj:compile-and-weave"/>
+    </j:if>
+  </postGoal>
+
+  <preGoal name="test:compile">
+    <j:if test="${cloverOn != 'true'}">
+      <ant:echo>### cleaning for test phase</ant:echo>
+      <ant:delete dir="${maven.test.dest}"/>
+      <ant:mkdir dir="${maven.test.dest}"/>
+      <ant:delete dir="${maven.test.dest}.javac"/>
+    </j:if>
+  </preGoal>
+
+  <postGoal name="test:compile">
+    <j:if test="${cloverOn != 'true'}">
+      <ant:echo>### starting test phase</ant:echo>
+      <j:set var="wadi.dest" value="${pom.getPluginContext('maven-test-plugin').getVariable('maven.test.dest')}"/>
+      <attainGoal name="aspectj:compile-and-weave"/>
+    </j:if>
+    <j:if test="${cloverOn == 'true'}">
+      <ant:echo>### adding aspects to coverage test</ant:echo>
+      <j:set var="wadi.dest" value="${pom.getPluginContext('maven-test-plugin').getVariable('maven.build.dest')}"/>
+      <attainGoal name="aspectj:compile-and-weave"/>
+    </j:if>
+  </postGoal>
+
+  <goal name="aspectj:compile-and-weave" prereqs="aspectj:init">
+
+    <ant:echo>### moving  ${wadi.dest} aside</ant:echo>
+    <ant:move toDir="${wadi.dest}.javac">
+      <ant:fileset dir="${wadi.dest}"/>
+    </ant:move>
+    <ant:echo>### compiling and weaving to ${wadi.dest}</ant:echo>
+    <ant:iajc
+      destdir="${wadi.dest}"
+      debug="true"
+      verbose="true"
+      time="true"
+      source="1.4"
+      >
+      <ant:sourceroots>
+      	<ant:pathelement path="${pom.build.aspectSourceDirectory}"/>
+      </ant:sourceroots>
+      <ant:classpath>
+	<ant:path refid="maven.dependency.classpath"/>
+	<ant:pathelement path="${maven.build.dest}.javac"/>
+      </ant:classpath>
+      <ant:inpath>
+	<ant:pathelement path="${wadi.dest}.javac"/>
+      </ant:inpath>
+    </ant:iajc>
+  </goal>
 
   <!-- ======================================== -->
 
