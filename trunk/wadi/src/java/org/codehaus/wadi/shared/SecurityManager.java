@@ -34,6 +34,12 @@ import org.apache.commons.logging.LogFactory;
 // the spec, particularly where it say that app child threads should
 // not outlive their parent's time within the container...
 
+/**
+ * Not in use. The intention was to monitor applications use of custom threads.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   SecurityManager
   extends java.lang.SecurityManager

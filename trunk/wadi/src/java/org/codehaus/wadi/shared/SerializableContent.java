@@ -17,6 +17,13 @@
 
 package org.codehaus.wadi.shared;
 
+/**
+ * Abstracts out the ability of an object to serialise just its
+ * content - not itself.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface
   SerializableContent
 {

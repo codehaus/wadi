@@ -22,7 +22,14 @@ import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.Signature;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-privileged public aspect Tracing
+/**
+ * Development time tracing utility
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+privileged public aspect
+  Tracing
 {
   protected Log _log=LogFactory.getLog(Tracing.class);
 

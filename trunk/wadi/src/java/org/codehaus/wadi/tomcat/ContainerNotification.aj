@@ -34,6 +34,12 @@ import org.apache.catalina.core.StandardContext;
 // corresponds to calls to fireContainerEvent in
 // org.apache.catalina.session.StandardSession
 
+/**
+ * Performs Tomcat container-level notifications of session lifecycle events
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public aspect
   ContainerNotification
 {

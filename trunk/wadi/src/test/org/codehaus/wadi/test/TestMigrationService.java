@@ -26,6 +26,12 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.shared.MigrationService;
 import org.codehaus.wadi.plugins.SimpleStreamingStrategy;
 
+/**
+ * Test the Migration Service
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   TestMigrationService
   extends TestCase

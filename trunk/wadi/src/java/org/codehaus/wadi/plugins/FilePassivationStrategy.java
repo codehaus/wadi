@@ -80,16 +80,15 @@ import org.codehaus.wadi.shared.StreamingStrategy;
 // 2. if we use the filter to 'proxy' the request, whose 'routing
 // info' will end up on the session id - A or B ?
 
-
-
 /**
  * A MigrationPolicy that uses a local or shared file system on which
  * to passivate evicted sessions. WARNING - the session file's
  * LastModified time is used to signal when it should be timed out, so
  * altering this may have unforseen effects.
  *
- * @author <a href="mailto:jules@mortbay.com">Jules Gosnell</a>
- * @version 1.0
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
  */
 public class
   FilePassivationStrategy

@@ -22,6 +22,12 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * Test session lifecycle listener
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class SessionListener
   implements
     HttpSessionListener

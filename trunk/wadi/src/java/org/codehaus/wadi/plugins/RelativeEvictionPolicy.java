@@ -22,6 +22,15 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.shared.EvictionPolicy;
 import org.codehaus.wadi.shared.HttpSessionImpl;
 
+/**
+ * Evict after a period of inactivity equivalent to a fraction
+ * (expressed as a float) of maxInactiveActivity - e.g. 0.5 with a
+ * maxInactiveActivity of 1 hour would evict after 1/2 an hour of
+ * inactivity.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class RelativeEvictionPolicy
     implements EvictionPolicy
   {

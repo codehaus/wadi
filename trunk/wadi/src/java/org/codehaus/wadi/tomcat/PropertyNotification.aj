@@ -38,6 +38,12 @@ import org.apache.commons.logging.LogFactory;
 // I can see no reason to do this as there appears to be no mechanism
 // for registering a listener for these events...
 
+/**
+ * Performs internal Tomcat bean-level mutation notifications.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public aspect
   PropertyNotification
 {

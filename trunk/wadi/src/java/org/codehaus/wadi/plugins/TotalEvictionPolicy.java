@@ -22,6 +22,12 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.shared.EvictionPolicy;
 import org.codehaus.wadi.shared.HttpSessionImpl;
 
+/**
+ * Always evict
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
 TotalEvictionPolicy
 implements EvictionPolicy

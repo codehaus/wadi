@@ -29,6 +29,12 @@ import org.mortbay.jetty.servlet.WebApplicationHandler;
 
 //TODO - remember max number of sessions in map
 
+/**
+ * A WADI session manager for Jetty (jetty.mortbay.org).
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   Manager
   extends org.codehaus.wadi.shared.Manager

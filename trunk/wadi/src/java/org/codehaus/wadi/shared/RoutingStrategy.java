@@ -23,7 +23,7 @@ package org.codehaus.wadi.shared;
  * pluggable.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version 1.0
+ * @version $Revision$
  */
 public interface
   RoutingStrategy

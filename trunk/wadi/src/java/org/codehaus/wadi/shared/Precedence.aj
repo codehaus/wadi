@@ -17,6 +17,12 @@
 
 package org.codehaus.wadi.shared;
 
+/**
+ * Manages aspect precedence arounf HttpSessionImpl
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public aspect
   Precedence
 {

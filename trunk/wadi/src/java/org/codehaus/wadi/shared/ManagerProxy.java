@@ -41,7 +41,7 @@ import org.codehaus.wadi.plugins.NoRoutingStrategy;
  * Node may be achieved through calling methods on the local proxy.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version 1.0
+ * @version $Revision$
  */
 public class
   ManagerProxy

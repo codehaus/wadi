@@ -19,6 +19,12 @@ package org.codehaus.wadi.plugins;
 
 import org.codehaus.wadi.shared.IdGenerator;
 
+/**
+ * A really simple session id generator - NOT for production use :-)
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DumbIdGenerator
     implements IdGenerator
   {

@@ -49,6 +49,12 @@ interface
   //  public void               invalidate();
 }
 
+/**
+ * Abstract base for HttpSession implementations
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class
   AbstractHttpSessionImpl
   implements HttpSessionGetters, HttpSessionSetters, java.io.Serializable

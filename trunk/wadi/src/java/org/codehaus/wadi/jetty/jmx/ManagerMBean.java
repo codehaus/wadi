@@ -21,6 +21,12 @@ import javax.management.MBeanException;
 import org.codehaus.wadi.jetty.Manager;
 import org.mortbay.util.jmx.LifeCycleMBean;
 
+/**
+ * Publishes session manager API to JMX agent
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   ManagerMBean
   extends LifeCycleMBean

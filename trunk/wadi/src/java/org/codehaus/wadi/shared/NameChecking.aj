@@ -20,6 +20,12 @@ package org.codehaus.wadi.shared;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * Guards against insertion of a null key into session
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 privileged public aspect
   NameChecking
 {

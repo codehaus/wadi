@@ -25,6 +25,13 @@ import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
+/**
+ * A JDK1.4 single line log formatter. No longer used, since JDK1.4
+ * logging seems to disappear during the running of ShutdownHook.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   LogFormatter
   extends Formatter

@@ -33,8 +33,8 @@ import org.apache.commons.logging.LogFactory;
  * public way to navigate from this class. i.e. a secure HttpSession
  * implementation to pass out to the user.
  *
- * @author <a href="mailto:jules@mortbay.com">Jules Gosnell</a>
- * @version 1.0
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
  */
 public class
   HttpSession

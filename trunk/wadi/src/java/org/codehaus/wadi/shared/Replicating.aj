@@ -31,6 +31,12 @@ import org.aspectj.lang.reflect.MethodSignature;
 // components every time we go through this aspect. - the try/catch is
 // probably bad news as well..
 
+/**
+ * Detects deltas and replicates them to listening peers - NYI
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public aspect
   Replicating
 {

@@ -28,7 +28,7 @@ import org.codehaus.wadi.shared.RoutingStrategy;
  * cooperation with Apache/mod_jk.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version 1.0
+ * @version $Revision$
  */
 public class
   JkRoutingStrategy

@@ -30,6 +30,13 @@ package org.codehaus.wadi.shared;
 // set _lastAccessedTime directly, otherwise go through
 // setLastAccessedTime()... - Think about it...
 
+/**
+ * Compresses last accessed time modifications to cut down on deltas
+ * generated.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public aspect
   Accessing
 {

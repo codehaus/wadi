@@ -42,9 +42,14 @@ import org.codehaus.wadi.plugins.FilePassivationStrategy;
 import org.codehaus.wadi.plugins.GZIPStreamingStrategy;
 import org.codehaus.wadi.shared.SerializableContent;
 
-//----------------------------------------
-
-public class TestHttpSession
+/**
+ * Test WADI's HttpSession implementation
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public class
+  TestHttpSession
   extends TestCase
 {
   protected Log         _log=LogFactory.getLog(TestHttpSession.class);

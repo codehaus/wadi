@@ -26,6 +26,12 @@ import java.util.List;
 import java.util.Map;
 import org.apache.catalina.SessionListener;
 
+/**
+ * Tomcat-specific HttpSession implementation
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   HttpSessionImpl
   extends org.codehaus.wadi.shared.HttpSessionImpl
