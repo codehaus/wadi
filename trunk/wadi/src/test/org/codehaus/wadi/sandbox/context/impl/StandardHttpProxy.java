@@ -1,35 +1,6 @@
 //this started life as org.mortbay.servlet.ProxyServlet. I copied the
 //whole thing to use as a starting point - Thanks Greg !
 
-// HTTP/1.1 Methods:
-
-// OPTIONS - RO, IDEM, SL?
-// GET - RO, IDEM, SF,
-// HEAD - RO, IDEM, SF?
-// POST - RW, SF
-// PUT - RW, IDEM, SF?
-// DELETE - RW, IDEM, SF?
-// TRACE - RO, IDEM, SL
-// CONNECT - RO, IDEM, SL
-
-// SL methods need not be proxied
-// some SF methods may not use state and hence need not be proxied
-// HTTPS may result in immediate migration - or can we find a way of proxying it ? Are we ever likely to encounter it in a cluster ? Perhaps we could use an java.net.HttpsURLCommection ?
-
-// how about some regexps: stateful-methods, stateful-uris
-// if request does not relate to a session and match both regexps in this order, it will be given a stateless context and executed locally.
-// if it matches (and is not https) it will be proxied
-// if it is https, state will immigrate underneath it immediately.
-// if lb integration allows updated routing info - do that too...
-
-// we should establish the connection to server, before delegating to proxy code. This way we know if server is valid. Once control has been passed to proxy code, all subsequent errors will be passed directly to client...
-// or we could leave the code here and use an IOException to signify to our caller that something under its control has gone wrong...
-
-// Greg reckons all forms of HTTP auth except certificate should work ok
-// look at Jetty ProxyHandler
-// Https cannot be proxied at this level - need a Handler/Valve - why ?
-// if ssl decryption is done at frontend how do we know whether an HTTP request is secure or not ?
-
 // ========================================================================
 // $Id$
 // Copyright 2004-2004 Mort Bay Consulting Pty. Ltd.
@@ -45,7 +16,7 @@
 // limitations under the License.
 // ========================================================================
 
-package org.codehaus.wadi.test.servlet;
+package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,15 +25,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
-import java.util.HashSet;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+// My choice of proxy - still suboptimal - servlet spec imposes a very clumsy API
+// for copying the headers out of the HttpServletRequest (a proprietary solution 
+// would be faster), but at least the Cookie headers can be copied straight across 
+// (see CommonsHttpProxy).
 
 /**
  * Enterprise HttpProxy implementation.
@@ -70,90 +42,7 @@ import org.apache.commons.logging.LogFactory;
  * @author gregw@mortbay.com, jules@coredevelopers.net
  *
  */
-public class HttpProxy {
-	protected Log _log = LogFactory.getLog(HttpProxy.class);
-
-	// need to understand why these should not be proxied...
-	protected HashSet _DontProxyHeaders = new HashSet();
-
-	{
-		_DontProxyHeaders.add("proxy-connection");
-		_DontProxyHeaders.add("connection");
-		_DontProxyHeaders.add("keep-alive");
-		_DontProxyHeaders.add("transfer-encoding");
-		_DontProxyHeaders.add("te");
-		_DontProxyHeaders.add("trailer");
-		_DontProxyHeaders.add("proxy-authorization");
-		_DontProxyHeaders.add("proxy-authenticate");
-		_DontProxyHeaders.add("upgrade");
-	}
-
-	class Copier implements Runnable {
-
-		protected final InputStream _is;
-		protected final OutputStream _os;
-		protected final int _length;
-		protected final byte[] _buffer;
-
-		protected int _total;
-		public int getTotal(){return _total;}
-
-		protected Exception _exception;
-		public Exception getException(){return _exception;}
-
-		protected Thread _thread;
-		public Thread getThread(){return _thread;}
-
-		public Copier(InputStream is, OutputStream os, int length) {
-			_is=is;
-			_os=os;
-			_length=length;
-			_buffer=new byte[_length];
-		}
-
-		public void runSynchronously() throws IOException {
-			_total=0;
-			for (int n=0; (n=_is.read(_buffer, 0, _length))>=0;) {
-				_os.write(_buffer,0,n);
-				_total+=n;
-			}
-		}
-
-		public void runAsynchronously() {
-			(_thread=new Thread(this)).start();
-		}
-
-		public void run() {
-			try {
-				runSynchronously();
-			} catch (IOException e) {
-				_exception=e; // report asynchronously
-			}
-		}
-	}
-
-	// move this into ProxyServlet...
-	public void proxy(ServletRequest req, ServletResponse res, URL url)	{
-		// we could check to scheme here as well - http only supported...
-
-		try {
-			proxy2(req, res, url);
-		} catch (IOException e) {
-			if (res instanceof HttpServletResponse) {
-				HttpServletResponse hres = (HttpServletResponse) res;
-				hres.setHeader("Date", null);
-				hres.setHeader("Server", null);
-				hres.addHeader("Via", "1.1 (WADI)");
-				// hres.setStatus(502, message);
-				try {
-					_log.warn("could not establish connection to server: "+url, e);
-					hres.sendError(502, "Bad Gateway: proxy could not establish connection to server"); // TODO - why do we need to use sendError ?
-				} catch (IOException e2) {
-					_log.warn("could not return error to client", e2);
-				}
-			}
-		}
-	}
+public class StandardHttpProxy extends AbstractHttpProxy {
 
 	/*
 	 * (non-Javadoc)
@@ -165,8 +54,6 @@ public class HttpProxy {
 		HttpServletRequest hreq = (HttpServletRequest) req;
 		HttpServletResponse hres = (HttpServletResponse) res;
 
-		Copier client2Server=null;
-		Copier server2Client=null;
 		long startTime=System.currentTimeMillis();
 
 		URLConnection uc=url.openConnection(); // IOException
@@ -183,16 +70,18 @@ public class HttpProxy {
 		}
 
 		// check connection header
+		// TODO - this might need some more time: see http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
 		String connectionHdr = hreq.getHeader("Connection"); // TODO - what if there are multiple values ?
 		if (connectionHdr != null) {
 			connectionHdr = connectionHdr.toLowerCase();
 			if (connectionHdr.equals("keep-alive")|| connectionHdr.equals("close"))
 				connectionHdr = null; // TODO  ??
 		}
-
+		
 		// copy headers
 		boolean xForwardedFor = false;
 		boolean hasContent = false;
+		int contentLength=0;
 		Enumeration enm = hreq.getHeaderNames();
 		while (enm.hasMoreElements()) {
 			// TODO could be better than this! - using javax.servlet ?
@@ -204,20 +93,30 @@ public class HttpProxy {
 			if (connectionHdr != null && connectionHdr.indexOf(lhdr) >= 0)
 				continue;
 
-			if ("content-type".equals(lhdr))
-				hasContent = true;
-
+			if ("content-length".equals(lhdr)) {
+				try {
+					contentLength=hreq.getIntHeader(hdr);
+					hasContent=contentLength>0;
+				} catch (NumberFormatException e) {
+					_log.info("bad Content-Length header value: "+hreq.getHeader(hdr), e);
+				}
+			}
+				
+			if ("content-type".equals(lhdr)) {
+				hasContent=true;
+			}
+			
 			Enumeration vals = hreq.getHeaders(hdr);
 			while (vals.hasMoreElements()) {
 				String val = (String) vals.nextElement();
 				if (val != null) {
 					uc.addRequestProperty(hdr, val);
 					//_log.debug("req " + hdr + ": " + val);
-					xForwardedFor |= "X-Forwarded-For".equalsIgnoreCase(hdr);
+					xForwardedFor |= "X-Forwarded-For".equalsIgnoreCase(hdr); // why is this not in the outer loop ?
 				}
 			}
 		}
-
+		
 		// Proxy headers
 		uc.setRequestProperty("Via", "1.1 (WADI)");
 		if (!xForwardedFor)
@@ -231,17 +130,25 @@ public class HttpProxy {
 		// customize Connection
 		uc.setDoInput(true);
 
-		// TODO - if client has ommitted content-type header, this will be missed - OK ?
-		OutputStream toServer=null;
+		int client2ServerTotal=0;
 		if (hasContent) {
 			uc.setDoOutput(true);
-
+			
+			OutputStream toServer=null;
 			try {
 				InputStream fromClient=hreq.getInputStream(); // IOException
 				toServer=uc.getOutputStream(); // IOException
-				(client2Server=new Copier(fromClient, toServer, 8192)).runAsynchronously(); // IOException
+				client2ServerTotal=copy(fromClient, toServer, 8192);
 			} catch (IOException e) {
 				_log.info("problem proxying client request to server", e);
+			} finally {
+				if (toServer!=null) {
+					try {
+						toServer.close(); // IOException
+					} catch (IOException e) {
+						_log.info("problem closing server request stream", e);
+					}
+				}
 			}
 		}
 
@@ -304,10 +211,9 @@ public class HttpProxy {
 				hdr = uc.getHeaderFieldKey(h);
 				val = uc.getHeaderField(h);
 			}
-		} else {
-			
+		} else {	
 			// TODO - is it a bug in Jetty that I have to start my loop at 1 ? or that key[0]==null ?
-			// ask Greg ?
+			// Try this inside Tomcat...
 			String key;
 			for (int i=1; (key=uc.getHeaderFieldKey(i))!=null; i++) {
 				key=key.toLowerCase();
@@ -321,10 +227,11 @@ public class HttpProxy {
 		hres.addHeader("Via", "1.1 (WADI)");
 
 		// copy server->client
+		int server2ClientTotal=0;
 		if (fromServer!=null) {
 			try {
 				OutputStream toClient=hres.getOutputStream();// IOException
-				(server2Client=new Copier(fromServer, toClient, 8192)).runSynchronously();// IOException
+				server2ClientTotal+=copy(fromServer, toClient, 8192);// IOException
 			} catch (IOException e) {
 				_log.info("problem proxying server response back to client", e);
 			} finally {
@@ -337,31 +244,8 @@ public class HttpProxy {
 			}
 		}
 
-		int client2ServerTotal=0;
-		if (toServer!=null) {
-			do {
-				try {
-					client2Server.getThread().join();
-				} catch (InterruptedException ignore) {
-					// ignore
-				}
-			} while (Thread.interrupted());
-
-			{
-				try {
-					toServer.close(); // IOException
-				} catch (IOException e) {
-					// well - we did our best...
-					_log.info("problem closing server request stream", e);
-				}
-			}
-
-			client2ServerTotal=client2Server.getTotal();
-//			Exception c2se=client2Server.getException();
-		}
-
 		long endTime=System.currentTimeMillis();
 		long elapsed=endTime-startTime;
-		_log.info("in:"+client2ServerTotal+", out:"+server2Client.getTotal()+", status:"+code+", time:"+elapsed+", url:"+url);
+		_log.info("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:"+url);
 	}
 }

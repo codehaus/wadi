@@ -4,7 +4,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package org.codehaus.wadi.test.servlet;
+package org.codehaus.wadi.sandbox.context;
 
 import java.io.IOException;
 import java.net.URL;
@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.codehaus.wadi.sandbox.context.impl.StandardHttpProxy;
 
 /**
  * @author jules
@@ -34,7 +35,7 @@ public class TestProxy extends TestServlet{
 		public void service(ServletRequest req, ServletResponse res)
 				throws ServletException, IOException {
 			_log.info("session-id: "+((HttpServletRequest)req).getRequestedSessionId());
-			new HttpProxy().proxy(req, res, new URL("http://localhost:8080/test/admin"));
+			new StandardHttpProxy().proxy(req, res, new URL("http://localhost:8080/test/admin"));
 		}
 	}
 	
@@ -44,7 +45,7 @@ public class TestProxy extends TestServlet{
 		
 		public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 				throws ServletException, IOException {
-			new HttpProxy().proxy(req, res, new URL("http://localhost:8080/test/admin"));
+			new StandardHttpProxy().proxy(req, res, new URL("http://localhost:8080/test/admin"));
 		}
 		
 		public void destroy(){
