@@ -186,6 +186,19 @@ public abstract class
       if (impl==null && getDistributable())
 	impl=getRemoteSession(realId);
 
+      // FIXME - the lock is taken, released then taken again - just
+      // take it once... this bit needs refactoring
+
+      // we should be able to get rid of the FirstGet field and move
+      // the fetching of a remote session and setting of
+      // lastAccessedTime into the filter - which is where we want it
+      // if we are going to avoid pulling in the session for stateless
+      // interactions...
+
+      // we could hand a dummy session to Jetty, so that we can
+      // capture LAT in a threadlocal and then set it on the session
+      // if/when we have it to hand in the filter...
+
       // there is a gap here between finding the session and getting
       // the lock....
 
