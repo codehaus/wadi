@@ -44,9 +44,10 @@ public aspect
   protected static final Log _log=LogFactory.getLog(PropertyNotification.class);
 
   pointcut setter(Manager manager)
-    : execution(void Manager.setContainer(Container)) && target(manager)
-    || execution(void Manager.setDefaultContext(DefaultContext)) && target(manager)
-    || execution(void Manager.setSessionIdLength(int)) && target(manager);
+    : (execution(void Manager.setContainer(Container)) ||
+       execution(void Manager.setDefaultContext(DefaultContext)) ||
+       execution(void Manager.setSessionIdLength(int))) &&
+    target(manager);
 
 
   static class
