@@ -296,6 +296,6 @@ public class
      _log.info("invocation finished");
 
      Thread.sleep(5*1000);	// how do we know when async message exchange has finished ?
-      assertTrue(_jetty.get("xxx")==null);
+      assertTrue(_jetty.getLocalSession("xxx")==null);
    }
 }
