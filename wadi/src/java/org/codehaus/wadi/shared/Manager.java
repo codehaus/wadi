@@ -200,6 +200,15 @@ public abstract class
     return impl;
   }
 
+  class EmmigrationSender
+    implements AsyncToSyncAdaptor.Sender
+    {
+      Manager _manager;
+
+      EmmigrationSender(Manager manager){_manager=manager;}
+      public void send(Object command) throws Exception {_manager.sendCommandToCluster((Command)command);}
+    }
+
   protected HttpSessionImpl
     getLocalSession(String realId)
   {
@@ -254,43 +263,55 @@ public abstract class
     // If a migration policy has been enabled, we may request it
     // from another node.
 
+//     if (!successfulMigration)
+//     {
+//       CyclicBarrier barrier=new CyclicBarrier(2);
+//       _migrationServer.putBarrier(realId, barrier);
+
+//       try
+//       {
+// 	//	_log.warn("sending migration command: "+realId);
+// 	sendCommandToCluster(new EmmigrationCommand(realId, _migrationServer.getAddress(), _migrationServer.getPort()));
+
+// 	barrier.attemptBarrier(5000L);
+// 	successfulMigration=true;
+
+// 	impl=(HttpSessionImpl)_local.get(realId); // TODO - rationalise
+// 	// migration/activation approaches
+// 	// where impl andlocking is concerned
+//       }
+//       catch (TimeoutException e)
+//       {
+// 	// no-one came back with the session in time - give up :-(
+
+// 	// TODO - consider the full ramifications of Greg's
+// 	// reuseSessionIds here (perhaps someone does have the session
+// 	// but did not get back to us in time...
+
+// 	_log.warn("could not locate/immigrate session: "+realId);
+//       }
+//       catch (InterruptedException e)
+//       {
+// 	_log.warn("unexpected interruption during immigration:: "+realId);
+//       }
+//       catch (Exception e)
+//       {
+// 	_log.warn("unexpected problem occurred during immigration: "+realId);
+//       }
+
+//       _migrationServer.removeBarrier(realId);
+//     }
+
     if (!successfulMigration)
     {
-      CyclicBarrier barrier=new CyclicBarrier(2);
-      _migrationServer.putBarrier(realId, barrier);
+      _adaptor.send(
+		    new EmmigrationCommand(realId, _migrationServer.getAddress(), _migrationServer.getPort()),
+		    realId,	// is this enough - TODO
+		    2000L,	// parameterise - TODO
+		    new EmmigrationSender(this)
+		    );
 
-      try
-      {
-	//	_log.warn("sending migration command: "+realId);
-	sendCommandToCluster(new EmmigrationCommand(realId, _migrationServer.getAddress(), _migrationServer.getPort()));
-
-	barrier.attemptBarrier(5000L);
-	successfulMigration=true;
-
-	impl=(HttpSessionImpl)_local.get(realId); // TODO - rationalise
-	// migration/activation approaches
-	// where impl andlocking is concerned
-      }
-      catch (TimeoutException e)
-      {
-	// no-one came back with the session in time - give up :-(
-
-	// TODO - consider the full ramifications of Greg's
-	// reuseSessionIds here (perhaps someone does have the session
-	// but did not get back to us in time...
-
-	_log.warn("could not locate/immigrate session: "+realId);
-      }
-      catch (InterruptedException e)
-      {
-	_log.warn("unexpected interruption during immigration:: "+realId);
-      }
-      catch (Exception e)
-      {
-	_log.warn("unexpected problem occurred during immigration: "+realId);
-      }
-
-      _migrationServer.removeBarrier(realId);
+      impl=(HttpSessionImpl)_local.get(realId); // TODO - rationalise
     }
 
     if (successfulMigration)
@@ -940,6 +961,7 @@ public abstract class
   // Migration
 
   MigrationService.Server _migrationServer;
+  AsyncToSyncAdaptor      _adaptor=new AsyncToSyncAdaptor();
 
   //----------------------------------------
   // Migration

@@ -41,7 +41,7 @@ public class
   protected final Log _log     = LogFactory.getLog(getClass());
   protected final Map _entries =Collections.synchronizedMap(new HashMap());
 
-  public interface Sender {public void send(Object command);}
+  public interface Sender {public void send(Object command) throws Exception;}
 
   public Object
     send(Object command, String id, long timeout, Sender sender)
@@ -50,11 +50,11 @@ public class
       Rendezvous rv=new Rendezvous(participants);
       _entries.put(id, rv);
 
-      sender.send(command);
-
       Object result=null;
+
       try
       {
+	sender.send(command);
 	result=rv.attemptRendezvous(null, timeout);
       }
       catch (TimeoutException e)
@@ -68,6 +68,10 @@ public class
       catch (BrokenBarrierException e)
       {
 	_log.warn("Broken barrier - should never happen - we own this rendezvous", e);
+      }
+      catch (Exception e)
+      {
+	_log.warn("unexpected problem sending message", e);
       }
       finally
       {
