@@ -796,7 +796,7 @@ public abstract class
 
     if (location==null)
     {
-      if (_log.isWarnEnabled()) _log.warn(realId+": could not locate session - perhaps dead ?");
+      //      if (_log.isWarnEnabled()) _log.warn(realId+": could not locate session - perhaps dead ?");
       return null;
     }
 
