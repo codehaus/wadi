@@ -82,9 +82,9 @@ public class TestLocation extends TestCase {
 		public void proxy(HttpServletRequest hreq, HttpServletResponse hres) throws ProxyingException {}
 		public Destination getDestination() {return null;}
 	};
-	
+
 	protected Sync _mutex=new MyMutex();
-	protected Location _location=new MyLocation(); 
+	protected Location _location=new MyLocation();
 
 	class MyThread extends Thread {
 		public void run() {
@@ -98,6 +98,8 @@ public class TestLocation extends TestCase {
 			_location.proxy(null, null);
 			} catch (Exception e) {
 				_log.warn("proxy problem", e);
+			} finally {
+			  _mutex.release();
 			}
 		}
 	}
