@@ -62,7 +62,7 @@ public class MyServlet implements Servlet {
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 		_cluster=cluster;
 		_cluster.start();
-		_collapser=new HashingCollapser(10, 60000);
+		_collapser=new HashingCollapser(10, 2000);
 		_clusterMap=new HashMap();
 		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), _cluster, 2000, 3000, new HttpProxyLocation(location, proxy));
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
