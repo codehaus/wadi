@@ -17,7 +17,14 @@
 
 package org.codehaus.wadi.plugins;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.shared.Manager;
+import org.codehaus.wadi.shared.ManagerProxy;
 import org.codehaus.wadi.shared.RoutingStrategy;
+
 
 // TODO - this class needs to be better integrated with the
 // IdGenerator API so that, in cases where the id is of fixed length,
@@ -34,6 +41,8 @@ public class
   JkRoutingStrategy
   implements RoutingStrategy
 {
+  protected Log _log = LogFactory.getLog(getClass());
+
   protected String _name;
   public JkRoutingStrategy(String name){_name=name;}
 
@@ -50,5 +59,44 @@ public class
     return _name==null?session:session+"."+_name; // TODO - can we be more efficient ?
   }
 
-  public String getInfo() {return "."+_name;}
+  public String
+    getInfo()
+  {
+    return "."+_name;
+  }
+
+  public boolean
+    reroute(HttpServletRequest req, HttpServletResponse res, Manager manager, String id)
+  {
+    return reroute(req, res, manager, id, _name);
+  };
+
+  public boolean
+    reroute(HttpServletRequest req, HttpServletResponse res, Manager manager, String id, String route)
+  {
+    int i=id.lastIndexOf(".")+1;
+
+    if (i<1)
+      return false;		// id has no routing info to switch
+    else
+    {
+      int idlen=id.length();
+      int sufLen=idlen-i;
+      int routeLen=route.length();
+
+      if (sufLen==routeLen && id.regionMatches(i, route, 0, sufLen))
+	return false;		// no need to switch - already has correct info
+      else
+      {
+	// OK - we need to fix routing info on this session id, so
+	// that subsequent requests are routed back to this node -
+	// this avoids thrashing the session round the cluster...
+	_log.info("switching routing info on "+id+" to "+route);
+
+	String newId=augment(strip(id));
+	ManagerProxy.rerouteSessionCookie(req, res, manager, id, newId);
+	return true;
+      }
+    }
+  }
 }

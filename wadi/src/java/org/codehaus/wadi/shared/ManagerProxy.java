@@ -159,41 +159,7 @@ public class
       // lb)), which should then route it the correct node...
 
       if (req.isRequestedSessionIdFromCookie())
-      {
-	String cookieName=manager.getSessionCookieName();
-	Cookie[] cookies=req.getCookies();
-
-	// TODO - what about case sensitivity on value ?
-	for (int i=0;i<cookies.length;i++)
-	{
-	  Cookie cookie=cookies[i];
-	  if (cookie.getName().equalsIgnoreCase(cookieName) &&
-	      cookie.getValue().equals(oldId))
-	  {
-	    // name, path and domain must match those on client side,
-	    // for cookie to be updated in browser...
-
-	    // TODO - move this into Jetty stuff...
-	    String cookiePath=manager.getSessionCookiePath(req);
-	    if (cookiePath!=null)
-	    {
-	      if (_log.isTraceEnabled()) _log.trace("cookie path="+cookiePath);
-	      cookie.setPath(cookiePath);
-	    }
-
-	    String cookieDomain=manager.getSessionCookieDomain();
-	    if (cookieDomain!=null)
-	    {
-	      if (_log.isTraceEnabled()) _log.trace("cookie domain="+cookieDomain);
-	      cookie.setDomain(cookieDomain);
-	    }
-
-	    cookie.setValue(newId); // the session id with redirected routing info
-
-	    res.addCookie(cookie);
-	  }
-	}
-      }
+	rerouteSessionCookie(req, res, manager, oldId, newId);
       else
       {
 	if (_log.isTraceEnabled()) _log.trace("old url="+oldUrl);
@@ -212,6 +178,44 @@ public class
     {
       _log.warn("failed to redirect request", e);
       return false;
+    }
+  }
+
+  public static void		// used by JkRoutingStrategy...
+    rerouteSessionCookie(HttpServletRequest req, HttpServletResponse res, Manager manager, String oldId, String newId)
+  {
+    String cookieName=manager.getSessionCookieName();
+    Cookie[] cookies=req.getCookies();
+
+    // TODO - what about case sensitivity on value ?
+    for (int i=0;i<cookies.length;i++)
+    {
+      Cookie cookie=cookies[i];
+      if (cookie.getName().equalsIgnoreCase(cookieName) &&
+	  cookie.getValue().equals(oldId))
+      {
+	// name, path and domain must match those on client side,
+	// for cookie to be updated in browser...
+
+	// TODO - move this into Jetty stuff...
+	String cookiePath=manager.getSessionCookiePath(req);
+	if (cookiePath!=null)
+	{
+	  //	  if (_log.isTraceEnabled()) _log.trace("cookie path="+cookiePath);
+	  cookie.setPath(cookiePath);
+	}
+
+	String cookieDomain=manager.getSessionCookieDomain();
+	if (cookieDomain!=null)
+	{
+	  //	  if (_log.isTraceEnabled()) _log.trace("cookie domain="+cookieDomain);
+	  cookie.setDomain(cookieDomain);
+	}
+
+	cookie.setValue(newId); // the session id with redirected routing info
+
+	res.addCookie(cookie);
+      }
     }
   }
 

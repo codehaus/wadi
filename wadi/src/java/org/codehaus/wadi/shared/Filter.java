@@ -61,6 +61,8 @@ public class
   protected Manager _manager;
   protected boolean _distributable;
 
+  // Filter Lifecycle
+
   public void
     init(FilterConfig filterConfig)
   {
@@ -76,188 +78,24 @@ public class
   }
 
   public void
-    doFilterOld(ServletRequest request, ServletResponse response, FilterChain chain)
-    throws IOException, ServletException
-    {
-      //	HttpServletRequest req=new RequestWrapper((HttpServletRequest)request);
-      //	HttpServletResponse res=new ResponseWrapper((HttpServletResponse)response);
-      HttpServletRequest req=(HttpServletRequest)request;
-      HttpServletResponse res=(HttpServletResponse)response;
-      String sessionId=req.getRequestedSessionId();
-      if (sessionId==null)
-      {
-	if (_log.isTraceEnabled()) _log.trace("no session id: "+req.getHeader("Cookie"));
-	// request is not taking part in a session - do we want to
-	// risk it creating a new one here, or should we proxy it to a
-	// node that is carrying fewer sessions than we are...? - TODO
-	process(req, res, chain, sessionId);
-      }
-      else
-      {
-	if (_log.isTraceEnabled()) _log.trace("external session id: "+sessionId);
-	sessionId=_manager.getRoutingStrategy().strip(sessionId); // we may be using mod_jk etc...
-	if (_log.isTraceEnabled()) _log.trace("internal session id: "+sessionId);
-	// request claims to be associated with a session...
-	HttpSessionImpl impl=(HttpSessionImpl)_manager.get(sessionId);
-
-	if (impl!=null)
-	{
-	  // tricky logic here - we have to deal with the case where
-	  // the session is local when the request tries to acquire a
-	  // shared lock, but it has to wait on an exclusive lock that
-	  // may move the session elsewhere or destroy it. By the time
-	  // the request thread succeeds in acquiring access to the
-	  // session it has gone...
-	  if (_log.isTraceEnabled()) _log.trace(sessionId+": may be local");
-	  Sync appLock=impl.getApplicationLock();
-	  boolean acquired=false;
-	  if (appLock!=null)
-	    try
-	    {
-	      appLock.acquire();
-	      acquired=true;
-	      org.codehaus.wadi.shared.HttpSession facade=(org.codehaus.wadi.shared.HttpSession)impl.getFacade();
-	      if (facade!=null && facade.isValid())	// hasn't moved whilst we were getting lock...
-	      {
-		if (_log.isTraceEnabled()) _log.trace(sessionId+": still here");
-		chain.doFilter(req, res);
-	      }
-	      else
-	      {
-		if (_log.isInfoEnabled()) _log.info(sessionId+": was local but emmigrated or was destroyed before we could gain access");
-		impl=null;
-	      }
-	    }
-	    catch (InterruptedException e)
-	    {
-	      _log.warn("unexpected interruption", e);
-	      Thread.interrupted();
-	      org.codehaus.wadi.shared.HttpSession facade=(org.codehaus.wadi.shared.HttpSession)impl.getFacade();
-	      if (facade==null || !facade.isValid())
-		impl=null;
-	    }
-	    finally
-	    {
-	      if (acquired)
-		impl.getApplicationLock().release();
-	    }
-	}
-
-	if (impl==null)
-	{
-	  if (_log.isTraceEnabled()) _log.trace(sessionId+": not local or passivated");
-	  // the session is not available on this node...
-	  ManagerProxy proxy=null;
-	  if ((proxy=_manager.locate(sessionId))!=null)
-	  {
-	    if (_log.isTraceEnabled()) _log.trace(sessionId+": is remote - relocating request");
-	    proxy.relocateRequest(req, res, _manager);
-	  }
-	  else
-	  {
-	    // either:
-	    // give up and process request without session here
-	    // or:
-	    // give up and process request somewhere else
-
-	    if (_log.isWarnEnabled()) _log.warn(sessionId+": must have expired or be an invalid id"); // TODO - incr cache miss counter ?
-	    // TODO - no-one has the session - we can either risk a new
-	    // one being created here and process locally, proxy to
-	    // another node carrying fewer sessions, or strip off
-	    // session id and redirect (somehow) back up to lb to make
-	    // decision for us...
-	    process(req, res, chain, sessionId);
-	  }
-	}
-      }
-    }
-
-  public void
-    process(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
-	    String sessionId)
-    throws IOException, ServletException
-  {
-    //    assert Thread.currentThread().getName().startsWith("PoolThread-"); // TODO - Jetty only
-
-    // every session has a RWLock
-    // priority will be given to Readers
-    // application threads are Readers
-    // container threads that need to ensure synchronous access to application resources are Writers.
-
-    try
-    {
-      chain.doFilter(request, response);
-    }
-    finally
-    {
-      // the session may have just been created - if so we need to
-      // look it up and release the read lock...
-      javax.servlet.http.HttpSession session=request.getSession(false);
-      if (session!=null)
-      {
-	HttpSessionImpl impl=(HttpSessionImpl)_manager.get(_manager.getRoutingStrategy().strip(session.getId()));
-	if (_log.isTraceEnabled()) _log.trace(sessionId+"; just created - releasing");
-	if (impl!=null)
-	  impl.getApplicationLock().release();
-      }
-    }
-
-    // TODO - LATER FUNCTIONALITY - REPLICATION WITH VALUE BASED SEMANTICS
-//     try
-//     {
-//       // can we acquire an exclusive lock for session replication
-//       // etc...
-
-//       // TODO - PROBLEM - we really need to upgrade our RLock to a
-//       // WLock, so there is no time for the housekeeping thread to
-//       // squeeze in and prevent us from signalling the end of a
-//       // request group... how do we ensure that this does not happen ?
-//       if (writeLock!=null && _manager.getUsingRequestGroups() && writeLock.attempt(-1))
-//       {
-// 	// if so, and we are working at request-group granularity,
-// 	// then this is the end of a request group....
-// 	_manager.notifyRequestGroupEnd(sessionId);
-//       }
-//       else
-//       {
-// 	// otherwise this is only the end of a single request within
-// 	// a group
-// 	_manager.notifyRequestEnd(sessionId);
-//       }
-//     }
-//     catch (InterruptedException e)
-//     {
-//       _log.warn("unexpected interruption", e);
-//       Thread.interrupted();
-//       return;
-//     }
-//     finally
-//     {
-//       if (writeLock!=null)
-// 	writeLock.release();
-//     }
-  }
-
-  public void
     destroy()
   {
     _distributable=false;
     _manager=null;
   }
 
-
-  // NEW STUFF
+  // Filter fn-ality
 
   public void
     doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
     throws IOException, ServletException
   {
-    if (!(request instanceof HttpServletRequest && response instanceof HttpServletResponse))
-      {
-	_log.warn("not an HttpServlet req/res pair - therefore stateless - ignored by WADI");
-	chain.doFilter(request, response);
-	return;
-      }
+    if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse))
+    {
+      _log.warn("not an HttpServlet req/res pair - therefore stateless - ignored by WADI");
+      chain.doFilter(request, response);
+      return;
+    }
 
     HttpServletRequest req=(HttpServletRequest)request;
     HttpServletResponse res=(HttpServletResponse)response;
@@ -281,9 +119,10 @@ public class
 	if((impl=_manager.get(id))!=null && // KEEP
 	   ((HttpSession)impl.getFacade()).isValid())
 	{
-	  ;
+	  // restick lb to this node if necessary...
+	  _manager.getRoutingStrategy().reroute(req, res, _manager, id);
 	}
-	// if id is non-null, but session does not exists locally -
+	// if id is non-null, but session does not exist locally -
 	// consider relocating session or request....
       }
       // we need to ensure that a shared lock has been taken on the
@@ -329,12 +168,78 @@ public class
 	  impl.getApplicationLock().release();
 	  if (reuse)
 	    if (_log.isTraceEnabled()) _log.trace(newId+": potential session id reuse - outgoing session may be new");
-	  else
-	    if (_log.isTraceEnabled()) _log.trace(newId+": new outgoing session");
+	    else
+	      if (_log.isTraceEnabled()) _log.trace(newId+": new outgoing session");
 	}
       }
       // in case Jetty or Tomcat is thread-pooling :
       _manager.setFirstGet(true); // ready for next time through...
     }
+  }
+
+  public void
+    process(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+	    String sessionId)
+    throws IOException, ServletException
+  {
+    //    assert Thread.currentThread().getName().startsWith("PoolThread-"); // TODO - Jetty only
+
+    // every session has a RWLock
+    // priority will be given to Readers
+    // application threads are Readers
+    // container threads that need to ensure exclusive access to application resources are Writers.
+
+    try
+    {
+      chain.doFilter(request, response);
+    }
+    finally
+    {
+      // the session may have just been created - if so we need to
+      // look it up and release the read lock...
+      javax.servlet.http.HttpSession session=request.getSession(false);
+      if (session!=null)
+      {
+	HttpSessionImpl impl=(HttpSessionImpl)_manager.get(_manager.getRoutingStrategy().strip(session.getId()));
+	if (_log.isTraceEnabled()) _log.trace(sessionId+"; just created - releasing");
+	if (impl!=null)
+	  impl.getApplicationLock().release();
+      }
+    }
+
+    // TODO - LATER FUNCTIONALITY - REPLICATION WITH VALUE BASED SEMANTICS
+    //     try
+    //     {
+    //       // can we acquire an exclusive lock for session replication
+    //       // etc...
+
+    //       // TODO - PROBLEM - we really need to upgrade our RLock to a
+    //       // WLock, so there is no time for the housekeeping thread to
+    //       // squeeze in and prevent us from signalling the end of a
+    //       // request group... how do we ensure that this does not happen ?
+    //       if (writeLock!=null && _manager.getUsingRequestGroups() && writeLock.attempt(-1))
+    //       {
+    // 	// if so, and we are working at request-group granularity,
+    // 	// then this is the end of a request group....
+    // 	_manager.notifyRequestGroupEnd(sessionId);
+    //       }
+    //       else
+    //       {
+    // 	// otherwise this is only the end of a single request within
+    // 	// a group
+    // 	_manager.notifyRequestEnd(sessionId);
+    //       }
+    //     }
+    //     catch (InterruptedException e)
+    //     {
+    //       _log.warn("unexpected interruption", e);
+    //       Thread.interrupted();
+    //       return;
+    //     }
+    //     finally
+    //     {
+    //       if (writeLock!=null)
+    // 	writeLock.release();
+    //     }
   }
 }
