@@ -141,7 +141,7 @@
 	  <include name="lib/gt2-main.jar"/>
 	</fileset>
       </classpath>
-      <arg value="${basedir}/jetty.xml"/>
+      <arg value="${basedir}/conf/jetty.xml"/>
     </java>
   </target>
 
