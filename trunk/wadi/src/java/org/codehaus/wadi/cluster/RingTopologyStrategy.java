@@ -22,37 +22,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Iterator;
-//import java.util.TreeSet;
 import java.util.ArrayList;
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.activecluster.ClusterFactory;
-
-// class ArrayList
-//   extends java.util.ArrayList
-//   implements Comparable
-// {
-//   public
-//     ArrayList(){super();}
-//   public
-//     ArrayList(int capacity){super(capacity);}
-
-//   public
-//     int compareTo(Object o)
-//   {
-//     ArrayList that=(ArrayList)o;
-
-//     Iterator i=this.iterator();
-//     Iterator j=that.iterator();
-
-//     int result=0;
-//     while (i.hasNext() && j.hasNext() && result==0)
-//     {
-//       result=((Comparable)i.next()).compareTo(j.next());
-//     }
-
-//     return result;
-//   }
-// }
 
 public class
   RingTopologyStrategy
@@ -95,7 +67,7 @@ public class
     }
 
   public Collection
-    combineCollection(Comparable local, Collection e, int k)
+    combineCollection(Peer local, Collection e, int k)
     {
       int l=e.size();
 
