@@ -52,11 +52,41 @@ import ri.cache.loader.NullCacheLoader;
 
 //----------------------------------------
 
+// TODO
+
+// figure out how sessions should be timed out and demoted to next
+// cache (Dummy or e.g. DataBase).
+
+// when cache starts it should loadAll from its dir and from its
+// backing cache (i.e. D.B.)
+
+// sort out touching, versioning and lastModified ttl seems to be on a
+// per-cache basis here, whereas we need it on a per-entry basis.. -
+// extend Cache API ? or just ignore ttl and take via extended Value
+// interface...
+
+// what metadata should live in the CacheEntry and what in the Value ?
+
+// collapse all timing fields together as calculated from each other
+
+//----------------------------------------
+
 // assumption - we are the only people reading and writing to this
-// directory... - could be dynamically made up...
+// directory... - should be dynamically created to ensure this...
 
 // if we know the cache is homogeneous (only stores one type), we do
-// not need to write type information into every evicted file...
+// not need to write type information into every evicted file... -
+// hence SerializableContent...
+
+//----------------------------------------
+
+interface
+  EvictionPolicy
+{
+  boolean evict(CacheEntry e);
+}
+
+//----------------------------------------
 
 interface
   SerializableContentPool
@@ -71,17 +101,18 @@ class
   LocalDiscCacheInnards
   implements CacheInnards
 {
-  protected Log _log=LogFactory.getLog(getClass());
+  protected final Log _log=LogFactory.getLog(getClass());
 
-  protected File                    _dir;
-  protected SerializableContentPool _valuePool;
-  protected StreamingStrategy       _streamingStrategy;
-  protected Cache                   _cache;
+  protected final File                    _dir;
+  protected final SerializableContentPool _valuePool;
+  protected final StreamingStrategy       _streamingStrategy;
+  protected final Cache                   _cache;
+  protected final EvictionPolicy          _evictionPolicy;
 
   //----------------------------------------
 
   public
-    LocalDiscCacheInnards(File dir, SerializableContentPool valuePool, StreamingStrategy streamingStrategy, Cache cache)
+    LocalDiscCacheInnards(File dir, SerializableContentPool valuePool, StreamingStrategy streamingStrategy, Cache cache, EvictionPolicy evictionPolicy)
   {
     assert dir.exists();
     assert dir.isDirectory();
@@ -90,11 +121,13 @@ class
     assert valuePool!=null;
     assert streamingStrategy!=null;
     assert cache!=null;
+    assert evictionPolicy!=null;
 
     _dir               =dir;
     _valuePool         =valuePool;
     _streamingStrategy =streamingStrategy;
     _cache             =cache;
+    _evictionPolicy    =evictionPolicy;
 
     _log.info("created: "+this);
   }
@@ -111,7 +144,7 @@ class
     if (value==null)
       _log.warn("load from local disc failed: "+key);
     else
-      _log.info("load from local disc: "+key+" : "+value);
+      _log.info("loaded from local disc: "+key+" : "+value);
 
     return value;
   }
@@ -171,21 +204,15 @@ class
   {
     _log.info("evict: "+c);
 
-    // decide who to evict
+    Map evictees=new HashMap();	// TODO - ouch - Maps are expensive - cache ?
 
-    // gather them into a Map
-    //Map evictees=c;		// all
-    Map evictees=Collections.EMPTY_MAP;
-
-    // remove them from this cache and
-    // either:
-    //  demote them to cache below us
-    // or:
-    // discard them
-
-    // I think we should keep an e.g. DB below this cache into which
-    // all expired session data will go for analysis. If you replace
-    // this with a dummy cache it will be thrown away immediately...
+    // decide who to evict...
+    for (Iterator i=c.values().iterator(); i.hasNext();)
+    {
+      CacheEntry ce=(CacheEntry)i.next();
+      if (_evictionPolicy.evict(ce))
+	evictees.put(ce.getKey(), ce.getValue()); // TODO - ouch - do we have to load the value ?
+    }
 
     return evictees;
   }
@@ -293,6 +320,8 @@ class
     {
       return "<"+getClass().getName()+": "+_key+">";
     }
+
+    // TODO - need equals() and hashcode() - look at RI
   }
 
   //----------------------------------------

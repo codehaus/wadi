@@ -188,6 +188,13 @@ public class
     public SerializableContent take(){return new Value();}
   }
 
+  class
+    NoEvictionPolicy
+    implements EvictionPolicy
+  {
+    public boolean evict(CacheEntry ce){return false;}
+  }
+
   public void
     testLocalDiscCache()
     throws Exception
@@ -198,7 +205,7 @@ public class
     {
       File dir=new File("/tmp");
       Cache shared=new BasicCache();
-      CacheInnards ci=new LocalDiscCacheInnards(dir, new Pool(), new SimpleStreamingStrategy(), shared);
+      CacheInnards ci=new LocalDiscCacheInnards(dir, new Pool(), new SimpleStreamingStrategy(), shared, new NoEvictionPolicy());
       Cache ld=new BasicCache(ci, ci);
 
       String key="key-1";
