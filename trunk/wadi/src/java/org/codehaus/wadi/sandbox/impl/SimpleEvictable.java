@@ -44,7 +44,7 @@ public abstract class SimpleEvictable implements Evictable {
 	public int  getMaxInactiveInterval(){return _maxInactiveInterval;}
 	public void setMaxInactiveInterval(int maxInactiveInterval){_maxInactiveInterval=maxInactiveInterval;}
 
-	public long getTimeToLive(long time) {return (_maxInactiveInterval*1000)-(time-_lastAccessedTime);}
+	public long getTimeToLive(long time) {return _maxInactiveInterval<0?Long.MAX_VALUE:(_maxInactiveInterval*1000)-(time-_lastAccessedTime);}
 
 	public boolean getTimedOut() {return getTimedOut(System.currentTimeMillis());}
 	public boolean getTimedOut(long time) {return getTimeToLive(time)<=0;}
