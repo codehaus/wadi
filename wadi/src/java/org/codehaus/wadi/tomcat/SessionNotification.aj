@@ -17,13 +17,9 @@
 
 package org.codehaus.wadi.tomcat;
 
-import java.beans.PropertyChangeSupport;
-import java.lang.reflect.Method;
 import java.util.List;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
-import org.apache.catalina.Container;
-import org.apache.catalina.DefaultContext;
 import org.apache.catalina.Session;
 import org.apache.catalina.SessionEvent;
 import org.apache.catalina.SessionListener;
@@ -34,7 +30,7 @@ import org.apache.commons.logging.LogFactory;
 // org.apache.catalina.session.StandardSession
 
 // why is the session rather than the manager sending out
-// notifications of its construction and destriction? - How am I meant
+// notifications of its construction and destruction? - How am I meant
 // to register interest in its construction before it is constructued
 // :-)
 
