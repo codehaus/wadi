@@ -512,7 +512,7 @@ public abstract class
       boolean nottried=true;
       if ((((hasTimedOut=impl.hasTimedOut(currentTime)) && setPriority(lock, HttpSessionImpl.TIMEOUT_PRIORITY)) ||
 	   ((shouldBeEvicted=(canEvict && _evictionPolicy.evictable(currentTime, impl))) && setPriority(lock, HttpSessionImpl.EVICTION_PRIORITY))) &&
-	  (nottried=impl.getContainerLock().attempt(100)))
+	  (nottried=impl.getContainerLock().attempt(-1))) // do not wait
       {
 	try
 	{
