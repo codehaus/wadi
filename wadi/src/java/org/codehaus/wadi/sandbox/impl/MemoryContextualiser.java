@@ -52,6 +52,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	protected final StreamingStrategy _streamer;
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
+	protected final Emoter _evictionEmoter;
 
 	public MemoryContextualiser(Contextualiser next, Map map, Evicter evicter, StreamingStrategy streamer, ContextPool pool) {
 		super(next, map, evicter);
@@ -60,39 +61,10 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 
 		_immoter=new MemoryImmoter(_map);
 		_emoter=new MemoryEmoter(_map);
+		_evictionEmoter=new AbstractMappedEmoter(_map){public String getInfo(){return "memory";}};
 	}
 
 	public boolean isLocal(){return true;}
-
-	// TODO - c.f. AbstractMappedContextualiser.evict()
-	public void evict() {
-		// TODO - lock the map - move expensive stuff out of lock...
-		long time=System.currentTimeMillis();
-		for (Iterator i=_map.entrySet().iterator(); i.hasNext(); ) {
-			Map.Entry e=(Map.Entry)i.next();
-			String id=(String)e.getKey();
-			Motable emotable=(Motable)e.getValue();
-			if (_evicter.evict(id, emotable, time)) { // first test without lock - cheap
-				Sync lock=((Context)emotable).getExclusiveLock();
-				boolean acquired=false;
-				// this should be a while loop
-				try {
-					if (lock.attempt(0) && _evicter.evict(id, emotable, time)) { // then confirm with exclusive lock
-						acquired=true;
-						Immoter immoter=_next.getDemoter(id, emotable);
-						Emoter emoter=getEmoter();
-						Utils.mote(emoter, immoter, emotable, id);
-					}
-				} catch (InterruptedException ie) {
-					// should be done in a loop...
-					_log.warn("unexpected interruption to eviction - ignoring", ie);
-				} finally {
-					if (acquired)
-						lock.release();
-				}
-			}
-		}
-	}
 
 	public boolean contextualiseLocally(HttpServletRequest req, HttpServletResponse res, FilterChain chain, String id, Sync promotionLock, Motable motable)  throws IOException, ServletException {
 	    Sync lock=((Context)motable).getSharedLock();
@@ -116,27 +88,6 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	    }
 	}
 	
-//	public boolean promote(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Motable emotable) throws IOException, ServletException {
-//	    Sync lock=((Context)emotable).getExclusiveLock();
-//	    boolean acquired=false;
-//	    try{
-//	        do {
-//	            try {
-//	                lock.acquire();
-//	                acquired=true;
-//	            } catch (TimeoutException e) {
-//	                _log.error("unexpected timeout - continuing without lock", e);
-//	            } catch (InterruptedException e) {
-//	                _log.warn("unexpected interruption - continuing", e);
-//	            }
-//	        } while (Thread.interrupted());
-//	        
-//	        return super.promote(hreq, hres, chain, id, immoter, promotionLock, emotable);
-//	    } finally {
-//	        if (acquired) lock.release();
-//	    }
-//	}
-
 	class MemoryEmoter extends AbstractMappedEmoter {
 	    
 	    public MemoryEmoter(Map map) {
@@ -144,18 +95,29 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	    }
 	    
 	    public boolean prepare(String id, Motable emotable, Motable immotable) {
-	        // TODO - acquire exclusive lock
+	        Sync lock=((Context)emotable).getExclusiveLock();
+	        do {
+	            try {
+	                lock.acquire();
+	            } catch (TimeoutException e) {
+	                _log.error("unexpected timeout", e);
+	                return false;
+	            } catch (InterruptedException e) {
+	                _log.warn("unexpected interruption - continuing", e);
+	            }
+	        } while (Thread.interrupted());
+	        
 	        return super.prepare(id, emotable, immotable);
 	    }
 	    
 	    public void commit(String id, Motable emotable) {
 	        super.commit(id, emotable);
-	        // TODO - release exclusive lock
+	        ((Context)emotable).getExclusiveLock().release();
 	    }
 	    
 	    public void rollback(String id, Motable emotable) {
 	        super.rollback(id, emotable);
-	        // TODO - release exclusive lock ?
+	        ((Context)emotable).getExclusiveLock().release();
 	    }
 	    
 	    public String getInfo() {
@@ -185,4 +147,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
 	public Immoter getPromoter(Immoter immoter) {return immoter==null?_immoter:immoter;}
+	
+	public Sync getEvictionLock(String id, Motable motable){return ((Context)motable).getExclusiveLock();}
+	public Emoter getEvictionEmoter(){return _evictionEmoter;} // leave lock-taking to evict()...
 }
