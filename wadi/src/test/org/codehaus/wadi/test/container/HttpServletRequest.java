@@ -70,11 +70,8 @@ public class HttpServletRequest
     }
   }
 
-  public String
-    getRequestedSessionId()
-  {
-    return _sessionId;
-  }
+  public void setRequestedSessionId(String requestedSessionId){_sessionId=requestedSessionId;}
+  public String getRequestedSessionId(){return _sessionId;}
 
   public Cookie[]     getCookies()                     {return null;}
   public Enumeration  getHeaderNames()                 {return null;}
@@ -83,12 +80,20 @@ public class HttpServletRequest
   public String       getAuthType()                    {return null;}
   public String       getContextPath()                 {return null;}
   public String       getHeader(String name)           {return null;}
-  public String       getMethod()                      {return null;}
+  
+  protected String _method=null;
+  public void setMethod(String method){_method=method;}
+  public String getMethod(){return _method;}
+  
   public String       getPathInfo()                    {return null;}
   public String       getPathTranslated()              {return null;}
   public String       getQueryString()                 {return null;}
   public String       getRemoteUser()                  {return null;}
-  public String       getRequestURI()                  {return null;}
+  
+  protected String _requestURI=null;
+  public void setRequestURI(String requestURI){_requestURI=requestURI;}
+  public String getRequestURI(){return _requestURI;}
+  
   public String       getServletPath()                 {return null;}
   public StringBuffer getRequestURL()                  {return null;}
   public boolean      isRequestedSessionIdFromCookie() {return true;}
@@ -118,7 +123,11 @@ public class HttpServletRequest
  public String             getRealPath(String path)                                             {return null;}
  public String             getRemoteAddr()                                                      {return null;}
  public String             getRemoteHost()                                                      {return null;}
- public String             getScheme()                                                          {return null;}
+ 
+ protected String _scheme=null;
+ public void setScheme(String scheme){_scheme=scheme;}
+ public String getScheme(){return _scheme;}
+ 
  public String             getServerName()                                                      {return null;}
  public String[]           getParameterValues(String name)                                      {return null;}
  public boolean            isSecure()                                                           {return true;}

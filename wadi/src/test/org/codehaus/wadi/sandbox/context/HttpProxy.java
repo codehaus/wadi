@@ -20,6 +20,7 @@ import java.net.URL;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * TODO - JavaDoc this type
@@ -29,5 +30,7 @@ import javax.servlet.ServletResponse;
  */
 public interface HttpProxy {
 	// move this into ProxyServlet...
-	public abstract void proxy(ServletRequest req, ServletResponse res, URL url);
+	public boolean canProxy(ServletRequest req);
+	public boolean isStateful(HttpServletRequest hreq);
+	public void proxy(ServletRequest req, ServletResponse res, URL url);
 }
