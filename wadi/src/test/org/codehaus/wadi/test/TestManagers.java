@@ -19,11 +19,12 @@ package org.codehaus.wadi.test;
 
 import javax.jms.JMSException;
 
+import java.io.IOException;
+import javax.servlet.http.HttpSessionContext;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import javax.servlet.http.HttpSessionContext;
-import java.io.IOException;
+import org.codehaus.wadi.Filter;
 
 /**
  *
@@ -36,8 +37,11 @@ public class
 {
   protected Log _log=LogFactory.getLog(TestManagers.class);
 
-  protected org.codehaus.wadi.jetty.Manager _jetty=new org.codehaus.wadi.jetty.Manager();
+  protected org.codehaus.wadi.jetty.Manager  _jetty =new org.codehaus.wadi.jetty.Manager();
   protected org.codehaus.wadi.tomcat.Manager _tomcat=new org.codehaus.wadi.tomcat.Manager();
+
+  protected Filter _jettyFilter = new Filter();
+  protected Filter _tomcatFilter= new Filter();
 
   public TestManagers(String name)
     {
@@ -49,8 +53,13 @@ public class
     throws Exception
     {
       javax.servlet.ServletContext servletContext=new ServletContext();
+      javax.servlet.FilterConfig filterConfig=new FilterConfig(servletContext);
+      servletContext.setAttribute(org.codehaus.wadi.Manager.class.getName(), _jetty);
+      _jettyFilter.init(filterConfig);
       _jetty.setServletContext(servletContext);
       _jetty.start();
+      servletContext.setAttribute(org.codehaus.wadi.Manager.class.getName(), _tomcat);
+      _jettyFilter.init(filterConfig);
       _tomcat.setServletContext(servletContext);
       _tomcat.start();
     }
@@ -62,8 +71,10 @@ public class
       try
       {
 	_tomcat.stop();
+	_tomcatFilter.destroy();
 	_log.info("here 0");
 	_jetty.stop();
+	_jettyFilter.destroy();
 	_log.info("here 1");
       }
       catch (Exception e)
@@ -191,4 +202,20 @@ public class
       // 	assertTrue(_tomcat.getActiveSessions()==n);
       //       }
     }
+
+  interface Invocation
+  {
+    void run(HttpServletRequest req);
+  }
+
+  public void
+    runInvocation(Invocation i)
+  {
+  }
+
+  public void
+    testFilter()
+  {
+
+  }
 }

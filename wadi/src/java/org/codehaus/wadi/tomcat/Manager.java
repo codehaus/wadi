@@ -173,9 +173,12 @@ public class
   protected void
     initialiseListeners()
   {
-    Context context=((Context)_container);
-    copySubset(context.getApplicationLifecycleListeners(), _sessionListeners,   _sessionListenerTest);
-    copySubset(context.getApplicationEventListeners(),     _attributeListeners, _attributeListenerTest);
+    if (_container!=null)
+    {
+      Context context=((Context)_container);
+      copySubset(context.getApplicationLifecycleListeners(), _sessionListeners,   _sessionListenerTest);
+      copySubset(context.getApplicationEventListeners(),     _attributeListeners, _attributeListenerTest);
+    }
   }
 
   public synchronized void
