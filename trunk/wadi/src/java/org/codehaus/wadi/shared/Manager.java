@@ -492,6 +492,7 @@ public abstract class
 	  if (_passivationStrategy.activate((String)i.next(), impl))
 	  {
 	    impl.setWadiManager(this);
+	    if (_log.isDebugEnabled()) _log.debug(impl.getId()+": expiration (in long-term storage)");
 	    _notify(impl);	// TODO - these methods all need renaming/factoring etc..
 	    _releaseImpl(impl);
 	  }
@@ -537,6 +538,9 @@ public abstract class
     if (canEvict)
       tidyStore(currentTime);
 
+    boolean infoEnabled=_log.isInfoEnabled();
+    boolean debugEnabled=_log.isDebugEnabled();
+    boolean traceEnabled=_log.isTraceEnabled();
     for (Iterator i=_local.values().iterator(); i.hasNext();)
     {
       HttpSessionImpl impl=(HttpSessionImpl)i.next();
@@ -558,15 +562,15 @@ public abstract class
 	  String realId=impl.getRealId();
 	  if (hasTimedOut)	// implicitly invalidated via time-out
 	  {
-	    if (_log.isDebugEnabled()) _log.debug(realId+" : expiration");
-	    if (_log.isTraceEnabled()) _log.trace(realId+" : removing (implicit time out)");
+	    if (debugEnabled) _log.debug(realId+" : expiration ("+currentTime+"-"+impl.getLastAccessedTime()+">"+impl.getMaxInactiveInterval()*1000+")");
+	    if (traceEnabled) _log.trace(realId+" : removing (implicit time out)");
 	    releaseImpl(impl);
 	    continue;
 	  }
 
 	  if (shouldBeEvicted)
 	  {
-	    if (_log.isTraceEnabled()) _log.trace(realId+" : removing (migrating to long-term store)");
+	    if (traceEnabled) _log.trace(realId+" : removing (migrating to long-term store)");
 	    // should this be done asynchronously via another Channel ?
 	    if (_passivationStrategy.passivate(impl))
 	    {
@@ -586,7 +590,7 @@ public abstract class
       }
       else if (!nottried)
       {
-	if (_log.isInfoEnabled()) _log.info("tried but failed for lock on:"+impl.getRealId()+" - "+impl.getRWLock());
+	if (infoEnabled) _log.info("tried but failed for lock on:"+impl.getRealId()+" - "+impl.getRWLock());
       }
     }
     _log.trace("housekeeping ended");
