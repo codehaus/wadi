@@ -16,14 +16,10 @@
  */
 package org.codehaus.wadi.sandbox.distributable.impl;
 
-import java.util.Set;
 
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.distributable.Dirtier;
 import org.codehaus.wadi.sandbox.distributable.Distributer;
-import org.codehaus.wadi.sandbox.impl.Utils;
-
 /**
  * Manage Attributes such that Object identity is scoped at a per-session
  * granularity.
@@ -35,84 +31,6 @@ import org.codehaus.wadi.sandbox.impl.Utils;
 public class WholeDistributer implements Distributer {
     
     protected Dirtier _dirtier;
-    
-    public static class AttributesWrapper implements Attributes {
-        
-        protected final Dirtier _dirtier;
-        protected final StreamingStrategy _streamer;
-        protected final boolean _saveMemory;
-
-        protected Attributes _objectRep;
-        protected byte[] _byteRep;
-        
-        public AttributesWrapper(Attributes attributes, Dirtier dirtier, StreamingStrategy streamer, boolean saveMemory) {
-            _dirtier=dirtier;
-            _streamer=streamer;
-            _saveMemory=saveMemory;
-
-            _objectRep=attributes;
-            _byteRep=null;
-        }
-        
-        protected synchronized Attributes getObjectRep() {
-            if (null==_objectRep) {
-                // convert byte[] to Object rep
-                _objectRep=(Attributes)Utils.safeByteArrayToObject(_byteRep, _streamer);
-                if (_saveMemory) _byteRep=null;
-            }
-            return _objectRep;
-        }
-        
-        synchronized byte[] getByteRep() {
-            if (null==_byteRep) {
-                // convert Object to byte[] rep
-                _byteRep=Utils.safeObjectToByteArray(_objectRep, _streamer);
-                if (_saveMemory) _objectRep=null;
-            }
-            return _byteRep;
-        }
-        
-        public Object get(Object key) {
-            Object tmp=getObjectRep().get(key);
-            if (tmp!=null && _dirtier.readAccess()) _byteRep=null;
-            return tmp;
-        }
-        
-        public Object remove(Object key) {
-            Object tmp=getObjectRep().remove(key);
-            if (tmp!=null && _dirtier.writeAccess()) _byteRep=null;
-            return tmp;
-        }
-        
-        public Object put(Object key, Object value) {
-            Object tmp=getObjectRep().put(key, value);
-            if (_dirtier.writeAccess()) _byteRep=null;
-            return tmp;
-        }
-        
-        public int size() {
-            return getObjectRep().size();
-        }
-        
-        public Set keySet() {
-            return getObjectRep().keySet();
-        }
-        
-        public byte[] getBytes() {
-            return getByteRep();
-        }
-        
-        public synchronized void setBytes(byte[] bytes) {
-            _objectRep=null;
-            _byteRep=bytes;
-        }
-        
-        public synchronized void clear() {
-            // _objectRep.clear(); // later, keep container and just chuck contents...
-            _objectRep=null;
-            _byteRep=null;
-        }
-    }
     
     public Attributes wrap(Attributes attributes) {
         return attributes;
