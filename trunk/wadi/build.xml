@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="WADI" default="tomcat.0">
+<project name="WADI" default="jetty.1">
 
   <!--=========================================================================-->
 
@@ -9,6 +9,7 @@
   <property name="aspectj.home" value="${env.ASPECTJ_HOME}"/>
   <property name="jetty.home" value="${env.JETTY_HOME}"/>
   <property name="tomcat.home" value="${env.TOMCAT_HOME}"/>
+  <property name="wadi.home" value="${basedir}"/>
 
   <!--=========================================================================-->
 
@@ -20,6 +21,7 @@
     <!-- Jetty -->
     <pathelement location="${jetty.home}/lib/javax.servlet.jar"/>
     <pathelement location="${jetty.home}/lib/org.mortbay.jetty.jar"/>
+    <pathelement location="${jetty.home}/lib/org.mortbay.jmx.jar"/>
     <!-- Tomcat -->
     <pathelement location="${tomcat.home}/server/lib/catalina.jar"/>
     <pathelement location="${tomcat.home}/common/lib/jmx.jar"/>
@@ -74,6 +76,11 @@
 	<pathelement path="src/test"/>
       </sourceroots>
     </iajc>
+    <copy toDir="WEB-INF/classes">
+      <fileset dir="src/java">
+	<include name="**/*.properties"/>
+      </fileset>
+    </copy>
   </target>
 
   <!--=========================================================================-->
@@ -89,13 +96,13 @@
       taskname="jetty.0"
       failonerror="true"
       >
-      <sysproperty key="wadi.home" value="${basedir}"/>
+      <sysproperty key="wadi.home" value="${wadi.home}"/>
       <sysproperty key="STOP.PORT" value="8079"/>
       <sysproperty key="http.port" value="8080"/>
       <sysproperty key="ajp.port" value="8009"/>
       <sysproperty key="bucket.name" value="web0"/>
       <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Jdk14Logger"/>
-      <sysproperty key="java.util.logging.config.file" value="${basedir}/lib/logging.properties"/>
+      <sysproperty key="java.util.logging.config.file" value="${wadi.home}/lib/logging.properties"/>
      <assertions>
 	<enable/>
       </assertions>
@@ -105,51 +112,60 @@
 	  <include name="lib/javax.servlet.jar"/>
 	  <include name="lib/org.mortbay.jetty.jar"/>
 	</fileset>
-	<fileset dir="${basedir}">
+	<fileset dir="${wadi.home}">
 	  <include name="lib/commons-logging-1.0.3.jar"/>
 	  <include name="lib/gt2-main.jar"/>
 	</fileset>
       </classpath>
-      <arg value="${basedir}/conf/jetty.xml"/>
+      <arg value="${wadi.home}/conf/jetty.xml"/>
     </java>
   </target>
 
-  <target name="jetty.1" depends="">
+  <target name="jetty.1" depends="compile">
     <java
       fork="yes"
       dir="${jetty.home}"
-      classname="org.mortbay.start.Main"
+      classname="org.mortbay.util.jmx.Main"
       taskname="jetty.1"
       failonerror="true"
       >
-      <sysproperty key="wadi.home" value="${basedir}"/>
+      <sysproperty key="wadi.home" value="${wadi.home}"/>
       <sysproperty key="STOP.PORT" value="8081"/>
-      <sysproperty key="http.port" value="8082"/>
+      <sysproperty key="http.port" value="8083"/><!-- mx4j console is on 8082 -->
       <sysproperty key="ajp.port" value="8010"/>
       <sysproperty key="bucket.name" value="web1"/>
       <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Jdk14Logger"/>
-      <sysproperty key="java.util.logging.config.file" value="${basedir}/lib/logging.properties"/>
+      <sysproperty key="java.util.logging.config.file" value="${wadi.home}/lib/logging.properties"/>
      <assertions>
 	<enable/>
       </assertions>
       <classpath>
 	<fileset dir="${jetty.home}">
-	  <include name="start.jar"/>
-	  <include name="lib/javax.servlet.jar"/>
+	  <include name="lib/org.mortbay.jmx.jar"/>
 	  <include name="lib/org.mortbay.jetty.jar"/>
+	  <include name="lib/javax.servlet.jar"/>
+	  <include name="ext/jasper-runtime.jar"/>
+	  <include name="ext/jasper-compiler.jar"/>
+	  <include name="ext/mx4j-*.jar"/>
+	  <include name="ext/*.jar"/>
+	  <include name="ext/*.JAR"/>
+	  <include name="ext/*.zip"/>
+	  <include name="ext/*.ZIP"/>
+	  <exclude name="ext/javax.xml.jaxp.jar"/>
+	  <exclude name="ext/crimson.jar"/>
 	</fileset>
-	<fileset dir="${basedir}">
+	<fileset dir="${wadi.home}">
 	  <include name="lib/commons-logging-1.0.3.jar"/>
 	  <include name="lib/gt2-main.jar"/>
 	</fileset>
       </classpath>
-      <arg value="${basedir}/conf/jetty.xml"/>
+      <arg line="file://${wadi.home}/conf/jetty.mlet"/>
     </java>
   </target>
 
   <target name="tomcat.0" depends="compile">
     <echo message="tomcat.home=${tomcat.home}"/>
-    <echo message="wadi.home=${basedir}"/>
+    <echo message="wadi.home=${wadi.home}"/>
     <java
       fork="yes"
       dir="${tomcat.home}/bin"
@@ -160,7 +176,7 @@
       <!-- experimental -->
       <sysproperty key="http.port" value="8080"/>
       <sysproperty key="ajp.port" value="8009"/>
-      <sysproperty key="wadi.home" value="${basedir}"/>
+      <sysproperty key="wadi.home" value="${wadi.home}"/>
 
       <sysproperty key="bucket.name" value="web0"/>
 
@@ -169,7 +185,7 @@
       <sysproperty key="catalina.home" value="${tomcat.home}"/>
       <sysproperty key="java.io.tmpdir" value="${tomcat.home}/temp"/>
       <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Jdk14Logger"/>
-      <sysproperty key="java.util.logging.config.file" value="${basedir}/lib/logging.properties"/>
+      <sysproperty key="java.util.logging.config.file" value="${wadi.home}/lib/logging.properties"/>
       <assertions>
 	<enable/>
       </assertions>
@@ -179,13 +195,13 @@
 	</fileset>
 	<pathelement location="${jetty.home}/lib/org.mortbay.jetty.jar"/><!-- am I mad -->
 	<pathelement path="./WEB-INF/classes"/>
-	<fileset dir="${basedir}">
+	<fileset dir="${wadi.home}">
 	  <include name="lib/*.jar"/>
 	  <include name="WEB-INF/lib/*.jar"/>
 	</fileset>
       </classpath>
       <arg value="-config"/>
-      <arg value="${basedir}/conf/tomcat.xml"/>
+      <arg value="${wadi.home}/conf/tomcat.xml"/>
       <arg value="start"/>
     </java>
   </target>
@@ -252,7 +268,7 @@
       <sysproperty key="ajp.port" value="8009"/>
       <sysproperty key="bucket.name" value="web0"/>
       <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Jdk14Logger"/>
-      <sysproperty key="java.util.logging.config.file" value="${basedir}/lib/logging.properties"/>
+      <sysproperty key="java.util.logging.config.file" value="${wadi.home}/lib/logging.properties"/>
     </java>
     <!--
     <junit>
