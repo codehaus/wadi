@@ -67,9 +67,8 @@ public abstract class MigrationRequest
 	if ((acquired=impl.getContainerLock().attempt(_timeout)))
 	  if (impl.getRealId()==null)
 	  {
-	    _log.warn(_id+": session disappeared whilst we were waiting for migration lock");
-	    _log.info("timeout was: "+_timeout+" millis");
-	    _log.warn(_id+"forwarding message back to cluster with spoofed ReplyTo");
+	    _log.warn(_id+": session disappeared whilst we were waiting for migration lock ("+_timeout+" millis)");
+	    _log.warn(_id+": forwarding message back to cluster with spoofed ReplyTo");
 	    try
 	    {
 	      Cluster cluster=service.getManager().getCluster();
@@ -102,7 +101,7 @@ public abstract class MigrationRequest
 	}
 	else
 	{
-	  _log.warn(_id+": emmigration failed - rolled back - we still own session");
+	  _log.warn(_id+": emmigration failed - rolled back");
 	}
 	if (acquired)
 	  impl.getContainerLock().release();
