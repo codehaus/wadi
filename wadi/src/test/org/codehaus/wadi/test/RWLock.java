@@ -70,8 +70,6 @@ public class RWLock implements ReadWriteLock {
 
 
   protected synchronized void cancelledWaitingReader() { --waitingReaders_; }
-  protected synchronized void cancelledWaitingWriter() { --waitingWriters_; }
-
 
   protected boolean allowReader() {
     return activeWriter_ == null;
@@ -265,7 +263,7 @@ public class RWLock implements ReadWriteLock {
             }
             catch (InterruptedException ex)
 	    {
-              cancelledWaitingWriter();
+	      synchronized(RWLock.this){--waitingWriters_;}
               WriterLock.this.notify();
               ie = ex;
               break;
@@ -321,7 +319,7 @@ public class RWLock implements ReadWriteLock {
 	    for (;;) {
 	      try { WriterLock.this.wait(waitTime);  }
 	      catch(InterruptedException ex){
-		cancelledWaitingWriter();
+		synchronized(RWLock.this){--waitingWriters_;};
 		WriterLock.this.notify();
 		ie = ex;
 		break;
@@ -339,7 +337,7 @@ public class RWLock implements ReadWriteLock {
 	      else {
 		waitTime = msecs - (System.currentTimeMillis() - start);
 		if (waitTime <= 0) {
-		  cancelledWaitingWriter();
+		  synchronized(RWLock.this){--waitingWriters_;};
 		  WriterLock.this.notify();
 		  break;
 		}
