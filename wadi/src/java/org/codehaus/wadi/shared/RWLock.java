@@ -364,6 +364,36 @@ public class RWLock implements ReadWriteLock {
   }
 
 
+  // Not well tested - I'm concerned about the synchronisation...
+  public void
+    overlap()
+    throws InterruptedException
+  {
+    synchronized (RWLock.this)
+    {
+      Signaller s=endRead();
+      
+      if (s==null)
+      {
+	// there are still extant readers - this call to acquire will
+	// just queue a write lock - it could be optimised but...
+	writeLock().acquire();
+      }
+      else
+      {
+	// readers are exhausted, we don't want to let this writer
+	// jump straight into the gap as it may not be of a higher
+	// priority than the other waiting writers...
+
+	// WARNING - TODO - However, at the moment we KNOW that the
+	// only thread using the overlap method will be the
+	// invalidation request thread so we can live with this -
+	// revisit if we ever need this lock to be used in a different
+	// manner...
+	writeLock().acquire();
+      }
+    }
+  }
 
 }
 
