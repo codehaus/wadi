@@ -93,7 +93,7 @@ public abstract class
     _log.info("adding: " + p);
     //	  _log.info("nodes : " + peers);
 
-    Object[] diffs=combine(p);
+    Object[] diffs=combineCollection(p);
   }
 
   public void
@@ -112,7 +112,7 @@ public abstract class
     _log.info("removing: " + p);
     //	  _log.info("nodes   : " + peers);
 
-    Object[] diffs=combine(p);
+    Object[] diffs=combineCollection(p);
   }
 
   // do we need this yet ?
@@ -134,5 +134,6 @@ public abstract class
     _log.info("nodes   : " + peers);
   }
 
-  public abstract Object[] combine(Peer p);
+  public abstract Object[] combineMap(Peer p);
+  public abstract Object[] combineCollection(Peer p);
 }

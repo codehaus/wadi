@@ -275,6 +275,7 @@
       <arg value="org.codehaus.wadi.test.TestConcurrency"/>
       <arg value="org.codehaus.wadi.test.TestHttpSession"/>
       <arg value="org.codehaus.wadi.test.TestCluster"/>
+      <arg value="org.codehaus.wadi.test.TestTopologies"/>
       <classpath refid="wadi.classpath"/>
       <!--
       -->

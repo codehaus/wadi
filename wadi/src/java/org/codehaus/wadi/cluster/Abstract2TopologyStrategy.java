@@ -1,4 +1,3 @@
-
 /**
  *
  * Copyright 2003-2004 The Apache Software Foundation
@@ -45,17 +44,18 @@ public abstract class
     _k=k;
   }
 
-  protected Map _oldPeers=new TreeMap();
+  protected Collection _oldPeers=new TreeSet(new CollectionComparator());
   protected Map _oldCells=new TreeMap();
+  protected Collection _oldCells2=new TreeSet(new CollectionComparator());
 
   public Object[]
-    combine(Peer p)
+    combineMap(Peer p)
   {
     Peer localPeer=getLocalPeer();
     localPeer=localPeer!=null?localPeer:p; // TODO - hack - FIXME
-    Map newCells=combine(localPeer, _peers.values(), Math.min(_k,_peers.size()));
+    Map newCells=combineMap(localPeer, _peers.values(), Math.min(_k,_peers.size()));
 
-    _log.info("old peers="+_oldPeers.keySet());
+    _log.info("old peers="+_oldPeers);
     _log.info("old rel cells="+_oldCells.keySet());
     _log.info("new peers="+_peers.keySet());
     _log.info("new rel cells="+newCells.keySet());
@@ -68,8 +68,36 @@ public abstract class
     leavingCells.keySet().removeAll(newCells.keySet());
     _log.info("leaving cells="+leavingCells.keySet());
 
-    _oldPeers=new TreeMap(_peers);
+    _oldPeers=new TreeSet(_peers.values());
     _oldCells=newCells;
+
+    return new Object[]{joiningCells, leavingCells};
+  }
+
+  public Object[]
+    combineCollection(Peer p)
+  {
+    Peer localPeer=getLocalPeer();
+    localPeer=localPeer!=null?localPeer:p; // TODO - hack - FIXME
+    Collection newCells=combineCollection(localPeer, _peers.values(), Math.min(_k,_peers.size()));
+
+    _log.info("old peers="+_oldPeers);
+    _log.info("old rel cells="+_oldCells2);
+    _log.info("new peers="+_peers.keySet());
+    _log.info("new rel cells="+newCells);
+
+    Collection joiningCells=new TreeSet(new CollectionComparator());
+    joiningCells.addAll(newCells);
+    joiningCells.removeAll(_oldCells2);
+    _log.info("joining cells="+joiningCells);
+
+    Collection leavingCells=new TreeSet(new CollectionComparator());
+    leavingCells.addAll(_oldCells2);
+    leavingCells.removeAll(newCells);
+    _log.info("leaving cells="+leavingCells);
+
+    _oldPeers=new TreeSet(_peers.values());
+    _oldCells2=newCells;
 
     return new Object[]{joiningCells, leavingCells};
   }
@@ -83,5 +111,6 @@ public abstract class
    * @param k an <code>int</code> value
    * @return a <code>Map</code> value
    */
-  public abstract Map combine(Peer localPeer, Collection peers, int peersPerCell);
+  public abstract Map combineMap(Peer localPeer, Collection peers, int peersPerCell);
+  public abstract Collection combineCollection(Comparable localPeer, Collection peers, int peersPerCell);
 }
