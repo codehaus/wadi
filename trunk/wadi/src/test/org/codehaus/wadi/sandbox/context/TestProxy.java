@@ -1,8 +1,18 @@
-/*
- * Created on Feb 11, 2005
+/**
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Copyright 2003-2004 The Apache Software Foundation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package org.codehaus.wadi.sandbox.context;
 
@@ -24,10 +34,10 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.codehaus.wadi.sandbox.context.impl.StandardHttpProxy;
 
 /**
- * @author jules
- * 
- * TODO To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Style - Code Templates
+ * TODO - JavaDoc this type
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
  */
 public class TestProxy extends TestServlet{
 
@@ -38,20 +48,20 @@ public class TestProxy extends TestServlet{
 			new StandardHttpProxy().proxy(req, res, new URL("http://localhost:8080/test/admin"));
 		}
 	}
-	
+
 	public class ProxyFilter implements Filter {
 		public void init(FilterConfig config){
 		}
-		
+
 		public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 				throws ServletException, IOException {
 			new StandardHttpProxy().proxy(req, res, new URL("http://localhost:8080/test/admin"));
 		}
-		
+
 		public void destroy(){
 		}
 	}
-	
+
 	protected void setUp() throws Exception {
 		super.setUp();
 		_log.info("setting up");
@@ -70,7 +80,7 @@ public class TestProxy extends TestServlet{
 
 	/**
 	 * Constructor for TestProxy.
-	 * 
+	 *
 	 * @param arg0
 	 */
 	public TestProxy(String arg0) {

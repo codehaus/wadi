@@ -1,8 +1,18 @@
-/*
- * Created on Feb 16, 2005
+/**
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Copyright 2003-2004 The Apache Software Foundation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package org.codehaus.wadi.sandbox.context.impl;
 
@@ -28,17 +38,17 @@ import org.codehaus.wadi.sandbox.context.Promoter;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * @author jules
+ * TODO - JavaDoc this type
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
  */
 public class MemoryContextualiser extends AbstractMappedContextualiser {
 	protected final Log _log = LogFactory.getLog(getClass());
 	protected final ContextPool _pool;
-	
+
 	/**
-	 * 
+	 *
 	 */
 	public MemoryContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, ContextPool pool) {
 		super(next, collapser, map, evicter);
@@ -70,39 +80,39 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 			return true;
 		}
 	}
-	
+
 	protected void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id)  throws IOException, ServletException {
 		_log.info("contextualising: "+id);
 		chain.doFilter(req, res);
 	}
-	
+
 	class MemoryPromoter implements Promoter {
 
 		public Context nextContext() {
 			return _pool.take();
 		}
-		
+
 		public boolean prepare(String id, Context context) {
 			try {
 				context.getSharedLock().acquire();
 			} catch (InterruptedException e) {
 				_log.warn("promotion abandoned: "+id, e);
 				return false;
-			}			
+			}
 			_log.info("promoting (to memory): "+id);
 			_log.info("insert (memory): "+id);
 			_map.put(id, context);
 			return true;
 		}
-		
+
 		public void commit(String id, Context context) {
 			}
-		
+
 		public void rollback(String id, Context context) {
 			_log.info("remove (memory): "+id);
 			_map.remove(id);
 		}
-		
+
 		public void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Context context) throws IOException, ServletException {
 			try {
 				MemoryContextualiser.this.contextualise(req, res, chain, id);
@@ -114,7 +124,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 
 	protected Promoter _promoter=new MemoryPromoter();
 	public Promoter getPromoter(Promoter promoter) {return _promoter;}
-	
+
 	public void demote(String key, Motable val) {
 		if (_evicter.evict(key, val)) {
 			_next.demote(key, val);
@@ -123,7 +133,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 			_map.put(key, val);
 		}
 	}
-	
+
 	public void evict() {
 		for (Iterator i=_map.entrySet().iterator(); i.hasNext(); ) {
 			Map.Entry e=(Map.Entry)i.next();
@@ -146,6 +156,6 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 			}
 		}
 	}
-	
+
 	public boolean isLocal(){return true;}
 }

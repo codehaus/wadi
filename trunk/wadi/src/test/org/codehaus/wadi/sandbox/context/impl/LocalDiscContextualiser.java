@@ -1,8 +1,18 @@
-/*
- * Created on Feb 16, 2005
+/**
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Copyright 2003-2004 The Apache Software Foundation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package org.codehaus.wadi.sandbox.context.impl;
 
@@ -36,18 +46,19 @@ import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * @author jules
- *
  * Maps id:File where file contains Context content...
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
  */
 public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	protected final Log _log = LogFactory.getLog(getClass());
 	protected final File _dir;
 	protected final StreamingStrategy _streamingStrategy;
 	protected final ContextPool _pool;
-	
+
 	/**
-	 * 
+	 *
 	 */
 	public LocalDiscContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, File dir, StreamingStrategy streamingStrategy, ContextPool pool) {
 		super(next, collapser, map, evicter);
@@ -90,13 +101,13 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 			return false;
 		}
 	}
-	
+
 	public Promoter getPromoter(Promoter promoter){return promoter;} // just pass contexts straight through...
-	
+
 	static public class LocalDiscMotable implements Motable {
 		protected final long _expiryTime;
 		protected final File _file;
-		
+
 		public LocalDiscMotable(long expiryTime, File file) {
 			_expiryTime=expiryTime;
 			_file=file;
@@ -105,7 +116,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 		public long getExpiryTime() {return _expiryTime;}
 		public File getFile() {return _file;}
 	}
-	
+
 	public void demote(String key, Motable val) {
 		if (_evicter.evict(key, val)) {
 			_next.demote(key, val);
@@ -129,7 +140,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 			}
 		}
 	}
-	
+
 	public void evict() {
 		for (Iterator i=_map.entrySet().iterator(); i.hasNext(); ) {
 			Map.Entry e=(Map.Entry)i.next();
@@ -160,7 +171,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 			}
 		}
 	}
-		
+
 	protected Context load(File file, Context context) throws ClassNotFoundException, IOException {
 		assert file.exists();
 		ObjectInput oi=null;
@@ -174,14 +185,14 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 			if (oi!=null)
 				oi.close();
 		}
-		
+
 		return success?context:null;
 	}
-	
+
 	protected void remove(File file) {
 		file.delete();
 		_log.info("removed (local disc): "+file);
 	}
-	
+
 	public boolean isLocal(){return true;}
 }

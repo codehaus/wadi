@@ -1,8 +1,18 @@
-/*
- * Created on Feb 24, 2005
+/**
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Copyright 2003-2004 The Apache Software Foundation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package org.codehaus.wadi.sandbox.context;
 
@@ -15,12 +25,12 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 import junit.framework.TestCase;
 
 /**
- * @author jules
- *
  * Start to test the complex locking in the PiggyBackLocation - difficult - I think we will just go with a Serial solution to start with...
- * 
+ *
  * This nearly works but we end up releasing too many locks (nthreads%threshold) - think about it...
- * 
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
  */
 public class TestLocation extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
@@ -46,25 +56,25 @@ public class TestLocation extends TestCase {
 	public TestLocation(String name) {
 		super(name);
 	}
-	
+
 	class MyMutex extends Mutex {
 		protected int _count;
-		
+
 		public void acquire() throws InterruptedException {
 			_log.info("acquiring: "+_count++);
 			super.acquire();
 		}
-		
+
 		public void release() {
 			super.release();
 			_log.info("releasing: "+(--_count));
 		}
-		
+
 	}
-	
+
 	protected Sync _mutex=new MyMutex();
 	protected PiggyBackHttpLocation _location=new PiggyBackHttpLocation(3);
-	
+
 	class MyThread extends Thread {
 		public void run() {
 			try {
@@ -72,11 +82,11 @@ public class TestLocation extends TestCase {
 			} catch (InterruptedException ie) {
 				_log.warn("interruption", ie);
 			}
-			
+
 			_location.proxy(null, null, getName(), _mutex);
 		}
 	}
-	
+
 	public void testLocation() throws Exception {
 		int numThreads=11;
 		Thread[] threads=new Thread[numThreads];

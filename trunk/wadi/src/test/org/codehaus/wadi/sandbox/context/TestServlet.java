@@ -1,8 +1,18 @@
-/*
- * Created on Feb 11, 2005
+/**
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Copyright 2003-2004 The Apache Software Foundation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package org.codehaus.wadi.sandbox.context;
 
@@ -32,12 +42,11 @@ import org.mortbay.jetty.servlet.ServletHttpContext;
 import junit.framework.TestCase;
 
 /**
- * @author jules
- * 
- * TODO To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Style - Code Templates
+ * TODO - JavaDoc this type
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
  */
-
 public abstract class TestServlet extends TestCase {
 	public static class ServletWrapper implements Servlet {
 
@@ -65,15 +74,15 @@ public abstract class TestServlet extends TestCase {
 
 		public void destroy() {
 		}
-		
+
 		public void setServlet(Servlet servlet) throws ServletException {
 			_servlet=servlet;
 			_servlet.init(_config);
 		}
-		
+
 		public Servlet getServlet(){return _servlet;}
 	}
-	
+
 	protected Log _log = LogFactory.getLog(TestServlet.class);
 	protected Server _server=new Server();
 	protected SocketListener _listener=new SocketListener();
@@ -102,9 +111,9 @@ public abstract class TestServlet extends TestCase {
 		_listener.setHost(host);
 		_listener.setPort(port);
 		_server.addListener(_listener);
-		
+
 		Map contexts=new HashMap();
-		
+
 		// walk through entries first time setting up and starting server
 		for (Iterator i=_map.entrySet().iterator(); i.hasNext();)
 		{
@@ -116,9 +125,9 @@ public abstract class TestServlet extends TestCase {
 //			WebApplicationContext wac=(WebApplicationContext)contexts.get(context);
 //			if (wac==null)
 //				contexts.put(context, new WebApplicationContext());
-			
-			
-			
+
+
+
 			for (Iterator j=components.iterator(); j.hasNext();){
 				Object[] tuple=(Object[])j.next();
 				c.addServlet((String)tuple[0], (String)tuple[1], ServletWrapper.class.getName());
@@ -127,9 +136,9 @@ public abstract class TestServlet extends TestCase {
 			ServletHandler handler=(ServletHandler)c.getHandler(ServletHandler.class);
 			handler.setAutoInitializeServlets(true);
 		}
-		
+
 		_server.start();
-		
+
 		// walk back through and poke all the servlet instances into waiting wrappers...
 		for (Iterator i=_map.entrySet().iterator(); i.hasNext();)
 		{
@@ -138,7 +147,7 @@ public abstract class TestServlet extends TestCase {
 			List servlets=(List)e.getValue();
 			ServletHttpContext c=(ServletHttpContext)_server.getContext(context);
 			ServletHandler handler=(ServletHandler)c.getHandler(ServletHandler.class);
-			
+
 			for (Iterator j=servlets.iterator(); j.hasNext();){
 				Object[] tuple=(Object[])j.next();
 				ServletHolder holder=handler.getServletHolder((String)tuple[0]);
@@ -148,7 +157,7 @@ public abstract class TestServlet extends TestCase {
 				}
 		}
 	}
-	
+
 	/*
 	 * @see TestCase#tearDown()
 	 */
@@ -160,7 +169,7 @@ public abstract class TestServlet extends TestCase {
 
 	/**
 	 * Constructor for TestServlet.
-	 * 
+	 *
 	 * @param arg0
 	 */
 	public TestServlet(String arg0) {
