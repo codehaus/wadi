@@ -19,6 +19,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.ContextPool;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.Evicter;
+import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.Promoter;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -36,8 +38,8 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	/**
 	 * 
 	 */
-	public MemoryContextualiser(Contextualiser next, Map map, ContextPool pool) {
-		super(next, map);
+	public MemoryContextualiser(Contextualiser next, Map map, Evicter evicter, ContextPool pool) {
+		super(next, map, evicter);
 		_pool=pool;
 	}
 
@@ -72,14 +74,14 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	
 	class MemoryPromoter implements Promoter {
 		
-		public void promoteAndContextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Context context, Sync overlap)
+		public void promoteAndContextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Context context, Sync promotionMutex)
 		throws IOException, ServletException {
 			try {
 				// TODO - revisit and think about unrolling on exception...
 				Sync shared=context.getSharedLock();
 				shared.acquire(); // now this is locked into the container until we use/release it
 				_map.put(id, context);
-				overlap.release(); // now available to other 'loading' threads
+				promotionMutex.release(); // now available to other 'loading' threads
 				contextualise(req, res, chain, id);
 				shared.release();
 			} catch (InterruptedException e) {
@@ -94,4 +96,12 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 
 	protected Promoter _promoter=new MemoryPromoter();
 	public Promoter getPromoter(Promoter promoter) {return _promoter;}
+	
+	public void demote(String key, Motable val) {
+		if (_evicter.evict(key, val)) {
+			_next.demote(key, val);
+		} else {
+			_map.put(key, val);
+		}
+	}
 }
