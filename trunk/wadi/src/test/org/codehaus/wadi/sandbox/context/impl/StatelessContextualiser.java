@@ -90,14 +90,14 @@ public class StatelessContextualiser implements Contextualiser {
         }
 	};
 
-	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
+	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
 		if (isStateful(hreq)) {
 			// we cannot optimise...
-			return _next.contextualise(hreq, hres, chain, id, promoter, promotionMutex, localOnly);
+			return _next.contextualise(hreq, hres, chain, id, promoter, promotionLock, localOnly);
 		} else {
 			// we know that we can run the request locally...
-			if (promotionMutex!=null) {
-				promotionMutex.release();
+			if (promotionLock!=null) {
+				promotionLock.release();
 			}
 			// wrap the request so that session is inaccessible and process here...
 			HttpServletRequestWrapper wrapper=(HttpServletRequestWrapper)_wrapper.get();

@@ -41,8 +41,10 @@ import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Location;
+import org.codehaus.wadi.sandbox.context.MigrationStrategy;
 import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.Promoter;
+import org.codehaus.wadi.sandbox.context.ProxyStrategy;
 
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -83,6 +85,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	protected final long            _timeout;
 	protected final Location        _location;
 	protected final long            _proxyHandOverPeriod;
+	protected final ProxyStrategy   _proxyer;
+	protected final MigrationStrategy _migrater;
 
 	protected Contextualiser _top;
 	public void setContextualiser(Contextualiser top){_top=top;}
@@ -218,7 +222,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 * @param map
 	 * @param evicter
 	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, Cluster cluster, long timeout, long proxyHandOverPeriod, Location location) throws JMSException {
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, Cluster cluster, long timeout, long proxyHandOverPeriod, Location location, ProxyStrategy proxyer, MigrationStrategy migrater) throws JMSException {
 		super(next, collapser, map, evicter);
 		_cluster=cluster;
 		boolean excludeSelf=true;
@@ -228,6 +232,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	    _timeout=timeout;
 	    _proxyHandOverPeriod=proxyHandOverPeriod;
 	    _location=location;
+	    _proxyer=proxyer;
+	    _migrater=migrater;
 	}
 
 	/* (non-Javadoc)
@@ -240,11 +246,11 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#contextualiseLocally(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync)
 	 */
-	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
+	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock) throws IOException, ServletException {
 		Location location=(Location)_map.get(id);
 		if (location!=null) {
 			// let's try the cached location...
-			 if (contextualiseLocally(hreq, hres, chain, id, promoter, promotionMutex, location)) {
+			 if (contextualiseLocally(hreq, hres, chain, id, promoter, promotionLock, location)) {
 			 	return true;
 			 } else {
 				// cached location may have been stale i.e. not responding to http requests
@@ -264,12 +270,12 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			return false;
 		}
 		
-		if ((contextualiseLocally(hreq, hres, chain, id, promoter, promotionMutex, location))) {
+		if ((contextualiseLocally(hreq, hres, chain, id, promoter, promotionLock, location))) {
 			return true;
 		} else {
 			// proxy failed
-			// the promotionMutex has NOT yet been released...
-			promotionMutex.release();
+			// the promotionLock has NOT yet been released...
+			promotionLock.release();
 			// we'll have to contextualise hreq here - stateless context ? TODO
 			_log.error("could not proxy to: "+location+" for id:"+id+" - contextualising locally");
 			chain.doFilter(hreq, hres);
@@ -352,9 +358,11 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		return location;
 	}
 	
-	protected boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, Location location) {
-		// how do we decide whether to proxy or migrate-n-promote ?
-		// Location needs to be a JMSDestination as well..
-		return location.proxy(hreq, hres, id, promotionMutex);
+	protected boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, Location location) {
+		boolean success=false;
+		if ((success=_proxyer.proxy(hreq, hres, id, promotionLock, location)))
+			success=_migrater.migrateAndPromote(hreq, hres, chain, id, promoter, promotionLock, location);
+		
+		return success;
 	}
 }
