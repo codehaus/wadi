@@ -41,24 +41,23 @@ package org.codehaus.wadi.shared;
 
 // Doug's code is under whatever license he chose, mine is under ASF2
 
-// TODO
-
-// allow r->w overlap (releasing r included in race for w-lock)
-
 import EDU.oswego.cs.dl.util.concurrent.*;
 
 public class RWLock implements ReadWriteLock {
 
-  class Lock
-  {
-    int _count=0;
-  }
+  protected int         _maxPriority=Thread.MAX_PRIORITY;
+  protected ThreadLocal _priority=new ThreadLocal(){protected synchronized Object initialValue() {return new Integer(0);}};    
+  protected class Lock {int _count=0;}
 
   protected long activeReaders_ = 0; 
   protected Thread activeWriter_ = null;
   protected long waitingReaders_ = 0;
   protected long waitingWriters_ = 0;
 
+  public RWLock(int maxPriority){_maxPriority=maxPriority;}
+
+  public void setPriority(int priority){_priority.set(new Integer(priority));}
+  public int getPriority(){return ((Integer)_priority.get()).intValue();}
 
   protected final ReaderLock readerLock_ = new ReaderLock();
   protected final WriterLock writerLock_ = new WriterLock();
@@ -257,19 +256,18 @@ public class RWLock implements ReadWriteLock {
 
   protected class WriterLock extends Signaller implements  Sync {
 
-    Lock[] _locks=new Lock[Thread.MAX_PRIORITY+1];
+    Lock[] _locks=new Lock[_maxPriority+1];
 
     WriterLock()
     {
-      for (int i=0;i<=Thread.MAX_PRIORITY;i++)
+      for (int i=0;i<=_maxPriority;i++)
 	_locks[i]=new Lock();
     }
 
     public void acquire() throws InterruptedException {
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
-      Thread t=Thread.currentThread();
-      int p=t.getPriority();
+      int p=getPriority();
       Lock l=_locks[p];
       synchronized(l) {
         if (!startWriteFromNewWriter(l)) {
@@ -306,7 +304,7 @@ public class RWLock implements ReadWriteLock {
       signalWaiters()
     {
       // walk down from top priority looking for a thread to notify...
-      for (int i=Thread.MAX_PRIORITY;i>=0;i--)
+      for (int i=_maxPriority;i>=0;i--)
       {
 	Lock l=_locks[i];
 	synchronized (l)
@@ -323,8 +321,7 @@ public class RWLock implements ReadWriteLock {
     public boolean attempt(long msecs) throws InterruptedException { 
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
-      Thread t=Thread.currentThread();
-      int p=t.getPriority();
+      int p=getPriority();
       Lock l=_locks[p];
       synchronized(l) {
         if (msecs <= 0)
