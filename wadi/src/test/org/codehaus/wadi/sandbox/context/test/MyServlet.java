@@ -36,6 +36,7 @@ import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.ContextPool;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
+import org.codehaus.wadi.sandbox.context.HttpProxy;
 import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
@@ -43,7 +44,6 @@ import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.context.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
-import org.codehaus.wadi.sandbox.context.impl.StandardHttpProxy;
 
 public class MyServlet implements Servlet {
 	protected ServletConfig _config;
@@ -55,13 +55,13 @@ public class MyServlet implements Servlet {
 	protected final ClusterContextualiser _clusterContextualiser;
 	protected final MemoryContextualiser _memoryContextualiser;
 	
-	public MyServlet(String name, Cluster cluster, InetSocketAddress location, ContextPool contextPool) throws Exception {
+	public MyServlet(String name, Cluster cluster, InetSocketAddress location, ContextPool contextPool, HttpProxy proxy) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 		_cluster=cluster;
 		_cluster.start();
 		_collapser=new HashingCollapser(10, 2000);
 		_clusterMap=new HashMap();
-		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), _cluster, 2000, 3000, new HttpProxyLocation(location, new StandardHttpProxy("jsessionid")));
+		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), _cluster, 2000, 3000, new HttpProxyLocation(location, proxy));
 		_memoryMap=new HashMap();
 		_memoryContextualiser=new MemoryContextualiser(_clusterContextualiser, _collapser, _memoryMap, new NeverEvicter(), contextPool);
 		_clusterContextualiser.setContextualiser(_memoryContextualiser);

@@ -23,8 +23,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,6 +37,9 @@ import javax.servlet.http.HttpServletResponse;
 // (see CommonsHttpProxy).
 
 // This does not yet support e.g. WebDav methods like PROPFIND etc...
+
+// ProxyStrategy should be applied before MigrationStrategy - if it succeeds, we don't migrate...
+
 /**
  * Enterprise HttpProxy implementation.
  *
@@ -44,10 +48,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class StandardHttpProxy extends AbstractHttpProxy {
 
-	protected final String _sessionCookieName;
-	
-	public StandardHttpProxy(String sessionCookieName) {
-		_sessionCookieName=sessionCookieName;
+	public StandardHttpProxy(String sessionPathParamKey) {
+		super(sessionPathParamKey);
 	}
 	
 	/*
@@ -56,38 +58,42 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 	 * @see javax.servlet.Servlet#service(javax.servlet.ServletRequest,
 	 *      javax.servlet.ServletResponse)
 	 */
-	public void proxy2(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res) throws IOException	{
+	public boolean proxy(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res) {
 
-		String uri=req.getRequestURI();
+		boolean success=true;
 		
-		// Jetty will return path params in this uri. Tomcat won't.
-		// There seems to be no API for retrieving them in any other way - DOH !
-		// Using more then just a jsessionid path param seems to confuse Tomcat anyway...
-		if (req.isRequestedSessionIdFromURL() && !(uri.lastIndexOf(';')>=0)) {
-			uri+=";"+_sessionCookieName+"="+req.getRequestedSessionId();
-		}
-		
+		String uri=getRequestURI(req);
 		String qs=req.getQueryString();
 		if (qs!=null) {
 			uri=new StringBuffer(uri).append("?").append(qs).toString();
 		}
-
-		URL url=new URL("http", location.getAddress().getHostAddress(), location.getPort(), uri);
+ 
+		URL url=null;
+		try {
+			url=new URL("http", location.getAddress().getHostAddress(), location.getPort(), uri);
+		} catch (MalformedURLException e) {
+			_log.warn("bad proxy url", e);
+			return false; // I don't expect this to happen... - probably not recoverable
+		}
 		
 		long startTime=System.currentTimeMillis();
 
-		URLConnection uc=url.openConnection(); // IOException
-
-		uc.setAllowUserInteraction(false);
-
-		// Set method - TODO - are we ever going to make a non-HttpURLConnection ?
 		HttpURLConnection huc=null;
-		if (uc instanceof HttpURLConnection) {
-			huc = (HttpURLConnection) uc;
-			String method=req.getMethod();
-			huc.setRequestMethod(method);
-			huc.setInstanceFollowRedirects(false);
+		String m=req.getMethod();
+		try {
+			 huc=(HttpURLConnection)url.openConnection(); // IOException
+			 huc.setRequestMethod(m); // ProtocolException
+		} catch (ProtocolException e) {
+			// this method is not supported by URL class... - we should probably check before trying...
+			_log.warn("unsupported Http method: "+m, e);
+			return false;
+		} catch (IOException e) {
+			_log.warn("could not open proxy connection", e);
+			return false; // probably recoverable - flush location cache and try again - BadLocation...
 		}
+
+		huc.setAllowUserInteraction(false);	
+		huc.setInstanceFollowRedirects(false);
 
 		// check connection header
 		// TODO - this might need some more time: see http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
@@ -115,7 +121,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 				for (Enumeration f=req.getHeaders(hdr); f.hasMoreElements();) {
 					String val=(String)f.nextElement();
 					if (val!=null) {
-						uc.addRequestProperty(hdr, val);
+						huc.addRequestProperty(hdr, val);
 					}
 				}
 			}
@@ -125,7 +131,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		boolean hasContent=false;
 		{
 			int contentLength=0;
-			String tmp=uc.getRequestProperty("Content-Length");
+			String tmp=huc.getRequestProperty("Content-Length");
 			if (tmp!=null) {
 				try {
 					contentLength=Integer.parseInt(tmp);
@@ -137,27 +143,27 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 			if (contentLength>0)
 				hasContent=true;
 			else
-				hasContent=(uc.getRequestProperty("Content-Type")!=null);
+				hasContent=(huc.getRequestProperty("Content-Type")!=null);
 		}
 		
 		// proxy
 		{
-			uc.addRequestProperty("Via", "1.1 "+req.getLocalName()+":"+req.getLocalPort()+" \"WADI\""); // TODO - should we be giving out personal details ?
-			uc.addRequestProperty("X-Forwarded-For", req.getRemoteAddr()); // adds last link in request chain...
+			huc.addRequestProperty("Via", "1.1 "+req.getLocalName()+":"+req.getLocalPort()+" \"WADI\""); // TODO - should we be giving out personal details ?
+			huc.addRequestProperty("X-Forwarded-For", req.getRemoteAddr()); // adds last link in request chain...
 			// String tmp=uc.getRequestProperty("Max-Forwards"); // TODO - do we really need to bother with this ?
 		}
 		
 		// cache-control
 		{
-			String cacheControl=uc.getRequestProperty("Cache-Control");
+			String cacheControl=huc.getRequestProperty("Cache-Control");
 			if (cacheControl!=null && (cacheControl.indexOf("no-cache")>=0 || cacheControl.indexOf("no-store")>=0))
-				uc.setUseCaches(false);
+				huc.setUseCaches(false);
 		}
 		
 		// confidentiality
 		{
 			if (req.isSecure()) {
-				uc.addRequestProperty(_WADI_IsSecure, req.getLocalAddr().toString());
+				huc.addRequestProperty(_WADI_IsSecure, req.getLocalAddr().toString());
 			}
 			
 			// at the other end, if this header is present we must :
@@ -170,20 +176,21 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 			// this code should also confirm that it not being spoofed by confirming that req.getRemoteAddress() is a cluster member...
 		}
 		// customize Connection
-		uc.setDoInput(true);
+		huc.setDoInput(true);
 
 		// client->server
 		int client2ServerTotal=0;
 		{
 			if (hasContent) {
-				uc.setDoOutput(true);
+				huc.setDoOutput(true);
 				
 				OutputStream toServer=null;
 				try {
 					InputStream fromClient=req.getInputStream(); // IOException
-					toServer=uc.getOutputStream(); // IOException
+					toServer=huc.getOutputStream(); // IOException
 					client2ServerTotal=copy(fromClient, toServer, 8192);
 				} catch (IOException e) {
+					success=false;
 					_log.info("problem proxying client request to server", e);
 				} finally {
 					if (toServer!=null) {
@@ -198,7 +205,12 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		}
 		
 		// Connect
-		uc.connect(); // IOException
+		try {
+			huc.connect(); // IOException
+		} catch (IOException e) {
+			_log.error("could not connect to proxy target", e);
+			return false; // probably recoverable - flush location and start again...
+		}
 
 		InputStream fromServer=null;
 
@@ -206,8 +218,9 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		int code=0;
 		if (huc==null) {
 			try {
-				fromServer = uc.getInputStream(); // IOException
+				fromServer = huc.getInputStream(); // IOException
 			} catch (IOException e) {
+				success=false;
 				_log.info("problem acquiring client output", e);
 			}
 		} else {
@@ -217,6 +230,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 				code=huc.getResponseCode(); // IOException
 				message=huc.getResponseMessage(); // IOException
 			} catch (IOException e) {
+				success=false;
 				_log.info("problem acquiring http server response code/message", e);
 			} finally {
 				res.setStatus(code, message);
@@ -227,6 +241,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 				try {
 					fromServer=huc.getInputStream(); // IOException
 				} catch (IOException e) {
+					success=false;
 					_log.info("problem acquiring http client output", e);
 				}
 			} else {
@@ -243,8 +258,8 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		// set response headers
 		if (false) {
 			int h = 0;
-			String hdr = uc.getHeaderFieldKey(h);
-			String val = uc.getHeaderField(h);
+			String hdr = huc.getHeaderFieldKey(h);
+			String val = huc.getHeaderField(h);
 			while (hdr != null || val != null) {
 				String lhdr = (hdr != null) ? hdr.toLowerCase() : null;
 				if (hdr != null && val != null && !_DontProxyHeaders.contains(lhdr))
@@ -253,16 +268,16 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 				//_log.debug("res " + hdr + ": " + val);
 				
 				h++;
-				hdr = uc.getHeaderFieldKey(h);
-				val = uc.getHeaderField(h);
+				hdr = huc.getHeaderFieldKey(h);
+				val = huc.getHeaderField(h);
 			}
 		} else {	
 			// TODO - is it a bug in Jetty that I have to start my loop at 1 ? or that key[0]==null ?
 			// Try this inside Tomcat...
 			String key;
-			for (int i=1; (key=uc.getHeaderFieldKey(i))!=null; i++) {
+			for (int i=1; (key=huc.getHeaderFieldKey(i))!=null; i++) {
 				key=key.toLowerCase();
-				String val=uc.getHeaderField(i);
+				String val=huc.getHeaderField(i);
 				if (val!=null && !_DontProxyHeaders.contains(key)) {
 					res.addHeader(key, val);
 				}
@@ -279,6 +294,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 					OutputStream toClient=res.getOutputStream();// IOException
 					server2ClientTotal+=copy(fromServer, toClient, 8192);// IOException
 				} catch (IOException e) {
+					success=false;
 					_log.info("problem proxying server response back to client", e);
 				} finally {
 					try {
@@ -294,5 +310,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		long endTime=System.currentTimeMillis();
 		long elapsed=endTime-startTime;
 		_log.info("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:"+url);
+		
+		return success;
 	}
 }

@@ -38,7 +38,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.wadi.sandbox.context.Collapser;
-import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Location;
@@ -294,8 +293,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 
 		_log.info("location found (cluster): "+id+" - "+location);
 
-		Context context=null;
-		if ((context=location.proxy((HttpServletRequest)req, (HttpServletResponse)res, id, promotionMutex))==null) { // TODO - change whole Contextualiser interface to these types
+		if ((location.proxy((HttpServletRequest)req, (HttpServletResponse)res, id, promotionMutex))) { // TODO - change whole Contextualiser interface to these types
 			// request was proxied and contextualised remotely...
 			// promotionMutex was released at earliest opportunity.
 			_log.info("migration has not occurred (contextualised remotely): "+id);
@@ -304,6 +302,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			// we must promote it and contextualise the outstanding request.
 			// the promotionMutex has NOT yet been released
 			_log.info("migration has occurred [NYI] (contextualisation will occur locally): "+id);
+			return false;
 			// TODO - lots of code here...
 		}
 

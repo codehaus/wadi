@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.Location;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -78,7 +77,7 @@ public class PiggyBackHttpLocation implements Location {
 		}
 	}
 
-	public Context proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) {
+	public boolean proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) {
 		// Either we pull the context across the connection and return it...
 
 		synchronized (_countLock) {
@@ -134,7 +133,7 @@ public class PiggyBackHttpLocation implements Location {
 
 		// use Greg's proxy code here....
 
-		return null;
+		return true;
 	}
 
 	protected int _sequence=0;

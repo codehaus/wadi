@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.HttpProxy;
 import org.codehaus.wadi.sandbox.context.Location;
 
@@ -48,15 +47,17 @@ public class HttpProxyLocation implements Location {
 		_proxy=proxy;
 	}
 	
-	// TODO - serial proxying at the moment - until I decide how to make it concurrent - see PiggyBackHttpProxy - unfinished
-	public Context proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) {
+	public boolean proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) {
+		boolean success=false;
 		try {
-			_proxy.proxy(_location, req, res);
+			success=_proxy.proxy(_location, req, res);
+		} catch (Exception e) {
+			_log.error("request relocation failed: "+_location, e); // TODO - some cases here a resolvable...
 		} finally {
 			promotionLock.release();
 		}
 		
-		return null; // no migration yet
+		return success;
 	}
 
 	public long getExpiryTime(){ return 0;}// TODO - NYI

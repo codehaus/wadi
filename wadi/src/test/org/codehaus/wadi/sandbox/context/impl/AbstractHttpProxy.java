@@ -73,6 +73,11 @@ import org.codehaus.wadi.sandbox.context.HttpProxy;
 public abstract class AbstractHttpProxy implements HttpProxy {
 
 	public static final String _WADI_IsSecure="WADI-IsSecure";
+	protected final String _sessionPathParamKey;
+	
+	public AbstractHttpProxy(String sessionPathParamKey) {
+		_sessionPathParamKey=sessionPathParamKey;
+	}
 	
 	// proxyable
 	protected Pattern _proxyableSchemes=Pattern.compile("HTTP", Pattern.CASE_INSENSITIVE);
@@ -99,15 +104,7 @@ public abstract class AbstractHttpProxy implements HttpProxy {
 		return true;
 	}
 	
-	/**
-	 *
-	 */
-	public AbstractHttpProxy() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
-	protected static final Log _log = LogFactory.getLog(HttpProxy.class); // TODO - sort out...
+	protected final Log _log = LogFactory.getLog(getClass());
 
 	protected static final HashSet _DontProxyHeaders = new HashSet();
 	
@@ -134,26 +131,19 @@ public abstract class AbstractHttpProxy implements HttpProxy {
 		return total;
 	}
 
-	// move this into ProxyServlet...
-	public void proxy(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res)	{
-		// we could check to scheme here as well - http only supported...
-		
-		try {
-			proxy2(location, req, res);
-		} catch (IOException e) {
-			HttpServletResponse hres = (HttpServletResponse) res;
-			hres.setHeader("Date", null);
-			hres.setHeader("Server", null);
-			hres.addHeader("Via", "1.1 (WADI)");
-			// hres.setStatus(502, message);
-			try {
-				_log.warn("could not establish connection to location: "+location, e);
-				hres.sendError(502, "Bad Gateway: proxy could not establish connection to server"); // TODO - why do we need to use sendError ?
-			} catch (IOException e2) {
-				_log.warn("could not return error to client", e2);
-			}
+	public String getRequestURI(HttpServletRequest hreq) {
+		String uri=hreq.getRequestURI();
+		// Jetty will return path params in this uri. Tomcat won't.
+		// There seems to be no API for retrieving them in any other way - DOH !
+		// Using more then just a jsessionid path param seems to confuse Tomcat anyway...
+		if (hreq.isRequestedSessionIdFromURL() && !(uri.lastIndexOf(';')>=0)) {
+			uri=new StringBuffer(uri).append(";").append(_sessionPathParamKey).append("=").append(hreq.getRequestedSessionId()).toString();
 		}
+		return uri;
 	}
 
-	public abstract void proxy2(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res) throws IOException;
+	// we need to consider error-handling tactics.
+	// If e.g. we can't connect to host, then we should remove location from cache and try again
+	// If e.g. a POST breaks halfway through - it cannot be run again...
+	public abstract boolean proxy(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res) throws Exception;
 }
