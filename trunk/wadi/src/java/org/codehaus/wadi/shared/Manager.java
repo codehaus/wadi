@@ -141,13 +141,37 @@ public abstract class
       synchronized(_migrating){return _migrating.containsKey(id);} // TODO - we should probably wait for lock here...
   }
 
+  protected ThreadLocal _firstGet=new ThreadLocal()
+    {
+      protected synchronized Object initialValue() {return Boolean.TRUE;}
+    };
+
+  public void setFirstGet(boolean b){_firstGet.set(b?Boolean.TRUE:Boolean.FALSE);}
+  public boolean getFirstGet(){return ((Boolean)_firstGet.get()).booleanValue();}
+
   public HttpSessionImpl
     get(String id)
   {
     HttpSessionImpl impl=getLocalSession(id);
 
-    if (impl==null)
-      impl=getRemoteSession(id);
+    if (getFirstGet())
+    {
+      setFirstGet(false);
+      // TODO - how do we synchronise this on a per-session basis - a
+      // HashMap of locks - yeugh!
+      if (impl==null)
+	impl=getRemoteSession(id);
+
+      if (impl!=null)
+	try
+	{
+	  impl.getApplicationLock().acquire(); // locked for duration of request...
+	}
+	catch (InterruptedException e)
+	{
+	  _log.warn("unexpected interruption", e);
+	}
+    }
 
     return impl;
   }
@@ -998,7 +1022,9 @@ public abstract class
     boolean acquired=false;
     try
     {
+      _log.trace("acquiring exclusive lock for session invalidation");
       lock.acquire();
+      _log.trace("lock acquired");
       acquired=true;
       // notification MUST be done synchronously on the request thread
       // because Servlet-2.4 insists that it is given BEFORE
@@ -1062,4 +1088,7 @@ public abstract class
 
   protected abstract HttpSessionImpl createImpl();
   protected abstract void destroyImpl(HttpSessionImpl impl);
+
+  boolean _reuseSessionIds=false;
+  public boolean getReuseSessionIds(){return _reuseSessionIds;}
 }

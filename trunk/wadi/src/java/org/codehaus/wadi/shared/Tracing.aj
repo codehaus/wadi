@@ -20,13 +20,21 @@ package org.codehaus.wadi.shared;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.Signature;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public aspect Tracing
 {
   protected Log _log=LogFactory.getLog(Tracing.class);
 
   pointcut traceMethods()
-    : execution(* *.nothing(..)) && !within(Tracing);
+    :
+  (
+   //call(* EDU.oswego.cs.dl.util.concurrent.Sync.*(..)) ||
+   //   call(* Manager.getFirstGet(..)) ||
+   //   call(* Manager.setFirstGet(..))
+   call(* FOO.BAR(..))
+   )
+    && !within(Tracing);
 
   Object
     around() : traceMethods()
@@ -38,10 +46,10 @@ public aspect Tracing
     String a="";
     for (int i=0;i<args.length;i++)
       a+=((a.length()==0)?"":",")+args[i];
-    _log.trace("Entering "+pkg+"."+name+"("+a+")");
+    _log.warn("Entering "+this.hashCode()+"."+pkg+"."+name+"("+a+")", new Exception());
 
     Object tmp=proceed();
-    _log.trace("Leaving "+pkg+"."+name+"() --> "+tmp);
+    _log.warn("Leaving "+this.hashCode()+"."+pkg+"."+name+"() --> "+tmp);
 
     return tmp;
   }
