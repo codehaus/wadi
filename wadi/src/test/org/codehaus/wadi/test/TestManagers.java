@@ -22,6 +22,8 @@ import javax.jms.JMSException;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import javax.servlet.http.HttpSessionContext;
+import java.io.IOException;
 
 /**
  *
@@ -60,7 +62,9 @@ public class
       try
       {
 	_tomcat.stop();
+	_log.info("here 0");
 	_jetty.stop();
+	_log.info("here 1");
       }
       catch (Exception e)
       {
@@ -73,13 +77,22 @@ public class
     testManagers()
     {
       {
+	_log.info("[0]");
 	String id=_jetty.newHttpSession().getId();
 	javax.servlet.http.HttpSession session=_jetty.getHttpSession(id);
 	assertTrue(session.getId()==id); // must be ==/same object
-
 	// what do we do about locking issues ?
 	//	session.invalidate();
       }
+      {
+	_log.info("[1]");
+	String id=_jetty.newHttpSession(new HttpServletRequest(_jetty, "xxx")).getId();
+	javax.servlet.http.HttpSession session=_jetty.getHttpSession(id);
+	assertTrue(session.getId()==id); // must be ==/same object
+	// what do we do about locking issues ?
+	//	session.invalidate();
+      }
+      _log.info("[2]");
       {
 	org.apache.catalina.Session session=_tomcat.createSession();
 	_tomcat.add(session);
@@ -99,49 +112,83 @@ public class
 	//	session.invalidate();
       }
       {
+	_log.info("[3]");
 	int i=45*60;
 	_jetty.setHouseKeepingInterval(i);
 	assertTrue(_jetty.getHouseKeepingInterval()==i);
       }
       {
+	_log.info("[4]");
 	String n="JSESSIONID";
 	assertTrue(_jetty.getSessionCookieName().equals(n));
 	assertTrue(_tomcat.getSessionCookieName().equals(n));
       }
       {
+	_log.info("[5]");
 	String n="jsessionid";
 	assertTrue(_jetty.getSessionUrlParamName().equals(n));
 	assertTrue(_tomcat.getSessionUrlParamName().equals(n));
       }
       {
+	_log.info("[6]");
 	String d=null;
 	assertTrue(_jetty.getSessionCookieDomain()==d);
 	assertTrue(_tomcat.getSessionCookieDomain()==d);
       }
       {
+	_log.info("[7]");
 	int n=-1;
 	_tomcat.setMaxActive(n);
 	assertTrue(_tomcat.getMaxActive()==n);
       }
       {
+	_log.info("[8]");
 	int n=1000;
 	_tomcat.setRejectedSessions(n);
 	assertTrue(_tomcat.getRejectedSessions()==n);
       }
       {
+	_log.info("[9]");
 	int n=1000;
 	_tomcat.setExpiredSessions(n);
 	assertTrue(_tomcat.getExpiredSessions()==n);
       }
       {
+	_log.info("[10]");
 	int n=1000;
 	_tomcat.setSessionCounter(n);
 	assertTrue(_tomcat.getSessionCounter()==n);
       }
-//       {
-// 	int n=1000;
-// 	_tomcat.setActiveSessions(n);
-// 	assertTrue(_tomcat.getActiveSessions()==n);
-//       }
+      {
+	_log.info("[11]");
+	_log.info("cookie path= "+_jetty.getSessionCookiePath(new HttpServletRequest(_jetty, "xxx")));
+	_log.info("cookie path= "+_tomcat.getSessionCookiePath(new HttpServletRequest(_tomcat, "xxx")));
+
+	// since it is up to the container what these return, there is
+	// not much point in checking the value - they are just here
+	// for coverage...
+      }
+      {
+	_log.info("[12]");
+	HttpSessionContext c0=_jetty.getSessionContext();
+	HttpSessionContext c1=_tomcat.getSessionContext();
+      }
+      {
+	_log.info("[13]");
+	assertTrue(_jetty.getHttpSession("dummy")==null);
+	try
+	{
+	  assertTrue(_tomcat.findSession("dummy")==null);
+	}
+	catch (IOException e)
+	{
+	  assertTrue(false);
+	}
+      }
+      //       {
+      // 	int n=1000;
+      // 	_tomcat.setActiveSessions(n);
+      // 	assertTrue(_tomcat.getActiveSessions()==n);
+      //       }
     }
 }
