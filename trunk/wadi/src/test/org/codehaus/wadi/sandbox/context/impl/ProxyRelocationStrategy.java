@@ -62,8 +62,9 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 	protected Contextualiser _top;
 	
 	public void setTop(Contextualiser top){_top=top;}
+	public Contextualiser getTop(){return _top;}
 	
-	public ProxyRelocationStrategy(Cluster cluster, MessageDispatcher dispatcher, long proxyHandOverPeriod, long timeout, Location location) {
+	public ProxyRelocationStrategy(Cluster cluster, MessageDispatcher dispatcher, Location location, long timeout, long proxyHandOverPeriod) {
 		_dispatcher=dispatcher;
 		_proxyHandOverPeriod=proxyHandOverPeriod;
 		_timeout=timeout;

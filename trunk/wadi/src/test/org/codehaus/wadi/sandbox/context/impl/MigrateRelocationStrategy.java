@@ -63,7 +63,7 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 	protected final Map _resRvMap=new HashMap();
 	protected final Map _ackRvMap=new HashMap();
 	
-	public MigrateRelocationStrategy(MessageDispatcher dispatcher, long timeout, Location location, Cluster cluster, StreamingStrategy ss) {
+	public MigrateRelocationStrategy(Cluster cluster, MessageDispatcher dispatcher, Location location, long timeout, StreamingStrategy ss) {
 		_dispatcher=dispatcher;		
 		_timeout=timeout;
 		_location=location;
@@ -136,6 +136,7 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 	
 	protected Contextualiser _top;
 	public void setTop(Contextualiser top){_top=top;}
+	public Contextualiser getTop(){return _top;}
 	
 	public void onMessage(ObjectMessage om, MigrationRequest request) throws JMSException {
 		String id=request.getId();

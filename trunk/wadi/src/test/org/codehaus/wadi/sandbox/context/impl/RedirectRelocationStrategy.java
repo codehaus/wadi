@@ -50,4 +50,5 @@ public class RedirectRelocationStrategy implements RequestRelocationStrategy {
 	}
 	
 	public void setTop(Contextualiser top){}
+	public Contextualiser getTop(){return null;}
 }
