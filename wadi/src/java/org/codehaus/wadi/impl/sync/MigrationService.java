@@ -54,7 +54,7 @@ import org.codehaus.wadi.StreamingStrategy;
 public class
   MigrationService
 {
-  public static class
+  public class
     Client
   {
     protected final Log _log=LogFactory.getLog(getClass());
@@ -171,23 +171,23 @@ public class
   }
 
   class Destination
-	implements javax.jms.Destination
-	{
-  	InetAddress _address;
-  	int         _port;
-	}
-  
-  public static class
+    implements javax.jms.Destination
+  {
+    InetAddress _address;
+    int         _port;
+  }
+
+  public class
     Server
     implements Runnable
   {
     protected final Log _log=LogFactory.getLog(getClass());
 
-//     protected Map _migrationBarriers=Collections.synchronizedMap(new HashMap());
+    //     protected Map _migrationBarriers=Collections.synchronizedMap(new HashMap());
 
-//     public void putBarrier(String id, CyclicBarrier barrier){_migrationBarriers.put(id, barrier);}
-//     public CyclicBarrier getBarrier(String id){return (CyclicBarrier)_migrationBarriers.get(id);}
-//     public void removeBarrier(String id){_migrationBarriers.remove(id);}
+    //     public void putBarrier(String id, CyclicBarrier barrier){_migrationBarriers.put(id, barrier);}
+    //     public CyclicBarrier getBarrier(String id){return (CyclicBarrier)_migrationBarriers.get(id);}
+    //     public void removeBarrier(String id){_migrationBarriers.remove(id);}
 
     protected Manager                _manager;
     protected HttpSessionImplFactory _factory;
@@ -213,6 +213,7 @@ public class
     public void
       start()
     {
+      if (_destination==null) _destination=new Destination();
       try
       {
 	if (_destination._address==null)
@@ -379,8 +380,8 @@ public class
 	  HttpSessionImpl impl=(HttpSessionImpl)i.next();
 	  impl.getContainerLock().release();
 
-	if (sync && candidates.size()==1)
-	  _manager.getAsyncToSyncAdaptor().receive(impl, impl.getRealId(), 2000L); // parameterise - TODO
+	  if (sync && candidates.size()==1)
+	    _manager.getAsyncToSyncAdaptor().receive(impl, impl.getRealId(), 2000L); // parameterise - TODO
 
 	}
 
@@ -389,8 +390,8 @@ public class
 
     }
 
-	public void setDestination(Destination destination) {_destination=destination;}
-	public Destination getDestination() {return _destination;}
+    public void setDestination(Destination destination) {_destination=destination;}
+    public Destination getDestination() {return _destination;}
   }
 }
 
