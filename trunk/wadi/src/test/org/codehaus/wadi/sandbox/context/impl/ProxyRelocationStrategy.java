@@ -76,8 +76,12 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 	
 	protected Location locate(String id, Map locationMap) {
 		_log.info("sending location request: "+id);
+		MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+		settingsInOut.from=_location.getDestination();
+		settingsInOut.to=_cluster.getDestination();
+		settingsInOut.correlationId=id; // TODO - better correlation id
 		LocationRequest request=new LocationRequest(id, _proxyHandOverPeriod);
-		LocationResponse response=(LocationResponse)_dispatcher.exchangeMessages(id, _rvMap, request, _cluster.getDestination(), _timeout);
+		LocationResponse response=(LocationResponse)_dispatcher.exchangeMessages(id, _rvMap, request, settingsInOut, _timeout);
 		
 		if (response==null)
 			return null;

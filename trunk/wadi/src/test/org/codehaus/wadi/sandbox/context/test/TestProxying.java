@@ -31,7 +31,10 @@ import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.activecluster.Cluster;
+import org.codehaus.activecluster.ClusterEvent;
 import org.codehaus.activecluster.ClusterFactory;
+import org.codehaus.activecluster.ClusterListener;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.sandbox.context.impl.CommonsHttpProxy;
@@ -59,7 +62,43 @@ public class TestProxying extends TestCase {
 	protected MyServlet _servlet0;
 	protected MyServlet _servlet1;
 	
-	/*
+	  class MyClusterListener
+	    implements ClusterListener
+	  {
+		protected Log _log = LogFactory.getLog(getClass());
+
+		public void
+	      onNodeAdd(ClusterEvent ce)
+	    {
+	      _log.info("node added: " + ce.getNode());
+	    }
+
+	    public void
+	      onNodeFailed(ClusterEvent ce)
+	    {
+	      _log.info("node failed: " + ce.getNode());
+	    }
+
+	    public void
+	      onNodeRemoved(ClusterEvent ce)
+	    {
+	      _log.info("node removed: " + ce.getNode());
+	    }
+
+	    public void
+	      onNodeUpdate(ClusterEvent ce)
+	    {
+	      _log.info("node updated: " + ce.getNode());
+	    }
+
+	    public void
+	      onCoordinatorChanged(ClusterEvent ce)
+	    {
+	      _log.info("coordinator changed: " + ce.getNode());
+	    }
+	  }
+
+	  /*
 	 * @see TestCase#setUp()
 	 */
 	protected void setUp() throws Exception {
@@ -68,10 +107,14 @@ public class TestProxying extends TestCase {
 		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
 		ClusterFactory clusterFactory       = new DefaultClusterFactory(connectionFactory);
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
-		_servlet0=new MyServlet("0", clusterFactory.createCluster(clusterName), new InetSocketAddress("localhost", 8080), new MyContextPool(), new StandardHttpProxy("jsessionid"));
+		Cluster cluster0=clusterFactory.createCluster(clusterName);
+		cluster0.addClusterListener(new MyClusterListener());
+		_servlet0=new MyServlet("0", cluster0, new InetSocketAddress("localhost", 8080), new MyContextPool(), new StandardHttpProxy("jsessionid"));
 		_filter0=new MyFilter("0", _servlet0);
 		(_node0=new JettyNode("0", "localhost", 8080, "/test", "/home/jules/workspace/wadi/webapps/test", _filter0, _servlet0)).start();
-		_servlet1=new MyServlet("1", clusterFactory.createCluster(clusterName), new InetSocketAddress("localhost", 8081), new MyContextPool(), new CommonsHttpProxy("jsessionid"));
+		Cluster cluster1=clusterFactory.createCluster(clusterName);
+		cluster1.addClusterListener(new MyClusterListener());
+		_servlet1=new MyServlet("1", cluster1, new InetSocketAddress("localhost", 8081), new MyContextPool(), new CommonsHttpProxy("jsessionid"));
 		_filter1=new MyFilter("1", _servlet1);
 		(_node1=new JettyNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...

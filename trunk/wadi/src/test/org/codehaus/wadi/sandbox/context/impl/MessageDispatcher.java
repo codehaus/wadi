@@ -40,13 +40,18 @@ public class MessageDispatcher implements MessageListener {
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final Map _map=new HashMap();
 	protected final Cluster _cluster;
-	protected final MessageConsumer _consumer;
+	protected final MessageConsumer _clusterConsumer;
+	protected final MessageConsumer _nodeConsumer;
 
 	public MessageDispatcher(Cluster cluster) throws JMSException {
 		_cluster=cluster;
-		boolean excludeSelf=true;
-	    _consumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
-	    _consumer.setMessageListener(this);
+		boolean excludeSelf;
+		excludeSelf=true;
+	    _clusterConsumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
+	    _clusterConsumer.setMessageListener(this);
+	    excludeSelf=false;
+	    _nodeConsumer=_cluster.createConsumer(_cluster.getLocalNode().getDestination(), null, excludeSelf);
+	    _nodeConsumer.setMessageListener(this);
 	    }
 	
 	interface Dispatcher {
@@ -95,6 +100,7 @@ public class MessageDispatcher implements MessageListener {
 				if ((old=(Dispatcher)_map.put(pts[1], nuw))!=null) {
 					_log.warn("later registration replaces earlier - multiple dispatch NYI: "+old+" -> "+nuw);
 				}
+				_log.info("registering class: "+pts[1].getName());
 				n++;
 			}
 		}
@@ -118,7 +124,7 @@ public class MessageDispatcher implements MessageListener {
 				if (rv!=null) {
 					do {
 						try {
-							rv.attemptRendezvous(obj, _timeout);
+							rv.attemptRendezvous(om, _timeout);
 						} catch (TimeoutException toe) {
 							_log.info("rendez-vous timed out: "+correlationId, toe);
 						} catch (InterruptedException ignore) {
@@ -141,6 +147,7 @@ public class MessageDispatcher implements MessageListener {
 	 */
 	public void register(Class type, Map rvMap, long timeout) {
 		_map.put(type, new RendezVousDispatcher(rvMap, timeout));
+		_log.info("registering class: "+type.getName());
 	}
 	
 	public void onMessage(Message message) {
@@ -179,42 +186,61 @@ public class MessageDispatcher implements MessageListener {
 		}
 	}
 
+	// Pass this around to avoid the risk of exception everytime we access an ObjectMessage
+	public static class Settings {
+		public Destination from;
+		public Destination to;
+		public String correlationId;
+		
+		public String toString() {
+			return "<Settings: to:"+to+" from:"+from+" corrId:"+correlationId+" >";
+		}
+	}
+	
+	public void sendMessage(Serializable s, Settings settingsIn) throws JMSException {
+		// construct and send message...
+		ObjectMessage message=_cluster.createObjectMessage();
+		message.setJMSReplyTo(settingsIn.from);
+		message.setJMSCorrelationID(settingsIn.correlationId);
+		message.setObject(s);
+		_cluster.send(settingsIn.to, message);
+	}
+	
 	// send a message and then wait a given amount of time for the first response - return it...
 	// for use with RendezVousDispatcher... - need to register type beforehand...
-	public Serializable exchangeMessages(String id, Map rvMap, Serializable request, Destination dest, long timeout) {
-		String correlationId=_cluster.getLocalNode().getDestination().toString()+"-"+id;
+	public Serializable exchangeMessages(String id, Map rvMap, Serializable request, Settings settingsInOut, long timeout) {
 		Rendezvous rv=new Rendezvous(2); // TODO - can these be reused ?
 		
 		// set up a rendez-vous...
 		synchronized (rvMap) {
-			rvMap.put(correlationId, rv);
+			rvMap.put(settingsInOut.correlationId, rv);
 		}
 		
+		ObjectMessage om=null;
 		Serializable response=null;
 		try {
-			// construct and send message...
-			ObjectMessage message=_cluster.createObjectMessage();
-			message.setJMSReplyTo(_cluster.getDestination());
-			message.setJMSCorrelationID(correlationId);
-			message.setObject(request);
-			_cluster.send(dest, message);
-			
+			sendMessage(request, settingsInOut);		
 			// rendez-vous with response/timeout...
 			do {
 				try {
-					response=(Serializable)rv.attemptRendezvous(null, timeout);
+					om=(ObjectMessage)rv.attemptRendezvous(null, timeout);
+					response=om.getObject();
+					settingsInOut.to=om.getJMSReplyTo();
+					// om.getJMSDestination() might be the whole cluster, not just this node... - TODO
+					settingsInOut.from=_cluster.getLocalNode().getDestination();
+					assert settingsInOut.correlationId.equals(om.getJMSCorrelationID());
 				} catch (TimeoutException toe) {
-					_log.info("no response to location query within timeout: "+id); // session does not exist
+					_log.info("no response to request within timeout: "+id); // session does not exist
 				} catch (InterruptedException ignore) {
-					_log.info("waiting for location response - interruption ignored: "+id);
+					_log.info("waiting for response - interruption ignored: "+id);
 				}
 			} while (Thread.interrupted());
 		} catch (JMSException e) {
-			_log.warn("problem sending session location query: "+id, e);
+			_log.warn("problem sending request message: "+id, e);
 		} finally {
 			// tidy up rendez-vous
 			synchronized (rvMap) {
-				rvMap.remove(correlationId);
+				rvMap.remove(settingsInOut.correlationId);
 			}
 		}
 		

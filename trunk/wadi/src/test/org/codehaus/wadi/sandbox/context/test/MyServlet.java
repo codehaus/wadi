@@ -41,6 +41,7 @@ import org.codehaus.wadi.sandbox.context.HttpProxy;
 import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
+import org.codehaus.wadi.sandbox.context.impl.MigrateRelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.ProxyRelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
@@ -71,6 +72,7 @@ public class MyServlet implements Servlet {
 		MessageDispatcher dispatcher=new MessageDispatcher(_cluster);
 		Location location=new HttpProxyLocation(cluster.getLocalNode().getDestination(), isa, proxy);
 		RelocationStrategy relocater=new ProxyRelocationStrategy(cluster, dispatcher, 3000, 2000, location);
+		//relocater=new MigrateRelocationStrategy(dispatcher, 2000, location, cluster);
 		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), relocater);
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);

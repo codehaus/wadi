@@ -17,21 +17,31 @@
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.Serializable;
-import java.util.Set;
 
 /**
- * TODO - JavaDoc this type
+ * A query for the location of the session with the enclosed ID - The response
+ * should be a LocationResponse object sent whence this request arrived.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class MigrationResponse implements Serializable {
-	protected final Set _ids;
+public class MigrationAcknowledgement implements Serializable {
+	protected String _id;
+	protected long _handOverPeriod;
 
-	public MigrationResponse(Set ids) {
+	/**
+	 *
+	 */
+	public MigrationAcknowledgement(String id, long handOverPeriod) {
 		super();
-		_ids=ids;
+		_id=id;
+		_handOverPeriod=handOverPeriod;
 	}
 
-	public Set getIds(){return _ids;}
+	public MigrationAcknowledgement() {
+		// for use when demarshalling...
+	}
+
+	public String getId(){return _id;}
+	public long getHandOverPeriod(){return _handOverPeriod;}
 }
