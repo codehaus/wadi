@@ -289,6 +289,7 @@
       <link href="http://jakarta.apache.org/commons/logging/apidocs"/>
       <link href="http://jetty.mortbay.org/javadoc"/>
       <link href="http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs/api"/>
+      <link href="http://www.junit.org/junit/javadoc/3.8.1"/>
     </javadoc>
   </target>
 

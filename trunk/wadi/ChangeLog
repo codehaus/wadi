@@ -1,5 +1,8 @@
 2004-04-18  Jules Gosnell  <jules@coredevelopers.net>
 
+	* xdocs/faq.fml: started an FAQ
+
 	*  (Repository): initial checkin
+
 	*  (Repository): fixed up Ant build and paths in conf files
 
