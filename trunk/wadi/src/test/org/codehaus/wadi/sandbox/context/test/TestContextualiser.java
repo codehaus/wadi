@@ -66,6 +66,7 @@ import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.context.impl.SharedJDBCContextualiser;
+import org.codehaus.wadi.sandbox.context.impl.SharedJDBCMotable;
 import org.codehaus.wadi.sandbox.context.impl.SimpleEvictable;
 import org.codehaus.wadi.sandbox.context.impl.SwitchableEvicter;
 import org.codehaus.wadi.sandbox.context.impl.Utils;
@@ -92,13 +93,7 @@ public class TestContextualiser extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		_log.info("starting ...");
-
-		Connection c=_ds.getConnection();
-		Statement s=c.createStatement();
-		// TODO - should parameterise the column names when code stabilises...
-		s.execute("create table "+_table+"(MyKey varchar, MyValue java_object)");
-		s.close();
-		c.close();
+		SharedJDBCMotable.initialise(_ds, _table);
 	}
 
 	/*
@@ -106,12 +101,7 @@ public class TestContextualiser extends TestCase {
 	 */
 	protected void tearDown() throws Exception {
 		super.tearDown();
-			Connection c=_ds.getConnection();
-			Statement s=c.createStatement();
-			s.execute("drop table "+_table);
-			s.execute("SHUTDOWN");
-			s.close();
-			c.close();
+		SharedJDBCMotable.destroy(_ds, _table);
 	      _log.info("...stopped");
 	}
 

@@ -41,9 +41,12 @@ public abstract class AbstractImmoter implements Immoter {
 		}
 	}
 	
-	public void rollback(String id, Motable emotable) {
+	public void commit(String id, Motable immotable) {
+	}
+	
+	public void rollback(String id, Motable immotable) {
 		try {
-			emotable.tidy();
+			immotable.tidy();
 		} catch (Exception e) {
 			_log.error("problem rolling back insertion: "+id, e);
 		}
