@@ -83,8 +83,8 @@ public class
 	{
 	  if (_address==null)
 	  {
-	    _address=InetAddress.getLocalHost();
-	    //_address=InetAddress.getByName("localhost");
+	    //	    _address=InetAddress.getLocalHost();
+	    _address=InetAddress.getByName("localhost");
 	  }
 
 	  socket=new Socket(remoteAddress, remotePort, _address, _port);
@@ -128,7 +128,7 @@ public class
       }
       catch (IOException e)
       {
-	_log.warn("unexpected problem emmigrating sessions - target node or comms failure ? - no emmigration will have occurred", e);
+	_log.warn("unexpected problem emmigrating sessions to "+remoteAddress+":"+remotePort+"- target node or comms failure ? - no emmigration will have occurred", e);
       }
       // what about timeout...
       finally
