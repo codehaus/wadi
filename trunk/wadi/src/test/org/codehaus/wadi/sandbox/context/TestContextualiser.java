@@ -28,7 +28,10 @@ import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.impl.AlwaysEvicter;
+import org.codehaus.wadi.sandbox.context.impl.DebugCollapser;
+import org.codehaus.wadi.sandbox.context.impl.DummyCollapser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
+import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.context.impl.LocalDiscContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
@@ -166,6 +169,7 @@ public class TestContextualiser extends TestCase {
 	}
 	
 	public void testConceptualiser() throws Exception {
+		Collapser collapser=new HashingCollapser(10, 2000);
 		Map d=new HashMap();
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 		File f=File.createTempFile("wadi.", "."+ss.getSuffix());
@@ -176,10 +180,10 @@ public class TestContextualiser extends TestCase {
 	    oo.close();
 	    assertTrue(f.exists());
 		d.put("bar", new LocalDiscContextualiser.LocalDiscMotable(0, f));
-		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), d, new NeverEvicter(), new File("/tmp"), ss, new MyContextPool());
+		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), new File("/tmp"), ss, new MyContextPool());
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo"));
-		Contextualiser memory=new MemoryContextualiser(disc, m, new NeverEvicter(), new MyContextPool());
+		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new NeverEvicter(), new MyContextPool());
 		
 		FilterChain fc=new MyFilterChain();
 //		Collapser collapser=new HashingCollapser();
@@ -257,7 +261,7 @@ public class TestContextualiser extends TestCase {
 	}
 	
 	public void testPromotion(Contextualiser c, int n) throws Exception {
-		Contextualiser mc=new MemoryContextualiser(c, new HashMap(), new NeverEvicter(), new MyContextPool());
+		Contextualiser mc=new MemoryContextualiser(c, new HashingCollapser(10, 2000), new HashMap(), new NeverEvicter(), new MyContextPool());
 		FilterChain fc=new MyFilterChain();		
 		Mutex promotionMutex=new Mutex();
 		
@@ -277,7 +281,7 @@ public class TestContextualiser extends TestCase {
 	}
 	
 	public void testCollapsing(Contextualiser c, int n) throws Exception {
-		Contextualiser mc=new MemoryContextualiser(c, new HashMap(), new NeverEvicter(), new MyContextPool());
+		Contextualiser mc=new MemoryContextualiser(c, new HashingCollapser(10, 2000), new HashMap(), new NeverEvicter(), new MyContextPool());
 		FilterChain fc=new MyFilterChain();
 		Mutex promotionMutex=new Mutex();
 
@@ -301,12 +305,13 @@ public class TestContextualiser extends TestCase {
 		}
 	
 	public void testEviction2() throws Exception {
+		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 		Map d=new HashMap();
-		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), d, new NeverEvicter(), new File("/tmp"), ss, new MyContextPool());
+		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), new File("/tmp"), ss, new MyContextPool());
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo"));
-		Contextualiser memory=new MemoryContextualiser(disc, m, new AlwaysEvicter(), new MyContextPool());
+		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new AlwaysEvicter(), new MyContextPool());
 		
 		FilterChain fc=new MyFilterChain();
 
@@ -339,13 +344,14 @@ public class TestContextualiser extends TestCase {
 		}
 	}
 	public void testEviction3() throws Exception {
+		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
-		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), new NeverEvicter(), _ds, _table, ss);
+		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), collapser, new NeverEvicter(), _ds, _table, ss);
 		Map d=new HashMap();
-		Contextualiser disc=new LocalDiscContextualiser(db, d, new MyEvicter(0), new File("/tmp"), ss, new MyContextPool());
+		Contextualiser disc=new LocalDiscContextualiser(db, collapser, d, new MyEvicter(0), new File("/tmp"), ss, new MyContextPool());
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo", System.currentTimeMillis()+2000)); // times out 2 seconds from now...
-		Contextualiser memory=new MemoryContextualiser(disc, m, new MyEvicter(1000), new MyContextPool());
+		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new MyEvicter(1000), new MyContextPool());
 			
 		FilterChain fc=new MyFilterChain();
 

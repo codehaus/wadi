@@ -17,6 +17,7 @@ import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.ContextPool;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
@@ -39,8 +40,8 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	/**
 	 * 
 	 */
-	public MemoryContextualiser(Contextualiser next, Map map, Evicter evicter, ContextPool pool) {
-		super(next, map, evicter);
+	public MemoryContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, ContextPool pool) {
+		super(next, collapser, map, evicter);
 		_pool=pool;
 	}
 
