@@ -44,6 +44,12 @@ package org.codehaus.wadi.shared;
 
 // TODO - a mess :-(
 
+/**
+ * Maintain routing info on session id transparently - NOT IN USE
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 privileged public aspect
   Routing
 {

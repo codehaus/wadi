@@ -48,6 +48,12 @@ import org.codehaus.wadi.shared.Filter;
 // TODO - revisit configuration mechanism when subcomponents types/apis
 // settle down a little more...
 
+/**
+ * A WADI session manager for Tomcat (jakarta.apache.org)
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   Manager
   extends org.codehaus.wadi.shared.Manager

@@ -26,6 +26,12 @@ import org.apache.commons.logging.LogFactory;
 
 // TODO - will a redirect work in all cases ?
 
+/**
+ * Provides necessary fn-ality for redirecting HttpRequests between WADI nodes.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   HttpRedirect
 {

@@ -20,6 +20,12 @@ package org.codehaus.wadi.plugins;
 import org.codehaus.wadi.shared.EvictionPolicy;
 import org.codehaus.wadi.shared.HttpSessionImpl;
 
+/**
+ * Never evict
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class NoEvictionPolicy implements EvictionPolicy {
  public boolean evictable(long currentTimeMillis, HttpSessionImpl impl){return false;}
  }

@@ -22,7 +22,14 @@ import javax.servlet.http.HttpSessionBindingListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public aspect BindingNotifier
+/**
+ * Notifies HttpSessionBindingListeners of session mutation
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public aspect
+  BindingNotifier
 {
   private static final Log _log=LogFactory.getLog(BindingNotifier.class);
 

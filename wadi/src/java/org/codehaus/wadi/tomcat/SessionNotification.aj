@@ -37,6 +37,12 @@ import org.apache.commons.logging.LogFactory;
 // why, with all the existing schemes for notification, does TC need
 // yet another one?
 
+/**
+ * Performs Tomcat internal session lifecycle notifications
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public privileged aspect
   SessionNotification
 {

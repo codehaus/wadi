@@ -23,6 +23,12 @@ import java.net.InetAddress;
 //import org.apache.commons.logging.Log;
 //import org.apache.commons.logging.LogFactory;
 
+/**
+ * Test unicast client to multicast server
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   TestUnicastClient
   implements Runnable

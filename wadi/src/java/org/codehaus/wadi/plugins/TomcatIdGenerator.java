@@ -99,6 +99,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedAction;
 import java.util.Random;
 
+/**
+ * An IdGenerator borrowed from Tomcat
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TomcatIdGenerator
   implements IdGenerator
 {

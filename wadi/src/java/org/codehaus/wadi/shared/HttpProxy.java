@@ -39,6 +39,12 @@ import org.apache.commons.logging.LogFactory;
 // TODO - conform to HTTP rfc for proxying
 // TODO - how do we indicate that we are proxying a secure connection - ask Greg
 
+/**
+ * Provides necessary fn-ality for proxying HttpRequests between WADI nodes.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   HttpProxy
 {

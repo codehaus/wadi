@@ -22,6 +22,13 @@ package org.codehaus.wadi.shared;
 
 import java.util.Collection;
 
+/**
+ * Abstracts out the mechanism whereby sessions may be e/immigrated to
+ * long-term storage.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface
     PassivationStrategy
 {

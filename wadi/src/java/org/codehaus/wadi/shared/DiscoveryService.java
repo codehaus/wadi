@@ -39,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
  * packet, via their multicast socket to this unicast socket.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version 1.0
+ * @version $Revision$
  */
 public abstract class
   DiscoveryService

@@ -30,6 +30,12 @@ import javax.servlet.http.HttpSessionContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * Common HttpSessionImpl fn-ality
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class
   HttpSessionImpl
   extends AbstractHttpSessionImpl

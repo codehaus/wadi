@@ -22,6 +22,12 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.shared.EvictionPolicy;
 import org.codehaus.wadi.shared.HttpSessionImpl;
 
+/**
+ * Evict after an absolute time period - e.g. after 1 minute of inactivity.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class AbsoluteEvictionPolicy
   implements EvictionPolicy
 {

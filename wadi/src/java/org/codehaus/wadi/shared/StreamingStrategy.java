@@ -23,6 +23,14 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.OutputStream;
 
+/**
+ * Abstract factory/pool. Allows pluggable implementations of various
+ * input/output streaming mechanisms to support e.g. compression,
+ * encryption etc...
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface
   StreamingStrategy
 {

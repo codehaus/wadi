@@ -40,6 +40,14 @@ import org.apache.commons.logging.LogFactory;
 
 //----------------------------------------
 
+/**
+ * Each session attribute is wrapped with one of these objects. It
+ * will manage [de]serialisation of the object and listener
+ * notification.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 class Wrapper
   implements Serializable
 {

@@ -19,6 +19,12 @@ package org.codehaus.wadi.jetty;
 
 import org.codehaus.wadi.shared.HttpSessionImpl;
 
+/**
+ * Jetty-specific HttpSession facade
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   HttpSession
   extends org.codehaus.wadi.shared.HttpSession

@@ -36,6 +36,13 @@ import org.apache.commons.logging.LogFactory;
 
 // TODO - Distributable sessions only...
 
+/**
+ * Wraps session attributes in a Wrapper responsible for management of
+ * their [de]serialisation.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public aspect
   Wrapping
 {

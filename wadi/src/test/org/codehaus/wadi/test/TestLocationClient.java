@@ -22,6 +22,12 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.io.IOException;
 
+/**
+ * Test the Location client
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   TestLocationClient
 {

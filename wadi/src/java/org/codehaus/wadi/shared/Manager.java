@@ -109,6 +109,12 @@ import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
 // only the successful locker does gc. On each sweep, the other nodes
 // try to acquire the lock, in case the winner last time died etc...
 
+/**
+ * Common parts of the WADI session manager.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class
   Manager
 {

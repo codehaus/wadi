@@ -19,6 +19,12 @@ package org.codehaus.wadi.jetty;
 
 import java.io.Serializable;
 
+/**
+ * Jetty-specific HttpSession implementation
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   HttpSessionImpl
   extends org.codehaus.wadi.shared.HttpSessionImpl

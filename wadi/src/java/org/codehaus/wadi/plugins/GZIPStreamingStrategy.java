@@ -28,6 +28,13 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.codehaus.wadi.shared.StreamingStrategy;
 
+/**
+ * Pluggable support for GZIP-ing sessions as they are exchanged with
+ * peers or long-term storage mechnisms.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   GZIPStreamingStrategy
   implements StreamingStrategy

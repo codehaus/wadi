@@ -34,6 +34,13 @@ import org.apache.commons.logging.LogFactory;
 // TODO - could our connection be to a filedescriptor instead of another node ?
 // TODO - insertion/removal of locks in lockMap NYI
 
+/**
+ * Abstracts out mechanism for i/emmigration of sessions between WADI
+ * peers.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   MigrationService
 {

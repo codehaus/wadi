@@ -18,19 +18,20 @@
 package org.codehaus.wadi.shared;
 
 import EDU.oswego.cs.dl.util.concurrent.Takable;
+
 /**
- * @author jules
+ * Abstract out the API for session id generation
  *
- * To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Generation - Code and Comments
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
  */
 public interface IdGenerator
-extends Takable
+  extends Takable
 {
   public abstract Object take();
   public abstract Object poll(long millis);
 
-//   public String getId(String id, String route);
-//   public String getIdId(String both);
-//   public String getIdRoute(String both);
+  //   public String getId(String id, String route);
+  //   public String getIdId(String both);
+  //   public String getIdRoute(String both);
 }

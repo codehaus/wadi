@@ -46,6 +46,12 @@ import org.apache.commons.logging.LogFactory;
 // to become free, evict them and then proxy subsequent requests until
 // client catches up with new location...
 
+/**
+ * Installed at front of Filter stack. Manages WADI-specific fn-ality.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   Filter
   implements javax.servlet.Filter

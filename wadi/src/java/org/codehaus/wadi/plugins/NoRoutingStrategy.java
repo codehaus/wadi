@@ -25,10 +25,10 @@ import org.codehaus.wadi.shared.RoutingStrategy;
 
 /**
  * An integration strategy for maintaining session affinity through
- * cooperation with Apache/mod_jk.
+ * cooperation with a load balancer that does not use routing info
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version 1.0
+ * @version $Revision$
  */
 public class
   NoRoutingStrategy

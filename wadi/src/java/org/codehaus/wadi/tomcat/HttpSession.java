@@ -17,6 +17,12 @@
 
 package org.codehaus.wadi.tomcat;
 
+/**
+ * Tomcat-specific HttpSession facade
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   HttpSession
   extends org.codehaus.wadi.shared.HttpSession

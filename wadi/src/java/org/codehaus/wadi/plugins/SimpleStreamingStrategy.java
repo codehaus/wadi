@@ -26,6 +26,12 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import org.codehaus.wadi.shared.StreamingStrategy;
 
+/**
+ * Don't do anything extra, just connect streams up directly.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   SimpleStreamingStrategy
   implements StreamingStrategy

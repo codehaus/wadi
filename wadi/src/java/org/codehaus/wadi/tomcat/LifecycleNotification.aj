@@ -24,6 +24,12 @@ import org.apache.commons.logging.LogFactory;
 // TC carries so much notification baggage in its code that it seemed
 // to be begging to have it Aspected out...
 
+/**
+ * Performs Tomcat proprietary container lifecycle notifications
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public aspect
   LifecycleNotification
 {

@@ -23,6 +23,12 @@ import org.apache.commons.logging.LogFactory;
 // abstract out support for all the different counters so they don't
 // clutter up the code....
 
+/**
+ * Maintains session lifecycle counters
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public aspect
   Counting
 {
