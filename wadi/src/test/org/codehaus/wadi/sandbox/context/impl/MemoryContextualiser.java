@@ -18,7 +18,7 @@ package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.ObjectOutput;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.ContextPool;
@@ -50,13 +51,12 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public class MemoryContextualiser extends AbstractMappedContextualiser {
 	protected final Log _log = LogFactory.getLog(getClass());
 	protected final ContextPool _pool;
+	protected final StreamingStrategy _streamer;
 
-	/**
-	 *
-	 */
-	public MemoryContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, ContextPool pool) {
+	public MemoryContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, StreamingStrategy streamer, ContextPool pool) {
 		super(next, collapser, map, evicter);
 		_pool=pool;
+		_streamer=streamer;
 	}
 
 	/* (non-Javadoc)
@@ -80,7 +80,10 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 					try {
 						// write context out into a buffer, then read buffer back into this one.. - clumsy - TODO
 						ByteArrayOutputStream baos=new ByteArrayOutputStream();
-						c.writeContent(new ObjectOutputStream(baos));
+						ObjectOutput oi=_streamer.getOutputStream(baos);
+						c.writeContent(oi);
+						oi.flush();
+						oi.close();
 						Context context=promoter.nextContext();
 						// shameful hack - TODO
 						((MigrateRelocationStrategy.MigrationContext)context).setBytes(baos.toByteArray());
