@@ -30,9 +30,9 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.HttpSessionImpl;
@@ -45,17 +45,47 @@ import org.codehaus.wadi.StreamingStrategy;
 // TODO - insertion/removal of locks in lockMap NYI
 
 /**
- * Abstracts out mechanism for i/emmigration of sessions between WADI
- * peers.
+ * Encapsulates mechanism for synchronous i/emmigration of sessions
+ * between WADI peers.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public class
   MigrationService
+  implements org.codehaus.wadi.MigrationService
 {
+  protected StreamingStrategy _streamingStrategy;
+  protected Manager           _manager;
+  protected Client            _client=new Client();
+  protected Server            _server=new Server();
+
+  public StreamingStrategy getStreamingStrategy(){return _streamingStrategy;}
+  public void setStreamingStrategy(StreamingStrategy strategy){_streamingStrategy=strategy;}
+
+  public Manager getManager(){return _manager;}
+  public void setManager(Manager manager){_manager=manager;}
+
+
+  public org.codehaus.wadi.MigrationService.Server getServer(){return _server;}
+  public org.codehaus.wadi.MigrationService.Client getClient(){return _client;}
+
+  /**
+   * Encapsulates an InetAddress and port, for synchronous
+   * SocketServer usage, within a Destination, so that it can be
+   * passed around opaquely.
+   *
+   */
+  class Destination
+    implements javax.jms.Destination
+  {
+    InetAddress _address;
+    int         _port;
+  }
+
   public class
     Client
+    implements org.codehaus.wadi.MigrationService.Client
   {
     protected final Log _log=LogFactory.getLog(getClass());
 
@@ -63,7 +93,21 @@ public class
     protected InetAddress _address; // null seems to work fine as default interface
 
     public boolean
-      emmigrate(Map map, Collection candidates, long timeout, Destination destination, StreamingStrategy streamingStrategy, boolean sync)
+      emmigrate(Map local, Collection candidates, long timeout, javax.jms.Destination dst)
+    {
+      _log.error("NYI");
+      return false;
+    }
+
+    public boolean
+      immigrate(Map local, String realId, HttpSessionImpl placeholder, long timeout, javax.jms.Destination dst)
+    {
+      _log.error("NYI");
+      return false;
+    };
+
+    public boolean
+      emmigrate(Map map, Collection candidates, long timeout, Destination destination, boolean sync)
     {
       Socket socket=null;
       boolean ok=true;
@@ -97,7 +141,7 @@ public class
 	  if (_log.isTraceEnabled()) _log.trace(socket+" -> "+destination);
 	  ObjectOutput os=new ObjectOutputStream(socket.getOutputStream());
 	  ObjectInput  is=new ObjectInputStream(socket.getInputStream());
-	  //	  ObjectOutput ss=streamingStrategy.getOutputStream(socket.getOutputStream());
+	  //	  ObjectOutput ss=_streamingStrategy.getOutputStream(socket.getOutputStream());
 	  ObjectOutput ss=os;
 
 	  // (1) send PREPARE()
@@ -170,27 +214,12 @@ public class
     }
   }
 
-  class Destination
-    implements javax.jms.Destination
-  {
-    InetAddress _address;
-    int         _port;
-  }
-
   public class
     Server
-    implements Runnable
+    implements org.codehaus.wadi.MigrationService.Server, Runnable
   {
     protected final Log _log=LogFactory.getLog(getClass());
 
-    //     protected Map _migrationBarriers=Collections.synchronizedMap(new HashMap());
-
-    //     public void putBarrier(String id, CyclicBarrier barrier){_migrationBarriers.put(id, barrier);}
-    //     public CyclicBarrier getBarrier(String id){return (CyclicBarrier)_migrationBarriers.get(id);}
-    //     public void removeBarrier(String id){_migrationBarriers.remove(id);}
-
-    protected Manager                _manager;
-    protected HttpSessionImplFactory _factory;
     protected boolean                _running;
     protected Thread                 _thread;
     protected Destination            _destination;
@@ -198,17 +227,13 @@ public class
     protected ServerSocket           _socket;
     protected int                    _timeout=2000;
 
-    protected final Map _sessions;
+    protected HttpSessionImplFactory _factory;
+    public HttpSessionImplFactory getHttpSessionImplFactory(){return _factory;}
+    public void setHttpSessionImplFactory(HttpSessionImplFactory factory){_factory=factory;}
 
-    protected StreamingStrategy _streamingStrategy;
-
-    public Server(Manager manager, HttpSessionImplFactory factory, Map sessions, StreamingStrategy streamingStrategy)
-    {
-      _manager=manager;
-      _factory=factory;
-      _sessions=sessions;
-      _streamingStrategy=streamingStrategy;
-    }
+    protected Map _sessions;
+    public Map getHttpSessionImplMap(){return _sessions;}
+    public void setHttpSessionImplMap(Map sessions){_sessions=sessions;}
 
     public void
       start()
@@ -390,8 +415,7 @@ public class
 
     }
 
-    public void setDestination(Destination destination) {_destination=destination;}
-    public Destination getDestination() {return _destination;}
+    public void setDestination(javax.jms.Destination destination) {assert destination instanceof Destination;_destination=(Destination)destination;}
+    public javax.jms.Destination getDestination() {return _destination;}
   }
 }
-
