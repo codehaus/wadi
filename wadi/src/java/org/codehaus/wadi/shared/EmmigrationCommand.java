@@ -48,7 +48,7 @@ public class
       if ((impl=(HttpSessionImpl)manager._local.get(_id))!=null)
       {
 	//	_log.info("emmigrating session: "+_id);
-	NewMigrationService.Client client=new NewMigrationService.Client();
+	MigrationService.Client client=new MigrationService.Client();
 	Collection list=new ArrayList(1);
 	list.add(impl);		// must be mutable
 	client.emmigrate(manager._local, list, 25000L, _address, _port, manager.getStreamingStrategy(), true);

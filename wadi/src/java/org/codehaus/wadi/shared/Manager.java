@@ -415,7 +415,7 @@ public abstract class
 				       );
     _locationClient=new LocationClient(getAutoLocationAddress(), getAutoLocationPort(), 5000L);
     _locationServer.start();
-    _migrationServer=new NewMigrationService.Server(this, _implFactory, _local, _streamingStrategy);
+    _migrationServer=new MigrationService.Server(this, _implFactory, _local, _streamingStrategy);
     _migrationServer.start();
     _running=true;
 
@@ -939,7 +939,7 @@ public abstract class
   //----------------------------------------
   // Migration
 
-  NewMigrationService.Server _migrationServer;
+  MigrationService.Server _migrationServer;
 
   //----------------------------------------
   // Migration

@@ -17,20 +17,28 @@
 
 package org.codehaus.wadi.shared;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.CyclicBarrier;
+import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 import java.io.IOException;
 import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.net.UnknownHostException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-// TODO - maybe use NIO as discussed with Jeremy.
+// TODO - maybe use NIO/AIO as discussed with Jeremy.
 // TODO - could our connection be to a filedescriptor instead of another node ?
 // TODO - insertion/removal of locks in lockMap NYI
 
@@ -52,75 +60,111 @@ public class
     protected int         _port=0;	// any port
     protected InetAddress _address; // null seems to work fine as default interface
 
-    // TODO - LOCKING INCOMPLETE HERE - NEEDS FIXING...
     public boolean
-      run(String id, HttpSessionImpl session, InetAddress remoteAddress, int remotePort, StreamingStrategy streamingStrategy)
+      emmigrate(Map map, Collection candidates, long timeout, InetAddress remoteAddress, int remotePort, StreamingStrategy streamingStrategy, boolean sync)
     {
-      Sync lock=null;
-      boolean acquired=false;
       Socket socket=null;
       boolean ok=true;
+      int locked=0;		// in case we are interrupted whilst locking candidates
+      boolean commit=false;
+      int numSessions=0;
 
       try
       {
-	if (_address==null)
+	// only try to migrate those candidates that we can lock -
+	// i.e. are not in use...
+	for (Iterator i=candidates.iterator(); i.hasNext(); locked++)
 	{
-	  _address=InetAddress.getLocalHost();
-	  //_address=InetAddress.getByName("localhost");
+	  HttpSessionImpl impl=(HttpSessionImpl)i.next();
+	  impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY);
+	  if (!impl.getContainerLock().attempt(timeout)) // InterruptedException here
+	    i.remove();
 	}
 
-	socket=new Socket(remoteAddress, remotePort, _address, _port);
-	// TODO - do we need a timeout ? - YES
-	if (_log.isTraceEnabled()) _log.trace(socket+" -> "+remoteAddress+":"+remotePort);
-	ObjectOutput os=streamingStrategy.getOutputStream(socket.getOutputStream());
-	ObjectInput  is=streamingStrategy.getInputStream(socket.getInputStream());
-	// send migration request to session source
-	os.writeObject("migrate");
-	os.writeObject(id);
-	os.flush();
-	ok=is.readBoolean();
-	if (!ok)
+	numSessions=candidates.size();
+	if (numSessions>0)
 	{
-	  _log.warn("failed to immigrate session - perhaps it has moved node or been invalidated?");
-	  return false;
+	  if (_address==null)
+	  {
+	    _address=InetAddress.getLocalHost();
+	    //_address=InetAddress.getByName("localhost");
+	  }
+
+	  socket=new Socket(remoteAddress, remotePort, _address, _port);
+	  // TODO - do we need a timeout ? - YES
+	  if (_log.isTraceEnabled()) _log.trace(socket+" -> "+remoteAddress+":"+remotePort);
+	  ObjectOutput os=new ObjectOutputStream(socket.getOutputStream());
+	  ObjectInput  is=new ObjectInputStream(socket.getInputStream());
+	  //	  ObjectOutput ss=streamingStrategy.getOutputStream(socket.getOutputStream());
+	  ObjectOutput ss=os;
+
+	  // (1) send PREPARE()
+	  os.writeBoolean(sync);
+	  os.writeInt(numSessions);
+	  os.flush();
+	  for (Iterator i=candidates.iterator(); i.hasNext(); )
+	    ((HttpSessionImpl)i.next()).writeContent(ss); // ClassNotFoundException here
+	  ss.flush();
+
+	  // (2) receive return code from PREPARE()
+	  ok=is.readBoolean(); // protocol may later allow partial success
+	  if (ok) map.values().removeAll(candidates); // release session ownership this end
+
+	  // (3) send COMMIT()
+	  os.writeBoolean(ok);
+	  os.flush();
 	}
-	// demarshall session off wire
-	session.readContent(is);
-	// send commit message
-	os.writeBoolean(true);
-	os.flush();
-	// receive commit message
-	ok=is.readBoolean();
-	assert ok;
-	if (_log.isDebugEnabled()) _log.debug(session.getRealId()+": immigration (peer: "+remoteAddress+":"+remotePort+")");
-	return ok;
-      }
-      catch (UnknownHostException e)
-      {
-	_log.warn("unexpected problem resolving client interface", e);
-      }
-      catch (IOException e)
-      {
-	_log.warn("problem arranging session immigration - current host may be shutting down", e);
+
+	commit=ok;
       }
       catch (ClassNotFoundException e)
       {
-	_log.warn("are you mixing different versions of the same webapp ?", e);
+	_log.warn("unexpected problem emmigrating sessions - this should not happen - no emmigration will have occurred", e);
       }
+      catch (InterruptedException e)
+      {
+	_log.warn("unexpected problem emmigrating sessions - thread interrupted - no emmigration will have occurred", e);
+      }
+      catch (UnknownHostException e)
+      {
+	_log.warn("unexpected problem emmigrating sessions - could not resolve target interface - no emmigration will have occurred", e);
+      }
+      catch (IOException e)
+      {
+	_log.warn("unexpected problem emmigrating sessions - target node or comms failure ? - no emmigration will have occurred", e);
+      }
+      // what about timeout...
       finally
       {
-	// release lock
-	if (acquired)
-	  lock.release();
+	if (commit)
+	{
+	  // should I print out all session ids - so we have a record ?
+	  if (_log.isDebugEnabled())
+	    _log.debug(numSessions+" emmigration[s] (peer: "+remoteAddress+":"+remotePort+")");
+	}
+	else
+	{
+	  // rollback...
+	  for (Iterator i=candidates.iterator(); i.hasNext(); )
+	  {
+	    HttpSessionImpl impl=(HttpSessionImpl)i.next();
+	    _log.info("SESSION:"+impl);
+	    map.put(impl.getRealId(), impl);
+	  }
+	}
+
+	// release impls' locks
+	for (Iterator i=candidates.iterator(); i.hasNext() && locked>0; locked--)
+	  ((HttpSessionImpl)i.next()).getContainerLock().release();
 
 	if (socket!=null)
-	  {
-	    try{socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
-	    socket=null;
-	  }
+	{
+	  try{socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
+	  socket=null;
+	}
       }
 
-      return false;
+      return ok;
     }
   }
 
@@ -130,13 +174,21 @@ public class
   {
     protected final Log _log=LogFactory.getLog(getClass());
 
-    protected boolean      _running;
-    protected Thread       _thread;
-    protected int          _port=0; // any free port
-    protected InetAddress  _address;
-    protected int          _backlog=16;	// TODO - is this a useful default
-    protected ServerSocket _socket;
-    protected int          _timeout=2000;
+    protected Map _migrationBarriers=Collections.synchronizedMap(new HashMap());
+
+    public void putBarrier(String id, CyclicBarrier barrier){_migrationBarriers.put(id, barrier);}
+    public CyclicBarrier getBarrier(String id){return (CyclicBarrier)_migrationBarriers.get(id);}
+    public void removeBarrier(String id){_migrationBarriers.remove(id);}
+
+    protected Manager                _manager;
+    protected HttpSessionImplFactory _factory;
+    protected boolean                _running;
+    protected Thread                 _thread;
+    protected int                    _port=0; // any free port
+    protected InetAddress            _address;
+    protected int                    _backlog=16; // TODO - is this a useful default
+    protected ServerSocket           _socket;
+    protected int                    _timeout=2000;
 
     protected final Map _sessions;
 
@@ -148,8 +200,10 @@ public class
 
     protected StreamingStrategy _streamingStrategy;
 
-    public Server(Map sessions, StreamingStrategy streamingStrategy)
+    public Server(Manager manager, HttpSessionImplFactory factory, Map sessions, StreamingStrategy streamingStrategy)
     {
+      _manager=manager;
+      _factory=factory;
       _sessions=sessions;
       _streamingStrategy=streamingStrategy;
     }
@@ -249,84 +303,111 @@ public class
     {
       protected final Socket _socket;
       public Migration(Socket socket){_socket=socket;}
-      public void run(){migrate(_socket);}
+      public void run(){immigrate(_socket);}
     }
 
     public void
-      migrate(Socket socket)
+      immigrate(Socket socket)
     {
-      Sync lock=null;
-      boolean acquired=false;
       boolean ok=true;
+      boolean commit=false;
+      int numSessions=0;
+      Collection candidates=new ArrayList(numSessions);
+      boolean sync=false;
+
       try
       {
-	ObjectOutput os=_streamingStrategy.getOutputStream(socket.getOutputStream());
-	ObjectInput  is=_streamingStrategy.getInputStream(socket.getInputStream());
-	// receive migration request from target
-	String method=(String)is.readObject();
-	// method==migrate
-	String id=(String)is.readObject();
-	HttpSessionImpl impl=(HttpSessionImpl)_sessions.get(id); // TODO - what if session is not there ?
-	if (impl!=null)
+	ObjectOutput os=new ObjectOutputStream(socket.getOutputStream());
+	ObjectInput  is=new ObjectInputStream(socket.getInputStream());
+	//	ObjectInput  ss=_streamingStrategy.getInputStream(socket.getInputStream());
+	ObjectInput ss=is;
+
+
+	// (1) receive PREPARE()
+	sync=is.readBoolean();
+	numSessions=is.readInt(); // how many sessions ?
+	for (int i=numSessions; i>0; i--)
 	{
-	  // acquire container lock on session id
-	  impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY);
-	  lock=impl.getContainerLock();
-	  acquired=lock.attempt(100);		// should we have a time out here ?
-	  String newId=impl.getRealId();
-	  if (newId==null || !newId.equals(id))
-	  {
-	    // the session has gone elsewhere whilst we were waiting for
-	    // the lock...
-	    ok=false;
-	  }
-	}
-	else
-	{
-	  _log.warn(id+": could not find for migration");
-	  ok=false;
+	  HttpSessionImpl impl=_factory.create();
+	  impl.readContent(ss); // demarshall session off wire
+	  impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY); // TODO - does priority matter here?
+	  impl.getContainerLock().acquire();
+	  impl.setWadiManager(_manager);
+	  _sessions.put(impl.getRealId(), impl);
+	  candidates.add(impl);
 	}
 
-	os.writeBoolean(ok);
+	// (2) send return code from PREPARE()
+	os.writeBoolean(true);
 	os.flush();
-	if (!ok)
-	{
-	  _log.warn("failed to emmigrate session - perhaps it has moved node or been invalidated?");
-	  return;
-	}
-	// marshall session onto wire
-	impl.writeContent(os);
-	os.flush();
-	// receive commit message
+
+	// (3) receive COMMIT()
 	ok=is.readBoolean();
-	assert ok;
-	// remove session
-	_sessions.remove(id); // TODO - recycle
-	// send commit message
-	os.writeBoolean(ok);
-	os.flush();
-	if (_log.isDebugEnabled()) _log.debug(impl.getRealId()+": emmigration (peer: "+socket.getInetAddress()+":"+socket.getPort()+")");
-      }
-      catch (IOException e)
-      {
-	_log.warn("problem migrating session", e);
+
+	commit=ok;
       }
       catch (ClassNotFoundException e)
       {
-	_log.warn("problem migrating session", e);
+	_log.warn("unexpected problem immigrating sessions - this should not happen - no immigration will have occurred", e);
       }
       catch (InterruptedException e)
       {
-	_log.warn("problem migrating session", e);
+	_log.warn("unexpected problem immigrating sessions - thread interrupted - no immigration will have occurred", e);
+      }
+      catch (IOException e)
+      {
+	_log.warn("unexpected problem immigrating sessions - target node or comms failure ? - no immigration will have occurred", e);
       }
       finally
       {
-	// release lock
-	if (acquired)
-	  lock.release();
+	if (commit)
+	{
+	  if (_log.isDebugEnabled())
+	    _log.debug(numSessions+" immigration[s] (peer: "+socket.getRemoteSocketAddress()+":"+socket.getPort()+")");
+	}
+	else
+	{
+	  // rollback...
+	  _sessions.values().removeAll(candidates);
+	  _log.warn("failed to immigrate "+numSessions+" sessions - rolled back");
+	}
+
+	for (Iterator i=candidates.iterator(); i.hasNext(); )
+	{
+	  HttpSessionImpl impl=(HttpSessionImpl)i.next();
+	  impl.getContainerLock().release();
+
+	  if (sync)
+	  {
+	    CyclicBarrier barrier=getBarrier(impl.getRealId());
+
+	    if (barrier==null)
+	    {
+	      _log.warn("missed sync point (too late?) in session transfer");
+	    }
+	    else
+	    {
+	      try
+	      {
+		barrier.attemptBarrier(5000L);
+		_log.trace("successful sync session transfer");
+	      }
+	      catch (TimeoutException e)
+	      {
+		_log.warn("missed sync point in session transfer - timed out");
+	      }
+	      catch (InterruptedException e)
+	      {
+		_log.warn("missed sync point in session transfer - interrupted");
+	      }
+	    }
+	  }
+	}
 
 	try{socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
       }
+
     }
   }
 }
+
