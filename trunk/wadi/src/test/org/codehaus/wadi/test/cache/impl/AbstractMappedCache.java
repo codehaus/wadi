@@ -9,6 +9,7 @@ package org.codehaus.wadi.test.cache.impl;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.codehaus.wadi.test.cache.Cache;
 import org.codehaus.wadi.test.cache.RequestProcessor;
 
 /**
@@ -21,8 +22,8 @@ public abstract class AbstractMappedCache extends AbstractCache {
 
 	protected final Map _map;
 	
-	public AbstractMappedCache(Joiner joiner, Evicter evicter, Map map) {
-		super(joiner, evicter);
+	public AbstractMappedCache(Map map, Evicter evicter, Cache subcache) {
+		super(evicter, subcache);
 		_map=map;
 	}
 
@@ -36,10 +37,15 @@ public abstract class AbstractMappedCache extends AbstractCache {
 			RequestProcessor val=(RequestProcessor)e.getValue();
 			// TODO - we need an exclusive lock on entry before we try to evict (demote) it...
 			if (_evicter.evict(key, val)) {
-				_joiner.store(key, val);
-				_map.remove(key);
+				_subcache.put(key, val);
+				i.remove();
+				_log.info("demoted: "+key+ " to "+_subcache);
 			}
 			// TODO - release exclusive lock here...
 		}
+	}
+	
+	public String toString() {
+		return "<"+getClass().getName()+":"+_map.size()+">";
 	}
 }

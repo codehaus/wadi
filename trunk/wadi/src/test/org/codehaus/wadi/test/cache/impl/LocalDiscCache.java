@@ -6,6 +6,7 @@
  */
 package org.codehaus.wadi.test.cache.impl;
 
+import org.codehaus.wadi.test.cache.Cache;
 import org.codehaus.wadi.test.cache.RequestProcessor;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
@@ -24,8 +25,8 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
  */
 public class LocalDiscCache extends AbstractMappedCache {
 
-	public LocalDiscCache(Joiner joiner, Evicter evicter) {
-		super(joiner, evicter, new ConcurrentHashMap());
+	public LocalDiscCache(Evicter evicter, Cache subcache) {
+		super(new ConcurrentHashMap(), evicter, subcache);
 	}
 	
 	public RequestProcessor put(String key, RequestProcessor val){return (RequestProcessor)_map.put(key, val);}

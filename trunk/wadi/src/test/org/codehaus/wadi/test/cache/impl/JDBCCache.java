@@ -17,12 +17,12 @@ import org.codehaus.wadi.test.cache.RequestProcessor;
  */
 public class JDBCCache implements Cache {
 
-	protected final Joiner _joiner;
 	protected final Evicter _evicter;
+	protected final Cache _subcache;
 	
-	public JDBCCache(Joiner joiner, Evicter evicter) {
-		_joiner=joiner;
+	public JDBCCache(Evicter evicter, Cache subcache) {
 		_evicter=evicter;
+		_subcache=subcache;
 	}
 	
 	/* (non-Javadoc)

@@ -20,8 +20,7 @@ public class InvalidEvicter implements Evicter {
 	 * @see org.codehaus.wadi.test.cache.Cache.Evicter#evict(java.lang.String, org.codehaus.wadi.test.cache.RequestProcessor)
 	 */
 	public boolean evict(String key, RequestProcessor val) {
-		// TODO Auto-generated method stub
-		return false;
+		return val.getTimeToLive()<=0;// also need to test for invalidity - or id this the same thing ?
 	}
 
 }
