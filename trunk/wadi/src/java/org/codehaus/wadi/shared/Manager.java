@@ -386,7 +386,7 @@ public abstract class
     (_connection=_connectionFactory.createConnection()).start();
     _clusterFactory=new DefaultClusterFactory(getConnection());
     _cluster=_clusterFactory.createCluster("org.codehaus.wadi#cluster");
-    CommandListener listener=new CommandListener();
+    CommandListener listener=new CommandListener(this);
     _cluster.createConsumer(_cluster.getDestination()).setMessageListener(listener);
     _cluster.createConsumer(_cluster.getLocalNode().getDestination()).setMessageListener(listener);
     _cluster.start(); // should include webapp context
@@ -1122,7 +1122,10 @@ public abstract class
   public void setConnectionFactory(ActiveMQConnectionFactory connectionFactory){_connectionFactory=connectionFactory;}
   public ActiveMQConnectionFactory getConnectionFactory(){return _connectionFactory;}
 
-  interface Command extends Runnable, java.io.Serializable {};
+  interface Command extends Runnable, java.io.Serializable
+  {
+    public void setManager(Manager manager);
+  };
 
   public static class
     DummyCommand
@@ -1132,6 +1135,8 @@ public abstract class
     {
       System.out.println("DummyMessage arrived!!");
     }
+
+    public void setManager(Manager manager){}
   }
 
   protected void
@@ -1155,6 +1160,14 @@ public abstract class
   class CommandListener
     implements MessageListener
   {
+    protected Manager _manager;
+
+    public
+      CommandListener(Manager manager)
+    {
+      _manager=manager;
+    }
+
     public void
       onMessage(Message message)
     {
@@ -1171,6 +1184,7 @@ public abstract class
 	{
 	  try
 	  {
+	    command.setManager(_manager); // inject manager
 	    command.run();
 	  }
 	  catch (Throwable t)
