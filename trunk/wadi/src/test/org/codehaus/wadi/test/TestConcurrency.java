@@ -176,36 +176,43 @@ public class
     priority(false);
   }
 
-//   public void
-//     testOverlap()
-//     throws Exception
-//   {
-//     final ReadWriteLock lock=new RWLock();
+  protected boolean _first=true;
 
-//     {
-//       lock.readLock().acquire();
+  public void
+    testOverlap()
+    throws Exception
+  {
+    final ReadWriteLock lock=new RWLock();
 
-//       Thread t1=new Thread() {public void run()
-// 	  {
-// 	    try
-// 	    {
-// 	      lock.writeLock().acquire();
-// 	      _log.info("you lost");
-// 	      lock.writeLock().release();
-// 	    }
-// 	    catch (Exception e)
-// 	    {
-// 	      _log.warn(e);
-// 	    }
-// 	  }
-// 	};
-//       t1.start();
+    {
+      lock.readLock().acquire();
 
-//       ((RWLock)lock).overlap();
-//       _log.info("I won");
-//       lock.writeLock().release();
+      Thread t1=new Thread() {public void run()
+ 	  {
+ 	    try
+ 	    {
+ 	      lock.writeLock().acquire();
+ 	      _log.info("I lost");
+	      assertTrue(_first==false);
+ 	      lock.writeLock().release();
+ 	    }
+ 	    catch (Exception e)
+ 	    {
+ 	      _log.warn(e);
+ 	    }
+ 	  }
+ 	};
+      t1.setPriority(Thread.MIN_PRIORITY);
+      t1.start();
 
-//       t1.join();
-//     }
-//   }
+      Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+      ((RWLock)lock).overlap();
+      _log.info("I won");
+      assertTrue(_first==true);
+      _first=false;
+      lock.writeLock().release();
+
+      t1.join();
+    }
+  }
 }
