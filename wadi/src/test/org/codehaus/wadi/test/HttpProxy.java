@@ -1,9 +1,21 @@
-/*
- * Created on Feb 11, 2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
+//this started life as org.mortbay.servlet.ProxyServlet. I copied the
+//whole thing to use as a starting point - Thanks Greg !
+
+// ========================================================================
+// $Id$
+// Copyright 2004-2004 Mort Bay Consulting Pty. Ltd.
+// ------------------------------------------------------------------------
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ========================================================================
+
 package org.codehaus.wadi.test;
 
 import java.io.IOException;
@@ -27,18 +39,16 @@ import org.apache.commons.logging.LogFactory;
 import org.mortbay.util.IO;
 import org.mortbay.util.InetAddrPort;
 
-//this started life as org.mortbay.servlet.ProxyServlet. I copied the whole thing to use as a starting point - Thanks Greg !
-
 /**
  * EXPERIMENTAL Proxy servlet.
- * 
+ *
  * @author gregw
- *  
+ *
  */
 public class HttpProxy {
 	private int _tunnelTimeoutMs = 3000;
 	protected Log _log = LogFactory.getLog(HttpProxy.class);
-	
+
 	protected HashSet _DontProxyHeaders = new HashSet();
 	{
 		_DontProxyHeaders.add("proxy-connection");
@@ -54,7 +64,7 @@ public class HttpProxy {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see javax.servlet.Servlet#service(javax.servlet.ServletRequest,
 	 *      javax.servlet.ServletResponse)
 	 */
