@@ -17,7 +17,13 @@
 
 package org.codehaus.wadi.test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -35,7 +41,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.jetty.HttpSessionImpl;
 import org.codehaus.wadi.jetty.Manager;
 import org.codehaus.wadi.plugins.FilePassivationStrategy;
-import org.codehaus.wadi.shared.ObjectInputStream;
+import org.codehaus.wadi.shared.SerializableContent;
 
 //----------------------------------------
 
@@ -649,52 +655,73 @@ public class TestHttpSession
     try{session.removeValue(null);assertTrue(false);}catch(IllegalArgumentException e){}
   }
 
-  // this needs a rethink - the facade is NOT serialisable - only the
-  // internal IMPL...
-//   public void
-//     testActivation()
-//   {
-//     HttpSession s0=_manager.newHttpSession();
-//     List events=ActivationListener._events;
-//     events.clear();
+  public byte[]
+    marshall(SerializableContent writer)
+    throws Exception
+  {
+    ByteArrayOutputStream baos=new ByteArrayOutputStream();
+    ObjectOutputStream    oos =new ObjectOutputStream(baos);
+    writer.writeContent(oos);
+    oos.flush();
+    return baos.toByteArray();
+  }
 
-//     String key="test";
-//     ActivationListener l=new ActivationListener();
-//     s0.setAttribute(key, l);
-//     byte[] buffer=ObjectInputStream.marshall(s0);
-//     s0.getAttribute(key); // force lazy activation to trigger...
-//     // listener should now have been passivated and activated...
-//     assertTrue(events.size()==2);
-//     {
-//       Pair pair=(Pair)events.remove(0);
-//       assertTrue(pair!=null);
-//       assertTrue(pair.getType().equals("sessionWillPassivate"));
-//       HttpSessionEvent e=pair.getEvent();
-//       assertTrue(s0==e.getSession());
-//     }
-//     {
-//       Pair pair=(Pair)events.remove(0);
-//       assertTrue(pair!=null);
-//       assertTrue(pair.getType().equals("sessionDidActivate"));
-//       HttpSessionEvent e=pair.getEvent();
-//       assertTrue(s0==e.getSession());
-//     }
+  public void
+    demarshall(SerializableContent reader, byte[] buffer)
+    throws Exception
+  {
+    ByteArrayInputStream bais=new ByteArrayInputStream(buffer);
+    ObjectInputStream    ois =new ObjectInputStream(bais);
+    reader.readContent(ois);
+  }
 
-//     HttpSession s1=(HttpSession)ObjectInputStream.demarshall(buffer);
-//     ((org.codehaus.wadi.shared.HttpSession)s1).setWadiManager(_manager); // TODO - yeugh!
-//     // listener should not have yet been activated (we do it lazily)
-//     assertTrue(events.size()==0);
-//     s1.getAttribute(key);
-//     // now it should...
-//     assertTrue(events.size()==1);
-//     {
-//       Pair pair=(Pair)events.remove(0);
-//       assertTrue(pair!=null);
-//       assertTrue(pair.getType().equals("sessionDidActivate"));
-//       HttpSessionEvent e=pair.getEvent();
-//       assertTrue(s1==e.getSession());
-//     }
-//   }
+  public void
+    testActivation()
+    throws Exception
+  {
+    HttpSessionImpl s0=new HttpSessionImpl();
+    s0.init(_manager, "1234", 0L, 60, 60);
+    List events=ActivationListener._events;
+    events.clear();
+
+    String key="test";
+    ActivationListener l=new ActivationListener();
+    s0.setAttribute(key, l, false);
+    byte[] buffer=marshall(s0);
+    s0.getAttribute(key); // force lazy activation to trigger...
+    // listener should now have been passivated and activated...
+    assertTrue(events.size()==2);
+    {
+      Pair pair=(Pair)events.remove(0);
+      assertTrue(pair!=null);
+      assertTrue(pair.getType().equals("sessionWillPassivate"));
+      HttpSessionEvent e=pair.getEvent();
+      assertTrue(s0.getFacade()==e.getSession());
+    }
+    {
+      Pair pair=(Pair)events.remove(0);
+      assertTrue(pair!=null);
+      assertTrue(pair.getType().equals("sessionDidActivate"));
+      HttpSessionEvent e=pair.getEvent();
+      assertTrue(s0.getFacade()==e.getSession());
+    }
+
+    HttpSessionImpl s1=new HttpSessionImpl();
+    demarshall(s1, buffer);
+    s1.setWadiManager(_manager); // TODO - yeugh!
+    // listener should not have yet been activated (we do it lazily)
+    assertTrue(events.size()==0);
+    s1.getAttribute(key);
+    // now it should...
+    assertTrue(events.size()==1);
+    {
+      Pair pair=(Pair)events.remove(0);
+      assertTrue(pair!=null);
+      assertTrue(pair.getType().equals("sessionDidActivate"));
+      HttpSessionEvent e=pair.getEvent();
+      assertTrue(s1.getFacade()==e.getSession());
+    }
+  }
 
   public void
     testMigration()

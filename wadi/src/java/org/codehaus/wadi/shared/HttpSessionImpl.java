@@ -33,7 +33,7 @@ import org.apache.commons.logging.LogFactory;
 public abstract class
   HttpSessionImpl
   extends AbstractHttpSessionImpl
-  implements Serializable
+  implements SerializableContent, Serializable // temporary
 {
   public abstract javax.servlet.http.HttpSession newFacade();
 
@@ -54,7 +54,7 @@ public abstract class
   public int getMaxInactiveInterval(){return _maxInactiveInterval;}
   public void setMaxInactiveInterval(int i){_maxInactiveInterval=i;}
 
-  protected final Map _attributes=new HashMap();
+  protected Map _attributes=new HashMap();
 
   // Setters
 
@@ -109,7 +109,7 @@ public abstract class
     init(Manager manager, String id, long creationTime, int maxInactiveInterval, int actualMaxInactiveInterval)
   {
     _log.trace(id+": initialising");
-    _wadiManager                   =manager;
+    _wadiManager               =manager;
     _id                        =id;
     _creationTime              =creationTime-1;// think about this... - see isNew() - TODO
     _lastAccessedTime          =_creationTime;
@@ -175,6 +175,36 @@ public abstract class
     in.defaultReadObject();
     _rwlock=new ReaderPreferenceReadWriteLock();
     _facade=newFacade();
+
+    assert false;
+  }
+
+  public void
+    readContent(java.io.ObjectInputStream is)
+    throws java.io.IOException, ClassNotFoundException
+  {
+    _id                        =(String)is.readObject();
+    _creationTime              =is.readLong();
+    _lastAccessedTime          =is.readLong();
+    _maxInactiveInterval       =is.readInt();
+    _attributes                =(Map)is.readObject();
+    _actualMaxInactiveInterval =is.readInt();
+
+    // initialise transients ?
+    _rwlock=new ReaderPreferenceReadWriteLock();
+    _facade=newFacade();
+  }
+
+  public void
+    writeContent(java.io.ObjectOutputStream os)
+    throws java.io.IOException, ClassNotFoundException
+  {
+    os.writeObject(_id);
+    os.writeLong(_creationTime);
+    os.writeLong(_lastAccessedTime);
+    os.writeInt(_maxInactiveInterval);
+    os.writeObject(_attributes);
+    os.writeInt(_actualMaxInactiveInterval);
   }
 
   public void setId(String id){_id=id;}
