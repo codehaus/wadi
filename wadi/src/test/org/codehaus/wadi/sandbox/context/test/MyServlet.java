@@ -1,19 +1,19 @@
 /**
-*
-* Copyright 2003-2004 The Apache Software Foundation
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*/
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.sandbox.context.test;
 
 import java.io.IOException;
@@ -60,7 +60,7 @@ public class MyServlet implements Servlet {
 	protected final StatelessContextualiser _statelessContextualiser;
 	protected final MemoryContextualiser _memoryContextualiser;
 	protected final Location _location;
-	
+
 	public MyServlet(String name, Cluster cluster, ContextPool contextPool, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 		_cluster=cluster;
@@ -79,9 +79,9 @@ public class MyServlet implements Servlet {
 		_memoryContextualiser=new MemoryContextualiser(_statelessContextualiser, _collapser, _memoryMap, new NeverEvicter(), new SimpleStreamingStrategy(), contextPool);
 		relocater.setTop(_memoryContextualiser);
 	}
-	
+
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}
-	
+
 	public void init(ServletConfig config) throws ServletException {
 		_config = config;
 		_log.info("Servlet.init()");
@@ -95,7 +95,7 @@ public class MyServlet implements Servlet {
 			throws ServletException, IOException {
 		String sessionId=((HttpServletRequest)req).getRequestedSessionId();
 		_log.info("Servlet.service("+((sessionId==null)?"":sessionId)+")");
-		
+
 		if (_test!=null)
 			_test.test(req, res);
 	}
@@ -111,14 +111,14 @@ public class MyServlet implements Servlet {
 			_log.warn(e);
 		}
 	}
-	
+
 	interface Test {
 		void test(ServletRequest req, ServletResponse res);
 	}
-	
+
 	protected Test _test;
 	public void setTest(Test test){_test=test;}
-	
+
 	public Map getClusterMap(){return _clusterMap;}
 	public Map getMemoryMap(){return _memoryMap;}
 }

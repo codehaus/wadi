@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public interface Contextualiser {
 	Evicter getEvicter();
 
 	boolean isLocal();
-	
+
 	/**
 	 * Return a Demoter to the first Contextualiser which would be happy to accept this Motable - i.e. would not evict() it.
 	 * @param id - uid of the Motable

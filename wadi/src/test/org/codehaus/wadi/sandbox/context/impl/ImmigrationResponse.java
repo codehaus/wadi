@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,10 +29,10 @@ import org.codehaus.wadi.sandbox.context.Motable;
 public class ImmigrationResponse implements Serializable {
 	protected String _id;
 	protected Motable _motable;
-	
+
 	public String getId(){return _id;}
 	public void setId(String id){_id=id;}
-	
+
 	public Motable getMotable(){return _motable;}
 	public void setMotable(Motable motable){_motable=motable;}
 }

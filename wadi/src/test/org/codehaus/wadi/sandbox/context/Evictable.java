@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -31,9 +31,9 @@ public interface Evictable {
 	public void setLastAccessedTime(long lastAccessedTime);
 	public int  getMaxInactiveInterval();
 	public void setMaxInactiveInterval(int maxInactiveInterval);
-	
+
 	public long getTimeToLive(long time);
-	
+
 	public boolean getValid();
 	//public void setValid(boolean valid);
 }

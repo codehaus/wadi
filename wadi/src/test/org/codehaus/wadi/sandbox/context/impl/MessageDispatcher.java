@@ -1,19 +1,19 @@
 /**
-*
-* Copyright 2003-2004 The Apache Software Foundation
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*/
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.Serializable;
@@ -53,33 +53,33 @@ public class MessageDispatcher implements MessageListener {
 	    _nodeConsumer=_cluster.createConsumer(_cluster.getLocalNode().getDestination(), null, excludeSelf);
 	    _nodeConsumer.setMessageListener(this);
 	    }
-	
+
 	interface Dispatcher {
 		void dispatch(ObjectMessage om, Serializable obj) throws Exception;
 	}
-	
+
 	class TargetDispatcher implements Dispatcher {
 		protected final Object _target;
 		protected final Method _method;
 		protected final ThreadLocal _pair=new ThreadLocal(){protected Object initialValue() {return new Object[2];}};
-		
+
 		public TargetDispatcher(Object target, Method method) {
 			_target=target;
 			_method=method;
 		}
-		
+
 		public void dispatch(ObjectMessage om, Serializable obj) throws InvocationTargetException, IllegalAccessException {
 			Object[] pair=(Object[])_pair.get();
 			pair[0]=om;
 			pair[1]=obj;
 			_method.invoke(_target, pair);
 		}
-		
+
 		public String toString() {
 			return "<TargetDispatcher: "+_method+" dispatched on: "+_target+">";
 		}
 	}
-	
+
 	/**
 	 * @param target - the object on which to dispatch messages
 	 * @param methodName - the name of the overloaded method to call
@@ -106,16 +106,16 @@ public class MessageDispatcher implements MessageListener {
 		}
 		return n;
 	}
-	
-	class RendezVousDispatcher implements Dispatcher {	
+
+	class RendezVousDispatcher implements Dispatcher {
 		protected final Map _rvMap;
 		protected final long _timeout;
-		
+
 		public RendezVousDispatcher(Map rvMap, long timeout) {
 			_rvMap=rvMap;
 			_timeout=timeout;
 		}
-		
+
 		public void dispatch(ObjectMessage om, Serializable obj) throws JMSException {
 			// rendez-vous with waiting thread...
 			String correlationId=om.getJMSCorrelationID();
@@ -149,27 +149,27 @@ public class MessageDispatcher implements MessageListener {
 		_map.put(type, new RendezVousDispatcher(rvMap, timeout));
 		_log.trace("registering class: "+type.getName());
 	}
-	
+
 	public void onMessage(Message message) {
 		//TODO -  Threads should be pooled and reusable
-		// any allocs should be cached as ThreadLocals and reused 
+		// any allocs should be cached as ThreadLocals and reused
 		// we need a way of indicating which messages should be threaded and which not...
 		// how about a producer/consumer arrangement...
 		new DispatchThread(message).start();
 	}
-	
+
 	class DispatchThread extends Thread {
 		protected final Message _message;
 
 		public DispatchThread(Message message) {
 			_message=message;
 		}
-		
+
 		public void run() {
 			ObjectMessage om=null;
 			Serializable obj=null;
 			Dispatcher d;
-			
+
 			try {
 				if (_message instanceof ObjectMessage && (om=(ObjectMessage)_message)!=null && (obj=om.getObject())!=null) {
 					if ((d=(Dispatcher)_map.get(obj.getClass()))!=null) {
@@ -191,12 +191,12 @@ public class MessageDispatcher implements MessageListener {
 		public Destination from;
 		public Destination to;
 		public String correlationId;
-		
+
 		public String toString() {
 			return "<Settings: to:"+to+" from:"+from+" corrId:"+correlationId+" >";
 		}
 	}
-	
+
 	public void sendMessage(Serializable s, Settings settingsIn) throws JMSException {
 		// construct and send message...
 		ObjectMessage message=_cluster.createObjectMessage();
@@ -205,21 +205,21 @@ public class MessageDispatcher implements MessageListener {
 		message.setObject(s);
 		_cluster.send(settingsIn.to, message);
 	}
-	
+
 	// send a message and then wait a given amount of time for the first response - return it...
 	// for use with RendezVousDispatcher... - need to register type beforehand...
 	public Serializable exchangeMessages(String id, Map rvMap, Serializable request, Settings settingsInOut, long timeout) {
 		Rendezvous rv=new Rendezvous(2); // TODO - can these be reused ?
-		
+
 		// set up a rendez-vous...
 		synchronized (rvMap) {
 			rvMap.put(settingsInOut.correlationId, rv);
 		}
-		
+
 		ObjectMessage om=null;
 		Serializable response=null;
 		try {
-			sendMessage(request, settingsInOut);		
+			sendMessage(request, settingsInOut);
 			// rendez-vous with response/timeout...
 			do {
 				try {
@@ -246,18 +246,18 @@ public class MessageDispatcher implements MessageListener {
 				rvMap.remove(settingsInOut.correlationId);
 			}
 		}
-		
+
 		return response;
 	}
-	
+
 	public Cluster getCluster(){return _cluster;}
-	
+
 	public void addDestination(Destination destination) throws JMSException {
 	    boolean excludeSelf=true;
 	    MessageConsumer mc=_cluster.createConsumer(destination, null, excludeSelf);
 	    mc.setMessageListener(this);
 	}
-	
+
 	public void removeDestination(Destination destination) {
 		// NYI - TODO
 	}

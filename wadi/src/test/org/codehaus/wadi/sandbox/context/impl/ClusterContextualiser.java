@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -85,26 +85,26 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		_dispatcher=dispatcher;
 	    _relocater=relocater;
 	    _location=location;
-	    
+
 	    _immoter=new ClusterImmoter();
 	    _emoter=null; // TODO - I think this should be something like the ImmigrationEmoter
 	    // it pulls a names Session out of the cluster and emotes it from this Contextualiser...
 	    // this makes it awkward to split session and request relocation into different strategies,
 	    // so session relocation should be the basic strategy, with request relocation as a pluggable
 	    // optimisation...
-	    
+
 	    _dispatcher.register(this, "onMessage");
 	    _dispatcher.register(EmigrationAcknowledgement.class, _emigrationRvMap, 3000);
 		}
-	
+
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
-	
+
 	// this field forms part of a circular dependency - so we need a setter rather than ctor param
 	protected Contextualiser _top;
 	public Contextualiser getTop() {return _top;}
 	public void setTop(Contextualiser top) {_top=top;}
-	
+
 	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
 		return _relocater.relocate(hreq, hres, chain, id, immoter, promotionLock, _map);
 	}
@@ -137,19 +137,19 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 //		_dispatcher.sendMessage(new ShutDownEndedNotification(_emigrationQueue), settings);
 		// dump subsequent demoted Contexts onto queue
 		}
-	
+
 	public void onMessage(ObjectMessage om, EmigrationStartedNotification sdsn) throws JMSException {
 		Destination emigrationQueue=sdsn.getDestination();
 		//_log.info("received EmigrationStartedNotification: "+emigrationQueue);
-		_dispatcher.addDestination(emigrationQueue); 
+		_dispatcher.addDestination(emigrationQueue);
 	}
-	
+
 	public void onMessage(ObjectMessage om, EmigrationEndedNotification sden) {
 		Destination emigrationQueue=sden.getDestination();
 		//_log.info("received EmigrationEndedNotification: "+emigrationQueue);
 		_dispatcher.removeDestination(emigrationQueue);
 	}
-	
+
 	/**
 	 * Manage the immotion of a session into the cluster tier from another and its emigration thence to another node.
 	 *
@@ -158,7 +158,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 */
 	class ClusterImmoter implements Immoter {
 		public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}
-		
+
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
 			settingsInOut.to=_emigrationQueue;
@@ -166,24 +166,24 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
 			EmigrationRequest er=new EmigrationRequest(id, emotable);
 			EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emigrationRvMap, er, settingsInOut, 3000);
-			
+
 			_map.put(id, ea.getLocation()); // cache new Location of Session
 			return ea!=null;
 		}
-		
+
 		public void commit(String id, Motable immotable) {
 			// TODO - cache new location of emigrating session...
 			}
-		
+
 		public void rollback(String id, Motable immotable) {
 			// TODO - errr... HOW ?
 			}
-		
+
 		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
 			// TODO
 			//contextualiseLocally(hreq, hres, chain, id, new ClusterImmoter(), new NullSync(), motable);
 		}
-		
+
 		public String getInfo() {
 			return "cluster";
 		}
@@ -196,17 +196,17 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 * @version $Revision$
 	 */
 	class ClusterEmoter implements Emoter {
-		
+
 		protected final ObjectMessage _om;
 		protected final EmigrationRequest _er;
 		protected final MessageDispatcher.Settings _settingsInOut;
-		
+
 		public ClusterEmoter(ObjectMessage om, EmigrationRequest er) {
 			_om=om;
 			_er=er;
 			_settingsInOut=new MessageDispatcher.Settings();
 		}
-		
+
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			try {
 				// reverse direction...
@@ -218,7 +218,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 				return false;
 			}
 		}
-		
+
 		public void commit(String id, Motable emotable) {
 			try {
 				EmigrationAcknowledgement ea=new EmigrationAcknowledgement();
@@ -228,20 +228,20 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			} catch (JMSException e) {
 				_log.error("could not acknowledge safe receipt: "+id, e);
 			}
-			
+
 			//_log.info("immigration (cluster): "+id);
 		}
-		
+
 		public void rollback(String id, Motable emotable) {
 			throw new RuntimeException("NYI");
 			// difficult !!!
 		}
-		
+
 		public String getInfo() {
 			return "cluster";
 		}
 	}
-	
+
 	public void onMessage(ObjectMessage om, EmigrationRequest er) throws JMSException {
 		String id=er.getId();
 		Emoter emoter=new ClusterEmoter(om, er);

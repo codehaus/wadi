@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		_immoter=new SharedJDBCImmoter();
 		_emoter=new SharedJDBCEmoter();
 	}
-	
+
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
 
@@ -77,15 +77,15 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 			return false;
 		// TODO - consider how to contextualise locally... should be implemented in ChainedContextualiser, as should this..
 	}
-	
+
 	public void evict() {
 		// TODO - NYI
 	}
-	
+
 	public boolean isLocal(){return false;}
-	
+
 	public class SharedJDBCEmoter extends ChainedEmoter {
-		
+
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			if (super.prepare(id, emotable, immotable)) {
 				try {
@@ -102,7 +102,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 			} else
 				return false;
 		}
-		
+
 		public void commit(String id, Motable emotable) {
 			super.commit(id, emotable);
 			SharedJDBCMotable sjm=((SharedJDBCMotable)emotable);
@@ -114,7 +114,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 				_log.error("could not close database connection", e);
 			}
 		}
-		
+
 		public void rollback(String id, Motable emotable) {
 			super.rollback(id, emotable);
 			SharedJDBCMotable sjm=((SharedJDBCMotable)emotable);
@@ -127,27 +127,27 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 				_log.error("could not rollback database connection", e);
 			}
 		}
-		
+
 		// TODO - abstract common code between this and Imoter...
-			
+
 		public String getInfo(){return "database";}
-		
+
 	};
-		
+
 	/**
 	 * An Emmoter that deals in terms of SharedJDBCMotables
 	 *
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$
 	 */
-	public class SharedJDBCImmoter extends AbstractImmoter {	
-		
+	public class SharedJDBCImmoter extends AbstractImmoter {
+
 		public Motable nextMotable(String id, Motable emotable) {
 			Motable motable=new SharedJDBCMotable(); // TODO - could be a thread local... - used then discarded immediately
-			motable.setId(id);			
+			motable.setId(id);
 			return motable;
 		}
-		
+
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			try {
 				Connection connection=_dataSource.getConnection();
@@ -158,10 +158,10 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 				_log.error("could not establish database connection", e);
 				return false;
 			}
-			
+
 			return super.prepare(id, emotable, immotable);
 		}
-		
+
 		public void commit(String id, Motable immotable) {
 			super.commit(id, immotable);
 			SharedJDBCMotable sjm=((SharedJDBCMotable)immotable);
@@ -173,7 +173,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 				_log.error("could not close database connection", e);
 			}
 		}
-		
+
 		public void rollback(String id, Motable immotable) {
 			super.rollback(id, immotable);
 			SharedJDBCMotable sjm=((SharedJDBCMotable)immotable);
@@ -186,12 +186,12 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 				_log.error("could not rollback database connection", e);
 			}
 		}
-		
+
 		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
 			// TODO - we need to pass through a promotionLock
 //			contextualiseLocally(hreq, hres, chain, id, new NullSync(), motable);
 		}
-		
+
 		public String getInfo() {
 			return "database";
 		}

@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -53,12 +53,12 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 		_collapser=collapser;
 		_evicter=evicter;
 	}
-	
+
 	/**
 	 * @return - an Emoter that facilitates removal of Motables from this Contextualiser's own store
 	 */
 	public abstract Emoter getEmoter();
-	
+
 	/**
 	 * @return - an Immoter that facilitates insertion of Motables into this Contextualiser's own store
 	 */
@@ -121,11 +121,11 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 	public Immoter getDemoter(String id, Motable motable) {
 		if (getEvicter().evict(id, motable))
 			return _next.getDemoter(id, motable);
-		else	
+		else
 			return getImmoter();
 	}
 
 	public abstract void evict();
-	
+
 	public Evicter getEvicter(){return _evicter;}
 }

@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ public abstract class AbstractHttpProxy implements HttpProxy {
 
 	public static final String _WADI_IsSecure="WADI-IsSecure";
 
-	protected static final HashSet _DontProxyHeaders = new HashSet();	
+	protected static final HashSet _DontProxyHeaders = new HashSet();
 	static
 	{
 		_DontProxyHeaders.add("proxy-connection");
@@ -84,11 +84,11 @@ public abstract class AbstractHttpProxy implements HttpProxy {
 	}
 
 	protected final String _sessionPathParamKey;
-	
+
 	public AbstractHttpProxy(String sessionPathParamKey) {
 		_sessionPathParamKey=sessionPathParamKey;
 	}
-	
+
 	public int copy(InputStream is, OutputStream os, int length) throws IOException {
 		int total=0;
 		byte[] buffer=new byte[length];

@@ -1,19 +1,19 @@
 /**
-*
-* Copyright 2003-2004 The Apache Software Foundation
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*/
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.sandbox.context.test;
 
 import java.io.IOException;
@@ -41,7 +41,7 @@ public class JettyNode implements Node {
 		protected boolean _secure;
 		public boolean getSecure(){return _secure;}
 		public void setSecure(boolean secure){_secure=secure;}
-	
+
 		public boolean isIntegral(org.mortbay.http.HttpConnection connection){return _secure||super.isIntegral(connection);}
 	    public boolean isConfidential(org.mortbay.http.HttpConnection connection){return _secure||super.isConfidential(connection);}
 	}
@@ -56,14 +56,14 @@ public class JettyNode implements Node {
 	protected final Filter _filter;
 	protected final Servlet _servlet;
 	protected final HttpHandler _whandler;
-	
+
 	public JettyNode(String name, String host, int port, String context, String webApp, Filter filter, Servlet servlet) throws Exception,IOException, UnknownHostException {
 		System.setProperty("org.mortbay.xml.XmlParser.NotValidating", "true");
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 
 		_context=_server.addWebApplication(context, webApp);
 		_whandler=new Handler(Pattern.compile("127\\.0\\.0\\.1|192\\.168\\.0\\.\\d{1,3}"));
-		_context.addHandler(0, _whandler);	
+		_context.addHandler(0, _whandler);
 		_context.start();
 		HttpHandler[] handlers=_context.getHandlers();
 		_handler=(WebApplicationHandler)handlers[1];
@@ -82,13 +82,13 @@ public class JettyNode implements Node {
 
 	public Filter getFilter(){return _filter;}
 	public Servlet getServlet(){return _servlet;}
-	
+
 	public void start() throws Exception {
 		_server.start();
 		((FilterInstance)_filterHolder.getFilter()).setInstance(_filter);
 		((ServletInstance)_servletHolder.getServlet()).setInstance(_servlet);
 	}
-	
+
 	public void stop() throws Exception {
 		_server.stop();
 	}
