@@ -101,25 +101,19 @@
     <nagEmailAddress>jules@coredevelopers.net</nagEmailAddress>
 
     <sourceDirectory>src/java</sourceDirectory>
-
-<!--
-    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
--->
-
     <aspectSourceDirectory>src/java</aspectSourceDirectory>
+    <sourceDirectory>src/test</sourceDirectory>
+    <aspectSourceDirectory>src/test</aspectSourceDirectory>
 
-    <!-- Unit test cases
+    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
+
     <unitTest>
       <includes>
-        <include>**/test/Test*.java</include>
+        <include>**/TestHttpSession.java</include>
       </includes>
-      <excludes>
-      </excludes>
     </unitTest>
-    -->
 
-    <!-- J A R  R E S O U R C E S -->
-    <!-- Resources that are packaged up inside the JAR file -->
+<!-- NYI -->
     <resources>
       <resource>
         <directory>${basedir}/src/resources/misc</directory>
@@ -134,10 +128,6 @@
         </includes>
       </resource>
     </resources>
-
-    <!-- Integration unit test cases
-    <integrationUnitTest/>
-    -->
 
     <jars>
     </jars>
@@ -185,7 +175,7 @@
       </properties>
     </dependency>
 
-    <dependency>
+    <dependency><!-- when will ibiblio be updated ? -->
       <groupId>aspectj</groupId>
       <artifactId>aspectjtools</artifactId>
       <version>1.2rc1</version>
@@ -239,7 +229,7 @@
       <url>http://mx4j.sourceforge.net</url>
     </dependency>
 
-    <dependency>
+    <dependency><!-- I have to replace this with a newer version -->
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jetty</artifactId>
       <version>5.0.RC0</version>
@@ -253,13 +243,14 @@
       <url>http://jetty.mortbay.org/jetty/index.html</url>
     </dependency>
 
-    <dependency>
+    <dependency><!-- when will this be updated/ -->
       <groupId>tomcat</groupId>
       <artifactId>catalina</artifactId>
       <version>5.0.18</version>
       <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/index.html</url>
     </dependency>
 
+<!--
     <dependency>
       <groupId>activemq</groupId>
       <artifactId>activemq</artifactId>
@@ -271,6 +262,7 @@
       <artifactId>activecluster</artifactId>
       <version>SNAPSHOT</version>
     </dependency>
+-->
 
   </dependencies>
 
