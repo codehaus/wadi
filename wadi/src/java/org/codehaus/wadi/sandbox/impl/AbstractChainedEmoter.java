@@ -16,38 +16,26 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import java.util.Map;
-
+import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Motable;
 
 
 /**
- * A basic Emoter for MappedContextualisers
+ * A basic Emoter for ChainedContextualisers
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class MappedEmoter extends ChainedEmoter {
-
-	protected final Map _map;
-
-	public MappedEmoter(Map map) {
-		_map=map;
-	}
+public abstract class AbstractChainedEmoter implements Emoter {
 
 	public boolean prepare(String id, Motable emotable, Motable immotable) {
-		if (super.prepare(id, emotable, immotable)) {
-			synchronized (_map){_map.remove(id);} // remove ref in cache
-			return true;
-		} else
-			return false;
+		return true;
+	}
+
+	public void commit(String id, Motable emotable) {
+		emotable.tidy(); // remove copy in store
 	}
 
 	public void rollback(String id, Motable emotable) {
-		synchronized (_map){_map.put(id, emotable);} // replace ref into cache
-	}
-
-	public String getInfo() {
-		return "mapped";
 	}
 }
