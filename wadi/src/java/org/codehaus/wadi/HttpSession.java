@@ -135,7 +135,7 @@ public class
   void setLastAccessedTime(long t){_impl.setLastAccessedTime(t);}
 
   // when an HttpSession comes across the wire it needs to
-  // reinitialise the backptr that it's impl holds...
+  // reinitialise the backptr that its impl holds...
 
   public String
     toString()

@@ -83,7 +83,7 @@ import ri.cache.BasicCache;
 // kill-9-level concern, so replication should protect against this -
 // how?).
 
-// first node up (n1) should promote a COPY of shared store to it's own
+// first node up (n1) should promote a COPY of shared store to its own
 // local store.
 
 // n2 should join n1's buddy group and replicate its VM and Local tiers...
