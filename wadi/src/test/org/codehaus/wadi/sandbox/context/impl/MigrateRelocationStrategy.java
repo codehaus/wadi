@@ -34,7 +34,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
@@ -57,18 +56,16 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 	protected final MessageDispatcher _dispatcher;
 	protected final long _timeout;
 	protected final Location _location;
-	protected final Cluster _cluster;
 	protected final StreamingStrategy _ss;
 	protected final Map _locationMap;
 	
 	protected final Map _resRvMap=new HashMap();
 	protected final Map _ackRvMap=new HashMap();
 	
-	public MigrateRelocationStrategy(Cluster cluster, MessageDispatcher dispatcher, Location location, long timeout, StreamingStrategy ss, Map locationMap) {
+	public MigrateRelocationStrategy(MessageDispatcher dispatcher, Location location, long timeout, StreamingStrategy ss, Map locationMap) {
 		_dispatcher=dispatcher;		
 		_timeout=timeout;
 		_location=location;
-		_cluster=cluster;
 		_ss=ss;
 		_locationMap=locationMap;
 		
@@ -84,7 +81,7 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 		
 		if (location==null) {
 			_log.info("no cached location - 1->n : "+id);
-			destination=_cluster.getDestination();
+			destination=_dispatcher.getCluster().getDestination();
 		} else {
 			_log.info("cached location - 1->1 : "+id);
 			destination=location.getDestination();

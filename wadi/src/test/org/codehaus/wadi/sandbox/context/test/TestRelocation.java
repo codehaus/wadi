@@ -86,42 +86,6 @@ public class TestRelocation extends TestCase {
 	protected SwitchableRelocationStrategy _relocater0;
 	protected SwitchableRelocationStrategy _relocater1;
 	
-	  class MyClusterListener
-	    implements ClusterListener
-	  {
-		protected Log _log = LogFactory.getLog(getClass());
-
-		public void
-	      onNodeAdd(ClusterEvent ce)
-	    {
-	      _log.info("node added: " + ce.getNode());
-	    }
-
-	    public void
-	      onNodeFailed(ClusterEvent ce)
-	    {
-	      _log.info("node failed: " + ce.getNode());
-	    }
-
-	    public void
-	      onNodeRemoved(ClusterEvent ce)
-	    {
-	      _log.info("node removed: " + ce.getNode());
-	    }
-
-	    public void
-	      onNodeUpdate(ClusterEvent ce)
-	    {
-	      _log.info("node updated: " + ce.getNode());
-	    }
-
-	    public void
-	      onCoordinatorChanged(ClusterEvent ce)
-	    {
-	      _log.info("coordinator changed: " + ce.getNode());
-	    }
-	  }
-
 	  class SwitchableRelocationStrategy implements RelocationStrategy {
 	  	protected RelocationStrategy _delegate=new DummyRelocationStrategy();
 	  	
@@ -155,7 +119,6 @@ public class TestRelocation extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		System.setProperty("org.mortbay.xml.XmlParser.NotValidating", "true");
 		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
 //		ClusterFactory clusterFactory       = new DefaultClusterFactory(connectionFactory,false, Session.AUTO_ACKNOWLEDGE, "ACTIVECLUSTER.DATA.", 50000L);
 		ClusterFactory clusterFactory       = new DefaultClusterFactory(connectionFactory);
@@ -168,7 +131,7 @@ public class TestRelocation extends TestCase {
 		_dispatcher0=new MessageDispatcher(_cluster0);
 		_location0=new HttpProxyLocation(_cluster0.getLocalNode().getDestination(), isa0, proxy0);
 		_relocater0=new SwitchableRelocationStrategy();
-		_servlet0=new MyServlet("0", _cluster0, new MyContextPool(), _relocater0);
+		_servlet0=new MyServlet("0", _cluster0, new MyContextPool(), _dispatcher0, _relocater0);
 		_filter0=new MyFilter("0", _servlet0);
 		(_node0=new TomcatNode("0", "localhost", 8080, "/test", "/home/jules/workspace/wadi/webapps/test", _filter0, _servlet0)).start();
 
@@ -179,7 +142,7 @@ public class TestRelocation extends TestCase {
 		_dispatcher1=new MessageDispatcher(_cluster1);
 		_location1=new HttpProxyLocation(_cluster1.getLocalNode().getDestination(), isa1, proxy1);
 		_relocater1=new SwitchableRelocationStrategy();
-		_servlet1=new MyServlet("1", _cluster1, new MyContextPool(), _relocater1);
+		_servlet1=new MyServlet("1", _cluster1, new MyContextPool(), _dispatcher1, _relocater1);
 		_filter1=new MyFilter("1", _servlet1);
 		(_node1=new JettyNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
@@ -215,14 +178,14 @@ public class TestRelocation extends TestCase {
 	}
 	
 	public void testProxyInsecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, 3000));
-		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, 3000));
+		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_dispatcher0, _location0, 2000, 3000));
+		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_dispatcher1, _location1, 2000, 3000));
 		testInsecureRelocation(false);
 		}
 	
 	public void testMigrateInsecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
-		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
+		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
+		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
 		testInsecureRelocation(true);
 		}
 		
@@ -347,14 +310,14 @@ public class TestRelocation extends TestCase {
 	}
 	
 	public void testProxySecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, 3000));
-		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, 3000));
+		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_dispatcher0, _location0, 2000, 3000));
+		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_dispatcher1, _location1, 2000, 3000));
 		testSecureRelocation(false);
 		}
 	
 	public void testMigrateSecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
-		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
+		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
+		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
 		testSecureRelocation(true);
 		}
 		
@@ -432,14 +395,14 @@ public class TestRelocation extends TestCase {
 	};
 	
 	public void testRelocationStatelessContextualiser() throws Exception {
-		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, 3000));
-		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, 3000));
+		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_dispatcher0, _location0, 2000, 3000));
+		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_dispatcher1, _location1, 2000, 3000));
 		testStatelessContextualiser(false);
 		}
 	
 	public void testMigrateStatelessContextualiser() throws Exception {
-		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
-		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
+		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
+		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
 		testStatelessContextualiser(true);
 		}
 		
