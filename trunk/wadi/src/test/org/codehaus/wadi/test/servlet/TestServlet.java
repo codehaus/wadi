@@ -27,7 +27,7 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.servlet.ServletHttpContext;
-import org.mortbay.jetty.servlet.WebApplicationContext;
+//import org.mortbay.jetty.servlet.WebApplicationContext;
 
 import junit.framework.TestCase;
 

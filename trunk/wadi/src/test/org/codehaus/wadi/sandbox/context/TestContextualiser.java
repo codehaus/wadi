@@ -23,6 +23,10 @@ import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.context.impl.LocalDiscContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 
+import EDU.oswego.cs.dl.util.concurrent.Mutex;
+import EDU.oswego.cs.dl.util.concurrent.NullSync;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 import junit.framework.TestCase;
 
 /**
@@ -83,10 +87,13 @@ public class TestContextualiser extends TestCase {
 	
 	class MyContext implements Context {
 		String _val;
+		Sync   _lock=new NullSync();
 		
 		MyContext(String val) { 
 			_val=val;
 		}
+		
+		public Sync getSharedLock(){return _lock;}
 	}
 	
 	class
@@ -110,7 +117,63 @@ public class TestContextualiser extends TestCase {
 		Contextualiser memory=new MemoryContextualiser(new HashingCollapser(10, 3000), disc, m);
 		
 		FilterChain fc=new MyFilterChain();
-		memory.contextualise(null,null,fc,"foo", null);
-		memory.contextualise(null,null,fc,"bar", null);
+		memory.contextualise(null,null,fc,"foo", null, new Mutex());
+		memory.contextualise(null,null,fc,"bar", null, new Mutex());
 	}
+	
+	class MyContextualiser implements Contextualiser {
+		int _counter=0;
+		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync overlap) throws IOException, ServletException {
+			try {
+				_counter++;
+				Thread.sleep(1000);
+				assertTrue(_counter==1);
+				overlap.release(); // other 'loading' threads may run now
+				Thread.sleep(1000);
+				_counter--;
+			} catch (InterruptedException ignore) {
+			}
+			return false;
+		}
+	}
+	
+	class MyRunnable implements Runnable {
+		Contextualiser _contextualiser;
+		FilterChain    _chain;
+		String         _id;
+		Mutex           _loadMutex;
+		
+		MyRunnable(Contextualiser contextualiser, FilterChain chain, String id, Mutex loadMutex) {
+			_contextualiser=contextualiser;
+			_chain=chain;
+			_id=id;
+			_loadMutex=loadMutex;
+		}
+		
+		public void run() {
+			try {
+				_contextualiser.contextualise(null, null, _chain, _id, null, _loadMutex);
+			} catch (Exception ignore) {
+				assertTrue(false);
+			}
+		}
+	}
+	
+	// this is very slow at the moment - because promotion is not implemented - so everything times out - TBD
+	public void maybetestCollapsing() throws Exception {
+		Contextualiser c=new MemoryContextualiser(new HashingCollapser(1, 3000), new MyContextualiser(), new HashMap());
+		FilterChain fc=new MyFilterChain();
+		
+		Mutex loadMutex=new Mutex();
+		
+		for (int i=0; i<100; i++)
+			c.contextualise(null,null,fc,"foo", null, loadMutex);
+	
+		Runnable r=new MyRunnable(c, fc, "foo", loadMutex);
+		Thread[] threads=new Thread[100];
+		for (int i=0; i<100; i++)
+			(threads[i]=new Thread(r)).start();
+		for (int i=0; i<100; i++)
+			threads[i].join();
+		}
 }

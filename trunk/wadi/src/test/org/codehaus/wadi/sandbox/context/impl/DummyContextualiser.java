@@ -14,6 +14,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.Promoter;
+
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 
 /**
  * @author jules
@@ -34,7 +38,7 @@ public class DummyContextualiser implements Contextualiser {
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
 	public boolean contextualise(ServletRequest req, ServletResponse res,
-			FilterChain chain, String id, Contextualiser previous)
+			FilterChain chain, String id, Promoter promoter, Sync overlap)
 			throws IOException, ServletException {
 		return false;
 	}
