@@ -31,7 +31,10 @@
     url="./render.jsp";
 
     // add a new entry to session
+    synchronized(session)
+    {
     session.setAttribute(""+System.currentTimeMillis(), colour);
+    }
 
     // if user has specified a limit to session size, remove from the
     // front to maintain this size - useful for running jmeter for long
@@ -40,14 +43,18 @@
     {
     int l=Integer.parseInt(limit);
     TreeSet keys=new TreeSet();
+
+    synchronized (session)
+    {
     for (Enumeration e=session.getAttributeNames(); e.hasMoreElements();)
     keys.add(e.nextElement());
+    }
 
     if (keys.size()>l)
     {
     int sessionSize=keys.size();
     for (Iterator i=keys.iterator(); sessionSize-->l && i.hasNext();)
-    session.removeAttribute((String)i.next());
+    synchronized(session){session.removeAttribute((String)i.next());}
     }
     }
       %>

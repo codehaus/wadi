@@ -24,12 +24,13 @@
     <%
       }
 
-//      session.setAttribute(""+session.getLastAccessedTime(), colour);
+    TreeSet keys=new TreeSet();
+    synchronized (session)
+    {
       String[] names=session.getValueNames();
-
-      TreeSet keys=new TreeSet();
       for (Enumeration e=session.getAttributeNames(); e.hasMoreElements();)
       keys.add(e.nextElement());
+    }
 
       int history=keys.size();
       int rows=1;
