@@ -44,6 +44,8 @@ import org.apache.commons.httpclient.methods.MultipartPostMethod;
 import org.apache.commons.httpclient.methods.OptionsMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.TraceMethod;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 // This does not seem as performant as the StandardHttpProxy - it also seems to be able to crash Firefox reproducibly !
 // commons-httpclient does not [seem to] allow us to pass Cookie headers straight through. So, we have
@@ -52,15 +54,15 @@ import org.apache.commons.httpclient.methods.TraceMethod;
 // I've tried moving up to 3.0rc1, but ProxyServlet with this HttpProxy produces wierd browser effects...
 
 /**
- * Enterprise HttpProxy implementation.
+ * HttpProxy implementation based on commons-httpclient
  *
  * @author gregw@mortbay.com, jules@coredevelopers.net
- *
  */
 public class CommonsHttpProxy extends AbstractHttpProxy {
 
+	protected static final Log _log=LogFactory.getLog(CommonsHttpProxy.class);
+
 	protected static final Map _methods=new HashMap();
-	
 	static {
 		_methods.put("CONNECT",ConnectMethod.class);
 		_methods.put("DELETE",DeleteMethod.class);
