@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="src/test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/geronimo-spec-servlet-1.0-M1.jar"/>
+	<classpathentry kind="lib" path="lib/junit.jar"/>
+	<classpathentry kind="lib" path="lib/mx4j-jmx-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="WEB-INF/lib/activecluster-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="WEB-INF/lib/activemq-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="WEB-INF/lib/aspectjrt.jar"/>
+	<classpathentry kind="lib" path="WEB-INF/lib/commons-httpclient-2.0.jar"/>
+	<classpathentry kind="lib" path="WEB-INF/lib/concurrent-1.3.2.jar"/>
+	<classpathentry kind="lib" path="WEB-INF/lib/geronimo-spec-j2ee-management-1.0-M1.jar"/>
+	<classpathentry kind="lib" path="WEB-INF/lib/geronimo-spec-jms-1.0-M1.jar"/>
+	<classpathentry kind="lib" path="/usr/local/java/jetty-5.0.RC2/lib/org.mortbay.jetty.jar"/>
+	<classpathentry kind="lib" path="/usr/local/java/jetty-5.0.RC2/lib/org.mortbay.jmx.jar"/>
+	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.27/server/lib/catalina.jar"/>
+	<classpathentry kind="output" path="WEB-INF-classes"/>
+</classpath>
