@@ -105,6 +105,28 @@ public class TomcatIdGenerator
   public Object poll(long millis){return take();}
   public Object take() {return generateSessionId();}
 
+//   // we should be able to better than this - can't we work out the
+//   // size of the ID ?
+//   public String
+//     getId(String idId, String idRoute)
+//   {
+//     return idId+"."+idRoute;
+//   }
+
+//   public String
+//     getIdId(String id)
+//     {
+//       int index=id.indexOf('.');
+//       return index<0?id:id.substring(0,index);
+//     }
+
+//   public String
+//     getIdRoute(String id)
+//     {
+//       int index=id.indexOf('.');
+//       return index<0?null:id.substring(index+1,id.length());
+//     }
+
   //------------------------------------------------
   // integration layer..
   //------------------------------------------------

@@ -56,8 +56,8 @@ public class
 	  _address=InetAddress.getLocalHost();
 
 	Socket socket=new Socket(remoteAddress, remotePort, _address, _port);
-	// do we need a timeout ?
-	_log.trace("socket: "+socket);
+	// TODO - do we need a timeout ? - YES
+	_log.trace("socket: "+socket); // TODO - sort out logging here
 	ObjectOutputStream os=new ObjectOutputStream(socket.getOutputStream());
 	ObjectInputStream  is=new ObjectInputStream(socket.getInputStream());
 	// acquire container lock on session id
@@ -97,7 +97,6 @@ public class
 
       return null;
     }
-
   }
 
   public static class
@@ -132,23 +131,23 @@ public class
     public void
       start()
     {
-      _log.trace("starting");
       try
       {
 	if (_address==null)
 	  _address=InetAddress.getLocalHost();
 
+	_log.debug("starting: "+_address);
+
 	// initialise dependant resources...
 	_socket=new ServerSocket(_port, _backlog, _address);
 	_socket.setSoTimeout(_timeout);
-	_log.trace("socket: "+_socket);
 	_port=_socket.getLocalPort();
 
 	// start...
 	_running=true;
 	_thread=new Thread(this);
 	_thread.start();
-	_log.trace("started");
+	_log.debug("started: "+_socket);
 	return;
       }
       catch (UnknownHostException e)
@@ -167,7 +166,7 @@ public class
     public void
       stop()
     {
-      _log.trace("stopping");
+      _log.debug("stopping: "+_socket);
       _running=false;
       _thread.interrupt();
       try
@@ -177,7 +176,7 @@ public class
 	_socket.close();
 	_socket=null;
 	// we need to join all our subthreads :-(
-	_log.trace("stopped");
+	_log.debug("stopped: "+_address+":"+_port);
       }
       catch (InterruptedException e)
       {

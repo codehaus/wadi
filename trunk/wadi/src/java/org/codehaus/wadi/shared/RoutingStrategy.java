@@ -53,4 +53,29 @@ public interface
    * @return a <code>String</code> value
    */
   String augment(String bucket, String session);
+
+  /**
+   * Return the corresponding routing info or bucket name for the
+   * given session id.
+   *
+   * @param id a <code>String</code> value
+   * @return a <code>String</code> value
+   */
+  String get(String id);
+
+//   /**
+//    * return the given session id without routing info.
+//    *
+//    * @param id a <code>String</code> value
+//    * @return a <code>String</code> value
+//    */
+//   String getShortName(String id);
+
+//   /**
+//    * return the given session id with routing info.
+//    *
+//    * @param id a <code>String</code> value
+//    * @return a <code>String</code> value
+//    */
+//   String getLongName(String id);
 }

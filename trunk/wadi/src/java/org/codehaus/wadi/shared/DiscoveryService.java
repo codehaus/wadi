@@ -44,196 +44,205 @@ import org.apache.commons.logging.LogFactory;
 public abstract class
   DiscoveryService
 {
+  protected static int _bufSize=1024;	// TODO - big enough?
+
   public static class
     Client
-  {
-    protected final Log         _log=LogFactory.getLog(Client.class);
-    protected final InetAddress _address;
-    protected final int         _port;
-    protected final long        _timeout;
-
-    public
-      Client(InetAddress address, int port, long timeout)
     {
-      _address=address;
-      _port=port;
-      _timeout=timeout;
-    }
+      protected final Log         _log=LogFactory.getLog(Client.class);
+      protected final InetAddress _address;
+      protected final int         _port;
+      protected final long        _timeout;
 
-    public String
-      run(String request)
-    {
-      String response=null;
-      DatagramSocket socket=null;
-
-      try
-      {
-	socket=new DatagramSocket();
-	socket.setSoTimeout((int)_timeout); // int/millis
-	DatagramPacket packet=new DatagramPacket(request.getBytes(), request.length(), _address, _port);
-	_log.trace("sending request (to "+_address+":"+_port+"): "+request);
-	socket.send(packet);
-
-	byte[] buffer=new byte[1024]; // TODO - big enough?
-	long start=System.currentTimeMillis();
-	for (long elapsed=0; elapsed<_timeout;)
+      public
+	Client(InetAddress address, int port, long timeout)
 	{
-	  packet.setData(buffer, 0, buffer.length);
-	  socket.receive(packet);
-	  response=new String(packet.getData(), packet.getOffset(), packet.getLength());
-	  if (response!=null && response.startsWith(request)) // TODO - NB response must 'startWith' request...
-	  {
-	    _log.trace("received well formed response (from "+packet.getAddress()+":"+packet.getPort()+"):"+response);
-	    return response;	// TODO - we need an API that allows verification of response
-	  }
-	  else
-	  {
-	    _log.warn("received malformed response (from "+packet.getAddress()+":"+packet.getPort()+"):"+response);
-	  }
-	  elapsed=System.currentTimeMillis()-start;
-	}
-      }
-      catch (SocketTimeoutException ignore)
-      {
-	_log.trace("no response for: "+request);
-      }
-      catch (IOException e)
-      {
-	_log.warn("problem handshaking with server", e);
-      }
-      finally
-      {
-	if (socket!=null)
-	  socket.close();
-      }
-
-      return response;
-    }
-  }
-
-  public static abstract class
-    Server
-  {
-    protected final Log         _log=LogFactory.getLog(Server.class);
-    protected final InetAddress _address;
-    protected final int         _port;
-    protected final long        _timeout=20000;
-
-    protected volatile boolean  _running=false;
-
-    protected MulticastSocket   _socket=null;
-    protected Thread            _thread;
-
-    public
-      Server(InetAddress address, int port)
-    {
-      _address=address;
-      _port=port;
-    }
-
-    public void
-      start()
-    {
-      _log.debug("starting: "+_address+":"+_port);
-      try
-      {
-	_socket=new MulticastSocket(_port); // 49152-65535
-	_socket.joinGroup(_address); // 224.0.0.1-239.255.255.255
-	_socket.setLoopbackMode(true); // messages we send should not come back to us
-	_socket.setSoTimeout((int)_timeout);
-      }
-      catch (IOException e)
-      {
-	_log.warn("could not set up server socket", e);
-      }
-
-      _running=true;
-      (_thread=new Thread(getClass().getName()){public void run(){Server.this.run();}}).start();
-      _log.debug("started: "+_address+":"+_port);
-      }
-
-    public void
-      stop()
-    {
-      _log.debug("stopping: "+_address+":"+_port);
-      _running=false;
-      	// nasty hack but how else do we break the socket out of receive()...
-      	new Client(_address, _port, 0).run("quit");//TODO - we need a proper quit protocol...
-      try
-      {
-	_thread.join();
-      }
-      catch (InterruptedException e)
-      {
-	_log.warn("unexpected interruption stopping");
-      }
-
-      _thread=null;
-      try
-      {
-	_socket.leaveGroup(_address);
-      }
-      catch (IOException e)
-      {
-	_log.warn("unexpected problem stopping");
-      }
-
-      _socket.close();
-      _socket=null;
-
-      _log.debug("stopped: "+_address+":"+_port);
-    }
-
-    public void
-      run()
-    {
-      // N.B. currently a single threaded server - TODO
-      byte[] buffer=new byte[256]; // TODO - big enough ?
-      DatagramPacket packet=new DatagramPacket(buffer, buffer.length);
-
-      while (_running)
-      {
-	String request=null;
-	packet.setData(buffer, 0, buffer.length);
-	try
-	{
-	  if (_timeout==0) Thread.yield();
-	  _socket.receive(packet);
-	  request=new String(packet.getData(), packet.getOffset(), packet.getLength());
-	  _log.trace("received request (from "+packet.getAddress()+":"+packet.getPort()+"): "+request);
-	}
-	catch (SocketTimeoutException ignore)
-	{
-	}
-	catch (IOException e)
-	{
-	  _log.warn("problem receiving packet", e);
+	  _address=address;
+	  _port=port;
+	  _timeout=timeout;
 	}
 
-	// TODO - run following section on new thread...
-	String response=null;
-	if (request!=null)
-	  response=process(request);
-
-	if (response!=null)
+      public String
+	run(String request)
+	throws IllegalArgumentException
 	{
-	  packet.setData(response.getBytes(), 0, response.length());
-	  // should not need to do this...
-	  //	  packet.setAddress(packet.getAddress());
-	  //	  packet.setPort(packet.getPort());
+	  String response=null;
+	  DatagramSocket socket=null;
+
+	  int l=request.length();
+	  if (l>_bufSize)
+	    throw new IllegalArgumentException("request ("+l+" bytes) too large for buffer ("+_bufSize+" bytes): "+request);
+
 	  try
 	  {
-	    _socket.send(packet);
+	    socket=new DatagramSocket();
+	    socket.setSoTimeout((int)_timeout); // int/millis
+	    DatagramPacket packet=new DatagramPacket(request.getBytes(), request.length(), _address, _port);
+	    _log.trace("sending request from "+socket.getLocalAddress()+":"+socket.getLocalPort()+" to "+_address+":"+_port+": "+request);
+	    socket.send(packet);
+
+	    byte[] buffer=new byte[_bufSize];
+	    long start=System.currentTimeMillis();
+	    for (long elapsed=0; elapsed<_timeout;)
+	    {
+	      packet.setData(buffer, 0, buffer.length);
+	      socket.receive(packet);
+	      response=new String(packet.getData(), packet.getOffset(), packet.getLength());
+	      if (response!=null && response.startsWith(request)) // TODO - do we still need this: NB response must 'startWith' request...
+	      {
+		_log.trace("received well formed response on "+socket.getLocalAddress()+":"+socket.getLocalPort()+" from "+packet.getAddress()+":"+packet.getPort()+":"+response);
+		return response;	// TODO - we need an API that allows verification of response
+	      }
+	      else
+	      {
+		_log.warn("received malformed response (from "+packet.getAddress()+":"+packet.getPort()+"):"+response);
+	      }
+	      elapsed=System.currentTimeMillis()-start;
+	    }
+	  }
+	  catch (SocketTimeoutException ignore)
+	  {
+	    _log.trace("no response for: "+request);
 	  }
 	  catch (IOException e)
 	  {
-	    _log.warn("unexpected problem sending response", e);
+	    _log.warn("problem handshaking with server", e);
 	  }
- 	  _log.trace("sent response (to "+packet.getAddress()+":"+packet.getPort()+"): "+response);
+	  finally
+	  {
+	    if (socket!=null)
+	      socket.close();
+	  }
+
+	  return response;
 	}
-      }
     }
 
-    public abstract String process(String request);
-  }
+  public static abstract class
+    Server
+    {
+      protected final Log         _log=LogFactory.getLog(Server.class);
+      protected final InetAddress _address;
+      protected final int         _port;
+
+      protected volatile boolean  _running=false;
+
+      protected MulticastSocket   _socket=null;
+      protected Thread            _thread;
+
+      public
+	Server(InetAddress address, int port)
+	{
+	  _address=address;
+	  _port=port;
+	}
+
+      public void
+	start()
+	{
+	  _log.debug("starting: "+_address+":"+_port);
+	  try
+	  {
+	    _socket=new MulticastSocket(_port); // 49152-65535
+	    _socket.joinGroup(_address); // 224.0.0.1-239.255.255.255
+	    _socket.setLoopbackMode(true); // messages we send should not come back to us
+	  }
+	  catch (IOException e)
+	  {
+	    _log.warn("could not set up server socket", e);
+	  }
+
+	  _running=true;
+	  (_thread=new Thread(getClass().getName()){public void run(){Server.this.run();}}).start();
+	  _log.debug("started: "+_address+":"+_port);
+	}
+
+      public void
+	stop()
+	{
+	  _log.debug("stopping: "+_address+":"+_port);
+	  _running=false;
+	  // nasty hack but how else do we break the socket out of receive()...
+	  new Client(_address, _port, 0).run("");//TODO - we need a proper quit protocol...
+	  try
+	  {
+	    _thread.join();
+	  }
+	  catch (InterruptedException e)
+	  {
+	    _log.warn("unexpected interruption stopping");
+	  }
+
+	  _thread=null;
+	  try
+	  {
+	    _socket.leaveGroup(_address);
+	  }
+	  catch (IOException e)
+	  {
+	    _log.warn("unexpected problem stopping");
+	  }
+
+	  _socket.close();
+	  _socket=null;
+
+	  _log.debug("stopped: "+_address+":"+_port);
+	}
+
+      public void
+	run()
+	{
+	  // N.B. currently a single threaded server - TODO
+	  byte[] buffer=new byte[_bufSize];
+	  DatagramPacket packet=new DatagramPacket(buffer, buffer.length);
+
+	  while (_running)
+	  {
+	    String request=null;
+	    packet.setData(buffer, 0, buffer.length);
+	    try
+	    {
+	      //	  if (_timeout==0) Thread.yield();
+	      _socket.receive(packet);
+	      request=new String(packet.getData(), packet.getOffset(), packet.getLength());
+	      _log.trace("received request on "+_socket.getLocalAddress()+":"+_socket.getLocalPort()+" from "+packet.getAddress()+":"+packet.getPort()+": "+request);
+	    }
+	    catch (SocketTimeoutException ignore)
+	    {
+	    }
+	    catch (IOException e)
+	    {
+	      _log.warn("problem receiving packet", e);
+	    }
+
+	    // TODO - run following section on new thread...- maybe
+	    String response=null;
+	    if (request!=null && request.length()>0)
+	      response=process(request);
+
+	    if (response!=null)
+	    {
+	      int l=response.length();
+	      if (l>_bufSize)
+		_log.warn("response ("+l+" bytes) too large for buffer ("+_bufSize+" bytes): "+response);
+
+	      packet.setData(response.getBytes(), 0, response.length());
+	      // should not need to do this...
+	      //	  packet.setAddress(packet.getAddress());
+	      //	  packet.setPort(packet.getPort());
+	      try
+	      {
+		_socket.send(packet);
+	      }
+	      catch (IOException e)
+	      {
+		_log.warn("unexpected problem sending response", e);
+	      }
+	      _log.trace("sent response from "+_socket.getLocalAddress()+":"+_socket.getLocalPort()+" to "+packet.getAddress()+":"+packet.getPort()+": "+response);
+	    }
+	  }
+	}
+
+      public abstract String process(String request);
+    }
 }

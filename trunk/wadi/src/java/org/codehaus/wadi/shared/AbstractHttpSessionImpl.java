@@ -65,6 +65,7 @@ public abstract class
 
   protected transient Manager _wadiManager;
   public Manager getWadiManager(){return _wadiManager;}
+  public void setWadiManager(Manager manager){_wadiManager=manager;}
 
   // this is a clever way to do this - but if different nodes have slightly different times, is it possible that we will get the wrong answer back ?
   public boolean isNew(){return getLastAccessedTime()==getCreationTime();} // think about this...
