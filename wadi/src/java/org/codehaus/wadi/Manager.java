@@ -1201,7 +1201,7 @@ public abstract class
     public void
       onMessage(Message message)
     {
-      _log.info("message arriving");
+      _log.info("message arriving: "+Thread.currentThread());
       try
       {
 	ObjectMessage om=null;
