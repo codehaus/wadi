@@ -18,8 +18,6 @@
 
 package org.codehaus.wadi.test;
 
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
