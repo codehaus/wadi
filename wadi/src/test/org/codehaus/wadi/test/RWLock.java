@@ -107,12 +107,6 @@ public class RWLock implements ReadWriteLock {
     return pass;
   }
 
-  protected synchronized boolean startWriteFromNewWriter() {
-    boolean pass = startWrite();
-    if (!pass) ++waitingWriters_;
-    return pass;
-  }
-
   protected synchronized boolean startReadFromWaitingReader() {
     boolean pass = startRead();
     if (pass) --waitingReaders_;
@@ -247,8 +241,13 @@ public class RWLock implements ReadWriteLock {
     public void acquire() throws InterruptedException {
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
-      synchronized(this) {
-        if (!startWriteFromNewWriter()) {
+      synchronized(WriterLock.this) {
+	boolean pass;
+	synchronized (RWLock.this){
+	  pass = startWrite();
+	  if (!pass) ++waitingWriters_;
+	}
+        if (!pass) {
           for (;;) {
             try {
               WriterLock.this.wait();
@@ -283,34 +282,42 @@ public class RWLock implements ReadWriteLock {
     public boolean attempt(long msecs) throws InterruptedException {
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
-      synchronized(this) {
+      synchronized(WriterLock.this) {
         if (msecs <= 0)
           return startWrite();
-        else if (startWriteFromNewWriter())
-          return true;
-        else {
-          long waitTime = msecs;
-          long start = System.currentTimeMillis();
-          for (;;) {
-            try { WriterLock.this.wait(waitTime);  }
-            catch(InterruptedException ex){
-              cancelledWaitingWriter();
-              WriterLock.this.notify();
-              ie = ex;
-              break;
-            }
-            if (startWriteFromWaitingWriter())
-              return true;
-            else {
-              waitTime = msecs - (System.currentTimeMillis() - start);
-              if (waitTime <= 0) {
-                cancelledWaitingWriter();
-                WriterLock.this.notify();
-                break;
-              }
-            }
-          }
-        }
+        else
+	{
+	  boolean pass;
+	  synchronized (RWLock.this){
+	    pass = startWrite();
+	    if (!pass) ++waitingWriters_;
+	  }
+	  if (pass)
+	    return true;
+	  else {
+	    long waitTime = msecs;
+	    long start = System.currentTimeMillis();
+	    for (;;) {
+	      try { WriterLock.this.wait(waitTime);  }
+	      catch(InterruptedException ex){
+		cancelledWaitingWriter();
+		WriterLock.this.notify();
+		ie = ex;
+		break;
+	      }
+	      if (startWriteFromWaitingWriter())
+		return true;
+	      else {
+		waitTime = msecs - (System.currentTimeMillis() - start);
+		if (waitTime <= 0) {
+		  cancelledWaitingWriter();
+		  WriterLock.this.notify();
+		  break;
+		}
+	      }
+	    }
+	  }
+	}
       }
 
       readerLock_.signalWaiters();
