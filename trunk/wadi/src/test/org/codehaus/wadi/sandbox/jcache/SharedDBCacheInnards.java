@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.sandbox.jcache;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.sandbox.jcache;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+
 import ri.cache.BasicCache;
 
 // WADI should use a JSR107 compatible API for its session Map
