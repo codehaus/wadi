@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project>
+  <pomVersion>3</pomVersion>
+  <name>WADI</name>
+  <id>wadi</id>
+  <currentVersion>1.0</currentVersion>
+
+  <organization>
+    <name>Codehaus</name>
+    <url>http://www.codehaus.org/</url>
+    <!--
+    <logo>http:/www.foo.org/images/logo.gif</logo>
+    -->
+  </organization>
+  <logo></logo>
+
+  <inceptionYear>2004</inceptionYear>
+  <package>org.codehaus.wadi</package>
+  <shortDescription>Clustered J2EE Web Tier State Management</shortDescription>
+
+  <gumpRepositoryId>wadi</gumpRepositoryId>
+
+  <description>
+    WADI is an acronym of 'Web Application Distribution
+    Infrastructure'. WADI's aim is to resolve many of the problems of
+    dealing with state in the clustered J2EE Web Tier. This involves
+    technologies such as HttpSession Migration (inter-node and
+    node-store-node), HttpRequest relocation, in-vm HttpSession state
+    replication, simple HttpSession semantics and a guaranteed
+    resolution to application vs container space concurrency issues
+    within the HttpSession.
+
+    WADI can currently be plugged into the latest Tomcat 5 and Jetty 5
+    releases.
+
+    WADI will be the subject of a BOF at JavaOne this year.
+  </description>
+
+  <url>http://wadi.codehaus.org/</url>
+  <issueTrackingUrl>http://jira.codehaus.org</issueTrackingUrl>
+
+  <siteAddress>www.codehaus.org</siteAddress>
+  <siteDirectory>/home/projects/wadi/public_html/maven</siteDirectory>
+  <distributionDirectory>/www/dist.codehaus.org/wadi/dist</distributionDirectory>
+
+  <repository>
+    <connection>scm:cvs:pserver:anonymous@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi</connection>
+    <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi</developerConnection>
+    <url>http://cvs.wadi.codehaus.org/cvsweb.cgi/wadi/</url>
+  </repository>
+
+  <mailingLists>
+    <mailingList>
+      <name>Wadi Developer List</name>
+      <subscribe>dev-subscribe@wadi.codehaus.org</subscribe>
+      <unsubscribe>dev-unsubscribe@wadi.codehaus.org</unsubscribe>
+      <archive>http://archive.wadi.codehaus.org/dev/</archive>
+    </mailingList>
+    <mailingList>
+      <name>Wadi User List</name>
+      <subscribe>user-subscribe@wadi.codehaus.org</subscribe>
+      <unsubscribe>user-unsubscribe@wadi.codehaus.org</unsubscribe>
+      <archive>http://archive.wadi.codehaus.org/user/</archive>
+    </mailingList>
+    <mailingList>
+      <name>Wadi SCM List</name>
+      <subscribe>scm-subscribe@wadi.codehaus.org</subscribe>
+      <unsubscribe>scm-unsubscribe@wadi.codehaus.org</unsubscribe>
+      <archive>http://archive.wadi.codehaus.org/scm/</archive>
+    </mailingList>
+  </mailingLists>
+
+  <versions>
+    <version>
+      <id>1.0-beta-1</id>
+      <name>1.0-beta-1</name>
+      <tag>1.0-beta-1</tag>
+    </version>
+  </versions>
+  <branches></branches>
+
+  <build>
+
+    <nagEmailAddress>jules@coredevelopers.net</nagEmailAddress>
+
+    <sourceDirectory>src/java</sourceDirectory>
+
+<!--
+    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
+-->
+
+    <aspectSourceDirectory>src/java</aspectSourceDirectory>
+
+    <!-- Unit test cases
+    <unitTest>
+      <includes>
+        <include>**/test/Test*.java</include>
+      </includes>
+      <excludes>
+      </excludes>
+    </unitTest>
+    -->
+
+    <!-- J A R  R E S O U R C E S -->
+    <!-- Resources that are packaged up inside the JAR file -->
+    <resources>
+      <resource>
+        <directory>${basedir}/src/resources/misc</directory>
+        <includes>
+          <include>*.xsd</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>${basedir}/src/resources/logging</directory>
+        <includes>
+          <include>log4j.properties</include>
+        </includes>
+      </resource>
+    </resources>
+
+    <!-- Integration unit test cases
+    <integrationUnitTest/>
+    -->
+
+    <jars>
+    </jars>
+
+  </build>
+
+  <!-- ========== -->
+  <!-- Developers -->
+  <!-- ========== -->
+
+  <developers>
+
+    <developer>
+      <name>Jules Gosnell</name>
+      <id>jules</id>
+      <email>jules@coredevelopers.net</email>
+      <organization>Core Developers Network</organization>
+    </developer>
+
+  </developers>
+
+  <!-- ============ -->
+  <!-- Dependencies -->
+  <!-- ============ -->
+
+  <dependencies>
+
+    <dependency>
+      <groupId>aspectj</groupId>
+      <artifactId>aspectjrt</artifactId>
+      <version>1.1.1</version>
+      <properties>
+        <classloader>root</classloader>
+      </properties>
+    </dependency>
+
+    <dependency>
+      <groupId>aspectj</groupId>
+      <artifactId>aspectjtools</artifactId>
+      <version>1.1.1</version>
+      <properties>
+        <classloader>root</classloader>
+      </properties>
+    </dependency>
+
+    <dependency>
+      <id>junit</id>
+      <version>3.8.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>concurrent</groupId>
+      <artifactId>concurrent</artifactId>
+      <version>1.3.2</version>
+    </dependency>
+
+    <dependency>
+      <id>commons-logging</id>
+      <version>1.0.3</version>
+    </dependency>
+
+    <dependency>
+      <id>commons-httpclient</id>
+      <version>2.0</version>
+    </dependency>
+
+    <dependency>
+      <id>geronimo-spec+servlet</id>
+      <version>DEV</version>
+    </dependency>
+
+    <dependency>
+      <groupId>jetty</groupId>
+      <artifactId>org.mortbay.jetty</artifactId>
+      <version>5.0.beta0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>catalina</artifactId>
+      <version>5.0.18</version>
+    </dependency>
+
+  </dependencies>
+
+</project>
