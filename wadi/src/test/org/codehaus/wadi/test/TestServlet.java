@@ -86,13 +86,13 @@ public abstract class TestServlet extends TestCase {
 		}
 
 	protected Map _map=new HashMap();
-	public synchronized void addServlet(String name, String context, String path, Servlet servlet) {
-		Object[] tuple=new Object[]{name, path, servlet};
-		List servlets=(List)_map.get(context);
-		if (servlets==null)
-			servlets=new ArrayList();
-		servlets.add(tuple);
-		_map.put(context, servlets);
+	public synchronized void add(String name, String context, String path, Object component) {
+		Object[] tuple=new Object[]{name, path, component};
+		List components=(List)_map.get(context);
+		if (components==null)
+			components=new ArrayList();
+		components.add(tuple);
+		_map.put(context, components);
 		}
 
 	public void start(String host, int port)
@@ -107,11 +107,11 @@ public abstract class TestServlet extends TestCase {
 		{
 			Map.Entry e=(Map.Entry)i.next();
 			String context=(String)e.getKey();
-			List servlets=(List)e.getValue();
+			List components=(List)e.getValue();
 
 			ServletHttpContext c=(ServletHttpContext)_server.getContext(context);
 			
-			for (Iterator j=servlets.iterator(); j.hasNext();){
+			for (Iterator j=components.iterator(); j.hasNext();){
 				Object[] tuple=(Object[])j.next();
 				c.addServlet((String)tuple[0], (String)tuple[1], ServletWrapper.class.getName());
 			}

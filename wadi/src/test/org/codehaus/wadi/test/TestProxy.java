@@ -9,6 +9,9 @@ package org.codehaus.wadi.test;
 import java.io.IOException;
 import java.net.URL;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -33,11 +36,24 @@ public class TestProxy extends TestServlet{
 		}
 	}
 	
+	public class ProxyFilter implements Filter {
+		public void init(FilterConfig config){
+		}
+		
+		public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+				throws ServletException, IOException {
+			new HttpProxy().proxy(req, res, new URL("http://localhost:8080/test/admin"));
+		}
+		
+		public void destroy(){
+		}
+	}
+	
 	protected void setUp() throws Exception {
 		super.setUp();
 		_log.info("setting up");
-		addServlet("Proxy", "/test", "/proxy", new ProxyServlet());
-		addServlet("Admin", "/test", "/admin", new org.mortbay.servlet.AdminServlet());
+		add("Proxy", "/test", "/proxy", new ProxyFilter());
+		add("Admin", "/test", "/admin", new org.mortbay.servlet.AdminServlet());
 		start("localhost", 8080);
 		}
 
