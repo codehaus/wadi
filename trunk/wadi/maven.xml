@@ -71,10 +71,9 @@
       </ant:sourceroots>
       <ant:classpath>
 	<ant:path refid="maven.dependency.classpath"/>
-	<ant:pathelement path="${wadi.maven.build.dest}.javac"/>
+	<ant:pathelement path="${maven.build.dest}.javac"/>
       </ant:classpath>
       <ant:inpath>
-	<ant:pathelement path="${wadi.maven.build.dest}.javac"/>
 	<ant:pathelement path="${wadi.dest}.javac"/>
       </ant:inpath>
     </ant:iajc>
