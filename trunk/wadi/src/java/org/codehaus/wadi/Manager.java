@@ -18,6 +18,7 @@
 package org.codehaus.wadi;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -170,6 +171,12 @@ public abstract class
   public HttpSessionImpl
     get(String realId)
   {
+    if (!getInside())
+    {
+      _log.warn(realId+": looked up from outside the container");
+      return null;		// this WILL become a dummy...
+    }
+
     HttpSessionImpl impl=getLocalSession(realId);
 
     if (getFirstGet())
@@ -185,7 +192,13 @@ public abstract class
       if (impl!=null)
 	try
 	{
-	  impl.getApplicationLock().acquire(); // locked for duration of request...
+	  Sync lock=impl.getApplicationLock();
+	  lock.acquire(); // locked for duration of request...
+	  if (impl.getRealId()==null)
+	  {
+	    lock.release();
+	    impl=null;
+	  }
 	}
 	catch (InterruptedException e)
 	{
@@ -1117,4 +1130,10 @@ public abstract class
     public void onNodeRemoved(ClusterEvent event){_log.info("node removed");}
     public void onNodeFailed(ClusterEvent event){_log.info("node failed");}
   }
+
+  //----------------------------------------
+
+  protected ThreadLocal _inside=new ThreadLocal() {protected synchronized Object initialValue() {return Boolean.FALSE;}};
+  public void setInside(boolean b){_inside.set(b?Boolean.TRUE:Boolean.FALSE);_log.info(Thread.currentThread().getName()+":"+(b?"entering":"leaving"));}
+  public boolean getInside(){return ((Boolean)_inside.get()).booleanValue();}
 }

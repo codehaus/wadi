@@ -7,35 +7,28 @@
       <%@ page import="java.net.URL" %>
       <%
       String colour=System.getProperty("wadi.colour");
-      String refresh=request.getParameter("refresh");
-      String id=session.getId();
 
-      if (refresh!=null)
-      {
       String url=request.getRequestURL().toString();
-      int i=url.indexOf(";jsessionid=");
-      if (i!=-1)
-      url=url.substring(0, i);
-      if (id!=null)
-      url+=";jsessionid="+id;
-      url+="?refresh="+refresh;
+
+      String params="";
+
+      String limit=request.getParameter("limit");
+      if (limit!=null)
+      params+=(params.length()==0?"?":"&")+"limit="+limit;
+
+      String refresh=request.getParameter("refresh");
+      if (refresh!=null)
+      params+=(params.length()==0?"?":"&")+"refresh="+refresh;
+
+      if (params.length()>0)
+      {
+      url+=params;
       %>
     <meta http-equiv="refresh" content="<%= refresh %>;url=<%= url %>"/>
     <%
-      }
+    }
 
-    String url="./render.jsp";
-
-    // are we using cookie or url rewriting?
-    String rewrite=request.getParameter("rewrite");
-    if (rewrite!=null)
-    {
-    if (id!=null)
-    url+=";jsessionid="+id+"?"+"rewrite=true";
-    };
-
-    if (refresh!=null)
-    url+="?"+refresh;
+    url="./render.jsp";
 
     // add a new entry to session
     session.setAttribute(""+System.currentTimeMillis(), colour);
@@ -43,7 +36,6 @@
     // if user has specified a limit to session size, remove from the
     // front to maintain this size - useful for running jmeter for long
     // periods...
-    String limit=request.getParameter("limit");
     if (limit!=null)
     {
     int l=Integer.parseInt(limit);

@@ -89,6 +89,8 @@ public class
     doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
     throws IOException, ServletException
   {
+    _manager.setInside(true);	// entering container...
+
     if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse))
     {
       _log.warn("not an HttpServlet req/res pair - therefore stateless - ignored by WADI");
@@ -129,6 +131,10 @@ public class
 	      return;
 	    }
 	  }
+	  else
+	  {
+	    _log.warn(realId+": session id cannot be mapped");
+	  }
 	}
 	else if (((HttpSession)impl.getFacade()).isValid())
 	{
@@ -138,6 +144,11 @@ public class
 	  else if (req.isRequestedSessionIdFromURL())
 	    _manager.getRoutingStrategy().rerouteURL();	// NYI
 	}
+	else
+	{
+	  _log.warn(realId+": session id maps to invalid session");
+	}
+
 	// if id is non-null, but session does not exist locally -
 	// consider relocating session or request....
       }
@@ -194,8 +205,9 @@ public class
 	      if (_log.isTraceEnabled()) _log.trace(newRealId+": new outgoing session");
 	}
       }
-      // in case Jetty or Tomcat is thread-pooling :
       _manager.setFirstGet(true); // ready for next time through...
+
+      _manager.setInside(false); // leaving container...
     }
   }
 }

@@ -55,7 +55,7 @@ public abstract class
 
   protected long _lastAccessedTime; // millis
   public long getLastAccessedTime(){return _lastAccessedTime;}
-  public void setLastAccessedTime(long l){_lastAccessedTime=l;}
+  public void setLastAccessedTime(long l){_lastAccessedTime=l; _log.info(Thread.currentThread().getName()+":"+"setLastAccessedTime()");}
 
   protected int _maxInactiveInterval; // secs
   public int getMaxInactiveInterval(){return _maxInactiveInterval;}
