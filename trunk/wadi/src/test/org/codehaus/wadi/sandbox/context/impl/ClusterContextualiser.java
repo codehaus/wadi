@@ -115,15 +115,25 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	
 	class LocationListener implements MessageListener {
 		public void onMessage(Message message) {
+			new LocationListenerThread(message).start();
+		}
+	}
+	
+	class LocationListenerThread extends Thread {
+		protected final Message _message;
+		
+		public LocationListenerThread(Message message) {
+			_message=message;
+		}
+		
+		public void run() {
 			ObjectMessage om=null;
 			Object tmp=null;
 			LocationResponse response=null;
 			LocationRequest request=null;
 			
-			// TODO - these need to be threaded, so that they can run concurrently
-			
 			try {
-				if (message instanceof ObjectMessage && (om=(ObjectMessage)message)!=null && (tmp=om.getObject())!=null) {
+				if (_message instanceof ObjectMessage && (om=(ObjectMessage)_message)!=null && (tmp=om.getObject())!=null) {
 					if (tmp instanceof LocationRequest && (request=(LocationRequest)tmp)!=null) 
 						onLocationRequestMessage(om, request);
 					else if (tmp instanceof LocationResponse && (response=(LocationResponse)tmp)!=null)
@@ -158,9 +168,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		
 		public void onLocationResponseMessage(ObjectMessage message, LocationResponse response) throws JMSException {
 			// unpack message content into local cache...
-			Location location=response.getLocation();
-			Set ids=response.getIds();
-			_log.info("receiving location response: "+ids);
+			_log.info("receiving location response: "+response.getIds());
 			
 			// notify waiting threads...
 			String correlationId=message.getJMSCorrelationID();
@@ -169,7 +177,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 				if (rv!=null) {
 					do {
 						try {
-							rv.attemptRendezvous(location, _timeout);
+							rv.attemptRendezvous(response, _timeout);
 						} catch (TimeoutException toe) {
 							_log.info("rendez-vous timed out: "+correlationId, toe);
 						} catch (InterruptedException ignore) {
@@ -178,13 +186,6 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 					} while (Thread.interrupted()); // TODO - should really subtract from timeout each time...
 				}
 			}
-			
-			// update cache
-			for (Iterator i=ids.iterator(); i.hasNext();) {
-				String id=(String)i.next();
-				_map.put(id, location);
-			}
-			_log.info("updated cache for: "+ids);
 		}
 	}
 	
@@ -230,18 +231,26 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			
 			try {
 				// broadcast location query to whole cluster
-				LocationRequest query=new LocationRequest(id, _proxyHandOverPeriod);
+				LocationRequest request=new LocationRequest(id, _proxyHandOverPeriod);
 				ObjectMessage message=_cluster.createObjectMessage();
 				message.setJMSReplyTo(_cluster.getDestination());
 				message.setJMSCorrelationID(correlationId);
-				message.setObject(query);
+				message.setObject(request);
 				_log.info("sending location request: "+id);
 				_cluster.send(_cluster.getDestination(), message);
 				
 				// rendez-vous with response/timeout...
 				do {
 					try {
-						location=(Location)rv.attemptRendezvous(null, _timeout);
+						LocationResponse response=(LocationResponse)rv.attemptRendezvous(null, _timeout);
+						location=response.getLocation();
+						Set ids=response.getIds();
+						// update cache
+						for (Iterator i=ids.iterator(); i.hasNext();) {
+							String tmp=(String)i.next();
+							_map.put(tmp, location);
+						}
+						_log.info("updated cache for: "+ids);
 					} catch (TimeoutException toe) {
 						_log.info("no response to location query within timeout: "+id); // session does not exist
 					} catch (InterruptedException ignore) {
