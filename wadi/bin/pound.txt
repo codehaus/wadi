@@ -1,0 +1,4 @@
+
+Pound (http://www.apsis.ch/pound/) is another load balancer. It seems
+to need to run as root, so a script is not currently provided, see
+../conf/pound.cfg
