@@ -112,32 +112,42 @@ public class
 
   protected int _priority=Thread.MAX_PRIORITY+1;
 
+  final int INVALIDATION_PRIORITY=3;
+  final int TIMEOUT_PRIORITY=2;
+  final int EMMIGRATION_PRIORITY=1;
+  final int EVICTION_PRIORITY=0;
+
+  final int MAX_PRIORITY=INVALIDATION_PRIORITY;
+
   public void
     priority(final boolean acquire)
     throws Exception
     {
-      final ReadWriteLock lock=new RWLock();
 
-      Thread[] threads=new Thread[Thread.MAX_PRIORITY-Thread.MIN_PRIORITY+1];
+      final RWLock lock=new RWLock(MAX_PRIORITY);
 
-      Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+      Thread[] threads=new Thread[MAX_PRIORITY+1];
+
+      lock.setPriority(EVICTION_PRIORITY);
 
       lock.readLock().attempt(60000);
 
-      for (int i=Thread.MIN_PRIORITY;i<=Thread.MAX_PRIORITY;i++)
+      for (int i=0;i<=MAX_PRIORITY;i++)
       {
-	_log.info("starting: "+i);
+	final int p=i;
+	_log.info("starting: "+p);
 	Thread t=new Thread()
 	  {
 	    public void run()
 	    {
 	      try
 	      {
+		lock.setPriority(p);
 		if (acquire)
 		  lock.writeLock().acquire();
 		else
 		  lock.writeLock().attempt(60000);
-		int priority=Thread.currentThread().getPriority();
+		int priority=lock.getPriority();
 		_log.info("priority: "+priority);
 		assertTrue(priority<_priority);
 		_priority=priority;
@@ -149,8 +159,7 @@ public class
 	      }
 	    }
 	  };
-	t.setPriority(i);
-	threads[i-Thread.MIN_PRIORITY]=t;
+	threads[i]=t;
 	t.start();
       }
 
@@ -158,9 +167,9 @@ public class
       _log.info("releasing read lock");
       lock.readLock().release();
 
-      for (int i=Thread.MIN_PRIORITY;i<=Thread.MAX_PRIORITY;i++)
+      for (int i=0;i<=MAX_PRIORITY;i++)
       {
-	Thread t=threads[i-Thread.MIN_PRIORITY];
+	Thread t=threads[i];
 	t.join();
 	_log.info("joining: "+i);
       }
@@ -170,9 +179,9 @@ public class
     testPriority()
     throws Exception
   {
-    _priority=Thread.MAX_PRIORITY+1;
+    _priority=MAX_PRIORITY+1;
     priority(true);
-    _priority=Thread.MAX_PRIORITY+1;
+    _priority=MAX_PRIORITY+1;
     priority(false);
   }
 
@@ -182,7 +191,7 @@ public class
     testOverlap()
     throws Exception
   {
-    final ReadWriteLock lock=new RWLock();
+    final RWLock lock=new RWLock(MAX_PRIORITY);
 
     {
       lock.readLock().acquire();
@@ -191,6 +200,7 @@ public class
  	  {
  	    try
  	    {
+	      lock.setPriority(EVICTION_PRIORITY);
  	      lock.writeLock().acquire();
  	      _log.info("I lost");
 	      assertTrue(_first==false);
@@ -202,11 +212,10 @@ public class
  	    }
  	  }
  	};
-      t1.setPriority(Thread.MIN_PRIORITY);
       t1.start();
 
-      Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-      ((RWLock)lock).overlap();
+      lock.setPriority(INVALIDATION_PRIORITY);
+      lock.overlap();
       _log.info("I won");
       assertTrue(_first==true);
       _first=false;
