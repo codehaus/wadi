@@ -26,19 +26,13 @@ import org.codehaus.wadi.sandbox.context.Motable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class MigrationResponse implements Serializable, Motable {
+public class MigrationResponse implements Serializable {
 	protected String _id;
-	protected byte[] _bytes;
-
+	protected Motable _motable;
+	
 	public String getId(){return _id;}
 	public void setId(String id){_id=id;}
 	
-	// TODO - these need to be on an object that is contained by this class
-	
-	// Motable
-	public byte[] getBytes(){return _bytes;}
-	public void setBytes(byte[] bytes){_bytes=bytes;}
-	
-	// Evictable
-	public long getExpiryTime(){return 0;}
+	public Motable getMotable(){return _motable;}
+	public void setMotable(Motable motable){_motable=motable;}
 }

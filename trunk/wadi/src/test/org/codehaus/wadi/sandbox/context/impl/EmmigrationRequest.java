@@ -18,6 +18,8 @@ package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.Serializable;
 
+import org.codehaus.wadi.sandbox.context.Motable;
+
 /**
  * A query for the location of the session with the enclosed ID - The response
  * should be a LocationResponse object sent whence this request arrived.
@@ -27,15 +29,15 @@ import java.io.Serializable;
  */
 public class EmmigrationRequest implements Serializable {
 	protected String _id;
-	protected byte[] _bytes;
+	protected Motable _motable;
 
 	/**
 	 *
 	 */
-	public EmmigrationRequest(String id, byte[] bytes) {
+	public EmmigrationRequest(String id, Motable motable) {
 		super();
 		_id=id;
-		_bytes=bytes;
+		_motable=motable;
 	}
 
 	public EmmigrationRequest() {
@@ -43,5 +45,5 @@ public class EmmigrationRequest implements Serializable {
 	}
 
 	public String getId(){return _id;}
-	public byte[] getBytes(){return _bytes;}
+	public Motable getMotable(){return _motable;}
 }

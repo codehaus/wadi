@@ -40,6 +40,7 @@ import org.codehaus.activecluster.impl.ReplicatedLocalNode;
 import org.codehaus.activecluster.impl.StateService;
 import org.codehaus.activecluster.impl.StateServiceStub;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
+import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Location;
@@ -47,6 +48,7 @@ import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyCollapser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
+import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
 
@@ -103,9 +105,11 @@ public class TestCluster extends TestCase {
 		protected final Location _location;
 		protected final RelocationStrategy _relocater;
 		protected final Collapser _collapser=new DummyCollapser();
-		protected final Map _map=new HashMap();
+		protected final Map _cmap=new HashMap();
+		protected final Map _mmap=new HashMap();
 		protected final Evicter _evicter=new NeverEvicter();
-		protected final ClusterContextualiser _contextualiser;
+		protected final MemoryContextualiser _top;
+		protected final ClusterContextualiser _bottom;
 		
 		public MyNode(MyClusterFactory factory, String clusterName) throws JMSException, ClusterException {
 			_cluster=(MyCluster)factory.createCluster(clusterName);
@@ -117,15 +121,20 @@ public class TestCluster extends TestCase {
 //			_relocater0=new SwitchableRelocationStrategy();
 			_location=null;
 			_relocater=null;
-			_contextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _map, _evicter, _dispatcher, _relocater);
+			_bottom=new ClusterContextualiser(new DummyContextualiser(), _collapser, _cmap, _evicter, _dispatcher, _relocater);
+			_top=new MemoryContextualiser(_bottom, _collapser, _mmap, _evicter, new SimpleStreamingStrategy(), new MyContextPool());
+			_bottom.setTop(_top);
 		}
 		
 		public void start() throws Exception {_cluster.start();}
 		public void stop() throws Exception {_cluster.stop();}
 		
-		public Map getMap() {return _map;}
+		public Map getClusterContextualiserMap() {return _cmap;}
 		public MyCluster getCluster(){return _cluster;}
-		public ClusterContextualiser getContextualiser() {return _contextualiser;}
+		public ClusterContextualiser getClusterContextualiser() {return _bottom;}
+		
+		public Map getMemoryContextualiserMap() {return _mmap;}
+		public MemoryContextualiser getMemoryContextualiser(){return _top;}
 	}
 	
 	protected ConnectionFactory _connectionFactory;
@@ -178,21 +187,23 @@ public class TestCluster extends TestCase {
 	public void testDemotion() throws Exception {
 		assertTrue(true);
 		
-		ClusterContextualiser c=_node0.getContextualiser();
+		ClusterContextualiser c=_node0.getClusterContextualiser();
 		Destination queue=_node0.getCluster().createQueue("EMMIGRATION");
 		
 		c.setEmmigrationQueue(queue);
 		for (int i=0; i<100; i++) {
-			_log.info("*** "+i+" ***");
-			c.demote("foo", new DummyMotable());
-			c.demote("bar", new DummyMotable());
-			c.demote("baz", new DummyMotable());
+			String id="session-"+i;
+			c.demote(id, new DummyMotable(id));
 		}
 		
 		// demote n Contexts into node0
 		// they should be distributed to nodes 1 and 2
 		// node0 should have 0 Contexts
 		// the sum of nodes 1 and 2 should total n Contexts
+		int s1=_node1.getMemoryContextualiserMap().size();
+		int s2=_node2.getMemoryContextualiserMap().size();
+		_log.info("dispersal - n1:"+s1+", n2:"+s2);
+		assertTrue(s1+s2==100);
 		
 		// as they shut down more exciting stuff should happen...
 	}

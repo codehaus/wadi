@@ -100,7 +100,7 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 			// TODO - packet-sniff James stuff and see if we can shrink the number of packets - is it significant?
 			
 			// consider how/when to send migration notifications... could the ack do it ?
-			p.setBytes(response.getBytes());
+			p.setBytes(response.getMotable().getBytes());
 		} catch (Exception e) {
 			_log.warn("problem promoting session", e);
 			return false;
@@ -169,9 +169,11 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 			_settingsInOut=settingsInOut;
 		}
 		
+		protected Motable _motable=new SimpleMotable();
+		
 		public Motable nextMotable() {
 			// return a message into which the session can be written
-			return new MigrationResponse();
+			return _motable;
 		}
 
 		public boolean prepare(String id, Motable motable) {
@@ -179,8 +181,9 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 			_log.info("promoting (to cluster): "+id);
 			// send the message
 			_log.info("sending migration response: "+id+" : "+_settingsInOut);
-			MigrationResponse mr=(MigrationResponse)motable;
+			MigrationResponse mr=new MigrationResponse();
 			mr.setId(id);
+			mr.setMotable(_motable);
 			MigrationAcknowledgement ack=(MigrationAcknowledgement)_dispatcher.exchangeMessages(id, _ackRvMap, mr, _settingsInOut, _timeout);
 			if (ack==null) {
 				_log.warn("no ack received for session migration: "+id);
