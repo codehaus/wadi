@@ -29,9 +29,11 @@ public aspect Tracing
   pointcut traceMethods()
     :
   (
-   //call(* EDU.oswego.cs.dl.util.concurrent.Sync.*(..)) ||
-   //   call(* Manager.getFirstGet(..)) ||
-   //   call(* Manager.setFirstGet(..))
+   //   call(* EDU.oswego.cs.dl.util.concurrent.Sync+.*(..)) &&
+   //   call(* RWLock.startRead(..)) ||
+   //   call(* RWLock.endRead(..))
+   //   (target(org.codehaus.wadi.shared.RWLock$ReaderLock) ||
+   //    target(org.codehaus.wadi.shared.RWLock$WriterLock))
    within(Tracing)		// this will never be true
    )
     && !within(Tracing);
@@ -46,10 +48,12 @@ public aspect Tracing
     String a="";
     for (int i=0;i<args.length;i++)
       a+=((a.length()==0)?"":",")+args[i];
-    _log.warn("Entering "+this.hashCode()+"."+pkg+"."+name+"("+a+")", new Exception());
+    //    _log.warn("Entering "+this.hashCode()+"."+pkg+"."+name+"("+a+")", new Exception());
+    Thread t=Thread.currentThread();
+    _log.warn(t+": Entering "+this.hashCode()+"."+pkg+"."+name+"("+a+")");
 
     Object tmp=proceed();
-    _log.warn("Leaving "+this.hashCode()+"."+pkg+"."+name+"() --> "+tmp);
+    _log.warn(t+": Leaving "+this.hashCode()+"."+pkg+"."+name+"() --> "+tmp);
 
     return tmp;
   }
