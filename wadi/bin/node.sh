@@ -38,8 +38,9 @@ properties="$properties \
 -Dorg.apache.commons.logging.simplelog.log.org=info \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.activecluster=warn \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.activemq=warn \
+-Dorg.apache.commons.logging.simplelog.log.org.springframework=warn \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.AsyncToSyncAdaptorXXX=trace \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=error \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=info \
 -Dorg.apache.commons.logging.simplelog.showShortLogname=true \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
 "
