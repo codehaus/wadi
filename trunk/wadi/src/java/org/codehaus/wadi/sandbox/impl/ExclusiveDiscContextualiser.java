@@ -64,7 +64,7 @@ public class ExclusiveDiscContextualiser extends AbstractCollapsingContextualise
 	public Emoter getEmoter(){return _emoter;}
 
 	/**
-	 * An Immoter that deals in terms of LocalDiscMotables
+	 * An Immoter that deals in terms of ExclusiveDiscMotables
 	 *
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$
@@ -87,12 +87,12 @@ public class ExclusiveDiscContextualiser extends AbstractCollapsingContextualise
 		}
 
 		public String getInfo() {
-			return "local disc";
+			return "exclusive disc";
 		}
 	}
 
 	/**
-	 * An Emmoter that deals in terms of LocalDiscMotables
+	 * An Emmoter that deals in terms of ExclusiveDiscMotables
 	 *
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$
@@ -109,7 +109,7 @@ public class ExclusiveDiscContextualiser extends AbstractCollapsingContextualise
 				if (ExclusiveDiscMotable.load(ldm.getFile(), emotable)==null)
 					return false;
 				} catch (Exception e) {
-					_log.error("could not load item from local file", e);
+					_log.error("could not load item from file", e);
 					return false;
 				}
 			} else
@@ -118,6 +118,6 @@ public class ExclusiveDiscContextualiser extends AbstractCollapsingContextualise
 			return true;
 		}
 
-		public String getInfo(){return "local disc";}
+		public String getInfo(){return "exclusive disc";}
 	};
 }

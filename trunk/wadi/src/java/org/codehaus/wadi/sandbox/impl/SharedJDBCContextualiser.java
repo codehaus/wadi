@@ -127,9 +127,9 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 
 		// TODO - abstract common code between this and Imoter...
 
-		public String getInfo(){return "database";}
+		public String getInfo(){return "shared database";}
 
-	};
+	}
 
 	/**
 	 * An Immoter that deals in terms of SharedJDBCMotables
@@ -185,7 +185,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		}
 
 		public String getInfo() {
-			return "database";
+			return "shared database";
 		}
 	}
 }
