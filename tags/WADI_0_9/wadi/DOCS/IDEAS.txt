@@ -1,0 +1,148 @@
+
+CLUSTER PROTOCOL THOUGHTS
+
+Its important that there is a 'leave' as well as a 'join' protocol so
+that everyone can discern the difference between a controlled shutdown
+and a catastrophic failure.
+
+Nodes are arranged into
+
+Explicit Join (1-N nodes)
+- joiners have no state
+- all existing members are informed of joining
+- joiner is DTM and mediates join XA
+- joiners negotiate ownership of some share of cluster state - it is migrated to them
+- corresponding backup services are also redistributed and backup state rearranged
+
+Explicit Leave (1-N nodes)
+ - leavers inform all existing members of wish to leave
+ - ownership of leavers' state is transferred to remaining members
+ - leaver is DTM and mediates leave XA
+ - corresponding backup services are also redistributed and backup state rearranged
+ - leaver[s] drop[s] state and leave[s]
+
+Implicit leave (failure)
+ - interested parties should reach agreement that it is unreachable/dead
+ - all members should be notified of the death
+ - if node is 'undead' and makes contact with any member it will be notified that it is 'dead', should dump its state and rejoin
+ - interested parties negotiate replacement services with rest of cluster
+
+(3) cluster split....
+
+say the cluster was split in two equally sized groups.
+it is possible that each group would have a complete copy of the state
+each group would see the other as having catastropically failed.
+the fun starts when the network heals itself :-)
+
+- interested parties should reach agreement that 1-N nodes are unreachable/dead.
+- remaining nodes should adopt state owned by dead node[s]
+- replacement services should be renegotiated amongst remaining nodes
+
+(a) nodes never rejoin...
+
+If N>B where N is the number of dead nodes and B is the number of
+state backups, then we may have lost some state.
+
+(b) nodes were really dead, are restarted and rejoin - goto
+
+
+
+
+-----------------------------------------------------------------
+
+CRAZED REPLICATION MODEL
+
+chaotic - model of life
+
+cells (sessions) arrange themselves in colonies (buckets)
+
+a primary colony will clone itself a number (n) of times.
+
+clones repel each other so that they will not choose the same host
+(vm) and will try to avoid geographically close hosts (i.e. vms on the
+same box).
+
+if a primary colony's host dies a secondary colony (clone) will
+be promoted to primary status and one of the remaining colonies (if
+possible a secondary one) will clone a replacement copy into a
+compatible organ/host.
+
+peer colonies keep each other informed of their location.
+organs are aware of the location of all primary colonies
+
+under certain conditions a cell may migrate between primary colonies,
+provided that the corresponding peer cell migrates between the
+corresponding peer colonies.
+
+colonies, particularly secondary ones, may migrate from resource-poor
+to resource-rich organs (taking into account their repellant
+behaviour).
+
+primary cells keep their secondary peers up to date with their
+mutations (state changes).
+
+primary colonies keep their secondary peers up to date with any
+internal change in cell structure through cell creation or cell death.
+
+
+---------------------------------------------------------------------
+
+In order to come up with good distributed algorithms, it is useful to
+model the components as autonomous since a single point of control is
+a single point of failure. Multiple autonomous units will be more
+resilient.
+
+Life starts with a number of colonies (buckets)
+
+Each of these is designated 'primary'
+
+Each primary colony will clone itself, assuring a population of N
+(resilience) peers.
+
+Colony peers repel each other and will therefore migrate away from
+each other, if possible, when placed in the same host (vm) or in
+geographically close hosts (i.e. vms on the same box). - In fact if in
+the same host and unable to migrate away, all but one peer will die.
+
+Colonies, less so primary ones, migrate towards resources (cpu,
+memory).
+
+Colony peers maintain contact with each other.
+
+Colony peers will endeavour to maintain a constant population of N.
+
+If a colony peer dies (because of the catastrophic death of it's host
+- or perhaps inability to migrate from dwindling resources), a
+remaining peer will attempt to produce a replacement by cloning itself
+into another host with sufficient resources.
+
+If the primary peer dies a surviving secondary peer will be promoted
+to primary.
+
+Colonies contain cells (sessions).
+
+Primary colonies may grow/shrink through cell birth/death.
+
+Secondary colonies keep their content in sync with their primary,
+which will notify them of such change.
+
+Cells contain DNA (state).
+
+A primary cell's DNA may mutate.
+
+A primary cell's mutations are notified to it's secondary peer cells
+so that they may sync their DNA with it.
+
+Every host is aware of the location of every primary colony.
+
+In some circumstance a primary cell may migrate between primary
+colonies - provided that it's secondary peer cells also migrate to the
+corresponding secondary peer colony.
+
+Every host is connected to every other host.
+
+Colonies need to negotiate with each other for resources. i.e. if
+there are insufficient resources available in the cluster for more
+than N-1 peers for each colony, then they should settle on this
+number...
+

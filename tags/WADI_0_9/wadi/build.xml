@@ -1,0 +1,407 @@
+<?xml version="1.0"?>
+
+<project name="WADI" default="test">
+
+  <!--=========================================================================-->
+
+  <property environment="env"/>
+
+  <property name="aspectj.home" value="${env.ASPECTJ_HOME}"/>
+  <property name="jetty.home" value="${env.JETTY_HOME}"/>
+  <property name="tomcat.home" value="${env.TOMCAT_HOME}"/>
+  <property name="java.home" value="${env.JAVA_HOME}"/>
+  <property name="wadi.home" value="${basedir}"/>
+
+  <!--=========================================================================-->
+
+  <path id="wadi.classpath">
+    <!-- compile time -->
+    <pathelement path="./lib/commons-logging-1.0.3.jar"/>
+    <pathelement path="./lib/junit.jar"/>
+    <!-- Jetty -->
+    <pathelement location="${jetty.home}/lib/javax.servlet.jar"/>
+    <pathelement location="${jetty.home}/lib/org.mortbay.jetty.jar"/>
+    <pathelement location="${jetty.home}/lib/org.mortbay.jmx.jar"/>
+    <!-- Tomcat -->
+    <pathelement location="${tomcat.home}/server/lib/catalina.jar"/>
+    <pathelement location="${tomcat.home}/common/lib/jmx.jar"/><!-- 5.0.19 -->
+    <pathelement location="${tomcat.home}/bin/jmx.jar"/><!-- 5.0.24 -->
+    <pathelement location="${tomcat.home}/server/lib/commons-digester.jar"/>
+    <!-- run time -->
+    <pathelement path="./WEB-INF/classes"/>
+    <fileset dir="./WEB-INF/lib"/>
+  </path>
+
+  <!--=========================================================================-->
+
+  <taskdef resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties">
+    <classpath>
+      <pathelement path="${aspectj.home}/lib/aspectjtools.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef
+    name="ajdoc"
+    classname="org.aspectj.tools.ant.taskdefs.Ajdoc"
+    >
+    <classpath>
+      <pathelement path="${aspectj.home}/lib/aspectjtools.jar"/>
+    </classpath>
+  </taskdef>
+
+  <!--=========================================================================-->
+
+  <target name="init">
+    <echo message="wadi.home=${wadi.home}"/>
+    <echo message="tomcat.home=${tomcat.home}"/>
+    <echo message="jetty.home=${jetty.home}"/>
+    <echo message="aspectj.home=${aspectj.home}"/>
+    <echo message="java.home=${java.home}"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="WEB-INF/classes"/>
+    <mkdir dir="WEB-INF/classes"/>
+    <delete dir="javadoc"/>
+    <delete dir="target"/>
+  </target>
+
+  <target name="compile" depends="init">
+    <iajc
+      destdir="WEB-INF/classes"
+      debug="true"
+      verbose="true"
+      time="true"
+      source="1.4"
+      >
+      <classpath refid="wadi.classpath"/>
+      <sourceroots>
+	<pathelement path="src/java"/>
+	<pathelement path="src/test"/>
+      </sourceroots>
+    </iajc>
+    <copy toDir="WEB-INF/classes">
+      <fileset dir="src/java">
+	<include name="**/*.properties"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <!--=========================================================================-->
+
+  <!-- I'm not running the start.jar direct, because this fails to
+  pass through the logging config file for some reason... -->
+
+  <target name="jetty.0" depends="compile">
+    <java
+      fork="yes"
+      dir="${jetty.home}"
+      classname="org.mortbay.start.Main"
+      taskname="jetty.0"
+      failonerror="true"
+      >
+      <sysproperty key="wadi.home" value="${wadi.home}"/>
+      <sysproperty key="STOP.PORT" value="8079"/>
+      <sysproperty key="http.port" value="8080"/>
+      <sysproperty key="ajp.port" value="8009"/>
+      <sysproperty key="wadi.colour" value="red"/>
+      <sysproperty key="bucket.name" value="web0"/>
+      <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Jdk14Logger"/>
+      <sysproperty key="java.util.logging.config.file" value="${wadi.home}/lib/logging.properties"/>
+     <assertions>
+	<enable/>
+      </assertions>
+      <classpath>
+	<pathelement path="WEB-INF/classes"/><!-- for LogFormatter -->
+	<fileset dir="${jetty.home}">
+	  <include name="start.jar"/>
+	  <include name="lib/javax.servlet.jar"/>
+	  <include name="lib/org.mortbay.jetty.jar"/>
+	</fileset>
+	<fileset dir="${wadi.home}">
+	  <include name="lib/commons-logging-1.0.3.jar"/>
+	</fileset>
+      </classpath>
+      <arg value="${wadi.home}/conf/jetty.xml"/>
+    </java>
+  </target>
+
+  <target name="jetty.1" depends="compile">
+    <java
+      fork="yes"
+      dir="${jetty.home}"
+      classname="org.mortbay.util.jmx.Main"
+      taskname="jetty.1"
+      failonerror="true"
+      >
+      <sysproperty key="wadi.home" value="${wadi.home}"/>
+      <sysproperty key="STOP.PORT" value="8081"/>
+      <sysproperty key="http.port" value="8083"/><!-- mx4j console is on 8082 -->
+      <sysproperty key="ajp.port" value="8010"/>
+      <sysproperty key="wadi.colour" value="yellow"/>
+      <sysproperty key="bucket.name" value="web1"/>
+      <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Jdk14Logger"/>
+      <sysproperty key="java.util.logging.config.file" value="${wadi.home}/lib/logging.properties"/>
+     <assertions>
+	<enable/>
+      </assertions>
+      <classpath>
+	<pathelement path="WEB-INF/classes"/><!-- for LogFormatter -->
+	<fileset dir="${jetty.home}">
+	  <include name="lib/org.mortbay.jmx.jar"/>
+	  <include name="lib/org.mortbay.jetty.jar"/>
+	  <include name="lib/javax.servlet.jar"/>
+	  <include name="ext/jasper-runtime.jar"/>
+	  <include name="ext/jasper-compiler.jar"/>
+	  <include name="ext/mx4j-*.jar"/>
+	  <include name="ext/*.jar"/>
+	  <include name="ext/*.JAR"/>
+	  <include name="ext/*.zip"/>
+	  <include name="ext/*.ZIP"/>
+	  <exclude name="ext/javax.xml.jaxp.jar"/>
+	  <exclude name="ext/crimson.jar"/>
+	</fileset>
+	<fileset dir="${wadi.home}">
+	  <include name="lib/commons-logging-1.0.3.jar"/>
+	</fileset>
+	<fileset dir="${java.home}/.."><!-- this is actually the JRE -->
+	  <include name="lib/tools.jar"/>
+	</fileset>
+      </classpath>
+      <arg line="file://${wadi.home}/conf/jetty.mlet"/>
+    </java>
+  </target>
+
+  <target name="tomcat.0" depends="compile">
+    <echo message="tomcat.home=${tomcat.home}"/>
+    <echo message="wadi.home=${wadi.home}"/>
+    <java
+      fork="yes"
+      dir="${tomcat.home}/bin"
+      classname="org.apache.catalina.startup.Bootstrap"
+      taskname="tomcat.0"
+      failonerror="true"
+      >
+      <!-- experimental -->
+      <sysproperty key="http.port" value="8084"/>
+      <sysproperty key="ajp.port" value="8011"/>
+      <sysproperty key="wadi.home" value="${wadi.home}"/>
+      <sysproperty key="wadi.colour" value="blue"/>
+      <sysproperty key="bucket.name" value="web0"/>
+
+      <sysproperty key="java.endorsed.dirs" value="${tomcat.home}/common/endorsed"/>
+      <sysproperty key="catalina.base" value="${tomcat.home}"/>
+      <sysproperty key="catalina.home" value="${tomcat.home}"/>
+      <sysproperty key="java.io.tmpdir" value="${tomcat.home}/temp"/>
+      <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Jdk14Logger"/>
+      <sysproperty key="java.util.logging.config.file" value="${wadi.home}/lib/logging.properties"/>
+      <assertions>
+	<enable/>
+      </assertions>
+      <classpath>
+	<fileset dir="${tomcat.home}">
+	  <include name="**/*.jar"/>
+	</fileset>
+	<pathelement location="${jetty.home}/lib/org.mortbay.jetty.jar"/><!-- am I mad -->
+	<pathelement path="./WEB-INF/classes"/>
+	<fileset dir="${wadi.home}">
+	  <include name="lib/*.jar"/>
+	  <include name="WEB-INF/lib/*.jar"/>
+	</fileset>
+	<fileset dir="${java.home}/.."><!-- this is actually the JRE -->
+	  <include name="lib/tools.jar"/>
+	</fileset>
+      </classpath>
+      <arg value="-config"/>
+      <arg value="${wadi.home}/conf/tomcat.xml"/>
+      <arg value="start"/>
+    </java>
+  </target>
+
+  <!--=========================================================================-->
+
+  <target name="location.server" depends="compile">
+    <java
+      fork="yes"
+      classname="org.codehaus.wadi.shared.TestLocationServer"
+      taskname="location"
+      failonerror="true">
+      <arg value="zeuglodon"/>
+      <arg value="8080"/>
+      <assertions>
+	<enable/>
+      </assertions>
+
+      <classpath>
+	<pathelement path="lib/log4j.jar"/>
+	<pathelement path="lib/commons-logging-1.0.3.jar"/>
+	<pathelement path="lib/concurrent-1.3.2.jar"/>
+	<pathelement path="WEB-INF/classes"/>
+	<pathelement path="WEB-INF/lib"/>
+	<pathelement path="lib"/><!-- log4j.properties -->
+      </classpath>
+
+    </java>
+  </target>
+
+  <target name="location.client" depends="">
+    <java
+      fork="yes"
+      classname="org.codehaus.wadi.shared.TestLocationClient"
+      taskname="location"
+      failonerror="true">
+      <arg value="org.codehaus.wadi,locate,F3E0C205AEFDD1DB1A471AF4A938A35B"/>
+      <assertions>
+	<enable/>
+      </assertions>
+      <classpath>
+	<pathelement path="lib/commons-logging-1.0.3.jar"/>
+	<pathelement path="lib/concurrent-1.3.2.jar"/>
+	<pathelement path="WEB-INF/classes"/>
+	<pathelement path="WEB-INF/lib"/>
+      </classpath>
+       <sysproperty key="java.util.logging.config.file" value="lib/logging.properties"/>
+   </java>
+  </target>
+
+  <!--=========================================================================-->
+
+  <target name="test" depends="compile">
+    <java fork="yes" classname="junit.textui.TestRunner" taskname="junit" failonerror="true">
+      <arg value="org.codehaus.wadi.test.TestSerialisation"/>
+      <arg value="org.codehaus.wadi.test.TestDiscoveryService"/>
+      <arg value="org.codehaus.wadi.test.TestMigrationService"/>
+      <arg value="org.codehaus.wadi.test.TestConcurrency"/>
+      <arg value="org.codehaus.wadi.test.TestHttpSession"/>
+      <classpath refid="wadi.classpath"/>
+      <!--
+      -->
+     <assertions>
+	<enable/>
+      </assertions>
+      <sysproperty key="STOP.PORT" value="8079"/>
+      <sysproperty key="http.port" value="8080"/>
+      <sysproperty key="ajp.port" value="8009"/>
+      <sysproperty key="bucket.name" value="web0"/>
+      <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Jdk14Logger"/>
+      <sysproperty key="java.util.logging.config.file" value="${wadi.home}/lib/logging.properties"/>
+    </java>
+    <!--
+    <junit>
+    <classpath>
+    <path refid="wadi.classpath"/>
+  </classpath>
+    <test name="TestOID" fork="true" todir="/tmp" />
+  </junit>
+    -->
+  </target>
+
+  <!--=========================================================================-->
+
+  <!-- can't get this to work - anyone ? -->
+  <target name="ajdoc">
+    <ajdoc
+      sourcepath="src"
+      destdir="javadoc"
+      packagenames="org.codehaus.wadi.*"
+      doctitle="WADI"
+      windowtitle="WADI"
+      defaultexcludes="yes"
+      classpathref="wadi.classpath"
+      />
+  </target>
+
+  <target name="javadoc">
+    <javadoc
+      source="1.4"
+      packagenames="org.codehaus.wadi.*"
+      destdir="javadoc"
+      author="true"
+      version="true"
+      public="true"
+      windowtitle="${ant.project.name} API"
+      doctitle="${ant.project.name}"
+      bottom="Copyright &#169; 2004 Jules Gosnell. All Rights Reserved."
+      >
+      <classpath>
+	<path refid="wadi.classpath"/>
+      </classpath>
+      <sourcepath>
+	<pathelement path="src/java"/>
+	<pathelement path="src/test"/>
+      </sourcepath>
+      <link href="http://java.sun.com/j2se/1.4.2/docs/api"/>
+      <link href="http://java.sun.com/j2ee/1.4/docs/api"/>
+      <link href="http://jakarta.apache.org/commons/httpclient/apidocs"/>
+      <link href="http://jakarta.apache.org/commons/logging/apidocs"/>
+      <link href="http://jetty.mortbay.org/javadoc"/>
+      <link href="http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs/api"/>
+      <link href="http://www.junit.org/junit/javadoc/3.8.1"/>
+    </javadoc>
+  </target>
+
+  <!--=========================================================================-->
+
+  <!-- package up a release - rudimentary at the moment - can probably be automated... -->
+  <target name="release" depends="compile">
+   <jar destfile="WEB-INF/lib/wadi-0.9.jar" basedir="WEB-INF/classes"/>
+   <delete dir="WEB-INF/classes"/>
+   <mkdir dir="WEB-INF/classes"/>
+    <fileset id="release.bundle" dir=".">
+      <exclude name="**/*~"/>
+      <exclude name="**/CVS"/>
+      <exclude name="**/.cvsignore"/>
+      <exclude name="*watchdog*"/>
+      <exclude name="*watchdog*/**"/>
+      <exclude name="*velocity.log*"/>
+      <exclude name="target"/>
+      <exclude name="junit*"/>
+      <exclude name="tmp"/>
+      <exclude name="tmp/**"/>
+      <exclude name="xdocs"/>
+      <exclude name="xdocs/**"/>
+      <exclude name="*.log"/>
+      <exclude name="DOCS"/>
+      <exclude name="DOCS/**"/>
+    </fileset>
+    <tar destfile="../wadi-0.9.tgz" compression="gzip">
+      <tarfileset prefix="wadi-0.9" dir=".">
+	<exclude name="**/*~"/>
+	<exclude name="**/CVS"/>
+	<exclude name="**/.cvsignore"/>
+	<exclude name="*watchdog*"/>
+	<exclude name="*watchdog*/**"/>
+	<exclude name="*velocity.log*"/>
+	<exclude name="target"/>
+	<exclude name="junit*"/>
+	<exclude name="tmp"/>
+	<exclude name="tmp/**"/>
+	<exclude name="xdocs"/>
+	<exclude name="xdocs/**"/>
+	<exclude name="*.log"/>
+	<exclude name="DOCS"/>
+	<exclude name="DOCS/**"/>
+      </tarfileset>
+    </tar>
+    <zip destfile="../wadi-0.9.zip">
+      <zipfileset prefix="wadi-0.9" dir=".">
+	<exclude name="**/*~"/>
+	<exclude name="**/CVS"/>
+	<exclude name="**/.cvsignore"/>
+	<exclude name="*watchdog*"/>
+	<exclude name="*watchdog*/**"/>
+	<exclude name="*velocity.log*"/>
+	<exclude name="target"/>
+	<exclude name="junit*"/>
+	<exclude name="tmp"/>
+	<exclude name="tmp/**"/>
+	<exclude name="xdocs"/>
+	<exclude name="xdocs/**"/>
+	<exclude name="*.log"/>
+	<exclude name="DOCS"/>
+	<exclude name="DOCS/**"/>
+      </zipfileset>
+   </zip>
+ </target>
+
+</project>

@@ -1,0 +1,57 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure 1.2//EN" "http://jetty.mortbay.org/configure_1_2.dtd">
+
+<Configure class="org.codehaus.wadi.shared.Manager">
+
+  <!-- used to stream sessions between peers -->
+  <Set name="StreamingStrategy">
+    <New class="org.codehaus.wadi.plugins.SimpleStreamingStrategy"/><!-- no compression -->
+  </Set>
+
+  <!-- used to select long-term storage mechanism -->
+  <Set name="PassivationStrategy">
+
+    <New class="org.codehaus.wadi.plugins.FilePassivationStrategy"><!-- File based persistance -->
+      <Arg><SystemProperty name="wadi.home"/>/tmp</Arg><!-- put evicted sessions ${wadi.home}/tmp -->
+
+      <!-- evicted sessions will be gzipped -->
+      <Set name="StreamingStrategy">
+	<New class="org.codehaus.wadi.plugins.GZIPStreamingStrategy"/>
+      </Set>
+    </New>
+  </Set>
+
+  <!-- used to decide when to evict a session -->
+  <Set name="EvictionPolicy">
+    <New class="org.codehaus.wadi.plugins.AbsoluteEvictionPolicy">
+      <Arg type="int">300</Arg><!-- evict after 5 mins of inactivity -->
+    </New>
+  </Set>
+
+  <!-- used to decide how session ids should be generated -->
+  <Set name="IdGenerator">
+    <New class="org.codehaus.wadi.plugins.TomcatIdGenerator"/><!-- use Tomcat style IDs -->
+  </Set>
+
+  <!-- Multicast address:port over which session location protocol runs -->
+  <Set name="AutoLocationAddress">228.5.6.7</Set>
+  <Set name="AutoLocationPort">6789</Set>
+
+<!-- if you are using Apache/mod_jk uncomment this for affinity -->
+<!--
+  <Set name="RoutingStrategy">
+   <New class="org.codehaus.wadi.plugins.JkRoutingStrategy">
+    <Arg><SystemProperty name="wadi.colour"/></Arg>
+   </New>
+  </Set>
+-->
+
+<!-- else use this... -->
+<!--
+-->
+  <Set name="RoutingStrategy">
+   <New class="org.codehaus.wadi.plugins.NoRoutingStrategy"/>
+  </Set>
+
+</Configure>

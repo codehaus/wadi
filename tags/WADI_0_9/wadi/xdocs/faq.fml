@@ -1,0 +1,1079 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/*
+ * Copyright 2001-2004 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0-lock
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ -->
+
+<faqs title="WADI - Frequently Asked Questions">
+
+  <part id="general">
+    <title>General</title>
+
+    <faq id="pronounciation">
+      <question>How is WADI pronounced? [20/04/04]</question>
+      <answer>
+	WADI is pronounced: 'woddy'.
+      </answer>
+    </faq>
+
+    <faq id="acronym">
+      <question>What does WADI stand for? [20/04/04]</question>
+      <answer>
+	W[eb] A[pplication] D[istribution] I[nfrastructure].
+      </answer>
+    </faq>
+
+    <faq id="what">
+      <question>What does WADI do? [01/06/04]</question>
+      <answer>
+
+       	WADI is a J2EE component that manages and ensures the scalable
+       	and transparent high availability of J2EE Web container state.
+
+	<p/>
+
+	Such state is stored in an HttpSession. This is the per-client
+	server-side repository of conversational state and the only
+	resource to be distributed in a &lt;distributable/&gt; Web
+	Application.
+
+	<p/>
+
+	The management of distributable HttpSessions is currently
+	loosely specified.  Consequently, it unfortunately tends to be
+	very much an afterthought in existing Open Source
+	implementations.
+
+	<p/>
+
+	WADI's goal is to identify and explain the shortcomings
+	present in current offerings and to provide an implementation
+	which draws upon this crystallisation of the current state of
+	play to provide a highly flexible toolkit capable of
+	delivering a number of different solutions in a complex
+	problem space.
+
+	<p/>
+
+	WADI is able to achieve this, because the project is focussed,
+	not on the delivery of a complete, working web-container, but
+	simply upon the problem of distributed state management.
+
+	<p/>
+
+	Ultimately, WADI will live or die upon its ability to justify
+	its architecture in terms of the constraints placed upon it by
+	the Servlet and Java language specifications and to deliver a
+	production-ready implementation of this in a format that is
+	sufficiently performant, flexible, and functional as to be
+	worth the investment, over and above just taking a vanilla
+	web-container out of the box, that the user will have to make
+	to put it to use.
+
+	<p/>
+
+	You are the Jury. Your verdict is final!
+
+      </answer>
+    </faq>
+
+    <faq id="goals">
+      <question>What are WADI's goals? [08/06/04]</question>
+      <answer>
+
+	We can crystallise WADI's goals into two stages:
+
+	<ul>
+	  <li>
+	    To be able to walk into your web farm and 'ctl-c' any
+	    webcontainer node without losing any HttpSessions
+	    (i.e. customers).
+	  </li>
+
+	  <li>
+	    To be able to walk into the same web farm and 'kill -9'
+	    any webcontainer node without losing any HttpSessions
+	    (i.e. customers).
+	  </li>
+	</ul>
+
+	<p/>
+
+	The first of these two cases is important because it allows
+	easy maintenance of existing h/w or s/w. This may seem a
+	trivial requirement, but many existing solutions are
+	time-consuming and/or error-prone (involving draining sessions
+	off target nodes over long periods etc.), to the point that
+	many sites simply accept that maintenance will impact quality
+	of service.
+
+	<p/>
+
+	The second of these two cases deals with a more exceptional
+	case - the catastrophic failure of a webcontainer node. As
+	online competition for business increases, systems are being
+	required to provide higher-availibility. This can be critical
+	in particular areas. The ability to preserve web-tier state
+	beyond the failure of its node is correspondingly an
+	increasing requirement.
+
+      </answer>
+    </faq>
+
+    <faq id="goals">
+      <question>What resolutions to these goals does WADI propose? [08/06/04]</question>
+      <answer>
+
+	WADI addresses its problem space through dividing and
+	conquering. The goals above have been broken down into the
+	following feature set.
+
+	<ul>
+	  <li>
+	    Perform the full set of duties associated with a standard,
+	    non-distributable session manager.
+	  </li>
+
+	  <li>
+	    A reliable solution to application and container space
+	    HttpSession concurrency issues - so that the container may
+	    safely serialise a session if/when the need arises.
+	  </li>
+
+	  <li>
+	    The ability to migrate sessions to/from a pluggable shared
+	    long-term storage mechanism allows WADI to preserve JVM
+	    resources by evicting infrequently used sessions during a
+	    node's lifetime and to ensure their availibility to its
+	    peers both during its lifetime and after shutdown.
+	  </li>
+
+	  <li>
+	    Further pluggable strategies allow the user to control
+	    e.g. compression algorithms used in such migration. These
+	    could be extended to perform other types of transformation
+	    - e.g. encryption, for sites where security is a priority.
+	  </li>
+
+	  <li>
+	    WADI is able to relocate sessions by migration directly
+	    between peer nodes in the cluster. If a request arrives at
+	    a node that does not have the corresponding session, it
+	    can locate it and request its immigration underneath the
+	    incoming request.
+	  </li>
+
+	  <li>
+	    Pluggable load-balancer integrations allow WADI to
+	    leverage specific mechanisms to control/predict on which
+	    node user requests will fall.
+	  </li>
+
+	  <li>
+	    WADI is also able to relocate requests between peers. It
+	    uses redirection (load-balancer permitting) or
+	    proxying. If a request arrives at a node that does not
+	    have the corresponding session, it can locate it and
+	    send the request on to the correct node..
+	  </li>
+
+	  <li>
+	    Bulletproof HttpSessions - through state replication -
+	    This is the second phase of WADI development, currently
+	    unimplemented. We will be drawing on the experience of
+	    having already twice implemented such mechanisms for <a
+	    href="http://jetty.mortbay.org">Jetty</a>. Work in this
+	    area is expected to start soon.
+	  </li>
+
+	  <li>
+	    All of the above in a manner completely compatible with
+	    the current J2EE Servlet Specification (2.4), thus
+	    preserving the users investment in the J2EE platform and
+	    avoiding vendor lockin.
+	  </li>
+	</ul>
+
+	HttpSessions have taken a back seat in terms of reliability
+	and effort put into their implementation to EJBs for some
+	time. With the proliferation of web farms and increasing
+	reliability and performance requirements in the web tier, WADI
+	will address these issues.
+
+      </answer>
+    </faq>
+
+    <faq id="platforms">
+      <question>On what platform[s] does WADI run? [20/04/04]</question>
+      <answer>
+	<ul>
+	  <li>J2SE 1.4.x</li>
+	  <li>J2EE 1.4 (Servlet 2.4)</li>
+	</ul>
+      </answer>
+    </faq>
+
+    <faq id="integration">
+      <question>With which J2EE containers is it integrated? [19/04/04]</question>
+      <answer>
+
+	WADI currently plugs into <a
+	href="http://jakarta.apache.org/tomcat/tomcat-5.0-doc">Tomcat
+	5</a> and <a href="http://jetty.mortbay.org">Jetty 5</a>, in
+	the form of an HttpSession Manager and a Filter. Any other web
+	container that is flexible enough to allow the substitution of
+	its HttpSession Manager with another 3rd party implementation
+	should present a fairly straightforward integration target for
+	WADI. Filters are a standard J2EE component, so will be
+	pluggable into any compliant or compatible implementation.
+
+	<p/>
+
+	In as far as WADI is integrated with the two web containers
+	mentioned above, it may be considered integrated with
+	application servers which embed them (notably e.g. <a
+	href="http://geronimo.apache.org">Geronimo</a>, Jonas and <a
+	href="http://www.sf.net/projects/jboss">JBoss</a>). Particular
+	attention will be paid to the <a
+	href="http://geronimo.apache.org">Geronimo</a> integration,
+	for reasons given below.
+
+      </answer>
+    </faq>
+
+    <faq id="how">
+      <question>How is this integration achieved? [01/06/04]</question>
+      <answer>
+
+	WADI comprises three main components, A Filter, a portable
+	HttpSession implementation and an HttpSession Manager. The
+	Filter is portable. The Manager has implementations that plug
+	into <a href="http://jetty.mortbay.org">Jetty</a> and <a
+	href="http://jakarta.apache.org/tomcat">Tomcat</a>, replacing
+	their existing HttpSession Managers and HttpSession
+	implementations with its own. HttpSessions are able to be
+	exchanged between instances of any WADI-enabled web-container.
+
+	The Filter end of WADI keeps track of which HttpRequests are
+	visiting which HttpSessions, enabling WADI to know when it may
+	interact with an HttpSession (e.g. for migration) without
+	involving itself in concurrency issues with application-space
+	threads. The Filter is also able to relocate requests, by
+	various pluggable mechanisms, from one node to another, before
+	the HttpRequest enters application code.
+
+	The HttpSession Manager is responsible for HttpSession
+	creation, destruction, pooling, location and
+	migration. Auxiliary code performs all the other tasks
+	involved in HttpSession migration etc...
+
+      </answer>
+    </faq>
+
+    <faq id="why">
+      <question>Why would I even want to store important information in the Web tier? [19/04/04]</question>
+      <answer>
+	Strictly speaking, data associated with presentation lives in
+	the web tier whilst data associated with the business should
+	be stored in the EJB tier.
+
+	<p/>
+
+	State management in the EJB tier is more tightly specified,
+	simpler and generally better implemented than the equivalent
+	functionality in the web-tier, so the tendancy has been to
+	push all important data in this direction, when high
+	availibility and fail-over are a major concern.
+
+	<p/>
+
+	Unfortunately, even designs such as the above cannot get away
+	from the fact that the web-client requires a single handle on
+	the conversational state held in some J2EE tier and that the
+	only such handle provided by the J2EE specifications is that
+	which binds a url parameter/session cookie to a web
+	session. So whilst you can store all data in the EJB tier,
+	unless you want to start learning proprietary tricks to
+	associate an EJB handle with a web client, you have no option
+	but to put your EJB into the relevant web session and pray
+	that it survives whatever gets thrown at it.
+
+	<p/>
+
+	This is obviously an unsatisfactory state of affairs, and
+	WADI's aim is to restore confidence in the reliability of web
+	sessions in general and to clearly demonstrate, that with a
+	little thought, in a number of cases, a distributed web
+	session may be implemented more efficiently and reliably than
+	the corresponding stateful EJB session.
+      </answer>
+    </faq>
+
+    <faq id="why">
+      <question>Why should I need it? [19/04/04]</question>
+      <answer>
+
+	If you have a requirement to store presentation state in your
+	J2EE web tier and this state is of value and you are not keen
+	on shoehorning it into the business tier in order to achieve
+	its persistance and distribution, then you should be looking
+	at WADI.
+
+      </answer>
+    </faq>
+
+    <faq id="competition">
+      <question>How does it differentiate itself from the competition? [08/06/04]</question>
+      <answer>
+
+	The competition is HttpSession implementations in the open
+	source world. At the time of writing, and to the best of my
+	knowledge, these begin to address the same issues as WADI, in
+	terms of e.g. paging HttpSessions to/from disc, or state
+	replication, but have unclear semantics under concurrent load,
+	or are lacking important features. I haven't found a single
+	implementation which addresses all the issues which WADI
+	chooses to in one package - otherwise I would have contributed
+	to that project.
+
+	<p/>
+
+	Here is a brief summary of the current state of play:
+
+	<p/>
+
+	<table border="1">
+	  <tr>
+	    <th>Implementation</th>
+	    <th>Session Persistance</th>
+	    <th>Shared Store</th>
+	    <th>Session Eviction</th>
+	    <th>Session Replication</th>
+	    <th>Replication Whole/Delta</th>
+	    <th>Replication Partitioned</th>
+	    <th>Replication Technology</th>
+	    <th>Author</th>
+	  </tr>
+	  <tr align="center">
+	    <th align="left">Jetty5/TC5: WADI</th>
+	    <td>Y</td>
+	    <td>Y</td>
+	    <td>Y</td>
+	    <td>NYI - Y</td>
+	    <td>NYI - both</td>
+	    <td>NYI - auto - pluggable</td>
+	    <td>ActiveCluster/Pluggable</td>
+	    <td align="left">Jules Gosnell</td>
+	  </tr>
+	  <tr align="center">
+	    <th align="left">Jetty4/5: Jules' DSM</th>
+	    <td>Y</td>
+	    <td>Y</td>
+	    <td>N</td>
+	    <td>Y</td>
+	    <td>both</td>
+	    <td>manual</td>
+	    <td>JGroups/Pluggable</td>
+	    <td align="left">Jules Gosnell</td>
+	  </tr>
+	  <tr align="center">
+	    <th align="left">TC4/JBoss: Thomas' DSM</th>
+	    <td>N</td>
+	    <td>N</td>
+	    <td>N</td>
+	    <td>Y</td>
+	    <td>whole</td>
+	    <td>manual</td>
+	    <td>JBossHA/JGroups</td>
+	    <td align="left">Thomas Peuss</td>
+	  </tr>
+	  <tr align="center">
+	    <th align="left">TC5: PersistentManager</th>
+	    <td>Y</td>
+	    <td>?</td>
+	    <td>Y</td>
+	    <td>N</td>
+	    <td>N</td>
+	    <td>N</td>
+	    <td>N/A</td>
+	    <td align="left">Kief Morris</td>
+	  </tr>
+	  <tr align="center">
+	    <th align="left">TC5: DeltaManager</th>
+	    <td>N</td>
+	    <td>N</td>
+	    <td>N</td>
+	    <td>delta</td>
+	    <td>N?</td>
+	    <td>?</td>
+	    <td>JGroups?</td>
+	    <td align="left">Filip Hanik, Craig McClanahan, Jean-Francois Arcand</td>
+	  </tr>
+	  <tr align="center">
+	    <th align="left">TC5: SimpleTcpReplicationManager</th>
+	    <td>N</td>
+	    <td>N</td>
+	    <td>N</td>
+	    <td>Y</td>
+	    <td>delta</td>
+	    <td>N?</td>
+	    <td>JGroups</td>
+	    <td align="left">Filip Hanik, Bela Ban</td>
+	  </tr>
+	  <tr align="center">
+	    <th align="left">TC5: - New JCluster-based</th>
+	    <td>?</td>
+	    <td>?</td>
+	    <td>?</td>
+	    <td>?</td>
+	    <td>?</td>
+	    <td>NYI - auto - clock</td>
+	    <td>JCluster/JGroups</td>
+	    <td align="left">Rob Block</td>
+	  </tr>
+	</table>
+
+	<p/>
+
+	Please notify us of mistakes or other features/implementations
+	that you would like to see in this table.
+
+      </answer>
+    </faq>
+
+    <faq id="jk">
+      <question>So tell me about WADI and mod_jk [13/06/04]</question>
+      <answer>
+      <p/>
+      I'm glad you asked...
+      <p/>
+
+      Mod_jk poses particular problems for session maintenance beyond
+      the lifetime of a single vm. Mod_jk implements session affinity
+      via a contract with the webcontainer. Each node has a unique
+      id. This id is appended to any session created on this node
+      i.e. if a session '1234' is created on node 'red', the cookie
+      returned to the browser will have a value of
+      '1234.red'. Mod_jk's workers.properties is used to map the 'red'
+      to a particular host:port combination each time it is seen. This
+      is a very efficient and effective way of achieving affinity,
+      until 'red' disappears. Then the browser is left holding a
+      cookie with no corresponding node. Rather than implementing a
+      contract involving some sort of predictability, e.g. failing
+      over to the next node in the list. Mod_jk will simply treat the
+      session as if it had no affinity and select a 'random' live node
+      and drop the request on it. Subsequent requests will be routed
+      to different nodes, whilst the session cookie still ends in
+      '.red'.
+
+     <p/>
+
+     WADI is able survive this ! If 'red' is shutdown cleanly it will
+     migrate its sessions to shared store. The next request will cause
+     the relevant session to be loaded into its receiving node. This
+     node will then rewrite the routing info at the end of the session
+     id with its own unique id, sticking all subsequent requests to
+     itself. Thus affinity immediately 'fails-over' onto another node,
+     maintaining session availibility at minimum price paid only in
+     the exceptional case.
+
+     <p/>
+
+     We believe that this is an important piece of functionality that
+     we have not seen demonstrated by other open source
+     solutions. Please do this test for yourself both with (you will
+     need to enable the Jk integration in WEB-INF/wadi-web.xml) and
+     without WADI and come back to us with any issues.
+
+      </answer>
+    </faq>
+
+    <faq id="aspectj">
+      <question>Why AspectJ? - I prefer AspectXYZ [19/04/04]</question>
+      <answer>
+
+	The complex and flexible requirements of middleware
+	particularly lend themselves to AOP. The previous incarnation
+	of WADI, the <a href="http://jetty.mortbay.org">Jetty</a>
+	HttpSession replication implementation, used a system of
+	deploytime aggregated custom 'interceptors' to compose its
+	HttpSession container on the fly. The move to AspectJ is
+	intended to preserve that investment of time in the
+	decomposition of the HttpSession container into its various
+	aspects whilst paying minimum price at runtime for what is now
+	a statically-typed, compile time abstraction. At the time of
+	the project's inception a number of AOP technologies were
+	investigated. AspectJ was chosen as being the most runtime
+	efficient and mature of this selection. Note that the
+	investment is in figuring out how to break a system down into
+	aspects, rather than implementing it using any particular
+	proprietary aspect technology. If a more suitable AOP
+	implementation comes along we foresee no problem in porting
+	WADI to it.
+
+      </answer>
+    </faq>
+
+    <faq id="status">
+      <question>What is WADI's current status? [08/06/04]</question>
+      <answer>
+
+	Changing daily :-)
+
+	<p/>
+
+	WADI started as a 'proof of concept' project, but is moving
+	rapidly towards production readiness. We will be releasing
+	very shortly.
+
+	<p/>
+
+	Functionality in <a
+	href="http://jakarta.apache.org/tomcat">Tomcat</a> and <a
+	href="http://jetty.mortbay.org">Jetty</a> is now equivalent,
+	so all further WADI development is now being done on a
+	webcontainer-independant platform.
+
+      </answer>
+    </faq>
+
+    <faq id="where">
+      <question>Where is it going? [01/06/04]</question>
+      <answer>
+
+	Currently we are concentrating on resolving all the issues
+	surrounding concurrency, migration and session/request
+	relocation. Once these have been resolved, the next large piece of
+	functionality will be state replication.
+
+      </answer>
+    </faq>
+
+    <faq id="where">
+      <question>How does WADI relate to <a
+      href="http://geronimo.apache.org">Apache Geronimo</a>?
+      [19/04/04]</question>
+      <answer>
+
+	WADI started life as a design for a <a
+	href="http://jetty.mortbay.org">Jetty</a>/<a
+	href="http://geronimo.apache.org">Geronimo</a> component. We
+	soon realized that, because of WADI's abstraction of all
+	significant functionality into pluggable strategies with
+	well-defined APIs, there would ultimately be nothing tieing it
+	exclusively to <a href="http://jetty.mortbay.org">Jetty</a> or
+	<a href="http://geronimo.apache.org">Geronimo</a>. At this
+	point it became WADI - a standalone project, now able to be
+	used by a wider audience, particularly stand-alone <a
+	href="http://jakarta.apache.org/tomcat">Tomcat</a> users.
+
+	<p/>
+
+	Ultimately, WADI's goals still involve a seamless integration
+	with <a href="http://geronimo.apache.org">Geronimo</a>. This
+	will be achieved by backing relevant WADI plugins with <a
+	href="http://geronimo.apache.org">Geronimo</a> services. The
+	authors of this project are involved in the design of <a
+	href="http://geronimo.apache.org">Geronimo</a> clustering
+	functionality and substantial part of WADI is simply the
+	reflection of concerns encountered in the Web tier of this
+	design.
+
+      </answer>
+    </faq>
+
+    <faq id="involved">
+      <question>This is interesting stuff - how do I get involved? [19/04/04]</question>
+      <answer>
+
+	Check out WADI from cvs or download a snapshot (when we get
+	them going) and play with it in <a
+	href="http://jakarta.apache.org/tomcat">Tomcat</a> or <a
+	href="http://jetty.mortbay.org">Jetty</a>. Report problems on
+	the mailing list or codehaus Jira and join in the discussion
+	on the mailing list and irc (when we have one).Bug fixes are
+	always welcome :-). These are the ways to have a direct impact
+	on the quality and direction of the project. There will also
+	be a <a
+	href="">WADI
+	BOF (2180)</a> at JavaOne this year, for those of you who are
+	attending.  <p/>
+
+	If your interest is more general, but still within the J2EE
+	space, you might consider getting involved with the <a
+	href="http://geronimo.apache.org">Apache Geronimo</a>
+	Project. There is plenty of scope here to scratch any itch
+	that you might have.
+
+      </answer>
+    </faq>
+
+  </part>
+
+  <part id="demo">
+    <title>The Demo Application</title>
+
+    <faq id="running">
+      <question>How do I run the demo app?  [09/06/04]</question>
+      <answer>
+
+	<p/>
+	Prerequisites: Either Linux/Unix OR scripting ability :-)
+	<p/>
+	Here's what you will need:
+	<ul>
+	  <li>JAVA_HOME set to the root of a 1.4.x J2SDK</li>
+	  <li>WADI_HOME set to the root of your WADI release tree</li>
+	  <li>TOMCAT_HOME set to a recent Tomcat5 binary release - I am using 5.0.26</li>
+	  <li>JETTY_HOME set to the latest Jetty5  binary release - I am using CVS HEAD</li>
+	  <li>xterm on your path (or hack bin/node.sh to use a different terminal program)</li>
+	  <li>An HTTP load-balancer of some kind (that supports some kind of affinity - INITIALLY DISABLED)</li>
+	  <li>A browser with cookies enabled</li>
+	</ul>
+	<p/>
+	and here's what you do (run scripts with 'sh' because Ant seems to screw executable bit on files):
+	<p/>
+	<ul>
+	  <li>cd $WADI_HOME/bin</li>
+	  <li>sh ./node.sh xterm jetty red&amp;</li>
+	  <li>sh ./node.sh xterm jetty green&amp;</li>
+	  <li>sh ./node.sh xterm tomcat blue&amp;</li>
+	  <li>sh ./node.sh xterm tomcat yellow&amp;</li>
+	  <li>look in the corresponding props files in $WADI_HOME/conf for details of server ports and set up your lb to balance over all 4 nodes</li>
+	  <li>$WADI_HOME/conf contains example configs for Apache/mod_jk and Pound</li>
+	  <li>hit http://&lt;your-lb&gt;/wadi/jsp with your browser</li>
+	</ul>
+	<p/>
+	and here is what you should see:-)
+	<p/>
+	<ul>
+	  <li>After a delay (JSPs  compiling) 9 frames, each containing a table with a single cell</li>
+	  <li>The table corresponds to your session</li>
+	  <li>The colour of the cell corresponds to the server from which the frameset was served - at which point it was inserted into the session</li>
+	  <li>The colour of the frame corresponds to the server from which it was served</li>
+	  <li>refreshing the page will add another item to the session</li>
+	  <li>all frames should contain tables with the same content - different views of the same session</li>
+	  <li>a few more refreshes should make things clear - black cells are just there to make up the table size</li>
+	  <li>looking at the output in your xterms, you should see messages about sessions being migrated between peers</li>
+	</ul>
+	<p/>
+	here's what is actually happening;
+	<p/>
+	<ul>
+	  <li>we are emulating a worst case scenario - an exceptional occurrence - a breakdown in session affinity</li>
+	  <li>each frameset will try to view the same session on a number of different servers</li>
+	  <li>only a single copy of the session exists, which is being moved around under the requests, ensuring their correct processing</li>
+	  <li>the table is a visual history of where the frameset has been served from</li>
+	  <li>N.B. WADI is happily migrating sessions between Jetty and Tomcat peers !</li>
+	</ul>
+	<p/>
+
+	Of course, this is hugely inefficient and not something that
+	you would ever want to happen in production. You would enable
+	session affinity between load-balancer and webcontainers,
+	cutting out all the IO required to move the session from one
+	node to another. But you would rest safe in the knowledge that
+	if affinity was temporarily lost through e.g. the
+	loss/shutdown of a node, or maintenance in the lb tier, WADI
+	would catch and deal with this exceptional case, maintaining
+	service to your customers.
+
+	<p/>
+
+	Running this same test with affinity is left as an exercise to
+	the reader :-). For mod_jk, uncomment the relevant block in
+	$WADI_HOME/WEB-INF/wadi-web.xml and restart your servers. This
+	will cause the proper coordination of session id with
+	mod_jk. For lbs that actually 'remember' the last place a
+	session was processed, rather than using routing info on the
+	end of the session id, you should not have to make any changes
+	server-side. (A sample Pound config is shipped in
+	$WADI_HOME/conf).
+
+        <p/>
+
+        Upon ctl-C-ing any of the nodes that is carrying any sessions,
+        you should see message about their being evicted to disc
+        ($WADI_HOME/tmp) and a summary detailing how many in total
+        were saved. All nodes share this eviction store, so a session
+        is available to all remaining nodes as soon as its host has
+        evicted it. Your customer can continue their conversation
+        transparently via another node.
+
+      </answer>
+    </faq>
+
+    <faq id="building">
+      <question>How do I build WADI from src?  [13/06/04]</question>
+      <answer>
+	<ul>
+	  <li>JAVA_HOME set to the root of a 1.4.x J2SDK</li>
+	  <li>ASPECTJ_HOME - I am using 1.2</li>
+	  <li>ANT_HOME - I am using 1.6.1</li>
+	  <li>TOMCAT_HOME set to a recent Tomcat5 binary release - I am using 5.0.26</li>
+	  <li>JETTY_HOME set to the latest Jetty5  binary release - I am using CVS HEAD</li>
+	  <li>WADI_HOME set to the root of your WADI release tree</li>
+	  <li>rm WEB-INF/lib/wadi-0.9.jar</li>
+	  <li>sh ./build.sh clean compile</li>
+	</ul>
+        <p/>
+
+        Classes are compiled straight into WEB-INF/classes. The dev
+        cycle does not waste time building the
+        WEB-INF/lib/wadi-*.jar...
+
+      </answer>
+    </faq>
+
+	<p/>
+    <faq id="jmeter">
+      <question>I notice a JMeter testplan...?  [09/06/04]</question>
+      <answer>
+	This is a very simple testplan, that I have just started using
+	on the test app. It uses a 'limit=25' request parameter to
+	prevent the session growing too large. The intention is to use
+	something similar to test WADI on multi-cpu boxes and iron out
+	any remaining concurrency issues. I have run a previous
+	version of the demo app at up to 1000 concurrent threads - but
+	it floors my client box :-(. If you want to play with it you
+	will need to pay attention to the hostname and port number to
+	which the HTTP request is sent. Download JMeter, load the
+	testplan into it, click on the HTTP request element and away
+	you go...
+      </answer>
+    </faq>
+
+  </part>
+
+  <part id="technical">
+    <title>Technical</title>
+
+    <faq id="build">
+      <question>What's going on with the build system - Ant or Maven? [19/04/04]</question>
+      <answer>
+
+	WADI started on an Ant build system and is in the process of
+	migrating to Maven. This required a changes to Maven's
+	aspectj-plugin, which is not yet in a release, so Maven is
+	currently only used to build the website. We hope to soon
+	remedy this. In the meantime, please use the build.sh script
+	to build from source.
+
+	<p/>
+
+	If anyone has successfully run AJDoc with AspectJ-1.2 from
+	Ant, please drop us a <address><a
+	href="mailto:jules@coredevelopers.net">mail</a></address> with
+	an example.
+
+      </answer>
+    </faq>
+
+    <faq id="porting">
+      <question>How do I get my app set up with WADI? [07/06/04]</question>
+      <answer>
+
+	Tomcat:
+	<p/>
+
+	<ul>
+	  <li>WADI has been tested on recent versions of <a
+	  href="http://jakarta.apache.org/tomcat">Tomcat</a>5 -
+	  e.g. 5.0.25</li>
+
+	  <li>Ensure that wadi-0.9.jar and the contents of WEB-INF/lib
+	  are on <a
+	  href="http://jakarta.apache.org/tomcat">Tomcat</a>'s
+	  classpath</li>
+
+	  <li>
+	    Configure your app in your server.xml with e.g.
+	    <pre>
+	      &lt;Context path="your-context-path" docBase="the-path-to-webapp-on-disc"&gt;
+	      &lt;Manager className="org.codehaus.wadi.tomcat.Manager"/&gt;
+	      &lt;/Context&gt;
+	    </pre>
+	  </li>
+
+	  <li>Add the &lt;distributable/&gt; tag to &lt;webapp&gt;/WEB-INF/web.xml</li>
+
+	  <li>Familiarise yourself with and add the example wadi-web.xml (in WEB-INF) to &lt;webapp&gt;/WEB-INF</li>
+
+	  <li>Start tomcat in the usual way</li>
+	</ul>
+
+	<p/>
+	Jetty:
+	<p/>
+
+	<ul>
+	  <li>WADI has been tested on Jetty-5.0 and <a
+	  href="http://jetty.mortbay.org">Jetty</a> CVS HEAD</li>
+
+	  <li>Ensure that wadi-0.9.jar and the contents of WEB-INF/lib
+	  are on <a href="http://jetty.mortbay.org">Jetty</a>'s
+	  classpath or in &lt;webapp&gt;/WEB-INF/lib</li>
+
+	  <li>
+	    Configure your app in your jetty.xml with e.g.
+	    <pre>
+	      &lt;Call name="addWebApplication"&gt;
+	      &lt;Arg&gt;your-context-path&lt;/Arg&gt;
+	      &lt;Arg&gt;the-path-to-webapp-on-disc&lt;/Arg&gt;
+	      &lt;/Call&gt;
+	    </pre>
+	  </li>
+
+	  <li>Add the &lt;distributable/&gt; tag to &lt;webapp&gt;/WEB-INF/web.xml</li>
+
+	  <li>Add the example jetty-web.xml (in WEB-INF) to &lt;webapp&gt;/WEB-INF</li>
+
+	  <li>Familiarise yourself with and add the example wadi-web.xml (in WEB-INF) to &lt;webapp&gt;/WEB-INF</li>
+
+	  <li>Start <a href="http://jetty.mortbay.org">Jetty</a> in
+	  the usual way</li>
+	</ul>
+      </answer>
+    </faq>
+
+    <faq id="format">
+      <question>What format is WEB-INF/wadi-web.xml in? [08/06/04]</question>
+      <answer>
+
+	<p/>
+
+	After comparing <a href="http://jetty.mortbay.org">Jetty</a>,
+	<a href="http://jakarta.apache.org/tomcat">Tomcat</a> and 3rd
+	party configuration mechanisms, we chose <a
+	href="http://jetty.mortbay.org">Jetty</a>'s for the following
+	reasons. (It is thoroughly documented <a
+	href="http://jetty.mortbay.org/jetty/tut/XmlConfiguration.html">here</a>).
+
+	<p/>
+
+	<ul>
+	  <li>It will already be familiar to part of our community</li>
+	  <li>It extends as quickly as you can write classes - no admin overhead (c.f. TC and Digester)</li>
+	  <li>Small and lightweight - it took 6 lines of code to insert</li>
+	  <li>As WADI settles down, we may replace it with a more std mechanism - but not right now:-)</li>
+	</ul>
+
+	<p/>
+
+	The format is basically a direct mapping from Java to XML with
+	a little syntactic sugar. Any public method on the WADI
+	session manager or its subcomponents may be called directly
+	from XML just before it is started. This results in
+	anextremely flexible configuration mechanism, which is exactly
+	what WADI needs at this stage. Please peruse the online WADI
+	<a href="http://wadi.codehaus.org/apidocs/org/codehaus/wadi/shared/Manager.html">JavaDoc</a>
+	for a complete listing of available methods/types.
+
+      </answer>
+    </faq>
+
+    <faq id="logging">
+      <question>What is WADI using for Logging infrastructure? [08/06/04]</question>
+      <answer>
+
+	WADI uses commons-logging, and this is backed onto
+	org.apache.commons.logging.impl.SimpleLog logging. We chose
+	this over Jdk1.4 logging, because this seems to swallow all
+	its input afterstarting Runtimme.ShutdownHook(). Logging what
+	happens during shutdown is important to WADI and SimpleLog
+	seems to do this with no problems.
+
+	<p/>
+
+	We didn't use the log4j backend, because we wanted to preserve
+	a TRACE level, which it does not support out-of-the-box.
+
+      </answer>
+    </faq>
+
+    <faq id="design">
+      <question>How is WADI put together? [19/04/04]</question>
+      <answer>
+
+	WADI installs as an HttpSession Manager for a particular
+	Context/WebApp. This Manager then installs (programmatically) a
+	Filter at the front of the webapp's Filter stack.
+	<p/>
+
+	The Manager may be considered to be the webapp's HttpSession
+	factory. It is in control of HttpSession creation and
+	destruction and provides its own HttpSession
+	implementation. Both <a
+	href="http://jakarta.apache.org/tomcat">Tomcat</a> and <a
+	href="http://jetty.mortbay.org">Jetty</a> (fortunately) have
+	well defined internal Manager and HttpSession
+	APIs. org.codehaus.wadi.shared provides core classes which
+	implement standard and WADI functionality as well as
+	interfaces defining pluggable strategies and
+	policies. org.codehaus.wadi.tomcat and org.codehaus.wadi.jetty
+	extend these classes with the necessary glue to fit them into
+	the targer webcontainer. Finally, org.codehaus.wadi.plugins
+	provides concrete implementations of these pluggable APIs,
+	e.g. HttpSession and HttpRequest relocation mechanisms.
+
+	<p/>
+
+	WADI does not set out to tell you how to distribute your
+	webapp. We believe that there are many different ways that you
+	might wish to do this. WADI simply provides a framework and
+	(eventually) every conceivable ability that you might
+	require. Useful default behaviour is supplied, but it is
+	expected that this will be customised with the use of the
+	supplied plugins.
+
+      </answer>
+    </faq>
+
+    <faq id="concurrency">
+      <question>How do you deal with concurrency in a webapp's HttpSessions? [19/04/04]</question>
+      <answer>
+
+	The servlet spec specifically mandates that implementations should
+	allow multiple concurrent request threads to pass through an
+	HttpSession. It omits describing any synchronisation protocol
+	around the HttpSession that the container and application might
+	use in order to coordinate their activities. This has presented a
+	problem for a number of Manager implementations that I have looked
+	at. Many chose simply to ignore the problem.
+
+	<p/>
+
+	This problem becomes far more pressing as the number of
+	activities that the Manager may wish to perform on an active
+	HttpSession increases in frequency or complexity. WADI, for
+	instance, needs to be able to guarantee that no application
+	threads are altering an HttpSession's content whilst the Manager
+	is trying to serialise the HttpSession as part of a relocation
+	(migration) to long term store or another node.
+
+	<p/>
+
+	Synchronising around the HttpSession would not actually solve
+	our problem. If we wish to relocate an HttpSession to another
+	node, we must prevent, once we have made this decision any
+	further requests for this session on this node from entering
+	application code here during the relocation.
+
+	<p/>
+
+	WADI's Filter looks at each incoming request. If it references a
+	local HttpSession it tries to acquire a non-exclusive lock in
+	that HttpSession (non-exclusive so that many concurrent request
+	threads may run). When the Manager wishes to e.g. relocate the
+	HttpSession it will try to acquire an exclusive lock in the
+	HttpSession. In this way application and container-space threads
+	are properly coordinated.
+
+      </answer>
+    </faq>
+
+    <faq id="relocation">
+      <question>Tell me what you mean by HttpSession and HttpRequest relocation [19/04/04]</question>
+      <answer>
+
+	Introducing state into a cluster thoroughly complicates
+	matters. It becomes important that client request and server-side
+	state meet each other somewhere in the cluster for correct
+	processing. Location becomes all important. WADI has the ability
+	to relocate both HttpSessions, by migrating them from node to node
+	(or to long term store) and to relocate HttpRequests by
+	redirection and proxying. Various pluggable strategies and
+	policies allow the user to define how and when this will be done.
+      </answer>
+    </faq>
+
+  </part>
+
+  <part id="business">
+    <title>Business</title>
+
+    <faq id="support">
+      <question>Where can I buy support for WADI?  [19/04/04]</question>
+      <answer>
+	WADI is developed and maintained by partners in <a
+	href="http://www.coredevelopers.net">Core Developers
+	Network</a>. If you wish to discuss support, consulting or
+	enhancements around WADI, please <address><a
+	href="mailto:sales@coredevelopers.net">mail</a></address> us.
+      </answer>
+    </faq>
+
+  </part>
+</faqs>
+
+<!--
+	<p/>
+
+	Relocation
+
+	<p/>
+
+	In certain circumstances (perhaps when a node fails)
+	HttpRequests may arrive at a node which is not in possession
+	of the relevant HttpSession. WADI might take a proactive
+	stance, in which it seeks to ever allow this to happen, or a
+	reactive stance in which we accept this and work around it.
+
+	<p/>
+
+	WADI currently chooses the latter. The reasoning behind this
+	is that the expense in terms of extra processing, distributed
+	locking and synchronisation that we would have to impose on
+	the common case, a correctly routed request, would outweigh
+	any benefit derived from the removal of the exceptional case,
+	an incorrectly routed one. Furthermore, in all likelihood, we
+	would not be able to eradicate the exceptional case, merely
+	reduce its frequency of occurrance. So we would still need to
+	implement all the code to handle the exceptional case anyway.
+
+	<p/>
+
+	Accepting that exceptional cases will arise, leaves WADI with
+	two resolutions :
+
+	<ul>
+	  <li>relocate the request to the session</li>
+	  <li>relocate the session to the request</li>
+	</ul>
+
+	HttpRequest Relocation
+
+	<p/>
+
+	This is currently achieved by means of :
+
+	<ul>
+	  <li>redirection</li>
+	  <li>proxying</li>
+	</ul>
+
+	HttpSession relocation
+
+	<p/>
+
+	This is currently achieved by :
+
+	<ul>
+	  <li>migration of session directly from one node to another</li>
+	  <li>migration of session to shared, long-term store and thence to any node in the cluster</li>
+	</ul>
+
+-->
