@@ -17,15 +17,11 @@
 
 package org.codehaus.wadi.shared;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-
 // now done by HttpSession facade... - which knows about bucket name
 
 //----------------------------------------
 
-// every session id may have routing info appended to it - à la
+// every session id may have routing info appended to it - ï¿½ la
 // modjk...
 
 // this aspect ensures that external (application, container) requests

@@ -17,9 +17,6 @@
 
 package org.codehaus.wadi.shared;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 // TODO - probably only distributable sessions..? depends on session
 // container impl..
 
