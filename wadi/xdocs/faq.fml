@@ -37,11 +37,11 @@
     </faq>
 
     <faq id="what">
-      <question>What does WADI do? [19/04/04]</question>
+      <question>What does WADI do? [01/06/04]</question>
       <answer>
 
        	WADI is a J2EE component that manages and ensures the scalable
-       	and transparent high availability of Web container state.
+       	and transparent high availability of J2EE Web container state.
 
 	<p/>
 
@@ -78,10 +78,10 @@
 	its architecture in terms of the constraints placed upon it by
 	the Servlet and Java language specifications and to deliver a
 	production-ready implementation of this in a format that is
-	sufficiently performant, flexible, functional and available as
-	to be worth the investment, over and above just taking a vanilla
-	web-container out of the box, that the user will have to make to
-	put it to use.
+	sufficiently performant, flexible, and functional as to be
+	worth the investment, over and above just taking a vanilla
+	web-container out of the box, that the user will have to make
+	to put it to use.
 
 	<p/>
 
@@ -153,7 +153,7 @@
     </faq>
 
     <faq id="how">
-      <question>How is this integration achieved? [19/04/04]</question>
+      <question>How is this integration achieved? [01/06/04]</question>
       <answer>
 
 	WADI comprises three main components, A Filter, a portable
@@ -161,8 +161,8 @@
 	Filter is portable. The Manager has implementations that plug
 	into Jetty and Tomcat, replacing their existing HttpSession
 	Managers and HttpSession implementations with its
-	own. HttpSessions will be able to be exchanged between
-	instances of any WADI-enabled web-container.
+	own. HttpSessions are able to be exchanged between instances
+	of any WADI-enabled web-container.
 
 	The Filter end of WADI keeps track of which HttpRequests are
 	visiting which HttpSessions, enabling WADI to know when it may
@@ -349,7 +349,7 @@
     </faq>
 
     <faq id="status">
-      <question>What is WADI's current status? [19/04/04]</question>
+      <question>What is WADI's current status? [01/06/04]</question>
       <answer>
 
 	Changing daily :-)
@@ -362,21 +362,30 @@
 
 	<p/>
 
-	Initial WADI development was done with Jetty and Tomcat was
-	added recently, so the flexibility of the Tomcat integration
-	still lags a little, but this is on our todo list.
+	Functionality in Tomcat and Jetty should now be equivalent, so
+	all further WADI development is now being done on a
+	webcontainer-independant platform.
 
       </answer>
     </faq>
 
     <faq id="where">
-      <question>Where is it going? [19/04/04]</question>
+      <question>Where is it going? [01/06/04]</question>
       <answer>
 
 	Currently we are concentrating on resolving all the issues
 	surrounding concurrency, migration and session/request
 	relocation. Once these have been resolved, the next large piece of
 	functionality will be state replication.
+
+	<p/>
+
+	The last piece of this puzzle, currently being worked upon, is
+	a ReadWrite Lock that orders writers according to thread
+	priority and allows the overlapping of r and w locks -
+	efectively allowing a reader to state its intention to upgrade
+	to a writer and, whilst not being guaranteed that it will win
+	the ensuing race, at least being given a place in it.
 
       </answer>
     </faq>
