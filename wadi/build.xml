@@ -17,7 +17,6 @@
   <path id="wadi.classpath">
     <!-- compile time -->
     <pathelement path="./lib/commons-logging-1.0.3.jar"/>
-    <pathelement path="./lib/gt2-main.jar"/>
     <pathelement path="./lib/junit.jar"/>
     <!-- Jetty -->
     <pathelement location="${jetty.home}/lib/javax.servlet.jar"/>
@@ -113,6 +112,7 @@
 	<enable/>
       </assertions>
       <classpath>
+	<pathelement path="WEB-INF/classes"/><!-- for LogFormatter -->
 	<fileset dir="${jetty.home}">
 	  <include name="start.jar"/>
 	  <include name="lib/javax.servlet.jar"/>
@@ -120,7 +120,6 @@
 	</fileset>
 	<fileset dir="${wadi.home}">
 	  <include name="lib/commons-logging-1.0.3.jar"/>
-	  <include name="lib/gt2-main.jar"/>
 	</fileset>
       </classpath>
       <arg value="${wadi.home}/conf/jetty.xml"/>
@@ -147,6 +146,7 @@
 	<enable/>
       </assertions>
       <classpath>
+	<pathelement path="WEB-INF/classes"/><!-- for LogFormatter -->
 	<fileset dir="${jetty.home}">
 	  <include name="lib/org.mortbay.jmx.jar"/>
 	  <include name="lib/org.mortbay.jetty.jar"/>
@@ -163,7 +163,6 @@
 	</fileset>
 	<fileset dir="${wadi.home}">
 	  <include name="lib/commons-logging-1.0.3.jar"/>
-	  <include name="lib/gt2-main.jar"/>
 	</fileset>
 	<fileset dir="${java.home}/.."><!-- this is actually the JRE -->
 	  <include name="lib/tools.jar"/>
@@ -273,8 +272,8 @@
       <arg value="org.codehaus.wadi.test.TestSerialisation"/>
       <arg value="org.codehaus.wadi.test.TestDiscoveryService"/>
       <arg value="org.codehaus.wadi.test.TestConcurrency"/>
-      <arg value="org.codehaus.wadi.test.TestHttpSession"/>
       <arg value="org.codehaus.wadi.test.TestMigrationService"/>
+      <arg value="org.codehaus.wadi.test.TestHttpSession"/>
       <classpath refid="wadi.classpath"/>
       <!--
       -->
