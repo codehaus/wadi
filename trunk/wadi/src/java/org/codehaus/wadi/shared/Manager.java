@@ -310,6 +310,9 @@ public abstract class
 		    );
 
       impl=(HttpSessionImpl)_local.get(realId); // TODO - rationalise
+
+      if (impl!=null)
+	successfulMigration=true;
     }
 
     if (successfulMigration)
@@ -1216,9 +1219,10 @@ public abstract class
   class MembershipListener
     implements ClusterListener
   {
-    public void onNodeAdd(ClusterEvent event){_log.info("node joined");}
+    public void onNodeAdd(ClusterEvent event){_log.info("node add");}
     public void onNodeUpdate(ClusterEvent event){_log.info("node updated");}
-    public void onNodeRemove(ClusterEvent event){_log.info("node left");}
+    public void onNodeRemoved(ClusterEvent event){_log.info("node removed");}
+    public void onNodeFailed(ClusterEvent event){_log.info("node failed");}
   }
 
   class CommandListener

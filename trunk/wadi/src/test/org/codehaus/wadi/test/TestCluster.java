@@ -81,7 +81,13 @@ public class
     }
 
     public void
-      onNodeRemove(ClusterEvent ce)
+      onNodeFailed(ClusterEvent ce)
+    {
+      _log.info("node failed: " + ce.getNode());
+    }
+
+    public void
+      onNodeRemoved(ClusterEvent ce)
     {
       _log.info("node removed: " + ce.getNode());
     }

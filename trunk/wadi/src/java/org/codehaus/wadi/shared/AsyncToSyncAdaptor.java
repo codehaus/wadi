@@ -48,6 +48,7 @@ public class
     {
       int participants=2;
       Rendezvous rv=new Rendezvous(participants);
+      _log.trace("preparing rendez-vous: "+id);
       _entries.put(id, rv);
 
       Object result=null;
@@ -84,6 +85,7 @@ public class
   public Object
     receive(Object command, String id, long timeout)
     {
+      _log.trace("attending rendez-vous: "+id);
       Rendezvous rv=(Rendezvous)_entries.get(id);
       Object result=null;
 
@@ -93,6 +95,7 @@ public class
 	try
 	{
 	  result=rv.attemptRendezvous(command, timeout);
+	  _log.trace("rendez-vous successful: "+id);
 	}
 	catch (TimeoutException e)
 	{
