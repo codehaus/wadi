@@ -27,10 +27,9 @@ privileged public aspect
 
   pointcut validate(HttpSession session) :
     execution(* HttpSession.*(..)) &&
-    this(session) &&
-    !withincode(* HttpSession.readObject(..)) &&
-    !withincode(* HttpSession.setInvalidated(..)) &&
-    !withincode(* HttpSession.getInvalidated(..)) ;
+    !execution(* HttpSession.isValid()) &&
+    !execution(* HttpSession.invalidate()) &&
+    this(session);
 
   before(HttpSession session)
     : validate(session)

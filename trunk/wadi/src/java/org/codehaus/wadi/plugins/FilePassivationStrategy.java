@@ -262,21 +262,38 @@ public class
   public boolean
     standUp()
     {
+      _log.trace("standing for election");
+      FileChannel channel=null;
       try
       {
-	FileChannel channel=new RandomAccessFile(_dgcFile, "rw").getChannel();
-	_dgcLock=channel.lock(); // take exclusive lock
-	channel.close();
-	_log.trace("we are the distributed garbage collector");
-	return true;
+	channel=new RandomAccessFile(_dgcFile, "rw").getChannel();
+	_dgcLock=channel.tryLock(); // take exclusive lock
       }
       catch (Exception e)
       {
-	_log.warn("problem acquiring housekeeping lock", e);
+	_log.warn("problem acquiring distributed garbage collection lock", e);
       }
 
-      _log.trace("we are not the distributed garbage collector");
-      return false;
+      if(_dgcLock!=null)
+      {
+	// keep channel open to keep lock alive...
+	_log.trace("elected to distributed garbage collection duties");
+	return true;
+      }
+      else
+      {
+	try
+	{
+	  channel.close();
+	}
+	catch (Exception e)
+	{
+	  _log.warn("problem tidying up file lock... ",e);
+	}
+
+	_log.trace("not elected");
+	return false;
+      }
     }
 
   public void
@@ -286,13 +303,15 @@ public class
       {
 	if (_dgcLock!=null)
 	{
+	  _log.trace("standing down from distributed garbage collection duties");
 	  _dgcLock.release();
+	  _dgcLock.channel().close();
 	  _dgcLock=null;
 	}
       }
       catch (Exception e)
       {
-	_log.warn("could not release housekeeping lock", e);
+	_log.warn("problem releasing distributed garbage collection lock", e);
       }
     }
 }
