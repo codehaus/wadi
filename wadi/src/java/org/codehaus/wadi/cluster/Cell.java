@@ -18,6 +18,7 @@
 package org.codehaus.wadi.cluster;
 
 import java.util.Collection;
+import java.util.Iterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
@@ -48,14 +49,14 @@ public class
   {
     _log.info("starting: "+_id);
 
-//     try
-//     {
-//       _cluster=_factory.createCluster(_clusterId+"."+_id);
-//     }
-//     catch (Exception e)
-//     {
-//       _log.warn("unexpected problem starting Cell: "+_id, e);
-//     }
+    try
+    {
+      _cluster=_factory.createCluster(_clusterId+"."+_id);
+    }
+    catch (Exception e)
+    {
+      _log.warn("unexpected problem starting Cell: "+_id, e);
+    }
   }
 
   public void
@@ -63,15 +64,15 @@ public class
   {
     _log.info("stopping: "+_id);
 
-//     try
-//     {
-//       _cluster.stop();
-//       _cluster=null;
-//     }
-//     catch (Exception e)
-//     {
-//       _log.warn("unexpected problem stopping Cell: "+_id, e);
-//     }
+    try
+    {
+      _cluster.stop();
+      _cluster=null;
+    }
+    catch (Exception e)
+    {
+      _log.warn("unexpected problem stopping Cell: "+_id, e);
+    }
   }
 
   public String
@@ -81,4 +82,13 @@ public class
   }
 
   public String getId(){return _id;}
+
+  public static String
+    id(Collection peers)
+  {
+    String id="";
+    for (Iterator i=peers.iterator(); i.hasNext(); )
+      id+=((id.length()==0)?"":"-")+((Peer)i.next()).getId();
+    return id;
+  }
 }

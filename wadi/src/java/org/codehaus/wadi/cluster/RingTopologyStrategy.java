@@ -39,31 +39,26 @@ public class
       super(nodeId, clusterId, cluster, factory, k);
     }
 
-  /**
-   * returns a Map of String:Collection - id:set-of-peers representing
-   * all cells into which the passed list of Peers should be
-   * organised. k is the number of Peers in each Cell.
-   *
-   * @param e a <code>Collection</code> value
-   * @param k an <code>int</code> value
-   * @return a <code>Map</code> value
-   */
   public Map
     combine(Collection e, int k)
     {
+      int l=e.size();
+
+      k=Math.min(k,l);
+
       Map combs=new TreeMap();
 
       if (k>0)
       {
 	Object[] array=e.toArray();
-	for (int i=0; i<e.size(); i++)
+	for (int i=0; i<l; i++)
 	{
 	  Set comb=new TreeSet();
 
 	  for (int j=0; j<k; j++)
-	    comb.add(array[(i+j)%k]);
+	    comb.add(array[(i+j)%l]);
 
-	  String id=comb.toString();
+	  String id=Cell.id(comb);
 	  combs.put(id, comb);
 	}
       }

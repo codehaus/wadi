@@ -56,6 +56,7 @@ public abstract class
     Peer localPeer=getLocalPeer();
     localPeer=localPeer!=null?localPeer:p; // TODO - hack - FIXME
     Map newCells=combine(_peers.values(), _k);
+    _log.info("topology="+newCells.keySet());
     Map relCells=relevant(_oldCells, newCells, localPeer);
 
     int n=relCells.size();
@@ -86,6 +87,7 @@ public abstract class
     Peer localPeer=getLocalPeer();
     localPeer=localPeer!=null?localPeer:p; // TODO - hack - FIXME
     Map newCells=combine(_peers.values(), _k);
+    _log.info("topology="+newCells.keySet());
     Map relCells=relevant(newCells, _oldCells, localPeer);
 
     int n=relCells.size();
@@ -142,5 +144,14 @@ public abstract class
     return diffCells;
   }
 
+  /**
+   * returns a Map of String:Collection - id:set-of-peers representing
+   * all cells into which the passed list of Peers should be
+   * organised. k is the number of Peers in each Cell.
+   *
+   * @param e a <code>Collection</code> value
+   * @param k an <code>int</code> value
+   * @return a <code>Map</code> value
+   */
   public abstract Map combine(Collection peers, int peersPerCell);
 }
