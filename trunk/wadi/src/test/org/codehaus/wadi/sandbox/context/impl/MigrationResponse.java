@@ -18,21 +18,27 @@ package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.Serializable;
 
+import org.codehaus.wadi.sandbox.context.Motable;
+
 /**
  * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class MigrationResponse implements Serializable {
-	protected final String _id;
-	protected final byte[] _bytes;
-	public MigrationResponse(String id, byte[] bytes) {
-		super();
-		_id=id;
-		_bytes=bytes;
-	}
+public class MigrationResponse implements Serializable, Motable {
+	protected String _id;
+	protected byte[] _bytes;
 
 	public String getId(){return _id;}
-	public byte[] getBytes(){return _bytes;}	
+	public void setId(String id){_id=id;}
+	
+	// TODO - these need to be on an object that is contained by this class
+	
+	// Motable
+	public byte[] getBytes(){return _bytes;}
+	public void setBytes(byte[] bytes){_bytes=bytes;}
+	
+	// Evictable
+	public long getExpiryTime(){return 0;}
 }

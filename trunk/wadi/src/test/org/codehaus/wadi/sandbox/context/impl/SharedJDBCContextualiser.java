@@ -16,15 +16,10 @@
  */
 package org.codehaus.wadi.sandbox.context.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 
 import javax.servlet.FilterChain;
@@ -35,10 +30,8 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Collapser;
-import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Motable;
@@ -68,100 +61,83 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		_ds=ds;
 		_table=table;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#getPromoter(org.codehaus.wadi.sandbox.context.Promoter)
 	 */
 	public Promoter getPromoter(Promoter promoter){return promoter;} // just pass contexts straight through...
-
+	
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#contextualiseLocally(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync)
 	 */
 	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres,
 			FilterChain chain, String id, Promoter promoter, Sync promotionLock) throws IOException, ServletException {
-		Context context=null;
 		try {
 			Connection c=_ds.getConnection();
 			Statement s=c.createStatement();
-
+			
 			ResultSet rs=s.executeQuery("SELECT MyValue FROM "+_table+" WHERE MyKey='"+id+"'");
 			if (rs.next()) {
-				Context sc=promoter.nextContext();
-		    	ObjectInput oi=_streamer.getInputStream(new ByteArrayInputStream((byte[])rs.getObject(1)));
-		    	sc.readContent(oi);
-		    	oi.close();
-
-		    	context=sc;
-		    	_log.info("loaded (database): "+id);
-		      }
-
-			// TODO - revisit...
-		    if (context!=null) {
-		    	_log.info("promoting (from database): "+id);
-		    	if (promoter.prepare(id, context)) {
-			    	s.executeUpdate("DELETE FROM "+_table+" WHERE MyKey='"+id+"'");
-			    	_log.info("removed (database): "+id);
-		    		promoter.commit(id, context);
-		    		promotionLock.release();
-		    		promoter.contextualise(hreq, hres, chain, id , context);
-		    	} else {
-		    		promoter.rollback(id, context);
-		    	}
-		    }
-
-		    s.close();
-		    c.close();
-
-		    return true;
-		} catch (SQLException e) {
-		    throw new ServletException("promotion (database) failed: "+id, e);
-		} catch (ClassNotFoundException e2) {
-			throw new ServletException("promotion (database) failed: "+id, e2);
+				Motable motable=promoter.nextMotable();
+				motable.setBytes((byte[])rs.getObject(1));
+				_log.info("loaded (database): "+id);
+				
+				// TODO - revisit...
+				_log.info("promoting (from database): "+id);
+				if (promoter.prepare(id, motable)) {
+					s.executeUpdate("DELETE FROM "+_table+" WHERE MyKey='"+id+"'");
+					_log.info("removed (database): "+id);
+					promoter.commit(id, motable);
+					promotionLock.release();
+					promoter.contextualise(hreq, hres, chain, id , motable);
+				} else {
+					promoter.rollback(id, motable);
+				}
+			}
+			
+			s.close();
+			c.close();
+			
+			return true;
+		} catch (Exception e) {
+			_log.warn("promotion (database) failed: "+id, e);
+			return false;
 		}
-
-		//return false;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#evict()
 	 */
 	public void evict() {
 		// TODO - NYI
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#demote(java.lang.String, org.codehaus.wadi.sandbox.context.Motable)
 	 */
-	public void demote(String key, Motable val) {
-	    try
-	    {
-	    	_log.info("demoting (to database): "+key);
-	      SerializableContent sc=(SerializableContent)val;
-
-	      Connection c=_ds.getConnection();
-	      PreparedStatement ps=c.prepareStatement("INSERT INTO "+_table+" (MyKey, MyValue) VALUES ('"+key.toString()+"', ?)");
-	      ByteArrayOutputStream baos=new ByteArrayOutputStream();
-	      ObjectOutput oos=_streamer.getOutputStream(baos);
-	      sc.writeContent(oos);
-	      oos.flush();
-	      oos.close();
-	      ps.setObject(1, baos.toByteArray());
-	      ps.executeUpdate();
-	      ps.close();
-	      c.close();
-
-	      // we should write metadata like ttl into another column so it is queryable by the evicter and sysadmin..
-	      // do we need to worry about ttl ?
-	      //	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
-	      //	file.setLastModified(willTimeOutAt);
-
-	      _log.info("stored (database): "+key);
-	    }
-	    catch (Exception e)
-	    {
-	      _log.error("eviction (database) failed: "+key, e);
-	    }
+	public void demote(String key, Motable motable) {
+		try
+		{
+			_log.info("demoting (to database): "+key);
+			Connection c=_ds.getConnection();
+			PreparedStatement ps=c.prepareStatement("INSERT INTO "+_table+" (MyKey, MyValue) VALUES ('"+key.toString()+"', ?)");
+			ps.setObject(1, motable.getBytes());
+			ps.executeUpdate();
+			ps.close();
+			c.close();
+			
+			// we should write metadata like ttl into another column so it is queryable by the evicter and sysadmin..
+			// do we need to worry about ttl ?
+			//	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
+			//	file.setLastModified(willTimeOutAt);
+			
+			_log.info("stored (database): "+key);
+		}
+		catch (Exception e)
+		{
+			_log.error("eviction (database) failed: "+key, e);
+		}
 	}
-
+	
 	public boolean isLocal(){return false;}
 }

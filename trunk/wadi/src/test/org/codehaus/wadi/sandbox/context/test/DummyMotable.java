@@ -27,12 +27,10 @@ import org.codehaus.wadi.sandbox.context.Motable;
 
 public class DummyMotable implements Motable {
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.Motable#getExpiryTime()
-	 */
-	public long getExpiryTime() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+	// Evictable
+	public long getExpiryTime() {return 0;}
 
+	// Motable
+	public byte[] getBytes(){return new byte[1];}
+	public void setBytes(byte[] bytes){};
 }

@@ -16,10 +16,16 @@
 */
 package org.codehaus.wadi.sandbox.context.test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.context.Context;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
@@ -28,6 +34,8 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 
 public class MyContext implements Context {
+	protected static Log _log = LogFactory.getLog(MyContext.class);
+	
 	String _val;
 	ReadWriteLock _lock=new ReaderPreferenceReadWriteLock();
 	long _expiryTime;
@@ -58,5 +66,26 @@ public class MyContext implements Context {
 
 	public void writeContent(ObjectOutput oo) throws IOException, ClassNotFoundException {
 		oo.writeObject(_val);
+	}
+	
+	// Motable
+	public byte[] getBytes() throws Exception {
+		ByteArrayOutputStream baos=new ByteArrayOutputStream();
+		ObjectOutputStream oos=null;
+		try {
+			oos=new ObjectOutputStream(baos);
+			writeContent(oos);
+			return baos.toByteArray();
+		} catch (Exception e) {
+			_log.warn("problem serialising context to byte[]", e);
+			throw e;
+		} finally {
+			if (oos!=null)
+				oos.close();
+		}
+	}
+	
+	public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {
+		readContent(new ObjectInputStream(new ByteArrayInputStream(bytes)));
 	}
 }

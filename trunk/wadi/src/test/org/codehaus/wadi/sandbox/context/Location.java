@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Location extends Motable, Serializable {
+public interface Location extends Evictable, Serializable {
 	/**
 	 * @param hreq - the request object from the webcontainer
 	 * @param hres - the response object from the webcontainer

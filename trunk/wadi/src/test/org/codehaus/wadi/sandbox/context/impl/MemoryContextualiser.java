@@ -16,9 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.context.impl;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutput;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -78,25 +76,18 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 				if (promoter!=null) {
 					// promote
 					try {
-						// write context out into a buffer, then read buffer back into this one.. - clumsy - TODO
-						ByteArrayOutputStream baos=new ByteArrayOutputStream();
-						ObjectOutput oi=_streamer.getOutputStream(baos);
-						c.writeContent(oi);
-						oi.flush();
-						oi.close();
-						Context context=promoter.nextContext();
-						// shameful hack - TODO
-						((MigrateRelocationStrategy.MigrationContext)context).setBytes(baos.toByteArray());
+						Motable motable=promoter.nextMotable();
+						motable.setBytes(c.getBytes());
 						_log.info("promoting (from memory): "+id);
-						if (promoter.prepare(id, context)) {
+						if (promoter.prepare(id, motable)) {
 							_map.remove(id); // locking ?
-							promoter.commit(id, context);
+							promoter.commit(id, motable);
 							promotionLock.release();
-							promoter.contextualise(hreq, hres, chain, id, context);
+							promoter.contextualise(hreq, hres, chain, id, motable);
 						} else {
-							promoter.rollback(id, context);
+							promoter.rollback(id, motable);
 						}
-					} catch (ClassNotFoundException e) {
+					} catch (Exception e) {
 						_log.warn("could not promote session: "+id);
 					}
 				} else {
@@ -119,11 +110,10 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 
 	class MemoryPromoter implements Promoter {
 
-		public Context nextContext() {
-			return _pool.take();
-		}
+		public Motable nextMotable() {return _pool.take();}
 
-		public boolean prepare(String id, Context context) {
+		public boolean prepare(String id, Motable motable) {
+			Context context=(Context)motable;
 			try {
 				context.getSharedLock().acquire();
 			} catch (InterruptedException e) {
@@ -136,15 +126,16 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 			return true;
 		}
 
-		public void commit(String id, Context context) {
+		public void commit(String id, Motable motable) {
 			}
 
-		public void rollback(String id, Context context) {
+		public void rollback(String id, Motable p) {
 			_log.info("remove (memory): "+id);
 			_map.remove(id);
 		}
 
-		public void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Context context) throws IOException, ServletException {
+		public void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Motable motable) throws IOException, ServletException {
+			Context context=(Context)motable;
 			try {
 				MemoryContextualiser.this.contextualise(req, res, chain, id);
 			} finally {

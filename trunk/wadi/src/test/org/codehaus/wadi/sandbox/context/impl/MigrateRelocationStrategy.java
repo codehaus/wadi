@@ -16,9 +16,7 @@
 */
 package org.codehaus.wadi.sandbox.context.impl;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,9 +33,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.sandbox.context.Context;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Location;
+import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.SessionRelocationStrategy;
 
@@ -56,7 +54,7 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 	protected final MessageDispatcher _dispatcher;
 	protected final long _timeout;
 	protected final Location _location;
-	protected final StreamingStrategy _ss;
+	protected final StreamingStrategy _streamer;
 	protected final Map _locationMap;
 	
 	protected final Map _resRvMap=new HashMap();
@@ -66,7 +64,7 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 		_dispatcher=dispatcher;		
 		_timeout=timeout;
 		_location=location;
-		_ss=ss;
+		_streamer=ss;
 		_locationMap=locationMap;
 		
 		_dispatcher.register(this, "onMessage");
@@ -96,22 +94,17 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 		MigrationResponse response=(MigrationResponse)_dispatcher.exchangeMessages(id, _resRvMap, request, settingsInOut, _timeout);
 		_log.info("received migration response: "+id+" - "+response);
 		// take out session, prepare to promote it...
-		Context context=promoter.nextContext();
+		Motable p=promoter.nextMotable();
 		try {
 			// TODO - this sort of stuff should be encapsulated by an AbstractStreamingStrategy...
 			// TODO - packet-sniff James stuff and see if we can shrink the number of packets - is it significant?
 			
 			// consider how/when to send migration notifications... could the ack do it ?
-			ObjectInput oi=_ss.getInputStream(new ByteArrayInputStream(response.getBytes()));
-			context.readContent(oi);
-			oi.close();
-		} catch (ClassNotFoundException e) {
-			_log.warn("perhaps all app classes are not deployed, or we need to load the class via e.g. jndi ?", e);
+			p.setBytes(response.getBytes());
+		} catch (Exception e) {
+			_log.warn("problem promoting session", e);
 			return false;
-		} catch (IOException e) {
-			_log.warn("problem unmarshalling session", e);
-		}
-		
+		}		
 		_log.info("sending migration ack: "+id);
 		MigrationAcknowledgement ack=new MigrationAcknowledgement(id, _location);
 		try {
@@ -123,13 +116,13 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 
 		// get session out of response and promote...
 		_log.info("promoting (from cluster): "+id);			
-		if (promoter.prepare(id, context)) {
+		if (promoter.prepare(id, p)) {
 			_locationMap.remove(id); // evict old location from cache
-			promoter.commit(id, context);
+			promoter.commit(id, p);
 			promotionLock.release();
-			promoter.contextualise(hreq, hres, chain, id, context);
+			promoter.contextualise(hreq, hres, chain, id, p);
 		} else {
-			promoter.rollback(id, context);
+			promoter.rollback(id, p);
 			return false;
 		}
 				
@@ -168,67 +161,6 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 		}
 	}
 	
-	class MigrationResponseFilterChain
-	implements FilterChain
-	{
-		protected final String _id;
-		protected final MessageDispatcher.Settings _settingsInOut;
-		protected final long _handOverPeriod;
-		MigrationResponseFilterChain(String id, MessageDispatcher.Settings settingsInOut, long handOverPeriod) {
-			_id=id;
-			_handOverPeriod=handOverPeriod;
-			_settingsInOut=settingsInOut;
-		}
-		
-		public void
-		doFilter(ServletRequest request, ServletResponse response)
-		throws IOException, ServletException
-		{
-			_log.info("acquiring session lock");
-			Context context=null; // TODO - how do we get hold of this Context ? - Yikes...!
-			context.getSharedLock().release();
-			try {
-//				context.getExclusiveLock().attempt(_timeout); // TODO - which timeout ?
-//				ByteArrayOutputStream baos=new ByteArrayOutputStream();
-//				ObjectOutput oos=_ss.getOutputStream(baos);
-//				context.writeContent(oos);
-//				oos.flush();
-//				oos.close();
-//				byte[] bytes=baos.toByteArray();
-				byte[] bytes=null;
-				_log.info("sending migration response: "+_id+" : "+_settingsInOut);
-				MigrationResponse mr=new MigrationResponse(_id, bytes);
-				MigrationAcknowledgement ack=(MigrationAcknowledgement)_dispatcher.exchangeMessages(_id, _ackRvMap, mr, _settingsInOut, _timeout);
-				if (ack==null) {
-					throw new Exception("no ack received for session migration: "+_id);
-					// TODO - who owns the session now - consider a syn link to old owner to negotiate this..
-				}
-				_log.info("received migration ack: "+_id+" : "+_settingsInOut);
-				// if we got to here we need to consider how to promote the session out of the container and release the exclusive lock
-				
-			} catch (Exception e) {
-				_log.error("problem responding to migration request - session may be lost: "+_id); // TODO - break this down...
-			}
-		}
-	}
-
-	class MigrationContext implements Context {
-		protected byte[] _bytes=null;
-		
-		// Context
-		public Sync getSharedLock() {return null;}
-		public Sync getExclusiveLock() {return null;}
-		// Motable
-		public long getExpiryTime() {return 0;}
-		// SerializableContent
-		public void readContent(java.io.ObjectInput is) throws IOException, ClassNotFoundException {}
-		public void writeContent(java.io.ObjectOutput os) throws IOException, ClassNotFoundException {}
-		
-		// total HACKery... - TODO
-		public void setBytes(byte[] bytes){_bytes=bytes;}
-		public byte[] getBytes(){return _bytes;}
-	}
-	
 	class MigrationPromoter implements Promoter {
 		
 		protected final MessageDispatcher.Settings _settingsInOut;
@@ -237,17 +169,18 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 			_settingsInOut=settingsInOut;
 		}
 		
-		public Context nextContext() {
+		public Motable nextMotable() {
 			// return a message into which the session can be written
-			return new MigrationContext();
+			return new MigrationResponse();
 		}
 
-		public boolean prepare(String id, Context context) {
+		public boolean prepare(String id, Motable motable) {
+			
 			_log.info("promoting (to cluster): "+id);
 			// send the message
-			byte[] bytes=((MigrationContext)context).getBytes();
 			_log.info("sending migration response: "+id+" : "+_settingsInOut);
-			MigrationResponse mr=new MigrationResponse(id, bytes);
+			MigrationResponse mr=(MigrationResponse)motable;
+			mr.setId(id);
 			MigrationAcknowledgement ack=(MigrationAcknowledgement)_dispatcher.exchangeMessages(id, _ackRvMap, mr, _settingsInOut, _timeout);
 			if (ack==null) {
 				_log.warn("no ack received for session migration: "+id);
@@ -264,15 +197,15 @@ public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 			return true;
 		}
 
-		public void commit(String id, Context context) {
+		public void commit(String id, Motable motable) {
 			// do nothing
 			}
 
-		public void rollback(String id, Context context) {
+		public void rollback(String id, Motable motable) {
 			// this probably has to by NYI... - nasty...
 		}
 
-		public void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Context context) throws IOException, ServletException {
+		public void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Motable motable) throws IOException, ServletException {
 			// does nothing - contextualisation will happen when the session arrives...
 		}
 	}

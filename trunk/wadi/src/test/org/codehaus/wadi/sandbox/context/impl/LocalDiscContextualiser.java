@@ -20,8 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -32,11 +31,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Collapser;
-import org.codehaus.wadi.sandbox.context.Context;
-import org.codehaus.wadi.sandbox.context.ContextPool;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Motable;
@@ -52,18 +48,14 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public class LocalDiscContextualiser extends AbstractMappedContextualiser {
-	protected final Log _log = LogFactory.getLog(getClass());
+	protected static final Log _log = LogFactory.getLog(LocalDiscContextualiser.class);
+	
 	protected final StreamingStrategy _streamer;
-	protected final ContextPool _pool;
 	protected final File _dir;
 
-	/**
-	 *
-	 */
-	public LocalDiscContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, StreamingStrategy streamer, ContextPool pool, File dir) {
+	public LocalDiscContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, StreamingStrategy streamer, File dir) {
 		super(next, collapser, map, evicter);
 		_streamer=streamer;
-		_pool=pool;
 	    assert dir.exists();
 	    assert dir.isDirectory();
 	    assert dir.canRead();
@@ -78,23 +70,22 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 		FilterChain chain, String id, Promoter promoter, Sync promotionLock) throws IOException, ServletException {
 		LocalDiscMotable ldm=(LocalDiscMotable)_map.get(id);
 		if (ldm!=null) {
-			File file=ldm.getFile();
-			Context context=null;
+			Motable motable=promoter.nextMotable();
 			try {
-				context=load(file, promoter.nextContext());
-			} catch (ClassNotFoundException e) {
+				motable.setBytes(ldm.getBytes());
+			} catch (Exception e) {
 				_log.warn("problem loading context (local disc): "+id, e);
 				return false;
 			}
 			_log.info("promoting (from local disc): "+id);
-			if (promoter.prepare(id, context)) {
+			if (promoter.prepare(id, motable)) {
 				_map.remove(id);
-				remove(file); // TODO - revisit
-				promoter.commit(id, context);
+				remove(ldm.getFile()); // TODO - revisit
+				promoter.commit(id, motable);
 				promotionLock.release();
-				promoter.contextualise(hreq, hres, chain, id, context);
+				promoter.contextualise(hreq, hres, chain, id, motable);
 			} else {
-				promoter.rollback(id, context);
+				promoter.rollback(id, motable);
 			}
 			return true;
 		} else {
@@ -104,17 +95,22 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 
 	public Promoter getPromoter(Promoter promoter){return promoter;} // just pass contexts straight through...
 
-	static public class LocalDiscMotable implements Motable {
+	public static class LocalDiscMotable implements Motable {
 		protected final long _expiryTime;
 		protected final File _file;
-
+		
 		public LocalDiscMotable(long expiryTime, File file) {
 			_expiryTime=expiryTime;
 			_file=file;
 		}
-
-		public long getExpiryTime() {return _expiryTime;}
 		public File getFile() {return _file;}
+		
+		// Evictable
+		public long getExpiryTime() {return _expiryTime;}
+		
+		// Motable
+		public byte[] getBytes() throws IOException {return load(_file);}
+		public void setBytes(byte[] bytes) throws IOException {store(_file, bytes);}
 	}
 
 	public void demote(String key, Motable val) {
@@ -123,17 +119,11 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 		} else {
 			try {
 				_log.info("demoting (to local disc): "+key);
-				SerializableContent sc=(SerializableContent)val;
 				File file=new File(_dir, key.toString()+"."+_streamer.getSuffix());
-				ObjectOutput oos=_streamer.getOutputStream(new FileOutputStream(file));
-				sc.writeContent(oos);
-				oos.flush();
-				oos.close();
-
 				long expiryTime=val.getExpiryTime();
-				// do we need to worry about this...
-				//	file.setLastModified(expiryTime);
-				_map.put(key, new LocalDiscMotable(expiryTime, file));
+				Motable motable=new LocalDiscMotable(expiryTime, file);
+				motable.setBytes(val.getBytes());
+				_map.put(key, motable);
 				_log.info("stored (local disc): "+file);
 			} catch (Exception e) {
 				_log.error("store (local disc) failed: "+key, e);
@@ -150,18 +140,13 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 				Sync exclusive=new NullSync(); // TODO - take the promotion lock here
 				try {
 					if (exclusive.attempt(0) && _evicter.evict(key, val)) { // then confirm with exclusive lock
-						File file=val.getFile();
-						Context context=null;
 						try {
-							context=load(file, _pool.take());
-							if (context!=null) {
-								_log.info("demoting (from local disc): "+key);
-								_next.demote(key, context);
-								remove(file);
-								i.remove();
-							}
+							_log.info("demoting (from local disc): "+key);
+							_next.demote(key, val);
+							i.remove();
+							remove(val.getFile());
 						} catch (Exception e2) {
-							_log.error("could not evict file from disc: "+file, e2);
+							_log.error("could not evict file from disc: "+val.getFile(), e2);
 						}
 						exclusive.release();
 					}
@@ -172,23 +157,41 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 		}
 	}
 
-	protected Context load(File file, Context context) throws ClassNotFoundException, IOException {
-		assert file.exists();
-		ObjectInput oi=null;
-		boolean success=false;
+	protected static byte[] load(File file) throws IOException {
+		int length=(int)file.length(); // length must be OK, or file would not exist
+		FileInputStream fis=null;
 		try {
-			oi=_streamer.getInputStream(new FileInputStream(file));
-			context.readContent(oi);
+			fis=new FileInputStream(file);
+			byte[] buffer=new byte[length];
+			fis.read(buffer, 0 ,length);
 			_log.info("loaded (local disc): "+file);
-			success=true;
-		} finally {
-			if (oi!=null)
-				oi.close();
+			return buffer;
+		} catch (IOException e) {
+			_log.warn("load (local disc) failed: "+file, e);
+			throw e;
 		}
-
-		return success?context:null;
+		finally {
+			if (fis!=null)
+				fis.close();
+		}
 	}
-
+	
+	protected static void store(File file, byte[] bytes) throws IOException {
+		OutputStream os=null;
+		try {
+			os=new FileOutputStream(file);
+			os.write(bytes);
+			os.flush();
+			_log.info("stored (local disc): "+file);
+		} catch (IOException e) {
+			_log.warn("store (local disc) failed: "+file, e);
+			throw e;
+		} finally {
+			if (os!=null)
+				os.close();			
+		}
+	}
+	
 	protected void remove(File file) {
 		file.delete();
 		_log.info("removed (local disc): "+file);

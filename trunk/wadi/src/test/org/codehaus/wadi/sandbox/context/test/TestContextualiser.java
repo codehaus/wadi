@@ -19,7 +19,6 @@ package org.codehaus.wadi.sandbox.context.test;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.sql.Connection;
@@ -68,8 +67,6 @@ import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.context.impl.SharedJDBCContextualiser;
 
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 import junit.framework.TestCase;
@@ -148,40 +145,6 @@ public class TestContextualiser extends TestCase {
 		// etc...
 	}
 
-	class MyContext implements Context {
-		String _val;
-		ReadWriteLock _lock=new ReaderPreferenceReadWriteLock();
-		long _expiryTime;
-
-		MyContext(String val) {
-			this(val, System.currentTimeMillis()+(30*1000));
-		}
-
-		MyContext(String val, long expiryTime) {
-			_val=val;
-			_expiryTime=expiryTime;
-		}
-
-		MyContext() {}
-
-		public Sync getSharedLock(){return _lock.readLock();}
-		public Sync getExclusiveLock(){return _lock.writeLock();}
-
-		// Motable...
-
-		public long getExpiryTime(){return _expiryTime;}
-
-		// SerializableContext...
-
-		public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-			_val=(String)oi.readObject();
-		}
-
-		public void writeContent(ObjectOutput oo) throws IOException, ClassNotFoundException {
-			oo.writeObject(_val);
-		}
-	}
-
 	class MyContextPool implements ContextPool {
 		public void put(Context context){}
 		public Context take(){return new MyContext();}
@@ -210,7 +173,7 @@ public class TestContextualiser extends TestCase {
 	    oo.close();
 	    assertTrue(f.exists());
 		d.put("bar", new LocalDiscContextualiser.LocalDiscMotable(0, f));
-		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), ss, new MyContextPool(), new File("/tmp"));
+		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), ss, new File("/tmp"));
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo"));
 		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new NeverEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
@@ -232,19 +195,29 @@ public class TestContextualiser extends TestCase {
 
 		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
 			_counter++;
-
-			MyContext context=_context;
-			assertTrue(_context!=null);
-			if (promoter.prepare(id, context)) {
-				_context=null;
-				promoter.commit(id, context);
-				promotionLock.release();
-				promoter.contextualise(hreq, hres, chain, id, context);
-			} else {
-				_context=context;
-				promoter.rollback(id, context);
+			
+			try {
+				Motable p=promoter.nextMotable();
+				assertTrue(_context!=null);
+				try {
+					_context.setBytes(p.getBytes());
+				} catch (ClassNotFoundException e) {
+					_log.warn("could not promote context", e);
+				}
+				if (promoter.prepare(id, p)) {
+					_context=null;
+					promoter.commit(id, p);
+					promotionLock.release();
+					promoter.contextualise(hreq, hres, chain, id, p);
+					return true;
+				} else {
+					promoter.rollback(id, p);
+					return false;
+				}
+			} catch (Exception e) {
+				_log.warn("unexpected problem", e);
+				return false;
 			}
-			return true;
 		}
 
 		public void demote(String key, Motable val){}
@@ -349,7 +322,7 @@ public class TestContextualiser extends TestCase {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 		Map d=new HashMap();
-		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), ss, new MyContextPool(), new File("/tmp"));
+		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), collapser, d, new NeverEvicter(), ss, new File("/tmp"));
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo"));
 		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new AlwaysEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
@@ -389,7 +362,7 @@ public class TestContextualiser extends TestCase {
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), collapser, new NeverEvicter(), ss, _ds, _table);
 		Map d=new HashMap();
-		Contextualiser disc=new LocalDiscContextualiser(db, collapser, d, new MyEvicter(0), ss, new MyContextPool(), new File("/tmp"));
+		Contextualiser disc=new LocalDiscContextualiser(db, collapser, d, new MyEvicter(0), ss, new File("/tmp"));
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo", System.currentTimeMillis()+2000)); // times out 2 seconds from now...
 		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new MyEvicter(1000), new GZIPStreamingStrategy(), new MyContextPool());
