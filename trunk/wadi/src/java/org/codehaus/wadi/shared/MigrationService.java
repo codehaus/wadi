@@ -101,11 +101,11 @@ public class
       }
       catch (IOException e)
       {
-	_log.warn("problem migrating session", e);
+	_log.warn("problem arranging session immigration - current host may be shutting down", e);
       }
       catch (ClassNotFoundException e)
       {
-	_log.warn("problem migrating session", e);
+	_log.warn("are you mixing different versions of the same webapp ?", e);
       }
       finally
       {
