@@ -29,6 +29,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.jms.Connection;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionAttributeListener;
@@ -38,6 +43,11 @@ import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.activecluster.Cluster;
+import org.codehaus.activecluster.ClusterFactory;
+import org.codehaus.activecluster.Node;
+import org.codehaus.activecluster.impl.DefaultClusterFactory;
+import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.plugins.FilePassivationStrategy;
 import org.codehaus.wadi.plugins.NoRoutingStrategy;
 import org.codehaus.wadi.plugins.RelativeEvictionPolicy;
@@ -371,6 +381,18 @@ public abstract class
     _migrationServer=new MigrationService.Server(_local, _streamingStrategy);
     _migrationServer.start();
     _running=true;
+
+    // TODO - activecluster stuff - replace with config ASAP...
+    (_connection=_connectionFactory.createConnection()).start();
+    _clusterFactory=new DefaultClusterFactory(getConnection());
+    _cluster=_clusterFactory.createCluster("org.codehaus.wadi#cluster");
+    CommandListener listener=new CommandListener();
+    _cluster.createConsumer(_cluster.getDestination()).setMessageListener(listener);
+    _cluster.createConsumer(_cluster.getLocalNode().getDestination()).setMessageListener(listener);
+    _cluster.start(); // should include webapp context
+
+    sendCommandToCluster(new DummyCommand());
+
     _log.debug("started");
   }
 
@@ -386,6 +408,8 @@ public abstract class
   {
     _log.debug("stopping");
     _running=false;
+
+    sendCommandToCluster(new DummyCommand());
 
     // assume that impls havestopped their housekeeping thread/process
     // by now...
@@ -419,6 +443,12 @@ public abstract class
 
     //    System.setSecurityManager(((SecurityManager)System.getSecurityManager()).getDelegate());
     _loader=null;
+
+    _cluster.stop();
+    _clusterFactory=null;
+    _connectionFactory.stop();
+    _connectionFactory=null;
+
     _log.debug("stopped");
   }
 
@@ -1073,4 +1103,90 @@ public abstract class
 
   protected Filter _filter;
   public void setFilter(Filter filter){_filter=filter;}
+
+  // activecluster stuff...
+
+  protected Cluster _cluster;
+  public void setCluster(Cluster cluster){_cluster=cluster;}
+  public Cluster getCluster(){return _cluster;}
+
+  protected ClusterFactory _clusterFactory;
+  public void setClusterFactory(ClusterFactory clusterFactory){_clusterFactory=clusterFactory;}
+  public ClusterFactory getClusterFactory(){return _clusterFactory;}
+
+  protected Connection _connection;
+  public void setConnection(Connection connection){_connection=connection;}
+  public Connection getConnection(){return _connection;}
+
+  protected ActiveMQConnectionFactory _connectionFactory;
+  public void setConnectionFactory(ActiveMQConnectionFactory connectionFactory){_connectionFactory=connectionFactory;}
+  public ActiveMQConnectionFactory getConnectionFactory(){return _connectionFactory;}
+
+  interface Command extends Runnable, java.io.Serializable {};
+
+  public static class
+    DummyCommand
+    implements Command
+  {
+    public void run()
+    {
+      System.out.println("DummyMessage arrived!!");
+    }
+  }
+
+  protected void
+    sendCommandToCluster(Command command)
+    throws Exception
+  {
+    ObjectMessage om = _cluster.createObjectMessage();
+    om.setObject(command);
+    _cluster.send(_cluster.getDestination(), om);
+  }
+
+  protected void
+    sendCommandToNode(Node node, Command command)
+    throws Exception
+  {
+    ObjectMessage om = _cluster.createObjectMessage();
+    om.setObject(command);
+    _cluster.send(node.getDestination(), om);
+  }
+
+  class CommandListener
+    implements MessageListener
+  {
+    public void
+      onMessage(Message message)
+    {
+      try
+      {
+	ObjectMessage om=null;
+	Object tmp=null;
+	Command command=null;
+	if (message instanceof ObjectMessage &&
+	    (om=(ObjectMessage)message)!=null &&
+	    (tmp=om.getObject())!=null &&
+	    tmp instanceof Command &&
+	    (command=(Command)tmp)!=null)
+	{
+	  try
+	  {
+	    command.run();
+	  }
+	  catch (Throwable t)
+	  {
+	    _log.warn("unexpected problem responding to message:"+command);
+	  }
+	}
+	else
+	{
+	  _log.warn("null message or unrecognised message type:"+message);
+	}
+      }
+      catch (JMSException e)
+      {
+	_log.warn("unexpected problem unpacking message:"+message);
+      }
+    }
+  }
 }
