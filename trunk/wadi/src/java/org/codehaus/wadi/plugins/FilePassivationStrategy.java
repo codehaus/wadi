@@ -141,7 +141,7 @@ public class
 
 	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
 	file.setLastModified(willTimeOutAt);
-	_log.debug(id+": emmigration (to file: "+file.toString()+")");
+	_log.debug(id+": emmigration (file: "+file.toString()+")");
 	return true;
       }
       catch (Exception e)
@@ -185,7 +185,7 @@ public class
 	    ObjectInputStream ois=new ObjectInputStream(fis);
 	    impl.readContent(ois);
 	    ois.close();
-	    _log.debug(impl.getId()+": immigration (from file: "+file.toString()+")");
+	    _log.debug(impl.getId()+": immigration (file: "+file.toString()+")");
 	    return true;
 	  }
 	  finally
@@ -260,7 +260,7 @@ public class
   public boolean
     standUp()
     {
-      _log.trace("standing for election");
+      _log.trace("standing up for election to distributed garbage collection duties");
       FileChannel channel=null;
       try
       {
