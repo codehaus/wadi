@@ -75,7 +75,7 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 		Emoter emoter=getEmoter();
 		Motable immotable=Utils.mote(emoter, immoter, emotable, id);
 		if (immotable!=null) {
-			promotionLock.release();
+			promotionLock.release(); // release as soon as we know Context is available to other threads
 			immoter.contextualise(hreq, hres, chain, id, immotable);
 			return true;
 		} else {

@@ -66,12 +66,11 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		return new SharedJDBCImmoter();
 	}
 
-	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres,
-			FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
+	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
 		if (immoter!=null) {
 			Motable emotable=new SharedJDBCMotable();
 			emotable.setId(id);
-			return promote(hreq, hres, chain, id, immoter, promotionLock, emotable);
+			return promote(hreq, hres, chain, id, immoter, promotionLock, emotable); // promotionLock should be released here...
 		} else
 			return false;
 		// TODO - consider how to contextualise locally... should be implemented in ChainedContextualiser, as should this..
@@ -187,8 +186,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		}
 
 		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
-			// TODO - we need to pass through a promotionLock
-//			contextualiseLocally(hreq, hres, chain, id, new NullSync(), motable);
+		    throw new RuntimeException("this should never happen");
 		}
 
 		public String getInfo() {

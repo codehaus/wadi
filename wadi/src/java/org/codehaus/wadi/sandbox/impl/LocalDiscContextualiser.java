@@ -65,8 +65,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 		}
 
 	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Sync promotionLock, Motable motable) throws IOException, ServletException {
-		// TODO - it should be possible to load a Session off disc, use it, then write it back - here...
-		throw new RuntimeException("NYI");
+		throw new RuntimeException("this should never happen");
 	}
 
 	public boolean isLocal(){return true;}
