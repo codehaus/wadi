@@ -36,9 +36,7 @@ import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.ContextPool;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
-import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Location;
-import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
@@ -123,23 +121,4 @@ public class MyServlet implements Servlet {
 	
 	public Map getClusterMap(){return _clusterMap;}
 	public Map getMemoryMap(){return _memoryMap;}
-
-	class MyEvicter implements Evicter{
-		long _remaining;
-	
-		MyEvicter(long remaining) {
-			_remaining=remaining;
-		}
-	
-		public boolean evict(String id, Motable m) {
-			long expiry=m.getLastAccessedTime()+(m.getMaxInactiveInterval()*1000);
-			long current=System.currentTimeMillis();
-			long left=expiry-current;
-			boolean evict=(left<=_remaining);
-	
-			//_log.info((!evict?"not ":"")+"evicting: "+id);
-	
-			return evict;
-		}
-	}
 }

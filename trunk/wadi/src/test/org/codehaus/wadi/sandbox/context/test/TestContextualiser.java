@@ -19,8 +19,6 @@ package org.codehaus.wadi.sandbox.context.test;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,6 +67,7 @@ import org.codehaus.wadi.sandbox.context.impl.SharedJDBCContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.SharedJDBCMotable;
 import org.codehaus.wadi.sandbox.context.impl.SimpleEvictable;
 import org.codehaus.wadi.sandbox.context.impl.SwitchableEvicter;
+import org.codehaus.wadi.sandbox.context.impl.TimeToLiveEvicter;
 import org.codehaus.wadi.sandbox.context.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -338,35 +337,17 @@ public class TestContextualiser extends TestCase {
 		assertTrue(m.containsKey("foo"));
 	}
 
-	class MyEvicter implements Evicter{
-		long _remaining;
-
-		MyEvicter(long remaining) {
-			_remaining=remaining;
-		}
-
-		public boolean evict(String id, Motable m) {
-			long expiry=m.getLastAccessedTime()+(m.getMaxInactiveInterval()*1000);
-			long current=System.currentTimeMillis();
-			long left=expiry-current;
-			boolean evict=(left<=_remaining);
-
-			//_log.info((!evict?"not ":"")+"evicting: "+id);
-
-			return evict;
-		}
-	}
 	public void testEviction3() throws Exception {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), collapser, new NeverEvicter(), _ds, _table);
 		Map d=new HashMap();
-		Contextualiser disc=new LocalDiscContextualiser(db, collapser, d, new MyEvicter(0), ss, new File("/tmp"));
+		Contextualiser disc=new LocalDiscContextualiser(db, collapser, d, new TimeToLiveEvicter(0), ss, new File("/tmp"));
 		Map m=new HashMap();
 		Context tmp=new MyContext("foo");
 		tmp.setMaxInactiveInterval(2);
 		m.put("foo", tmp); // times out 2 seconds from now...
-		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new MyEvicter(1000), new GZIPStreamingStrategy(), new MyContextPool());
+		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new TimeToLiveEvicter(1000), new GZIPStreamingStrategy(), new MyContextPool());
 
 		FilterChain fc=new MyFilterChain();
 

@@ -30,4 +30,6 @@ public interface Evictable {
 	public void setLastAccessedTime(long lastAccessedTime);
 	public int  getMaxInactiveInterval();
 	public void setMaxInactiveInterval(int maxInactiveInterval);
+	public boolean getValid();
+	//public void setValid(boolean valid);
 }
