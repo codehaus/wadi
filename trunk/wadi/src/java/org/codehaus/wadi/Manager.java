@@ -56,7 +56,6 @@ import org.codehaus.wadi.impl.RelativeEvictionPolicy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.impl.TotalEvictionPolicy;
-import org.codehaus.wadi.impl.MulticastDiscoveryService;
 import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
 
 // TODO - replace some form of location discovery protocol
@@ -376,7 +375,7 @@ public abstract class
     //      System.setSecurityManager(new SecurityManager(System.getSecurityManager()));// TODO
 
     // default migration policy
-    if (_migrationService==null) _migrationService=new org.codehaus.wadi.impl.async.MigrationService();
+    if (_migrationService==null) _migrationService=new org.codehaus.wadi.impl.MessagedMigrationService();
     if (_passivationStrategy==null) _passivationStrategy=new FilePassivationStrategy(new File("/tmp/wadi"));
     if (_streamingStrategy==null) _streamingStrategy=new SimpleStreamingStrategy();
     if (_passivationStrategy.getStreamingStrategy()==null) _passivationStrategy.setStreamingStrategy(_streamingStrategy);
@@ -388,17 +387,6 @@ public abstract class
     if (_routingStrategy==null) _routingStrategy=new NoRoutingStrategy();
 
     if (_autoLocationAddress==null) setAutoLocationAddress("228.5.6.7");
-
-    // this needs to be a pluggable part of the sync.MigrationService
-    _locationServer=new LocationServer(getAutoLocationAddress(),
-				       getAutoLocationPort(),
-				       5000L,	// 5 seconds
-				       InetAddress.getLocalHost(), // TODO - resolve
-				       getHttpPort()
-				       );
-    _locationClient=new LocationClient(getAutoLocationAddress(), getAutoLocationPort(), 5000L);
-    _locationServer.start();
-    _running=true;
 
     // TODO - activecluster stuff - replace with config ASAP...
     if (_connectionFactory!=null)
@@ -456,8 +444,6 @@ public abstract class
 
     // since housekeeping may take time, we'll keep these processes
     // running until afterwards for the moment...
-    _locationServer.stop();
-    _locationServer=null;
     _migrationService.getServer().stop();
 
     // what about housekeeping thread ?
@@ -845,18 +831,12 @@ public abstract class
   public int getAutoLocationTimeout(){return _autoLocationTimeout;}
   public void setAutoLocationTimeout(int timeout){_autoLocationTimeout=timeout;}
 
-  //----------------------------------------
-  // location
-  //----------------------------------------
-
-  protected LocationServer _locationServer;
-  protected LocationClient _locationClient;
-
   public ManagerProxy
     locate(String realId)
   {
-    String location=_locationClient.run("org.codehaus.wadi"+","+ "locate"+","+realId);
-
+ //   String location=_migrationService.getClient.immigrate(realId, null, timeout);
+  	String location=null;
+  	
     if (location==null)
     {
       //      if (_log.isWarnEnabled()) _log.warn(realId+": could not locate session - perhaps dead ?");
@@ -871,62 +851,6 @@ public abstract class
     {
       _log.warn("bad location response", e);
       return null;
-    }
-  }
-
-  class
-    LocationClient
-    extends MulticastDiscoveryService.Client
-  {
-    public
-      LocationClient(InetAddress address, int port, long timeout)
-    {
-      super(address, port, timeout);
-    }
-  }
-
-  class
-    LocationServer
-    extends MulticastDiscoveryService.Server
-  {
-    protected long        _timeout=2000; // TODO - 0does not quit properly
-    protected InetAddress _httpIpAddress;
-    protected int         _httpPort;
-
-    public
-      LocationServer(InetAddress serverIpAddress, int serverPort,
-		     long timeout, InetAddress httpIpAddress, int httpPort)
-    {
-      super(serverIpAddress, serverPort);
-      _httpIpAddress=httpIpAddress;
-      _httpPort=httpPort;
-    }
-
-    public String
-      process(String request)
-    {
-      String response=null;
-
-      String params[]=request.split(",");
-
-      HttpSessionImpl impl=null;
-      if (params.length==3 &&
-	  params[0].equals("org.codehaus.wadi") &&
-	  params[1].equals("locate") &&
-	  (impl=(HttpSessionImpl)_local.get(params[2]))!=null &&
-	  impl.getRealId()!=null) // may exist, but be placeholder for incoming or remains of outgoing session...
-      {
-	response=
-	  "org.codehaus.wadi"+","+
-	  "locate"+","+
-	  params[2]+","+
-	  _httpIpAddress.getHostAddress()+","+
-	  _httpPort+","+
-	  _migrationService.getServer().getDestination()+","+
-	  _routingStrategy.getInfo();
-      }
-
-      return response;
     }
   }
 

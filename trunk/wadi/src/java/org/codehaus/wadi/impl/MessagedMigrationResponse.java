@@ -15,7 +15,7 @@
 *  limitations under the License.
 */
 
-package org.codehaus.wadi.impl.async;
+package org.codehaus.wadi.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -31,16 +31,16 @@ import org.codehaus.wadi.MigrationService;
 import org.codehaus.wadi.ObjectInputStream;
 
 public class
-  MigrationResponse
+  MessagedMigrationResponse
   implements Executable
 {
-  protected static final Log _log=LogFactory.getLog(MigrationResponse.class);
+  protected static final Log _log=LogFactory.getLog(MessagedMigrationResponse.class);
   protected final String     _id;
   protected final byte[]     _impl;
   protected final long       _timeout;
 
   public
-    MigrationResponse(String id, long timeout, byte[] impl)
+    MessagedMigrationResponse(String id, long timeout, byte[] impl)
   {
     _id      =id;
     _timeout =timeout;
@@ -48,7 +48,7 @@ public class
   }
 
   public void
-    invoke(MigrationService service, ObjectMessage in)
+    invoke(MigrationService service, Destination source, String correlationID)
   {
     boolean ok=false;
 
@@ -59,7 +59,7 @@ public class
       HttpSessionImpl      impl=(HttpSessionImpl)service.getHttpSessionImplMap().get(_id);
       impl.readContent(ois);
       ois.close();
-      service.getAsyncToSyncAdaptor().receive(impl, in.getJMSCorrelationID(), _timeout);
+      service.getAsyncToSyncAdaptor().receive(impl, correlationID, _timeout);
       ok=true;
     }
     catch (IOException e)
@@ -70,24 +70,18 @@ public class
     {
       _log.warn(_id+": ClassLoading problems demarshalling session for immigration", e);
     }
-    catch (JMSException e)
-    {
-      _log.warn(_id+": could not extract correlation/rendez-vous id", e);
-    }
 
     Destination src=null;
     Destination dst=null;
-    String correlationID=null;
     try
     {
       Cluster cluster=service.getManager().getCluster();
       ObjectMessage out=cluster.createObjectMessage();
       src=cluster.getLocalNode().getDestination();
-      correlationID=in.getJMSCorrelationID();
-      dst=in.getJMSReplyTo();
+      dst=source;
       out.setJMSReplyTo(src);
       out.setJMSCorrelationID(correlationID);
-      out.setObject(new MigrationAcknowledgement(_id, ok, _timeout));
+      out.setObject(new MessagedMigrationAcknowledgement(_id, ok, _timeout));
       cluster.send(dst, out);
       _log.trace(correlationID+": response sent");
     }

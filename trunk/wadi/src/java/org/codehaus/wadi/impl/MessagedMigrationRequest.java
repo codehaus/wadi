@@ -15,29 +15,27 @@
 *  limitations under the License.
 */
 
-package org.codehaus.wadi.impl.async;
+package org.codehaus.wadi.impl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.wadi.HttpSessionImpl;
 import org.codehaus.wadi.MigrationService;
 
 public class
-  MigrationRequest
+  MessagedMigrationRequest
   extends org.codehaus.wadi.MigrationRequest
 {
   public
-    MigrationRequest(String id, Destination destination, long timeout)
+    MessagedMigrationRequest(String id, long timeout)
   {
-    super(id, destination, timeout);
+    super(id, timeout);
   }
 
-  public void invoke(MigrationService service, ObjectMessage in)
+  public void invoke(MigrationService service, Destination source, String correlationID)
   {
     HttpSessionImpl impl=null;
 
@@ -66,20 +64,14 @@ public class
 	oos.close();
 
 	Destination dest=null;
-	try
-	{
+
 	  Cluster cluster=service.getManager().getCluster();
 	  result=service.getAsyncToSyncAdaptor().send(cluster,
-						      new MigrationResponse(_id, _timeout, buffer),
-						      in.getJMSCorrelationID(),
+						      new MessagedMigrationResponse(_id, _timeout, buffer),
+						      correlationID,
 						      _timeout,
 						      cluster.getLocalNode().getDestination(),
-						      in.getJMSReplyTo());
-	}
-	catch (JMSException e)
-	{
-	  _log.warn("could not send migration response to: "+dest, e);
-	}
+						      source);
       }
       catch (InterruptedException e)
       {

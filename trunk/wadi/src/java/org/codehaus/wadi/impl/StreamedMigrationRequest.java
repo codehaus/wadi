@@ -15,35 +15,30 @@
 *  limitations under the License.
 */
 
-package org.codehaus.wadi.impl.sync;
+package org.codehaus.wadi.impl;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
-import org.codehaus.activecluster.Cluster;
-import org.codehaus.wadi.HttpSessionImpl;
 import org.codehaus.wadi.MigrationService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class
-  MigrationRequest
+  StreamedMigrationRequest
   extends org.codehaus.wadi.MigrationRequest
 {
-  protected final static Log _log=LogFactory.getLog(MigrationRequest.class);
+  protected final static Log _log=LogFactory.getLog(StreamedMigrationRequest.class);
+  protected final Destination _destination;
 
   public
-    MigrationRequest(String id, Destination destination, long timeout)
+    StreamedMigrationRequest(String id, Destination destination, long timeout)
   {
-    super(id, destination, timeout);
+    super(id, timeout);
+    _destination=destination;
     _log.info("ctor");
   }
 
   public void
-    invoke(MigrationService service, ObjectMessage in)
+    invoke(MigrationService service, Destination source, String correlationID)
   {
     _log.info("invoke - NYI");
   }

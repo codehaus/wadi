@@ -18,13 +18,11 @@
 package org.codehaus.wadi;
 
 import java.io.Serializable;
-
-import javax.jms.ObjectMessage;
-
+import javax.jms.Destination;
 
 public interface
   Executable
   extends Serializable
 {
-  public void invoke(MigrationService service, ObjectMessage message);
+  public void invoke(MigrationService service, Destination source, String correlationID);
 }

@@ -44,7 +44,7 @@ public class
   protected final Map _entries = Collections.synchronizedMap(new HashMap());
 
   public Object
-    send(Cluster cluster, Serializable command, String correlationId, long timeout, Destination src, Destination dst)
+    send(Cluster cluster, Serializable action, String correlationId, long timeout, Destination src, Destination dst)
     {
       int participants=2;
       Rendezvous rv=new Rendezvous(participants);
@@ -58,7 +58,7 @@ public class
 	ObjectMessage message = cluster.createObjectMessage();
 	if (src!=null) message.setJMSReplyTo(src);
 	message.setJMSCorrelationID(correlationId);
-	message.setObject(command);
+	message.setObject(action);
 	cluster.send(dst, message);
 
 	long timeStarted=System.currentTimeMillis();
