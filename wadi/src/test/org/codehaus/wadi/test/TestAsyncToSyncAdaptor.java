@@ -23,7 +23,7 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.AsyncToSyncAdaptor;
-import org.codehaus.wadi.Invocable;
+import org.codehaus.wadi.Executable;
 import org.codehaus.wadi.Manager;
 
 /**
