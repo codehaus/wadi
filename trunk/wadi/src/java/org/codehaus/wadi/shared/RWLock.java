@@ -43,7 +43,6 @@ package org.codehaus.wadi.shared;
 
 // TODO
 
-// switch to r preference
 // sort waiting writers by priority
 // allow r->w overlap (releasing r included in race for w-lock)
 
@@ -74,9 +73,8 @@ public class RWLock implements ReadWriteLock {
   protected synchronized void cancelledWaitingWriter() { --waitingWriters_; }
 
 
-  /** Override this method to change to reader preference **/
   protected boolean allowReader() {
-    return activeWriter_ == null && waitingWriters_ == 0;
+    return activeWriter_ == null;
   }
 
 
