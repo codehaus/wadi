@@ -34,16 +34,16 @@ import org.apache.commons.logging.LogFactory;
 public class MyFilter implements Filter {
 	protected final Log _log;
 	protected final MyServlet _servlet;
-	
+
 	public MyFilter(String name, MyServlet servlet) {
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 		_servlet=servlet;
 	}
-	
+
 	public void init(FilterConfig config) throws ServletException {
 		_log.info("Filter.init()");
 	}
-	
+
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 	throws ServletException, IOException {
 		if (req instanceof HttpServletRequest) {
@@ -52,19 +52,21 @@ public class MyFilter implements Filter {
 		String sessionId=hreq.getRequestedSessionId();
 		_log.info("Filter.doFilter("+((sessionId==null)?"":sessionId)+")"+(hreq.isSecure()?" - SECURE":""));
 		boolean found=_servlet.getContextualiser().contextualise(hreq, hres, chain, sessionId, null, null, _localOnly);
-		
+
 		// only here for testing...
-		if (!found)
-			hres.sendError(410, "could not locate session: "+sessionId);
-		
+		if (!found) {
+		  _log.error("could not locate session: "+sessionId);
+		  hres.sendError(410, "could not locate session: "+sessionId);
+		}
+
 		} else {
 			// not http - therefore stateless...
 			chain.doFilter(req, res);
 		}
 	}
-	
+
 	public void destroy() {}
-	
+
 	protected boolean _localOnly=false;
 	public void setLocalOnly(boolean localOnly){_localOnly=localOnly;}
 }

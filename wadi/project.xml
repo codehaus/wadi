@@ -129,9 +129,10 @@
 
     <unitTest>
       <includes>
-        <include>**/TestJCache.java</include>
+        <include>**/sandbox/context/test/Test*.java</include>
 	<!-- work -->
 <!--
+        <include>**/TestJCache.java</include>
         <include>**/TestConcurrency.java</include>
         <include>**/TestHttpSession.java</include>
         <include>**/TestManagers.java</include>
@@ -409,6 +410,116 @@
       <properties>
 	<war.bundle>true</war.bundle>
       </properties>
+    </dependency>
+
+    <dependency>
+      <groupId>geronimo-spec</groupId>
+      <artifactId>geronimo-spec-jsp</artifactId>
+      <version>2.0-rc4</version>
+      <url>http://geronimo.apache.org</url>
+      <javadoc>http://geronimo.apache.org/specs/servlet/apidocs</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>jasper-compiler</artifactId>
+      <version>5.0.28</version>
+      <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc</url>
+      <javadoc>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs/api</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>jasper-runtime</artifactId>
+      <version>5.0.28</version>
+      <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc</url>
+      <javadoc>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs/api</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>naming-resources</artifactId>
+      <version>5.0.18</version>
+      <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc</url>
+      <javadoc>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs/api</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>tomcat-util</artifactId>
+      <version>5.0.18</version>
+      <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc</url>
+      <javadoc>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs/api</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>tomcat-coyote</artifactId>
+      <version>5.0.18</version>
+      <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc</url>
+      <javadoc>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs/api</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>tomcat-http11</artifactId>
+      <version>5.0.18</version>
+      <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc</url>
+      <javadoc>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs/api</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>catalina</artifactId>
+      <version>5.0.18</version>
+      <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc</url>
+      <javadoc>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs/api</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>catalina-optional</artifactId>
+      <version>5.0.18</version>
+      <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc</url>
+      <javadoc>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs/api</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>naming-common</artifactId>
+      <version>5.0.18</version>
+      <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc</url>
+      <javadoc>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs/api</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-digester</groupId>
+      <artifactId>commons-digester</artifactId>
+      <version>1.6</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-modeler</groupId>
+      <artifactId>commons-modeler</artifactId>
+      <version>1.1M1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+      <version>1.7.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>mx4j</groupId>
+      <artifactId>mx4j</artifactId>
+      <version>2.1.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>xerces</groupId>
+      <artifactId>xerces</artifactId>
+      <version>2.4.0</version>
     </dependency>
 
   </dependencies>
