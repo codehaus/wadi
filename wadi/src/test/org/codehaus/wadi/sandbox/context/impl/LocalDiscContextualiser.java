@@ -58,11 +58,11 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 				throw new ServletException("problem loading context from local disc: "+id, e);
 			}
 			oi.close();
-			_log.info("loaded (local disc): "+id+" : "+context);
+			_log.info("loaded (local disc): "+file);
 			_log.info("promoting: "+id);
 			promoter.promoteAndContextualise(req, res, chain, id, context, promotionMutex); // inject result into our caller - now available to new threads
 			file.delete(); // perhaps this should be wrapped up in a callback object and passed up to the promoter with the promotionMutex - otherwise file is not removed until after request has run...
-			_log.info("removed (local disc): "+id);
+			_log.info("removed (local disc): "+file);
 			return true;
 		} else {
 			return false;
