@@ -283,4 +283,5 @@ public class
   public int getMaxActive(){return 100000;}
 
   protected org.codehaus.wadi.shared.HttpSessionImpl createImpl(){return new HttpSessionImpl();}
+  protected void destroyImpl(org.codehaus.wadi.shared.HttpSessionImpl impl){} // TODO - cache later
 }

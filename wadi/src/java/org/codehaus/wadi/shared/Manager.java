@@ -223,28 +223,36 @@ public abstract class
       else
       {
 	// We are initiating a migration.
+	boolean successfulMigration=false;
+	impl=createImpl();
 
 	// If a passivation store has been enabled, we may find the
 	// session in it and load it....
 	if (_passivationStrategy!=null)
-	  _passivationStrategy.activate(id, (impl=createImpl())); // TODO - check for success
+	  successfulMigration=_passivationStrategy.activate(id, impl);
 
 	// If a migration policy has been enabled, we may request it
 	// from another node.
 
-//  	if (impl==null)
-//  	{
-//  	  ManagerProxy proxy=locate(id);
-//  	  if (proxy!=null)
-//  	    impl=proxy.relocateSession(_local, _migrating, id);
-//  	}
+	if (!successfulMigration)
+  	{
+  	  ManagerProxy proxy=locate(id);
+  	  if (proxy!=null)
+  	    successfulMigration=proxy.relocateSession(_local, _migrating, id, impl);
+  	}
 
-	// make newly acquired session impl available to container...
-	if (impl!=null)
+	if (successfulMigration)
 	{
-	  impl.setWadiManager(this);
-	  //	  impl.setFacade(createFacade(impl));
-	  _local.put(id, impl);
+	  // make newly acquired session impl available to container...
+	  _acquireImpl(impl);
+	}
+	else
+	{
+	  // we were not able to migrate the session to this node -
+	  // tidy up the impl into which we were hoping to migrate
+	  // it...
+	  _releaseImpl(impl);
+	  impl=null;
 	}
 
 	// the migration is complete and the session is now local -
@@ -428,11 +436,23 @@ public abstract class
 	if (n>0)
 	{
 	  _log.trace("tidying up "+n+" session[s] expired in long-term storage");
+
+	  // we could be a lot cleverer here and :
+	  // - only reload impls when there is some listener to notify
+	  // - reuse the same impl for all of them...
 	  for (Iterator i=c.iterator(); i.hasNext();)
 	  {
 	    HttpSessionImpl impl=createImpl();
 	    if (_passivationStrategy.activate((String)i.next(), impl))
-	      releaseImpl(impl);
+	    {
+	      impl.setWadiManager(this);
+	      _notify(impl);	// TODO - these methods all need renaming/factoring etc..
+	      _releaseImpl(impl);
+	    }
+	    else
+	    {
+	      destroyImpl(impl); // put back in cache
+	    }
 	  }
 	  list.clear();		// could be reused on next iteration...
 	}
@@ -460,6 +480,7 @@ public abstract class
       boolean hasBeenInvalidated=false;
       boolean hasTimedOut=false;
       boolean shouldBeEvicted=false;
+
       if (((hasBeenInvalidated=!((org.codehaus.wadi.shared.HttpSession)impl.getFacade()).isValid()) ||
 	   (hasTimedOut=impl.hasTimedOut(currentTime)) ||
 	   (shouldBeEvicted=(canEvict && _evictionPolicy.evictable(currentTime, impl)))) &&
@@ -936,10 +957,20 @@ public abstract class
 
     HttpSessionImpl impl=createImpl();
     impl.init(Manager.this, id, System.currentTimeMillis(), _maxInactiveInterval, _maxInactiveInterval); // TODO need actual...
-    impl.setWadiManager(manager);
+    _acquireImpl(impl);
+    notifySessionCreated(impl.getFacade());
+    return impl;
+  }
 
+  protected void
+    _acquireImpl(HttpSessionImpl impl)
+  {
+    impl.setWadiManager(this);
     // v. important - before we go public, take the rlock to indicate a request thread is busy in this session
     // TODO assert() that this is a request thread
+
+    // TODO - should this locking be here - check in filter. do we
+    // need to do it on creation or immigration ?
     try
     {
       impl.getApplicationLock().acquire();
@@ -949,15 +980,12 @@ public abstract class
       _log.warn("unable to acquire rlock on new session");
     }
 
-    _local.put(id, impl);
-    notifySessionCreated(impl.getFacade());
-    return impl;
+    _local.put(impl.getId(), impl);
   }
 
   protected void
-    releaseImpl(HttpSessionImpl impl)
+    _notify(HttpSessionImpl impl)
   {
-    _local.remove(impl.getId());
     HttpSession session=(HttpSession)impl.getFacade();
 
     // The session is marked as invalid until it has been removed
@@ -981,11 +1009,24 @@ public abstract class
       notifySessionDestroyed(session);
 
     session.setValid(false);
+  }
+
+  protected void
+    releaseImpl(HttpSessionImpl impl)
+  {
+    _local.remove(impl.getId());
+    _notify(impl);
+    _releaseImpl(impl);
+  }
+
+  protected void
+    _releaseImpl(HttpSessionImpl impl)
+  {
     impl.setWadiManager(null);
     impl.destroy();
-
-    //    destroyImpl(impl); // TODO
+    destroyImpl(impl);
   }
 
   protected abstract HttpSessionImpl createImpl();
+  protected abstract void destroyImpl(HttpSessionImpl impl);
 }

@@ -13,15 +13,18 @@
       String id=session.getId();
       if (id!=null)
        url+=";jsessionid="+id;
+
+      int period=(int)(Math.random()*90);
       %>
 
-      <meta http-equiv="refresh" content="90;url=<%= url %>"/>
+      <meta http-equiv="refresh" content="<%= period %>;url=<%= url %>"/>
 
       <HTML>
 	<BODY BGCOLOR="<%= colour %>">
 	  <H2>Session Creation</H2>
 
 	  <pre>current url:           <%= request.getRequestURL() %></pre>
+	  <pre>wait period:           <%= period %></pre>
 	  <pre>next url:              <%= url %></pre>
 	  <pre>session id:            <%= session.getId() %></pre>
 	  <pre>session created:       <%= new Date(session.getCreationTime()) %></pre>
