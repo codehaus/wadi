@@ -31,7 +31,7 @@ import org.codehaus.wadi.impl.async.MigrationResponse;
 
 public class
   MigrationRequest
-  implements Invocable
+  implements Executable
 {
   protected static final Log  _log=LogFactory.getLog(MigrationRequest.class);
   protected final String      _id;

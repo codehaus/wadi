@@ -30,7 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.wadi.AsyncToSyncAdaptor;
 import org.codehaus.wadi.HttpSessionImpl;
-import org.codehaus.wadi.Invocable;
+import org.codehaus.wadi.Executable;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.StreamingStrategy;
 
@@ -143,12 +143,12 @@ public class
 	  {
 	    ObjectMessage om=null;
 	    Object tmp=null;
-	    Invocable invocable=null;
+	    Executable invocable=null;
 	    if (message instanceof ObjectMessage &&
 		(om=(ObjectMessage)message)!=null &&
 		(tmp=om.getObject())!=null &&
-		tmp instanceof Invocable &&
-		(invocable=(Invocable)tmp)!=null)
+		tmp instanceof Executable &&
+		(invocable=(Executable)tmp)!=null)
 	    {
 	      _log.info("message arrived: "+invocable);
 	      try
