@@ -129,7 +129,7 @@ public class TestRelocation extends TestCase {
 		_dispatcher0=new MessageDispatcher(_cluster0);
 		_location0=new HttpProxyLocation(_cluster0.getLocalNode().getDestination(), isa0, proxy0);
 		_relocater0=new SwitchableRelocationStrategy();
-		_servlet0=new MyServlet("0", _cluster0, new MyContextPool(), _dispatcher0, _relocater0);
+		_servlet0=new MyServlet("0", _cluster0, new MyContextPool(), _dispatcher0, _relocater0, _location0);
 		_filter0=new MyFilter("0", _servlet0);
 		(_node0=new TomcatNode("0", "localhost", 8080, "/test", "/home/jules/workspace/wadi/webapps/test", _filter0, _servlet0)).start();
 
@@ -140,7 +140,7 @@ public class TestRelocation extends TestCase {
 		_dispatcher1=new MessageDispatcher(_cluster1);
 		_location1=new HttpProxyLocation(_cluster1.getLocalNode().getDestination(), isa1, proxy1);
 		_relocater1=new SwitchableRelocationStrategy();
-		_servlet1=new MyServlet("1", _cluster1, new MyContextPool(), _dispatcher1, _relocater1);
+		_servlet1=new MyServlet("1", _cluster1, new MyContextPool(), _dispatcher1, _relocater1, _location1);
 		_filter1=new MyFilter("1", _servlet1);
 		(_node1=new JettyNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...

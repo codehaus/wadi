@@ -33,6 +33,7 @@ import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Emoter;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Immoter;
+import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 
@@ -66,19 +67,23 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class ClusterContextualiser extends AbstractMappedContextualiser {
 
+	protected final HashMap _emigrationRvMap=new HashMap();
 	protected final MessageDispatcher _dispatcher;
 	protected final RelocationStrategy _relocater;
+	protected final Location _location;
 
 	/**
 	 * @param next
 	 * @param collapser
 	 * @param map
 	 * @param evicter
+	 * @param location TODO
 	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, MessageDispatcher dispatcher, RelocationStrategy relocater) throws JMSException {
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) throws JMSException {
 		super(next, collapser, map, evicter);
 		_dispatcher=dispatcher;
 	    _relocater=relocater;
+	    _location=location;
 	    
 	    _dispatcher.register(this, "onMessage");
 	    _dispatcher.register(EmigrationAcknowledgement.class, _emigrationRvMap, 3000);
@@ -100,6 +105,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	public void evict() {
 		// how long do we wish to maintain cached Locations ?
 	}
+
+	public boolean isLocal(){return false;}
 
 	protected Destination _emigrationQueue;
 
@@ -154,12 +161,12 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
 			EmigrationRequest er=new EmigrationRequest(id, emotable);
 			EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emigrationRvMap, er, settingsInOut, 3000);
-			//_log.info("received EmigrationAcknowledgement: "+ea.getId()+" ["+settingsInOut.to+"]");
+			
+			_map.put(id, ea.getLocation()); // cache new Location of Session
 			return ea!=null;
 		}
 		
 		public void commit(String id, Motable immotable) {
-			//_log.info("emigration (cluster): "+id);
 			// TODO - cache new location of emigrating session...
 			}
 		
@@ -209,7 +216,10 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		
 		public void commit(String id, Motable emotable) {
 			try {
-				_dispatcher.sendMessage(new EmigrationAcknowledgement(id), _settingsInOut);
+				EmigrationAcknowledgement ea=new EmigrationAcknowledgement();
+				ea.setId(id);
+				ea.setLocation(_location);
+				_dispatcher.sendMessage(ea, _settingsInOut);
 			} catch (JMSException e) {
 				_log.error("could not acknowledge safe receipt: "+id, e);
 			}
@@ -229,14 +239,9 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	
 	public void onMessage(ObjectMessage om, EmigrationRequest er) throws JMSException {
 		String id=er.getId();
-		//_log.info("receiving emigration request: "+id);
 		Emoter emoter=new ClusterEmoter(om, er);
 		Motable emotable=er.getMotable();
 		Immoter immoter=_top.getDemoter(id, emotable);
-		Motable immotable=Utils.mote(emoter, immoter, emotable, id);
+		Utils.mote(emoter, immoter, emotable, id);
 	}
-	
-	protected final HashMap _emigrationRvMap=new HashMap();
-	
-	public boolean isLocal(){return false;}
 }
