@@ -44,6 +44,7 @@ import org.codehaus.wadi.plugins.FilePassivationStrategy;
 import org.codehaus.wadi.plugins.NoRoutingStrategy;
 import org.codehaus.wadi.plugins.RelativeEvictionPolicy;
 import org.codehaus.wadi.plugins.TomcatIdGenerator;
+import org.codehaus.wadi.plugins.TotalEvictionPolicy;
 import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
 
 // TODO - replace some form of location discovery protocol
@@ -157,10 +158,6 @@ public abstract class
     if (getFirstGet())
     {
       setFirstGet(false);
-      // TODO - how do we synchronise this on a per-session basis - a
-      // HashMap of locks - yeugh!
-      if (impl==null)
-	impl=getRemoteSession(id);
 
       if (impl!=null)
 	try
@@ -171,6 +168,11 @@ public abstract class
 	{
 	  _log.warn("unexpected interruption", e);
 	}
+
+      // TODO - how do we synchronise this on a per-session basis - a
+      // HashMap of locks - yeugh!
+      if (impl==null)
+	impl=getRemoteSession(id); // this will take the r-lock
     }
 
     return impl;
@@ -418,6 +420,27 @@ public abstract class
   {
     _log.debug("stopping");
     _running=false;
+
+    // assume that impls havestopped their housekeeping thread/process
+    // by now...
+
+    // now we need to alter the eviction decision policy, so that
+    // every session is invalidate or passivated, then run the
+    // housekeeper again....
+    EvictionPolicy oldEvictionPolicy=_evictionPolicy;
+    _evictionPolicy=new TotalEvictionPolicy();
+    int oldSize=_local.size();
+    housekeeper();
+    int newSize=_local.size();
+    // this is inaccurate - currently sessions may also still be
+    // created/[e/i]mmigrated whilst this is going on. sessions with
+    // current requests will remain in container :-(. We need a fix in
+    // Filter which will relocate all incoming requests...
+    _log.debug("emmigrated "+(oldSize-newSize)+"/"+oldSize+" sessions");
+    _evictionPolicy=oldEvictionPolicy;
+
+    // since housekeeping may take time, we'll keep these processes
+    // running until afterwards for the moment...
     _locationServer.stop();
     _locationServer=null;
     _migrationServer.stop();
@@ -513,9 +536,10 @@ public abstract class
       boolean hasTimedOut=false;
       boolean shouldBeEvicted=false;
 
+      boolean nottried=true;
       if ((((hasTimedOut=impl.hasTimedOut(currentTime)) && setPriority(lock, HttpSessionImpl.TIMEOUT_PRIORITY)) ||
 	   ((shouldBeEvicted=(canEvict && _evictionPolicy.evictable(currentTime, impl))) && setPriority(lock, HttpSessionImpl.EVICTION_PRIORITY))) &&
-	  impl.getContainerLock().attempt(-1))
+	  (nottried=impl.getContainerLock().attempt(100)))
       {
 	try
 	{
@@ -546,6 +570,10 @@ public abstract class
 	{
 	  impl.getContainerLock().release();
 	}
+      }
+      else if (!nottried)
+      {
+	_log.info("tried but failed for lock on:"+impl.getId()+" - "+impl.getRWLock());
       }
     }
     _log.trace("housekeeping ended");
