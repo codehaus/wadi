@@ -28,7 +28,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -38,9 +37,6 @@ import javax.jms.JMSException;
 
 import org.codehaus.wadi.HttpSessionImpl;
 import org.codehaus.wadi.MigrationService;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 // TODO - maybe use NIO/AIO as discussed with Jeremy.
 // TODO - could our connection be to a filedescriptor instead of another node ?

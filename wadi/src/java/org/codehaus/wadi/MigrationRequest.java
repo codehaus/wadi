@@ -18,12 +18,8 @@
 package org.codehaus.wadi;
 
 import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
 
 public abstract class MigrationRequest
   implements Executable

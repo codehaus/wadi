@@ -18,7 +18,6 @@
 package org.codehaus.wadi.impl;
 
 import javax.jms.Destination;
-import javax.jms.Message;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.HttpSessionImpl;

@@ -19,7 +19,6 @@ package org.codehaus.wadi.test;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.jms.Connection;
 import javax.jms.JMSException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -19,8 +19,6 @@ package org.codehaus.wadi.test;
 
 import javax.jms.JMSException;
 
-import java.io.IOException;
-import javax.servlet.http.HttpSessionContext;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -17,14 +17,10 @@
 
 package org.codehaus.wadi.test;
 
-import javax.jms.ObjectMessage;
-
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.AsyncToSyncAdaptor;
-import org.codehaus.wadi.Executable;
-import org.codehaus.wadi.Manager;
 
 /**
  * Test the Migration Service
