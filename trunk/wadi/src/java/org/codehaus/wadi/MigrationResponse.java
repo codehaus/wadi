@@ -27,8 +27,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
 
 public class
-    MigrationResponse
-    implements Invocable
+  MigrationResponse
+  implements Invocable
 {
   protected static final Log _log=LogFactory.getLog(MigrationResponse.class);
   protected final String     _id;
@@ -55,7 +55,7 @@ public class
       HttpSessionImpl impl=manager.getLocalSession(_id);
       impl.readContent(ois);
       ois.close();
-      manager._adaptor.receive(impl, _id, _timeout);
+      manager._adaptor.receive(impl, _id+"-request", _timeout);
       ok=true;
     }
     catch (IOException e)
@@ -68,18 +68,50 @@ public class
     }
 
     Destination dest=null;
+    Object result=null;
     try
     {
-      dest=in.getJMSReplyTo();
       Cluster cluster=manager.getCluster();
-      ObjectMessage out=cluster.createObjectMessage();
-      out.setJMSReplyTo(cluster.getLocalNode().getDestination());
-      out.setObject(new MigrationAcknowledgement(_id, ok));
-      cluster.send(dest, out);
+      ObjectMessage om=cluster.createObjectMessage();
+      Destination src=cluster.getLocalNode().getDestination();
+      om.setJMSReplyTo(src);
+      om.setObject(new MigrationAcknowledgement(_id, ok, _timeout));
+      cluster.send(in.getJMSReplyTo(), om);
     }
     catch (JMSException e)
     {
       _log.warn("could not send migration response to: "+dest, e);
+    }
+
+    ok=(result==Boolean.TRUE);
+
+    HttpSessionImpl impl=null;
+
+    impl=manager.getLocalSession(_id);
+
+    if (impl==null)
+    {
+      _log.warn(_id+": IN REAL TROUBLE"); // FIXME
+    }
+    else
+    {
+      try
+      {
+	impl=manager.getLocalSession(_id);
+	if (ok)
+	{
+	  _log.debug(_id+": committing emmigration");
+	  manager.releaseImpl(impl);
+	}
+	else
+	{
+	  _log.debug(_id+": rolling back emmigration");
+	}
+      }
+      finally
+      {
+	impl.getContainerLock().release();
+      }
     }
   }
 

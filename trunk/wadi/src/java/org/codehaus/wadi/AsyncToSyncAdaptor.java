@@ -17,16 +17,18 @@
 
 package org.codehaus.wadi;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import EDU.oswego.cs.dl.util.concurrent.BrokenBarrierException;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import javax.jms.Destination;
+import javax.jms.ObjectMessage;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.activecluster.Cluster;
 
 /**
  * Enable a thread to send a Command over an async medium and wait for
@@ -41,26 +43,28 @@ public class
   protected final Log _log     = LogFactory.getLog(getClass());
   protected final Map _entries = Collections.synchronizedMap(new HashMap());
 
-  public interface Sender {public void send(Object command) throws Exception;}
-
   public Object
-    send(Object command, String id, long timeout, Sender sender)
+    send(Cluster cluster, Serializable command, String id, long timeout, Destination src, Destination dst)
     {
       int participants=2;
       Rendezvous rv=new Rendezvous(participants);
-      _log.trace("preparing rendez-vous: "+id);
       _entries.put(id, rv);
+      _log.trace(""+hashCode()+": "+"preparing rendez-vous: "+id+" - "+_entries);
 
       Object result=null;
 
       try
       {
-	sender.send(command);
+	ObjectMessage message = cluster.createObjectMessage();
+	message.setJMSReplyTo(src);
+	message.setObject(command);
+	cluster.send(dst, message);
+
 	result=rv.attemptRendezvous(null, timeout);
       }
       catch (TimeoutException e)
       {
-	_log.debug("timed out at rendez-vous - no answer within required timeframe");
+	_log.debug(""+hashCode()+": "+"timed out at rendez-vous - no answer within required timeframe");
       }
       catch (InterruptedException e)
       {
@@ -85,17 +89,17 @@ public class
   public Object
     receive(Object datum, String id, long timeout)
     {
-      _log.trace("attending rendez-vous: "+id);
+      _log.trace(""+hashCode()+": "+"attending rendez-vous: "+id+" - "+_entries);
       Rendezvous rv=(Rendezvous)_entries.get(id);
       Object result=null;
 
       if (rv==null)
-	_log.warn("missed rendez-vous - invoker thread must have timed out");
+	_log.warn("missed rendez-vous "+id+" - waiting thread must have timed out");
       else
 	try
 	{
 	  result=rv.attemptRendezvous(datum, timeout);
-	  _log.trace("rendez-vous successful: "+datum);
+	  _log.trace(""+hashCode()+": "+"rendez-vous successful: "+datum);
 	}
 	catch (TimeoutException e)
 	{

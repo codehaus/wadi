@@ -28,45 +28,22 @@ public class
   protected static final Log _log=LogFactory.getLog(MigrationAcknowledgement.class);
   protected final String     _id;
   protected final boolean    _ok;
+  protected final long       _timeout;
 
   public
-    MigrationAcknowledgement(String id, boolean ok)
+    MigrationAcknowledgement(String id, boolean ok, long timeout)
   {
     _id=id;
     _ok=ok;
+    _timeout=timeout;
   }
 
   public void
     invoke(Manager manager, ObjectMessage message)
   {
-    HttpSessionImpl impl=null;
-
-    impl=manager.getLocalSession(_id);
-
-    if (impl==null)
-    {
-      _log.warn(_id+": IN REAL TROUBLE"); // FIXME
-    }
-    else
-    {
-      try
-      {
-	impl=manager.getLocalSession(_id);
-	if (_ok)
-	{
-	  _log.debug(_id+": committing emmigration");
-	  manager.releaseImpl(impl);
-	}
-	else
-	{
-	  _log.debug(_id+": rolling back emmigration");
-	}
-      }
-      finally
-      {
-	impl.getContainerLock().release();
-      }
-    }
+    manager._adaptor.receive(_ok?Boolean.TRUE:Boolean.FALSE,
+			     _id+"-response",
+			     _timeout);
   }
 
   public String

@@ -76,12 +76,14 @@ public class
 	Destination dest=null;
 	try
 	{
-	  dest=in.getJMSReplyTo();
 	  Cluster cluster=manager.getCluster();
-	  ObjectMessage out=cluster.createObjectMessage();
-	  out.setJMSReplyTo(cluster.getLocalNode().getDestination());
-	  out.setObject(new MigrationResponse(_id, _timeout, buffer));
-	  cluster.send(dest, out);
+	  Object result=manager._adaptor.send(cluster,
+					      new MigrationResponse(_id, _timeout, buffer),
+					      _id+"-response",
+					      _timeout,
+					      cluster.getLocalNode().getDestination(),
+					      in.getJMSReplyTo());
+	  // TODO - check result
 	}
 	catch (JMSException e)
 	{

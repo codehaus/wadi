@@ -200,15 +200,6 @@ public abstract class
     return impl;
   }
 
-  class EmmigrationSender
-    implements AsyncToSyncAdaptor.Sender
-    {
-      Manager _manager;
-
-      EmmigrationSender(Manager manager){_manager=manager;}
-      public void send(Object command) throws Exception {_manager.sendCommandToCluster((Invocable)command);}
-    }
-
   protected HttpSessionImpl
     getLocalSession(String realId)
   {
@@ -266,11 +257,12 @@ public abstract class
     if (!successfulMigration)
     {
       long timeout=2000L;
-      Object result=_adaptor.send(new MigrationRequest(realId, _migrationServer.getAddress(), _migrationServer.getPort(), timeout),
-				  realId,	// is this enough - TODO
+      Object result=_adaptor.send(_cluster,
+				  new MigrationRequest(realId, _migrationServer.getAddress(), _migrationServer.getPort(), timeout),
+				  realId+"-request",
 				  timeout,	// parameterise - TODO
-				  new EmmigrationSender(this)
-				  );
+				  _cluster.getLocalNode().getDestination(),
+				  _cluster.getDestination());
 
       _log.info("successfully immigrated: "+impl);
       successfulMigration=(impl==result);
