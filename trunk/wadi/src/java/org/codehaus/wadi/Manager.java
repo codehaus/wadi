@@ -259,7 +259,7 @@ public abstract class
       String correlationId=realId+"-"+src.toString();
       long timeout=2000L;
       Object result=_adaptor.send(_cluster,
-				  new MigrationRequest(realId, _migrationServer.getAddress(), _migrationServer.getPort(), timeout),
+				  new MigrationRequest(realId, _migrationServer.getDestination(), timeout),
 				  correlationId,
 				  timeout,	// parameterise - TODO
 				  src,
@@ -924,8 +924,7 @@ public abstract class
 	  params[2]+","+
 	  _httpIpAddress.getHostAddress()+","+
 	  _httpPort+","+
-	  _migrationServer.getAddress().getHostAddress()+","+
-	  _migrationServer.getPort()+","+
+	  _migrationServer.getDestination()+","+
 	  _routingStrategy.getInfo();
       }
 
@@ -940,7 +939,7 @@ public abstract class
   //----------------------------------------
   // Migration
 
-  org.codehaus.wadi.impl.sync.MigrationService.Server _migrationServer;
+  protected org.codehaus.wadi.impl.sync.MigrationService.Server _migrationServer;
   protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor();
 
   //----------------------------------------

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.HttpSessionImpl;
@@ -62,7 +63,7 @@ public class
     protected InetAddress _address; // null seems to work fine as default interface
 
     public boolean
-      emmigrate(Map map, Collection candidates, long timeout, InetAddress remoteAddress, int remotePort, StreamingStrategy streamingStrategy, boolean sync)
+      emmigrate(Map map, Collection candidates, long timeout, Destination destination, StreamingStrategy streamingStrategy, boolean sync)
     {
       Socket socket=null;
       boolean ok=true;
@@ -91,9 +92,9 @@ public class
 	    //_address=InetAddress.getByName("localhost");
 	  }
 
-	  socket=new Socket(remoteAddress, remotePort, _address, _port);
+	  socket=new Socket(destination._address, destination._port, _address, _port);
 	  // TODO - do we need a timeout ? - YES
-	  if (_log.isTraceEnabled()) _log.trace(socket+" -> "+remoteAddress+":"+remotePort);
+	  if (_log.isTraceEnabled()) _log.trace(socket+" -> "+destination);
 	  ObjectOutput os=new ObjectOutputStream(socket.getOutputStream());
 	  ObjectInput  is=new ObjectInputStream(socket.getInputStream());
 	  //	  ObjectOutput ss=streamingStrategy.getOutputStream(socket.getOutputStream());
@@ -132,7 +133,7 @@ public class
       }
       catch (IOException e)
       {
-	_log.warn("unexpected problem emmigrating sessions to "+remoteAddress+":"+remotePort+"- target node or comms failure ? - no emmigration will have occurred", e);
+	_log.warn("unexpected problem emmigrating sessions to "+destination+"- target node or comms failure ? - no emmigration will have occurred", e);
       }
       // what about timeout...
       finally
@@ -141,7 +142,7 @@ public class
 	{
 	  // should I print out all session ids - so we have a record ?
 	  if (_log.isDebugEnabled())
-	    _log.debug(numSessions+" emmigration[s] (peer: "+remoteAddress+":"+remotePort+")");
+	    _log.debug(numSessions+" emmigration[s] (peer: "+destination+")");
 	}
 	else
 	{
@@ -169,6 +170,13 @@ public class
     }
   }
 
+  class Destination
+	implements javax.jms.Destination
+	{
+  	InetAddress _address;
+  	int         _port;
+	}
+  
   public static class
     Server
     implements Runnable
@@ -185,19 +193,12 @@ public class
     protected HttpSessionImplFactory _factory;
     protected boolean                _running;
     protected Thread                 _thread;
-    protected int                    _port=0; // any free port
-    protected InetAddress            _address;
+    protected Destination            _destination;
     protected int                    _backlog=16; // TODO - is this a useful default
     protected ServerSocket           _socket;
     protected int                    _timeout=2000;
 
     protected final Map _sessions;
-
-    public int getPort(){return _port;}
-    public void setPort(int port){_port=port;}
-
-    public InetAddress getAddress(){return _address;}
-    public void setAddress(InetAddress address){_address=address;}
 
     protected StreamingStrategy _streamingStrategy;
 
@@ -214,18 +215,18 @@ public class
     {
       try
       {
-	if (_address==null)
+	if (_destination._address==null)
 	{
-	  _address=InetAddress.getLocalHost();
+	  _destination._address=InetAddress.getLocalHost();
 	  //_address=InetAddress.getByName("localhost");
 	}
 
-	if (_log.isDebugEnabled()) _log.debug("starting: "+_address+":"+(_port==0?"<anonymous>":""+_port));
+	if (_log.isDebugEnabled()) _log.debug("starting: "+_destination._address+":"+(_destination._port==0?"<anonymous>":""+_destination._port));
 
 	// initialise dependant resources...
-	_socket=new ServerSocket(_port, _backlog, _address);
+	_socket=new ServerSocket(_destination._port, _backlog, _destination._address);
 	_socket.setSoTimeout(_timeout);
-	_port=_socket.getLocalPort();
+	_destination._port=_socket.getLocalPort();
 
 	// start...
 	_running=true;
@@ -260,7 +261,7 @@ public class
 	_socket.close();
 	_socket=null;
 	// we need to join all our subthreads :-(
-	if (_log.isDebugEnabled()) _log.debug("stopped: "+_address+":"+_port);
+	if (_log.isDebugEnabled()) _log.debug("stopped: "+_destination._address+":"+_destination._port);
       }
       catch (InterruptedException e)
       {
@@ -387,6 +388,9 @@ public class
       }
 
     }
+
+	public void setDestination(Destination destination) {_destination=destination;}
+	public Destination getDestination() {return _destination;}
   }
 }
 

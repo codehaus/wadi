@@ -20,7 +20,6 @@ package org.codehaus.wadi;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
@@ -35,16 +34,14 @@ public class
 {
   protected static final Log  _log=LogFactory.getLog(MigrationRequest.class);
   protected final String      _id;
-  protected final InetAddress _address;
-  protected final int         _port;
+  protected final Destination _destination;
   protected final long        _timeout;
 
   public
-    MigrationRequest(String id, InetAddress address, int port, long timeout)
+    MigrationRequest(String id, Destination destination, long timeout)
   {
     _id      =id;
-    _address =address;
-    _port    =port;
+    _destination=destination;
     _timeout =timeout;
   }
 
