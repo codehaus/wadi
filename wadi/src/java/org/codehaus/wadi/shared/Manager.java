@@ -287,7 +287,7 @@ public abstract class
   public int getMaxInactiveInterval(){return _maxInactiveInterval;}
   public void setMaxInactiveInterval(int seconds){_maxInactiveInterval=seconds;}
 
-  protected boolean _distributable=true;
+  protected boolean _distributable=false;
   public void setDistributable(boolean distributable){_distributable=distributable;}
   public boolean getDistributable(){return _distributable;}
 

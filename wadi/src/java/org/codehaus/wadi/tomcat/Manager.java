@@ -71,10 +71,6 @@ public class
   public DefaultContext getDefaultContext(){return _defaultContext;}
   public void setDefaultContext(DefaultContext defaultContext){_defaultContext=defaultContext;}
 
-  protected String _configFile;
-  public String getConfigFile(){return _configFile;}
-  public void setConfigFile(String configFile){_configFile=configFile;}
-
   // actual notifications are done by aspects...
   protected PropertyChangeSupport _propertyChangeListeners=new PropertyChangeSupport(this);
   public void addPropertyChangeListener(PropertyChangeListener pcl){_propertyChangeListeners.addPropertyChangeListener(pcl);}
@@ -230,8 +226,10 @@ public class
     // starts us...
     ((ContainerBase)context).addLifecycleListener(new ContextLifecycleListener());
 
-    // TODO - figure out how to find out if tc app thinks it is
-    // distributable and call setDistributable();
+    // is this a distributable webapp ?
+    boolean distributable=context.getDistributable();
+    if (distributable && !_distributable)
+      setDistributable(distributable);
   }
 
   public synchronized void
