@@ -26,8 +26,8 @@ import javax.jms.ObjectMessage;
 import org.codehaus.activecluster.Cluster;
 
 public class
-    EmmigrationCommand
-    implements Command
+    MigrationRequest
+    implements Invocable
 {
   protected SerializableLog _log=new SerializableLog(getClass());
   protected String          _id;
@@ -38,7 +38,7 @@ public class
   protected Destination     _replyTo;
 
   public
-    EmmigrationCommand(String id, InetAddress address, int port, long timeout, Destination replyTo)
+    MigrationRequest(String id, InetAddress address, int port, long timeout, Destination replyTo)
   {
     _id      =id;
     _address =address;
@@ -49,7 +49,7 @@ public class
   }
 
   public void
-    run(ObjectMessage message, Manager manager)
+    invoke(Manager manager, ObjectMessage message)
   {
     HttpSessionImpl impl=null;
 
@@ -66,7 +66,7 @@ public class
       list.add(impl);		// must be mutable
       client.emmigrate(manager._local, list, _timeout, _address, _port, manager.getStreamingStrategy(), true);
 
-      EmmigrationResponse er=new EmmigrationResponse(_id, _timeout, null);
+      MigrationResponse er=new MigrationResponse(_id, _timeout, null);
 
       Cluster cluster=manager.getCluster();
 

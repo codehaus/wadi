@@ -21,18 +21,19 @@ import java.io.Serializable;
 
 import javax.jms.ObjectMessage;
 
+
 /**
  * @author jules
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class RequestRelocationCommand implements Command, Serializable {
+public class RequestRelocationCommand implements Invocable, Serializable {
 
     /* (non-Javadoc)
      * @see org.codehaus.wadi.shared.Command#run(javax.jms.ObjectMessage, org.codehaus.wadi.shared.Manager)
      */
-    public void run(ObjectMessage message, Manager manager) {
+    public void invoke(Manager manager, ObjectMessage message) {
         // TODO Auto-generated method stub
 
     }

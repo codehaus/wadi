@@ -18,11 +18,12 @@
 package org.codehaus.wadi.test;
 
 import javax.jms.ObjectMessage;
+
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.shared.AsyncToSyncAdaptor;
-import org.codehaus.wadi.shared.Command;
+import org.codehaus.wadi.shared.Invocable;
 import org.codehaus.wadi.shared.Manager;
 
 /**
@@ -73,10 +74,10 @@ public class
     {
       _log.info("[0] entering adaptor");
       Object result=_adaptor.send(
-				  new Command()
+				  new Invocable()
 				  {
 				    public void
-				      run(ObjectMessage message, Manager manager)
+				      invoke(Manager manager, ObjectMessage message)
 				    {
 				      _log.info("[0] starting Command");
 				      new Thread()
@@ -100,7 +101,7 @@ public class
 				      send(Object command)
 				    {
 				      _log.info("[0] send Object");
-				      ((Command)command).run(null, null);
+				      ((Invocable)command).invoke(null, null);
 				      _log.info("[0] sent Object");
 				    }
 				  }

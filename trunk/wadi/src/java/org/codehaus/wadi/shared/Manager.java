@@ -204,7 +204,7 @@ public abstract class
       Manager _manager;
 
       EmmigrationSender(Manager manager){_manager=manager;}
-      public void send(Object command) throws Exception {_manager.sendCommandToCluster((Command)command);}
+      public void send(Object command) throws Exception {_manager.sendCommandToCluster((Invocable)command);}
     }
 
   protected HttpSessionImpl
@@ -303,7 +303,7 @@ public abstract class
     if (!successfulMigration)
     {
       long timeout=2000L;
-      _adaptor.send(new EmmigrationCommand(realId, _migrationServer.getAddress(), _migrationServer.getPort(), timeout, _cluster.getLocalNode().getDestination()),
+      _adaptor.send(new MigrationRequest(realId, _migrationServer.getAddress(), _migrationServer.getPort(), timeout, _cluster.getLocalNode().getDestination()),
 		    realId,	// is this enough - TODO
 		    timeout,	// parameterise - TODO
 		    new EmmigrationSender(this)
@@ -1184,7 +1184,7 @@ public abstract class
   protected Map _conversations=new HashMap();
 
   protected void
-    sendCommandToCluster(Command command)
+    sendCommandToCluster(Invocable command)
     throws Exception
   {
     ObjectMessage om = _cluster.createObjectMessage();
@@ -1194,7 +1194,7 @@ public abstract class
   }
 
   protected void
-    sendCommandToNode(Node node, Command command)
+    sendCommandToNode(Node node, Invocable command)
     throws Exception
   {
     ObjectMessage om = _cluster.createObjectMessage();
@@ -1234,17 +1234,17 @@ public abstract class
       {
 	ObjectMessage om=null;
 	Object tmp=null;
-	Command command=null;
+	Invocable command=null;
 	if (message instanceof ObjectMessage &&
 	    (om=(ObjectMessage)message)!=null &&
 	    (tmp=om.getObject())!=null &&
-	    tmp instanceof Command &&
-	    (command=(Command)tmp)!=null)
+	    tmp instanceof Invocable &&
+	    (command=(Invocable)tmp)!=null)
 	{
 	  _log.info("message arrived: "+command);
 	  try
 	  {
-	    command.run(om, _manager);
+	    command.invoke(_manager, om);
 	  }
 	  catch (Throwable t)
 	  {
