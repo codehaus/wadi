@@ -304,7 +304,7 @@
     <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jetty</artifactId>
-      <version>5.1.2pre0</version>
+      <version>5.1.2</version>
       <url>http://jetty.mortbay.org/jetty</url>
       <javadoc>http://jetty.mortbay.org/javadoc</javadoc>
     </dependency>
@@ -312,7 +312,7 @@
     <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jmx</artifactId>
-      <version>5.1.2pre0</version>
+      <version>5.1.2</version>
       <url>http://jetty.mortbay.org/jetty</url>
       <javadoc>http://jetty.mortbay.org/javadoc</javadoc>
     </dependency>
