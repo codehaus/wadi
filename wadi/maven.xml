@@ -29,38 +29,36 @@
   </postGoal>
 
   <preGoal name="java:compile">
-    <j:set var="wadi.maven.build.dest" value="${maven.build.dest}"/>
-    <maven:set plugin="maven-java-plugin" property="maven.build.dest" value="${wadi.maven.build.dest}.javac"/>
-    <ant:echo>### switching output dir ${wadi.maven.build.dest} to ${wadi.maven.build.dest}.javac</ant:echo>
-    <ant:mkdir dir="${wadi.maven.build.dest}.javac"/>
+    <j:set var="iajc.dest" value="${maven.build.dest}"/>
+    <maven:set plugin="maven-java-plugin" property="maven.build.dest" value="${iajc.dest}.javac"/>
+    <ant:echo>### switching output dir ${iajc.dest} to ${iajc.dest}.javac</ant:echo>
+    <ant:mkdir dir="${iajc.dest}.javac"/>
   </preGoal>
 
   <postGoal name="java:compile">
-    <maven:set plugin="maven-java-plugin" property="maven.build.dest" value="${wadi.maven.build.dest}"/>
-    <ant:echo>### switching output dir ${wadi.maven.build.dest}.javac back to ${wadi.maven.build.dest}</ant:echo>
-    <j:set var="wadi.dest" value="${wadi.maven.build.dest}"/>
+    <maven:set plugin="maven-java-plugin" property="maven.build.dest" value="${iajc.dest}"/>
+    <ant:echo>### switching output dir ${iajc.dest}.javac back to ${iajc.dest}</ant:echo>
     <attainGoal name="aspectj:compile-and-weave"/>
   </postGoal>
 
   <preGoal name="test:compile">
-    <j:set var="wadi.maven.test.dest" value="${maven.test.dest}"/>
-    <maven:set plugin="maven-test-plugin" property="maven.test.dest" value="${wadi.maven.test.dest}.javac"/>
-    <ant:echo>### switching output dir ${wadi.maven.test.dest} to ${wadi.maven.test.dest}.javac</ant:echo>
-    <ant:mkdir dir="${wadi.maven.test.dest}.javac"/>
+    <j:set var="iajc.dest" value="${maven.test.dest}"/>
+    <maven:set plugin="maven-test-plugin" property="maven.test.dest" value="${iajc.dest}.javac"/>
+    <ant:echo>### switching output dir ${iajc.dest} to ${iajc.dest}.javac</ant:echo>
+    <ant:mkdir dir="${iajc.dest}.javac"/>
   </preGoal>
 
   <postGoal name="test:compile">
-    <maven:set plugin="maven-test-plugin" property="maven.test.dest" value="${wadi.maven.test.dest}"/>
-    <ant:echo>### switching output dir ${wadi.maven.test.dest}.javac back to ${wadi.maven.test.dest}</ant:echo>
-    <j:set var="wadi.dest" value="${wadi.maven.test.dest}"/>
+    <maven:set plugin="maven-test-plugin" property="maven.test.dest" value="${iajc.dest}"/>
+    <ant:echo>### switching output dir ${iajc.dest}.javac back to ${iajc.dest}</ant:echo>
     <attainGoal name="aspectj:compile-and-weave"/>
   </postGoal>
 
   <goal name="aspectj:compile-and-weave" prereqs="aspectj:init">
-    <ant:echo>### compiling and weaving to ${wadi.dest}</ant:echo>
-    <delete dir="${wadi.dest}"/>
+    <ant:echo>### compiling and weaving to ${iajc.dest}</ant:echo>
+    <delete dir="${iajc.dest}"/>
     <ant:iajc
-      destdir="${wadi.dest}"
+      destdir="${iajc.dest}"
       debug="true"
       verbose="true"
       time="true"
@@ -74,7 +72,7 @@
 	<ant:pathelement path="${maven.build.dest}.javac"/>
       </ant:classpath>
       <ant:inpath>
-	<ant:pathelement path="${wadi.dest}.javac"/>
+	<ant:pathelement path="${iajc.dest}.javac"/>
       </ant:inpath>
     </ant:iajc>
   </goal>
