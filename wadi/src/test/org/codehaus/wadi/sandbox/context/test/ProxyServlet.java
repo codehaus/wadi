@@ -66,16 +66,11 @@ public class ProxyServlet implements Servlet {
 		HttpServletRequest hreq=(HttpServletRequest)req;
 		HttpServletResponse hres=(HttpServletResponse)res;
 
-		if (!_proxy.canProxy(hreq)) {
-			_log.info("request not proxyable: "+hreq.getRequestURL());
-			// so we can't do anything about it...
-			return;
-		}
-
-		if (!_proxy.isStateful(hreq)) {
-			_log.warn("request not stateful: "+hreq.getMethod()+" - "+hreq.getRequestURI());
-			// still needs to be proxied as we don't have the webapp here...
-		}
+//		if (!_proxy.canProxy(hreq)) {
+//			_log.info("request not proxyable: "+hreq.getRequestURL());
+//			// so we can't do anything about it...
+//			return;
+//		}
 
 		InetSocketAddress location=null;
 		try {
@@ -121,8 +116,8 @@ public class ProxyServlet implements Servlet {
 		{
 			Server server=new Server();
 			SocketListener listener=new SocketListener(new InetAddrPort(8080));
-			listener.setMinThreads(1000);
-			listener.setMaxThreads(2000);
+			listener.setMinThreads(1);
+			//listener.setMaxThreads(2000);
 			server.addListener(listener);
 			ServletHttpContext context=(ServletHttpContext)server.getContext("/");
 			context.addServlet("Proxy", "/", ProxyServlet.class.getName());
@@ -131,8 +126,8 @@ public class ProxyServlet implements Servlet {
 		{
 			Server server=new Server();
 			SocketListener listener=new SocketListener(new InetAddrPort(8081));
-			listener.setMinThreads(1000);
-			listener.setMaxThreads(2000);
+			listener.setMinThreads(1);
+			//listener.setMaxThreads(2000);
 			server.addListener(listener);
 			ServletHttpContext context=(ServletHttpContext)server.getContext("/");
 			context.addServlet("RemoteDetails", "/", RemoteDetailsServlet.class.getName());

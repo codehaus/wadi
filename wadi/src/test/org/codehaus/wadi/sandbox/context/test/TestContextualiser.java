@@ -417,10 +417,10 @@ public class TestContextualiser extends TestCase {
 
 	static class MyLocation implements Location, Serializable {
 		public long getExpiryTime(){return 0;}
-		public Context proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionMutex) {
+		public boolean proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionMutex) {
 			promotionMutex.release();
 			System.out.println("PROXYING TO: "+id);
-			return null;
+			return true;
 		}
 	}
 
