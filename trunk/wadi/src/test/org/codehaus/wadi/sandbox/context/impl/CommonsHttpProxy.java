@@ -21,11 +21,9 @@ package org.codehaus.wadi.sandbox.context.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
+import java.net.InetSocketAddress;
 import java.util.Enumeration;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -56,11 +54,9 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 	 * @see javax.servlet.Servlet#service(javax.servlet.ServletRequest,
 	 *      javax.servlet.ServletResponse)
 	 */
-	public void proxy2(ServletRequest req, ServletResponse res, URL url) throws IOException	{
-		HttpServletRequest hreq = (HttpServletRequest) req;
-		HttpServletResponse hres = (HttpServletResponse) res;
+	public void proxy2(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res) throws IOException	{
 
-	    String m=hreq.getMethod();
+	    String m=req.getMethod();
 
 	    HttpMethod httpMethod=null;
 	    if ("GET".equals(m))
@@ -73,18 +69,22 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 	    	return;
 	    }
 	    
-	    String contextPath=hreq.getContextPath();
-	    contextPath=contextPath==null?"":contextPath;
-	    String servletPath=hreq.getServletPath();
-	    servletPath=servletPath==null?"":servletPath;
-	    httpMethod.setPath(contextPath+servletPath);// TODO - url params ?
-	    httpMethod.setQueryString(hreq.getQueryString());
+	    String contextPath=req.getContextPath();
+	    contextPath=(contextPath==null?"":contextPath);
+	    String servletPath=req.getServletPath();
+	    servletPath=(servletPath==null?"":servletPath);
+	    String path=contextPath+servletPath;
+	    httpMethod.setPath(path);// TODO - url params ?
+	    String queryString=req.getQueryString();
+    	httpMethod.setQueryString(queryString);
+
+	    String uri=path+(queryString==null?"":("?"+queryString)); // used later
 	    httpMethod.setFollowRedirects(false);
 
 		long startTime=System.currentTimeMillis();
 
 		// check connection header
-		String connectionHdr = hreq.getHeader("Connection"); // TODO - what if there are multiple values ?
+		String connectionHdr = req.getHeader("Connection"); // TODO - what if there are multiple values ?
 		if (connectionHdr != null) {
 			connectionHdr = connectionHdr.toLowerCase();
 			if (connectionHdr.equals("keep-alive")|| connectionHdr.equals("close"))
@@ -95,7 +95,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		boolean xForwardedFor = false;
 		boolean hasContent = false;
 		int contentLength=0;
-		Enumeration enm = hreq.getHeaderNames();
+		Enumeration enm = req.getHeaderNames();
 		while (enm.hasMoreElements()) {
 			// TODO could be better than this! - using javax.servlet ?
 			String hdr = (String) enm.nextElement();
@@ -108,10 +108,10 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 
 			if ("content-length".equals(lhdr)) {
 				try {
-					contentLength=hreq.getIntHeader(hdr);
+					contentLength=req.getIntHeader(hdr);
 					hasContent=contentLength>0;
 				} catch (NumberFormatException e) {
-					_log.info("bad Content-Length header value: "+hreq.getHeader(hdr), e);
+					_log.info("bad Content-Length header value: "+req.getHeader(hdr), e);
 				}
 			}
 				
@@ -120,7 +120,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 			}
 			
 			
-			Enumeration vals = hreq.getHeaders(hdr);
+			Enumeration vals = req.getHeaders(hdr);
 			while (vals.hasMoreElements()) {
 				String val = (String) vals.nextElement();
 				if (val != null) {
@@ -141,7 +141,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		// map onto each other without data loss...
 		HttpState state=new HttpState();
 		//state.setCookiePolicy(CookiePolicy.COMPATIBILITY);
-		javax.servlet.http.Cookie[] cookies=hreq.getCookies();
+		javax.servlet.http.Cookie[] cookies=req.getCookies();
 		if (cookies!=null)
 		{
 			for (int i=0;i<cookies.length;i++)
@@ -149,17 +149,17 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 				javax.servlet.http.Cookie c=cookies[i];
 				String domain=c.getDomain();
 				if (domain==null) {
-					domain=hreq.getServerName(); // TODO - tmp test
+					domain=req.getServerName(); // TODO - tmp test
 					//_log.warn("defaulting cookie domain");
 				}
 				//	  domain=null;
-				String path=c.getPath();
-				if (path==null) {
-					path=hreq.getContextPath(); // fix for Jetty
+				String cpath=c.getPath();
+				if (cpath==null) {
+					cpath=req.getContextPath(); // fix for Jetty
 					//_log.warn("defaulting cookie path");
 				}
 				//if (_log.isTraceEnabled()) _log.trace("PATH: value="+path+" length="+(path==null?0:path.length()));
-				Cookie cookie=new Cookie(domain, c.getName(), c.getValue(), path, c.getMaxAge(), c.getSecure()); // TODO - sort out domain
+				Cookie cookie=new Cookie(domain, c.getName(), c.getValue(), cpath, c.getMaxAge(), c.getSecure()); // TODO - sort out domain
 				//if (_log.isTraceEnabled()) _log.trace("Cookie: "+cookie.getDomain()+","+ cookie.getName()+","+ cookie.getValue()+","+ cookie.getPath()+","+ cookie.getExpiryDate()+","+ cookie.getSecure());
 				state.addCookie(cookie);
 				//if (_log.isTraceEnabled()) _log.trace("Cookie: "+cookie.toString());
@@ -169,7 +169,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		// Proxy headers
 		httpMethod.setRequestHeader("Via", "1.1 (WADI)");
 		if (!xForwardedFor)
-			httpMethod.setRequestHeader("X-Forwarded-For", hreq.getRemoteAddr());
+			httpMethod.setRequestHeader("X-Forwarded-For", req.getRemoteAddr());
 
 		// a little bit of cache control
 //		String cache_control = hreq.getHeader("Cache-Control");
@@ -184,7 +184,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 //			uc.setDoOutput(true);
 			
 			if (httpMethod instanceof EntityEnclosingMethod)
-				((EntityEnclosingMethod)httpMethod).setRequestBody(hreq.getInputStream());
+				((EntityEnclosingMethod)httpMethod).setRequestBody(req.getInputStream());
 			// TODO - do we need to close response stream at end... ?
 		}
 
@@ -192,7 +192,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		{
 			HttpClient client=new HttpClient();
 			HostConfiguration hc=new HostConfiguration();
-			hc.setHost(hreq.getServerName(), hreq.getServerPort());
+			hc.setHost(location.getAddress().getHostAddress(), location.getPort());
 			client.executeMethod(hc, httpMethod, state);
 		}
 		catch (IOException e)	// TODO
@@ -208,7 +208,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		
 		code=httpMethod.getStatusCode(); // IOException
 		message=httpMethod.getStatusText(); // IOException
-		hres.setStatus(code, message);
+		res.setStatus(code, message);
 		
 		try {
 			fromServer=httpMethod.getResponseBodyAsStream(); // IOException
@@ -218,8 +218,8 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		
 		
 		// clear response defaults.
-		hres.setHeader("Date", null);
-		hres.setHeader("Server", null);
+		res.setHeader("Date", null);
+		res.setHeader("Server", null);
 		
 		// set response headers
 		// TODO - is it a bug in Jetty that I have to start my loop at 1 ? or that key[0]==null ?
@@ -231,18 +231,18 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 			String key=h.substring(0, index).trim().toLowerCase();
 			String val=h.substring(index+1, h.length()).trim();
 			if (val!=null && !_DontProxyHeaders.contains(key)) {
-				hres.addHeader(key, val);
+				res.addHeader(key, val);
 				//_log.info("Response: "+key+" - "+val);
 			}
 		}
 		
-		hres.addHeader("Via", "1.1 (WADI)");
+		res.addHeader("Via", "1.1 (WADI)");
 
 		// copy server->client
 		int server2ClientTotal=0;
 		if (fromServer!=null) {
 			try {
-				OutputStream toClient=hres.getOutputStream();// IOException
+				OutputStream toClient=res.getOutputStream();// IOException
 				server2ClientTotal+=copy(fromServer, toClient, 8192);// IOException
 			} catch (IOException e) {
 				_log.info("problem proxying server response back to client", e);
@@ -258,6 +258,6 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 
 		long endTime=System.currentTimeMillis();
 		long elapsed=endTime-startTime;
-		_log.info("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:"+url);
+		_log.info("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:"+location.getHostName()+":"+location.getPort()+"/"+uri);
 	}
 }

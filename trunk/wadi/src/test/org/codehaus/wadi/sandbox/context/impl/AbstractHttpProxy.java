@@ -19,12 +19,10 @@ package org.codehaus.wadi.sandbox.context.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
+import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -75,7 +73,7 @@ public abstract class AbstractHttpProxy implements HttpProxy {
 	// proxyable
 	protected Pattern _proxyableSchemes=Pattern.compile("HTTP", Pattern.CASE_INSENSITIVE);
 
-	public boolean canProxy(ServletRequest req) {
+	public boolean canProxy(HttpServletRequest req) {
 		String scheme=req.getScheme();
 		return _proxyableSchemes.matcher(scheme).matches();
 	}
@@ -133,27 +131,25 @@ public abstract class AbstractHttpProxy implements HttpProxy {
 	}
 
 	// move this into ProxyServlet...
-	public void proxy(ServletRequest req, ServletResponse res, URL url)	{
+	public void proxy(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res)	{
 		// we could check to scheme here as well - http only supported...
-
+		
 		try {
-			proxy2(req, res, url);
+			proxy2(location, req, res);
 		} catch (IOException e) {
-			if (res instanceof HttpServletResponse) {
-				HttpServletResponse hres = (HttpServletResponse) res;
-				hres.setHeader("Date", null);
-				hres.setHeader("Server", null);
-				hres.addHeader("Via", "1.1 (WADI)");
-				// hres.setStatus(502, message);
-				try {
-					_log.warn("could not establish connection to server: "+url, e);
-					hres.sendError(502, "Bad Gateway: proxy could not establish connection to server"); // TODO - why do we need to use sendError ?
-				} catch (IOException e2) {
-					_log.warn("could not return error to client", e2);
-				}
+			HttpServletResponse hres = (HttpServletResponse) res;
+			hres.setHeader("Date", null);
+			hres.setHeader("Server", null);
+			hres.addHeader("Via", "1.1 (WADI)");
+			// hres.setStatus(502, message);
+			try {
+				_log.warn("could not establish connection to location: "+location, e);
+				hres.sendError(502, "Bad Gateway: proxy could not establish connection to server"); // TODO - why do we need to use sendError ?
+			} catch (IOException e2) {
+				_log.warn("could not return error to client", e2);
 			}
 		}
 	}
 
-	public abstract void proxy2(ServletRequest req, ServletResponse res, URL url) throws IOException;
+	public abstract void proxy2(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res) throws IOException;
 }

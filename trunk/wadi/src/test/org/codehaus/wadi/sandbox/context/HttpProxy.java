@@ -17,11 +17,10 @@
 package org.codehaus.wadi.sandbox.context;
 
 import java.io.Serializable;
-import java.net.URL;
+import java.net.InetSocketAddress;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * TODO - JavaDoc this type
@@ -30,8 +29,7 @@ import javax.servlet.http.HttpServletRequest;
  * @version $Revision$
  */
 public interface HttpProxy extends Serializable {
-	// move this into ProxyServlet...
-	public boolean canProxy(ServletRequest req);
+	public boolean canProxy(HttpServletRequest req);
 	public boolean isStateful(HttpServletRequest hreq);
-	public void proxy(ServletRequest req, ServletResponse res, URL url);
+	public void proxy(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res);
 }

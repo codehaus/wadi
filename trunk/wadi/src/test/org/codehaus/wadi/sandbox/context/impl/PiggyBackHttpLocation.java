@@ -18,6 +18,8 @@ package org.codehaus.wadi.sandbox.context.impl;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -76,7 +78,7 @@ public class PiggyBackHttpLocation implements Location {
 		}
 	}
 
-	public Context proxy(ServletRequest req, ServletResponse res, String id, Sync promotionLock) {
+	public Context proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) {
 		// Either we pull the context across the connection and return it...
 
 		synchronized (_countLock) {

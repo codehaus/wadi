@@ -17,7 +17,7 @@
 package org.codehaus.wadi.sandbox.context.test;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.InetSocketAddress;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -26,6 +26,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -63,8 +64,9 @@ public class ProxyServlet implements Servlet {
 	throws ServletException, IOException {
 
 		HttpServletRequest hreq=(HttpServletRequest)req;
+		HttpServletResponse hres=(HttpServletResponse)res;
 
-		if (!_proxy.canProxy(req)) {
+		if (!_proxy.canProxy(hreq)) {
 			_log.info("request not proxyable: "+hreq.getRequestURL());
 			// so we can't do anything about it...
 			return;
@@ -75,15 +77,8 @@ public class ProxyServlet implements Servlet {
 			// still needs to be proxied as we don't have the webapp here...
 		}
 
-		String uri=hreq.getRequestURI();
-		String qs=hreq.getQueryString();
-		if (qs!=null) {
-			uri=new StringBuffer(uri).append("?").append(qs).toString();
+		_proxy.proxy(new InetSocketAddress(req.getServerName(), req.getServerPort()), hreq, hres);
 		}
-
-		URL url=new URL(req.getScheme(), req.getServerName(), req.getServerPort(), uri);
-		_proxy.proxy(req, res, url); // TODO - why a URL - expensive...
-	}
 
 	public String getServletInfo() {
 		return "Proxy Servlet";

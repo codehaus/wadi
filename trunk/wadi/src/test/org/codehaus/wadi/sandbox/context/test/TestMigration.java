@@ -59,6 +59,7 @@ import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.context.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
+import org.codehaus.wadi.sandbox.context.impl.StandardHttpProxy;
 import org.mortbay.http.SocketListener;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.FilterHolder;
@@ -239,7 +240,7 @@ public class TestMigration extends TestCase {
 			_cluster.start();
 			_collapser=new HashingCollapser(10, 2000);
 			_clusterMap=new HashMap();
-			_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), _cluster, 2000, 3000, new HttpProxyLocation(location));
+			_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), _cluster, 2000, 3000, new HttpProxyLocation(location, new StandardHttpProxy()));
 			_memoryMap=new HashMap();
 			_memoryContextualiser=new MemoryContextualiser(_clusterContextualiser, _collapser, _memoryMap, new NeverEvicter(), new MyContextPool());
 			_clusterContextualiser.setContextualiser(_memoryContextualiser);
