@@ -16,6 +16,7 @@
 */
 package org.codehaus.wadi.sandbox.context.test;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -44,19 +45,20 @@ import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Emoter;
 import org.codehaus.wadi.sandbox.context.Evicter;
+import org.codehaus.wadi.sandbox.context.HttpProxy;
 import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.Motable;
-import org.codehaus.wadi.sandbox.context.Moter;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.ChainedEmoter;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyCollapser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
-import org.codehaus.wadi.sandbox.context.impl.EmigrationAcknowledgement;
+import org.codehaus.wadi.sandbox.context.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
+import org.codehaus.wadi.sandbox.context.impl.StandardHttpProxy;
 import org.codehaus.wadi.sandbox.context.impl.Utils;
 
 import junit.framework.TestCase;
@@ -122,13 +124,12 @@ public class TestCluster extends TestCase {
 			_cluster=(MyCluster)factory.createCluster(clusterName);
 			_cluster.addClusterListener(new MyClusterListener());
 			_dispatcher=new MessageDispatcher(_cluster);
-//			InetSocketAddress isa0=new InetSocketAddress("localhost", 8080);
-//			HttpProxy proxy0=new StandardHttpProxy("jsessionid");
-//			_location0=new HttpProxyLocation(_cluster0.getLocalNode().getDestination(), isa0, proxy0);
-//			_relocater0=new SwitchableRelocationStrategy();
-			_location=null;
+			InetSocketAddress isa=new InetSocketAddress("localhost", 8080);
+			HttpProxy proxy=new StandardHttpProxy("jsessionid");
+			_location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), isa, proxy);
+			//_relocater=new SwitchableRelocationStrategy();
 			_relocater=null;
-			_bottom=new ClusterContextualiser(new DummyContextualiser(), _collapser, _cmap, _evicter, _dispatcher, _relocater);
+			_bottom=new ClusterContextualiser(new DummyContextualiser(), _collapser, _cmap, _evicter, _dispatcher, _relocater, _location);
 			_top=new MemoryContextualiser(_bottom, _collapser, _mmap, _evicter, new SimpleStreamingStrategy(), new MyContextPool());
 			_bottom.setTop(_top);
 		}
@@ -197,15 +198,15 @@ public class TestCluster extends TestCase {
 		ClusterContextualiser c=_node0.getClusterContextualiser();
 		Destination queue=_node0.getCluster().createQueue("EMIGRATION");
 		
+		int numContexts=100;
 		c.setEmigrationQueue(queue);
-		for (int i=0; i<100; i++) {
+		for (int i=0; i<numContexts; i++) {
 			String id="session-"+i;
 			Motable emotable=new MyContext(id);
 			Immoter immoter=c.getDemoter(id, emotable);
 			Emoter emoter=new ChainedEmoter(){public String getInfo(){return "ether";}}; // sessions are coming from us..
 			Utils.mote(emoter, immoter, emotable, id);
 		}
-		
 		// demote n Contexts into node0
 		// they should be distributed to nodes 1 and 2
 		// node0 should have 0 Contexts
@@ -214,7 +215,10 @@ public class TestCluster extends TestCase {
 		int s2=_node2.getMemoryContextualiserMap().size();
 		_log.info("dispersal - n1:"+s1+", n2:"+s2);
 		assertTrue(s1+s2==100);
-		
+
+		assertTrue(numContexts==_node0.getClusterContextualiserMap().size());
+		_log.info("new locations: "+_node0.getClusterContextualiserMap());
+
 		// as they shut down more exciting stuff should happen...
 	}
 }
