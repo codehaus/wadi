@@ -116,8 +116,21 @@ public class
 	// Ensure that Manager.get() is called before entry (this may
 	// have already happened) - this will pull in and lock our
 	// session even if remote.
-	if((impl=_manager.get(realId))!=null && // KEEP
-	   ((HttpSession)impl.getFacade()).isValid())
+	if((impl=_manager.get(realId))==null)
+	{
+	  if (!_manager.getDistributable())
+	  {
+	    // we cannot relocate the session to this request, so we
+	    // must relocate the request to the session...
+	    ManagerProxy proxy=_manager.locate(realId);
+	    if (proxy!=null)
+	    {
+	      proxy.relocateRequest(req, res, _manager);
+	      return;
+	    }
+	  }
+	}
+	else if (((HttpSession)impl.getFacade()).isValid())
 	{
 	  // restick lb to this node if necessary...
 	  if (req.isRequestedSessionIdFromCookie())
