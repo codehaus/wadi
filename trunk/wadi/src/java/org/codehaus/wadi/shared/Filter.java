@@ -246,6 +246,13 @@ public class
     doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
     throws IOException, ServletException
   {
+    if (!(request instanceof HttpServletRequest && response instanceof HttpServletResponse))
+      {
+	_log.warn("not an HttpServlet req/res pair - therefore stateless - ignored by WADI");
+	chain.doFilter(request, response);
+	return;
+      }
+
     HttpServletRequest req=(HttpServletRequest)request;
     HttpServletResponse res=(HttpServletResponse)response;
     String id=req.getRequestedSessionId();
