@@ -14,16 +14,13 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package org.codehaus.wadi.sandbox.context.impl.jetty;
+package org.codehaus.wadi.sandbox.context.test;
 
-/**
- * TODO - JavaDoc this type
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
+import org.codehaus.wadi.sandbox.context.Context;
+import org.codehaus.wadi.sandbox.context.ContextPool;
 
-public interface Securable {
-	public boolean getSecure();
-	public void setSecure(boolean secure);
+
+public class MyContextPool implements ContextPool {
+	public void put(Context context){}
+	public Context take(){return new MyContext();}
 }

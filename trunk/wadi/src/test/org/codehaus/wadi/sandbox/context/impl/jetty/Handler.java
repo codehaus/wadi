@@ -17,11 +17,13 @@
 package org.codehaus.wadi.sandbox.context.impl.jetty;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.context.impl.AbstractHttpProxy;
+import org.codehaus.wadi.sandbox.context.Securable;
 import org.mortbay.http.HttpException;
+import org.mortbay.http.HttpRequest;
 import org.mortbay.http.HttpResponse;
 import org.mortbay.http.handler.AbstractHttpHandler;
 
@@ -33,22 +35,27 @@ import org.mortbay.http.handler.AbstractHttpHandler;
  */
 
 public class Handler extends AbstractHttpHandler {
-	protected Log _log = LogFactory.getLog(getClass());
-
-	public void handle(String pathInContext, String pathParams, org.mortbay.http.HttpRequest request, HttpResponse response) throws HttpException, IOException {
-		if (isProxied(request) && hasSecureOrigin(request)) {
-			// TODO - we should check the remote end's IP against a regexp to ensure
-			// that we are not being spoofed...
-			_log.info("securing proxied request: "+request.getRequestURL());
-			((Securable)request.getHttpConnection()).setSecure(true);
-		}
-	}
+	protected final Log _log=LogFactory.getLog(getClass());
+	protected final Pattern _trustedIps;
 	
-	protected boolean isProxied(org.mortbay.http.HttpRequest request) {
-		return request.containsField("X-Forwarded-For");
+	public Handler(Pattern trustedIps) {
+		_trustedIps=trustedIps;		
 	}
 
-	protected boolean hasSecureOrigin(org.mortbay.http.HttpRequest request) {
-		return request.containsField(AbstractHttpProxy._WADI_IsSecure);
+	public void handle(String pathInContext, String pathParams, HttpRequest request, HttpResponse response) throws HttpException, IOException {
+		// request must have been :
+		//  proxied by WADI
+		String field=request.getField("Via");
+		if (field!=null && field.endsWith("\"WADI\"")) { // TODO - should we ignore case ?
+			String ip=request.getRemoteAddr();
+			//  from a trusted IP...
+			if (_trustedIps.matcher(ip).matches()) {
+				_log.info("securing proxied request: "+request.getRequestURL());
+				((Securable)request.getHttpConnection()).setSecure(true);
+			} else {
+				// otherwise we have a configuration issue or are being spoofed...
+				_log.warn("purported WADI request arrived from suspect IP address: "+_trustedIps.pattern()+" !~ "+ip);
+			}
+		}
 	}
 }

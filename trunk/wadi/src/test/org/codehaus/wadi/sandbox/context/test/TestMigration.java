@@ -17,25 +17,10 @@
 package org.codehaus.wadi.sandbox.context.test;
 
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -43,37 +28,9 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
 import org.codehaus.activecluster.ClusterFactory;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
-import org.codehaus.wadi.sandbox.context.Collapser;
-import org.codehaus.wadi.sandbox.context.Context;
-import org.codehaus.wadi.sandbox.context.ContextPool;
-import org.codehaus.wadi.sandbox.context.Contextualiser;
-import org.codehaus.wadi.sandbox.context.Evicter;
-import org.codehaus.wadi.sandbox.context.Motable;
-import org.codehaus.wadi.sandbox.context.Promoter;
-import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
-import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
-import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
-import org.codehaus.wadi.sandbox.context.impl.HttpProxyLocation;
-import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
-import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
-import org.codehaus.wadi.sandbox.context.impl.StandardHttpProxy;
-import org.codehaus.wadi.sandbox.context.impl.jetty.Handler;
-import org.codehaus.wadi.sandbox.context.impl.jetty.SocketListener;
-import org.mortbay.http.HttpHandler;
-import org.mortbay.http.SecurityConstraint;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.servlet.FilterHolder;
-import org.mortbay.jetty.servlet.ServletHolder;
-import org.mortbay.jetty.servlet.WebApplicationContext;
-import org.mortbay.jetty.servlet.WebApplicationHandler;
-
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 import junit.framework.TestCase;
 
@@ -90,242 +47,12 @@ import junit.framework.TestCase;
 public class TestMigration extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
 	
-	public static class SwitchableListener extends SocketListener {
-		protected boolean _secure;
-		public boolean getSecure(){return _secure;}
-		public void setSecure(boolean secure){_secure=secure;}
-
-		public boolean isIntegral(org.mortbay.http.HttpConnection connection){return _secure||super.isIntegral(connection);}
-	    public boolean isConfidential(org.mortbay.http.HttpConnection connection){return _secure||super.isConfidential(connection);}
-	}
-	
-	class Node {
-		protected final Log _log;
-		protected final Server _server=new Server();
-		protected final SwitchableListener _listener=new SwitchableListener();
-		protected final WebApplicationContext _context=new WebApplicationContext();
-		protected final WebApplicationHandler _handler=new WebApplicationHandler();
-		protected final FilterHolder _filterHolder;
-		protected final ServletHolder _servletHolder;
-		protected final Filter _filter;
-		protected final Servlet _servlet;
-		protected final HttpHandler _whandler;
-		
-		public Node(String name, String host, int port, String context, String pathSpec, Filter filter, Servlet servlet) throws UnknownHostException {
-			_log=LogFactory.getLog(getClass().getName()+"#"+name);
-			// filter
-			String filterName="Filter";
-			_filterHolder=new FilterHolder(_handler, filterName, FilterInstance.class.getName());
-			_handler.addFilterHolder(_filterHolder);
-			_handler.addFilterPathMapping(pathSpec, filterName, FilterHolder.__REQUEST);
-			//servlet
-			String servletName="Servlet";
-			_servletHolder=new ServletHolder(_handler, servletName, ServletInstance.class.getName());
-			_handler.addServletHolder(_servletHolder);
-			_handler.mapPathToServlet(pathSpec, servletName);
-			// handler
-			_context.addHandler(_handler);
-			// context
-			_context.setContextPath(context);
-			
-			// security - any resource mapped below /confidential requires confidential transport
-			SecurityConstraint sc=new SecurityConstraint();
-			sc.setDataConstraint(SecurityConstraint.DC_CONFIDENTIAL);
-			_context.addSecurityConstraint("/confidential/*", sc);
-			
-			// handler
-			_whandler=new Handler();
-			_context.addHandler(0, _whandler);			
-			
-			_server.addContext(_context);
-			// listener
-			_listener.setHost(host);
-			_listener.setPort(port);
-			_server.addListener(_listener);
-			_filter=filter;
-			_servlet=servlet;
-		}
-
-		public Filter getFilter(){return _filter;}
-		public Servlet getServlet(){return _servlet;}
-		public SwitchableListener getListener(){return _listener;}
-		
-		public void start() throws Exception {
-			_server.start();
-			((FilterInstance)_filterHolder.getFilter()).setInstance(_filter);
-			((ServletInstance)_servletHolder.getServlet()).setInstance(_servlet);
-		}
-		
-		public void stop() throws Exception {
-			_server.stop();
-		}
-	}
-	
-	public class TestFilter implements Filter {
-		protected final Log _log;
-		protected final TestServlet _servlet;
-		
-		public TestFilter(String name, TestServlet servlet) {
-			_log=LogFactory.getLog(getClass().getName()+"#"+name);
-			_servlet=servlet;
-		}
-		
-		public void init(FilterConfig config) throws ServletException {
-			_log.info("Filter.init()");
-		}
-		
-		public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
-		throws ServletException, IOException {
-			String sessionId=((HttpServletRequest)req).getRequestedSessionId();
-			_log.info("Filter.doFilter("+((sessionId==null)?"":sessionId)+")"+(req.isSecure()?" - SECURE":""));
-			boolean found=_servlet.getContextualiser().contextualise(req, res, chain, sessionId, null, null, _localOnly);
-			
-			if (!found)
-				((HttpServletResponse)res).sendError(410, "could not locate session: "+sessionId);
-		}
-		
-		public void destroy() {}
-		
-		protected boolean _localOnly=false;
-		public void setLocalOnly(boolean localOnly){_localOnly=localOnly;}
-	}
-	
-	class MyEvicter implements Evicter{
-		long _remaining;
-
-		MyEvicter(long remaining) {
-			_remaining=remaining;
-		}
-
-		public boolean evict(String id, Motable m) {
-			long expiry=m.getExpiryTime();
-			long current=System.currentTimeMillis();
-			long left=expiry-current;
-			boolean evict=(left<=_remaining);
-
-			//_log.info((!evict?"not ":"")+"evicting: "+id);
-
-			return evict;
-		}
-	}
-
-	class MyContext implements Context {
-		String _val;
-		ReadWriteLock _lock=new ReaderPreferenceReadWriteLock();
-		long _expiryTime;
-
-		MyContext(String val) {
-			this(val, System.currentTimeMillis()+(30*1000));
-		}
-
-		MyContext(String val, long expiryTime) {
-			_val=val;
-			_expiryTime=expiryTime;
-		}
-
-		MyContext() {}
-
-		public Sync getSharedLock(){return _lock.readLock();}
-		public Sync getExclusiveLock(){return _lock.writeLock();}
-
-		// Motable...
-
-		public long getExpiryTime(){return _expiryTime;}
-
-		// SerializableContext...
-
-		public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-			_val=(String)oi.readObject();
-		}
-
-		public void writeContent(ObjectOutput oo) throws IOException, ClassNotFoundException {
-			oo.writeObject(_val);
-		}
-	}
-
-	class MyContextPool implements ContextPool {
-		public void put(Context context){}
-		public Context take(){return new MyContext();}
-	}
-
-	public class ConfidentialContextualiser implements Contextualiser {
-
-		protected final Contextualiser _next;
-		
-		public ConfidentialContextualiser(Contextualiser next){_next=next;}
-		
-		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
-			return _next.contextualise(req, res, chain, id, promoter, promotionMutex, localOnly);
-		}
-
-		public void evict(){}
-		public void demote(String key, Motable val){}{}
-		public boolean isLocal(){return true;}
-	}
-	
-	public class TestServlet implements Servlet {
-		protected ServletConfig _config;
-		protected final Log _log;
-		protected final Cluster _cluster;
-		protected final Collapser _collapser;
-		protected final Map _clusterMap;
-		protected final Map _memoryMap;
-		protected final ClusterContextualiser _clusterContextualiser;
-		protected final MemoryContextualiser _memoryContextualiser;
-		protected final ConfidentialContextualiser _confidentialContextualiser;
-		
-		public TestServlet(String name, Cluster cluster, InetSocketAddress location) throws Exception {
-			_log=LogFactory.getLog(getClass().getName()+"#"+name);
-			_cluster=cluster;
-			_cluster.start();
-			_collapser=new HashingCollapser(10, 2000);
-			_clusterMap=new HashMap();
-			_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), _cluster, 2000, 3000, new HttpProxyLocation(location, new StandardHttpProxy()));
-			_memoryMap=new HashMap();
-			_memoryContextualiser=new MemoryContextualiser(_clusterContextualiser, _collapser, _memoryMap, new NeverEvicter(), new MyContextPool());
-			_clusterContextualiser.setContextualiser(_memoryContextualiser);
-			_confidentialContextualiser=new ConfidentialContextualiser(_memoryContextualiser);
-		}
-		
-		public Contextualiser getContextualiser(){return _confidentialContextualiser;}
-		
-		public void init(ServletConfig config) throws ServletException {
-			_config = config;
-			_log.info("Servlet.init()");
-		}
-
-		public ServletConfig getServletConfig() {
-			return _config;
-		}
-
-		public void service(ServletRequest req, ServletResponse res)
-				throws ServletException, IOException {
-			String sessionId=((HttpServletRequest)req).getRequestedSessionId();
-			_log.info("Servlet.service("+((sessionId==null)?"":sessionId)+")");
-		}
-
-		public String getServletInfo() {
-			return "Test Servlet";
-		}
-
-		public void destroy() {
-			try {
-			_cluster.stop();
-			} catch (JMSException e) {
-				_log.warn(e);
-			}
-		}
-		
-		public Map getClusterMap(){return _clusterMap;}
-		public Map getMemoryMap(){return _memoryMap;}
-	}
-	
 	protected Node _node0;
 	protected Node _node1;
-	protected TestFilter _filter0;
-	protected TestFilter _filter1;
-	protected TestServlet _servlet0;
-	protected TestServlet _servlet1;
+	protected MyFilter _filter0;
+	protected MyFilter _filter1;
+	protected MyServlet _servlet0;
+	protected MyServlet _servlet1;
 	
 	/*
 	 * @see TestCase#setUp()
@@ -336,12 +63,12 @@ public class TestMigration extends TestCase {
 		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
 		ClusterFactory clusterFactory       = new DefaultClusterFactory(connectionFactory);
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
-		_servlet0=new TestServlet("0", clusterFactory.createCluster(clusterName), new InetSocketAddress("localhost", 8080));
-		_filter0=new TestFilter("0", _servlet0);
-		(_node0=new Node("0", "localhost", 8080, "/test", "/*", _filter0, _servlet0)).start();
-		_servlet1=new TestServlet("1", clusterFactory.createCluster(clusterName), new InetSocketAddress("localhost", 8081));
-		_filter1=new TestFilter("1", _servlet1);
-		(_node1=new Node("1", "localhost", 8081, "/test", "/*", _filter1, _servlet1)).start();
+		_servlet0=new MyServlet("0", clusterFactory.createCluster(clusterName), new InetSocketAddress("localhost", 8080), new MyContextPool());
+		_filter0=new MyFilter("0", _servlet0);
+		(_node0=new JettyNode("0", "localhost", 8080, "/test", "/*", _filter0, _servlet0)).start();
+		_servlet1=new MyServlet("1", clusterFactory.createCluster(clusterName), new InetSocketAddress("localhost", 8081), new MyContextPool());
+		_filter1=new MyFilter("1", _servlet1);
+		(_node1=new JettyNode("1", "localhost", 8081, "/test", "/*", _filter1, _servlet1)).start();
 	}
 	
 	/*
@@ -452,7 +179,7 @@ public class TestMigration extends TestCase {
 		assertTrue(get(client, method0, "/test/confidential;jsessionid=foo")==403); // forbidden
 		// won't run remotely
 		assertTrue(get(client, method0, "/test/confidential;jsessionid=bar")==403); // forbidden
-		_node0.getListener().setSecure(true);
+		_node0.setSecure(true);
 		
 		// will run locally - since we have declared the Listener secure
 		assertTrue(get(client, method0, "/test/confidential;jsessionid=foo")==200);

@@ -22,8 +22,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.context.Securable;
 import org.mortbay.http.HttpListener;
 
 /**
@@ -34,8 +33,6 @@ import org.mortbay.http.HttpListener;
  */
 
 public class SocketListener extends org.mortbay.http.SocketListener {
-	protected Log _log = LogFactory.getLog(getClass());
-
 	public static class HttpConnection extends org.mortbay.http.HttpConnection implements Securable {
 		
 		public HttpConnection(HttpListener listener, InetAddress remoteAddr, InputStream in, OutputStream out, Object connection) {

@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 // would be faster), but at least the Cookie headers can be copied straight across 
 // (see CommonsHttpProxy).
 
+// This does not yet support e.g. WebDav methods like PROPFIND etc...
 /**
  * Enterprise HttpProxy implementation.
  *
@@ -57,7 +58,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 			uri=new StringBuffer(uri).append("?").append(qs).toString();
 		}
 
-		URL url=new URL(req.getScheme(), location.getAddress().getHostAddress(), location.getPort(), uri);
+		URL url=new URL("http", location.getAddress().getHostAddress(), location.getPort(), uri);
 		
 		long startTime=System.currentTimeMillis();
 
