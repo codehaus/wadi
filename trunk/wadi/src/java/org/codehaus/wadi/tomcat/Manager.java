@@ -73,10 +73,12 @@ public class
   public DefaultContext getDefaultContext(){return _defaultContext;}
   public void setDefaultContext(DefaultContext defaultContext){_defaultContext=defaultContext;}
 
+  // actual notifications are done by aspects...
   protected PropertyChangeSupport _propertyChangeListeners=new PropertyChangeSupport(this);
   public void addPropertyChangeListener(PropertyChangeListener pcl){_propertyChangeListeners.addPropertyChangeListener(pcl);}
   public void removePropertyChangeListener(PropertyChangeListener pcl){_propertyChangeListeners.removePropertyChangeListener(pcl);}
 
+  // actual notifications are done by aspects...
   protected LifecycleSupport _lifecycleListeners=new LifecycleSupport(this);
   public void addLifecycleListener(LifecycleListener ll){_lifecycleListeners.addLifecycleListener(ll);}
   public void removeLifecycleListener(LifecycleListener ll){_lifecycleListeners.removeLifecycleListener(ll);}
@@ -159,6 +161,15 @@ public class
     start()
       throws LifecycleException
     {
+      try
+      {
+	super.start();
+      }
+      catch (Exception e)
+      {
+	throw new LifecycleException(e);
+      }
+
       if (_container==null)
 	throw new LifecycleException("container not yet set");
 
@@ -175,24 +186,20 @@ public class
       fm.setURLPattern("/*");
       context.addFilterMap(fm);
 
-      try
-      {
-	super.start();
-      }
-      catch (Exception e)
-      {
-	throw new LifecycleException(e);
-      }
-
       // add HttpSessionListeners - we copy them in from our Context -
       // the list should be immutable by now.
+
+      // TODO - this doesn't seem to work :-(
       Object listeners[] = context.getApplicationLifecycleListeners();
       if (listeners!=null)
 	for (int i=0; i<listeners.length; i++)
 	{
 	  Object tmp=listeners[i];
 	  if (!(tmp instanceof HttpSessionListener))
+	  {
+	    _log.trace("adding HttpSessionListener: "+tmp.getClass().getName());
 	    _sessionListeners.add(tmp);
+	  }
 	}
     }
 
