@@ -39,7 +39,7 @@ public class
   AsyncToSyncAdaptor
 {
   protected final Log _log     = LogFactory.getLog(getClass());
-  protected final Map _entries =Collections.synchronizedMap(new HashMap());
+  protected final Map _entries = Collections.synchronizedMap(new HashMap());
 
   public interface Sender {public void send(Object command) throws Exception;}
 
