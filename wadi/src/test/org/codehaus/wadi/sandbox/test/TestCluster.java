@@ -19,27 +19,14 @@ package org.codehaus.wadi.sandbox.test;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
 
-import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.Topic;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
 import org.codehaus.activecluster.ClusterException;
-import org.codehaus.activecluster.LocalNode;
-import org.codehaus.activecluster.impl.DefaultCluster;
-import org.codehaus.activecluster.impl.DefaultClusterFactory;
-import org.codehaus.activecluster.impl.ReplicatedLocalNode;
-import org.codehaus.activecluster.impl.StateService;
-import org.codehaus.activecluster.impl.StateServiceStub;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Collapser;
@@ -72,41 +59,6 @@ import junit.framework.TestCase;
 
 public class TestCluster extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
-
-	class MyCluster extends DefaultCluster {
-	    public MyCluster(final LocalNode localNode, Topic dataTopic, Topic destination, Connection connection, Session session, MessageProducer producer, Timer timer, long inactiveTime) throws JMSException {
-	    	super(localNode, dataTopic, destination, connection, session, producer, timer, inactiveTime);
-	    }
-
-	    public Destination createQueue(String name) throws JMSException {
-	    	return getSession().createQueue(name);
-	    }
-	}
-
-	class MyClusterFactory extends DefaultClusterFactory {
-		public MyClusterFactory(ConnectionFactory connectionFactory) {
-			super(connectionFactory);
-		}
-
-	    protected Cluster createCluster(Connection connection, Session session, Topic groupDestination) throws JMSException {
-	        Topic dataTopic=session.createTopic(getDataTopicPrefix()+groupDestination.getTopicName());
-	        MessageProducer producer=createProducer(session, null);
-	        producer.setDeliveryMode(getDeliveryMode());
-	        MessageProducer keepAliveProducer=session.createProducer(dataTopic);
-	        keepAliveProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-	        StateService serviceStub=new StateServiceStub(session, keepAliveProducer);
-	        Destination localInbox=null;
-	        if (isUseQueueForInbox()) {
-	            localInbox=session.createTemporaryQueue();
-	        } else {
-	            localInbox=session.createTemporaryTopic();
-	        }
-	        ReplicatedLocalNode localNode=new ReplicatedLocalNode(localInbox, serviceStub);
-	        Timer timer=new Timer();
-	        MyCluster answer=new MyCluster(localNode, dataTopic, groupDestination, connection, session, producer, timer, getInactiveTime());
-	        return answer;
-	    }
-	}
 
 	class MyNode {
 		protected final MyCluster _cluster;

@@ -75,6 +75,7 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 	public Emoter getEvictionEmoter(){return getEmoter();}
 	public abstract Sync getEvictionLock(String id, Motable motable);
 	
+	// FIXME - move this back to ChainedContextualiser
 	public void evict(String id, Motable emotable, long time) {
 	    Sync lock=getEvictionLock(id, emotable);
 	    boolean acquired=false;
