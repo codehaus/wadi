@@ -194,25 +194,27 @@ public class
     }
 
     if (_container==null)
-      throw new LifecycleException("container not yet set");
+      _log.warn("container not set - fn-ality will be limited");
+    else
+    {
+      Context context=((Context)_container);
 
-    Context context=((Context)_container);
+      // install filter
+      String filterName="WadiFilter";
+      FilterDef fd=new FilterDef();
+      fd.setFilterName(filterName);
+      fd.setFilterClass(Filter.class.getName());
+      context.addFilterDef(fd);
+      FilterMap fm=new FilterMap();
+      fm.setFilterName(filterName);
+      fm.setURLPattern("/*");
+      context.addFilterMap(fm);
 
-    // install filter
-    String filterName="WadiFilter";
-    FilterDef fd=new FilterDef();
-    fd.setFilterName(filterName);
-    fd.setFilterClass(Filter.class.getName());
-    context.addFilterDef(fd);
-    FilterMap fm=new FilterMap();
-    fm.setFilterName(filterName);
-    fm.setURLPattern("/*");
-    context.addFilterMap(fm);
-
-    // is this a distributable webapp ?
-    boolean distributable=context.getDistributable();
-    if (distributable && !_distributable)
-      setDistributable(distributable);
+      // is this a distributable webapp ?
+      boolean distributable=context.getDistributable();
+      if (distributable && !_distributable)
+	setDistributable(distributable);
+    }
   }
 
   public synchronized void
@@ -272,8 +274,9 @@ public class
 
   // I guess they are valid if we are using the AbsoluteEvictionPolicy
   // - otherwise we will just have to fake it :-)
-  public void setMaxActive(int maxActive){}
-  public int getMaxActive(){return 100000;}
+  protected int _maxActive=-1;
+  public void setMaxActive(int maxActive){_maxActive=maxActive;}
+  public int getMaxActive(){return _maxActive;}
 
   protected org.codehaus.wadi.HttpSessionImpl createImpl(){return new HttpSessionImpl();}
   protected void destroyImpl(org.codehaus.wadi.HttpSessionImpl impl){} // TODO - cache later

@@ -46,7 +46,10 @@ public class
     setUp()
     throws Exception
     {
+      javax.servlet.ServletContext servletContext=new ServletContext();
+      _jetty.setServletContext(servletContext);
       _jetty.start();
+      _tomcat.setServletContext(servletContext);
       _tomcat.start();
     }
 
@@ -69,6 +72,76 @@ public class
   public void
     testManagers()
     {
-      assertTrue(true);
+      {
+	String id=_jetty.newHttpSession().getId();
+	javax.servlet.http.HttpSession session=_jetty.getHttpSession(id);
+	assertTrue(session.getId()==id); // must be ==/same object
+
+	// what do we do about locking issues ?
+	//	session.invalidate();
+      }
+      {
+	org.apache.catalina.Session session=_tomcat.createSession();
+	_tomcat.add(session);
+	String id=session.getId();
+	session=null;
+	try
+	{
+	  session=_tomcat.findSession(id);
+	}
+	catch (java.io.IOException e)
+	{
+	  // this will cause a failure in the following assertation - no body
+	}
+	assertTrue(session.getId()==id); // must be ==/same object
+
+	// what do we do about locking issues ?
+	//	session.invalidate();
+      }
+      {
+	int i=45*60;
+	_jetty.setHouseKeepingInterval(i);
+	assertTrue(_jetty.getHouseKeepingInterval()==i);
+      }
+      {
+	String n="JSESSIONID";
+	assertTrue(_jetty.getSessionCookieName().equals(n));
+	assertTrue(_tomcat.getSessionCookieName().equals(n));
+      }
+      {
+	String n="jsessionid";
+	assertTrue(_jetty.getSessionUrlParamName().equals(n));
+	assertTrue(_tomcat.getSessionUrlParamName().equals(n));
+      }
+      {
+	String d=null;
+	assertTrue(_jetty.getSessionCookieDomain()==d);
+	assertTrue(_tomcat.getSessionCookieDomain()==d);
+      }
+      {
+	int n=-1;
+	_tomcat.setMaxActive(n);
+	assertTrue(_tomcat.getMaxActive()==n);
+      }
+      {
+	int n=1000;
+	_tomcat.setRejectedSessions(n);
+	assertTrue(_tomcat.getRejectedSessions()==n);
+      }
+      {
+	int n=1000;
+	_tomcat.setExpiredSessions(n);
+	assertTrue(_tomcat.getExpiredSessions()==n);
+      }
+      {
+	int n=1000;
+	_tomcat.setSessionCounter(n);
+	assertTrue(_tomcat.getSessionCounter()==n);
+      }
+//       {
+// 	int n=1000;
+// 	_tomcat.setActiveSessions(n);
+// 	assertTrue(_tomcat.getActiveSessions()==n);
+//       }
     }
 }

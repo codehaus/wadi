@@ -356,12 +356,10 @@ public abstract class
     _log.debug("starting");
     _log.info("WADI-0.9 - Web Application Distribution Infrastructure (http://wadi.codehaus.org)");
 
-    ServletContext ctx=getServletContext();
-
     // load config
     try
     {
-      InputStream is=ctx.getResourceAsStream(_configurationResource);
+      InputStream is=_servletContext.getResourceAsStream(_configurationResource);
       if (is!=null)
       {
 	new XmlConfiguration(is).configure(this);
@@ -374,7 +372,7 @@ public abstract class
     }
 
     // TODO - is putting ourselves in an attribute a security risk ?
-    ctx.setAttribute(Manager.class.getName(), this);
+    _servletContext.setAttribute(Manager.class.getName(), this);
     _loader=Thread.currentThread().getContextClassLoader();
     //      System.setSecurityManager(new SecurityManager(System.getSecurityManager()));// TODO
 
