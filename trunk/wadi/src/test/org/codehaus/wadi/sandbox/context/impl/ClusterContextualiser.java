@@ -244,7 +244,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		Location location=(Location)_map.get(id);
 		if (location!=null) {
 			// let's try the cached location...
-			 if (location.proxy(hreq, hres, id, promotionMutex)) {
+			 if (contextualiseLocally(hreq, hres, chain, id, promoter, promotionMutex, location)) {
 			 	return true;
 			 } else {
 				// cached location may have been stale i.e. not responding to http requests
@@ -264,7 +264,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			return false;
 		}
 		
-		if ((location.proxy(hreq, hres, id, promotionMutex))) {
+		if ((contextualiseLocally(hreq, hres, chain, id, promoter, promotionMutex, location))) {
 			return true;
 		} else {
 			// proxy failed
@@ -327,7 +327,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 					Set ids=response.getIds();
 					// update cache
 					// TODO - do we need to considering NOT putting any location that is the same ours into the map
-					// otherwise we may end up in a tight loop proxying to ourself... - could this happen ?gramps
+					// otherwise we may end up in a tight loop proxying to ourself... - could this happen ?
 
 					for (Iterator i=ids.iterator(); i.hasNext();) {
 						String tmp=(String)i.next();
@@ -350,5 +350,11 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		}
 
 		return location;
+	}
+	
+	protected boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, Location location) {
+		// how do we decide whether to proxy or migrate-n-promote ?
+		// Location needs to be a JMSDestination as well..
+		return location.proxy(hreq, hres, id, promotionMutex);
 	}
 }
