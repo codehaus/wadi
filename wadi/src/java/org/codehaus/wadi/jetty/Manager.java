@@ -139,6 +139,8 @@ public class
     start()
       throws Exception
   {
+    _implFactory=new HttpSessionImplFactory();
+
     super.start();
     (_housekeeper=new Thread(new HouseKeeper())).start();
     //    _filter=(Filter)(_handler.getFilter("WadiFilter").getFilter());
@@ -228,7 +230,4 @@ public class
 
   public ServletContext getServletContext(){return _handler.getServletContext();}
   public HttpSessionContext getSessionContext() {return org.mortbay.jetty.servlet.SessionContext.NULL_IMPL;}
-
-  protected org.codehaus.wadi.shared.HttpSessionImpl createImpl(){return new HttpSessionImpl();}
-  protected void destroyImpl(org.codehaus.wadi.shared.HttpSessionImpl impl){} // TODO - cache later
 }

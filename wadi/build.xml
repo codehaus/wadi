@@ -271,11 +271,11 @@
     <java fork="yes" classname="junit.textui.TestRunner" taskname="junit" failonerror="true">
       <arg value="org.codehaus.wadi.test.TestSerialisation"/>
       <arg value="org.codehaus.wadi.test.TestDiscoveryService"/>
-      <arg value="org.codehaus.wadi.test.TestMigrationService"/>
       <arg value="org.codehaus.wadi.test.TestConcurrency"/>
       <arg value="org.codehaus.wadi.test.TestHttpSession"/>
       <arg value="org.codehaus.wadi.test.TestCluster"/>
       <arg value="org.codehaus.wadi.test.TestTopologies"/>
+      <arg value="org.codehaus.wadi.test.TestMigrationService"/>
       <classpath refid="wadi.classpath"/>
       <!--
       -->

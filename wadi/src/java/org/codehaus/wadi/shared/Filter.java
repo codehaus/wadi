@@ -148,6 +148,12 @@ public class
     }
     finally
     {
+      // TODO - This needs to be rewritten to e.g. stash a lock in a
+      // threadlocal when taken and remove it when released. If thread
+      // still owns lock when it gets to here it should be
+      // released....
+
+
       // ensure that this request's current session's shared lock is
       // released...
 
@@ -161,7 +167,7 @@ public class
       }
       else
       {
-	String newId=session.getId();
+	String newId=session.getId(); // can we not be more clever about this ?
 	String newRealId=_manager.getRoutingStrategy().strip(newId);
 
 	boolean reuse=_manager.getReuseSessionIds();

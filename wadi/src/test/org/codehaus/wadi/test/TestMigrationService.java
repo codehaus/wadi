@@ -23,8 +23,12 @@ import java.util.Map;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.shared.MigrationService;
+import org.codehaus.wadi.jetty.HttpSessionImplFactory;
+import org.codehaus.wadi.shared.StreamingStrategy;
 import org.codehaus.wadi.plugins.SimpleStreamingStrategy;
+import org.codehaus.wadi.plugins.GZIPStreamingStrategy;
+import org.codehaus.wadi.plugins.ZipStreamingStrategy;
+import org.codehaus.wadi.shared.NewMigrationService;
 
 /**
  * Test the Migration Service
@@ -38,10 +42,13 @@ public class
 {
   protected final Log _log=LogFactory.getLog(getClass());
 
-  protected MigrationService.Server _server;
-  protected MigrationService.Client _client;
+  protected NewMigrationService.Server _server;
+  protected NewMigrationService.Client _client;
 
+  protected Map _clientSessions=new HashMap();
   protected Map _serverSessions=new HashMap();
+
+  protected StreamingStrategy _streamingStrategy=new SimpleStreamingStrategy();
 
   public
     TestMigrationService(String name)
@@ -57,8 +64,8 @@ public class
       InetAddress address=InetAddress.getByName("228.5.6.7");
       int port=6789;
       int timeout=5000;		// 5 secs
-      _client=new MigrationService.Client();
-      _server=new MigrationService.Server(_serverSessions, new SimpleStreamingStrategy());
+      _client=new NewMigrationService.Client();
+      _server=new NewMigrationService.Server(new HttpSessionImplFactory(), _serverSessions, _streamingStrategy);
       _server.start();
     }
 
@@ -83,19 +90,29 @@ public class
       session.setId(""+System.currentTimeMillis());
       String id=session.getRealId();
       if (_log.isInfoEnabled()) _log.info("session: "+id);
-      _serverSessions.put(id, session);
+      _clientSessions.put(id, session);
 
       int serverPort=_server.getPort();
       InetAddress serverAddress=_server.getAddress();
       if (_log.isInfoEnabled()) _log.info("server: "+serverAddress+":"+serverPort);
 
 
+      assertTrue(_serverSessions.size()==0);
+      assertTrue(_clientSessions.size()==1);
+      assertTrue(_clientSessions.containsKey(id));
+      if (_log.isInfoEnabled())
+      {
+	_log.info("_clientSessions: "+_clientSessions);
+	_log.info("_serverSessions: "+_serverSessions);
+      }
+      _client.emmigrate(_clientSessions, _clientSessions.values(), 5000L, serverAddress, serverPort, _streamingStrategy);
+      assertTrue(_clientSessions.size()==0);
       assertTrue(_serverSessions.size()==1);
       assertTrue(_serverSessions.containsKey(id));
-      if (_log.isInfoEnabled()) _log.info("_serverSessions: "+_serverSessions);
-      _client.run(id, new org.codehaus.wadi.jetty.HttpSessionImpl(), serverAddress, serverPort, new SimpleStreamingStrategy());
-      assertTrue(_serverSessions.size()==0);
-      assertTrue(!_serverSessions.containsKey(id));
-      if (_log.isInfoEnabled()) _log.info("serverSessions: "+_serverSessions);
+      if (_log.isInfoEnabled())
+      {
+	_log.info("_clientSessions: "+_clientSessions);
+	_log.info("_serverSessions: "+_serverSessions);
+      }
     }
 }
