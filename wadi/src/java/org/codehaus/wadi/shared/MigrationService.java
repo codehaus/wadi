@@ -50,14 +50,19 @@ public class
     {
       Sync lock=null;
       boolean acquired=false;
+      Socket socket=null;
+
       try
       {
 	if (_address==null)
-	  _address=InetAddress.getLocalHost();
+	{
+	  //	  _address=InetAddress.getLocalHost();
+	  _address=InetAddress.getByName("localhost");
+	}
 
-	Socket socket=new Socket(remoteAddress, remotePort, _address, _port);
+	socket=new Socket(remoteAddress, remotePort, _address, _port);
 	// TODO - do we need a timeout ? - YES
-	_log.trace("socket: "+socket); // TODO - sort out logging here
+	_log.trace(socket+" -> "+remoteAddress+":"+remotePort);
 	ObjectOutputStream os=new ObjectOutputStream(socket.getOutputStream());
 	ObjectInputStream  is=new ObjectInputStream(socket.getInputStream());
 	// acquire container lock on session id
@@ -69,11 +74,13 @@ public class
 	HttpSessionImpl session=(HttpSessionImpl)is.readObject();
 	_log.trace("received migrated session: "+session);
 	// send commit message
-	os.writeObject("commit");
+	os.writeBoolean(true);
 	os.flush();
 	// insert session
 	sessions.put(id, session); // TODO - needs wrapping in facade etc..
-	socket.close();
+	// receive commit message
+	boolean ok=is.readBoolean();
+	assert ok;
 	return session;
       }
       catch (UnknownHostException e)
@@ -93,6 +100,12 @@ public class
 	// release lock
 	if (acquired)
 	  lock.release();
+
+	if (socket!=null)
+	  {
+	    try{socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
+	    socket=null;
+	  }
       }
 
       return null;
@@ -134,9 +147,12 @@ public class
       try
       {
 	if (_address==null)
-	  _address=InetAddress.getLocalHost();
+	{
+	  //	  _address=InetAddress.getLocalHost();
+	  _address=InetAddress.getByName("localhost");
+	}
 
-	_log.debug("starting: "+_address);
+	_log.debug("starting: "+_address+":"+(_port==0?"<anonymous>":""+_port));
 
 	// initialise dependant resources...
 	_socket=new ServerSocket(_port, _backlog, _address);
@@ -168,6 +184,7 @@ public class
     {
       _log.debug("stopping: "+_socket);
       _running=false;
+      // TODO - we need to send a noop here...
       _thread.interrupt();
       try
       {
@@ -239,15 +256,17 @@ public class
 	// acquire container lock on session id
 	// marshall session onto wire
 	HttpSessionImpl impl=(HttpSessionImpl)_sessions.get(id); // TODO - what if session is not there ?
+	_log.trace("sending migrating session: "+impl);
 	os.writeObject(impl);
 	os.flush();
 	// receive commit message
-	String commit=(String)is.readObject();
-	// commit=="commit"
+	boolean ok=is.readBoolean();
+	assert ok;
 	// remove session
 	_sessions.remove(id); // TODO - recycle
-
-	socket.close();		// TODO - should we do this ?
+	// send commit message
+	os.writeBoolean(ok);
+	os.flush();
       }
       catch (IOException e)
       {
@@ -262,6 +281,8 @@ public class
 	// release lock
 	if (acquired)
 	  lock.release();
+
+	try{socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
       }
     }
   }

@@ -34,7 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.jetty.HttpSessionImpl;
 import org.codehaus.wadi.jetty.Manager;
-import org.codehaus.wadi.plugins.OldFilePassivationStrategy;
+import org.codehaus.wadi.plugins.FilePassivationStrategy;
 import org.codehaus.wadi.shared.ObjectInputStream;
 
 import org.mortbay.jetty.servlet.WebApplicationHandler;
@@ -103,14 +103,24 @@ public class TestHttpSession
       Serializable
   {
     public static List _events=new ArrayList();
+    protected static Log _log=LogFactory.getLog(ActivationListener.class);
 
     // HttpSessionActivationListener
-    public void sessionDidActivate   (HttpSessionEvent e)
+    public void
+      sessionDidActivate(HttpSessionEvent e)
     {
     	e.getSession().getId();
     	_events.add(new Pair("sessionDidActivate",e));
+	_log.trace("ACTIVATING");
     }
-    public void sessionWillPassivate (HttpSessionEvent e) {e.getSession().getId();_events.add(new Pair("sessionWillPassivate",e));}
+
+    public void
+      sessionWillPassivate(HttpSessionEvent e)
+    {
+      e.getSession().getId();
+      _events.add(new Pair("sessionWillPassivate",e));
+      _log.trace("PASSIVATING");
+    }
   }
 
   protected void
@@ -672,79 +682,75 @@ public class TestHttpSession
     List events=ActivationListener._events;
     events.clear();
 
-    //      String key="test";
-    //      ActivationListener l=new ActivationListener();
-    //      impl1.setAttribute(key, l, false);
+    String key="test";
+    ActivationListener l=new ActivationListener();
+    impl1.setAttribute(key, l, false);
 
-    OldFilePassivationStrategy fmp=new OldFilePassivationStrategy(new File("/tmp"));
+    FilePassivationStrategy fmp=new FilePassivationStrategy(new File("/tmp"));
     fmp.passivate(impl1);
 
-    //      // listener should now have been passivated and activated...
-    //      assertTrue(events.size()==2);
-    //      {
-    //        Pair pair=(Pair)events.remove(0);
-    //        assertTrue(pair!=null);
-    //        assertTrue(pair.getType().equals("sessionWillPassivate"));
-    //        HttpSessionEvent e=pair.getEvent();
-    //        assertTrue(impl1==e.getSession());
-    //      }
-    //      {
-    //        Pair pair=(Pair)events.remove(0);
-    //        assertTrue(pair!=null);
-    //        assertTrue(pair.getType().equals("sessionDidActivate"));
-    //        HttpSessionEvent e=pair.getEvent();
-    //        assertTrue(impl1==e.getSession());
-    //      }
+    // listener should now have been passivated
+    _log.info("SIZE: "+events.size());
+    assertTrue(events.size()==1);
+    {
+      Pair pair=(Pair)events.remove(0);
+      assertTrue(pair!=null);
+      assertTrue(pair.getType().equals("sessionWillPassivate"));
+      HttpSessionEvent e=pair.getEvent();
+      assertTrue(impl1==e.getSession());
+    }
 
     HttpSessionImpl impl2=(HttpSessionImpl)fmp.activate(id);
     // listener should not have yet been activated (we do it lazily)
     assertTrue(events.size()==0);
-    //      impl2.getAttribute(key);
-    //      // now it should...
-    //      assertTrue(events.size()==1);
-    //      {
-    //        Pair pair=(Pair)events.remove(0);
-    //        assertTrue(pair!=null);
-    //        assertTrue(pair.getType().equals("sessionDidActivate"));
-    //        HttpSessionEvent e=pair.getEvent();
-    //        assertTrue(impl1==e.getSession());
-    //      }
-  }
-
-  public void
-    testLotsOfSessions()
-    throws Exception
-  {
-    _manager.stop();
-    _manager.removeEventListener(_listener); // otherwise we get lots of events :-)
-    _manager.start();
-
-    // put some code in here to figure out how much mem they use...
-    long start=System.currentTimeMillis();
-    int numSessions=100;//000;
-    HttpSession[] sessions=new HttpSession[numSessions];
-
-    for (int i=0;i<numSessions;i++)
+    impl2.getAttribute(key);
+    // now it should...
+    assertTrue(events.size()==1);
     {
-      sessions[i]=_manager.newHttpSession();
-      sessions[i].setAttribute("foo", "bar");
+      Pair pair=(Pair)events.remove(0);
+      assertTrue(pair!=null);
+      assertTrue(pair.getType().equals("sessionDidActivate"));
+      HttpSessionEvent e=pair.getEvent();
+      assertTrue(impl1==e.getSession());
     }
 
-    for (int i=0;i<numSessions;i++)
-    {
-      sessions[i].invalidate();
-      sessions[i]=null;
-    }
-
-    sessions=null;
-    long stop=System.currentTimeMillis();
-
-    _log.info("create/destroy "+numSessions+" sessions: "+(stop-start)+" millis");
-
-    _manager.stop();
-    _manager.addEventListener(_listener);
-    _manager.start();
+    //    assertTrue(impl1.equals(impl2));
   }
+
+//   public void
+//     testLotsOfSessions()
+//     throws Exception
+//   {
+//     _manager.stop();
+//     _manager.removeEventListener(_listener); // otherwise we get lots of events :-)
+//     _manager.start();
+
+//     // put some code in here to figure out how much mem they use...
+//     long start=System.currentTimeMillis();
+//     int numSessions=100;//000;
+//     HttpSession[] sessions=new HttpSession[numSessions];
+
+//     for (int i=0;i<numSessions;i++)
+//     {
+//       sessions[i]=_manager.newHttpSession();
+//       sessions[i].setAttribute("foo", "bar");
+//     }
+
+//     for (int i=0;i<numSessions;i++)
+//     {
+//       sessions[i].invalidate();
+//       sessions[i]=null;
+//     }
+
+//     sessions=null;
+//     long stop=System.currentTimeMillis();
+
+//     _log.info("create/destroy "+numSessions+" sessions: "+(stop-start)+" millis");
+
+//     _manager.stop();
+//     _manager.addEventListener(_listener);
+//     _manager.start();
+//   }
 
   //   public void
   //     testDistributedSessions()

@@ -32,54 +32,75 @@ public class
 {
   protected final Log _log=LogFactory.getLog(getClass());
 
+  protected MigrationService.Server _server;
+  protected MigrationService.Client _client;
+
+  protected Map _serverSessions=new HashMap();
+  protected Map _serverLocks=new HashMap();
+
   public
     TestMigrationService(String name)
-  {
-    super(name);
-  }
+    {
+      super(name);
+    }
+
+  protected void
+    setUp()
+    throws Exception
+    {
+      _log.info("starting test");
+      InetAddress address=InetAddress.getByName("228.5.6.7");
+      int port=6789;
+      int timeout=5000;		// 5 secs
+      _client=new MigrationService.Client();
+      _server=new MigrationService.Server(_serverSessions, _serverLocks);
+      _server.start();
+    }
+
+  protected void
+    tearDown()
+    throws InterruptedException
+    {
+      _server.stop();
+      _server=null;
+      _client=null;
+      _log.info("stopping test");
+    }
 
   //----------------------------------------
 
   public void
     testMigration()
     throws Exception
-  {
+    {
 
-    Map serverSessions=new HashMap();
-    Map serverLocks=new HashMap();
+      HttpSessionImpl session=new HttpSessionImpl();
+      session.setId(""+System.currentTimeMillis());
+      String id=session.getId();
+      _log.info("session: "+id);
+      _serverSessions.put(id, session);
 
-    HttpSessionImpl session=new HttpSessionImpl();
-    session.setId(""+System.currentTimeMillis());
-    String id=session.getId();
-    _log.info("session: "+id);
-    serverSessions.put(id, session);
+      int serverPort=_server.getPort();
+      InetAddress serverAddress=_server.getAddress();
+      _log.info("server: "+serverAddress+":"+serverPort);
 
-    MigrationService.Server server=new MigrationService.Server(serverSessions, serverLocks);
-    server.start();
+      Map clientSessions=new HashMap();
+      Map clientLocks=new HashMap();
 
-    int serverPort=server.getPort();
-    InetAddress serverAddress=server.getAddress();
-    _log.info("server: "+serverAddress+":"+serverPort);
-
-    Map clientSessions=new HashMap();
-    Map clientLocks=new HashMap();
-
-    MigrationService.Client client=new MigrationService.Client();
-    assertTrue(serverSessions.size()==1);
-    assertTrue(serverSessions.containsKey(id));
-    assertTrue(serverLocks.size()==0);
-    assertTrue(clientSessions.size()==0);
-    assertTrue(!clientSessions.containsKey(id));
-    assertTrue(clientLocks.size()==0);
-    _log.info("serverSessions: "+serverSessions+", clientSessions:"+clientSessions);
-    client.run(clientSessions, clientLocks, id, serverAddress, serverPort);
-    server.stop();
-    assertTrue(serverSessions.size()==0);
-    assertTrue(!serverSessions.containsKey(id));
-    assertTrue(serverLocks.size()==0);
-    assertTrue(clientSessions.size()==1);
-    assertTrue(clientSessions.containsKey(id));
-    assertTrue(clientLocks.size()==0);
-    _log.info("serverSessions: "+serverSessions+", clientSessions:"+clientSessions);
-  }
+      assertTrue(_serverSessions.size()==1);
+      assertTrue(_serverSessions.containsKey(id));
+      assertTrue(_serverLocks.size()==0);
+      assertTrue(clientSessions.size()==0);
+      assertTrue(!clientSessions.containsKey(id));
+      assertTrue(clientLocks.size()==0);
+      _log.info("_serverSessions: "+_serverSessions+", clientSessions:"+clientSessions);
+      _client.run(clientSessions, clientLocks, id, serverAddress, serverPort);
+      assertTrue(_serverSessions.size()==0);
+      assertTrue(!_serverSessions.containsKey(id));
+      assertTrue(_serverLocks.size()==0);
+      assertTrue(clientSessions.size()==1);
+      assertTrue(clientSessions.containsKey(id));
+      assertTrue(clientLocks.size()==0);
+      _log.info("serverSessions: "+_serverSessions+", clientSessions:"+clientSessions);
+    }
 }
