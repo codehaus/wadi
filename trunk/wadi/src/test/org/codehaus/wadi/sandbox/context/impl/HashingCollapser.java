@@ -21,7 +21,6 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutSync;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class HashingCollapser implements Collapser {
-
 	protected final Log    _log = LogFactory.getLog(getClass());
 	protected final int    _numSyncs;
 	protected final Sync[] _syncs;

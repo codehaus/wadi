@@ -251,18 +251,16 @@ public class TestContextualiser extends TestCase {
 		Contextualiser _contextualiser;
 		FilterChain    _chain;
 		String         _id;
-		Mutex          _promotionMutex;
 		
-		MyRunnable(Contextualiser contextualiser, FilterChain chain, String id, Mutex promotionMutex) {
+		MyRunnable(Contextualiser contextualiser, FilterChain chain, String id) {
 			_contextualiser=contextualiser;
 			_chain=chain;
 			_id=id;
-			_promotionMutex=promotionMutex;
 		}
 		
 		public void run() {
 			try {
-				_contextualiser.contextualise(null, null, _chain, _id, null, _promotionMutex);
+				_contextualiser.contextualise(null, null, _chain, _id, null, null);
 			} catch (Exception e) {
 				_log.error("unexpected problem", e);
 				assertTrue(false);
@@ -273,10 +271,9 @@ public class TestContextualiser extends TestCase {
 	public void testPromotion(Contextualiser c, int n) throws Exception {
 		Contextualiser mc=new MemoryContextualiser(c, new HashingCollapser(10, 2000), new HashMap(), new NeverEvicter(), new MyContextPool());
 		FilterChain fc=new MyFilterChain();		
-		Mutex promotionMutex=new Mutex();
 		
 		for (int i=0; i<n; i++)
-			mc.contextualise(null,null,fc,"baz", null, promotionMutex);
+			mc.contextualise(null,null,fc,"baz", null, null);
 	}
 	
 	public void testPromotion() throws Exception {
@@ -293,9 +290,8 @@ public class TestContextualiser extends TestCase {
 	public void testCollapsing(Contextualiser c, int n) throws Exception {
 		Contextualiser mc=new MemoryContextualiser(c, new HashingCollapser(10, 2000), new HashMap(), new NeverEvicter(), new MyContextPool());
 		FilterChain fc=new MyFilterChain();
-		Mutex promotionMutex=new Mutex();
 
-		Runnable r=new MyRunnable(mc, fc, "baz", promotionMutex);
+		Runnable r=new MyRunnable(mc, fc, "baz");
 		Thread[] threads=new Thread[n];
 		for (int i=0; i<n; i++)
 			(threads[i]=new Thread(r)).start();
