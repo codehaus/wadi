@@ -419,7 +419,7 @@ public class TestContextualiser extends TestCase {
 
 	static class MyLocation implements Location, Serializable {
 		public long getExpiryTime(){return 0;}
-		public boolean proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) {
+		public boolean proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) throws IOException {
 			promotionLock.release();
 			System.out.println("PROXYING TO: "+id);
 			return true;

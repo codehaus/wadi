@@ -16,13 +16,6 @@
 */
 package org.codehaus.wadi.sandbox.context;
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
 /**
  * TODO - JavaDoc this type
  *
@@ -30,15 +23,13 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 
-public interface ProxyStrategy {
-	/**
-	 * @param hreq
-	 * @param hres
-	 * @param id
-	 * @param promotionLock
-	 * @param location
-	 * @return - true, if request was proxied, false if not
-	 * @throws IOException TODO
-	 */
-	boolean proxy(HttpServletRequest hreq, HttpServletResponse hres, String id, Sync promotionLock, Location location) throws IOException;
+public class ProxyingException extends Exception {
+
+	public ProxyingException(String message) {
+		super(message);
+	}
+	
+	public ProxyingException(String message, Exception cause) {
+		super(message, cause);
+	}
 }

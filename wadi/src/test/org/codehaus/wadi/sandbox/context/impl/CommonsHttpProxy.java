@@ -46,6 +46,8 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.TraceMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.context.IrrecoverableException;
+import org.codehaus.wadi.sandbox.context.ProxyingException;
 
 // This does not seem as performant as the StandardHttpProxy - it also seems to be able to crash Firefox reproducibly !
 // commons-httpclient does not [seem to] allow us to pass Cookie headers straight through. So, we have
@@ -85,22 +87,20 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 	 * @see javax.servlet.Servlet#service(javax.servlet.ServletRequest,
 	 *      javax.servlet.ServletResponse)
 	 */
-	public boolean proxy(InetSocketAddress location, HttpServletRequest hreq, HttpServletResponse hres) {
+	public void proxy(InetSocketAddress location, HttpServletRequest hreq, HttpServletResponse hres) throws ProxyingException {
 		long startTime=System.currentTimeMillis();
 
 		String m=hreq.getMethod();
 	    Class clazz=(Class)_methods.get(m);
 	    if (clazz==null) {
-	    	_log.warn("unsupported http method: "+m);
-	    	return false;
+	    	throw new IrrecoverableException("unsupported http method: "+m);
 	    }
 	    
 	    HttpMethod hm=null;
 	    try {
 	    	hm=(HttpMethod)clazz.newInstance();
 	    } catch (Exception e) {
-	    	_log.warn("could not create HttpMethod instance", e); // should never happen
-	    	return false;
+	    	throw new IrrecoverableException("could not create HttpMethod instance", e); // should never happen
 	    }
 	    
 	    String uri=getRequestURI(hreq);
@@ -220,8 +220,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 					((EntityEnclosingMethod)hm).setRequestBody(hreq.getInputStream());
 				// TODO - do we need to close response stream at end... ?
 			} catch (IOException e) {
-				_log.warn("could not pss request input across proxy", e);
-				return false;
+				throw new IrrecoverableException("could not pss request input across proxy", e);
 			}
 		}
 
@@ -298,7 +297,5 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		long endTime=System.currentTimeMillis();
 		long elapsed=endTime-startTime;
 		_log.info("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:http://"+location.getHostName()+":"+location.getPort()+uri);
-	
-		return true;
 	}
 }

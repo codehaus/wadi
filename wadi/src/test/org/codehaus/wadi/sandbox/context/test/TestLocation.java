@@ -83,7 +83,11 @@ public class TestLocation extends TestCase {
 				_log.warn("interruption", ie);
 			}
 
+			try {
 			_location.proxy(null, null, getName(), _mutex);
+			} catch (Exception e) {
+				_log.warn("proxy problem", e);
+			}
 		}
 	}
 

@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.context.impl;
 
+import java.io.IOException;
+
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -77,7 +79,7 @@ public class PiggyBackHttpLocation implements Location {
 		}
 	}
 
-	public boolean proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) {
+	public boolean proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) throws IOException {
 		// Either we pull the context across the connection and return it...
 
 		synchronized (_countLock) {

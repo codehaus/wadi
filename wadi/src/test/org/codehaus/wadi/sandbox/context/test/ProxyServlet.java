@@ -75,16 +75,16 @@ public class ProxyServlet implements Servlet {
 		InetSocketAddress location=null;
 		try {
 			location=new InetSocketAddress(req.getServerName(), req.getServerPort());
-			if (!_proxy.proxy(location, hreq, hres))
-				_log.warn("request not stateful: "+hreq.getMethod()+" - "+hreq.getRequestURI());
+			_proxy.proxy(location, hreq, hres);
 		} catch (Exception e) {
 			hres.setHeader("Date", null);
 			hres.setHeader("Server", null);
 			hres.addHeader("Via", "1.1 (WADI)");
 			// hres.setStatus(502, message);
 			try {
-				_log.warn("could not establish connection to location: "+location, e);
-				hres.sendError(502, "Bad Gateway: proxy could not establish connection to server"); // TODO - why do we need to use sendError ?
+				String message="problem proxying request to; "+location;
+				_log.warn(message, e);
+				hres.sendError(502, "Bad Gateway: "+message);
 			} catch (IOException e2) {
 				_log.warn("could not return error to client", e2);
 			}
