@@ -42,7 +42,6 @@ public class
   protected MigrationService.Client _client;
 
   protected Map _serverSessions=new HashMap();
-  protected Map _serverLocks=new HashMap();
 
   public
     TestMigrationService(String name)
@@ -59,7 +58,7 @@ public class
       int port=6789;
       int timeout=5000;		// 5 secs
       _client=new MigrationService.Client();
-      _server=new MigrationService.Server(_serverSessions, _serverLocks, new SimpleStreamingStrategy());
+      _server=new MigrationService.Server(_serverSessions, new SimpleStreamingStrategy());
       _server.start();
     }
 
@@ -90,23 +89,13 @@ public class
       InetAddress serverAddress=_server.getAddress();
       if (_log.isInfoEnabled()) _log.info("server: "+serverAddress+":"+serverPort);
 
-      Map clientSessions=new HashMap();
-      Map clientLocks=new HashMap();
 
       assertTrue(_serverSessions.size()==1);
       assertTrue(_serverSessions.containsKey(id));
-      assertTrue(_serverLocks.size()==0);
-      assertTrue(clientSessions.size()==0);
-      assertTrue(!clientSessions.containsKey(id));
-      assertTrue(clientLocks.size()==0);
-      if (_log.isInfoEnabled()) _log.info("_serverSessions: "+_serverSessions+", clientSessions:"+clientSessions);
-      _client.run(clientSessions, clientLocks, id, new org.codehaus.wadi.jetty.HttpSessionImpl(), serverAddress, serverPort, new SimpleStreamingStrategy());
+      if (_log.isInfoEnabled()) _log.info("_serverSessions: "+_serverSessions);
+      _client.run(id, new org.codehaus.wadi.jetty.HttpSessionImpl(), serverAddress, serverPort, new SimpleStreamingStrategy());
       assertTrue(_serverSessions.size()==0);
       assertTrue(!_serverSessions.containsKey(id));
-      assertTrue(_serverLocks.size()==0);
-      assertTrue(clientSessions.size()==1);
-      assertTrue(clientSessions.containsKey(id));
-      assertTrue(clientLocks.size()==0);
-      if (_log.isInfoEnabled()) _log.info("serverSessions: "+_serverSessions+", clientSessions:"+clientSessions);
+      if (_log.isInfoEnabled()) _log.info("serverSessions: "+_serverSessions);
     }
 }
