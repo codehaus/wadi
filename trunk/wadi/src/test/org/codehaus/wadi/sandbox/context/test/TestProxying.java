@@ -150,6 +150,9 @@ public class TestProxying extends TestCase {
 	}
 	
 	public void testInsecureProxy() throws Exception {
+		
+		boolean migrating=true;
+		
 	    HttpClient client=new HttpClient();
 		HttpMethod method0=new GetMethod("http://localhost:8080");
 		HttpMethod method1=new GetMethod("http://localhost:8081");
@@ -202,27 +205,67 @@ public class TestProxying extends TestCase {
 		_filter0.setLocalOnly(false);
 		assertTrue(get(client, method0, "/test;jsessionid=foo")==200);
 		assertTrue(get(client, method0, "/test;jsessionid=bar")==200);
+		
+		if (migrating) {
+			assertTrue(m0.size()==2);
+			Thread.sleep(1000); // can take a while for ACK to be processed
+			assertTrue(m1.size()==0);
+			
+			// TODO - what about location caches ?
+			
+		} else {
+			assertTrue(m0.size()==1);
+			assertTrue(m1.size()==1);			
+			// TODO - what about location caches ?
+		}
+		
 		_filter1.setLocalOnly(false);
 		assertTrue(get(client, method1, "/test;jsessionid=foo")==200);
 		assertTrue(get(client, method1, "/test;jsessionid=bar")==200);
 
-		assertTrue(m0.size()==1);
-		assertTrue(m1.size()==1);
-		assertTrue(c0.size()==1); // location from clusterwide query has been cached
-		assertTrue(c1.size()==1); // location from clusterwide query has been cached
+		if (migrating) {
+			assertTrue(m1.size()==2);
+			Thread.sleep(1000); // can take a while for ACK to be processed
+			assertTrue(m0.size()==0);
+			// TODO - what about location caches ?
+		} else {
+			assertTrue(m0.size()==1);
+			assertTrue(m1.size()==1);
+			assertTrue(c0.size()==1); // location from clusterwide query has been cached
+			assertTrue(c1.size()==1); // location from clusterwide query has been cached
+		}
 		
 		// ensure that cached locations work second time around...
 		_filter0.setLocalOnly(false);
 		assertTrue(get(client, method0, "/test;jsessionid=foo")==200);
 		assertTrue(get(client, method0, "/test;jsessionid=bar")==200);
+
+		if (migrating) {
+			assertTrue(m0.size()==2);
+			Thread.sleep(1000); // can take a while for ACK to be processed
+			assertTrue(m1.size()==0);
+			// TODO - what about location caches ?
+		} else {
+			assertTrue(m0.size()==1);
+			assertTrue(m1.size()==1);			
+			// TODO - what about location caches ?
+		}
+
 		_filter1.setLocalOnly(false);
 		assertTrue(get(client, method1, "/test;jsessionid=foo")==200);
 		assertTrue(get(client, method1, "/test;jsessionid=bar")==200);
 		
-		assertTrue(m0.size()==1);
-		assertTrue(m1.size()==1);
-		assertTrue(c0.size()==1);
-		assertTrue(c1.size()==1);
+		if (migrating) {
+			assertTrue(m1.size()==2);
+			Thread.sleep(1000); // can take a while for ACK to be processed
+			assertTrue(m0.size()==0);		
+			// TODO - what about location caches ?
+		} else {
+			assertTrue(m0.size()==1);
+			assertTrue(m1.size()==1);
+			assertTrue(c0.size()==1);
+			assertTrue(c1.size()==1);
+		}
 	}
 	
 	public void testSecureProxy() throws Exception {
@@ -275,8 +318,6 @@ public class TestProxying extends TestCase {
 		assertTrue(get(client, method1, "/test/confidential;jsessionid=foo")==200);
 	}
 	
-	// next test should be that we can somehow migrate sessions across, in place of proxying...
-	
 	// TODO:
 	// consider merging two classes
 	// consider having MigrationConceptualiser at top of stack (to promote sessions to other nodes)
@@ -307,6 +348,9 @@ public class TestProxying extends TestCase {
 	};
 	
 	public void testStatelessContextualiser() throws Exception {
+		
+		boolean migrating=true;
+		
 	    HttpClient client=new HttpClient();
 		HttpMethod method0=new GetMethod("http://localhost:8080");
 		HttpMethod method1=new GetMethod("http://localhost:8081");
@@ -327,12 +371,15 @@ public class TestProxying extends TestCase {
 		assertTrue(test.getCount()==1 && !test.isStateful());
 		_servlet0.setTest(null);
 		
+		MyServlet servlet;
+
+		servlet=migrating?_servlet0:_servlet1;		
 		// this will be proxied, because we cannot prove that it is stateless...
-		test=new Test();
-		_servlet1.setTest(test);
+		test=new Test();		
+		servlet.setTest(test);
 		assertTrue(get(client, method0, "/test/dynamic.dyn;jsessionid=bar")==200);
 		assertTrue(test.getCount()==1 && test.isStateful());
-		_servlet1.setTest(null);
+		servlet.setTest(null);
 		
 		// this won't be proxied, because we can prove that it is stateless...
 		test=new Test();
@@ -341,11 +388,12 @@ public class TestProxying extends TestCase {
 		assertTrue(test.getCount()==1 && !test.isStateful());
 		_servlet1.setTest(null);
 
+		servlet=migrating?_servlet1:_servlet0;
 		// this will be proxied, because we cannot prove that it is stateless...
 		test=new Test();
-		_servlet0.setTest(test);
+		servlet.setTest(test);
 		assertTrue(get(client, method1, "/test/dynamic.jsp;jsessionid=foo")==200);
 		assertTrue(test.getCount()==1 && test.isStateful());
-		_servlet0.setTest(null);
+		servlet.setTest(null);
 	}
 }

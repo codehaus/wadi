@@ -16,7 +16,9 @@
  */
 package org.codehaus.wadi.sandbox.context.impl;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -73,7 +75,31 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 				if (promotionLock!=null) {
 					promotionLock.release();
 				}
-				contextualise(hreq, hres, chain, id);
+				if (promoter!=null) {
+					// promote
+					try {
+						// write context out into a buffer, then read buffer back into this one.. - clumsy - TODO
+						ByteArrayOutputStream baos=new ByteArrayOutputStream();
+						c.writeContent(new ObjectOutputStream(baos));
+						Context context=promoter.nextContext();
+						// shameful hack - TODO
+						((MigrateRelocationStrategy.MigrationContext)context).setBytes(baos.toByteArray());
+						_log.info("promoting (from memory): "+id);
+						if (promoter.prepare(id, context)) {
+							_map.remove(id); // locking ?
+							promoter.commit(id, context);
+							promotionLock.release();
+							promoter.contextualise(hreq, hres, chain, id, context);
+						} else {
+							promoter.rollback(id, context);
+						}
+					} catch (ClassNotFoundException e) {
+						_log.warn("could not promote session: "+id);
+					}
+				} else {
+					// contextualise
+					contextualise(hreq, hres, chain, id);
+				}
 			} catch (InterruptedException e) {
 				throw new ServletException("timed out acquiring context", e);
 			} finally {
