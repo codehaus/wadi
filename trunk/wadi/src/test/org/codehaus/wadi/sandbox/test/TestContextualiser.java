@@ -430,7 +430,6 @@ public class TestContextualiser extends TestCase {
 		// do the test
 
 		Location location=new MyLocation();
-		Collapser collapser0=new HashingCollapser(10, 2000);
 		Map c0=new HashMap();
 		MessageDispatcher dispatcher0=new MessageDispatcher(cluster0);
 		RelocationStrategy relocater0=new ProxyRelocationStrategy(dispatcher0, location, 2000, 3000);
@@ -440,7 +439,6 @@ public class TestContextualiser extends TestCase {
 		Contextualiser memory0=new MemoryContextualiser(clstr0, m0, new NeverEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
 		relocater0.setTop(memory0);
 
-		Collapser collapser1=new HashingCollapser(10, 2000);
 		Map c1=new HashMap();
 		MessageDispatcher dispatcher1=new MessageDispatcher(cluster1);
 		RelocationStrategy relocater1=new ProxyRelocationStrategy(dispatcher1, location, 2000, 3000);
