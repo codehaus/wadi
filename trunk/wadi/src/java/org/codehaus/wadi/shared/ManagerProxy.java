@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.plugins.NoRoutingStrategy;
 
 // TODO - should these be cached ?
 
@@ -70,10 +71,12 @@ public class
   public boolean
     relocateRequest(HttpServletRequest req, HttpServletResponse res, Manager manager)
   {
-//     if (req.isRequestedSessionIdFromCookie())
-//       return proxyRequestTo(req, res);
-//     else
-      return redirectRequestTo(req, res, manager);
+    if (manager.getRoutingStrategy() instanceof NoRoutingStrategy)
+      // TODO - not quite right - if request is direct, we could
+      // redirect directly to other host - unusual situation, however
+      return proxyRequestTo(req, res); // we have no way to control where request falls
+    else
+      return redirectRequestTo(req, res, manager); // we should be able to redirect to the correct host
   }
 
   //----------------------------------------
@@ -144,7 +147,6 @@ public class
       {
 	_log.warn("unexpected problem synthesising url", e);
       }
-
     }
     else
     {
@@ -243,5 +245,5 @@ public class
 
   //----------------------------------------
 
-  public boolean isDirect(HttpServletRequest req){return true;}
+  public boolean isDirect(HttpServletRequest req){return true;}	// TODO - how do we work this out ?
 }
