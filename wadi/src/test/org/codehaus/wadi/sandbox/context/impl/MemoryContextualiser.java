@@ -96,16 +96,17 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	// TODO - c.f. AbstractMappedContextualiser.evict()
 	public void evict() {
 		// TODO - lock the map - move expensive stuff out of lock...
+		long time=System.currentTimeMillis();
 		for (Iterator i=_map.entrySet().iterator(); i.hasNext(); ) {
 			Map.Entry e=(Map.Entry)i.next();
 			String id=(String)e.getKey();
 			Motable emotable=(Motable)e.getValue();
-			if (_evicter.evict(id, emotable)) { // first test without lock - cheap
+			if (_evicter.evict(id, emotable, time)) { // first test without lock - cheap
 				Sync lock=((Context)emotable).getExclusiveLock();
 				boolean acquired=false;
 				// this should be a while loop
 				try {
-					if (lock.attempt(0) && _evicter.evict(id, emotable)) { // then confirm with exclusive lock
+					if (lock.attempt(0) && _evicter.evict(id, emotable, time)) { // then confirm with exclusive lock
 						acquired=true;
 						Immoter immoter=_next.getDemoter(id, emotable);
 						Emoter emoter=getEmoter();

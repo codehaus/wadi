@@ -16,11 +16,11 @@
 */
 package org.codehaus.wadi.sandbox.context.impl;
 
+import org.codehaus.wadi.sandbox.context.Evictable;
 import org.codehaus.wadi.sandbox.context.Evicter;
-import org.codehaus.wadi.sandbox.context.Motable;
 
 /**
- * An Evicter which evicts invalid Motables
+ * An Evicter which evicts invalid Evictables
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -28,8 +28,7 @@ import org.codehaus.wadi.sandbox.context.Motable;
 
 public class InvalidEvicter implements Evicter {
 
-	public boolean evict(String id, Motable motable) {
-		return !motable.getValid();
-	}
+	public boolean evict(String id, Evictable evictable) {return !evictable.getValid();}
+	public boolean evict(String id, Evictable evictable, long time) {return !evictable.getValid();}
 
 }
