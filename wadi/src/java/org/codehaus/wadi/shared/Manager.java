@@ -767,6 +767,12 @@ public abstract class
   {
     String location=_locationClient.run("org.codehaus.wadi"+","+ "locate"+","+id);
 
+    if (location==null)
+    {
+      _log.warn(id+": could not locate session - perhaps dead ?");
+      return null;
+    }
+
     try
     {
       return new ManagerProxy(id, location);
