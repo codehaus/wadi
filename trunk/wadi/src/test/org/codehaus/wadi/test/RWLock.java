@@ -221,34 +221,50 @@ public class RWLock implements ReadWriteLock {
 
   protected class WriterLock extends Signaller implements  Sync {
 
-    public void acquire() throws InterruptedException {
-      if (Thread.interrupted()) throw new InterruptedException();
+    public void
+      acquire()
+      throws InterruptedException
+    {
+      if (Thread.interrupted())
+	throw new InterruptedException();
+
+      Thread t=Thread.currentThread();
+
       InterruptedException ie = null;
-      synchronized(WriterLock.this) {
+      synchronized(WriterLock.this)
+      {
 	boolean pass;
-	synchronized (RWLock.this){
-	  synchronized (RWLock.this){
-	    pass = (activeWriter_ == null && activeReaders_ == 0);
-	    if (pass)  activeWriter_ = Thread.currentThread();
-	  }
-	  if (!pass) ++waitingWriters_;
+	synchronized (RWLock.this)
+	{
+	  pass = (activeWriter_ == null && activeReaders_ == 0);
+	  if (pass)
+	    activeWriter_ = t;
+	  else
+	    ++waitingWriters_;
 	}
-        if (!pass) {
-          for (;;) {
-            try {
+
+        if (!pass)
+	{
+          for (;;)
+	  {
+            try
+	    {
               WriterLock.this.wait();
 	      boolean pass2;
-	      synchronized(RWLock.this){
-		synchronized (RWLock.this){
-		 pass2 = (activeWriter_ == null && activeReaders_ == 0);
-		  if (pass2)  activeWriter_ = Thread.currentThread();
+	      synchronized(RWLock.this)
+	      {
+		pass2 = (activeWriter_ == null && activeReaders_ == 0);
+		if (pass2)
+		{
+		  activeWriter_ = t;
+		  --waitingWriters_;
 		}
-		if (pass2) --waitingWriters_;
 	      }
               if (pass2)
                 return;
             }
-            catch(InterruptedException ex){
+            catch (InterruptedException ex)
+	    {
               cancelledWaitingWriter();
               WriterLock.this.notify();
               ie = ex;
@@ -257,7 +273,9 @@ public class RWLock implements ReadWriteLock {
           }
         }
       }
-      if (ie != null) {
+
+      if (ie != null)
+      {
         // Fall through outside synch on interrupt.
         //  On exception, we may need to signal readers.
         //  It is not worth checking here whether it is strictly necessary.
