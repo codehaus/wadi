@@ -128,8 +128,7 @@ public class
 	    {
 	      impl.getApplicationLock().release();
 	      impl=null;
-	      _log.warn(realId+": local session emmigrated before it could be locked into container");
-	      // what do we do now :-)
+	      _log.debug(realId+": session disappeared before it could be locked into container");
 	    }
 	  }
 	  catch (InterruptedException e)
@@ -161,7 +160,8 @@ public class
 	  _log.warn(realId+": session id cannot be mapped");
 	else
 	{
-	  if (((HttpSession)impl.getFacade()).isValid())
+	  HttpSession facade=(HttpSession)impl.getFacade();
+	  if (facade!=null && facade.isValid())
 	  {
 	    // restick lb to this node if necessary...
 	    if (req.isRequestedSessionIdFromCookie())
@@ -171,7 +171,7 @@ public class
 	  }
 	  else
 	  {
-	    _log.warn(realId+": session id maps to invalid session");
+	    _log.debug(realId+": session id maps to invalid session");
 	  }
 	}
       }

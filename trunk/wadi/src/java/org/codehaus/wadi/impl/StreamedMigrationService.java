@@ -62,6 +62,9 @@ public class
   public MigrationService.Server getServer(){return _server;}
   public MigrationService.Client getClient(){return _client;}
 
+  public void setTimeout(int timeout) {((Server)getServer()).setTimeout(timeout);}
+  public int getTimeout() {return ((Server)getServer()).getTimeout();}
+
   public class
     Client
     extends AbstractMigrationService.Client
@@ -285,6 +288,9 @@ public class
 
       public void setDestination(Destination destination) {_destination=(InetSocketAddressDestination)destination;}
       public Destination getDestination() {return _destination;}
+
+      public void setTimeout(int timeout) {_timeout=timeout;}
+      public int getTimeout() {return _timeout;}
 
       public void
 	start()

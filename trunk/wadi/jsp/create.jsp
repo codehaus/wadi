@@ -2,8 +2,11 @@
       <%@ page import="java.util.Date" %>
       <%@ page import="java.util.Enumeration" %>
       <%@ page import="java.net.URL" %>
+      <%@ page import="org.apache.commons.logging.Log" %>
+      <%@ page import="org.apache.commons.logging.LogFactory" %>
       <%
-      System.out.println("CREATE: "+session.getId());
+      Log log=LogFactory.getLog(getClass());
+      log.trace("CREATE: "+session.getId());
       String colour=System.getProperty("wadi.colour");
       %>
 

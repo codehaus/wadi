@@ -61,10 +61,9 @@
   </Call>
 -->
 
-<!--
   <Set name="RequestLog">
     <New class="org.mortbay.http.NCSARequestLog">
-      <Arg><SystemProperty name="jetty.home" default="."/>/logs/yyyy_mm_dd.request.0.log</Arg>
+      <Arg><SystemProperty name="wadi.home" default="."/>/logs/yyyy_mm_dd.request.0.log</Arg>
       <Set name="retainDays">90</Set>
       <Set name="append">true</Set>
       <Set name="extended">false</Set>
@@ -72,7 +71,7 @@
       <Set name="LogTimeZone">GMT</Set>
     </New>
   </Set>
--->
+
 
 </Configure>
 

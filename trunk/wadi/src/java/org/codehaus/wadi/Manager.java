@@ -196,16 +196,19 @@ public abstract class
     HttpSessionImpl impl=null;
     boolean locked=false;
 
+    // this is to collapse multiple incoming threads looking for the
+    // same session into one immigration...
     synchronized (_localLock)
     {
       if ((impl=getLocalSession(realId))!=null)
       {
 	// session already local - return it...
+	_log.debug(realId+": collapsing secondary immigration...");
 	return impl;
       }
       else
       {
-	// session is remote/dead - we will try to migrate it
+	// session is remote/dead - we will try to immigrate it
 	// here. Take an exclusive lock on an empty session and insert
 	// into local table as a placeholder.
 	impl=createImpl();
@@ -240,7 +243,7 @@ public abstract class
     // from another node.
     if (!successfulMigration)
     {
-      long timeout=2000L;	// parameterise - TODO
+      long timeout=6000L;	// parameterise - TODO
       successfulMigration=_migrationService.getClient().immigrateSingleSession(realId, impl, timeout, _cluster.getDestination());
     }
 
