@@ -41,52 +41,119 @@ public class
     }
 
   public Map
-    combine(Peer local, Collection e, int k)
+    combineMap(Peer local, Collection e, int k)
     {
-      Map combs=combine(e, k);
+      Map combs=null;
+      boolean filter=(local!=null);
 
-      // only return combinations that contain the local node...
-      for (Iterator i=combs.values().iterator(); i.hasNext(); )
-	if (!((Collection)i.next()).contains(local))
-	  i.remove();
+      if (filter)
+      {
+	// calculate all subcombinations...
+	e=new TreeSet(e);
+	e.remove(local);
+	k--;
+	combs=combineMap(e, k);
+
+	// combine them with local node...
+	Map tmp=new TreeMap();
+	for (Iterator i=combs.entrySet().iterator(); i.hasNext(); )
+	{
+	  Map.Entry entry=(Map.Entry)i.next();
+	  String key=(String)entry.getKey();
+	  Collection value=(Collection)entry.getValue();
+	  value.add(local);
+	  key=Cell.id(value);
+	  tmp.put(key, value);
+	}
+	combs=tmp;
+      }
+      else
+      {
+	combs=combineMap(e, k);
+      }
 
       return combs;
     }
 
   protected Map
-    combine(Collection e, int k)
+    combineMap(Collection e, int k)
   {
     Map combsOut=new TreeMap();
 
-    if (k==1)
-    {
-      for (Iterator i=e.iterator(); i.hasNext(); )
-      {
-	Peer peer=((Peer)i.next());
-	Set comb=new TreeSet();
-	comb.add(peer);
-	//	_log.info("combining [] and "+peer);
-	combsOut.put(Cell.id(comb), comb);
-      }
-    }
+    if (k==0)
+      combsOut.put("", new TreeSet());
     else
     {
-      Map combsIn=combine(e, k-1);
+      Map combsIn=combineMap(e, k-1);
 
       for (Iterator i=combsIn.values().iterator(); i.hasNext(); )
       {
 	Collection comb=((Collection)i.next());
 	for (Iterator j=e.iterator(); j.hasNext(); )
 	{
-	  Peer peer=((Peer)j.next());
-	  //	  _log.info("combining "+comb+" and "+peer);
+	  Object peer=j.next();
 	  if (!comb.contains(peer))
 	  {
 	    Set newComb=new TreeSet(comb);
 	    newComb.add(peer);
 	    String id=Cell.id(newComb);
-	    if (!combsOut.containsKey(id))
-	      combsOut.put(id, newComb);
+	    combsOut.put(id, newComb);
+	  }
+	}
+      }
+    }
+
+    return combsOut;
+  }
+
+  public Collection
+    combineCollection(Comparable local, Collection e, int k)
+    {
+      Collection combs=null;
+      boolean filter=(local!=null);
+
+      if (filter)
+      {
+	// calculate all subcombinations...
+	e=new TreeSet(e);
+	e.remove(local);
+	k--;
+	combs=combineCollection(e, k);
+
+	// combine them with local node...
+	for (Iterator i=combs.iterator(); i.hasNext(); )
+	  ((Collection)i.next()).add(local);
+      }
+      else
+      {
+	combs=combineCollection(e, k);
+      }
+
+      return combs;
+    }
+
+  protected Collection
+    combineCollection(Collection e, int k)
+  {
+    Collection combsOut=new TreeSet(new CollectionComparator());
+
+    if (k==0)
+      combsOut.add(new TreeSet());
+    else
+    {
+      Collection combsIn=combineCollection(e, k-1);
+
+      for (Iterator i=combsIn.iterator(); i.hasNext(); )
+      {
+	Collection comb=((Collection)i.next());
+	for (Iterator j=e.iterator(); j.hasNext(); )
+	{
+	  Comparable peer=(Comparable)j.next();
+	  if (!comb.contains(peer))
+	  {
+	    Set newComb=new TreeSet(comb);
+	    newComb.add(peer);
+	    combsOut.add(newComb);
 	  }
 	}
       }

@@ -21,9 +21,38 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.Iterator;
+//import java.util.TreeSet;
+import java.util.ArrayList;
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.activecluster.ClusterFactory;
+
+// class ArrayList
+//   extends java.util.ArrayList
+//   implements Comparable
+// {
+//   public
+//     ArrayList(){super();}
+//   public
+//     ArrayList(int capacity){super(capacity);}
+
+//   public
+//     int compareTo(Object o)
+//   {
+//     ArrayList that=(ArrayList)o;
+
+//     Iterator i=this.iterator();
+//     Iterator j=that.iterator();
+
+//     int result=0;
+//     while (i.hasNext() && j.hasNext() && result==0)
+//     {
+//       result=((Comparable)i.next()).compareTo(j.next());
+//     }
+
+//     return result;
+//   }
+// }
 
 public class
   RingTopologyStrategy
@@ -36,7 +65,7 @@ public class
     }
 
   public Map
-    combine(Peer local, Collection e, int k)
+    combineMap(Peer local, Collection e, int k)
     {
       int l=e.size();
 
@@ -47,13 +76,48 @@ public class
 	Object[] array=e.toArray();
 	for (int i=0; i<l; i++)
 	{
-	  Set comb=new TreeSet();
+	  // use an ArrayList because:
+	  // the algorithm does not produce duplicates
+	  // we want cell peers to use ordering produced by algorithm - 3-0, not 0-3
+	  Collection comb=new ArrayList(k);
 
 	  for (int j=0; j<k; j++)
 	    comb.add(array[(i+j)%l]);
 
-	  if (comb.contains(local)) // TODO - could be more efficient...
+	  boolean filter=(local!=null);
+
+	  if (!filter || comb.contains(local)) // TODO - could be more efficient...
 	    combs.put(Cell.id(comb), comb);
+	}
+      }
+
+      return combs;
+    }
+
+  public Collection
+    combineCollection(Comparable local, Collection e, int k)
+    {
+      int l=e.size();
+
+      Collection combs=new ArrayList();
+
+      if (k>0)
+      {
+	Object[] array=e.toArray();
+	for (int i=0; i<l; i++)
+	{
+	  // use an ArrayList because:
+	  // the algorithm does not produce duplicates
+	  // we want cell peers to use ordering produced by algorithm - 3-0, not 0-3
+	  Collection comb=new ArrayList(k);
+
+	  for (int j=0; j<k; j++)
+	    comb.add(array[(i+j)%l]);
+
+	  boolean filter=(local!=null);
+
+	  if (!filter || comb.contains(local)) // TODO - could be more efficient...
+	    combs.add(comb);
 	}
       }
 

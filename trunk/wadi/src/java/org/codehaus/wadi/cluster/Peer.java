@@ -43,6 +43,18 @@ public class
     _node=node;
   }
 
+
+  /**
+   * This ctor is for testing only...
+   *
+   * @param id a <code>String</code> value
+   */
+  public
+    Peer(String id)
+    {
+      _id=id;
+    }
+
   public void setNode(Node node){_node=node;}
 
   public String
