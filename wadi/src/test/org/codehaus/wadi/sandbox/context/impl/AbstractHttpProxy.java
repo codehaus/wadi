@@ -41,6 +41,8 @@ import org.codehaus.wadi.sandbox.context.HttpProxy;
 //TRACE - RO, IDEM, SL
 //CONNECT - RO, IDEM, SL
 
+// extra WEBDAV Methods - PROPFIND etc...
+
 //SL methods need not be proxied
 //some SF methods may not use state and hence need not be proxied
 //HTTPS may result in immediate migration - or can we find a way of proxying it ? Are we ever likely to encounter it in a cluster ? Perhaps we could use an java.net.HttpsURLCommection ?
