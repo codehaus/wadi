@@ -215,7 +215,13 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 			_log.info("sending immigration response: "+id+" : "+_settingsInOut);
 			ImmigrationResponse mr=new ImmigrationResponse();
 			mr.setId(id);
-			mr.setMotable(emotable);
+			try {
+			immotable.copy(emotable);
+			} catch (Exception e) {
+			    _log.warn("unexpected problem", e);
+			    return false;
+			}
+			mr.setMotable(immotable);
 			ImmigrationAcknowledgement ack=(ImmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _ackRvMap, mr, _settingsInOut, _timeout);
 			if (ack==null) {
 				_log.warn("no ack received for session immigration: "+id);

@@ -17,9 +17,6 @@
 
 package org.codehaus.wadi;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 //----------------------------------------
 
 // every attribute is wrapped up so that we can manage it's
@@ -46,8 +43,6 @@ import org.apache.commons.logging.LogFactory;
 public aspect
   Wrapping
 {
-  private static final Log _log=LogFactory.getLog(Wrapping.class);
-
   pointcut setAttribute(AbstractHttpSessionImpl ahsi, String key, Object val, boolean returnVal) :
     execution(Object HttpSessionSetters.setAttribute(String, Object, boolean)) && args(key, val, returnVal) && target(ahsi);
 

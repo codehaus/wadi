@@ -207,7 +207,7 @@ public abstract class
     hasTimedOut(long currentTimeMillis)
   {
     return ((currentTimeMillis-_lastAccessedTime)>_maxInactiveInterval*1000);
-  }; // TODO - actualMII
+  } // TODO - actualMII
 
   public String
     toString()

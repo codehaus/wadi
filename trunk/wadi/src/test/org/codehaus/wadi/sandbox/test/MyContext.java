@@ -16,30 +16,20 @@
  */
 package org.codehaus.wadi.sandbox.test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
-import org.codehaus.wadi.sandbox.Context;
-import org.codehaus.wadi.sandbox.impl.AbstractMotable;
+import org.codehaus.wadi.sandbox.impl.AbstractContext;
 import org.codehaus.wadi.sandbox.impl.RWLock;
 
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-
-public class MyContext extends AbstractMotable implements Context {
+public class MyContext extends AbstractContext {
 	protected static Log _log = LogFactory.getLog(MyContext.class);
 
 	protected String _val;
-	protected transient ReadWriteLock _lock;
-
 	MyContext(String id, String val) {
 		this();
 		_id=id;
@@ -50,38 +40,14 @@ public class MyContext extends AbstractMotable implements Context {
 		_lock=new RWLock();
 		}
 
-	public Sync getSharedLock(){return _lock.readLock();}
-	public Sync getExclusiveLock(){return _lock.writeLock();}
-
-	// SerializableContext...
-
 	public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+	    _id=(String)oi.readObject();
 		_val=(String)oi.readObject();
 	}
 
 	public void writeContent(ObjectOutput oo) throws IOException {
+		oo.writeObject(_id);
 		oo.writeObject(_val);
-	}
-
-	// Motable
-	public byte[] getBytes() throws Exception {
-		ByteArrayOutputStream baos=new ByteArrayOutputStream();
-		ObjectOutputStream oos=null;
-		try {
-			oos=new ObjectOutputStream(baos);
-			writeContent(oos);
-			return baos.toByteArray();
-		} catch (Exception e) {
-			_log.warn("problem serialising context to byte[]", e);
-			throw e;
-		} finally {
-			if (oos!=null)
-				oos.close();
-		}
-	}
-
-	public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {
-		readContent(new SimpleStreamingStrategy().getInputStream(new ByteArrayInputStream(bytes)));
 	}
 
 	public void tidy() {

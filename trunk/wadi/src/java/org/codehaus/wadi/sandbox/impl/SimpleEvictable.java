@@ -64,4 +64,19 @@ public abstract class SimpleEvictable implements Evictable {
 		_lastAccessedTime=evictable.getLastAccessedTime();
 		_maxInactiveInterval=evictable.getMaxInactiveInterval();
 	}
+	
+	public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated) {
+	    _creationTime=creationTime;
+	    _lastAccessedTime=lastAccessedTime;
+	    _maxInactiveInterval=maxInactiveInterval;
+	    _invalidated=invalidated;	    
+	}
+	
+	public void destroy() {
+	    _creationTime=0;
+	    _lastAccessedTime=0;
+	    _maxInactiveInterval=0;
+	    _invalidated=true;
+	}
+	
 }
