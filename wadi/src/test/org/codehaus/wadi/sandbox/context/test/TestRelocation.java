@@ -157,6 +157,7 @@ public class TestRelocation extends TestCase {
 		super.setUp();
 		System.setProperty("org.mortbay.xml.XmlParser.NotValidating", "true");
 		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
+//		ClusterFactory clusterFactory       = new DefaultClusterFactory(connectionFactory,false, Session.AUTO_ACKNOWLEDGE, "ACTIVECLUSTER.DATA.", 50000L);
 		ClusterFactory clusterFactory       = new DefaultClusterFactory(connectionFactory);
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
 
@@ -169,7 +170,7 @@ public class TestRelocation extends TestCase {
 		_relocater0=new SwitchableRelocationStrategy();
 		_servlet0=new MyServlet("0", _cluster0, new MyContextPool(), _relocater0);
 		_filter0=new MyFilter("0", _servlet0);
-		(_node0=new JettyNode("0", "localhost", 8080, "/test", "/home/jules/workspace/wadi/webapps/test", _filter0, _servlet0)).start();
+		(_node0=new TomcatNode("0", "localhost", 8080, "/test", "/home/jules/workspace/wadi/webapps/test", _filter0, _servlet0)).start();
 
 		InetSocketAddress isa1=new InetSocketAddress("localhost", 8081);
 		_cluster1=clusterFactory.createCluster(clusterName);
@@ -180,7 +181,7 @@ public class TestRelocation extends TestCase {
 		_relocater1=new SwitchableRelocationStrategy();
 		_servlet1=new MyServlet("1", _cluster1, new MyContextPool(), _relocater1);
 		_filter1=new MyFilter("1", _servlet1);
-		(_node1=new TomcatNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
+		(_node1=new JettyNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
 	    _log.info("STARTING NOW!");
 	}
@@ -220,8 +221,8 @@ public class TestRelocation extends TestCase {
 		}
 	
 	public void testMigrateInsecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new GZIPStreamingStrategy()));
-		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new GZIPStreamingStrategy()));
+		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
+		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
 		testInsecureRelocation(true);
 		}
 		
@@ -283,13 +284,13 @@ public class TestRelocation extends TestCase {
 			assertTrue(m0.size()==2);
 			Thread.sleep(1000); // can take a while for ACK to be processed
 			assertTrue(m1.size()==0);
-			
-			// TODO - what about location caches ?
-			
+			assertTrue(c0.size()==0); // n0 has all the sessions, so needn't remember any further locations...
+			assertTrue(c1.size()==1); // bar migrated from n1 to n0, so n1 needs to remember the new location...
 		} else {
 			assertTrue(m0.size()==1);
-			assertTrue(m1.size()==1);			
-			// TODO - what about location caches ?
+			assertTrue(m1.size()==1);
+			assertTrue(c0.size()==1); // n0 had to proxy a request to n1, so needs to remember the location
+			assertTrue(c1.size()==0);
 		}
 		
 		_filter1.setLocalOnly(false);
@@ -300,7 +301,8 @@ public class TestRelocation extends TestCase {
 			assertTrue(m1.size()==2);
 			Thread.sleep(1000); // can take a while for ACK to be processed
 			assertTrue(m0.size()==0);
-			// TODO - what about location caches ?
+			assertTrue(c0.size()==2); // n0 should now know that both sessions are on n1
+			assertTrue(c1.size()==0); // n1 has all the sessions and doesn't need to know anything...
 		} else {
 			assertTrue(m0.size()==1);
 			assertTrue(m1.size()==1);
@@ -317,11 +319,13 @@ public class TestRelocation extends TestCase {
 			assertTrue(m0.size()==2);
 			Thread.sleep(1000); // can take a while for ACK to be processed
 			assertTrue(m1.size()==0);
-			// TODO - what about location caches ?
+			assertTrue(c0.size()==0); // n1 had all the sessions, now n0 has
+			assertTrue(c1.size()==2); // n1 needs to know all their new locations
 		} else {
 			assertTrue(m0.size()==1);
 			assertTrue(m1.size()==1);			
-			// TODO - what about location caches ?
+			assertTrue(c0.size()==1); // no change - everyone already knows
+			assertTrue(c1.size()==1); // all locations...
 		}
 
 		_filter1.setLocalOnly(false);
@@ -332,7 +336,8 @@ public class TestRelocation extends TestCase {
 			assertTrue(m1.size()==2);
 			Thread.sleep(1000); // can take a while for ACK to be processed
 			assertTrue(m0.size()==0);		
-			// TODO - what about location caches ?
+			assertTrue(c0.size()==2); // n0 needs to know all their new locations
+			assertTrue(c1.size()==0); // n0 had all the sessions, now n1 has
 		} else {
 			assertTrue(m0.size()==1);
 			assertTrue(m1.size()==1);
@@ -348,8 +353,8 @@ public class TestRelocation extends TestCase {
 		}
 	
 	public void testMigrateSecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new GZIPStreamingStrategy()));
-		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new GZIPStreamingStrategy()));
+		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
+		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
 		testSecureRelocation(true);
 		}
 		
@@ -404,12 +409,6 @@ public class TestRelocation extends TestCase {
 	}
 	
 	// TODO:
-	// consider merging two classes
-	// consider having MigrationConceptualiser at top of stack (to promote sessions to other nodes)
-	// Consider a MigrationContextualiser in place of the Location tier, which only migrates
-	// and a HybridContextualiser, which sometimes proxies and sometimes migrates...
-	// consider moving back to a more jcache like architecture, where the CacheKey is a compound - Req, Chain, etc...
-	// lookup returns a FilterChain to be run.... (problem - pause between lookup and locking - think about it).
 	// if we have located a session and set up a timeout, this should be released after the first proxy to it...
 	// 8080, 8081 should only be encoded once...
     
@@ -439,8 +438,8 @@ public class TestRelocation extends TestCase {
 		}
 	
 	public void testMigrateStatelessContextualiser() throws Exception {
-		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new GZIPStreamingStrategy()));
-		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new GZIPStreamingStrategy()));
+		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new GZIPStreamingStrategy(), _servlet0.getClusterMap()));
+		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new GZIPStreamingStrategy(), _servlet1.getClusterMap()));
 		testStatelessContextualiser(true);
 		}
 		

@@ -79,6 +79,7 @@ public class TomcatNode implements Node {
 	    _engine=_server.createEngine();
 	    _engine.setDefaultHost("localhost");
 	    _engine.addChild(_host);
+	    
 	    // Server
 	    _server.addEngine(_engine);
 
@@ -115,6 +116,7 @@ public class TomcatNode implements Node {
 	 * @see org.codehaus.wadi.sandbox.context.test.Node#start()
 	 */
 	public void start() throws Exception {
+		//_context.start();
 	    _server.start();
 
 	    _wrapper=(StandardWrapper)_context.findChild("Servlet");
