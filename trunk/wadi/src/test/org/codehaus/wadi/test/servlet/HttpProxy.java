@@ -60,17 +60,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * EXPERIMENTAL Proxy servlet.
+ * Enterprise HttpProxy implementation.
  *
- * @author gregw
+ * @author gregw@mortbay.com, jules@coredevelopers.net
  *
  */
 public class HttpProxy {
 	protected Log _log = LogFactory.getLog(HttpProxy.class);
-	
+
 	// need to understand why these should not be proxied...
 	protected HashSet _DontProxyHeaders = new HashSet();
-	
+
 	{
 		_DontProxyHeaders.add("proxy-connection");
 		_DontProxyHeaders.add("connection");
@@ -82,8 +82,55 @@ public class HttpProxy {
 		_DontProxyHeaders.add("proxy-authenticate");
 		_DontProxyHeaders.add("upgrade");
 	}
-	
+
+	class Copier implements Runnable {
+
+		protected final InputStream _is;
+		protected final OutputStream _os;
+		protected final int _length;
+		protected final byte[] _buffer;
+
+		protected int _total;
+		public int getTotal(){return _total;}
+
+		protected Exception _exception;
+		public Exception getException(){return _exception;}
+
+		protected Thread _thread;
+		public Thread getThread(){return _thread;}
+
+		public Copier(InputStream is, OutputStream os, int length) {
+			_is=is;
+			_os=os;
+			_length=length;
+			_buffer=new byte[_length];
+		}
+
+		public void runSynchronously() throws IOException {
+			_total=0;
+			for (int n=0; (n=_is.read(_buffer, 0, _length))>=0;) {
+				_os.write(_buffer,0,n);
+				_total+=n;
+			}
+		}
+
+		public void runAsynchronously() {
+			(_thread=new Thread(this)).start();
+		}
+
+		public void run() {
+			try {
+				runSynchronously();
+			} catch (IOException e) {
+				_exception=e; // report asynchronously
+			}
+		}
+	}
+
+	// move this into ProxyServlet...
 	public void proxy(ServletRequest req, ServletResponse res, URL url)	{
+		// we could check to scheme here as well - http only supported...
+
 		try {
 			proxy2(req, res, url);
 		} catch (IOException e) {
@@ -98,11 +145,11 @@ public class HttpProxy {
 					hres.sendError(502, "Bad Gateway: proxy could not establish connection to server"); // TODO - why do we need to use sendError ?
 				} catch (IOException e2) {
 					_log.warn("could not return error to client", e2);
-				}		
+				}
 			}
 		}
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 *
@@ -112,12 +159,15 @@ public class HttpProxy {
 	public void proxy2(ServletRequest req, ServletResponse res, URL url) throws IOException	{
 		HttpServletRequest hreq = (HttpServletRequest) req;
 		HttpServletResponse hres = (HttpServletResponse) res;
-		_log.info("-->: "+url);
-		
+
+		Copier client2Server=null;
+		Copier server2Client=null;
+		long startTime=System.currentTimeMillis();
+
 		URLConnection uc=url.openConnection(); // IOException
-	
+
 		uc.setAllowUserInteraction(false);
-		
+
 		// Set method
 		HttpURLConnection huc=null;
 		if (uc instanceof HttpURLConnection) {
@@ -126,7 +176,7 @@ public class HttpProxy {
 			huc.setRequestMethod(method);
 			huc.setInstanceFollowRedirects(false);
 		}
-		
+
 		// check connection header
 		String connectionHdr = hreq.getHeader("Connection"); // TODO - what if there are multiple values ?
 		if (connectionHdr != null) {
@@ -134,7 +184,7 @@ public class HttpProxy {
 			if (connectionHdr.equals("keep-alive")|| connectionHdr.equals("close"))
 				connectionHdr = null; // TODO  ??
 		}
-		
+
 		// copy headers
 		boolean xForwardedFor = false;
 		boolean hasContent = false;
@@ -143,15 +193,15 @@ public class HttpProxy {
 			// TODO could be better than this! - using javax.servlet ?
 			String hdr = (String) enm.nextElement();
 			String lhdr = hdr.toLowerCase();
-			
+
 			if (_DontProxyHeaders.contains(lhdr))
 				continue;
 			if (connectionHdr != null && connectionHdr.indexOf(lhdr) >= 0)
 				continue;
-			
+
 			if ("content-type".equals(lhdr))
 				hasContent = true;
-			
+
 			Enumeration vals = hreq.getHeaders(hdr);
 			while (vals.hasMoreElements()) {
 				String val = (String) vals.nextElement();
@@ -162,54 +212,41 @@ public class HttpProxy {
 				}
 			}
 		}
-		
+
 		// Proxy headers
 		uc.setRequestProperty("Via", "1.1 (WADI)");
 		if (!xForwardedFor)
 			uc.addRequestProperty("X-Forwarded-For", hreq.getRemoteAddr());
-		
+
 		// a little bit of cache control
 		String cache_control = hreq.getHeader("Cache-Control");
 		if (cache_control != null && (cache_control.indexOf("no-cache") >= 0 || cache_control.indexOf("no-store") >= 0))
 			uc.setUseCaches(false);
-		
+
 		// customize Connection
 		uc.setDoInput(true);
-		
+
 		// TODO - if client has ommitted content-type header, this will be missed - OK ?
-		if (hasContent) {			
+		OutputStream toServer=null;
+		if (hasContent) {
 			uc.setDoOutput(true);
-			
-			// copy client->server - TODO - shouldn't this be on background thread ?
-			OutputStream toServer=null;
-			try {			
+
+			try {
 				InputStream fromClient=hreq.getInputStream(); // IOException
 				toServer=uc.getOutputStream(); // IOException
-				
-				int bufferSize = 8192;
-				byte buffer[] = new byte[bufferSize];
-				for (int nbytes=0; (nbytes=fromClient.read(buffer,0,bufferSize))>=0;)
-					toServer.write(buffer,0,nbytes); // IOException	
+				(client2Server=new Copier(fromClient, toServer, 8192)).runAsynchronously(); // IOException
 			} catch (IOException e) {
 				_log.info("problem proxying client request to server", e);
-			} finally {
-				if (toServer!=null) {
-					try {			
-						toServer.close(); // IOException
-					} catch (IOException e) {
-						// well - we did our best...
-						_log.info("problem closing server request stream", e);
-					}
-				}
 			}
 		}
-		
+
 		// Connect - TODO - should we really leave it this late before trying to connect ?
 		uc.connect(); // IOException
-		
+
 		InputStream fromServer = null;
-		
+
 		// handler status codes etc.
+		int code=0;
 		if (huc==null) {
 			try {
 				fromServer = uc.getInputStream(); // IOException
@@ -217,8 +254,8 @@ public class HttpProxy {
 				_log.info("problem acquiring client output", e);
 			}
 		} else {
-			int code=502;
-			String message="Bad Gateway: could not read server response code or message";	
+			code=502;
+			String message="Bad Gateway: could not read server response code or message";
 			try {
 				code=huc.getResponseCode(); // IOException
 				message=huc.getResponseMessage(); // IOException
@@ -226,7 +263,6 @@ public class HttpProxy {
 				_log.info("problem acquiring http server response code/message", e);
 			} finally {
 				hres.setStatus(code, message);
-				_log.info(""+code+": "+url);
 			}
 
 			if (code<400) {
@@ -242,53 +278,49 @@ public class HttpProxy {
 				// TODO - do we need to use sendError()?
 			}
 		}
-		
+
 		// clear response defaults.
 		hres.setHeader("Date", null);
 		hres.setHeader("Server", null);
-		
+
 		// set response headers
-//		int h = 0;
-//		String hdr = connection.getHeaderFieldKey(h);
-//		String val = connection.getHeaderField(h);
-//		while (hdr != null || val != null) {
-//			String lhdr = (hdr != null) ? hdr.toLowerCase() : null;
-//			if (hdr != null && val != null && !_DontProxyHeaders.contains(lhdr))
-//				response.addHeader(hdr, val);
-//			
-//			//_log.debug("res " + hdr + ": " + val);
-//			
-//			h++;
-//			hdr = connection.getHeaderFieldKey(h);
-//			val = connection.getHeaderField(h);
-//		}
-		
-		// TODO - check with Greg that a null header key is impossible - 
-		// why did he write the loop like this [above]?
-		String key;
-		for (int i=0; (key=uc.getHeaderFieldKey(i))!=null; i++) {
-			key=key.toLowerCase();
-			String val=uc.getHeaderField(i);
-			if (val!=null && !_DontProxyHeaders.contains(key)) {
-				hres.addHeader(key, val);
-			}
+		int h = 0;
+		String hdr = uc.getHeaderFieldKey(h);
+		String val = uc.getHeaderField(h);
+		while (hdr != null || val != null) {
+			String lhdr = (hdr != null) ? hdr.toLowerCase() : null;
+			if (hdr != null && val != null && !_DontProxyHeaders.contains(lhdr))
+				hres.addHeader(hdr, val);
+
+			//_log.debug("res " + hdr + ": " + val);
+
+			h++;
+			hdr = uc.getHeaderFieldKey(h);
+			val = uc.getHeaderField(h);
 		}
-		
+
+//		// TODO - check with Greg that a null header key is impossible -
+//		// why did he write the loop like this [above]?
+//		String key;
+//		for (int i=0; (key=uc.getHeaderFieldKey(i))!=null; i++) {
+//			key=key.toLowerCase();
+//			String val=uc.getHeaderField(i);
+//			if (val!=null && !_DontProxyHeaders.contains(key)) {
+//				hres.addHeader(key, val);
+//			}
+//		}
+
 		hres.addHeader("Via", "1.1 (WADI)");
-		
-		// copy server->client		
-		if (fromServer != null) {
-			try {			
+
+		// copy server->client
+		if (fromServer!=null) {
+			try {
 				OutputStream toClient=hres.getOutputStream();// IOException
-				int bufferSize = 8192;
-				byte buffer[] = new byte[bufferSize];
-				for (int nbytes=0; (nbytes=fromServer.read(buffer,0,bufferSize))>=0;)
-					toClient.write(buffer,0,nbytes); // IOException
-				
+				(server2Client=new Copier(fromServer, toClient, 8192)).runSynchronously();// IOException
 			} catch (IOException e) {
 				_log.info("problem proxying server response back to client", e);
 			} finally {
-				try {			
+				try {
 					fromServer.close();
 				} catch (IOException e) {
 					// well - we did our best...
@@ -296,5 +328,32 @@ public class HttpProxy {
 				}
 			}
 		}
+
+		int client2ServerTotal=0;
+		if (toServer!=null) {
+			do {
+				try {
+					client2Server.getThread().join();
+				} catch (InterruptedException ignore) {
+					// ignore
+				}
+			} while (Thread.interrupted());
+
+			{
+				try {
+					toServer.close(); // IOException
+				} catch (IOException e) {
+					// well - we did our best...
+					_log.info("problem closing server request stream", e);
+				}
+			}
+
+			client2ServerTotal=client2Server.getTotal();
+//			Exception c2se=client2Server.getException();
+		}
+
+		long endTime=System.currentTimeMillis();
+		long elapsed=endTime-startTime;
+		_log.info("in:"+client2ServerTotal+", out:"+server2Client.getTotal()+", status:"+code+", time:"+elapsed+", url:"+url);
 	}
 }
