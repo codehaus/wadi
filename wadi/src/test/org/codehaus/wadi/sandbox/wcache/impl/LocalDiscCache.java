@@ -7,9 +7,7 @@
 package org.codehaus.wadi.sandbox.wcache.impl;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import org.codehaus.wadi.SerializableContent;

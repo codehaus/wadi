@@ -16,7 +16,7 @@
 // limitations under the License.
 // ========================================================================
 
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.test.servlet;
 
 import java.io.IOException;
 import java.io.InputStream;

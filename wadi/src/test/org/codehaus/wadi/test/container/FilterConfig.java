@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.test.container;
 
 import java.util.Enumeration;
 import javax.servlet.ServletContext;

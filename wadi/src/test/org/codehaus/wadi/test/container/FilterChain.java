@@ -15,14 +15,33 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.test.container;
 
+import java.io.IOException;
+import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import org.codehaus.wadi.Manager;
 
-interface
-  Invocation
+
+public class
+  FilterChain
+  implements javax.servlet.FilterChain
 {
-  void invoke(Manager manager, ServletRequest requset, ServletResponse response);
+  protected final Manager _manager;
+  protected final Invocation _invocation;
+
+  public
+    FilterChain(Manager manager, Invocation invocation)
+  {
+    _manager=manager;
+    _invocation=invocation;
+  }
+
+  public void
+    doFilter(ServletRequest request, ServletResponse response)
+    throws IOException, ServletException
+  {
+    _invocation.invoke(_manager, request, response);
+  }
 }

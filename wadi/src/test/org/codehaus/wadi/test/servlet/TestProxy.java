@@ -4,7 +4,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.test.servlet;
 
 import java.io.IOException;
 import java.net.URL;
