@@ -17,7 +17,6 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import org.codehaus.wadi.sandbox.Evictable;
-import org.codehaus.wadi.sandbox.Evicter;
 
 /**
  * An Evicter which evicts Evictables with less than a certain time to live remaining.

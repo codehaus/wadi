@@ -70,6 +70,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	}
 
 	public boolean isLocal(){return false;}
+	
 	/**
 	 * An Emoter that deals in terms of SharedJDBCMotables
 	 *
