@@ -1,0 +1,27 @@
+
+Implemented:
+
+- Tomcat-5.2x/Jetty-5.1x
+- [Fully spec compliant distributed HttpSession manager]
+- Pluggable (in terms of length and composition) Session storage stack (memory, disc, database, cluster)
+- Session promotion/demotion up/down this stack is overlapped/transaction-aware for safety
+- Pluggable Eviction strategies decide when to demote sessions
+- Pluggable Streaming Strategies (simple, gzip, zip) applied to serialised sessions
+- Transparent peer-to-peer session redistribution upon node shutdown
+- Transparent on-demand session migration between nodes
+- Transparent on-demand request proxying[/redirection] between nodes
+- Pluggable session/request relocation strategies (migrate, proxy (HttpUrlConnection/Commons-HttpClient)[, redirect])
+- Fully IOC
+- Spring-wired
+- Technologies: Java-1.4, AspectJ-1.2, ActiveCluster/MQ, ...
+
+NYI :
+
+- request relocation via redirection (routing lbs only)
+- integration of various lbs
+- pluggable object identity scoping policies - session, attribute
+- pluggable replication policies - immediate, request-group, timeout
+- pluggable auto-partitioning/healing strategies
+- LRU Eviction
+
+- OpenEJB
