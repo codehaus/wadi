@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 
 /**
- * TODO - JavaDoc this type
+ * API which encodes the Location of a Context
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

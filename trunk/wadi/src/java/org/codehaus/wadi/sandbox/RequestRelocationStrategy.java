@@ -17,7 +17,7 @@
 package org.codehaus.wadi.sandbox;
 
 /**
- * TODO - JavaDoc this type
+ * A relocation strategy that involves relocating the Request to the State.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

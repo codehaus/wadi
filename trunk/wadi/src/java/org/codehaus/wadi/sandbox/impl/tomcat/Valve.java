@@ -31,7 +31,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * TODO - JavaDoc this type
+ * A Tomcat Valvewhich checks incoming proxied requests to see if they were originally from
+ * a secure connection. If this is the case, it modifies the request object so that it encodes
+ * this fact.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

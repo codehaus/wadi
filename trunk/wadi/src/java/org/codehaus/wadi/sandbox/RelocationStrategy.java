@@ -27,7 +27,8 @@ import javax.servlet.http.HttpServletResponse;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * TODO - JavaDoc this type
+ * Abstracts out a strategy for either request or state relocation. This is necessary to
+ * ensure that a request is processed in the same node as its state.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

@@ -17,7 +17,7 @@
 package org.codehaus.wadi.sandbox;
 
 /**
- * TODO - JavaDoc this type
+ * An Object on which we may set a flag indicating that it is to be considered Secure.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

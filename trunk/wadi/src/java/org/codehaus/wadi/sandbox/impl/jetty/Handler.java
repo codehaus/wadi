@@ -28,7 +28,9 @@ import org.mortbay.http.HttpResponse;
 import org.mortbay.http.handler.AbstractHttpHandler;
 
 /**
- * TODO - JavaDoc this type
+ * A Jetty Handler which checks incoming proxied requests to see if they were originally from
+ * a secure connection. If this is the case, it modifies the request object so that it encodes
+ * this fact.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
