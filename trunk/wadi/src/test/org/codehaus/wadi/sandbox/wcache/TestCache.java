@@ -125,7 +125,7 @@ public class TestCache extends TestCase {
 		cache.evict();
 		disc.evict();
 		
-		RequestProcessor tmp=cache.get(key);
+//		RequestProcessor tmp=cache.get(key);
 //		
 //		assertTrue(val.equals(tmp));
 //		

@@ -399,7 +399,7 @@ public class TomcatIdGenerator
       devRandomSource=null;
       randomIS=null;
     }
-    Random random = getRandom();
+//    Random random = getRandom();
     getRandom().nextBytes(bytes);
   }
 }

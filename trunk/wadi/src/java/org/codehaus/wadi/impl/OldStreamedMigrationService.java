@@ -265,7 +265,8 @@ public class
 	ObjectOutput os=_streamingStrategy.getOutputStream(socket.getOutputStream());
 	ObjectInput  is=_streamingStrategy.getInputStream(socket.getInputStream());
 	// receive migration request from target
-	String method=(String)is.readObject();
+	//String method=(String)is.readObject();
+	is.readObject();
 	// method==migrate
 	String id=(String)is.readObject();
 	HttpSessionImpl impl=(HttpSessionImpl)_sessions.get(id); // TODO - what if session is not there ?

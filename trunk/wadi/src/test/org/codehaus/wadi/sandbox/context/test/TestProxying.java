@@ -254,7 +254,6 @@ public class TestProxying extends TestCase {
 
 		public void test(ServletRequest req, ServletResponse res){
 			_count++;
-			boolean stateful;
 			try {
 				((javax.servlet.http.HttpServletRequest)req).getSession();
 				_stateful=true;

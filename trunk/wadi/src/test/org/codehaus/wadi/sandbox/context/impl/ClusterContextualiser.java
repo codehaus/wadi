@@ -17,6 +17,7 @@
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -140,77 +141,51 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	}
 
 	class LocationListener implements MessageListener {
-		// TODO - should we use a semaphore here to bound the number of threads that we start ?
+		
+		protected final Map _map=new HashMap();
+		protected final Object _target;
+		
+		public LocationListener(Object target, String methodName) {
+			_target=target;
+			Method[] ms=target.getClass().getMethods();
+			for (int i=ms.length-1; i>=0; i--) {
+				Method m=ms[i];
+				Class[] pts=null;
+				if (methodName.equals(m.getName()) && (pts=m.getParameterTypes()).length==2 && pts[0]==ObjectMessage.class) {
+					//_log.info("caching method: "+m+" for class: "+pts[1]);
+					_map.put(pts[1], m);
+				}
+			}
+		}
+		
 		public void onMessage(Message message) {
+			// Threads should be pooled
+			// any allocs should be cached as ThreadLocals and reused 
+			// we need a way of indicating which messages should be threaded and which not...
 			new LocationListenerThread(message).start();
 		}
-	}
-
-	class LocationListenerThread extends Thread {
-		protected final Message _message;
-
-		public LocationListenerThread(Message message) {
-			_message=message;
-		}
-
-		public void run() {
-			ObjectMessage om=null;
-			Object tmp=null;
-			LocationResponse response=null;
-			LocationRequest request=null;
-
-			try {
-				if (_message instanceof ObjectMessage && (om=(ObjectMessage)_message)!=null && (tmp=om.getObject())!=null) {
-					if (tmp instanceof LocationRequest && (request=(LocationRequest)tmp)!=null)
-						onLocationRequestMessage(om, request);
-					else if (tmp instanceof LocationResponse && (response=(LocationResponse)tmp)!=null)
-						onLocationResponseMessage(om, response);
-				}
-				// should we try evicting entried before inserting them - or is this just a waste of time...
-				// TODO - maybe call evict ?
-			} catch (JMSException e) {
-				_log.error("problem processing location message", e);
+		
+		class LocationListenerThread extends Thread {
+			protected final Message _message;
+			
+			public LocationListenerThread(Message message) {
+				_message=message;
 			}
-		}
-
-		public void onLocationRequestMessage(ObjectMessage message, LocationRequest request) throws JMSException {
-			String id=request.getId();
-			_log.info("receiving location request: "+id);
-			if (_top==null) {
-				_log.warn("no Contextualiser set - cannot respond to LocationRequests");
-			} else {
+			
+			public void run() {
+				ObjectMessage om=null;
+				Object tmp=null;
+				Method m;
+				
 				try {
-					Destination replyTo=message.getJMSReplyTo();
-					String correlationId=message.getJMSCorrelationID();
-					long handShakePeriod=request.getHandOverPeriod();
-					// TODO - the peekTimeout should be specified by the remote node...
-					FilterChain fc=new LocationResponseFilterChain(replyTo, correlationId, _location, id, handShakePeriod);
-					_top.contextualise(null,null,fc,id, null, null, true);
+					if (_message instanceof ObjectMessage && (om=(ObjectMessage)_message)!=null && (tmp=om.getObject())!=null && (m=(Method)_map.get(tmp.getClass()))!=null) {
+						m.invoke(_target, new Object[]{om, tmp}); // TODO - how do we avoid this alloc ? ThreadPool/ThreadLocal...
+						
+						// if a message is of unrecognised type, we should recurse up its class hierarchy, memoizing the result
+						// if we find a class that matches - TODO - This would enable message subtyping...
+					}
 				} catch (Exception e) {
-					_log.warn("problem handling location request: "+id);
-				}
-				// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
-			}
-		}
-
-		public void onLocationResponseMessage(ObjectMessage message, LocationResponse response) throws JMSException {
-			// unpack message content into local cache...
-			_log.info("receiving location response: "+response.getIds());
-
-			// notify waiting threads...
-			String correlationId=message.getJMSCorrelationID();
-			synchronized (_searches) {
-				Rendezvous rv=(Rendezvous)_searches.get(correlationId);
-				if (rv!=null) {
-					do {
-						try {
-							rv.attemptRendezvous(response, _timeout);
-						} catch (TimeoutException toe) {
-							_log.info("rendez-vous timed out: "+correlationId, toe);
-						} catch (InterruptedException ignore) {
-							_log.info("rendez-vous interruption ignored: "+correlationId);
-						}
-					} while (Thread.interrupted()); // TODO - should really subtract from timeout each time...
+					_log.error("problem processing location message", e);
 				}
 			}
 		}
@@ -227,7 +202,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		_cluster=cluster;
 		boolean excludeSelf=true;
 	    _consumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
-		_listener=new LocationListener();
+		_listener=new LocationListener(this, "onMessage");
 	    _consumer.setMessageListener(_listener);// should be called in start() - we need a stop() too - to remove listeners...
 	    _timeout=timeout;
 	    _proxyHandOverPeriod=proxyHandOverPeriod;
@@ -364,5 +339,49 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			success=_migrater.migrateAndPromote(hreq, hres, chain, id, promoter, promotionLock, location);
 		
 		return success;
+	}
+	
+	// message handlers...
+	
+	public void onMessage(ObjectMessage message, LocationRequest request) throws JMSException {
+		String id=request.getId();
+		_log.info("receiving location request: "+id);
+		if (_top==null) {
+			_log.warn("no Contextualiser set - cannot respond to LocationRequests");
+		} else {
+			try {
+				Destination replyTo=message.getJMSReplyTo();
+				String correlationId=message.getJMSCorrelationID();
+				long handShakePeriod=request.getHandOverPeriod();
+				// TODO - the peekTimeout should be specified by the remote node...
+				FilterChain fc=new LocationResponseFilterChain(replyTo, correlationId, _location, id, handShakePeriod);
+				_top.contextualise(null,null,fc,id, null, null, true);
+			} catch (Exception e) {
+				_log.warn("problem handling location request: "+id);
+			}
+			// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
+		}
+	}
+
+	public void onMessage(ObjectMessage message, LocationResponse response) throws JMSException {
+		// unpack message content into local cache...
+		_log.info("receiving location response: "+response.getIds());
+
+		// notify waiting threads...
+		String correlationId=message.getJMSCorrelationID();
+		synchronized (_searches) {
+			Rendezvous rv=(Rendezvous)_searches.get(correlationId);
+			if (rv!=null) {
+				do {
+					try {
+						rv.attemptRendezvous(response, _timeout);
+					} catch (TimeoutException toe) {
+						_log.info("rendez-vous timed out: "+correlationId, toe);
+					} catch (InterruptedException ignore) {
+						_log.info("rendez-vous interruption ignored: "+correlationId);
+					}
+				} while (Thread.interrupted()); // TODO - should really subtract from timeout each time...
+			}
+		}
 	}
 }

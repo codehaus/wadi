@@ -45,32 +45,28 @@ public class LocalDiscCache extends AbstractMappedCache {
 	}
 	
 	public RequestProcessor put(String key, RequestProcessor val) {
-		   boolean success=false;
-
-		    try
-		    {
-		      SerializableContent sc=(SerializableContent)val;
-		      File file=new File(_dir, key.toString()+"."+_streamingStrategy.getSuffix());
-		      ObjectOutput oos=_streamingStrategy.getOutputStream(new FileOutputStream(file));
-		      sc.writeContent(oos);
-		      oos.flush();
-		      oos.close();
-
-		      // do we need to worry about ttl ?
-		      //	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
-		      //	file.setLastModified(willTimeOutAt);
-
-		      _log.info("stored (local disc): "+key+" : "+val);
-		      success=true;
-		    }
-		    catch (Exception e)
-		    {
-		      _log.error("store (local disc) failed: "+key, e);
-		    }
-
-		    //return success;
-		return (RequestProcessor)_map.put(key, val);
+		try
+		{
+			SerializableContent sc=val;
+			File file=new File(_dir, key.toString()+"."+_streamingStrategy.getSuffix());
+			ObjectOutput oos=_streamingStrategy.getOutputStream(new FileOutputStream(file));
+			sc.writeContent(oos);
+			oos.flush();
+			oos.close();
+			
+			// do we need to worry about ttl ?
+			//	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
+			//	file.setLastModified(willTimeOutAt);
+			
+			_log.info("stored (local disc): "+key+" : "+val);
 		}
+		catch (Exception e)
+		{
+			_log.error("store (local disc) failed: "+key, e);
+		}
+		
+		return (RequestProcessor)_map.put(key, val);
+	}
 	
 	public RequestProcessor peek(String key) {
 //	    Object value=null;

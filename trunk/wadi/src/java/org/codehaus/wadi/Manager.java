@@ -266,7 +266,7 @@ public abstract class
     // If a passivation store has been enabled, we may find the
     // session in it and load it....
     if (_passivationStrategy!=null)
-      if ((successfulMigration=_passivationStrategy.activate(realId, impl)))
+      if (true==(successfulMigration=_passivationStrategy.activate(realId, impl)))
 	_sessionLoadCounter++;
 
     // If a migration policy has been enabled, we may request it

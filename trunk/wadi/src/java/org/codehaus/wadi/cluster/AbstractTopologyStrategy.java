@@ -82,18 +82,18 @@ public abstract class
     onNodeAdd(ClusterEvent event)
   {
     Peer p=new Peer(event.getNode());
-    Collection peers=null;
+//    Collection peers=null;
 
     synchronized (_peers)
     {
       _peers.put(p.getId(), p);
-      peers=_peers.values();
+ //     peers=_peers.values();
     }
 
     _log.info("adding: " + p);
     //	  _log.info("nodes : " + peers);
 
-    Object[] diffs=combineCollection(p);
+ //   Object[] diffs=combineCollection(p);
   }
 
   public void onCoordinatorChanged(ClusterEvent ce){} // TODO - what does thi mean ?
@@ -104,17 +104,17 @@ public abstract class
     Node node=event.getNode();
     String id=(String)node.getState().get("id");
     Peer p=null;
-    Collection peers=null;
+//    Collection peers=null;
     synchronized (_peers)
     {
       p=(Peer)_peers.remove(id);
-      peers=_peers.values();
+//      peers=_peers.values();
     }
 
     _log.info("removing: " + p);
     //	  _log.info("nodes   : " + peers);
 
-    Object[] diffs=combineCollection(p);
+//    Object[] diffs=combineCollection(p);
   }
 
   // do we need this yet ?

@@ -100,7 +100,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		    if (context!=null) {
 		    	_log.info("promoting (from database): "+id);
 		    	if (promoter.prepare(id, context)) {
-			    	int r=s.executeUpdate("DELETE FROM "+_table+" WHERE MyKey='"+id+"'");
+			    	s.executeUpdate("DELETE FROM "+_table+" WHERE MyKey='"+id+"'");
 			    	_log.info("removed (database): "+id);
 		    		promoter.commit(id, context);
 		    		promotionLock.release();

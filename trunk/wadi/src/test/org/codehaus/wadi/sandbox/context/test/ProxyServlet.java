@@ -104,7 +104,6 @@ public class ProxyServlet implements Servlet {
 		public ServletConfig getServletConfig() {return null;}
 		public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
 			HttpServletRequest hreq=(HttpServletRequest)req;
-			HttpServletResponse hres=(HttpServletResponse)res;
 			_log.info("Via: "+hreq.getHeader("Via"));
 			_log.info("Max-Forwards: "+hreq.getHeader("Max-Forwards"));
 			_log.info("X-Forwarded-For: "+hreq.getHeader("X-Forwarded-For"));
