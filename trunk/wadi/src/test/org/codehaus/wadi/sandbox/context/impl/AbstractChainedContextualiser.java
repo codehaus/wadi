@@ -40,21 +40,21 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
 	public boolean contextualise(ServletRequest req, ServletResponse res,
-			FilterChain chain, String id, Promoter promoter, Sync overlap) throws IOException, ServletException {
-		if (contextualiseLocally(req, res, chain, id, promoter, overlap))
+			FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
+		if (contextualiseLocally(req, res, chain, id, promoter, promotionMutex))
 			return true;
 		else {
 			try {
-				overlap.acquire();
+				promotionMutex.acquire();
 				// by the time we get the lock, another thread may have already promoted this context - try again locally...
-				if (contextualiseLocally(req, res, chain, id, promoter, overlap)) // mutex released here if successful
+				if (contextualiseLocally(req, res, chain, id, promoter, promotionMutex)) // mutex released here if successful
 					return true;
 				else {
 					try {
 						Promoter p=getPromoter(promoter);
-						return _next.contextualise(req, res, chain, id, p, overlap);
+						return _next.contextualise(req, res, chain, id, p, promotionMutex);
 					} finally {
-						overlap.release();
+						promotionMutex.release();
 					}
 				}
 			} catch (InterruptedException e) {
@@ -66,5 +66,5 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 	public abstract Promoter getPromoter(Promoter promoter);
 	
 	public abstract boolean contextualiseLocally(ServletRequest req, ServletResponse res,
-			FilterChain chain, String id, Promoter promoter, Sync overlap) throws IOException, ServletException;
+			FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException;
 }

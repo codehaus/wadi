@@ -18,12 +18,12 @@ import javax.servlet.ServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
-import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.context.impl.LocalDiscContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
-import EDU.oswego.cs.dl.util.concurrent.NullSync;
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 import junit.framework.TestCase;
@@ -86,13 +86,13 @@ public class TestContextualiser extends TestCase {
 	
 	class MyContext implements Context {
 		String _val;
-		Sync   _lock=new NullSync();
+		ReadWriteLock _lock=new ReaderPreferenceReadWriteLock();
 		
 		MyContext(String val) { 
 			_val=val;
 		}
 		
-		public Sync getSharedLock(){return _lock;}
+		public Sync getSharedLock(){return _lock.readLock();}
 	}
 	
 	class
@@ -129,10 +129,35 @@ public class TestContextualiser extends TestCase {
 			_context=new MyContext(context);
 		}
 		
-		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync overlap) throws IOException, ServletException {
+		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
 			_counter++;
-			promoter.promoteAndContextualise(req, res, chain, id, _context, overlap);
+			promoter.promoteAndContextualise(req, res, chain, id, _context, promotionMutex);
 			return true;
+		}
+	}
+	
+	class MyXContextualiser implements Contextualiser {
+		int _counter=0;
+		MyContext _context;
+
+		public MyXContextualiser(String context) {
+			_context=new MyContext(context);
+		}
+		
+		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
+			_counter++;
+			Context context=_context;
+			Sync shared=context.getSharedLock();
+			try {
+				shared.acquire();
+				promotionMutex.release();
+				_log.info("running locally: "+id);
+				chain.doFilter(req, res);
+				shared.release();
+				return true;
+			} catch (InterruptedException e) {
+				throw new ServletException("problem processing request for: "+id, e);
+			}
 		}
 	}
 	
@@ -140,51 +165,65 @@ public class TestContextualiser extends TestCase {
 		Contextualiser _contextualiser;
 		FilterChain    _chain;
 		String         _id;
-		Mutex          _loadMutex;
+		Mutex          _promotionMutex;
 		
-		MyRunnable(Contextualiser contextualiser, FilterChain chain, String id, Mutex loadMutex) {
+		MyRunnable(Contextualiser contextualiser, FilterChain chain, String id, Mutex promotionMutex) {
 			_contextualiser=contextualiser;
 			_chain=chain;
 			_id=id;
-			_loadMutex=loadMutex;
+			_promotionMutex=promotionMutex;
 		}
 		
 		public void run() {
 			try {
-				_contextualiser.contextualise(null, null, _chain, _id, null, _loadMutex);
+				_contextualiser.contextualise(null, null, _chain, _id, null, _promotionMutex);
 			} catch (Exception ignore) {
 				assertTrue(false);
 			}
 		}
 	}
 	
-	public void testPromotion() throws Exception {
-		MyPromotingContextualiser mpc=new MyPromotingContextualiser("baz");
-		Contextualiser c=new MemoryContextualiser(mpc, new HashMap());
+	public void testPromotion(Contextualiser c, int n) throws Exception {
+		Contextualiser mc=new MemoryContextualiser(c, new HashMap());
 		FilterChain fc=new MyFilterChain();		
-		Mutex loadMutex=new Mutex();
+		Mutex promotionMutex=new Mutex();
 		
-		for (int i=0; i<2; i++)
-			c.contextualise(null,null,fc,"baz", null, loadMutex);
-		
-		assertTrue(mpc._counter==1);
+		for (int i=0; i<n; i++)
+			mc.contextualise(null,null,fc,"baz", null, promotionMutex);
 	}
 	
-	public void testCollapsing() throws Exception {
+	public void testPromotion() throws Exception {
+		int n=2;
 		MyPromotingContextualiser mpc=new MyPromotingContextualiser("baz");
-		Contextualiser c=new MemoryContextualiser(mpc, new HashMap());
-		FilterChain fc=new MyFilterChain();
-		Mutex loadMutex=new Mutex();
-
-		Runnable r=new MyRunnable(c, fc, "baz", loadMutex);
-		Thread[] threads=new Thread[100];
-		for (int i=0; i<100; i++)
-			(threads[i]=new Thread(r)).start();
-		for (int i=0; i<100; i++)
-			threads[i].join();
-		
+		testPromotion(mpc, n);	
 		assertTrue(mpc._counter==1);
+		
+		MyXContextualiser mxc=new MyXContextualiser("baz");
+		testPromotion(mxc, n);	
+		assertTrue(mxc._counter==n);
+	}
+	
+	public void testCollapsing(Contextualiser c, int n) throws Exception {
+		Contextualiser mc=new MemoryContextualiser(c, new HashMap());
+		FilterChain fc=new MyFilterChain();
+		Mutex promotionMutex=new Mutex();
+
+		Runnable r=new MyRunnable(mc, fc, "baz", promotionMutex);
+		Thread[] threads=new Thread[n];
+		for (int i=0; i<n; i++)
+			(threads[i]=new Thread(r)).start();
+		for (int i=0; i<n; i++)
+			threads[i].join();
 		}
 	
-	// same thing as above - but high concurrency to test thread collapsing...
+	public void testCollapsing() throws Exception {
+		int n=10;
+		MyPromotingContextualiser mpc=new MyPromotingContextualiser("baz");
+		testCollapsing(mpc, n);
+		assertTrue(mpc._counter==1);
+		
+		MyXContextualiser mxc=new MyXContextualiser("baz");
+		testCollapsing(mxc, n);
+		assertTrue(mxc._counter==n);
+		}
 }

@@ -29,6 +29,6 @@ public interface Contextualiser {
 	
 	// I'd like to add Manager to param list, but it bloats dependency tree - can we get along without it ?
 	// FilterChain.doFilter() throws IOException, ServletException...
-	boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync overlap) throws IOException, ServletException;
+	boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException;
 
 }
