@@ -316,6 +316,7 @@ public abstract class
     start()
       throws Exception
   {
+  	_log.debug("starting");
     _log.info("WADI v1.0 - Web Application Distribution Infrastructure (jules@coredevelopers.net)");
     // TODO - is putting ourselves in an attribute a security risk ?
     getServletContext().setAttribute(Manager.class.getName(), this);
@@ -342,6 +343,7 @@ public abstract class
 
     _migrationServer.start();
     _running=true;
+    _log.debug("started");
   }
 
   public synchronized boolean
@@ -354,6 +356,7 @@ public abstract class
     stop()
       throws Exception
   {
+  	_log.debug("stopping");
     _running=false;
     _locationServer.stop();
     _locationServer=null;
@@ -362,8 +365,7 @@ public abstract class
 
     //    System.setSecurityManager(((SecurityManager)System.getSecurityManager()).getDelegate());
     _loader=null;
-    System.out.println("STOPPING MANAGER");
-    _log.trace("stopped");
+    _log.debug("stopped");
   }
 
   //----------------------------------------
