@@ -14,33 +14,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.context.impl;
+package org.codehaus.wadi.sandbox.context;
 
-import java.io.Serializable;
-
-import javax.jms.Destination;
+import java.io.IOException;
 
 /**
- * Sent to notify Cluster memebers of a new Queue from which they should take and acknowledge
- * Context emmigrations...
+ * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ShutDownEndedNotification implements Serializable {
-	protected Destination _emmigrationQueue;
 
-	/**
-	 *
-	 */
-	public ShutDownEndedNotification(Destination emmigrationQueue) {
-		super();
-		_emmigrationQueue=emmigrationQueue;
-	}
+public interface ByteArray {
+	public byte[] getBytes() throws IOException, ClassNotFoundException;
 
-	public ShutDownEndedNotification() {
-		// for use when demarshalling...
-	}
-
-	public Destination getDestination(){return _emmigrationQueue;}
+	public void setBytes(byte[] bytes) throws IOException,
+			ClassNotFoundException;
 }

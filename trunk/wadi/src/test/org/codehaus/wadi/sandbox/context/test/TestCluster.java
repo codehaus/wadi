@@ -33,7 +33,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.activecluster.ClusterException;
-import org.codehaus.activecluster.ClusterFactory;
 import org.codehaus.activecluster.LocalNode;
 import org.codehaus.activecluster.impl.DefaultCluster;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
@@ -42,10 +41,8 @@ import org.codehaus.activecluster.impl.StateService;
 import org.codehaus.activecluster.impl.StateServiceStub;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.sandbox.context.Collapser;
-import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Location;
-import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyCollapser;
@@ -68,10 +65,6 @@ public class TestCluster extends TestCase {
 	class MyCluster extends DefaultCluster {
 	    public MyCluster(final LocalNode localNode, Topic dataTopic, Topic destination, Connection connection, Session session, MessageProducer producer, Timer timer, long inactiveTime) throws JMSException {
 	    	super(localNode, dataTopic, destination, connection, session, producer, timer, inactiveTime);
-	    }
-	    
-	    public Destination createTemporaryQueue() throws JMSException {
-	    	return getSession().createTemporaryQueue();
 	    }
 	    
 	    public Destination createQueue(String name) throws JMSException {
@@ -186,7 +179,6 @@ public class TestCluster extends TestCase {
 		assertTrue(true);
 		
 		ClusterContextualiser c=_node0.getContextualiser();
-//		Destination queue=_node0.getCluster().createTemporaryQueue();
 		Destination queue=_node0.getCluster().createQueue("EMMIGRATION");
 		
 		c.setEmmigrationQueue(queue);
