@@ -482,3 +482,26 @@ not being done unecessarily elsewhere.
 we need a good joinpoint to hang session creation and destruction
 related aspects from - how about a session commission/decommission
 method pair.
+
+----------------------------------------
+
+wad-web.xml is written (currently) in Jetty-ese, because I anticipate
+the internal APIs changing frequently for a while and Jetty-ese is
+more flexible in this respectthan Digester. I understand that this
+ties the Tomcat integration to Jetty code. Too bad :-) its probably
+only a temporary situation.
+
+----------------------------------------
+
+The PassivationStrategy should probably live inside the EvictionPolicy
+? Their naming convention should be rationalised.
+
+-----------------------------------------
+
+wadi-web.xml needs FAQ-ing
+
+-----------------------------------------
+
+What happens when Jetty or Tomcat are run via JMX :-)
+
+
