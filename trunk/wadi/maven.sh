@@ -2,13 +2,13 @@
 
 if [ -z "$MAVEN_HOME" ]
 then
-    MAVEN_HOME=/usr/java/maven-1.0.2
+    MAVEN_HOME=/usr/local/java/maven-1.0.2
 fi
 export MAVEN_HOME
 
 if [ -z "$JAVA_HOME" ]
 then
-    JAVA_HOME=/usr/java/j2sdk1.4.2_05
+    JAVA_HOME=/usr/local/java/sun-j2sdk1.4.2_05
 fi
 export JAVA_HOME
 
