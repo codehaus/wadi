@@ -25,4 +25,5 @@ public interface Promoter {
 
 	void promoteAndContextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Context context, Sync overlap) throws IOException, ServletException;
 	
+	Context nextContext();
 }
