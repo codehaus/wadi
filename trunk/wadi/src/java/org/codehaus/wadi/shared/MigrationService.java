@@ -174,11 +174,11 @@ public class
   {
     protected final Log _log=LogFactory.getLog(getClass());
 
-    protected Map _migrationBarriers=Collections.synchronizedMap(new HashMap());
+//     protected Map _migrationBarriers=Collections.synchronizedMap(new HashMap());
 
-    public void putBarrier(String id, CyclicBarrier barrier){_migrationBarriers.put(id, barrier);}
-    public CyclicBarrier getBarrier(String id){return (CyclicBarrier)_migrationBarriers.get(id);}
-    public void removeBarrier(String id){_migrationBarriers.remove(id);}
+//     public void putBarrier(String id, CyclicBarrier barrier){_migrationBarriers.put(id, barrier);}
+//     public CyclicBarrier getBarrier(String id){return (CyclicBarrier)_migrationBarriers.get(id);}
+//     public void removeBarrier(String id){_migrationBarriers.remove(id);}
 
     protected Manager                _manager;
     protected HttpSessionImplFactory _factory;
@@ -377,31 +377,9 @@ public class
 	  HttpSessionImpl impl=(HttpSessionImpl)i.next();
 	  impl.getContainerLock().release();
 
-	  if (sync)
-	  {
-	    CyclicBarrier barrier=getBarrier(impl.getRealId());
+	if (sync && candidates.size()==1)
+	  _manager._adaptor.receive(null,impl.getRealId(), 2000L); // parameterise - TODO
 
-	    if (barrier==null)
-	    {
-	      _log.warn("missed sync point (too late?) in session transfer");
-	    }
-	    else
-	    {
-	      try
-	      {
-		barrier.attemptBarrier(5000L);
-		_log.trace("successful sync session transfer");
-	      }
-	      catch (TimeoutException e)
-	      {
-		_log.warn("missed sync point in session transfer - timed out");
-	      }
-	      catch (InterruptedException e)
-	      {
-		_log.warn("missed sync point in session transfer - interrupted");
-	      }
-	    }
-	  }
 	}
 
 	try{socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
