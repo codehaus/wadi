@@ -345,6 +345,8 @@ public abstract class
 
   protected String _configurationResource="WEB-INF/wadi-web.xml";
 
+  protected org.codehaus.wadi.NewMigrationService _ms=new org.codehaus.wadi.impl.async.MigrationService();
+
   public synchronized void
     start()
       throws Exception
@@ -406,9 +408,10 @@ public abstract class
       _clusterFactory=new DefaultClusterFactory(getConnection());
       _cluster=_clusterFactory.createCluster("org.codehaus.wadi#cluster");
       _cluster.addClusterListener(new MembershipListener());
-      InvokableListener listener=new InvokableListener(this);
-      _cluster.createConsumer(_cluster.getDestination(), null, true).setMessageListener(listener);
-      _cluster.createConsumer(_cluster.getLocalNode().getDestination()).setMessageListener(listener);
+
+      _ms.setManager(this);
+      _ms.getServer().start();
+
       _cluster.start(); // should include webapp context
     }
 
@@ -453,6 +456,7 @@ public abstract class
     // running until afterwards for the moment...
     _locationServer.stop();
     _locationServer=null;
+    _ms.getServer().stop();
     _migrationServer.stop();
     _migrationServer=null;
 
@@ -1188,65 +1192,5 @@ public abstract class
     public void onNodeUpdate(ClusterEvent event){_log.info("node updated");}
     public void onNodeRemoved(ClusterEvent event){_log.info("node removed");}
     public void onNodeFailed(ClusterEvent event){_log.info("node failed");}
-  }
-
-  class InvokableListener
-    implements MessageListener, Runnable
-  {
-    protected Manager _manager;
-
-    public
-      InvokableListener(Manager manager)
-    {
-      _manager=manager;
-    }
-
-    protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor(); // TODO
-
-    protected Message _message;
-
-    public void
-      onMessage(Message message)
-    {
-      _message=message;
-      new Thread(this, "MessageListener").start();
-    }
-
-    public void
-      run()
-    {
-      Message message=_message;
-      _log.info("message arriving: "+Thread.currentThread());
-      try
-      {
-	ObjectMessage om=null;
-	Object tmp=null;
-	Invocable invocable=null;
-	if (message instanceof ObjectMessage &&
-	    (om=(ObjectMessage)message)!=null &&
-	    (tmp=om.getObject())!=null &&
-	    tmp instanceof Invocable &&
-	    (invocable=(Invocable)tmp)!=null)
-	{
-	  _log.info("message arrived: "+invocable);
-	  try
-	  {
-	    invocable.invoke(_manager, om);
-	  }
-	  catch (Throwable t)
-	  {
-	    _log.warn("unexpected problem responding to message:"+invocable, t);
-	  }
-	}
-	else
-	{
-	  _log.warn("null message or unrecognised message type:"+message);
-	}
-      }
-      catch (JMSException e)
-      {
-	_log.warn("unexpected problem unpacking message:"+message);
-      }
-    }
   }
 }
