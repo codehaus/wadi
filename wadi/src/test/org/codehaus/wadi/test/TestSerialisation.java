@@ -22,7 +22,7 @@ import java.io.Serializable;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.shared.ObjectInputStream;
+import org.codehaus.wadi.ObjectInputStream;
 
 /**
  * Serialisation related tests

@@ -19,8 +19,8 @@ package org.codehaus.wadi.jetty;
 
 public class
   HttpSessionImplFactory
-  implements org.codehaus.wadi.shared.HttpSessionImplFactory
+  implements org.codehaus.wadi.HttpSessionImplFactory
 {
-  public org.codehaus.wadi.shared.HttpSessionImpl create(){return new HttpSessionImpl();}
-  public void destroy(org.codehaus.wadi.shared.HttpSessionImpl impl){}
+  public org.codehaus.wadi.HttpSessionImpl create(){return new HttpSessionImpl();}
+  public void destroy(org.codehaus.wadi.HttpSessionImpl impl){}
 }

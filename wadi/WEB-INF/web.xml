@@ -23,7 +23,7 @@
 <!-- now deployed programmatically in Jetty
   <filter>
     <filter-name>WadiFilter</filter-name>
-    <filter-class>org.codehaus.wadi.shared.Filter</filter-class>
+    <filter-class>org.codehaus.wadi.Filter</filter-class>
   </filter>
 
   <filter-mapping>

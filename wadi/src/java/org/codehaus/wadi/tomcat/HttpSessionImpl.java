@@ -34,7 +34,7 @@ import org.apache.catalina.SessionListener;
  */
 public class
   HttpSessionImpl
-  extends org.codehaus.wadi.shared.HttpSessionImpl
+  extends org.codehaus.wadi.HttpSessionImpl
   implements org.apache.catalina.Session
 {
   //--------//
