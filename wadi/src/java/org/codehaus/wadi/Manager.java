@@ -256,27 +256,32 @@ public abstract class
     // from another node.
     if (!successfulMigration)
     {
+      Destination src=_cluster.getLocalNode().getDestination();
+      Destination dst=_cluster.getDestination();
+      String correlationId=realId+"-"+src.toString();
       long timeout=2000L;
       Object result=_adaptor.send(_cluster,
 				  new MigrationRequest(realId, _migrationServer.getAddress(), _migrationServer.getPort(), timeout),
-				  realId+"-request",
+				  correlationId,
 				  timeout,	// parameterise - TODO
-				  _cluster.getLocalNode().getDestination(),
-				  _cluster.getDestination());
+				  src,
+				  dst);
 
-      _log.info("successfully immigrated: "+impl);
       successfulMigration=(impl==result);
     }
 
     if (successfulMigration)
     {
+      _log.info("successfully immigrated: "+impl);
+
       assert impl.getRealId()!=null;
       if (locked)
 	impl.getContainerLock().release();
     }
     else
     {
-      _log.warn(realId+": failed to acquire remote session - tidying up");
+      _log.warn(realId+": failed to immigrate session - tidying up");
+
       _local.remove(realId);
       if (locked)
 	impl.getContainerLock().release();
@@ -1186,7 +1191,7 @@ public abstract class
   }
 
   class InvokableListener
-    implements MessageListener
+    implements MessageListener, Runnable
   {
     protected Manager _manager;
 
@@ -1198,9 +1203,19 @@ public abstract class
 
     protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor(); // TODO
 
+    protected Message _message;
+
     public void
       onMessage(Message message)
     {
+      _message=message;
+      new Thread(this, "MessageListener").start();
+    }
+
+    public void
+      run()
+    {
+      Message message=_message;
       _log.info("message arriving: "+Thread.currentThread());
       try
       {

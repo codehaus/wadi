@@ -20,6 +20,7 @@ package org.codehaus.wadi;
 import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import javax.jms.JMSException;
 
 public class
     MigrationAcknowledgement
@@ -41,9 +42,14 @@ public class
   public void
     invoke(Manager manager, ObjectMessage message)
   {
-    manager._adaptor.receive(_ok?Boolean.TRUE:Boolean.FALSE,
-			     _id+"-response",
-			     _timeout);
+    try
+    {
+      manager._adaptor.receive(_ok?Boolean.TRUE:Boolean.FALSE, message.getJMSCorrelationID(), _timeout);
+    }
+    catch (JMSException e)
+    {
+      _log.warn("could not extract correlation id from acknowledgement message", e);
+    }
   }
 
   public String

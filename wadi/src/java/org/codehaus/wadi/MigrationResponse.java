@@ -55,10 +55,7 @@ public class
       HttpSessionImpl impl=manager.getLocalSession(_id);
       impl.readContent(ois);
       ois.close();
-      long timeStarted=System.currentTimeMillis();
-      manager._adaptor.receive(impl, _id+"-request", _timeout);
-      long timeTaken=System.currentTimeMillis()-timeStarted;
-      _log.trace(_id+": rendez-vous completed in "+timeTaken+" millis");
+      manager._adaptor.receive(impl, in.getJMSCorrelationID(), _timeout);
       ok=true;
     }
     catch (IOException e)
@@ -69,23 +66,30 @@ public class
     {
       _log.warn(_id+": ClassLoading problems demarshalling session for immigration", e);
     }
+    catch (JMSException e)
+    {
+      _log.warn(_id+": could not extract correlation/rendez-vous id", e);
+    }
 
     Destination src=null;
     Destination dst=null;
+    String correlationID=null;
     try
     {
       Cluster cluster=manager.getCluster();
       ObjectMessage out=cluster.createObjectMessage();
       src=cluster.getLocalNode().getDestination();
+      correlationID=in.getJMSCorrelationID();
       dst=in.getJMSReplyTo();
       out.setJMSReplyTo(src);
+      out.setJMSCorrelationID(correlationID);
       out.setObject(new MigrationAcknowledgement(_id, ok, _timeout));
       cluster.send(dst, out);
-      _log.trace(_id+": ack sent");
+      _log.trace(correlationID+": response sent");
     }
     catch (JMSException e)
     {
-      _log.warn(_id+": could not send migration acknowledgement to: "+dst, e);
+      _log.warn(correlationID+": could not send migration acknowledgement to: "+dst, e);
     }
   }
 
