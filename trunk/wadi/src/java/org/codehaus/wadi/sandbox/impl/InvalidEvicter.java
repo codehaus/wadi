@@ -28,7 +28,7 @@ import org.codehaus.wadi.sandbox.Evicter;
 
 public class InvalidEvicter implements Evicter {
 
-	public boolean evict(String id, Evictable evictable) {return !evictable.getValid();}
+	public boolean evict(String id, Evictable evictable) {return evict(id, evictable, 0);}
 	public boolean evict(String id, Evictable evictable, long time) {return !evictable.getValid();}
 
 }
