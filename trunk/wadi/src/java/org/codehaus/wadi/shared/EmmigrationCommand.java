@@ -26,36 +26,38 @@ import javax.jms.ObjectMessage;
 public class
     EmmigrationCommand
     implements Command
+{
+  protected SerializableLog _log=new SerializableLog(getClass());
+  protected String          _id;
+  protected InetAddress     _address;
+  protected int             _port;
+  protected long            _timeout;
+
+  public
+    EmmigrationCommand(String id, InetAddress address, int port, long timeout)
   {
-    protected SerializableLog _log=new SerializableLog(getClass());
-    protected String _id;
-    protected InetAddress _address;
-    protected int _port;
+    _id      =id;
+    _address =address;
+    _port    =port;
+    _timeout =timeout;
+  }
 
-    public
-      EmmigrationCommand(String id, InetAddress address, int port)
-      {
-	_id=id;
-	_address=address;
-	_port=port;
-      }
+  public void
+    run(ObjectMessage message, Manager manager)
+  {
+    HttpSessionImpl impl=null;
 
-    public void
-      run(ObjectMessage message, Manager manager)
+    if ((impl=(HttpSessionImpl)manager._local.get(_id))!=null)
     {
-      HttpSessionImpl impl=null;
-      //      _log.info("looking for session: "+_id);
-      if ((impl=(HttpSessionImpl)manager._local.get(_id))!=null)
-      {
-	//	_log.info("emmigrating session: "+_id);
-	MigrationService.Client client=new MigrationService.Client();
-	Collection list=new ArrayList(1);
-	list.add(impl);		// must be mutable
-	client.emmigrate(manager._local, list, 25000L, _address, _port, manager.getStreamingStrategy(), true);
-      }
-      else
-      {
-	if (_log.isTraceEnabled()) _log.trace("session not present: "+_id);
-      }
+      MigrationService.Client client=new MigrationService.Client();
+      Collection list=new ArrayList(1);
+      list.add(impl);		// must be mutable
+      client.emmigrate(manager._local, list, _timeout, _address, _port, manager.getStreamingStrategy(), true);
+    }
+    else
+    {
+      if (_log.isTraceEnabled()) _log.trace("session not present: "+_id);
     }
   }
+}
+
