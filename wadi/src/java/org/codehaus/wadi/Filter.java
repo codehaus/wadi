@@ -120,9 +120,21 @@ public class
 	impl=_manager.getLocalSession(realId);
 	if (impl!=null)
 	{
-	  try
-	  {
-	    impl.getApplicationLock().acquire(); // TODO - timeout
+	  boolean acquired=false;
+	  while (acquired==false)
+	    try
+	    {
+	      impl.getApplicationLock().acquire(); // TODO - timeout
+	      acquired=true;
+	    }
+	    catch (InterruptedException ignore)
+	    {
+	      // interrupts are ignored here. Jetty interrupts request
+	      // threads on shutdown, but we want the thread to
+	      // complete correctly....
+	      _log.trace(realId+": interrupted whilst acquiring application lock");
+	    }
+
 	    HttpSession facade=(HttpSession)impl.getFacade();
 	    if (facade==null || !facade.isValid())
 	    {
@@ -130,11 +142,6 @@ public class
 	      impl=null;
 	      _log.debug(realId+": session disappeared before it could be locked into container");
 	    }
-	  }
-	  catch (InterruptedException e)
-	  {
-	    _log.warn("unable to acquire rlock on local session");
-	  }
 	}
 
 	if (impl==null)
