@@ -81,5 +81,11 @@ public class
       if (_log.isTraceEnabled()) _log.info("session not present: "+_id);
     }
   }
+
+  public String
+    toString()
+    {
+      return "<MigrationRequest:"+_id+">";
+    }
 }
 

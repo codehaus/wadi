@@ -69,7 +69,13 @@ public class
 
   protected Container _container;
   public Container getContainer(){return _container;}
-  public void setContainer(Container container){_container=container;}
+
+  public void
+    setContainer(Container container)
+    {
+      _container=container;
+      _servletContext=((Context)_container).getServletContext();
+    }
 
   protected DefaultContext _defaultContext;
   public DefaultContext getDefaultContext(){return _defaultContext;}
@@ -237,7 +243,6 @@ public class
 
   public int getHttpPort(){return Integer.parseInt(System.getProperty("http.port"));} // TODO - temporary hack...
 
-  public ServletContext getServletContext(){return ((Context)_container).getServletContext();}
   public HttpSessionContext getSessionContext() {return null;}
 
   // TODO - These are here so that Container and Session Notification
