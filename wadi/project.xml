@@ -207,4 +207,8 @@
 
   </dependencies>
 
+  <reports>
+    <report>maven-faq-plugin</report>
+  </reports>
+
 </project>
