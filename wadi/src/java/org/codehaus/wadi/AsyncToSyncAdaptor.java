@@ -56,7 +56,7 @@ public class
       try
       {
 	ObjectMessage message = cluster.createObjectMessage();
-	message.setJMSReplyTo(src);
+	if (src!=null) message.setJMSReplyTo(src);
 	message.setJMSCorrelationID(correlationId);
 	message.setObject(command);
 	cluster.send(dst, message);

@@ -56,6 +56,7 @@ import org.codehaus.wadi.impl.RelativeEvictionPolicy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.impl.TotalEvictionPolicy;
+import org.codehaus.wadi.impl.MulticastDiscoveryService;
 import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
 
 // TODO - replace some form of location discovery protocol
@@ -875,7 +876,7 @@ public abstract class
 
   class
     LocationClient
-    extends DiscoveryService.Client
+    extends MulticastDiscoveryService.Client
   {
     public
       LocationClient(InetAddress address, int port, long timeout)
@@ -886,7 +887,7 @@ public abstract class
 
   class
     LocationServer
-    extends DiscoveryService.Server
+    extends MulticastDiscoveryService.Server
   {
     protected long        _timeout=2000; // TODO - 0does not quit properly
     protected InetAddress _httpIpAddress;
