@@ -127,7 +127,6 @@ public abstract class
 	run()
       {
 	Message message=_message;
-	_log.info("message arriving: "+Thread.currentThread());
 	try
 	{
 	  ObjectMessage om=null;
@@ -139,7 +138,6 @@ public abstract class
 	      tmp instanceof Executable &&
 	      (invocable=(Executable)tmp)!=null)
 	  {
-	    _log.info("message arrived: "+invocable);
 	    try
 	    {
 	      invocable.invoke(AbstractMigrationService.this, om.getJMSReplyTo(), om.getJMSCorrelationID());

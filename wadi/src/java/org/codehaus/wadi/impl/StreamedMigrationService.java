@@ -185,7 +185,6 @@ public class
 	      for (Iterator i=candidates.iterator(); i.hasNext(); )
 	      {
 		HttpSessionImpl impl=(HttpSessionImpl)i.next();
-		_log.info("SESSION:"+impl);
 		map.put(impl.getRealId(), impl);
 	      }
 	    }
@@ -213,8 +212,6 @@ public class
 	  boolean ok=true;
 
 	  String id=impl.getRealId();
-	  assert id!=null;
-
 	  InetSocketAddressDestination dest=(InetSocketAddressDestination)source;
 
 	  try
@@ -244,7 +241,7 @@ public class
 	    // write our own status
 	    os.writeBoolean(ok);
 	    os.flush();
-	    if (_log.isDebugEnabled()) _log.debug(impl.getRealId()+": emmigration (peer: "+dest+")");
+	    if (_log.isDebugEnabled()) _log.debug(id+": emmigration (peer: "+dest+")");
 	  }
 	  catch (UnknownHostException e)
 	  {
@@ -402,7 +399,10 @@ public class
 		ObjectOutput oo=new ObjectOutputStream(_socket.getOutputStream());
 		ObjectInput  oi=new ObjectInputStream(_socket.getInputStream());
 
-		((Processor)oi.readObject()).process(Server.this, oi, oo);
+		InetSocketAddressDestination peer=new InetSocketAddressDestination();
+		peer.setAddress(_socket.getInetAddress());
+		peer.setPort(_socket.getPort());
+		((Processor)oi.readObject()).process(Server.this, oi, oo, peer);
 
 		oo.close();
 		oi.close();
@@ -423,7 +423,7 @@ public class
 	}
 
       public void
-	processSingleImmigration(ObjectInput is, ObjectOutput os)
+	immigrateSingleSession(ObjectInput is, ObjectOutput os, Destination peer)
 	{
 	  boolean ok=false;
 	  String id=null;
@@ -451,7 +451,7 @@ public class
 	    String correlationID=id+"-"+getDestination(); // no need to pass it - we can work it out
 	    if (ok && _adaptor.receive(impl, correlationID, _timeout)==impl)
 	    {
-	      _log.trace(id+": immigration successful");
+	      if (_log.isDebugEnabled()) _log.debug(id+": immigration (peer: "+peer+")");
 	    }
 	    else
 	    {
@@ -467,7 +467,7 @@ public class
     Processor
     implements Serializable
     {
-      public abstract void process(Server server, ObjectInput oi, ObjectOutput oo);
+      public abstract void process(Server server, ObjectInput oi, ObjectOutput oo, Destination peer);
     }
 
   static class
@@ -475,9 +475,9 @@ public class
     extends Processor
     {
       public void
-	process(Server server, ObjectInput is, ObjectOutput os)
+	process(Server server, ObjectInput is, ObjectOutput os, Destination peer)
 	{
-	  server.processSingleImmigration(is, os);
+	  server.immigrateSingleSession(is, os, peer);
 	}
     }
 
@@ -486,10 +486,8 @@ public class
     extends Processor
     {
       public void
-	process(Server server, ObjectInput oi, ObjectOutput oo)
+	process(Server server, ObjectInput oi, ObjectOutput oo, Destination peer)
 	{
-
 	}
     }
-
 }

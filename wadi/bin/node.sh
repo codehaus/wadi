@@ -21,6 +21,9 @@ WADI_HOME=`pwd`/..
 JAVA=$JAVA_HOME/bin/java
 
 echo "JAVA_HOME=$JAVA_HOME"
+echo "WADI_HOME=$WADI_HOME"
+echo "JETTY_HOME=$JETTY_HOME"
+echo "TOMCAT_HOME=$TOMCAT_HOME"
 $JAVA -fullversion
 
 properties=`sed -e '/#.*/d' -e 's/${wadi.home}/$WADI_HOME/g' -e 's/\(.*\)/-D\1/g' $WADI_HOME/conf/node.$instance.properties | tr '\n' ' '`
@@ -32,8 +35,9 @@ properties="$properties \
 -Dactivemq.persistenceAdapter=org.codehaus.activemq.store.vm.VMPersistenceAdapter \
 -Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog \
 -Dorg.apache.commons.logging.LogFactory=org.apache.commons.logging.impl.LogFactoryImpl \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.activecluster=info \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.activemq=info \
+-Dorg.apache.commons.logging.simplelog.log.org=info \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.activecluster=warn \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.activemq=warn \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=debug \
 -Dorg.apache.commons.logging.simplelog.showShortLogname=true \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \

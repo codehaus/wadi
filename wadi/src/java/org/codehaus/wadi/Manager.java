@@ -259,7 +259,7 @@ public abstract class
 
     if (successfulMigration)
     {
-      _log.info("successfully immigrated: "+impl);
+      //      _log.info("successfully immigrated: "+impl);
 
       assert impl.getRealId()!=null;
       if (locked)
@@ -836,7 +836,7 @@ public abstract class
   {
  //   String location=_migrationService.getClient.immigrate(realId, null, timeout);
   	String location=null;
-  	
+
     if (location==null)
     {
       //      if (_log.isWarnEnabled()) _log.warn(realId+": could not locate session - perhaps dead ?");
@@ -1028,6 +1028,13 @@ public abstract class
     releaseImpl(HttpSessionImpl impl)
   {
     String realId=impl.getRealId();
+
+    if (realId==null)
+    {
+      _log.warn("session impl already removed!");
+      return;
+    }
+
     _local.remove(realId);
     _notify(impl);
     _releaseImpl(impl);
