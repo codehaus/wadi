@@ -45,101 +45,33 @@ public abstract class
     _k=k;
   }
 
-  protected Collection _oldPeers=new TreeSet();
-  protected Map        _oldCells=new TreeMap();
+  protected Map _oldPeers=new TreeMap();
+  protected Map _oldCells=new TreeMap();
 
-  public void
-    add(Peer p)
+  public Object[]
+    combine(Peer p)
   {
     Peer localPeer=getLocalPeer();
     localPeer=localPeer!=null?localPeer:p; // TODO - hack - FIXME
-    Map newCells=combine(_peers.values(), _k);
-    _log.info("topology="+newCells.keySet());
-    Map relCells=relevant(_oldCells, newCells, localPeer);
+    Map newCells=combine(localPeer, _peers.values(), _k);
 
-    int n=relCells.size();
+    _log.info("old peers="+_oldPeers.keySet());
+    _log.info("old rel cells="+_oldCells.keySet());
+    _log.info("new peers="+_peers.keySet());
+    _log.info("new rel cells="+newCells.keySet());
 
-    if (n>0)
-    {
-      _log.info("gaining: "+n+" relevant cell[s] - "+relCells.keySet());
+    Map joiningCells=new TreeMap(newCells);
+    joiningCells.keySet().removeAll(_oldCells.keySet());
+    _log.info("joining cells="+joiningCells.keySet());
 
-      for (Iterator i=relCells.entrySet().iterator(); i.hasNext(); )
-      {
-	Map.Entry entry=(Map.Entry)i.next();
-	String cellId=(String)entry.getKey();
-	Collection peers=(Collection)entry.getValue();
-	Cell cell=new Cell(cellId, _clusterId, peers, _factory);
-	_cells.put(cellId, cell);
-	cell.start();
-      }
-    }
-    else
-      _log.debug("no relevant change to cell structure");
+    Map leavingCells=new TreeMap(_oldCells);
+    leavingCells.keySet().removeAll(newCells.keySet());
+    _log.info("leaving cells="+leavingCells.keySet());
 
+    _oldPeers=_peers;
     _oldCells=newCells;
-  }
 
-  public void
-    remove(Peer p)
-  {
-    Peer localPeer=getLocalPeer();
-    localPeer=localPeer!=null?localPeer:p; // TODO - hack - FIXME
-    Map newCells=combine(_peers.values(), _k);
-    _log.info("topology="+newCells.keySet());
-    Map relCells=relevant(newCells, _oldCells, localPeer);
-
-    int n=relCells.size();
-
-    if (n>0)
-    {
-      _log.info("losing: "+n+" relevant cell[s] - "+relCells.keySet());
-      for (Iterator i=relCells.entrySet().iterator(); i.hasNext(); )
-      {
-	Map.Entry entry=(Map.Entry)i.next();
-	String cellId=(String)entry.getKey();
-	Collection peers=(Collection)entry.getValue();
-	Cell cell=(Cell)_cells.get(cellId);
-	cell.stop();
-      }
-    }
-    else
-      _log.debug("no relevant change to cell structure");
-
-    _oldCells=newCells;
-  }
-
-  /**
-   * A Cell is relevant if it is joining/leaving and contains the
-   * LocalPeer...
-   *
-   * @param oldCells a <code>Map</code> value
-   * @param newCells a <code>Map</code> value
-   * @param localPeer a <code>Peer</code> value
-   */
-  public Map
-    relevant(Map oldCells, Map newCells, Peer localPeer)
-  {
-    // 1st, figure out the difference between the old and new
-    // topologies for whole cluster...
-
-    _log.debug("oldCells: "+oldCells.keySet());
-    _log.debug("newCells: "+newCells.keySet());
-
-    Map diffCells=new TreeMap(newCells);
-    diffCells.keySet().removeAll(oldCells.keySet());
-
-    _log.debug("diffCells: "+diffCells.keySet());
-
-    // 2nd, figure out which of these cells this peer is
-    // involved in - these are the ones that are relevant...
-
-    for (Iterator i=diffCells.values().iterator(); i.hasNext();)
-      if (!((Set)i.next()).contains(localPeer))
-	i.remove();
-
-    _log.debug("relCells: "+diffCells.keySet());
-
-    return diffCells;
+    return new Object[]{joiningCells, leavingCells};
   }
 
   /**
@@ -151,5 +83,5 @@ public abstract class
    * @param k an <code>int</code> value
    * @return a <code>Map</code> value
    */
-  public abstract Map combine(Collection peers, int peersPerCell);
+  public abstract Map combine(Peer localPeer, Collection peers, int peersPerCell);
 }
