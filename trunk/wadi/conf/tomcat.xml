@@ -77,9 +77,7 @@
 	>
 
 	<Context path="/wadi" docBase="/home/jules/zeuglodon/cvs/wadi/wadi">
-
 	  <Manager className="org.codehaus.wadi.tomcat.Manager"/>
-
 	</Context>
 
         <Logger

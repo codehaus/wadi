@@ -11,6 +11,8 @@
     <description>create session cookies with given path</description>
   </context-param>
 
+  <listener>org.codehaus.wadi.test.SessionListener</listener>
+
 <!-- now deployed programmatically in Jetty
   <filter>
     <filter-name>WadiFilter</filter-name>

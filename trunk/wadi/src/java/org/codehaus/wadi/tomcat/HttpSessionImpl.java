@@ -18,12 +18,13 @@
 package org.codehaus.wadi.tomcat;
 
 import java.security.Principal;
-import java.util.Iterator;
-import org.apache.catalina.SessionListener;
-
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import org.apache.catalina.SessionListener;
 
 public class
   HttpSessionImpl
@@ -56,8 +57,9 @@ public class
   public void removeNote(String name){_notes.remove(name);}
   public Iterator getNoteNames(){return _notes.keySet().iterator();} // TODO - is iterator thread safe ?
 
-  public void addSessionListener(SessionListener listener){} // TODO
-  public void removeSessionListener(SessionListener listener){}	// TODO
+  protected List _listeners=Collections.synchronizedList(new ArrayList());
+  public void addSessionListener(SessionListener listener){_listeners.add(listener);}
+  public void removeSessionListener(SessionListener listener){_listeners.remove(listener);}
 
   public javax.servlet.http.HttpSession getSession(){return _facade;}
 
