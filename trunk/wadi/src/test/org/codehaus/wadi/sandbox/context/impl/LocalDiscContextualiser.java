@@ -72,12 +72,6 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	
 	public boolean isLocal(){return true;}
 
-	public Immoter getPromoter(Immoter immoter) {
-		// do not check to see whether we should retain this Motable
-		// just pass straight through to the COntextualiser above us
-		return immoter;
-	} 
-	
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
 	

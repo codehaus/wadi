@@ -204,6 +204,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
 	
+	// Override - should this always be the case ?
 	public Immoter getPromoter(Immoter immoter) {
 		// do NOT pass through, we want to promote sessions into this store
 		return _immoter;

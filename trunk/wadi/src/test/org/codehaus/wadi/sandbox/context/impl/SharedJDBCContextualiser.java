@@ -35,18 +35,6 @@ import org.codehaus.wadi.sandbox.context.Motable;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-
-//SORT OUT THIS FILE
-//MOVE MOTABLE BACK IN
-//USE SAME CONNECTION FOR WHOLE MOTION
-//FIX UP REMAINING TESTS
-//FIX SPELLING ON EMOTER/ABLE/...
-//FIX SPELLING ON EMMIGRAT...
-//ETC...
-//RENAME CONTEXTUALISERS TO STORES
-//REFACTOR MEMORY STORE /ABSTRACTMAPPED STORE TO BE MORE ALIKE
-
-
 /**
  * TODO - JavaDoc this type
  *
@@ -72,10 +60,6 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
 
-	public Immoter getPromoter(Immoter immoter) {
-		return immoter; // just pass contexts straight through...
-	}
-	
 	public Immoter getDemoter(String id, Motable motable) {
 		// TODO - should check _next... - just remove when we have an evicter sorted
 		return new SharedJDBCImmoter();
@@ -101,7 +85,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	public boolean isLocal(){return false;}
 	
 	/**
-	 * An Immoter that deals in terms of LocalDiscMotables
+	 * An Immoter that deals in terms of SharedJDBCMotables
 	 *
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$

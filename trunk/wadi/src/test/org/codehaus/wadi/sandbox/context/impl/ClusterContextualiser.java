@@ -100,6 +100,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
 	
+	// this field forms part of a circular dependency - so we need a setter rather than ctor param
 	protected Contextualiser _top;
 	public Contextualiser getTop() {return _top;}
 	public void setTop(Contextualiser top) {_top=top;}
@@ -113,8 +114,12 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		throw new RuntimeException("NYI");
 	}
 
+	// be careful here - there are two things going on, a map of cached locations, which needs management
+	// and incoming sessions which must be routed either out to cluster, or down to e.g. DB...
 	public void evict() {
 		// how long do we wish to maintain cached Locations ?
+		// TODO - get timestamps working on Locations - write a hybrid Evicter ?
+		// or implement Chained instead of Mapped Contextualiser - consider....
 	}
 
 	public boolean isLocal(){return false;}
@@ -143,10 +148,6 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		Destination emigrationQueue=sden.getDestination();
 		//_log.info("received EmigrationEndedNotification: "+emigrationQueue);
 		_dispatcher.removeDestination(emigrationQueue);
-	}
-	
-	public Immoter getPromoter(Immoter immoter) {
-		return immoter; // TODO - would we ever want to allow promotion of a context into our cache or out to the cluster ?
 	}
 	
 	/**
