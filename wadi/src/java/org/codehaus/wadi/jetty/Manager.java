@@ -21,7 +21,6 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import org.codehaus.wadi.plugins.TotalEvictionPolicy;
 import org.codehaus.wadi.shared.EvictionPolicy;
 import org.codehaus.wadi.shared.Filter;
@@ -41,28 +40,28 @@ public class
   // SessionManager //
   //----------------//
 
-  public HttpSession
+  public javax.servlet.http.HttpSession
     getHttpSession(String id)
   {
     HttpSessionImpl impl=(HttpSessionImpl)get(getRoutingStrategy().strip(getBucketName(), id));
-    org.codehaus.wadi.jetty.HttpSession session=impl==null?null:(org.codehaus.wadi.jetty.HttpSession)impl.getFacade();
+    HttpSession session=impl==null?null:(HttpSession)impl.getFacade();
 
-    HttpSession answer=(session==null?null:(session.getInvalidated()?null:session)); // TODO - or should session just be removed from map as soon as it is invalidated..
+    javax.servlet.http.HttpSession answer=(session==null?null:(session.getInvalidated()?null:session)); // TODO - or should session just be removed from map as soon as it is invalidated..
     return answer;
   }
 
-  public HttpSession
+  public javax.servlet.http.HttpSession
     newHttpSession()
   {
-    return (HttpSession)sessionCreate();
+    return (javax.servlet.http.HttpSession)sessionCreate();
   }
 
   protected boolean _reuseIds=false; // TODO - make this explicit
 
-  public HttpSession
+  public javax.servlet.http.HttpSession
     newHttpSession(HttpServletRequest request)
   {
-    org.codehaus.wadi.jetty.HttpSession session=(org.codehaus.wadi.jetty.HttpSession)sessionCreate();
+    HttpSession session=(HttpSession)sessionCreate();
     if (_reuseIds)
       session.setId(request.getRequestedSessionId()); // TODO - wasted session id allocation
     return session;
@@ -190,7 +189,7 @@ public class
 
   // why does the session manager need to be serialisable ?
 
-  protected org.codehaus.wadi.shared.HttpSession createFacade(org.codehaus.wadi.shared.HttpSessionImpl impl){return new org.codehaus.wadi.jetty.HttpSession((org.codehaus.wadi.shared.HttpSessionImpl)impl);}
+  protected org.codehaus.wadi.shared.HttpSession createFacade(org.codehaus.wadi.shared.HttpSessionImpl impl){return new HttpSession((org.codehaus.wadi.shared.HttpSessionImpl)impl);}
 
   //----------------------------------------
 
@@ -244,5 +243,5 @@ public class
 
   //----------------------------------------
 
-  public org.codehaus.wadi.shared.HttpSession newFacade(HttpSessionImpl impl) {return new org.codehaus.wadi.jetty.HttpSession(impl);}
+  public org.codehaus.wadi.shared.HttpSession newFacade(HttpSessionImpl impl) {return new HttpSession(impl);}
 }
