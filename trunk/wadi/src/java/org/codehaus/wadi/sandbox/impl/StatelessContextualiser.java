@@ -24,7 +24,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Immoter;
@@ -75,15 +74,10 @@ public class StatelessContextualiser extends AbstractThinContextualiser {
 	}
 
 	protected static final HttpServletRequest _dummyRequest=new DummyHttpServletRequest();
-	protected static final RuntimeException _exception=new UnsupportedOperationException();
 
 	public ThreadLocal _wrapper=new ThreadLocal(){
         protected synchronized Object initialValue() {
-            return new HttpServletRequestWrapper(_dummyRequest) {
-            	// These methods should never be called while contextualising a stateless request...
-        		public HttpSession getSession(){throw _exception;}
-        		public HttpSession getSession(boolean create){throw _exception;}
-        	};
+            return new StatelessHttpServletRequestWrapper(_dummyRequest);
         }
 	};
 
