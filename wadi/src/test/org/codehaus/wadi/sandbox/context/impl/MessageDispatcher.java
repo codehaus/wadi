@@ -147,7 +147,7 @@ public class MessageDispatcher implements MessageListener {
 	 */
 	public void register(Class type, Map rvMap, long timeout) {
 		_map.put(type, new RendezVousDispatcher(rvMap, timeout));
-		_log.info("registering class: "+type.getName());
+		_log.trace("registering class: "+type.getName());
 	}
 	
 	public void onMessage(Message message) {
@@ -231,7 +231,7 @@ public class MessageDispatcher implements MessageListener {
 					settingsInOut.from=_cluster.getLocalNode().getDestination();
 					assert settingsInOut.correlationId.equals(om.getJMSCorrelationID());
 					long elapsedTime=System.currentTimeMillis()-startTime;
-					_log.debug("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis): "+id); // session does not exist
+					_log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis): "+id); // session does not exist
 				} catch (TimeoutException toe) {
 					_log.warn("no response to request within timeout ("+timeout+" millis): "+id); // session does not exist
 				} catch (InterruptedException ignore) {

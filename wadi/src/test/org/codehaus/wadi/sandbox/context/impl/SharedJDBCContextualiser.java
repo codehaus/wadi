@@ -17,6 +17,8 @@
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -95,13 +97,40 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		public Motable nextMotable(String id, Motable emotable) {
 			SharedJDBCMotable sjm=new SharedJDBCMotable();
 			sjm.setId(id);
-			sjm.setDataSource(_ds);
 			sjm.setTable(_table);
+
+			try {
+				sjm.setConnection(_ds.getConnection());
+			} catch (SQLException e) {
+				_log.error("could not allocate database connection", e);
+			}
+			
 			return sjm;
 		}
 		
 		public void commit(String id, Motable immotable) {
-			//_log.info("insertion (database): "+id);
+			super.commit(id, immotable);
+			SharedJDBCMotable sjm=((SharedJDBCMotable)immotable);
+			Connection connection=sjm.getConnection();
+			sjm.setConnection(null);
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				_log.error("could not close database connection", e);
+			}
+		}
+		
+		public void rollback(String id, Motable immotable) {
+			super.rollback(id, immotable);
+			SharedJDBCMotable sjm=((SharedJDBCMotable)immotable);
+			Connection connection=sjm.getConnection();
+			sjm.setConnection(null);
+			try {
+				connection.rollback();
+				connection.close();
+			} catch (SQLException e) {
+				_log.error("could not rollbck database connection", e);
+			}
 		}
 		
 		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {

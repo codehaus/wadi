@@ -28,8 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * A Motable that represents its Bytes field as a File on LocalDisc.
- * N.B. The File field must be set before the Bytes field.
+ * A Motable that represents its Bytes field as a row ina DataBase table.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -41,29 +40,25 @@ public class SharedJDBCMotable extends AbstractMotable {
 	public String getId(){return _id;}
 	public void setId(String id){_id=id;}
 	
-	protected DataSource _dataSource;
-	public DataSource getDataSource() {return _dataSource;}
-	public void setDataSource(DataSource dataSource) {_dataSource=dataSource;}
-	
 	protected String _table;
 	public String getTable() {return _table;}
 	public void setTable(String table) {_table=table;}
 	
-	public void tidy() {
-		remove(_dataSource, _table, _id);
-	}
+	protected Connection _connection;
+	public Connection getConnection(){return _connection;}
+	public void setConnection(Connection connection){_connection=connection;}
+	
+	public void tidy() {remove(_connection, _table, _id);}
 	
 	// Motable
-	public byte[] getBytes() throws SQLException {return load(_dataSource, _table, _id);}
-	public void setBytes(byte[] bytes) throws SQLException {store(_dataSource, _table, _id, bytes);}
+	public byte[] getBytes() throws SQLException {return load(_connection, _table, _id);}
+	public void setBytes(byte[] bytes) throws SQLException {store(_connection, _table, _id, bytes);}
 	
-	protected static byte[] load(DataSource ds, String table, String id) throws SQLException {
-		Connection c=null;
+	protected static byte[] load(Connection connection, String table, String id) throws SQLException {
 		Statement s=null;
 		try {
-			c=ds.getConnection();
-			s=c.createStatement();
-			ResultSet rs=s.executeQuery("SELECT MyValue FROM "+table+" WHERE MyKey='"+id+"'");
+			s=connection.createStatement();
+			ResultSet rs=s.executeQuery("SELECT Bytes FROM "+table+" WHERE Id='"+id+"'");
 			if (rs.next()) {
 				byte[] buffer=(byte[])rs.getObject(1);
 				_log.info("loaded (database): "+id);
@@ -77,17 +72,13 @@ public class SharedJDBCMotable extends AbstractMotable {
 		} finally {
 			if (s!=null)
 				s.close();
-			if (c!=null)
-				c.close();				
 		}
 	}
 	
-	protected static void store(DataSource ds, String table, String id, byte[] bytes) throws SQLException {
-		Connection c=null;
+	protected static void store(Connection connection, String table, String id, byte[] bytes) throws SQLException {
 		PreparedStatement ps=null;
 		try {
-			c=ds.getConnection();
-			ps=c.prepareStatement("INSERT INTO "+table+" (MyKey, MyValue) VALUES ('"+id+"', ?)");
+			ps=connection.prepareStatement("INSERT INTO "+table+" (Id, Bytes) VALUES ('"+id+"', ?)");
 			ps.setObject(1, bytes);
 			ps.executeUpdate();
 			_log.info("stored (database): "+id);
@@ -97,18 +88,14 @@ public class SharedJDBCMotable extends AbstractMotable {
 		} finally {
 			if (ps!=null)
 				ps.close();
-			if (c!=null)
-				c.close();				
 		}
 	}
 	
-	protected static void remove(DataSource ds, String table, String id) {
-		Connection c=null;
+	protected static void remove(Connection connection, String table, String id) {
 		Statement s=null;
 		try {
-			c=ds.getConnection();
-			s=c.createStatement();
-			s.executeUpdate("DELETE FROM "+table+" WHERE MyKey='"+id+"'");
+			s=connection.createStatement();
+			s.executeUpdate("DELETE FROM "+table+" WHERE Id='"+id+"'");
 			_log.info("removed (database): "+id);
 		} catch (SQLException e) {
 			_log.error("remove (database) failed: "+id);
@@ -117,10 +104,23 @@ public class SharedJDBCMotable extends AbstractMotable {
 			if (s!=null)
 				s.close();
 			} catch (SQLException e) {}
-			try {
-			if (c!=null)
-				c.close();				
-			} catch (SQLException e) {}
 		}
+	}
+	
+	public static void initialise(DataSource dataSource, String table) throws SQLException {
+		Connection c=dataSource.getConnection();
+		Statement s=c.createStatement();
+		s.execute("CREATE TABLE "+table+"(Id varchar, CreationTime long, LastAccessedTime long, MaxInactiveInterval int, Bytes java_object)");
+		s.close();
+		c.close();
+	}
+	
+	public static void destroy(DataSource dataSource, String table) throws SQLException {
+		Connection c=dataSource.getConnection();
+		Statement s=c.createStatement();
+		s.execute("DROP TABLE "+table);
+//		s.execute("SHUTDOWN");
+		s.close();
+		c.close();
 	}
 }
