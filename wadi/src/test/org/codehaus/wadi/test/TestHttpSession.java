@@ -39,6 +39,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.jetty.HttpSessionImpl;
 import org.codehaus.wadi.jetty.Manager;
 import org.codehaus.wadi.plugins.FilePassivationStrategy;
+import org.codehaus.wadi.plugins.GZIPStreamingStrategy;
 import org.codehaus.wadi.shared.SerializableContent;
 
 //----------------------------------------
@@ -738,6 +739,7 @@ public class TestHttpSession
     impl1.setAttribute(key, l, false);
 
     FilePassivationStrategy fmp=new FilePassivationStrategy(new File("/tmp"));
+    fmp.setStreamingStrategy(new GZIPStreamingStrategy());
     assertTrue(fmp.passivate(impl1));
 
     // listener should now have been passivated

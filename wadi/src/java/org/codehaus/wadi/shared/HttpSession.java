@@ -107,6 +107,7 @@ public class
 	// because Servlet-2.4 insists that it is given BEFORE
 	// invalidation!
 	impl.getWadiManager().releaseImpl(impl);
+	setValid(false);		// do we need this flag ?
 	_log.debug(id+": invalidated");
       }
       else
