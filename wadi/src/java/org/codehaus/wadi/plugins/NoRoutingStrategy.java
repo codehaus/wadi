@@ -35,12 +35,6 @@ public class
   implements RoutingStrategy
 {
   public String strip(String session) {return session;}
-  public String strip(String bucket, String session) {return session;}
-  public String augment(String bucket, String session) {return session;}
-
-  // not used ?
-  public String get(String id){return _nodeId;}
-  protected String _nodeId;
-  public String getNodeId(){return _nodeId;}
-  public void setNodeId(String nodeId){_nodeId=nodeId;}
+  public String augment(String session) {return session;}
+  public String getInfo() {return null;}
 }

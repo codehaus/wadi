@@ -272,17 +272,26 @@ public class
 	// method==migrate
 	String id=(String)is.readObject();
 	HttpSessionImpl impl=(HttpSessionImpl)_sessions.get(id); // TODO - what if session is not there ?
-	// acquire container lock on session id
-	impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY);
-	lock=impl.getContainerLock();
-	acquired=lock.attempt(100);		// should we have a time out here ?
-	String newId=impl.getId();
-	if (newId==null || !newId.equals(id))
+	if (impl!=null)
 	{
-	  // the session has gone elsewhere whilst we were waiting for
-	  // the lock...
+	  // acquire container lock on session id
+	  impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY);
+	  lock=impl.getContainerLock();
+	  acquired=lock.attempt(100);		// should we have a time out here ?
+	  String newId=impl.getId();
+	  if (newId==null || !newId.equals(id))
+	  {
+	    // the session has gone elsewhere whilst we were waiting for
+	    // the lock...
+	    ok=false;
+	  }
+	}
+	else
+	{
+	  _log.warn(id+": could not find for migration");
 	  ok=false;
 	}
+
 	os.writeBoolean(ok);
 	os.flush();
 	if (!ok)

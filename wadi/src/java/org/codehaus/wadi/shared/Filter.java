@@ -95,7 +95,7 @@ public class
       else
       {
 	if (_log.isTraceEnabled()) _log.trace("external session id: "+sessionId);
-	sessionId=_manager.getRoutingStrategy().strip(_manager.getBucketName(), sessionId); // we may be using mod_jk etc...
+	sessionId=_manager.getRoutingStrategy().strip(sessionId); // we may be using mod_jk etc...
 	if (_log.isTraceEnabled()) _log.trace("internal session id: "+sessionId);
 	// request claims to be associated with a session...
 	HttpSessionImpl impl=(HttpSessionImpl)_manager.get(sessionId);
@@ -195,7 +195,7 @@ public class
       javax.servlet.http.HttpSession session=request.getSession(false);
       if (session!=null)
       {
-	HttpSessionImpl impl=(HttpSessionImpl)_manager.get(_manager.getRoutingStrategy().strip(_manager.getBucketName(), session.getId()));
+	HttpSessionImpl impl=(HttpSessionImpl)_manager.get(_manager.getRoutingStrategy().strip(session.getId()));
 	if (_log.isTraceEnabled()) _log.trace(sessionId+"; just created - releasing");
 	if (impl!=null)
 	  impl.getApplicationLock().release();
@@ -307,6 +307,8 @@ public class
       else
       {
 	String newId=session.getId();
+	newId=_manager.getRoutingStrategy().strip(newId);
+
 	boolean reuse=_manager.getReuseSessionIds();
 	// we have to release a lock
 	if (id!=null && !reuse && id.equals(newId))
@@ -320,10 +322,10 @@ public class
 	{
 	  // we cannot be sure that the session coming out of the
 	  // request is the same as the one that went in to it, so
-	  // we have to do the lookup again.
 	  impl=_manager.getLocalSession(newId);
 	  // session must still be valid, since we have not yet
 	  // released our lock, so no need to check...
+
 	  impl.getApplicationLock().release();
 	  if (reuse)
 	    if (_log.isTraceEnabled()) _log.trace(newId+": potential session id reuse - outgoing session may be new");

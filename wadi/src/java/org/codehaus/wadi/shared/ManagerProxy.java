@@ -116,7 +116,7 @@ public class
     String oldId=req.getRequestedSessionId();
     RoutingStrategy router=manager.getRoutingStrategy();
     String root=router.strip(oldId);
-    String newId=router.augment(_bucketName, root);
+    String newId=router.augment(root);
 
     String oldUrl=req.getRequestURL().toString();
     String newUrl=oldUrl;

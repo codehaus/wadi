@@ -34,18 +34,24 @@
     <New class="org.codehaus.wadi.plugins.TomcatIdGenerator"/><!-- use Tomcat style IDs -->
   </Set>
 
-  <!-- uncomment if running with Apache/mod_jk -->
-  <!--
-  <Set name="RoutingStrategy">
-  <New class="org.codehaus.wadi.plugins.JkRoutingStrategy"/>
-  </Set>
-  -->
-
   <!-- Multicast address:port over which session location protocol runs -->
   <Set name="AutoLocationAddress">228.5.6.7</Set>
   <Set name="AutoLocationPort">6789</Set>
 
-  <!-- not yet used -->
-  <Set name="BucketName"><SystemProperty name="bucket.name"/></Set>
+<!-- if you are using Apache/mod_jk uncomment this for affinity -->
+<!--
+-->
+  <Set name="RoutingStrategy">
+   <New class="org.codehaus.wadi.plugins.JkRoutingStrategy">
+    <Arg><SystemProperty name="wadi.colour"/></Arg>
+   </New>
+  </Set>
+
+<!-- else use this... -->
+<!--
+  <Set name="RoutingStrategy">
+   <New class="org.codehaus.wadi.plugins.NoRoutingStrategy"/>
+  </Set>
+-->
 
 </Configure>

@@ -34,6 +34,9 @@ public class
   JkRoutingStrategy
   implements RoutingStrategy
 {
+  protected String _name;
+  public JkRoutingStrategy(String name){_name=name;}
+
   public String
     strip(String session)
   {
@@ -42,26 +45,10 @@ public class
   }
 
   public String
-    strip(String bucket, String session)
+    augment(String session)
   {
-    if (bucket!=null)
-    {
-      int index=session.length()-bucket.length()-1;
-      return session.substring(0, index);
-    }
-    else
-      return session;
+    return _name==null?session:session+"."+_name; // TODO - can we be more efficient ?
   }
 
-  public String
-    augment(String bucket, String session)
-  {
-    return bucket==null?session:session+"."+bucket; // TODO - can we be more efficient ?
-  }
-
-  public String get(String id){return _nodeId;}
-
-  protected String _nodeId;
-  public String getNodeId(){return _nodeId;}
-  public void setNodeId(String nodeId){_nodeId=nodeId;}
+  public String getInfo() {return "."+_name;}
 }
