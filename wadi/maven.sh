@@ -2,7 +2,7 @@
 
 if [ -z "$MAVEN_HOME" ]
 then
-    MAVEN_HOME=/usr/java/maven-1.0
+    MAVEN_HOME=/usr/java/maven-1.0.2
 fi
 export MAVEN_HOME
 

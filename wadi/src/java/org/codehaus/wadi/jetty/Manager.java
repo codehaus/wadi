@@ -233,7 +233,7 @@ public class
   {
     if (_handler.isUsingCookies())
     {
-      javax.servlet.http.Cookie cookie = _handler.getSessionManager().getHttpOnly()
+      javax.servlet.http.Cookie cookie=getHttpOnly()
 	?new org.mortbay.http.HttpOnlyCookie(SessionManager.__SessionCookie,session.getId())
 	:new javax.servlet.http.Cookie(SessionManager.__SessionCookie,session.getId());
       String domain=_handler.getServletContext().getInitParameter(SessionManager.__SessionDomain);
