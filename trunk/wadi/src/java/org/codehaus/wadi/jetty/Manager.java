@@ -67,22 +67,6 @@ public class
     return session;
   }
 
-  protected org.codehaus.wadi.shared.Manager.SessionPool _blankSessionPool=new BlankSessionPool();
-  protected org.codehaus.wadi.shared.Manager.SessionPool getBlankSessionPool(){return _blankSessionPool;}
-  protected void setBlankSessionPool(org.codehaus.wadi.shared.Manager.SessionPool pool){_blankSessionPool=pool;}
-
-  /**
-   * A logical pool of uninitialised session impls. Consumes from the
-   * ReadyPool and is Consumed by it as session impls are recycled.
-   *
-   */
-  class BlankSessionPool
-    extends org.codehaus.wadi.shared.Manager.SessionPool
-  {
-    public Object take(){return new HttpSessionImpl();}
-    public void put(Object o){}	// just let it go
-  }
-
   //-----------//
   // lifecycle //
   //-----------//

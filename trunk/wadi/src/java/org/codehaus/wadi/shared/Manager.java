@@ -524,8 +524,21 @@ public abstract class
     public Object peek(){return null;}
   }
 
-  protected abstract SessionPool getBlankSessionPool();
-  protected abstract void setBlankSessionPool(SessionPool pool);
+  /**
+   * A logical pool of uninitialised session impls. Consumes from the
+   * ReadyPool and is Consumed by it as session impls are recycled.
+   *
+   */
+  class BlankSessionPool
+    extends org.codehaus.wadi.shared.Manager.SessionPool
+  {
+    public Object take(){return new HttpSessionImpl();}
+    public void put(Object o){}	// just let it go
+  }
+
+  protected SessionPool _blankSessionPool=new BlankSessionPool();
+  protected SessionPool getBlankSessionPool(){return _blankSessionPool;}
+  protected void setBlankSessionPool(SessionPool pool){_blankSessionPool=pool;}
 
   protected IdGenerator _idGenerator;
   public IdGenerator getIdGenerator(){return _idGenerator;}
