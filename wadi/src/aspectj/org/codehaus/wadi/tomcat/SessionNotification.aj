@@ -41,7 +41,7 @@ import org.apache.commons.logging.LogFactory;
  * Performs Tomcat internal session lifecycle notifications
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1.8 $
  */
 public privileged aspect
   SessionNotification
