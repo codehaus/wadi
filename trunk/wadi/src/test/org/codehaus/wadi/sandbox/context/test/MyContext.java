@@ -1,19 +1,19 @@
 /**
-*
-* Copyright 2003-2004 The Apache Software Foundation
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*/
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.sandbox.context.test;
 
 import java.io.ByteArrayInputStream;
@@ -36,7 +36,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class MyContext extends AbstractMotable implements Context {
 	protected static Log _log = LogFactory.getLog(MyContext.class);
-	
+
 	protected String _val;
 	protected transient ReadWriteLock _lock;
 
@@ -62,7 +62,7 @@ public class MyContext extends AbstractMotable implements Context {
 	public void writeContent(ObjectOutput oo) throws IOException, ClassNotFoundException {
 		oo.writeObject(_val);
 	}
-	
+
 	// Motable
 	public byte[] getBytes() throws Exception {
 		ByteArrayOutputStream baos=new ByteArrayOutputStream();
@@ -79,11 +79,11 @@ public class MyContext extends AbstractMotable implements Context {
 				oos.close();
 		}
 	}
-	
+
 	public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {
 		readContent(new SimpleStreamingStrategy().getInputStream(new ByteArrayInputStream(bytes)));
 	}
-	
+
 	public void tidy() {
 		_val=null;
 	}

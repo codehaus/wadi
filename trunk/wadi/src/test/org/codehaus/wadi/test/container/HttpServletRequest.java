@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -80,20 +80,20 @@ public class HttpServletRequest
   public String       getAuthType()                    {return null;}
   public String       getContextPath()                 {return null;}
   public String       getHeader(String name)           {return null;}
-  
+
   protected String _method=null;
   public void setMethod(String method){_method=method;}
   public String getMethod(){return _method;}
-  
+
   public String       getPathInfo()                    {return null;}
   public String       getPathTranslated()              {return null;}
   public String       getQueryString()                 {return null;}
   public String       getRemoteUser()                  {return null;}
-  
+
   protected String _requestURI=null;
   public void setRequestURI(String requestURI){_requestURI=requestURI;}
   public String getRequestURI(){return _requestURI;}
-  
+
   public String       getServletPath()                 {return null;}
   public StringBuffer getRequestURL()                  {return null;}
   public boolean      isRequestedSessionIdFromCookie() {return true;}
@@ -123,11 +123,11 @@ public class HttpServletRequest
  public String             getRealPath(String path)                                             {return null;}
  public String             getRemoteAddr()                                                      {return null;}
  public String             getRemoteHost()                                                      {return null;}
- 
+
  protected String _scheme=null;
  public void setScheme(String scheme){_scheme=scheme;}
  public String getScheme(){return _scheme;}
- 
+
  public String             getServerName()                                                      {return null;}
  public String[]           getParameterValues(String name)                                      {return null;}
  public boolean            isSecure()                                                           {return true;}

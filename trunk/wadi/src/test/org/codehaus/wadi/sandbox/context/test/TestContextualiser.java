@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -184,7 +184,7 @@ public class TestContextualiser extends TestCase {
 		}
 		assertTrue(d.containsKey("bar"));
 		assertTrue(d.size()==1);
-		
+
 		Map m=new HashMap();
 		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new NeverEvicter(), ss, new MyContextPool());
 		m.put("foo", new MyContext("foo", "foo"));
@@ -196,7 +196,7 @@ public class TestContextualiser extends TestCase {
 		memory.contextualise(null,null,fc,"baz", null, null, false);
 		assertTrue(d.size()==0);
 		assertTrue(m.size()==3);
-		
+
 		MyContext bar=(MyContext)m.get("bar");
 		assertTrue(bar!=null);
 		assertTrue("bar".equals(bar._val));
@@ -222,14 +222,14 @@ public class TestContextualiser extends TestCase {
 
 		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
 			_counter++;
-			
+
 			Motable emotable=_context;
 			Emoter emoter=new EtherEmoter();
 			Motable immotable=Utils.mote(emoter, immoter, emotable, id);
 			if (immotable!=null) {
 				promotionLock.release();
 				immoter.contextualise(hreq, hres, chain, id, immotable);
-				return true;				
+				return true;
 			} else {
 				return false;
 			}
@@ -239,7 +239,7 @@ public class TestContextualiser extends TestCase {
 		public Evicter getEvicter(){return null;}
 
 		public boolean isLocal(){return false;}
-		
+
 		public Immoter getDemoter(String id, Motable motable) {
 			return null;
 		}
@@ -271,9 +271,9 @@ public class TestContextualiser extends TestCase {
 
 		public void evict(){}
 		public Evicter getEvicter(){return null;}
-		
+
 		public boolean isLocal(){return false;}
-		
+
 		public Immoter getDemoter(String id, Motable motable) {
 			return null;
 		}
@@ -407,7 +407,7 @@ public class TestContextualiser extends TestCase {
 		public void proxy(HttpServletRequest hreq, HttpServletResponse hres) throws ProxyingException {
 			System.out.println("PROXYING");
 		}
-		
+
 		public Destination getDestination(){return null;}
 	}
 

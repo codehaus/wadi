@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 		super(next, collapser, map, evicter);
 		_pool=pool;
 		_streamer=streamer;
-		
+
 		_immoter=new MemoryImmoter();
 		_emoter=new MemoryEmoter();
 	}
@@ -69,22 +69,22 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 		Motable emotable=(Motable)_map.get(id);
 		if (emotable==null)
 			return false; // we cannot proceed without the session...
-		
+
 		Sync shared=((Context)emotable).getSharedLock();
 		boolean acquired=false;
 		try {
 			shared.acquire();
 			acquired=true;
 			// now that we know the Context has been promoted to this point and is going nowhere we can allow other threads that were trying to find it proceed...
-			
+
 			if (promotionLock!=null)
 				promotionLock.release();
-			
+
 			if (immoter!=null)
 				return contextualiseElsewhere(hreq, hres, chain, id, immoter, promotionLock, emotable);
-			
+
 			return contextualiseLocally(hreq, hres, chain, id, promotionLock, emotable);
-			
+
 		} catch (InterruptedException e) {
 			throw new ServletException("timed out acquiring context", e); // TODO - good idea ?
 		} finally {
@@ -131,36 +131,36 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 
 	// TODO - merge with MappedEmoter soon
 	class MemoryEmoter implements Emoter {
-		
+
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			// TODO - acquire exclusive lock
 			_map.remove(id);
 			return true;
 		}
-		
+
 		public void commit(String id, Motable emotable) {
 			emotable.tidy();
 			//_log.info("removal (memory): "+id);
 			// TODO - release exclusive lock
 		}
-		
+
 		public void rollback(String id, Motable emotable) {
 			_map.put(id, emotable);
 			// TODO - locking ?
 		}
-		
+
 		public String getInfo() {
 			return "memory";
-		}		
+		}
 	}
-	
+
 	class MemoryImmoter extends AbstractImmoter {
-		
+
 		public Motable nextMotable(String id, Motable emotable) {
 			return _pool.take();
 		}
-		
-		
+
+
 		// TODO - I don't think this is ever called...
 		public boolean prepare(String id, Motable motable, Sync lock) {
 			do {
@@ -177,16 +177,16 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 					// go around again
 				}
 			} while (Thread.interrupted());
-			
+
 			_log.error("THIS CODE SHOULD NOT BE EXECUTED");
 			return false; // keep Eclipse compiler happy
 		}
-		
+
 		public void commit(String id, Motable immotable) {
 			_map.put(id, immotable); // assumes that Map does own syncing...
 			//_log.info("insertion (memory): "+id);
 		}
-		
+
 		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
 			Context context=(Context)immotable;
 			try {
@@ -195,7 +195,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 				context.getSharedLock().release();
 			}
 		}
-		
+
 		public String getInfo() {
 			return "memory";
 		}
@@ -203,7 +203,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
-	
+
 	// Override - should this always be the case ?
 	public Immoter getPromoter(Immoter immoter) {
 		// do NOT pass through, we want to promote sessions into this store

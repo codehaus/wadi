@@ -1,19 +1,19 @@
 /**
-*
-* Copyright 2003-2004 The Apache Software Foundation
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*/
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.sandbox.context.test;
 
 import java.net.InetSocketAddress;
@@ -77,17 +77,17 @@ public class TestCluster extends TestCase {
 	    public MyCluster(final LocalNode localNode, Topic dataTopic, Topic destination, Connection connection, Session session, MessageProducer producer, Timer timer, long inactiveTime) throws JMSException {
 	    	super(localNode, dataTopic, destination, connection, session, producer, timer, inactiveTime);
 	    }
-	    
+
 	    public Destination createQueue(String name) throws JMSException {
 	    	return getSession().createQueue(name);
 	    }
 	}
-	
+
 	class MyClusterFactory extends DefaultClusterFactory {
 		public MyClusterFactory(ConnectionFactory connectionFactory) {
 			super(connectionFactory);
 		}
-		
+
 	    protected Cluster createCluster(Connection connection, Session session, Topic groupDestination) throws JMSException {
 	        Topic dataTopic=session.createTopic(getDataTopicPrefix()+groupDestination.getTopicName());
 	        MessageProducer producer=createProducer(session, null);
@@ -107,9 +107,9 @@ public class TestCluster extends TestCase {
 	        return answer;
 	    }
 	}
-	
+
 	class MyNode {
-		protected final MyCluster _cluster;	
+		protected final MyCluster _cluster;
 		protected final MessageDispatcher _dispatcher;
 		protected final Location _location;
 		protected final RelocationStrategy _relocater;
@@ -119,7 +119,7 @@ public class TestCluster extends TestCase {
 		protected final Evicter _evicter=new NeverEvicter();
 		protected final MemoryContextualiser _top;
 		protected final ClusterContextualiser _bottom;
-		
+
 		public MyNode(MyClusterFactory factory, String clusterName) throws JMSException, ClusterException {
 			_cluster=(MyCluster)factory.createCluster(clusterName);
 			_cluster.addClusterListener(new MyClusterListener());
@@ -133,25 +133,25 @@ public class TestCluster extends TestCase {
 			_top=new MemoryContextualiser(_bottom, _collapser, _mmap, _evicter, new SimpleStreamingStrategy(), new MyContextPool());
 			_bottom.setTop(_top);
 		}
-		
+
 		public void start() throws Exception {_cluster.start();}
 		public void stop() throws Exception {_cluster.stop();}
-		
+
 		public Map getClusterContextualiserMap() {return _cmap;}
 		public MyCluster getCluster(){return _cluster;}
 		public ClusterContextualiser getClusterContextualiser() {return _bottom;}
-		
+
 		public Map getMemoryContextualiserMap() {return _mmap;}
 		public MemoryContextualiser getMemoryContextualiser(){return _top;}
 	}
-	
+
 	protected ConnectionFactory _connectionFactory;
 	protected MyClusterFactory _clusterFactory;
 	protected String _clusterName;
 	protected MyNode _node0;
 	protected MyNode _node1;
 	protected MyNode _node2;
-	
+
 	/*
 	 * @see TestCase#setUp()
 	 */
@@ -163,7 +163,7 @@ public class TestCluster extends TestCase {
 		(_node0=new MyNode(_clusterFactory, _clusterName)).start();
 		(_node1=new MyNode(_clusterFactory, _clusterName)).start();
 		(_node2=new MyNode(_clusterFactory, _clusterName)).start();
-		
+
 		_node0.getCluster().waitForClusterToComplete(3, 6000);
 		_node1.getCluster().waitForClusterToComplete(3, 6000);
 		_node2.getCluster().waitForClusterToComplete(3, 6000);
@@ -194,10 +194,10 @@ public class TestCluster extends TestCase {
 
 	public void testDemotion() throws Exception {
 		assertTrue(true);
-		
+
 		ClusterContextualiser c=_node0.getClusterContextualiser();
 		Destination queue=_node0.getCluster().createQueue("EMIGRATION");
-		
+
 		int numContexts=100;
 		c.setEmigrationQueue(queue);
 		for (int i=0; i<numContexts; i++) {

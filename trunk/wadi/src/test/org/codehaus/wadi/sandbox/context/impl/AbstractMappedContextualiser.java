@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -60,13 +60,13 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 		Motable emotable=(Motable)_map.get(id);
 		if (emotable==null)
 			return false; // we cannot proceed without the session...
-		
-		if (immoter!=null) 
+
+		if (immoter!=null)
 			return contextualiseElsewhere(hreq, hres, chain, id, immoter, promotionLock, emotable);
-		
+
 		return contextualiseLocally(hreq, hres, chain, id, promotionLock, emotable);
 	}
-	
+
 	public abstract boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Sync promotionLock, Motable motable) throws IOException, ServletException;
 
 	public void evict() {

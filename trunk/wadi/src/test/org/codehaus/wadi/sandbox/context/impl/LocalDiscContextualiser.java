@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -46,12 +46,12 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	protected static final Log _log = LogFactory.getLog(LocalDiscContextualiser.class);
-	
+
 	protected final StreamingStrategy _streamer;
 	protected final File _dir;
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
-	
+
 	public LocalDiscContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, StreamingStrategy streamer, File dir) {
 		super(next, collapser, map, evicter);
 		_streamer=streamer;
@@ -60,7 +60,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	    assert dir.canRead();
 	    assert dir.canWrite();
 		_dir=dir;
-		
+
 		_immoter=new LocalDiscImmoter();
 		_emoter=new LocalDiscEmoter(_map);
 		}
@@ -69,46 +69,46 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 		// TODO - it should be possible to load a Session off disc, use it, then write it back - here...
 		throw new RuntimeException("NYI");
 	}
-	
+
 	public boolean isLocal(){return true;}
 
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
-	
+
 	/**
 	 * An Immoter that deals in terms of LocalDiscMotables
 	 *
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$
 	 */
-	public class LocalDiscImmoter extends AbstractImmoter {	
-		
+	public class LocalDiscImmoter extends AbstractImmoter {
+
 		public Motable nextMotable(String id, Motable emotable) {
 			LocalDiscMotable ldm=new LocalDiscMotable();
 			ldm.setId(id);
 			return ldm;
 		}
-		
+
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			((LocalDiscMotable)immotable).setFile(new File(_dir, id+"."+_streamer.getSuffix()));
 			return super.prepare(id, emotable, immotable);
-		}		
-		
+		}
+
 		public void commit(String id, Motable immotable) {
 			super.commit(id, immotable);
 			synchronized (_map){_map.put(id, immotable);}
 		}
-		
+
 		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
 			// TODO - we need to pass through a promotionLock
 			contextualiseLocally(hreq, hres, chain, id, new NullSync(), immotable);
 		}
-		
+
 		public String getInfo() {
 			return "local disc";
 		}
 	}
-	
+
 	/**
 	 * An Emmoter that deals in terms of LocalDiscMotables
 	 *
@@ -116,9 +116,9 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	 * @version $Revision$
 	 */
 	class LocalDiscEmoter extends MappedEmoter {
-		
+
 		public LocalDiscEmoter(Map map) {super(map);}
-		
+
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			if (super.prepare(id, emotable, immotable)) {
 				try {
@@ -132,10 +132,10 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 				}
 			} else
 				return false;
-			
+
 			return true;
 		}
-		
+
 		public String getInfo(){return "local disc";}
 	};
 }

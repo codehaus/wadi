@@ -1,19 +1,19 @@
 /**
-*
-* Copyright 2003-2004 The Apache Software Foundation
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*/
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.IOException;
@@ -55,27 +55,27 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 	protected final Location _location;
 	protected final StreamingStrategy _streamer;
 	protected final Map _locationMap;
-	
+
 	protected final Map _resRvMap=new HashMap();
 	protected final Map _ackRvMap=new HashMap();
-	
+
 	public ImmigrateRelocationStrategy(MessageDispatcher dispatcher, Location location, long timeout, StreamingStrategy ss, Map locationMap) {
-		_dispatcher=dispatcher;		
+		_dispatcher=dispatcher;
 		_timeout=timeout;
 		_location=location;
 		_streamer=ss;
 		_locationMap=locationMap;
-		
+
 		_dispatcher.register(this, "onMessage");
 		_dispatcher.register(ImmigrationResponse.class, _resRvMap, _timeout);
 		_dispatcher.register(ImmigrationAcknowledgement.class, _ackRvMap, _timeout);
 	}
-	
+
 	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {
-		
+
 		Location location=(Location)locationMap.get(id);
 		Destination destination;
-		
+
 		if (location==null) {
 			_log.info("immigration: no cached location - 1->n : "+id);
 			destination=_dispatcher.getCluster().getDestination();
@@ -83,7 +83,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 			_log.info("immigration: cached location - 1->1 : "+id);
 			destination=location.getDestination();
 		}
-		
+
 		MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
 		settingsInOut.from=_location.getDestination();
 		settingsInOut.to=destination;
@@ -95,7 +95,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 		// take out session, prepare to promote it...
 
 		Motable emotable=response.getMotable();
-		Emoter emoter=new ImmigrationEmoter(_locationMap, settingsInOut);		
+		Emoter emoter=new ImmigrationEmoter(_locationMap, settingsInOut);
 		Motable immotable=Utils.mote(emoter, immoter, emotable, id);
 		if (immotable!=null) {
 			promotionLock.release();
@@ -105,26 +105,26 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 			return false;
 		}
 	}
-	
+
 	protected Contextualiser _top;
 	public void setTop(Contextualiser top){_top=top;}
 	public Contextualiser getTop(){return _top;}
-	
+
 	class ImmigrationEmoter extends ChainedEmoter {
 		protected final Log _log=LogFactory.getLog(getClass());
 
 		protected final Map _locationMap;
 		protected MessageDispatcher.Settings _settingsInOut;
-		
+
 		public ImmigrationEmoter(Map locationMap, MessageDispatcher.Settings settingsInOut) {
 			_locationMap=locationMap;
 			_settingsInOut=settingsInOut;
 		}
-		
+
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			return true;
 		}
-		
+
 		public void commit(String id, Motable emotable) {
 			emotable.tidy(); // remove copy in store
 
@@ -138,15 +138,15 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 				_log.error("could not send immigration acknowledgement: "+id, e);
 			}
 		}
-		
+
 		public void rollback(String id, Motable motable) {
 		}
-		
+
 		public String getInfo() {
 			return "immigration";
 		}
 	}
-	
+
 	public void onMessage(ObjectMessage om, ImmigrationRequest request) throws JMSException {
 		String id=request.getId();
 		_log.info("receiving immigration request: "+id);
@@ -174,16 +174,16 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 			// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
 		}
 	}
-	
+
 	class ImmigrationImmoter implements Immoter {
 		protected final Log _log=LogFactory.getLog(getClass());
-		
+
 		protected final MessageDispatcher.Settings _settingsInOut;
-		
+
 		public ImmigrationImmoter(MessageDispatcher.Settings settingsInOut) {
 			_settingsInOut=settingsInOut;
 		}
-		
+
 		public Motable nextMotable(String id, Motable emotable) {
 			return new SimpleMotable();
 		}
@@ -206,7 +206,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 			synchronized (_locationMap) {
 				_locationMap.put(id, tmp);
 			}
-			
+
 			return true;
 		}
 
@@ -221,7 +221,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
 			// does nothing - contextualisation will happen when the session arrives...
 		}
-		
+
 		public String getInfo() {
 			return "immigration";
 		}

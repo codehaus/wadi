@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -32,9 +32,9 @@ public class EmigrationAcknowledgement implements Serializable {
 	protected String _id;
 	public String getId(){return _id;}
 	public void setId(String id){_id=id;}
-	
+
 	protected Location _location;
 	public Location getLocation() {return _location;}
 	public void setLocation(Location location) {_location=location;}
-	
+
 }

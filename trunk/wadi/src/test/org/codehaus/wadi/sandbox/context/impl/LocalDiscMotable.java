@@ -1,19 +1,19 @@
 /**
-*
-* Copyright 2003-2004 The Apache Software Foundation
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*/
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.File;
@@ -36,20 +36,20 @@ import org.codehaus.wadi.sandbox.context.Motable;
  */
 public class LocalDiscMotable extends AbstractMotable {
 	protected static final Log _log = LogFactory.getLog(LocalDiscMotable.class);
-	
+
 	protected File _file;
 	public File getFile() {return _file;}
 	public void setFile(File file){_file=file;}
-	
+
 	protected byte[] _bytes;
 	public byte[] getBytes(){return _bytes;}
 	public void setBytes(byte[] bytes){_bytes=bytes;}
-	
+
 	public void tidy() {
 		if (_file!=null && _file.exists())
 			remove(_file);
 	}
-	
+
 	public void copy(Motable motable) throws Exception {
 		super.copy(motable);
 		store(_file, this);
@@ -75,7 +75,7 @@ public class LocalDiscMotable extends AbstractMotable {
 				ois.close();
 		}
 	}
-	
+
 	protected static void store(File file, Motable motable) throws Exception {
 		ObjectOutputStream oos=null;
 		try {
@@ -92,10 +92,10 @@ public class LocalDiscMotable extends AbstractMotable {
 			throw e;
 		} finally {
 			if (oos!=null)
-				oos.close();			
+				oos.close();
 		}
 	}
-	
+
 	protected static void remove(File file) {
 		file.delete();
 		_log.info("removed (local disc): "+file);

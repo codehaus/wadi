@@ -1,19 +1,19 @@
 /**
-*
-* Copyright 2003-2004 The Apache Software Foundation
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*/
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.sandbox.context.test;
 
 import java.net.UnknownHostException;
@@ -54,7 +54,7 @@ public class TomcatNode implements Node {
 	protected final Servlet _servlet;
 
 	/**
-	 * 
+	 *
 	 */
 	public TomcatNode(String name, String host, int port, String context, String webApp, Filter filter, Servlet servlet) throws LifecycleException,UnknownHostException {
 		super();
@@ -71,7 +71,7 @@ public class TomcatNode implements Node {
 //	    _context.setTldValidation(false);
 	    _context.addValve(new Valve(Pattern.compile("127\\.0\\.0\\.1|192\\.168\\.0\\.\\d{1,3}")));
 	    //_context.start();
-	    
+
 	    // Host
 	    _host=_server.createHost("localhost", "/home/jules/workspace/wadi/webapps");
 	    _host.addChild(_context);
@@ -79,7 +79,7 @@ public class TomcatNode implements Node {
 	    _engine=_server.createEngine();
 	    _engine.setDefaultHost("localhost");
 	    _engine.addChild(_host);
-	    
+
 	    // Server
 	    _server.addEngine(_engine);
 
@@ -87,7 +87,7 @@ public class TomcatNode implements Node {
 	    _connector=_server.createConnector((String)null, port, false);
 	    _connector.setRedirectPort(0);
 	    _server.addConnector(_connector);
-	    
+
 	    _filter=filter;
 	    _servlet=servlet;
 	}
@@ -121,7 +121,7 @@ public class TomcatNode implements Node {
 
 	    _wrapper=(StandardWrapper)_context.findChild("Servlet");
 		_wrapper.setMaxInstances(1);
-	    
+
 		((FilterInstance)getFilter()).setInstance(_filter);
 		((ServletInstance)getServlet()).setInstance(_servlet);	}
 

@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ package org.codehaus.wadi.sandbox.context;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Moter {	
+public interface Moter {
 	boolean prepare(String id, Motable emotable, Motable immotable);
 	void commit(String id, Motable p);
 	void rollback(String id, Motable p);
-	
+
 	String getInfo();
 }

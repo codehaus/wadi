@@ -1,19 +1,19 @@
 /**
-*
-* Copyright 2003-2004 The Apache Software Foundation
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*/
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.IOException;
@@ -58,20 +58,20 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 	protected final Map _rvMap=new HashMap();
 	protected final Location _location;
 	protected Contextualiser _top;
-	
+
 	public void setTop(Contextualiser top){_top=top;}
 	public Contextualiser getTop(){return _top;}
-	
+
 	public ProxyRelocationStrategy(MessageDispatcher dispatcher, Location location, long timeout, long proxyHandOverPeriod) {
 		_dispatcher=dispatcher;
 		_proxyHandOverPeriod=proxyHandOverPeriod;
 		_timeout=timeout;
 		_location=location;
-		
+
 		_dispatcher.register(this, "onMessage"); // dispatch LocationRequest messages onto our onMessage() method
 		_dispatcher.register(LocationResponse.class, _rvMap, _timeout); // dispatch LocationResponse classes via synchronous rendez-vous
 	}
-	
+
 	protected Location locate(String id, Map locationMap) {
 		_log.info("sending location request: "+id);
 		MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
@@ -80,16 +80,16 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 		settingsInOut.correlationId=id; // TODO - better correlation id
 		LocationRequest request=new LocationRequest(id, _proxyHandOverPeriod);
 		LocationResponse response=(LocationResponse)_dispatcher.exchangeMessages(id, _rvMap, request, settingsInOut, _timeout);
-		
+
 		if (response==null)
 			return null;
-		
+
 		Location location=response.getLocation();
 		Set ids=response.getIds();
 		// update cache
 		// TODO - do we need to considering NOT putting any location that is the same ours into the map
 		// otherwise we may end up in a tight loop proxying to ourself... - could this happen ?
-		
+
 		Iterator i=ids.iterator();
 		synchronized (locationMap) {
 			while (i.hasNext()) {
@@ -97,22 +97,22 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 			}
 		}
 		_log.info("updated cache for: "+ids);
-		
+
 		return location;
 	}
-	
+
 	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {
 		Location location;
 		boolean refreshed=false;
-		
+
 		if (null==(location=(Location)locationMap.get(id))) {
 			location=locate(id, locationMap);
 			refreshed=true;
 		}
-		
+
 		if (location==null)
 			return false;
-		
+
 		boolean recoverable=true;
 		try {
 			location.proxy(hreq, hres);
@@ -121,7 +121,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 		} catch (RecoverableException e1) {
 			if (!refreshed) {
 				if (null==(location=locate(id, locationMap)))
-					return false;			
+					return false;
 				try {
 					location.proxy(hreq, hres);
 					promotionLock.release();
@@ -135,18 +135,18 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 			} else {
 				recoverable=true;
 			}
-			
+
 		} catch (ProxyingException e) {
 			_log.error("irrecoverable proxying problem: "+id, e);
 			recoverable=false;
 		}
-		
+
 		if (recoverable) {
 			// we did find the session's location, but all attempts to proxy to it failed,,,
 			promotionLock.release();
 			_log.error("all attempts at proxying to session location failed - processing request without session: "+id+ " - "+location);
 			// we'll have to contextualise hreq here - stateless context ? TODO
-			chain.doFilter(hreq, hres);			
+			chain.doFilter(hreq, hres);
 			return true; // looks wrong - but actually indicates that req should proceed no further down stack...
 		} else {
 			// TODO - is this correct ?
@@ -154,7 +154,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 			return true;
 		}
 	}
-	
+
 	public void onMessage(ObjectMessage message, LocationRequest request) throws JMSException {
 		String id=request.getId();
 		_log.info("receiving location request: "+id);
@@ -174,7 +174,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 			// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
 		}
 	}
-	
+
 	class LocationResponseFilterChain
 	implements FilterChain
 	{
