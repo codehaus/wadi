@@ -56,7 +56,7 @@
 
   <goal name="aspectj:compile-and-weave" prereqs="aspectj:init">
     <ant:echo>### compiling and weaving to ${iajc.dest}</ant:echo>
-    <delete dir="${iajc.dest}"/>
+<!--    <delete dir="${iajc.dest}"/> -->
     <ant:iajc
       destdir="${iajc.dest}"
       debug="true"

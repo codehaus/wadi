@@ -17,20 +17,26 @@
 
 package org.codehaus.wadi;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.activecluster.Cluster;
 
 public class
     MigrationResponse
     implements Invocable
 {
-  protected SerializableLog _log=new SerializableLog(getClass());
-  protected String          _id;
-  protected HttpSessionImpl _impl;
-  protected long            _timeout;
+  protected static final Log _log=LogFactory.getLog(MigrationResponse.class);
+  protected final String     _id;
+  protected final byte[]     _impl;
+  protected final long       _timeout;
 
   public
-    MigrationResponse(String id, long timeout, HttpSessionImpl impl)
+    MigrationResponse(String id, long timeout, byte[] impl)
   {
     _id      =id;
     _timeout =timeout;
@@ -38,9 +44,43 @@ public class
   }
 
   public void
-    invoke(Manager manager, ObjectMessage message)
+    invoke(Manager manager, ObjectMessage in)
   {
-    _log.info("here is the session: "+"xxx");
+    boolean ok=false;
+
+    try
+    {
+      ByteArrayInputStream bais=new ByteArrayInputStream(_impl);
+      ObjectInputStream    ois =new ObjectInputStream(bais);
+      HttpSessionImpl impl=manager.getLocalSession(_id);
+      impl.readContent(ois);
+      ois.close();
+      manager._adaptor.receive(impl, _id, _timeout);
+      ok=true;
+    }
+    catch (IOException e)
+    {
+      _log.warn("IO problems demarshalling session for immigration", e);
+    }
+    catch (ClassNotFoundException e)
+    {
+      _log.warn("ClassLoading problems demarshalling session for immigration", e);
+    }
+
+    Destination dest=null;
+    try
+    {
+      dest=in.getJMSReplyTo();
+      Cluster cluster=manager.getCluster();
+      ObjectMessage out=cluster.createObjectMessage();
+      out.setJMSReplyTo(cluster.getLocalNode().getDestination());
+      out.setObject(new MigrationAcknowledgement(_id, ok));
+      cluster.send(dest, out);
+    }
+    catch (JMSException e)
+    {
+      _log.warn("could not send migration response to: "+dest, e);
+    }
   }
 
   public String

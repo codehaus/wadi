@@ -181,7 +181,7 @@ public abstract class
   public String
     toString()
   {
-    return "<"+getClass().getName()+": "+_attributes+">";
+    return "<"+getClass().getName()+": "+getRealId()+":"+_attributes+">";
   }
 
   private void readObject(java.io.ObjectInputStream in)

@@ -29,6 +29,7 @@
     <pathelement location="${tomcat.home}/server/lib/commons-digester.jar"/>
     <pathelement location="${tomcat.home}/common/lib/servlet-api.jar"/><!-- 5.0.27 -->
     <!-- run time -->
+    <pathelement path="."/>
     <pathelement path="./WEB-INF/classes"/>
     <fileset dir="./WEB-INF/lib"/>
   </path>
@@ -144,6 +145,7 @@
       <sysproperty key="bucket.name" value="web0"/>
       <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Jdk14Logger"/>
       <sysproperty key="java.util.logging.config.file" value="${wadi.home}/lib/logging.properties"/>
+      <sysproperty key="activemq.persistenceAdapter" value="org.codehaus.activemq.store.vm.VMPersistenceAdapter"/>
     </java>
     <!--
     <junit>

@@ -266,16 +266,14 @@ public abstract class
     if (!successfulMigration)
     {
       long timeout=2000L;
-      _adaptor.send(new MigrationRequest(realId, _migrationServer.getAddress(), _migrationServer.getPort(), timeout),
-		    realId,	// is this enough - TODO
-		    timeout,	// parameterise - TODO
-		    new EmmigrationSender(this)
-		    );
+      Object result=_adaptor.send(new MigrationRequest(realId, _migrationServer.getAddress(), _migrationServer.getPort(), timeout),
+				  realId,	// is this enough - TODO
+				  timeout,	// parameterise - TODO
+				  new EmmigrationSender(this)
+				  );
 
-      impl=(HttpSessionImpl)_local.get(realId); // TODO - rationalise
-
-      if (impl!=null)
-	successfulMigration=true;
+      _log.info("successfully immigrated: "+impl);
+      successfulMigration=(impl==result);
     }
 
     if (successfulMigration)
@@ -366,6 +364,8 @@ public abstract class
 	new XmlConfiguration(is).configure(this);
 	if (_log.isTraceEnabled()) _log.trace("configured from: "+_configurationResource);
       }
+      else
+	_log.warn("could not find WADI descriptor: "+_configurationResource);
     }
     catch (Exception e)
     {
@@ -405,19 +405,15 @@ public abstract class
     // TODO - activecluster stuff - replace with config ASAP...
     if (_connectionFactory!=null)
     {
-      _log.info("CLUSTERING!");
       (_connection=_connectionFactory.createConnection()).start();
       _clusterFactory=new DefaultClusterFactory(getConnection());
       _cluster=_clusterFactory.createCluster("org.codehaus.wadi#cluster");
-      _log.info("CLUSTERING!: "+_cluster);
       _cluster.addClusterListener(new MembershipListener());
       InvokableListener listener=new InvokableListener(this);
       _cluster.createConsumer(_cluster.getDestination(), null, true).setMessageListener(listener);
       _cluster.createConsumer(_cluster.getLocalNode().getDestination()).setMessageListener(listener);
       _cluster.start(); // should include webapp context
     }
-    else
-      _log.info("NOT CLUSTERING!");
 
     _log.debug("started");
   }
@@ -1213,7 +1209,7 @@ public abstract class
     public void
       onMessage(Message message)
     {
-      _log.info("message arrived");
+      _log.info("message arriving");
       try
       {
 	ObjectMessage om=null;

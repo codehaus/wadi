@@ -375,7 +375,7 @@ public class
 	  impl.getContainerLock().release();
 
 	if (sync && candidates.size()==1)
-	  _manager._adaptor.receive(null,impl.getRealId(), 2000L); // parameterise - TODO
+	  _manager._adaptor.receive(impl, impl.getRealId(), 2000L); // parameterise - TODO
 
 	}
 
