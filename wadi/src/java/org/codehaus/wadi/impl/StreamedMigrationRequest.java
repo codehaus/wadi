@@ -28,6 +28,9 @@ public class
   extends org.codehaus.wadi.MigrationRequest
 {
   protected final static Log _log=LogFactory.getLog(StreamedMigrationRequest.class);
+
+  // we have to carry our own replyTo, since we cannot pass a custom
+  // Destination through the layer below us...
   protected final InetSocketAddressDestination _destination;
 
   public
@@ -40,6 +43,6 @@ public class
   public Object
     doit(MigrationService service, HttpSessionImpl impl, String correlationID, Destination source)
   {
-    return ((StreamedMigrationService.Client)service.getClient()).emmigrate(this, impl, correlationID, source);
+    return ((StreamedMigrationService.Client)service.getClient()).emmigrateSession(this, impl, correlationID, _destination);
   }
 }
