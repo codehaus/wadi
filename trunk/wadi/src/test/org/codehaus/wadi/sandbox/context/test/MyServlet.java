@@ -61,7 +61,7 @@ public class MyServlet implements Servlet {
 		_cluster.start();
 		_collapser=new HashingCollapser(10, 2000);
 		_clusterMap=new HashMap();
-		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), _cluster, 2000, 3000, new HttpProxyLocation(location, new StandardHttpProxy()));
+		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), _cluster, 2000, 3000, new HttpProxyLocation(location, new StandardHttpProxy("jsessionid")));
 		_memoryMap=new HashMap();
 		_memoryContextualiser=new MemoryContextualiser(_clusterContextualiser, _collapser, _memoryMap, new NeverEvicter(), contextPool);
 		_clusterContextualiser.setContextualiser(_memoryContextualiser);

@@ -49,7 +49,7 @@ public class ProxyServlet implements Servlet {
 	protected ServletConfig _config;
 	protected ServletContext _context;
 
-	protected HttpProxy _proxy=new StandardHttpProxy();
+	protected HttpProxy _proxy=new StandardHttpProxy("jsessionid");
 
 	public void init(ServletConfig config) throws ServletException {
 		_config = config;
