@@ -23,8 +23,11 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
@@ -39,8 +42,6 @@ import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.util.LifecycleSupport;
 import org.codehaus.wadi.shared.Filter;
-
-import javax.servlet.http.HttpSessionEvent;
 
 // TODO
 // - all setters need to fire PropertyChange notifications... - should be an aspect
@@ -160,45 +161,39 @@ public class
   // Lifecycle //
   //-----------//
 
+  protected interface Test { public boolean test(Object o); }
+  protected static final Test _sessionListenerTest=new Test(){ public boolean test(Object o){return o instanceof HttpSessionListener;} };
+  protected static final Test _attributeListenerTest=new Test(){ public boolean test(Object o){return o instanceof HttpSessionAttributeListener;} };
+
   class
     ContextLifecycleListener
     implements LifecycleListener
     {
       public void
 	lifecycleEvent(LifecycleEvent event)
+      {
+	String type=event.getType();
+	if (type.equals(Lifecycle.AFTER_START_EVENT))
 	{
-	  _log.trace("notified");
-	  String type=event.getType();
-	  if (type.equals(Lifecycle.AFTER_START_EVENT))
-	    afterStart();
+	  Context context=((Context)_container);
+	  copySubset(context.getApplicationLifecycleListeners(), _sessionListeners,   _sessionListenerTest);
+	  copySubset(context.getApplicationEventListeners(),     _attributeListeners, _attributeListenerTest);
+	  ((ContainerBase)context).removeLifecycleListener(this);
 	}
+      }
 
       public void
-	afterStart()
-	{
-	  _log.trace("AFTER_START");
-	  Context context=((Context)_container);
-	  // add HttpSessionListeners - we copy them in from our Context -
-	  // the list should be immutable by now.
-	  Object listeners[] = context.getApplicationLifecycleListeners();
-	  if (listeners!=null)
+	copySubset(Object[] src, List tgt, Test test)
+      {
+	if (src!=null)
+	  for (int i=0; i<src.length; i++)
 	  {
-	    _log.trace(""+listeners.length+" listeners");
-	    for (int i=0; i<listeners.length; i++)
-	    {
-	      Object tmp=listeners[i];
-	      _log.trace(tmp.getClass().getName());
-	      if (!(tmp instanceof HttpSessionListener))
-	      {
-		_log.trace("adding HttpSessionListener: "+tmp.getClass().getName());
-		_sessionListeners.add(tmp);
-	      }
-	    }
+	    Object tmp=src[i];
+	    if (test.test(tmp))
+	      tgt.add(tmp);
 	  }
-	  else
-	    _log.trace("no listeners :-(");
-	}
-    }
+      }
+  }
 
   public synchronized void
     start()
