@@ -49,6 +49,8 @@ import org.apache.commons.httpclient.methods.TraceMethod;
 // commons-httpclient does not [seem to] allow us to pass Cookie headers straight through. So, we have
 // to deal with them explicitly - This leaves scope for cookie mutation as request passes through proxy - Bad news.
 
+// I've tried moving up to 3.0rc1, but ProxyServlet with this HttpProxy produces wierd browser effects...
+
 /**
  * Enterprise HttpProxy implementation.
  *
@@ -109,6 +111,8 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 	    }
 	    
 	    hm.setFollowRedirects(false);
+	    //hm.setURI(new URI(uri));
+	    hm.setStrictMode(false);
 
 		// check connection header
 		String connectionHdr = hreq.getHeader("Connection"); // TODO - what if there are multiple values ?
@@ -166,7 +170,6 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		// javax.servlet.http.Cookie - and it looks like the two don't
 		// map onto each other without data loss...
 		HttpState state=new HttpState();
-		//state.setCookiePolicy(CookiePolicy.COMPATIBILITY);
 		javax.servlet.http.Cookie[] cookies=hreq.getCookies();
 		if (cookies!=null)
 		{
@@ -219,7 +222,9 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		{
 			HttpClient client=new HttpClient();
 			HostConfiguration hc=new HostConfiguration();
-			hc.setHost(location.getAddress().getHostAddress(), location.getPort());
+			//String host=location.getAddress().getHostAddress();
+			String host=location.getHostName(); // inefficient - but stops httpclient from rejecting half our cookies...
+			hc.setHost(host, location.getPort());
 			client.executeMethod(hc, hm, state);
 		}
 		catch (IOException e)	// TODO
@@ -285,7 +290,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 
 		long endTime=System.currentTimeMillis();
 		long elapsed=endTime-startTime;
-		_log.info("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:"+location.getHostName()+":"+location.getPort()+"/"+uri);
+		_log.info("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:http://"+location.getHostName()+":"+location.getPort()+uri);
 	
 		return true;
 	}
