@@ -62,20 +62,20 @@ public class TestDistribution extends TestCase {
 
     	public static int _serialisations=0;
     	public static int _deserialisations=0;
-    
+
         public static class Counter implements Serializable {
 
         private void writeObject(java.io.ObjectOutputStream out) throws IOException {
             _serialisations++;
             out.defaultWriteObject();
         }
-        
+
         private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
             in.defaultReadObject();
             _deserialisations++;
         }
     }
-    
+
     public void testSerialisation() throws Exception {
         Dirtier dirtier=new WriteDirtier();
         StreamingStrategy streamer=new SimpleStreamingStrategy();
@@ -83,67 +83,74 @@ public class TestDistribution extends TestCase {
         Attributes wrapper=new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, saveMemory);
         String key="foo";
         Counter val=new Counter();
+	int serialisations=0;
+	int deserialisations=0;
+
         // check initial state
-        assertTrue(_serialisations==0);
-        assertTrue(_deserialisations==0);
+        assertTrue(_serialisations==serialisations);
+        assertTrue(_deserialisations==deserialisations);
         // insert into container and reinspect - expect no change
         wrapper.put(key, val);
-        assertTrue(_serialisations==0);
-        assertTrue(_deserialisations==0);
+        assertTrue(_serialisations==serialisations);
+        assertTrue(_deserialisations==deserialisations);
         // can we retrieve the same reference ?
         assertTrue(val==wrapper.get(key));
         // try serialising container - should serialise content..
         byte[] bytes=wrapper.getBytes();
-        assertTrue(_serialisations==1);
-        assertTrue(_deserialisations==0);
+	serialisations++;
+        assertTrue(_serialisations==serialisations);
+        assertTrue(_deserialisations==deserialisations);
         // serialise container again - should used cached serialised content
         bytes=wrapper.getBytes();
-        assertTrue(_serialisations==1);
-        assertTrue(_deserialisations==0);
+        assertTrue(_serialisations==serialisations);
+        assertTrue(_deserialisations==deserialisations);
         // can we still retrieve the original reference ?
         assertTrue(val==wrapper.get(key));
         // did this last operation affect effect the content ?
-        assertTrue(_serialisations==1);
-        assertTrue(_deserialisations==0);
+        assertTrue(_serialisations==serialisations);
+        assertTrue(_deserialisations==deserialisations);
         // serialise the container again - should still not alter contents ...
         bytes=wrapper.getBytes();
-        assertTrue(_serialisations==1);
-        assertTrue(_deserialisations==0);
+        assertTrue(_serialisations==serialisations);
+        assertTrue(_deserialisations==deserialisations);
         // reinsert content, should invalidate serialised cache...
         wrapper.put(key, val);
         assertTrue(val==wrapper.get(key));
-        assertTrue(_serialisations==1);
-        assertTrue(_deserialisations==0);
+        assertTrue(_serialisations==serialisations);
+        assertTrue(_deserialisations==deserialisations);
         bytes=wrapper.getBytes();
-        assertTrue(_serialisations==2);
-        assertTrue(_deserialisations==0);
+	serialisations++;
+        assertTrue(_serialisations==serialisations);
+        assertTrue(_deserialisations==deserialisations);
 
         // Looks good - now let's try deserialising...
-        
+
         // populate the container - should not change old content state...
         wrapper.setBytes(bytes);
-        assertTrue(_serialisations==2);
-        assertTrue(_deserialisations==0);
+        assertTrue(_serialisations==serialisations);
+        assertTrue(_deserialisations==deserialisations);
         // retrieve content - should cause deserialisation
         val=(Counter)wrapper.get(key);
-        assertTrue(_serialisations==2);
-        assertTrue(_deserialisations==1);
+	deserialisations++;
+        assertTrue(_serialisations==serialisations);
+        assertTrue(_deserialisations==deserialisations);
         // retrieve content again - should be found in cache - no deserialisation...
         val=(Counter)wrapper.get(key);
-        assertTrue(_serialisations==2);
-        assertTrue(_deserialisations==1);
+        assertTrue(_serialisations==serialisations);
+        assertTrue(_deserialisations==deserialisations);
         // reinitialise content - should invalidate object cache...
         bytes=wrapper.getBytes();
-        assertTrue(_serialisations==2);
-        assertTrue(_deserialisations==1);
+        assertTrue(_serialisations==serialisations);
+        assertTrue(_deserialisations==deserialisations);
         wrapper.setBytes(bytes);
-        assertTrue(_serialisations==2);
-        assertTrue(_deserialisations==1);
+        assertTrue(_serialisations==serialisations);
+        assertTrue(_deserialisations==deserialisations);
         // reretrieve content - should cause fresh deserialisation
         val=(Counter)wrapper.get(key);
-        assertTrue(_serialisations==2);
-        assertTrue(_deserialisations==2);
-        
+	deserialisations++;
+        assertTrue(_serialisations==serialisations);
+        assertTrue(_deserialisations==deserialisations);
+
         // TODO:
         // cool - lots more to do...
         // add a second counter
