@@ -66,8 +66,10 @@ public aspect
   }
 
   pointcut notifySession(Manager manager, HttpSessionListener listener, HttpSessionEvent event)
-    : (execution(void Manager.notifySessionCreated(HttpSessionListener, HttpSessionEvent)) && args(listener, event) && target(manager)) ||
-    (execution(void Manager.notifySessionDestroyed(HttpSessionListener, HttpSessionEvent)) && args(listener, event) && target(manager));
+    : (execution(void Manager.notifySessionCreated(HttpSessionListener, HttpSessionEvent)) ||
+       execution(void Manager.notifySessionDestroyed(HttpSessionListener, HttpSessionEvent))) &&
+    args(listener, event) &&
+    target(manager);
 
   void
     around(Manager manager, HttpSessionListener listener, HttpSessionEvent event)
@@ -95,9 +97,11 @@ public aspect
   }
 
   pointcut notifySessionAttribute(Manager manager, HttpSessionAttributeListener listener, HttpSessionBindingEvent event)
-    : (execution(void Manager.notifySessionAttributeAdded(HttpSessionAttributeListener, HttpSessionBindingEvent)) && args(listener, event) && target(manager)) ||
-    (execution(void Manager.notifySessionAttributeRemoved(HttpSessionAttributeListener, HttpSessionBindingEvent)) && args(listener, event) && target(manager)) ||
-    (execution(void Manager.notifySessionAttributeReplaced(HttpSessionAttributeListener, HttpSessionBindingEvent)) && args(listener, event) && target(manager));
+    : (execution(void Manager.notifySessionAttributeAdded(HttpSessionAttributeListener, HttpSessionBindingEvent)) ||
+       execution(void Manager.notifySessionAttributeRemoved(HttpSessionAttributeListener, HttpSessionBindingEvent)) ||
+       execution(void Manager.notifySessionAttributeReplaced(HttpSessionAttributeListener, HttpSessionBindingEvent))) &&
+    args(listener, event) &&
+    target(manager);
 
   void
     around(Manager manager, HttpSessionAttributeListener listener, HttpSessionBindingEvent event)

@@ -43,10 +43,10 @@ public privileged aspect
   protected static final Log _log=LogFactory.getLog(SessionNotification.class);
 
   pointcut notifySessionCreated(Manager manager, HttpSessionListener listener, HttpSessionEvent event)
-    : (execution(void Manager.notifySessionCreated(HttpSessionListener, HttpSessionEvent)) && args(listener, event) && target(manager));
+    : execution(void Manager.notifySessionCreated(HttpSessionListener, HttpSessionEvent)) && args(listener, event) && target(manager);
 
   pointcut notifySessionDestroyed(Manager manager, HttpSessionListener listener, HttpSessionEvent event)
-    : (execution(void Manager.notifySessionDestroyed(HttpSessionListener, HttpSessionEvent)) && args(listener, event) && target(manager));
+    : execution(void Manager.notifySessionDestroyed(HttpSessionListener, HttpSessionEvent)) && args(listener, event) && target(manager);
 
   before(Manager manager, HttpSessionListener listener, HttpSessionEvent event)
     : notifySessionCreated(manager, listener, event)
