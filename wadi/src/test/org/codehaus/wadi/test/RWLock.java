@@ -243,55 +243,48 @@ public class RWLock implements ReadWriteLock {
 
       InterruptedException ie = null;
 
-      synchronized(WriterLock.this)
+      boolean isActiveWriter=false;;
+      Object lock=null;
+      synchronized (RWLock.this)
       {
-	boolean pass;
-	Object lock=null;
-	synchronized (RWLock.this)
+	if (activeReaders_==0 && activeWriter_==null)
 	{
-	  pass = (activeWriter_ == null && activeReaders_ == 0);
-	  if (pass)
-	    activeWriter_ = t;
-	  else
-	    _writerQueue.put(t, lock=new Object()); // queue this writer with a unique lock
+	  activeWriter_ = t;
+	  isActiveWriter=true;
 	}
+	else
+	  _writerQueue.put(t, lock=new Object()); // queue this writer with a unique lock
+      }
 
-        if (!pass)
+      if (!isActiveWriter)
+      {
+	while (true)
 	{
-          for (;;)
+	  try
 	  {
-            try
+	    synchronized (lock){lock.wait();}
+	    synchronized(RWLock.this)
 	    {
-	      //_log.info("waiting on unique lock: "+t);
-	      //	      synchronized (lock){lock.wait();}
-	      //	      _log.info("notified on unique lock: "+t);
-	      _log.info("waiting on WriterLock: "+t);
-              WriterLock.this.wait();
-	      _log.info("notified on WriterLock: "+t);
-	      boolean pass2;
-	      synchronized(RWLock.this)
+	      if (activeReaders_==0 && activeWriter_==null)
 	      {
-		pass2 = (activeWriter_ == null && activeReaders_ == 0);
-		if (pass2)
-		{
-		  activeWriter_ = t;
-		  _writerQueue.remove(t); // promoted to active writer
-		  return;
-		}
+		activeWriter_ = t;
+		_writerQueue.remove(t); // promoted to active writer
+		return;
 	      }
-            }
-            catch (InterruptedException ex)
+	    }
+	  }
+	  catch (InterruptedException ex)
+	  {
+	    synchronized (RWLock.this)
 	    {
-	      synchronized (RWLock.this)
-	      {
-		_writerQueue.remove(t);	// writer interrupted whilst in queue
-	      }
-              notifyNextWriter();
-              ie = ex;
-              break;
-            }
-          }
-        }
+	      _writerQueue.remove(t);	// writer interrupted whilst in queue
+	      Object tmp=_writerQueue.remove(_writerQueue.firstKey());
+	      synchronized (tmp) {tmp.notify();}
+	    }
+	    ie = ex;
+	    break;
+	  }
+	}
       }
 
       if (ie != null)
@@ -405,18 +398,13 @@ public class RWLock implements ReadWriteLock {
 	return false; // timed out
     }
 
-    protected void
-      notifyNextWriter()
-    {
-      //      Object lock=_writerQueue.remove(_writerQueue.firstKey());
-      //      synchronized (lock) {lock.notify();}
-      _log.info("notifying WriterLock");
-      WriterLock.this.notify();
-    }
-
   }
 
-
-
+  protected synchronized void
+    notifyNextWriter()
+  {
+    Object lock=_writerQueue.remove(_writerQueue.firstKey());
+    synchronized (lock) {lock.notify();}
+  }
 }
 
