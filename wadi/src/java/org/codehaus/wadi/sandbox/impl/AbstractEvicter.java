@@ -20,17 +20,17 @@ import org.codehaus.wadi.sandbox.Evictable;
 import org.codehaus.wadi.sandbox.Evicter;
 
 /**
- * Abstract base for Evicters. only evicts invalidated sessions.
+ * Abstract base for Evicters. This Evicter only evicts invalidated sessions.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public abstract class AbstractEvicter implements Evicter {
-    
+
     public boolean evict(String id, Evictable evictable) {
         return evict(id, evictable, System.currentTimeMillis());
     }
-    
+
     public boolean evict(String id, Evictable evictable,long time) {
         return evictable.getInvalidated();
     }
