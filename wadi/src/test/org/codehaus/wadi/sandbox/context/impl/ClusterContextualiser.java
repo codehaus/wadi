@@ -25,7 +25,6 @@ import java.util.Set;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
 import javax.jms.ObjectMessage;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -39,10 +38,9 @@ import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Location;
-import org.codehaus.wadi.sandbox.context.MigrationStrategy;
 import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.Promoter;
-import org.codehaus.wadi.sandbox.context.ProxyStrategy;
+import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -74,15 +72,13 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class ClusterContextualiser extends AbstractMappedContextualiser {
 
-	protected final Cluster           _cluster;
-	protected final MessageConsumer   _consumer;
-	protected final MessageDispatcher _listener;
-	protected final Map               _locationResponses=new HashMap(); // do we need more concurrency ?
-	protected final long              _timeout;
-	protected final Location          _location;
-	protected final long              _proxyHandOverPeriod;
-	protected final ProxyStrategy     _proxyer;
-	protected final MigrationStrategy _migrater;
+	protected final Cluster            _cluster;
+	protected final MessageDispatcher  _dispatcher;
+	protected final Map                _locationResponses=new HashMap(); // do we need more concurrency ?
+	protected final long               _timeout;
+	protected final Location           _location;
+	protected final long               _proxyHandOverPeriod;
+	protected final RelocationStrategy _relocater;
 
 	protected Contextualiser _top;
 	public void setContextualiser(Contextualiser top){_top=top;}
@@ -141,21 +137,17 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 * @param map
 	 * @param evicter
 	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, Cluster cluster, long timeout, long proxyHandOverPeriod, Location location, ProxyStrategy proxyer, MigrationStrategy migrater) throws JMSException {
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, Cluster cluster, long timeout, long proxyHandOverPeriod, Location location, MessageDispatcher dispatcher, RelocationStrategy relocater) throws JMSException {
 		super(next, collapser, map, evicter);
 		_cluster=cluster;
-		boolean excludeSelf=true;
-	    _consumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
-		_listener=new MessageDispatcher(_cluster);
-	    _consumer.setMessageListener(_listener);// TODO - should be called in start() - we need a stop() too - to remove listeners...
+		_dispatcher=dispatcher;
 	    _timeout=timeout;
 	    _proxyHandOverPeriod=proxyHandOverPeriod;
 	    _location=location;
-	    _proxyer=proxyer;
-	    _migrater=migrater;
+	    _relocater=relocater;
 	    
-		_listener.register(this, "onMessage"); // dispatch matching messages using onMessage() methods
-		_listener.register(LocationResponse.class, _locationResponses, _timeout); // dispatch matching messages via rendez-vous
+		_dispatcher.register(this, "onMessage"); // dispatch matching messages using onMessage() methods
+		//_dispatcher.register(LocationResponse.class, _locationResponses, _timeout); // dispatch matching messages via rendez-vous
 		}
 
 	/* (non-Javadoc)
@@ -169,41 +161,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#contextualiseLocally(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync)
 	 */
 	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock) throws IOException, ServletException {
-		Location location=(Location)_map.get(id);
-		if (location!=null) {
-			// let's try the cached location...
-			 if (contextualiseLocally(hreq, hres, chain, id, promoter, promotionLock, location)) {
-			 	return true;
-			 } else {
-				// cached location may have been stale i.e. not responding to http requests
-				// this should be a very infrequent occurrence...
-				location=null;
-			}
-		}
-		
-		if (location==null) {
-			// refresh the cache...
-			location=locate2(id);
-		}
-
-		// if we could not locate the context, we are at the end of the road...
-		if (location==null) {
-			_log.info("could not locate: "+id);
-			return false;
-		}
-		
-		if ((contextualiseLocally(hreq, hres, chain, id, promoter, promotionLock, location))) {
-			return true;
-		} else {
-			// proxy failed
-			// the promotionLock has NOT yet been released...
-			promotionLock.release();
-			// we'll have to contextualise hreq here - stateless context ? TODO
-			_log.error("could not proxy to: "+location+" for id:"+id+" - contextualising locally");
-			chain.doFilter(hreq, hres);
-			
-			return true; // looks wrong - but actually indicates that req should proceed no further down stack...
-		}
+		return _relocater.relocate(hreq, hres, chain, id, promoter, promotionLock, _map);
 	}
 
 	/* (non-Javadoc)
@@ -226,10 +184,10 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	
 	// ClusterContextualiser...
 	
-	protected Location locate2(String id) {
+	protected Location locate(String id) {
 		_log.info("sending location request: "+id);
 		LocationRequest request=new LocationRequest(id, _proxyHandOverPeriod);
-		LocationResponse response=(LocationResponse)_listener.exchangeMessages(id, _locationResponses, request, _cluster.getDestination(), _timeout);
+		LocationResponse response=(LocationResponse)_dispatcher.exchangeMessages(id, _locationResponses, request, _cluster.getDestination(), _timeout);
 		Location location=response.getLocation();
 		Set ids=response.getIds();
 		// update cache
@@ -243,14 +201,6 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		_log.info("updated cache for: "+ids);
 		
 		return location;
-	}
-	
-	protected boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, Location location) throws IOException {
-		boolean success=false;
-		if (!(success=_proxyer.proxy(hreq, hres, id, promotionLock, location)))
-			success=_migrater.migrateAndPromote(hreq, hres, chain, id, promoter, promotionLock, location);
-		
-		return success;
 	}
 	
 	// message handlers...

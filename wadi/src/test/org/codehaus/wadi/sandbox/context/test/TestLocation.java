@@ -16,9 +16,14 @@
  */
 package org.codehaus.wadi.sandbox.context.test;
 
+import javax.jms.Destination;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.context.impl.PiggyBackHttpLocation;
+import org.codehaus.wadi.sandbox.context.Location;
+import org.codehaus.wadi.sandbox.context.ProxyingException;
 
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -73,7 +78,11 @@ public class TestLocation extends TestCase {
 	}
 
 	protected Sync _mutex=new MyMutex();
-	protected PiggyBackHttpLocation _location=new PiggyBackHttpLocation(3);
+	protected Location _location=new Location() {
+		public void proxy(HttpServletRequest hreq, HttpServletResponse hres) throws ProxyingException {}
+		public Destination getDestination() {return null;}
+		public long getExpiryTime() {return 0;}
+	};
 
 	class MyThread extends Thread {
 		public void run() {
@@ -84,7 +93,7 @@ public class TestLocation extends TestCase {
 			}
 
 			try {
-			_location.proxy(null, null, getName(), _mutex);
+			_location.proxy(null, null);
 			} catch (Exception e) {
 				_log.warn("proxy problem", e);
 			}
