@@ -17,6 +17,9 @@
 
 package org.codehaus.wadi.plugins;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import org.codehaus.wadi.shared.Manager;
 import org.codehaus.wadi.shared.RoutingStrategy;
 
 // TODO - this class needs to be better integrated with the
@@ -37,4 +40,6 @@ public class
   public String strip(String session) {return session;}
   public String augment(String session) {return session;}
   public String getInfo() {return null;}
+  public boolean reroute(HttpServletRequest req, HttpServletResponse res, Manager manager, String id) {return false;}
+  public boolean reroute(HttpServletRequest req, HttpServletResponse res, Manager manager, String id, String route) {return false;}
 }

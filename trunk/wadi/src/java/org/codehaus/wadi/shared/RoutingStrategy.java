@@ -17,6 +17,9 @@
 
 package org.codehaus.wadi.shared;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * Abstract the encoding and decoding of routing info within the
  * session id, so that different load balancer integrations may be
@@ -51,4 +54,28 @@ public interface
    * @return a <code>String</code> value
    */
   String getInfo();
+
+  /**
+   * Reroute to ourselves.
+   *
+   * @param req a <code>HttpServletRequest</code> value
+   * @param res a <code>HttpServletResponse</code> value
+   * @param manager a <code>Manager</code> value
+   * @param id a <code>String</code> value
+   * @return a <code>boolean</code> value
+   */
+  boolean reroute(HttpServletRequest req, HttpServletResponse res, Manager manager, String id);
+
+  /**
+   * Alter the value of the session cookie to reflect the route that
+   * we now require the load balancer to use.
+   *
+   * @param req a <code>HttpServletRequest</code> value
+   * @param res a <code>HttpServletResponse</code> value
+   * @param manager a <code>Manager</code> value
+   * @param id a <code>String</code> value
+   * @param route a <code>String</code> value
+   * @return a <code>boolean</code> value
+   */
+  boolean reroute(HttpServletRequest req, HttpServletResponse res, Manager manager, String id, String route);
 }
