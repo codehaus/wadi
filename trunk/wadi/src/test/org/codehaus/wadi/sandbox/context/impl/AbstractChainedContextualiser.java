@@ -54,15 +54,16 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 					promotionMutex=_collapser.getLock(id);
 					promotionMutex.acquire();
 					acquired=true;
-				}
-				// by the time we get the lock, another thread may have already promoted this context - try again locally...
-				if ((success=contextualiseLocally(req, res, chain, id, promoter, promotionMutex))) {// mutex released here if successful
-					return success;
-				} else {
-					Promoter p=getPromoter(promoter);
-					if ((success=_next.contextualise(req, res, chain, id, p, promotionMutex))) // mutex released here if successful
+					// by the time we get the lock, another thread may have already promoted this context - try again locally...
+					if ((success=contextualiseLocally(req, res, chain, id, promoter, promotionMutex))) {// mutex released here if successful
 						return success;
+					}
 				}
+				
+				Promoter p=getPromoter(promoter);
+				if ((success=_next.contextualise(req, res, chain, id, p, promotionMutex))) // mutex released here if successful
+					return success;
+				
 			} catch (InterruptedException e) {
 				throw new ServletException("timed out collapsing requests for context: "+id, e);
 			} finally {

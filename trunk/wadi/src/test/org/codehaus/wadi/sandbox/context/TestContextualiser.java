@@ -426,7 +426,7 @@ public class TestContextualiser extends TestCase {
 					(id=((LocationQuery)tmp).getId())!=null &&
 					_id.equals(id)) {
 					// send a LocationResponse
-					_log.info("sending location of: "+_id);
+					_log.info("sending location response for: "+_id);
 					LocationResponse response=new LocationResponse(_location, Collections.singleton(id));
 					ObjectMessage res=_cluster.createObjectMessage();
 					res.setJMSReplyTo(message.getJMSReplyTo());
@@ -481,12 +481,19 @@ public class TestContextualiser extends TestCase {
 		MessageListener listener1=new MyListener("bar", location1, cluster1);
 	    consumer1.setMessageListener(listener1);
 		
+	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
+	    _log.info("STARTING NOW!");
 		FilterChain fc=new MyFilterChain();
 
 		assertTrue(!m0.containsKey("bar"));
 		assertTrue(!m1.containsKey("foo"));
-		memory0.contextualise(null,null,fc,"bar", null, null);
-		memory1.contextualise(null,null,fc,"foo", null, null);
+		assertTrue(memory0.contextualise(null,null,fc,"bar", null, null));
+		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null));
+		assertTrue(!memory0.contextualise(null,null,fc,"baz", null, null));
+		assertTrue(!memory1.contextualise(null,null,fc,"baz", null, null));
+		
+		Thread.sleep(2000);
+	    _log.info("STOPPING NOW!");
 		// ------------------
 		cluster1.stop();
 		cluster1=null;
