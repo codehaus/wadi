@@ -27,7 +27,7 @@ import org.codehaus.wadi.sandbox.Evicter;
  */
 public class AlwaysEvicter implements Evicter {
 
-	public boolean evict(String id, Evictable evictable) {return true;}
+	public boolean evict(String id, Evictable evictable) {return evict(id, evictable, 0);}
 	public boolean evict(String id, Evictable evictable, long time) {return true;}
 
 }
