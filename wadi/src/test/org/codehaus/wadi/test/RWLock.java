@@ -47,14 +47,27 @@ package org.codehaus.wadi.test;
 // allow r->w overlap (releasing r included in race for w-lock)
 
 import EDU.oswego.cs.dl.util.concurrent.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import java.util.TreeMap;
+import java.util.SortedMap;
+import java.util.Comparator;
 
 public class RWLock implements ReadWriteLock {
+
+  protected Log _log=LogFactory.getLog(getClass());
 
   protected long activeReaders_ = 0;
   protected Thread activeWriter_ = null;
   protected long waitingReaders_ = 0;
-  protected long waitingWriters_ = 0;
-
+  protected SortedMap _writerQueue=new TreeMap(new Comparator()
+    {
+      public int
+	compare(Object o1, Object o2)
+      {
+	return ((Thread)o2).getPriority()-((Thread)o1).getPriority();
+      }
+    });
 
   protected final ReaderLock readerLock_ = new ReaderLock();
   protected final WriterLock writerLock_ = new WriterLock();
@@ -105,7 +118,7 @@ public class RWLock implements ReadWriteLock {
    * Returns the object to signal to wake up a waiter, or null if no such
    **/
   protected synchronized Signaller endRead() {
-    if (--activeReaders_ == 0 && waitingWriters_ > 0)
+    if (--activeReaders_ == 0 && _writerQueue.size() > 0)
       return writerLock_;
     else
       return null;
@@ -120,7 +133,7 @@ public class RWLock implements ReadWriteLock {
     activeWriter_ = null;
     if (waitingReaders_ > 0 && allowReader())
       return readerLock_;
-    else if (waitingWriters_ > 0)
+    else if (_writerQueue.size() > 0)
       return writerLock_;
     else
       return null;
@@ -229,16 +242,18 @@ public class RWLock implements ReadWriteLock {
       Thread t=Thread.currentThread();
 
       InterruptedException ie = null;
+
       synchronized(WriterLock.this)
       {
 	boolean pass;
+	Object lock=null;
 	synchronized (RWLock.this)
 	{
 	  pass = (activeWriter_ == null && activeReaders_ == 0);
 	  if (pass)
 	    activeWriter_ = t;
 	  else
-	    ++waitingWriters_;
+	    _writerQueue.put(t, lock=new Object()); // queue this writer with a unique lock
 	}
 
         if (!pass)
@@ -247,7 +262,12 @@ public class RWLock implements ReadWriteLock {
 	  {
             try
 	    {
+	      //_log.info("waiting on unique lock: "+t);
+	      //	      synchronized (lock){lock.wait();}
+	      //	      _log.info("notified on unique lock: "+t);
+	      _log.info("waiting on WriterLock: "+t);
               WriterLock.this.wait();
+	      _log.info("notified on WriterLock: "+t);
 	      boolean pass2;
 	      synchronized(RWLock.this)
 	      {
@@ -255,7 +275,7 @@ public class RWLock implements ReadWriteLock {
 		if (pass2)
 		{
 		  activeWriter_ = t;
-		  --waitingWriters_;
+		  _writerQueue.remove(t); // promoted to active writer
 		  return;
 		}
 	      }
@@ -264,9 +284,9 @@ public class RWLock implements ReadWriteLock {
 	    {
 	      synchronized (RWLock.this)
 	      {
-		--waitingWriters_;
+		_writerQueue.remove(t);	// writer interrupted whilst in queue
 	      }
-              WriterLock.this.notify();
+              notifyNextWriter();
               ie = ex;
               break;
             }
@@ -289,7 +309,7 @@ public class RWLock implements ReadWriteLock {
       if (s != null) s.signalWaiters();
     }
 
-    synchronized void signalWaiters() { WriterLock.this.notify(); }
+    synchronized void signalWaiters() { notifyNextWriter(); }
 
     public boolean
       attempt(long msecs)
@@ -323,7 +343,7 @@ public class RWLock implements ReadWriteLock {
 	    if (pass)
 	      activeWriter_ = t;
 	    else
-	      ++waitingWriters_;
+	      _writerQueue.put(t, new Object()); // queue this writer with a unique lock
 	  }
 
 	  if (pass)
@@ -342,9 +362,9 @@ public class RWLock implements ReadWriteLock {
 	      {
 		synchronized(RWLock.this)
 		{
-		  --waitingWriters_;
+		  _writerQueue.remove(t); // writer interrupted whilst in queue
 		};
-		WriterLock.this.notify();
+		notifyNextWriter();
 		ie = ex;
 		break;
 	      }
@@ -355,7 +375,7 @@ public class RWLock implements ReadWriteLock {
 		if (pass2)
 		{
 		  activeWriter_ = t;
-		  --waitingWriters_;
+		  _writerQueue.remove(t); // promoted to active writer
 		}
 	      }
 	      if (pass2)
@@ -367,9 +387,9 @@ public class RWLock implements ReadWriteLock {
 		{
 		  synchronized(RWLock.this)
 		  {
-		    --waitingWriters_;
+		    _writerQueue.remove(t); // writer timed out and left queue
 		  };
-		  WriterLock.this.notify();
+		  notifyNextWriter();
 		  break;
 		}
 	      }
@@ -383,6 +403,15 @@ public class RWLock implements ReadWriteLock {
 	throw ie;
       else
 	return false; // timed out
+    }
+
+    protected void
+      notifyNextWriter()
+    {
+      //      Object lock=_writerQueue.remove(_writerQueue.firstKey());
+      //      synchronized (lock) {lock.notify();}
+      _log.info("notifying WriterLock");
+      WriterLock.this.notify();
     }
 
   }
