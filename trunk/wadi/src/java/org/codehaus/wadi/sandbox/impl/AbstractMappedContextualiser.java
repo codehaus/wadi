@@ -17,6 +17,8 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -69,33 +71,42 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 
 	public abstract boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Sync promotionLock, Motable motable) throws IOException, ServletException;
 
+	protected final Sync _dummyLock=new NullSync();
+	public Sync getEvictionLock(String id, Motable motable){return _dummyLock;} // TODO - should this be the promotionLock ?
+	public Emoter getEvictionEmoter(){return getEmoter();}
+	
 	public void evict() {
-		// TODO - lock the map - move expensive stuff out of lock...
-		// take a copy of the map to work on...?
-		long time=System.currentTimeMillis();
-		for (Iterator i=_map.entrySet().iterator(); i.hasNext(); ) {
-			Map.Entry e=(Map.Entry)i.next();
-			String id=(String)e.getKey();
-			Motable emotable=(Motable)e.getValue();
-			if (_evicter.evict(id, emotable, time)) { // first test without lock - cheap
-				Sync lock=new NullSync(); // TODO - take the promotion lock here
-				boolean acquired=false;
-				// this should be a while loop
-				try {
-					if (lock.attempt(0) && _evicter.evict(id, emotable, time)) { // then confirm with exclusive lock
-						acquired=true;
-						Immoter immoter=_next.getDemoter(id, emotable);
-						Emoter emoter=getEmoter();
-						_log.info("demoting : "+emotable);
-						Utils.mote(emoter, immoter, emotable, id);
-					}
-				} catch (InterruptedException ie) {
-					_log.warn("unexpected interruption to eviction - ignoring", ie);
-				} finally {
-					if (acquired)
-						lock.release();
-				}
-			}
-		}
+	    Collection copy=null;
+	    synchronized (_map) {copy=new ArrayList(_map.entrySet());}
+	    
+	    long time=System.currentTimeMillis();
+	    for (Iterator i=copy.iterator(); i.hasNext(); ) {
+	        Map.Entry e=(Map.Entry)i.next();
+	        String id=(String)e.getKey();
+	        Motable emotable=(Motable)e.getValue();
+	        if (_evicter.evict(id, emotable, time)) { // first test without lock - cheap
+	            Sync lock=getEvictionLock(id, emotable);
+	            boolean acquired=false;
+	            do {
+	                try {
+	                    lock.attempt(0);
+	                    acquired=true;
+	                } catch (InterruptedException ie) {
+	                    _log.warn("unexpected interruption - continuing", ie);
+	                }
+	            } while (Thread.interrupted());
+	            
+	            try {
+	                if (acquired && _evicter.evict(id, emotable, time)) { // second confirmatory test with lock
+	                    Immoter immoter=_next.getDemoter(id, emotable);
+	                    Emoter emoter=getEvictionEmoter();
+	                    Utils.mote(emoter, immoter, emotable, id);
+	                }
+	            } finally {
+	                if (acquired)
+	                    lock.release();
+	            }
+	        }
+	    }
 	}
 }
