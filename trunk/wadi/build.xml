@@ -276,6 +276,7 @@
       <arg value="org.codehaus.wadi.test.TestCluster"/>
       <arg value="org.codehaus.wadi.test.TestTopologies"/>
       <arg value="org.codehaus.wadi.test.TestMigrationService"/>
+      <arg value="org.codehaus.wadi.test.TestAsyncToSyncAdaptor"/>
       <classpath refid="wadi.classpath"/>
       <!--
       -->

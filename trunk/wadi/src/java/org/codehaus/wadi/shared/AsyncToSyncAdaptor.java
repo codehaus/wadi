@@ -29,95 +29,111 @@ import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 /**
- * @author jules
+ * Enable a thread to send a Command over an async medium and wait for
+ * a reply or timeout before continuing...
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version 1.0
  */
-public class AsyncToSyncAdaptor {
-    	protected Log _log = LogFactory.getLog(getClass());
-    	protected int _nextId=0;
-    	protected Map _entries=Collections.synchronizedMap(new HashMap());
-    	
-    	class ConversationalMessage
-    	{
-                public String getRvId() {
-                    return _rvId;
-                }
-                public void setRvId(String id) {
-                    _rvId = id;
-                }
-                public long getRvTimeout() {
-                    return _rvTimeout;
-                }
-                public void setRvTimeout(long _timeout) {
-                    this._rvTimeout = _timeout;
-                }
-                
-    	    	protected long _rvTimeout=2000L;
-    	    	protected String _rvId=null;
-    	}
-    	
-    	public Object send(ConversationalMessage message, long timeout)
-    	{
-    	    Rendezvous rv=new Rendezvous(2);
-    	    String id=""+_nextId++;
-    	    _entries.put(id, rv);
-    	    message.setRvId(id);
-    	    message.setRvTimeout(timeout);
+public class
+  AsyncToSyncAdaptor
+{
+  protected final Log _log     = LogFactory.getLog(getClass());
+  protected final Map _entries =Collections.synchronizedMap(new HashMap());
+  protected final String _name;
 
-    	    // send message here...
-    	    
-    	    Object result=null;
-    	    try
-    	    {
-    	        result=rv.attemptRendezvous(null, timeout);
-    	    }
-    	    catch (TimeoutException e)
-    	    {
-    	        _log.warn("timed out at rendezvous", e);
-    	    }
-    	    catch (InterruptedException e)
-    	    {
-    	        _log.warn("unexpectedly interrupted whilst waiting on rendezvous", e);
-    	    }
-    	    catch (BrokenBarrierException e)
-    	    {
-    	        _log.warn("Broken barrier - should never happen - we own this rendezvous", e);
-    	    }
-    	    finally
-    	    {
-    	        _entries.remove(id);
-    	    }
+  public AsyncToSyncAdaptor(String name){_name=name;}
 
-    	    return result;
-    	}
-    	
-    	public Object receive(ConversationalMessage message)
-    	{
-    	    long timeout=message.getRvTimeout();
-    	    String id=message.getRvId();
-    	    Rendezvous rv=(Rendezvous)_entries.get(id);
-    	    Object result=null;
-    	    
-    	    try
-    	    {
-    	        result=rv.attemptRendezvous(message, timeout);
-    	    }
-    	    catch (TimeoutException e)
-    	    {
-    	        _log.warn("rendezvous timed out", e);
-    	    }
-    	    catch (InterruptedException e)
-    	    {
-    	        _log.warn("unexpectedly interrupted whilst waiting on rendezvous", e);
-    	    }
-    	    catch (BrokenBarrierException e)
-    	    {
-    	        _log.warn("Broken barrier - we must have arrived too late for rendezvous", e);
-    	    }
-    	    
-    	    return result;
-    	}
+  protected int _nextId  =0;
+
+  public static abstract class
+    SyncCommand
+    implements Command
+    {
+      protected long _rvTimeout=2000L;
+      protected String _rvId=null;
+
+      public String getRvId() {
+	return _rvId;
+      }
+      public void setRvId(String id) {
+	_rvId = id;
+      }
+      public long getRvTimeout() {
+	return _rvTimeout;
+      }
+      public void setRvTimeout(long _timeout) {
+	this._rvTimeout = _timeout;
+      }
+    }
+
+  interface Sender {public void send(SyncCommand cc);}
+
+  public Object
+    send(SyncCommand command, Sender sender, long timeout)
+    {
+      int participants=2;
+      Rendezvous rv=new Rendezvous(participants);
+      String id=_name+"-"+_nextId++;
+      _entries.put(id, rv);
+      command.setRvId(id);
+      command.setRvTimeout(timeout);
+
+      sender.send(command);
+
+      Object result=null;
+      try
+      {
+	result=rv.attemptRendezvous(null, timeout);
+      }
+      catch (TimeoutException e)
+      {
+	_log.warn("timed out at rendezvous", e);
+      }
+      catch (InterruptedException e)
+      {
+	_log.warn("unexpectedly interrupted whilst waiting on rendezvous", e);
+      }
+      catch (BrokenBarrierException e)
+      {
+	_log.warn("Broken barrier - should never happen - we own this rendezvous", e);
+      }
+      finally
+      {
+	_entries.remove(id);
+      }
+
+      return result;
+    }
+
+  public Object
+    receive(SyncCommand command)
+    {
+      long timeout=command.getRvTimeout();
+      String id=command.getRvId();
+      Rendezvous rv=(Rendezvous)_entries.get(id);
+      Object result=null;
+
+      if (rv==null)
+	_log.warn("missed rendezvous - invoker thread must have timed out");
+      else
+	try
+	{
+	  result=rv.attemptRendezvous(command, timeout);
+	}
+	catch (TimeoutException e)
+	{
+	  _log.warn("rendezvous timed out", e);
+	}
+	catch (InterruptedException e)
+	{
+	  _log.warn("unexpectedly interrupted whilst waiting on rendezvous", e);
+	}
+	catch (BrokenBarrierException e)
+	{
+	  _log.warn("Broken barrier - we must have arrived too late for rendezvous", e);
+	}
+
+      return result;
+    }
 }
-
