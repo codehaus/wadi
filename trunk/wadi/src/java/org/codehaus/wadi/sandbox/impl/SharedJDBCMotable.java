@@ -75,6 +75,10 @@ public class SharedJDBCMotable extends AbstractMotable {
 				motable.setLastAccessedTime(rs.getLong(i++));
 				motable.setMaxInactiveInterval(rs.getInt(i++));
 				motable.setBytes((byte[])rs.getObject(i++));
+
+				if (!motable.checkTimeframe(System.currentTimeMillis()))
+				    _log.warn("loaded session from the future!: "+id);
+				
 				_log.info("loaded (database): "+id);
 				return motable;
 			} else {

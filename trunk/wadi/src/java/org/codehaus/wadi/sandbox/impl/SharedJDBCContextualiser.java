@@ -70,7 +70,12 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	}
 
 	public boolean isLocal(){return false;}
-
+	/**
+	 * An Emoter that deals in terms of SharedJDBCMotables
+	 *
+	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+	 * @version $Revision$
+	 */
 	public class SharedJDBCEmoter extends AbstractChainedEmoter {
 
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
@@ -122,7 +127,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	};
 
 	/**
-	 * An Emmoter that deals in terms of SharedJDBCMotables
+	 * An Immoter that deals in terms of SharedJDBCMotables
 	 *
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$

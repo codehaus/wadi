@@ -189,13 +189,13 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$
 	 */
-	class ClusterEmoter implements Emoter {
+	class ImmigrationEmoter implements Emoter {
 
 		protected final ObjectMessage _om;
 		protected final EmigrationRequest _er;
 		protected final MessageDispatcher.Settings _settingsInOut;
 
-		public ClusterEmoter(ObjectMessage om, EmigrationRequest er) {
+		public ImmigrationEmoter(ObjectMessage om, EmigrationRequest er) {
 			_om=om;
 			_er=er;
 			_settingsInOut=new MessageDispatcher.Settings();
@@ -238,8 +238,12 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 
 	public void onMessage(ObjectMessage om, EmigrationRequest er) throws JMSException {
 		String id=er.getId();
-		Emoter emoter=new ClusterEmoter(om, er);
+		Emoter emoter=new ImmigrationEmoter(om, er);
 		Motable emotable=er.getMotable();
+		
+		if (!emotable.checkTimeframe(System.currentTimeMillis()))
+		    _log.warn("immigrating session has come from the future!: "+emotable.getId());
+
 		Immoter immoter=_top.getDemoter(id, emotable);
 		Utils.mote(emoter, immoter, emotable, id);
 	}
