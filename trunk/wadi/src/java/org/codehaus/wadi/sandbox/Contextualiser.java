@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * Contextualising a request is realising/processing it within the correct Context, i.e. in the presence of the required HttpSession, if any.
+ * Contextualising a request is realising/processing it within the correct Context, in other words, in the presence of the required HttpSession, if any.
  *
  * A Contextualiser can choose to either process the request within itself, or promote a Context to its caller, within which the request may be processed.
  * It should indicate to its caller, via return code, whether said processing has already been carried out or not.
@@ -46,7 +46,7 @@ public interface Contextualiser {
 	boolean isLocal();
 
 	/**
-	 * Return a Demoter to the first Contextualiser which would be happy to accept this Motable - i.e. would not evict() it.
+	 * Return a Demoter to the first Contextualiser which would be happy to accept this Motable - in other words - would not evict() it.
 	 * @param id - uid of the Motable
 	 * @param motable - the Motable in question
 	 * @return - a Demoter - a delegate capable of arranging immotion into the correct Contextualiser

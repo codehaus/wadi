@@ -43,7 +43,7 @@ public interface RelocationStrategy {
 	 * @param immoter
 	 * @param promotionLock
 	 * @param locationMap
-	 * @return
+	 * @return - whether, or not, the request was contextualised
 	 */
 	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException;
 	public void setTop(Contextualiser top);

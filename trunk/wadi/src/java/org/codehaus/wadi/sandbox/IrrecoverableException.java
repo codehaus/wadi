@@ -27,7 +27,6 @@ public class IrrecoverableException extends ProxyingException {
 
 	/**
 	 * @param message
-	 * @param cause
 	 */
 	public IrrecoverableException(String message) {
 		super(message);
