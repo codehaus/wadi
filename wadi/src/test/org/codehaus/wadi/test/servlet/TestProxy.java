@@ -16,6 +16,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -32,6 +33,7 @@ public class TestProxy extends TestServlet{
 	public class ProxyServlet extends HttpServlet {
 		public void service(ServletRequest req, ServletResponse res)
 				throws ServletException, IOException {
+			_log.info("session-id: "+((HttpServletRequest)req).getRequestedSessionId());
 			new HttpProxy().proxy(req, res, new URL("http://localhost:8080/test/admin"));
 		}
 	}
@@ -52,7 +54,7 @@ public class TestProxy extends TestServlet{
 	protected void setUp() throws Exception {
 		super.setUp();
 		_log.info("setting up");
-		add("Proxy", "/test", "/proxy", new ProxyFilter());
+		add("Proxy", "/test", "/proxy", new ProxyServlet());
 		add("Admin", "/test", "/admin", new org.mortbay.servlet.AdminServlet());
 		start("localhost", 8080);
 		}
@@ -76,7 +78,7 @@ public class TestProxy extends TestServlet{
 
 	public void testGET() throws Exception {
 		HttpMethod get=new GetMethod("http://localhost:8080");
-		get.setPath("/test/proxy");
+		get.setPath("/test/proxy;jsessionid=xxx");
 		HttpClient client=new HttpClient();
 		client.executeMethod(get);
 		String proxied=get.getResponseBodyAsString();
