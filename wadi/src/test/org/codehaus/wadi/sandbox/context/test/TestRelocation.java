@@ -244,7 +244,6 @@ public class TestRelocation extends TestCase {
 		if (migrating) {
 			assertTrue(m0.size()==2);
 			Thread.sleep(1000); // can take a while for ACK to be processed
-			_log.info("M1="+m1);
 			assertTrue(m1.size()==0);
 			assertTrue(c0.size()==0); // n0 has all the sessions, so needn't remember any further locations...
 			assertTrue(c1.size()==1); // bar migrated from n1 to n0, so n1 needs to remember the new location...
@@ -264,6 +263,10 @@ public class TestRelocation extends TestCase {
 			Thread.sleep(1000); // can take a while for ACK to be processed
 			assertTrue(m0.size()==0);
 			assertTrue(c0.size()==2); // n0 should now know that both sessions are on n1
+			_log.info("M0="+m0);
+			_log.info("M1="+m1);
+			_log.info("C0="+c0);
+			_log.info("C1="+c1);
 			assertTrue(c1.size()==0); // n1 has all the sessions and doesn't need to know anything...
 		} else {
 			assertTrue(m0.size()==1);

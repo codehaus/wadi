@@ -72,46 +72,16 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 		_dispatcher.register(ImmigrationAcknowledgement.class, _ackRvMap, _timeout);
 	}
 	
-	
-	class RelocationEmoter extends ChainedEmoter {
-		
-		protected final Map _locationMap;
-		
-		public RelocationEmoter(Map locationMap) {
-			super();
-			_locationMap=locationMap;
-		}
-		
-		public boolean prepare(String id, Motable motable, Motable immotable) {
-			return true;
-		}
-		
-		public void commit(String id, Motable emotable) {
-			super.commit(id, emotable); // remove copy in store
-			//synchronized (_locationMap){_locationMap.put(id, );} // this location no longer valid
-		}
-		
-		public void rollback(String id, Motable motable) {
-			super.rollback(id, motable);
-			// tricky...
-			throw new RuntimeException("NYI");
-		}
-
-		public String getInfo() {
-			return "immigration relocation";
-		}
-	}
-	
 	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {
 		
 		Location location=(Location)locationMap.get(id);
 		Destination destination;
 		
 		if (location==null) {
-			_log.info("no cached location - 1->n : "+id);
+			_log.info("immigration: no cached location - 1->n : "+id);
 			destination=_dispatcher.getCluster().getDestination();
 		} else {
-			_log.info("cached location - 1->1 : "+id);
+			_log.info("immigration: cached location - 1->1 : "+id);
 			destination=location.getDestination();
 		}
 		
@@ -126,7 +96,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 		// take out session, prepare to promote it...
 
 		Motable emotable=response.getMotable();
-		Emoter emoter=new RelocationEmoter(_locationMap);		
+		Emoter emoter=new ImmigrationEmoter(_locationMap, settingsInOut);		
 		Motable immotable=Utils.mote(emoter, immoter, emotable, id);
 		if (immotable!=null) {
 			promotionLock.release();
@@ -142,7 +112,8 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 	public Contextualiser getTop(){return _top;}
 	
 	class ImmigrationEmoter extends ChainedEmoter {
-		
+		protected final Log _log=LogFactory.getLog(getClass());
+
 		protected final Map _locationMap;
 		protected MessageDispatcher.Settings _settingsInOut;
 		
@@ -158,12 +129,14 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 		public void commit(String id, Motable emotable) {
 			emotable.tidy(); // remove copy in store
 
-			_log.info("sending migration ack: "+id);
+			// TODO - move some of this to prepare()...
+			_log.info("sending immigration ack: "+id);
 			ImmigrationAcknowledgement ack=new ImmigrationAcknowledgement(id, _location);
 			try {
 				_dispatcher.sendMessage(ack, _settingsInOut);
+				_locationMap.remove(id);
 			} catch (JMSException e) {
-				_log.error("could not send migration acknowledgement: "+id, e);
+				_log.error("could not send immigration acknowledgement: "+id, e);
 			}
 		}
 		
@@ -177,9 +150,9 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 	
 	public void onMessage(ObjectMessage om, ImmigrationRequest request) throws JMSException {
 		String id=request.getId();
-		_log.info("receiving migration request: "+id);
+		_log.info("receiving immigration request: "+id);
 		if (_top==null) {
-			_log.warn("no Contextualiser set - cannot respond to MigrationRequests");
+			_log.warn("no Contextualiser set - cannot respond to ImmigrationRequests");
 		} else {
 			try {
 				MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
@@ -187,27 +160,28 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 				settingsInOut.to=om.getJMSReplyTo();
 				settingsInOut.from=_location.getDestination();
 				settingsInOut.correlationId=om.getJMSCorrelationID();
-				_log.info("receiving migration request: "+id+" : "+settingsInOut);
+				_log.info("receiving immigration request: "+id+" : "+settingsInOut);
 //				long handShakePeriod=request.getHandOverPeriod();
 				// TODO - the peekTimeout should be specified by the remote node...
 				//FilterChain fc=new MigrationResponseFilterChain(id, settingsInOut, handShakePeriod);
-				Immoter promoter=new MigrationImmoter(settingsInOut);
+				Immoter promoter=new ImmigrationImmoter(settingsInOut);
 		//		boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException;
 				//_top.contextualise(null,null,fc,id, null, null, true);
 				Sync promotionLock=new NullSync(); // TODO - is this right?...
 				_top.contextualise(null,null,null,id, promoter, promotionLock, true);
 				} catch (Exception e) {
-				_log.warn("problem handling migration request: "+id, e);
+				_log.warn("problem handling immigration request: "+id, e);
 			}
 			// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
 		}
 	}
 	
-	class MigrationImmoter implements Immoter {
+	class ImmigrationImmoter implements Immoter {
+		protected final Log _log=LogFactory.getLog(getClass());
 		
 		protected final MessageDispatcher.Settings _settingsInOut;
 		
-		public MigrationImmoter(MessageDispatcher.Settings settingsInOut) {
+		public ImmigrationImmoter(MessageDispatcher.Settings settingsInOut) {
 			_settingsInOut=settingsInOut;
 		}
 		
@@ -217,17 +191,17 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			// send the message
-			_log.info("sending migration response: "+id+" : "+_settingsInOut);
+			_log.info("sending immigration response: "+id+" : "+_settingsInOut);
 			ImmigrationResponse mr=new ImmigrationResponse();
 			mr.setId(id);
 			mr.setMotable(emotable);
 			ImmigrationAcknowledgement ack=(ImmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _ackRvMap, mr, _settingsInOut, _timeout);
 			if (ack==null) {
-				_log.warn("no ack received for session migration: "+id);
+				_log.warn("no ack received for session immigration: "+id);
 				// TODO - who owns the session now - consider a syn link to old owner to negotiate this..
 				return false;
 			}
-			_log.info("received migration ack: "+id+" : "+_settingsInOut);
+			_log.info("received immigration ack: "+id+" : "+_settingsInOut);
 			// update location cache...
 			Location tmp=ack.getLocation();
 			synchronized (_locationMap) {

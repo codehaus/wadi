@@ -116,13 +116,13 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	
 	public void onMessage(ObjectMessage om, EmigrationStartedNotification sdsn) throws JMSException {
 		Destination emigrationQueue=sdsn.getDestination();
-		_log.info("received EmigrationStartedNotification: "+emigrationQueue);
+		//_log.info("received EmigrationStartedNotification: "+emigrationQueue);
 		_dispatcher.addDestination(emigrationQueue); 
 	}
 	
 	public void onMessage(ObjectMessage om, EmigrationEndedNotification sden) {
 		Destination emigrationQueue=sden.getDestination();
-		_log.info("received EmigrationEndedNotification: "+emigrationQueue);
+		//_log.info("received EmigrationEndedNotification: "+emigrationQueue);
 		_dispatcher.removeDestination(emigrationQueue);
 	}
 	
@@ -138,6 +138,12 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		}
 	}
 
+	/**
+	 * Manage the immotion of a session into the cluster tier from another and its emigration thence to another node.
+	 *
+	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+	 * @version $Revision$
+	 */
 	class ClusterImmoter implements Immoter {
 		public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}
 		
@@ -148,11 +154,12 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
 			EmigrationRequest er=new EmigrationRequest(id, emotable);
 			EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emigrationRvMap, er, settingsInOut, 3000);
-			_log.info("received EmigrationAcknowledgement: "+ea.getId()+" ["+settingsInOut.to+"]");
+			//_log.info("received EmigrationAcknowledgement: "+ea.getId()+" ["+settingsInOut.to+"]");
 			return ea!=null;
 		}
 		
 		public void commit(String id, Motable immotable) {
+			//_log.info("emigration (cluster): "+id);
 			// TODO - cache new location of emigrating session...
 			}
 		
@@ -170,6 +177,12 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		}
 	}
 
+	/**
+	 * Manage the immigration of a session from another node and and thence its emotion from the cluster layer into another.
+	 *
+	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+	 * @version $Revision$
+	 */
 	class ClusterEmoter implements Emoter {
 		
 		protected final ObjectMessage _om;
@@ -200,6 +213,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			} catch (JMSException e) {
 				_log.error("could not acknowledge safe receipt: "+id, e);
 			}
+			
+			//_log.info("immigration (cluster): "+id);
 		}
 		
 		public void rollback(String id, Motable emotable) {
@@ -214,7 +229,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	
 	public void onMessage(ObjectMessage om, EmigrationRequest er) throws JMSException {
 		String id=er.getId();
-		_log.info("receiving emigration request: "+id);
+		//_log.info("receiving emigration request: "+id);
 		Emoter emoter=new ClusterEmoter(om, er);
 		Motable emotable=er.getMotable();
 		Immoter immoter=_top.getDemoter(id, emotable);

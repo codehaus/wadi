@@ -208,7 +208,7 @@ public class TestContextualiser extends TestCase {
 			Emoter emoter=new ChainedEmoter() {
 				public void commit(String id, Motable emotable) {
 					super.commit(id, emotable);
-					_log.info("deletion (ether): "+id);
+//					_log.info("deletion (ether): "+id);
 				}
 				public String getInfo(){return "ether";}
 			};
