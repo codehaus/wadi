@@ -259,7 +259,7 @@ public abstract class
       String correlationId=realId+"-"+src.toString();
       long timeout=2000L;
       Object result=_adaptor.send(_cluster,
-				  new MigrationRequest(realId, _migrationServer.getDestination(), timeout),
+				  new MigrationRequest(realId, _migrationService.getServer().getDestination(), timeout),
 				  correlationId,
 				  timeout,	// parameterise - TODO
 				  src,
@@ -399,8 +399,6 @@ public abstract class
 				       );
     _locationClient=new LocationClient(getAutoLocationAddress(), getAutoLocationPort(), 5000L);
     _locationServer.start();
-    _migrationServer=new org.codehaus.wadi.impl.sync.MigrationService.Server(this, _implFactory, _local, _streamingStrategy);
-    _migrationServer.start();
     _running=true;
 
     // TODO - activecluster stuff - replace with config ASAP...
@@ -459,8 +457,6 @@ public abstract class
     _locationServer.stop();
     _locationServer=null;
     _migrationService.getServer().stop();
-    _migrationServer.stop();
-    _migrationServer=null;
 
     // what about housekeeping thread ?
 
@@ -727,51 +723,51 @@ public abstract class
 
   protected void
     notifySessionAttributeAdded(String realId, javax.servlet.http.HttpSession session, String key, Object val)
+  {
+    int n=_attributeListeners.size();
+    if (n>0)
     {
-      int n=_attributeListeners.size();
-      if (n>0)
-      {
-	if (_log.isTraceEnabled()) _log.trace(realId+" : notifying attribute addition : "+key+" : null --> "+val);
+      if (_log.isTraceEnabled()) _log.trace(realId+" : notifying attribute addition : "+key+" : null --> "+val);
 
-	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, val);
-	for(int i=0;i<n;i++)
-	  notifySessionAttributeAdded((HttpSessionAttributeListener)_attributeListeners.get(i), event);
+      HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, val);
+      for(int i=0;i<n;i++)
+	notifySessionAttributeAdded((HttpSessionAttributeListener)_attributeListeners.get(i), event);
 
-	event=null;
-      }
+      event=null;
     }
+  }
 
   protected void
     notifySessionAttributeReplaced(String realId, javax.servlet.http.HttpSession session, String key, Object oldVal, Object newVal)
+  {
+    int n=_attributeListeners.size();
+    if (n>0)
     {
-      int n=_attributeListeners.size();
-      if (n>0)
-      {
-	if (_log.isTraceEnabled()) _log.trace(realId+" : notifying attribute replacement : "+key+" : "+oldVal+" --> "+newVal);
-	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, oldVal);
+      if (_log.isTraceEnabled()) _log.trace(realId+" : notifying attribute replacement : "+key+" : "+oldVal+" --> "+newVal);
+      HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, oldVal);
 
-	for(int i=0;i<n;i++)
-	  notifySessionAttributeReplaced((HttpSessionAttributeListener)_attributeListeners.get(i), event);
+      for(int i=0;i<n;i++)
+	notifySessionAttributeReplaced((HttpSessionAttributeListener)_attributeListeners.get(i), event);
 
-	event=null;
-      }
+      event=null;
     }
+  }
 
   protected void
     notifySessionAttributeRemoved(String realId, javax.servlet.http.HttpSession session, String key, Object val)
+  {
+    int n=_attributeListeners.size();
+    if (n>0)
     {
-      int n=_attributeListeners.size();
-      if (n>0)
-      {
-	if (_log.isTraceEnabled()) _log.trace(realId+" : notifying attribute removal : "+key+" : "+val+" --> null");
-	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, val);
+      if (_log.isTraceEnabled()) _log.trace(realId+" : notifying attribute removal : "+key+" : "+val+" --> null");
+      HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, val);
 
-	for(int i=0;i<n;i++)
-	  notifySessionAttributeRemoved((HttpSessionAttributeListener)_attributeListeners.get(i), event);
+      for(int i=0;i<n;i++)
+	notifySessionAttributeRemoved((HttpSessionAttributeListener)_attributeListeners.get(i), event);
 
-	event=null;
-      }
+      event=null;
     }
+  }
 
   // these are split out so that they may be easily aspected (event notifications for tomcat...
   public void notifySessionCreated(HttpSessionListener listener, HttpSessionEvent event){listener.sessionCreated(event);}
@@ -804,19 +800,19 @@ public abstract class
 
   //  protected abstract HttpSession createFacade(HttpSessionImpl impl);
 
-//   public void
-//     notifyRequestEnd(String id)
-//   {
-//     if (_log.isTraceEnabled()) _log.trace(id+": request end");
-//   }
+  //   public void
+  //     notifyRequestEnd(String id)
+  //   {
+  //     if (_log.isTraceEnabled()) _log.trace(id+": request end");
+  //   }
 
-//   public void
-//     notifyRequestGroupEnd(String id)
-//   {
-//     if (_log.isTraceEnabled()) _log.trace(id+": request group end");
-//   }
+  //   public void
+  //     notifyRequestGroupEnd(String id)
+  //   {
+  //     if (_log.isTraceEnabled()) _log.trace(id+": request group end");
+  //   }
 
-//   public boolean getUsingRequestGroups(){return true;}
+  //   public boolean getUsingRequestGroups(){return true;}
 
   //----------------------------------------
   // autolocation API
@@ -924,7 +920,7 @@ public abstract class
 	  params[2]+","+
 	  _httpIpAddress.getHostAddress()+","+
 	  _httpPort+","+
-	  _migrationServer.getDestination()+","+
+	  _migrationService.getServer().getDestination()+","+
 	  _routingStrategy.getInfo();
       }
 
@@ -939,7 +935,6 @@ public abstract class
   //----------------------------------------
   // Migration
 
-  protected org.codehaus.wadi.impl.sync.MigrationService.Server _migrationServer;
   protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor();
 
   //----------------------------------------
@@ -1186,21 +1181,10 @@ public abstract class
     _cluster.send(node.getDestination(), om);
   }
 
-  /**
- * @param _adaptor The _adaptor to set.
- */
-public void setAsyncToSyncAdaptor(AsyncToSyncAdaptor _adaptor) {
-	this._adaptor = _adaptor;
-}
+  public void setAsyncToSyncAdaptor(AsyncToSyncAdaptor adaptor){_adaptor=adaptor;}
+  public AsyncToSyncAdaptor getAsyncToSyncAdaptor(){return _adaptor;}
 
-/**
- * @return Returns the _adaptor.
- */
-public AsyncToSyncAdaptor getAsyncToSyncAdaptor() {
-	return _adaptor;
-}
-
-class MembershipListener
+  class MembershipListener
     implements ClusterListener
   {
     public void onNodeAdd(ClusterEvent event){_log.info("node add");}
