@@ -73,7 +73,7 @@ import org.codehaus.wadi.sandbox.context.HttpProxy;
 public abstract class AbstractHttpProxy implements HttpProxy {
 
 	// proxyable
-	protected final Pattern _proxyableSchemes=Pattern.compile("HTTP", Pattern.CASE_INSENSITIVE);
+	protected Pattern _proxyableSchemes=Pattern.compile("HTTP", Pattern.CASE_INSENSITIVE);
 
 	public boolean canProxy(ServletRequest req) {
 		String scheme=req.getScheme();
@@ -81,8 +81,8 @@ public abstract class AbstractHttpProxy implements HttpProxy {
 	}
 
 	// stateful
-	protected final Pattern _statefulMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE); // TODO - |HEAD|PUT|DELETE
-	protected final Pattern _statelessURIs=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)", Pattern.CASE_INSENSITIVE); // TODO - CSS, ...?
+	protected Pattern _statefulMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE); // TODO - |HEAD|PUT|DELETE
+	protected Pattern _statelessURIs=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)", Pattern.CASE_INSENSITIVE); // TODO - CSS, ...?
 
 	// N.B. it is VERY important that we know what the session id's cookie name is, so that we can spot it in the request...
 	public boolean isStateful(HttpServletRequest hreq) {
@@ -105,9 +105,11 @@ public abstract class AbstractHttpProxy implements HttpProxy {
 		// TODO Auto-generated constructor stub
 	}
 
-	protected Log _log = LogFactory.getLog(getClass()); // TODO - inefficient
+	protected static final Log _log = LogFactory.getLog(HttpProxy.class); // TODO - sort out...
 
-	protected HashSet _DontProxyHeaders = new HashSet();
+	protected static final HashSet _DontProxyHeaders = new HashSet();
+	
+	static
 	{
 		_DontProxyHeaders.add("proxy-connection");
 		_DontProxyHeaders.add("connection");
