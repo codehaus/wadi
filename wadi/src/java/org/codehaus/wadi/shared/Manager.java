@@ -178,7 +178,7 @@ public abstract class
 
       // TODO - how do we synchronise this on a per-session basis - a
       // HashMap of locks - yeugh!
-      if (impl==null)
+      if (impl==null && getDistributable())
 	impl=getRemoteSession(realId); // this will take the r-lock
     }
 
