@@ -73,14 +73,7 @@ public class
       public void setPort(int port){_port=port;}
 
       public boolean
-	emmigrate(Collection candidates, long timeout, Destination dst)
-	{
-	  _log.error("NYI");
-	  return false;
-	}
-
-      public boolean
-	immigrate(String realId, HttpSessionImpl placeholder, long timeout, Destination dst)
+	immigrateSingleSession(String realId, HttpSessionImpl placeholder, long timeout, Destination dst)
 	{
 	  Destination src=_server.getDestination();
 	  String correlationId=realId+"-"+src.toString();
@@ -97,7 +90,7 @@ public class
 	};
 
       public boolean
-	emmigrate(Map map, Collection candidates, long timeout, Destination destination, boolean sync)
+	emmigrateMultipleSessions(Map map, Collection candidates, long timeout, Destination destination)
 	{
 	  Socket socket=null;
 	  boolean ok=true;
@@ -136,7 +129,6 @@ public class
 	      ObjectOutput ss=os;
 
 	      // (1) send PREPARE()
-	      os.writeBoolean(sync);
 	      os.writeInt(numSessions);
 	      os.flush();
 	      for (Iterator i=candidates.iterator(); i.hasNext(); )

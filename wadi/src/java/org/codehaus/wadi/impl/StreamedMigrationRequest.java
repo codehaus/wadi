@@ -18,6 +18,7 @@
 package org.codehaus.wadi.impl;
 
 import javax.jms.Destination;
+import javax.jms.Message;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.HttpSessionImpl;
@@ -45,4 +46,6 @@ public class
   {
     return ((StreamedMigrationService.Client)service.getClient()).emmigrateSingleSession(this, impl, correlationID, _destination);
   }
+
+  public Destination getReplyTo(Destination destination){return _destination;}
 }

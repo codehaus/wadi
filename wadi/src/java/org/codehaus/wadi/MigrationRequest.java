@@ -18,6 +18,7 @@
 package org.codehaus.wadi;
 
 import javax.jms.Destination;
+import javax.jms.Message;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,6 +43,12 @@ public abstract class MigrationRequest
   public void
     invoke(MigrationService service, Destination source, String correlationID)
   {
+    if (getReplyTo(source).equals(service.getManager().getCluster().getLocalNode().getDestination()))
+    {
+      _log.trace(_id+": our own message forwarded back to us - ignoring");
+      return;
+    }
+
     HttpSessionImpl impl=null;
 
     if ((impl=(HttpSessionImpl)service.getHttpSessionImplMap().get(_id))==null)
@@ -86,4 +93,6 @@ public abstract class MigrationRequest
   public abstract Object doit(MigrationService service, HttpSessionImpl impl, String correlationID, Destination source);
 
   public String toString() {return "<"+getClass().getName()+":"+_id+">";}
+
+  public abstract Destination getReplyTo(Destination destination);
 }

@@ -254,7 +254,7 @@ public abstract class
     if (!successfulMigration)
     {
       long timeout=2000L;	// parameterise - TODO
-      successfulMigration=_migrationService.getClient().immigrate(realId, impl, timeout, _cluster.getDestination());
+      successfulMigration=_migrationService.getClient().immigrateSingleSession(realId, impl, timeout, _cluster.getDestination());
     }
 
     if (successfulMigration)

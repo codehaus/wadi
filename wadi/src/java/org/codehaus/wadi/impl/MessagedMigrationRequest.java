@@ -21,6 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
 import org.codehaus.activecluster.Cluster;
 import org.codehaus.wadi.HttpSessionImpl;
 import org.codehaus.wadi.MigrationService;
@@ -41,6 +43,7 @@ public class
     byte[] buffer=null;
     try
     {
+      // TODO - yeugh !! - work this out - double serialisation is BAD!!
       ByteArrayOutputStream baos=new ByteArrayOutputStream();
       ObjectOutputStream    oos =new ObjectOutputStream(baos);
       impl.writeContent(oos);
@@ -65,4 +68,6 @@ public class
 						source,
 						impl);
   }
+
+  public Destination getReplyTo(Destination destination) {return destination;}
 }

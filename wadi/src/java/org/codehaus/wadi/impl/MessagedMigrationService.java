@@ -18,6 +18,7 @@
 package org.codehaus.wadi.impl;
 
 import java.util.Collection;
+import java.util.Map;
 import javax.jms.Destination;
 import org.codehaus.wadi.HttpSessionImpl;
 import org.codehaus.wadi.MigrationService;
@@ -39,37 +40,37 @@ public class
   public class
     Client
     extends AbstractMigrationService.Client
-  {
-    public boolean
-      emmigrate(Collection candidates, long timeout, Destination dst)
     {
-      return true;
-    }
+      public boolean
+	emmigrateMultipleSessions(Map sessions, Collection candidates, long timeout, Destination dst)
+	{
+	  return true;
+	}
 
-    public boolean
-      immigrate(String realId, HttpSessionImpl placeholder, long timeout, Destination dst)
-    {
-      Destination src=_server.getDestination();
-      String correlationId=realId+"-"+src.toString();
-      Object result=_adaptor.send(_manager.getCluster(),
-				  new MessagedMigrationRequest(realId, timeout),
-				  correlationId,
-				  timeout,
-				  src,
-				  dst,
-				  placeholder);
+      public boolean
+	immigrateSingleSession(String realId, HttpSessionImpl placeholder, long timeout, Destination dst)
+	{
+	  Destination src=_server.getDestination();
+	  String correlationId=realId+"-"+src.toString();
+	  Object result=_adaptor.send(_manager.getCluster(),
+				      new MessagedMigrationRequest(realId, timeout),
+				      correlationId,
+				      timeout,
+				      src,
+				      dst,
+				      placeholder);
 
-      return (placeholder==result);
+	  return (placeholder==result);
+	}
     }
-  }
 
   public class
     Server
     extends AbstractMigrationService.Server
-  {
-    public Destination getDestination(){return _manager.getCluster().getLocalNode().getDestination();}
-  }
+    {
+      public Destination getDestination(){return _manager.getCluster().getLocalNode().getDestination();}
+    }
 
-protected Client _client = new Client();
-protected Server _server = new Server();
+  protected Client _client = new Client();
+  protected Server _server = new Server();
 }

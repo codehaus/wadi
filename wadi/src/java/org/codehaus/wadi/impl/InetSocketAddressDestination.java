@@ -33,25 +33,24 @@ import javax.jms.Destination;
 public class InetSocketAddressDestination
 implements Destination, Serializable
 {
-    protected InetAddress _address;
-    protected int         _port;
-    
-	public void setAddress(InetAddress address) {
-		_address=address;
-	}
-	public InetAddress getAddress() {
-		return _address;
-	}
-	public void setPort(int port) {
-		_port=port;
-	}
-	public int getPort() {
-		return _port;
-	}
-	
-		public String
-		toString()
-		{
-				return new InetSocketAddress(_address, _port).toString();
-		}
+  protected InetAddress _address;
+  protected int         _port;
+
+  public void setAddress(InetAddress address) {_address=address;}
+  public InetAddress getAddress() {return _address;}
+  public void setPort(int port) {_port=port;}
+  public int getPort() {return _port;}
+  public String toString() {return new InetSocketAddress(_address, _port).toString();}
+
+  public boolean
+    equals(Object o)
+  {
+    if (o instanceof InetSocketAddressDestination)
+    {
+      InetSocketAddressDestination isad=(InetSocketAddressDestination)o;
+      return _port==isad._port && _address.equals(isad._address);
+    }
+
+    return false;
+  }
 }
