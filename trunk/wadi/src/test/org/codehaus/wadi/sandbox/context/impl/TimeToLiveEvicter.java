@@ -26,17 +26,17 @@ import org.codehaus.wadi.sandbox.context.Motable;
  * @version $Revision$
  */
 public class TimeToLiveEvicter implements Evicter{
-	long _remaining;
+	long _ttl;
 
-	public TimeToLiveEvicter(long remaining) {
-		_remaining=remaining;
+	public TimeToLiveEvicter(long ttl) {
+		_ttl=ttl;
 	}
 
 	public boolean evict(String id, Motable m) {
 		long expiry=m.getLastAccessedTime()+(m.getMaxInactiveInterval()*1000);
 		long current=System.currentTimeMillis();
-		long left=expiry-current;
-		boolean evict=(left<=_remaining);
+		long remaining=expiry-current;
+		boolean evict=(remaining<=_ttl);
 
 		//_log.info((!evict?"not ":"")+"evicting: "+id);
 
