@@ -159,8 +159,9 @@ public abstract class
   public boolean getFirstGet(){return ((Boolean)_firstGet.get()).booleanValue();}
 
   public HttpSessionImpl
-    get(String id)
+    get(String oldId)
   {
+    String id=_routingStrategy.strip(oldId);
     HttpSessionImpl impl=getLocalSession(id);
 
     if (getFirstGet())
@@ -829,8 +830,9 @@ public abstract class
   protected LocationClient _locationClient;
 
   public ManagerProxy
-    locate(String id)
+    locate(String oldId)
   {
+    String id=getRoutingStrategy().strip(oldId);
     String location=_locationClient.run("org.codehaus.wadi"+","+ "locate"+","+id);
 
     if (location==null)
@@ -898,17 +900,12 @@ public abstract class
 	  _httpPort+","+
 	  _migrationServer.getAddress().getHostAddress()+","+
 	  _migrationServer.getPort()+","+
-	  getBucketName();
+	  _routingStrategy.getInfo();
       }
 
       return response;
     }
   }
-
-  // TODO - not sure if this is the right way to go, but we need it now...
-  protected String _bucketName;
-  public String getBucketName(){return _bucketName;}
-  public void setBucketName(String bucketName){_bucketName=bucketName;}
 
   protected RoutingStrategy _routingStrategy;
   public RoutingStrategy getRoutingStrategy(){return _routingStrategy;}

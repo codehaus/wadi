@@ -31,12 +31,16 @@
       for (Enumeration e=session.getAttributeNames(); e.hasMoreElements();)
       keys.add(e.nextElement());
 
-      int history=keys.size();;
-      int rows=(int)Math.sqrt((double)history);
-      int cols=history/rows;
+      int history=keys.size();
+      int rows=1;
+      int cols=1;
+    if (history>1)
+    {
+    rows=(int)Math.sqrt((double)history);
+    cols=history/rows;
     if (cols*rows<history)
       rows++;
-
+      }
       %>
 
     <HTML>

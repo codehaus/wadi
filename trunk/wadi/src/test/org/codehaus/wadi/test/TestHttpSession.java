@@ -136,7 +136,6 @@ public class
     throws Exception
   {
     _manager=new Manager();
-    _manager.setBucketName("foo"); // TODO: we should be able to work without this...
     org.mortbay.jetty.servlet.WebApplicationHandler handler=new org.mortbay.jetty.servlet.WebApplicationHandler();
     handler.initialize(new org.mortbay.jetty.servlet.WebApplicationContext());
     handler.start();

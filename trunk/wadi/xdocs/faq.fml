@@ -647,14 +647,24 @@
 	<p/>
 
 	Running this same test with affinity is left as an exercise to
-	the reader :-). For mod_jk, uncomment the RoutingStrategy
-	element in $WADI_HOME/WEB-INF/wadi-web.xml. This will cause
-	the proper coordination of session id with mod_jk. For lbs
-	that actually 'remember' the last place a session was
-	processed, rather than using routing info on the end of the
-	session id, you should not have to make any changes
+	the reader :-). For mod_jk, uncomment the relevant block in
+	$WADI_HOME/WEB-INF/wadi-web.xml and restart your servers. This
+	will cause the proper coordination of session id with
+	mod_jk. For lbs that actually 'remember' the last place a
+	session was processed, rather than using routing info on the
+	end of the session id, you should not have to make any changes
 	server-side. (A sample Pound config is shipped in
 	$WADI_HOME/conf).
+
+        <p/>
+
+        Upon ctl-C-ing any of the nodes that is carrying any sessions,
+        you should see message about their being evicted to disc
+        ($WADI_HOME/tmp) and a summary detailing how many in total
+        were saved. All nodes share this eviction store, so a session
+        is available to all remaining nodes as soon as its host has
+        evicted it. Your customer can continue their conversation
+        transparently via another node.
 
       </answer>
     </faq>
@@ -667,11 +677,12 @@
 	prevent the session growing too large. The intention is to use
 	something similar to test WADI on multi-cpu boxes and iron out
 	any remaining concurrency issues. I have run a previous
-	version of the demo app at up to 100 concurrent threads - but
-	it floors my box :-(. If you want to play with it you will
-	need to pay attention to the hostname and port number to which
-	the HTTP request is sent. Download JMeter, load the testplan
-	into it, click on the HTTP request element and away you go...
+	version of the demo app at up to 1000 concurrent threads - but
+	it floors my client box :-(. If you want to play with it you
+	will need to pay attention to the hostname and port number to
+	which the HTTP request is sent. Download JMeter, load the
+	testplan into it, click on the HTTP request element and away
+	you go...
       </answer>
     </faq>
 

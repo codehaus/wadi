@@ -63,12 +63,7 @@ public class
   public String			// TODO - yeugh !
     getId()
     {
-      String session=_impl.getId();
-      String bucket=_impl.getWadiManager().getBucketName(); // TODO - 'orrible
-      if (bucket==null)
-	return session;
-      else
-	return _impl.getWadiManager().getRoutingStrategy().augment(bucket, session); // TODO - cache...
+      return _impl.getWadiManager().getRoutingStrategy().augment(_impl.getId()); // TODO - cache...
     }
 
   // Setters

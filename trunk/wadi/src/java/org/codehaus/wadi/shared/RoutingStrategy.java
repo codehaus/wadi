@@ -37,45 +37,18 @@ public interface
   String strip(String session);
 
   /**
-   * Strip this routing info from this session id.
+   * Add our routing info to this session id.
    *
-   * @param bucket a <code>String</code> value
    * @param session a <code>String</code> value
    * @return a <code>String</code> value
    */
-  String strip(String bucket, String session);
+  String augment(String session);
 
   /**
-   * Add this routing info to this session id.
-   *
-   * @param bucket a <code>String</code> value
-   * @param session a <code>String</code> value
-   * @return a <code>String</code> value
-   */
-  String augment(String bucket, String session);
-
-  /**
-   * Return the corresponding routing info or bucket name for the
-   * given session id.
+   * Return the routing info for this node
    *
    * @param id a <code>String</code> value
    * @return a <code>String</code> value
    */
-  String get(String id);
-
-//   /**
-//    * return the given session id without routing info.
-//    *
-//    * @param id a <code>String</code> value
-//    * @return a <code>String</code> value
-//    */
-//   String getShortName(String id);
-
-//   /**
-//    * return the given session id with routing info.
-//    *
-//    * @param id a <code>String</code> value
-//    * @return a <code>String</code> value
-//    */
-//   String getLongName(String id);
+  String getInfo();
 }

@@ -47,7 +47,7 @@ public class
   public javax.servlet.http.HttpSession
     getHttpSession(String id)
   {
-    HttpSessionImpl impl=(HttpSessionImpl)get(getRoutingStrategy().strip(getBucketName(), id));
+    HttpSessionImpl impl=(HttpSessionImpl)get(getRoutingStrategy().strip(id));
     org.codehaus.wadi.jetty.HttpSession session=impl==null?null:(org.codehaus.wadi.jetty.HttpSession)impl.getFacade();
 
     javax.servlet.http.HttpSession answer=(session==null?null:(session.isValid()?session:null)); // TODO - or should session just be removed from map as soon as it is invalidated..
