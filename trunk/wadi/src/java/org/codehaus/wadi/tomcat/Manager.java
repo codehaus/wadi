@@ -43,6 +43,7 @@ import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.util.LifecycleSupport;
 import org.codehaus.wadi.shared.Filter;
+import org.codehaus.wadi.shared.HttpSessionImpl;
 
 // TODO - revisit configuration mechnism when subcomponents types/apis
 // settle down a little more...
@@ -91,9 +92,8 @@ public class
   public Session
     createSession()
   {
-    HttpSessionImpl impl=(HttpSessionImpl)getReadySessionPool().take();
-    impl.setManager(this);
-    HttpSession facade=(HttpSession)impl.getFacade();
+    HttpSession facade=(HttpSession)sessionCreate();
+    facade.setManager(this);
     return facade;
   }
 
@@ -262,7 +262,7 @@ public class
     public void put(Object o){}	// just let it go
   }
 
-  protected org.codehaus.wadi.shared.HttpSession createFacade(org.codehaus.wadi.shared.HttpSessionImpl impl){return new org.codehaus.wadi.tomcat.HttpSession((org.codehaus.wadi.tomcat.HttpSessionImpl)impl);}
+  protected org.codehaus.wadi.shared.HttpSession createFacade(org.codehaus.wadi.shared.HttpSessionImpl impl){return new org.codehaus.wadi.tomcat.HttpSession((org.codehaus.wadi.shared.HttpSessionImpl)impl);}
 
   //----------------------------------------
 
@@ -310,4 +310,7 @@ public class
   public void setMaxActive(int maxActive){}
   public int getMaxActive(){return 100000;}
 
+  //----------------------------------------
+
+  public org.codehaus.wadi.shared.HttpSession newFacade(HttpSessionImpl impl) {return new HttpSession(impl);}
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="WADI" default="jetty.1">
+<project name="WADI" default="test">
 
   <!--=========================================================================-->
 
@@ -207,6 +207,9 @@
 	  <include name="lib/*.jar"/>
 	  <include name="WEB-INF/lib/*.jar"/>
 	</fileset>
+	<fileset dir="${java.home}/.."><!-- this is actually the JRE -->
+	  <include name="lib/tools.jar"/>
+	</fileset>
       </classpath>
       <arg value="-config"/>
       <arg value="${wadi.home}/conf/tomcat.xml"/>
@@ -270,6 +273,7 @@
       <arg value="org.codehaus.wadi.test.TestHttpSession"/>
       <classpath refid="wadi.classpath"/>
       <!--
+      <arg value="org.codehaus.wadi.test.TestSerialisation"/>
       -->
       <sysproperty key="STOP.PORT" value="8079"/>
       <sysproperty key="http.port" value="8080"/>

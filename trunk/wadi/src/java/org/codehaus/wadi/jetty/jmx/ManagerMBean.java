@@ -34,13 +34,16 @@ public class
     super.defineManagedResource();
     // jetty/Manager
     defineAttribute("houseKeepingInterval");
-    defineAttribute("httpPort");
-    defineAttribute("sessionCookieDomain");
     defineAttribute("sessionCookieName");
     defineAttribute("sessionUrlParamName");
     // shared/Manager
     defineAttribute("distributable");
     defineAttribute("maxInactiveInterval");
     defineAttribute("specificationVersion");
+    defineAttribute("sessionCreationCounter");
+    defineAttribute("sessionDestructionCounter");
+    defineAttribute("sessionExpirationCounter");
+    defineAttribute("sessionInvalidationCounter");
+    defineAttribute("sessionRejectionCounter");
   }
 }
