@@ -42,10 +42,10 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
 	public boolean contextualiseLocally(ServletRequest req, ServletResponse res,
-		FilterChain chain, String id, Promoter promoter, Sync overlap) throws IOException, ServletException {
+		FilterChain chain, String id, Promoter promoter, Sync promotionmutex) throws IOException, ServletException {
 		Context c=(Context)_map.get(id); // TODO - should load from disc
 		_log.info("promoting: "+id);
-		promoter.promoteAndContextualise(req, res, chain, id, c, overlap); // inject result into our caller - now available to new threads
+		promoter.promoteAndContextualise(req, res, chain, id, c, promotionmutex); // inject result into our caller - now available to new threads
 		// TODO - remove file here...
 		return true;
 	}
