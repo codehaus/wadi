@@ -228,7 +228,7 @@ public abstract class
 	// If a passivation store has been enabled, we may find the
 	// session in it and load it....
 	if (_passivationStrategy!=null)
-	  _passivationStrategy.activate(id, (impl=(HttpSessionImpl)getBlankSessionPool().take())); // TODO - check for success
+	  _passivationStrategy.activate(id, (impl=createImpl())); // TODO - check for success
 
 	// If a migration policy has been enabled, we may request it
 	// from another node.
@@ -422,19 +422,18 @@ public abstract class
       if (_passivationStrategy.isElected())
       {
 	// We are responsible for distributed garbage collection...
-	SessionPool pool=getReadySessionPool();
 	Collection list=new LinkedList();
 	// load all sessions that have timed out and destroy them...
 	Collection c=_passivationStrategy.findTimedOut(currentTime, list);
 	int n=c.size();
 	if (n>0)
 	{
-	  _log.trace("tidying up "+n+" sessions expired in long-term storage");
+	  _log.trace("tidying up "+n+" session[s] expired in long-term storage");
 	  for (Iterator i=c.iterator(); i.hasNext();)
 	  {
-	    HttpSessionImpl impl=(HttpSessionImpl)pool.take();
+	    HttpSessionImpl impl=createImpl();
 	    if (_passivationStrategy.activate((String)i.next(), impl))
-	      destroyHttpSession(impl);
+	      releaseImpl(impl);
 	  }
 	  list.clear();		// could be reused on next iteration...
 	}
@@ -472,16 +471,14 @@ public abstract class
 	  if (hasBeenInvalidated) // explicitly invalidated
 	  {
 	    _log.trace(impl.getId()+" : removing (explicit invalidation)");
-	    _local.remove(impl.getId());
-	    destroyHttpSession(impl);
+	    releaseImpl(impl);
 	    continue;
 	  }
 
 	  if (hasTimedOut)	// implicitly invalidated via time-out
 	  {
 	    _log.trace(impl.getId()+" : removing (implicit time out)");
-	    _local.remove(impl.getId());
-	    destroyHttpSession(impl);
+	    releaseImpl(impl);
 	    continue;
 	  }
 
@@ -491,7 +488,9 @@ public abstract class
 	    // should this be done asynchronously via another Channel ?
 	    if (_passivationStrategy.passivate(impl))
 	    {
+	      // TODO - we cannot use releaseImpl() as it will fire unecessary notifications...
 	      _local.remove(impl.getId());
+	      impl.destroy();
 	      // TODO - how do we recycle the impl ?
 	    }
 
@@ -512,33 +511,6 @@ public abstract class
   //----------------------------------------
 
   public String getSpecificationVersion(){return "2.4";} // TODO - read from DD
-
-  /**
-   * Put a session impl that we have finished with, back into the
-   * ready pool for recycling...
-   *
-   * @param session a <code>javax.servlet.http.HttpSession</code> value
-   */
-  protected void
-    destroyHttpSession(HttpSessionImpl impl)
-  {
-    getReadySessionPool().put(impl);
-  }
-
-  public abstract class SessionPool
-    implements Channel
-  {
-    public abstract Object take();
-    public Object poll(long millis){return take();}
-
-    public abstract void put(Object o);
-    public boolean offer(Object o, long millis){put(o);return true;}
-
-    public Object peek(){return null;}
-  }
-
-  protected abstract SessionPool getBlankSessionPool();
-  protected abstract void setBlankSessionPool(SessionPool pool);
 
   protected IdGenerator _idGenerator;
   public IdGenerator getIdGenerator(){return _idGenerator;}
@@ -887,81 +859,6 @@ public abstract class
 
   public abstract ServletContext getServletContext();
 
-  //----------------------------------------
-
-  //----------------------------------------
-
-  protected org.codehaus.wadi.shared.Manager.SessionPool _readySessionPool=new ReadySessionPool();
-  protected org.codehaus.wadi.shared.Manager.SessionPool getReadySessionPool(){return _readySessionPool;}
-  protected void setReadySessionPool(org.codehaus.wadi.shared.Manager.SessionPool pool){_readySessionPool=pool;}
-
-  /**
-   * A logical pool of initialised session impls. They are put here upon
-   * invalidation/destruction and taken from here when a fresh session
-   * is required.
-   *
-   */
-  class ReadySessionPool
-    extends org.codehaus.wadi.shared.Manager.SessionPool
-  {
-    public Object
-      take()
-    {
-      String id=(String)getIdGenerator().take();
-      HttpSessionImpl impl=(HttpSessionImpl)getBlankSessionPool().take();
-      impl.init(Manager.this, id, System.currentTimeMillis(), _maxInactiveInterval, _maxInactiveInterval); // TODO need actual...
-
-      // v. important - before we go public, take the rlock to indicate a request thread is busy in this session
-      // TODO assert() that this is a request thread
-      try
-      {
-	impl.getApplicationLock().acquire();
-      }
-      catch (InterruptedException e)
-      {
-	_log.warn("unable to acquire rlock on new session");
-      }
-
-      _local.put(id, impl);
-      notifySessionCreated(impl.getFacade());
-      return impl;
-    }
-
-    // initially we will do this synchronously, but later it should be
-    // done asynchronously, by the housekeeping thread...
-    public void
-      put(Object o)
-    {
-      HttpSessionImpl impl=(HttpSessionImpl)o;
-      _local.remove(impl.getId());
-      org.codehaus.wadi.shared.HttpSession session=(org.codehaus.wadi.shared.HttpSession)impl.getFacade();
-
-      // The session is marked as invalid until it has been removed
-      // from _local. It must be temporarily switched back to valid
-      // status so that it can be passed back into application space
-      // as part of the destruction notification protocol...
-      session.setValid(true);
-
-      if ("2.4".equals(getSpecificationVersion()))
-	notifySessionDestroyed(session);
-
-      // TODO - if we could get an iter directly from the attr map, we
-      // could do this much faster... - IMPORTANT...
-      String[] names=session.getValueNames();
-      int len=names.length;
-      for (int i=0;i<len;i++)
-	session.removeAttribute(names[i]);
-      names=null;
-
-      if ("2.3".equals(getSpecificationVersion())) // TODO - 2.2? etc...
-	notifySessionDestroyed(session);
-
-      session.setValid(false);
-      impl.destroy();
-      getBlankSessionPool().put(impl);
-    }
-  }
-
   // stats - TODO - since these are ints and updates are atomic we
   // should not need to sync them?
 
@@ -1029,4 +926,67 @@ public abstract class
   // number of sessions in store (too expensive?)
   // it would be nice to know the actual number of bytes moved an hour
   // etc...
+
+  protected HttpSessionImpl acquireImpl(Manager manager){return acquireImpl(manager, null);}
+
+  protected HttpSessionImpl
+    acquireImpl(Manager manager, String id)
+  {
+    if (id==null)
+      id=(String)getIdGenerator().take();
+
+    HttpSessionImpl impl=createImpl();
+    impl.init(Manager.this, id, System.currentTimeMillis(), _maxInactiveInterval, _maxInactiveInterval); // TODO need actual...
+    impl.setWadiManager(manager);
+
+    // v. important - before we go public, take the rlock to indicate a request thread is busy in this session
+    // TODO assert() that this is a request thread
+    try
+    {
+      impl.getApplicationLock().acquire();
+    }
+    catch (InterruptedException e)
+    {
+      _log.warn("unable to acquire rlock on new session");
+    }
+
+    _local.put(id, impl);
+    notifySessionCreated(impl.getFacade());
+    return impl;
+  }
+
+  protected void
+    releaseImpl(HttpSessionImpl impl)
+  {
+    _local.remove(impl.getId());
+    HttpSession session=(HttpSession)impl.getFacade();
+
+    // The session is marked as invalid until it has been removed
+    // from _local. It must be temporarily switched back to valid
+    // status so that it can be passed back into application space
+    // as part of the destruction notification protocol...
+    session.setValid(true);
+
+    if ("2.4".equals(getSpecificationVersion()))
+      notifySessionDestroyed(session);
+
+    // TODO - if we could get an iter directly from the attr map, we
+    // could do this much faster... - IMPORTANT...
+    String[] names=session.getValueNames();
+    int len=names.length;
+    for (int i=0;i<len;i++)
+      session.removeAttribute(names[i]);
+    names=null;
+
+    if ("2.3".equals(getSpecificationVersion())) // TODO - 2.2? etc...
+      notifySessionDestroyed(session);
+
+    session.setValid(false);
+    impl.setWadiManager(null);
+    impl.destroy();
+
+    //    destroyImpl(impl); // TODO
+  }
+
+  protected abstract HttpSessionImpl createImpl();
 }

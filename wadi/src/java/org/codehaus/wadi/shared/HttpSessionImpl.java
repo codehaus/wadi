@@ -36,7 +36,7 @@ public abstract class
   extends AbstractHttpSessionImpl
   implements SerializableContent, Serializable // temporary
 {
-  public abstract javax.servlet.http.HttpSession newFacade();
+  public abstract javax.servlet.http.HttpSession createFacade();
 
   public void setCreationTime(long time){_creationTime=time;}
   protected static final Log _log=LogFactory.getLog(HttpSessionImpl.class);
@@ -116,6 +116,7 @@ public abstract class
     _lastAccessedTime          =_creationTime;
     _maxInactiveInterval       =maxInactiveInterval;
     _actualMaxInactiveInterval =actualMaxInactiveInterval;
+    _facade=createFacade();
   }
 
   public void
@@ -129,6 +130,7 @@ public abstract class
     _maxInactiveInterval=0;
     _actualMaxInactiveInterval=0;
     _attributes.clear();
+    _facade=null;		// more secure to drop this - S.O. may have taken a reference...
 
     // TODO - reuse _attributes, _rwlock and _facade
   }
@@ -141,7 +143,7 @@ public abstract class
   // the container is active. It should be broken out either into a
   // session impl subclass, or perhaps a separate LockManager...
 
-  protected transient ReadWriteLock _rwlock;
+  protected final transient ReadWriteLock _rwlock=new ReaderPreferenceReadWriteLock();
 
   // TODO- if I try to initialise these fields outside a ctor,
   // deserialisation results in them being empty - why ?
@@ -149,8 +151,6 @@ public abstract class
     HttpSessionImpl()
   {
     super();
-    _rwlock=new ReaderPreferenceReadWriteLock();
-    _facade=newFacade();
   }
 
   public Sync getApplicationLock()  {return _rwlock.readLock();} // allows concurrent app threads
@@ -195,9 +195,8 @@ public abstract class
     for (int i=is.readInt();i>0;i--)
       _attributes.put(is.readObject(), is.readObject());
 
-    // initialise transients ?
-    _rwlock=new ReaderPreferenceReadWriteLock();
-    _facade=newFacade();
+    // initialise non-final transients ?
+    _facade=createFacade();
   }
 
   public void

@@ -52,7 +52,7 @@ public class
   public javax.servlet.http.HttpSession
     newHttpSession()
   {
-    return ((HttpSessionImpl)getReadySessionPool().take()).getFacade();
+    return acquireImpl(this).getFacade();
   }
 
   protected boolean _reuseIds=false; // TODO - make this explicit
@@ -60,26 +60,7 @@ public class
   public javax.servlet.http.HttpSession
     newHttpSession(HttpServletRequest request)
   {
-    HttpSessionImpl impl=(HttpSessionImpl)getReadySessionPool().take();
-    if (_reuseIds)
-      impl.setId(request.getRequestedSessionId()); // TODO - wasted session id allocation
-    return impl.getFacade();
-  }
-
-  protected org.codehaus.wadi.shared.Manager.SessionPool _blankSessionPool=new BlankSessionPool();
-  protected org.codehaus.wadi.shared.Manager.SessionPool getBlankSessionPool(){return _blankSessionPool;}
-  protected void setBlankSessionPool(org.codehaus.wadi.shared.Manager.SessionPool pool){_blankSessionPool=pool;}
-
-  /**
-   * A logical pool of uninitialised session impls. Consumes from the
-   * ReadyPool and is Consumed by it as session impls are recycled.
-   *
-   */
-  class BlankSessionPool
-    extends org.codehaus.wadi.shared.Manager.SessionPool
-  {
-    public Object take(){return new HttpSessionImpl();}
-    public void put(Object o){}	// just let it go
+    return acquireImpl(this, _reuseIds?request.getRequestedSessionId():null).getFacade();
   }
 
   //-----------//
@@ -238,4 +219,7 @@ public class
   public int getHttpPort(){return Integer.parseInt(System.getProperty("http.port"));} // TODO - temporary hack...
 
   public ServletContext getServletContext(){return _handler.getServletContext();}
+
+
+  protected org.codehaus.wadi.shared.HttpSessionImpl createImpl(){return new HttpSessionImpl();}
 }
