@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.test.container;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
