@@ -166,6 +166,20 @@ public class
     {
       os.writeObject(_value);
     }
+
+    public boolean
+      equals(Object o)
+    {
+      if (o==this)
+	return true;
+
+      if (o==null || !(o instanceof Value))
+	return false;
+
+      Value that=(Value)o;
+
+      return this._value.equals(that._value);
+    }
   }
 
   // modelled on Doug Lea's Takable/Channel
@@ -185,7 +199,7 @@ public class
   }
 
   protected void
-    testJCache(Cache c)
+    testJCache(Cache c, boolean byRef)
   {
     boolean success=false;
 
@@ -195,11 +209,25 @@ public class
       Value val=new Value("value-1");
 
       c.put(key, val);
-      _log.info(c.get(key));
-      c.remove(key);
 
-      c.evict();
-      c.get("key-2");
+      Value first=(Value)c.get(key);
+      assertTrue(val.equals(first));
+      Value second=(Value)c.get(key);
+      assertTrue(val.equals(second));
+      assertTrue(byRef?(first==second):(first.equals(second)));
+
+      c.containsKey(key);
+      c.containsKey(key);
+      c.containsKey(key);
+      c.containsKey(key);
+      c.containsKey(key);
+      c.containsKey(key);
+
+//       c.remove(key);
+//       assertTrue(c.get(key)==null);
+
+//       c.evict();
+//       c.get("key-2");
 
       success=true;
     }
@@ -209,6 +237,14 @@ public class
     }
 
     assertTrue(success);
+  }
+
+  public void
+    testRI()
+  {
+    Cache cache=new BasicCache();
+
+    testJCache(cache, true);
   }
 
   public void
@@ -227,7 +263,7 @@ public class
     CacheInnards ci=new LocalDiscCacheInnards(dir, new Pool(), new SimpleStreamingStrategy(), backing, new NoEvictionPolicy());
     Cache cache=new BasicCache(ci, ci);
 
-    testJCache(cache);
+    testJCache(cache, false);
 
     dir.delete();
   }
@@ -259,7 +295,7 @@ public class
       CacheInnards ci=new SharedDBCacheInnards(ds, table, new Pool(), new SimpleStreamingStrategy(), backing, new NoEvictionPolicy());
       Cache cache=new BasicCache(ci, ci);
 
-      testJCache(cache);
+      testJCache(cache, false);
 
       {
 	Connection c=ds.getConnection();

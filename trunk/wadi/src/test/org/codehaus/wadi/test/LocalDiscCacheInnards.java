@@ -86,11 +86,11 @@ public class
 	oi.close();
 
 	value=sc;
-	_log.info("invicted (local disc): "+key+" : "+value);
+	_log.info("loaded (local disc): "+key+" : "+value);
       }
       catch (Exception e)
       {
-	_log.error("inviction (local disc) failed: "+key, e);
+	_log.error("load (local disc) failed: "+key, e);
       }
     }
 
@@ -115,12 +115,12 @@ public class
       //	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
       //	file.setLastModified(willTimeOutAt);
 
-      _log.info("evicted (local disc): "+key+" : "+value);
+      _log.info("stored (local disc): "+key+" : "+value);
       success=true;
     }
     catch (Exception e)
     {
-      _log.error("eviction (local disc) failed: "+key, e);
+      _log.error("store (local disc) failed: "+key, e);
     }
 
     return success;
@@ -131,7 +131,7 @@ public class
   {
   	return storeValue(key, value);
   }
-  
+
   protected boolean
     removeValue(Object key)
   {
