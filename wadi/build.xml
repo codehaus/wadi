@@ -88,8 +88,8 @@
       taskname="jetty.0"
       failonerror="true"
       >
+      <sysproperty key="wadi.home" value="${basedir}"/>
       <sysproperty key="STOP.PORT" value="8079"/>
-      <sysproperty key="jetty.port" value="8080"/><!-- why do we need this? -->
       <sysproperty key="http.port" value="8080"/>
       <sysproperty key="ajp.port" value="8009"/>
       <sysproperty key="bucket.name" value="web0"/>
@@ -121,8 +121,8 @@
       taskname="jetty.1"
       failonerror="true"
       >
+      <sysproperty key="wadi.home" value="${basedir}"/>
       <sysproperty key="STOP.PORT" value="8081"/>
-      <sysproperty key="jetty.port" value="8082"/><!-- why do we need this? -->
       <sysproperty key="http.port" value="8082"/>
       <sysproperty key="ajp.port" value="8010"/>
       <sysproperty key="bucket.name" value="web1"/>
@@ -148,6 +148,7 @@
 
   <target name="tomcat.0" depends="compile">
     <echo message="tomcat.home=${tomcat.home}"/>
+    <echo message="wadi.home=${basedir}"/>
     <java
       fork="yes"
       dir="${tomcat.home}/bin"
@@ -155,6 +156,13 @@
       taskname="tomcat.0"
       failonerror="true"
       >
+      <!-- experimental -->
+      <sysproperty key="http.port" value="8080"/>
+      <sysproperty key="ajp.port" value="8009"/>
+      <sysproperty key="wadi.home" value="${basedir}"/>
+
+      <sysproperty key="bucket.name" value="web0"/>
+
       <sysproperty key="java.endorsed.dirs" value="${tomcat.home}/common/endorsed"/>
       <sysproperty key="catalina.base" value="${tomcat.home}"/>
       <sysproperty key="catalina.home" value="${tomcat.home}"/>

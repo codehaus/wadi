@@ -41,7 +41,7 @@
 
   <Call name="addWebApplication">
     <Arg>/wadi</Arg>
-    <Arg>/home/jules/zeuglodon/cvs/wadi/wadi</Arg><!-- TODO, absolute path, BAD -->
+    <Arg><SystemProperty name="wadi.home"/></Arg>
   </Call>
 
 <!--

@@ -27,7 +27,7 @@
     >
 
     <Connector
-      port="8080"
+      port="${http.port}"
       maxThreads="150"
       minSpareThreads="25"
       maxSpareThreads="75"
@@ -40,7 +40,7 @@
       />
 
     <Connector
-      port="8009"
+      port="${ajp.port}"
       enableLookups="false"
       redirectPort="8443"
       debug="0"
@@ -76,8 +76,11 @@
 	xmlNamespaceAware="false"
 	>
 
-	<Context path="/wadi" docBase="/home/jules/zeuglodon/cvs/wadi/wadi">
-	  <Manager className="org.codehaus.wadi.tomcat.Manager"/>
+	<Context path="/wadi" docBase="${wadi.home}">
+	  <Manager className="org.codehaus.wadi.tomcat.Manager" distributable="true">
+	    <PassivationStrategy className="org.codehaus.wadi.plugins.FilePassivationStrategy">
+	    </PassivationStrategy>
+          </Manager>
 	</Context>
 
         <Logger
