@@ -1,0 +1,17 @@
+
+Maven build not yet finished.
+
+Requires : maven-1.0rc3, maven-aspectj-plugin-3.0
+
+You will need to make the folowing hacks to your system to get anywhere.
+
+
+1. hack a new jetty.jar built from cvs over the top of the one in your
+.mave/repository - we need fixes that have not yet been released.
+
+2. hack a source (and time) attribute into your
+maven-aspectj--plugin-3.0.jar/plugin.jelly/ iajc task. We need it set
+to 1.4.
+
+
+
