@@ -105,9 +105,9 @@ public abstract class
     Object value=loadValue(key);
 
     if (value==null)
-      _log.warn("load from local disc failed: "+key);
+      _log.warn("load failed: "+key);
     else
-      _log.info("loaded from local disc: "+key+" : "+value);
+      _log.info("loaded: "+key+" : "+value);
 
     return value;
   }
@@ -116,8 +116,6 @@ public abstract class
     loadAll(Collection keys)
     throws CacheException
   {
-    _log.info("loadAll: "+keys);
-
     // do we throw an exception if we fail to get one item, or if we
     // fail to get any ?
 
@@ -127,6 +125,11 @@ public abstract class
       Object key=i.next();
       map.put(key, load(key));
     }
+
+    if (map.size()==0)
+      _log.warn("loadAll failed: "+keys);
+    else
+      _log.info("loadAll: "+map);
 
     return map;
   }
@@ -284,7 +287,19 @@ public abstract class
       return "<"+getClass().getName()+": "+_key+">";
     }
 
-    // TODO - need equals() and hashcode() - look at RI
+    public int
+      hashCode()
+    {
+      _log.info("hashCode");
+      throw new UnsupportedOperationException();
+    }
+
+    public boolean
+      equals()
+    {
+      _log.info("equals");
+      throw new UnsupportedOperationException();
+    }
   }
 
   //----------------------------------------
