@@ -1217,9 +1217,14 @@ public abstract class
       }
     }
 
+    public boolean isInfoEnabled(){return _log.isInfoEnabled();}
+    public boolean isDebugEnabled(){return _log.isDebugEnabled();}
+    public boolean isTraceEnabled(){return _log.isTraceEnabled();}
+
     public void info(String info){_log.info(info);}
     public void warn(String warn){_log.warn(warn);}
     public void warn(String warn, Exception e){_log.warn(warn, e);}
+    public void trace(String trace){_log.trace(trace);}
   }
 
   public static class
@@ -1254,7 +1259,7 @@ public abstract class
       }
       else
       {
-	_log.info("session not present: "+_id);
+	if (_log.isTraceEnabled()) _log.trace("session not present: "+_id);
       }
     }
   }
