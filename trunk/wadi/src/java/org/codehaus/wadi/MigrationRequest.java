@@ -71,6 +71,24 @@ public abstract class MigrationRequest
 	  if (impl.getRealId()==null)
 	  {
 	    _log.warn(_id+": session disappeared whilst we were waiting for emmigration lock ("+elapsed+"/"+_timeout+" millis elapsed) - forwarding");
+
+	    // 3 possibilities..
+
+	    // a) it has just been passivated to shared store - in
+	    // which case we simply reload it.
+
+	    // b) it has just been emmigrated to another node - still
+	    // thinking about this one...
+
+	    // c) it has just been invalidated - we could do nothing,
+	    // but better would be to send back a message to cut short
+	    // the other nodes waiting...
+
+	    // BUT - how do we know what happened to the session ???
+
+	    // so it looks like we have to send back a message saying
+	    // "here it is" or "it went here" or "it's dead"...
+
 //  	    try
 //  	    {
 //  	      Cluster cluster=service.getManager().getCluster();
@@ -94,7 +112,7 @@ public abstract class MigrationRequest
 	    }
 	    else
 	    {
-	      _log.warn(_id+": emmigration failed - rolled back");
+	      _log.info(_id+": emmigration failed - rolled back");
 	    }
 	  }
 	}
