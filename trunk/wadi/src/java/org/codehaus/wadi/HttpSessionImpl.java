@@ -171,6 +171,38 @@ public abstract class
   public Sync getContainerLock() {return _rwlock.writeLock();} // container threads exclude all others
   public RWLock getRWLock() {return _rwlock;}
 
+  public void
+    acquireApplicationLock()
+  {
+    for (boolean locked=false;!locked;)
+    {
+      try
+      {
+	_rwlock.readLock().acquire();
+	locked=true;
+      }
+      catch(InterruptedException ignore)
+      {
+      }
+    }
+  }
+
+  public void
+    acquireContainerLock()
+  {
+    for (boolean locked=false;!locked;)
+    {
+      try
+      {
+	_rwlock.writeLock().acquire();
+	locked=true;
+      }
+      catch(InterruptedException ignore)
+      {
+      }
+    }
+  }
+
   public boolean
     hasTimedOut(long currentTimeMillis)
   {
