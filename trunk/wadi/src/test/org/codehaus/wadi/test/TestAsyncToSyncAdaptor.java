@@ -20,13 +20,16 @@ package org.codehaus.wadi.test;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
+import javax.jms.ObjectMessage;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.jetty.HttpSessionImplFactory;
-import org.codehaus.wadi.shared.StreamingStrategy;
 import org.codehaus.wadi.plugins.SimpleStreamingStrategy;
 import org.codehaus.wadi.shared.AsyncToSyncAdaptor;
+import org.codehaus.wadi.shared.Command;
+import org.codehaus.wadi.shared.Manager;
+import org.codehaus.wadi.shared.StreamingStrategy;
 
 /**
  * Test the Migration Service
@@ -42,37 +45,84 @@ public class
 
   public
     TestAsyncToSyncAdaptor(String name)
-    {
-      super(name);
-    }
+  {
+    super(name);
+  }
 
   protected AsyncToSyncAdaptor _adaptor;
 
   protected void
     setUp()
     throws Exception
-    {
-      _log.info("starting test");
-      _adaptor=new AsyncToSyncAdaptor("test");
-    }
+  {
+    _log.info("starting test");
+    _adaptor=new AsyncToSyncAdaptor();
+  }
 
   protected void
     tearDown()
     throws InterruptedException
-    {
-      _adaptor=null;
-      _log.info("stopping test");
-    }
+  {
+    _adaptor=null;
+    _log.info("stopping test");
+  }
 
   //----------------------------------------
 
-//   class OutwardAsyncCommand
-//     extends Command, implements Runnable
-//   {
-//   }
+  long _timeout=2000L;
+  String _id="rendez-vous id";
+  String _data="payload";
 
   public void
     testAdaptor()
     throws Exception
-    {}
+  {
+    new Thread()
+    {
+      public void
+	run()
+      {
+	_log.info("[0] entering adaptor");
+	Object result=_adaptor.send(
+				    new Command()
+				    {
+				      public void
+					run(ObjectMessage message, Manager manager)
+				      {
+					_log.info("[0] starting Command");
+					new Thread()
+					{
+					  public void
+					    run()
+					  {
+					    _log.info("[1] entering adaptor");
+					    Object result=_adaptor.receive(_data, _id, _timeout);
+					    _log.info("[1] leaving adaptor");
+					  }
+					}.start();
+					_log.info("[0] ending Command");
+				      }
+				    },
+				    _id,
+				    _timeout,
+				    new AsyncToSyncAdaptor.Sender()
+				    {
+				      public void
+					send(Object command)
+				      {
+					_log.info("[0] send Object");
+					((Command)command).run(null, null);
+					_log.info("[0] sent Object");
+				      }
+				    }
+				    );
+
+	assertTrue(result.equals(_data));
+	_log.info("[0] data was: "+_data);
+	_log.info("[0] leaving adaptor");
+      }
+    }.start();
+
+    Thread.sleep(2000L);
+  }
 }

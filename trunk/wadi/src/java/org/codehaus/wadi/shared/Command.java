@@ -18,10 +18,11 @@
 package org.codehaus.wadi.shared;
 
 import java.io.Serializable;
-
 import javax.jms.ObjectMessage;
 
-interface Command extends Serializable
-  {
-    public void run(ObjectMessage message, Manager manager);
-  }
+public interface
+  Command
+  extends Serializable
+{
+  public void run(ObjectMessage message, Manager manager);
+}
