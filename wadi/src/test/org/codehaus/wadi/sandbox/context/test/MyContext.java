@@ -42,6 +42,7 @@ public class MyContext extends AbstractMotable implements Context {
 
 	MyContext(String val) {
 		this();
+		_id=val;
 		_val=val;
 	}
 

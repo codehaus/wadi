@@ -85,6 +85,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 		
 		public Motable nextMotable(String id, Motable emotable) {
 			LocalDiscMotable ldm=new LocalDiscMotable();
+			ldm.setId(id);
 			ldm.setFile(new File(_dir, id+"."+_streamer.getSuffix()));
 			return ldm;
 		}

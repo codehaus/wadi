@@ -36,6 +36,8 @@ import org.apache.commons.logging.LogFactory;
 public class LocalDiscMotable extends AbstractMotable {
 	protected static final Log _log = LogFactory.getLog(LocalDiscMotable.class);
 	
+	public LocalDiscMotable(){}
+	
 	protected File _file;
 	//public File getFile() {return _file;}
 	public void setFile(File file){_file=file;}
