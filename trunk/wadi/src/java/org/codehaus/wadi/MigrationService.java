@@ -58,7 +58,7 @@ public interface
      * @param dst a <code>Destination</code> value
      * @return a <code>boolean</code> value
      */
-    public boolean emmigrate(Collection candidates, long timeout, Destination dst);
+    public boolean emmigrateMultipleSessions(Map sessions, Collection candidates, long timeout, Destination dst);
 
     /**
      * Locate a remote session by id and cause it to be migrated from
@@ -71,7 +71,7 @@ public interface
      * @param dst a <code>Destination</code> value
      * @return a <code>boolean</code> value
      */
-    public boolean immigrate(String realId, HttpSessionImpl placeholder, long timeout, Destination dst);
+    public boolean immigrateSingleSession(String realId, HttpSessionImpl placeholder, long timeout, Destination dst);
   }
 
   public interface
