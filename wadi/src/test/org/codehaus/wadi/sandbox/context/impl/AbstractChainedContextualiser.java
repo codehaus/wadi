@@ -99,8 +99,6 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 		return success;
 	}
 
-	public abstract Immoter getPromoter(Immoter immoter);
-
 	public abstract boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres,
 			FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException;
 
@@ -114,6 +112,10 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 		} else {
 			return false;
 		}
+	}
+
+	public Immoter getPromoter(Immoter immoter) {
+		return immoter; // just pass contexts straight through...
 	}
 
 	public Immoter getDemoter(String id, Motable motable) {
