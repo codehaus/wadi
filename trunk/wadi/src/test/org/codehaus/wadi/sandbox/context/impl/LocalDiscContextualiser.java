@@ -62,6 +62,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 			_log.info("promoting: "+id);
 			promoter.promoteAndContextualise(req, res, chain, id, context, promotionMutex); // inject result into our caller - now available to new threads
 			file.delete(); // perhaps this should be wrapped up in a callback object and passed up to the promoter with the promotionMutex - otherwise file is not removed until after request has run...
+			// this is important since the session may be written out again BEFORE we actually get around to deleting the file !
 			_log.info("removed (local disc): "+file);
 			return true;
 		} else {
