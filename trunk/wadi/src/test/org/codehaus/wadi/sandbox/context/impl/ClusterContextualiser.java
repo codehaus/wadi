@@ -103,7 +103,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 				// should we try evicting entried before inserting them - or is this just a waste of time...
 				// TODO - maybe call evict ?
 			} catch (JMSException e) {
-				_log.info("bad message received: "+message);
+				_log.warn("bad message received: ", e);
 			}
 		}
 	}
@@ -139,7 +139,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		Location location=null;
 		
 		if ((location=(Location)_map.get(id))==null) {
-			String correlationId=id+"something";
+			String correlationId=_cluster.getLocalNode().getDestination().toString()+"-"+id;
 			Rendezvous rv=new Rendezvous(2);
 
 			// set up a rendez-vous...
