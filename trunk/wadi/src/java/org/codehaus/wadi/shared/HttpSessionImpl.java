@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSessionContext;
@@ -54,7 +55,7 @@ public abstract class
   public int getMaxInactiveInterval(){return _maxInactiveInterval;}
   public void setMaxInactiveInterval(int i){_maxInactiveInterval=i;}
 
-  protected Map _attributes=new HashMap();
+  protected final Map _attributes=new HashMap();
 
   // Setters
 
@@ -127,9 +128,9 @@ public abstract class
     _lastAccessedTime=0;
     _maxInactiveInterval=0;
     _actualMaxInactiveInterval=0;
-    // attributes ? - TODO
-    _facade=null;
     _attributes.clear();
+
+    // TODO - reuse _attributes, _rwlock and _facade
   }
 
   // TODO - stubbed out - implement later
@@ -187,8 +188,12 @@ public abstract class
     _creationTime              =is.readLong();
     _lastAccessedTime          =is.readLong();
     _maxInactiveInterval       =is.readInt();
-    _attributes                =(Map)is.readObject();
     _actualMaxInactiveInterval =is.readInt();
+
+    // read in map contents manually...
+    assert _attributes.size()==0;
+    for (int i=is.readInt();i>0;i--)
+      _attributes.put(is.readObject(), is.readObject());
 
     // initialise transients ?
     _rwlock=new ReaderPreferenceReadWriteLock();
@@ -203,8 +208,20 @@ public abstract class
     os.writeLong(_creationTime);
     os.writeLong(_lastAccessedTime);
     os.writeInt(_maxInactiveInterval);
-    os.writeObject(_attributes);
     os.writeInt(_actualMaxInactiveInterval);
+
+    // write out attributes - forget the map itself - unecessary
+    // overhead and may change type/version....
+    os.writeInt(_attributes.size());
+    for (Iterator i=_attributes.entrySet().iterator(); i.hasNext();)
+    {
+      Map.Entry e=(Map.Entry)i.next();
+      os.writeObject(e.getKey());
+      os.writeObject(e.getValue());
+    }
+
+    // TODO - we could write attrs into a byte[] and only deserialise it
+    // lazily on the other side, as we do for attributes...
   }
 
   public void setId(String id){_id=id;}
