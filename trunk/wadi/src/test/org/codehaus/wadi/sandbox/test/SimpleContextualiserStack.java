@@ -61,7 +61,7 @@ import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.HttpProxyLocation;
-import org.codehaus.wadi.sandbox.impl.LocalDiscContextualiser;
+import org.codehaus.wadi.sandbox.impl.ExclusiveDiscContextualiser;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.impl.NeverEvicter;
@@ -105,7 +105,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final File _discDirectory;
     protected final Evicter _discEvicter;
     protected final Map _discMap;
-    protected final LocalDiscContextualiser _disc;
+    protected final ExclusiveDiscContextualiser _disc;
     
     protected final SerialContextualiser _serial;
     
@@ -148,7 +148,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _discDirectory=new File("/tmp");
         _discEvicter=new TimedOutEvicter();
         _discMap=new HashMap();
-        _disc=new LocalDiscContextualiser(_stateless, _discEvicter, _discMap, _collapser, _streamer, _discDirectory);
+        _disc=new ExclusiveDiscContextualiser(_stateless, _discEvicter, _discMap, _collapser, _streamer, _discDirectory);
 
         _serial=new SerialContextualiser(_disc, _collapser);
 

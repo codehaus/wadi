@@ -31,10 +31,14 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
 
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
+
+// TODO - we need a ThreadPool here - to stop a glut of incoming messages from overwhelming a node.
+
+// IDEA - a single thread of this pool could be responsible for e.g., aggregating all immigrations and batching them
+// to cut contention...
 
 /**
  * A Class responsible for the sending of outgoing and dispatching of incoming messages,

@@ -37,15 +37,15 @@ import org.codehaus.wadi.sandbox.Motable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class LocalDiscContextualiser extends AbstractCollapsingContextualiser {
-	protected static final Log _log = LogFactory.getLog(LocalDiscContextualiser.class);
+public class ExclusiveDiscContextualiser extends AbstractCollapsingContextualiser {
+	protected static final Log _log = LogFactory.getLog(ExclusiveDiscContextualiser.class);
 
 	protected final StreamingStrategy _streamer;
 	protected final File _dir;
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public LocalDiscContextualiser(Contextualiser next, Evicter evicter, Map map, Collapser collapser, StreamingStrategy streamer, File dir) {
+	public ExclusiveDiscContextualiser(Contextualiser next, Evicter evicter, Map map, Collapser collapser, StreamingStrategy streamer, File dir) {
 	    super(next, evicter, map, collapser);
 	    _streamer=streamer;
 	    assert dir.exists();
@@ -76,13 +76,13 @@ public class LocalDiscContextualiser extends AbstractCollapsingContextualiser {
 	    }
 	    
 		public Motable nextMotable(String id, Motable emotable) {
-			LocalDiscMotable ldm=new LocalDiscMotable();
+			ExclusiveDiscMotable ldm=new ExclusiveDiscMotable();
 			ldm.setId(id);
 			return ldm;
 		}
 
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
-			((LocalDiscMotable)immotable).setFile(new File(_dir, id+"."+_streamer.getSuffix()));
+			((ExclusiveDiscMotable)immotable).setFile(new File(_dir, id+"."+_streamer.getSuffix()));
 			return super.prepare(id, emotable, immotable);
 		}
 
@@ -104,9 +104,9 @@ public class LocalDiscContextualiser extends AbstractCollapsingContextualiser {
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			if (super.prepare(id, emotable, immotable)) {
 				try {
-					LocalDiscMotable ldm=(LocalDiscMotable)emotable;
+					ExclusiveDiscMotable ldm=(ExclusiveDiscMotable)emotable;
 					ldm.setFile(new File(_dir, id+"."+_streamer.getSuffix()));
-				if (LocalDiscMotable.load(ldm.getFile(), emotable)==null)
+				if (ExclusiveDiscMotable.load(ldm.getFile(), emotable)==null)
 					return false;
 				} catch (Exception e) {
 					_log.error("could not load item from local file", e);
