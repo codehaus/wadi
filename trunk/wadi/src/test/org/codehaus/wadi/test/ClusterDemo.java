@@ -47,74 +47,74 @@ public class
 
   public
     ClusterDemo(String id, int cellSize)
-    {
-      _id=id;
-      _cellSize=cellSize;
-    }
+  {
+    _id=id;
+    _cellSize=cellSize;
+  }
 
   protected void
     start()
     throws JMSException, ClusterException
-    {
-      _cluster = createCluster();
-      Map state=new HashMap();
-      state.put("id", _id);
-      _cluster.getLocalNode().setState(state);
-      _topology=new NChooseKTopologyStrategy(_cluster, _cellSize);
-      _topology.start();
-      _cluster.addClusterListener(_topology);
-      _cluster.start();
-    }
+  {
+    _cluster = createCluster();
+    Map state=new HashMap();
+    state.put("id", _id);
+    _cluster.getLocalNode().setState(state);
+    _topology=new NChooseKTopologyStrategy(_id, _cluster, _cellSize);
+    _topology.start();
+    _cluster.addClusterListener(_topology);
+    _cluster.start();
+  }
 
   protected void
     stop()
     throws JMSException
-    {
-      _cluster.stop();
-      _topology.stop();
-      _connFactory.stop();
-    }
+  {
+    _cluster.stop();
+    _topology.stop();
+    _connFactory.stop();
+  }
 
   protected Cluster
     createCluster()
     throws JMSException, ClusterException
-    {
-      Connection connection = _connFactory.createConnection();
-      DefaultClusterFactory factory = new DefaultClusterFactory(connection);
-      return factory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
+  {
+    Connection connection = _connFactory.createConnection();
+    DefaultClusterFactory factory = new DefaultClusterFactory(connection);
+    return factory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
 
-    }
+  }
 
   //----------------------------------------
 
 
   public static void
     main(String[] args)
+  {
+    Log log=LogFactory.getLog(ClusterDemo.class);
+
+    int nPeers=Integer.parseInt(args[0]);
+    int cellSize=Integer.parseInt(args[1]);
+
+    for (int i=0; i<nPeers; i++)
     {
-      Log log=LogFactory.getLog(ClusterDemo.class);
-
-      int nPeers=Integer.parseInt(args[0]);
-      int cellSize=Integer.parseInt(args[1]);
-
-      for (int i=0; i<nPeers; i++)
+      try
       {
-	try
-	{
-	  String pid=System.getProperty("pid");
-	  ClusterDemo test = new ClusterDemo("node"+pid+"."+i, cellSize);
-	  test.start();
-	}
-	catch (JMSException e)
-	{
-	  log.warn("unexpected problem", e);
-	  Exception c = e.getLinkedException();
-	  if (c != null)
-	    log.warn("unexpected problem", c);
-	}
-	catch (Throwable e)
-	{
-	  log.warn("unexpected problem", e);
-	}
+	String pid=System.getProperty("pid");
+	ClusterDemo test = new ClusterDemo("node"+pid+"."+i, cellSize);
+	test.start();
+      }
+      catch (JMSException e)
+      {
+	log.warn("unexpected problem", e);
+	Exception c = e.getLinkedException();
+	if (c != null)
+	  log.warn("unexpected problem", c);
+      }
+      catch (Throwable e)
+      {
+	log.warn("unexpected problem", e);
       }
     }
+  }
 }
