@@ -50,7 +50,7 @@ import EDU.oswego.cs.dl.util.concurrent.*;
 
 public class RWLock implements ReadWriteLock {
 
-  protected long activeReaders_ = 0; 
+  protected long activeReaders_ = 0;
   protected Thread activeWriter_ = null;
   protected long waitingReaders_ = 0;
   protected long waitingWriters_ = 0;
@@ -94,7 +94,7 @@ public class RWLock implements ReadWriteLock {
    }
 
 
-  /* 
+  /*
      Each of these variants is needed to maintain atomicity
      of wait counts during wait loops. They could be
      made faster by manually inlining each other. We hope that
@@ -136,7 +136,7 @@ public class RWLock implements ReadWriteLock {
       return null;
   }
 
-  
+
   /**
    * Called upon termination of a write.
    * Returns the object to signal to wake up a waiter, or null if no such
@@ -173,8 +173,8 @@ public class RWLock implements ReadWriteLock {
       synchronized(this) {
         if (!startReadFromNewReader()) {
           for (;;) {
-            try { 
-              ReaderLock.this.wait();  
+            try {
+              ReaderLock.this.wait();
               if (startReadFromWaitingReader())
                 return;
             }
@@ -188,7 +188,7 @@ public class RWLock implements ReadWriteLock {
       }
       if (ie != null) {
         // fall through outside synch on interrupt.
-        // This notification is not really needed here, 
+        // This notification is not really needed here,
         //   but may be in plausible subclasses
         writerLock_.signalWaiters();
         throw ie;
@@ -204,13 +204,13 @@ public class RWLock implements ReadWriteLock {
 
     synchronized void signalWaiters() { ReaderLock.this.notifyAll(); }
 
-    public boolean attempt(long msecs) throws InterruptedException { 
+    public boolean attempt(long msecs) throws InterruptedException {
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
       synchronized(this) {
         if (msecs <= 0)
           return startRead();
-        else if (startReadFromNewReader()) 
+        else if (startReadFromNewReader())
           return true;
         else {
           long waitTime = msecs;
@@ -250,8 +250,8 @@ public class RWLock implements ReadWriteLock {
       synchronized(this) {
         if (!startWriteFromNewWriter()) {
           for (;;) {
-            try { 
-              WriterLock.this.wait();  
+            try {
+              WriterLock.this.wait();
               if (startWriteFromWaitingWriter())
                 return;
             }
@@ -280,13 +280,13 @@ public class RWLock implements ReadWriteLock {
 
     synchronized void signalWaiters() { WriterLock.this.notify(); }
 
-    public boolean attempt(long msecs) throws InterruptedException { 
+    public boolean attempt(long msecs) throws InterruptedException {
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
       synchronized(this) {
         if (msecs <= 0)
           return startWrite();
-        else if (startWriteFromNewWriter()) 
+        else if (startWriteFromNewWriter())
           return true;
         else {
           long waitTime = msecs;
@@ -312,7 +312,7 @@ public class RWLock implements ReadWriteLock {
           }
         }
       }
-      
+
       readerLock_.signalWaiters();
       if (ie != null) throw ie;
       else return false; // timed out
