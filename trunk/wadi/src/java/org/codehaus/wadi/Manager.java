@@ -57,7 +57,12 @@ import org.codehaus.wadi.impl.RelativeEvictionPolicy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.impl.TotalEvictionPolicy;
-import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
+//import org.mortbay.xml.XmlConfiguration; // do I really want to do this ?
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
 // TODO - replace some form of location discovery protocol
 
@@ -352,14 +357,23 @@ public abstract class
       InputStream is=null;
       String config=System.getProperty("wadi.config");
       if (config!=null)
-	is=new FileInputStream(config);
+	is=new FileInputStream((_configurationResource=config));
       else
 	is=_servletContext.getResourceAsStream(_configurationResource);
 
       if (is!=null)
       {
-	new XmlConfiguration(is).configure(this);
-	if (_log.isTraceEnabled()) _log.trace("configured from: "+_configurationResource);
+	DefaultListableBeanFactory dlbf=new DefaultListableBeanFactory();
+	PropertyPlaceholderConfigurer cfg = new PropertyPlaceholderConfigurer();
+	dlbf.registerSingleton("Manager", this);
+	new XmlBeanDefinitionReader(dlbf).loadBeanDefinitions(new InputStreamResource(is));
+	cfg.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
+	cfg.postProcessBeanFactory(dlbf);
+
+	Manager me=(Manager)dlbf.getBean("ConfiguredManager");
+	assert me==this;
+
+	if (_log.isTraceEnabled()) _log.trace("configured from WADI descriptor: "+_configurationResource);
       }
       else
 	_log.warn("could not find WADI descriptor: "+_configurationResource);
@@ -385,8 +399,6 @@ public abstract class
     if (_idGenerator==null) _idGenerator=new TomcatIdGenerator();
     // default routing strategy
     if (_routingStrategy==null) _routingStrategy=new NoRoutingStrategy();
-
-    if (_autoLocationAddress==null) setAutoLocationAddress("228.5.6.7");
 
     // TODO - activecluster stuff - replace with config ASAP...
     if (_connectionFactory!=null)
@@ -801,35 +813,6 @@ public abstract class
   //   }
 
   //   public boolean getUsingRequestGroups(){return true;}
-
-  //----------------------------------------
-  // autolocation API
-  //----------------------------------------
-
-  protected InetAddress _autoLocationAddress=null;
-  public InetAddress getAutoLocationAddress(){return _autoLocationAddress;}
-  public void setAutoLocationAddress(InetAddress address){_autoLocationAddress=address;}
-
-  public void
-    setAutoLocationAddress(String address)
-  {
-    try
-    {
-      setAutoLocationAddress(InetAddress.getByName(address));
-    }
-    catch (Exception e)
-    {
-      if (_log.isWarnEnabled()) _log.warn("could not resolve address: "+address, e);
-    }
-  }
-
-  protected int _autoLocationPort=6789;
-  public int getAutoLocationPort(){return _autoLocationPort;}
-  public void setAutoLocationPort(int port){_autoLocationPort=port;}
-
-  protected int _autoLocationTimeout=5;	// seconds
-  public int getAutoLocationTimeout(){return _autoLocationTimeout;}
-  public void setAutoLocationTimeout(int timeout){_autoLocationTimeout=timeout;}
 
   public ManagerProxy
     locate(String realId)
