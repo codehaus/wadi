@@ -378,12 +378,12 @@ public abstract class
       if (is!=null)
       {
 	new XmlConfiguration(is).configure(this);
-	_log.trace("configured from: "+_configurationResource);
+	if (_log.isTraceEnabled()) _log.trace("configured from: "+_configurationResource);
       }
     }
     catch (Exception e)
     {
-      _log.warn("problem configuring from: "+_configurationResource, e);
+      if (_log.isWarnEnabled()) _log.warn("problem configuring from: "+_configurationResource, e);
     }
 
     // TODO - is putting ourselves in an attribute a security risk ?
@@ -448,7 +448,7 @@ public abstract class
       // created/[e/i]mmigrated whilst this is going on. sessions with
       // current requests will remain in container :-(. We need a fix in
       // Filter which will relocate all incoming requests...
-      _log.debug("emmigrated "+(oldSize-newSize)+"/"+oldSize+" sessions");
+      if (_log.isDebugEnabled()) _log.debug("emmigrated "+(oldSize-newSize)+"/"+oldSize+" sessions");
       _evictionPolicy=oldEvictionPolicy;
     }
 
@@ -482,7 +482,7 @@ public abstract class
       int n=c.size();
       if (n>0)
       {
-	_log.trace("tidying up "+n+" session[s] expired in long-term storage");
+	if (_log.isTraceEnabled()) _log.trace("tidying up "+n+" session[s] expired in long-term storage");
 
 	// we could be a lot cleverer here and :
 	// - only reload impls when there is some listener to notify
@@ -558,15 +558,15 @@ public abstract class
 	{
 	  if (hasTimedOut)	// implicitly invalidated via time-out
 	  {
-	    _log.trace(impl.getId()+" : removing (implicit time out)");
-	    _log.debug(impl.getId()+" : timed out");
+	    if (_log.isTraceEnabled()) _log.trace(impl.getId()+" : removing (implicit time out)");
+	    if (_log.isDebugEnabled()) _log.debug(impl.getId()+" : timed out");
 	    releaseImpl(impl);
 	    continue;
 	  }
 
 	  if (shouldBeEvicted)
 	  {
-	    _log.trace(impl.getId()+" : removing (migrating to long-term store)");
+	    if (_log.isTraceEnabled()) _log.trace(impl.getId()+" : removing (migrating to long-term store)");
 	    // should this be done asynchronously via another Channel ?
 	    if (_passivationStrategy.passivate(impl))
 	    {
@@ -586,7 +586,7 @@ public abstract class
       }
       else if (!nottried)
       {
-	_log.info("tried but failed for lock on:"+impl.getId()+" - "+impl.getRWLock());
+	if (_log.isInfoEnabled()) _log.info("tried but failed for lock on:"+impl.getId()+" - "+impl.getRWLock());
       }
     }
     _log.trace("housekeeping ended");
@@ -624,13 +624,13 @@ public abstract class
     boolean known=false;
     if (listener instanceof HttpSessionAttributeListener)
     {
-      _log.debug("adding HttpSessionAttributeListener: "+listener);
+      if (_log.isDebugEnabled()) _log.debug("adding HttpSessionAttributeListener: "+listener);
       _attributeListeners.add(listener);
       known=true;
     }
     if (listener instanceof HttpSessionListener)
     {
-      _log.debug("adding HttpSessionListener: "+listener);
+      if (_log.isDebugEnabled()) _log.debug("adding HttpSessionListener: "+listener);
       _sessionListeners.add(listener);
       known=true;
     }
@@ -650,17 +650,17 @@ public abstract class
 
     if (listener instanceof HttpSessionAttributeListener)
     {
-      _log.debug("removing HttpSessionAttributeListener: "+listener);
+      if (_log.isDebugEnabled()) _log.debug("removing HttpSessionAttributeListener: "+listener);
       known|=_attributeListeners.remove(listener);
     }
     if (listener instanceof HttpSessionListener)
     {
-      _log.debug("removing HttpSessionListener: "+listener);
+      if (_log.isDebugEnabled()) _log.debug("removing HttpSessionListener: "+listener);
       known|=_sessionListeners.remove(listener);
     }
 
     if (!known)
-      _log.warn("EventListener not registered: "+listener);
+      if (_log.isWarnEnabled()) _log.warn("EventListener not registered: "+listener);
   }
 
   //--------------------
@@ -673,7 +673,7 @@ public abstract class
     int n=_sessionListeners.size();
     if (n>0)
     {
-      _log.trace(session.getId()+" : notifying session creation");
+      if (_log.isTraceEnabled()) _log.trace(session.getId()+" : notifying session creation");
       HttpSessionEvent event = new HttpSessionEvent(session);
 
       for(int i=0;i<n;i++)
@@ -689,7 +689,7 @@ public abstract class
     int n=_sessionListeners.size();
     if (n>0)
     {
-      _log.trace(session.getId()+" : notifying session destruction");
+      if (_log.isTraceEnabled()) _log.trace(session.getId()+" : notifying session destruction");
       HttpSessionEvent event = new HttpSessionEvent(session);
 
       for(int i=0;i<n;i++)
@@ -705,7 +705,7 @@ public abstract class
       int n=_attributeListeners.size();
       if (n>0)
       {
-	_log.trace(session.getId()+" : notifying attribute addition : "+key+" : null --> "+val);
+	if (_log.isTraceEnabled()) _log.trace(session.getId()+" : notifying attribute addition : "+key+" : null --> "+val);
 
 	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, val);
 	for(int i=0;i<n;i++)
@@ -721,7 +721,7 @@ public abstract class
       int n=_attributeListeners.size();
       if (n>0)
       {
-	_log.trace(session.getId()+" : notifying attribute replacement : "+key+" : "+oldVal+" --> "+newVal);
+	if (_log.isTraceEnabled()) _log.trace(session.getId()+" : notifying attribute replacement : "+key+" : "+oldVal+" --> "+newVal);
 	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, oldVal);
 
 	for(int i=0;i<n;i++)
@@ -737,7 +737,7 @@ public abstract class
       int n=_attributeListeners.size();
       if (n>0)
       {
-	_log.trace(session.getId()+" : notifying attribute removal : "+key+" : "+val+" --> null");
+	if (_log.isTraceEnabled()) _log.trace(session.getId()+" : notifying attribute removal : "+key+" : "+val+" --> null");
 	HttpSessionBindingEvent event = new HttpSessionBindingEvent(session, key, val);
 
 	for(int i=0;i<n;i++)
@@ -759,7 +759,7 @@ public abstract class
   public void
     replicate(String id, Method method, Object[] args)
   {
-    _log.debug("replicating delta: "+id+" -> "+method);
+    if (_log.isDebugEnabled()) _log.debug("replicating delta: "+id+" -> "+method);
 
     // this method should be invoked on a dynamic proxy which
     // represents the cluster to which the deltas are being sent...
@@ -773,7 +773,7 @@ public abstract class
   {
     // look up a session and invoke the given method and args upon
     // it...
-    _log.debug("invoking delta: "+id+" -> "+method);
+    if (_log.isDebugEnabled()) _log.debug("invoking delta: "+id+" -> "+method);
   }
 
   //  protected abstract HttpSession createFacade(HttpSessionImpl impl);
@@ -781,13 +781,13 @@ public abstract class
   public void
     notifyRequestEnd(String id)
   {
-    _log.trace(id+": request end");
+    if (_log.isTraceEnabled()) _log.trace(id+": request end");
   }
 
   public void
     notifyRequestGroupEnd(String id)
   {
-    _log.trace(id+": request group end");
+    if (_log.isTraceEnabled()) _log.trace(id+": request group end");
   }
 
   public boolean getUsingRequestGroups(){return true;}
@@ -809,7 +809,7 @@ public abstract class
     }
     catch (Exception e)
     {
-      _log.warn("could not resolve address: "+address, e);
+      if (_log.isWarnEnabled()) _log.warn("could not resolve address: "+address, e);
     }
   }
 
@@ -835,7 +835,7 @@ public abstract class
 
     if (location==null)
     {
-      _log.warn(id+": could not locate session - perhaps dead ?");
+      if (_log.isWarnEnabled()) _log.warn(id+": could not locate session - perhaps dead ?");
       return null;
     }
 
@@ -1032,7 +1032,7 @@ public abstract class
     impl.init(Manager.this, id, System.currentTimeMillis(), _maxInactiveInterval, _maxInactiveInterval); // TODO need actual...
     _acquireImpl(impl);
     notifySessionCreated(impl.getFacade());
-    _log.debug(impl.getId()+": creation");
+    if (_log.isDebugEnabled()) _log.debug(impl.getId()+": creation");
     return impl;
   }
 
@@ -1088,7 +1088,9 @@ public abstract class
   protected void
     releaseImpl(HttpSessionImpl impl)
   {
-    _local.remove(impl.getId());
+    String id=impl.getId();
+    _local.remove(id);
+    if (_log.isDebugEnabled()) _log.debug(id+": destruction");
     _notify(impl);
     _releaseImpl(impl);
   }

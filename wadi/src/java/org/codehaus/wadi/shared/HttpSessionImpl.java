@@ -114,7 +114,7 @@ public abstract class
   public void
     init(Manager manager, String id, long creationTime, int maxInactiveInterval, int actualMaxInactiveInterval)
   {
-    _log.trace(id+": initialising");
+    if (_log.isTraceEnabled()) _log.trace(id+": initialising");
     _wadiManager               =manager;
     _id                        =id;
     _creationTime              =creationTime;
@@ -127,7 +127,7 @@ public abstract class
   public void
     destroy()
   {
-    _log.trace(_id+": destroying");
+    if (_log.isTraceEnabled()) _log.trace(_id+": destroying");
     _wadiManager=null;
     _id=null;
     _creationTime=0;

@@ -81,7 +81,7 @@ public class
   public void recycle(){}	// TODO
 
   protected boolean _new=true;
-  public void setNew(boolean nuw){_new=nuw;_log.info("setNew() called: "+nuw);}
+  public void setNew(boolean nuw){_new=nuw;if (_log.isInfoEnabled()) _log.info("setNew() called: "+nuw);}
   public boolean isNew(){return _new;}
 
   public void access(){setLastAccessedTime(System.currentTimeMillis());}

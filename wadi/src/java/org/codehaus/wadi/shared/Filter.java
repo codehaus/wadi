@@ -68,7 +68,7 @@ public class
     if (_manager==null)
       _log.fatal("Manager not found");
     else
-      _log.trace("Manager found: "+_manager);
+      if (_log.isTraceEnabled()) _log.trace("Manager found: "+_manager);
 
     _manager.setFilter(this);
     _distributable=_manager.getDistributable();
@@ -86,7 +86,7 @@ public class
       String sessionId=req.getRequestedSessionId();
       if (sessionId==null)
       {
-	_log.trace("no session id: "+req.getHeader("Cookie"));
+	if (_log.isTraceEnabled()) _log.trace("no session id: "+req.getHeader("Cookie"));
 	// request is not taking part in a session - do we want to
 	// risk it creating a new one here, or should we proxy it to a
 	// node that is carrying fewer sessions than we are...? - TODO
@@ -94,9 +94,9 @@ public class
       }
       else
       {
-	_log.trace("external session id: "+sessionId);
+	if (_log.isTraceEnabled()) _log.trace("external session id: "+sessionId);
 	sessionId=_manager.getRoutingStrategy().strip(_manager.getBucketName(), sessionId); // we may be using mod_jk etc...
-	_log.trace("internal session id: "+sessionId);
+	if (_log.isTraceEnabled()) _log.trace("internal session id: "+sessionId);
 	// request claims to be associated with a session...
 	HttpSessionImpl impl=(HttpSessionImpl)_manager.get(sessionId);
 
@@ -108,7 +108,7 @@ public class
 	  // may move the session elsewhere or destroy it. By the time
 	  // the request thread succeeds in acquiring access to the
 	  // session it has gone...
-	  _log.trace(sessionId+": may be local");
+	  if (_log.isTraceEnabled()) _log.trace(sessionId+": may be local");
 	  Sync appLock=impl.getApplicationLock();
 	  boolean acquired=false;
 	  if (appLock!=null)
@@ -119,12 +119,12 @@ public class
 	      org.codehaus.wadi.shared.HttpSession facade=(org.codehaus.wadi.shared.HttpSession)impl.getFacade();
 	      if (facade!=null && facade.isValid())	// hasn't moved whilst we were getting lock...
 	      {
-		_log.trace(sessionId+": still here");
+		if (_log.isTraceEnabled()) _log.trace(sessionId+": still here");
 		chain.doFilter(req, res);
 	      }
 	      else
 	      {
-		_log.info(sessionId+": was local but emmigrated or was destroyed before we could gain access");
+		if (_log.isInfoEnabled()) _log.info(sessionId+": was local but emmigrated or was destroyed before we could gain access");
 		impl=null;
 	      }
 	    }
@@ -145,12 +145,12 @@ public class
 
 	if (impl==null)
 	{
-	  _log.trace(sessionId+": not local or passivated");
+	  if (_log.isTraceEnabled()) _log.trace(sessionId+": not local or passivated");
 	  // the session is not available on this node...
 	  ManagerProxy proxy=null;
 	  if ((proxy=_manager.locate(sessionId))!=null)
 	  {
-	    _log.trace(sessionId+": is remote - relocating request");
+	    if (_log.isTraceEnabled()) _log.trace(sessionId+": is remote - relocating request");
 	    proxy.relocateRequest(req, res, _manager);
 	  }
 	  else
@@ -160,7 +160,7 @@ public class
 	    // or:
 	    // give up and process request somewhere else
 
-	    _log.warn(sessionId+": must have expired or be an invalid id"); // TODO - incr cache miss counter ?
+	    if (_log.isWarnEnabled()) _log.warn(sessionId+": must have expired or be an invalid id"); // TODO - incr cache miss counter ?
 	    // TODO - no-one has the session - we can either risk a new
 	    // one being created here and process locally, proxy to
 	    // another node carrying fewer sessions, or strip off
@@ -196,7 +196,7 @@ public class
       if (session!=null)
       {
 	HttpSessionImpl impl=(HttpSessionImpl)_manager.get(_manager.getRoutingStrategy().strip(_manager.getBucketName(), session.getId()));
-	_log.trace(sessionId+"; just created - releasing");
+	if (_log.isTraceEnabled()) _log.trace(sessionId+"; just created - releasing");
 	if (impl!=null)
 	  impl.getApplicationLock().release();
       }
@@ -314,7 +314,7 @@ public class
 	  // an optimisation, hopefully the most common case -
 	  // saves us a lookup that we have already done...
 	  impl.getApplicationLock().release();
-	  _log.trace(newId+": original session maintained throughout request");
+	  if (_log.isTraceEnabled()) _log.trace(newId+": original session maintained throughout request");
 	}
 	else
 	{
@@ -326,9 +326,9 @@ public class
 	  // released our lock, so no need to check...
 	  impl.getApplicationLock().release();
 	  if (reuse)
-	    _log.trace(newId+": potential session id reuse - outgoing session may be new");
+	    if (_log.isTraceEnabled()) _log.trace(newId+": potential session id reuse - outgoing session may be new");
 	  else
-	    _log.trace(newId+": new outgoing session");
+	    if (_log.isTraceEnabled()) _log.trace(newId+": new outgoing session");
 	}
       }
       // in case Jetty or Tomcat is thread-pooling :

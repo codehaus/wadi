@@ -86,14 +86,14 @@ public class
   public void
     checkAccess(Thread t)
     {
-      _log.info("checkAccess(Thread "+t+") called");
+      if (_log.isInfoEnabled()) _log.info("checkAccess(Thread "+t+") called");
       if (_delegate!=null) _delegate.checkAccess(t);
     }
 
   public void
     checkAccess(ThreadGroup g)
     {
-      _log.info("checkAccess(ThreadGroup "+g+") called");
+      if (_log.isInfoEnabled()) _log.info("checkAccess(ThreadGroup "+g+") called");
       if (_delegate!=null) _delegate.checkAccess(g);
     }
 }

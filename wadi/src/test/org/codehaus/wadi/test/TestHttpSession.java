@@ -814,7 +814,7 @@ public class
 //     sessions=null;
 //     long stop=System.currentTimeMillis();
 
-//     _log.info("create/destroy "+numSessions+" sessions: "+(stop-start)+" millis");
+//     if (_log.isInfoEnabled()) _log.info("create/destroy "+numSessions+" sessions: "+(stop-start)+" millis");
 
 //     _manager.stop();
 //     _manager.addEventListener(_listener);

@@ -97,7 +97,7 @@ public class
   // 	(request.isRequestedSessionIdFromURL()?";jsessionid="+request.getRequestedSessionId():"")+
   // 	"";
 
-  //       _log.trace("proxying request to: "+scheme+"://"+hostname+":"+port);
+  //       if (_log.isTraceEnabled()) _log.trace("proxying request to: "+scheme+"://"+hostname+":"+port);
 
   //       try
   //       {
@@ -121,7 +121,7 @@ public class
   // 	    values+=(values.length()>0?",":"")+value;
   // 	  }
 
-  // 	  _log.trace(header+": "+values);
+  // 	  if (_log.isTraceEnabled()) _log.trace(header+": "+values);
   // 	  pw.println(header+": "+values);
   // 	}
 
@@ -158,7 +158,7 @@ public class
 
       String m=request.getMethod();
 
-      _log.trace("method="+m);
+      if (_log.isTraceEnabled()) _log.trace("method="+m);
 
       // why doesn't commons-httpclient provide an abstract factory to
       // create HttpMethods from e.g. "GET", "HEAD" etc ?
@@ -167,7 +167,7 @@ public class
 	method=new GetMethod();
       else
       {
-	_log.warn("method NYI: "+m); // TODO
+	if (_log.isWarnEnabled()) _log.warn("method NYI: "+m); // TODO
 	return false;
       }
 
@@ -175,7 +175,7 @@ public class
       if (request.isRequestedSessionIdFromURL())
 	cpath+=";jsessionid="+request.getRequestedSessionId();
 
-      _log.info("cpath::"+cpath);
+      if (_log.isInfoEnabled()) _log.info("cpath::"+cpath);
       method.setPath(cpath);
       method.setQueryString(request.getQueryString());
 
@@ -192,7 +192,7 @@ public class
 	  values+=(values.length()>0?",":"")+value;
 	}
 
-	_log.trace("req - Header: "+header+": "+values);
+	if (_log.isTraceEnabled()) _log.trace("req - Header: "+header+": "+values);
 	method.setRequestHeader(header, values);
       }
 
@@ -212,17 +212,17 @@ public class
 	  if (domain==null) domain="192.168.0.2"; // TODO - tmp test
  	  String path=c.getPath();
 	  if (path==null) path=request.getContextPath(); // fix for Jetty
- 	  _log.trace("PATH: value="+path+" length="+(path==null?0:path.length()));
+ 	  if (_log.isTraceEnabled()) _log.trace("PATH: value="+path+" length="+(path==null?0:path.length()));
  	  Cookie cookie=new Cookie(domain, c.getName(), c.getValue(), path, c.getMaxAge(), c.getSecure()); // TODO - sort out domain
- 	  _log.trace("Cookie: "+cookie.getDomain()+","+ cookie.getName()+","+ cookie.getValue()+","+ cookie.getPath()+","+ cookie.getExpiryDate()+","+ cookie.getSecure());
+ 	  if (_log.isTraceEnabled()) _log.trace("Cookie: "+cookie.getDomain()+","+ cookie.getName()+","+ cookie.getValue()+","+ cookie.getPath()+","+ cookie.getExpiryDate()+","+ cookie.getSecure());
  	  state.addCookie(cookie);
- 	  _log.trace("Cookie: "+cookie.toString());
+ 	  if (_log.isTraceEnabled()) _log.trace("Cookie: "+cookie.toString());
  	}
       }
 
       String scheme=request.getScheme();
 
-      _log.trace("proxying request to: "+scheme+"://"+hostname+":"+port);
+      if (_log.isTraceEnabled()) _log.trace("proxying request to: "+scheme+"://"+hostname+":"+port);
 
       try
       {
@@ -246,7 +246,7 @@ public class
 	//	if (name.equals("Set-Cookie")) continue; // ignore
 	String value=header.substring(colon+1, header.length()).trim();
 
-	_log.trace("res - Header: "+name+": "+value);
+	if (_log.isTraceEnabled()) _log.trace("res - Header: "+name+": "+value);
 
 	if (!name.equals("Transfer-Encoding")) // Jetty will chuck entire response if I pass this in...
 	  response.setHeader(name, value);
@@ -255,7 +255,7 @@ public class
       // Cookies
       Cookie[] cookee=state.getCookies();
       for (int i=0;i<cookee.length;i++)
-	_log.trace("res - Cookie: "+cookee[i]+", domain="+cookee[i].getDomain()+", path="+cookee[i].getPath());
+	if (_log.isTraceEnabled()) _log.trace("res - Cookie: "+cookee[i]+", domain="+cookee[i].getDomain()+", path="+cookee[i].getPath());
 
       try
       {
@@ -275,7 +275,7 @@ public class
 	}
 	else
 	{
-	  _log.warn("null response body - failed request - is "+hostname+";"+port+" available ?");
+	  if (_log.isWarnEnabled()) _log.warn("null response body - failed request - is "+hostname+";"+port+" available ?");
 	}
 
 	_log.trace("response successfully transferred");

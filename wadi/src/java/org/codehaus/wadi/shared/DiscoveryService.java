@@ -78,7 +78,7 @@ public abstract class
 	    socket=new DatagramSocket();
 	    socket.setSoTimeout((int)_timeout); // int/millis
 	    DatagramPacket packet=new DatagramPacket(request.getBytes(), request.length(), _address, _port);
-	    _log.trace("sending request from "+socket.getLocalAddress()+":"+socket.getLocalPort()+" to "+_address+":"+_port+": "+request);
+	    if (_log.isTraceEnabled()) _log.trace("sending request from "+socket.getLocalAddress()+":"+socket.getLocalPort()+" to "+_address+":"+_port+": "+request);
 	    socket.send(packet);
 
 	    byte[] buffer=new byte[_bufSize];
@@ -90,19 +90,19 @@ public abstract class
 	      response=new String(packet.getData(), packet.getOffset(), packet.getLength());
 	      if (response!=null && response.startsWith(request)) // TODO - do we still need this: NB response must 'startWith' request...
 	      {
-		_log.trace("received well formed response on "+socket.getLocalAddress()+":"+socket.getLocalPort()+" from "+packet.getAddress()+":"+packet.getPort()+":"+response);
+		if (_log.isTraceEnabled()) _log.trace("received well formed response on "+socket.getLocalAddress()+":"+socket.getLocalPort()+" from "+packet.getAddress()+":"+packet.getPort()+":"+response);
 		return response;	// TODO - we need an API that allows verification of response
 	      }
 	      else
 	      {
-		_log.warn("received malformed response (from "+packet.getAddress()+":"+packet.getPort()+"):"+response);
+		if (_log.isWarnEnabled()) _log.warn("received malformed response (from "+packet.getAddress()+":"+packet.getPort()+"):"+response);
 	      }
 	      elapsed=System.currentTimeMillis()-start;
 	    }
 	  }
 	  catch (SocketTimeoutException ignore)
 	  {
-	    _log.trace("no response for: "+request);
+	    if (_log.isTraceEnabled()) _log.trace("no response for: "+request);
 	  }
 	  catch (IOException e)
 	  {
@@ -140,7 +140,7 @@ public abstract class
       public void
 	start()
 	{
-	  _log.debug("starting: "+_address+":"+_port);
+	  if (_log.isDebugEnabled()) _log.debug("starting: "+_address+":"+_port);
 	  try
 	  {
 	    _socket=new MulticastSocket(_port); // 49152-65535
@@ -154,13 +154,13 @@ public abstract class
 
 	  _running=true;
 	  (_thread=new Thread(getClass().getName()){public void run(){Server.this.run();}}).start();
-	  _log.debug("started: "+_address+":"+_port);
+	  if (_log.isDebugEnabled()) _log.debug("started: "+_address+":"+_port);
 	}
 
       public void
 	stop()
 	{
-	  _log.debug("stopping: "+_address+":"+_port);
+	  if (_log.isDebugEnabled()) _log.debug("stopping: "+_address+":"+_port);
 	  _running=false;
 	  // nasty hack but how else do we break the socket out of receive()...
 	  new Client(_address, _port, 0).run("");//TODO - we need a proper quit protocol...
@@ -186,7 +186,7 @@ public abstract class
 	  _socket.close();
 	  _socket=null;
 
-	  _log.debug("stopped: "+_address+":"+_port);
+	  if (_log.isDebugEnabled()) _log.debug("stopped: "+_address+":"+_port);
 	}
 
       public void
@@ -205,7 +205,7 @@ public abstract class
 	      //	  if (_timeout==0) Thread.yield();
 	      _socket.receive(packet);
 	      request=new String(packet.getData(), packet.getOffset(), packet.getLength());
-	      _log.trace("received request on "+_socket.getLocalAddress()+":"+_socket.getLocalPort()+" from "+packet.getAddress()+":"+packet.getPort()+": "+request);
+	      if (_log.isTraceEnabled()) _log.trace("received request on "+_socket.getLocalAddress()+":"+_socket.getLocalPort()+" from "+packet.getAddress()+":"+packet.getPort()+": "+request);
 	    }
 	    catch (SocketTimeoutException ignore)
 	    {
@@ -224,7 +224,7 @@ public abstract class
 	    {
 	      int l=response.length();
 	      if (l>_bufSize)
-		_log.warn("response ("+l+" bytes) too large for buffer ("+_bufSize+" bytes): "+response);
+		if (_log.isWarnEnabled()) _log.warn("response ("+l+" bytes) too large for buffer ("+_bufSize+" bytes): "+response);
 
 	      packet.setData(response.getBytes(), 0, response.length());
 	      // should not need to do this...
@@ -238,7 +238,7 @@ public abstract class
 	      {
 		_log.warn("unexpected problem sending response", e);
 	      }
-	      _log.trace("sent response from "+_socket.getLocalAddress()+":"+_socket.getLocalPort()+" to "+packet.getAddress()+":"+packet.getPort()+": "+response);
+	      if (_log.isTraceEnabled()) _log.trace("sent response from "+_socket.getLocalAddress()+":"+_socket.getLocalPort()+" to "+packet.getAddress()+":"+packet.getPort()+": "+response);
 	    }
 	  }
 	}

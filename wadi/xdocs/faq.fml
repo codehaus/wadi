@@ -470,6 +470,54 @@
       </answer>
     </faq>
 
+    <faq id="porting">
+      <question>How do I get my app set up with WADI? [07/06/04]</question>
+      <answer>
+
+	Tomcat:
+	<p/>
+
+	<ul>
+	  <li>WADI has been tested on recent versions of Tomcat5 - e.g. 5.0.25</li>
+	  <li>ensure that wadi-0.9.jar is on Tomcat's classpath</li>
+	  <li>
+	configure your app in your server.xml with e.g.
+	<pre>
+	<Context path="/<context-path>" docBase="<path-to-webapp-on-disc>">
+	  <Manager className="org.codehaus.wadi.tomcat.Manager"/>
+	</Context>
+	</pre>
+	</li>
+	  <li>add the <distributable/> tag to <webapp>/WEB-INF/web.xml</li>
+	  <li>add the example wadi-web.xml (in conf) to <webapp>/WEB-INF</li>
+	  <li>start tomcat in the usual way</li>
+	</ul>
+
+	Jetty:
+	<p/>
+
+	<ul>
+	  <li>WADI will work on Jetty-5.0 or Jetty CVS HEAD</li>
+	  <li>ensure that wadi-0.9.jar is on Jetty's classpath or in <webapp>/WEB-INF/lib</li>
+	  <li>
+	configure your app in your jetty.xml with e.g.
+	<pre>
+  <Call name="addWebApplication">
+    <Arg>/<context-path></Arg>
+    <Arg><path-to-webapp-on-disc></Arg>
+  </Call>
+	</pre>
+	</li>
+	  <li>add the <distributable/> tag to <webapp>/WEB-INF/web.xml</li>
+	  <li>add the example jetty-web.xml (in conf) to <webapp>/WEB-INF</li>
+	  <li>add the example wadi-web.xml (in conf) to <webapp>/WEB-INF</li>
+	  <li>start Jetty in the usual way</li>
+	</ul>
+
+
+      </answer>
+    </faq>
+
     <faq id="starting">
       <question>How do I get started? [19/04/04]</question>
       <answer>
