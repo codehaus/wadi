@@ -4,10 +4,11 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package org.codehaus.wadi.test.servlet;
+package org.codehaus.wadi.sandbox.context;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.regex.Pattern;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -19,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.context.impl.StandardHttpProxy;
 import org.mortbay.http.SocketListener;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.ServletHttpContext;
@@ -36,7 +38,7 @@ public class ProxyServlet implements Servlet {
 	protected ServletConfig _config;
 	protected ServletContext _context;
 	
-	protected HttpProxy _proxy=new HttpProxy();
+	protected HttpProxy _proxy=new StandardHttpProxy();
 	
 	public void init(ServletConfig config) throws ServletException {
 		_config = config;
@@ -47,9 +49,30 @@ public class ProxyServlet implements Servlet {
 		return _config;
 	}
 	
+	// proxyable
+	protected final Pattern _schemes=Pattern.compile("http");
+	
+	// stateless
+	protected final Pattern _methods=Pattern.compile("GET|POST");
+//	protected final Pattern _paths=Pattern.compile("*");
+	
 	public void service(ServletRequest req, ServletResponse res)
 	throws ServletException, IOException {
+
+		String scheme=req.getScheme();
+		if (!_schemes.matcher(scheme).matches()) {
+			_log.warn("scheme not proxyable: "+scheme);
+			return;
+		}
+		
 		HttpServletRequest hreq=(HttpServletRequest)req;
+		
+		String method=hreq.getMethod();
+		if (!_methods.matcher(method).matches()) {
+			_log.warn("method not stateful: "+method);
+			return;
+		}
+
 		String uri=hreq.getRequestURI();
 		String qs=hreq.getQueryString();
 		if (qs!=null) {
