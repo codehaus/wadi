@@ -157,6 +157,13 @@
       <organization>Core Developers Network</organization>
     </developer>
 
+    <developer>
+      <name>James Strachan</name>
+      <id>jstrachan</id>
+      <email>james@coredevelopers.net</email>
+      <organization>Core Developers Network</organization>
+    </developer>
+
   </developers>
 
   <!-- ============ -->
