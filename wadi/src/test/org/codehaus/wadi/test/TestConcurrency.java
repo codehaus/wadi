@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import junit.framework.TestCase;
-import org.codehaus.wadi.jetty.Manager;
 
 public class
   TestConcurrency
