@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.context;
 
+import java.io.Serializable;
+
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
@@ -27,7 +29,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Location extends Motable {
+public interface Location extends Motable, Serializable {
 	/**
 	 * @param req - the request object from the webcontainer
 	 * @param res - the response object from the webcontainer

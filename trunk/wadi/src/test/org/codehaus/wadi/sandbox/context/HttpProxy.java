@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.context;
 
+import java.io.Serializable;
 import java.net.URL;
 
 import javax.servlet.ServletRequest;
@@ -28,7 +29,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface HttpProxy {
+public interface HttpProxy extends Serializable {
 	// move this into ProxyServlet...
 	public boolean canProxy(ServletRequest req);
 	public boolean isStateful(HttpServletRequest hreq);
