@@ -37,8 +37,6 @@ import org.codehaus.wadi.jetty.Manager;
 import org.codehaus.wadi.plugins.FilePassivationStrategy;
 import org.codehaus.wadi.shared.ObjectInputStream;
 
-import org.mortbay.jetty.servlet.WebApplicationHandler;
-
 //----------------------------------------
 
 public class TestHttpSession
