@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
+import org.codehaus.wadi.sandbox.context.SessionRelocationStrategy;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -41,13 +42,13 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 
-public class SessionRelocationStrategy implements RelocationStrategy {
+public class MigrateRelocationStrategy implements SessionRelocationStrategy {
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final MessageDispatcher _dispatcher;
 	protected final Map _rvMap=new HashMap();
 	protected final long _timeout;
 	
-	public SessionRelocationStrategy(MessageDispatcher dispatcher, long timeout) {
+	public MigrateRelocationStrategy(MessageDispatcher dispatcher, long timeout) {
 		_dispatcher=dispatcher;		
 		_timeout=timeout;
 		_dispatcher.register(this, "onMessage");

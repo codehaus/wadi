@@ -41,7 +41,7 @@ import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.ProxyingException;
 import org.codehaus.wadi.sandbox.context.RecoverableException;
-import org.codehaus.wadi.sandbox.context.RelocationStrategy;
+import org.codehaus.wadi.sandbox.context.RequestRelocationStrategy;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -51,8 +51,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-
-public class RequestRelocationStrategy implements RelocationStrategy {
+public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 	protected final Log _log = LogFactory.getLog(getClass());
 	protected final MessageDispatcher _dispatcher;
 	protected final long _proxyHandOverPeriod;
@@ -64,7 +63,7 @@ public class RequestRelocationStrategy implements RelocationStrategy {
 	
 	public void setTop(Contextualiser top){_top=top;}
 	
-	public RequestRelocationStrategy(Cluster cluster, MessageDispatcher dispatcher, long proxyHandOverPeriod, long timeout, Location location) {
+	public ProxyRelocationStrategy(Cluster cluster, MessageDispatcher dispatcher, long proxyHandOverPeriod, long timeout, Location location) {
 		_dispatcher=dispatcher;
 		_proxyHandOverPeriod=proxyHandOverPeriod;
 		_timeout=timeout;

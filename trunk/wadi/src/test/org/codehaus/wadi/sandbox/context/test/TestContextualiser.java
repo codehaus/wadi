@@ -57,7 +57,7 @@ import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.ProxyingException;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.AlwaysEvicter;
-import org.codehaus.wadi.sandbox.context.impl.RequestRelocationStrategy;
+import org.codehaus.wadi.sandbox.context.impl.ProxyRelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
@@ -445,7 +445,7 @@ public class TestContextualiser extends TestCase {
 		Collapser collapser0=new HashingCollapser(10, 2000);
 		Map c0=new HashMap();
 		MessageDispatcher dispatcher0=new MessageDispatcher(cluster0);
-		RelocationStrategy relocater0=new RequestRelocationStrategy(cluster0, dispatcher0, 3000, 2000, location);
+		RelocationStrategy relocater0=new ProxyRelocationStrategy(cluster0, dispatcher0, 3000, 2000, location);
 		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), relocater0);
 		Map m0=new HashMap();
 		m0.put("foo", new MyContext());
@@ -455,7 +455,7 @@ public class TestContextualiser extends TestCase {
 		Collapser collapser1=new HashingCollapser(10, 2000);
 		Map c1=new HashMap();
 		MessageDispatcher dispatcher1=new MessageDispatcher(cluster1);
-		RelocationStrategy relocater1=new RequestRelocationStrategy(cluster1, dispatcher1, 3000, 2000, location);
+		RelocationStrategy relocater1=new ProxyRelocationStrategy(cluster1, dispatcher1, 3000, 2000, location);
 		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), relocater1);
 		Map m1=new HashMap();
 		m1.put("bar", new MyContext());
