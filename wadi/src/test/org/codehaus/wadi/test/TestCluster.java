@@ -167,7 +167,7 @@ public class
     public void
       onMessage(Message message)
     {
-      _log.info("message received");
+      _log.info("message received: "+message);
 
       ObjectMessage om=null;
       Object tmp=null;
@@ -253,89 +253,36 @@ public class
   }
 
   public void
-    testResponse1()
-  {
-
-    MessageListener listener0=new InvocationListener(_cluster0);
-
-    try
-    {
-      // 1->n messages (includes self)
-      _cluster0.createConsumer(_cluster0.getDestination(), null, true).setMessageListener(listener0);
-      // 1->1 messages
-      _cluster0.createConsumer(_cluster0.getLocalNode().getDestination()).setMessageListener(listener0);
-    }
-    catch (JMSException e)
-    {
-      _log.warn("could not attach listeners", e);
-    }
-
-    try
-    {
-      ObjectMessage om = _cluster0.createObjectMessage();
-      om.setJMSReplyTo(_cluster0.getLocalNode().getDestination());
-      om.setObject(new Request());
-      _cluster0.send(_cluster0.getDestination(), om);
-    }
-    catch (JMSException e)
-    {
-      _log.warn("problem sending request", e);
-    }
-
-    try {Thread.sleep(3000);} catch (InterruptedException e) {_log.warn("thread interrupted", e);}
-
-    assertTrue(testResponsePassed);
-
-    _log.info("request/response to self OK");
-  }
-
-  public void
-    testResponse2()
+    testResponse()
+    throws Exception
   {
 
     MessageListener listener0=new InvocationListener(_cluster0);
     MessageListener listener1=new InvocationListener(_cluster1);
 
-    try
-    {
-      // 1->(n-1) messages (excludes self)
-      _cluster0.createConsumer(_cluster0.getDestination(), null, true).setMessageListener(listener0);
-      // 1->1 messages
-      _cluster0.createConsumer(_cluster0.getLocalNode().getDestination()).setMessageListener(listener0);
-      // 1->(n-1) messages (excludes self)
-      _cluster1.createConsumer(_cluster1.getDestination(), null, true).setMessageListener(listener1);
-      // 1->1 messages
-      _cluster1.createConsumer(_cluster1.getLocalNode().getDestination()).setMessageListener(listener1);
-    }
-    catch (JMSException e)
-    {
-      _log.warn("could not attach listeners", e);
-    }
+    // 1->(n-1) messages (excludes self)
+    _cluster0.createConsumer(_cluster0.getDestination(), null, true).setMessageListener(listener0);
+    // 1->1 messages
+    _cluster0.createConsumer(_cluster0.getLocalNode().getDestination()).setMessageListener(listener0);
+    // 1->(n-1) messages (excludes self)
+    _cluster1.createConsumer(_cluster1.getDestination(), null, true).setMessageListener(listener1);
+    // 1->1 messages
+    _cluster1.createConsumer(_cluster1.getLocalNode().getDestination()).setMessageListener(listener1);
 
-    try
-    {
-      ObjectMessage om = _cluster0.createObjectMessage();
-      om.setJMSReplyTo(_cluster0.getLocalNode().getDestination());
-      om.setObject(new Request());
-      _cluster0.send(_cluster0.getDestination(), om);
-    }
-    catch (JMSException e)
-    {
-      _log.warn("problem sending request", e);
-    }
+    ObjectMessage om = _cluster0.createObjectMessage();
+    om.setJMSReplyTo(_cluster0.getLocalNode().getDestination());
+    om.setObject(new Request());
 
-    try
-    {
-      Thread.sleep(3000);
-    }
-    catch (InterruptedException e)
-    {
-      // won't happen
-      _log.warn("thread interrupted", e);
-    }
-
+    testResponsePassed=false;
+    _cluster0.send(_cluster0.getLocalNode().getDestination(), om);
+    Thread.sleep(3000);
     assertTrue(testResponsePassed);
+    _log.info("request/response between same node OK");
 
+    testResponsePassed=false;
+    _cluster0.send(_cluster1.getLocalNode().getDestination(), om);
+    Thread.sleep(3000);
+    assertTrue(testResponsePassed);
     _log.info("request/response between two different nodes OK");
   }
 }
