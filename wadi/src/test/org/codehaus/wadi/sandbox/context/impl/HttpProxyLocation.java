@@ -48,7 +48,7 @@ public class HttpProxyLocation implements Location {
 		_proxy=proxy;
 	}
 	
-	// TODO - serial proxying at the moment - until I decide how to make it concurrent...
+	// TODO - serial proxying at the moment - until I decide how to make it concurrent - see PiggyBackHttpProxy - unfinished
 	public Context proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) {
 		try {
 			_proxy.proxy(_location, req, res);
@@ -60,4 +60,6 @@ public class HttpProxyLocation implements Location {
 	}
 
 	public long getExpiryTime(){ return 0;}// TODO - NYI
+	
+	public String toString() {return "<HttpProxyLocation:"+_location+">";} // we could include proxy strategy here...
 }
