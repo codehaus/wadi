@@ -200,7 +200,7 @@ public abstract class
     return impl;
   }
 
-  protected HttpSessionImpl
+  public HttpSessionImpl
     getLocalSession(String realId)
   {
     return (HttpSessionImpl)_local.get(realId);

@@ -297,7 +297,8 @@ public class RWLock implements ReadWriteLock {
     }
 
     public void acquire() throws InterruptedException {
-      _log.info(Thread.currentThread().toString()+" acquiring W-lock "+hashCode());
+      if (_log.isTraceEnabled())
+	_log.trace(Thread.currentThread().toString()+" acquiring W-lock "+hashCode());
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
       int p=getPriority();
@@ -329,7 +330,8 @@ public class RWLock implements ReadWriteLock {
     }
 
     public void release(){
-      _log.info(Thread.currentThread().toString()+" releasing W-lock "+hashCode());
+      if (_log.isTraceEnabled())
+	_log.trace(Thread.currentThread().toString()+" releasing W-lock "+hashCode());
       Signaller s = endWrite();
       if (s != null) s.signalWaiters();
     }
@@ -353,7 +355,8 @@ public class RWLock implements ReadWriteLock {
     }
 
     public boolean attempt(long msecs) throws InterruptedException {
-      _log.info(Thread.currentThread().toString()+" attempting W-lock "+hashCode());
+      if (_log.isTraceEnabled())
+	_log.trace(Thread.currentThread().toString()+" attempting W-lock "+hashCode());
       if (Thread.interrupted()) throw new InterruptedException();
       InterruptedException ie = null;
       int p=getPriority();
@@ -401,7 +404,8 @@ public class RWLock implements ReadWriteLock {
     overlap()
     throws InterruptedException
   {
-    _log.info(Thread.currentThread().toString()+" overlapping W-lock "+writerLock_.hashCode());
+    if (_log.isTraceEnabled())
+      _log.trace(Thread.currentThread().toString()+" overlapping W-lock "+writerLock_.hashCode());
     synchronized (RWLock.this)
     {
       Signaller s=endRead();
