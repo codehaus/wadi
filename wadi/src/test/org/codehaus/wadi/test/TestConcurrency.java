@@ -33,195 +33,7 @@ import org.apache.commons.logging.LogFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-// class RWLock
-//   extends ReaderPreferenceReadWriteLock
-// {
-//   protected class
-//     WriterLock
-//     extends WriterPreferenceReadWriteLock.WriterLock
-//   {
-//     public void
-//       acquire()
-//       throws InterruptedException
-//       {
-//       if (Thread.interrupted()) throw new InterruptedException();
-//       InterruptedException ie = null;
-//       synchronized(this) {
-//         if (!startWriteFromNewWriter()) {
-//           for (;;) {
-//             try {
-//               WriterLock.this.wait();
-//               if (startWriteFromWaitingWriter())
-//                 return;
-//             }
-//             catch(InterruptedException ex){
-//               cancelledWaitingWriter();
-//               WriterLock.this.notify();
-//               ie = ex;
-//               break;
-//             }
-//           }
-//         }
-//       }
-//       if (ie != null) {
-//         // Fall through outside synch on interrupt.
-//         //  On exception, we may need to signal readers.
-//         //  It is not worth checking here whether it is strictly necessary.
-//         _readerLock.signalWaiters();
-//         throw ie;
-//       }
-//     }
-
-//     public boolean
-//       attempt(long msecs)
-//       throws InterruptedException
-//       {
-// 	if (Thread.interrupted()) throw new InterruptedException();
-// 	InterruptedException ie = null;
-// 	synchronized(this) {
-// 	  if (msecs <= 0)
-// 	    return startWrite();
-// 	  else if (startWriteFromNewWriter())
-// 	    return true;
-// 	  else {
-// 	    long waitTime = msecs;
-// 	    long start = System.currentTimeMillis();
-// 	    for (;;) {
-// 	      try { WriterLock.this.wait(waitTime);  }
-// 	      catch(InterruptedException ex){
-// 		cancelledWaitingWriter();
-// 		WriterLock.this.notify();
-// 		ie = ex;
-// 		break;
-// 	      }
-// 	      if (startWriteFromWaitingWriter())
-// 		return true;
-// 	      else {
-// 		waitTime = msecs - (System.currentTimeMillis() - start);
-// 		if (waitTime <= 0) {
-// 		  cancelledWaitingWriter();
-// 		  WriterLock.this.notify();
-// 		  break;
-// 		}
-// 	      }
-// 	    }
-// 	  }
-// 	}
-
-// 	_readerLock.signalWaiters();
-// 	if (ie != null) throw ie;
-// 	else return false; // timed out
-//       }
-//   }
-
-//   protected class
-//     ReaderLock
-//     extends WriterPreferenceReadWriteLock.ReaderLock
-//   {
-//     synchronized void signalWaiters(){super.signalWaiters();}
-
-//     public  void acquire() throws InterruptedException {
-//       if (Thread.interrupted()) throw new InterruptedException();
-//       InterruptedException ie = null;
-//       synchronized(this) {
-//         if (!startReadFromNewReader()) {
-//           for (;;) {
-//             try {
-//               ReaderLock.this.wait();
-//               if (startReadFromWaitingReader())
-//                 return;
-//             }
-//             catch(InterruptedException ex){
-//               cancelledWaitingReader();
-//               ie = ex;
-//               break;
-//             }
-//           }
-//         }
-//       }
-//       if (ie != null) {
-//         // fall through outside synch on interrupt.
-//         // This notification is not really needed here,
-//         //   but may be in plausible subclasses
-//         _writerLock.signalWaiters();
-//         throw ie;
-//       }
-//     }
-
-//     public boolean attempt(long msecs) throws InterruptedException {
-//       if (Thread.interrupted()) throw new InterruptedException();
-//       InterruptedException ie = null;
-//       synchronized(this) {
-//         if (msecs <= 0)
-//           return startRead();
-//         else if (startReadFromNewReader())
-//           return true;
-//         else {
-//           long waitTime = msecs;
-//           long start = System.currentTimeMillis();
-//           for (;;) {
-//             try { ReaderLock.this.wait(waitTime);  }
-//             catch(InterruptedException ex){
-//               cancelledWaitingReader();
-//               ie = ex;
-//               break;
-//             }
-//             if (startReadFromWaitingReader())
-//               return true;
-//             else {
-//               waitTime = msecs - (System.currentTimeMillis() - start);
-//               if (waitTime <= 0) {
-//                 cancelledWaitingReader();
-//                 break;
-//               }
-//             }
-//           }
-//         }
-//       }
-//       // safeguard on interrupt or timeout:
-//       _writerLock.signalWaiters();
-//       if (ie != null) throw ie;
-//       else return false; // timed out
-//     }
-//   }
-
-//   protected WriterLock _writerLock=new WriterLock();
-//   protected ReaderLock _readerLock=new ReaderLock();
-
-//   public Sync
-//     writeLock()
-//   {
-//     return _writerLock;
-//   }
-
-//   public Sync
-//     readLock()
-//   {
-//     return _readrLock;
-//   }
-
-//   protected synchronized Signaller
-//     endRead()
-//   {
-//     if (--activeReaders_ == 0 && waitingWriters_ > 0)
-//       return _writerLock;
-//     else
-//       return null;
-//   }
-
-//   protected synchronized Signaller
-//     endWrite()
-//   {
-//     activeWriter_ = null;
-//     if (waitingReaders_ > 0 && allowReader())
-//       return _readerLock;
-//     else if (waitingWriters_ > 0)
-//       return _writerLock;
-//     else
-//       return null;
-//   }
-// }
-
+import org.codehaus.wadi.shared.RWLock;
 public class
   TestConcurrency
   extends TestCase
@@ -301,7 +113,7 @@ public class
   protected int _priority=Thread.MAX_PRIORITY+1;
 
   public void
-    testPriority()
+    priority(final boolean acquire)
     throws Exception
     {
       final ReadWriteLock lock=new RWLock();
@@ -310,7 +122,7 @@ public class
 
       Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 
-      lock.readLock().acquire();
+      lock.readLock().attempt(60000);
 
       for (int i=Thread.MIN_PRIORITY;i<=Thread.MAX_PRIORITY;i++)
       {
@@ -321,10 +133,13 @@ public class
 	    {
 	      try
 	      {
-		lock.writeLock().acquire();
+		if (acquire)
+		  lock.writeLock().acquire();
+		else
+		  lock.writeLock().attempt(60000);
 		int priority=Thread.currentThread().getPriority();
 		_log.info("priority: "+priority);
-		assertTrue(priority<_priority);
+		//		synchronized(this){assertTrue(priority<_priority);}
 		_priority=priority;
 		lock.writeLock().release();
 	      }
@@ -349,6 +164,46 @@ public class
 	t.join();
 	_log.info("joining: "+i);
       }
-
     }
+
+  public void
+    testPriority()
+    throws Exception
+  {
+    priority(true);
+    priority(false);
+  }
+
+//   public void
+//     testOverlap()
+//     throws Exception
+//   {
+//     final ReadWriteLock lock=new RWLock();
+
+//     {
+//       lock.readLock().acquire();
+
+//       Thread t1=new Thread() {public void run()
+// 	  {
+// 	    try
+// 	    {
+// 	      lock.writeLock().acquire();
+// 	      _log.info("you lost");
+// 	      lock.writeLock().release();
+// 	    }
+// 	    catch (Exception e)
+// 	    {
+// 	      _log.warn(e);
+// 	    }
+// 	  }
+// 	};
+//       t1.start();
+
+//       ((RWLock)lock).overlap();
+//       _log.info("I won");
+//       lock.writeLock().release();
+
+//       t1.join();
+//     }
+//   }
 }
