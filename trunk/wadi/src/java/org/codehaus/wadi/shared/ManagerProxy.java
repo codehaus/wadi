@@ -47,23 +47,23 @@ public class
 {
   protected final Log _log=LogFactory.getLog(getClass());
 
-  public boolean
-    relocateSession(String id, HttpSessionImpl impl, StreamingStrategy streamingStrategy)
-  {
-    return migrateSessionFrom(id, impl, streamingStrategy);
-  }
+//   public boolean
+//     relocateSession(String id, HttpSessionImpl impl, StreamingStrategy streamingStrategy)
+//   {
+//     return migrateSessionFrom(id, impl, streamingStrategy);
+//   }
 
   //----------------------------------------
   // migration - use if we are relocating state rather than request
   protected final InetAddress             _migrationAddress;
   protected final int                     _migrationPort;
-  protected final MigrationService.Client _migrationClient;
+  //  protected final NewMigrationService.Client _migrationClient;
 
-  protected boolean
-    migrateSessionFrom(String id, HttpSessionImpl impl, StreamingStrategy streamingStrategy)
-  {
-    return _migrationClient.run(id, impl, _migrationAddress, _migrationPort, streamingStrategy);
-  }
+//   protected boolean
+//     migrateSessionFrom(String id, HttpSessionImpl impl, StreamingStrategy streamingStrategy)
+//   {
+//     return _migrationClient.run(id, impl, _migrationAddress, _migrationPort, streamingStrategy);
+//   }
 
   //----------------------------------------
 
@@ -237,7 +237,7 @@ public class
     _httpPort         = Integer.parseInt(args[4]);
     _migrationAddress = InetAddress.getByName(args[5]);
     _migrationPort    = Integer.parseInt(args[6]);
-    _migrationClient  = new MigrationService.Client(); // TODO - should be static ?
+    //    _migrationClient  = new NewMigrationService.Client(); // TODO - should be static ?
     _lbAddress        = null;	// TODO - NYI
     _lbPort           = 0;	// TODO - NYI
     _route            = (args.length>7)?args[7]:null; // TODO - NYI

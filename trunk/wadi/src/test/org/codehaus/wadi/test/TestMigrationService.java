@@ -29,6 +29,7 @@ import org.codehaus.wadi.plugins.SimpleStreamingStrategy;
 import org.codehaus.wadi.plugins.GZIPStreamingStrategy;
 import org.codehaus.wadi.plugins.ZipStreamingStrategy;
 import org.codehaus.wadi.shared.NewMigrationService;
+import EDU.oswego.cs.dl.util.concurrent.CyclicBarrier;
 
 /**
  * Test the Migration Service
@@ -49,6 +50,7 @@ public class
   protected Map _serverSessions=new HashMap();
 
   protected StreamingStrategy _streamingStrategy=new SimpleStreamingStrategy();
+  protected HttpSessionImplFactory _factory=new HttpSessionImplFactory();
 
   public
     TestMigrationService(String name)
@@ -65,7 +67,7 @@ public class
       int port=6789;
       int timeout=5000;		// 5 secs
       _client=new NewMigrationService.Client();
-      _server=new NewMigrationService.Server(new HttpSessionImplFactory(), _serverSessions, _streamingStrategy);
+      _server=new NewMigrationService.Server(null, _factory, _serverSessions, _streamingStrategy); // HELP - TODO
       _server.start();
     }
 
@@ -105,7 +107,7 @@ public class
 	_log.info("_clientSessions: "+_clientSessions);
 	_log.info("_serverSessions: "+_serverSessions);
       }
-      _client.emmigrate(_clientSessions, _clientSessions.values(), 5000L, serverAddress, serverPort, _streamingStrategy);
+      _client.emmigrate(_clientSessions, _clientSessions.values(), 5000L, serverAddress, serverPort, _streamingStrategy, false);
       assertTrue(_clientSessions.size()==0);
       assertTrue(_serverSessions.size()==1);
       assertTrue(_serverSessions.containsKey(id));

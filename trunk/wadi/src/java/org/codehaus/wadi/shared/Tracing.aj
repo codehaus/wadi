@@ -32,20 +32,21 @@ public aspect
 {
   protected Log _log=LogFactory.getLog(Tracing.class);
 
-  pointcut traceMethods()
+  pointcut traceMethods(Object lock)
     :
   (
-   //   call(* EDU.oswego.cs.dl.util.concurrent.Sync+.*(..)) &&
+   call(* EDU.oswego.cs.dl.util.concurrent.Sync+.*(..)) &&
    //   call(* RWLock.startRead(..)) ||
    //      call(* RoutingStrategy+.*(..))
-   //   (target(org.codehaus.wadi.shared.RWLock$ReaderLock) ||
-   //    target(org.codehaus.wadi.shared.RWLock$WriterLock))
+   (target(org.codehaus.wadi.shared.RWLock$ReaderLock) ||
+    target(org.codehaus.wadi.shared.RWLock$WriterLock)) &&
    within(Tracing)		// this will never be true
    )
+    && target(lock)
     && !within(Tracing);
 
   Object
-    around() : traceMethods()
+    around(Object lock) : traceMethods(lock)
   {
     Signature sig = thisJoinPointStaticPart.getSignature();
     Object[] args = thisJoinPoint.getArgs();
@@ -56,10 +57,12 @@ public aspect
       a+=((a.length()==0)?"":",")+args[i];
     //    _log.warn("Entering "+this.hashCode()+"."+pkg+"."+name+"("+a+")", new Exception());
     Thread t=Thread.currentThread();
-    _log.warn(t+": Entering "+this.hashCode()+"."+pkg+"."+name+"("+a+")");
+    //    _log.warn(t+": Entering "+this.hashCode()+"."+pkg+"."+name+"("+a+") "+this);
+    _log.warn(t+": Entering "+lock.toString()+"."+name+"("+a+")", new Exception());
 
-    Object tmp=proceed();
-    _log.warn(t+": Leaving "+this.hashCode()+"."+pkg+"."+name+"() --> "+tmp);
+    Object tmp=proceed(lock);
+    //    _log.warn(t+": Leaving "+this.hashCode()+"."+pkg+"."+name+"() "+this+" --> "+tmp);
+    _log.warn(t+": Leaving "+lock.toString()+"."+name+"("+a+")"+" --> "+tmp);
 
     return tmp;
   }

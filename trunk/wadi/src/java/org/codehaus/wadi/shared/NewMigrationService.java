@@ -17,6 +17,8 @@
 
 package org.codehaus.wadi.shared;
 
+import EDU.oswego.cs.dl.util.concurrent.CyclicBarrier;
+import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -29,13 +31,15 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-// TODO - maybe use NIO as discussed with Jeremy.
+// TODO - maybe use NIO/AIO as discussed with Jeremy.
 // TODO - could our connection be to a filedescriptor instead of another node ?
 // TODO - insertion/removal of locks in lockMap NYI
 
@@ -58,7 +62,7 @@ public class
     protected InetAddress _address; // null seems to work fine as default interface
 
     public boolean
-      emmigrate(Map map, Collection candidates, long timeout, InetAddress remoteAddress, int remotePort, StreamingStrategy streamingStrategy)
+      emmigrate(Map map, Collection candidates, long timeout, InetAddress remoteAddress, int remotePort, StreamingStrategy streamingStrategy, boolean sync)
     {
       Socket socket=null;
       boolean ok=true;
@@ -92,9 +96,11 @@ public class
 	  if (_log.isTraceEnabled()) _log.trace(socket+" -> "+remoteAddress+":"+remotePort);
 	  ObjectOutput os=new ObjectOutputStream(socket.getOutputStream());
 	  ObjectInput  is=new ObjectInputStream(socket.getInputStream());
-	  ObjectOutput ss=streamingStrategy.getOutputStream(socket.getOutputStream());
+	  //	  ObjectOutput ss=streamingStrategy.getOutputStream(socket.getOutputStream());
+	  ObjectOutput ss=os;
 
 	  // (1) send PREPARE()
+	  os.writeBoolean(sync);
 	  os.writeInt(numSessions);
 	  os.flush();
 	  for (Iterator i=candidates.iterator(); i.hasNext(); )
@@ -143,6 +149,7 @@ public class
 	  for (Iterator i=candidates.iterator(); i.hasNext(); )
 	  {
 	    HttpSessionImpl impl=(HttpSessionImpl)i.next();
+	    _log.info("SESSION:"+impl);
 	    map.put(impl.getRealId(), impl);
 	  }
 	}
@@ -158,7 +165,7 @@ public class
 	}
       }
 
-      return false;
+      return ok;
     }
   }
 
@@ -168,6 +175,13 @@ public class
   {
     protected final Log _log=LogFactory.getLog(getClass());
 
+    protected Map _migrationBarriers=Collections.synchronizedMap(new HashMap());
+
+    public void putBarrier(String id, CyclicBarrier barrier){_migrationBarriers.put(id, barrier);}
+    public CyclicBarrier getBarrier(String id){return (CyclicBarrier)_migrationBarriers.get(id);}
+    public void removeBarrier(String id){_migrationBarriers.remove(id);}
+
+    protected Manager                _manager;
     protected HttpSessionImplFactory _factory;
     protected boolean                _running;
     protected Thread                 _thread;
@@ -187,8 +201,9 @@ public class
 
     protected StreamingStrategy _streamingStrategy;
 
-    public Server(HttpSessionImplFactory factory, Map sessions, StreamingStrategy streamingStrategy)
+    public Server(Manager manager, HttpSessionImplFactory factory, Map sessions, StreamingStrategy streamingStrategy)
     {
+      _manager=manager;
       _factory=factory;
       _sessions=sessions;
       _streamingStrategy=streamingStrategy;
@@ -299,14 +314,18 @@ public class
       boolean commit=false;
       int numSessions=0;
       Collection candidates=new ArrayList(numSessions);
+      boolean sync=false;
 
       try
       {
 	ObjectOutput os=new ObjectOutputStream(socket.getOutputStream());
 	ObjectInput  is=new ObjectInputStream(socket.getInputStream());
-	ObjectInput  ss=_streamingStrategy.getInputStream(socket.getInputStream());
+	//	ObjectInput  ss=_streamingStrategy.getInputStream(socket.getInputStream());
+	ObjectInput ss=is;
+
 
 	// (1) receive PREPARE()
+	sync=is.readBoolean();
 	numSessions=is.readInt(); // how many sessions ?
 	for (int i=numSessions; i>0; i--)
 	{
@@ -314,6 +333,7 @@ public class
 	  impl.readContent(ss); // demarshall session off wire
 	  impl.getRWLock().setPriority(HttpSessionImpl.EMMIGRATION_PRIORITY); // TODO - does priority matter here?
 	  impl.getContainerLock().acquire();
+	  impl.setWadiManager(_manager);
 	  _sessions.put(impl.getRealId(), impl);
 	  candidates.add(impl);
 	}
@@ -354,10 +374,40 @@ public class
 	}
 
 	for (Iterator i=candidates.iterator(); i.hasNext(); )
-	  ((HttpSessionImpl)i.next()).getContainerLock().release();
+	{
+	  HttpSessionImpl impl=(HttpSessionImpl)i.next();
+	  impl.getContainerLock().release();
+
+	  if (sync)
+	  {
+	    CyclicBarrier barrier=getBarrier(impl.getRealId());
+
+	    if (barrier==null)
+	    {
+	      _log.warn("missed sync point (too late?) in session transfer");
+	    }
+	    else
+	    {
+	      try
+	      {
+		barrier.attemptBarrier(5000L);
+		_log.trace("successful sync session transfer");
+	      }
+	      catch (TimeoutException e)
+	      {
+		_log.warn("missed sync point in session transfer - timed out");
+	      }
+	      catch (InterruptedException e)
+	      {
+		_log.warn("missed sync point in session transfer - interrupted");
+	      }
+	    }
+	  }
+	}
 
 	try{socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
       }
+
     }
   }
 }

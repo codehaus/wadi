@@ -18,6 +18,9 @@ XTERM=`eval "echo $XTERM"`
 WADI_HOME=`pwd`/..
 JAVA=$JAVA_HOME/bin/java
 
+echo "JAVA_HOME=$JAVA_HOME"
+$JAVA -fullversion
+
 properties=`sed -e '/#.*/d' -e 's/${wadi.home}/$WADI_HOME/g' -e 's/\(.*\)/-D\1/g' $WADI_HOME/conf/node.$instance.properties | tr '\n' ' '`
 properties=`eval "echo $properties"`
 
@@ -26,6 +29,9 @@ properties="$properties \
 -Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog \
 -Dorg.apache.commons.logging.LogFactory=org.apache.commons.logging.impl.LogFactoryImpl \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=debug \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.activecluster.impl.StateServiceStub=info \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.activecluster.impl.StateConsumer=info \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.activemq=info \
 -Dorg.apache.commons.logging.simplelog.showShortLogname=true \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
 "

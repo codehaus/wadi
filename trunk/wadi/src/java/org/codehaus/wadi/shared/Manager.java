@@ -17,8 +17,9 @@
 
 package org.codehaus.wadi.shared;
 
-import EDU.oswego.cs.dl.util.concurrent.CyclicBarrier;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
+import EDU.oswego.cs.dl.util.concurrent.CyclicBarrier;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -26,12 +27,13 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EventListener;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -47,6 +49,8 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
+import org.codehaus.activecluster.ClusterListener;
+import org.codehaus.activecluster.ClusterEvent;
 import org.codehaus.activecluster.ClusterFactory;
 import org.codehaus.activecluster.Node;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
@@ -254,9 +258,41 @@ public abstract class
 
     if (!successfulMigration)
     {
-      ManagerProxy proxy=locate(realId);
-      if (proxy!=null)
-	successfulMigration=proxy.relocateSession(realId, impl, _streamingStrategy);
+      CyclicBarrier barrier=new CyclicBarrier(2);
+      _migrationServer.putBarrier(realId, barrier);
+
+      try
+      {
+	//	_log.warn("sending migration command: "+realId);
+	sendCommandToCluster(new ImmigrationCommand(realId, _migrationServer.getAddress(), _migrationServer.getPort()));
+
+	barrier.attemptBarrier(5000L);
+	successfulMigration=true;
+
+	impl=(HttpSessionImpl)_local.get(realId); // TODO - rationalise
+	// migration/activation approaches
+	// where impl andlocking is concerned
+      }
+      catch (TimeoutException e)
+      {
+	// no-one came back with the session in time - give up :-(
+
+	// TODO - consider the full ramifications of Greg's
+	// reuseSessionIds here (perhaps someone does have the session
+	// but did not get back to us in time...
+
+	_log.warn("could not locate/immigrate session: "+realId);
+      }
+      catch (InterruptedException e)
+      {
+	_log.warn("unexpected interruption during immigration:: "+realId);
+      }
+      catch (Exception e)
+      {
+	_log.warn("unexpected problem occurred during immigration: "+realId);
+      }
+
+      _migrationServer.removeBarrier(realId);
     }
 
     if (successfulMigration)
@@ -381,7 +417,7 @@ public abstract class
 				       );
     _locationClient=new LocationClient(getAutoLocationAddress(), getAutoLocationPort(), 5000L);
     _locationServer.start();
-    _migrationServer=new MigrationService.Server(_local, _streamingStrategy);
+    _migrationServer=new NewMigrationService.Server(this, _implFactory, _local, _streamingStrategy);
     _migrationServer.start();
     _running=true;
 
@@ -389,12 +425,11 @@ public abstract class
     (_connection=_connectionFactory.createConnection()).start();
     _clusterFactory=new DefaultClusterFactory(getConnection());
     _cluster=_clusterFactory.createCluster("org.codehaus.wadi#cluster");
+    _cluster.addClusterListener(new MembershipListener());
     CommandListener listener=new CommandListener(this);
-    _cluster.createConsumer(_cluster.getDestination()).setMessageListener(listener);
+    _cluster.createConsumer(_cluster.getDestination(), null, true).setMessageListener(listener);
     _cluster.createConsumer(_cluster.getLocalNode().getDestination()).setMessageListener(listener);
     _cluster.start(); // should include webapp context
-
-    sendCommandToCluster(new ImmigrateCommand("xxx"));
 
     _log.debug("started");
   }
@@ -411,8 +446,6 @@ public abstract class
   {
     _log.debug("stopping");
     _running=false;
-
-    sendCommandToCluster(new ImmigrateCommand("yyy"));
 
     // assume that impls have stopped their housekeeping thread/process
     // by now...
@@ -908,7 +941,7 @@ public abstract class
   //----------------------------------------
   // Migration
 
-  MigrationService.Server _migrationServer;
+  NewMigrationService.Server _migrationServer;
 
   //----------------------------------------
   // Migration
@@ -1095,6 +1128,7 @@ public abstract class
   }
 
   protected HttpSessionImplFactory _implFactory;
+  public HttpSessionImplFactory getHttpSessionImplFactory(){return _implFactory;}
   protected HttpSessionImpl createImpl(){return _implFactory.create();}
   protected void destroyImpl(HttpSessionImpl impl){_implFactory.destroy(impl);}
 
@@ -1158,26 +1192,70 @@ public abstract class
     }
   }
 
+  public static class SerializableLog
+    implements Serializable
+  {
+    protected transient Log _log;
+    protected String _name;
+
+    public SerializableLog(Class clazz) {_name=clazz.getName(); init();}
+    public SerializableLog(String name) {_name=name;init();}
+
+    protected void init(){_log=LogFactory.getLog(_name);}
+
+    private void readObject(java.io.ObjectInputStream ois)
+      throws java.io.IOException, ClassNotFoundException
+    {
+      try
+      {
+	ois.defaultReadObject();
+	init();
+      }
+      catch (Exception e)
+      {
+	System.err.println("aaarrrgh!");
+      }
+    }
+
+    public void info(String info){_log.info(info);}
+    public void warn(String warn){_log.warn(warn);}
+    public void warn(String warn, Exception e){_log.warn(warn, e);}
+  }
+
   public static class
-    ImmigrateCommand
+    ImmigrationCommand
     implements Command
   {
+    protected SerializableLog _log=new SerializableLog(getClass());
     protected String _id;
+    protected InetAddress _address;
+    protected int _port;
 
     public
-      ImmigrateCommand(String id)
+      ImmigrationCommand(String id, InetAddress address, int port)
       {
 	_id=id;
+	_address=address;
+	_port=port;
       }
 
     public void
       run(ObjectMessage message, Manager manager)
     {
       HttpSessionImpl impl=null;
+      //      _log.info("looking for session: "+_id);
       if ((impl=(HttpSessionImpl)manager._local.get(_id))!=null)
-	System.out.println("Session "+_id+" lives here!!");
+      {
+	//	_log.info("emmigrating session: "+_id);
+	NewMigrationService.Client client=new NewMigrationService.Client();
+	Collection list=new ArrayList(1);
+	list.add(impl);		// must be mutable
+	client.emmigrate(manager._local, list, 25000L, _address, _port, manager.getStreamingStrategy(), true);
+      }
       else
-	System.out.println("Session "+_id+" does not live here!!");
+      {
+	_log.info("session not present: "+_id);
+      }
     }
   }
 
@@ -1197,6 +1275,14 @@ public abstract class
     ObjectMessage om = _cluster.createObjectMessage();
     om.setObject(command);
     _cluster.send(node.getDestination(), om);
+  }
+
+  class MembershipListener
+    implements ClusterListener
+  {
+    public void onNodeAdd(ClusterEvent event){_log.info("node joined");}
+    public void onNodeUpdate(ClusterEvent event){_log.info("node updated");}
+    public void onNodeRemove(ClusterEvent event){_log.info("node left");}
   }
 
   class CommandListener
@@ -1230,7 +1316,7 @@ public abstract class
 	  }
 	  catch (Throwable t)
 	  {
-	    _log.warn("unexpected problem responding to message:"+command);
+	    _log.warn("unexpected problem responding to message:"+command, t);
 	  }
 	}
 	else
