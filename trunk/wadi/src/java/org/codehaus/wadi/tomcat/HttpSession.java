@@ -19,6 +19,7 @@ package org.codehaus.wadi.tomcat;
 
 import java.security.Principal;
 import java.util.Iterator;
+import java.util.List;
 import org.apache.catalina.SessionListener;
 
 // what's the point of having this facade that looks like an
@@ -32,6 +33,7 @@ public class
 {
   HttpSession(HttpSessionImpl impl) {super(impl);}
 
+  public List getSessionListeners()                           {return getImpl().getSessionListeners();}
   public void addSessionListener(SessionListener sl)          {getImpl().addSessionListener(sl);}
   public void removeSessionListener(SessionListener sl)       {getImpl().removeSessionListener(sl);}
 

@@ -58,6 +58,7 @@ public class
   public Iterator getNoteNames(){return _notes.keySet().iterator();} // TODO - is iterator thread safe ?
 
   protected List _listeners=Collections.synchronizedList(new ArrayList());
+  public List getSessionListeners(){return _listeners;}
   public void addSessionListener(SessionListener listener){_listeners.add(listener);}
   public void removeSessionListener(SessionListener listener){_listeners.remove(listener);}
 
