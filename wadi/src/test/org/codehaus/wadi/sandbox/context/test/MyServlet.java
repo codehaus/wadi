@@ -17,7 +17,6 @@
 package org.codehaus.wadi.sandbox.context.test;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -33,23 +32,16 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.ContextPool;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
-import org.codehaus.wadi.sandbox.context.HttpProxy;
-import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
-import org.codehaus.wadi.sandbox.context.impl.MigrateRelocationStrategy;
-import org.codehaus.wadi.sandbox.context.impl.ProxyRelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
-import org.codehaus.wadi.sandbox.context.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
-import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.context.impl.StatelessContextualiser;
 
@@ -64,16 +56,12 @@ public class MyServlet implements Servlet {
 	protected final StatelessContextualiser _statelessContextualiser;
 	protected final MemoryContextualiser _memoryContextualiser;
 	
-	public MyServlet(String name, Cluster cluster, InetSocketAddress isa, ContextPool contextPool, HttpProxy proxy) throws Exception {
+	public MyServlet(String name, Cluster cluster, ContextPool contextPool, RelocationStrategy relocater) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 		_cluster=cluster;
 		_cluster.start();
 		_collapser=new HashingCollapser(10, 2000);
 		_clusterMap=new HashMap();
-		MessageDispatcher dispatcher=new MessageDispatcher(_cluster);
-		Location location=new HttpProxyLocation(cluster.getLocalNode().getDestination(), isa, proxy);
-		RelocationStrategy relocater=new ProxyRelocationStrategy(cluster, dispatcher, 3000, 2000, location);
-		relocater=new MigrateRelocationStrategy(dispatcher, 2000, location, cluster, new SimpleStreamingStrategy());
 		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), relocater);
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);

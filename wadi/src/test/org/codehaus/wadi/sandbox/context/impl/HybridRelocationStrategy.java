@@ -50,4 +50,5 @@ public class HybridRelocationStrategy implements RelocationStrategy {
 	}
 	
 	public void setTop(Contextualiser top){}
+	public Contextualiser getTop(){return null;}
 }

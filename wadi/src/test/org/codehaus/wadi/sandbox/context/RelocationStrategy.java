@@ -47,4 +47,5 @@ public interface RelocationStrategy {
 	 */
 	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, Map locationMap) throws IOException, ServletException;
 	public void setTop(Contextualiser top);
+	public Contextualiser getTop();
 }

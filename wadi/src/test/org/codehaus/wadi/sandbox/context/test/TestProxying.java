@@ -21,8 +21,12 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 
 import javax.jms.ConnectionFactory;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -37,8 +41,20 @@ import org.codehaus.activecluster.ClusterFactory;
 import org.codehaus.activecluster.ClusterListener;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
+import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.HttpProxy;
+import org.codehaus.wadi.sandbox.context.Location;
+import org.codehaus.wadi.sandbox.context.Promoter;
+import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.CommonsHttpProxy;
+import org.codehaus.wadi.sandbox.context.impl.HttpProxyLocation;
+import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
+import org.codehaus.wadi.sandbox.context.impl.MigrateRelocationStrategy;
+import org.codehaus.wadi.sandbox.context.impl.ProxyRelocationStrategy;
 import org.codehaus.wadi.sandbox.context.impl.StandardHttpProxy;
+
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 import junit.framework.TestCase;
 
@@ -61,6 +77,14 @@ public class TestProxying extends TestCase {
 	protected MyFilter _filter1;
 	protected MyServlet _servlet0;
 	protected MyServlet _servlet1;
+	protected Cluster _cluster0;
+	protected Cluster _cluster1;
+	protected Location _location0;
+	protected Location _location1;
+	protected MessageDispatcher _dispatcher0;
+	protected MessageDispatcher _dispatcher1;
+	protected SwitchableRelocationStrategy _relocater0;
+	protected SwitchableRelocationStrategy _relocater1;
 	
 	  class MyClusterListener
 	    implements ClusterListener
@@ -98,6 +122,34 @@ public class TestProxying extends TestCase {
 	    }
 	  }
 
+	  class SwitchableRelocationStrategy implements RelocationStrategy {
+	  	protected RelocationStrategy _delegate=new DummyRelocationStrategy();
+	  	
+	  	public void setRelocationStrategy(RelocationStrategy delegate){
+	  		delegate.setTop(_delegate.getTop());
+	  		_delegate=delegate;
+	  	}
+	  	
+	  	// RelocationStrategy
+	  	
+		public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {
+			return _delegate.relocate(hreq, hres, chain, id, promoter, promotionLock, locationMap);
+		}
+
+		public void setTop(Contextualiser top) {
+			_delegate.setTop(top);
+		}
+		
+		public Contextualiser getTop(){return _delegate.getTop();}
+	}
+	  
+	  class DummyRelocationStrategy implements RelocationStrategy {
+		public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {return false;}
+		protected Contextualiser _top;
+		public void setTop(Contextualiser top) {_top=top;}
+		public Contextualiser getTop(){return _top;}
+	}
+	  
 	  /*
 	 * @see TestCase#setUp()
 	 */
@@ -107,14 +159,26 @@ public class TestProxying extends TestCase {
 		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
 		ClusterFactory clusterFactory       = new DefaultClusterFactory(connectionFactory);
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
-		Cluster cluster0=clusterFactory.createCluster(clusterName);
-		cluster0.addClusterListener(new MyClusterListener());
-		_servlet0=new MyServlet("0", cluster0, new InetSocketAddress("localhost", 8080), new MyContextPool(), new StandardHttpProxy("jsessionid"));
+
+		InetSocketAddress isa0=new InetSocketAddress("localhost", 8080);
+		_cluster0=clusterFactory.createCluster(clusterName);
+		_cluster0.addClusterListener(new MyClusterListener());
+		HttpProxy proxy0=new StandardHttpProxy("jsessionid");
+		_dispatcher0=new MessageDispatcher(_cluster0);
+		_location0=new HttpProxyLocation(_cluster0.getLocalNode().getDestination(), isa0, proxy0);
+		_relocater0=new SwitchableRelocationStrategy();
+		_servlet0=new MyServlet("0", _cluster0, new MyContextPool(), _relocater0);
 		_filter0=new MyFilter("0", _servlet0);
 		(_node0=new JettyNode("0", "localhost", 8080, "/test", "/home/jules/workspace/wadi/webapps/test", _filter0, _servlet0)).start();
-		Cluster cluster1=clusterFactory.createCluster(clusterName);
-		cluster1.addClusterListener(new MyClusterListener());
-		_servlet1=new MyServlet("1", cluster1, new InetSocketAddress("localhost", 8081), new MyContextPool(), new CommonsHttpProxy("jsessionid"));
+
+		InetSocketAddress isa1=new InetSocketAddress("localhost", 8081);
+		_cluster1=clusterFactory.createCluster(clusterName);
+		_cluster1.addClusterListener(new MyClusterListener());
+		HttpProxy proxy1=new CommonsHttpProxy("jsessionid");
+		_dispatcher1=new MessageDispatcher(_cluster1);
+		_location1=new HttpProxyLocation(_cluster1.getLocalNode().getDestination(), isa1, proxy1);
+		_relocater1=new SwitchableRelocationStrategy();
+		_servlet1=new MyServlet("1", _cluster1, new MyContextPool(), _relocater1);
 		_filter1=new MyFilter("1", _servlet1);
 		(_node1=new JettyNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
@@ -149,11 +213,20 @@ public class TestProxying extends TestCase {
 		return method.getStatusCode();
 	}
 	
-	public void testInsecureProxy() throws Exception {
+	public void testProxyInsecureProxy() throws Exception {
+		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, 3000));
+		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, 3000));
+		testInsecureProxy(false);
+		}
+	
+	public void testMigrateInsecureProxy() throws Exception {
+		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new SimpleStreamingStrategy()));
+		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new SimpleStreamingStrategy()));
+		testInsecureProxy(true);
+		}
 		
-		boolean migrating=true;
-		
-	    HttpClient client=new HttpClient();
+	public void testInsecureProxy(boolean migrating) throws Exception {
+		HttpClient client=new HttpClient();
 		HttpMethod method0=new GetMethod("http://localhost:8080");
 		HttpMethod method1=new GetMethod("http://localhost:8081");
 
@@ -268,7 +341,19 @@ public class TestProxying extends TestCase {
 		}
 	}
 	
-	public void testSecureProxy() throws Exception {
+	public void testProxySecureProxy() throws Exception {
+		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, 3000));
+		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, 3000));
+		testSecureProxy(false);
+		}
+	
+	public void testMigrateSecureProxy() throws Exception {
+		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new SimpleStreamingStrategy()));
+		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new SimpleStreamingStrategy()));
+		testSecureProxy(true);
+		}
+		
+	public void testSecureProxy(boolean migrating) throws Exception {
 	    HttpClient client=new HttpClient();
 		HttpMethod method0=new GetMethod("http://localhost:8080");
 		HttpMethod method1=new GetMethod("http://localhost:8081");
@@ -347,14 +432,23 @@ public class TestProxying extends TestCase {
 		}
 	};
 	
-	public void testStatelessContextualiser() throws Exception {
+	public void testProxyStatelessContextualiser() throws Exception {
+		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, 3000));
+		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, 3000));
+		testStatelessContextualiser(false);
+		}
+	
+	public void testMigrateStatelessContextualiser() throws Exception {
+		_relocater0.setRelocationStrategy(new MigrateRelocationStrategy(_cluster0, _dispatcher0, _location0, 2000, new SimpleStreamingStrategy()));
+		_relocater1.setRelocationStrategy(new MigrateRelocationStrategy(_cluster1, _dispatcher1, _location1, 2000, new SimpleStreamingStrategy()));
+		testStatelessContextualiser(true);
+		}
 		
-		boolean migrating=true;
-		
-	    HttpClient client=new HttpClient();
+	public void testStatelessContextualiser(boolean migrating) throws Exception {
+
+		HttpClient client=new HttpClient();
 		HttpMethod method0=new GetMethod("http://localhost:8080");
 		HttpMethod method1=new GetMethod("http://localhost:8081");
-
 		
 		Map m0=_servlet0.getMemoryMap();
 		Map m1=_servlet1.getMemoryMap();
