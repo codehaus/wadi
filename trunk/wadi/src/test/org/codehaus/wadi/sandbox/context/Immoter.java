@@ -14,21 +14,25 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package org.codehaus.wadi.sandbox.context.impl;
+package org.codehaus.wadi.sandbox.context;
+
+import java.io.IOException;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
- * A very Simple implementation of Motable, with the Bytes field represented as a byte[]
+ * Basic API for motion of Motables IN to a container
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 
-public class SimpleMotable extends AbstractMotable {
-	protected byte[] _bytes;
-	public byte[] getBytes() {return _bytes;}
-	public void setBytes(byte[] bytes){_bytes=bytes;}
+public interface Immoter extends Moter {
 
-	public void tidy(){_bytes=null;}
+	Motable nextMotable(String id, Motable emotable);
+
+	void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException;
 }
-	
-

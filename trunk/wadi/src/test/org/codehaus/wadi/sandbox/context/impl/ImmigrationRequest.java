@@ -25,20 +25,23 @@ import java.io.Serializable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class EmmigrationAcknowledgement implements Serializable {
+public class ImmigrationRequest implements Serializable {
 	protected String _id;
+	protected long _handOverPeriod;
 
 	/**
 	 *
 	 */
-	public EmmigrationAcknowledgement(String id) {
+	public ImmigrationRequest(String id, long handOverPeriod) {
 		super();
 		_id=id;
+		_handOverPeriod=handOverPeriod;
 	}
 
-	public EmmigrationAcknowledgement() {
+	public ImmigrationRequest() {
 		// for use when demarshalling...
 	}
 
 	public String getId(){return _id;}
+	public long getHandOverPeriod(){return _handOverPeriod;}
 }

@@ -23,6 +23,12 @@ package org.codehaus.wadi.sandbox.context;
  * @version $Revision$
  */
 public interface Motable extends Evictable {
-	public byte[] getBytes() throws Exception;
-	public void setBytes(byte[] bytes) throws Exception;
+	void copy(Motable motable) throws Exception;
+	void tidy();
+
+	String getId();
+	void setId(String id);
+	
+	byte[] getBytes() throws Exception;
+	void setBytes(byte[] bytes) throws Exception;
 }

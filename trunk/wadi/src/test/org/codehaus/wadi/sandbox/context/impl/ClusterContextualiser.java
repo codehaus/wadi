@@ -30,9 +30,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.Emoter;
 import org.codehaus.wadi.sandbox.context.Evicter;
+import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Motable;
-import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -80,100 +81,147 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	    _relocater=relocater;
 	    
 	    _dispatcher.register(this, "onMessage");
-	    _dispatcher.register(EmmigrationAcknowledgement.class, _emmigrationRvMap, 3000);
+	    _dispatcher.register(EmigrationAcknowledgement.class, _emigrationRvMap, 3000);
 		}
 	
 	protected Contextualiser _top;
 	public Contextualiser getTop() {return _top;}
 	public void setTop(Contextualiser top) {_top=top;}
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#getPromoter(org.codehaus.wadi.sandbox.context.Promoter)
-	 */
-	public Promoter getPromoter(Promoter promoter) {
-		return promoter; // TODO - would we ever want to allow promotion of a context into our cache or out to the cluster ?
-}
-
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#contextualiseLocally(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync)
-	 */
-	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock) throws IOException, ServletException {
-		return _relocater.relocate(hreq, hres, chain, id, promoter, promotionLock, _map);
+	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
+		return _relocater.relocate(hreq, hres, chain, id, immoter, promotionLock, _map);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#evict()
-	 */
+	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Sync promotionLock, Motable motable) throws IOException, ServletException {
+		// this should delegate...
+		throw new RuntimeException("NYI");
+	}
+
 	public void evict() {
 		// how long do we wish to maintain cached Locations ?
 	}
 
-	protected Destination _emmigrationQueue;
+	protected Destination _emigrationQueue;
 
-	public void setEmmigrationQueue(Destination emmigrationQueue) throws Exception {
-		_emmigrationQueue=emmigrationQueue;
+	public void setEmigrationQueue(Destination emigrationQueue) throws Exception {
+		_emigrationQueue=emigrationQueue;
 		// send message inviting everyone to start reading from queue
 		MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
 		settings.to=_dispatcher.getCluster().getDestination();
-		_dispatcher.sendMessage(new EmmigrationStartedNotification(_emmigrationQueue), settings);
+		_dispatcher.sendMessage(new EmigrationStartedNotification(_emigrationQueue), settings);
 //		Thread.sleep(1000);
-//		_dispatcher.sendMessage(new ShutDownEndedNotification(_emmigrationQueue), settings);
+//		_dispatcher.sendMessage(new ShutDownEndedNotification(_emigrationQueue), settings);
 		// dump subsequent demoted Contexts onto queue
 		}
 	
-	public void onMessage(ObjectMessage om, EmmigrationStartedNotification sdsn) throws JMSException {
-		Destination emmigrationQueue=sdsn.getDestination();
-		_log.info("received EmmigrationStartedNotification: "+emmigrationQueue);
-		_dispatcher.addDestination(emmigrationQueue); 
+	public void onMessage(ObjectMessage om, EmigrationStartedNotification sdsn) throws JMSException {
+		Destination emigrationQueue=sdsn.getDestination();
+		_log.info("received EmigrationStartedNotification: "+emigrationQueue);
+		_dispatcher.addDestination(emigrationQueue); 
 	}
 	
-	public void onMessage(ObjectMessage om, EmmigrationEndedNotification sden) {
-		Destination emmigrationQueue=sden.getDestination();
-		_log.info("received EmmigrationEndedNotification: "+emmigrationQueue);
-		_dispatcher.removeDestination(emmigrationQueue);
+	public void onMessage(ObjectMessage om, EmigrationEndedNotification sden) {
+		Destination emigrationQueue=sden.getDestination();
+		_log.info("received EmigrationEndedNotification: "+emigrationQueue);
+		_dispatcher.removeDestination(emigrationQueue);
 	}
 	
-	public void onMessage(ObjectMessage om, EmmigrationRequest er) throws JMSException {
-		String id=er.getId();
-		_log.info("receiving migration request: "+id);
-		try {
-			MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-			// reverse direction...
-			settingsInOut.to=om.getJMSReplyTo();
-			settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
-			settingsInOut.correlationId=om.getJMSCorrelationID();
-			_log.info("received EmmigrationRequest: "+id);
-			_top.demote(id, er.getMotable());
-			_dispatcher.sendMessage(new EmmigrationAcknowledgement(id), settingsInOut);
-		} catch (Exception e) {
-			_log.warn("problem handling migration request: "+id, e);
-		}
-		// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
+	public Immoter getPromoter(Immoter immoter) {
+		return immoter; // TODO - would we ever want to allow promotion of a context into our cache or out to the cluster ?
 	}
 	
-	protected final HashMap _emmigrationRvMap=new HashMap();
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#demote(java.lang.String, org.codehaus.wadi.sandbox.context.Motable)
-	 */
-	public void demote(String id, Motable motable) {		
-		if (_emmigrationQueue==null) {
-			// pass straight through...
-			_next.demote(id, motable);
+	public Immoter getDemoter(String id, Motable motable) {
+		if (_emigrationQueue==null) {
+			return _next.getDemoter(id, motable);
 		} else {
-			// push out to another node in the cluster
-			MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-			settingsInOut.to=_emmigrationQueue;
-			settingsInOut.correlationId=id;
-			settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
-			EmmigrationRequest er=new EmmigrationRequest(id, motable);
-			EmmigrationAcknowledgement ea=(EmmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emmigrationRvMap, er, settingsInOut, 3000);
-			_log.info("received EmmigrationAcknowledgement: "+ea.getId()+" ["+settingsInOut.to+"]");
-			// we should :
-			// remove the session our side - demotion API needs to work like promotion API
-			// cache location of emmigrating session...
-			// TODO
+			return new ClusterImmoter();
 		}
 	}
 
+	class ClusterImmoter implements Immoter {
+		public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}
+		
+		public boolean prepare(String id, Motable emotable, Motable immotable) {
+			MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+			settingsInOut.to=_emigrationQueue;
+			settingsInOut.correlationId=id;
+			settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
+			EmigrationRequest er=new EmigrationRequest(id, emotable);
+			EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emigrationRvMap, er, settingsInOut, 3000);
+			_log.info("received EmigrationAcknowledgement: "+ea.getId()+" ["+settingsInOut.to+"]");
+			return ea!=null;
+		}
+		
+		public void commit(String id, Motable immotable) {
+			// TODO - cache new location of emigrating session...
+			}
+		
+		public void rollback(String id, Motable immotable) {
+			// TODO - errr... HOW ?
+			}
+		
+		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
+			// TODO
+			//contextualiseLocally(hreq, hres, chain, id, new ClusterImmoter(), new NullSync(), motable);
+		}
+		
+		public String getInfo() {
+			return "cluster";
+		}
+	}
+
+	class ClusterEmoter implements Emoter {
+		
+		protected final ObjectMessage _om;
+		protected final EmigrationRequest _er;
+		protected final MessageDispatcher.Settings _settingsInOut;
+		
+		public ClusterEmoter(ObjectMessage om, EmigrationRequest er) {
+			_om=om;
+			_er=er;
+			_settingsInOut=new MessageDispatcher.Settings();
+		}
+		
+		public boolean prepare(String id, Motable emotable, Motable immotable) {
+			try {
+				// reverse direction...
+				_settingsInOut.to=_om.getJMSReplyTo();
+				_settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
+				_settingsInOut.correlationId=_om.getJMSCorrelationID();
+				return true;
+			} catch (JMSException e) {
+				return false;
+			}
+		}
+		
+		public void commit(String id, Motable emotable) {
+			try {
+				_dispatcher.sendMessage(new EmigrationAcknowledgement(id), _settingsInOut);
+			} catch (JMSException e) {
+				_log.error("could not acknowledge safe receipt: "+id, e);
+			}
+		}
+		
+		public void rollback(String id, Motable emotable) {
+			throw new RuntimeException("NYI");
+			// difficult !!!
+		}
+		
+		public String getInfo() {
+			return "cluster";
+		}
+	}
+	
+	public void onMessage(ObjectMessage om, EmigrationRequest er) throws JMSException {
+		String id=er.getId();
+		_log.info("receiving emigration request: "+id);
+		Emoter emoter=new ClusterEmoter(om, er);
+		Motable emotable=er.getMotable();
+		Immoter immoter=_top.getDemoter(id, emotable);
+		Motable immotable=Utils.mote(emoter, immoter, emotable, id);
+	}
+	
+	protected final HashMap _emigrationRvMap=new HashMap();
+	
 	public boolean isLocal(){return false;}
 }

@@ -17,10 +17,6 @@
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -30,14 +26,25 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
+import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Motable;
-import org.codehaus.wadi.sandbox.context.Promoter;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+
+
+//SORT OUT THIS FILE
+//MOVE MOTABLE BACK IN
+//USE SAME CONNECTION FOR WHOLE MOTION
+//FIX UP REMAINING TESTS
+//FIX SPELLING ON EMOTER/ABLE/...
+//FIX SPELLING ON EMMIGRAT...
+//ETC...
+//RENAME CONTEXTUALISERS TO STORES
+//REFACTOR MEMORY STORE /ABSTRACTMAPPED STORE TO BE MORE ALIKE
+
 
 /**
  * TODO - JavaDoc this type
@@ -48,96 +55,73 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final Evicter _evicter;
-	protected final StreamingStrategy _streamer;
 	protected final DataSource _ds;
 	protected final String _table;
-	/**
-	 * @param next
-	 */
-	public SharedJDBCContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, StreamingStrategy streamer, DataSource ds, String table) {
+
+	public SharedJDBCContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, DataSource ds, String table) {
 		super(next, collapser);
 		_evicter=evicter;
-		_streamer=streamer;
 		_ds=ds;
 		_table=table;
+
+		_emoter=new ChainedEmoter() {public String getInfo(){return "database";}}; // overwrite - yeugh ! - fix when we have a LifeCycle
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#getPromoter(org.codehaus.wadi.sandbox.context.Promoter)
-	 */
-	public Promoter getPromoter(Promoter promoter){return promoter;} // just pass contexts straight through...
+	public Immoter getPromoter(Immoter immoter) {
+		return immoter; // just pass contexts straight through...
+	}
 	
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#contextualiseLocally(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync)
-	 */
+	public Immoter getDemoter(String id, Motable motable) {
+		// TODO - should check _next...
+		return new SharedJDBCImmoter();
+	}
+
 	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres,
-			FilterChain chain, String id, Promoter promoter, Sync promotionLock) throws IOException, ServletException {
-		try {
-			Connection c=_ds.getConnection();
-			Statement s=c.createStatement();
+			FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
+//			Connection c=_ds.getConnection();
+//			Statement s=c.createStatement();
 			
-			ResultSet rs=s.executeQuery("SELECT MyValue FROM "+_table+" WHERE MyKey='"+id+"'");
-			if (rs.next()) {
-				Motable motable=promoter.nextMotable();
-				motable.setBytes((byte[])rs.getObject(1));
-				_log.info("loaded (database): "+id);
-				
-				// TODO - revisit...
-				_log.info("promoting (from database): "+id);
-				if (promoter.prepare(id, motable)) {
-					s.executeUpdate("DELETE FROM "+_table+" WHERE MyKey='"+id+"'");
-					_log.info("removed (database): "+id);
-					promoter.commit(id, motable);
-					promotionLock.release();
-					promoter.contextualise(hreq, hres, chain, id , motable);
-				} else {
-					promoter.rollback(id, motable);
-				}
-			}
-			
-			s.close();
-			c.close();
-			
-			return true;
-		} catch (Exception e) {
-			_log.warn("promotion (database) failed: "+id, e);
-			return false;
-		}
+			if (immoter!=null) {
+				Motable emotable=new SharedJDBCImmoter().nextMotable(id, null); // TODO - WRONG - tmp hack
+				return contextualiseElsewhere(hreq, hres, chain, id, immoter, promotionLock, emotable);
+			} else
+				return false;
+			// TODO - consider how to contextualise locally... should be implemented in ChainedContextualiser, as should this..
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#evict()
-	 */
 	public void evict() {
 		// TODO - NYI
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#demote(java.lang.String, org.codehaus.wadi.sandbox.context.Motable)
+	public boolean isLocal(){return false;}
+	
+	/**
+	 * An Immoter that deals in terms of LocalDiscMotables
+	 *
+	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+	 * @version $Revision$
 	 */
-	public void demote(String key, Motable motable) {
-		try
-		{
-			_log.info("demoting (to database): "+key);
-			Connection c=_ds.getConnection();
-			PreparedStatement ps=c.prepareStatement("INSERT INTO "+_table+" (MyKey, MyValue) VALUES ('"+key.toString()+"', ?)");
-			ps.setObject(1, motable.getBytes());
-			ps.executeUpdate();
-			ps.close();
-			c.close();
-			
-			// we should write metadata like ttl into another column so it is queryable by the evicter and sysadmin..
-			// do we need to worry about ttl ?
-			//	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
-			//	file.setLastModified(willTimeOutAt);
-			
-			_log.info("stored (database): "+key);
+	public class SharedJDBCImmoter extends AbstractImmoter {	
+		
+		public Motable nextMotable(String id, Motable emotable) {
+			SharedJDBCMotable sjm=new SharedJDBCMotable();
+			sjm.setId(id);
+			sjm.setDataSource(_ds);
+			sjm.setTable(_table);
+			return sjm;
 		}
-		catch (Exception e)
-		{
-			_log.error("eviction (database) failed: "+key, e);
+		
+		public void commit(String id, Motable immotable) {
+			_log.info("insertion (database): "+id);
+		}
+		
+		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
+			// TODO - we need to pass through a promotionLock
+//			contextualiseLocally(hreq, hres, chain, id, new NullSync(), motable);
+		}
+		
+		public String getInfo() {
+			return "database";
 		}
 	}
-	
-	public boolean isLocal(){return false;}
 }

@@ -23,9 +23,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
-import org.codehaus.wadi.sandbox.context.Promoter;
+import org.codehaus.wadi.sandbox.context.Emoter;
+import org.codehaus.wadi.sandbox.context.Immoter;
+import org.codehaus.wadi.sandbox.context.Motable;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -36,26 +40,27 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public abstract class AbstractChainedContextualiser implements Contextualiser {
+	protected final Log _log=LogFactory.getLog(getClass());
 
 	protected final Contextualiser _next;
 	protected final Collapser _collapser;
+	protected /*final*/ Emoter _emoter;
 
-	/**
-	 *
-	 */
 	public AbstractChainedContextualiser(Contextualiser next, Collapser collapser) {
 		super();
 		_next=next;
 		_collapser=collapser;
+		_emoter=new ChainedEmoter();
 	}
+	
+	public Emoter getEmoter(){return _emoter;}
 
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
-	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres,
-			FilterChain chain, String id, Promoter promoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
+	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
 		boolean success=false;
-		if (true==(success=contextualiseLocally(hreq, hres, chain, id, promoter, promotionLock))) {
+		if (true==(success=contextualiseLocally(hreq, hres, chain, id, immoter, promotionLock))) {
 			return success;
 		} else if (!(localOnly && !_next.isLocal())) {
 			boolean acquired=false;
@@ -65,12 +70,12 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 					promotionLock.acquire();
 					acquired=true;
 					// by the time we get the lock, another thread may have already promoted this context - try again locally...
-					if (true==(success=contextualiseLocally(hreq, hres, chain, id, promoter, promotionLock))) {// mutex released here if successful
+					if (true==(success=contextualiseLocally(hreq, hres, chain, id, immoter, promotionLock))) {// mutex released here if successful
 						return success;
 					}
 				}
 
-				Promoter p=getPromoter(promoter);
+				Immoter p=getPromoter(immoter);
 				if (true==(success=_next.contextualise(hreq, hres, chain, id, p, promotionLock, localOnly))) // mutex released here if successful
 					return success;
 
@@ -85,8 +90,20 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 		return success;
 	}
 
-	public abstract Promoter getPromoter(Promoter promoter);
+	public abstract Immoter getPromoter(Immoter immoter);
 
 	public abstract boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres,
-			FilterChain chain, String id, Promoter promoter, Sync promotionLock) throws IOException, ServletException;
+			FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException;
+
+	public boolean contextualiseElsewhere(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Motable emotable) throws IOException, ServletException {
+		Emoter emoter=getEmoter();
+		Motable immotable=Utils.mote(emoter, immoter, emotable, id);
+		if (immotable!=null) {
+			promotionLock.release();
+			immoter.contextualise(hreq, hres, chain, id, immotable);
+			return true;
+		} else {
+			return false;
+		}
+	}
 }

@@ -18,21 +18,32 @@ package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.sandbox.context.Motable;
+import org.codehaus.wadi.sandbox.context.Location;
 
 /**
- * TODO - JavaDoc this type
+ * A query for the location of the session with the enclosed ID - The response
+ * should be a LocationResponse object sent whence this request arrived.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class MigrationResponse implements Serializable {
+public class ImmigrationAcknowledgement implements Serializable {
 	protected String _id;
-	protected Motable _motable;
-	
+	protected Location _location;
+
+	/**
+	 *
+	 */
+	public ImmigrationAcknowledgement(String id, Location location) {
+		super();
+		_id=id;
+		_location=location;
+	}
+
+	public ImmigrationAcknowledgement() {
+		// for use when demarshalling...
+	}
+
 	public String getId(){return _id;}
-	public void setId(String id){_id=id;}
-	
-	public Motable getMotable(){return _motable;}
-	public void setMotable(Motable motable){_motable=motable;}
+	public Location getLocation(){return _location;}
 }

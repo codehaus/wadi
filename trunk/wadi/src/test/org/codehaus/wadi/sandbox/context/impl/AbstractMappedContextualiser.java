@@ -16,40 +16,92 @@
  */
 package org.codehaus.wadi.sandbox.context.impl;
 
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.Emoter;
 import org.codehaus.wadi.sandbox.context.Evicter;
+import org.codehaus.wadi.sandbox.context.Immoter;
+import org.codehaus.wadi.sandbox.context.Motable;
+
+import EDU.oswego.cs.dl.util.concurrent.NullSync;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 
 /**
- * TODO - JavaDoc this type
+ * Basic implementation for Contextualisers which maintain a local Map of references
+ * to Motables.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractMappedContextualiser extends
-		AbstractChainedContextualiser {
-
-	protected final Log _log = LogFactory.getLog(getClass());
+public abstract class AbstractMappedContextualiser extends AbstractChainedContextualiser {
 	protected final Map _map;
 	protected final Evicter _evicter;
 
-	/**
-	 * @param next
-	 */
 	public AbstractMappedContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter) {
 		super(next, collapser);
 		_map=map;
 		_evicter=evicter;
+		
+		_emoter=new MappedEmoter(_map); // overwrite - yeugh ! - fix when we have a LifeCycle
 	}
 
 	protected String _stringPrefix="<"+getClass().getName()+":";
 	protected String _stringSuffix=">";
 	public String toString() {
 		return new StringBuffer(_stringPrefix).append(_map.size()).append(_stringSuffix).toString();
+	}
+
+	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
+		Motable emotable=(Motable)_map.get(id);
+		if (emotable==null)
+			return false; // we cannot proceed without the session...
+		
+		if (immoter!=null) 
+			return contextualiseElsewhere(hreq, hres, chain, id, immoter, promotionLock, emotable);
+		
+		return contextualiseLocally(hreq, hres, chain, id, promotionLock, emotable);
+	}
+	
+	public abstract boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Sync promotionLock, Motable motable) throws IOException, ServletException;
+	
+	public void evict() {
+		// TODO - lock the map - move expensive stuff out of lock...
+		// take a copy of the map to work on...?
+		for (Iterator i=_map.entrySet().iterator(); i.hasNext(); ) {
+			Map.Entry e=(Map.Entry)i.next();
+			String id=(String)e.getKey();
+			Motable emotable=(Motable)e.getValue();
+			if (_evicter.evict(id, emotable)) { // first test without lock - cheap
+				Sync lock=new NullSync(); // TODO - take the promotion lock here
+				boolean acquired=false;
+				// this should be a while loop
+				try {
+					if (lock.attempt(0) && _evicter.evict(id, emotable)) { // then confirm with exclusive lock
+						acquired=true;
+						Immoter immoter=_next.getDemoter(id, emotable);
+						Emoter emoter=getEmoter();
+						_log.info("demoting : "+emotable);
+						Utils.mote(emoter, immoter, emotable, id);
+					}
+				} catch (InterruptedException ie) {
+					_log.warn("unexpected interruption to eviction - ignoring", ie);
+				} finally {
+					if (acquired)
+						lock.release();
+				}
+			}
+		}
 	}
 }

@@ -14,21 +14,14 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package org.codehaus.wadi.sandbox.context.impl;
+package org.codehaus.wadi.sandbox.context;
 
 /**
- * A very Simple implementation of Motable, with the Bytes field represented as a byte[]
+ * Basic API for motion of Motables OUT of a container
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 
-public class SimpleMotable extends AbstractMotable {
-	protected byte[] _bytes;
-	public byte[] getBytes() {return _bytes;}
-	public void setBytes(byte[] bytes){_bytes=bytes;}
-
-	public void tidy(){_bytes=null;}
+public interface Emoter extends Moter {
 }
-	
-

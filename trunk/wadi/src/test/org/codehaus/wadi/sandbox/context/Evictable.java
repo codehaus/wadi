@@ -24,13 +24,10 @@ package org.codehaus.wadi.sandbox.context;
  */
 
 public interface Evictable {
-	public long getExpiryTime();
-
-//	public long getCreationTime(); // final
-//	public long getLastAccessedTime();
-//	public void setLastAccessedTime(long l);
-//	public int  getMaxInactiveInterval();
-//	public void setMaxInactiveInterval(int i);
-//	
-
+	public long getCreationTime();
+	public void setCreationTime(long creationTime);
+	public long getLastAccessedTime();
+	public void setLastAccessedTime(long lastAccessedTime);
+	public int  getMaxInactiveInterval();
+	public void setMaxInactiveInterval(int maxInactiveInterval);
 }

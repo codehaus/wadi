@@ -18,29 +18,32 @@ package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.Serializable;
 
-import javax.jms.Destination;
+import org.codehaus.wadi.sandbox.context.Motable;
 
 /**
- * Sent to notify Cluster memebers of a new Queue from which they should take and acknowledge
- * Context emmigrations...
+ * A query for the location of the session with the enclosed ID - The response
+ * should be a LocationResponse object sent whence this request arrived.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class EmmigrationStartedNotification implements Serializable {
-	protected Destination _emmigrationQueue;
+public class EmigrationRequest implements Serializable {
+	protected String _id;
+	protected Motable _motable;
 
 	/**
 	 *
 	 */
-	public EmmigrationStartedNotification(Destination emmigrationQueue) {
+	public EmigrationRequest(String id, Motable motable) {
 		super();
-		_emmigrationQueue=emmigrationQueue;
+		_id=id;
+		_motable=motable;
 	}
 
-	public EmmigrationStartedNotification() {
+	public EmigrationRequest() {
 		// for use when demarshalling...
 	}
 
-	public Destination getDestination(){return _emmigrationQueue;}
+	public String getId(){return _id;}
+	public Motable getMotable(){return _motable;}
 }

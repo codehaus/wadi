@@ -42,15 +42,22 @@ import org.codehaus.activecluster.impl.StateServiceStub;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Collapser;
+import org.codehaus.wadi.sandbox.context.Emoter;
 import org.codehaus.wadi.sandbox.context.Evicter;
+import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Location;
+import org.codehaus.wadi.sandbox.context.Motable;
+import org.codehaus.wadi.sandbox.context.Moter;
 import org.codehaus.wadi.sandbox.context.RelocationStrategy;
+import org.codehaus.wadi.sandbox.context.impl.ChainedEmoter;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyCollapser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
+import org.codehaus.wadi.sandbox.context.impl.EmigrationAcknowledgement;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
+import org.codehaus.wadi.sandbox.context.impl.Utils;
 
 import junit.framework.TestCase;
 
@@ -188,12 +195,15 @@ public class TestCluster extends TestCase {
 		assertTrue(true);
 		
 		ClusterContextualiser c=_node0.getClusterContextualiser();
-		Destination queue=_node0.getCluster().createQueue("EMMIGRATION");
+		Destination queue=_node0.getCluster().createQueue("EMIGRATION");
 		
-		c.setEmmigrationQueue(queue);
+		c.setEmigrationQueue(queue);
 		for (int i=0; i<100; i++) {
 			String id="session-"+i;
-			c.demote(id, new DummyMotable(id));
+			Motable emotable=new MyContext(id);
+			Immoter immoter=c.getDemoter(id, emotable);
+			Emoter emoter=new ChainedEmoter(){public String getInfo(){return "ether";}}; // sessions are coming from us..
+			Utils.mote(emoter, immoter, emotable, id);
 		}
 		
 		// demote n Contexts into node0

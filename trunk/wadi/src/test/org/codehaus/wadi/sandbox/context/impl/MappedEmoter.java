@@ -16,19 +16,38 @@
 */
 package org.codehaus.wadi.sandbox.context.impl;
 
+import java.util.Map;
+
+import org.codehaus.wadi.sandbox.context.Motable;
+
+
 /**
- * A very Simple implementation of Motable, with the Bytes field represented as a byte[]
+ * A basic Emoter for MappedContextualisers
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-
-public class SimpleMotable extends AbstractMotable {
-	protected byte[] _bytes;
-	public byte[] getBytes() {return _bytes;}
-	public void setBytes(byte[] bytes){_bytes=bytes;}
-
-	public void tidy(){_bytes=null;}
-}
+public class MappedEmoter extends ChainedEmoter {
 	
+	protected final Map _map;
+	
+	public MappedEmoter(Map map) {
+		_map=map;
+	}
+	
+	public boolean prepare(String id, Motable emotable, Motable immotable) {
+		if (super.prepare(id, emotable, immotable)) {
+			synchronized (_map){_map.remove(id);} // remove ref in cache
+			return true;
+		} else
+			return false;
+	}
 
+	public void rollback(String id, Motable emotable) {
+		synchronized (_map){_map.put(id, emotable);} // replace ref into cache
+	}
+	
+	public String getInfo() {
+		return "mapped";
+	}
+}

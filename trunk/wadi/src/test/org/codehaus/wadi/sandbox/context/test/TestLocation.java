@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.ProxyingException;
+import org.codehaus.wadi.sandbox.context.impl.SimpleEvictable;
 
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -77,12 +78,13 @@ public class TestLocation extends TestCase {
 
 	}
 
-	protected Sync _mutex=new MyMutex();
-	protected Location _location=new Location() {
+	class MyLocation extends SimpleEvictable implements Location {
 		public void proxy(HttpServletRequest hreq, HttpServletResponse hres) throws ProxyingException {}
 		public Destination getDestination() {return null;}
-		public long getExpiryTime() {return 0;}
 	};
+	
+	protected Sync _mutex=new MyMutex();
+	protected Location _location=new MyLocation(); 
 
 	class MyThread extends Thread {
 		public void run() {

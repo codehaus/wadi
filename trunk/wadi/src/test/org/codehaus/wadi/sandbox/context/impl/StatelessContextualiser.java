@@ -27,8 +27,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Motable;
-import org.codehaus.wadi.sandbox.context.Promoter;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -90,10 +90,10 @@ public class StatelessContextualiser implements Contextualiser {
         }
 	};
 
-	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
-		if (isStateful(hreq)) {
+	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
+		if (hreq==null || isStateful(hreq)) {
 			// we cannot optimise...
-			return _next.contextualise(hreq, hres, chain, id, promoter, promotionLock, localOnly);
+			return _next.contextualise(hreq, hres, chain, id, immoter, promotionLock, localOnly);
 		} else {
 			// we know that we can run the request locally...
 			if (promotionLock!=null) {
@@ -112,8 +112,11 @@ public class StatelessContextualiser implements Contextualiser {
 	}
 
 	public void evict() {}
-	public void demote(String key, Motable val) {_next.demote(key, val);}
 	public boolean isLocal() {return _next.isLocal();}
+
+	public Immoter getDemoter(String id, Motable motable) {
+		return _next.getDemoter(id, motable);
+	}
 
 	/**
 	 * We know request is stateful - if :

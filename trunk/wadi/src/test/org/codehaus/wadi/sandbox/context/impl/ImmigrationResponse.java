@@ -14,15 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.context;
+package org.codehaus.wadi.sandbox.context.impl;
 
-import java.io.IOException;
+import java.io.Serializable;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
+import org.codehaus.wadi.sandbox.context.Motable;
 
 /**
  * TODO - JavaDoc this type
@@ -30,10 +26,13 @@ import javax.servlet.ServletResponse;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Promoter {	
-	Motable nextMotable();
-	boolean prepare(String id, Motable p);
-	void commit(String id, Motable p);
-	void rollback(String id, Motable p);
-	void contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Motable p) throws IOException, ServletException;
+public class ImmigrationResponse implements Serializable {
+	protected String _id;
+	protected Motable _motable;
+	
+	public String getId(){return _id;}
+	public void setId(String id){_id=id;}
+	
+	public Motable getMotable(){return _motable;}
+	public void setMotable(Motable motable){_motable=motable;}
 }
