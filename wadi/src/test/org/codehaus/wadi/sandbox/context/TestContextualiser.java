@@ -11,11 +11,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -25,17 +33,23 @@ import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
+import org.codehaus.activecluster.Cluster;
+import org.codehaus.activecluster.ClusterFactory;
+import org.codehaus.activecluster.impl.DefaultClusterFactory;
+import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.impl.AlwaysEvicter;
+import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.context.impl.LocalDiscContextualiser;
+import org.codehaus.wadi.sandbox.context.impl.LocationQuery;
+import org.codehaus.wadi.sandbox.context.impl.LocationResponse;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.context.impl.SharedJDBCContextualiser;
 
-import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -384,5 +398,101 @@ public class TestContextualiser extends TestCase {
 //		assertTrue(!d.containsKey("foo"));
 //		assertTrue(m.containsKey("foo"));
 //		assertTrue(((MyContext)m.get("foo"))._val.equals("foo"));
+	}
+	
+	class MyListener implements MessageListener {
+		
+		String _id;
+		Location _location;
+		Cluster _cluster;
+		
+		MyListener(String id, Location location, Cluster cluster) {
+			_id=id;
+			_location=location;
+			_cluster=cluster;
+		}
+		
+		public void onMessage(Message message) {
+			ObjectMessage om=null;
+			Object tmp=null;
+			String id=null;
+			
+			try {
+				// filter/validate message
+				if (message instanceof ObjectMessage &&
+					(om=(ObjectMessage)message)!=null &&
+					(tmp=om.getObject())!=null &&
+					tmp instanceof LocationQuery &&
+					(id=((LocationQuery)tmp).getId())!=null &&
+					_id.equals(id)) {
+					// send a LocationResponse
+					_log.info("sending location of: "+_id);
+					LocationResponse response=new LocationResponse(_location, Collections.singleton(id));
+					ObjectMessage res=_cluster.createObjectMessage();
+					res.setJMSReplyTo(message.getJMSReplyTo());
+					res.setJMSCorrelationID(message.getJMSCorrelationID());
+					res.setObject(response);
+					_cluster.send(message.getJMSReplyTo(), res);
+					}
+			} catch (JMSException e) {
+				_log.info("problem sending receiving message: ", e);
+			}
+		}
+	}
+
+	static class MyLocation implements Location, Serializable{
+		public long getExpiryTime(){return 0;}
+		public void proxy(ServletRequest req, ServletResponse res) {System.out.println("PROXYING!!!");}
+	}
+	
+	public void testCluster() throws Exception {
+		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
+		ClusterFactory clusterFactory       = new DefaultClusterFactory(connectionFactory);
+		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
+		Cluster cluster0                    = clusterFactory.createCluster(clusterName);
+		Cluster cluster1                    = clusterFactory.createCluster(clusterName);
+		
+		cluster0.start();
+		cluster1.start();
+		//-------------------
+		// do the test
+		
+		Collapser collapser0=new HashingCollapser(10, 2000);		
+		Map c0=new HashMap();
+		c0.put("foo", null); // add a location
+		Contextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000);
+		Map m0=new HashMap();
+		Contextualiser memory0=new MemoryContextualiser(clstr0, collapser0, m0, new NeverEvicter(), new MyContextPool());
+		boolean excludeSelf0=true;
+	    MessageConsumer consumer0=cluster0.createConsumer(cluster0.getDestination(), null, excludeSelf0);
+	    MyLocation location0=new MyLocation();
+		MessageListener listener0=new MyListener("foo", location0, cluster0);
+	    consumer0.setMessageListener(listener0);
+		
+		Collapser collapser1=new HashingCollapser(10, 2000);		
+		Map c1=new HashMap();
+		c1.put("bar", null); // add a location
+		Contextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000);
+		Map m1=new HashMap();
+		Contextualiser memory1=new MemoryContextualiser(clstr1, collapser1, m1, new NeverEvicter(), new MyContextPool());
+		boolean excludeSelf1=true;
+	    MessageConsumer consumer1=cluster1.createConsumer(cluster1.getDestination(), null, excludeSelf1);
+	    MyLocation location1=new MyLocation();
+		MessageListener listener1=new MyListener("bar", location1, cluster1);
+	    consumer1.setMessageListener(listener1);
+		
+		FilterChain fc=new MyFilterChain();
+
+		assertTrue(!m0.containsKey("bar"));
+		assertTrue(!m1.containsKey("foo"));
+		memory0.contextualise(null,null,fc,"bar", null, null);
+		memory1.contextualise(null,null,fc,"foo", null, null);
+		// ------------------
+		cluster1.stop();
+		cluster1=null;
+		cluster0.stop();
+		cluster0=null;
+		clusterFactory=null;
+		connectionFactory=null;
 	}
 }
