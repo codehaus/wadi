@@ -36,6 +36,10 @@ import org.apache.commons.logging.LogFactory;
 // this. In future this should be done by xdoclet - investigate how
 // barter.sf.net achieves same result...
 
+// TODO - it should be possible to precache all the string
+// manipulation into a lookup table, along with method/field objects
+// etc, so no allocation is done during normal running.
+
 public aspect
   PropertyNotification
 {

@@ -29,9 +29,12 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.DefaultContext;
+import org.apache.catalina.Lifecycle;
+import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Session;
+import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.util.LifecycleSupport;
@@ -157,6 +160,46 @@ public class
   // Lifecycle //
   //-----------//
 
+  class
+    ContextLifecycleListener
+    implements LifecycleListener
+    {
+      public void
+	lifecycleEvent(LifecycleEvent event)
+	{
+	  _log.trace("notified");
+	  String type=event.getType();
+	  if (type.equals(Lifecycle.AFTER_START_EVENT))
+	    afterStart();
+	}
+
+      public void
+	afterStart()
+	{
+	  _log.trace("AFTER_START");
+	  Context context=((Context)_container);
+	  // add HttpSessionListeners - we copy them in from our Context -
+	  // the list should be immutable by now.
+	  Object listeners[] = context.getApplicationLifecycleListeners();
+	  if (listeners!=null)
+	  {
+	    _log.trace(""+listeners.length+" listeners");
+	    for (int i=0; i<listeners.length; i++)
+	    {
+	      Object tmp=listeners[i];
+	      _log.trace(tmp.getClass().getName());
+	      if (!(tmp instanceof HttpSessionListener))
+	      {
+		_log.trace("adding HttpSessionListener: "+tmp.getClass().getName());
+		_sessionListeners.add(tmp);
+	      }
+	    }
+	  }
+	  else
+	    _log.trace("no listeners :-(");
+	}
+    }
+
   public synchronized void
     start()
       throws LifecycleException
@@ -175,7 +218,7 @@ public class
 
       Context context=((Context)_container);
 
-      // install filter - TODO - should be below super start
+      // install filter
       String filterName="WadiFilter";
       FilterDef fd=new FilterDef();
       fd.setFilterName(filterName);
@@ -186,21 +229,10 @@ public class
       fm.setURLPattern("/*");
       context.addFilterMap(fm);
 
-      // add HttpSessionListeners - we copy them in from our Context -
-      // the list should be immutable by now.
-
-      // TODO - this doesn't seem to work :-(
-      Object listeners[] = context.getApplicationLifecycleListeners();
-      if (listeners!=null)
-	for (int i=0; i<listeners.length; i++)
-	{
-	  Object tmp=listeners[i];
-	  if (!(tmp instanceof HttpSessionListener))
-	  {
-	    _log.trace("adding HttpSessionListener: "+tmp.getClass().getName());
-	    _sessionListeners.add(tmp);
-	  }
-	}
+      // used to bootstrap our Session and Attribute Listeners lists,
+      // since they are not set up in our context at the point that it
+      // starts us...
+      ((ContainerBase)context).addLifecycleListener(new ContextLifecycleListener());
     }
 
   public synchronized void

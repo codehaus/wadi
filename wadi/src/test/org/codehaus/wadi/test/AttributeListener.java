@@ -17,32 +17,38 @@
 
 package org.codehaus.wadi.test;
 
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionAttributeListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class SessionListener
+public class AttributeListener
   implements
-    HttpSessionListener
+    HttpSessionAttributeListener
 {
-  protected Log _log=LogFactory.getLog(SessionListener.class);
+  protected Log _log=LogFactory.getLog(AttributeListener.class);
 
   public
-    SessionListener()
+    AttributeListener()
   {
     _log.trace("ctor");
   }
 
   public void
-    sessionCreated(HttpSessionEvent e)
+    attributeAdded(HttpSessionBindingEvent e)
   {
-    _log.trace("sessionCreated()");
+    _log.trace("attributeAdded()");
   }
 
   public void
-    sessionDestroyed(HttpSessionEvent e)
+    attributeRemoved(HttpSessionBindingEvent e)
   {
-    _log.trace("sessionDestroyed()");
+    _log.trace("attributeRemoved()");
+  }
+
+  public void
+    attributeReplaced(HttpSessionBindingEvent e)
+  {
+    _log.trace("attributeReplaced()");
   }
 }
