@@ -28,6 +28,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionContext;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import org.apache.catalina.Container;
@@ -250,6 +251,7 @@ public class
   public int getHttpPort(){return 8080;} // TODO - temporary hack...
 
   public ServletContext getServletContext(){return ((Context)_container).getServletContext();}
+  public HttpSessionContext getSessionContext() {return null;}
 
   // TODO - These are here so that Container and Session Notification
   // aspects can get a grip on them. If I write the aspects on

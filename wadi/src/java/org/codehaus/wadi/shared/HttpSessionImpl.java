@@ -135,8 +135,8 @@ public abstract class
   }
 
   // TODO - stubbed out - implement later
-  public ServletContext     getServletContext(){return null;}
-  public HttpSessionContext getSessionContext(){return null;}
+  public ServletContext     getServletContext(){return _wadiManager.getServletContext();}
+  public HttpSessionContext getSessionContext(){return _wadiManager.getSessionContext();}
 
   // This stuff is only needed if session needs to be migrated whilst
   // the container is active. It should be broken out either into a

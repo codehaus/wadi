@@ -36,6 +36,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionContext;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
@@ -937,6 +938,7 @@ public abstract class
   public abstract int getHttpPort();
 
   public abstract ServletContext getServletContext();
+  public abstract HttpSessionContext getSessionContext();
 
   // stats - TODO - since these are ints and updates are atomic we
   // should not need to sync them?
