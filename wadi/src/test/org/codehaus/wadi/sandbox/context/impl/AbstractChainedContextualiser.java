@@ -13,7 +13,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Promoter;
 
@@ -32,16 +31,9 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 	/**
 	 * 
 	 */
-	public AbstractChainedContextualiser(Collapser collapser, Contextualiser next) {
+	public AbstractChainedContextualiser(Contextualiser next) {
 		super();
-		_collapser=collapser;
 		_next=next;
-	}
-	
-	public boolean contextualise(ServletRequest req, ServletResponse res,
-			FilterChain chain, String id, Promoter promoter) throws IOException, ServletException {
-		Sync loadMutex=_collapser.getLock(id);
-		return contextualise(req, res, chain, id, promoter, loadMutex);
 	}
 	
 	/* (non-Javadoc)
@@ -75,6 +67,4 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 	
 	public abstract boolean contextualiseLocally(ServletRequest req, ServletResponse res,
 			FilterChain chain, String id, Promoter promoter, Sync overlap) throws IOException, ServletException;
-
-	protected final Collapser _collapser;
 }
