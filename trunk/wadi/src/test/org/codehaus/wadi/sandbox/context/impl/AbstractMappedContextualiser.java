@@ -45,14 +45,9 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public abstract class AbstractMappedContextualiser extends AbstractChainedContextualiser {
 	protected final Map _map;
-	protected final Evicter _evicter;
-
 	public AbstractMappedContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter) {
-		super(next, collapser);
+		super(next, collapser, evicter);
 		_map=map;
-		_evicter=evicter;
-		
-		_emoter=new MappedEmoter(_map); // overwrite - yeugh ! - fix when we have a LifeCycle
 	}
 
 	protected String _stringPrefix="<"+getClass().getName()+":";
@@ -73,7 +68,7 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 	}
 	
 	public abstract boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Sync promotionLock, Motable motable) throws IOException, ServletException;
-	
+
 	public void evict() {
 		// TODO - lock the map - move expensive stuff out of lock...
 		// take a copy of the map to work on...?

@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.Emoter;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Motable;
@@ -48,7 +49,9 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	
 	protected final StreamingStrategy _streamer;
 	protected final File _dir;
-
+	protected final Immoter _immoter;
+	protected final Emoter _emoter;
+	
 	public LocalDiscContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, StreamingStrategy streamer, File dir) {
 		super(next, collapser, map, evicter);
 		_streamer=streamer;
@@ -58,6 +61,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	    assert dir.canWrite();
 		_dir=dir;
 		
+		_immoter=new LocalDiscImmoter();
 		_emoter=new MappedEmoter(_map) {public String getInfo(){return "local disc";}}; // overwrite - yeugh ! - fix when we have a LifeCycle
 	}
 
@@ -74,16 +78,8 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 		return immoter;
 	} 
 	
-	protected final Immoter _immoter=new LocalDiscImmoter();
-	
-	public Immoter getDemoter(String id, Motable motable) {
-		if (_evicter.evict(id, motable))
-			return _next.getDemoter(id, motable);
-		else	
-			return _immoter;
-	}
-	
 	public Immoter getImmoter(){return _immoter;}
+	public Emoter getEmoter(){return _emoter;}
 	
 	/**
 	 * An Immoter that deals in terms of LocalDiscMotables

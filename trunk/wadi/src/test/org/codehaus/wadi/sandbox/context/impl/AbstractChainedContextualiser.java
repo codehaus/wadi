@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Emoter;
+import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Motable;
 
@@ -44,16 +45,24 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 
 	protected final Contextualiser _next;
 	protected final Collapser _collapser;
-	protected /*final*/ Emoter _emoter;
+	protected final Evicter _evicter;
 
-	public AbstractChainedContextualiser(Contextualiser next, Collapser collapser) {
+	public AbstractChainedContextualiser(Contextualiser next, Collapser collapser, Evicter evicter) {
 		super();
 		_next=next;
 		_collapser=collapser;
-		_emoter=new ChainedEmoter();
+		_evicter=evicter;
 	}
 	
-	public Emoter getEmoter(){return _emoter;}
+	/**
+	 * @return - an Emoter that facilitates removal of Motables from this Contextualiser's own store
+	 */
+	public abstract Emoter getEmoter();
+	
+	/**
+	 * @return - an Immoter that facilitates insertion of Motables into this Contextualiser's own store
+	 */
+	public abstract Immoter getImmoter();
 
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
@@ -106,4 +115,15 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 			return false;
 		}
 	}
+
+	public Immoter getDemoter(String id, Motable motable) {
+		if (getEvicter().evict(id, motable))
+			return _next.getDemoter(id, motable);
+		else	
+			return getImmoter();
+	}
+
+	public abstract void evict();
+	
+	public Evicter getEvicter(){return _evicter;}
 }

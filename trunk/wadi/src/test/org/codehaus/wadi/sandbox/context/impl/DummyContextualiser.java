@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Motable;
 
@@ -55,6 +56,8 @@ public class DummyContextualiser implements Contextualiser {
 	}
 
 	public void evict(){}
+	public Evicter getEvicter(){return null;}
+	
 	public boolean isLocal(){return false;}
 	
 	public Immoter getDemoter(String id, Motable motable) {

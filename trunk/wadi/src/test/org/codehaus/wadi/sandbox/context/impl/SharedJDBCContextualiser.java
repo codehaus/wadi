@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
+import org.codehaus.wadi.sandbox.context.Emoter;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Motable;
@@ -54,25 +55,29 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	protected final Log _log=LogFactory.getLog(getClass());
-	protected final Evicter _evicter;
 	protected final DataSource _ds;
 	protected final String _table;
+	protected final Immoter _immoter;
+	protected final Emoter _emoter;
 
 	public SharedJDBCContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, DataSource ds, String table) {
-		super(next, collapser);
-		_evicter=evicter;
+		super(next, collapser, evicter);
 		_ds=ds;
 		_table=table;
 
+		_immoter=new SharedJDBCImmoter();
 		_emoter=new ChainedEmoter() {public String getInfo(){return "database";}}; // overwrite - yeugh ! - fix when we have a LifeCycle
 	}
 	
+	public Immoter getImmoter(){return _immoter;}
+	public Emoter getEmoter(){return _emoter;}
+
 	public Immoter getPromoter(Immoter immoter) {
 		return immoter; // just pass contexts straight through...
 	}
 	
 	public Immoter getDemoter(String id, Motable motable) {
-		// TODO - should check _next...
+		// TODO - should check _next... - just remove when we have an evicter sorted
 		return new SharedJDBCImmoter();
 	}
 

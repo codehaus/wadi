@@ -41,9 +41,16 @@ public interface Contextualiser {
 	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException;
 
 	void evict();
+	Evicter getEvicter();
 
 	boolean isLocal();
 	
+	/**
+	 * Return a Demoter to the first Contextualiser which would be happy to accept this Motable - i.e. would not evict() it.
+	 * @param id - uid of the Motable
+	 * @param motable - the Motable in question
+	 * @return - a Demoter - a delegate capable of arranging immotion into the correct Contextualiser
+	 */
 	Immoter getDemoter(String id, Motable motable);
 
 }

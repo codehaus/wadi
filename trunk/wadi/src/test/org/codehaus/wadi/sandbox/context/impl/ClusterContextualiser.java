@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Emoter;
-import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Immoter;
 import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.Motable;
@@ -71,6 +70,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	protected final MessageDispatcher _dispatcher;
 	protected final RelocationStrategy _relocater;
 	protected final Location _location;
+	protected final Immoter _immoter;
+	protected final Emoter _emoter;
 
 	/**
 	 * @param next
@@ -79,20 +80,30 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 * @param evicter
 	 * @param location TODO
 	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) throws JMSException {
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, SwitchableEvicter evicter, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) throws JMSException {
 		super(next, collapser, map, evicter);
 		_dispatcher=dispatcher;
 	    _relocater=relocater;
 	    _location=location;
 	    
+	    _immoter=new ClusterImmoter();
+	    _emoter=null; // TODO - I think this should be something like the ImmigrationEmoter
+	    // it pulls a names Session out of the cluster and emotes it from this Contextualiser...
+	    // this makes it awkward to split session and request relocation into different strategies,
+	    // so session relocation should be the basic strategy, with request relocation as a pluggable
+	    // optimisation...
+	    
 	    _dispatcher.register(this, "onMessage");
 	    _dispatcher.register(EmigrationAcknowledgement.class, _emigrationRvMap, 3000);
 		}
 	
+	public Immoter getImmoter(){return _immoter;}
+	public Emoter getEmoter(){return _emoter;}
+	
 	protected Contextualiser _top;
 	public Contextualiser getTop() {return _top;}
 	public void setTop(Contextualiser top) {_top=top;}
-
+	
 	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
 		return _relocater.relocate(hreq, hres, chain, id, immoter, promotionLock, _map);
 	}
@@ -112,6 +123,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 
 	public void setEmigrationQueue(Destination emigrationQueue) throws Exception {
 		_emigrationQueue=emigrationQueue;
+		((SwitchableEvicter)_evicter).setSwitch(false);
 		// send message inviting everyone to start reading from queue
 		MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
 		settings.to=_dispatcher.getCluster().getDestination();
@@ -137,14 +149,6 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		return immoter; // TODO - would we ever want to allow promotion of a context into our cache or out to the cluster ?
 	}
 	
-	public Immoter getDemoter(String id, Motable motable) {
-		if (_emigrationQueue==null) {
-			return _next.getDemoter(id, motable);
-		} else {
-			return new ClusterImmoter();
-		}
-	}
-
 	/**
 	 * Manage the immotion of a session into the cluster tier from another and its emigration thence to another node.
 	 *
