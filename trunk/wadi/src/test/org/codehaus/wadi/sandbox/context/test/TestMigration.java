@@ -53,6 +53,7 @@ import org.codehaus.wadi.sandbox.context.ContextPool;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Evicter;
 import org.codehaus.wadi.sandbox.context.Motable;
+import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
@@ -60,8 +61,10 @@ import org.codehaus.wadi.sandbox.context.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.context.impl.StandardHttpProxy;
-import org.mortbay.http.HttpConnection;
-import org.mortbay.http.SocketListener;
+import org.codehaus.wadi.sandbox.context.impl.jetty.Handler;
+import org.codehaus.wadi.sandbox.context.impl.jetty.SocketListener;
+import org.mortbay.http.HttpHandler;
+import org.mortbay.http.SecurityConstraint;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.FilterHolder;
 import org.mortbay.jetty.servlet.ServletHolder;
@@ -87,10 +90,13 @@ import junit.framework.TestCase;
 public class TestMigration extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
 	
-	class SwitchableListener extends SocketListener {
-		protected boolean _confidential;
-		public void setConfidential(boolean confidential){_confidential=confidential;}
-		public boolean isConfidential(HttpConnection connection){return _confidential;}
+	public static class SwitchableListener extends SocketListener {
+		protected boolean _secure;
+		public boolean getSecure(){return _secure;}
+		public void setSecure(boolean secure){_secure=secure;}
+
+		public boolean isIntegral(org.mortbay.http.HttpConnection connection){return _secure||super.isIntegral(connection);}
+	    public boolean isConfidential(org.mortbay.http.HttpConnection connection){return _secure||super.isConfidential(connection);}
 	}
 	
 	class Node {
@@ -103,6 +109,7 @@ public class TestMigration extends TestCase {
 		protected final ServletHolder _servletHolder;
 		protected final Filter _filter;
 		protected final Servlet _servlet;
+		protected final HttpHandler _whandler;
 		
 		public Node(String name, String host, int port, String context, String pathSpec, Filter filter, Servlet servlet) throws UnknownHostException {
 			_log=LogFactory.getLog(getClass().getName()+"#"+name);
@@ -120,6 +127,16 @@ public class TestMigration extends TestCase {
 			_context.addHandler(_handler);
 			// context
 			_context.setContextPath(context);
+			
+			// security - any resource mapped below /confidential requires confidential transport
+			SecurityConstraint sc=new SecurityConstraint();
+			sc.setDataConstraint(SecurityConstraint.DC_CONFIDENTIAL);
+			_context.addSecurityConstraint("/confidential/*", sc);
+			
+			// handler
+			_whandler=new Handler();
+			_context.addHandler(0, _whandler);			
+			
 			_server.addContext(_context);
 			// listener
 			_listener.setHost(host);
@@ -231,6 +248,21 @@ public class TestMigration extends TestCase {
 		public Context take(){return new MyContext();}
 	}
 
+	public class ConfidentialContextualiser implements Contextualiser {
+
+		protected final Contextualiser _next;
+		
+		public ConfidentialContextualiser(Contextualiser next){_next=next;}
+		
+		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
+			return _next.contextualise(req, res, chain, id, promoter, promotionMutex, localOnly);
+		}
+
+		public void evict(){}
+		public void demote(String key, Motable val){}{}
+		public boolean isLocal(){return true;}
+	}
+	
 	public class TestServlet implements Servlet {
 		protected ServletConfig _config;
 		protected final Log _log;
@@ -240,6 +272,7 @@ public class TestMigration extends TestCase {
 		protected final Map _memoryMap;
 		protected final ClusterContextualiser _clusterContextualiser;
 		protected final MemoryContextualiser _memoryContextualiser;
+		protected final ConfidentialContextualiser _confidentialContextualiser;
 		
 		public TestServlet(String name, Cluster cluster, InetSocketAddress location) throws Exception {
 			_log=LogFactory.getLog(getClass().getName()+"#"+name);
@@ -251,9 +284,10 @@ public class TestMigration extends TestCase {
 			_memoryMap=new HashMap();
 			_memoryContextualiser=new MemoryContextualiser(_clusterContextualiser, _collapser, _memoryMap, new NeverEvicter(), new MyContextPool());
 			_clusterContextualiser.setContextualiser(_memoryContextualiser);
+			_confidentialContextualiser=new ConfidentialContextualiser(_memoryContextualiser);
 		}
 		
-		public Contextualiser getContextualiser(){return _memoryContextualiser;}
+		public Contextualiser getContextualiser(){return _confidentialContextualiser;}
 		
 		public void init(ServletConfig config) throws ServletException {
 			_config = config;
@@ -412,10 +446,22 @@ public class TestMigration extends TestCase {
 		assertTrue(c0.size()==1);
 		assertTrue(c1.size()==1);
 		
+		c0.clear();
+		c1.clear();
+		// won't run locally
+		assertTrue(get(client, method0, "/test/confidential;jsessionid=foo")==403); // forbidden
+		// won't run remotely
+		assertTrue(get(client, method0, "/test/confidential;jsessionid=bar")==403); // forbidden
+		_node0.getListener().setSecure(true);
+		
+		// will run locally - since we have declared the Listener secure
+		assertTrue(get(client, method0, "/test/confidential;jsessionid=foo")==200);
+		// will run remotely - proxy should preserve confidentiality on remote server...
+		assertTrue(get(client, method0, "/test/confidential;jsessionid=bar")==200);
+
 		// next test should be that we can somehow migrate sessions across, in place of proxying...
 		
 		// TODO:
-		// streamline API between HttpProxyLocation and HttpProxy
 		// consider merging two classes
 		// consider having MigrationConceptualiser at top of stack (to promote sessions to other nodes)
 		// Consider a MigrationContextualiser in place of the Location tier, which only migrates
@@ -428,26 +474,4 @@ public class TestMigration extends TestCase {
 	    _log.info("STOPPING NOW!");
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
 	    }	
-	
-	public void testSecurity() throws Exception {
-	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
-	    _log.info("STARTING NOW!");
-
-	    HttpClient client=new HttpClient();
-		HttpMethod method0=new GetMethod("http://localhost:8080");
-		HttpMethod method1=new GetMethod("http://localhost:8081");
-		_node0.getListener().setConfidential(true);
-		_node1.getListener().setConfidential(true);
-
-		_filter0.setLocalOnly(true);
-		assertTrue(get(client, method0, "/test;jsessionid=foo")!=200);
-		assertTrue(get(client, method0, "/test;jsessionid=bar")!=200);
-		_filter1.setLocalOnly(true);
-		assertTrue(get(client, method1, "/test;jsessionid=foo")!=200);
-		assertTrue(get(client, method1, "/test;jsessionid=bar")!=200);
-		
-		_log.info("STOPPING NOW!");
-	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
-	    }	
-		
 }

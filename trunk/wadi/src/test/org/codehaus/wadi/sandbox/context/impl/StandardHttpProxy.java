@@ -141,8 +141,9 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		
 		// confidentiality
 		{
-			if (req.isSecure())
+			if (req.isSecure()) {
 				uc.addRequestProperty(_WADI_IsSecure, req.getLocalAddr().toString());
+			}
 			
 			// at the other end, if this header is present we must :
 			
