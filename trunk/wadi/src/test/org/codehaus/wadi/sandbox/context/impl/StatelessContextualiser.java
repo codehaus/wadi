@@ -33,6 +33,10 @@ import org.codehaus.wadi.sandbox.context.Promoter;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+// N.B.
+// Ultimately this should support pluggable and combinable 'Tests' - i.e. URIPatternTest
+// MethodPatternTest & AndTest...
+
 /**
  * A Contextualiser that will intercept requests that can be shown to be stateless
  * and run them in a generic stateless Context immediately, without the overhead of
@@ -50,7 +54,6 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-
 public class StatelessContextualiser implements Contextualiser {
 
 	protected final Contextualiser _next;
@@ -93,6 +96,10 @@ public class StatelessContextualiser implements Contextualiser {
 			// we cannot optimise...
 			return _next.contextualise(req, res, chain, id, promoter, promotionMutex, localOnly);
 		} else {
+			// we know that we can run the request locally...
+			if (promotionMutex!=null) {
+				promotionMutex.release();
+			}
 			// wrap the request so that session is inaccessible and process here...
 			HttpServletRequestWrapper wrapper=(HttpServletRequestWrapper)_wrapper.get();
 			wrapper.setRequest(req);
@@ -107,7 +114,7 @@ public class StatelessContextualiser implements Contextualiser {
 
 	public void evict() {}
 	public void demote(String key, Motable val) {_next.demote(key, val);}
-	public boolean isLocal() {return true;}
+	public boolean isLocal() {return _next.isLocal();}
 
 	/**
 	 * We know request is stateful - if :
@@ -117,19 +124,23 @@ public class StatelessContextualiser implements Contextualiser {
 	 * @param hreq
 	 * @return
 	 */
-	public boolean isStateful(HttpServletRequest hreq) {
+	public boolean isStateful(HttpServletRequest hreq) {		
 		// TODO - should the order of matching be configurable ?
 		boolean matched;
 		
 		// can we prove it is stateless ? - try first test...
-		matched=(_methods!=null && _methods.matcher(hreq.getMethod()).matches());
-		if (matched!=_methodFlag)
-			return false;
+		if (_methods!=null) {
+			matched=(_methods.matcher(hreq.getMethod()).matches());
+			if (matched!=_methodFlag)
+				return false;
+		}
 		
 		// could still be stateful - try second test...		
-		matched=(_uris!=null && _uris.matcher(hreq.getRequestURI()).matches());
-		if (matched!=_uriFlag)
-			return false;
+		if (_uris!=null) {
+			matched=(_uris.matcher(hreq.getRequestURI()).matches());
+			if (matched!=_uriFlag)
+				return false;
+		}
 
 		// we cannot eliminate the possibility that the request is stateful...
 		return true;

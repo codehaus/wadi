@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.jms.JMSException;
 import javax.servlet.Servlet;
@@ -44,6 +45,7 @@ import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.context.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
+import org.codehaus.wadi.sandbox.context.impl.StatelessContextualiser;
 
 public class MyServlet implements Servlet {
 	protected ServletConfig _config;
@@ -53,17 +55,22 @@ public class MyServlet implements Servlet {
 	protected final Map _clusterMap;
 	protected final Map _memoryMap;
 	protected final ClusterContextualiser _clusterContextualiser;
+	protected final StatelessContextualiser _statelessContextualiser;
 	protected final MemoryContextualiser _memoryContextualiser;
 	
 	public MyServlet(String name, Cluster cluster, InetSocketAddress location, ContextPool contextPool, HttpProxy proxy) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 		_cluster=cluster;
 		_cluster.start();
-		_collapser=new HashingCollapser(10, 2000);
+		_collapser=new HashingCollapser(10, 60000);
 		_clusterMap=new HashMap();
 		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), _cluster, 2000, 3000, new HttpProxyLocation(location, proxy));
+		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
+		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
+		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);
+		_statelessContextualiser=new StatelessContextualiser(_clusterContextualiser, methods, true, uris, false);
 		_memoryMap=new HashMap();
-		_memoryContextualiser=new MemoryContextualiser(_clusterContextualiser, _collapser, _memoryMap, new NeverEvicter(), contextPool);
+		_memoryContextualiser=new MemoryContextualiser(_statelessContextualiser, _collapser, _memoryMap, new NeverEvicter(), contextPool);
 		_clusterContextualiser.setContextualiser(_memoryContextualiser);
 	}
 	
@@ -82,6 +89,9 @@ public class MyServlet implements Servlet {
 			throws ServletException, IOException {
 		String sessionId=((HttpServletRequest)req).getRequestedSessionId();
 		_log.info("Servlet.service("+((sessionId==null)?"":sessionId)+")");
+		
+		if (_test!=null)
+			_test.test(req, res);
 	}
 
 	public String getServletInfo() {
@@ -95,6 +105,13 @@ public class MyServlet implements Servlet {
 			_log.warn(e);
 		}
 	}
+	
+	interface Test {
+		void test(ServletRequest req, ServletResponse res);
+	}
+	
+	protected Test _test;
+	public void setTest(Test test){_test=test;}
 	
 	public Map getClusterMap(){return _clusterMap;}
 	public Map getMemoryMap(){return _memoryMap;}
