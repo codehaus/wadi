@@ -48,7 +48,7 @@ implements Destination, Serializable
     if (o instanceof InetSocketAddressDestination)
     {
       InetSocketAddressDestination isad=(InetSocketAddressDestination)o;
-      return _port==isad._port && _address.equals(isad._address);
+      return (this==isad) || (_port==isad._port && (_address==isad._address ||_address.equals(isad._address)));
     }
 
     return false;
