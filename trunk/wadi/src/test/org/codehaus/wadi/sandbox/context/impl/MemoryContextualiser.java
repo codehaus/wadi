@@ -7,6 +7,7 @@
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.FilterChain;
@@ -56,7 +57,8 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 			try {
 				shared.acquire();
 				// now that we know the Context has been promoted to this point and is going nowhere we can allow other threads that were trying to find it proceed...
-				promotionMutex.release();
+				if (promotionMutex!=null)
+					promotionMutex.release();
 				contextualise(req, res, chain, id);
 			} catch (InterruptedException e) {
 				throw new ServletException("timed out acquiring context", e);
@@ -80,6 +82,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 				// TODO - revisit and think about unrolling on exception...
 				Sync shared=context.getSharedLock();
 				shared.acquire(); // now this is locked into the container until we use/release it
+				_log.info("promoting (to memory): "+id);
 				_map.put(id, context);
 				promotionMutex.release(); // now available to other 'loading' threads
 				contextualise(req, res, chain, id);
@@ -102,6 +105,28 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 			_next.demote(key, val);
 		} else {
 			_map.put(key, val);
+		}
+	}
+	
+	public void evict() {
+		for (Iterator i=_map.entrySet().iterator(); i.hasNext(); ) {
+			Map.Entry e=(Map.Entry)i.next();
+			String key=(String)e.getKey();
+			Context val=(Context)e.getValue();
+			if (_evicter.evict(key, val)) { // first test without lock - cheap
+				Sync exclusive=val.getExclusiveLock();
+				try {
+					if (exclusive.attempt(0) && _evicter.evict(key, val)) { // then confirm with exclusive lock
+						// do we need the promotion lock ? don't think so - TODO
+						_log.info("demoting (from memory): "+key);
+						_next.demote(key, val);
+						i.remove();
+						exclusive.release();
+					}
+				} catch (InterruptedException ie) {
+					_log.warn("unexpected interruption to eviction - ignoring", ie);
+				}
+			}
 		}
 	}
 }

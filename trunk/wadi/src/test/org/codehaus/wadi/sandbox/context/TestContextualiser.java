@@ -11,6 +11,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.sql.Connection;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,9 +20,11 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.impl.AlwaysEvicter;
@@ -28,6 +32,7 @@ import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.LocalDiscContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
+import org.codehaus.wadi.sandbox.context.impl.SharedJDBCContextualiser;
 
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
@@ -44,6 +49,9 @@ import junit.framework.TestCase;
  */
 public class TestContextualiser extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
+    protected DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");	// db springs into existance in-vm beneath us
+    protected String _table="MyTable";
+
 	
 	/*
 	 * @see TestCase#setUp()
@@ -51,6 +59,13 @@ public class TestContextualiser extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		_log.info("starting ...");
+
+		Connection c=_ds.getConnection();
+		Statement s=c.createStatement();
+		// TODO - should parameterise the column names when code stabilises...
+		s.execute("create table "+_table+"(MyKey varchar, MyValue java_object)");
+		s.close();
+		c.close();
 	}
 
 	/*
@@ -58,7 +73,13 @@ public class TestContextualiser extends TestCase {
 	 */
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		_log.info("...stopped");
+			Connection c=_ds.getConnection();
+			Statement s=c.createStatement();
+			s.execute("drop table "+_table);
+			s.execute("SHUTDOWN");
+			s.close();
+			c.close();
+	      _log.info("...stopped");
 	}
 
 	/**
@@ -155,15 +176,15 @@ public class TestContextualiser extends TestCase {
 	    oo.close();
 	    assertTrue(f.exists());
 		d.put("bar", new LocalDiscContextualiser.LocalDiscMotable(0, f));
-		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), d, new NeverEvicter(), new File("/tmp"), ss);
+		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), d, new NeverEvicter(), new File("/tmp"), ss, new MyContextPool());
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo"));
 		Contextualiser memory=new MemoryContextualiser(disc, m, new NeverEvicter(), new MyContextPool());
 		
 		FilterChain fc=new MyFilterChain();
 //		Collapser collapser=new HashingCollapser();
-		memory.contextualise(null,null,fc,"foo", null, new Mutex());
-		memory.contextualise(null,null,fc,"bar", null, new Mutex());
+		memory.contextualise(null,null,fc,"foo", null, null);
+		memory.contextualise(null,null,fc,"bar", null, null);
 		assertTrue(!f.exists());
 	}
 	
@@ -279,10 +300,10 @@ public class TestContextualiser extends TestCase {
 		assertTrue(mxc._counter==n);
 		}
 	
-	public void testEviction() throws Exception {
-		Map d=new HashMap();
+	public void testEviction2() throws Exception {
 		StreamingStrategy ss=new SimpleStreamingStrategy();
-		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), d, new NeverEvicter(), new File("/tmp"), ss);
+		Map d=new HashMap();
+		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), d, new NeverEvicter(), new File("/tmp"), ss, new MyContextPool());
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo"));
 		Contextualiser memory=new MemoryContextualiser(disc, m, new AlwaysEvicter(), new MyContextPool());
@@ -291,11 +312,65 @@ public class TestContextualiser extends TestCase {
 
 		assertTrue(!d.containsKey("foo"));
 		assertTrue(m.containsKey("foo"));
-		memory.evict();
+		memory.evict(); // should move foo to disc
 		assertTrue(d.containsKey("foo"));
 		assertTrue(!m.containsKey("foo"));
-		memory.contextualise(null,null,fc,"foo", null, new Mutex());
+		memory.contextualise(null,null,fc,"foo", null, null); // should promote foo back into memory
 		assertTrue(!d.containsKey("foo"));
 		assertTrue(m.containsKey("foo"));
+	}
+		
+	class MyEvicter implements Evicter{
+		long _remaining;
+		
+		MyEvicter(long remaining) {
+			_remaining=remaining;
+		}
+		
+		public boolean evict(String id, Motable m) {
+			long expiry=m.getExpiryTime();
+			long current=System.currentTimeMillis();
+			long left=expiry-current;
+			boolean evict=(left<=_remaining);
+			
+			//_log.info((!evict?"not ":"")+"evicting: "+id);
+			
+			return evict;
+		}
+	}
+	public void testEviction3() throws Exception {
+		StreamingStrategy ss=new SimpleStreamingStrategy();
+		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), new NeverEvicter(), _ds, _table, ss);
+		Map d=new HashMap();
+		Contextualiser disc=new LocalDiscContextualiser(db, d, new MyEvicter(0), new File("/tmp"), ss, new MyContextPool());
+		Map m=new HashMap();
+		m.put("foo", new MyContext("foo", System.currentTimeMillis()+2000)); // times out 2 seconds from now...
+		Contextualiser memory=new MemoryContextualiser(disc, m, new MyEvicter(1000), new MyContextPool());
+			
+		FilterChain fc=new MyFilterChain();
+
+		assertTrue(!d.containsKey("foo"));
+		assertTrue(m.containsKey("foo"));
+		memory.evict(); // should not have timed out yet
+		assertTrue(!d.containsKey("foo"));
+		assertTrue(m.containsKey("foo"));
+		Thread.sleep(1000);
+		memory.evict(); // should now be a second old - moved to disc
+		assertTrue(d.containsKey("foo"));
+		assertTrue(!m.containsKey("foo"));
+		disc.evict(); // should stay on disc...
+		assertTrue(d.containsKey("foo"));
+		assertTrue(!m.containsKey("foo"));
+		Thread.sleep(1000);
+		disc.evict(); // should finally move to db
+		assertTrue(!d.containsKey("foo"));
+		assertTrue(!m.containsKey("foo"));
+		memory.contextualise(null,null,fc,"foo", null, null); // should be promoted to memory
+		assertTrue(!d.containsKey("foo"));
+		assertTrue(m.containsKey("foo")); // need to be able to 'touch' a context...
+		memory.evict(); // should still be there...
+		assertTrue(!d.containsKey("foo"));
+		assertTrue(m.containsKey("foo"));
+		assertTrue(((MyContext)m.get("foo"))._val.equals("foo"));
 	}
 }
