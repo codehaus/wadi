@@ -60,6 +60,7 @@ import org.codehaus.wadi.sandbox.context.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.context.impl.StandardHttpProxy;
+import org.mortbay.http.HttpConnection;
 import org.mortbay.http.SocketListener;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.FilterHolder;
@@ -86,10 +87,16 @@ import junit.framework.TestCase;
 public class TestMigration extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
 	
+	class SwitchableListener extends SocketListener {
+		protected boolean _confidential;
+		public void setConfidential(boolean confidential){_confidential=confidential;}
+		public boolean isConfidential(HttpConnection connection){return _confidential;}
+	}
+	
 	class Node {
 		protected final Log _log;
 		protected final Server _server=new Server();
-		protected final SocketListener _listener=new SocketListener();
+		protected final SwitchableListener _listener=new SwitchableListener();
 		protected final WebApplicationContext _context=new WebApplicationContext();
 		protected final WebApplicationHandler _handler=new WebApplicationHandler();
 		protected final FilterHolder _filterHolder;
@@ -118,13 +125,13 @@ public class TestMigration extends TestCase {
 			_listener.setHost(host);
 			_listener.setPort(port);
 			_server.addListener(_listener);
-			
 			_filter=filter;
 			_servlet=servlet;
 		}
 
 		public Filter getFilter(){return _filter;}
 		public Servlet getServlet(){return _servlet;}
+		public SwitchableListener getListener(){return _listener;}
 		
 		public void start() throws Exception {
 			_server.start();
@@ -153,7 +160,7 @@ public class TestMigration extends TestCase {
 		public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 		throws ServletException, IOException {
 			String sessionId=((HttpServletRequest)req).getRequestedSessionId();
-			_log.info("Filter.doFilter("+((sessionId==null)?"":sessionId)+")");
+			_log.info("Filter.doFilter("+((sessionId==null)?"":sessionId)+")"+(req.isSecure()?" - SECURE":""));
 			boolean found=_servlet.getContextualiser().contextualise(req, res, chain, sessionId, null, null, _localOnly);
 			
 			if (!found)
@@ -421,4 +428,26 @@ public class TestMigration extends TestCase {
 	    _log.info("STOPPING NOW!");
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
 	    }	
+	
+	public void testSecurity() throws Exception {
+	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
+	    _log.info("STARTING NOW!");
+
+	    HttpClient client=new HttpClient();
+		HttpMethod method0=new GetMethod("http://localhost:8080");
+		HttpMethod method1=new GetMethod("http://localhost:8081");
+		_node0.getListener().setConfidential(true);
+		_node1.getListener().setConfidential(true);
+
+		_filter0.setLocalOnly(true);
+		assertTrue(get(client, method0, "/test;jsessionid=foo")!=200);
+		assertTrue(get(client, method0, "/test;jsessionid=bar")!=200);
+		_filter1.setLocalOnly(true);
+		assertTrue(get(client, method1, "/test;jsessionid=foo")!=200);
+		assertTrue(get(client, method1, "/test;jsessionid=bar")!=200);
+		
+		_log.info("STOPPING NOW!");
+	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
+	    }	
+		
 }
