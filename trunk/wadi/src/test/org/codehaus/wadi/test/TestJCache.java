@@ -19,20 +19,23 @@
 package org.codehaus.wadi.test;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import javax.cache.Cache;
+import javax.cache.CacheEntry;
 import javax.cache.CacheException;
 import javax.cache.CacheLoader;
+import javax.cache.EvictionStrategy;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -111,6 +114,268 @@ import ri.cache.loader.NullCacheLoader;
 // item, so it knows when it is safe and can be promoted/removed ?
 // more thought needed...
 
+//----------------------------------------
+
+// assumption - we are the only people reading and writing to this
+// directory... - could be dynamically made up...
+
+// if we know the cache is homogeneous (only stores one type), we do
+// not need to write type information into every evicted file...
+
+interface
+  Identifiable
+{
+  String getId();
+}
+
+interface
+  FileCacheable		// needs a better name
+  extends SerializableContent, Identifiable
+{
+}
+
+interface
+  FileCacheablePool
+{
+  FileCacheable poll(long msecs);
+  FileCacheable take();
+}
+
+class
+  HomogeneousLocalDiscCacheLoader
+  implements CacheLoader
+{
+  protected Log _log=LogFactory.getLog(HomogeneousLocalDiscCacheLoader.class);
+
+  protected File              _dir;
+  protected FileCacheablePool _entryPool;
+  protected StreamingStrategy _streamingStrategy;
+  protected Cache             _cache;
+
+  public
+    HomogeneousLocalDiscCacheLoader(File dir, FileCacheablePool entryPool, StreamingStrategy streamingStrategy, Cache cache)
+  {
+    assert dir.exists();
+    assert dir.isDirectory();
+    assert dir.canRead();
+    assert dir.canWrite();
+    assert entryPool!=null;
+    assert streamingStrategy!=null;
+    assert cache!=null;
+
+    _dir               =dir;
+    _entryPool         =entryPool;
+    _streamingStrategy =streamingStrategy;
+    _cache             =cache;
+
+    _log.info("created: "+this);
+  }
+
+  public Object
+    load(Object key)
+    throws CacheException
+  {
+    Object entry=null;
+
+    File file=new File(_dir, key.toString()+_streamingStrategy.getSuffix()); // need to know UID here...
+    if (file.exists())
+    {
+      try
+      {
+	FileCacheable fc=_entryPool.take();
+	ObjectInput oi=_streamingStrategy.getInputStream(new FileInputStream(file));
+	fc.readContent(oi);
+	oi.close();
+
+	entry=fc;		// data WILL be returned
+	file.delete();	// even if file removal fails...
+
+	_log.info("loaded from local disc: "+key+":"+entry);
+      }
+      catch (Exception e)
+      {
+	_log.error("cache load failure", e);
+      }
+    }
+    else
+    {
+      entry=_cache.remove(key);	// removed from lower and promoted to upper...
+      _log.info("loaded from cache: "+key+":"+entry);
+    }
+
+    return entry;
+  }
+
+  public Map
+    loadAll(Collection keys)
+    throws CacheException
+  {
+    _log.info("loadAll: "+keys);
+
+    // do we throw an exception if we fail to get one item, or if we
+    // fail to get any ?
+
+    Map map=new HashMap(keys.size());
+    for (Iterator i=keys.iterator(); i.hasNext();)
+    {
+      Object key=i.next();
+      map.put(key, load(key));
+    }
+
+    return map;
+  }
+
+  public String
+    toString()
+  {
+    return "<HomogeneousLocalDiscCacheLoader:"+_dir+", "+_entryPool+", "+_cache+">";
+  }
+}
+
+//----------------------------------------
+
+class
+  IdentifiableCacheEntry
+  implements CacheEntry
+{
+  protected static Log _log=LogFactory.getLog(IdentifiableCacheEntry.class);
+
+  IdentifiableCacheEntry(Object key, Object value)
+  {
+    _key=key;
+    _value=value;
+  }
+
+  long _cost;
+  public long
+    getCost()
+  {
+    _log.info("getCost");
+    return _cost;
+  }
+
+  long _creationTime;
+  public long
+    getCreationTime()
+  {
+    _log.info("getCreationTime");
+    return _creationTime;
+  }
+
+  long _expirationTime;
+  public long
+    getExpirationTime()
+  {
+    _log.info("getExpirationTime");
+    return _expirationTime;
+  }
+
+  int _hits;
+  public int
+    getHits()
+  {
+    _log.info("getHits");
+    return _hits;
+  }
+
+  long _lastAccessedTime;
+  public long
+    getLastAccessTime()
+  {
+    _log.info("getLastAccessTime");
+    return _lastAccessedTime;
+  }
+
+  long _lastUpdateTime;
+  public long
+    getLastUpdateTime()
+  {
+    _log.info("getLastUpdateTime");
+    return _lastUpdateTime;
+  }
+
+  long _version;
+  public long
+    getVersion()
+  {
+    _log.info("getVersion");
+    return _version;
+  }
+
+  boolean _valid=true;
+  public boolean
+    isValid()
+  {
+    _log.info("isValid");
+    return _valid;
+  }
+
+  Object _key;
+
+  public Object getKey(){return _key;}
+
+  Object _value;
+
+  public Object getValue(){return _value;}
+
+  public Object
+    setValue(Object value)
+  {
+    Object oldValue=_value;
+    _value=value;
+    return oldValue;
+  }
+
+  public String
+    toString()
+  {
+    return "<IdentifiableCacheEntry: "+_key+">";
+  }
+}
+
+class
+  IdentifiableEvictionStrategy
+  implements EvictionStrategy
+{
+  protected Log _log=LogFactory.getLog(IdentifiableEvictionStrategy.class);
+
+  public CacheEntry
+    createEntry(Object key, Object value, long ttl)
+  {
+    _log.info("createEntry");
+    return new IdentifiableCacheEntry(key, value);	// Pool these
+  }
+
+  public void
+    discardEntry(CacheEntry e)
+  {
+    _log.info("discardEntry: "+e);
+  }
+
+  public void
+    touchEntry(CacheEntry entry)
+  {
+    _log.info("touchEntry");
+  }
+
+  public void
+    clear()
+  {
+    _log.info("clear");
+  }
+
+  public Map
+    evict(Cache c)
+  {
+    _log.info("evict: "+c);
+
+    //    return Collections.EMPTY_MAP;
+    return c;			// evict all !
+  }
+}
+
+//----------------------------------------
+
 public class
   TestJCache
   extends TestCase
@@ -132,113 +397,6 @@ public class
     {
       _log.info("stopping test");
     }
-
-  public interface
-    FileCacheable		// needs a better name
-    extends SerializableContent
-  {
-    String getId();
-  }
-
-  // should probably expect Cache values to be e.g. FileCacheable -
-  // have a uid and serialisable content.
-
-  // assumption - we are the only people reading and writing to this
-  // directory... - could be dynamically made up...
-
-  // if we know the cache is homogeneous (only stores one type), we do
-  // not need to write type information into every evicted file...
-  static class
-    HomogeneousLocalDiscCacheLoader
-    implements CacheLoader
-  {
-    protected Log _log=LogFactory.getLog(HomogeneousLocalDiscCacheLoader.class);
-
-    protected File              _dir;
-    protected FileCacheablePool _entryPool;
-    protected StreamingStrategy _streamingStrategy;
-    protected Cache             _cache;
-
-    public
-      HomogeneousLocalDiscCacheLoader(File dir, FileCacheablePool entryPool, StreamingStrategy streamingStrategy, Cache cache)
-    {
-      assert dir.exists();
-      assert dir.isDirectory();
-      assert dir.canRead();
-      assert dir.canWrite();
-      assert entryPool!=null;
-      assert streamingStrategy!=null;
-      assert cache!=null;
-
-      _dir               =dir;
-      _entryPool         =entryPool;
-      _streamingStrategy =streamingStrategy;
-      _cache             =cache;
-
-      _log.info("created: "+this);
-    }
-
-    public Object
-      load(Object key)
-      throws CacheException
-    {
-      Object entry=null;
-
-      File file=new File(_dir, key.toString()+_streamingStrategy.getSuffix()); // need to know UID here...
-      if (file.exists())
-      {
-	try
-	{
-	  FileCacheable fc=_entryPool.take();
-	  ObjectInput oi=_streamingStrategy.getInputStream(new FileInputStream(file));
-	  fc.readContent(oi);
-	  oi.close();
-
-	  entry=fc;		// data WILL be returned
-	  file.delete();	// even if file removal fails...
-
-	  _log.info("loaded from local disc: "+key+":"+entry);
-	}
-	catch (Exception e)
-	{
-	  _log.error("cache load failure", e);
-	}
-      }
-      else
-      {
-	entry=_cache.get(key);
-	_log.info("loaded from cache: "+key+":"+entry);
-      }
-
-      return entry;
-    }
-
-    public Map
-      loadAll(Collection keys)
-      throws CacheException
-    {
-      _log.info("loadAll: "+keys);
-
-      // do we throw an exception if we fail to get one item, or if we
-      // fail to get any ?
-
-      Map map=new HashMap(keys.size());
-      for (Iterator i=keys.iterator(); i.hasNext();)
-      {
-	Object key=i.next();
-	map.put(key, load(key));
-      }
-
-      return map;
-    }
-
-    public String
-      toString()
-    {
-      return "<HomogeneousLocalDiscCacheLoader:"+_dir+", "+_entryPool+", "+_cache+">";
-    }
-
-  }
 
   class
     Entry
@@ -273,11 +431,12 @@ public class
   }
 
   class
-    FileCacheablePool
+    Pool
+    implements FileCacheablePool
   {
     int _counter=0;
-    FileCacheable poll(long msecs){return new Entry(""+_counter++);}
-    FileCacheable take(){return new Entry(""+_counter++);}
+    public FileCacheable poll(long msecs){return new Entry(""+_counter++);}
+    public FileCacheable take(){return new Entry(""+_counter++);}
   }
 
   public void
@@ -286,11 +445,13 @@ public class
   {
     File dir=new File("/tmp");
     Cache shared=new BasicCache();
-    CacheLoader localDisc=new HomogeneousLocalDiscCacheLoader(dir, new FileCacheablePool(), new SimpleStreamingStrategy(), shared);
-    Cache local=new BasicCache(localDisc);
+    CacheLoader cl=new HomogeneousLocalDiscCacheLoader(dir, new Pool(), new SimpleStreamingStrategy(), shared);
+    EvictionStrategy ev=new IdentifiableEvictionStrategy();
+    Cache local=new BasicCache(ev, cl);
 
     local.put("0", "a");
     local.get("0");
+    local.evict();
     local.get("1");
   }
 }
