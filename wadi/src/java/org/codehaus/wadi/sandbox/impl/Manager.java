@@ -51,7 +51,7 @@ public class Manager {
     }
 
     public Session createSession() {
-        return new Session(this);
+        return new AtomicDistributedSession(this);
     }
     
     //----------------------------------------
