@@ -15,8 +15,6 @@ import javax.servlet.ServletResponse;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-
-
 /**
  * @author jules
  *
@@ -24,6 +22,8 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * 
  * A Contextualiser can choose to either process the request within itself, or promote a Context to its caller, within which the request may be processed.
  * It should indicate to its caller, via return code, whether said processing has already been carried out or not.
+ * 
+ * N.B. The promotionMutex MUST be Reentrant - I use a ReentrantLock.
  */
 public interface Contextualiser {
 	

@@ -16,6 +16,7 @@ import javax.servlet.ServletResponse;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
 import org.codehaus.wadi.sandbox.context.Promoter;
 
+import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
@@ -44,18 +45,19 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 		if (contextualiseLocally(req, res, chain, id, promoter, promotionMutex))
 			return true;
 		else {
+			if (promotionMutex==null) {
+				promotionMutex=new ReentrantLock(); // TODO - timeout ? - concurrency ? need Collapser again...
+			}
 			try {
 				promotionMutex.acquire();
 				// by the time we get the lock, another thread may have already promoted this context - try again locally...
 				if (contextualiseLocally(req, res, chain, id, promoter, promotionMutex)) // mutex released here if successful
 					return true;
 				else {
-					try {
 						Promoter p=getPromoter(promoter);
-						return _next.contextualise(req, res, chain, id, p, promotionMutex);
-					} finally {
-						promotionMutex.release();
-					}
+						boolean success=_next.contextualise(req, res, chain, id, p, promotionMutex);
+						if (!success) promotionMutex.release();
+						return success;
 				}
 			} catch (InterruptedException e) {
 				throw new ServletException("timed out collapsing requests for context: "+id, e);
