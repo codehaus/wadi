@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
+import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.ContextPool;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
@@ -72,7 +73,7 @@ public class MyServlet implements Servlet {
 		MessageDispatcher dispatcher=new MessageDispatcher(_cluster);
 		Location location=new HttpProxyLocation(cluster.getLocalNode().getDestination(), isa, proxy);
 		RelocationStrategy relocater=new ProxyRelocationStrategy(cluster, dispatcher, 3000, 2000, location);
-		//relocater=new MigrateRelocationStrategy(dispatcher, 2000, location, cluster);
+		//relocater=new MigrateRelocationStrategy(dispatcher, 2000, location, cluster, new SimpleStreamingStrategy());
 		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, new MyEvicter(0), relocater);
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
