@@ -19,6 +19,7 @@ package org.codehaus.wadi.shared;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
@@ -156,7 +157,7 @@ public class
 
 	// initialise dependant resources...
 	_socket=new ServerSocket(_port, _backlog, _address);
-	_socket.setSoTimeout(_timeout);
+	//	_socket.setSoTimeout(_timeout);
 	_port=_socket.getLocalPort();
 
 	// start...
@@ -184,8 +185,7 @@ public class
     {
       _log.debug("stopping: "+_socket);
       _running=false;
-      // TODO - we need to send a noop here...
-      _thread.interrupt();
+      try {new Socket(_address, _port).close();} catch (Throwable ignore) {}
       try
       {
 	_thread.join();
