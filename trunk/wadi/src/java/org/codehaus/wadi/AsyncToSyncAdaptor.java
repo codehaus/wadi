@@ -64,7 +64,7 @@ public class
       }
       catch (TimeoutException e)
       {
-	_log.debug(""+hashCode()+": "+"timed out at rendez-vous - no answer within required timeframe");
+	_log.debug(""+hashCode()+": "+"timed out at rendez-vous - no answer within required timeframe: "+Thread.currentThread());
       }
       catch (InterruptedException e)
       {

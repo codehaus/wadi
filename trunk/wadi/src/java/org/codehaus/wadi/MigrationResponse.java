@@ -55,63 +55,37 @@ public class
       HttpSessionImpl impl=manager.getLocalSession(_id);
       impl.readContent(ois);
       ois.close();
+      long timeStarted=System.currentTimeMillis();
       manager._adaptor.receive(impl, _id+"-request", _timeout);
+      long timeTaken=System.currentTimeMillis()-timeStarted;
+      _log.trace(_id+": rendez-vous completed in "+timeTaken+" millis");
       ok=true;
     }
     catch (IOException e)
     {
-      _log.warn("IO problems demarshalling session for immigration", e);
+      _log.warn(_id+": IO problems demarshalling session for immigration", e);
     }
     catch (ClassNotFoundException e)
     {
-      _log.warn("ClassLoading problems demarshalling session for immigration", e);
+      _log.warn(_id+": ClassLoading problems demarshalling session for immigration", e);
     }
 
-    Destination dest=null;
-    Object result=null;
+    Destination src=null;
+    Destination dst=null;
     try
     {
       Cluster cluster=manager.getCluster();
-      ObjectMessage om=cluster.createObjectMessage();
-      Destination src=cluster.getLocalNode().getDestination();
-      om.setJMSReplyTo(src);
-      om.setObject(new MigrationAcknowledgement(_id, ok, _timeout));
-      cluster.send(in.getJMSReplyTo(), om);
+      ObjectMessage out=cluster.createObjectMessage();
+      src=cluster.getLocalNode().getDestination();
+      dst=in.getJMSReplyTo();
+      out.setJMSReplyTo(src);
+      out.setObject(new MigrationAcknowledgement(_id, ok, _timeout));
+      cluster.send(dst, out);
+      _log.trace(_id+": ack sent");
     }
     catch (JMSException e)
     {
-      _log.warn("could not send migration response to: "+dest, e);
-    }
-
-    ok=(result==Boolean.TRUE);
-
-    HttpSessionImpl impl=null;
-
-    impl=manager.getLocalSession(_id);
-
-    if (impl==null)
-    {
-      _log.warn(_id+": IN REAL TROUBLE"); // FIXME
-    }
-    else
-    {
-      try
-      {
-	impl=manager.getLocalSession(_id);
-	if (ok)
-	{
-	  _log.debug(_id+": committing emmigration");
-	  manager.releaseImpl(impl);
-	}
-	else
-	{
-	  _log.debug(_id+": rolling back emmigration");
-	}
-      }
-      finally
-      {
-	impl.getContainerLock().release();
-      }
+      _log.warn(_id+": could not send migration acknowledgement to: "+dst, e);
     }
   }
 
