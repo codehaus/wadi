@@ -21,7 +21,7 @@ import java.io.Serializable;
 import org.codehaus.wadi.sandbox.Motable;
 
 /**
- * TODO - JavaDoc this type
+ * A message sent in response to an ImmigrationRequest
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

@@ -22,7 +22,7 @@ import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * TODO - JavaDoc this type
+ * A lock Collapser that does no locking
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

@@ -21,8 +21,7 @@ import java.io.Serializable;
 import org.codehaus.wadi.sandbox.Location;
 
 /**
- * A query for the location of the session with the enclosed ID - The response
- * should be a LocationResponse object sent whence this request arrived.
+ * A message used to acknowledge a successful immigration
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

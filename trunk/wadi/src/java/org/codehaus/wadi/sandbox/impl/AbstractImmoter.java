@@ -22,7 +22,7 @@ import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
 
 /**
- * Abstract out common functionality for Immoters
+ * Abstract base for Immoters
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

@@ -23,7 +23,7 @@ import org.codehaus.wadi.sandbox.Collapser;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * TODO - JavaDoc this type
+ * A lock Collapser, with useful debugging info
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

@@ -42,7 +42,7 @@ import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * TODO - JavaDoc this type
+ * Relocate the state, bringing it underneath the incoming request - immigration
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

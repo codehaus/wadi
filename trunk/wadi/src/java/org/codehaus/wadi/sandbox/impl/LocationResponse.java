@@ -22,7 +22,7 @@ import java.util.Set;
 import org.codehaus.wadi.sandbox.Location;
 
 /**
- * TODO - JavaDoc this type
+ * A message that is sent in response to a LocationRequest
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

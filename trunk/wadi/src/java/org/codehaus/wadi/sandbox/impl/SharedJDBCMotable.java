@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Motable;
 
 /**
- * A Motable that represents its Bytes field as a row ina DataBase table.
+ * A Motable that represents its Bytes field as a row in a DataBase table.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

@@ -29,7 +29,7 @@ import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.ProxyingException;
 
 /**
- * TODO - JavaDoc this type
+ * A Location that includes a hostname/ip-address and HTTP port
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

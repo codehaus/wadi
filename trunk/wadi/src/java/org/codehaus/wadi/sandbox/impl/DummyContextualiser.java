@@ -32,7 +32,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 
 /**
- * TODO - JavaDoc this type
+ * A Contextualiser that does no contextualising
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
