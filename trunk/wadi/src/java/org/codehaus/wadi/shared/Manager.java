@@ -425,20 +425,23 @@ public abstract class
     // assume that impls havestopped their housekeeping thread/process
     // by now...
 
-    // now we need to alter the eviction decision policy, so that
-    // every session is invalidate or passivated, then run the
-    // housekeeper again....
-    EvictionPolicy oldEvictionPolicy=_evictionPolicy;
-    _evictionPolicy=new TotalEvictionPolicy();
-    int oldSize=_local.size();
-    housekeeper();
-    int newSize=_local.size();
-    // this is inaccurate - currently sessions may also still be
-    // created/[e/i]mmigrated whilst this is going on. sessions with
-    // current requests will remain in container :-(. We need a fix in
-    // Filter which will relocate all incoming requests...
-    _log.debug("emmigrated "+(oldSize-newSize)+"/"+oldSize+" sessions");
-    _evictionPolicy=oldEvictionPolicy;
+    if (getDistributable() && _passivationStrategy!=null)
+    {
+      // now we need to alter the eviction decision policy, so that
+      // every session is invalidate or passivated, then run the
+      // housekeeper again....
+      EvictionPolicy oldEvictionPolicy=_evictionPolicy;
+      _evictionPolicy=new TotalEvictionPolicy();
+      int oldSize=_local.size();
+      housekeeper();
+      int newSize=_local.size();
+      // this is inaccurate - currently sessions may also still be
+      // created/[e/i]mmigrated whilst this is going on. sessions with
+      // current requests will remain in container :-(. We need a fix in
+      // Filter which will relocate all incoming requests...
+      _log.debug("emmigrated "+(oldSize-newSize)+"/"+oldSize+" sessions");
+      _evictionPolicy=oldEvictionPolicy;
+    }
 
     // since housekeeping may take time, we'll keep these processes
     // running until afterwards for the moment...
@@ -521,7 +524,7 @@ public abstract class
 
     long currentTime=System.currentTimeMillis();
 
-    boolean canEvict=_passivationStrategy!=null && _evictionPolicy!=null;
+    boolean canEvict=getDistributable() && _passivationStrategy!=null && _evictionPolicy!=null;
 
     if (canEvict)
       tidyStore(currentTime);
