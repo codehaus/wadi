@@ -34,8 +34,8 @@ import org.codehaus.wadi.sandbox.Motable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class LocalDiscMotable extends AbstractMotable {
-	protected static final Log _log = LogFactory.getLog(LocalDiscMotable.class);
+public class ExclusiveDiscMotable extends AbstractMotable {
+	protected static final Log _log = LogFactory.getLog(ExclusiveDiscMotable.class);
 
 	protected File _file;
 	public File getFile() {return _file;}

@@ -59,7 +59,7 @@ import org.codehaus.wadi.sandbox.impl.CustomCluster;
 import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
-import org.codehaus.wadi.sandbox.impl.LocalDiscContextualiser;
+import org.codehaus.wadi.sandbox.impl.ExclusiveDiscContextualiser;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.impl.NeverEvicter;
@@ -175,7 +175,7 @@ public class TestContextualiser extends TestCase {
 		}
 
 		Map d=new HashMap();
-		LocalDiscContextualiser disc=new LocalDiscContextualiser(db, new NeverEvicter(), d, collapser, ss, new File("/tmp"));
+		ExclusiveDiscContextualiser disc=new ExclusiveDiscContextualiser(db, new NeverEvicter(), d, collapser, ss, new File("/tmp"));
 		{
 			// place a "bar" item onto local disc
 			String id="bar";
@@ -353,7 +353,7 @@ public class TestContextualiser extends TestCase {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 		Map d=new HashMap();
-		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), new NeverEvicter(), d, collapser, ss, new File("/tmp"));
+		Contextualiser disc=new ExclusiveDiscContextualiser(new DummyContextualiser(), new NeverEvicter(), d, collapser, ss, new File("/tmp"));
 		Contextualiser serial=new SerialContextualiser(disc, collapser);
 		Map m=new HashMap();
 		Evictable foo=new MyContext("foo", "foo");
@@ -378,7 +378,7 @@ public class TestContextualiser extends TestCase {
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), new NeverEvicter(), _ds, _table);
 		Map d=new HashMap();
-		Contextualiser disc=new LocalDiscContextualiser(db, new TimeToLiveEvicter(0), d, collapser, ss, new File("/tmp"));
+		Contextualiser disc=new ExclusiveDiscContextualiser(db, new TimeToLiveEvicter(0), d, collapser, ss, new File("/tmp"));
 		Contextualiser serial=new SerialContextualiser(disc, collapser);
 		Map m=new HashMap();
 		Context tmp=new MyContext("foo", "foo");
@@ -484,7 +484,7 @@ public class TestContextualiser extends TestCase {
 	    StreamingStrategy streamer=new SimpleStreamingStrategy();
 	    Collapser collapser=new HashingCollapser(1, 2000);
 		Map d=new HashMap();
-		LocalDiscContextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), new TimedOutEvicter(), d, collapser, streamer, new File("/tmp"));
+		ExclusiveDiscContextualiser disc=new ExclusiveDiscContextualiser(new DummyContextualiser(), new TimedOutEvicter(), d, collapser, streamer, new File("/tmp"));
 		Map m=new HashMap();
 		MemoryContextualiser memory=new MemoryContextualiser(disc, new AbsoluteEvicter(30*60*1000), m, streamer, new MyContextPool());
 		Context foo=new MyContext("foo", "foo");
