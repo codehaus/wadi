@@ -26,7 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.jetty.HttpSessionImplFactory;
 import org.codehaus.wadi.shared.StreamingStrategy;
 import org.codehaus.wadi.plugins.SimpleStreamingStrategy;
-import org.codehaus.wadi.shared.NewMigrationService;
+import org.codehaus.wadi.shared.MigrationService;
 
 /**
  * Test the Migration Service
@@ -40,8 +40,8 @@ public class
 {
   protected final Log _log=LogFactory.getLog(getClass());
 
-  protected NewMigrationService.Server _server;
-  protected NewMigrationService.Client _client;
+  protected MigrationService.Server _server;
+  protected MigrationService.Client _client;
 
   protected Map _clientSessions=new HashMap();
   protected Map _serverSessions=new HashMap();
@@ -63,8 +63,8 @@ public class
       InetAddress address=InetAddress.getByName("228.5.6.7");
       int port=6789;
       int timeout=5000;		// 5 secs
-      _client=new NewMigrationService.Client();
-      _server=new NewMigrationService.Server(null, _factory, _serverSessions, _streamingStrategy); // HELP - TODO
+      _client=new MigrationService.Client();
+      _server=new MigrationService.Server(null, _factory, _serverSessions, _streamingStrategy); // HELP - TODO
       _server.start();
     }
 
