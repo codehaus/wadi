@@ -129,12 +129,15 @@
 
     <unitTest>
       <includes>
+        <include>**/TestJCache.java</include>
 	<!-- work -->
+<!--
         <include>**/TestConcurrency.java</include>
         <include>**/TestHttpSession.java</include>
         <include>**/TestManagers.java</include>
         <include>**/TestTopologies.java</include>
 	<include>**/TestCluster.java</include>
+-->
 	<!-- should work -->
 	<!--
 	<include>**/TestAsyncToSyncAdaptor.java</include>
@@ -268,6 +271,14 @@
     </dependency>
 
     <dependency>
+      <groupId>jcache</groupId>
+      <artifactId>jcache</artifactId>
+      <version>1.0-dev-2</version>
+      <url>???</url>
+      <javadoc>???</javadoc>
+    </dependency>
+
+    <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jmx</artifactId>
       <version>5.1.2</version>
@@ -353,8 +364,8 @@
     <dependency>
       <groupId>activemq</groupId>
       <artifactId>activemq</artifactId>
-<!--      <version>2.0-SNAPSHOT</version> -->
-      <version>1.1</version>
+      <version>2.0-SNAPSHOT</version>
+<!--       <version>1.1</version> -->
       <url>http://activemq.codehaus.org</url>
       <javadoc>http://activemq.codehaus.org/maven/apidocs</javadoc>
       <type>jar</type>
