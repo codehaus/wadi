@@ -191,8 +191,8 @@ public class TestContextualiser extends TestCase {
 		
 		FilterChain fc=new MyFilterChain();
 //		Collapser collapser=new HashingCollapser();
-		memory.contextualise(null,null,fc,"foo", null, null, 0);
-		memory.contextualise(null,null,fc,"bar", null, null, 0);
+		memory.contextualise(null,null,fc,"foo", null, null, false);
+		memory.contextualise(null,null,fc,"bar", null, null, false);
 		assertTrue(!f.exists());
 	}
 	
@@ -204,7 +204,7 @@ public class TestContextualiser extends TestCase {
 			_context=new MyContext(context);
 		}
 		
-		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, long peekTimeout) throws IOException, ServletException {
+		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
 			_counter++;
 			
 			MyContext context=_context;
@@ -235,7 +235,7 @@ public class TestContextualiser extends TestCase {
 			_context=new MyContext(context);
 		}
 		
-		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, long peekTimeout) throws IOException, ServletException {
+		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
 			_counter++;
 			Context context=_context;
 			Sync shared=context.getSharedLock();
@@ -269,7 +269,7 @@ public class TestContextualiser extends TestCase {
 		
 		public void run() {
 			try {
-				_contextualiser.contextualise(null, null, _chain, _id, null, null, 0);
+				_contextualiser.contextualise(null, null, _chain, _id, null, null, false);
 			} catch (Exception e) {
 				_log.error("unexpected problem", e);
 				assertTrue(false);
@@ -282,7 +282,7 @@ public class TestContextualiser extends TestCase {
 		FilterChain fc=new MyFilterChain();		
 		
 		for (int i=0; i<n; i++)
-			mc.contextualise(null,null,fc,"baz", null, null, 0);
+			mc.contextualise(null,null,fc,"baz", null, null, false);
 	}
 	
 	public void testPromotion() throws Exception {
@@ -335,7 +335,7 @@ public class TestContextualiser extends TestCase {
 		memory.evict(); // should move foo to disc
 		assertTrue(d.containsKey("foo"));
 		assertTrue(!m.containsKey("foo"));
-		memory.contextualise(null,null,fc,"foo", null, null, 0); // should promote foo back into memory
+		memory.contextualise(null,null,fc,"foo", null, null, false); // should promote foo back into memory
 		assertTrue(!d.containsKey("foo"));
 		assertTrue(m.containsKey("foo"));
 	}
@@ -386,7 +386,7 @@ public class TestContextualiser extends TestCase {
 		disc.evict(); // should finally move to db
 		assertTrue(!d.containsKey("foo"));
 		assertTrue(!m.containsKey("foo"));
-		memory.contextualise(null,null,fc,"foo", null, null, 0); // should be promoted to memory
+		memory.contextualise(null,null,fc,"foo", null, null, false); // should be promoted to memory
 		assertTrue(!d.containsKey("foo"));
 		assertTrue(m.containsKey("foo")); // need to be able to 'touch' a context...
 		memory.evict(); // should still be there...
@@ -414,7 +414,7 @@ public class TestContextualiser extends TestCase {
 		
 		Collapser collapser0=new HashingCollapser(10, 2000);		
 		Map c0=new HashMap();
-		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000, 2, new MyLocation());
+		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000, 20000, new MyLocation());
 		Map m0=new HashMap();
 		m0.put("foo", new MyContext());
 		Contextualiser memory0=new MemoryContextualiser(clstr0, collapser0, m0, new NeverEvicter(), new MyContextPool());
@@ -422,7 +422,7 @@ public class TestContextualiser extends TestCase {
 		
 		Collapser collapser1=new HashingCollapser(10, 2000);		
 		Map c1=new HashMap();
-		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000, 2, new MyLocation());
+		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000, 20000, new MyLocation());
 		Map m1=new HashMap();
 		m1.put("bar", new MyContext());
 		Contextualiser memory1=new MemoryContextualiser(clstr1, collapser1, m1, new NeverEvicter(), new MyContextPool());
@@ -434,12 +434,12 @@ public class TestContextualiser extends TestCase {
 
 		assertTrue(!m0.containsKey("bar"));
 		assertTrue(!m1.containsKey("foo"));
-		assertTrue(memory0.contextualise(null,null,fc,"bar", null, null, 0));
-		assertTrue(memory0.contextualise(null,null,fc,"bar", null, null, 0));
-		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null, 0));
-		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null, 0));
-		assertTrue(!memory0.contextualise(null,null,fc,"baz", null, null, 0));
-		assertTrue(!memory1.contextualise(null,null,fc,"baz", null, null, 0));
+		assertTrue(memory0.contextualise(null,null,fc,"bar", null, null, false));
+		assertTrue(memory0.contextualise(null,null,fc,"bar", null, null, false));
+		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null, false));
+		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null, false));
+		assertTrue(!memory0.contextualise(null,null,fc,"baz", null, null, false));
+		assertTrue(!memory1.contextualise(null,null,fc,"baz", null, null, false));
 		
 		Thread.sleep(2000);
 	    _log.info("STOPPING NOW!");
