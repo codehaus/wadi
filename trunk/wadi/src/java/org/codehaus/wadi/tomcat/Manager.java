@@ -265,7 +265,7 @@ public class
   public void setExpiredSessions(int n){setSessionExpirationCounter(n);}
 
   // can do - total number of sessions created by this manager...
-  public void setSessionCounter(int n){setSessionCounter(n);}
+  public void setSessionCounter(int n){setSessionCreationCounter(n);}
   public int getSessionCounter(){return getSessionCreationCounter();}
 
   // this is tricky as well as we will rarely reject new sessions...
