@@ -23,7 +23,7 @@
 
     <filter>
         <filter-name>Filter</filter-name>
-        <filter-class>org.codehaus.wadi.sandbox.context.test.FilterInstance</filter-class>
+        <filter-class>org.codehaus.wadi.sandbox.test.FilterInstance</filter-class>
     </filter>
 
     <filter-mapping>
@@ -33,7 +33,7 @@
 
     <servlet>
         <servlet-name>Servlet</servlet-name>
-        <servlet-class>org.codehaus.wadi.sandbox.context.test.ServletInstance</servlet-class>
+        <servlet-class>org.codehaus.wadi.sandbox.test.ServletInstance</servlet-class>
     </servlet>
 
     <servlet-mapping>
