@@ -408,65 +408,88 @@ public abstract class
    * migration, etc...)
    *
    */
+
   public void
     housekeeper()		// pass in eviction decision parameters
     throws InterruptedException
   {
     _log.trace("housekeeping beginning");
-    boolean canEvict=_passivationStrategy!=null && _evictionPolicy!=null;
+
     long currentTime=System.currentTimeMillis();
-    Collection list=new LinkedList();
 
-    // this is probably the wrong way to do this - load all timed out
-    // sessions back into memory, so that they are included in normal housekeeping...
+    if (_passivationStrategy!=null)
+    {
+      if (_passivationStrategy.isElected())
+      {
+	// We are responsible for distributed garbage collection...
+	SessionPool pool=getReadySessionPool();
+	Collection list=new LinkedList();
+	// load all sessions that have timed out and destroy them...
+	for (Iterator i=_passivationStrategy.findTimedOut(currentTime, list).iterator(); i.hasNext();)
+	{
+	  HttpSessionImpl impl=(HttpSessionImpl)pool.take();
+	  if (_passivationStrategy.activate((String)i.next(), impl))
+	    destroyHttpSession(impl);
+	}
+	list.clear();		// could be reused on next iteration...
 
-    _passivationStrategy.standDown();
-    // TODO - we are very likely to be reelected here...
-    _passivationStrategy.standUp();
-    if (_passivationStrategy.isElected())
-      for (Iterator i=_passivationStrategy.findTimedOut(currentTime, list).iterator(); i.hasNext();)
-	get((String)i.next());
-    list.clear();		// could be reused on next iteration...
+	// we have now served a term - stand down...
+	_passivationStrategy.standDown();
+      }
+      else
+      {
+	// Someone else has been responsible for distributed garbage
+	// collection. It's time we served a term...
+	_passivationStrategy.standUp();
+      }
+    }
+
+    boolean canEvict=_passivationStrategy!=null && _evictionPolicy!=null;
 
     for (Iterator i=_local.values().iterator(); i.hasNext();)
     {
       HttpSessionImpl impl=(HttpSessionImpl)i.next();
-      boolean acquired=impl.getContainerLock().attempt(0);
-      if (!acquired) // if this fails, is it a guarantee that there are active threads ? TODO
+
+      // check, with shared access, for a number of reasons why a
+      // session should be moved out of local store, then if it
+      // should, take an exclusive lock and do so... - if we cannot
+      // get the lock, forget this session, we will do it next time...
+      boolean hasBeenInvalidated=false;
+      boolean hasTimedOut=false;
+      boolean shouldBeEvicted=false;
+      if (((hasBeenInvalidated=!((org.codehaus.wadi.shared.HttpSession)impl.getFacade()).isValid()) ||
+	   (hasTimedOut=impl.hasTimedOut(currentTime)) ||
+	   (shouldBeEvicted=(canEvict && _evictionPolicy.evictable(currentTime, impl)))) &&
+	  impl.getContainerLock().attempt(0))
       {
-	// we could not get an exclusive lock on this session,
-	// therefore there are associated threads active within the
-	// container - do not touch it...
-	_log.trace(impl.getId()+" : failed to acquire exclusive access for housekeeping");
-	continue;
-      }
-      else
-      {
-	//	  _log.trace(impl.getId()+" : testing for invalidation or eviction");
-	// we are free to do as we will :-)
 	try
 	{
-	  if (!((org.codehaus.wadi.shared.HttpSession)impl.getFacade()).isValid()) // explicitly invalidated
+	  if (hasBeenInvalidated) // explicitly invalidated
 	  {
-	    _log.trace(impl.getId()+" : marking as invalidation candidate (explicit invalidation)");
-	    getReadySessionPool().put(impl);
+	    _log.trace(impl.getId()+" : removing (explicit invalidation)");
+	    _local.remove(impl.getId());
+	    destroyHttpSession(impl);
 	    continue;
 	  }
 
-	  if (impl.hasTimedOut(currentTime))	// implicitly invalidated via time-out
+	  if (hasTimedOut)	// implicitly invalidated via time-out
 	  {
-	    _log.trace(impl.getId()+" : marking as invalidation candidate (implicit time out)");
-	    ((org.codehaus.wadi.shared.HttpSession)impl.getFacade()).invalidate(); // TODO - don't do this...
-	    getReadySessionPool().put(impl);
+	    _log.trace(impl.getId()+" : removing (implicit time out)");
+	    _local.remove(impl.getId());
+	    destroyHttpSession(impl);
 	    continue;
 	  }
 
-	  if (canEvict && _evictionPolicy.evictable(currentTime, impl))
+	  if (shouldBeEvicted)
 	  {
-	    _log.trace(impl.getId()+" : marking as migration candidate");
+	    _log.trace(impl.getId()+" : removing (migrating to long-term store)");
 	    // should this be done asynchronously via another Channel ?
 	    if (_passivationStrategy.passivate(impl))
+	    {
 	      _local.remove(impl.getId());
+	      // TODO - how do we recycle the impl ?
+	    }
+
 	    continue;
 	  }
 	}
