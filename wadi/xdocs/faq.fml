@@ -94,6 +94,15 @@
       <question>What are WADI's goals? [20/04/04]</question>
       <answer>
 
+	We can crystallise WADI's goals into two stages:
+
+	<ul>
+	<li>to be able to walk into your web farm and ctl-c a node
+	without losing any httpsessions.</li>
+	<li>to be able to walk into your web farm and 'kill -9' a node
+	without losing any httpsessions.</li>
+	</ul>
+
 	WADI is a collection of pluggable components which,
 	ultimately, aim to provide a complete solution to all the
 	common problems encountered in managing user state in the
