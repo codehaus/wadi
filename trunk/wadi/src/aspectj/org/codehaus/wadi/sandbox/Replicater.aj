@@ -17,15 +17,15 @@
 package org.codehaus.wadi.sandbox;
 
 import org.codehaus.wadi.HttpSessionSetters;
-import org.codehaus.wadi.sandbox.impl.AtomicReplicatedSession;
+//import org.codehaus.wadi.sandbox.impl.AtomicReplicatedSession;
 import org.codehaus.wadi.sandbox.impl.Session;
 
 public aspect Replicater {
-    
-    pointcut replicate(AtomicReplicatedSession session) : execution(* HttpSessionSetters.set*(..)) && target(session);
-    
-    after(AtomicReplicatedSession session) : replicate(session) {
-        session.setDirty(true);
-    }
+
+  //    pointcut replicate(AtomicReplicatedSession session) : execution(* HttpSessionSetters.set*(..)) && target(session);
+
+  //    after(AtomicReplicatedSession session) : replicate(session) {
+  //        session.setDirty(true);
+  //    }
 
 }
