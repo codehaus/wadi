@@ -37,7 +37,7 @@
 -->
 
  <Set name="MigrationService">
-  <New class="org.codehaus.wadi.impl.sync.MigrationService"/>
+  <New class="org.codehaus.wadi.impl.StreamedMigrationService"/>
  </Set>
 
   <!-- used to stream sessions between peers -->

@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.impl.sync;
+package org.codehaus.wadi.impl;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import java.io.IOException;
@@ -44,7 +44,7 @@ import org.codehaus.wadi.StreamingStrategy;
  * @version $Revision$
  */
 public class
-  OldMigrationService
+  OldStreamedMigrationService
 {
   public static class
     Client

@@ -64,7 +64,7 @@ public class
        InetAddress address=InetAddress.getByName("228.5.6.7");
        int port=6789;
        int timeout=5000;		// 5 secs
-       _service=new org.codehaus.wadi.impl.async.MigrationService();
+       _service=new org.codehaus.wadi.impl.MessagedMigrationService();
        _service.setHttpSessionImplMap(_serverSessions);
        _client=_service.getClient();
        _server=_service.getServer();

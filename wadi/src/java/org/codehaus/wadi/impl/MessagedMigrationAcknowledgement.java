@@ -15,27 +15,25 @@
 *  limitations under the License.
 */
 
-package org.codehaus.wadi.impl.async;
+package org.codehaus.wadi.impl;
 
-import javax.jms.ObjectMessage;
+import javax.jms.Destination;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Executable;
 import org.codehaus.wadi.MigrationService;
 
-import javax.jms.JMSException;
-
 public class
-    MigrationAcknowledgement
+    MessagedMigrationAcknowledgement
     implements Executable
 {
-  protected static final Log _log=LogFactory.getLog(MigrationAcknowledgement.class);
+  protected static final Log _log=LogFactory.getLog(MessagedMigrationAcknowledgement.class);
   protected final String     _id;
   protected final boolean    _ok;
   protected final long       _timeout;
 
   public
-    MigrationAcknowledgement(String id, boolean ok, long timeout)
+    MessagedMigrationAcknowledgement(String id, boolean ok, long timeout)
   {
     _id=id;
     _ok=ok;
@@ -43,16 +41,9 @@ public class
   }
 
   public void
-    invoke(MigrationService service, ObjectMessage message)
+    invoke(MigrationService service, Destination source, String correlationID)
   {
-    try
-    {
-      service.getAsyncToSyncAdaptor().receive(_ok?Boolean.TRUE:Boolean.FALSE, message.getJMSCorrelationID(), _timeout);
-    }
-    catch (JMSException e)
-    {
-      _log.warn("could not extract correlation id from acknowledgement message", e);
-    }
+      service.getAsyncToSyncAdaptor().receive(_ok?Boolean.TRUE:Boolean.FALSE, correlationID, _timeout);
   }
 
   public String
