@@ -26,7 +26,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Motable;
 
-
 /**
  * A Motable that represents its Bytes field as a File on LocalDisc.
  * N.B. The File field must be set before the Bytes field.
@@ -69,10 +68,10 @@ public class ExclusiveDiscMotable extends AbstractMotable {
 			if (!motable.checkTimeframe(System.currentTimeMillis()))
 			    _log.warn("loaded session from the future!: "+motable.getId());
 
-			_log.info("loaded (local disc): "+file);
+			_log.info("loaded (exclusive disc): "+file);
 			return motable;
 		} catch (Exception e) {
-			_log.warn("load (local disc) failed: "+file, e);
+			_log.warn("load (exclusive disc) failed: "+file, e);
 			throw e;
 		}
 		finally {
@@ -91,9 +90,9 @@ public class ExclusiveDiscMotable extends AbstractMotable {
 			oos.writeInt(motable.getMaxInactiveInterval());
 			oos.writeObject(motable.getBytes());
 			oos.flush();
-			_log.info("stored (local disc): "+file);
+			_log.info("stored (exclusive disc): "+file);
 		} catch (Exception e) {
-			_log.warn("store (local disc) failed: "+file, e);
+			_log.warn("store (exclusive disc) failed: "+file, e);
 			throw e;
 		} finally {
 			if (oos!=null)
@@ -103,6 +102,6 @@ public class ExclusiveDiscMotable extends AbstractMotable {
 
 	protected static void remove(File file) {
 		file.delete();
-		_log.info("removed (local disc): "+file);
+		_log.info("removed (exclusive disc): "+file);
 	}
 }
