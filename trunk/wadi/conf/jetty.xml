@@ -45,6 +45,23 @@
   </Call>
 
 <!--
+  <Call name="addWebApplication">
+    <Arg>/jsp-tests</Arg>
+    <Arg><SystemProperty name="wadi.home"/>/watchdog/jsp-tests</Arg>
+  </Call>
+
+  <Call name="addWebApplication">
+    <Arg>/servlet-tests</Arg>
+    <Arg><SystemProperty name="wadi.home"/>/watchdog/servlet-tests</Arg>
+  </Call>
+
+  <Call name="addWebApplication">
+    <Arg>/servlet-compat</Arg>
+    <Arg><SystemProperty name="wadi.home"/>/watchdog/servlet-compat</Arg>
+  </Call>
+-->
+
+<!--
   <Set name="RequestLog">
     <New class="org.mortbay.http.NCSARequestLog">
       <Arg><SystemProperty name="jetty.home" default="."/>/logs/yyyy_mm_dd.request.0.log</Arg>

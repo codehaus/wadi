@@ -77,11 +77,22 @@
 	>
 
 	<Context path="/wadi" docBase="${wadi.home}">
-	  <Manager className="org.codehaus.wadi.tomcat.Manager">
-	    <PassivationStrategy className="org.codehaus.wadi.plugins.FilePassivationStrategy">
-	    </PassivationStrategy>
-          </Manager>
+	  <Manager className="org.codehaus.wadi.tomcat.Manager"/>
 	</Context>
+
+<!--
+	<Context path="/jsp-tests" docBase="${wadi.home}/watchdog/jsp-tests">
+	  <Manager className="org.codehaus.wadi.tomcat.Manager"/>
+	</Context>
+
+	<Context path="/servlet-tests" docBase="${wadi.home}/watchdog/servlet-tests">
+	  <Manager className="org.codehaus.wadi.tomcat.Manager"/>
+	</Context>
+
+	<Context path="/servlet-compat" docBase="${wadi.home}/watchdog/servlet-compat">
+	  <Manager className="org.codehaus.wadi.tomcat.Manager"/>
+	</Context>
+-->
 
         <Logger
 	  className="org.apache.catalina.logger.FileLogger"
