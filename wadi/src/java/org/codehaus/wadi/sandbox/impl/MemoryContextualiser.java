@@ -58,35 +58,11 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 		_pool=pool;
 		_streamer=streamer;
 
-		_immoter=new MemoryImmoter();
-		_emoter=new MemoryEmoter();
+		_immoter=new MemoryImmoter(_map);
+		_emoter=new MemoryEmoter(_map);
 	}
 
 	public boolean isLocal(){return true;}
-
-	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
-		Motable emotable=(Motable)_map.get(id);
-		if (emotable==null)
-			return false; // we cannot proceed without the session...
-
-		Sync shared=((Context)emotable).getSharedLock();
-		boolean acquired=false;
-		try {
-			shared.acquire();
-			acquired=true;
-
-			if (immoter!=null)
-				return promote(hreq, hres, chain, id, immoter, promotionLock, emotable);
-
-			return contextualiseLocally(hreq, hres, chain, id, promotionLock, emotable);
-
-		} catch (InterruptedException e) {
-			throw new ServletException("timed out acquiring context", e); // TODO - good idea ?
-		} finally {
-			if (acquired)
-				shared.release(); // should we release here ?
-		}
-	}
 
 	// TODO - c.f. AbstractMappedContextualiser.evict()
 	public void evict() {
@@ -119,29 +95,67 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	}
 
 	public boolean contextualiseLocally(HttpServletRequest req, HttpServletResponse res, FilterChain chain, String id, Sync promotionLock, Motable motable)  throws IOException, ServletException {
-		_log.info("contextualising: "+id);
-		chain.doFilter(req, res);
-		return true;
+	    Sync lock=((Context)motable).getSharedLock();
+	    boolean acquired=false;
+	    try{
+	        do {
+	            try {
+	                lock.acquire();
+	                acquired=true;
+	            } catch (TimeoutException e) {
+	                _log.error("unexpected timeout - continuing without lock", e);
+	            } catch (InterruptedException e) {
+	                _log.warn("unexpected interruption - continuing", e);
+	            }
+	        } while (Thread.interrupted());
+	        
+	        chain.doFilter(req, res);
+	        return true;
+	    } finally {
+	        if (acquired) lock.release();
+	    }
 	}
+	
+//	public boolean promote(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Motable emotable) throws IOException, ServletException {
+//	    Sync lock=((Context)emotable).getExclusiveLock();
+//	    boolean acquired=false;
+//	    try{
+//	        do {
+//	            try {
+//	                lock.acquire();
+//	                acquired=true;
+//	            } catch (TimeoutException e) {
+//	                _log.error("unexpected timeout - continuing without lock", e);
+//	            } catch (InterruptedException e) {
+//	                _log.warn("unexpected interruption - continuing", e);
+//	            }
+//	        } while (Thread.interrupted());
+//	        
+//	        return super.promote(hreq, hres, chain, id, immoter, promotionLock, emotable);
+//	    } finally {
+//	        if (acquired) lock.release();
+//	    }
+//	}
 
-	// TODO - merge with MappedEmoter soon
-	class MemoryEmoter implements Emoter {
+	class MemoryEmoter extends AbstractMappedEmoter {
+	    
+	    public MemoryEmoter(Map map) {
+	        super(map);
+	    }
 	    
 	    public boolean prepare(String id, Motable emotable, Motable immotable) {
 	        // TODO - acquire exclusive lock
-	        _map.remove(id);
-	        return true;
+	        return super.prepare(id, emotable, immotable);
 	    }
 	    
 	    public void commit(String id, Motable emotable) {
-	        emotable.tidy();
-	        //_log.info("removal (memory): "+id);
+	        super.commit(id, emotable);
 	        // TODO - release exclusive lock
 	    }
 	    
 	    public void rollback(String id, Motable emotable) {
-	        _map.put(id, emotable);
-	        // TODO - locking ?
+	        super.rollback(id, emotable);
+	        // TODO - release exclusive lock ?
 	    }
 	    
 	    public String getInfo() {
@@ -149,23 +163,18 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	    }
 	}
 	
-	class MemoryImmoter extends AbstractImmoter {
+	class MemoryImmoter extends AbstractMappedImmoter {
+	    
+	    public MemoryImmoter(Map map) {
+	        super(map);
+	    }
 	    
 	    public Motable nextMotable(String id, Motable emotable) {
 	        return _pool.take();
 	    }
 	    
-	    public void commit(String id, Motable immotable) {
-	        _map.put(id, immotable); // assumes that Map does own syncing...
-	    }
-	    
 	    public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
-	        Context context=(Context)immotable;
-	        try {
-	            MemoryContextualiser.this.contextualiseLocally(hreq, hres, chain, id, new NullSync(), immotable); // TODO - promotionLock ?
-	        } finally {
-	            context.getSharedLock().release();
-	        }
+	        contextualiseLocally(hreq, hres, chain, id, new NullSync(), immotable); // TODO - promotionLock ?
 	    }
 	    
 	    public String getInfo() {
@@ -175,8 +184,5 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
-
-	public Immoter getPromoter(Immoter immoter) {
-		return immoter==null?_immoter:immoter;
-	}
+	public Immoter getPromoter(Immoter immoter) {return immoter==null?_immoter:immoter;}
 }
