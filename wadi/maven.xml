@@ -7,28 +7,15 @@
   xmlns:clover="jelly:clover"
   >
 
-
   <goal name="default" prereqs="clean, test"/>
+
   <goal name="dc" prereqs="clean, site:deploy, jar:deploy-snapshot"/>
 
-  <preGoal name="site:deploy">
 <!--
-    <attainGoal name="javadoc"/>
-    <attainGoal name="java:compile"/>
-    <attainGoal name="clover"/>
--->
-  </preGoal>
-
   <goal name="maven-linkcheck-plugin"/>
   <goal name="maven-linkcheck-plugin:register"/>
   <goal name="maven-linkcheck-plugin:report-real"/>
-
-  <!--
-  <goal name="doc">
-  <attainGoal name="html2xdoc"/>
-  <attainGoal name="xdoc"/>
-  </goal>
-  -->
+-->
 
   <!-- ======================================== -->
 
