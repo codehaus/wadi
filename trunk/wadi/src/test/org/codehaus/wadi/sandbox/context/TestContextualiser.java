@@ -14,16 +14,10 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.Statement;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -44,8 +38,6 @@ import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.context.impl.LocalDiscContextualiser;
-import org.codehaus.wadi.sandbox.context.impl.LocationRequest;
-import org.codehaus.wadi.sandbox.context.impl.LocationResponse;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.context.impl.SharedJDBCContextualiser;
@@ -199,8 +191,8 @@ public class TestContextualiser extends TestCase {
 		
 		FilterChain fc=new MyFilterChain();
 //		Collapser collapser=new HashingCollapser();
-		memory.contextualise(null,null,fc,"foo", null, null);
-		memory.contextualise(null,null,fc,"bar", null, null);
+		memory.contextualise(null,null,fc,"foo", null, null, 0);
+		memory.contextualise(null,null,fc,"bar", null, null, 0);
 		assertTrue(!f.exists());
 	}
 	
@@ -212,7 +204,7 @@ public class TestContextualiser extends TestCase {
 			_context=new MyContext(context);
 		}
 		
-		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
+		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, long peekTimeout) throws IOException, ServletException {
 			_counter++;
 			
 			MyContext context=_context;
@@ -231,6 +223,8 @@ public class TestContextualiser extends TestCase {
 		
 		public void demote(String key, Motable val){}
 		public void evict(){}
+		
+		public boolean isLocal(){return false;}
 	}
 	
 	class MyActiveContextualiser implements Contextualiser {
@@ -241,7 +235,7 @@ public class TestContextualiser extends TestCase {
 			_context=new MyContext(context);
 		}
 		
-		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
+		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, long peekTimeout) throws IOException, ServletException {
 			_counter++;
 			Context context=_context;
 			Sync shared=context.getSharedLock();
@@ -259,6 +253,7 @@ public class TestContextualiser extends TestCase {
 
 		public void demote(String key, Motable val){}
 		public void evict(){}
+		public boolean isLocal(){return false;}
 	}
 	
 	class MyRunnable implements Runnable {
@@ -274,7 +269,7 @@ public class TestContextualiser extends TestCase {
 		
 		public void run() {
 			try {
-				_contextualiser.contextualise(null, null, _chain, _id, null, null);
+				_contextualiser.contextualise(null, null, _chain, _id, null, null, 0);
 			} catch (Exception e) {
 				_log.error("unexpected problem", e);
 				assertTrue(false);
@@ -287,7 +282,7 @@ public class TestContextualiser extends TestCase {
 		FilterChain fc=new MyFilterChain();		
 		
 		for (int i=0; i<n; i++)
-			mc.contextualise(null,null,fc,"baz", null, null);
+			mc.contextualise(null,null,fc,"baz", null, null, 0);
 	}
 	
 	public void testPromotion() throws Exception {
@@ -340,7 +335,7 @@ public class TestContextualiser extends TestCase {
 		memory.evict(); // should move foo to disc
 		assertTrue(d.containsKey("foo"));
 		assertTrue(!m.containsKey("foo"));
-		memory.contextualise(null,null,fc,"foo", null, null); // should promote foo back into memory
+		memory.contextualise(null,null,fc,"foo", null, null, 0); // should promote foo back into memory
 		assertTrue(!d.containsKey("foo"));
 		assertTrue(m.containsKey("foo"));
 	}
@@ -391,7 +386,7 @@ public class TestContextualiser extends TestCase {
 		disc.evict(); // should finally move to db
 		assertTrue(!d.containsKey("foo"));
 		assertTrue(!m.containsKey("foo"));
-		memory.contextualise(null,null,fc,"foo", null, null); // should be promoted to memory
+		memory.contextualise(null,null,fc,"foo", null, null, 0); // should be promoted to memory
 		assertTrue(!d.containsKey("foo"));
 		assertTrue(m.containsKey("foo")); // need to be able to 'touch' a context...
 		memory.evict(); // should still be there...
@@ -400,46 +395,6 @@ public class TestContextualiser extends TestCase {
 //		assertTrue(((MyContext)m.get("foo"))._val.equals("foo"));
 	}
 	
-	class MyListener implements MessageListener {
-		
-		String _id;
-		Location _location;
-		Cluster _cluster;
-		
-		MyListener(String id, Location location, Cluster cluster) {
-			_id=id;
-			_location=location;
-			_cluster=cluster;
-		}
-		
-		public void onMessage(Message message) {
-			ObjectMessage om=null;
-			Object tmp=null;
-			String id=null;
-			
-			try {
-				// filter/validate message
-				if (message instanceof ObjectMessage &&
-					(om=(ObjectMessage)message)!=null &&
-					(tmp=om.getObject())!=null &&
-					tmp instanceof LocationRequest &&
-					(id=((LocationRequest)tmp).getId())!=null &&
-					_id.equals(id)) {
-					// send a LocationResponse
-					_log.info("sending location response: "+_id);
-					LocationResponse response=new LocationResponse(_location, Collections.singleton(id));
-					ObjectMessage res=_cluster.createObjectMessage();
-					res.setJMSReplyTo(message.getJMSReplyTo());
-					res.setJMSCorrelationID(message.getJMSCorrelationID());
-					res.setObject(response);
-					_cluster.send(message.getJMSReplyTo(), res);
-					}
-			} catch (JMSException e) {
-				_log.info("problem sending receiving message: ", e);
-			}
-		}
-	}
-
 	static class MyLocation implements Location, Serializable{
 		public long getExpiryTime(){return 0;}
 		public void proxy(ServletRequest req, ServletResponse res) {System.out.println("PROXYING!!!");}
@@ -459,29 +414,19 @@ public class TestContextualiser extends TestCase {
 		
 		Collapser collapser0=new HashingCollapser(10, 2000);		
 		Map c0=new HashMap();
-		c0.put("foo", null); // add a location
-		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000);
+		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000, 2, new MyLocation());
 		Map m0=new HashMap();
+		m0.put("foo", new MyContext());
 		Contextualiser memory0=new MemoryContextualiser(clstr0, collapser0, m0, new NeverEvicter(), new MyContextPool());
 		clstr0.setContextualiser(memory0);
-		boolean excludeSelf0=true;
-	    MessageConsumer consumer0=cluster0.createConsumer(cluster0.getDestination(), null, excludeSelf0);
-	    MyLocation location0=new MyLocation();
-		MessageListener listener0=new MyListener("foo", location0, cluster0);
-	    consumer0.setMessageListener(listener0);
 		
 		Collapser collapser1=new HashingCollapser(10, 2000);		
 		Map c1=new HashMap();
-		c1.put("bar", null); // add a location
-		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000);
+		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000, 2, new MyLocation());
 		Map m1=new HashMap();
+		m1.put("bar", new MyContext());
 		Contextualiser memory1=new MemoryContextualiser(clstr1, collapser1, m1, new NeverEvicter(), new MyContextPool());
 		clstr1.setContextualiser(memory1);
-		boolean excludeSelf1=true;
-	    MessageConsumer consumer1=cluster1.createConsumer(cluster1.getDestination(), null, excludeSelf1);
-	    MyLocation location1=new MyLocation();
-		MessageListener listener1=new MyListener("bar", location1, cluster1);
-	    consumer1.setMessageListener(listener1);
 		
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
 	    _log.info("STARTING NOW!");
@@ -489,10 +434,12 @@ public class TestContextualiser extends TestCase {
 
 		assertTrue(!m0.containsKey("bar"));
 		assertTrue(!m1.containsKey("foo"));
-		assertTrue(memory0.contextualise(null,null,fc,"bar", null, null));
-		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null));
-		assertTrue(!memory0.contextualise(null,null,fc,"baz", null, null));
-		assertTrue(!memory1.contextualise(null,null,fc,"baz", null, null));
+		assertTrue(memory0.contextualise(null,null,fc,"bar", null, null, 0));
+		assertTrue(memory0.contextualise(null,null,fc,"bar", null, null, 0));
+		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null, 0));
+		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null, 0));
+		assertTrue(!memory0.contextualise(null,null,fc,"baz", null, null, 0));
+		assertTrue(!memory1.contextualise(null,null,fc,"baz", null, null, 0));
 		
 		Thread.sleep(2000);
 	    _log.info("STOPPING NOW!");

@@ -61,6 +61,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	protected final Map             _searches=new HashMap(); // do we need more concurrency ?
 	protected final long            _timeout;
 	protected final Location        _location;
+	protected final long            _peekTimeout;
 	
 	protected Contextualiser _top;
 	public void setContextualiser(Contextualiser top){_top=top;}
@@ -91,17 +92,22 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			String id=request.getId();
 			_log.info("receiving location request: "+id);
 
+			boolean present=false;
 			if (_top==null) {
 				_log.warn("no Contextualiser set - cannot respond to LocationRequests");
 			} else {
-				// TODO - somehow we have to query local contextualisers for this session, causing its promotion if it is present and send a message back if so...
-				_log.info("GOT TO HERE");
+				try {
+					present=_top.contextualise(null,null,null,id, null, null, _peekTimeout);
+					_log.info("peeked for "+id+" - "+present);
+				} catch (Exception e) {
+					_log.warn("problem peeking for location request: "+id);
+				}
+				// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
 			}
 			
-			Destination destination=message.getJMSReplyTo();
-			String correlationId=message.getJMSCorrelationID();
-			boolean present=false;
 			if (present) {
+				Destination destination=message.getJMSReplyTo();
+				String correlationId=message.getJMSCorrelationID();
 				LocationResponse response=new LocationResponse(_location, Collections.singleton(id));
 				try {
 					ObjectMessage m=_cluster.createObjectMessage();
@@ -153,7 +159,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 * @param map
 	 * @param evicter
 	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, Cluster cluster, long timeout) throws JMSException {
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, Cluster cluster, long timeout, long peekTimeout, Location location) throws JMSException {
 		super(next, collapser, map, evicter);
 		_cluster=cluster;
 		boolean excludeSelf=true;
@@ -161,8 +167,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		_listener=new LocationListener();
 	    _consumer.setMessageListener(_listener);// should be called in start() - we need a stop() too - to remove listeners...
 	    _timeout=timeout;
-	    // TODO
-	    _location=null; // should be a Location allowing proxying back to this node...
+	    _peekTimeout=peekTimeout==0?1:peekTimeout; // must not be 0
+	    _location=location;
 	}
 
 	/* (non-Javadoc)
@@ -175,8 +181,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#contextualiseLocally(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync)
 	 */
-	public boolean contextualiseLocally(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
-		
+	public boolean contextualiseLocally(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, long peekTimeout) throws IOException, ServletException {
+		// ignore peekTimeout - we are not local
 		Location location=null;
 		
 		if ((location=(Location)_map.get(id))==null) {
@@ -258,4 +264,6 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		// for the moment - just push to the tier below us...
 		_next.demote(key, val);
 	}
+	
+	public boolean isLocal(){return false;}
 }
