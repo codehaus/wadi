@@ -167,15 +167,15 @@ public abstract class
     return "<"+getClass().getName()+": "+_attributes+">";
   }
 
-  // why do I have to go to such lengths to initialise these
-  // transient fields ?
   private void readObject(java.io.ObjectInputStream in)
     throws java.io.IOException, ClassNotFoundException
   {
-    in.defaultReadObject();
-    _rwlock=new ReaderPreferenceReadWriteLock();
-    _facade=newFacade();
+    assert false;
+  }
 
+  private void writeObject(java.io.ObjectOutputStream os)
+    throws java.io.IOException
+  {
     assert false;
   }
 

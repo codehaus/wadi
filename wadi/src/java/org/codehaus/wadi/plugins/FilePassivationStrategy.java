@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.shared.HttpSessionImpl;
 import org.codehaus.wadi.shared.PassivationStrategy;
+import org.codehaus.wadi.shared.SerializableContent;
 
 
 // TODO - should use NIO all the way through. Sessions should be
@@ -137,7 +138,7 @@ public class
 	lock=fos.getChannel().lock();
 	_log.trace(file.toString()+": passivating : "+impl);
 	ObjectOutputStream oos=new ObjectOutputStream(fos);
-	oos.writeObject(impl);
+	impl.writeContent(oos);
 	oos.flush();
 	oos.close();
 
@@ -163,10 +164,9 @@ public class
       }
     }
 
-  public HttpSessionImpl
-    activate(String id)
+  public boolean
+    activate(String id, HttpSessionImpl impl)
     {
-      HttpSessionImpl impl=null;
       File file=null;
       RandomAccessFile raf=null;
       try
@@ -175,7 +175,7 @@ public class
 	// quick exit - saves expensive allocation and stack unwinding
 	// if file not present..
 	if (!file.exists())
-	  return impl;
+	  return false;
 	else
 	{
 	  FileLock lock=null;
@@ -185,10 +185,10 @@ public class
 	    lock=raf.getChannel().lock();
 	    FileInputStream fis=new FileInputStream(file);
 	    ObjectInputStream ois=new ObjectInputStream(fis);
-	    impl=(HttpSessionImpl)ois.readObject();
+	    impl.readContent(ois);
 	    ois.close();
 	    _log.trace(file.toString()+": activating : "+impl);
-	    return impl;
+	    return true;
 	  }
 	  finally
 	  {
@@ -220,7 +220,7 @@ public class
 	_log.warn(file.toString()+": could not restore passivated session", e);
       }
 
-      return impl;
+      return false;
     }
 
   /**

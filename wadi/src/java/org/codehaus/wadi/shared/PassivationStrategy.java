@@ -17,6 +17,9 @@
 
 package org.codehaus.wadi.shared;
 
+// TODO - The API should probably be in terms of multiple sessions
+// instead of single ones ?
+
 import java.util.Collection;
 
 public interface
@@ -37,7 +40,7 @@ public interface
    * @param id a <code>String</code> value
    * @return a <code>Session</code> value
    */
-  HttpSessionImpl activate(String id);
+  boolean activate(String id, HttpSessionImpl impl);
 
   /**
    * This is called occasionally to collect passivated sessions that

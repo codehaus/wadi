@@ -39,11 +39,25 @@ public class
     // shared/Manager
     defineAttribute("distributable");
     defineAttribute("maxInactiveInterval");
+    // stats
     defineAttribute("specificationVersion");
     defineAttribute("sessionCreationCounter");
     defineAttribute("sessionDestructionCounter");
     defineAttribute("sessionExpirationCounter");
     defineAttribute("sessionInvalidationCounter");
     defineAttribute("sessionRejectionCounter");
+    defineAttribute("sessionLoadCounter");
+    defineAttribute("sessionStoreCounter");
+    defineAttribute("sessionSendCounter");
+    defineAttribute("sessionReceivedCounter");
+    defineAttribute("sessionLocalHitCounter");
+    defineAttribute("sessionStoreHitCounter");
+    defineAttribute("sessionRemoteHitCounter");
+    defineAttribute("sessionMissCounter");
+    defineAttribute("requestAcceptedCounter");
+    defineAttribute("requestRedirectedCounter");
+    defineAttribute("requestProxiedCounter");
+    defineAttribute("requestStatefulCounter");
+    defineAttribute("requestStatelessCounter");
   }
 }

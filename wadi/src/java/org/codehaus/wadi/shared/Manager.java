@@ -228,7 +228,7 @@ public abstract class
 	// If a passivation store has been enabled, we may find the
 	// session in it and load it....
 	if (_passivationStrategy!=null)
-	  impl=_passivationStrategy.activate(id);
+	  _passivationStrategy.activate(id, (impl=(HttpSessionImpl)getBlankSessionPool().take())); // TODO - check for success
 
 	// If a migration policy has been enabled, we may request it
 	// from another node.
@@ -954,8 +954,51 @@ public abstract class
   public void setSessionRejectionCounter(int n){_sessionRejectionCounter=n;}
   public int getSessionRejectionCounter(){return _sessionRejectionCounter;}
 
-  // I think we also want to know how many sessions are activated,
-  // passivated, migrated to us, migrated from us ? or simply how many
-  // serialisations and deserialisations to store or other node we
-  // have done. Also how many request relocations...
+  protected int _sessionLoadCounter;
+  public void setSessionLoadCounter(int n){_sessionLoadCounter=n;}
+  public int getSessionLoadCounter(){return _sessionLoadCounter;}
+  protected int _sessionStoreCounter;
+  public void setSessionStoreCounter(int n){_sessionStoreCounter=n;}
+  public int getSessionStoreCounter(){return _sessionStoreCounter;}
+  protected int _sessionSendCounter;
+  public void setSessionSendCounter(int n){_sessionSendCounter=n;}
+  public int getSessionSendCounter(){return _sessionSendCounter;}
+  protected int _sessionReceivedCounter;
+  public void setSessionReceivedCounter(int n){_sessionReceivedCounter=n;}
+  public int getSessionReceivedCounter(){return _sessionReceivedCounter;}
+
+  protected int _sessionLocalHitCounter;
+  public void setSessionLocalHitCounter(int n){_sessionLocalHitCounter=n;}
+  public int getSessionLocalHitCounter(){return _sessionLocalHitCounter;}
+  protected int _sessionStoreHitCounter;
+  public void setSessionStoreHitCounter(int n){_sessionStoreHitCounter=n;}
+  public int getSessionStoreHitCounter(){return _sessionStoreHitCounter;}
+  protected int _sessionRemoteHitCounter;
+  public void setSessionRemoteHitCounter(int n){_sessionRemoteHitCounter=n;}
+  public int getSessionRemoteHitCounter(){return _sessionRemoteHitCounter;}
+  protected int _sessionMissCounter;
+  public void setSessionMissCounter(int n){_sessionMissCounter=n;}
+  public int getSessionMissCounter(){return _sessionMissCounter;}
+
+  protected int _requestAcceptedCounter;
+  public void setRequestAcceptedCounter(int n){_requestAcceptedCounter=n;}
+  public int getRequestAcceptedCounter(){return _requestAcceptedCounter;}
+  protected int _requestRedirectedCounter;
+  public void setRequestRedirectedCounter(int n){_requestRedirectedCounter=n;}
+  public int getRequestRedirectedCounter(){return _requestRedirectedCounter;}
+  protected int _requestProxiedCounter;
+  public void setRequestProxiedCounter(int n){_requestProxiedCounter=n;}
+  public int getRequestProxiedCounter(){return _requestProxiedCounter;}
+
+  protected int _requestStatefulCounter;
+  public void setRequestStatefulCounter(int n){_requestStatefulCounter=n;}
+  public int getRequestStatefulCounter(){return _requestStatefulCounter;}
+  protected int _requestStatelessCounter;
+  public void setRequestStatelessCounter(int n){_requestStatelessCounter=n;}
+  public int getRequestStatelessCounter(){return _requestStatelessCounter;}
+
+  // number of local sessions
+  // number of sessions in store (too expensive?)
+  // it would be nice to know the actual number of bytes moved an hour
+  // etc...
 }

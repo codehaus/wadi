@@ -23,7 +23,6 @@ import java.util.Map;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.jetty.HttpSessionImpl;
 import org.codehaus.wadi.shared.MigrationService;
 
 public class
@@ -74,7 +73,7 @@ public class
     throws Exception
     {
 
-      HttpSessionImpl session=new HttpSessionImpl();
+      org.codehaus.wadi.shared.HttpSessionImpl session=new org.codehaus.wadi.tomcat.HttpSessionImpl();
       session.setId(""+System.currentTimeMillis());
       String id=session.getId();
       _log.info("session: "+id);
@@ -94,7 +93,7 @@ public class
       assertTrue(!clientSessions.containsKey(id));
       assertTrue(clientLocks.size()==0);
       _log.info("_serverSessions: "+_serverSessions+", clientSessions:"+clientSessions);
-      _client.run(clientSessions, clientLocks, id, serverAddress, serverPort);
+      _client.run(clientSessions, clientLocks, id, new org.codehaus.wadi.jetty.HttpSessionImpl(), serverAddress, serverPort);
       assertTrue(_serverSessions.size()==0);
       assertTrue(!_serverSessions.containsKey(id));
       assertTrue(_serverLocks.size()==0);

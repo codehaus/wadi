@@ -751,7 +751,8 @@ public class TestHttpSession
       assertTrue(s1==e.getSession());
     }
 
-    HttpSessionImpl impl2=(HttpSessionImpl)fmp.activate(id);
+    HttpSessionImpl impl2=new HttpSessionImpl();
+    assertTrue(fmp.activate(id, impl2));
     impl2.setWadiManager(_manager);
     HttpSession s2=impl2.getFacade();
     // listener should not have yet been activated (we do it lazily)
