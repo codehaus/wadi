@@ -129,7 +129,7 @@
 
     <unitTest>
       <includes>
-        <include>**/sandbox/context/test/Test*.java</include>
+        <include>**/sandbox/test/Test*.java</include>
 	<!-- work -->
 <!--
         <include>**/TestJCache.java</include>
