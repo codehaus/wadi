@@ -234,87 +234,48 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#getPromoter(org.codehaus.wadi.sandbox.context.Promoter)
 	 */
 	public Promoter getPromoter(Promoter promoter) {
-		return promoter; // would we ever want to allow promotion of a context into our cache or out to the cluster ?
+		return promoter; // TODO - would we ever want to allow promotion of a context into our cache or out to the cluster ?
 }
 
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#contextualiseLocally(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync)
 	 */
 	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
-		Location location=null;
-
-		if ((location=(Location)_map.get(id))==null) {
-			String correlationId=_cluster.getLocalNode().getDestination().toString()+"-"+id;
-			Rendezvous rv=new Rendezvous(2);
-
-			// set up a rendez-vous...
-			synchronized (_searches) {
-				_searches.put(correlationId, rv);
-			}
-
-			try {
-				// broadcast location query to whole cluster
-				LocationRequest request=new LocationRequest(id, _proxyHandOverPeriod);
-				ObjectMessage message=_cluster.createObjectMessage();
-				message.setJMSReplyTo(_cluster.getDestination());
-				message.setJMSCorrelationID(correlationId);
-				message.setObject(request);
-				_log.info("sending location request: "+id);
-				_cluster.send(_cluster.getDestination(), message);
-
-				// rendez-vous with response/timeout...
-				do {
-					try {
-						LocationResponse response=(LocationResponse)rv.attemptRendezvous(null, _timeout);
-						location=response.getLocation();
-						Set ids=response.getIds();
-						// update cache
-						// TODO - do we need to considering NOT putting any location that is the same ours into the map
-						// otherwise we may end up in a tight loop proxying to ourself... - could this happen ?gramps
-
-						for (Iterator i=ids.iterator(); i.hasNext();) {
-							String tmp=(String)i.next();
-							_map.put(tmp, location);
-						}
-						_log.info("updated cache for: "+ids);
-					} catch (TimeoutException toe) {
-						_log.info("no response to location query within timeout: "+id); // session does not exist
-					} catch (InterruptedException ignore) {
-						_log.info("waiting for location response - interruption ignored: "+id);
-					}
-				} while (Thread.interrupted());
-			} catch (JMSException e) {
-				_log.warn("problem sending session location query: "+id, e);
-			}
-
-			// tidy up rendez-vous
-			synchronized (_searches) {
-				_searches.remove(correlationId);
-			}
-
-			if (location==null) {
-				return false;
+		Location location=(Location)_map.get(id);
+		if (location!=null) {
+			// let's try the cached location...
+			 if (location.proxy(hreq, hres, id, promotionMutex)) {
+			 	return true;
+			 } else {
+				// cached location may have been stale i.e. not responding to http requests
+				// this should be a very infrequent occurrence...
+				location=null;
 			}
 		}
+		
+		if (location==null) {
+			// refresh the cache...
+			location=locate(id);
+		}
 
-		assert location!=null;
-
-		_log.info("location found (cluster): "+id+" - "+location);
-
-		if ((location.proxy(hreq, hres, id, promotionMutex))) { // TODO - change whole Contextualiser interface to these types
-			// request was proxied and contextualised remotely...
-			// promotionMutex was released at earliest opportunity.
-			_log.info("migration has not occurred (contextualised remotely): "+id);
-		} else {
-			// the context has migrated from this Location to us...
-			// we must promote it and contextualise the outstanding request.
-			// the promotionMutex has NOT yet been released
-			_log.info("migration has occurred [NYI] (contextualisation will occur locally): "+id);
+		// if we could not locate the context, we are at the end of the road...
+		if (location==null) {
+			_log.info("could not locate: "+id);
 			return false;
-			// TODO - lots of code here...
 		}
-
-		return true;
+		
+		if ((location.proxy(hreq, hres, id, promotionMutex))) {
+			return true;
+		} else {
+			// proxy failed
+			// the promotionMutex has NOT yet been released...
+			promotionMutex.release();
+			// we'll have to contextualise hreq here - stateless context ? TODO
+			_log.error("could not proxy to: "+location+" for id:"+id+" - contextualising locally");
+			chain.doFilter(hreq, hres);
+			
+			return true; // looks wrong - but actually indicates that req should proceed no further down stack...
+		}
 	}
 
 	/* (non-Javadoc)
@@ -334,4 +295,60 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	}
 
 	public boolean isLocal(){return false;}
+	
+	// ClusterContextualiser...
+	
+	protected Location locate(String id) {
+		Location location=null;
+		
+		String correlationId=_cluster.getLocalNode().getDestination().toString()+"-"+id;
+		Rendezvous rv=new Rendezvous(2);
+
+		// set up a rendez-vous...
+		synchronized (_searches) {
+			_searches.put(correlationId, rv);
+		}
+
+		try {
+			// broadcast location query to whole cluster
+			LocationRequest request=new LocationRequest(id, _proxyHandOverPeriod);
+			ObjectMessage message=_cluster.createObjectMessage();
+			message.setJMSReplyTo(_cluster.getDestination());
+			message.setJMSCorrelationID(correlationId);
+			message.setObject(request);
+			_log.info("sending location request: "+id);
+			_cluster.send(_cluster.getDestination(), message);
+
+			// rendez-vous with response/timeout...
+			do {
+				try {
+					LocationResponse response=(LocationResponse)rv.attemptRendezvous(null, _timeout);
+					location=response.getLocation();
+					Set ids=response.getIds();
+					// update cache
+					// TODO - do we need to considering NOT putting any location that is the same ours into the map
+					// otherwise we may end up in a tight loop proxying to ourself... - could this happen ?gramps
+
+					for (Iterator i=ids.iterator(); i.hasNext();) {
+						String tmp=(String)i.next();
+						_map.put(tmp, location);
+					}
+					_log.info("updated cache for: "+ids);
+				} catch (TimeoutException toe) {
+					_log.info("no response to location query within timeout: "+id); // session does not exist
+				} catch (InterruptedException ignore) {
+					_log.info("waiting for location response - interruption ignored: "+id);
+				}
+			} while (Thread.interrupted());
+		} catch (JMSException e) {
+			_log.warn("problem sending session location query: "+id, e);
+		}
+
+		// tidy up rendez-vous
+		synchronized (_searches) {
+			_searches.remove(correlationId);
+		}
+
+		return location;
+	}
 }

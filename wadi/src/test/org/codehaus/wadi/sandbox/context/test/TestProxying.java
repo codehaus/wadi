@@ -27,6 +27,7 @@ import javax.servlet.ServletResponse;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -72,7 +73,7 @@ public class TestProxying extends TestCase {
 		(_node0=new JettyNode("0", "localhost", 8080, "/test", "/home/jules/workspace/wadi/webapps/test", _filter0, _servlet0)).start();
 		_servlet1=new MyServlet("1", clusterFactory.createCluster(clusterName), new InetSocketAddress("localhost", 8081), new MyContextPool(), new CommonsHttpProxy("jsessionid"));
 		_filter1=new MyFilter("1", _servlet1);
-		(_node1=new TomcatNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
+		(_node1=new JettyNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
 	    _log.info("STARTING NOW!");
 	}
@@ -98,6 +99,7 @@ public class TestProxying extends TestCase {
 	}
 
 	public int get(HttpClient client, HttpMethod method, String path) throws IOException, HttpException {
+		client.setState(new HttpState());
 		method.recycle();
 		method.setPath(path);
 		client.executeMethod(method);

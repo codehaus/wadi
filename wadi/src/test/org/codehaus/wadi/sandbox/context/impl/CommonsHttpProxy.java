@@ -85,7 +85,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 	 * @see javax.servlet.Servlet#service(javax.servlet.ServletRequest,
 	 *      javax.servlet.ServletResponse)
 	 */
-	public boolean proxy(InetSocketAddress location, HttpServletRequest hreq, HttpServletResponse hres) throws IOException	{
+	public boolean proxy(InetSocketAddress location, HttpServletRequest hreq, HttpServletResponse hres) {
 		long startTime=System.currentTimeMillis();
 
 		String m=hreq.getMethod();
@@ -215,9 +215,14 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		if (hasContent) {
 //			uc.setDoOutput(true);
 			
-			if (hm instanceof EntityEnclosingMethod)
-				((EntityEnclosingMethod)hm).setRequestBody(hreq.getInputStream());
-			// TODO - do we need to close response stream at end... ?
+			try {
+				if (hm instanceof EntityEnclosingMethod)
+					((EntityEnclosingMethod)hm).setRequestBody(hreq.getInputStream());
+				// TODO - do we need to close response stream at end... ?
+			} catch (IOException e) {
+				_log.warn("could not pss request input across proxy", e);
+				return false;
+			}
 		}
 
 		try
