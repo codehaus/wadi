@@ -17,8 +17,6 @@
 
 package org.codehaus.wadi.shared;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 
 import org.apache.commons.logging.Log;
