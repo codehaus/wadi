@@ -37,6 +37,8 @@ import org.codehaus.wadi.jetty.Manager;
 import org.codehaus.wadi.plugins.OldFilePassivationStrategy;
 import org.codehaus.wadi.shared.ObjectInputStream;
 
+import org.mortbay.jetty.servlet.WebApplicationHandler;
+
 //----------------------------------------
 
 public class TestHttpSession
@@ -112,9 +114,15 @@ public class TestHttpSession
     throws Exception
   {
     _manager=new Manager();
+    org.mortbay.jetty.servlet.WebApplicationHandler handler=new org.mortbay.jetty.servlet.WebApplicationHandler();
+    handler.initialize(new org.mortbay.http.HttpContext());
+    handler.start();
+    _manager.initialize(handler);
     _listener=new Listener();
     _manager.addEventListener(_listener);
     _manager.start();
+
+    System.out.println("GOT TO HERE");
   }
 
   protected void
