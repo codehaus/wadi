@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import java.io.Serializable;
-
 import org.codehaus.wadi.sandbox.Motable;
 
 /**
@@ -27,7 +25,7 @@ import org.codehaus.wadi.sandbox.Motable;
  * @version $Revision$
  */
 
-public abstract class AbstractMotable extends SimpleEvictable implements Motable, Serializable {
+public abstract class AbstractMotable extends SimpleEvictable implements Motable {
 
 	public void copy(Motable motable) throws Exception {
 		super.copy(motable); // Evictable fields

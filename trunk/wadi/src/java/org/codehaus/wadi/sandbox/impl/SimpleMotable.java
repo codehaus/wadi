@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.io.Serializable;
+
 /**
  * A very Simple implementation of Motable, with the Bytes field represented as a byte[]
  *
@@ -23,7 +25,8 @@ package org.codehaus.wadi.sandbox.impl;
  * @version $Revision$
  */
 
-public class SimpleMotable extends AbstractMotable {
+public class SimpleMotable extends AbstractMotable implements Serializable {
+    // TODO - why does this have to be Serializable ?
 	protected byte[] _bytes;
 	public byte[] getBytes() {return _bytes;}
 	public void setBytes(byte[] bytes){_bytes=bytes;}
