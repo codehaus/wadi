@@ -17,7 +17,7 @@
 
 package org.codehaus.wadi.jetty;
 
-import org.codehaus.wadi.shared.HttpSessionImpl;
+import org.codehaus.wadi.HttpSessionImpl;
 
 /**
  * Jetty-specific HttpSession facade
@@ -27,7 +27,7 @@ import org.codehaus.wadi.shared.HttpSessionImpl;
  */
 public class
   HttpSession
-  extends org.codehaus.wadi.shared.HttpSession
+  extends org.codehaus.wadi.HttpSession
   implements org.mortbay.jetty.servlet.SessionManager.Session
 {
   HttpSession(HttpSessionImpl impl) {super(impl);}

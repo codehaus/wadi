@@ -24,7 +24,6 @@ import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
@@ -40,7 +39,7 @@ import org.apache.catalina.Session;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.util.LifecycleSupport;
-import org.codehaus.wadi.shared.Filter;
+import org.codehaus.wadi.Filter;
 
 // TODO - revisit configuration mechanism when subcomponents types/apis
 // settle down a little more...
@@ -53,7 +52,7 @@ import org.codehaus.wadi.shared.Filter;
  */
 public class
   Manager
-  extends org.codehaus.wadi.shared.Manager
+  extends org.codehaus.wadi.Manager
   implements org.apache.catalina.Manager, org.apache.catalina.Lifecycle
 {
   //---------//
@@ -276,8 +275,8 @@ public class
   public void setMaxActive(int maxActive){}
   public int getMaxActive(){return 100000;}
 
-  protected org.codehaus.wadi.shared.HttpSessionImpl createImpl(){return new HttpSessionImpl();}
-  protected void destroyImpl(org.codehaus.wadi.shared.HttpSessionImpl impl){} // TODO - cache later
+  protected org.codehaus.wadi.HttpSessionImpl createImpl(){return new HttpSessionImpl();}
+  protected void destroyImpl(org.codehaus.wadi.HttpSessionImpl impl){} // TODO - cache later
 
   public void
     setFilter(Filter filter)

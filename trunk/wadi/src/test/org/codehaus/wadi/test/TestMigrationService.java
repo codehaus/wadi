@@ -23,10 +23,10 @@ import java.util.Map;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.MigrationService;
+import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.jetty.HttpSessionImplFactory;
-import org.codehaus.wadi.shared.StreamingStrategy;
-import org.codehaus.wadi.plugins.SimpleStreamingStrategy;
-import org.codehaus.wadi.shared.MigrationService;
 
 /**
  * Test the Migration Service
@@ -85,7 +85,7 @@ public class
     throws Exception
     {
 
-      org.codehaus.wadi.shared.HttpSessionImpl session=new org.codehaus.wadi.tomcat.HttpSessionImpl();
+      org.codehaus.wadi.HttpSessionImpl session=new org.codehaus.wadi.tomcat.HttpSessionImpl();
       session.setId(""+System.currentTimeMillis());
       String id=session.getRealId();
       if (_log.isInfoEnabled()) _log.info("session: "+id);

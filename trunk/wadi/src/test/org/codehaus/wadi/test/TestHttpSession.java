@@ -36,11 +36,11 @@ import javax.servlet.http.HttpSessionListener;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.SerializableContent;
+import org.codehaus.wadi.impl.FilePassivationStrategy;
+import org.codehaus.wadi.impl.GZIPStreamingStrategy;
 import org.codehaus.wadi.jetty.HttpSessionImpl;
 import org.codehaus.wadi.jetty.Manager;
-import org.codehaus.wadi.plugins.FilePassivationStrategy;
-import org.codehaus.wadi.plugins.GZIPStreamingStrategy;
-import org.codehaus.wadi.shared.SerializableContent;
 
 /**
  * Test WADI's HttpSession implementation

@@ -25,7 +25,7 @@ package org.codehaus.wadi.tomcat;
  */
 public class
   HttpSession
-  extends org.codehaus.wadi.shared.HttpSession
+  extends org.codehaus.wadi.HttpSession
 {
   HttpSession(HttpSessionImpl impl) {super(impl);}
 }

@@ -15,6 +15,8 @@ shift
 
 XTERM=`eval "echo $XTERM"`
 
+JAVA_OPTS="-enablesystemassertions $JAVA_OPTS"
+
 WADI_HOME=`pwd`/..
 JAVA=$JAVA_HOME/bin/java
 
@@ -42,14 +44,14 @@ if [ jettyold = "$container" ]
 then
     cd $JETTY_HOME
     exec \
-    $XTERM $JAVA $properties -cp $WADI_HOME/WEB-INF/classes -enablesystemassertions -jar start.jar $WADI_HOME/conf/jetty.xml
+    $XTERM $JAVA $properties -cp $WADI_HOME/WEB-INF/classes $JAVA_OPTS -jar start.jar $WADI_HOME/conf/jetty.xml
 fi
 
 if [ jetty = "$container" ]
 then
     cd $JETTY_HOME
     classpath=`find lib ext $WADI_HOME/WEB-INF/lib -name "*.jar" | tr '\n' ':'`./start.jar:$JAVA_HOME/lib/tools.jar:$WADI_HOME/WEB-INF/classes
-    exec $XTERM $JAVA $properties -cp $classpath -enablesystemassertions org.mortbay.jetty.Server $WADI_HOME/conf/jetty.xml
+    exec $XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.mortbay.jetty.Server $WADI_HOME/conf/jetty.xml
 fi
 
 if [ tomcat = "$container" ]
@@ -57,5 +59,5 @@ then
     cd $TOMCAT_HOME/bin
     properties="-Djava.endorsed.dirs=$TOMCAT_HOME/common/endorsed -Dcatalina.base=$TOMCAT_HOME -Dcatalina.home=$TOMCAT_HOME -Djava.io.tmpdir=$TOMCAT_HOME/temp $properties"
     classpath=`find $TOMCAT_HOME/. $WADI_HOME/lib $WADI_HOME/WEB-INF/lib $JETTY_HOME/lib/org.mortbay.jetty.jar $JAVA_HOME/lib/tools.jar -name "*.jar" | tr '\n' ':'`:$WADI_HOME/WEB-INF/classes
-    exec $XTERM $JAVA $properties -cp $classpath -enablesystemassertions org.apache.catalina.startup.Bootstrap -config $WADI_HOME/conf/tomcat.xml start
+    exec $XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.apache.catalina.startup.Bootstrap -config $WADI_HOME/conf/tomcat.xml start
 fi

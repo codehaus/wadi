@@ -17,21 +17,11 @@
 
 package org.codehaus.wadi.test;
 
-import java.util.HashMap;
-import java.util.Map;
-import javax.jms.Connection;
 import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
+
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
-import org.codehaus.activecluster.ClusterEvent;
-import org.codehaus.activecluster.ClusterListener;
-import org.codehaus.activecluster.impl.DefaultClusterFactory;
-import org.codehaus.activemq.ActiveMQConnectionFactory;
 
 /**
  *

@@ -2,7 +2,7 @@
 
 <!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure 1.2//EN" "http://jetty.mortbay.org/configure_1_2.dtd">
 
-<Configure class="org.codehaus.wadi.shared.Manager">
+<Configure class="org.codehaus.wadi.Manager">
 
  <Set name="ConnectionFactory">
   <New class="org.codehaus.activemq.ActiveMQConnectionFactory">
@@ -37,32 +37,32 @@
 
   <!-- used to stream sessions between peers -->
   <Set name="StreamingStrategy">
-    <New class="org.codehaus.wadi.plugins.SimpleStreamingStrategy"/><!-- no compression -->
+    <New class="org.codehaus.wadi.impl.SimpleStreamingStrategy"/><!-- no compression -->
   </Set>
 
   <!-- used to select long-term storage mechanism -->
   <Set name="PassivationStrategy">
 
-    <New class="org.codehaus.wadi.plugins.FilePassivationStrategy"><!-- File based persistance -->
+    <New class="org.codehaus.wadi.impl.FilePassivationStrategy"><!-- File based persistance -->
       <Arg><SystemProperty name="wadi.home"/>/tmp</Arg><!-- put evicted sessions ${wadi.home}/tmp -->
 
       <!-- evicted sessions will be gzipped -->
       <Set name="StreamingStrategy">
-	<New class="org.codehaus.wadi.plugins.GZIPStreamingStrategy"/>
+	<New class="org.codehaus.wadi.impl.GZIPStreamingStrategy"/>
       </Set>
     </New>
   </Set>
 
   <!-- used to decide when to evict a session -->
   <Set name="EvictionPolicy">
-    <New class="org.codehaus.wadi.plugins.AbsoluteEvictionPolicy">
+    <New class="org.codehaus.wadi.impl.AbsoluteEvictionPolicy">
       <Arg type="int">300</Arg><!-- evict after 5 mins of inactivity -->
     </New>
   </Set>
 
   <!-- used to decide how session ids should be generated -->
   <Set name="IdGenerator">
-    <New class="org.codehaus.wadi.plugins.TomcatIdGenerator"/><!-- use Tomcat style IDs -->
+    <New class="org.codehaus.wadi.impl.TomcatIdGenerator"/><!-- use Tomcat style IDs -->
   </Set>
 
   <!-- Multicast address:port over which session location protocol runs -->
@@ -72,7 +72,7 @@
 <!-- if you are using Apache/mod_jk uncomment this for affinity -->
 <!--
   <Set name="RoutingStrategy">
-   <New class="org.codehaus.wadi.plugins.JkRoutingStrategy">
+   <New class="org.codehaus.wadi.impl.JkRoutingStrategy">
     <Arg><SystemProperty name="wadi.colour"/></Arg>
    </New>
   </Set>
@@ -82,7 +82,7 @@
 <!--
 -->
   <Set name="RoutingStrategy">
-   <New class="org.codehaus.wadi.plugins.NoRoutingStrategy"/>
+   <New class="org.codehaus.wadi.impl.NoRoutingStrategy"/>
   </Set>
 
 </Configure>

@@ -21,7 +21,7 @@ export ASPECTJ_HOME
 if [ -z "$JETTY_HOME" ]
 then
     JETTY_HOME=/usr/java/Jetty-5.0.beta2
-    JETTY_HOME=$HOME/cvs/jetty/Jetty
+    JETTY_HOME=$HOME/cvs/jetty
 fi
 export JETTY_HOME
 

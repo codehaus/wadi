@@ -119,16 +119,14 @@
 
     <nagEmailAddress>jules@coredevelopers.net</nagEmailAddress>
 
-    <sourceDirectory>src/test</sourceDirectory>
-    <aspectSourceDirectory>src/test</aspectSourceDirectory>
     <sourceDirectory>src/java</sourceDirectory>
-    <aspectSourceDirectory>src/java</aspectSourceDirectory>
+    <aspectSourceDirectory>src/aspectj</aspectSourceDirectory>
 
     <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
 
     <unitTest>
       <includes>
-        <include>**/Test*.java</include>
+        <include>**/FTest*.java</include>
       </includes>
       <excludes>
         <exclude>**/TestLocationClient.java</exclude>
@@ -198,6 +196,7 @@
       <properties>
 	<war.bundle>true</war.bundle>
       </properties>
+      <javadoc>http://dev.eclipse.org/viewcvs/indextech.cgi/~checkout~/aspectj-home/doc/api</javadoc>
     </dependency>
 
     <dependency><!-- when will ibiblio be updated ? -->
@@ -208,12 +207,14 @@
         <classloader>root</classloader>
       </properties>
       <url>http://www.eclipse.org/aspectj/</url>
+      <javadoc>http://dev.eclipse.org/viewcvs/indextech.cgi/~checkout~/aspectj-home/doc/api</javadoc>
     </dependency>
 
     <dependency>
       <id>junit</id>
       <version>3.8.1</version>
       <url>http://www.junit.org/index.htm</url>
+      <javadoc>http://www.junit.org/junit/javadoc/3.8.1/index.htm</javadoc>
     </dependency>
 
     <dependency>
@@ -224,12 +225,14 @@
       <properties>
 	<war.bundle>true</war.bundle>
       </properties>
+      <javadoc>http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html</javadoc>
     </dependency>
 
     <dependency>
       <id>commons-logging</id>
       <version>1.0.3</version>
       <url>http://jakarta.apache.org/commons/logging/</url>
+      <javadoc>http://jakarta.apache.org/commons/logging/apidocs</javadoc>
     </dependency>
 
     <dependency>
@@ -239,6 +242,7 @@
       <properties>
 	<war.bundle>true</war.bundle>
       </properties>
+      <javadoc>http://jakarta.apache.org/commons/httpclient/apidocs/index.htm</javadoc>
     </dependency>
 
     <dependency>
@@ -246,34 +250,7 @@
       <artifactId>geronimo-spec-servlet</artifactId>
       <version>1.0-M1</version>
       <url>http://geronimo.apache.org</url>
-    </dependency>
-
-    <dependency><!-- why isn't there a Geronimo JMX spec jar?  -->
-      <groupId>mx4j</groupId>
-      <artifactId>mx4j-jmx</artifactId>
-      <version>2.0.1</version>
-      <url>http://mx4j.sourceforge.net</url>
-    </dependency>
-
-    <dependency><!-- I have to replace this with a newer version -->
-      <groupId>jetty</groupId>
-      <artifactId>org.mortbay.jetty</artifactId>
-      <version>5.0.RC0</version>
-      <url>http://jetty.mortbay.org/jetty/index.html</url>
-    </dependency>
-
-    <dependency>
-      <groupId>jetty</groupId>
-      <artifactId>org.mortbay.jmx</artifactId>
-      <version>5.0.RC0</version>
-      <url>http://jetty.mortbay.org/jetty/index.html</url>
-    </dependency>
-
-    <dependency><!-- when will this be updated/ -->
-      <groupId>tomcat</groupId>
-      <artifactId>catalina</artifactId>
-      <version>5.0.18</version>
-      <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/index.html</url>
+      <javadoc>http://geronimo.apache.org/specs/servlet/apidocs</javadoc>
     </dependency>
 
     <dependency>
@@ -281,42 +258,76 @@
       <artifactId>geronimo-spec-jms</artifactId>
       <version>1.0-M1</version>
       <url>http://geronimo.apache.org</url>
+      <javadoc>http://geronimo.apache.org/specs/jms/apidocs/index.html</javadoc>
+    </dependency>
+
+    <dependency><!-- why isn't there a Geronimo JMX spec jar?  -->
+      <groupId>mx4j</groupId>
+      <artifactId>mx4j-jmx</artifactId>
+      <version>2.0.1</version>
+      <url>http://mx4j.sourceforge.net</url>
+      <javadoc>http://mx4j.sourceforge.net/docs/api/index.html</javadoc>
+    </dependency>
+
+    <dependency><!-- I have to replace this with a newer version -->
+      <groupId>jetty</groupId>
+      <artifactId>org.mortbay.jetty</artifactId>
+      <version>5.0.RC0</version>
+      <url>http://jetty.mortbay.org/jetty/index.html</url>
+      <javadoc>http://jetty.mortbay.org/javadoc/index.html</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>jetty</groupId>
+      <artifactId>org.mortbay.jmx</artifactId>
+      <version>5.0.RC0</version>
+      <url>http://jetty.mortbay.org/jetty/index.html</url>
+      <javadoc>http://jetty.mortbay.org/javadoc/index.html</javadoc>
+    </dependency>
+
+    <dependency><!-- when will this be updated? -->
+      <groupId>tomcat</groupId>
+      <artifactId>catalina</artifactId>
+      <version>5.0.18</version>
+      <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/index.html</url>
+      <javadoc>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs/api</javadoc>
     </dependency>
 
     <dependency>
       <groupId>activemq</groupId>
       <artifactId>activemq</artifactId>
       <version>1.0-SNAPSHOT</version>
+      <javadoc>http://activemq.codehaus.org/maven/apidocs</javadoc>
     </dependency>
 
     <dependency>
       <groupId>activecluster</groupId>
       <artifactId>activecluster</artifactId>
-      <version>SNAPSHOT</version>
+      <version>1.0-SNAPSHOT</version>
+      <javadoc>http://activecluster.codehaus.org/maven/apidocs</javadoc>
     </dependency>
 
   </dependencies>
 
   <reports>
 <!--
-    <report>maven-jdepend-plugin</report>
--->
-    <report>maven-checkstyle-plugin</report>
-    <report>maven-changes-plugin</report>
-    <report>maven-changelog-plugin</report>
-    <report>maven-file-activity-plugin</report>
-    <report>maven-developer-activity-plugin</report>
-    <report>maven-javadoc-plugin</report>
-    <report>maven-jxr-plugin</report>
-    <report>maven-junit-report-plugin</report>
-    <report>maven-tasklist-plugin</report>
-<!--
     <report>maven-jellydoc-plugin</report>
 -->
+    <report>maven-changelog-plugin</report>
+    <report>maven-changes-plugin</report>
+    <report>maven-checkstyle-plugin</report>
+    <report>maven-clover-plugin</report>
+    <report>maven-developer-activity-plugin</report>
+    <report>maven-faq-plugin</report>
+    <report>maven-file-activity-plugin</report>
+    <report>maven-javadoc-plugin</report>
+    <report>maven-jdepend-plugin</report>
+    <report>maven-junit-report-plugin</report>
+    <report>maven-jxr-plugin</report>
+    <report>maven-multiproject-plugin</report>
     <report>maven-pmd-plugin</report>
     <report>maven-simian-plugin</report>
-    <report>maven-faq-plugin</report>
-    <report>maven-multiproject-plugin</report>
+    <report>maven-tasklist-plugin</report>
   </reports>
 
 </project>

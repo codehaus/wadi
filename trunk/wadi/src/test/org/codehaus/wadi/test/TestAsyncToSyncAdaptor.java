@@ -22,9 +22,9 @@ import javax.jms.ObjectMessage;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.shared.AsyncToSyncAdaptor;
-import org.codehaus.wadi.shared.Invocable;
-import org.codehaus.wadi.shared.Manager;
+import org.codehaus.wadi.AsyncToSyncAdaptor;
+import org.codehaus.wadi.Invocable;
+import org.codehaus.wadi.Manager;
 
 /**
  * Test the Migration Service

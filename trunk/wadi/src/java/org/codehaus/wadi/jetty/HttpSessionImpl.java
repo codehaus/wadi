@@ -27,7 +27,7 @@ import java.io.Serializable;
  */
 public class
   HttpSessionImpl
-  extends org.codehaus.wadi.shared.HttpSessionImpl
+  extends org.codehaus.wadi.HttpSessionImpl
   implements Serializable
 {
   //--------//

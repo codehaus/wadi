@@ -19,10 +19,9 @@ package org.codehaus.wadi.jetty;
 
 import java.io.Serializable;
 import java.net.InetAddress;
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionContext;
-import org.codehaus.wadi.shared.Filter;
+import org.codehaus.wadi.Filter;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.WebApplicationContext;
 import org.mortbay.jetty.servlet.WebApplicationHandler;
@@ -37,7 +36,7 @@ import org.mortbay.jetty.servlet.WebApplicationHandler;
  */
 public class
   Manager
-  extends org.codehaus.wadi.shared.Manager
+  extends org.codehaus.wadi.Manager
   implements org.mortbay.jetty.servlet.SessionManager, Serializable
 {
   //----------------//
@@ -185,7 +184,7 @@ public class
 
   // why does the session manager need to be serialisable ?
 
-  //  protected org.codehaus.wadi.shared.HttpSession createFacade(org.codehaus.wadi.shared.HttpSessionImpl impl){return new org.codehaus.wadi.jetty.HttpSession((org.codehaus.wadi.jetty.HttpSessionImpl)impl);}
+  //  protected org.codehaus.wadi.HttpSession createFacade(org.codehaus.wadi.HttpSessionImpl impl){return new org.codehaus.wadi.jetty.HttpSession((org.codehaus.wadi.jetty.HttpSessionImpl)impl);}
 
   //----------------------------------------
 
