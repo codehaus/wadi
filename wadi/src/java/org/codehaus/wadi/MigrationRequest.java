@@ -68,17 +68,17 @@ public abstract class MigrationRequest
       }
       finally
       {
+	if (result==Boolean.TRUE)
+	{
+	  service.getManager().releaseImpl(impl);
+	  _log.trace(_id+": emmigration acknowledged and committed");
+	}
+	else
+	{
+	  _log.warn(_id+": emmigration failed - rolled back - we still own session");
+	}
 	if (acquired)
 	  impl.getContainerLock().release();
-      }
-      if (result==Boolean.TRUE)
-      {
-	service.getManager().releaseImpl(impl);
-	_log.trace(_id+": emmigration acknowledged and committed");
-      }
-      else
-      {
-	_log.warn(_id+": emmigration failed - rolled back - we still own session");
       }
     }
   }
