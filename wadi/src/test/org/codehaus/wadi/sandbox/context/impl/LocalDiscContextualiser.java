@@ -138,6 +138,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 						try {
 							context=load(file, _pool.take());
 							if (context!=null) {
+								_log.info("demoting (from local disc): "+key);
 								_next.demote(key, context);
 								remove(file);
 								i.remove();
