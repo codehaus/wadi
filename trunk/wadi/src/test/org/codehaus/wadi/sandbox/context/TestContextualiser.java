@@ -460,9 +460,10 @@ public class TestContextualiser extends TestCase {
 		Collapser collapser0=new HashingCollapser(10, 2000);		
 		Map c0=new HashMap();
 		c0.put("foo", null); // add a location
-		Contextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000);
+		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000);
 		Map m0=new HashMap();
 		Contextualiser memory0=new MemoryContextualiser(clstr0, collapser0, m0, new NeverEvicter(), new MyContextPool());
+		clstr0.setContextualiser(memory0);
 		boolean excludeSelf0=true;
 	    MessageConsumer consumer0=cluster0.createConsumer(cluster0.getDestination(), null, excludeSelf0);
 	    MyLocation location0=new MyLocation();
@@ -472,9 +473,10 @@ public class TestContextualiser extends TestCase {
 		Collapser collapser1=new HashingCollapser(10, 2000);		
 		Map c1=new HashMap();
 		c1.put("bar", null); // add a location
-		Contextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000);
+		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000);
 		Map m1=new HashMap();
 		Contextualiser memory1=new MemoryContextualiser(clstr1, collapser1, m1, new NeverEvicter(), new MyContextPool());
+		clstr1.setContextualiser(memory1);
 		boolean excludeSelf1=true;
 	    MessageConsumer consumer1=cluster1.createConsumer(cluster1.getDestination(), null, excludeSelf1);
 	    MyLocation location1=new MyLocation();

@@ -62,6 +62,10 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	protected final long            _timeout;
 	protected final Location        _location;
 	
+	protected Contextualiser _top;
+	public void setContextualiser(Contextualiser top){_top=top;}
+	public Contextualiser getContextualiser(){return _top;}
+	
 	class LocationListener implements MessageListener {
 		public void onMessage(Message message) {
 			ObjectMessage om=null;
@@ -86,7 +90,14 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		public void onLocationRequestMessage(ObjectMessage message, LocationRequest request) throws JMSException {
 			String id=request.getId();
 			_log.info("receiving location request: "+id);
-			// TODO - somehow we have to query local contextualisers for this session, causing its promotion if it is present and send a message back if so...
+
+			if (_top==null) {
+				_log.warn("no Contextualiser set - cannot respond to LocationRequests");
+			} else {
+				// TODO - somehow we have to query local contextualisers for this session, causing its promotion if it is present and send a message back if so...
+				_log.info("GOT TO HERE");
+			}
+			
 			Destination destination=message.getJMSReplyTo();
 			String correlationId=message.getJMSCorrelationID();
 			boolean present=false;
