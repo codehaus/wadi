@@ -34,6 +34,10 @@ public interface Evictable {
 
 	public long getTimeToLive(long time);
 
-	public boolean getValid();
-	//public void setValid(boolean valid);
+	public boolean getTimedOut(); // implicitly invalid via timeout
+	public boolean getTimedOut(long time); // implicitly invalid via timeout
+	public boolean getInvalidated(); // explicitly invalidated by application
+	public void setInvalidated(boolean invalidate);
+	
+	public boolean getValid(); // invalid, either implicitly or explicitly
 }

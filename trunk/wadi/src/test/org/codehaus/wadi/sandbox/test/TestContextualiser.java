@@ -47,6 +47,7 @@ import org.codehaus.wadi.sandbox.Context;
 import org.codehaus.wadi.sandbox.ContextPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
+import org.codehaus.wadi.sandbox.Evictable;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
@@ -353,7 +354,9 @@ public class TestContextualiser extends TestCase {
 		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), new NeverEvicter(), d, collapser, ss, new File("/tmp"));
 		Contextualiser serial=new SerialContextualiser(disc, collapser);
 		Map m=new HashMap();
-		m.put("foo", new MyContext("foo", "foo"));
+		Evictable foo=new MyContext("foo", "foo");
+		//foo.setMaxInactiveInterval(100);
+		m.put("foo", foo);
 		Contextualiser memory=new MemoryContextualiser(serial, new AlwaysEvicter(), m, new GZIPStreamingStrategy(), new MyContextPool());
 
 		FilterChain fc=new MyFilterChain();
