@@ -17,8 +17,6 @@
 
 package org.codehaus.wadi;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
