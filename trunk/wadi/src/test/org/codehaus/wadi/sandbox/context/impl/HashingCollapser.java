@@ -52,7 +52,7 @@ public class HashingCollapser implements Collapser {
 	 * @see org.codehaus.wadi.sandbox.context.Collapser#getLock(java.lang.String)
 	 */
 	public Sync getLock(String id) {
-		int index=id.hashCode()%_numSyncs;
+		int index=Math.abs(id.hashCode()%_numSyncs); // Jetty seems to generate negative session id hashcodes...
 		_log.info("collapsed "+id+" to index: "+index);
 		return _syncs[index];
 	}

@@ -35,7 +35,6 @@ public interface HttpProxy extends Serializable {
 	 * @param req - the request
 	 * @param res - the response
 	 * @return - true if req/res was proxied successfully (even if remote processing was unsuccessful)
-	 * @throws Exception - if something went wrong locally e.g. we could not establish a connection
 	 */
-	public boolean proxy(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res) throws Exception;
+	public boolean proxy(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res);
 }
