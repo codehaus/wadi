@@ -28,6 +28,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Immoter;
@@ -63,7 +64,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ClusterContextualiser extends AbstractMappedContextualiser {
+public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 
 	protected final HashMap _emigrationRvMap=new HashMap();
 	protected final MessageDispatcher _dispatcher;
@@ -78,8 +79,8 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 * @param evicter
 	 * @param location TODO
 	 */
-	public ClusterContextualiser(Contextualiser next, Map map, SwitchableEvicter evicter, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) throws JMSException {
-		super(next, map, evicter);
+	public ClusterContextualiser(Contextualiser next, Map map, SwitchableEvicter evicter, Collapser collapser, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) throws JMSException {
+		super(next, map, evicter, collapser);
 		_dispatcher=dispatcher;
 	    _relocater=relocater;
 	    _location=location;

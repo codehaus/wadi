@@ -172,7 +172,7 @@ public class TestContextualiser extends TestCase {
 		}
 
 		Map d=new HashMap();
-		LocalDiscContextualiser disc=new LocalDiscContextualiser(db, d, new NeverEvicter(), ss, new File("/tmp"));
+		LocalDiscContextualiser disc=new LocalDiscContextualiser(db, d, new NeverEvicter(), collapser, ss, new File("/tmp"));
 		{
 			// place a "bar" item onto local disc
 			String id="bar";
@@ -350,7 +350,7 @@ public class TestContextualiser extends TestCase {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 		Map d=new HashMap();
-		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), d, new NeverEvicter(), ss, new File("/tmp"));
+		Contextualiser disc=new LocalDiscContextualiser(new DummyContextualiser(), d, new NeverEvicter(), collapser, ss, new File("/tmp"));
 		Contextualiser serial=new SerialContextualiser(disc, collapser);
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo", "foo"));
@@ -373,7 +373,7 @@ public class TestContextualiser extends TestCase {
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), new NeverEvicter(), _ds, _table);
 		Map d=new HashMap();
-		Contextualiser disc=new LocalDiscContextualiser(db, d, new TimeToLiveEvicter(0), ss, new File("/tmp"));
+		Contextualiser disc=new LocalDiscContextualiser(db, d, new TimeToLiveEvicter(0), collapser, ss, new File("/tmp"));
 		Contextualiser serial=new SerialContextualiser(disc, collapser);
 		Map m=new HashMap();
 		Context tmp=new MyContext("foo", "foo");
@@ -433,7 +433,8 @@ public class TestContextualiser extends TestCase {
 		Map c0=new HashMap();
 		MessageDispatcher dispatcher0=new MessageDispatcher(cluster0);
 		RelocationStrategy relocater0=new ProxyRelocationStrategy(dispatcher0, location, 2000, 3000);
-		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), c0, new SwitchableEvicter(), dispatcher0, relocater0, location);
+		Collapser collapser0=new HashingCollapser(10, 2000);
+		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), c0, new SwitchableEvicter(), collapser0, dispatcher0, relocater0, location);
 		Map m0=new HashMap();
 		m0.put("foo", new MyContext());
 		Contextualiser memory0=new MemoryContextualiser(clstr0, m0, new NeverEvicter(), new GZIPStreamingStrategy(), new MyContextPool());
@@ -442,7 +443,8 @@ public class TestContextualiser extends TestCase {
 		Map c1=new HashMap();
 		MessageDispatcher dispatcher1=new MessageDispatcher(cluster1);
 		RelocationStrategy relocater1=new ProxyRelocationStrategy(dispatcher1, location, 2000, 3000);
-		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), c1, new SwitchableEvicter(), dispatcher1, relocater1, null);
+		Collapser collapser1=new HashingCollapser(10, 2000);
+		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), c1, new SwitchableEvicter(), collapser1, dispatcher1, relocater1, null);
 		Map m1=new HashMap();
 		m1.put("bar", new MyContext());
 		Contextualiser memory1=new MemoryContextualiser(clstr1, m1, new NeverEvicter(), new GZIPStreamingStrategy(), new MyContextPool());

@@ -17,24 +17,17 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
-
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * Maps id:File where file contains Context content...
@@ -42,7 +35,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class LocalDiscContextualiser extends AbstractMappedContextualiser {
+public class LocalDiscContextualiser extends AbstractCollapsingContextualiser {
 	protected static final Log _log = LogFactory.getLog(LocalDiscContextualiser.class);
 
 	protected final StreamingStrategy _streamer;
@@ -50,8 +43,8 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public LocalDiscContextualiser(Contextualiser next, Map map, Evicter evicter, StreamingStrategy streamer, File dir) {
-	    super(next, map, evicter);
+	public LocalDiscContextualiser(Contextualiser next, Map map, Evicter evicter, Collapser collapser, StreamingStrategy streamer, File dir) {
+	    super(next, map, evicter, collapser);
 	    _streamer=streamer;
 	    assert dir.exists();
 	    assert dir.isDirectory();

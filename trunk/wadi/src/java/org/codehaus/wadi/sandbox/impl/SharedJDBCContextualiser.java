@@ -16,14 +16,9 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
@@ -33,8 +28,6 @@ import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
-
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * A Contextualiser which stores its Contexts in a shared database via JDBC

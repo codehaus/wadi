@@ -33,7 +33,6 @@ import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
 
-import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 
@@ -73,9 +72,8 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 	    }
 	}
 
-	protected final Sync _dummyLock=new NullSync();
-	public Sync getEvictionLock(String id, Motable motable){return _dummyLock;} // TODO - should this be the promotionLock ?
 	public Emoter getEvictionEmoter(){return getEmoter();}
+	public abstract Sync getEvictionLock(String id, Motable motable);
 	
 	public void evict() {
 	    Collection copy=null;
