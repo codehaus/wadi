@@ -26,8 +26,11 @@ public abstract class MigrationRequest
 {
   protected static final Log  _log = LogFactory.getLog(MigrationRequest.class);
 
-  protected final String      _id;
-  protected final long        _timeout;
+  protected final String _id;
+  public String getId(){return _id;}
+
+  protected final long _timeout;
+  public long getTimeout(){return _timeout;}
 
   public
     MigrationRequest(String id, long timeout)
@@ -36,8 +39,48 @@ public abstract class MigrationRequest
     _timeout     =timeout;
   }
 
-  public abstract void invoke(MigrationService service, Destination source, String correlationID);
- 
+  public void
+    invoke(MigrationService service, Destination source, String correlationID)
+  {
+    HttpSessionImpl impl=null;
 
-  public String toString() {return "<MigrationRequest:"+_id+">";}
+    if ((impl=(HttpSessionImpl)service.getHttpSessionImplMap().get(_id))==null)
+    {
+      if (_log.isTraceEnabled()) _log.info("session not present: "+_id);
+    }
+    else
+    {
+      boolean acquired=false;
+      Object result=null;
+      try
+      {
+	impl.getContainerLock().attempt(_timeout);
+	acquired=true;
+
+	result=doit(service, impl, correlationID, source);
+      }
+      catch (InterruptedException e)
+      {
+	_log.warn("could not get container lock on session for emmigration", e);
+      }
+      finally
+      {
+	if (acquired)
+	  impl.getContainerLock().release();
+      }
+      if (result==Boolean.TRUE)
+      {
+	service.getManager().releaseImpl(impl);
+	_log.info(_id+": emmigration acknowledged and committed");
+      }
+      else
+      {
+	_log.info(_id+": emmigration failed - rolled back - we still own session");
+      }
+    }
+  }
+
+  public abstract Object doit(MigrationService service, HttpSessionImpl impl, String correlationID, Destination source);
+
+  public String toString() {return "<"+getClass().getName()+":"+_id+">";}
 }

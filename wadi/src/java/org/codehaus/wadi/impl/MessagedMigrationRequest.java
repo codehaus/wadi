@@ -35,70 +35,33 @@ public class
     super(id, timeout);
   }
 
-  public void invoke(MigrationService service, Destination source, String correlationID)
+  public Object
+    doit(MigrationService service, HttpSessionImpl impl, String correlationID, Destination source)
   {
-    HttpSessionImpl impl=null;
-
-    if ((impl=(HttpSessionImpl)service.getHttpSessionImplMap().get(_id))==null)
+    byte[] buffer=null;
+    try
     {
-      if (_log.isTraceEnabled()) _log.info("session not present: "+_id);
+      ByteArrayOutputStream baos=new ByteArrayOutputStream();
+      ObjectOutputStream    oos =new ObjectOutputStream(baos);
+      impl.writeContent(oos);
+      oos.flush();
+      buffer=baos.toByteArray();
+      oos.close();
     }
-    else
+    catch (Exception e)
     {
-      //       MigrationService.Client client=new MigrationService.Client();
-      //       Collection list=new ArrayList(1);
-      //       list.add(impl);		// must be mutable
-      //       client.emmigrate(manager._local, list, _timeout, _address, _port, manager.getStreamingStrategy(), true);
-
-      boolean acquired=false;
-      Object result=null;
-      try
-      {
-	impl.getContainerLock().attempt(_timeout);
-	acquired=true;
-	ByteArrayOutputStream baos=new ByteArrayOutputStream();
-	ObjectOutputStream    oos =new ObjectOutputStream(baos);
-	impl.writeContent(oos);
-	oos.flush();
-	byte[] buffer=baos.toByteArray();
-	oos.close();
-
-	Destination dest=null;
-
-	  Cluster cluster=service.getManager().getCluster();
-	  result=service.getAsyncToSyncAdaptor().send(cluster,
-						      new MessagedMigrationResponse(_id, _timeout, buffer),
-						      correlationID,
-						      _timeout,
-						      cluster.getLocalNode().getDestination(),
-						      source);
-      }
-      catch (InterruptedException e)
-      {
-	_log.warn("could not get container lock on session for emmigration", e);
-      }
-      catch (IOException e)
-      {
-	_log.warn("IO problems marshalling session for emmigration", e);
-      }
-      catch (ClassNotFoundException e)
-      {
-	_log.warn("ClassLoading problems marshalling session for emmigration", e);
-      }
-      finally
-      {
-	if (acquired)
-	  impl.getContainerLock().release();
-      }
-      if (result==Boolean.TRUE)
-      {
-	service.getManager().releaseImpl(impl);
-	_log.info(_id+": emmigration acknowledged and committed");
-      }
-      else
-      {
-	_log.info(_id+": emmigration failed - rolled back - we still own session");
-      }
+      _log.warn("problem filling session buffer", e);
+      return null;
     }
+
+    Destination dest=null;
+
+    Cluster cluster=service.getManager().getCluster();
+    return service.getAsyncToSyncAdaptor().send(cluster,
+						new MessagedMigrationResponse(_id, _timeout, buffer),
+						correlationID,
+						_timeout,
+						cluster.getLocalNode().getDestination(),
+						source);
   }
 }
