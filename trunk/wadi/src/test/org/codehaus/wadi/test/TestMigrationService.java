@@ -17,13 +17,9 @@
 
 package org.codehaus.wadi.test;
 
-import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.Map;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.MigrationService;
 import org.codehaus.wadi.MigrationService;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.MessagedMigrationService;

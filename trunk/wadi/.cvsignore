@@ -1,3 +1,5 @@
 .generated.ajsym
 .generated.lst
 build.ajproperties
+target
+tmp
