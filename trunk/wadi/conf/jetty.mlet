@@ -27,5 +27,5 @@
  NAME="org.mortbay:jetty=demo"
  CODE="org.mortbay.jetty.jmx.ServerMBean"
  ARCHIVE="org.mortbay.jetty.jmx.jar" >
- <ARG type="java.lang.String" value="/space1/jules/wadi/wadi/conf/jetty.xml">
+ <ARG type="java.lang.String" value="/home/jules/wadi/conf/jetty.xml">
 </MLET>

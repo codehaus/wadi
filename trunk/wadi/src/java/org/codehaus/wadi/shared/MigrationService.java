@@ -30,7 +30,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-// TODO - should use NIO as discussed with Jeremy.
+// TODO - maybe use NIO as discussed with Jeremy.
 // TODO - could our connection be to a filedescriptor instead of another node ?
 // TODO - insertion/removal of locks in lockMap NYI
 
@@ -45,8 +45,8 @@ public class
     protected int         _port=0;	// any port
     protected InetAddress _address; // null seems to work fine as default interface
 
-    public HttpSessionImpl
-      run(Map sessions, Map locks, String id, InetAddress remoteAddress, int remotePort)
+    public boolean
+      run(Map sessions, Map locks, String id, HttpSessionImpl session, InetAddress remoteAddress, int remotePort)
     {
       Sync lock=null;
       boolean acquired=false;
@@ -71,7 +71,7 @@ public class
 	os.writeObject(id);
 	os.flush();
 	// demarshall session off wire
-	HttpSessionImpl session=(HttpSessionImpl)is.readObject();
+	session.readContent(is);
 	_log.trace("received migrated session: "+session);
 	// send commit message
 	os.writeBoolean(true);
@@ -81,7 +81,7 @@ public class
 	// receive commit message
 	boolean ok=is.readBoolean();
 	assert ok;
-	return session;
+	return ok;
       }
       catch (UnknownHostException e)
       {
@@ -108,7 +108,7 @@ public class
 	  }
       }
 
-      return null;
+      return false;
     }
   }
 
@@ -256,7 +256,7 @@ public class
 	// marshall session onto wire
 	HttpSessionImpl impl=(HttpSessionImpl)_sessions.get(id); // TODO - what if session is not there ?
 	_log.trace("sending migrating session: "+impl);
-	os.writeObject(impl);
+	impl.writeContent(os);
 	os.flush();
 	// receive commit message
 	boolean ok=is.readBoolean();

@@ -48,10 +48,10 @@ public class
 {
   protected final Log _log=LogFactory.getLog(getClass());
 
-  public HttpSessionImpl
-    relocateSession(Map sessions, Map locks, String id)
+  public boolean
+    relocateSession(Map sessions, Map locks, String id, HttpSessionImpl impl)
   {
-    return migrateSessionFrom(sessions, locks, id);
+    return migrateSessionFrom(sessions, locks, id, impl);
   }
 
   //----------------------------------------
@@ -60,10 +60,10 @@ public class
   protected final int                     _migrationPort;
   protected final MigrationService.Client _migrationClient;
 
-  protected HttpSessionImpl
-    migrateSessionFrom(Map sessions, Map locks, String id)
+  protected boolean
+    migrateSessionFrom(Map sessions, Map locks, String id, HttpSessionImpl impl)
   {
-    return _migrationClient.run(sessions, locks, id, _migrationAddress, _migrationPort);
+    return _migrationClient.run(sessions, locks, id, impl, _migrationAddress, _migrationPort);
   }
 
   //----------------------------------------
