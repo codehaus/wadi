@@ -53,6 +53,13 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 	public void proxy2(InetSocketAddress location, HttpServletRequest req, HttpServletResponse res) throws IOException	{
 
 		String uri=req.getRequestURI();
+		
+		if (req.isRequestedSessionIdFromURL()) {
+			// Jetty will include this on getRequestURI() - Tomcat won't...
+			uri+=";jsessionid="+req.getRequestedSessionId();
+			// TODO - ugly temp fix..
+		}
+		
 		String qs=req.getQueryString();
 		if (qs!=null) {
 			uri=new StringBuffer(uri).append("?").append(qs).toString();
