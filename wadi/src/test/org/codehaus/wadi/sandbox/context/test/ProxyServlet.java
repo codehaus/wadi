@@ -101,17 +101,19 @@ public class ProxyServlet implements Servlet {
 	public static class RemoteDetailsServlet implements Servlet {
 		protected final Log _log = LogFactory.getLog(getClass());
 		public void init(ServletConfig config) throws ServletException {}
-		public ServletConfig getServletConfig() {return null;}		
+		public ServletConfig getServletConfig() {return null;}
 		public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
-			_log.info("Via: "+((HttpServletRequest)req).getHeader("Via"));
-			_log.info("Max-Forwards: "+((HttpServletRequest)req).getHeader("Max-Forwards"));
-			_log.info("X-Forwarded-For: "+((HttpServletRequest)req).getHeader("X-Forwarded-For"));
+			HttpServletRequest hreq=(HttpServletRequest)req;
+			HttpServletResponse hres=(HttpServletResponse)res;
+			_log.info("Via: "+hreq.getHeader("Via"));
+			_log.info("Max-Forwards: "+hreq.getHeader("Max-Forwards"));
+			_log.info("X-Forwarded-For: "+hreq.getHeader("X-Forwarded-For"));
 			_log.info("remote location was: "+req.getRemoteAddr()+"/"+req.getRemoteHost()+":"+req.getRemotePort());
 		}
 		public String getServletInfo() {return null;}
 		public void destroy() {}
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 		{
 			Server server=new Server();

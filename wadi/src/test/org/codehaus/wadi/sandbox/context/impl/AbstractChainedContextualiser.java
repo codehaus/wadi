@@ -20,8 +20,8 @@ import java.io.IOException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.wadi.sandbox.context.Collapser;
 import org.codehaus.wadi.sandbox.context.Contextualiser;
@@ -52,10 +52,10 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
-	public boolean contextualise(ServletRequest req, ServletResponse res,
+	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres,
 			FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
 		boolean success=false;
-		if ((success=contextualiseLocally(req, res, chain, id, promoter, promotionMutex))) {
+		if ((success=contextualiseLocally(hreq, hres, chain, id, promoter, promotionMutex))) {
 			return success;
 		} else if (!(localOnly && !_next.isLocal())) {
 			boolean acquired=false;
@@ -65,13 +65,13 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 					promotionMutex.acquire();
 					acquired=true;
 					// by the time we get the lock, another thread may have already promoted this context - try again locally...
-					if ((success=contextualiseLocally(req, res, chain, id, promoter, promotionMutex))) {// mutex released here if successful
+					if ((success=contextualiseLocally(hreq, hres, chain, id, promoter, promotionMutex))) {// mutex released here if successful
 						return success;
 					}
 				}
 
 				Promoter p=getPromoter(promoter);
-				if ((success=_next.contextualise(req, res, chain, id, p, promotionMutex, localOnly))) // mutex released here if successful
+				if ((success=_next.contextualise(hreq, hres, chain, id, p, promotionMutex, localOnly))) // mutex released here if successful
 					return success;
 
 			} catch (InterruptedException e) {
@@ -87,6 +87,6 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 
 	public abstract Promoter getPromoter(Promoter promoter);
 
-	public abstract boolean contextualiseLocally(ServletRequest req, ServletResponse res,
+	public abstract boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres,
 			FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException;
 }

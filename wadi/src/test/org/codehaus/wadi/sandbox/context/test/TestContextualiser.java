@@ -224,7 +224,7 @@ public class TestContextualiser extends TestCase {
 			_context=new MyContext(context);
 		}
 
-		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
+		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
 			_counter++;
 
 			MyContext context=_context;
@@ -233,7 +233,7 @@ public class TestContextualiser extends TestCase {
 				_context=null;
 				promoter.commit(id, context);
 				promotionMutex.release();
-				promoter.contextualise(req, res, chain, id, context);
+				promoter.contextualise(hreq, hres, chain, id, context);
 			} else {
 				_context=context;
 				promoter.rollback(id, context);
@@ -255,7 +255,7 @@ public class TestContextualiser extends TestCase {
 			_context=new MyContext(context);
 		}
 
-		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
+		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
 			_counter++;
 			Context context=_context;
 			Sync shared=context.getSharedLock();
@@ -263,7 +263,7 @@ public class TestContextualiser extends TestCase {
 				shared.acquire();
 				promotionMutex.release();
 				_log.info("running locally: "+id);
-				chain.doFilter(req, res);
+				chain.doFilter(hreq, hres);
 				shared.release();
 				return true;
 			} catch (InterruptedException e) {

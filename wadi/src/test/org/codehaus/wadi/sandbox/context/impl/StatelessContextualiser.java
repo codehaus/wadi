@@ -21,10 +21,9 @@ import java.util.regex.Pattern;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.codehaus.wadi.sandbox.context.Contextualiser;
@@ -91,10 +90,10 @@ public class StatelessContextualiser implements Contextualiser {
         }
 	};
 
-	public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
-		if (isStateful((HttpServletRequest)req)) {
+	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
+		if (isStateful(hreq)) {
 			// we cannot optimise...
-			return _next.contextualise(req, res, chain, id, promoter, promotionMutex, localOnly);
+			return _next.contextualise(hreq, hres, chain, id, promoter, promotionMutex, localOnly);
 		} else {
 			// we know that we can run the request locally...
 			if (promotionMutex!=null) {
@@ -102,9 +101,9 @@ public class StatelessContextualiser implements Contextualiser {
 			}
 			// wrap the request so that session is inaccessible and process here...
 			HttpServletRequestWrapper wrapper=(HttpServletRequestWrapper)_wrapper.get();
-			wrapper.setRequest(req);
+			wrapper.setRequest(hreq);
 			try {
-				chain.doFilter(wrapper, res);
+				chain.doFilter(wrapper, hres);
 			} finally {
 				wrapper.setRequest(_dummyRequest);
 			}

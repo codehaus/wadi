@@ -20,8 +20,8 @@ import java.io.IOException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -38,7 +38,7 @@ public interface Contextualiser {
 
 	// I'd like to add Manager to param list, but it bloats dependency tree - can we get along without it ?
 	// FilterChain.doFilter() throws IOException, ServletException...
-	boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException;
+	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException;
 
 	void evict();
 	void demote(String key, Motable val);

@@ -29,8 +29,8 @@ import java.sql.Statement;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
@@ -78,7 +78,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#contextualiseLocally(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync)
 	 */
-	public boolean contextualiseLocally(ServletRequest req, ServletResponse res,
+	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres,
 			FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
 		Context context=null;
 		try {
@@ -104,7 +104,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 			    	_log.info("removed (database): "+id);
 		    		promoter.commit(id, context);
 		    		promotionMutex.release();
-		    		promoter.contextualise(req, res, chain, id , context);
+		    		promoter.contextualise(hreq, hres, chain, id , context);
 		    	} else {
 		    		promoter.rollback(id, context);
 		    	}
