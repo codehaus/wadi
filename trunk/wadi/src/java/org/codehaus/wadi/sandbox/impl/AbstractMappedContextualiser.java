@@ -75,7 +75,24 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 	public Emoter getEvictionEmoter(){return getEmoter();}
 	public abstract Sync getEvictionLock(String id, Motable motable);
 	
+	public void evict(String id, Motable emotable, long time) {
+	    Sync lock=getEvictionLock(id, emotable);
+	    boolean acquired=false;
+	    try {
+	        if ((acquired=Utils.attemptUninterrupted(lock)) && _evicter.evict(id, emotable, time)) { // second confirmatory test with lock
+	            // TODO - how do we figure out whether, now we have the lock, the Context has not already moved as the result of some other operation ?
+	            Immoter immoter=_next.getDemoter(id, emotable);
+	            Emoter emoter=getEvictionEmoter();
+	            Utils.mote(emoter, immoter, emotable, id);
+	        }
+	    } finally {
+	        if (acquired)
+	            lock.release();
+	    }
+	}
+
 	public void evict() {
+	    RWLock.setPriority(RWLock.EVICTION_PRIORITY);
 	    Collection copy=null;
 	    synchronized (_map) {copy=new ArrayList(_map.entrySet());}
 	    
@@ -85,20 +102,9 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 	        String id=(String)e.getKey();
 	        Motable emotable=(Motable)e.getValue();
 	        if (_evicter.evict(id, emotable, time)) { // first test without lock - cheap
-	            Sync lock=getEvictionLock(id, emotable);
-	            boolean acquired=false;
-	            try {
-	                if ((acquired=Utils.attemptUninterrupted(lock)) && _evicter.evict(id, emotable, time)) { // second confirmatory test with lock
-	                    // TODO - how do we figure out whether, now we have the lock, the Context has not already moved as the result of some other operation ?
-	                    Immoter immoter=_next.getDemoter(id, emotable);
-	                    Emoter emoter=getEvictionEmoter();
-	                    Utils.mote(emoter, immoter, emotable, id);
-	                }
-	            } finally {
-	                if (acquired)
-	                    lock.release();
-	            }
+	            evict(id, emotable, time);
 	        }
 	    }
+	    RWLock.setPriority(RWLock.NO_PRIORITY);
 	}
 }

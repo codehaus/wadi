@@ -58,7 +58,7 @@ public class RWLock implements ReadWriteLock {
   protected static final Log _log=LogFactory.getLog(RWLock.class);
 
   protected int         _maxPriority=Thread.MAX_PRIORITY;
-  protected ThreadLocal _priority=new ThreadLocal(){protected synchronized Object initialValue() {return new Integer(0);}};
+  protected static ThreadLocal _priority=new ThreadLocal(){protected synchronized Object initialValue() {return new Integer(0);}};
   protected class Lock {int _count=0;}
 
   protected long activeReaders_ = 0;
@@ -68,8 +68,14 @@ public class RWLock implements ReadWriteLock {
 
   public RWLock(int maxPriority){_maxPriority=maxPriority;}
 
-  public void setPriority(int priority){_priority.set(new Integer(priority));}
-  public int getPriority(){return ((Integer)_priority.get()).intValue();}
+  public static void setPriority(int priority){_priority.set(new Integer(priority));}
+
+  public static int getPriority() {
+      int tmp=((Integer)_priority.get()).intValue();
+      if (0==tmp && _log.isWarnEnabled())
+          _log.warn("no thread priority specified", new Exception());
+      return tmp;
+  }
 
   protected final ReaderLock readerLock_ = new ReaderLock();
   protected final WriterLock writerLock_ = new WriterLock();

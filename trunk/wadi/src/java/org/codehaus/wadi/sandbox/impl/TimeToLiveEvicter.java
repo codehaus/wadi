@@ -19,7 +19,7 @@ package org.codehaus.wadi.sandbox.impl;
 import org.codehaus.wadi.sandbox.Evictable;
 
 /**
- * An Evicter which evicts Evictables with less than a certain time to live remaining.
+ * An Evicter which also evicts Evictables with less than a certain time to live remaining.
  * For example, using this Evicter, you could evict sessions with less than 30 minutes of time left.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -33,5 +33,7 @@ public class TimeToLiveEvicter extends AbstractEvicter {
 		_ttl=ttl;
 	}
 
-	public boolean evict(String id, Evictable evictable, long time) {return evictable.getTimeToLive(time)<=_ttl;}
+	public boolean evict(String id, Evictable evictable, long time) {
+	    return super.evict(id, evictable, time) || evictable.getTimeToLive(time)<=_ttl;
+	    }
 }

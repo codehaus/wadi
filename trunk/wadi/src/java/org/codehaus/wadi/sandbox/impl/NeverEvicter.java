@@ -20,14 +20,9 @@ import org.codehaus.wadi.sandbox.Evictable;
 import org.codehaus.wadi.sandbox.Evicter;
 
 /**
- * An Evicter which never evicts
+ * An Evicter which never evicts (except explicitly invalidated sessions).
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class NeverEvicter implements Evicter {
-
-	public boolean evict(String id, Evictable evictable) {return evict(id, evictable, 0);}
-	public boolean evict(String id, Evictable evictable, long time) {return false;}
-
-}
+public class NeverEvicter extends AbstractEvicter {}

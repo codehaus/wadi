@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Context;
 import org.codehaus.wadi.sandbox.impl.AbstractMotable;
+import org.codehaus.wadi.sandbox.impl.RWLock;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
@@ -47,7 +48,7 @@ public class MyContext extends AbstractMotable implements Context {
 	}
 
 	MyContext() {
-		_lock=new ReaderPreferenceReadWriteLock();
+		_lock=new RWLock();
 		}
 
 	public Sync getSharedLock(){return _lock.readLock();}

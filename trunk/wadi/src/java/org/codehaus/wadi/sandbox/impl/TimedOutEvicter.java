@@ -17,18 +17,18 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import org.codehaus.wadi.sandbox.Evictable;
-import org.codehaus.wadi.sandbox.Evicter;
 
 /**
- * An Evicter which evicts invalid Evictables
+ * An Evicter which evicts Evictables that have been explicitly invalidated or have timed out.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 
-public class InvalidEvicter implements Evicter {
-
-	public boolean evict(String id, Evictable evictable) {return evict(id, evictable, 0);}
-	public boolean evict(String id, Evictable evictable, long time) {return !evictable.getValid();}
-
+public class TimedOutEvicter extends AbstractEvicter {
+    
+    public boolean evict(String id, Evictable evictable, long time) {
+        return super.evict(id, evictable, time) || evictable.getTimedOut();
+    }
+    
 }
