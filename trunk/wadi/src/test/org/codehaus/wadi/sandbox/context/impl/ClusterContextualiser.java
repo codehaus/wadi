@@ -7,6 +7,7 @@
 package org.codehaus.wadi.sandbox.context.impl;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -29,8 +30,17 @@ import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.Promoter;
 
-
+import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
+
+//NOTES - 
+
+// how do we attach a listener for location requests that can decide whether an id is present in cache and reply with a location response object ?
+
+// we need to resolve the immigration of sessions after a given number of requests have been proxied successfully...
+
+// we need a way of testing this...
 
 /**
  * @author jules
@@ -43,35 +53,51 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class ClusterContextualiser extends AbstractMappedContextualiser {
 
-	protected final Cluster _cluster;
+	protected final Cluster         _cluster;
 	protected final MessageConsumer _consumer;
 	protected final MessageListener _listener;
+	protected final Map             _searches=new HashMap(); // do we need more concurrency ?
+	protected final long            _timeout;
 	
 	class LocationListener implements MessageListener {
 		public void onMessage(Message message) {
 			ObjectMessage om=null;
 			Object tmp=null;
-			Locations locations=null;
+			LocationResponse locations=null;
 			
 			try {
 				// filter/validate message
 				if (message instanceof ObjectMessage &&
 					(om=(ObjectMessage)message)!=null &&
 					(tmp=om.getObject())!=null &&
-					tmp instanceof Locations &&
-					(locations=(Locations)tmp)!=null) {
+					tmp instanceof LocationResponse &&
+					(locations=(LocationResponse)tmp)!=null) {
 					// unpack message content into local cache...
 					Location location=locations.getLocation();
 					Set ids=locations.getIds();
+					
+					// notify waiting threads...
+					String correlationId=message.getJMSCorrelationID();
+					synchronized (_searches) {
+						Rendezvous rv=(Rendezvous)_searches.get(correlationId);
+						if (rv!=null) {
+							do {
+								try {
+									rv.attemptRendezvous(location, _timeout);
+								} catch (TimeoutException toe) {
+									_log.info("rendez-vous timed out: "+correlationId, toe);
+								} catch (InterruptedException ignore) {
+									_log.info("rendez-vous interruption ignored: "+correlationId);
+								}
+							} while (Thread.interrupted());
+						}
+					}
+					
+					// update cache
 					for (Iterator i=ids.iterator(); i.hasNext();) {
 						String id=(String)i.next();
 						_map.put(id, location);
 					}
-					
-					// how about :
-					// request for Location uses unique correlation id and stores rendezvous in _table
-					// after processing a Location, we check _table for correlation id and rendezvous if present...
-					
 					_log.info("updated cache for: "+ids);
 				}			
 				// should we try evicting entried before inserting them - or is this just a waste of time...
@@ -88,13 +114,14 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 * @param map
 	 * @param evicter
 	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, Cluster cluster) throws JMSException {
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Evicter evicter, Cluster cluster, long timeout) throws JMSException {
 		super(next, collapser, map, evicter);
 		_cluster=cluster;
 		boolean excludeSelf=true;
 	    _consumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
 		_listener=new LocationListener();
 	    _consumer.setMessageListener(_listener);// should be called in start() - we need a stop() too - to remove listeners...
+	    _timeout=timeout;
 	}
 
 	/* (non-Javadoc)
@@ -109,23 +136,53 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 */
 	public boolean contextualiseLocally(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
 		
-		Location l=null;
+		Location location=null;
 		
-		if ((l=(Location)_map.get(id))==null) {
-			// TODO :
-			// send out LocationMessage to Cluster
-			// wait for a response (Locations - broadcast to everyone - includes unique correlation id) or timeout
+		if ((location=(Location)_map.get(id))==null) {
+			String correlationId=id+"something";
+			Rendezvous rv=new Rendezvous(2);
+
+			// set up a rendez-vous...
+			synchronized (_searches) {
+				_searches.put(correlationId, rv);
+			}
 			
-			// question - if we receive a request for location, how do we answer it - without a req/res pair to contextualise...
+			try {
+				// broadcast location query to whole cluster
+				LocationQuery query=new LocationQuery(id);
+				ObjectMessage message=_cluster.createObjectMessage();
+				message.setJMSReplyTo(_cluster.getDestination());
+				message.setJMSCorrelationID(correlationId);
+				message.setObject(query);
+				_cluster.send(_cluster.getDestination(), message);
+				
+				// rendez-vous with response/timeout...
+				do {
+					try {
+						location=(Location)rv.attemptRendezvous(null, _timeout);
+					} catch (TimeoutException toe) {
+						_log.info("no response to location query within timeout: "+id); // session does not exist
+					} catch (InterruptedException ignore) {
+						_log.info("waiting for location response - interruption ignored: "+id);
+					}
+				} while (Thread.interrupted());
+			} catch (JMSException e) {
+				_log.warn("problem sending session location query: "+id, e);
+			}
 			
-			if ((l=(Location)_map.get(id))==null) {
+			// tidy up rendez-vous
+			synchronized (_searches) {
+				_searches.remove(correlationId);
+			}
+			
+			if (location==null) {
 				return false;
 			} 
 		}
 		
-		assert l!=null;
+		assert location!=null;
 		
-		_log.info("location found (cluster): "+id+" - "+l);
+		_log.info("location found (cluster): "+id+" - "+location);
 		
 		// initially we will release the promotion lock here, so that proxying is done concurrently
 		// later we need to decide how to count successful proxies and retrieve a remote session when count is achieved...
@@ -135,7 +192,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		
 		// either:
 		// proxy the request/response to the sessions current location...
-		l.proxy(req,res);
+		location.proxy(req,res);
 		// or:
 		// retrieve and promote the session
 		// send out a LocationMessage to cluster
