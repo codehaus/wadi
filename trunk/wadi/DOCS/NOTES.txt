@@ -365,3 +365,102 @@ migration could remove session from table then reinsert on fail
 Commands could be nested into two-sided conversations.
 A whole conversation could be sent from one node then progressively unpacked and as passed backwards and forwards
 each command has a commit and rollback method.
+
+----------------------------------------=
+
+
+two types of affinity ?
+
+(1) memory-based
+
+lb actually remembers where last request for a given session was
+processed and sends subsequent requests for same session to same
+place.
+
+with this type of lb we cannot redirect a request to another node via
+its routing info - see (2), but we could proxy it. However this should
+only be done in emergencies as the lb will still think that the
+session was available on the node that it sent the request to and will
+continue to route relevent requests since we it is awkward to relocate
+requests with this lb we shouldhere. Therefore we should choose
+policies that will relocate the session instead, knowing that the lb
+will remember where it last saw it.
+
+NB - memory is state and a tier of these lbs will need to replicate
+such state to each other.
+
+(2) routing-based
+
+lb holds no memory/state, but this is encoded as routing info on the
+end if the session cookie/param. This is advantageous since no state
+needs to be replicated across lb tier, but adds extra complexity in
+web tier, since if a session relocates its session cookie must be
+adjusted.
+
+If we understand how the routing info is encoded then we can use
+request relocation (cheaper than session relocation). This means that
+we can actually relocate sessions to where we want them, rather than
+where the lb expects them, then relocate initial requests to
+them. Subsequent requests will thenceforth be delivered to correct new
+location.
+
+
+node shutdown...
+
+we should avoid writing to long term store if we can, since it is a
+single point of contention and failure.
+
+under a routing-based lb, a node should share out its active sessions
+between remaining nodes up to their capacity, then write remaining
+sessions into long term storage. The lb will have no idea where to
+deliver requests for these sessions, since the node encoded in the
+routing info is inactive, so it will drop them anywhere on the
+cluster. The node receiving the request will relocate it to the
+sessions new owner. worst case scenario cost for a sbsequent incoming
+request will be: either a single request relocation, or a single
+session disc-node migration.
+
+under a memory-based lb a node has a choice :-(
+
+a) do as for a routing-based lb.
+
+worst case scenario cost will be: either one node/store-node session relocation
+
+or migrate all sessions to store where WCSC becomes one store-node session relocation
+
+so if we want to avoid use of store it looks as if both lb strategies
+should share their sessions out with remaining nodes. At least some
+requests will fall on correct node and if they fall on wrong node cost
+will be same or less than load from store.
+
+There is another way an lb can implement stickiness - by intrusive
+cookie that records where last successful request went, this can be
+considered to be the same as routing-based affinity except that the
+routing info is encoded in its own cookie - WADI should consider how
+to do this.
+
+in summary:
+
+- node is shutting down
+- takes exclusive lock on session map
+- multicasts to all other nodes enquiring about location and capacity
+- share out active sessions between answering nodes up to their
+capacity (all nodes should answer as this will be quicker than waiting
+for a timeout - we have to wait anyway if we don't know how many nodes
+there are)
+- release lock or shutdown whilst still holding it - browsers will
+reissue unanswered requests.
+
+issues.
+
+node A shuts down passing node B sessions that fill it to capacity
+node A puts remaining sessions in store
+node B receives a request that requires that it load one of As sessions from store
+but it has no capacity...
+
+it can temporarily override max-size
+it can forcibly evict another session to make space
+
+it can look for another that has space and proxy the request to it -
+but will end up being a long-term go-between in this conversation -
+not a good idea.
