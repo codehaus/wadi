@@ -25,6 +25,11 @@
 // we should establish the connection to server, before delegating to proxy code. This way we know if server is valid. Once control has been passed to proxy code, all subsequent errors will be passed directly to client...
 // or we could leave the code here and use an IOException to signify to our caller that something under its control has gone wrong...
 
+// Greg reckons all forms of HTTP auth except certificate should work ok
+// look at Jetty ProxyHandler
+// Https cannot be proxied at this level - need a Handler/Valve - why ?
+// if ssl decryption is done at frontend how do we know whether an HTTP request is secure or not ?
+
 // ========================================================================
 // $Id$
 // Copyright 2004-2004 Mort Bay Consulting Pty. Ltd.
@@ -284,32 +289,35 @@ public class HttpProxy {
 		hres.setHeader("Server", null);
 
 		// set response headers
-		int h = 0;
-		String hdr = uc.getHeaderFieldKey(h);
-		String val = uc.getHeaderField(h);
-		while (hdr != null || val != null) {
-			String lhdr = (hdr != null) ? hdr.toLowerCase() : null;
-			if (hdr != null && val != null && !_DontProxyHeaders.contains(lhdr))
-				hres.addHeader(hdr, val);
-
-			//_log.debug("res " + hdr + ": " + val);
-
-			h++;
-			hdr = uc.getHeaderFieldKey(h);
-			val = uc.getHeaderField(h);
+		if (false) {
+			int h = 0;
+			String hdr = uc.getHeaderFieldKey(h);
+			String val = uc.getHeaderField(h);
+			while (hdr != null || val != null) {
+				String lhdr = (hdr != null) ? hdr.toLowerCase() : null;
+				if (hdr != null && val != null && !_DontProxyHeaders.contains(lhdr))
+					hres.addHeader(hdr, val);
+				
+				//_log.debug("res " + hdr + ": " + val);
+				
+				h++;
+				hdr = uc.getHeaderFieldKey(h);
+				val = uc.getHeaderField(h);
+			}
+		} else {
+			
+			// TODO - is it a bug in Jetty that I have to start my loop at 1 ? or that key[0]==null ?
+			// ask Greg ?
+			String key;
+			for (int i=1; (key=uc.getHeaderFieldKey(i))!=null; i++) {
+				key=key.toLowerCase();
+				String val=uc.getHeaderField(i);
+				if (val!=null && !_DontProxyHeaders.contains(key)) {
+					hres.addHeader(key, val);
+				}
+			}
 		}
-
-//		// TODO - check with Greg that a null header key is impossible -
-//		// why did he write the loop like this [above]?
-//		String key;
-//		for (int i=0; (key=uc.getHeaderFieldKey(i))!=null; i++) {
-//			key=key.toLowerCase();
-//			String val=uc.getHeaderField(i);
-//			if (val!=null && !_DontProxyHeaders.contains(key)) {
-//				hres.addHeader(key, val);
-//			}
-//		}
-
+		
 		hres.addHeader("Via", "1.1 (WADI)");
 
 		// copy server->client
