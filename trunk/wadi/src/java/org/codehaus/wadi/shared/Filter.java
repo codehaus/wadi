@@ -58,7 +58,6 @@ public class
   public void
     init(FilterConfig filterConfig)
   {
-    _log.info("WADI v1.0 Filter installed");
     _manager=(Manager)filterConfig.getServletContext().getAttribute(org.codehaus.wadi.shared.Manager.class.getName());
     if (_manager==null)
       _log.fatal("Manager not found");
