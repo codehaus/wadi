@@ -79,7 +79,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#contextualiseLocally(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync)
 	 */
 	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres,
-			FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
+			FilterChain chain, String id, Promoter promoter, Sync promotionLock) throws IOException, ServletException {
 		Context context=null;
 		try {
 			Connection c=_ds.getConnection();
@@ -103,7 +103,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 			    	int r=s.executeUpdate("DELETE FROM "+_table+" WHERE MyKey='"+id+"'");
 			    	_log.info("removed (database): "+id);
 		    		promoter.commit(id, context);
-		    		promotionMutex.release();
+		    		promotionLock.release();
 		    		promoter.contextualise(hreq, hres, chain, id , context);
 		    	} else {
 		    		promoter.rollback(id, context);

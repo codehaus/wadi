@@ -75,7 +75,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
 	public boolean contextualiseLocally(HttpServletRequest hreq, HttpServletResponse hres,
-		FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
+		FilterChain chain, String id, Promoter promoter, Sync promotionLock) throws IOException, ServletException {
 		LocalDiscMotable ldm=(LocalDiscMotable)_map.get(id);
 		if (ldm!=null) {
 			File file=ldm.getFile();
@@ -91,7 +91,7 @@ public class LocalDiscContextualiser extends AbstractMappedContextualiser {
 				_map.remove(id);
 				remove(file); // TODO - revisit
 				promoter.commit(id, context);
-				promotionMutex.release();
+				promotionLock.release();
 				promoter.contextualise(hreq, hres, chain, id, context);
 			} else {
 				promoter.rollback(id, context);

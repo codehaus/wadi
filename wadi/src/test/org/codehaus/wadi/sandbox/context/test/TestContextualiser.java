@@ -54,12 +54,14 @@ import org.codehaus.wadi.sandbox.context.Location;
 import org.codehaus.wadi.sandbox.context.Motable;
 import org.codehaus.wadi.sandbox.context.Promoter;
 import org.codehaus.wadi.sandbox.context.impl.AlwaysEvicter;
+import org.codehaus.wadi.sandbox.context.impl.AlwaysProxyStrategy;
 import org.codehaus.wadi.sandbox.context.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.context.impl.LocalDiscContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.context.impl.NeverEvicter;
+import org.codehaus.wadi.sandbox.context.impl.NeverMigrateStrategy;
 import org.codehaus.wadi.sandbox.context.impl.SharedJDBCContextualiser;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
@@ -224,7 +226,7 @@ public class TestContextualiser extends TestCase {
 			_context=new MyContext(context);
 		}
 
-		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
+		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
 			_counter++;
 
 			MyContext context=_context;
@@ -232,7 +234,7 @@ public class TestContextualiser extends TestCase {
 			if (promoter.prepare(id, context)) {
 				_context=null;
 				promoter.commit(id, context);
-				promotionMutex.release();
+				promotionLock.release();
 				promoter.contextualise(hreq, hres, chain, id, context);
 			} else {
 				_context=context;
@@ -255,13 +257,13 @@ public class TestContextualiser extends TestCase {
 			_context=new MyContext(context);
 		}
 
-		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
+		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Promoter promoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
 			_counter++;
 			Context context=_context;
 			Sync shared=context.getSharedLock();
 			try {
 				shared.acquire();
-				promotionMutex.release();
+				promotionLock.release();
 				_log.info("running locally: "+id);
 				chain.doFilter(hreq, hres);
 				shared.release();
@@ -417,8 +419,8 @@ public class TestContextualiser extends TestCase {
 
 	static class MyLocation implements Location, Serializable {
 		public long getExpiryTime(){return 0;}
-		public boolean proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionMutex) {
-			promotionMutex.release();
+		public boolean proxy(HttpServletRequest req, HttpServletResponse res, String id, Sync promotionLock) {
+			promotionLock.release();
 			System.out.println("PROXYING TO: "+id);
 			return true;
 		}
@@ -438,7 +440,7 @@ public class TestContextualiser extends TestCase {
 
 		Collapser collapser0=new HashingCollapser(10, 2000);
 		Map c0=new HashMap();
-		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000, 3000, new MyLocation());
+		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000, 3000, new MyLocation(), new AlwaysProxyStrategy(), new NeverMigrateStrategy());
 		Map m0=new HashMap();
 		m0.put("foo", new MyContext());
 		Contextualiser memory0=new MemoryContextualiser(clstr0, collapser0, m0, new NeverEvicter(), new MyContextPool());
@@ -446,7 +448,7 @@ public class TestContextualiser extends TestCase {
 
 		Collapser collapser1=new HashingCollapser(10, 2000);
 		Map c1=new HashMap();
-		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000, 3000, new MyLocation());
+		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000, 3000, new MyLocation(), new AlwaysProxyStrategy(), new NeverMigrateStrategy());
 		Map m1=new HashMap();
 		m1.put("bar", new MyContext());
 		Contextualiser memory1=new MemoryContextualiser(clstr1, collapser1, m1, new NeverEvicter(), new MyContextPool());
