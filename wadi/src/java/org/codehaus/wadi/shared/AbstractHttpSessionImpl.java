@@ -29,6 +29,7 @@ interface
 {
   public long               getCreationTime();
   public String             getId();
+  public String             getRealId();
   public long               getLastAccessedTime();
   public ServletContext     getServletContext();
   public int                getMaxInactiveInterval();

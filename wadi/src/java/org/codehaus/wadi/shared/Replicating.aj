@@ -48,7 +48,7 @@ public aspect
   before(AbstractHttpSessionImpl ahsi)
     : invocation(ahsi)
     {
-      String    id          =ahsi.getId();
+      String    id          =ahsi.getRealId();
       Signature signature   =thisJoinPointStaticPart.getSignature();
       String    methodName  =signature.getName();
       Class[]   methodTypes =((MethodSignature)signature).getParameterTypes();

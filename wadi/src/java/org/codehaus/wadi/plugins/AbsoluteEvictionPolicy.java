@@ -48,7 +48,7 @@ public class AbsoluteEvictionPolicy
     long mii=impl.getMaxInactiveInterval()*1000;
     long fencepost=_fencepost*1000;
     boolean answer=(age>fencepost) && (age<mii);
-    if (_log.isTraceEnabled()) _log.trace(impl.getId()+" : eviction policy: "+fencepost+"<"+age+"<"+mii+"="+answer);
+    if (_log.isTraceEnabled()) _log.trace(impl.getRealId()+" : eviction policy: "+fencepost+"<"+age+"<"+mii+"="+answer);
     return answer;
   }
 }

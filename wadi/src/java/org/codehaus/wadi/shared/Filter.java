@@ -112,10 +112,11 @@ public class
       }
       else
       {
+	String realId=_manager.getRoutingStrategy().strip(id);
 	// Ensure that Manager.get() is called before entry (this may
 	// have already happened) - this will pull in and lock our
 	// session even if remote.
-	if((impl=_manager.get(id))!=null && // KEEP
+	if((impl=_manager.get(realId))!=null && // KEEP
 	   ((HttpSession)impl.getFacade()).isValid())
 	{
 	  // restick lb to this node if necessary...
@@ -148,100 +149,34 @@ public class
       else
       {
 	String newId=session.getId();
-	newId=_manager.getRoutingStrategy().strip(newId);
+	String newRealId=_manager.getRoutingStrategy().strip(newId);
 
 	boolean reuse=_manager.getReuseSessionIds();
 	// we have to release a lock
-	if (id!=null && !reuse && id.equals(newId))
+	if (id!=null && !reuse && id.equals(newRealId))
 	{
 	  // an optimisation, hopefully the most common case -
 	  // saves us a lookup that we have already done...
 	  impl.getApplicationLock().release();
-	  if (_log.isTraceEnabled()) _log.trace(newId+": original session maintained throughout request");
+	  if (_log.isTraceEnabled()) _log.trace(newRealId+": original session maintained throughout request");
 	}
 	else
 	{
 	  // we cannot be sure that the session coming out of the
 	  // request is the same as the one that went in to it, so
-	  impl=_manager.getLocalSession(newId);
+	  impl=_manager.getLocalSession(newRealId);
 	  // session must still be valid, since we have not yet
 	  // released our lock, so no need to check...
 
 	  impl.getApplicationLock().release();
 	  if (reuse)
-	    if (_log.isTraceEnabled()) _log.trace(newId+": potential session id reuse - outgoing session may be new");
+	    if (_log.isTraceEnabled()) _log.trace(newRealId+": potential session id reuse - outgoing session may be new");
 	    else
-	      if (_log.isTraceEnabled()) _log.trace(newId+": new outgoing session");
+	      if (_log.isTraceEnabled()) _log.trace(newRealId+": new outgoing session");
 	}
       }
       // in case Jetty or Tomcat is thread-pooling :
       _manager.setFirstGet(true); // ready for next time through...
     }
-  }
-
-  public void
-    process(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
-	    String sessionId)
-    throws IOException, ServletException
-  {
-    //    assert Thread.currentThread().getName().startsWith("PoolThread-"); // TODO - Jetty only
-
-    // every session has a RWLock
-    // priority will be given to Readers
-    // application threads are Readers
-    // container threads that need to ensure exclusive access to application resources are Writers.
-
-    try
-    {
-      chain.doFilter(request, response);
-    }
-    finally
-    {
-      // the session may have just been created - if so we need to
-      // look it up and release the read lock...
-      javax.servlet.http.HttpSession session=request.getSession(false);
-      if (session!=null)
-      {
-	HttpSessionImpl impl=(HttpSessionImpl)_manager.get(_manager.getRoutingStrategy().strip(session.getId()));
-	if (_log.isTraceEnabled()) _log.trace(sessionId+"; just created - releasing");
-	if (impl!=null)
-	  impl.getApplicationLock().release();
-      }
-    }
-
-    // TODO - LATER FUNCTIONALITY - REPLICATION WITH VALUE BASED SEMANTICS
-    //     try
-    //     {
-    //       // can we acquire an exclusive lock for session replication
-    //       // etc...
-
-    //       // TODO - PROBLEM - we really need to upgrade our RLock to a
-    //       // WLock, so there is no time for the housekeeping thread to
-    //       // squeeze in and prevent us from signalling the end of a
-    //       // request group... how do we ensure that this does not happen ?
-    //       if (writeLock!=null && _manager.getUsingRequestGroups() && writeLock.attempt(-1))
-    //       {
-    // 	// if so, and we are working at request-group granularity,
-    // 	// then this is the end of a request group....
-    // 	_manager.notifyRequestGroupEnd(sessionId);
-    //       }
-    //       else
-    //       {
-    // 	// otherwise this is only the end of a single request within
-    // 	// a group
-    // 	_manager.notifyRequestEnd(sessionId);
-    //       }
-    //     }
-    //     catch (InterruptedException e)
-    //     {
-    //       _log.warn("unexpected interruption", e);
-    //       Thread.interrupted();
-    //       return;
-    //     }
-    //     finally
-    //     {
-    //       if (writeLock!=null)
-    // 	writeLock.release();
-    //     }
   }
 }

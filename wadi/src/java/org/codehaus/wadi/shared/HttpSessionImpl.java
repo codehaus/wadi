@@ -47,7 +47,8 @@ public abstract class
   protected static final Log _log=LogFactory.getLog(HttpSessionImpl.class);
 
   protected String _id;		// TODO - could be transient :-)
-  public String getId(){return _id;}
+  public String getId(){return _wadiManager.getRoutingStrategy().augment(_id);}	// TODO - cache ?
+  public String getRealId(){return _id;}
 
   protected long _creationTime;	// millis
   public long getCreationTime(){return _creationTime;}

@@ -125,7 +125,7 @@ public class
   public boolean
     passivate(HttpSessionImpl impl)
     {
-      String id=impl.getId();
+      String id=impl.getRealId();
       File file=null;
       FileLock lock=null;
       try
@@ -184,7 +184,7 @@ public class
 	    ObjectInput ois=_streamingStrategy.getInputStream(fis);
 	    impl.readContent(ois);
 	    ois.close();
-	    if (_log.isDebugEnabled()) _log.debug(impl.getId()+": immigration (file: "+file.toString()+")");
+	    if (_log.isDebugEnabled()) _log.debug(impl.getRealId()+": immigration (file: "+file.toString()+")");
 	    return true;
 	  }
 	  finally

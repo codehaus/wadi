@@ -47,7 +47,7 @@ public aspect
 	try
 	{
 	  javax.servlet.http.HttpSession facade=ahsi.getFacade();
-	  notifyValueUnbound(facade, key, oldVal);
+	  notifyValueUnbound(ahsi.getRealId(), facade, key, oldVal);
 	}
 	catch (Throwable t)
 	{
@@ -66,15 +66,16 @@ public aspect
     : setAttribute(ahsi, key, val, returnVal)
     {
       Object oldVal=proceed(ahsi, key, val, true);
+      String realId=ahsi.getRealId();
       javax.servlet.http.HttpSession facade=ahsi.getFacade();
 
       // send binding notifications
       try
       {
 	if (oldVal!=null)
-	  notifyValueUnbound(facade, key, oldVal);
+	  notifyValueUnbound(realId, facade, key, oldVal);
 
-	notifyValueBound(facade, key, val);
+	notifyValueBound(realId, facade, key, val);
       }
       catch (Throwable t)
       {
@@ -87,11 +88,11 @@ public aspect
   // impl
 
   protected void
-    notifyValueUnbound(javax.servlet.http.HttpSession session, String key, Object val)
+    notifyValueUnbound(String realId, javax.servlet.http.HttpSession session, String key, Object val)
     {
       if (val instanceof HttpSessionBindingListener)
       {
-	_log.trace(session.getId()+" : notifying unbinding(\""+key+"\") : "+val);
+	_log.trace(realId+" : notifying unbinding(\""+key+"\") : "+val);
 
 	HttpSessionBindingEvent event=new HttpSessionBindingEvent(session, key, val);
 	((HttpSessionBindingListener)val).valueUnbound(event);
@@ -100,11 +101,11 @@ public aspect
     }
 
   protected void
-    notifyValueBound(javax.servlet.http.HttpSession session, String key, Object val)
+    notifyValueBound(String realId, javax.servlet.http.HttpSession session, String key, Object val)
     {
       if (val instanceof HttpSessionBindingListener)
       {
-	_log.trace(session.getId()+": notifying binding(\""+key+"\") : "+val);
+	_log.trace(realId+": notifying binding(\""+key+"\") : "+val);
 
 	HttpSessionBindingEvent event=new HttpSessionBindingEvent(session, key, val);
 	((HttpSessionBindingListener)val).valueBound(event);

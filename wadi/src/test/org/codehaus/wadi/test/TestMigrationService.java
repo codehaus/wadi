@@ -82,7 +82,7 @@ public class
 
       org.codehaus.wadi.shared.HttpSessionImpl session=new org.codehaus.wadi.tomcat.HttpSessionImpl();
       session.setId(""+System.currentTimeMillis());
-      String id=session.getId();
+      String id=session.getRealId();
       if (_log.isInfoEnabled()) _log.info("session: "+id);
       _serverSessions.put(id, session);
 

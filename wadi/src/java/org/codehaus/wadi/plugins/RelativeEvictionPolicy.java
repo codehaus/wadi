@@ -51,7 +51,7 @@ public class RelativeEvictionPolicy
       long mii=impl.getMaxInactiveInterval()*1000;
       long cutOff=(long)(mii*_ratio);
       boolean answer=age>cutOff;
-      if (_log.isTraceEnabled()) _log.trace(impl.getId()+" : eviction policy: "+age+">"+cutOff+"="+answer);
+      if (_log.isTraceEnabled()) _log.trace(impl.getRealId()+" : eviction policy: "+age+">"+cutOff+"="+answer);
       return answer;
     }
   }

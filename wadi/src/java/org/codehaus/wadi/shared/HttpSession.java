@@ -59,12 +59,7 @@ public class
   public Enumeration        getAttributeNames()      {return _impl.getAttributeNameEnumeration();}
   public String[]           getValueNames()          {return _impl.getAttributeNameStringArray();}
   public boolean            isNew()                  {return _impl.isNew();}
-
-  public String			// TODO - yeugh !
-    getId()
-    {
-      return _impl.getWadiManager().getRoutingStrategy().augment(_impl.getId()); // TODO - cache...
-    }
+  public String             getId()                  {return _impl.getId();}
 
   // Setters
   public void setMaxInactiveInterval(int i)        {_impl.setMaxInactiveInterval(i);}
@@ -82,7 +77,7 @@ public class
     invalidate()
   {
     HttpSessionImpl impl=((HttpSessionImpl)_impl);
-    String id=impl.getId();
+    String id=impl.getRealId();
 
     RWLock lock=impl.getRWLock();
     boolean acquired=false;
@@ -93,7 +88,7 @@ public class
       lock.overlap();
       acquired=true;
 
-      String newId=impl.getId();
+      String newId=impl.getRealId();
       if (newId!=null && newId.equals(id))
       {
 	// no other invalidation thread beat us to it...

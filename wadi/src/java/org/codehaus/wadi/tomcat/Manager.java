@@ -101,20 +101,20 @@ public class
   public void
     add(Session impl)
   {
-    put(impl.getId(), (HttpSessionImpl)impl);
+    put(((HttpSessionImpl)impl).getRealId(), (HttpSessionImpl)impl);
   }
 
   public void
     remove(Session impl)
   {
-    remove(impl.getId());
+    remove(((HttpSessionImpl)impl).getRealId());
   }
 
   public Session
     findSession(String id)
     throws IOException
   {
-    return (HttpSessionImpl)get(id);
+    return (HttpSessionImpl)get(_routingStrategy.strip(id));
   }
 
   public Session[]
