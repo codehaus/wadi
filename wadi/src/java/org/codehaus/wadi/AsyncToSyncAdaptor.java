@@ -60,15 +60,15 @@ public class
       }
       catch (TimeoutException e)
       {
-	_log.warn("timed out at rendezvous", e);
+	_log.debug("timed out at rendez-vous - no answer within required timeframe");
       }
       catch (InterruptedException e)
       {
-	_log.warn("unexpectedly interrupted whilst waiting on rendezvous", e);
+	_log.warn("unexpectedly interrupted whilst waiting on rendez-vous", e);
       }
       catch (BrokenBarrierException e)
       {
-	_log.warn("Broken barrier - should never happen - we own this rendezvous", e);
+	_log.warn("Broken barrier - should never happen - we own this rendez-vous", e);
       }
       catch (Exception e)
       {
@@ -83,31 +83,31 @@ public class
     }
 
   public Object
-    receive(Object command, String id, long timeout)
+    receive(Object datum, String id, long timeout)
     {
       _log.trace("attending rendez-vous: "+id);
       Rendezvous rv=(Rendezvous)_entries.get(id);
       Object result=null;
 
       if (rv==null)
-	_log.warn("missed rendezvous - invoker thread must have timed out");
+	_log.warn("missed rendez-vous - invoker thread must have timed out");
       else
 	try
 	{
-	  result=rv.attemptRendezvous(command, timeout);
-	  _log.trace("rendez-vous successful: "+id);
+	  result=rv.attemptRendezvous(datum, timeout);
+	  _log.trace("rendez-vous successful: "+datum);
 	}
 	catch (TimeoutException e)
 	{
-	  _log.warn("rendezvous timed out", e);
+	  _log.warn("rendez-vous timed out", e);
 	}
 	catch (InterruptedException e)
 	{
-	  _log.warn("unexpectedly interrupted whilst waiting on rendezvous", e);
+	  _log.warn("unexpectedly interrupted whilst waiting on rendez-vous", e);
 	}
 	catch (BrokenBarrierException e)
 	{
-	  _log.warn("Broken barrier - we must have arrived too late for rendezvous", e);
+	  _log.warn("Broken barrier - we must have arrived too late for rendez-vous", e);
 	}
 
       return result;

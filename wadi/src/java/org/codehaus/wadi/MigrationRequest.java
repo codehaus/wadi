@@ -17,25 +17,28 @@
 
 package org.codehaus.wadi;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.Cluster;
 
 public class
-    MigrationRequest
-    implements Invocable
+  MigrationRequest
+  implements Invocable
 {
-  protected SerializableLog _log=new SerializableLog(getClass());
-  protected String          _id;
-  protected InetAddress     _address;
-  protected int             _port;
-  protected long            _timeout;
-
-  protected Destination     _replyTo;
+  protected static final Log  _log=LogFactory.getLog(MigrationRequest.class);
+  protected final String      _id;
+  protected final InetAddress _address;
+  protected final int         _port;
+  protected final long        _timeout;
 
   public
     MigrationRequest(String id, InetAddress address, int port, long timeout)
@@ -51,34 +54,54 @@ public class
   {
     HttpSessionImpl impl=null;
 
-    if ((impl=(HttpSessionImpl)manager._local.get(_id))!=null)
+    if ((impl=(HttpSessionImpl)manager._local.get(_id))==null)
     {
-      MigrationService.Client client=new MigrationService.Client();
-      Collection list=new ArrayList(1);
-      list.add(impl);		// must be mutable
-      client.emmigrate(manager._local, list, _timeout, _address, _port, manager.getStreamingStrategy(), true);
-
-      Cluster cluster=manager.getCluster();
-
-      Destination dest=null;
-      try
-      {
-	dest=in.getJMSReplyTo();
-	_log.info("sending response to: "+dest);
-	ObjectMessage out = cluster.createObjectMessage();
-	out.setJMSReplyTo(cluster.getLocalNode().getDestination());
-	out.setObject(new MigrationResponse(_id, _timeout, null));
-	cluster.send(dest, out);
-	_log.info("sent response to: "+dest);
-      }
-      catch (JMSException e)
-      {
-	_log.warn("could not send migration response to: "+dest, e);
-      }
+      if (_log.isTraceEnabled()) _log.info("session not present: "+_id);
     }
     else
     {
-      if (_log.isTraceEnabled()) _log.info("session not present: "+_id);
+      //       MigrationService.Client client=new MigrationService.Client();
+      //       Collection list=new ArrayList(1);
+      //       list.add(impl);		// must be mutable
+      //       client.emmigrate(manager._local, list, _timeout, _address, _port, manager.getStreamingStrategy(), true);
+
+      try
+      {
+	impl.getContainerLock().attempt(_timeout);
+	ByteArrayOutputStream baos=new ByteArrayOutputStream();
+	ObjectOutputStream    oos =new ObjectOutputStream(baos);
+	impl.writeContent(oos);
+	oos.flush();
+	byte[] buffer=baos.toByteArray();
+	oos.close();
+
+	Destination dest=null;
+	try
+	{
+	  dest=in.getJMSReplyTo();
+	  Cluster cluster=manager.getCluster();
+	  ObjectMessage out=cluster.createObjectMessage();
+	  out.setJMSReplyTo(cluster.getLocalNode().getDestination());
+	  out.setObject(new MigrationResponse(_id, _timeout, buffer));
+	  cluster.send(dest, out);
+	}
+	catch (JMSException e)
+	{
+	  _log.warn("could not send migration response to: "+dest, e);
+	}
+      }
+      catch (InterruptedException e)
+      {
+	_log.warn("could not get container lock on session for emmigration", e);
+      }
+      catch (IOException e)
+      {
+	_log.warn("IO problems marshalling session for emmigration", e);
+      }
+      catch (ClassNotFoundException e)
+      {
+	_log.warn("ClassLoading problems marshalling session for emmigration", e);
+      }
     }
   }
 

@@ -40,4 +40,4 @@ echo ASPECTJ_HOME=$ASPECTJ_HOME
 echo TOMCAT_HOME=$TOMCAT_HOME
 echo JETTY_HOME=$JETTY_HOME
 
-exec ant -emacs $@
+sh $ANT_HOME/bin/ant -emacs $@
