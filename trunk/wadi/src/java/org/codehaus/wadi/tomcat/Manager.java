@@ -233,7 +233,7 @@ public class
 
   public boolean isServing(InetAddress address, int port){return true;}	// TODO
 
-  public int getHttpPort(){return 8080;} // TODO - temporary hack...
+  public int getHttpPort(){return Integer.parseInt(System.getProperty("http.port"));} // TODO - temporary hack...
 
   public ServletContext getServletContext(){return ((Context)_container).getServletContext();}
   public HttpSessionContext getSessionContext() {return null;}
