@@ -26,5 +26,5 @@ public interface
   Executable
   extends Serializable
 {
-  public void invoke(Manager manager, ObjectMessage message);
+  public void invoke(MigrationService service, ObjectMessage message);
 }

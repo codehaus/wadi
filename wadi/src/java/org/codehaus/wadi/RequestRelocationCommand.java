@@ -29,15 +29,6 @@ import javax.jms.ObjectMessage;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class RequestRelocationCommand implements Executable, Serializable {
-
-    /* (non-Javadoc)
-     * @see org.codehaus.wadi.Command#run(javax.jms.ObjectMessage, org.codehaus.wadi.Manager)
-     */
-    public void invoke(Manager manager, ObjectMessage message) {
-        // TODO Auto-generated method stub
-
-    }
-
-}
+public class RequestRelocationCommand
+{}				// DEAD!
 

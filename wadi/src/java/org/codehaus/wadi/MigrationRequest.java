@@ -46,11 +46,11 @@ public class
   }
 
   public void
-    invoke(Manager manager, ObjectMessage in)
+    invoke(MigrationService service, ObjectMessage in)
   {
     HttpSessionImpl impl=null;
 
-    if ((impl=(HttpSessionImpl)manager._local.get(_id))==null)
+    if ((impl=(HttpSessionImpl)service.getManager()._local.get(_id))==null)
     {
       if (_log.isTraceEnabled()) _log.info("session not present: "+_id);
     }
@@ -77,13 +77,13 @@ public class
 	Destination dest=null;
 	try
 	{
-	  Cluster cluster=manager.getCluster();
-	  result=manager.getAsyncToSyncAdaptor().send(cluster,
-				       new MigrationResponse(_id, _timeout, buffer),
-				       in.getJMSCorrelationID(),
-				       _timeout,
-				       cluster.getLocalNode().getDestination(),
-				       in.getJMSReplyTo());
+	  Cluster cluster=service.getManager().getCluster();
+	  result=service.getAsyncToSyncAdaptor().send(cluster,
+						      new MigrationResponse(_id, _timeout, buffer),
+						      in.getJMSCorrelationID(),
+						      _timeout,
+						      cluster.getLocalNode().getDestination(),
+						      in.getJMSReplyTo());
 	}
 	catch (JMSException e)
 	{
@@ -109,7 +109,7 @@ public class
       }
       if (result==Boolean.TRUE)
       {
-	manager.releaseImpl(impl);
+	service.getManager().releaseImpl(impl);
 	_log.info(_id+": emmigration acknowledged and committed");
       }
       else

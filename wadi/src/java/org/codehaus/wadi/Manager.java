@@ -255,18 +255,8 @@ public abstract class
     // from another node.
     if (!successfulMigration)
     {
-      Destination src=_cluster.getLocalNode().getDestination();
-      Destination dst=_cluster.getDestination();
-      String correlationId=realId+"-"+src.toString();
-      long timeout=2000L;
-      Object result=_adaptor.send(_cluster,
-				  new MigrationRequest(realId, _migrationService.getServer().getDestination(), timeout),
-				  correlationId,
-				  timeout,	// parameterise - TODO
-				  src,
-				  dst);
-
-      successfulMigration=(impl==result);
+      long timeout=2000L;	// parameterise - TODO
+      successfulMigration=_migrationService.getClient().immigrate(realId, impl, timeout, _cluster.getDestination());
     }
 
     if (successfulMigration)
@@ -420,9 +410,9 @@ public abstract class
       _cluster.addClusterListener(new MembershipListener());
 
       _migrationService.setManager(this);
+      _migrationService.setHttpSessionImplMap(_local);
       MigrationService.Server server=_migrationService.getServer();
       server.setHttpSessionImplFactory(_implFactory);
-      server.setHttpSessionImplMap(_local);
       server.start();
 
       _cluster.start(); // should include webapp context
@@ -948,11 +938,6 @@ public abstract class
   //----------------------------------------
   // Migration
 
-  protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor();
-
-  //----------------------------------------
-  // Migration
-
   public abstract String getSessionCookieName();
   public abstract String getSessionCookiePath(HttpServletRequest req);
   public abstract String getSessionCookieDomain();
@@ -1193,9 +1178,6 @@ public abstract class
     om.setObject(command);
     _cluster.send(node.getDestination(), om);
   }
-
-  public void setAsyncToSyncAdaptor(AsyncToSyncAdaptor adaptor){_adaptor=adaptor;}
-  public AsyncToSyncAdaptor getAsyncToSyncAdaptor(){return _adaptor;}
 
   class MembershipListener
     implements ClusterListener

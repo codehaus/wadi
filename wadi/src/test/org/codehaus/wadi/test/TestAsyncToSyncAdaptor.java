@@ -75,46 +75,46 @@ public class
 //   public void
 //     testAdaptor()
 //     throws Exception
-//     {
-//       _log.info("[0] entering adaptor");
-//       Object result=_adaptor.send(
-// 				  new Invocable()
+//   {
+//     _log.info("[0] entering adaptor");
+//     Object result=_adaptor.send(
+// 				new Executable()
+// 				{
+// 				  public void
+// 				    invoke(Manager manager, ObjectMessage message)
 // 				  {
-// 				    public void
-// 				      invoke(Manager manager, ObjectMessage message)
+// 				    _log.info("[0] starting Command");
+// 				    new Thread()
 // 				    {
-// 				      _log.info("[0] starting Command");
-// 				      new Thread()
+// 				      public void
+// 					run()
 // 				      {
-// 					public void
-// 					  run()
-// 					{
-// 					  _log.info("[1] entering adaptor");
-// 					  Object result=_adaptor.receive(_data, _id, _timeout);
-// 					  _log.info("[1] leaving adaptor");
-// 					}
-// 				      }.start();
-// 				      _log.info("[0] ending Command");
-// 				    }
-// 				  },
-// 				  _id,
-// 				  _timeout,
-// 				  new AsyncToSyncAdaptor.Sender()
-// 				  {
-// 				    public void
-// 				      send(Object command)
-// 				    {
-// 				      _log.info("[0] send Object");
-// 				      ((Invocable)command).invoke(null, null);
-// 				      _log.info("[0] sent Object");
-// 				    }
+// 					_log.info("[1] entering adaptor");
+// 					Object result=_adaptor.receive(_data, _id, _timeout);
+// 					_log.info("[1] leaving adaptor");
+// 				      }
+// 				    }.start();
+// 				    _log.info("[0] ending Command");
 // 				  }
-// 				  );
+// 				},
+// 				_id,
+// 				_timeout,
+// 				new AsyncToSyncAdaptor.Sender()
+// 				{
+// 				  public void
+// 				    send(Object command)
+// 				  {
+// 				    _log.info("[0] send Object");
+// 				    ((Invocable)command).invoke(null, null);
+// 				    _log.info("[0] sent Object");
+// 				  }
+// 				}
+// 				);
 
-//       assertTrue(result.equals(_data));
-//       _log.info("[0] data was: "+_data);
-//       _log.info("[0] leaving adaptor");
+//     assertTrue(result.equals(_data));
+//     _log.info("[0] data was: "+_data);
+//     _log.info("[0] leaving adaptor");
 
-//       Thread.sleep(2000L);
-//     }
+//     Thread.sleep(2000L);
+//   }
 }

@@ -48,10 +48,17 @@ public class
 {
   protected final Log _log=LogFactory.getLog(getClass());
 
+  protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor();
+  public AsyncToSyncAdaptor getAsyncToSyncAdaptor(){return _adaptor;}
+
   protected StreamingStrategy _streamingStrategy;
   protected Manager           _manager;
   protected Client            _client=new Client();
   protected Server            _server=new Server();
+
+  protected Map _sessions;
+  public Map getHttpSessionImplMap(){return _sessions;}
+  public void setHttpSessionImplMap(Map sessions){_sessions=sessions;}
 
   public StreamingStrategy getStreamingStrategy(){return _streamingStrategy;}
   public void setStreamingStrategy(StreamingStrategy strategy){_streamingStrategy=strategy;}
@@ -68,15 +75,24 @@ public class
     implements org.codehaus.wadi.MigrationService.Client
   {
     public boolean
-      emmigrate(Map local, Collection candidates, long timeout, Destination dst)
+      emmigrate(Collection candidates, long timeout, Destination dst)
     {
       return true;
     }
 
     public boolean
-      immigrate(Map local, String realId, HttpSessionImpl placeholder, long timeout, Destination dst)
+      immigrate(String realId, HttpSessionImpl placeholder, long timeout, Destination dst)
     {
-      return false;
+      Destination src=_server.getDestination();
+      String correlationId=realId+"-"+src.toString();
+      Object result=_adaptor.send(_manager.getCluster(),
+				  new org.codehaus.wadi.MigrationRequest(realId, src, timeout),
+				  correlationId,
+				  timeout,
+				  src,
+				  dst);
+
+      return (placeholder==result);
     }
   }
 
@@ -84,17 +100,11 @@ public class
     Server
     implements org.codehaus.wadi.MigrationService.Server
   {
-    protected Destination _destination;
-
-    public Destination getDestination(){return _destination;}
+    public Destination getDestination(){return _manager.getCluster().getLocalNode().getDestination();}
 
     protected HttpSessionImplFactory _factory;
     public HttpSessionImplFactory getHttpSessionImplFactory(){return _factory;}
     public void setHttpSessionImplFactory(HttpSessionImplFactory factory){_factory=factory;}
-
-    protected Map _sessions;
-    public Map getHttpSessionImplMap(){return _sessions;}
-    public void setHttpSessionImplMap(Map sessions){_sessions=sessions;}
 
     protected MessageConsumer   _clusterConsumer;
     protected MessageConsumer   _nodeConsumer;
@@ -132,8 +142,6 @@ public class
 	_manager=manager;
       }
 
-      protected AsyncToSyncAdaptor _adaptor=new AsyncToSyncAdaptor(); // TODO
-
       protected Message _message;
 
       public void
@@ -162,7 +170,7 @@ public class
 	    _log.info("message arrived: "+invocable);
 	    try
 	    {
-	      invocable.invoke(_manager, om);
+	      invocable.invoke(MigrationService.this, om);
 	    }
 	    catch (Throwable t)
 	    {
