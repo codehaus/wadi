@@ -55,7 +55,10 @@ public abstract class MigrationRequest
       try
       {
 	if ((acquired=impl.getContainerLock().attempt(_timeout)))
-	  result=doit(service, impl, correlationID, source);
+	  if (impl.getRealId()==null)
+	    _log.warn(_id+": session disappeared whilst we were waiting for migration lock");
+	  else
+	    result=doit(service, impl, correlationID, source);
 	else
 	  _log.warn(impl.getRealId()+": unable to acquire exclusive access within timeframe");
       }
@@ -71,11 +74,11 @@ public abstract class MigrationRequest
       if (result==Boolean.TRUE)
       {
 	service.getManager().releaseImpl(impl);
-	_log.info(_id+": emmigration acknowledged and committed");
+	_log.trace(_id+": emmigration acknowledged and committed");
       }
       else
       {
-	_log.info(_id+": emmigration failed - rolled back - we still own session");
+	_log.warn(_id+": emmigration failed - rolled back - we still own session");
       }
     }
   }

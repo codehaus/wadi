@@ -64,7 +64,7 @@ public class
 	long timeStarted=System.currentTimeMillis();
 	result=rv.attemptRendezvous(datum, timeout);
 	long timeTaken=System.currentTimeMillis()-timeStarted;
-	_log.info(correlationId+"/"+hashCode()+": starter completed rendez-vous successfully in "+timeTaken+" millis - "+result);
+	_log.trace(correlationId+"/"+hashCode()+": starter completed rendez-vous successfully in "+timeTaken+" millis - "+result);
       }
       catch (TimeoutException e)
       {
@@ -105,7 +105,8 @@ public class
 	  long timeStarted=System.currentTimeMillis();
 	  result=rv.attemptRendezvous(datum, timeout);
 	  long timeTaken=System.currentTimeMillis()-timeStarted;
-	  _log.info(correlationId+"/"+hashCode()+": finisher completed rendez-vous successfully in "+timeTaken+" millis - "+datum);
+	  if (_log.isTraceEnabled())
+	    _log.trace(correlationId+"/"+hashCode()+": finisher completed rendez-vous successfully in "+timeTaken+" millis - "+datum.hashCode());
 	}
 	catch (TimeoutException e)
 	{
