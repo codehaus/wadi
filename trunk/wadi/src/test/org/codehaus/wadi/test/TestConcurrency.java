@@ -139,7 +139,7 @@ public class
 		  lock.writeLock().attempt(60000);
 		int priority=Thread.currentThread().getPriority();
 		_log.info("priority: "+priority);
-		//		synchronized(this){assertTrue(priority<_priority);}
+		assertTrue(priority<_priority);
 		_priority=priority;
 		lock.writeLock().release();
 	      }
@@ -170,7 +170,9 @@ public class
     testPriority()
     throws Exception
   {
+    _priority=Thread.MAX_PRIORITY+1;
     priority(true);
+    _priority=Thread.MAX_PRIORITY+1;
     priority(false);
   }
 
