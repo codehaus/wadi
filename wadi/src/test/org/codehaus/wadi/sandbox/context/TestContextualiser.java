@@ -1,8 +1,18 @@
-/*
- * Created on Feb 16, 2005
+/**
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Copyright 2003-2004 The Apache Software Foundation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package org.codehaus.wadi.sandbox.context;
 
@@ -49,17 +59,17 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 import junit.framework.TestCase;
 
 /**
- * @author jules
+ * TODO - JavaDoc this type
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
  */
 public class TestContextualiser extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
     protected DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");	// db springs into existance in-vm beneath us
     protected String _table="MyTable";
 
-	
+
 	/*
 	 * @see TestCase#setUp()
 	 */
@@ -98,30 +108,30 @@ public class TestContextualiser extends TestCase {
 	}
 
 	// test how interning works - we will use locking of keys to ensure that concurrent loading of same session does not occur...
-	
+
 	public void testIntern() {
 		String s1="foo"; // automatically interned
 
 		String s2=s1.intern();
 		assertTrue(s2==s1);
-		
-		String s3=s1.intern();	
+
+		String s3=s1.intern();
 		assertTrue(s3==s2);
 
 		String s4="fo"+"o"; // automatically interned
 		assertTrue(s4==s3);
-		
+
 		String s5=new StringBuffer("fo").append("o").toString(); // NOT interned
 		assertTrue(s5!=s4);
 		s5=s5.intern();
 		assertTrue(s5==s4); // now it is
-		
+
 		String s6="-foo-".substring(1, 4); // NOT interned
 		assertTrue(s6!=s5);
-		
+
 		// etc...
 	}
-	
+
 	class MyContext implements Context {
 		String _val;
 		ReadWriteLock _lock=new ReaderPreferenceReadWriteLock();
@@ -130,37 +140,37 @@ public class TestContextualiser extends TestCase {
 		MyContext(String val) {
 			this(val, System.currentTimeMillis()+(30*1000));
 		}
-		
+
 		MyContext(String val, long expiryTime) {
 			_val=val;
 			_expiryTime=expiryTime;
 		}
-		
+
 		MyContext() {}
-		
+
 		public Sync getSharedLock(){return _lock.readLock();}
 		public Sync getExclusiveLock(){return _lock.writeLock();}
 
 		// Motable...
-		
+
 		public long getExpiryTime(){return _expiryTime;}
-		
+
 		// SerializableContext...
-		
+
 		public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
 			_val=(String)oi.readObject();
 		}
-		
+
 		public void writeContent(ObjectOutput oo) throws IOException, ClassNotFoundException {
 			oo.writeObject(_val);
 		}
 	}
-	
+
 	class MyContextPool implements ContextPool {
 		public void put(Context context){}
 		public Context take(){return new MyContext();}
 	}
-	
+
 	class MyFilterChain
 	  implements FilterChain
 	{
@@ -171,7 +181,7 @@ public class TestContextualiser extends TestCase {
 	    _log.info("invoking FilterChain...");
 	  }
 	}
-	
+
 	public void testConceptualiser() throws Exception {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		Map d=new HashMap();
@@ -188,14 +198,14 @@ public class TestContextualiser extends TestCase {
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo"));
 		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new NeverEvicter(), new MyContextPool());
-		
+
 		FilterChain fc=new MyFilterChain();
 //		Collapser collapser=new HashingCollapser();
 		memory.contextualise(null,null,fc,"foo", null, null, false);
 		memory.contextualise(null,null,fc,"bar", null, null, false);
 		assertTrue(!f.exists());
 	}
-	
+
 	class MyPromotingContextualiser implements Contextualiser {
 		int _counter=0;
 		MyContext _context;
@@ -203,10 +213,10 @@ public class TestContextualiser extends TestCase {
 		public MyPromotingContextualiser(String context) {
 			_context=new MyContext(context);
 		}
-		
+
 		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
 			_counter++;
-			
+
 			MyContext context=_context;
 			assertTrue(_context!=null);
 			if (promoter.prepare(id, context)) {
@@ -220,13 +230,13 @@ public class TestContextualiser extends TestCase {
 			}
 			return true;
 		}
-		
+
 		public void demote(String key, Motable val){}
 		public void evict(){}
-		
+
 		public boolean isLocal(){return false;}
 	}
-	
+
 	class MyActiveContextualiser implements Contextualiser {
 		int _counter=0;
 		MyContext _context;
@@ -234,7 +244,7 @@ public class TestContextualiser extends TestCase {
 		public MyActiveContextualiser(String context) {
 			_context=new MyContext(context);
 		}
-		
+
 		public boolean contextualise(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex, boolean localOnly) throws IOException, ServletException {
 			_counter++;
 			Context context=_context;
@@ -255,18 +265,18 @@ public class TestContextualiser extends TestCase {
 		public void evict(){}
 		public boolean isLocal(){return false;}
 	}
-	
+
 	class MyRunnable implements Runnable {
 		Contextualiser _contextualiser;
 		FilterChain    _chain;
 		String         _id;
-		
+
 		MyRunnable(Contextualiser contextualiser, FilterChain chain, String id) {
 			_contextualiser=contextualiser;
 			_chain=chain;
 			_id=id;
 		}
-		
+
 		public void run() {
 			try {
 				_contextualiser.contextualise(null, null, _chain, _id, null, null, false);
@@ -276,26 +286,26 @@ public class TestContextualiser extends TestCase {
 			}
 		}
 	}
-	
+
 	public void testPromotion(Contextualiser c, int n) throws Exception {
 		Contextualiser mc=new MemoryContextualiser(c, new HashingCollapser(10, 2000), new HashMap(), new NeverEvicter(), new MyContextPool());
-		FilterChain fc=new MyFilterChain();		
-		
+		FilterChain fc=new MyFilterChain();
+
 		for (int i=0; i<n; i++)
 			mc.contextualise(null,null,fc,"baz", null, null, false);
 	}
-	
+
 	public void testPromotion() throws Exception {
 		int n=10;
 		MyPromotingContextualiser mpc=new MyPromotingContextualiser("baz");
-		testPromotion(mpc, n);	
+		testPromotion(mpc, n);
 		assertTrue(mpc._counter==1);
-		
+
 		MyActiveContextualiser mac=new MyActiveContextualiser("baz");
-		testPromotion(mac, n);	
+		testPromotion(mac, n);
 		assertTrue(mac._counter==n);
 	}
-	
+
 	public void testCollapsing(Contextualiser c, int n) throws Exception {
 		Contextualiser mc=new MemoryContextualiser(c, new HashingCollapser(10, 2000), new HashMap(), new NeverEvicter(), new MyContextPool());
 		FilterChain fc=new MyFilterChain();
@@ -307,18 +317,18 @@ public class TestContextualiser extends TestCase {
 		for (int i=0; i<n; i++)
 			threads[i].join();
 		}
-	
+
 	public void testCollapsing() throws Exception {
 		int n=10;
 		MyPromotingContextualiser mpc=new MyPromotingContextualiser("baz");
 		testCollapsing(mpc, n);
 		assertTrue(mpc._counter==1);
-		
+
 		MyActiveContextualiser mxc=new MyActiveContextualiser("baz");
 		testCollapsing(mxc, n);
 		assertTrue(mxc._counter==n);
 		}
-	
+
 	public void testEviction2() throws Exception {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
@@ -327,7 +337,7 @@ public class TestContextualiser extends TestCase {
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo"));
 		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new AlwaysEvicter(), new MyContextPool());
-		
+
 		FilterChain fc=new MyFilterChain();
 
 		assertTrue(!d.containsKey("foo"));
@@ -339,22 +349,22 @@ public class TestContextualiser extends TestCase {
 		assertTrue(!d.containsKey("foo"));
 		assertTrue(m.containsKey("foo"));
 	}
-		
+
 	class MyEvicter implements Evicter{
 		long _remaining;
-		
+
 		MyEvicter(long remaining) {
 			_remaining=remaining;
 		}
-		
+
 		public boolean evict(String id, Motable m) {
 			long expiry=m.getExpiryTime();
 			long current=System.currentTimeMillis();
 			long left=expiry-current;
 			boolean evict=(left<=_remaining);
-			
+
 			//_log.info((!evict?"not ":"")+"evicting: "+id);
-			
+
 			return evict;
 		}
 	}
@@ -367,7 +377,7 @@ public class TestContextualiser extends TestCase {
 		Map m=new HashMap();
 		m.put("foo", new MyContext("foo", System.currentTimeMillis()+2000)); // times out 2 seconds from now...
 		Contextualiser memory=new MemoryContextualiser(disc, collapser, m, new MyEvicter(1000), new MyContextPool());
-			
+
 		FilterChain fc=new MyFilterChain();
 
 		assertTrue(!d.containsKey("foo"));
@@ -394,7 +404,7 @@ public class TestContextualiser extends TestCase {
 //		assertTrue(m.containsKey("foo"));
 //		assertTrue(((MyContext)m.get("foo"))._val.equals("foo"));
 	}
-	
+
 	static class MyLocation implements Location, Serializable {
 		public long getExpiryTime(){return 0;}
 		public Context proxy(ServletRequest req, ServletResponse res, String id, Sync promotionMutex) {
@@ -403,35 +413,35 @@ public class TestContextualiser extends TestCase {
 			return null;
 		}
 	}
-	
+
 	public void testCluster() throws Exception {
 		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
 		ClusterFactory clusterFactory       = new DefaultClusterFactory(connectionFactory);
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
 		Cluster cluster0                    = clusterFactory.createCluster(clusterName);
 		Cluster cluster1                    = clusterFactory.createCluster(clusterName);
-		
+
 		cluster0.start();
 		cluster1.start();
 		//-------------------
 		// do the test
-		
-		Collapser collapser0=new HashingCollapser(10, 2000);		
+
+		Collapser collapser0=new HashingCollapser(10, 2000);
 		Map c0=new HashMap();
 		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, c0, new MyEvicter(0), cluster0, 2000, 3000, new MyLocation());
 		Map m0=new HashMap();
 		m0.put("foo", new MyContext());
 		Contextualiser memory0=new MemoryContextualiser(clstr0, collapser0, m0, new NeverEvicter(), new MyContextPool());
 		clstr0.setContextualiser(memory0);
-		
-		Collapser collapser1=new HashingCollapser(10, 2000);		
+
+		Collapser collapser1=new HashingCollapser(10, 2000);
 		Map c1=new HashMap();
 		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, c1, new MyEvicter(0), cluster1, 2000, 3000, new MyLocation());
 		Map m1=new HashMap();
 		m1.put("bar", new MyContext());
 		Contextualiser memory1=new MemoryContextualiser(clstr1, collapser1, m1, new NeverEvicter(), new MyContextPool());
 		clstr1.setContextualiser(memory1);
-		
+
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
 	    _log.info("STARTING NOW!");
 		FilterChain fc=new MyFilterChain();
@@ -444,7 +454,7 @@ public class TestContextualiser extends TestCase {
 		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null, false));
 		assertTrue(!memory0.contextualise(null,null,fc,"baz", null, null, false));
 		assertTrue(!memory1.contextualise(null,null,fc,"baz", null, null, false));
-		
+
 		Thread.sleep(2000);
 	    _log.info("STOPPING NOW!");
 		// ------------------

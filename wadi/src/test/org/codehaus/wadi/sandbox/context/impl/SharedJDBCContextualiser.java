@@ -1,8 +1,18 @@
-/*
- * Created on Feb 17, 2005
+/**
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Copyright 2003-2004 The Apache Software Foundation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package org.codehaus.wadi.sandbox.context.impl;
 
@@ -37,10 +47,10 @@ import org.codehaus.wadi.sandbox.context.Promoter;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * @author jules
+ * TODO - JavaDoc this type
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
  */
 public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	protected final Log _log = LogFactory.getLog(getClass());
@@ -64,7 +74,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#getPromoter(org.codehaus.wadi.sandbox.context.Promoter)
 	 */
 	public Promoter getPromoter(Promoter promoter){return promoter;} // just pass contexts straight through...
-	
+
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.impl.AbstractChainedContextualiser#contextualiseLocally(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync)
 	 */
@@ -87,7 +97,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		      }
 
 			// TODO - revisit...
-		    if (context!=null) {			
+		    if (context!=null) {
 		    	_log.info("promoting (from database): "+id);
 		    	if (promoter.prepare(id, context)) {
 			    	int r=s.executeUpdate("DELETE FROM "+_table+" WHERE MyKey='"+id+"'");
@@ -99,7 +109,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		    		promoter.rollback(id, context);
 		    	}
 		    }
-		    
+
 		    s.close();
 		    c.close();
 
@@ -109,7 +119,7 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		} catch (ClassNotFoundException e2) {
 			throw new ServletException("promotion (database) failed: "+id, e2);
 		}
-		
+
 		//return false;
 	}
 
@@ -153,6 +163,6 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 	      _log.error("eviction (database) failed: "+key, e);
 	    }
 	}
-	
+
 	public boolean isLocal(){return false;}
 }

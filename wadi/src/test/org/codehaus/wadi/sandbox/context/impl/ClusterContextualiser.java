@@ -1,8 +1,18 @@
-/*
- * Created on Feb 22, 2005
+/**
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Copyright 2003-2004 The Apache Software Foundation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package org.codehaus.wadi.sandbox.context.impl;
 
@@ -38,21 +48,22 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 /**
- * @author jules
- * 
  * A cache of Locations. If the Location of a Context is not known, the Cluster
  * may be queried for it. If it is forthcoming, we can proxy to it. After a
  * given number of successful proxies, the Context will be migrated to this
  * Contextualiser which should promote it so that future requests for it can be
  * run straight off the top of the stack.
- * 
+ *
  * Node N1 sends LocationRequest to Cluster
  * Node N2 contextualises this request with a FilterChain that will send a LocationResponse and wait a specified handover period.
  * Node N1 receives the response, updates its cache and then proxies through the Location to the required resource.
- * 
+ *
  * The promotion mutex is held correctly during the initial Location lookup, so that searches for the same Context are correctly collapsed.
- * 
+ *
  * This class is getting out of hand !
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
  */
 public class ClusterContextualiser extends AbstractMappedContextualiser {
 
@@ -63,11 +74,11 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	protected final long            _timeout;
 	protected final Location        _location;
 	protected final long            _proxyHandOverPeriod;
-	
+
 	protected Contextualiser _top;
 	public void setContextualiser(Contextualiser top){_top=top;}
 	public Contextualiser getContextualiser(){return _top;}
-	
+
 	class LocationResponseFilterChain
 	implements FilterChain
 	{
@@ -76,7 +87,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		protected final Location _location;
 		protected final String _id;
 		protected final long _handOverPeriod;
-		
+
 		LocationResponseFilterChain(Destination replyTo, String correlationId, Location location, String id, long handOverPeriod) {
 			_replyTo=replyTo;
 			_correlationId=correlationId;
@@ -84,7 +95,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			_id=id;
 			_handOverPeriod=handOverPeriod;
 		}
-		
+
 		public void
 		doFilter(ServletRequest request, ServletResponse response)
 		throws IOException, ServletException
@@ -97,7 +108,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 				m.setJMSCorrelationID(_correlationId);
 				m.setObject(lr);
 				_cluster.send(_replyTo, m);
-				
+
 				// Now wait for a while so that the session is locked into this container, giving the other node a chance to proxy to this location and still find it here...
 				// instead of just waiting a set period, we could use a Rendezvous object with a timeout - more complexity - consider...
 				try {
@@ -108,36 +119,36 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 					// ignore
 					// TODO - should we loop here until timeout is up ?
 				}
-				
+
 			} catch (JMSException e) {
 				_log.error("problem sending location response: "+_id, e);
 			}
 		}
 	}
-	
+
 	class LocationListener implements MessageListener {
 		// TODO - should we use a semaphore here to bound the number of threads that we start ?
 		public void onMessage(Message message) {
 			new LocationListenerThread(message).start();
 		}
 	}
-	
+
 	class LocationListenerThread extends Thread {
 		protected final Message _message;
-		
+
 		public LocationListenerThread(Message message) {
 			_message=message;
 		}
-		
+
 		public void run() {
 			ObjectMessage om=null;
 			Object tmp=null;
 			LocationResponse response=null;
 			LocationRequest request=null;
-			
+
 			try {
 				if (_message instanceof ObjectMessage && (om=(ObjectMessage)_message)!=null && (tmp=om.getObject())!=null) {
-					if (tmp instanceof LocationRequest && (request=(LocationRequest)tmp)!=null) 
+					if (tmp instanceof LocationRequest && (request=(LocationRequest)tmp)!=null)
 						onLocationRequestMessage(om, request);
 					else if (tmp instanceof LocationResponse && (response=(LocationResponse)tmp)!=null)
 						onLocationResponseMessage(om, response);
@@ -148,7 +159,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 				_log.error("problem processing location message", e);
 			}
 		}
-		
+
 		public void onLocationRequestMessage(ObjectMessage message, LocationRequest request) throws JMSException {
 			String id=request.getId();
 			_log.info("receiving location request: "+id);
@@ -168,11 +179,11 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 				// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
 			}
 		}
-		
+
 		public void onLocationResponseMessage(ObjectMessage message, LocationResponse response) throws JMSException {
 			// unpack message content into local cache...
 			_log.info("receiving location response: "+response.getIds());
-			
+
 			// notify waiting threads...
 			String correlationId=message.getJMSCorrelationID();
 			synchronized (_searches) {
@@ -191,7 +202,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			}
 		}
 	}
-	
+
 	/**
 	 * @param next
 	 * @param collapser
@@ -222,7 +233,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 	 */
 	public boolean contextualiseLocally(ServletRequest req, ServletResponse res, FilterChain chain, String id, Promoter promoter, Sync promotionMutex) throws IOException, ServletException {
 		Location location=null;
-		
+
 		if ((location=(Location)_map.get(id))==null) {
 			String correlationId=_cluster.getLocalNode().getDestination().toString()+"-"+id;
 			Rendezvous rv=new Rendezvous(2);
@@ -231,7 +242,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			synchronized (_searches) {
 				_searches.put(correlationId, rv);
 			}
-			
+
 			try {
 				// broadcast location query to whole cluster
 				LocationRequest request=new LocationRequest(id, _proxyHandOverPeriod);
@@ -241,7 +252,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 				message.setObject(request);
 				_log.info("sending location request: "+id);
 				_cluster.send(_cluster.getDestination(), message);
-				
+
 				// rendez-vous with response/timeout...
 				do {
 					try {
@@ -263,21 +274,21 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			} catch (JMSException e) {
 				_log.warn("problem sending session location query: "+id, e);
 			}
-			
+
 			// tidy up rendez-vous
 			synchronized (_searches) {
 				_searches.remove(correlationId);
 			}
-			
+
 			if (location==null) {
 				return false;
-			} 
+			}
 		}
-		
+
 		assert location!=null;
-		
+
 		_log.info("location found (cluster): "+id+" - "+location);
-		
+
 		Context context=null;
 		if ((context=location.proxy(req, res, id, promotionMutex))==null) {
 			// request was proxied and contextualised remotely...
@@ -290,7 +301,7 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 			_log.info("migration has occurred [NYI] (contextualisation will occur locally): "+id);
 			// TODO - lots of code here...
 		}
-		
+
 		return true;
 	}
 
@@ -309,6 +320,6 @@ public class ClusterContextualiser extends AbstractMappedContextualiser {
 		// for the moment - just push to the tier below us...
 		_next.demote(key, val);
 	}
-	
+
 	public boolean isLocal(){return false;}
 }
