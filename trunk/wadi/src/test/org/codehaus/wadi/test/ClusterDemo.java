@@ -28,7 +28,6 @@ import org.codehaus.activecluster.ClusterException;
 import org.codehaus.activecluster.ClusterFactory;
 import org.codehaus.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
-import org.codehaus.wadi.cluster.RingTopologyStrategy;
 import org.codehaus.wadi.cluster.NChooseKTopologyStrategy;
 import org.codehaus.wadi.cluster.TopologyStrategy;
 

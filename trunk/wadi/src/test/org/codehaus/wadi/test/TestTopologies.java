@@ -31,7 +31,6 @@ import org.codehaus.wadi.cluster.CollectionComparator;
 import org.codehaus.wadi.cluster.NChooseKTopologyStrategy;
 import org.codehaus.wadi.cluster.Peer;
 import org.codehaus.wadi.cluster.RingTopologyStrategy;
-import org.codehaus.wadi.cluster.TopologyStrategy;
 
 public class
   TestTopologies

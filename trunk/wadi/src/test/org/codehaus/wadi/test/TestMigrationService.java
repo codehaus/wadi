@@ -26,10 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.jetty.HttpSessionImplFactory;
 import org.codehaus.wadi.shared.StreamingStrategy;
 import org.codehaus.wadi.plugins.SimpleStreamingStrategy;
-import org.codehaus.wadi.plugins.GZIPStreamingStrategy;
-import org.codehaus.wadi.plugins.ZipStreamingStrategy;
 import org.codehaus.wadi.shared.NewMigrationService;
-import EDU.oswego.cs.dl.util.concurrent.CyclicBarrier;
 
 /**
  * Test the Migration Service
