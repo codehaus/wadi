@@ -46,6 +46,7 @@ public class LocalDiscMotable extends AbstractMotable {
 	public void setBytes(byte[] bytes){_bytes=bytes;}
 
 	public void tidy() {
+	    super.tidy();
 		if (_file!=null && _file.exists())
 			remove(_file);
 	}

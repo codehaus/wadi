@@ -85,6 +85,7 @@ public class MyContext extends AbstractMotable implements Context {
 	}
 
 	public void tidy() {
+	    super.tidy();
 		_val=null;
 	}
 }

@@ -28,7 +28,10 @@ public class SimpleMotable extends AbstractMotable {
 	public byte[] getBytes() {return _bytes;}
 	public void setBytes(byte[] bytes){_bytes=bytes;}
 
-	public void tidy(){_bytes=null;}
+	public void tidy() {
+	    super.tidy();
+	    _bytes=null;
+	}
 }
 
 

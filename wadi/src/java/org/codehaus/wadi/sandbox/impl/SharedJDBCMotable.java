@@ -53,7 +53,10 @@ public class SharedJDBCMotable extends AbstractMotable {
 	public Connection getConnection(){return _connection;}
 	public void setConnection(Connection connection){_connection=connection;}
 
-	public void tidy() {remove(_connection, _table, this);}
+	public void tidy() {
+	    super.tidy();
+	    remove(_connection, _table, this);
+	}
 
 	public void copy(Motable motable) throws Exception {
 		super.copy(motable);
