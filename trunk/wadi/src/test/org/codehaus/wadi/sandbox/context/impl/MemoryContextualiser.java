@@ -84,6 +84,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 				Sync shared=context.getSharedLock();
 				shared.acquire(); // now this is locked into the container until we use/release it
 				_log.info("promoting (to memory): "+id);
+				_log.info("insert (memory): "+id);
 				_map.put(id, context);
 				promotionMutex.release(); // now available to other 'loading' threads
 				contextualise(req, res, chain, id);
@@ -105,6 +106,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 		if (_evicter.evict(key, val)) {
 			_next.demote(key, val);
 		} else {
+			_log.info("insert (memory): "+key);
 			_map.put(key, val);
 		}
 	}
@@ -122,6 +124,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 						_log.info("demoting (from memory): "+key);
 						_next.demote(key, val);
 						i.remove();
+						_log.info("remove (memory): "+key);
 						exclusive.release();
 					}
 				} catch (InterruptedException ie) {
