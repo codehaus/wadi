@@ -4,8 +4,6 @@
 
 <Configure class="org.codehaus.wadi.shared.Manager">
 
-  <Set name="Distributable">true</Set>
-
   <Set name="MaxInactiveInterval">600</Set><!-- destroy after N secs of inactivity -->
 
   <Set name="PassivationStrategy">

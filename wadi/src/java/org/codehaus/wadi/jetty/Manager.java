@@ -27,6 +27,7 @@ import org.codehaus.wadi.shared.EvictionPolicy;
 import org.codehaus.wadi.shared.Filter;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.WebApplicationHandler;
+import org.mortbay.jetty.servlet.WebApplicationContext;
 
 //TODO - remember max number of sessions in map
 
@@ -120,6 +121,7 @@ public class
   public int getHouseKeepingInterval(){return _housekeepingInterval;}
 
   protected WebApplicationHandler _handler;
+  protected WebApplicationContext _context;
 
   public synchronized void
     initialize(ServletHandler handler)
@@ -129,7 +131,8 @@ public class
     _handler.defineFilter(filterName, Filter.class.getName());
     _handler.mapPathToFilter("/*", filterName); // TODO - improve mapping, all 'stateful' servlets/filters
 
-    // TODO - get this working - perhaps we can add the filter from here...
+    _context=(WebApplicationContext)_handler.getHttpContext();
+    setDistributable(_context.isDistributable());
   }
 
   public synchronized void
