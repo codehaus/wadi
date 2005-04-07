@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.util.Collections;
 import java.util.Enumeration;
 
 import javax.servlet.ServletContext;
@@ -23,7 +24,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
 
 /**
- * TODO - JavaDoc this type
+ * Wraps a Session instance, presenting ONLY an HttpSession facade to the application.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -62,6 +63,14 @@ public class SessionWrapper implements HttpSession {
 
     // delegate to Manager
     public ServletContext getServletContext() {return _session.getManager().getServletContext();}
-    public HttpSessionContext getSessionContext() {return _session.getManager().getSessionContext();}
     public void invalidate() {_session.getManager().destroySession(_session);}
+    
+    // handle ourselves...
+    protected static final HttpSessionContext _httpSessionContext=new HttpSessionContext() {
+        protected final Enumeration _emptyEnumeration =Collections.enumeration(Collections.EMPTY_LIST);
+        public HttpSession getSession(String sessionId) {return null;}
+        public Enumeration getIds() {return _emptyEnumeration;}
+    };
+    public HttpSessionContext getSessionContext(){return _httpSessionContext;}
+
 }

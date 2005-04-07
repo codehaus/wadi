@@ -44,7 +44,7 @@ public class Session extends AbstractContext {
     
     public Session(Manager manager, Attributes attributes) {
         super();
-        _manager=manager;
+        _manager=manager; // TODO - push manager ref into wrapper - do we need it here at all ?
         _attributes=attributes;
         _attributes.setHttpSessionEvent(_httpSessionEvent); // contains a backptr
     }
@@ -84,8 +84,8 @@ public class Session extends AbstractContext {
     //public String getRealId() {return null;} // TODO - lose this method...
     
     // useful constants...
-    protected static Enumeration _emptyEnumeration =Collections.enumeration(Collections.EMPTY_LIST);
-    protected static String[]    _emptyStringArray =new String[0];
+    protected static final String[]    _emptyStringArray =new String[0];
+    protected static final Enumeration _emptyEnumeration =Collections.enumeration(Collections.EMPTY_LIST);
     
     // Attributes...
     
