@@ -20,18 +20,22 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpSessionActivationListener;
+import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.distributable.Dirtier;
+import org.codehaus.wadi.sandbox.impl.Session;
 
 public class WholeAttributes implements Attributes {
 	protected static final Log _log = LogFactory.getLog(WholeAttributes.class);
@@ -60,6 +64,7 @@ public class WholeAttributes implements Attributes {
     
     protected synchronized Map getObjectRep() {
         if (!_objectRepValid) {
+            List activationListeners=new ArrayList();
             // convert byte[] to Object rep
             try {
                 ByteArrayInputStream bais=new ByteArrayInputStream(_byteRep);
@@ -74,7 +79,7 @@ public class WholeAttributes implements Attributes {
                     Object val=oi.readObject();
                     //  if it is an activation listener, call didActivate() on it
                     if (val instanceof HttpSessionActivationListener) {
-                        ((HttpSessionActivationListener)val).sessionDidActivate(null); // FIXME - call after whole session has been read in... - use real event
+                        activationListeners.add(val);
                     }
                     //  if it is the wrapper class - use this to get the real object
                     // TODO - use wrapper to reincarnate val
@@ -83,6 +88,11 @@ public class WholeAttributes implements Attributes {
                 oi.close();
                 _objectRepValid=true;
                 if (_evictByteRepASAP) _byteRep=null;
+                // call activationListeners, now that we have a complete session...
+                int l=activationListeners.size();
+                HttpSessionEvent event=_session.getHttpSessionEvent();
+                for (int i=0; i<l; i++) 
+                    ((HttpSessionActivationListener)activationListeners.get(i)).sessionDidActivate(event);
             } catch (Exception e) {
                 _log.error("unexpected problem converting byte[] to Attributes", e);
             }
@@ -92,6 +102,7 @@ public class WholeAttributes implements Attributes {
     
     synchronized byte[] getByteRep() {
         if (null==_byteRep) {
+            HttpSessionEvent event=_session.getHttpSessionEvent();
             // convert Object to byte[] rep
             try {
                 ByteArrayOutputStream baos=new ByteArrayOutputStream();
@@ -107,7 +118,7 @@ public class WholeAttributes implements Attributes {
                     Object val=e.getValue();
                     //  if it is either an Activation or Binding listener, set a flag
                     if (val instanceof HttpSessionActivationListener) {
-                        ((HttpSessionActivationListener)val).sessionWillPassivate(null); // FIXME - how do we get hold of the event ?
+                        ((HttpSessionActivationListener)val).sessionWillPassivate(event);
                         _hasListeners=true; // the whole session will need deserialising if it times out on e.g. disc...
                     }
                     //  if it is a known non-serialisable type, do the right thing with a serialisable wrapper class
@@ -171,4 +182,7 @@ public class WholeAttributes implements Attributes {
         _objectRepValid=false;
         _byteRep=null;
     }
+    
+    protected Session _session;
+    public void setSession(Session session) {_session=session;}
 }

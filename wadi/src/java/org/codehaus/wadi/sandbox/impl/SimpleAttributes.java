@@ -30,7 +30,7 @@ import org.codehaus.wadi.sandbox.Attributes;
  */
 
 public class SimpleAttributes extends HashMap implements Attributes {
-
+    
     protected final static StreamingStrategy _streamer=new SimpleStreamingStrategy(); // TODO - parameterise 
     
     public byte[] getBytes() {
@@ -41,5 +41,8 @@ public class SimpleAttributes extends HashMap implements Attributes {
         HashMap attributes=(HashMap)Utils.safeByteArrayToObject(bytes, _streamer);
         putAll(attributes);
     }
-
+    
+    public void setSession(Session session) {
+        // we don't need it...
+    }
 }
