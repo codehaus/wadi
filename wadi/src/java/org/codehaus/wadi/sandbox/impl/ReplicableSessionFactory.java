@@ -23,12 +23,12 @@ public class ReplicableSessionFactory extends DistributableSessionFactory {
 
     protected final Replicaterr _replicater; // duplicate of super's _distributer field - clumsy
     
-    public ReplicableSessionFactory(Manager manager, AttributesFactory factory, Replicaterr replicater) {
-        super(manager, factory);
+    public ReplicableSessionFactory(AttributesFactory factory, Replicaterr replicater) {
+        super(factory);
         _replicater=replicater;
     }
 
-    public Session create() {
-        return new ReplicableSession(_manager, _factory.create(), _replicater);
+    public Session create(Manager manager) {
+        return new ReplicableSession(manager, _factory.create(), _replicater);
     }
 }

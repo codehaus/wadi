@@ -21,16 +21,14 @@ import org.codehaus.wadi.sandbox.SessionFactory;
 
 public class DistributableSessionFactory implements SessionFactory {
 
-    protected final Manager _manager;
     protected final AttributesFactory _factory;
     
-    public DistributableSessionFactory(Manager manager, AttributesFactory factory) {
+    public DistributableSessionFactory(AttributesFactory factory) {
         super();
-        _manager=manager;
         _factory=factory;
     }
 
-    public Session create() {
-        return new DistributableSession(_manager, _factory.create());
+    public Session create(Manager manager) {
+        return new DistributableSession(manager, _factory.create());
     }
 }

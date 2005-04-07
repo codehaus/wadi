@@ -36,6 +36,9 @@ import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.Dirtier;
 
+// TODO - consider mode where rep is shifted from byte->Object->byte for the duration of any change
+// this would be useful for testing that apps were distributable
+
 public class WholeAttributes implements Attributes {
 	protected static final Log _log = LogFactory.getLog(WholeAttributes.class);
     
@@ -182,4 +185,9 @@ public class WholeAttributes implements Attributes {
     
     protected HttpSessionEvent _event;
     public void setHttpSessionEvent(HttpSessionEvent event) {_event=event;}
+    
+    // FIXME
+    public Set getBindingListenerNames() {return null;}
+    public Set getActivationListenerNames() {return null;}
+
 }

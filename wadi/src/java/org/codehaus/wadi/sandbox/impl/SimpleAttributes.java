@@ -17,6 +17,7 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.util.HashMap;
+import java.util.Set;
 
 import javax.servlet.http.HttpSessionEvent;
 
@@ -47,4 +48,9 @@ public class SimpleAttributes extends HashMap implements Attributes {
     public void setHttpSessionEvent(HttpSessionEvent event) {
         // we don't need it...
     }
+    
+    // FIXME
+    public Set getBindingListenerNames() {return null;}
+    public Set getActivationListenerNames() {return null;}
+
 }

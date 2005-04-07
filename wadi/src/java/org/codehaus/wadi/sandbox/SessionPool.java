@@ -16,9 +16,10 @@
  */
 package org.codehaus.wadi.sandbox;
 
+import org.codehaus.wadi.sandbox.impl.Manager;
 import org.codehaus.wadi.sandbox.impl.Session;
 
 public interface SessionPool {
-    Session take();
+    Session take(Manager manager); // TODO - get Manager out of here...
     void put(Session session);
 }

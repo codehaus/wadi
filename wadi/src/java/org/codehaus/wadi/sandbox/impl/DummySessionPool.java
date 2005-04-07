@@ -19,23 +19,21 @@ package org.codehaus.wadi.sandbox.impl;
 import org.codehaus.wadi.sandbox.SessionFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
 
-public class SimpleSessionPool implements SessionPool {
+public class DummySessionPool implements SessionPool {
 
     protected final SessionFactory _factory;
     
-    public SimpleSessionPool(SessionFactory factory) {
+    public DummySessionPool(SessionFactory factory) {
         super();
         _factory=factory;
     }
     
-    public Session take() {
-        // TODO Auto-generated method stub
-        return null;
+    public Session take(Manager manager) {
+        return _factory.create(manager);
     }
 
     public void put(Session session) {
-        // TODO Auto-generated method stub
-
+        // just drop the session - truly pool later
     }
 
 }

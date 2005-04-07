@@ -21,6 +21,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
@@ -44,7 +45,7 @@ public class Session extends AbstractContext {
     
     public Session(Manager manager, Attributes attributes) {
         super();
-        _manager=manager; // TODO - push manager ref into wrapper - do we need it here at all ?
+        _manager=manager; // TODO - Id' like to lose manager - but i think we will need to know about listeners upon invalidation
         _attributes=attributes;
         _attributes.setHttpSessionEvent(_httpSessionEvent); // contains a backptr
     }
@@ -95,6 +96,10 @@ public class Session extends AbstractContext {
         return _attributes.get(name);
     }
     
+    public Set getAttributeNameSet() {
+        return _attributes.keySet();
+    }
+    
     public Enumeration getAttributeNameEnumeration() {
         return _attributes.size()==0?_emptyEnumeration:Collections.enumeration(_attributes.keySet());
     }
@@ -115,4 +120,8 @@ public class Session extends AbstractContext {
         // memory..
         return _attributes.remove(name);
     }
+    
+    public Set getBindingListenerNames() {return _attributes.getBindingListenerNames();}
+    public Set getActivationListenerNames() {return _attributes.getActivationListenerNames();}
+
 }
