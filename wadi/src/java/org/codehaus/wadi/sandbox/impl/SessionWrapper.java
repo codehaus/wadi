@@ -67,7 +67,7 @@ public class SessionWrapper implements HttpSession {
     
     // handle ourselves...
     protected static final HttpSessionContext _httpSessionContext=new HttpSessionContext() {
-        protected final Enumeration _emptyEnumeration =Collections.enumeration(Collections.EMPTY_LIST);
+        protected final Enumeration _emptyEnumeration=Collections.enumeration(Collections.EMPTY_LIST);
         public HttpSession getSession(String sessionId) {return null;}
         public Enumeration getIds() {return _emptyEnumeration;}
     };
