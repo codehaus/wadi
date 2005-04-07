@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.distributable.impl;
 
+import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.distributable.Replicater;
 import org.codehaus.wadi.sandbox.impl.Manager;
 
@@ -30,9 +31,11 @@ public class ReplicableSession extends DistributableSession {
 
     /**
      * @param manager
+     * @param attributes
+     * @param replicater
      */
-    public ReplicableSession(Manager manager, Replicater replicater) {
-        super(manager, replicater);
+    public ReplicableSession(Manager manager, Attributes attributes, Replicater replicater) {
+        super(manager, attributes);
     }
 
 }

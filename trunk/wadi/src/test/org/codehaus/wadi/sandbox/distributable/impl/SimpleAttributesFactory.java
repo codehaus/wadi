@@ -14,22 +14,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.distributable;
+package org.codehaus.wadi.sandbox.distributable.impl;
 
 import org.codehaus.wadi.sandbox.Attributes;
+import org.codehaus.wadi.sandbox.distributable.AttributesFactory;
+import org.codehaus.wadi.sandbox.impl.SimpleAttributes;
 
 /**
- * Externalise the representation of a Session's attributes into a attributes,
- * access to which is controlled via this API.
+ * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Distributer {
-    
-    Attributes wrap(Attributes attributes);
-    Object getAttribute(String id, Attributes attributes, String name);
-    Object setAttribute(String id, Attributes attributes, String name, Object newValue);
-    Object removeAttribute(String id, Attributes attributes, String name);
+
+public class SimpleAttributesFactory implements AttributesFactory {
+
+    /* (non-Javadoc)
+     * @see org.codehaus.wadi.sandbox.distributable.AttributesFactory#create()
+     */
+    public Attributes create() {
+        return new SimpleAttributes();
+    }
 
 }

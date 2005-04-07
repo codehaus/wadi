@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.distributable.SessionFactory;
 import org.codehaus.wadi.sandbox.impl.Session;
 
 /**
@@ -51,7 +52,7 @@ public class Manager {
     }
 
     public Session createSession() {
-        return new Session(this);
+        return new Session(this, new SimpleAttributes()); // TODO - should be using a SessionPool...
     }
     
     //----------------------------------------

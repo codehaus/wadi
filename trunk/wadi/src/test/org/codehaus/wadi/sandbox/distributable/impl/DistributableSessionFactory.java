@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.distributable.impl;
 
-import org.codehaus.wadi.sandbox.distributable.Distributer;
+import org.codehaus.wadi.sandbox.distributable.AttributesFactory;
 import org.codehaus.wadi.sandbox.distributable.SessionFactory;
 import org.codehaus.wadi.sandbox.impl.Manager;
 import org.codehaus.wadi.sandbox.impl.Session;
@@ -24,15 +24,15 @@ import org.codehaus.wadi.sandbox.impl.Session;
 public class DistributableSessionFactory implements SessionFactory {
 
     protected final Manager _manager;
-    protected final Distributer _distributer;
+    protected final AttributesFactory _factory;
     
-    public DistributableSessionFactory(Manager manager, Distributer distributer) {
+    public DistributableSessionFactory(Manager manager, AttributesFactory factory) {
         super();
         _manager=manager;
-        _distributer=distributer;
+        _factory=factory;
     }
 
     public Session create() {
-        return new DistributableSession(_manager, _distributer);
+        return new DistributableSession(_manager, _factory.create());
     }
 }

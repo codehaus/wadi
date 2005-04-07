@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.distributable.impl;
 
-import org.codehaus.wadi.sandbox.distributable.Distributer;
+import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.impl.Manager;
 import org.codehaus.wadi.sandbox.impl.Session;
 
@@ -29,26 +29,11 @@ import org.codehaus.wadi.sandbox.impl.Session;
 
 public class DistributableSession extends Session {
 
-    protected final Distributer _distributer;
-    
     /**
      * @param manager
      */
-    public DistributableSession(Manager manager, Distributer distributer) {
-        super(manager);
-        _distributer=distributer;
-        _attributes=_distributer.wrap(_attributes);
+    public DistributableSession(Manager manager, Attributes attributes) {
+        super(manager, attributes);
     }
 
-    public Object getAttribute(String name) {
-        return _distributer.getAttribute(_id, _attributes, name);
-    }
-    
-    public Object setAttribute(String name, Object newValue) {
-        return _distributer.setAttribute(_id, _attributes, name, newValue);
-    }
-    
-    public Object removeAttribute(String name) {
-        return _distributer.removeAttribute(_id, _attributes, name);
-    }
 }

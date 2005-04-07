@@ -14,35 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.distributable.impl;
+package org.codehaus.wadi.sandbox.distributable;
 
 import org.codehaus.wadi.sandbox.Attributes;
-import org.codehaus.wadi.sandbox.distributable.Distributer;
 
 /**
- * Manage Attributes such that Object identity is scoped at a per-attribute
- * granularity. 
+ * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 
-public class PartDistributer implements Distributer {
+public interface AttributesFactory {
 
-    public Attributes wrap(Attributes attributes) {
-        return attributes;
-    }
-
-    public Object getAttribute(String id, Attributes attributes, String name) {
-        return attributes.get(name);
-    }
+    public Attributes create();
     
-    public Object setAttribute(String id, Attributes attributes, String name, Object newValue) {
-        return attributes.put(name, newValue);
-    }
-    
-    public Object removeAttribute(String id, Attributes attributes, String name) {
-        return attributes.remove(name);
-    }
-
 }

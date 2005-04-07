@@ -38,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.sandbox.impl.Manager;
 import org.codehaus.wadi.sandbox.impl.Session;
+import org.codehaus.wadi.sandbox.impl.SimpleAttributes;
 
 /**
  * Test WADI's HttpSession implementation
@@ -629,7 +630,7 @@ public class
   public void
   testIsNew()
   {
-      Session s=new Session(_manager);
+      Session s=new Session(_manager, new SimpleAttributes());
       HttpSession session=s.getWrapper();
       assertTrue(session.isNew());
       s.setLastAccessedTime(System.currentTimeMillis()+1);
@@ -672,7 +673,7 @@ public class
     LATERtestActivation() // TODO
     throws Exception
   {
-    Session s0=new Session(_manager);
+    Session s0=new Session(_manager, new SimpleAttributes());
     //s0.init(_manager, "1234", 0L, 60, 60);
     List events=ActivationListener._events;
     events.clear();
@@ -699,7 +700,7 @@ public class
       assertTrue(s0.getWrapper()==e.getSession());
     }
 
-    Session s1=new Session(_manager);
+    Session s1=new Session(_manager, new SimpleAttributes());
     demarshall(s1, buffer);
     //s1.setWadiManager(_manager); // TODO - yeugh!
     // listener should not have yet been activated (we do it lazily)

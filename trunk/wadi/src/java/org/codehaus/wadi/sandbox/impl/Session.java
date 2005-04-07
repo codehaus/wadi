@@ -21,8 +21,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
@@ -42,20 +40,21 @@ public class Session extends AbstractContext {
     
     protected final static Log _log = LogFactory.getLog(Session.class);
     protected final Manager _manager;
-    protected Attributes _attributes;
-    public Session(Manager manager) {
+    protected final Attributes _attributes;
+    
+    public Session(Manager manager, Attributes attributes) {
         super();
         _manager=manager;
-        _attributes=new SimpleAttributes(); // TODO - parameterise
+        _attributes=attributes;
     }
     
     public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id, RWLock lock, Attributes attributes) {
         init(creationTime, lastAccessedTime, maxInactiveInterval, invalidated, id, lock);
-        _attributes=attributes;
+        // _attributes=attributes; // FIXME
     }
     
     public void destroy() {
-        _attributes=null; // should we recycle the Map ?
+        _attributes.clear();
     }
     
     public Manager getManager(){return _manager;}
@@ -70,7 +69,7 @@ public class Session extends AbstractContext {
     
     public void tidy() { // TODO - merge with destroy()
         super.tidy();
-        _attributes=null;
+        _attributes.clear();
     }
     
     // public access to the contents of this session should all be directed via wrapper
