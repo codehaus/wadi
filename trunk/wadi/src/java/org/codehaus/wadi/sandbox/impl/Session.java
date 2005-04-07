@@ -46,6 +46,7 @@ public class Session extends AbstractContext {
         super();
         _manager=manager;
         _attributes=attributes;
+        _attributes.setSession(this); // initialise backptr
     }
     
     public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id, RWLock lock, Attributes attributes) {
@@ -79,10 +80,6 @@ public class Session extends AbstractContext {
     // cached events...
     protected final HttpSessionEvent _httpSessionEvent=new HttpSessionEvent(_wrapper);
     public HttpSessionEvent getHttpSessionEvent(){return _httpSessionEvent;}
-    
-    // IDEA - move these two up to Wrapper - they are not instance level data...
-    //public ServletContext     getServletContext(){return null;} // FIXME
-    //public HttpSessionContext getSessionContext(){return null;} // FIXME
     
     //public String getRealId() {return null;} // TODO - lose this method...
     
