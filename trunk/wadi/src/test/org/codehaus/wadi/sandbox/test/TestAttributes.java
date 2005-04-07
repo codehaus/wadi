@@ -39,7 +39,7 @@ import junit.framework.TestCase;
  * @version $Revision$
  */
 
-public class TestDistribution extends TestCase {
+public class TestAttributes extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
     
     /*
@@ -60,7 +60,7 @@ public class TestDistribution extends TestCase {
      * Constructor for TestDistribution.
      * @param name
      */
-    public TestDistribution(String name) {
+    public TestAttributes(String name) {
         super(name);
     }
     
