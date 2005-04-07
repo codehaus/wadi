@@ -16,8 +16,9 @@
  */
 package org.codehaus.wadi.sandbox;
 
+import org.codehaus.wadi.sandbox.impl.Manager;
 import org.codehaus.wadi.sandbox.impl.Session;
 
 public interface SessionFactory {
-    Session create();
+    Session create(Manager manager); // TODO - remove dep on Manager and lose it...
 }

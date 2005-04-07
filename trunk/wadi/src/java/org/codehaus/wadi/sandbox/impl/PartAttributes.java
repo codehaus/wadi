@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.util.Set;
+
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Dirtier;
 
@@ -31,4 +33,9 @@ public class PartAttributes extends SimpleAttributes {
     public PartAttributes(Dirtier dirtier, StreamingStrategy streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
         // NYI
     }
+    
+    // FIXME
+    public Set getBindingListenerNames() {return null;}
+    public Set getActivationListenerNames() {return null;}
+
 }

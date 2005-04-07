@@ -36,9 +36,19 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SerializableContent;
+import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.sandbox.AttributesFactory;
+import org.codehaus.wadi.sandbox.Dirtier;
+import org.codehaus.wadi.sandbox.SessionFactory;
+import org.codehaus.wadi.sandbox.SessionPool;
+import org.codehaus.wadi.sandbox.impl.DistributableSessionFactory;
+import org.codehaus.wadi.sandbox.impl.DummySessionPool;
 import org.codehaus.wadi.sandbox.impl.Manager;
 import org.codehaus.wadi.sandbox.impl.Session;
 import org.codehaus.wadi.sandbox.impl.SimpleAttributes;
+import org.codehaus.wadi.sandbox.impl.WholeAttributesFactory;
+import org.codehaus.wadi.sandbox.impl.WriteDirtier;
 
 /**
  * Test WADI's HttpSession implementation
@@ -51,10 +61,17 @@ public class
  
   extends TestCase
 {
-  protected Log         _log=LogFactory.getLog(TestHttpSession.class);
-  protected Listener    _listener;
-  protected List        _events=new ArrayList();
-  protected Manager     _manager=new Manager();
+  protected Log               _log=LogFactory.getLog(TestHttpSession.class);
+  protected Listener          _listener;
+  protected List              _events=new ArrayList();
+  protected Dirtier           _dirtier=new WriteDirtier();
+  protected StreamingStrategy _streamer=new SimpleStreamingStrategy();
+  protected boolean           _evictObjectRepASAP=false;
+  protected boolean           _evictByteRepASAP=false;
+  protected AttributesFactory _attributesFactory=new WholeAttributesFactory(_dirtier, _streamer, _evictObjectRepASAP, _evictByteRepASAP);
+  protected SessionFactory    _sessionFactory=new DistributableSessionFactory(_attributesFactory);
+  protected SessionPool       _pool=new DummySessionPool(_sessionFactory);
+  protected Manager           _manager=new Manager(_pool);
   
   public TestHttpSession(String name)
   {

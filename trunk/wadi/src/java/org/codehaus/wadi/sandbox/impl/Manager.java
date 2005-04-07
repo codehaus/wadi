@@ -18,6 +18,7 @@ package org.codehaus.wadi.sandbox.impl;
 
 import java.util.ArrayList;
 import java.util.EventListener;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -28,7 +29,7 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.SessionFactory;
+import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.impl.Session;
 
 /**
@@ -41,18 +42,47 @@ import org.codehaus.wadi.sandbox.impl.Session;
 public class Manager {
 
     protected final Log _log = LogFactory.getLog(getClass());
+
+    protected final SessionPool _pool;
+    
+    public Manager(SessionPool pool) {
+        _pool=pool;
+    }
     
     public boolean isStarted(){return false;}
     
     public HttpSession newHttpSession() {
+        // TODO - don't create a new one - use a pool...
         return createSession().getWrapper();
     }
     
     public void destroySession(Session session) {
+        // fetch any ActivationListeners - so that they are activated.
+        // Session must appear to be in memory when invalidated ? - Think - TODO
+        for (Iterator i=session.getActivationListenerNames().iterator(); i.hasNext();) // ALLOC ?
+            session.getAttribute((String)i.next());
+        if (_attributeListeners.size()>0) {
+            // expensive - we are going to have to remove every
+            // attribute - one by one, so that these listeners 
+            // are correctly notified...
+            // BindingListeners will fire, if they are present...
+            for (Iterator i=session.getAttributeNameSet().iterator(); i.hasNext();) {
+                // inefficient - results in a lot of dehashing - maybe we can improve this later - TODO...
+                // perhaps an Attribute.Iterator, which we could advise with the same notification aspects ?
+                session.removeAttribute((String)i.next());
+            }
+        } else {
+            // remove any BindingListeners  - so that they are unbound
+            for (Iterator i=session.getBindingListenerNames().iterator(); i.hasNext();) // ALLOC ?
+                session.removeAttribute((String)i.next());
+        }
+        
+        // TODO - remove from Contextualiser....at end of initial request ?
+        _pool.put(session);
     }
 
     public Session createSession() {
-        return new Session(this, new SimpleAttributes()); // TODO - should be using a SessionPool...
+        return _pool.take(this);
     }
     
     //----------------------------------------
