@@ -16,6 +16,12 @@
  */
 package org.codehaus.wadi.sandbox.distributable;
 
-public interface Replicater extends Distributer {
-    // NYI
+import org.codehaus.wadi.sandbox.Attributes;
+
+public interface Replicater {
+
+    Object getAttribute(String id, Attributes attributes, String name);
+    Object setAttribute(String id, Attributes attributes, String name, Object newValue);
+    Object removeAttribute(String id, Attributes attributes, String name);
+
 }

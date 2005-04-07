@@ -28,10 +28,6 @@ import org.codehaus.wadi.sandbox.distributable.Replicater;
 
 public class RequestGroupReplicater implements Replicater {
 
-    public Attributes wrap(Attributes attributes) {
-        return attributes;
-    }
-
     public Object getAttribute(String id, Attributes attributes, String name) {
         return attributes.get(name);
     }

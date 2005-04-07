@@ -16,37 +16,34 @@
  */
 package org.codehaus.wadi.sandbox.distributable.impl;
 
-
+import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
+import org.codehaus.wadi.sandbox.distributable.AttributesFactory;
 import org.codehaus.wadi.sandbox.distributable.Dirtier;
-import org.codehaus.wadi.sandbox.distributable.Distributer;
+
 /**
- * Manage Attributes such that Object identity is scoped at a per-session
- * granularity.
+ * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 
-public class WholeDistributer implements Distributer {
+public class WholeAttributesFactory implements AttributesFactory {
+
+    protected final Dirtier _dirtier;
+    protected final StreamingStrategy _streamer;
+    protected final boolean _evictObjectRepASAP;
+    protected final boolean _evictByteRepASAP;
     
-    protected Dirtier _dirtier;
-    
-    public Attributes wrap(Attributes attributes) {
-        return attributes;
+    public WholeAttributesFactory(Dirtier dirtier, StreamingStrategy streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
+        _dirtier=dirtier;
+        _streamer=streamer;
+        _evictObjectRepASAP=evictObjectRepASAP;
+        _evictByteRepASAP=evictByteRepASAP;
     }
-    
-    // do we need all this stuff as well ? - leave it for the moment...
-    public Object getAttribute(String id, Attributes attributes, String name) {
-        return attributes.get(name);
+
+    public Attributes create() {
+        return new WholeAttributes(_dirtier, _streamer, _evictObjectRepASAP, _evictByteRepASAP);
     }
-    
-    public Object setAttribute(String id, Attributes attributes, String name, Object newValue) {
-        return attributes.put(name, newValue);
-    }
-    
-    public Object removeAttribute(String id, Attributes attributes, String name) {
-        return attributes.remove(name);
-    }
-    
+
 }

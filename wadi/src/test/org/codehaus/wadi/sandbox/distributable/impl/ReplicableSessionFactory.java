@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.distributable.impl;
 
+import org.codehaus.wadi.sandbox.distributable.AttributesFactory;
 import org.codehaus.wadi.sandbox.distributable.Replicater;
 import org.codehaus.wadi.sandbox.impl.Manager;
 import org.codehaus.wadi.sandbox.impl.Session;
@@ -24,12 +25,12 @@ public class ReplicableSessionFactory extends DistributableSessionFactory {
 
     protected final Replicater _replicater; // duplicate of super's _distributer field - clumsy
     
-    public ReplicableSessionFactory(Manager manager, Replicater replicater) {
-        super(manager, replicater);
+    public ReplicableSessionFactory(Manager manager, AttributesFactory factory, Replicater replicater) {
+        super(manager, factory);
         _replicater=replicater;
     }
 
     public Session create() {
-        return new ReplicableSession(_manager, _replicater);
+        return new ReplicableSession(_manager, _factory.create(), _replicater);
     }
 }
