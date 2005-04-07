@@ -125,8 +125,8 @@ public class WholeAttributes implements Attributes {
                 }
                 // don't write the flag - this will form part of our containing session's metadata...
                 // extract resulting byte[]...
-                _byteRep=baos.toByteArray();
                 oo.close();
+                _byteRep=baos.toByteArray();
                 if (_evictObjectRepASAP) {
                     _objectRep.clear();
                     _objectRepValid=false;
