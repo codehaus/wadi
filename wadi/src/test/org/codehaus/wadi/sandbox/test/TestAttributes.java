@@ -25,6 +25,7 @@ import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.Dirtier;
+import org.codehaus.wadi.sandbox.impl.PartAttributes;
 import org.codehaus.wadi.sandbox.impl.ReadWriteDirtier;
 import org.codehaus.wadi.sandbox.impl.SimpleAttributes;
 import org.codehaus.wadi.sandbox.impl.WholeAttributes;
@@ -118,6 +119,53 @@ public class TestAttributes extends TestCase {
 //        evictObjectRepASAP=true;
 //        evictByteRepASAP=true;
 //        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
+    }
+    
+    public void testWholeAttributes() throws Exception {
+        testAttributes(new SimpleAttributes());
+        testAttributes(new SimpleAttributes());
+        testAttributes(new SimpleAttributes());
+        testAttributes(new SimpleAttributes());
+        testAttributes(new SimpleAttributes());
+        testAttributes(new SimpleAttributes());
+        testAttributes(new SimpleAttributes());
+        testAttributes(new SimpleAttributes());
+
+        testAttributes(new WholeAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), false, false));
+        testAttributes(new WholeAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), true, false));
+        testAttributes(new WholeAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), false, true));
+        testAttributes(new WholeAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), true, true));
+        testAttributes(new WholeAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), false, false));
+        testAttributes(new WholeAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), true, false));
+        testAttributes(new WholeAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), false, true));
+        testAttributes(new WholeAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), true, true));
+
+        testAttributes(new PartAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), false, false));
+        testAttributes(new PartAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), true, false));
+        testAttributes(new PartAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), false, true));
+        testAttributes(new PartAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), true, true));
+        testAttributes(new PartAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), false, false));
+        testAttributes(new PartAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), true, false));
+        testAttributes(new PartAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), false, true));
+        testAttributes(new PartAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), true, true));
+
+    }
+
+    public void testAttributes(Attributes a) throws Exception {
+        // can we serialise an empty instance OK ?
+        byte[] bytes=a.getBytes();
+        // and then put the result back in ?
+        a.setBytes(bytes);
+        
+        String key="foo";
+        Object val=key;
+        a.put(key, val);
+        assertTrue(a.get(key).equals(val));
+        bytes=a.getBytes();
+        a.remove(key);
+        assertTrue(a.get(key)==null);
+        a.setBytes(bytes);
+        assertTrue(a.get(key).equals(val));
     }
     
     public void testSerialisation(Attributes wrapper, boolean evictObjectRepASAP, boolean evictByteRepASAP, boolean readIsDirty) throws Exception {

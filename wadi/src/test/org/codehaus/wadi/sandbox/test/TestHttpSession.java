@@ -48,6 +48,7 @@ import org.codehaus.wadi.sandbox.impl.SimpleAttributes;
  */
 public class
   TestHttpSession
+ 
   extends TestCase
 {
   protected Log         _log=LogFactory.getLog(TestHttpSession.class);
