@@ -14,18 +14,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.distributable.impl;
+package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.sandbox.distributable.AttributesFactory;
-import org.codehaus.wadi.sandbox.distributable.Replicater;
-import org.codehaus.wadi.sandbox.impl.Manager;
-import org.codehaus.wadi.sandbox.impl.Session;
+import org.codehaus.wadi.sandbox.AttributesFactory;
+import org.codehaus.wadi.sandbox.Replicaterr;
 
 public class ReplicableSessionFactory extends DistributableSessionFactory {
 
-    protected final Replicater _replicater; // duplicate of super's _distributer field - clumsy
+    protected final Replicaterr _replicater; // duplicate of super's _distributer field - clumsy
     
-    public ReplicableSessionFactory(Manager manager, AttributesFactory factory, Replicater replicater) {
+    public ReplicableSessionFactory(Manager manager, AttributesFactory factory, Replicaterr replicater) {
         super(manager, factory);
         _replicater=replicater;
     }

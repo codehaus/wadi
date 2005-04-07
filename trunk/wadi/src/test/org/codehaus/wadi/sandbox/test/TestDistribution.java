@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.distributable.test;
+package org.codehaus.wadi.sandbox.test;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -24,11 +24,11 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
-import org.codehaus.wadi.sandbox.distributable.Dirtier;
-import org.codehaus.wadi.sandbox.distributable.impl.ReadWriteDirtier;
-import org.codehaus.wadi.sandbox.distributable.impl.WholeAttributes;
-import org.codehaus.wadi.sandbox.distributable.impl.WriteDirtier;
+import org.codehaus.wadi.sandbox.Dirtier;
+import org.codehaus.wadi.sandbox.impl.ReadWriteDirtier;
 import org.codehaus.wadi.sandbox.impl.SimpleAttributes;
+import org.codehaus.wadi.sandbox.impl.WholeAttributes;
+import org.codehaus.wadi.sandbox.impl.WriteDirtier;
 
 import junit.framework.TestCase;
 

@@ -14,11 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.distributable.impl;
-
+package org.codehaus.wadi.sandbox.impl;
 
 import org.codehaus.wadi.sandbox.Attributes;
-import org.codehaus.wadi.sandbox.distributable.Replicater;
 
 /**
  * TODO - JavaDoc this type
@@ -27,17 +25,13 @@ import org.codehaus.wadi.sandbox.distributable.Replicater;
  * @version $Revision$
  */
 
-public class ImmediateReplicater implements Replicater {
+public class DistributableSession extends Session {
 
-    public Object getAttribute(String id, Attributes attributes, String name) {
-        return attributes.get(name);
+    /**
+     * @param manager
+     */
+    public DistributableSession(Manager manager, Attributes attributes) {
+        super(manager, attributes);
     }
-    
-    public Object setAttribute(String id, Attributes attributes, String name, Object newValue) {
-        return attributes.put(name, newValue);
-    }
-    
-    public Object removeAttribute(String id, Attributes attributes, String name) {
-        return attributes.remove(name);
-    }
+
 }

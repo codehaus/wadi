@@ -14,11 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.distributable.impl;
+package org.codehaus.wadi.sandbox.impl;
 
 import org.codehaus.wadi.sandbox.Attributes;
-import org.codehaus.wadi.sandbox.distributable.AttributesFactory;
-import org.codehaus.wadi.sandbox.impl.SimpleAttributes;
+import org.codehaus.wadi.sandbox.Replicaterr;
 
 /**
  * TODO - JavaDoc this type
@@ -27,13 +26,18 @@ import org.codehaus.wadi.sandbox.impl.SimpleAttributes;
  * @version $Revision$
  */
 
-public class SimpleAttributesFactory implements AttributesFactory {
+public class RequestGroupReplicater implements Replicaterr {
 
-    /* (non-Javadoc)
-     * @see org.codehaus.wadi.sandbox.distributable.AttributesFactory#create()
-     */
-    public Attributes create() {
-        return new SimpleAttributes();
+    public Object getAttribute(String id, Attributes attributes, String name) {
+        return attributes.get(name);
+    }
+    
+    public Object setAttribute(String id, Attributes attributes, String name, Object newValue) {
+        return attributes.put(name, newValue);
+    }
+    
+    public Object removeAttribute(String id, Attributes attributes, String name) {
+        return attributes.remove(name);
     }
 
 }

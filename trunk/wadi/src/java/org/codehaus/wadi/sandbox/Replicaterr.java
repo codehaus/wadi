@@ -14,11 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.distributable;
+package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.impl.Session;
 
-public interface SessionPool {
-    Session take();
-    void put(Session session);
+public interface Replicaterr {
+
+    Object getAttribute(String id, Attributes attributes, String name);
+    Object setAttribute(String id, Attributes attributes, String name, Object newValue);
+    Object removeAttribute(String id, Attributes attributes, String name);
+
 }

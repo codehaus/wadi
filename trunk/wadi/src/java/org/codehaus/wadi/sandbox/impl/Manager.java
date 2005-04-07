@@ -28,7 +28,7 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.distributable.SessionFactory;
+import org.codehaus.wadi.sandbox.SessionFactory;
 import org.codehaus.wadi.sandbox.impl.Session;
 
 /**

@@ -14,11 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.distributable.impl;
+package org.codehaus.wadi.sandbox.impl;
 
 import org.codehaus.wadi.sandbox.Attributes;
-import org.codehaus.wadi.sandbox.distributable.Replicater;
-import org.codehaus.wadi.sandbox.impl.Manager;
+import org.codehaus.wadi.sandbox.AttributesFactory;
 
 /**
  * TODO - JavaDoc this type
@@ -27,15 +26,13 @@ import org.codehaus.wadi.sandbox.impl.Manager;
  * @version $Revision$
  */
 
-public class ReplicableSession extends DistributableSession {
+public class SimpleAttributesFactory implements AttributesFactory {
 
-    /**
-     * @param manager
-     * @param attributes
-     * @param replicater
+    /* (non-Javadoc)
+     * @see org.codehaus.wadi.sandbox.distributable.AttributesFactory#create()
      */
-    public ReplicableSession(Manager manager, Attributes attributes, Replicater replicater) {
-        super(manager, attributes);
+    public Attributes create() {
+        return new SimpleAttributes();
     }
 
 }

@@ -16,13 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import java.util.HashMap;
-
-import javax.servlet.http.HttpSessionEvent;
-
-import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
+import org.codehaus.wadi.sandbox.Replicaterr;
 
 /**
  * TODO - JavaDoc this type
@@ -31,20 +26,15 @@ import org.codehaus.wadi.sandbox.Attributes;
  * @version $Revision$
  */
 
-public class SimpleAttributes extends HashMap implements Attributes {
-    
-    protected final static StreamingStrategy _streamer=new SimpleStreamingStrategy(); // TODO - parameterise 
-    
-    public byte[] getBytes() {
-        return Utils.safeObjectToByteArray(this, _streamer);
+public class ReplicableSession extends DistributableSession {
+
+    /**
+     * @param manager
+     * @param attributes
+     * @param replicater
+     */
+    public ReplicableSession(Manager manager, Attributes attributes, Replicaterr replicater) {
+        super(manager, attributes);
     }
-    
-    public void setBytes(byte[] bytes) {
-        HashMap attributes=(HashMap)Utils.safeByteArrayToObject(bytes, _streamer);
-        putAll(attributes);
-    }
-    
-    public void setHttpSessionEvent(HttpSessionEvent event) {
-        // we don't need it...
-    }
+
 }

@@ -18,7 +18,7 @@ package org.codehaus.wadi.sandbox;
 
 import java.util.Set;
 
-import org.codehaus.wadi.sandbox.impl.Session;
+import javax.servlet.http.HttpSessionEvent;
 
 /**
  * TODO - JavaDoc this type
@@ -41,6 +41,6 @@ public interface Attributes {
     byte[] getBytes();
     void setBytes(byte[] bytes);
     
-    // a backptr to our container - breaks a circular ref, so cannot be ctor param..
-    void setSession(Session session);
+    // event contains a backptr to our container - breaks a circular ref, so cannot be ctor param..
+    void setHttpSessionEvent(HttpSessionEvent event);
 }
