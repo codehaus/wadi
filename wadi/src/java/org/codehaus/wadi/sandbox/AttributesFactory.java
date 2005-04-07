@@ -14,29 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.distributable.impl;
+package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.distributable.SessionFactory;
-import org.codehaus.wadi.sandbox.distributable.SessionPool;
-import org.codehaus.wadi.sandbox.impl.Session;
 
-public class SimpleSessionPool implements SessionPool {
+/**
+ * TODO - JavaDoc this type
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 
-    protected final SessionFactory _factory;
+public interface AttributesFactory {
+
+    public Attributes create();
     
-    public SimpleSessionPool(SessionFactory factory) {
-        super();
-        _factory=factory;
-    }
-    
-    public Session take() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public void put(Session session) {
-        // TODO Auto-generated method stub
-
-    }
-
 }

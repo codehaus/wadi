@@ -14,12 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.distributable.impl;
+package org.codehaus.wadi.sandbox.impl;
 
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
-import org.codehaus.wadi.sandbox.distributable.AttributesFactory;
-import org.codehaus.wadi.sandbox.distributable.Dirtier;
+import org.codehaus.wadi.sandbox.AttributesFactory;
+import org.codehaus.wadi.sandbox.Dirtier;
 
 /**
  * TODO - JavaDoc this type

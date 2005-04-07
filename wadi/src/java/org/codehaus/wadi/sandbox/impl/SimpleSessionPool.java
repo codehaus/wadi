@@ -14,20 +14,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.distributable.impl;
+package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.sandbox.distributable.Dirtier;
+import org.codehaus.wadi.sandbox.SessionFactory;
+import org.codehaus.wadi.sandbox.SessionPool;
 
-/**
- * TODO - JavaDoc this type
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
+public class SimpleSessionPool implements SessionPool {
 
-public class WriteDirtier implements Dirtier {
+    protected final SessionFactory _factory;
+    
+    public SimpleSessionPool(SessionFactory factory) {
+        super();
+        _factory=factory;
+    }
+    
+    public Session take() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-    public boolean readAccess() {return false;}
-    public boolean writeAccess() {return true;}
+    public void put(Session session) {
+        // TODO Auto-generated method stub
+
+    }
 
 }

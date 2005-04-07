@@ -14,26 +14,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.distributable.impl;
+package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.sandbox.Attributes;
-import org.codehaus.wadi.sandbox.impl.Manager;
-import org.codehaus.wadi.sandbox.impl.Session;
+import org.codehaus.wadi.sandbox.AttributesFactory;
+import org.codehaus.wadi.sandbox.SessionFactory;
 
-/**
- * TODO - JavaDoc this type
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
+public class DistributableSessionFactory implements SessionFactory {
 
-public class DistributableSession extends Session {
-
-    /**
-     * @param manager
-     */
-    public DistributableSession(Manager manager, Attributes attributes) {
-        super(manager, attributes);
+    protected final Manager _manager;
+    protected final AttributesFactory _factory;
+    
+    public DistributableSessionFactory(Manager manager, AttributesFactory factory) {
+        super();
+        _manager=manager;
+        _factory=factory;
     }
 
+    public Session create() {
+        return new DistributableSession(_manager, _factory.create());
+    }
 }

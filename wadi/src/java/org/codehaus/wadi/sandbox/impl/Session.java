@@ -46,7 +46,7 @@ public class Session extends AbstractContext {
         super();
         _manager=manager;
         _attributes=attributes;
-        _attributes.setSession(this); // initialise backptr
+        _attributes.setHttpSessionEvent(_httpSessionEvent); // contains a backptr
     }
     
     public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id, RWLock lock, Attributes attributes) {

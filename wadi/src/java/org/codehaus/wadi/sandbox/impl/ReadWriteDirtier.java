@@ -14,9 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.distributable;
+package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.sandbox.Attributes;
+import org.codehaus.wadi.sandbox.Dirtier;
 
 /**
  * TODO - JavaDoc this type
@@ -25,8 +25,9 @@ import org.codehaus.wadi.sandbox.Attributes;
  * @version $Revision$
  */
 
-public interface AttributesFactory {
-
-    public Attributes create();
+public class ReadWriteDirtier implements Dirtier {
+    
+    public boolean readAccess() {return true;}
+    public boolean writeAccess() {return true;}
     
 }
