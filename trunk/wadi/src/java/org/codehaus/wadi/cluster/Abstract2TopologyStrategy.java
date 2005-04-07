@@ -50,7 +50,7 @@ public abstract class
     combineMap(Peer p)
   {
     Peer localPeer=getLocalPeer();
-    localPeer=localPeer!=null?localPeer:p; // TODO - hack - FIXME
+    localPeer=localPeer!=null?localPeer:p; // TODO - hack
     Map newCells=combineMap(localPeer, _peers.values(), Math.min(_k,_peers.size()));
 
     _log.info("old peers="+_oldPeers);
@@ -76,7 +76,7 @@ public abstract class
     combineCollection(Peer p)
   {
     Peer localPeer=getLocalPeer();
-    localPeer=localPeer!=null?localPeer:p; // TODO - hack - FIXME
+    localPeer=localPeer!=null?localPeer:p; // TODO - hack
     Collection newCells=combineCollection(localPeer, _peers.values(), Math.min(_k,_peers.size()));
 
     _log.info("old peers="+_oldPeers);
