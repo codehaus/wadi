@@ -16,10 +16,6 @@
  */
 package org.codehaus.wadi.sandbox;
 
-
-import javax.servlet.http.HttpSessionEvent;
-
-import org.codehaus.wadi.StreamingStrategy;
 /**
  * TODO - JavaDoc this type
  *
