@@ -32,7 +32,7 @@ import javax.servlet.http.HttpSessionEvent;
  * @version $Revision$
  */
 
-public class CleverAttributeWrapper extends AttributeWrapper {
+public class ActivatableAttribute extends Attribute {
     
     protected transient boolean _needsNotification;
     protected transient HttpSessionEvent _event;

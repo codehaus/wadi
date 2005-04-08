@@ -35,7 +35,7 @@ import org.codehaus.wadi.sandbox.AttributeHelper;
  * @version $Revision$
  */
 
-public class AttributeWrapper implements Serializable {
+public class Attribute implements Serializable {
     
     protected Object _value;
     
@@ -50,14 +50,14 @@ public class AttributeWrapper implements Serializable {
     }
     
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        AttributeHelper helper=findHelper(_value.getClass());
+        AttributeHelper helper=_value==null?null:findHelper(_value.getClass());
         Serializable value=(helper==null?(Serializable)_value:helper.write(_value));
         out.writeObject(value);
     }
     
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         Serializable value=(Serializable)in.readObject(); // why does readObject() not return a Serializable ?
-        AttributeHelper helper=findHelper(value.getClass());
+        AttributeHelper helper=value==null?null:findHelper(value.getClass());
         _value=(helper==null?value:helper.read(value));
     }
     
@@ -91,6 +91,10 @@ public class AttributeWrapper implements Serializable {
      */
     public static void registerHelper(Class type, AttributeHelper helper) {
         _helpers.add(new HelperPair(type, helper));
+    }
+    
+    public static void deregisterHelper(Class type) {
+        _helpers.remove(type);
     }
     
     public static AttributeHelper findHelper(Class type) {

@@ -25,9 +25,11 @@ import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.Dirtier;
+import org.codehaus.wadi.sandbox.impl.Attribute;
 import org.codehaus.wadi.sandbox.impl.PartAttributes;
 import org.codehaus.wadi.sandbox.impl.ReadWriteDirtier;
 import org.codehaus.wadi.sandbox.impl.SimpleAttributes;
+import org.codehaus.wadi.sandbox.impl.Utils;
 import org.codehaus.wadi.sandbox.impl.WholeAttributes;
 import org.codehaus.wadi.sandbox.impl.WriteDirtier;
 
@@ -65,9 +67,40 @@ public class TestAttributes extends TestCase {
         super(name);
     }
     
+    public void testAttribute() throws Exception {
+          Attribute a=new Attribute();
+          // test get/set
+          assertTrue(a.getValue()==null);
+          String foo="foo";
+          a.setValue(foo);
+          assertTrue(a.getValue()==foo);
+          a.setValue(null);
+          assertTrue(a.getValue()==null);
+          // test serialisation with various values
+          testAttributeSerialisation(null);
+          testAttributeSerialisation(foo);
+      }
+    
+    public void testAttributeSerialisation(Serializable s) throws Exception {
+        StreamingStrategy streamer=new SimpleStreamingStrategy();
+        Attribute a=new Attribute();
+        a.setValue(s);
+        byte[] bytes=Utils.objectToByteArray(a, streamer);
+        assertTrue(a.getValue()==s);
+        a=(Attribute)Utils.byteArrayToObject(bytes, streamer);
+        assertTrue(safeEquals(a.getValue(), s));
+    }
+    
+    public boolean safeEquals(Object a, Object b) {
+        if (a==null)
+            return b==null;
+        else
+            return a.equals(b);
+    }
+    
     public static int _serialisations=0;
     public static int _deserialisations=0;
-    
+
     public static class Counter implements Serializable {
         
         double _random=Math.random();
@@ -88,38 +121,38 @@ public class TestAttributes extends TestCase {
     }
     
     public void testAttributesWrapper() throws Exception {
-        Dirtier dirtier=new WriteDirtier();
-        StreamingStrategy streamer=new SimpleStreamingStrategy();
-        boolean evictObjectRepASAP=false;
-        boolean evictByteRepASAP=false;
-
-        evictObjectRepASAP=false;
-        evictByteRepASAP=false;
-        testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
-        evictObjectRepASAP=true;
-        evictByteRepASAP=false;
-        testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
-        evictObjectRepASAP=false;
-        evictByteRepASAP=true;
-        testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
-        evictObjectRepASAP=true;
-        evictByteRepASAP=true;
-        testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
-        
-//        dirtier=new ReadWriteDirtier();
-//        evictObjectRepASAP=false;
-//        evictByteRepASAP=false;
-//        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
-//        evictObjectRepASAP=true;
-//       evictByteRepASAP=false;
-//        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
-//        evictObjectRepASAP=false;
-//        evictByteRepASAP=true;
-//        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
-//        evictObjectRepASAP=true;
-//        evictByteRepASAP=true;
-//        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
-    }
+            Dirtier dirtier=new WriteDirtier();
+            StreamingStrategy streamer=new SimpleStreamingStrategy();
+            boolean evictObjectRepASAP=false;
+            boolean evictByteRepASAP=false;
+    
+            evictObjectRepASAP=false;
+            evictByteRepASAP=false;
+            testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
+            evictObjectRepASAP=true;
+            evictByteRepASAP=false;
+            testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
+            evictObjectRepASAP=false;
+            evictByteRepASAP=true;
+            testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
+            evictObjectRepASAP=true;
+            evictByteRepASAP=true;
+            testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
+            
+    //        dirtier=new ReadWriteDirtier();
+    //        evictObjectRepASAP=false;
+    //        evictByteRepASAP=false;
+    //        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
+    //        evictObjectRepASAP=true;
+    //       evictByteRepASAP=false;
+    //        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
+    //        evictObjectRepASAP=false;
+    //        evictByteRepASAP=true;
+    //        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
+    //        evictObjectRepASAP=true;
+    //        evictByteRepASAP=true;
+    //        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
+        }
     
     public void testWholeAttributes() throws Exception {
         testAttributes(new SimpleAttributes());
