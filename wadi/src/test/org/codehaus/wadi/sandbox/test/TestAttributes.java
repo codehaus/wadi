@@ -27,11 +27,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.sandbox.Attribute;
 import org.codehaus.wadi.sandbox.AttributeHelper;
 import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.Dirtier;
 import org.codehaus.wadi.sandbox.impl.ActivatableAttribute;
-import org.codehaus.wadi.sandbox.impl.Attribute;
+import org.codehaus.wadi.sandbox.impl.ReplacingAttribute;
 import org.codehaus.wadi.sandbox.impl.PartAttributes;
 import org.codehaus.wadi.sandbox.impl.ReadWriteDirtier;
 import org.codehaus.wadi.sandbox.impl.SimpleAttributes;
@@ -98,7 +99,7 @@ public class TestAttributes extends TestCase {
     }
     
     public void testAttribute() throws Exception {
-        Attribute a=new Attribute(null);
+        Attribute a=new ReplacingAttribute(null);
         // test get/set
         assertTrue(a.getValue()==null);
         String foo="foo";
@@ -107,18 +108,18 @@ public class TestAttributes extends TestCase {
         a.setValue(null);
         assertTrue(a.getValue()==null);
         // test serialisation with various values
-        testAttributeSerialisation(new Attribute(null), new Attribute(null), null);
-        testAttributeSerialisation(new Attribute(null), new Attribute(null), foo);
+        testAttributeSerialisation(new ReplacingAttribute(null), new ReplacingAttribute(null), null);
+        testAttributeSerialisation(new ReplacingAttribute(null), new ReplacingAttribute(null), foo);
         
         // try using a Helper
-        Attribute.registerHelper(NotSerializable.class, new NotSerializableHelper());
-        testAttributeSerialisation(new Attribute(null), new Attribute(null), new NotSerializable(foo));
+        ReplacingAttribute.registerHelper(NotSerializable.class, new NotSerializableHelper());
+        testAttributeSerialisation(new ReplacingAttribute(null), new ReplacingAttribute(null), new NotSerializable(foo));
         
         // try without the Helper
-        assertTrue(Attribute.deregisterHelper(NotSerializable.class));
-        assertTrue(!Attribute.deregisterHelper(NotSerializable.class)); // can't be removed twice
+        assertTrue(ReplacingAttribute.deregisterHelper(NotSerializable.class));
+        assertTrue(!ReplacingAttribute.deregisterHelper(NotSerializable.class)); // can't be removed twice
         try {
-            testAttributeSerialisation(new Attribute(null), new Attribute(null), new NotSerializable(foo));
+            testAttributeSerialisation(new ReplacingAttribute(null), new ReplacingAttribute(null), new NotSerializable(foo));
             assertTrue(false); // not expected
         } catch (NotSerializableException ignore) {
             // expected
@@ -150,7 +151,7 @@ public class TestAttributes extends TestCase {
         assertTrue(al._activations==1);
     }
     
-    public void testAttributeSerialisation(Attribute a, Attribute b, Object s) throws Exception {
+    public void testAttributeSerialisation(ReplacingAttribute a, ReplacingAttribute b, Object s) throws Exception {
         StreamingStrategy streamer=new SimpleStreamingStrategy();
         a.setValue(s);
         byte[] bytes=Utils.getContent(a, streamer);
