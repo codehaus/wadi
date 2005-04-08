@@ -16,11 +16,10 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import java.util.Set;
 
 import javax.servlet.http.HttpSessionEvent;
 
-
+import org.codehaus.wadi.StreamingStrategy;
 /**
  * TODO - JavaDoc this type
  *
@@ -28,23 +27,6 @@ import javax.servlet.http.HttpSessionEvent;
  * @version $Revision$
  */
 
-public interface Attributes extends AttributeConfig {
-
-    // Map-like
-    Object get(Object key);
-    Object remove(Object key);
-    Object put(Object key, Object newValue);
-    
-    int size();
-    Set keySet();
-    void clear();
-    
-    byte[] getBytes();
-    void setBytes(byte[] bytes);
-    
-    // event contains a backptr to our container - breaks a circular ref, so cannot be ctor param..
-    void setHttpSessionEvent(HttpSessionEvent event);
-    
-    Set getBindingListenerNames();
-    Set getActivationListenerNames();
+public interface AttributeConfig {
+    // empty
 }

@@ -186,8 +186,11 @@ public class WholeAttributes implements Attributes {
     protected HttpSessionEvent _event;
     public void setHttpSessionEvent(HttpSessionEvent event) {_event=event;}
     
-    // FIXME
-    public Set getBindingListenerNames() {return null;}
-    public Set getActivationListenerNames() {return null;}
+    public Set getBindingListenerNames() {return null;} // NYI
+    public Set getActivationListenerNames() {return null;} // NYI
+
+    public HttpSessionEvent getHttpSessionEvent() {return null;} // NYI
+    public StreamingStrategy getStreamer() {return _streamer;}
+    public Dirtier getDirtier() {return _dirtier;}
 
 }

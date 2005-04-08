@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.AttributeConfig;
 import org.codehaus.wadi.sandbox.Attributes;
 
 /**
@@ -123,5 +124,7 @@ public class Session extends AbstractContext {
     
     public Set getBindingListenerNames() {return _attributes.getBindingListenerNames();}
     public Set getActivationListenerNames() {return _attributes.getActivationListenerNames();}
+    
+    public Attributes getAttributes() {return _attributes;}
 
 }
