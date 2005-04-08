@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.wadi.SerializableContent;
+import org.codehaus.wadi.sandbox.Attribute;
 import org.codehaus.wadi.sandbox.AttributeHelper;
 
 /**
@@ -38,11 +39,11 @@ import org.codehaus.wadi.sandbox.AttributeHelper;
  * @version $Revision$
  */
 
-public class Attribute implements SerializableContent {
+public class ReplacingAttribute implements Attribute {
     
     protected final Session _session; // backptr - breaks IOC
 
-    public Attribute(Session session) {_session=session;}
+    public ReplacingAttribute(Session session) {_session=session;}
     
     protected Object _value;
     

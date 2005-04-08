@@ -31,7 +31,7 @@ import javax.servlet.http.HttpSessionActivationListener;
  * @version $Revision$
  */
 
-public class ActivatableAttribute extends Attribute {
+public class ActivatableAttribute extends ReplacingAttribute {
     
     public ActivatableAttribute(Session session) {super(session);}
     
