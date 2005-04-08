@@ -98,7 +98,7 @@ public class TestAttributes extends TestCase {
     }
     
     public void testAttribute() throws Exception {
-        Attribute a=new Attribute();
+        Attribute a=new Attribute(null);
         // test get/set
         assertTrue(a.getValue()==null);
         String foo="foo";
@@ -107,18 +107,18 @@ public class TestAttributes extends TestCase {
         a.setValue(null);
         assertTrue(a.getValue()==null);
         // test serialisation with various values
-        testAttributeSerialisation(new Attribute(), new Attribute(), null);
-        testAttributeSerialisation(new Attribute(), new Attribute(), foo);
+        testAttributeSerialisation(new Attribute(null), new Attribute(null), null);
+        testAttributeSerialisation(new Attribute(null), new Attribute(null), foo);
         
         // try using a Helper
         Attribute.registerHelper(NotSerializable.class, new NotSerializableHelper());
-        testAttributeSerialisation(new Attribute(), new Attribute(), new NotSerializable(foo));
+        testAttributeSerialisation(new Attribute(null), new Attribute(null), new NotSerializable(foo));
         
         // try without the Helper
         assertTrue(Attribute.deregisterHelper(NotSerializable.class));
         assertTrue(!Attribute.deregisterHelper(NotSerializable.class)); // can't be removed twice
         try {
-            testAttributeSerialisation(new Attribute(), new Attribute(), new NotSerializable(foo));
+            testAttributeSerialisation(new Attribute(null), new Attribute(null), new NotSerializable(foo));
             assertTrue(false); // not expected
         } catch (NotSerializableException ignore) {
             // expected
@@ -143,7 +143,7 @@ public class TestAttributes extends TestCase {
     
     public void testActivatableAttribute() throws Exception {
         ActivationListener al=new ActivationListener();
-        testAttributeSerialisation(new ActivatableAttribute(), new ActivatableAttribute(), al);
+        testAttributeSerialisation(new ActivatableAttribute(null), new ActivatableAttribute(null), al);
         _log.info("passivations: "+al._passivations);
         assertTrue(al._passivations==1);        
         _log.info("activations: "+al._activations);

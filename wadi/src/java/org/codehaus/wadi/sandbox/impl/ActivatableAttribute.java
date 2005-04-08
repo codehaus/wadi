@@ -21,9 +21,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import javax.servlet.http.HttpSessionActivationListener;
-import javax.servlet.http.HttpSessionEvent;
-
-// TODO - test ferociously !!!
 
 /**
  * An AttributeWrapper that supports the lazy notification of HttpSessionActivationListeners.
@@ -36,14 +33,13 @@ import javax.servlet.http.HttpSessionEvent;
 
 public class ActivatableAttribute extends Attribute {
     
-    protected transient boolean _needsNotification;
-    protected transient HttpSessionEvent _event;
+    public ActivatableAttribute(Session session) {super(session);}
     
-    public void setHttpSessionEvent(HttpSessionEvent event){_event=event;} // TODO - should this be a ctor arg ?
+    protected transient boolean _needsNotification;
     
     public synchronized Object getValue() {
         if (_needsNotification) {
-            ((HttpSessionActivationListener)_value).sessionDidActivate(_event);
+            ((HttpSessionActivationListener)_value).sessionDidActivate(_session==null?null:_session.getHttpSessionEvent());
             _needsNotification=false;
         }
         return super.getValue();
@@ -54,7 +50,7 @@ public class ActivatableAttribute extends Attribute {
             // as _value is about to be unbound, it should be activated first...
             // IDEA - if it is not a BindingListener and no AttributeListeners are
             // registered, do we need to do this ? I think we should still probably do it...
-            ((HttpSessionActivationListener)_value).sessionDidActivate(_event);
+            ((HttpSessionActivationListener)_value).sessionDidActivate(_session==null?null:_session.getHttpSessionEvent());
             _needsNotification=false;
         }
         return super.setValue(newValue);
@@ -62,7 +58,7 @@ public class ActivatableAttribute extends Attribute {
      
     public synchronized void writeContent(ObjectOutput oo) throws IOException {
         if (_value instanceof HttpSessionActivationListener) {
-            ((HttpSessionActivationListener)_value).sessionWillPassivate(_event);
+            ((HttpSessionActivationListener)_value).sessionWillPassivate(_session==null?null:_session.getHttpSessionEvent());
             _needsNotification=true;
         }
         super.writeContent(oo);

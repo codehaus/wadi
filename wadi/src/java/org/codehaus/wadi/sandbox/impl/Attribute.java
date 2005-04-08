@@ -18,9 +18,7 @@ package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
 import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +39,10 @@ import org.codehaus.wadi.sandbox.AttributeHelper;
  */
 
 public class Attribute implements SerializableContent {
+    
+    protected final Session _session;
+
+    public Attribute(Session session) {_session=session;}
     
     protected Object _value;
     
