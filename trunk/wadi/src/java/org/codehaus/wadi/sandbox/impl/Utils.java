@@ -19,6 +19,8 @@ package org.codehaus.wadi.sandbox.impl;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -110,7 +112,10 @@ public class Utils {
 	
 	public static Object byteArrayToObject(byte[] bytes, StreamingStrategy streamer) throws IOException, ClassNotFoundException {
 	    ByteArrayInputStream bais=new ByteArrayInputStream(bytes);
-	    return streamer.getInputStream(bais).readObject(); // TODO - ClassLoading ?
+	    ObjectInput oi=streamer.getInputStream(bais);
+	    Object tmp=oi.readObject(); // TODO - ClassLoading ?
+	    oi.close();
+	    return tmp;
 	}
 	
 	public static Object safeByteArrayToObject(byte[] bytes, StreamingStrategy streamer) {
@@ -124,7 +129,9 @@ public class Utils {
 	
 	public static byte[] objectToByteArray(Object object, StreamingStrategy streamer) throws IOException {
 	    ByteArrayOutputStream baos=new ByteArrayOutputStream();
-	    streamer.getOutputStream(baos).writeObject(object);
+	    ObjectOutput oo=streamer.getOutputStream(baos);
+	    oo.writeObject(object);
+	    oo.close();
 	    return baos.toByteArray();
 	}
 
