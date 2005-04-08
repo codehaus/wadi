@@ -17,10 +17,15 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.sandbox.AttributeHelper;
 
 /**
@@ -35,7 +40,7 @@ import org.codehaus.wadi.sandbox.AttributeHelper;
  * @version $Revision$
  */
 
-public class Attribute implements Serializable {
+public class Attribute implements SerializableContent {
     
     protected Object _value;
     
@@ -49,10 +54,14 @@ public class Attribute implements Serializable {
         return oldValue;
     }
     
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+        _value=oi.readObject();
+    }
+
+    public void writeContent(ObjectOutput oo) throws IOException {
         AttributeHelper helper=(_value==null || _value instanceof Serializable)?null:findHelper(_value.getClass());
         Object value=(helper==null?_value:helper.replace(_value));
-        out.writeObject(value);
+        oo.writeObject(value);        
     }
     
     //--------------------------------------------------

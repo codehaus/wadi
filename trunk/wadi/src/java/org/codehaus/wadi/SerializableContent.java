@@ -33,5 +33,5 @@ public interface
     throws IOException, ClassNotFoundException;
 
   void writeContent(java.io.ObjectOutput os)
-    throws IOException, ClassNotFoundException;
+    throws IOException;
 }

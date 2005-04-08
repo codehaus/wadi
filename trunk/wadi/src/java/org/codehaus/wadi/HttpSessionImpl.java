@@ -248,7 +248,7 @@ public abstract class
 
   public void
     writeContent(java.io.ObjectOutput os)
-    throws java.io.IOException, ClassNotFoundException
+    throws java.io.IOException
   {
     os.writeObject(_id);
     os.writeLong(_creationTime);

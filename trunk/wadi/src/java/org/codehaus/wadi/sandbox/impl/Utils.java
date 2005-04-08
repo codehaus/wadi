@@ -24,6 +24,7 @@ import java.io.ObjectOutput;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Immoter;
@@ -135,6 +136,22 @@ public class Utils {
 	    return baos.toByteArray();
 	}
 
+	public static byte[] getContent(SerializableContent object, StreamingStrategy streamer) throws IOException {
+	    ByteArrayOutputStream baos=new ByteArrayOutputStream();
+	    ObjectOutput oo=streamer.getOutputStream(baos);
+	    object.writeContent(oo);
+	    oo.close();
+	    return baos.toByteArray();
+	}
+	
+	public static SerializableContent setContent(SerializableContent object, byte[] content, StreamingStrategy streamer) throws IOException, ClassNotFoundException {
+	    ByteArrayInputStream bais=new ByteArrayInputStream(content);
+	    ObjectInput oi=streamer.getInputStream(bais);
+	    object.readContent(oi);
+	    oi.close();
+	    return object;
+	}
+	
 	public static byte[] safeObjectToByteArray(Object object, StreamingStrategy streamer) {
 	    try {
 	        return objectToByteArray(object, streamer);

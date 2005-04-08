@@ -17,6 +17,8 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionEvent;
@@ -58,14 +60,16 @@ public class ActivatableAttribute extends Attribute {
         return super.setValue(newValue);
     }
      
-    private synchronized void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    public synchronized void writeContent(ObjectOutput oo) throws IOException {
         if (_value instanceof HttpSessionActivationListener) {
             ((HttpSessionActivationListener)_value).sessionWillPassivate(_event);
             _needsNotification=true;
         }
+        super.writeContent(oo);
     }
     
-    private synchronized void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+        super.readContent(oi);
         _needsNotification=(_value instanceof HttpSessionActivationListener);
     }
     

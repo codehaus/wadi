@@ -42,7 +42,7 @@ import org.codehaus.wadi.sandbox.impl.WriteDirtier;
 import junit.framework.TestCase;
 
 /**
- * TODO - JavaDoc this type
+ * Test Attribute and Attributes classes and subclasses...
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -107,24 +107,25 @@ public class TestAttributes extends TestCase {
         a.setValue(null);
         assertTrue(a.getValue()==null);
         // test serialisation with various values
-        testAttributeSerialisation(new Attribute(), null);
-        testAttributeSerialisation(new Attribute(), foo);
+        testAttributeSerialisation(new Attribute(), new Attribute(), null);
+        testAttributeSerialisation(new Attribute(), new Attribute(), foo);
         
         // try using a Helper
         Attribute.registerHelper(NotSerializable.class, new NotSerializableHelper());
-        testAttributeSerialisation(new Attribute(), new NotSerializable(foo));
+        testAttributeSerialisation(new Attribute(), new Attribute(), new NotSerializable(foo));
         
         // try without the Helper
         assertTrue(Attribute.deregisterHelper(NotSerializable.class));
         assertTrue(!Attribute.deregisterHelper(NotSerializable.class)); // can't be removed twice
         try {
-            testAttributeSerialisation(new Attribute(), new NotSerializable(foo));
+            testAttributeSerialisation(new Attribute(), new Attribute(), new NotSerializable(foo));
             assertTrue(false); // not expected
         } catch (NotSerializableException ignore) {
             // expected
         }
     }
     
+
     static class ActivationListener implements HttpSessionActivationListener, Serializable {
         
         protected double _content=Math.random();
@@ -142,19 +143,21 @@ public class TestAttributes extends TestCase {
     
     public void testActivatableAttribute() throws Exception {
         ActivationListener al=new ActivationListener();
-        testAttributeSerialisation(new ActivatableAttribute(), al);
-        assertTrue(al._activations==1);
+        testAttributeSerialisation(new ActivatableAttribute(), new ActivatableAttribute(), al);
+        _log.info("passivations: "+al._passivations);
         assertTrue(al._passivations==1);        
+        _log.info("activations: "+al._activations);
+        assertTrue(al._activations==1);
     }
     
-    public void testAttributeSerialisation(Attribute a, Object s) throws Exception {
+    public void testAttributeSerialisation(Attribute a, Attribute b, Object s) throws Exception {
         StreamingStrategy streamer=new SimpleStreamingStrategy();
         a.setValue(s);
-        byte[] bytes=Utils.objectToByteArray(a, streamer);
-        assertTrue(a.getValue()==s);
-        a=(Attribute)Utils.byteArrayToObject(bytes, streamer);
-        assertTrue(safeEquals(a.getValue(), s));
-        assertTrue(safeEquals(a.getValue(), s)); // do this twice to show that activation only occurs once
+        byte[] bytes=Utils.getContent(a, streamer);
+        assertTrue(a.getValue()==s); // activation
+        Utils.setContent(b, bytes, streamer);
+        assertTrue(safeEquals(b.getValue(), s)); // activation
+        assertTrue(safeEquals(b.getValue(), s)); // do this twice to show that activation only occurs once (for this Attribute)
     }
     
     public static boolean safeEquals(Object a, Object b) {
@@ -351,12 +354,5 @@ public class TestAttributes extends TestCase {
         deserialisations++;
         assertTrue(_serialisations==serialisations);
         assertTrue(_deserialisations==deserialisations);
-        
-        // TODO:
-        // cool - lots more to do...
-        // add a second counter
-        // try with a PartAttributes
-        // try with saveMem=true
-        // tyr other things...
     }
 }
