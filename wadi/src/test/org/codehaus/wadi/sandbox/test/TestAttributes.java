@@ -17,12 +17,16 @@
 package org.codehaus.wadi.sandbox.test;
 
 import java.io.IOException;
+import java.io.NotSerializableException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.sandbox.AttributeHelper;
 import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.Dirtier;
 import org.codehaus.wadi.sandbox.impl.Attribute;
@@ -67,21 +71,59 @@ public class TestAttributes extends TestCase {
         super(name);
     }
     
-    public void testAttribute() throws Exception {
-          Attribute a=new Attribute();
-          // test get/set
-          assertTrue(a.getValue()==null);
-          String foo="foo";
-          a.setValue(foo);
-          assertTrue(a.getValue()==foo);
-          a.setValue(null);
-          assertTrue(a.getValue()==null);
-          // test serialisation with various values
-          testAttributeSerialisation(null);
-          testAttributeSerialisation(foo);
-      }
+    static class NotSerializable {
+        
+        final String _content;
+        public NotSerializable(String content) {_content=content;}
+        
+        public boolean equals(Object that) {
+            return this==that || (that instanceof NotSerializable && safeEquals(this._content, ((NotSerializable)that)._content));
+        }
+    }
     
-    public void testAttributeSerialisation(Serializable s) throws Exception {
+    static class IsSerializable implements Serializable {
+        String _content;
+        public IsSerializable(){} // for Serialising...
+        public IsSerializable(String content){_content=content;} // for Helper
+       }	
+    
+    static class NotSerializableHelper implements AttributeHelper {
+        public Serializable write(Object object) {return new IsSerializable(((NotSerializable)object)._content);}
+        public Object read(Serializable serializable){return new NotSerializable(((IsSerializable)serializable)._content);}
+    }
+    
+    public void testAttribute() throws Exception {
+        Attribute a=new Attribute();
+        // test get/set
+        assertTrue(a.getValue()==null);
+        String foo="foo";
+        a.setValue(foo);
+        assertTrue(a.getValue()==foo);
+        a.setValue(null);
+        assertTrue(a.getValue()==null);
+        // test serialisation with various values
+        testAttributeSerialisation(null);
+        testAttributeSerialisation(foo);
+        
+        // try using a Helper
+        Attribute.registerHelper(NotSerializable.class, new NotSerializableHelper());
+        Attribute.registerHelper(IsSerializable.class, new NotSerializableHelper());
+        testAttributeSerialisation(new NotSerializable(foo));
+        
+        // try without the Helper
+        assertTrue(Attribute.deregisterHelper(NotSerializable.class));
+        assertTrue(!Attribute.deregisterHelper(NotSerializable.class)); // can't be removed twice
+        assertTrue(Attribute.deregisterHelper(IsSerializable.class));
+        assertTrue(!Attribute.deregisterHelper(IsSerializable.class)); // can't be removed twice
+        try {
+            testAttributeSerialisation(new NotSerializable(foo));
+            assertTrue(false);
+        } catch (NotSerializableException ignore) {
+            // expected
+        }
+    }
+    
+    public void testAttributeSerialisation(Object s) throws Exception {
         StreamingStrategy streamer=new SimpleStreamingStrategy();
         Attribute a=new Attribute();
         a.setValue(s);
@@ -91,7 +133,7 @@ public class TestAttributes extends TestCase {
         assertTrue(safeEquals(a.getValue(), s));
     }
     
-    public boolean safeEquals(Object a, Object b) {
+    public static boolean safeEquals(Object a, Object b) {
         if (a==null)
             return b==null;
         else

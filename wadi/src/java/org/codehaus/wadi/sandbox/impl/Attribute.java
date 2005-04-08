@@ -19,6 +19,7 @@ package org.codehaus.wadi.sandbox.impl;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.codehaus.wadi.sandbox.AttributeHelper;
@@ -51,7 +52,7 @@ public class Attribute implements Serializable {
     
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         AttributeHelper helper=_value==null?null:findHelper(_value.getClass());
-        Serializable value=(helper==null?(Serializable)_value:helper.write(_value));
+        Object value=(helper==null?_value:helper.write(_value));
         out.writeObject(value);
     }
     
@@ -93,14 +94,20 @@ public class Attribute implements Serializable {
         _helpers.add(new HelperPair(type, helper));
     }
     
-    public static void deregisterHelper(Class type) {
-        _helpers.remove(type);
+    public static boolean deregisterHelper(Class type) {
+        int l=_helpers.size();
+        for (int i=0; i<l; i++)
+            if (type.equals(((HelperPair)_helpers.get(i))._type)) {
+                _helpers.remove(i);
+                return true;
+            }
+        return false;
     }
     
     public static AttributeHelper findHelper(Class type) {
         int l=_helpers.size();
         for (int i=0; i<l; i++) {
-            HelperPair p=(HelperPair)_helpers.get(0);
+            HelperPair p=(HelperPair)_helpers.get(i);
             if (p._type.isAssignableFrom(type))
                 return p._helper;
         }
