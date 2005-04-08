@@ -40,7 +40,7 @@ import org.codehaus.wadi.sandbox.AttributeHelper;
 
 public class Attribute implements SerializableContent {
     
-    protected final Session _session;
+    protected final Session _session; // backptr - breaks IOC
 
     public Attribute(Session session) {_session=session;}
     

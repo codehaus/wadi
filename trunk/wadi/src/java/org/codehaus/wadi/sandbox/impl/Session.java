@@ -40,7 +40,7 @@ import org.codehaus.wadi.sandbox.Attributes;
 public class Session extends AbstractContext {
     
     protected final static Log _log = LogFactory.getLog(Session.class);
-    protected final Manager _manager;
+    protected final Manager _manager; // backptr - breaks IOC
     protected final Attributes _attributes;
     
     public Session(Manager manager, Attributes attributes) {
