@@ -21,10 +21,8 @@ import java.io.Serializable;
 /**
  * Help with the [de]serialisation of non-Serializable types. Registered
  * via AttributeWrapper.registerHelper(Class type, AttributeHelper helper).
- * N.B that Serializables produced by the write() method should be of a type
- * that is both registered (otherwise the Helper will not be found on deserialisation)
- * and sufficiently unique that it does not match other non-problematic Attributes
- * that started life as Serializables.
+ * See the doc on java.io.Serializable for an explanation of the readResolve()
+ * method.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -34,23 +32,13 @@ public interface AttributeHelper extends Serializable {
     
     /**
      * Used during the writing out of a non-Serializable. If its type matches
-     * a registered Helper, that Helper's write() method will be used to convert
-     * it into a Serializable representation, which will then be written out.
+     * a registered Helper, that Helper's replace() method will be used to return
+     * a Serializable Object that implements readResolve() to return an instance
+     * with the same value as the original non-Serializable on deserialisation.
      * 
      * @param output - a non-Serializable, which is about to be serialised
      * @return - a Serializable, which will be serialised in place of the original Object
      */
-    public Serializable write(Object output);
+    public Serializable replace(Object output);
 
-    /**
-     * Used during reading in of an, originally, non-Serializable. If the type of the 
-     * replacement Object read in matches a registered Helper, that Helper's read()
-     * method will be used to convert it back into its original non-Serializable form,
-     * which is then placed back into its Attribute.
-     * 
-     * @param input
-     * @return
-     */
-    public Object read(Serializable input);
-    
 }

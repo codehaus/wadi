@@ -19,7 +19,6 @@ package org.codehaus.wadi.sandbox.impl;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.codehaus.wadi.sandbox.AttributeHelper;
@@ -51,15 +50,9 @@ public class Attribute implements Serializable {
     }
     
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        AttributeHelper helper=_value==null?null:findHelper(_value.getClass());
-        Object value=(helper==null?_value:helper.write(_value));
+        AttributeHelper helper=(_value==null || _value instanceof Serializable)?null:findHelper(_value.getClass());
+        Object value=(helper==null?_value:helper.replace(_value));
         out.writeObject(value);
-    }
-    
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-        Serializable value=(Serializable)in.readObject(); // why does readObject() not return a Serializable ?
-        AttributeHelper helper=value==null?null:findHelper(value.getClass());
-        _value=(helper==null?value:helper.read(value));
     }
     
     //--------------------------------------------------
@@ -84,7 +77,7 @@ public class Attribute implements Serializable {
      * Objects flowing in/out of the persistance medium will be passed through this
      * Helper, which will have the opportunity to convert them between Serializable
      * and non-Serializable representations. Helpers will be returned in their registration
-     * order, so this is significan (as an Object may implement more than one interface
+     * order, so this is significant (as an Object may implement more than one interface
      * or registered type).
      * 
      * @param type

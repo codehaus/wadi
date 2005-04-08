@@ -19,8 +19,6 @@ package org.codehaus.wadi.sandbox.test;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,13 +81,16 @@ public class TestAttributes extends TestCase {
     
     static class IsSerializable implements Serializable {
         String _content;
-        public IsSerializable(){} // for Serialising...
+        public IsSerializable(){/* empty */} // for Serialising...
         public IsSerializable(String content){_content=content;} // for Helper
-       }	
+
+        private Object readResolve() {
+            return new NotSerializable(_content);
+        }
+}	
     
     static class NotSerializableHelper implements AttributeHelper {
-        public Serializable write(Object object) {return new IsSerializable(((NotSerializable)object)._content);}
-        public Object read(Serializable serializable){return new NotSerializable(((IsSerializable)serializable)._content);}
+        public Serializable replace(Object object) {return new IsSerializable(((NotSerializable)object)._content);}
     }
     
     public void testAttribute() throws Exception {
@@ -107,17 +108,14 @@ public class TestAttributes extends TestCase {
         
         // try using a Helper
         Attribute.registerHelper(NotSerializable.class, new NotSerializableHelper());
-        Attribute.registerHelper(IsSerializable.class, new NotSerializableHelper());
         testAttributeSerialisation(new NotSerializable(foo));
         
         // try without the Helper
         assertTrue(Attribute.deregisterHelper(NotSerializable.class));
         assertTrue(!Attribute.deregisterHelper(NotSerializable.class)); // can't be removed twice
-        assertTrue(Attribute.deregisterHelper(IsSerializable.class));
-        assertTrue(!Attribute.deregisterHelper(IsSerializable.class)); // can't be removed twice
         try {
             testAttributeSerialisation(new NotSerializable(foo));
-            assertTrue(false);
+            assertTrue(false); // not expected
         } catch (NotSerializableException ignore) {
             // expected
         }
