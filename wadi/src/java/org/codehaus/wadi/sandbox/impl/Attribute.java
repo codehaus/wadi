@@ -59,6 +59,10 @@ public class Attribute implements Serializable {
     // static stuff... - yeugh ! - but the thought of chaining backptrs all the way
     // up to the manager is horribly expensive...
     
+    // TODO - change from storing List in static to storing it on Manager and having Session push 
+    // it into a ThreadLocal before every Serialisation, so that all the Sessions attributes have access
+    // to it when they need it.
+    
     protected static List _helpers=new ArrayList();
     
     static class HelperPair {
