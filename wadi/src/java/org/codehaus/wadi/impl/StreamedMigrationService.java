@@ -152,10 +152,6 @@ public class
 
 	    commit=ok;
 	  }
-	  catch (ClassNotFoundException e)
-	  {
-	    _log.warn("unexpected problem emmigrating sessions - this should not happen - no emmigration will have occurred", e);
-	  }
 	  catch (InterruptedException e)
 	  {
 	    _log.warn("unexpected problem emmigrating sessions - thread interrupted - no emmigration will have occurred", e);
@@ -248,11 +244,6 @@ public class
 	  catch (IOException e)
 	  {
 	    _log.warn(id+": emmigration connection broken - rolling back", e);
-	    ok=false;
-	  }
-	  catch (ClassNotFoundException e)
-	  {
-	    _log.warn(id+": emmigration class mismatch - version/security problem? - rolling back", e);
 	    ok=false;
 	  }
 	  finally

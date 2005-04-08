@@ -163,7 +163,7 @@ public class
 
     public void
       writeContent(ObjectOutput os)
-      throws IOException, ClassNotFoundException
+      throws IOException
     {
       os.writeObject(_value);
     }

@@ -95,7 +95,7 @@ public class TestCache extends TestCase {
 		  }
 
 		public void writeContent(ObjectOutput os)
-		    throws IOException, ClassNotFoundException {
+		    throws IOException {
 			os.writeObject(_content);
 		  }
 		}

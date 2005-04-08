@@ -45,7 +45,7 @@ public class ProxyRequestProcessor implements RequestProcessor {
 	  }
 
 	public void writeContent(ObjectOutput os)
-	    throws IOException, ClassNotFoundException {
+	    throws IOException {
 		// TODO
 	  }
 	}
