@@ -14,12 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox;
+package org.codehaus.wadi.sandbox.impl;
 
-import java.util.Set;
-
-import javax.servlet.http.HttpSessionEvent;
-
+import org.codehaus.wadi.sandbox.Attribute;
+import org.codehaus.wadi.sandbox.AttributeConfig;
+import org.codehaus.wadi.sandbox.AttributeFactory;
+import org.codehaus.wadi.sandbox.DistributableAttributeConfig;
 
 /**
  * TODO - JavaDoc this type
@@ -28,23 +28,14 @@ import javax.servlet.http.HttpSessionEvent;
  * @version $Revision$
  */
 
-public interface Attributes extends AttributeConfig {
+public class ReplacingAttributeFactory implements AttributeFactory {
 
-    // Map-like
-    Object get(Object key);
-    Object remove(Object key);
-    Object put(Object key, Object newValue);
-    
-    int size();
-    Set keySet();
-    void clear();
-    
-    byte[] getBytes();
-    void setBytes(byte[] bytes);
-    
-    // event contains a backptr to our container - breaks a circular ref, so cannot be ctor param..
-    void setHttpSessionEvent(HttpSessionEvent event);
-    
-    Set getBindingListenerNames();
-    Set getActivationListenerNames();
+    public ReplacingAttributeFactory() {
+        super();
+    }
+
+    public Attribute create(AttributeConfig config) {
+        return new ReplacingAttribute((DistributableAttributeConfig)config);
+    }
+
 }

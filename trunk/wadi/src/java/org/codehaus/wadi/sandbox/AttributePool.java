@@ -16,9 +16,6 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.impl.Session;
-
-
 /**
  * TODO - JavaDoc this type
  *
@@ -28,7 +25,7 @@ import org.codehaus.wadi.sandbox.impl.Session;
 
 public interface AttributePool {
 
-    public Attribute take(Session session);
+    public Attribute take(AttributeConfig config);
     public void put(Attribute attribute);
     
 }

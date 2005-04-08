@@ -18,8 +18,11 @@ package org.codehaus.wadi.sandbox.impl;
 
 import java.util.Set;
 
+import javax.servlet.http.HttpSessionEvent;
+
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Dirtier;
+import org.codehaus.wadi.sandbox.DistributableAttributeConfig;
 
 /**
  * TODO - JavaDoc this type
@@ -28,14 +31,17 @@ import org.codehaus.wadi.sandbox.Dirtier;
  * @version $Revision$
  */
 
-public class PartAttributes extends SimpleAttributes {
+public class PartAttributes extends SimpleAttributes implements DistributableAttributeConfig {
 
     public PartAttributes(Dirtier dirtier, StreamingStrategy streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
         // NYI
     }
     
-    // FIXME
-    public Set getBindingListenerNames() {return null;}
-    public Set getActivationListenerNames() {return null;}
+    public Set getBindingListenerNames() {return null;} //NYI
+    public Set getActivationListenerNames() {return null;} //NYI
+    
+    public HttpSessionEvent getHttpSessionEvent() {return null;} //NYI
+    public StreamingStrategy getStreamer() {return null;} //NYI
+    public Dirtier getDirtier() {return null;} //NYI
 
 }

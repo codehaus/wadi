@@ -17,6 +17,7 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import org.codehaus.wadi.sandbox.Attribute;
+import org.codehaus.wadi.sandbox.AttributeConfig;
 import org.codehaus.wadi.sandbox.AttributeFactory;
 import org.codehaus.wadi.sandbox.AttributePool;
 
@@ -27,14 +28,14 @@ import org.codehaus.wadi.sandbox.AttributePool;
  * @version $Revision$
  */
 
-public class DummyAttributePool implements AttributePool {
+public class SimpleAttributePool implements AttributePool {
     
     protected final AttributeFactory _factory;
     
-    public DummyAttributePool(AttributeFactory factory) {_factory=factory;}
+    public SimpleAttributePool(AttributeFactory factory) {_factory=factory;}
 
-    public Attribute take(Session session) {
-        return _factory.create(session);
+    public Attribute take(AttributeConfig config) {
+        return _factory.create(config);
     }
 
     public void put(Attribute attribute) {

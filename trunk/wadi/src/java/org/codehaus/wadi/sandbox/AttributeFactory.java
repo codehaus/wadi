@@ -16,9 +16,6 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.impl.Session;
-
-
 /**
  * TODO - JavaDoc this type
  *
@@ -28,6 +25,6 @@ import org.codehaus.wadi.sandbox.impl.Session;
 
 public interface AttributeFactory {
 
-    public Attribute create(Session session);
+    public Attribute create(AttributeConfig config);
     
 }

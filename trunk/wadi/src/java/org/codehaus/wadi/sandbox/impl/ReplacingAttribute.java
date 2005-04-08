@@ -26,6 +26,7 @@ import java.util.List;
 import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.sandbox.Attribute;
 import org.codehaus.wadi.sandbox.AttributeHelper;
+import org.codehaus.wadi.sandbox.DistributableAttributeConfig;
 
 /**
  * Allows [de]serialisation of its content via optional pluggable Helper class.
@@ -41,9 +42,9 @@ import org.codehaus.wadi.sandbox.AttributeHelper;
 
 public class ReplacingAttribute implements Attribute {
     
-    protected final Session _session; // backptr - breaks IOC
+    protected final DistributableAttributeConfig _config; // TODO - move this down the hierarchy ?
 
-    public ReplacingAttribute(Session session) {_session=session;}
+    public ReplacingAttribute(DistributableAttributeConfig config) {_config=config;}
     
     protected Object _value;
     
