@@ -20,6 +20,8 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSessionEvent;
 
+import org.codehaus.wadi.SerializableContent;
+
 
 /**
  * TODO - JavaDoc this type
@@ -28,7 +30,7 @@ import javax.servlet.http.HttpSessionEvent;
  * @version $Revision$
  */
 
-public interface Attributes {
+public interface Attributes extends SerializableContent {
 
     // Map-like
     Object get(Object key);

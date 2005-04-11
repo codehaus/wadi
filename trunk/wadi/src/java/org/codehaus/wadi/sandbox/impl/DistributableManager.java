@@ -28,8 +28,8 @@ public class DistributableManager extends Manager implements DistributableSessio
     protected final StreamingStrategy _streamer;
     protected final Dirtier _dirtier;
 
-    public DistributableManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool attributePool, StreamingStrategy streamer, Dirtier dirtier) {
-        super(sessionPool, attributesPool, attributePool);
+    public DistributableManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, StreamingStrategy streamer, Dirtier dirtier) {
+        super(sessionPool, attributesPool, valuePool);
         _streamer=streamer;
         _dirtier=dirtier;
     }

@@ -25,7 +25,7 @@ import org.codehaus.wadi.sandbox.impl.Session;
 
 public aspect AttributeLifecycleNotifier {
     
-    pointcut setAttribute(Session session, String name, Object newValue) : execution(Object Session.setAttribute(String, Object)) && args(name, newValue) && target(session);
+    pointcut setAttribute(Session session, String name, Object newValue) : execution(Object Session+.setAttribute(String, Object)) && args(name, newValue) && target(session);
     
     Object around(Session session, String name, Object newValue) : setAttribute(session, name, newValue) {
         Object oldValue=proceed(session, name, newValue);
@@ -50,7 +50,7 @@ public aspect AttributeLifecycleNotifier {
         return oldValue;
     }
     
-    pointcut removeAttribute(Session session, String name) : execution(Object Session.removeAttribute(String)) && args(name) && target(session);
+    pointcut removeAttribute(Session session, String name) : execution(Object Session+.removeAttribute(String)) && args(name) && target(session);
     
     Object around(Session session, String name) : removeAttribute(session, name) {
         Object oldValue=proceed(session, name);

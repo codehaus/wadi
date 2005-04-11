@@ -23,6 +23,7 @@ import java.io.ObjectOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Context;
 
@@ -55,23 +56,11 @@ public abstract class AbstractContext extends AbstractMotable implements Context
 
 	// Motable
 	public byte[] getBytes() throws Exception {
-		ByteArrayOutputStream baos=new ByteArrayOutputStream();
-		ObjectOutputStream oos=null;
-		try {
-			oos=new ObjectOutputStream(baos);
-			writeContent(oos);
-			return baos.toByteArray();
-		} catch (Exception e) {
-			_log.warn("problem serialising context to byte[]", e);
-			throw e;
-		} finally {
-			if (oos!=null)
-				oos.close();
-		}
+        return Utils.getContent(this, new SimpleStreamingStrategy());
 	}
 
 	public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {
-		readContent(new SimpleStreamingStrategy().getInputStream(new ByteArrayInputStream(bytes)));
+		Utils.setContent(this, bytes, new SimpleStreamingStrategy());
 	}
 	
 }

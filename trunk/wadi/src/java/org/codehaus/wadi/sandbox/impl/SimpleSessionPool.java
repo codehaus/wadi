@@ -16,30 +16,25 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.sandbox.Value;
-import org.codehaus.wadi.sandbox.ValueConfig;
-import org.codehaus.wadi.sandbox.ValueFactory;
-import org.codehaus.wadi.sandbox.ValuePool;
+import org.codehaus.wadi.sandbox.SessionConfig;
+import org.codehaus.wadi.sandbox.SessionFactory;
+import org.codehaus.wadi.sandbox.SessionPool;
 
-/**
- * TODO - JavaDoc this type
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
+public class SimpleSessionPool implements SessionPool {
 
-public class DistributableValuePool implements ValuePool {
+    protected final SessionFactory _factory;
     
-    protected final ValueFactory _factory;
+    public SimpleSessionPool(SessionFactory factory) {
+        super();
+        _factory=factory;
+    }
     
-    public DistributableValuePool(DistributableValueFactory factory) {_factory=factory;}
-
-    public Value take(ValueConfig config) {
+    public Session take(SessionConfig config) {
         return _factory.create(config);
     }
 
-    public void put(Value attribute) {
-        // just drop the Attribute - no pooling...
+    public void put(Session session) {
+        // just drop the session - truly pool later
     }
 
 }

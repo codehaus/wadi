@@ -18,6 +18,8 @@ package org.codehaus.wadi.sandbox.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
@@ -192,5 +194,14 @@ public class WholeAttributes implements Attributes {
     public HttpSessionEvent getHttpSessionEvent() {return null;} // NYI
     public StreamingStrategy getStreamer() {return _streamer;}
     public Dirtier getDirtier() {return _dirtier;}
+
+    // NYI
+    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+        throw new NotSerializableException();
+    }
+    
+    public void writeContent(ObjectOutput oo) throws IOException {
+        throw new NotSerializableException();
+    }
 
 }

@@ -22,6 +22,7 @@ import java.io.ObjectOutput;
 
 import javax.servlet.http.HttpSessionActivationListener;
 
+import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
 
 /**
@@ -33,7 +34,7 @@ import org.codehaus.wadi.sandbox.DistributableValueConfig;
  * @version $Revision$
  */
 
-public class DistributableValue extends ReplacingValue {
+public class DistributableValue extends ReplacingValue  { // TODO - collapse Replacing & Distributable Value
     
     public DistributableValue(DistributableValueConfig config) {super(config);}
     
@@ -41,7 +42,7 @@ public class DistributableValue extends ReplacingValue {
     
     public synchronized Object getValue() {
         if (_needsNotification) {
-            ((HttpSessionActivationListener)_value).sessionDidActivate(_config==null?null:_config.getHttpSessionEvent());
+            ((HttpSessionActivationListener)_value).sessionDidActivate(_config==null?null:((DistributableValueConfig)_config).getHttpSessionEvent());
             _needsNotification=false;
         }
         return super.getValue();
@@ -52,7 +53,7 @@ public class DistributableValue extends ReplacingValue {
             // as _value is about to be unbound, it should be activated first...
             // IDEA - if it is not a BindingListener and no AttributeListeners are
             // registered, do we need to do this ? I think we should still probably do it...
-            ((HttpSessionActivationListener)_value).sessionDidActivate(_config==null?null:_config.getHttpSessionEvent());
+            ((HttpSessionActivationListener)_value).sessionDidActivate(_config==null?null:((DistributableValueConfig)_config).getHttpSessionEvent());
             _needsNotification=false;
         }
         return super.setValue(newValue);
@@ -60,7 +61,7 @@ public class DistributableValue extends ReplacingValue {
      
     public synchronized void writeContent(ObjectOutput oo) throws IOException {
         if (_value instanceof HttpSessionActivationListener) {
-            ((HttpSessionActivationListener)_value).sessionWillPassivate(_config==null?null:_config.getHttpSessionEvent());
+            ((HttpSessionActivationListener)_value).sessionWillPassivate(_config==null?null:((DistributableValueConfig)_config).getHttpSessionEvent());
             _needsNotification=true;
         }
         super.writeContent(oo);
