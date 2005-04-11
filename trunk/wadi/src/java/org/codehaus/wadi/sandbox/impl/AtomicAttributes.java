@@ -20,16 +20,13 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionBindingListener;
 
-import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
-import org.codehaus.wadi.sandbox.Value;
 import org.codehaus.wadi.sandbox.AttributesConfig;
 
 public class AtomicAttributes extends AbstractAttributes implements DistributableValueConfig {

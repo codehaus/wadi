@@ -22,7 +22,6 @@ import java.io.ObjectOutput;
 
 import javax.servlet.http.HttpSessionActivationListener;
 
-import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
 
 /**

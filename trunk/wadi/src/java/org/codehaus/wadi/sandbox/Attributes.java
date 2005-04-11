@@ -18,8 +18,6 @@ package org.codehaus.wadi.sandbox;
 
 import java.util.Set;
 
-import javax.servlet.http.HttpSessionEvent;
-
 import org.codehaus.wadi.SerializableContent;
 
 
