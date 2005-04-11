@@ -31,6 +31,7 @@ import javax.servlet.http.HttpSessionEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.AttributesConfig;
@@ -43,25 +44,21 @@ import org.codehaus.wadi.sandbox.SessionConfig;
  * @version $Revision$
  */
 
-public class Session extends AbstractContext implements AttributesConfig {
+public class StandardSession extends AbstractContext implements Session, AttributesConfig{
     
-    protected final static Log _log = LogFactory.getLog(Session.class);
+    protected final static Log _log = LogFactory.getLog(StandardSession.class);
     protected final Attributes _attributes;
     protected final SessionConfig _config;
     
-    public Session(SessionConfig config) {
+    public StandardSession(SessionConfig config) {
         super();
         _config=config;
         _attributes=_config.getAttributesPool().take(this);
     }
     
-    public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id, RWLock lock, Attributes attributes) {
-        init(creationTime, lastAccessedTime, maxInactiveInterval, invalidated, id, lock);
-        // _attributes=attributes; // FIXME
-    }
-    
     public void destroy() {
         _attributes.clear();
+        // NYI - other fields...
     }
     
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {

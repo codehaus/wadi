@@ -21,8 +21,6 @@ import java.util.List;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 
-import org.codehaus.wadi.sandbox.impl.Session;
-
 public aspect AttributeLifecycleNotifier {
     
     pointcut setAttribute(Session session, String name, Object newValue) : execution(Object Session+.setAttribute(String, Object)) && args(name, newValue) && target(session);
@@ -31,6 +29,7 @@ public aspect AttributeLifecycleNotifier {
         Object oldValue=proceed(session, name, newValue);
         boolean replaced=(oldValue!=null);
         List l=session.getConfig().getAttributeListeners();
+       
         int s=l.size();
         if (s>0) {
             if (replaced) { // only test once, instead of inside the loop - results in duplicate code...

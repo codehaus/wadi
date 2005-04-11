@@ -21,7 +21,6 @@ import java.util.List;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
-import org.codehaus.wadi.sandbox.impl.Session;
 import org.codehaus.wadi.sandbox.impl.Manager;
 
 // TODO - do we really want to use aspects for all notifications ?

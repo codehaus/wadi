@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionConfig;
 import org.codehaus.wadi.sandbox.SessionFactory;
 import org.codehaus.wadi.sandbox.SessionPool;

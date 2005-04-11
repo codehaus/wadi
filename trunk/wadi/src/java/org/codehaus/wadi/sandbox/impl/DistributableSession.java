@@ -34,31 +34,23 @@ import org.codehaus.wadi.sandbox.DistributableSessionConfig;
  * @version $Revision$
  */
 
-public class DistributableSession extends Session implements DistributableAttributesConfig {
+public class DistributableSession extends StandardSession implements DistributableAttributesConfig {
 
-    /**
-     * @param manager
-     */
-    public DistributableSession(DistributableSessionConfig config) {
-        super(config);
-    }
+    public DistributableSession(DistributableSessionConfig config) {super(config);}
 
     public Dirtier getDirtier() {return ((DistributableSessionConfig)_config).getDirtier();}
     public StreamingStrategy getStreamer() {return ((DistributableSessionConfig)_config).getStreamer();}
     
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         _attributes.readContent(oi);
+        // NYI - other fields
     }
     
     public void writeContent(ObjectOutput oo) throws IOException {
         _attributes.writeContent(oo);
+        // NYI - other fields
     }
     
-    public byte[] getBytes() throws Exception {
-        return Utils.getContent(this, ((DistributableSessionConfig)_config).getStreamer());
-    }
-
-    public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {
-        Utils.setContent(this, bytes, ((DistributableSessionConfig)_config).getStreamer());
-    }
+    public byte[] getBytes() throws Exception {return Utils.getContent(this, getStreamer());}
+    public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {Utils.setContent(this, bytes, getStreamer());}
 }

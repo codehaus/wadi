@@ -16,14 +16,38 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.HttpSessionSetters;
+import java.util.Enumeration;
+import java.util.Set;
 
-public aspect Replicater {
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionEvent;
 
-  //    pointcut replicate(AtomicReplicatedSession session) : execution(* HttpSessionSetters.set*(..)) && target(session);
+public interface Session extends Context {
 
-  //    after(AtomicReplicatedSession session) : replicate(session) {
-  //        session.setDirty(true);
-  //    }
+    void destroy();
+
+    void tidy();
+
+    HttpSession getWrapper();
+
+    HttpSessionEvent getHttpSessionEvent();
+
+    Object getAttribute(String name);
+
+    Set getAttributeNameSet();
+
+    Enumeration getAttributeNameEnumeration();
+
+    String[] getAttributeNameStringArray();
+
+    Object setAttribute(String name, Object value);
+
+    Object removeAttribute(String name);
+
+    Set getBindingListenerNames();
+
+    Set getActivationListenerNames();
+
+    SessionConfig getConfig();
 
 }

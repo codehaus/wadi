@@ -20,6 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
+import org.codehaus.wadi.sandbox.Session;
+
 
 public class StatefulHttpServletRequestWrapper extends HttpServletRequestWrapper {
     

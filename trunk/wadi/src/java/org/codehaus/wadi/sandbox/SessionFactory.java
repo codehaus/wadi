@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.impl.Session;
-
 public interface SessionFactory {
     Session create(SessionConfig config);
 }

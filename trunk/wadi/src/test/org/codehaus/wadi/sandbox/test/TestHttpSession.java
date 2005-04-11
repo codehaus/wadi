@@ -38,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.ValueFactory;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.AttributesPool;
@@ -52,7 +53,7 @@ import org.codehaus.wadi.sandbox.impl.AtomicAttributesPool;
 import org.codehaus.wadi.sandbox.impl.DistributableSessionFactory;
 import org.codehaus.wadi.sandbox.impl.SimpleSessionPool;
 import org.codehaus.wadi.sandbox.impl.Manager;
-import org.codehaus.wadi.sandbox.impl.Session;
+import org.codehaus.wadi.sandbox.impl.StandardSession;
 import org.codehaus.wadi.sandbox.impl.SimpleValuePool;
 import org.codehaus.wadi.sandbox.impl.StandardSessionFactory;
 import org.codehaus.wadi.sandbox.impl.StandardValueFactory;
@@ -872,7 +873,7 @@ public class
       }
       events.clear();
 
-    Session s1=(DistributableSession)pool.take(_distributableManager);
+    StandardSession s1=(DistributableSession)pool.take(_distributableManager);
     s1.setBytes(bytes);
     // listsners may be activated lazily - so:
     s1.getAttribute(key);
