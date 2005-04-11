@@ -18,19 +18,15 @@ package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Set;
 
-import javax.naming.OperationNotSupportedException;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.Attributes;
@@ -44,7 +40,7 @@ import org.codehaus.wadi.sandbox.SessionConfig;
  * @version $Revision$
  */
 
-public class StandardSession extends AbstractContext implements Session, AttributesConfig{
+public class StandardSession extends AbstractContext implements Session, AttributesConfig {
     
     protected final static Log _log = LogFactory.getLog(StandardSession.class);
     protected final Attributes _attributes;
@@ -61,11 +57,11 @@ public class StandardSession extends AbstractContext implements Session, Attribu
         // NYI - other fields...
     }
     
-    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+    public byte[] getBytes() throws Exception {
         throw new NotSerializableException();
     }
-    
-    public void writeContent(ObjectOutput oo) throws IOException {
+
+    public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {
         throw new NotSerializableException();
     }
     

@@ -17,12 +17,10 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
-import java.io.NotSerializableException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Dirtier;
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableSessionConfig;
@@ -42,13 +40,13 @@ public class DistributableSession extends StandardSession implements Distributab
     public StreamingStrategy getStreamer() {return ((DistributableSessionConfig)_config).getStreamer();}
     
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+        super.readContent(oi);
         _attributes.readContent(oi);
-        // NYI - other fields
     }
     
     public void writeContent(ObjectOutput oo) throws IOException {
+        super.writeContent(oo);
         _attributes.writeContent(oo);
-        // NYI - other fields
     }
     
     public byte[] getBytes() throws Exception {return Utils.getContent(this, getStreamer());}

@@ -16,6 +16,12 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Motable;
 
 /**
@@ -26,6 +32,7 @@ import org.codehaus.wadi.sandbox.Motable;
  */
 
 public abstract class AbstractMotable extends SimpleEvictable implements Motable {
+    protected static Log _log = LogFactory.getLog(AbstractMotable.class);
 
 	public void copy(Motable motable) throws Exception {
 		super.copy(motable); // Evictable fields
@@ -50,6 +57,33 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
 	}
 	
 	// N.B. implementation of Bytes field is left abstract...
+    
+    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+        super.readContent(oi);
+        _id=(String)oi.readObject();
+//        int length=oi.readInt();
+//        byte[] bytes=new byte[length];
+//        int actualLength=oi.read(bytes);
+//        if (actualLength!=length)
+//            _log.error("serialized session truncated - "+(length-actualLength)+" bytes lost");
+//        try {
+//            setBytes(bytes);
+//        } catch (Exception e) {
+//            _log.error("unexpected problem deserializing session - data lost", e);
+//        }
+    }
+    
+    public void writeContent(ObjectOutput oo) throws IOException {
+        super.writeContent(oo);
+        oo.writeObject(_id);
+//        try {
+//            byte[] bytes=getBytes();
+//            oo.writeInt(bytes.length);
+//            oo.write(bytes);
+//        } catch (Exception e) {
+//            _log.error("unexpected problem serializing session - data lost", e);
+//        }
+    }
 }
 
 

@@ -16,6 +16,10 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import org.codehaus.wadi.sandbox.Evictable;
 
 /**
@@ -78,5 +82,17 @@ public abstract class SimpleEvictable implements Evictable {
 	    _maxInactiveInterval=0;
 	    _invalidated=true;
 	}
+    
+    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+        _creationTime=oi.readLong();
+        _lastAccessedTime=oi.readLong();
+        _maxInactiveInterval=oi.readInt();
+    }
+    
+    public void writeContent(ObjectOutput oo) throws IOException {
+        oo.writeLong(_creationTime);
+        oo.writeLong(_lastAccessedTime);
+        oo.writeInt(_maxInactiveInterval);
+    }
 	
 }

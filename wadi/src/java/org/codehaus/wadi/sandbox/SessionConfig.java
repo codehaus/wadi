@@ -20,7 +20,6 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.impl.Manager;
 
 public interface SessionConfig {

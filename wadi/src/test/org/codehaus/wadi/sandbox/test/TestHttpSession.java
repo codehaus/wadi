@@ -763,9 +763,26 @@ public class
   }
 
   public void
-    testMaxInactiveInterval()
+  testMaxInactiveInterval()
   {
-    // TODO
+      testMaxInactiveInterval(_standardManager);
+      testMaxInactiveInterval(_distributableManager);
+  }
+  
+  public void
+  testMaxInactiveInterval(Manager manager)
+  {
+      HttpSession session=manager.newHttpSession();
+      {
+          int interval=60*60;
+          session.setMaxInactiveInterval(interval);
+          assertTrue(session.getMaxInactiveInterval()==interval);
+      }
+      {
+          int interval=-1;
+          session.setMaxInactiveInterval(interval);
+          assertTrue(session.getMaxInactiveInterval()==interval);
+      }
   }
 
   // TODO

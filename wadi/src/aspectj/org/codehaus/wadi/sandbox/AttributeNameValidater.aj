@@ -24,4 +24,6 @@ public aspect AttributeNameValidater {
         if (null==name)
             throw new IllegalArgumentException("HttpSession attribute name must be non-null (see SRV.15.1.7.1)");
     }
+    
+    // TODO - should confirm that Attribute Value is Serializable or a special case - for Distributable Sessions...
 }
