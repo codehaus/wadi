@@ -16,10 +16,10 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.sandbox.Attribute;
-import org.codehaus.wadi.sandbox.AttributeConfig;
-import org.codehaus.wadi.sandbox.AttributeFactory;
-import org.codehaus.wadi.sandbox.DistributableAttributeConfig;
+import org.codehaus.wadi.sandbox.Value;
+import org.codehaus.wadi.sandbox.ValueConfig;
+import org.codehaus.wadi.sandbox.ValueFactory;
+import org.codehaus.wadi.sandbox.DistributableValueConfig;
 
 /**
  * TODO - JavaDoc this type
@@ -28,14 +28,14 @@ import org.codehaus.wadi.sandbox.DistributableAttributeConfig;
  * @version $Revision$
  */
 
-public class ActivatableAttributeFactory implements AttributeFactory {
+public class ReplacingValueFactory implements ValueFactory {
 
-    public ActivatableAttributeFactory() {
+    public ReplacingValueFactory() {
         super();
     }
 
-    public Attribute create(AttributeConfig config) {
-        return new ActivatableAttribute((DistributableAttributeConfig)config);
+    public Value create(ValueConfig config) {
+        return new ReplacingValue((DistributableValueConfig)config);
     }
 
 }

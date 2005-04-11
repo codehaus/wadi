@@ -14,15 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.impl;
-
-import java.util.Set;
+package org.codehaus.wadi.sandbox;
 
 import javax.servlet.http.HttpSessionEvent;
 
 import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.sandbox.Dirtier;
-import org.codehaus.wadi.sandbox.DistributableValueConfig;
 
 /**
  * TODO - JavaDoc this type
@@ -31,17 +27,10 @@ import org.codehaus.wadi.sandbox.DistributableValueConfig;
  * @version $Revision$
  */
 
-public class PartAttributes extends SimpleAttributes implements DistributableValueConfig {
-
-    public PartAttributes(Dirtier dirtier, StreamingStrategy streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
-        // NYI
-    }
+public interface DistributableValueConfig extends ValueConfig {
     
-    public Set getBindingListenerNames() {return null;} //NYI
-    public Set getActivationListenerNames() {return null;} //NYI
-    
-    public HttpSessionEvent getHttpSessionEvent() {return null;} //NYI
-    public StreamingStrategy getStreamer() {return null;} //NYI
-    public Dirtier getDirtier() {return null;} //NYI
+    HttpSessionEvent getHttpSessionEvent();
+    StreamingStrategy getStreamer();
+    Dirtier getDirtier();
 
 }

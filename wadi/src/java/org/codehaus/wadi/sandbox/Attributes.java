@@ -28,7 +28,7 @@ import javax.servlet.http.HttpSessionEvent;
  * @version $Revision$
  */
 
-public interface Attributes extends AttributeConfig {
+public interface Attributes {
 
     // Map-like
     Object get(Object key);
@@ -41,9 +41,6 @@ public interface Attributes extends AttributeConfig {
     
     byte[] getBytes();
     void setBytes(byte[] bytes);
-    
-    // event contains a backptr to our container - breaks a circular ref, so cannot be ctor param..
-    void setHttpSessionEvent(HttpSessionEvent event);
     
     Set getBindingListenerNames();
     Set getActivationListenerNames();

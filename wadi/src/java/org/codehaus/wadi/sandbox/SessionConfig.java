@@ -16,8 +16,20 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.impl.Session;
+import java.util.List;
 
-public interface SessionFactory {
-    Session create(SessionConfig config);
+import javax.servlet.ServletContext;
+
+import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.impl.Manager;
+
+public interface SessionConfig {
+    
+    ValuePool getAttributePool();
+    AttributesPool getAttributesPool();
+    List getSessionListeners();
+    List getAttributeListeners();
+    ServletContext getServletContext();
+    
+    Manager getManager(); // TODO - just for destroySession()...
 }

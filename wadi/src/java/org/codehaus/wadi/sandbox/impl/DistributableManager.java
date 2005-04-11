@@ -17,26 +17,25 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.Dirtier;
-import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableSessionConfig;
+import org.codehaus.wadi.sandbox.SessionPool;
+import org.codehaus.wadi.sandbox.ValuePool;
 
-/**
- * TODO - JavaDoc this type
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
+public class DistributableManager extends Manager implements DistributableSessionConfig {
 
-public class DistributableSession extends Session implements DistributableAttributesConfig {
+    protected final StreamingStrategy _streamer;
+    protected final Dirtier _dirtier;
 
-    /**
-     * @param manager
-     */
-    public DistributableSession(DistributableSessionConfig config) {
-        super(config);
+    public DistributableManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool attributePool, StreamingStrategy streamer, Dirtier dirtier) {
+        super(sessionPool, attributesPool, attributePool);
+        _streamer=streamer;
+        _dirtier=dirtier;
     }
 
-    public Dirtier getDirtier() {return ((DistributableSessionConfig)_config).getDirtier();}
-    public StreamingStrategy getStreamer() {return ((DistributableSessionConfig)_config).getStreamer();}
+    // Distributable
+    public StreamingStrategy getStreamer() {return _streamer;}
+    public Dirtier getDirtier() {return _dirtier;}
+    
 }

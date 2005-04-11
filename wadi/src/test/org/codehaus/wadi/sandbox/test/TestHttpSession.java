@@ -38,14 +38,23 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.sandbox.ValueFactory;
+import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.AttributesFactory;
+import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.Dirtier;
 import org.codehaus.wadi.sandbox.SessionFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
+import org.codehaus.wadi.sandbox.impl.DistributableManager;
+import org.codehaus.wadi.sandbox.impl.DistributableValueFactory;
+import org.codehaus.wadi.sandbox.impl.AtomicAttributesFactory;
+import org.codehaus.wadi.sandbox.impl.AtomicAttributesPool;
 import org.codehaus.wadi.sandbox.impl.DistributableSessionFactory;
+import org.codehaus.wadi.sandbox.impl.DistributableValuePool;
 import org.codehaus.wadi.sandbox.impl.DummySessionPool;
 import org.codehaus.wadi.sandbox.impl.Manager;
 import org.codehaus.wadi.sandbox.impl.Session;
+import org.codehaus.wadi.sandbox.impl.SimpleValuePool;
 import org.codehaus.wadi.sandbox.impl.SimpleAttributes;
 import org.codehaus.wadi.sandbox.impl.WholeAttributesFactory;
 import org.codehaus.wadi.sandbox.impl.WriteDirtier;
@@ -68,10 +77,13 @@ public class
   protected StreamingStrategy _streamer=new SimpleStreamingStrategy();
   protected boolean           _evictObjectRepASAP=false;
   protected boolean           _evictByteRepASAP=false;
-  protected AttributesFactory _attributesFactory=new WholeAttributesFactory(_dirtier, _streamer, _evictObjectRepASAP, _evictByteRepASAP);
+  protected AtomicAttributesFactory _attributesFactory=new AtomicAttributesFactory();
+  protected AttributesPool    _attributesPool=new AtomicAttributesPool(_attributesFactory);
   protected SessionFactory    _sessionFactory=new DistributableSessionFactory(_attributesFactory);
-  protected SessionPool       _pool=new DummySessionPool(_sessionFactory);
-  protected Manager           _manager=new Manager(_pool);
+  protected SessionPool       _sessionPool=new DummySessionPool(_sessionFactory);
+  protected DistributableValueFactory _valueFactory=new DistributableValueFactory();
+  protected ValuePool         _valuePool=new DistributableValuePool(_valueFactory);
+  protected Manager           _manager=new DistributableManager(_sessionPool, _attributesPool, _valuePool, _streamer, _dirtier);
   
   public TestHttpSession(String name)
   {
@@ -648,7 +660,7 @@ public class
   public void
   testIsNew()
   {
-      Session s=new Session(_manager, new SimpleAttributes());
+      Session s=_sessionPool.take(_manager);
       HttpSession session=s.getWrapper();
       assertTrue(session.isNew());
       s.setLastAccessedTime(System.currentTimeMillis()+1);
@@ -691,7 +703,7 @@ public class
     LATERtestActivation() // TODO
     throws Exception
   {
-    Session s0=new Session(_manager, new SimpleAttributes());
+    Session s0=_sessionPool.take(_manager);
     //s0.init(_manager, "1234", 0L, 60, 60);
     List events=ActivationListener._events;
     events.clear();
@@ -718,7 +730,7 @@ public class
       assertTrue(s0.getWrapper()==e.getSession());
     }
 
-    Session s1=new Session(_manager, new SimpleAttributes());
+    Session s1=_sessionPool.take(_manager);
     demarshall(s1, buffer);
     //s1.setWadiManager(_manager); // TODO - yeugh!
     // listener should not have yet been activated (we do it lazily)

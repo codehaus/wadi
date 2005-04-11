@@ -28,7 +28,7 @@ import java.io.Serializable;
  * @version $Revision$
  */
 
-public interface AttributeHelper extends Serializable {
+public interface ValueHelper extends Serializable {
     
     /**
      * Used during the writing out of a non-Serializable. If its type matches

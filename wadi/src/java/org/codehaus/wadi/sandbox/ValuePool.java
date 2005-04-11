@@ -16,8 +16,16 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.impl.Session;
+/**
+ * TODO - JavaDoc this type
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 
-public interface SessionFactory {
-    Session create(SessionConfig config);
+public interface ValuePool {
+
+    public Value take(ValueConfig config);
+    public void put(Value attribute);
+    
 }

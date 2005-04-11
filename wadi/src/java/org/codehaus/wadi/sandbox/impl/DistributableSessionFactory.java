@@ -17,6 +17,8 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import org.codehaus.wadi.sandbox.AttributesFactory;
+import org.codehaus.wadi.sandbox.DistributableSessionConfig;
+import org.codehaus.wadi.sandbox.SessionConfig;
 import org.codehaus.wadi.sandbox.SessionFactory;
 
 public class DistributableSessionFactory implements SessionFactory {
@@ -28,7 +30,7 @@ public class DistributableSessionFactory implements SessionFactory {
         _factory=factory;
     }
 
-    public Session create(Manager manager) {
-        return new DistributableSession(manager, _factory.create());
+    public Session create(SessionConfig config) {
+        return new DistributableSession((DistributableSessionConfig)config);
     }
 }

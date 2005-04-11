@@ -14,10 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox;
+package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.sandbox.impl.Session;
+import java.util.HashMap;
 
-public interface SessionFactory {
-    Session create(SessionConfig config);
+import org.codehaus.wadi.sandbox.Attributes;
+import org.codehaus.wadi.sandbox.AttributesConfig;
+import org.codehaus.wadi.sandbox.AttributesFactory;
+
+public class AtomicAttributesFactory implements AttributesFactory {
+
+    public Attributes create(AttributesConfig config) {
+        return new AtomicAttributes(config, new HashMap());
+    }
+
 }
