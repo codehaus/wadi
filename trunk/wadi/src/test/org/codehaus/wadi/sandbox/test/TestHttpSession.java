@@ -1091,6 +1091,29 @@ extends TestCase
     //     _log.info("Tested Distributed Sessions");
     //     _manager.stop();
     //   }
+    
+    public void testAtomicAttributes() throws Exception {
+        testAtomicAttributes(_distributableManager);
+    }
+
+    public void testAtomicAttributes(Manager manager) throws Exception {
+        Session sess0=manager.createSession();
+        Object val=new String("value");
+        String key0="foo";
+        String key1="bar";
+        sess0.setAttribute(key0, val);
+        sess0.setAttribute(key1, val);
+        assertTrue(sess0.getAttribute(key0)==sess0.getAttribute(key1));
+        byte[] bytes=sess0.getBytes();
+        Session sess1=manager.createSession();
+        sess1.setBytes(bytes);
+        assertTrue(sess1.getAttribute(key0)==sess1.getAttribute(key1)); // after deserialisation values are still '='
+        assertTrue(sess0.getAttribute(key0)!=sess1.getAttribute(key1));
+        assertTrue(sess0.getAttribute(key0).equals(sess1.getAttribute(key1)));
+        assertTrue(sess1.getAttribute(key0)!=sess0.getAttribute(key1));
+        assertTrue(sess1.getAttribute(key0).equals(sess0.getAttribute(key1)));
+    }
+    
 }
 
 // we need to test the difference between distributed and local
