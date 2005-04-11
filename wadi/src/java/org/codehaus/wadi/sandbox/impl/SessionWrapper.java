@@ -32,9 +32,9 @@ import javax.servlet.http.HttpSessionContext;
 
 public class SessionWrapper implements HttpSession {
 
-    protected final Session _session;
+    protected final StandardSession _session;
 
-    public SessionWrapper(Session session) {_session=session;}
+    public SessionWrapper(StandardSession session) {_session=session;}
 
     // delegate to Session
     public long getCreationTime() {return _session.getCreationTime();}

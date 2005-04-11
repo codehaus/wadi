@@ -26,6 +26,7 @@ import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Dirtier;
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
+import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.Value;
 import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.AttributesConfig;

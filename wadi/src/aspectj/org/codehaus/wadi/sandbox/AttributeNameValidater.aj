@@ -16,11 +16,9 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.impl.Session;
-
 public aspect AttributeNameValidater {
     
-    pointcut validate(String name) : execution(Object Session.*Attribute(..)) && args(name,..);
+    pointcut validate(String name) : execution(Object Session+.*Attribute(..)) && args(name,..);
     
     before(String name) : validate(name) {
         if (null==name)

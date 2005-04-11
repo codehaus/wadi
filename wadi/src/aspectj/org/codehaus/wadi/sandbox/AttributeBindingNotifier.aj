@@ -19,11 +19,9 @@ package org.codehaus.wadi.sandbox;
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 
-import org.codehaus.wadi.sandbox.impl.Session;
-
 public aspect AttributeBindingNotifier {
     
-    pointcut setAttribute(Session session, String name, Object newValue) : execution(Object Session.setAttribute(String, Object)) && args(name, newValue) && target(session);
+    pointcut setAttribute(Session session, String name, Object newValue) : execution(Object Session+.setAttribute(String, Object)) && args(name, newValue) && target(session);
     
     Object around(Session session, String name, Object newValue) : setAttribute(session, name, newValue) {
         Object oldValue=proceed(session, name, newValue);
@@ -35,7 +33,7 @@ public aspect AttributeBindingNotifier {
         return oldValue;
     }
     
-    pointcut removeAttribute(Session session, String name) : execution(Object Session.removeAttribute(String)) && args(name) && target(session);
+    pointcut removeAttribute(Session session, String name) : execution(Object Session+.removeAttribute(String)) && args(name) && target(session);
     
     Object around(Session session, String name) : removeAttribute(session, name) {
         Object oldValue=proceed(session, name);

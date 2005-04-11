@@ -30,11 +30,12 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.SessionConfig;
 import org.codehaus.wadi.sandbox.SessionPool;
-import org.codehaus.wadi.sandbox.impl.Session;
+import org.codehaus.wadi.sandbox.impl.StandardSession;
 
 /**
  * TODO - JavaDoc this type
@@ -63,7 +64,7 @@ public class Manager implements SessionConfig {
         return createSession().getWrapper();
     }
     
-    public void destroySession(Session session) {
+    public void destroySession(StandardSession session) {
         // fetch any ActivationListeners - so that they are activated.
         // Session must appear to be in memory when invalidated ? - Think - TODO
         for (Iterator i=session.getActivationListenerNames().iterator(); i.hasNext();) // ALLOC ?
