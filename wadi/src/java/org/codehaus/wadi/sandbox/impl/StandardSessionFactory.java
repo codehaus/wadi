@@ -14,14 +14,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox;
+package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.sandbox.impl.Session;
+import org.codehaus.wadi.sandbox.AttributesFactory;
+import org.codehaus.wadi.sandbox.DistributableSessionConfig;
+import org.codehaus.wadi.sandbox.SessionConfig;
+import org.codehaus.wadi.sandbox.SessionFactory;
 
-public interface AttributesConfig {
+public class StandardSessionFactory implements SessionFactory {
+
+    protected final AttributesFactory _factory;
     
-    Session getSession();
-    ValuePool getValuePool();
-    boolean hasListeners(); // TODO - don't like name - does manager have session or attribute listeners ?
-    
+    public StandardSessionFactory(AttributesFactory factory) {
+        super();
+        _factory=factory;
+    }
+
+    public Session create(SessionConfig config) {
+        return new Session(config);
+    }
 }

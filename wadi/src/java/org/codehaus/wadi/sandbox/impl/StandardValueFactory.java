@@ -16,25 +16,26 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.sandbox.SessionConfig;
-import org.codehaus.wadi.sandbox.SessionFactory;
-import org.codehaus.wadi.sandbox.SessionPool;
+import org.codehaus.wadi.sandbox.Value;
+import org.codehaus.wadi.sandbox.ValueConfig;
+import org.codehaus.wadi.sandbox.ValueFactory;
+import org.codehaus.wadi.sandbox.DistributableValueConfig;
 
-public class DummySessionPool implements SessionPool {
+/**
+ * TODO - JavaDoc this type
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 
-    protected final SessionFactory _factory;
-    
-    public DummySessionPool(SessionFactory factory) {
+public class StandardValueFactory implements ValueFactory {
+
+    public StandardValueFactory() {
         super();
-        _factory=factory;
-    }
-    
-    public Session take(SessionConfig config) {
-        return _factory.create(config);
     }
 
-    public void put(Session session) {
-        // just drop the session - truly pool later
+    public Value create(ValueConfig config) {
+        return new StandardValue(config);
     }
 
 }

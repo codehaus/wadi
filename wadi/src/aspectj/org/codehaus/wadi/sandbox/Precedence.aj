@@ -16,12 +16,12 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.impl.Session;
-
-public interface AttributesConfig {
-    
-    Session getSession();
-    ValuePool getValuePool();
-    boolean hasListeners(); // TODO - don't like name - does manager have session or attribute listeners ?
-    
+public aspect Precedence {
+    declare precedence :
+        
+        SessionLifecycleNotifier,
+        Replicater,
+        AttributeNameValidater,
+        AttributeLifecycleNotifier,
+        AttributeBindingNotifier;
 }

@@ -25,7 +25,7 @@ import org.codehaus.wadi.SerializableContent;
  * @version $Revision$
  */
 
-public interface Value extends SerializableContent {
+public interface Value {
 
     Object getValue();
     Object setValue(Object newValue);

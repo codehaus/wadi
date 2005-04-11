@@ -25,7 +25,7 @@ import org.codehaus.wadi.sandbox.impl.Manager;
 
 public interface SessionConfig {
     
-    ValuePool getAttributePool();
+    ValuePool getValuePool();
     AttributesPool getAttributesPool();
     List getSessionListeners();
     List getAttributeListeners();

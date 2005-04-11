@@ -48,10 +48,9 @@ public class AtomicAttributes extends AbstractAttributes implements Distributabl
         int size=oi.readInt();
         for (int i=0; i<size; i++) {
             Object key=oi.readObject();
-            Object val=oi.readObject();
-            Value a=_config.getAttributePool().take(this);
-            a.setValue(val);
-            _map.put(key, a);
+            DistributableValue val=(DistributableValue)_config.getValuePool().take(this);
+            val.readContent(oi);
+            _map.put(key, val);
         }
     }
 
@@ -65,15 +64,16 @@ public class AtomicAttributes extends AbstractAttributes implements Distributabl
             Map.Entry e=(Map.Entry)i.next();
             Object key=e.getKey();
             oo.writeObject(key);
-            Value a=(Value)e.getValue();
-            Object val=a.getValue();
-            oo.writeObject(val);
+            DistributableValue val=(DistributableValue)e.getValue();
+            Object o=val.getValue();
+            val.writeContent(oo);
             
             if (!_config.hasListeners()) {
-                if (val instanceof HttpSessionActivationListener) {
+                if (o instanceof HttpSessionActivationListener) {
+                    // a bit silly that we spent all this time hiding Activationlistaners inside Value - yet need to know about them here...
                     // NYI
                 }
-                if (val instanceof HttpSessionBindingListener) {
+                if (o instanceof HttpSessionBindingListener) {
                     // NYI
                 }
             }

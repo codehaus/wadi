@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.sandbox.Value;
 import org.codehaus.wadi.sandbox.ValueHelper;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
@@ -39,23 +40,9 @@ import org.codehaus.wadi.sandbox.DistributableValueConfig;
  * @version $Revision$
  */
 
-public class ReplacingValue implements Value {
+public class ReplacingValue extends StandardValue implements Value, SerializableContent {
     
-    protected final DistributableValueConfig _config; // TODO - move this down the hierarchy ?
-
-    public ReplacingValue(DistributableValueConfig config) {_config=config;}
-    
-    protected Object _value;
-    
-    public Object getValue() {
-        return _value;
-    }
-    
-    public Object setValue(Object newValue) {
-        Object oldValue=_value;
-        _value=newValue;
-        return oldValue;
-    }
+    public ReplacingValue(DistributableValueConfig config) {super(config);}
     
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         _value=oi.readObject();

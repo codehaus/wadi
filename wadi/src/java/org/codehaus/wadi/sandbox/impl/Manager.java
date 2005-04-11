@@ -49,17 +49,17 @@ public class Manager implements SessionConfig {
 
     protected final SessionPool _sessionPool;
     protected final AttributesPool _attributesPool;
-    protected final ValuePool _attributePool;
-    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool attributePool) {
+    protected final ValuePool _valuePool;
+    
+    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool) {
         _sessionPool=sessionPool;
         _attributesPool=attributesPool;
-        _attributePool=attributePool;
+        _valuePool=valuePool;
     }
     
     public boolean isStarted(){return false;}
     
     public HttpSession newHttpSession() {
-        // TODO - don't create a new one - use a pool...
         return createSession().getWrapper();
     }
     
@@ -158,7 +158,7 @@ public class Manager implements SessionConfig {
     public HttpSessionContext getSessionContext() {return null;} // TODO
     
     public AttributesPool getAttributesPool() {return _attributesPool;}
-    public ValuePool getAttributePool() {return _attributePool;}
+    public ValuePool getValuePool() {return _valuePool;}
     
     public Manager getManager(){return this;}
     

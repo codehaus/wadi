@@ -16,7 +16,13 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Dirtier;
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableSessionConfig;
@@ -39,4 +45,20 @@ public class DistributableSession extends Session implements DistributableAttrib
 
     public Dirtier getDirtier() {return ((DistributableSessionConfig)_config).getDirtier();}
     public StreamingStrategy getStreamer() {return ((DistributableSessionConfig)_config).getStreamer();}
+    
+    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+        _attributes.readContent(oi);
+    }
+    
+    public void writeContent(ObjectOutput oo) throws IOException {
+        _attributes.writeContent(oo);
+    }
+    
+    public byte[] getBytes() throws Exception {
+        return Utils.getContent(this, ((DistributableSessionConfig)_config).getStreamer());
+    }
+
+    public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {
+        Utils.setContent(this, bytes, ((DistributableSessionConfig)_config).getStreamer());
+    }
 }

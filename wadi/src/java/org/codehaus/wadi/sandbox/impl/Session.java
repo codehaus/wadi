@@ -17,12 +17,14 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
+import java.io.NotSerializableException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Set;
 
+import javax.naming.OperationNotSupportedException;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 
@@ -63,11 +65,11 @@ public class Session extends AbstractContext implements AttributesConfig {
     }
     
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-        // NYI
+        throw new NotSerializableException();
     }
     
     public void writeContent(ObjectOutput oo) throws IOException {
-        // NYI
+        throw new NotSerializableException();
     }
     
     public void tidy() { // TODO - merge with destroy()
@@ -132,6 +134,6 @@ public class Session extends AbstractContext implements AttributesConfig {
     
     public Session getSession(){return this;}
     public boolean hasListeners(){return false;} //NYI
-    public ValuePool getAttributePool(){return _config.getAttributePool();}
+    public ValuePool getValuePool(){return _config.getValuePool();}
 
 }

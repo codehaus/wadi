@@ -16,6 +16,10 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -52,5 +56,13 @@ public class SimpleAttributes extends HashMap implements Attributes {
     // FIXME
     public Set getBindingListenerNames() {return null;}
     public Set getActivationListenerNames() {return null;}
+
+    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+        throw new NotSerializableException();
+    }
+    
+    public void writeContent(ObjectOutput oo) throws IOException {
+        throw new NotSerializableException();
+    }
 
 }

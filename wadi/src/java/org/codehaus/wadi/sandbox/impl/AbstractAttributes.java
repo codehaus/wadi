@@ -57,13 +57,13 @@ public abstract class AbstractAttributes implements Attributes, SerializableCont
         } else {
             Object tmp=a.getValue();
             a.setValue(null);
-            _config.getAttributePool().put(a);
+            _config.getValuePool().put(a);
             return tmp;
         }
     }
 
     public Object put(Object key, Object newValue) {
-        Value in=_config.getAttributePool().take(this);
+        Value in=_config.getValuePool().take(this);
         in.setValue(newValue);
         Value out=(Value)_map.put(key, in);
         if (out==null) {
@@ -71,7 +71,7 @@ public abstract class AbstractAttributes implements Attributes, SerializableCont
         } else {
             Object tmp=out.getValue();
             out.setValue(null);
-            _config.getAttributePool().put(out);
+            _config.getValuePool().put(out);
             return tmp;
         }
     }
