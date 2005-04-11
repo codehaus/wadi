@@ -22,7 +22,7 @@ import java.io.ObjectOutput;
 
 import javax.servlet.http.HttpSessionActivationListener;
 
-import org.codehaus.wadi.sandbox.DistributableAttributeConfig;
+import org.codehaus.wadi.sandbox.DistributableValueConfig;
 
 /**
  * An AttributeWrapper that supports the lazy notification of HttpSessionActivationListeners.
@@ -33,9 +33,9 @@ import org.codehaus.wadi.sandbox.DistributableAttributeConfig;
  * @version $Revision$
  */
 
-public class ActivatableAttribute extends ReplacingAttribute {
+public class DistributableValue extends ReplacingValue {
     
-    public ActivatableAttribute(DistributableAttributeConfig config) {super(config);}
+    public DistributableValue(DistributableValueConfig config) {super(config);}
     
     protected transient boolean _needsNotification;
     

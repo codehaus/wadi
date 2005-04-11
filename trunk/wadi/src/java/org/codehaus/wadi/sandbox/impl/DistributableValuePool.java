@@ -16,13 +16,10 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import java.util.Set;
-
-import javax.servlet.http.HttpSessionEvent;
-
-import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.sandbox.Dirtier;
-import org.codehaus.wadi.sandbox.DistributableValueConfig;
+import org.codehaus.wadi.sandbox.Value;
+import org.codehaus.wadi.sandbox.ValueConfig;
+import org.codehaus.wadi.sandbox.ValueFactory;
+import org.codehaus.wadi.sandbox.ValuePool;
 
 /**
  * TODO - JavaDoc this type
@@ -31,17 +28,18 @@ import org.codehaus.wadi.sandbox.DistributableValueConfig;
  * @version $Revision$
  */
 
-public class PartAttributes extends SimpleAttributes implements DistributableValueConfig {
+public class DistributableValuePool implements ValuePool {
+    
+    protected final ValueFactory _factory;
+    
+    public DistributableValuePool(DistributableValueFactory factory) {_factory=factory;}
 
-    public PartAttributes(Dirtier dirtier, StreamingStrategy streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
-        // NYI
+    public Value take(ValueConfig config) {
+        return _factory.create(config);
     }
-    
-    public Set getBindingListenerNames() {return null;} //NYI
-    public Set getActivationListenerNames() {return null;} //NYI
-    
-    public HttpSessionEvent getHttpSessionEvent() {return null;} //NYI
-    public StreamingStrategy getStreamer() {return null;} //NYI
-    public Dirtier getDirtier() {return null;} //NYI
+
+    public void put(Value attribute) {
+        // just drop the Attribute - no pooling...
+    }
 
 }

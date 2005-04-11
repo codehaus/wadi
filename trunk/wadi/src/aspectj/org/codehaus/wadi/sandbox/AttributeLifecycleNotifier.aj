@@ -30,7 +30,7 @@ public aspect AttributeLifecycleNotifier {
     Object around(Session session, String name, Object newValue) : setAttribute(session, name, newValue) {
         Object oldValue=proceed(session, name, newValue);
         boolean replaced=(oldValue!=null);
-        List l=session.getManager().getAttributeListeners();
+        List l=session.getConfig().getAttributeListeners();
         int s=l.size();
         if (s>0) {
             if (replaced) { // only test once, instead of inside the loop - results in duplicate code...
@@ -55,7 +55,7 @@ public aspect AttributeLifecycleNotifier {
     Object around(Session session, String name) : removeAttribute(session, name) {
         Object oldValue=proceed(session, name);
         if (null!=oldValue) {
-            List l=session.getManager().getAttributeListeners();
+            List l=session.getConfig().getAttributeListeners();
             int s=l.size();
             if (s>0) {
                 HttpSessionBindingEvent hsbe=new HttpSessionBindingEvent(session.getWrapper(), name, oldValue);

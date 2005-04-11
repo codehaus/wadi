@@ -28,8 +28,11 @@ import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.AttributeConfig;
+import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.Attributes;
+import org.codehaus.wadi.sandbox.AttributesConfig;
+import org.codehaus.wadi.sandbox.SessionConfig;
 
 /**
  * Our internal representation of any Web Session
@@ -38,17 +41,16 @@ import org.codehaus.wadi.sandbox.Attributes;
  * @version $Revision$
  */
 
-public class Session extends AbstractContext {
+public class Session extends AbstractContext implements AttributesConfig {
     
     protected final static Log _log = LogFactory.getLog(Session.class);
-    protected final Manager _manager; // backptr - breaks IOC
     protected final Attributes _attributes;
+    protected final SessionConfig _config;
     
-    public Session(Manager manager, Attributes attributes) {
+    public Session(SessionConfig config) {
         super();
-        _manager=manager; // TODO - Id' like to lose manager - but i think we will need to know about listeners upon invalidation
-        _attributes=attributes;
-        _attributes.setHttpSessionEvent(_httpSessionEvent); // contains a backptr
+        _config=config;
+        _attributes=_config.getAttributesPool().take(this);
     }
     
     public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id, RWLock lock, Attributes attributes) {
@@ -59,8 +61,6 @@ public class Session extends AbstractContext {
     public void destroy() {
         _attributes.clear();
     }
-    
-    public Manager getManager(){return _manager;}
     
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         // NYI
@@ -126,5 +126,12 @@ public class Session extends AbstractContext {
     public Set getActivationListenerNames() {return _attributes.getActivationListenerNames();}
     
     public Attributes getAttributes() {return _attributes;}
+    public SessionConfig getConfig() {return _config;}
+    
+    // AttributesConfig
+    
+    public Session getSession(){return this;}
+    public boolean hasListeners(){return false;} //NYI
+    public ValuePool getAttributePool(){return _config.getAttributePool();}
 
 }

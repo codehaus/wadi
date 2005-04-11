@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import org.codehaus.wadi.sandbox.SessionConfig;
 import org.codehaus.wadi.sandbox.SessionFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
 
@@ -28,8 +29,8 @@ public class DummySessionPool implements SessionPool {
         _factory=factory;
     }
     
-    public Session take(Manager manager) {
-        return _factory.create(manager);
+    public Session take(SessionConfig config) {
+        return _factory.create(config);
     }
 
     public void put(Session session) {

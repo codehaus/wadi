@@ -40,8 +40,8 @@ public class
   ZipStreamingStrategy
   implements StreamingStrategy
 {
-  public ObjectInput getInputStream(InputStream is) throws IOException {return new ObjectInputStream(new ZipInputStream(is));};
-  public ObjectOutput getOutputStream(OutputStream os) throws IOException {return new ObjectOutputStream(new ZipOutputStream(os));};
+  public ObjectInput getInputStream(InputStream is) throws IOException {return new ObjectInputStream(new ZipInputStream(is));}
+  public ObjectOutput getOutputStream(OutputStream os) throws IOException {return new ObjectOutputStream(new ZipOutputStream(os));}
   public String getSuffix(){return "zip";}
 }
 

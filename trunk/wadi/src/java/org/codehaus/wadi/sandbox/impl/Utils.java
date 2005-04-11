@@ -136,29 +136,47 @@ public class Utils {
 	    return baos.toByteArray();
 	}
 
-	public static byte[] getContent(SerializableContent object, StreamingStrategy streamer) throws IOException {
-	    ByteArrayOutputStream baos=new ByteArrayOutputStream();
-	    ObjectOutput oo=streamer.getOutputStream(baos);
-	    object.writeContent(oo);
-	    oo.close();
-	    return baos.toByteArray();
-	}
-	
-	public static SerializableContent setContent(SerializableContent object, byte[] content, StreamingStrategy streamer) throws IOException, ClassNotFoundException {
-	    ByteArrayInputStream bais=new ByteArrayInputStream(content);
-	    ObjectInput oi=streamer.getInputStream(bais);
-	    object.readContent(oi);
-	    oi.close();
-	    return object;
-	}
-	
-	public static byte[] safeObjectToByteArray(Object object, StreamingStrategy streamer) {
-	    try {
-	        return objectToByteArray(object, streamer);
-	    } catch (Exception e) {
-	        _log.error("unexpected problem whilst marshalling", e);
-	        return null;
-	    }
-	}
+    public static byte[] safeObjectToByteArray(Object object, StreamingStrategy streamer) {
+        try {
+            return objectToByteArray(object, streamer);
+        } catch (Exception e) {
+            _log.error("unexpected problem whilst marshalling", e);
+            return null;
+        }
+    }
+
+    public static byte[] getContent(SerializableContent object, StreamingStrategy streamer) throws IOException {
+        ByteArrayOutputStream baos=new ByteArrayOutputStream();
+        ObjectOutput oo=streamer.getOutputStream(baos);
+        object.writeContent(oo);
+        oo.close();
+        return baos.toByteArray();
+    }
+    
+    public static byte[] safeGetContent(SerializableContent object, StreamingStrategy streamer) {
+        try {
+            return getContent(object, streamer);
+        } catch (Exception e) {
+            _log.error("unexpected problem whilst marshalling", e);
+            return null;
+        }
+    }
+    
+    public static SerializableContent setContent(SerializableContent object, byte[] content, StreamingStrategy streamer) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream bais=new ByteArrayInputStream(content);
+        ObjectInput oi=streamer.getInputStream(bais);
+        object.readContent(oi);
+        oi.close();
+        return object;
+    }
+    
+    public static SerializableContent safeSetContent(SerializableContent object, byte[] content, StreamingStrategy streamer) {
+        try {
+            return setContent(object, content, streamer);
+        } catch (Exception e) {
+            _log.error("unexpected problem whilst marshalling", e);
+            return null;
+        }
+    }
 
 }

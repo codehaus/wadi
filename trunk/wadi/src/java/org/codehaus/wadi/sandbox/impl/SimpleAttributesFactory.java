@@ -17,6 +17,7 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import org.codehaus.wadi.sandbox.Attributes;
+import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.AttributesFactory;
 
 /**
@@ -28,11 +29,8 @@ import org.codehaus.wadi.sandbox.AttributesFactory;
 
 public class SimpleAttributesFactory implements AttributesFactory {
 
-    /* (non-Javadoc)
-     * @see org.codehaus.wadi.sandbox.distributable.AttributesFactory#create()
-     */
-    public Attributes create() {
-        return new SimpleAttributes();
+    public Attributes create(AttributesConfig config) {
+        return new SimpleAttributes(); // FIXME
     }
 
 }

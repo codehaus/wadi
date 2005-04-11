@@ -14,12 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.impl;
+package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.Attribute;
-import org.codehaus.wadi.sandbox.AttributeConfig;
-import org.codehaus.wadi.sandbox.AttributeFactory;
-import org.codehaus.wadi.sandbox.AttributePool;
+import org.codehaus.wadi.StreamingStrategy;
 
 /**
  * TODO - JavaDoc this type
@@ -28,18 +25,9 @@ import org.codehaus.wadi.sandbox.AttributePool;
  * @version $Revision$
  */
 
-public class SimpleAttributePool implements AttributePool {
+public interface DistributableSessionConfig extends SessionConfig {
     
-    protected final AttributeFactory _factory;
-    
-    public SimpleAttributePool(AttributeFactory factory) {_factory=factory;}
-
-    public Attribute take(AttributeConfig config) {
-        return _factory.create(config);
-    }
-
-    public void put(Attribute attribute) {
-        // just drop the Attribute - no pooling...
-    }
+    Dirtier getDirtier();
+    StreamingStrategy getStreamer();
 
 }

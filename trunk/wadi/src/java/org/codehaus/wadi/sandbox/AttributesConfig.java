@@ -16,16 +16,13 @@
  */
 package org.codehaus.wadi.sandbox;
 
-/**
- * TODO - JavaDoc this type
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
+import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.impl.Session;
 
-public interface AttributePool {
-
-    public Attribute take(AttributeConfig config);
-    public void put(Attribute attribute);
+public interface AttributesConfig {
+    
+    Session getSession();
+    ValuePool getAttributePool();
+    boolean hasListeners(); // TODO - don't like name - does manager have session or attribute listeners ?
     
 }

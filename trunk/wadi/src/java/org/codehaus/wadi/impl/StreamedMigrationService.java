@@ -93,7 +93,7 @@ public class
 	    }
 	  else
 	    return false;
-	};
+	}
 
       public boolean
 	emmigrateMultipleSessions(Map map, Collection candidates, long timeout, Destination destination)

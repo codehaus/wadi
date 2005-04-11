@@ -26,6 +26,6 @@ package org.codehaus.wadi.sandbox;
 
 public interface AttributesFactory {
 
-    public Attributes create();
+    public Attributes create(AttributesConfig config);
     
 }

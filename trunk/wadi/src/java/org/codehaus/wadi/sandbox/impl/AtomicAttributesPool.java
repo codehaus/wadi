@@ -16,25 +16,26 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.sandbox.DistributableSessionConfig;
-import org.codehaus.wadi.sandbox.SessionConfig;
+import org.codehaus.wadi.sandbox.Attributes;
+import org.codehaus.wadi.sandbox.AttributesConfig;
+import org.codehaus.wadi.sandbox.AttributesFactory;
+import org.codehaus.wadi.sandbox.AttributesPool;
 
-/**
- * TODO - JavaDoc this type
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
+public class AtomicAttributesPool implements AttributesPool {
 
-public class ReplicableSession extends DistributableSession {
+    protected final AttributesFactory _factory;
+    
+    public AtomicAttributesPool(AtomicAttributesFactory factory) {
+        super();
+        _factory=factory;
+    }
 
-    /**
-     * @param manager
-     * @param attributes
-     * @param replicater
-     */
-    public ReplicableSession(SessionConfig config) {
-        super((DistributableSessionConfig)config);
+    public Attributes take(AttributesConfig config) {
+        return _factory.create(config);
+    }
+
+    public void put(Attributes attributes) {
+        // just drop Attributes...
     }
 
 }

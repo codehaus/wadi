@@ -222,7 +222,7 @@ public class
    *
    * @return a <code>String</code> value
    */
-  public String getSessionUrlParamName(){return __SessionURL;};
+  public String getSessionUrlParamName(){return __SessionURL;}
 
   public int getHttpPort(){return Integer.parseInt(System.getProperty("http.port"));} // TODO - temporary hack...
 

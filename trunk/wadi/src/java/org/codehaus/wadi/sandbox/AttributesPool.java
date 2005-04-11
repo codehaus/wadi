@@ -16,15 +16,9 @@
  */
 package org.codehaus.wadi.sandbox;
 
-/**
- * TODO - JavaDoc this type
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
-
-public interface AttributeFactory {
-
-    public Attribute create(AttributeConfig config);
+public interface AttributesPool {
+    
+    Attributes take(AttributesConfig config);
+    void put(Attributes attributes);
     
 }

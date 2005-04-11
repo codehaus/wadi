@@ -14,7 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox;
+package org.codehaus.wadi.sandbox.impl;
+
+import org.codehaus.wadi.sandbox.Value;
+import org.codehaus.wadi.sandbox.ValueConfig;
+import org.codehaus.wadi.sandbox.ValueFactory;
+import org.codehaus.wadi.sandbox.DistributableValueConfig;
 
 /**
  * TODO - JavaDoc this type
@@ -23,6 +28,14 @@ package org.codehaus.wadi.sandbox;
  * @version $Revision$
  */
 
-public interface AttributeConfig {
-    // empty
+public class DistributableValueFactory implements ValueFactory {
+
+    public DistributableValueFactory() {
+        super();
+    }
+
+    public Value create(ValueConfig config) {
+        return new DistributableValue((DistributableValueConfig)config);
+    }
+
 }

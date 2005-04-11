@@ -27,19 +27,21 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
-import org.codehaus.wadi.sandbox.Attribute;
-import org.codehaus.wadi.sandbox.AttributeFactory;
-import org.codehaus.wadi.sandbox.AttributeHelper;
-import org.codehaus.wadi.sandbox.AttributePool;
+import org.codehaus.wadi.sandbox.Value;
+import org.codehaus.wadi.sandbox.ValueFactory;
+import org.codehaus.wadi.sandbox.ValueHelper;
+import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.Attributes;
+import org.codehaus.wadi.sandbox.AttributesConfig;
+import org.codehaus.wadi.sandbox.AttributesFactory;
 import org.codehaus.wadi.sandbox.Dirtier;
-import org.codehaus.wadi.sandbox.impl.ActivatableAttribute;
-import org.codehaus.wadi.sandbox.impl.ActivatableAttributeFactory;
-import org.codehaus.wadi.sandbox.impl.SimpleAttributePool;
-import org.codehaus.wadi.sandbox.impl.ReplacingAttribute;
+import org.codehaus.wadi.sandbox.impl.DistributableValue;
+import org.codehaus.wadi.sandbox.impl.DistributableValueFactory;
+import org.codehaus.wadi.sandbox.impl.SimpleValuePool;
+import org.codehaus.wadi.sandbox.impl.ReplacingValue;
 import org.codehaus.wadi.sandbox.impl.PartAttributes;
 import org.codehaus.wadi.sandbox.impl.ReadWriteDirtier;
-import org.codehaus.wadi.sandbox.impl.ReplacingAttributeFactory;
+import org.codehaus.wadi.sandbox.impl.ReplacingValueFactory;
 import org.codehaus.wadi.sandbox.impl.SimpleAttributes;
 import org.codehaus.wadi.sandbox.impl.Utils;
 import org.codehaus.wadi.sandbox.impl.WholeAttributes;
@@ -99,15 +101,15 @@ public class TestAttributes extends TestCase {
         }
 }	
     
-    static class NotSerializableHelper implements AttributeHelper {
+    static class NotSerializableHelper implements ValueHelper {
         public Serializable replace(Object object) {return new IsSerializable(((NotSerializable)object)._content);}
     }
     
     public void testAttribute() throws Exception {
-        AttributeFactory factory=new ReplacingAttributeFactory();
-        AttributePool pool=new SimpleAttributePool(factory); 
+        ValueFactory factory=new ReplacingValueFactory();
+        ValuePool pool=new SimpleValuePool(factory); 
         
-        Attribute a=pool.take(null);
+        Value a=pool.take(null);
         // test get/set
         assertTrue(a.getValue()==null);
         String foo="foo";
@@ -119,36 +121,36 @@ public class TestAttributes extends TestCase {
         
         // test serialisation with various values
         {
-            ReplacingAttribute attr1=(ReplacingAttribute)pool.take(null);
-            ReplacingAttribute attr2=(ReplacingAttribute)pool.take(null);
+            ReplacingValue attr1=(ReplacingValue)pool.take(null);
+            ReplacingValue attr2=(ReplacingValue)pool.take(null);
             testAttributeSerialisation(attr1, attr2, null);
             pool.put(attr1);
             pool.put(attr2);
         }
         {
-            ReplacingAttribute attr1=(ReplacingAttribute)pool.take(null);
-            ReplacingAttribute attr2=(ReplacingAttribute)pool.take(null);
-            testAttributeSerialisation(new ReplacingAttribute(null), new ReplacingAttribute(null), foo);
+            ReplacingValue attr1=(ReplacingValue)pool.take(null);
+            ReplacingValue attr2=(ReplacingValue)pool.take(null);
+            testAttributeSerialisation(new ReplacingValue(null), new ReplacingValue(null), foo);
             pool.put(attr1);
             pool.put(attr2);
         }
         
         // try using a Helper
-        ReplacingAttribute.registerHelper(NotSerializable.class, new NotSerializableHelper());
+        ReplacingValue.registerHelper(NotSerializable.class, new NotSerializableHelper());
         {
-            ReplacingAttribute attr1=(ReplacingAttribute)pool.take(null);
-            ReplacingAttribute attr2=(ReplacingAttribute)pool.take(null);
-            testAttributeSerialisation(new ReplacingAttribute(null), new ReplacingAttribute(null), new NotSerializable(foo));
+            ReplacingValue attr1=(ReplacingValue)pool.take(null);
+            ReplacingValue attr2=(ReplacingValue)pool.take(null);
+            testAttributeSerialisation(new ReplacingValue(null), new ReplacingValue(null), new NotSerializable(foo));
             pool.put(attr1);
             pool.put(attr2);
         }
         
         // try without the Helper
-        assertTrue(ReplacingAttribute.deregisterHelper(NotSerializable.class));
-        assertTrue(!ReplacingAttribute.deregisterHelper(NotSerializable.class)); // can't be removed twice
+        assertTrue(ReplacingValue.deregisterHelper(NotSerializable.class));
+        assertTrue(!ReplacingValue.deregisterHelper(NotSerializable.class)); // can't be removed twice
         {
-            ReplacingAttribute attr1=(ReplacingAttribute)pool.take(null);
-            ReplacingAttribute attr2=(ReplacingAttribute)pool.take(null);
+            ReplacingValue attr1=(ReplacingValue)pool.take(null);
+            ReplacingValue attr2=(ReplacingValue)pool.take(null);
             try {
                 testAttributeSerialisation(attr1, attr2, new NotSerializable(foo));
                 assertTrue(false); // not expected
@@ -178,10 +180,10 @@ public class TestAttributes extends TestCase {
     
     public void testActivatableAttribute() throws Exception {
         ActivationListener al=new ActivationListener();
-        AttributeFactory factory=new ActivatableAttributeFactory();
-        AttributePool pool=new SimpleAttributePool(factory); 
-        ActivatableAttribute attr1=(ActivatableAttribute)pool.take(null);
-        ActivatableAttribute attr2=(ActivatableAttribute)pool.take(null);
+        ValueFactory factory=new DistributableValueFactory();
+        ValuePool pool=new SimpleValuePool(factory); 
+        DistributableValue attr1=(DistributableValue)pool.take(null);
+        DistributableValue attr2=(DistributableValue)pool.take(null);
         testAttributeSerialisation(attr1, attr2, al);
         _log.info("passivations: "+al._passivations);
         assertTrue(al._passivations==1);        
@@ -191,7 +193,7 @@ public class TestAttributes extends TestCase {
         pool.put(attr2);
     }
     
-    public void testAttributeSerialisation(ReplacingAttribute a, ReplacingAttribute b, Object s) throws Exception {
+    public void testAttributeSerialisation(ReplacingValue a, ReplacingValue b, Object s) throws Exception {
         StreamingStrategy streamer=new SimpleStreamingStrategy();
         a.setValue(s);
         byte[] bytes=Utils.getContent(a, streamer);
@@ -206,6 +208,11 @@ public class TestAttributes extends TestCase {
             return b==null;
         else
             return a.equals(b);
+    }
+    
+    public void testAtomicAttributes() throws Exception {
+        AttributesConfig config=null;
+//        AttributesFactory factory=new 
     }
     
     public static int _serialisations=0;
@@ -230,7 +237,7 @@ public class TestAttributes extends TestCase {
         }
     }
     
-    public void testAttributesWrapper() throws Exception {
+    public void testAttributes() throws Exception {
             Dirtier dirtier=new WriteDirtier();
             StreamingStrategy streamer=new SimpleStreamingStrategy();
             boolean evictObjectRepASAP=false;

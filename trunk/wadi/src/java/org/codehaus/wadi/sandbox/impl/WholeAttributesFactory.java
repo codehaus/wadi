@@ -18,6 +18,7 @@ package org.codehaus.wadi.sandbox.impl;
 
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
+import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.AttributesFactory;
 import org.codehaus.wadi.sandbox.Dirtier;
 
@@ -42,8 +43,8 @@ public class WholeAttributesFactory implements AttributesFactory {
         _evictByteRepASAP=evictByteRepASAP;
     }
 
-    public Attributes create() {
-        return new WholeAttributes(_dirtier, _streamer, _evictObjectRepASAP, _evictByteRepASAP);
+    public Attributes create(AttributesConfig config) {
+        return new WholeAttributes(_dirtier, _streamer, _evictObjectRepASAP, _evictByteRepASAP); // FIXME
     }
 
 }

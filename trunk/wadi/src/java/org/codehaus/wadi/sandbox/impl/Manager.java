@@ -29,6 +29,10 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.ValuePool;
+import org.codehaus.wadi.sandbox.AttributesPool;
+import org.codehaus.wadi.sandbox.SessionConfig;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.impl.Session;
 
@@ -39,14 +43,17 @@ import org.codehaus.wadi.sandbox.impl.Session;
  * @version $Revision$
  */
 
-public class Manager {
+public class Manager implements SessionConfig {
 
     protected final Log _log = LogFactory.getLog(getClass());
 
-    protected final SessionPool _pool;
-    
-    public Manager(SessionPool pool) {
-        _pool=pool;
+    protected final SessionPool _sessionPool;
+    protected final AttributesPool _attributesPool;
+    protected final ValuePool _attributePool;
+    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool attributePool) {
+        _sessionPool=sessionPool;
+        _attributesPool=attributesPool;
+        _attributePool=attributePool;
     }
     
     public boolean isStarted(){return false;}
@@ -78,11 +85,11 @@ public class Manager {
         }
         
         // TODO - remove from Contextualiser....at end of initial request ?
-        _pool.put(session);
+        _sessionPool.put(session);
     }
 
     public Session createSession() {
-        return _pool.take(this);
+        return _sessionPool.take(this);
     }
     
     //----------------------------------------
@@ -149,4 +156,10 @@ public class Manager {
     // Context stuff
     public ServletContext getServletContext() {return null;}// TODO
     public HttpSessionContext getSessionContext() {return null;} // TODO
+    
+    public AttributesPool getAttributesPool() {return _attributesPool;}
+    public ValuePool getAttributePool() {return _attributePool;}
+    
+    public Manager getManager(){return this;}
+    
 }

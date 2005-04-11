@@ -23,10 +23,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.wadi.SerializableContent;
-import org.codehaus.wadi.sandbox.Attribute;
-import org.codehaus.wadi.sandbox.AttributeHelper;
-import org.codehaus.wadi.sandbox.DistributableAttributeConfig;
+import org.codehaus.wadi.sandbox.Value;
+import org.codehaus.wadi.sandbox.ValueHelper;
+import org.codehaus.wadi.sandbox.DistributableValueConfig;
 
 /**
  * Allows [de]serialisation of its content via optional pluggable Helper class.
@@ -40,11 +39,11 @@ import org.codehaus.wadi.sandbox.DistributableAttributeConfig;
  * @version $Revision$
  */
 
-public class ReplacingAttribute implements Attribute {
+public class ReplacingValue implements Value {
     
-    protected final DistributableAttributeConfig _config; // TODO - move this down the hierarchy ?
+    protected final DistributableValueConfig _config; // TODO - move this down the hierarchy ?
 
-    public ReplacingAttribute(DistributableAttributeConfig config) {_config=config;}
+    public ReplacingValue(DistributableValueConfig config) {_config=config;}
     
     protected Object _value;
     
@@ -63,7 +62,7 @@ public class ReplacingAttribute implements Attribute {
     }
 
     public void writeContent(ObjectOutput oo) throws IOException {
-        AttributeHelper helper=(_value==null || _value instanceof Serializable)?null:findHelper(_value.getClass());
+        ValueHelper helper=(_value==null || _value instanceof Serializable)?null:findHelper(_value.getClass());
         Object value=(helper==null?_value:helper.replace(_value));
         oo.writeObject(value);        
     }
@@ -81,9 +80,9 @@ public class ReplacingAttribute implements Attribute {
     static class HelperPair {
         
         final Class _type;
-        final AttributeHelper _helper;
+        final ValueHelper _helper;
 
-        HelperPair(Class type, AttributeHelper helper) {
+        HelperPair(Class type, ValueHelper helper) {
             _type=type;
             _helper=helper;
         }
@@ -100,7 +99,7 @@ public class ReplacingAttribute implements Attribute {
      * @param type
      * @param helper
      */
-    public static void registerHelper(Class type, AttributeHelper helper) {
+    public static void registerHelper(Class type, ValueHelper helper) {
         _helpers.add(new HelperPair(type, helper));
     }
     
@@ -114,7 +113,7 @@ public class ReplacingAttribute implements Attribute {
         return false;
     }
     
-    public static AttributeHelper findHelper(Class type) {
+    public static ValueHelper findHelper(Class type) {
         int l=_helpers.size();
         for (int i=0; i<l; i++) {
             HelperPair p=(HelperPair)_helpers.get(i);

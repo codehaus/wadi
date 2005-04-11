@@ -37,8 +37,8 @@ public class
   SimpleStreamingStrategy
   implements StreamingStrategy
 {
-  public ObjectInput getInputStream(InputStream is) throws IOException {return new ObjectInputStream(is);};
-  public ObjectOutput getOutputStream(OutputStream os) throws IOException {return new ObjectOutputStream(os);};
+  public ObjectInput getInputStream(InputStream is) throws IOException {return new ObjectInputStream(is);}
+  public ObjectOutput getOutputStream(OutputStream os) throws IOException {return new ObjectOutputStream(os);}
   public String getSuffix(){return "ser";}
 }
 

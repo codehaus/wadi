@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.SerializableContent;
-
 /**
  * TODO - JavaDoc this type
  *
@@ -25,9 +23,6 @@ import org.codehaus.wadi.SerializableContent;
  * @version $Revision$
  */
 
-public interface Attribute extends SerializableContent {
-
-    Object getValue();
-    Object setValue(Object newValue);
-
+public interface ValueConfig {
+    // empty
 }

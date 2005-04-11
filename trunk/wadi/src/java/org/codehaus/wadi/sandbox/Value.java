@@ -14,12 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.impl;
+package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.Attribute;
-import org.codehaus.wadi.sandbox.AttributeConfig;
-import org.codehaus.wadi.sandbox.AttributeFactory;
-import org.codehaus.wadi.sandbox.DistributableAttributeConfig;
+import org.codehaus.wadi.SerializableContent;
 
 /**
  * TODO - JavaDoc this type
@@ -28,14 +25,9 @@ import org.codehaus.wadi.sandbox.DistributableAttributeConfig;
  * @version $Revision$
  */
 
-public class ReplacingAttributeFactory implements AttributeFactory {
+public interface Value extends SerializableContent {
 
-    public ReplacingAttributeFactory() {
-        super();
-    }
-
-    public Attribute create(AttributeConfig config) {
-        return new ReplacingAttribute((DistributableAttributeConfig)config);
-    }
+    Object getValue();
+    Object setValue(Object newValue);
 
 }

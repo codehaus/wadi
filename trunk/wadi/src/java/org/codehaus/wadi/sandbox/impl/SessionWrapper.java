@@ -62,8 +62,8 @@ public class SessionWrapper implements HttpSession {
     public void removeValue(String name) {removeAttribute(name);}
 
     // delegate to Manager
-    public ServletContext getServletContext() {return _session.getManager().getServletContext();}
-    public void invalidate() {_session.getManager().destroySession(_session);}
+    public ServletContext getServletContext() {return _session.getConfig().getServletContext();}
+    public void invalidate() {_session.getConfig().getManager().destroySession(_session);}
     
     // handle ourselves...
     protected static final HttpSessionContext _httpSessionContext=new HttpSessionContext() {
