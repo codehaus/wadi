@@ -31,9 +31,9 @@ import org.codehaus.wadi.sandbox.DistributableValueConfig;
 import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.ValueHelper;
 
-public class AtomicAttributes extends AbstractAttributes implements DistributableValueConfig {
+public class SimpleAttributes extends AbstractAttributes implements DistributableValueConfig {
 
-    public AtomicAttributes(AttributesConfig config, Map map) {
+    public SimpleAttributes(AttributesConfig config, Map map) {
         super(config, map);
     }
 
