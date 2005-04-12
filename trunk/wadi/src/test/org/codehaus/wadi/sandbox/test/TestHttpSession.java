@@ -17,10 +17,8 @@
 
 package org.codehaus.wadi.sandbox.test;
 
-import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -41,13 +39,11 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.AttributesPool;
-import org.codehaus.wadi.sandbox.Dirtier;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.ValueFactory;
 import org.codehaus.wadi.sandbox.ValuePool;
-import org.codehaus.wadi.sandbox.WriteDirtier;
 import org.codehaus.wadi.sandbox.impl.AtomicAttributesFactory;
 import org.codehaus.wadi.sandbox.impl.AtomicAttributesPool;
 import org.codehaus.wadi.sandbox.impl.DistributableManager;
@@ -58,7 +54,6 @@ import org.codehaus.wadi.sandbox.impl.LazyValueFactory;
 import org.codehaus.wadi.sandbox.impl.Manager;
 import org.codehaus.wadi.sandbox.impl.SimpleSessionPool;
 import org.codehaus.wadi.sandbox.impl.SimpleValuePool;
-import org.codehaus.wadi.sandbox.impl.StandardSession;
 import org.codehaus.wadi.sandbox.impl.StandardSessionFactory;
 import org.codehaus.wadi.sandbox.impl.StandardValueFactory;
 
