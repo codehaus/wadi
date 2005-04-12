@@ -38,13 +38,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.sandbox.AttributesFactory;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.ValueFactory;
 import org.codehaus.wadi.sandbox.ValuePool;
-import org.codehaus.wadi.sandbox.impl.SimpleAttributesFactory;
+import org.codehaus.wadi.sandbox.impl.DistributableAttributesFactory;
+import org.codehaus.wadi.sandbox.impl.StandardAttributesFactory;
 import org.codehaus.wadi.sandbox.impl.SimpleAttributesPool;
 import org.codehaus.wadi.sandbox.impl.DistributableManager;
 import org.codehaus.wadi.sandbox.impl.DistributableSession;
@@ -72,25 +74,27 @@ extends TestCase
     protected Listener                _listener;
     protected List                    _events=new ArrayList();
     
-    protected SimpleAttributesFactory _attributesFactory=new SimpleAttributesFactory();
-    protected AttributesPool          _attributesPool=new SimpleAttributesPool(_attributesFactory);
     // Standard
-    protected SessionFactory          _standardSessionFactory=new StandardSessionFactory(_attributesFactory);
+    protected AttributesFactory       _standardAttributesFactory=new StandardAttributesFactory();
+    protected AttributesPool          _standardAttributesPool=new SimpleAttributesPool(_standardAttributesFactory);
+    protected SessionFactory          _standardSessionFactory=new StandardSessionFactory();
     protected SessionPool             _standardSessionPool=new SimpleSessionPool(_standardSessionFactory);
     protected ValueFactory            _standardValueFactory=new StandardValueFactory();
     protected ValuePool               _standardValuePool=new SimpleValuePool(_standardValueFactory);
-    protected Manager                 _standardManager=new Manager(_standardSessionPool, _attributesPool, _standardValuePool);
+    protected Manager                 _standardManager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool);
     // Distributable
     protected StreamingStrategy       _streamer=new SimpleStreamingStrategy();
-    protected SessionFactory          _distributableSessionFactory=new DistributableSessionFactory(_attributesFactory);
+    protected AttributesFactory       _distributedAttributesFactory=new DistributableAttributesFactory();
+    protected AttributesPool          _distributedAttributesPool=new SimpleAttributesPool(_distributedAttributesFactory);
+    protected SessionFactory          _distributableSessionFactory=new DistributableSessionFactory();
     protected SessionPool             _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _distributableValueFactory=new DistributableValueFactory();
     protected ValuePool               _distributableValuePool=new SimpleValuePool(_distributableValueFactory);
-    protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _attributesPool, _distributableValuePool, _streamer);
+    protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesPool, _distributableValuePool, _streamer);
     // Lazy
     protected ValueFactory            _lazyValueFactory=new LazyValueFactory();
     protected ValuePool               _lazyValuePool=new SimpleValuePool(_lazyValueFactory);
-    protected Manager                 _lazyManager=new DistributableManager(_distributableSessionPool, _attributesPool, _lazyValuePool, _streamer);
+    protected Manager                 _lazyManager=new DistributableManager(_distributableSessionPool, _distributedAttributesPool, _lazyValuePool, _streamer);
     
     public TestHttpSession(String name)
     {

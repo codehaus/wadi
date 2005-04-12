@@ -17,11 +17,14 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.DistributableSessionConfig;
+import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.ValueHelper;
 import org.codehaus.wadi.sandbox.ValuePool;
@@ -87,8 +90,29 @@ public class DistributableManager extends Manager implements DistributableSessio
         return null;
     }
 
+    public void destroySession(Session session) {
+        if (_attributeListeners.size()>0) {
+            // there is nothing we can do to optimise - the HttpSessionAttributeListeners
+            // must be notified of every Attribute being removed from the Session, one-by-one...
+            super.destroySession(session);
+        } else {
+            // no-one is listening, so we only need to ensure the notification of Attributes
+            // that are themselves either HttpSessionActivationListeners or
+            // HttpSessionAttributeBindingListeners...
+            Set listenerNames=((DistributableSession)session).getListenerNames();
+            
+            for (Iterator i=listenerNames.iterator(); i.hasNext();) // ALLOC ?
+                session.removeAttribute((String)i.next());
+        }
+        
+        // TODO - remove from Contextualiser....at end of initial request ?
+        _sessionPool.put(session);
+    }
+    
     // Lazy
     
-    public boolean getContextHasListeners(){return _attributeListeners.size()>0;}
+    public boolean getHttpSessionAttributeListenersRegistered(){return _attributeListeners.size()>0;}
+    public boolean getHttpSessionListenersRegistered(){return _sessionListeners.size()>0;}
+    
 
 }

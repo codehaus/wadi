@@ -19,6 +19,7 @@ package org.codehaus.wadi.sandbox.impl;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Set;
 
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
@@ -52,5 +53,9 @@ public class DistributableSession extends StandardSession implements Distributab
     public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {Utils.setContent(this, bytes, getStreamer());}
     
     public ValueHelper findHelper(Class type){return ((DistributableSessionConfig)_config).findHelper(type);}
-    public boolean getContextHasListeners(){return ((DistributableSessionConfig)_config).getContextHasListeners();}
+    public Set getListenerNames(){return ((DistributableAttributes)_attributes).getListenerNames();}
+    
+    // Lazy
+    public boolean getHttpSessionAttributeListenersRegistered(){return ((DistributableSessionConfig)_config).getHttpSessionAttributeListenersRegistered();}
+    public boolean getHttpSessionListenersRegistered(){return ((DistributableSessionConfig)_config).getHttpSessionListenersRegistered();}
 }

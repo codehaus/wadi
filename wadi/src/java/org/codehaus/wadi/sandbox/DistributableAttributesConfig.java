@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox;
 
+import javax.servlet.http.HttpSessionEvent;
+
 import org.codehaus.wadi.StreamingStrategy;
 
 /**
@@ -30,8 +32,10 @@ public interface DistributableAttributesConfig extends AttributesConfig {
     // Distributable
     StreamingStrategy getStreamer();
     ValueHelper findHelper(Class type);
+    HttpSessionEvent getHttpSessionEvent();
     
     // Lazy
-    boolean getContextHasListeners();
-
+    boolean getHttpSessionAttributeListenersRegistered();
+    boolean getHttpSessionListenersRegistered();
+    
 }

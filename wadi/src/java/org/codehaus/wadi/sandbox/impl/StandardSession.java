@@ -117,16 +117,13 @@ public class StandardSession extends AbstractContext implements Session, Attribu
         return _attributes.remove(name);
     }
     
-    public Set getBindingListenerNames() {return _attributes.getBindingListenerNames();}
-    public Set getActivationListenerNames() {return _attributes.getActivationListenerNames();}
-    
     public Attributes getAttributes() {return _attributes;}
     public SessionConfig getConfig() {return _config;}
     
     // AttributesConfig
     
     public Session getSession(){return this;}
-    public boolean getContextHasListeners(){return false;} //NYI
+    public boolean getHttpSessionAttributeListenersRegistered(){return false;} //NYI
     public ValuePool getValuePool(){return _config.getValuePool();}
     
 }

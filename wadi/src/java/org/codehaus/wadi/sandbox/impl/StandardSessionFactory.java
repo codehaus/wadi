@@ -16,20 +16,11 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.sandbox.AttributesFactory;
-import org.codehaus.wadi.sandbox.DistributableSessionConfig;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionConfig;
 import org.codehaus.wadi.sandbox.SessionFactory;
 
 public class StandardSessionFactory implements SessionFactory {
-
-    protected final AttributesFactory _factory;
-    
-    public StandardSessionFactory(AttributesFactory factory) {
-        super();
-        _factory=factory;
-    }
 
     public Session create(SessionConfig config) {
         return new StandardSession(config);
