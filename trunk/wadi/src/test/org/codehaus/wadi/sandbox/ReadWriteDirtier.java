@@ -14,10 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.impl;
+package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.DistributableSessionConfig;
-import org.codehaus.wadi.sandbox.SessionConfig;
+import org.codehaus.wadi.sandbox.Dirtier;
 
 /**
  * TODO - JavaDoc this type
@@ -26,15 +25,9 @@ import org.codehaus.wadi.sandbox.SessionConfig;
  * @version $Revision$
  */
 
-public class ReplicableSession extends DistributableSession {
-
-    /**
-     * @param manager
-     * @param attributes
-     * @param replicater
-     */
-    public ReplicableSession(SessionConfig config) {
-        super((DistributableSessionConfig)config);
-    }
-
+public class ReadWriteDirtier implements Dirtier {
+    
+    public boolean readAccess() {return true;}
+    public boolean writeAccess() {return true;}
+    
 }

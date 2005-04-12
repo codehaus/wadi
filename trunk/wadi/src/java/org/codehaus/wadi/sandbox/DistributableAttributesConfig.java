@@ -27,11 +27,11 @@ import org.codehaus.wadi.StreamingStrategy;
 
 public interface DistributableAttributesConfig extends AttributesConfig {
     
-    Dirtier getDirtier();
+    // Distributable
     StreamingStrategy getStreamer();
     ValueHelper findHelper(Class type);
     
-    // LazyValue needs :
+    // Lazy
     boolean hasAttributeListeners();
 
 }

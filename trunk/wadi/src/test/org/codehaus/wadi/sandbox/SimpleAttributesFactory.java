@@ -14,23 +14,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.impl;
+package org.codehaus.wadi.sandbox;
 
+import org.codehaus.wadi.sandbox.Attributes;
+import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.AttributesFactory;
-import org.codehaus.wadi.sandbox.Replicaterr;
-import org.codehaus.wadi.sandbox.Session;
-import org.codehaus.wadi.sandbox.SessionConfig;
 
-public class ReplicableSessionFactory extends DistributableSessionFactory {
+/**
+ * TODO - JavaDoc this type
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 
-    protected final Replicaterr _replicater; // duplicate of super's _distributer field - clumsy
-    
-    public ReplicableSessionFactory(AttributesFactory factory, Replicaterr replicater) {
-        super(factory);
-        _replicater=replicater;
+public class SimpleAttributesFactory implements AttributesFactory {
+
+    public Attributes create(AttributesConfig config) {
+        return new SimpleAttributes(); // FIXME
     }
 
-    public Session create(SessionConfig config) {
-        return new ReplicableSession(config);
-    }
 }

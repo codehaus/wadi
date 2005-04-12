@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.AttributesPool;
-import org.codehaus.wadi.sandbox.Dirtier;
 import org.codehaus.wadi.sandbox.DistributableSessionConfig;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.ValueHelper;
@@ -30,17 +29,14 @@ import org.codehaus.wadi.sandbox.ValuePool;
 public class DistributableManager extends Manager implements DistributableSessionConfig {
 
     protected final StreamingStrategy _streamer;
-    protected final Dirtier _dirtier;
 
-    public DistributableManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, StreamingStrategy streamer, Dirtier dirtier) {
+    public DistributableManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, StreamingStrategy streamer) {
         super(sessionPool, attributesPool, valuePool);
         _streamer=streamer;
-        _dirtier=dirtier;
     }
 
     // Distributable
     public StreamingStrategy getStreamer() {return _streamer;}
-    public Dirtier getDirtier() {return _dirtier;}
 
     static class HelperPair {
         
