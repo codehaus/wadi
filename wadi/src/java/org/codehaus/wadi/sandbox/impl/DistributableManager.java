@@ -91,19 +91,11 @@ public class DistributableManager extends Manager implements DistributableSessio
     }
 
     public void destroySession(Session session) {
-        if (_attributeListeners.size()>0) {
-            // there is nothing we can do to optimise - the HttpSessionAttributeListeners
-            // must be notified of every Attribute being removed from the Session, one-by-one...
-            super.destroySession(session);
-        } else {
-            // no-one is listening, so we only need to ensure the notification of Attributes
-            // that are themselves either HttpSessionActivationListeners or
-            // HttpSessionAttributeBindingListeners...
-            Set listenerNames=((DistributableSession)session).getListenerNames();
-            
-            for (Iterator i=listenerNames.iterator(); i.hasNext();) // ALLOC ?
-                session.removeAttribute((String)i.next());
-        }
+        // this destroySession method must not chain the one in super - otherwise the
+        // notification aspect fires twice - once around each invocation... - DOH !
+        Set names=(_attributeListeners.size()>0)?session.getAttributeNameSet():((DistributableSession)session).getListenerNames();
+        for (Iterator i=names.iterator(); i.hasNext();) // ALLOC ?
+            session.removeAttribute((String)i.next());
         
         // TODO - remove from Contextualiser....at end of initial request ?
         _sessionPool.put(session);

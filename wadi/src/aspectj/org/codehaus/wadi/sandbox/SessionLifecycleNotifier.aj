@@ -44,6 +44,7 @@ public aspect SessionLifecycleNotifier {
     pointcut destroySession(Manager manager, Session session) : execution(void Manager+.destroySession(Session)) && args(session) && target(manager);
     
     void around(Manager manager, Session session) : destroySession(manager, session) {
+        proceed(manager, session);
         List l=manager.getSessionListeners();
         int s=l.size();
         HttpSessionEvent hse=session.getHttpSessionEvent();
@@ -51,6 +52,5 @@ public aspect SessionLifecycleNotifier {
             HttpSessionListener hsl=(HttpSessionListener)l.get(i);
             hsl.sessionDestroyed(hse); // actually - about-to-be-destroyed - hasn't happened yet - see SRV.15.1.14.1
         }
-        proceed(manager, session);
     }
 }

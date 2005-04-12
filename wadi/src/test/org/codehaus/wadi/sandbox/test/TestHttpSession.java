@@ -209,86 +209,67 @@ extends TestCase
         assertTrue(_events.size()==0);
     }
     
-    // TODO
-    //   public void
-    //     testDestroyHttpSession()
-    //     throws Exception
-    //   {
-    // _log.info("[0] foo");
-    //     int interval=10;//TODO - dodgy test - how can it be improved...?
-    //     int oldInterval= _manager.getHouseKeepingInterval();
-    //     _manager.stop();
-    // _log.info("[1] foo");
-    //     _manager.setHouseKeepingInterval(interval); // seconds
-    //     _manager.removeEventListener(_listener);
-    //     _manager.addEventListener(_listener);
-    // _log.info("[1.2] foo");
-    //     _manager.start();
-    // _log.info("[2] foo");
-    //     // set up test
-    //     HttpSession session=_manager.newHttpSession();
-    // _log.info("[2.1] foo");
-    //     String key="foo";
-    // _log.info("[2.2] foo");
-    //     Object val=new Listener();
-    // _log.info("[2.3] foo");
-    //     session.setAttribute(key, val);
-    // _log.info("[2.4] foo");
-    //     _events.clear();
-    // _log.info("[2.5] foo");
+    public void
+    testDestroyHttpSession() throws Exception {
+        testDestroyHttpSession(_standardManager);
+        testDestroyHttpSession(_distributableManager);
+        testDestroyHttpSession(_lazyManager);
+    }
     
-    //     // destroy session
-    //     session.invalidate();
-    // _log.info("[2.6] foo");
-    //     Thread.sleep(2000*interval); //2*interval - millis
-    // _log.info("[2.7] foo");
-    
-    //     {
-    // _log.info("[2.8] foo");
-    //       Pair pair=(Pair)_events.remove(0);
-    // _log.info("[2.8.1] foo");
-    //       assertTrue(pair!=null);
-    // _log.info("[2.8.2] foo");
-    //       assertTrue(pair.getType().equals("sessionDestroyed"));
-    // _log.info("[2.8.3] foo");
-    //       HttpSessionEvent e=pair.getEvent();
-    // _log.info("[2.8.4] foo");
-    //       assertTrue(session==e.getSession());
-    // _log.info("[2.9] foo");
-    //     }
-    //     {
-    // _log.info("[2.10] foo");
-    //       Pair pair=(Pair)_events.remove(0);
-    //       assertTrue(pair!=null);
-    //       assertTrue(pair.getType().equals("valueUnbound"));
-    //       HttpSessionEvent e=pair.getEvent();
-    //       assertTrue(session==e.getSession());
-    //       HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
-    //       assertTrue(be.getName()==key);
-    //       assertTrue(be.getValue()==val);
-    // _log.info("[2.11] foo");
-    //     }
-    //     {
-    // _log.info("[2.12] foo");
-    //       Pair pair=(Pair)_events.remove(0);
-    //       assertTrue(pair!=null);
-    //       assertTrue(pair.getType().equals("attributeRemoved"));
-    //       HttpSessionEvent e=pair.getEvent();
-    //       assertTrue(session==e.getSession());
-    //       HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
-    //       assertTrue(be.getName()==key);
-    //       assertTrue(be.getValue()==val);
-    // _log.info("[2.13] foo");
-    //     }
-    //     assertTrue(_events.size()==0);
-    
-    //     _manager.stop();
-    // _log.info("[3] foo");
-    //     _manager.setHouseKeepingInterval(oldInterval);
-    //     _manager.start();
-    // _log.info("[4] foo");
-    //   }
-    
+    public void
+    testDestroyHttpSession(Manager manager)
+    throws Exception
+    {
+        // create session
+        Session session=manager.createSession();
+        HttpSession wrapper=session.getWrapper();
+
+        // set up test
+        String key="foo";
+        Object val=new Listener();
+        wrapper.setAttribute(key, val);
+        _events.clear();
+
+        // destroy session
+        manager.destroySession(session);
+        
+        // analyse results
+        assertTrue(_events.size()==3);
+        {
+            Pair pair=(Pair)_events.get(0);
+            assertTrue(pair!=null);
+            assertTrue(pair.getType().equals("valueUnbound"));
+            HttpSessionEvent e=pair.getEvent();
+            assertTrue(wrapper==e.getSession());
+            HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
+            assertTrue(be.getName()==key);
+            assertTrue(be.getValue()==val);
+        }
+        {
+            Pair pair=(Pair)_events.get(1);
+            assertTrue(pair!=null);
+            assertTrue(pair.getType().equals("attributeRemoved"));
+            HttpSessionEvent e=pair.getEvent();
+            assertTrue(wrapper==e.getSession());
+            HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
+            assertTrue(be.getName()==key);
+            assertTrue(be.getValue()==val);
+        }
+        {
+            Pair pair=(Pair)_events.get(2);
+            assertTrue(pair!=null);
+            assertTrue(pair.getType().equals("sessionDestroyed"));
+            HttpSessionEvent e=pair.getEvent();
+            assertTrue(wrapper==e.getSession());
+        }
+        _events.clear();
+        
+        // TODO - 
+        // try without an HttpSessionAttributeListener registered
+        // try with a serialised session
+        // track what is serialised and what is not...
+    }
+
     public void
     testSetAttribute()
     {  
