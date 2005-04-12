@@ -42,19 +42,6 @@ public class DistributableManager extends Manager implements DistributableSessio
     public StreamingStrategy getStreamer() {return _streamer;}
     public Dirtier getDirtier() {return _dirtier;}
     
-    
-    
-    
-    //--------------------------------------------------
-    // static stuff... - yeugh ! - but the thought of chaining backptrs all the way
-    // up to the manager is horribly expensive...
-    
-    // TODO - change from storing List in static to storing it on Manager and having Session push 
-    // it into a ThreadLocal before every Serialisation, so that all the Sessions attributes have access
-    // to it when they need it.
-    
-    protected final List _helpers=new ArrayList();
-    
     static class HelperPair {
         
         final Class _type;
@@ -66,8 +53,10 @@ public class DistributableManager extends Manager implements DistributableSessio
         }
     }
     
+    protected final List _helpers=new ArrayList();
+    
     /**
-     * Register an AttributeHelper for a particular type. During [de]serialisation
+     * Register a ValueHelper for a particular type. During [de]serialisation
      * Objects flowing in/out of the persistance medium will be passed through this
      * Helper, which will have the opportunity to convert them between Serializable
      * and non-Serializable representations. Helpers will be returned in their registration
@@ -77,6 +66,7 @@ public class DistributableManager extends Manager implements DistributableSessio
      * @param type
      * @param helper
      */
+    
     public void registerHelper(Class type, ValueHelper helper) {
         _helpers.add(new HelperPair(type, helper));
     }
