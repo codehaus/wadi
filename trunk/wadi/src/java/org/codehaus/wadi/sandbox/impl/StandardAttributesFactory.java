@@ -22,10 +22,10 @@ import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.AttributesFactory;
 
-public class SimpleAttributesFactory implements AttributesFactory {
+public class StandardAttributesFactory implements AttributesFactory {
 
     public Attributes create(AttributesConfig config) {
-        return new SimpleAttributes(config, new HashMap());
+        return new StandardAttributes(config, new HashMap());
     }
 
 }

@@ -25,7 +25,7 @@ public class SimpleAttributesPool implements AttributesPool {
 
     protected final AttributesFactory _factory;
     
-    public SimpleAttributesPool(SimpleAttributesFactory factory) {
+    public SimpleAttributesPool(AttributesFactory factory) {
         super();
         _factory=factory;
     }

@@ -42,6 +42,4 @@ public interface Attributes extends SerializableContent {
     byte[] getBytes();
     void setBytes(byte[] bytes);
     
-    Set getBindingListenerNames();
-    Set getActivationListenerNames();
 }

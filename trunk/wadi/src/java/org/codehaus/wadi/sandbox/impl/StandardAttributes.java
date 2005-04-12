@@ -25,24 +25,19 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionBindingListener;
+import javax.servlet.http.HttpSessionEvent;
 
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
 import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.ValueHelper;
 
-public class SimpleAttributes extends AbstractAttributes implements DistributableValueConfig {
+public class StandardAttributes extends AbstractAttributes implements DistributableValueConfig {
 
-    public SimpleAttributes(AttributesConfig config, Map map) {
+    public StandardAttributes(AttributesConfig config, Map map) {
         super(config, map);
     }
 
-    protected Set _activationListenerNames;
-    public Set getActivationListenerNames(){return _activationListenerNames;}
-    
-    protected Set _bindingListenerNames;
-    public Set getBindingListenerNames(){return _bindingListenerNames;}
-    
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         int size=oi.readInt();
         for (int i=0; i<size; i++) {
@@ -55,35 +50,21 @@ public class SimpleAttributes extends AbstractAttributes implements Distributabl
 
     public void writeContent(ObjectOutput oo) throws IOException {
         oo.writeInt(size());
-        
-        Set activationListenerNames;
-        Set bindingListenerNames;
-        
-        DistributableAttributesConfig config=(DistributableAttributesConfig)_config;
         for (Iterator i=_map.entrySet().iterator(); i.hasNext();) {
             Map.Entry e=(Map.Entry)i.next();
             Object key=e.getKey();
             oo.writeObject(key);
             DistributableValue val=(DistributableValue)e.getValue();
-            Object o=val.getValue();
             val.writeContent(oo);
-            
-            if (!config.getContextHasListeners()) {
-                if (o instanceof HttpSessionActivationListener) {
-                    // a bit silly that we spent all this time hiding Activationlistaners inside Value - yet need to know about them here...
-                    // NYI
-                }
-                if (o instanceof HttpSessionBindingListener) {
-                    // NYI
-                }
-            }
         }
     }
     
     public ValueHelper findHelper(Class type) {return ((DistributableAttributesConfig)_config).findHelper(type);}
     
-    public boolean getContextHasListeners() {return ((DistributableAttributesConfig)_config).getContextHasListeners();}
-    
+    public boolean getContextHasListeners() {return ((DistributableAttributesConfig)_config).getHttpSessionAttributeListenersRegistered();}
+
+    public HttpSessionEvent getHttpSessionEvent() {return ((DistributableAttributesConfig)_config).getHttpSessionEvent();}
+
     
 
 }

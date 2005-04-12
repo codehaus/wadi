@@ -44,10 +44,6 @@ public interface Session extends Context {
 
     Object removeAttribute(String name);
 
-    Set getBindingListenerNames();
-
-    Set getActivationListenerNames();
-
     SessionConfig getConfig();
 
 }

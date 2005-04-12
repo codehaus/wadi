@@ -34,7 +34,6 @@ import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.SessionConfig;
 import org.codehaus.wadi.sandbox.SessionPool;
-import org.codehaus.wadi.sandbox.impl.StandardSession;
 
 /**
  * TODO - JavaDoc this type
@@ -63,28 +62,10 @@ public class Manager implements SessionConfig {
         return createSession().getWrapper();
     }
     
-    public void destroySession(StandardSession session) {
-        // fetch any ActivationListeners - so that they are activated.
-        // Session must appear to be in memory when invalidated ? - Think - TODO
-        for (Iterator i=session.getActivationListenerNames().iterator(); i.hasNext();) // ALLOC ?
-            session.getAttribute((String)i.next());
-        if (_attributeListeners.size()>0) {
-            // expensive - we are going to have to remove every
-            // attribute - one by one, so that these listeners 
-            // are correctly notified...
-            // BindingListeners will fire, if they are present...
-            for (Iterator i=session.getAttributeNameSet().iterator(); i.hasNext();) {
-                // inefficient - results in a lot of dehashing - maybe we can improve this later - TODO...
-                // perhaps an Attribute.Iterator, which we could advise with the same notification aspects ?
-                session.removeAttribute((String)i.next());
-            }
-        } else {
-            // remove any BindingListeners  - so that they are unbound
-            for (Iterator i=session.getBindingListenerNames().iterator(); i.hasNext();) // ALLOC ?
-                session.removeAttribute((String)i.next());
-        }
-        
-        // TODO - remove from Contextualiser....at end of initial request ?
+    public void destroySession(Session session) {
+        for (Iterator i=session.getAttributeNameSet().iterator(); i.hasNext();) // ALLOC ?
+            session.removeAttribute((String)i.next()); // TODO - very inefficient
+        // TODO - more here
         _sessionPool.put(session);
     }
 

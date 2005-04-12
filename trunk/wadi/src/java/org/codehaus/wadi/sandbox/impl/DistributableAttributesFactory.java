@@ -14,24 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox;
+package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.StreamingStrategy;
+import java.util.HashMap;
 
-/**
- * TODO - JavaDoc this type
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
+import org.codehaus.wadi.sandbox.Attributes;
+import org.codehaus.wadi.sandbox.AttributesConfig;
+import org.codehaus.wadi.sandbox.AttributesFactory;
 
-public interface DistributableSessionConfig extends SessionConfig {
-
-    // Distributable
-    StreamingStrategy getStreamer();
-    ValueHelper findHelper(Class type);
-
-    // Lazy
-    boolean getHttpSessionAttributeListenersRegistered();
-    boolean getHttpSessionListenersRegistered();
+public class DistributableAttributesFactory implements AttributesFactory {
+    
+    public Attributes create(AttributesConfig config) {
+        return new DistributableAttributes(config, new HashMap());
+    }
+    
 }

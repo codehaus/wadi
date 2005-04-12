@@ -19,8 +19,6 @@ package org.codehaus.wadi.sandbox.impl;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpSessionEvent;
-
 import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
@@ -84,17 +82,12 @@ public abstract class AbstractAttributes implements Attributes, SerializableCont
         _map.clear();
     }
 
+    public Session getSession() {return _config.getSession();}
+    
+    // Distributable - TODO - should not be here ?
+    public StreamingStrategy getStreamer() {return ((DistributableAttributesConfig)_config).getStreamer();}
     public byte[] getBytes() {return Utils.safeGetContent(this, getStreamer());}
     public void setBytes(byte[] bytes) {Utils.safeSetContent(this, bytes, getStreamer());}
 
-    public Session getSession() {return _config.getSession();}
-    
-//    public Set getBindingListenerNames() {return _config.getSession().getBindingListenerNames();}
-//    public Set getActivationListenerNames() {return _config.getSession().getActivationListenerNames();}
-
-    public HttpSessionEvent getHttpSessionEvent() {return _config.getSession().getHttpSessionEvent();}
-
-    // Distributable
-    public StreamingStrategy getStreamer() {return ((DistributableAttributesConfig)_config).getStreamer();}
 
 }
