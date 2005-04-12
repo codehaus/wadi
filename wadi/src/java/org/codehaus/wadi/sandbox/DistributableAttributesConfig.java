@@ -32,6 +32,6 @@ public interface DistributableAttributesConfig extends AttributesConfig {
     ValueHelper findHelper(Class type);
     
     // Lazy
-    boolean hasAttributeListeners();
+    boolean getContextHasListeners();
 
 }
