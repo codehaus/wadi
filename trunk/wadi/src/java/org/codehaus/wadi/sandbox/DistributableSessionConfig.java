@@ -31,4 +31,6 @@ public interface DistributableSessionConfig extends SessionConfig {
     StreamingStrategy getStreamer();
     ValueHelper findHelper(Class type);
 
+    // needed by LazyValue
+    boolean hasAttributeListeners();
 }

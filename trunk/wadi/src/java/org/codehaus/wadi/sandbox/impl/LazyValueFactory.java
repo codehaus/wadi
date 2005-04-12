@@ -14,24 +14,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox;
+package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.DistributableValueConfig;
+import org.codehaus.wadi.sandbox.Value;
+import org.codehaus.wadi.sandbox.ValueConfig;
+import org.codehaus.wadi.sandbox.ValueFactory;
 
-/**
- * TODO - JavaDoc this type
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
+public class LazyValueFactory implements ValueFactory {
 
-public interface DistributableAttributesConfig extends AttributesConfig {
-    
-    Dirtier getDirtier();
-    StreamingStrategy getStreamer();
-    ValueHelper findHelper(Class type);
-    
-    // LazyValue needs :
-    boolean hasAttributeListeners();
+    public LazyValueFactory() {
+        super();
+    }
+
+    public Value create(ValueConfig config) {
+        return new LazyValue((DistributableValueConfig)config);
+    }
 
 }

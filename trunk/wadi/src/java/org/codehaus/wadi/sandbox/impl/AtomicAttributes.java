@@ -80,5 +80,9 @@ public class AtomicAttributes extends AbstractAttributes implements Distributabl
     }
     
     public ValueHelper findHelper(Class type) {return ((DistributableAttributesConfig)_config).findHelper(type);}
+    
+    public boolean hasAttributeListeners() {return ((DistributableAttributesConfig)_config).hasAttributeListeners();}
+    
+    
 
 }

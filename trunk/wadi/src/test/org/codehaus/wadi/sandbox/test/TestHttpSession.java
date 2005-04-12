@@ -53,6 +53,7 @@ import org.codehaus.wadi.sandbox.impl.DistributableManager;
 import org.codehaus.wadi.sandbox.impl.DistributableSession;
 import org.codehaus.wadi.sandbox.impl.DistributableSessionFactory;
 import org.codehaus.wadi.sandbox.impl.DistributableValueFactory;
+import org.codehaus.wadi.sandbox.impl.LazyValueFactory;
 import org.codehaus.wadi.sandbox.impl.Manager;
 import org.codehaus.wadi.sandbox.impl.SimpleSessionPool;
 import org.codehaus.wadi.sandbox.impl.SimpleValuePool;
@@ -77,6 +78,7 @@ extends TestCase
     protected List              _events=new ArrayList();
     protected boolean           _evictObjectRepASAP=false;
     protected boolean           _evictByteRepASAP=false;
+    
     protected AtomicAttributesFactory _attributesFactory=new AtomicAttributesFactory();
     protected AttributesPool          _attributesPool=new AtomicAttributesPool(_attributesFactory);
     // Standard
@@ -93,6 +95,10 @@ extends TestCase
     protected ValueFactory            _distributableValueFactory=new DistributableValueFactory();
     protected ValuePool               _distributableValuePool=new SimpleValuePool(_distributableValueFactory);
     protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _attributesPool, _distributableValuePool, _streamer, _dirtier);
+    // Lazy
+    protected ValueFactory            _lazyValueFactory=new LazyValueFactory();
+    protected ValuePool               _lazyValuePool=new SimpleValuePool(_lazyValueFactory);
+    protected Manager                 _lazyManager=new DistributableManager(_distributableSessionPool, _attributesPool, _lazyValuePool, _streamer, _dirtier);
     
     public TestHttpSession(String name)
     {
@@ -173,9 +179,11 @@ extends TestCase
         _listener=new Listener();
         _standardManager.addEventListener(_listener);
         _distributableManager.addEventListener(_listener);
+        _lazyManager.addEventListener(_listener);
     }
     
     protected void tearDown() {
+        _lazyManager.removeEventListener(_listener);
         _distributableManager.removeEventListener(_listener);
         _standardManager.removeEventListener(_listener);
         _listener=null;
@@ -186,6 +194,7 @@ extends TestCase
     public void testCreateHttpSession() {
         testCreateHttpSession(_standardManager);
         testCreateHttpSession(_distributableManager);
+        testCreateHttpSession(_lazyManager);
     }
     
     public void
@@ -289,6 +298,7 @@ extends TestCase
     {  
         testSetAttribute(_standardManager);
         testSetAttribute(_distributableManager);
+        testSetAttribute(_lazyManager);
     }
     
     public void
@@ -331,6 +341,7 @@ extends TestCase
     {
         testPutValue(_standardManager);
         testPutValue(_distributableManager);
+        testPutValue(_lazyManager);
     }
     
     public void
@@ -373,6 +384,7 @@ extends TestCase
     {
         testGetAttribute(_standardManager);
         testGetAttribute(_distributableManager);
+        testGetAttribute(_lazyManager);
     }
     
     public void
@@ -392,6 +404,7 @@ extends TestCase
     {
         testGetValue(_standardManager);
         testGetValue(_distributableManager);
+        testGetValue(_lazyManager);
     }
     
     public void
@@ -411,6 +424,7 @@ extends TestCase
     {
         testRemoveAttribute(_standardManager);
         testRemoveAttribute(_distributableManager);
+        testRemoveAttribute(_lazyManager);
     }
     
     public void
@@ -456,6 +470,7 @@ extends TestCase
     {
         testRemoveValue(_standardManager);
         testRemoveValue(_distributableManager);
+        testRemoveValue(_lazyManager);
     }
     
     public void
@@ -502,6 +517,7 @@ extends TestCase
     {
         testSetAttributeNull(_standardManager);
         testSetAttributeNull(_distributableManager);
+        testSetAttributeNull(_lazyManager);
     }
     
     public void
@@ -548,6 +564,7 @@ extends TestCase
     {
         testPutValueNull(_standardManager);
         testPutValueNull(_distributableManager);
+        testPutValueNull(_lazyManager);
     }
     
     public void
@@ -594,6 +611,7 @@ extends TestCase
     {
         testReplaceAttribute(_standardManager);
         testReplaceAttribute(_distributableManager);
+        testReplaceAttribute(_lazyManager);
     }
     
     public void
@@ -651,6 +669,7 @@ extends TestCase
     {
         testReplaceValue(_standardManager);
         testReplaceValue(_distributableManager);
+        testReplaceValue(_lazyManager);
     }
     
     public void
@@ -715,6 +734,7 @@ extends TestCase
     {
         testGetAttributeNames(_standardManager);
         testGetAttributeNames(_distributableManager);
+        testGetAttributeNames(_lazyManager);
     }
     
     public void
@@ -741,6 +761,7 @@ extends TestCase
     {
         testGetValueNames(_standardManager);
         testGetValueNames(_distributableManager);
+        testGetValueNames(_lazyManager);
     }
     
     public void
@@ -767,6 +788,7 @@ extends TestCase
     {
         testMaxInactiveInterval(_standardManager);
         testMaxInactiveInterval(_distributableManager);
+        testMaxInactiveInterval(_lazyManager);
     }
     
     public void
@@ -801,6 +823,7 @@ extends TestCase
     {
         testIsNew(_standardManager, _standardSessionPool);
         testIsNew(_distributableManager, _distributableSessionPool);
+        testIsNew(_lazyManager, _distributableSessionPool);
     }
     
     public void
@@ -819,6 +842,7 @@ extends TestCase
     {
         testNullName(_standardManager);
         testNullName(_distributableManager);
+        testNullName(_lazyManager);
     }
     
     public void
@@ -841,8 +865,11 @@ extends TestCase
     public void testDistributable() throws Exception
     {
         testActivation(_distributableManager, _distributableSessionPool);
+        testActivation(_lazyManager, _distributableSessionPool);
         testMigration(_distributableManager, _distributableSessionPool);
+        testMigration(_lazyManager, _distributableSessionPool);
         testDistributableValidation(_distributableManager);
+        testDistributableValidation(_lazyManager);
     }
     
     public void
@@ -857,7 +884,7 @@ extends TestCase
         ActivationListener l=new ActivationListener();
         s0.setAttribute(key, l);
         byte[] bytes=s0.getBytes();
-        assertTrue(events.size()>=1); // passivation MUST have occurred - activation may be lazy
+        assertTrue(events.size()==1);
         {
             Pair pair=(Pair)events.get(0);
             assertTrue(pair!=null);
@@ -865,18 +892,9 @@ extends TestCase
             HttpSessionEvent e=pair.getEvent();
             assertTrue(s0.getWrapper()==e.getSession());
         }
-        s0.getAttribute(key); // force lazy activation to trigger...
-        assertTrue(events.size()==2); // [re]activation MUST now have occurred
-        {
-            Pair pair=(Pair)events.get(1);
-            assertTrue(pair!=null);
-            assertTrue(pair.getType().equals("sessionDidActivate"));
-            HttpSessionEvent e=pair.getEvent();
-            assertTrue(s0.getWrapper()==e.getSession());
-        }
         events.clear();
         
-        StandardSession s1=(DistributableSession)pool.take(_distributableManager);
+        DistributableSession s1=(DistributableSession)pool.take(manager);
         s1.setBytes(bytes);
         // listsners may be activated lazily - so:
         s1.getAttribute(key);
@@ -909,23 +927,25 @@ extends TestCase
 
         DistributableSession s1=(DistributableSession)pool.take(manager);
         s1.copy(s0);
+        DistributableSession s2=(DistributableSession)pool.take(manager);
+        s2.copy(s0);
         
-        assertTrue(s0.getCreationTime()==s1.getCreationTime());        
-        assertTrue(s0.getLastAccessedTime()==s1.getLastAccessedTime());        
-        assertTrue(s0.getMaxInactiveInterval()==s1.getMaxInactiveInterval());        
-        assertTrue(s0.getId()!=s1.getId());        
-        assertTrue(s0.getId().equals(s1.getId()));        
-        assertTrue(s0.getAttributeNameSet().equals(s1.getAttributeNameSet()));
+        assertTrue(s1.getCreationTime()==s2.getCreationTime());        
+        assertTrue(s1.getLastAccessedTime()==s2.getLastAccessedTime());        
+        assertTrue(s1.getMaxInactiveInterval()==s2.getMaxInactiveInterval());        
+        assertTrue(s1.getId()!=s2.getId());        
+        assertTrue(s1.getId().equals(s2.getId()));        
+        assertTrue(s1.getAttributeNameSet().equals(s2.getAttributeNameSet()));
         {
-            Iterator i=s0.getAttributeNameSet().iterator();
-            Iterator j=s1.getAttributeNameSet().iterator();
+            Iterator i=s1.getAttributeNameSet().iterator();
+            Iterator j=s2.getAttributeNameSet().iterator();
             while(i.hasNext() && j.hasNext())
                 assertTrue(i.next()!=j.next());
         }
-        for (Iterator i=s0.getAttributeNameSet().iterator(); i.hasNext(); ) {
+        for (Iterator i=s1.getAttributeNameSet().iterator(); i.hasNext(); ) {
             String key=(String)i.next();
-            assertTrue(s0.getAttribute(key)!=s1.getAttribute(key));
-            assertTrue(s0.getAttribute(key).equals(s1.getAttribute(key)));
+            assertTrue(s1.getAttribute(key)!=s2.getAttribute(key));
+            assertTrue(s1.getAttribute(key).equals(s2.getAttribute(key)));
         }
             
     }
@@ -1199,7 +1219,25 @@ extends TestCase
         assertTrue(sess1.getAttribute(key0)!=sess0.getAttribute(key1));
         assertTrue(sess1.getAttribute(key0).equals(sess0.getAttribute(key1)));
     }
-    
+
+    public void testSeparateAttributes() throws Exception {
+        testSeparateAttributes(_lazyManager);
+    }
+
+    public void testSeparateAttributes(Manager manager) throws Exception {
+        Session sess0=manager.createSession();
+        Object val=new String("value");
+        String key0="foo";
+        String key1="bar";
+        sess0.setAttribute(key0, val);
+        sess0.setAttribute(key1, val);
+        assertTrue(sess0.getAttribute(key0)==sess0.getAttribute(key1));
+        byte[] bytes=sess0.getBytes();
+        Session sess1=manager.createSession();
+        sess1.setBytes(bytes);
+        assertTrue(sess1.getAttribute(key0)!=sess1.getAttribute(key1)); // after deserialisation values are no longer '='
+        assertTrue(sess1.getAttribute(key0).equals(sess1.getAttribute(key1)));
+    }
 }
 
 // we need to test the difference between distributed and local

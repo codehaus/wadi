@@ -41,7 +41,7 @@ public class DistributableManager extends Manager implements DistributableSessio
     // Distributable
     public StreamingStrategy getStreamer() {return _streamer;}
     public Dirtier getDirtier() {return _dirtier;}
-    
+
     static class HelperPair {
         
         final Class _type;
@@ -90,5 +90,9 @@ public class DistributableManager extends Manager implements DistributableSessio
         }
         return null;
     }
+
+    // Lazy
     
+    public boolean hasAttributeListeners(){return _attributeListeners.size()>0;}
+
 }
