@@ -29,5 +29,6 @@ public interface DistributableSessionConfig extends SessionConfig {
     
     Dirtier getDirtier();
     StreamingStrategy getStreamer();
+    ValueHelper findHelper(Class type);
 
 }

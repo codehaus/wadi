@@ -23,6 +23,7 @@ import javax.servlet.http.HttpSessionEvent;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Dirtier;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
+import org.codehaus.wadi.sandbox.ValueHelper;
 
 /**
  * TODO - JavaDoc this type
@@ -43,5 +44,6 @@ public class PartAttributes extends SimpleAttributes implements DistributableVal
     public HttpSessionEvent getHttpSessionEvent() {return null;} //NYI
     public StreamingStrategy getStreamer() {return null;} //NYI
     public Dirtier getDirtier() {return null;} //NYI
+    public ValueHelper findHelper(Class type) {return null;} //NYI
 
 }

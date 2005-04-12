@@ -24,6 +24,7 @@ import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Dirtier;
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableSessionConfig;
+import org.codehaus.wadi.sandbox.ValueHelper;
 
 /**
  * TODO - JavaDoc this type
@@ -51,4 +52,6 @@ public class DistributableSession extends StandardSession implements Distributab
     
     public byte[] getBytes() throws Exception {return Utils.getContent(this, getStreamer());}
     public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {Utils.setContent(this, bytes, getStreamer());}
+    
+    public ValueHelper findHelper(Class type){return ((DistributableSessionConfig)_config).findHelper(type);}
 }

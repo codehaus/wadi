@@ -17,9 +17,13 @@
 
 package org.codehaus.wadi.sandbox.test;
 
+import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -124,7 +128,8 @@ extends TestCase
     implements
     HttpSessionListener,
     HttpSessionAttributeListener,
-    HttpSessionBindingListener
+    HttpSessionBindingListener,
+    Serializable
     {
         // HttpSessionListener
         public void sessionCreated       (HttpSessionEvent e)        {e.getSession().getId();_events.add(new Pair("sessionCreated",e));}
@@ -828,10 +833,16 @@ extends TestCase
         try{session.removeValue(null);assertTrue(false);}catch(IllegalArgumentException e){}
     }
     
-    public void
-    testActivation() throws Exception
+    public void testStandard() throws Exception
+    {
+        testStandardValidation(_standardManager);
+    }
+    
+    public void testDistributable() throws Exception
     {
         testActivation(_distributableManager, _distributableSessionPool);
+        testMigration(_distributableManager, _distributableSessionPool);
+        testDistributableValidation(_distributableManager);
     }
     
     public void
@@ -881,7 +892,82 @@ extends TestCase
         events.clear();
     }
     
-//    public void
+    public void
+    testMigration(Manager manager, SessionPool pool) // Distributable only
+    throws Exception
+    {
+        // test that a 'copy' (the basis of all motion/migration) completely copies
+        // a sessions contents, by VALUE not reference...
+        DistributableSession s0=(DistributableSession)pool.take(manager);
+        s0.setLastAccessedTime(System.currentTimeMillis());
+        s0.setMaxInactiveInterval(60*60);
+        s0.setId("a-session");
+        for (int i=0; i<10; i++)
+            s0.setAttribute("key-"+i, "val-"+i);
+        
+        Thread.sleep(1000);
+
+        DistributableSession s1=(DistributableSession)pool.take(manager);
+        s1.copy(s0);
+        
+        assertTrue(s0.getCreationTime()==s1.getCreationTime());        
+        assertTrue(s0.getLastAccessedTime()==s1.getLastAccessedTime());        
+        assertTrue(s0.getMaxInactiveInterval()==s1.getMaxInactiveInterval());        
+        assertTrue(s0.getId()!=s1.getId());        
+        assertTrue(s0.getId().equals(s1.getId()));        
+        assertTrue(s0.getAttributeNameSet().equals(s1.getAttributeNameSet()));
+        {
+            Iterator i=s0.getAttributeNameSet().iterator();
+            Iterator j=s1.getAttributeNameSet().iterator();
+            while(i.hasNext() && j.hasNext())
+                assertTrue(i.next()!=j.next());
+        }
+        for (Iterator i=s0.getAttributeNameSet().iterator(); i.hasNext(); ) {
+            String key=(String)i.next();
+            assertTrue(s0.getAttribute(key)!=s1.getAttribute(key));
+            assertTrue(s0.getAttribute(key).equals(s1.getAttribute(key)));
+        }
+            
+    }
+    
+    public void
+    testStandardValidation(Manager manager) // Distributable only
+    throws Exception
+    {
+        HttpSession session=manager.newHttpSession();
+        // try some Serializables...
+        session.setAttribute("0", "foo");
+        session.setAttribute("1", new Integer(1));
+        session.setAttribute("2", new Float(1.1));
+        session.setAttribute("3", new Date());
+        session.setAttribute("4", new byte[256]);
+        // and some non-Serializables...
+        session.setAttribute("5", new Object());
+    }
+    
+    public void
+    testDistributableValidation(Manager manager) // Distributable only
+    throws Exception
+    {
+        HttpSession session=manager.newHttpSession();
+        // try some Serializables...
+        session.setAttribute("0", "foo");
+        session.setAttribute("1", new Integer(1));
+        session.setAttribute("2", new Float(1.1));
+        session.setAttribute("3", new Date());
+        session.setAttribute("4", new byte[256]);
+        // and some non-Serializables...
+        try {
+            session.setAttribute("5", new Object());
+            assertTrue(false);
+        } catch (IllegalArgumentException ignore) {
+            // expected
+        }
+    }
+
+        
+        
+        //    public void
 //    LATERtestReplication(Manager manager, SessionPool pool)
 //    throws Exception
 //    {

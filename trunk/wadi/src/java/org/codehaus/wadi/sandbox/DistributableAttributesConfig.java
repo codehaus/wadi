@@ -29,6 +29,6 @@ public interface DistributableAttributesConfig extends AttributesConfig {
     
     Dirtier getDirtier();
     StreamingStrategy getStreamer();
-    
+    ValueHelper findHelper(Class type);
 
 }

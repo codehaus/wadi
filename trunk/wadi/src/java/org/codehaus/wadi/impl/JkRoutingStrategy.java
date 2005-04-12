@@ -72,9 +72,8 @@ public class
   }
 
   public boolean
-    rerouteCookie(HttpServletRequest req, HttpServletResponse res, Manager manager, String id)
-  {
-    return rerouteCookie(req, res, manager, id, _name);
+    rerouteCookie(HttpServletRequest req, HttpServletResponse res, Manager manager, String id) {
+      return rerouteCookie(req, res, manager, id, _name);
   }
   
   public boolean
