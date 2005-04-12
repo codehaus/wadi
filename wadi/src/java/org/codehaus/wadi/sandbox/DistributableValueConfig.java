@@ -32,5 +32,6 @@ public interface DistributableValueConfig extends ValueConfig {
     HttpSessionEvent getHttpSessionEvent();
     StreamingStrategy getStreamer();
     Dirtier getDirtier();
+    ValueHelper findHelper(Class type);
 
 }

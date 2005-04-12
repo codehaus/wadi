@@ -26,8 +26,10 @@ import java.util.Set;
 import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionBindingListener;
 
+import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
 import org.codehaus.wadi.sandbox.AttributesConfig;
+import org.codehaus.wadi.sandbox.ValueHelper;
 
 public class AtomicAttributes extends AbstractAttributes implements DistributableValueConfig {
 
@@ -76,5 +78,7 @@ public class AtomicAttributes extends AbstractAttributes implements Distributabl
             }
         }
     }
+    
+    public ValueHelper findHelper(Class type) {return ((DistributableAttributesConfig)_config).findHelper(type);}
 
 }

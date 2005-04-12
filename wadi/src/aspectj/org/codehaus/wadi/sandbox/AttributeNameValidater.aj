@@ -16,14 +16,17 @@
  */
 package org.codehaus.wadi.sandbox;
 
+import java.io.Serializable;
+
+import org.codehaus.wadi.sandbox.impl.DistributableSession;
+
 public aspect AttributeNameValidater {
     
     pointcut validate(String name) : execution(Object Session+.*Attribute(..)) && args(name,..);
     
     before(String name) : validate(name) {
         if (null==name)
-            throw new IllegalArgumentException("HttpSession attribute name must be non-null (see SRV.15.1.7.1)");
+            throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
     }
-    
-    // TODO - should confirm that Attribute Value is Serializable or a special case - for Distributable Sessions...
+
 }

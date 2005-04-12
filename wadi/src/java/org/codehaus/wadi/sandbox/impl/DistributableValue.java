@@ -19,10 +19,13 @@ package org.codehaus.wadi.sandbox.impl;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Serializable;
 
 import javax.servlet.http.HttpSessionActivationListener;
 
+import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
+import org.codehaus.wadi.sandbox.ValueHelper;
 
 /**
  * An AttributeWrapper that supports the lazy notification of HttpSessionActivationListeners.
@@ -33,7 +36,7 @@ import org.codehaus.wadi.sandbox.DistributableValueConfig;
  * @version $Revision$
  */
 
-public class DistributableValue extends ReplacingValue  { // TODO - collapse Replacing & Distributable Value
+public class DistributableValue extends StandardValue implements SerializableContent  {
     
     public DistributableValue(DistributableValueConfig config) {super(config);}
     
@@ -48,6 +51,9 @@ public class DistributableValue extends ReplacingValue  { // TODO - collapse Rep
     }
     
     public synchronized Object setValue(Object newValue) {
+        if (newValue!=null && !(newValue instanceof Serializable) && ((DistributableValueConfig)_config).findHelper(newValue.getClass())==null)
+            throw new IllegalArgumentException("Distributable HttpSession attribute values must be Serializable or of other designated type (see SRV.7.7.2)");
+
         if (_needsNotification) {
             // as _value is about to be unbound, it should be activated first...
             // IDEA - if it is not a BindingListener and no AttributeListeners are
@@ -63,12 +69,15 @@ public class DistributableValue extends ReplacingValue  { // TODO - collapse Rep
             ((HttpSessionActivationListener)_value).sessionWillPassivate(_config==null?null:((DistributableValueConfig)_config).getHttpSessionEvent());
             _needsNotification=true;
         }
-        super.writeContent(oo);
+
+        ValueHelper helper=(_value==null || _value instanceof Serializable)?null:((DistributableValueConfig)_config).findHelper(_value.getClass());
+        Object value=(helper==null?_value:helper.replace(_value));
+        oo.writeObject(value);        
     }
     
     public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-        super.readContent(oi);
+        _value=oi.readObject();
         _needsNotification=(_value instanceof HttpSessionActivationListener);
     }
-    
+
 }
