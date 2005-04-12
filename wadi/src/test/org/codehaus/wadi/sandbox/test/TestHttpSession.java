@@ -44,8 +44,8 @@ import org.codehaus.wadi.sandbox.SessionFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.ValueFactory;
 import org.codehaus.wadi.sandbox.ValuePool;
-import org.codehaus.wadi.sandbox.impl.AtomicAttributesFactory;
-import org.codehaus.wadi.sandbox.impl.AtomicAttributesPool;
+import org.codehaus.wadi.sandbox.impl.SimpleAttributesFactory;
+import org.codehaus.wadi.sandbox.impl.SimpleAttributesPool;
 import org.codehaus.wadi.sandbox.impl.DistributableManager;
 import org.codehaus.wadi.sandbox.impl.DistributableSession;
 import org.codehaus.wadi.sandbox.impl.DistributableSessionFactory;
@@ -72,8 +72,8 @@ extends TestCase
     protected Listener                _listener;
     protected List                    _events=new ArrayList();
     
-    protected AtomicAttributesFactory _attributesFactory=new AtomicAttributesFactory();
-    protected AttributesPool          _attributesPool=new AtomicAttributesPool(_attributesFactory);
+    protected SimpleAttributesFactory _attributesFactory=new SimpleAttributesFactory();
+    protected AttributesPool          _attributesPool=new SimpleAttributesPool(_attributesFactory);
     // Standard
     protected SessionFactory          _standardSessionFactory=new StandardSessionFactory(_attributesFactory);
     protected SessionPool             _standardSessionPool=new SimpleSessionPool(_standardSessionFactory);

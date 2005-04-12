@@ -21,11 +21,11 @@ import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.AttributesFactory;
 import org.codehaus.wadi.sandbox.AttributesPool;
 
-public class AtomicAttributesPool implements AttributesPool {
+public class SimpleAttributesPool implements AttributesPool {
 
     protected final AttributesFactory _factory;
     
-    public AtomicAttributesPool(AtomicAttributesFactory factory) {
+    public SimpleAttributesPool(SimpleAttributesFactory factory) {
         super();
         _factory=factory;
     }
