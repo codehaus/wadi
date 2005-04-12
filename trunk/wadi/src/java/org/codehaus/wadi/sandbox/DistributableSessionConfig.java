@@ -31,5 +31,5 @@ public interface DistributableSessionConfig extends SessionConfig {
     ValueHelper findHelper(Class type);
 
     // needed by LazyValue
-    boolean hasAttributeListeners();
+    boolean getContextHasListeners();
 }

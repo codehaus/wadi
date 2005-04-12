@@ -126,7 +126,7 @@ public class StandardSession extends AbstractContext implements Session, Attribu
     // AttributesConfig
     
     public Session getSession(){return this;}
-    public boolean hasListeners(){return false;} //NYI
+    public boolean getContextHasListeners(){return false;} //NYI
     public ValuePool getValuePool(){return _config.getValuePool();}
     
 }

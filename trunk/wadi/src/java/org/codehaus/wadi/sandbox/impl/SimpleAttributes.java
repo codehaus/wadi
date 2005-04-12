@@ -59,6 +59,7 @@ public class SimpleAttributes extends AbstractAttributes implements Distributabl
         Set activationListenerNames;
         Set bindingListenerNames;
         
+        DistributableAttributesConfig config=(DistributableAttributesConfig)_config;
         for (Iterator i=_map.entrySet().iterator(); i.hasNext();) {
             Map.Entry e=(Map.Entry)i.next();
             Object key=e.getKey();
@@ -67,7 +68,7 @@ public class SimpleAttributes extends AbstractAttributes implements Distributabl
             Object o=val.getValue();
             val.writeContent(oo);
             
-            if (!_config.hasListeners()) {
+            if (!config.getContextHasListeners()) {
                 if (o instanceof HttpSessionActivationListener) {
                     // a bit silly that we spent all this time hiding Activationlistaners inside Value - yet need to know about them here...
                     // NYI
@@ -81,7 +82,7 @@ public class SimpleAttributes extends AbstractAttributes implements Distributabl
     
     public ValueHelper findHelper(Class type) {return ((DistributableAttributesConfig)_config).findHelper(type);}
     
-    public boolean hasAttributeListeners() {return ((DistributableAttributesConfig)_config).hasAttributeListeners();}
+    public boolean getContextHasListeners() {return ((DistributableAttributesConfig)_config).getContextHasListeners();}
     
     
 

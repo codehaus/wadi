@@ -89,6 +89,6 @@ public class DistributableManager extends Manager implements DistributableSessio
 
     // Lazy
     
-    public boolean hasAttributeListeners(){return _attributeListeners.size()>0;}
+    public boolean getContextHasListeners(){return _attributeListeners.size()>0;}
 
 }

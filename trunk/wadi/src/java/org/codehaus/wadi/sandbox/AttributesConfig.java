@@ -20,6 +20,5 @@ public interface AttributesConfig {
     
     Session getSession();
     ValuePool getValuePool();
-    boolean hasListeners(); // TODO - don't like name - does manager have session or attribute listeners ?
     
 }
