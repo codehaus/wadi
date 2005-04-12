@@ -68,11 +68,9 @@ TestHttpSession
 
 extends TestCase
 {
-    protected Log               _log=LogFactory.getLog(TestHttpSession.class);
-    protected Listener          _listener;
-    protected List              _events=new ArrayList();
-    protected boolean           _evictObjectRepASAP=false;
-    protected boolean           _evictByteRepASAP=false;
+    protected Log                     _log=LogFactory.getLog(TestHttpSession.class);
+    protected Listener                _listener;
+    protected List                    _events=new ArrayList();
     
     protected AtomicAttributesFactory _attributesFactory=new AtomicAttributesFactory();
     protected AttributesPool          _attributesPool=new AtomicAttributesPool(_attributesFactory);
@@ -830,7 +828,6 @@ extends TestCase
         assertTrue(!session.isNew());
     }
     
-    
     public void
     testNullName()
     {
@@ -1231,6 +1228,27 @@ extends TestCase
         sess1.setBytes(bytes);
         assertTrue(sess1.getAttribute(key0)!=sess1.getAttribute(key1)); // after deserialisation values are no longer '='
         assertTrue(sess1.getAttribute(key0).equals(sess1.getAttribute(key1)));
+    }
+    
+    public void
+    testRest()
+    {
+        testRest(_standardManager);
+        testRest(_distributableManager);
+        testRest(_lazyManager);
+    }
+    
+    public void
+    testRest(Manager manager)
+    {
+        long start=System.currentTimeMillis();
+        HttpSession session=manager.newHttpSession();
+        long end=System.currentTimeMillis();
+        assertTrue(session.getSessionContext().getSession(null)==null);
+        assertTrue(session.getSessionContext().getIds()!=null);
+        session.getServletContext(); // cannot really test unless inside a container... - TODO
+        assertTrue(session.getCreationTime()>=start && session.getCreationTime()<=end);
+        assertTrue(session.getCreationTime()==session.getLastAccessedTime());
     }
 }
 
