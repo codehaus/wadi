@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.impl;
+package org.codehaus.wadi.sandbox;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSessionEvent;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
+import org.codehaus.wadi.sandbox.impl.Utils;
 
 /**
  * TODO - JavaDoc this type

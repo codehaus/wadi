@@ -29,15 +29,14 @@ import org.codehaus.wadi.StreamingStrategy;
 
 public interface DistributableValueConfig extends ValueConfig {
 
-    // used by DistributableValue
+    // Distributable
     HttpSessionEvent getHttpSessionEvent();
     ValueHelper findHelper(Class type);
     
-    // use by LazyValue
+    // Lazy
     boolean hasAttributeListeners();
 
     // not yet used
-    Dirtier getDirtier();
     StreamingStrategy getStreamer();
 
 }

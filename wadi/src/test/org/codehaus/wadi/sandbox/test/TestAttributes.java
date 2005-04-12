@@ -27,6 +27,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.sandbox.PartAttributes;
+import org.codehaus.wadi.sandbox.ReadWriteDirtier;
+import org.codehaus.wadi.sandbox.SimpleAttributes;
 import org.codehaus.wadi.sandbox.Value;
 import org.codehaus.wadi.sandbox.ValueFactory;
 import org.codehaus.wadi.sandbox.ValueHelper;
@@ -35,17 +38,14 @@ import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.AttributesFactory;
 import org.codehaus.wadi.sandbox.Dirtier;
+import org.codehaus.wadi.sandbox.WholeAttributes;
+import org.codehaus.wadi.sandbox.WriteDirtier;
 import org.codehaus.wadi.sandbox.impl.DistributableValue;
 import org.codehaus.wadi.sandbox.impl.DistributableValueFactory;
 import org.codehaus.wadi.sandbox.impl.SimpleValuePool;
 import org.codehaus.wadi.sandbox.impl.DistributableValue;
-import org.codehaus.wadi.sandbox.impl.PartAttributes;
-import org.codehaus.wadi.sandbox.impl.ReadWriteDirtier;
 import org.codehaus.wadi.sandbox.impl.DistributableValueFactory;
-import org.codehaus.wadi.sandbox.impl.SimpleAttributes;
 import org.codehaus.wadi.sandbox.impl.Utils;
-import org.codehaus.wadi.sandbox.impl.WholeAttributes;
-import org.codehaus.wadi.sandbox.impl.WriteDirtier;
 
 import junit.framework.TestCase;
 
@@ -180,20 +180,20 @@ public class TestAttributes extends TestCase {
 
     }
     
-    public void testActivatableAttribute() throws Exception {
-        ActivationListener al=new ActivationListener();
-        ValueFactory factory=new DistributableValueFactory();
-        ValuePool pool=new SimpleValuePool(factory); 
-        DistributableValue attr1=(DistributableValue)pool.take(null);
-        DistributableValue attr2=(DistributableValue)pool.take(null);
-        testAttributeSerialisation(attr1, attr2, al);
-        _log.info("passivations: "+al._passivations);
-        assertTrue(al._passivations==1);        
-        _log.info("activations: "+al._activations);
-        assertTrue(al._activations==1);
-        pool.put(attr1);
-        pool.put(attr2);
-    }
+//    public void testActivatableAttribute() throws Exception {
+//        ActivationListener al=new ActivationListener();
+//        ValueFactory factory=new DistributableValueFactory();
+//        ValuePool pool=new SimpleValuePool(factory); 
+//        DistributableValue attr1=(DistributableValue)pool.take(null);
+//        DistributableValue attr2=(DistributableValue)pool.take(null);
+//        testAttributeSerialisation(attr1, attr2, al);
+//        _log.info("passivations: "+al._passivations);
+//        assertTrue(al._passivations==1);        
+//        _log.info("activations: "+al._activations);
+//        assertTrue(al._activations==1);
+//        pool.put(attr1);
+//        pool.put(attr2);
+//    }
     
     public void testAttributeSerialisation(DistributableValue a, DistributableValue b, Object s) throws Exception {
         StreamingStrategy streamer=new SimpleStreamingStrategy();

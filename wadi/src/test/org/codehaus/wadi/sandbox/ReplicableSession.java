@@ -16,7 +16,9 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.DistributableSessionConfig;
+import org.codehaus.wadi.sandbox.SessionConfig;
+import org.codehaus.wadi.sandbox.impl.DistributableSession;
 
 /**
  * TODO - JavaDoc this type
@@ -25,11 +27,15 @@ import org.codehaus.wadi.StreamingStrategy;
  * @version $Revision$
  */
 
-public interface DistributableSessionConfig extends SessionConfig {
+public class ReplicableSession extends DistributableSession {
 
-    StreamingStrategy getStreamer();
-    ValueHelper findHelper(Class type);
+    /**
+     * @param manager
+     * @param attributes
+     * @param replicater
+     */
+    public ReplicableSession(SessionConfig config) {
+        super((DistributableSessionConfig)config);
+    }
 
-    // needed by LazyValue
-    boolean hasAttributeListeners();
 }

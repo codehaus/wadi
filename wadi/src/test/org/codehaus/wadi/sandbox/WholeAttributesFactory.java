@@ -14,11 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.impl;
+package org.codehaus.wadi.sandbox;
 
+import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.AttributesFactory;
+import org.codehaus.wadi.sandbox.Dirtier;
 
 /**
  * TODO - JavaDoc this type
@@ -27,10 +29,22 @@ import org.codehaus.wadi.sandbox.AttributesFactory;
  * @version $Revision$
  */
 
-public class SimpleAttributesFactory implements AttributesFactory {
+public class WholeAttributesFactory implements AttributesFactory {
+
+    protected final Dirtier _dirtier;
+    protected final StreamingStrategy _streamer;
+    protected final boolean _evictObjectRepASAP;
+    protected final boolean _evictByteRepASAP;
+    
+    public WholeAttributesFactory(Dirtier dirtier, StreamingStrategy streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
+        _dirtier=dirtier;
+        _streamer=streamer;
+        _evictObjectRepASAP=evictObjectRepASAP;
+        _evictByteRepASAP=evictByteRepASAP;
+    }
 
     public Attributes create(AttributesConfig config) {
-        return new SimpleAttributes(); // FIXME
+        return new WholeAttributes(_dirtier, _streamer, _evictObjectRepASAP, _evictByteRepASAP); // FIXME
     }
 
 }

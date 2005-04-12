@@ -23,7 +23,6 @@ import javax.servlet.http.HttpSessionEvent;
 
 import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.sandbox.Dirtier;
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
 import org.codehaus.wadi.sandbox.Session;
@@ -96,7 +95,6 @@ public abstract class AbstractAttributes implements Attributes, SerializableCont
     public HttpSessionEvent getHttpSessionEvent() {return _config.getSession().getHttpSessionEvent();}
 
     // Distributable
-    public Dirtier getDirtier() {return ((DistributableAttributesConfig)_config).getDirtier();}
     public StreamingStrategy getStreamer() {return ((DistributableAttributesConfig)_config).getStreamer();}
 
 }

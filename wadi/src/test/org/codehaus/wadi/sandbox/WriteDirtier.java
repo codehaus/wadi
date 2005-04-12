@@ -14,10 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.impl;
+package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.Attributes;
-import org.codehaus.wadi.sandbox.Replicaterr;
+import org.codehaus.wadi.sandbox.Dirtier;
 
 /**
  * TODO - JavaDoc this type
@@ -26,18 +25,9 @@ import org.codehaus.wadi.sandbox.Replicaterr;
  * @version $Revision$
  */
 
-public class RequestGroupReplicater implements Replicaterr {
+public class WriteDirtier implements Dirtier {
 
-    public Object getAttribute(String id, Attributes attributes, String name) {
-        return attributes.get(name);
-    }
-    
-    public Object setAttribute(String id, Attributes attributes, String name, Object newValue) {
-        return attributes.put(name, newValue);
-    }
-    
-    public Object removeAttribute(String id, Attributes attributes, String name) {
-        return attributes.remove(name);
-    }
+    public boolean readAccess() {return false;}
+    public boolean writeAccess() {return true;}
 
 }

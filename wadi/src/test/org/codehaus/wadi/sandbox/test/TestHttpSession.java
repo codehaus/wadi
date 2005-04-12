@@ -47,6 +47,7 @@ import org.codehaus.wadi.sandbox.SessionFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.ValueFactory;
 import org.codehaus.wadi.sandbox.ValuePool;
+import org.codehaus.wadi.sandbox.WriteDirtier;
 import org.codehaus.wadi.sandbox.impl.AtomicAttributesFactory;
 import org.codehaus.wadi.sandbox.impl.AtomicAttributesPool;
 import org.codehaus.wadi.sandbox.impl.DistributableManager;
@@ -60,7 +61,6 @@ import org.codehaus.wadi.sandbox.impl.SimpleValuePool;
 import org.codehaus.wadi.sandbox.impl.StandardSession;
 import org.codehaus.wadi.sandbox.impl.StandardSessionFactory;
 import org.codehaus.wadi.sandbox.impl.StandardValueFactory;
-import org.codehaus.wadi.sandbox.impl.WriteDirtier;
 
 /**
  * Test WADI's HttpSession implementation
@@ -88,17 +88,16 @@ extends TestCase
     protected ValuePool               _standardValuePool=new SimpleValuePool(_standardValueFactory);
     protected Manager                 _standardManager=new Manager(_standardSessionPool, _attributesPool, _standardValuePool);
     // Distributable
-    protected Dirtier                 _dirtier=new WriteDirtier();
     protected StreamingStrategy       _streamer=new SimpleStreamingStrategy();
     protected SessionFactory          _distributableSessionFactory=new DistributableSessionFactory(_attributesFactory);
     protected SessionPool             _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _distributableValueFactory=new DistributableValueFactory();
     protected ValuePool               _distributableValuePool=new SimpleValuePool(_distributableValueFactory);
-    protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _attributesPool, _distributableValuePool, _streamer, _dirtier);
+    protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _attributesPool, _distributableValuePool, _streamer);
     // Lazy
     protected ValueFactory            _lazyValueFactory=new LazyValueFactory();
     protected ValuePool               _lazyValuePool=new SimpleValuePool(_lazyValueFactory);
-    protected Manager                 _lazyManager=new DistributableManager(_distributableSessionPool, _attributesPool, _lazyValuePool, _streamer, _dirtier);
+    protected Manager                 _lazyManager=new DistributableManager(_distributableSessionPool, _attributesPool, _lazyValuePool, _streamer);
     
     public TestHttpSession(String name)
     {
