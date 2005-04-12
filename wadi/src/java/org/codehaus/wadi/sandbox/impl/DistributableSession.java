@@ -54,4 +54,5 @@ public class DistributableSession extends StandardSession implements Distributab
     public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {Utils.setContent(this, bytes, getStreamer());}
     
     public ValueHelper findHelper(Class type){return ((DistributableSessionConfig)_config).findHelper(type);}
+    public boolean hasAttributeListeners(){return ((DistributableSessionConfig)_config).hasAttributeListeners();}
 }
