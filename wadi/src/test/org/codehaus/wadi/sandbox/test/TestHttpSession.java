@@ -101,6 +101,9 @@ extends TestCase
     protected AttributesFactory       _lazyAttributesFactory=new LazyAttributesFactory();
     protected AttributesPool          _lazyAttributesPool=new SimpleAttributesPool(_lazyAttributesFactory);
     protected Manager                 _lazyAttributesManager=new DistributableManager(_distributableSessionPool, _lazyAttributesPool,_distributableValuePool, _streamer);
+    // LazyBoth
+    protected Manager                 _lazyBothManager=new DistributableManager(_distributableSessionPool, _lazyAttributesPool,_lazyValuePool, _streamer);
+    
     
     public TestHttpSession(String name)
     {
@@ -196,9 +199,11 @@ extends TestCase
         _distributableManager.addEventListener(_listener);
         _lazyValueManager.addEventListener(_listener);
         _lazyAttributesManager.addEventListener(_listener);
+        _lazyBothManager.addEventListener(_listener);
     }
     
     protected void tearDown() {
+        _lazyBothManager.removeEventListener(_listener);
         _lazyAttributesManager.removeEventListener(_listener);
         _lazyValueManager.removeEventListener(_listener);
         _distributableManager.removeEventListener(_listener);
@@ -213,6 +218,7 @@ extends TestCase
         testCreateHttpSession(_distributableManager);
         testCreateHttpSession(_lazyValueManager);
         testCreateHttpSession(_lazyAttributesManager);
+        testCreateHttpSession(_lazyBothManager);
     }
     
     public void
@@ -237,6 +243,7 @@ extends TestCase
         testDestroyHttpSessionWithListener(_distributableManager);
         testDestroyHttpSessionWithListener(_lazyValueManager);
         testDestroyHttpSessionWithListener(_lazyAttributesManager);
+        testDestroyHttpSessionWithListener(_lazyBothManager);
     }
     
     public void
@@ -305,6 +312,7 @@ extends TestCase
         testDestroyHttpSessionWithoutListener(_distributableManager);
         testDestroyHttpSessionWithoutListener(_lazyValueManager);
         testDestroyHttpSessionWithoutListener(_lazyAttributesManager);
+        testDestroyHttpSessionWithoutListener(_lazyBothManager);
     }
     
     public void
@@ -355,6 +363,7 @@ extends TestCase
         testInvalidate(_distributableManager);
         testInvalidate(_lazyValueManager);
         testInvalidate(_lazyAttributesManager);
+        testInvalidate(_lazyBothManager);
     }
 
     public void
@@ -372,6 +381,7 @@ extends TestCase
         testSetAttribute(_distributableManager);
         testSetAttribute(_lazyValueManager);
         testSetAttribute(_lazyAttributesManager);
+        testSetAttribute(_lazyBothManager);
     }
     
     public void
@@ -416,6 +426,7 @@ extends TestCase
         testPutValue(_distributableManager);
         testPutValue(_lazyValueManager);
         testPutValue(_lazyAttributesManager);
+        testPutValue(_lazyBothManager);
     }
     
     public void
@@ -460,6 +471,7 @@ extends TestCase
         testGetAttribute(_distributableManager);
         testGetAttribute(_lazyValueManager);
         testGetAttribute(_lazyAttributesManager);
+        testGetAttribute(_lazyBothManager);
     }
     
     public void
@@ -481,6 +493,7 @@ extends TestCase
         testGetValue(_distributableManager);
         testGetValue(_lazyValueManager);
         testGetValue(_lazyAttributesManager);
+        testGetValue(_lazyBothManager);
     }
     
     public void
@@ -502,6 +515,7 @@ extends TestCase
         testRemoveAttribute(_distributableManager);
         testRemoveAttribute(_lazyValueManager);
         testRemoveAttribute(_lazyAttributesManager);
+        testRemoveAttribute(_lazyBothManager);
     }
     
     public void
@@ -554,6 +568,7 @@ extends TestCase
         testRemoveValue(_distributableManager);
         testRemoveValue(_lazyValueManager);
         testRemoveValue(_lazyAttributesManager);
+        testRemoveValue(_lazyBothManager);
     }
     
     public void
@@ -602,6 +617,7 @@ extends TestCase
         testSetAttributeNull(_distributableManager);
         testSetAttributeNull(_lazyValueManager);
         testSetAttributeNull(_lazyAttributesManager);
+        testSetAttributeNull(_lazyBothManager);
     }
     
     public void
@@ -650,6 +666,7 @@ extends TestCase
         testPutValueNull(_distributableManager);
         testPutValueNull(_lazyValueManager);
         testPutValueNull(_lazyAttributesManager);
+        testPutValueNull(_lazyBothManager);
     }
     
     public void
@@ -698,6 +715,7 @@ extends TestCase
         testReplaceAttribute(_distributableManager);
         testReplaceAttribute(_lazyValueManager);
         testReplaceAttribute(_lazyAttributesManager);
+        testReplaceAttribute(_lazyBothManager);
     }
     
     public void
@@ -757,6 +775,7 @@ extends TestCase
         testReplaceValue(_distributableManager);
         testReplaceValue(_lazyValueManager);
         testReplaceValue(_lazyAttributesManager);
+        testReplaceValue(_lazyBothManager);
     }
     
     public void
@@ -823,6 +842,7 @@ extends TestCase
         testGetAttributeNames(_distributableManager);
         testGetAttributeNames(_lazyValueManager);
         testGetAttributeNames(_lazyAttributesManager);
+        testGetAttributeNames(_lazyBothManager);
     }
     
     public void
@@ -851,6 +871,7 @@ extends TestCase
         testGetValueNames(_distributableManager);
         testGetValueNames(_lazyValueManager);
         testGetValueNames(_lazyAttributesManager);
+        testGetValueNames(_lazyBothManager);
     }
     
     public void
@@ -879,6 +900,7 @@ extends TestCase
         testMaxInactiveInterval(_distributableManager);
         testMaxInactiveInterval(_lazyValueManager);
         testMaxInactiveInterval(_lazyAttributesManager);
+        testMaxInactiveInterval(_lazyBothManager);
     }
     
     public void
@@ -904,6 +926,7 @@ extends TestCase
         testIsNew(_distributableManager, _distributableSessionPool);
         testIsNew(_lazyValueManager, _distributableSessionPool);
         testIsNew(_lazyAttributesManager, _distributableSessionPool);
+        testIsNew(_lazyBothManager, _distributableSessionPool);
     }
     
     public void
@@ -923,6 +946,7 @@ extends TestCase
         testNullName(_distributableManager);
         testNullName(_lazyValueManager);
         testNullName(_lazyAttributesManager);
+        testNullName(_lazyBothManager);
     }
     
     public void
@@ -947,21 +971,27 @@ extends TestCase
         testActivation(_distributableManager, _distributableSessionPool);
         testActivation(_lazyValueManager, _distributableSessionPool);
         testActivation(_lazyAttributesManager, _distributableSessionPool);
+        testActivation(_lazyBothManager, _distributableSessionPool);
         testMigration(_distributableManager, _distributableSessionPool);
         testMigration(_lazyValueManager, _distributableSessionPool);
         testMigration(_lazyAttributesManager, _distributableSessionPool);
+        testMigration(_lazyBothManager, _distributableSessionPool);
         testDistributableValidation(_distributableManager);
         testDistributableValidation(_lazyValueManager);
         testDistributableValidation(_lazyAttributesManager);
+        testDistributableValidation(_lazyBothManager);
         testCustomSerialisation((DistributableManager)_distributableManager);
         testCustomSerialisation((DistributableManager)_lazyValueManager);
         testCustomSerialisation((DistributableManager)_lazyAttributesManager);
+        testCustomSerialisation((DistributableManager)_lazyBothManager);
         testDeserialisationOnReplacementWithListener((DistributableManager)_distributableManager);
         testDeserialisationOnReplacementWithListener((DistributableManager)_lazyValueManager);
         testDeserialisationOnReplacementWithListener((DistributableManager)_lazyAttributesManager);
+        testDeserialisationOnReplacementWithListener((DistributableManager)_lazyBothManager);
         testDeserialisationOnReplacementWithoutListener((DistributableManager)_distributableManager);
         testDeserialisationOnReplacementWithoutListener((DistributableManager)_lazyValueManager);
         testDeserialisationOnReplacementWithoutListener((DistributableManager)_lazyAttributesManager);
+        testDeserialisationOnReplacementWithoutListener((DistributableManager)_lazyBothManager);
     }
     
     public void
@@ -1417,6 +1447,7 @@ extends TestCase
 
     public void testSeparateAttributes() throws Exception {
         testSeparateAttributes(_lazyValueManager);
+        testSeparateAttributes(_lazyBothManager);
     }
 
     public void testSeparateAttributes(Manager manager) throws Exception {
@@ -1441,6 +1472,7 @@ extends TestCase
         testRest(_distributableManager);
         testRest(_lazyValueManager);
         testRest(_lazyAttributesManager);
+        testRest(_lazyBothManager);
     }
     
     public void
