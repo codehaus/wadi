@@ -44,6 +44,7 @@ import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.ValueFactory;
+import org.codehaus.wadi.sandbox.ValueHelper;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.sandbox.impl.StandardAttributesFactory;
@@ -846,6 +847,8 @@ extends TestCase
         testMigration(_lazyManager, _distributableSessionPool);
         testDistributableValidation(_distributableManager);
         testDistributableValidation(_lazyManager);
+        testCustomSerialisation((DistributableManager)_distributableManager);
+        testCustomSerialisation((DistributableManager)_lazyManager);
     }
     
     public void
@@ -961,9 +964,40 @@ extends TestCase
         }
     }
 
+    static class NotSerializable {
+        final String _content;
+        public NotSerializable(String content) {_content=content;}
+    }
+    
+    static class IsSerializable implements Serializable {
+        String _content;
+        public IsSerializable(){/* empty */} // for Serialising...
+        public IsSerializable(String content){_content=content;} // for Helper
+        private Object readResolve() {return new NotSerializable(_content);}
+    }   
+    
+    static class NotSerializableHelper implements ValueHelper {
+        public Serializable replace(Object object) {return new IsSerializable(((NotSerializable)object)._content);}
+    }
+    
+    public void testCustomSerialisation(DistributableManager manager) throws Exception {
+        String content="foo";
+        NotSerializable val0=new NotSerializable(content);
+        Class type=val0.getClass();
+        manager.registerHelper(type, new NotSerializableHelper());
         
+        Session s0=manager.createSession();
+        s0.setAttribute(content, val0);
+        Session s1=manager.createSession();
+        s1.setBytes(s0.getBytes());
+        NotSerializable val1=(NotSerializable)s1.getAttribute(content);
+        assertTrue(val0._content.equals(val1._content));
         
-        //    public void
+        assertTrue(manager.deregisterHelper(type));
+        assertTrue(!manager.deregisterHelper(type));
+    }
+
+//    public void
 //    LATERtestReplication(Manager manager, SessionPool pool)
 //    throws Exception
 //    {
