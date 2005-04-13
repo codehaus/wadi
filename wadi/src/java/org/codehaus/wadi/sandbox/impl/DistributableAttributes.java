@@ -106,7 +106,7 @@ public class DistributableAttributes extends StandardAttributes implements Distr
 
     public ValueHelper findHelper(Class type) {return ((DistributableAttributesConfig)_config).findHelper(type);}
 
-    public boolean getContextHasListeners() {return ((DistributableAttributesConfig)_config).getHttpSessionAttributeListenersRegistered();}
+    public boolean getHttpSessionAttributeListenersRegistered() {return ((DistributableAttributesConfig)_config).getHttpSessionAttributeListenersRegistered();}
 
     public HttpSessionEvent getHttpSessionEvent() {return ((DistributableAttributesConfig)_config).getHttpSessionEvent();}
     

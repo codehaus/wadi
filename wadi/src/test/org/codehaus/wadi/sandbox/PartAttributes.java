@@ -45,6 +45,6 @@ public class PartAttributes extends SimpleAttributes implements DistributableVal
     public StreamingStrategy getStreamer() {return null;} //NYI
     public Dirtier getDirtier() {return null;} //NYI
     public ValueHelper findHelper(Class type) {return null;} //NYI
-    public boolean getContextHasListeners(){return false;}// NYI
+    public boolean getHttpSessionAttributeListenersRegistered(){return false;}// NYI
 
 }
