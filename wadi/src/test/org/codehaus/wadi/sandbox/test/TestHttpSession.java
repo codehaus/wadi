@@ -211,14 +211,14 @@ extends TestCase
     }
     
     public void
-    testDestroyHttpSession() throws Exception {
-        testDestroyHttpSession(_standardManager);
-        testDestroyHttpSession(_distributableManager);
-        testDestroyHttpSession(_lazyManager);
+    testDestroyHttpSessionWithListener() throws Exception {
+        testDestroyHttpSessionWithListener(_standardManager);
+        testDestroyHttpSessionWithListener(_distributableManager);
+        testDestroyHttpSessionWithListener(_lazyManager);
     }
     
     public void
-    testDestroyHttpSession(Manager manager)
+    testDestroyHttpSessionWithListener(Manager manager)
     throws Exception
     {
         // create session
@@ -229,13 +229,14 @@ extends TestCase
         String key="foo";
         Object val=new Listener();
         wrapper.setAttribute(key, val);
+        wrapper.setAttribute("bar", "baz");
         _events.clear();
 
         // destroy session
         manager.destroySession(session);
         
         // analyse results
-        assertTrue(_events.size()==3);
+        assertTrue(_events.size()==4);
         {
             Pair pair=(Pair)_events.get(0);
             assertTrue(pair!=null);
@@ -253,15 +254,68 @@ extends TestCase
             HttpSessionEvent e=pair.getEvent();
             assertTrue(wrapper==e.getSession());
             HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
-            assertTrue(be.getName()==key);
-            assertTrue(be.getValue()==val);
         }
         {
             Pair pair=(Pair)_events.get(2);
             assertTrue(pair!=null);
+            assertTrue(pair.getType().equals("attributeRemoved"));
+            HttpSessionEvent e=pair.getEvent();
+            assertTrue(wrapper==e.getSession());
+            HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
+        }
+        {
+            Pair pair=(Pair)_events.get(3);
+            assertTrue(pair!=null);
             assertTrue(pair.getType().equals("sessionDestroyed"));
             HttpSessionEvent e=pair.getEvent();
             assertTrue(wrapper==e.getSession());
+        }
+        _events.clear();
+        
+        // TODO - 
+        // try without an HttpSessionAttributeListener registered
+        // try with a serialised session
+        // track what is serialised and what is not...
+    }
+
+    public void testDestroyHttpSessionWithoutListener() throws Exception {
+        testDestroyHttpSessionWithoutListener(_standardManager);
+        testDestroyHttpSessionWithoutListener(_distributableManager);
+        testDestroyHttpSessionWithoutListener(_lazyManager);
+    }
+    
+    public void
+    testDestroyHttpSessionWithoutListener(Manager manager)
+    throws Exception
+    {
+        // remove Listener
+        manager.removeEventListener(_listener);
+        
+        // create session
+        Session session=manager.createSession();
+        HttpSession wrapper=session.getWrapper();
+
+        // set up test
+        String key="foo";
+        Object val=new Listener();
+        wrapper.setAttribute(key, val);
+        wrapper.setAttribute("bar", "baz");
+        _events.clear();
+
+        // destroy session
+        manager.destroySession(session);
+        
+        // analyse results
+        assertTrue(_events.size()==1);
+        {
+            Pair pair=(Pair)_events.get(0);
+            assertTrue(pair!=null);
+            assertTrue(pair.getType().equals("valueUnbound"));
+            HttpSessionEvent e=pair.getEvent();
+            assertTrue(wrapper==e.getSession());
+            HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
+            assertTrue(be.getName()==key);
+            assertTrue(be.getValue()==val);
         }
         _events.clear();
         
@@ -902,7 +956,7 @@ extends TestCase
         for (int i=0; i<10; i++)
             s0.setAttribute("key-"+i, "val-"+i);
         
-        Thread.sleep(1000);
+        Thread.sleep(1);
 
         DistributableSession s1=(DistributableSession)pool.take(manager);
         s1.copy(s0);

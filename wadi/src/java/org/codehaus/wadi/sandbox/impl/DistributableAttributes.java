@@ -72,7 +72,7 @@ public class DistributableAttributes extends StandardAttributes {
     }
     
     protected boolean isListener(Object o) {
-        return (((DistributableAttributesConfig)_config).getHttpSessionAttributeListenersRegistered() && // first test should not be done dynamically
+        return (!((DistributableAttributesConfig)_config).getHttpSessionAttributeListenersRegistered() && // first test should not be done dynamically
         (o instanceof HttpSessionActivationListener || o instanceof HttpSessionBindingListener)); // TODO
     }
     
