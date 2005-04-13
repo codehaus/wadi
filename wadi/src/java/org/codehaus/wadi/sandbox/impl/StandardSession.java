@@ -117,7 +117,6 @@ public class StandardSession extends AbstractContext implements Session, Attribu
         return _attributes.remove(name);
     }
     
-    public Attributes getAttributes() {return _attributes;}
     public SessionConfig getConfig() {return _config;}
     
     // AttributesConfig
