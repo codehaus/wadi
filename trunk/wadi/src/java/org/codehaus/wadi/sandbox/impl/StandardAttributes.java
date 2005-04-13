@@ -86,12 +86,7 @@ public class StandardAttributes implements Attributes, SerializableContent, Valu
         _map.clear();
     }
 
-    public Session getSession() {return _config.getSession();}
-    
     // Distributable - TODO - should not be here ?
-    public StreamingStrategy getStreamer() {return ((DistributableAttributesConfig)_config).getStreamer();}
-    public byte[] getBytes() {return Utils.safeGetContent(this, getStreamer());}
-    public void setBytes(byte[] bytes) {Utils.safeSetContent(this, bytes, getStreamer());}
 
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         throw new NotSerializableException();

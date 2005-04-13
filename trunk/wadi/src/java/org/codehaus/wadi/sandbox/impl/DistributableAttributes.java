@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionEvent;
 
+import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
@@ -109,5 +110,7 @@ public class DistributableAttributes extends StandardAttributes implements Distr
     public boolean getHttpSessionAttributeListenersRegistered() {return ((DistributableAttributesConfig)_config).getHttpSessionAttributeListenersRegistered();}
 
     public HttpSessionEvent getHttpSessionEvent() {return ((DistributableAttributesConfig)_config).getHttpSessionEvent();}
+    
+    public StreamingStrategy getStreamer(){return ((DistributableAttributesConfig)_config).getStreamer();}
     
 }
