@@ -16,23 +16,15 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.wadi.SerializableContent;
-import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
-import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.Value;
 import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.ValueConfig;
 
-public class StandardAttributes implements Attributes, SerializableContent, ValueConfig {
+public class StandardAttributes implements Attributes, ValueConfig {
 
     protected final Map _map;
     protected final AttributesConfig _config;
@@ -86,13 +78,4 @@ public class StandardAttributes implements Attributes, SerializableContent, Valu
         _map.clear();
     }
 
-    // Distributable - TODO - should not be here ?
-
-    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-        throw new NotSerializableException();
-    }
-
-    public void writeContent(ObjectOutput oo) throws IOException {
-        throw new NotSerializableException();
-    }
 }
