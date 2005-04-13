@@ -39,7 +39,4 @@ public interface Attributes extends SerializableContent {
     Set keySet();
     void clear();
     
-    byte[] getBytes();
-    void setBytes(byte[] bytes);
-    
 }
