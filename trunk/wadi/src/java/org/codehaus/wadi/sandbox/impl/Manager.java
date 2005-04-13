@@ -66,11 +66,13 @@ public class Manager implements SessionConfig {
         for (Iterator i=new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) // ALLOC ?
             session.removeAttribute((String)i.next()); // TODO - very inefficient
         // TODO - more here
+        session.destroy();
         _sessionPool.put(session);
     }
 
     public Session createSession() {
         return _sessionPool.take(this);
+        // TODO - initialise ID !
     }
     
     //----------------------------------------
