@@ -99,6 +99,7 @@ public class DistributableManager extends Manager implements DistributableSessio
             session.removeAttribute((String)i.next());
         
         // TODO - remove from Contextualiser....at end of initial request ?
+        session.destroy();
         _sessionPool.put(session);
     }
     
