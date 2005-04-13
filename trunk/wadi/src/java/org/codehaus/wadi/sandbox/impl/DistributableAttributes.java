@@ -16,15 +16,22 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionBindingListener;
+import javax.servlet.http.HttpSessionEvent;
 
 import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
+import org.codehaus.wadi.sandbox.DistributableValueConfig;
+import org.codehaus.wadi.sandbox.ValueHelper;
 
 /**
  * A DistributableAttributes object needs to be Listener aware. When a Session is invalidated in Serialised
@@ -36,7 +43,7 @@ import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DistributableAttributes extends StandardAttributes {
+public class DistributableAttributes extends StandardAttributes implements DistributableValueConfig {
 
     public DistributableAttributes(AttributesConfig config, Map map) {
         super(config, map);
@@ -75,5 +82,32 @@ public class DistributableAttributes extends StandardAttributes {
         return (!((DistributableAttributesConfig)_config).getHttpSessionAttributeListenersRegistered() && // first test should not be done dynamically
         (o instanceof HttpSessionActivationListener || o instanceof HttpSessionBindingListener)); // TODO
     }
+
+    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+        int size=oi.readInt();
+        for (int i=0; i<size; i++) {
+            Object key=oi.readObject();
+            DistributableValue val=(DistributableValue)_config.getValuePool().take(this);
+            val.readContent(oi);
+            _map.put(key, val);
+        }
+    }
+
+    public void writeContent(ObjectOutput oo) throws IOException {
+        oo.writeInt(size());
+        for (Iterator i=_map.entrySet().iterator(); i.hasNext();) {
+            Map.Entry e=(Map.Entry)i.next();
+            Object key=e.getKey();
+            oo.writeObject(key);
+            DistributableValue val=(DistributableValue)e.getValue();
+            val.writeContent(oo);
+        }
+    }
+
+    public ValueHelper findHelper(Class type) {return ((DistributableAttributesConfig)_config).findHelper(type);}
+
+    public boolean getContextHasListeners() {return ((DistributableAttributesConfig)_config).getHttpSessionAttributeListenersRegistered();}
+
+    public HttpSessionEvent getHttpSessionEvent() {return ((DistributableAttributesConfig)_config).getHttpSessionEvent();}
     
 }

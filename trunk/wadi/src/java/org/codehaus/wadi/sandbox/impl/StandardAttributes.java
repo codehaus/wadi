@@ -17,54 +17,87 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
+import java.io.NotSerializableException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpSessionActivationListener;
-import javax.servlet.http.HttpSessionBindingListener;
-import javax.servlet.http.HttpSessionEvent;
-
+import org.codehaus.wadi.SerializableContent;
+import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
-import org.codehaus.wadi.sandbox.DistributableValueConfig;
+import org.codehaus.wadi.sandbox.Session;
+import org.codehaus.wadi.sandbox.Value;
+import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.AttributesConfig;
-import org.codehaus.wadi.sandbox.ValueHelper;
+import org.codehaus.wadi.sandbox.ValueConfig;
 
-public class StandardAttributes extends AbstractAttributes implements DistributableValueConfig {
+public class StandardAttributes implements Attributes, SerializableContent, ValueConfig {
 
+    protected final Map _map;
+    protected final AttributesConfig _config;
+    
     public StandardAttributes(AttributesConfig config, Map map) {
-        super(config, map);
+        super();
+        _map=map; // could be inherited ?
+        _config=config;
     }
 
-    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-        int size=oi.readInt();
-        for (int i=0; i<size; i++) {
-            Object key=oi.readObject();
-            DistributableValue val=(DistributableValue)_config.getValuePool().take(this);
-            val.readContent(oi);
-            _map.put(key, val);
+    public Object get(Object key) {
+        Value a=(Value)_map.get(key);
+        if (a==null){
+            return null;
+        } else {
+            return a.getValue();
         }
+    }
+
+    public Object remove(Object key) {
+        Value a=(Value)_map.remove(key);
+        if (a==null) {
+            return null;
+        } else {
+            Object tmp=a.getValue();
+            a.setValue(null);
+            _config.getValuePool().put(a);
+            return tmp;
+        }
+    }
+
+    public Object put(Object key, Object newValue) {
+        Value in=_config.getValuePool().take(this);
+        in.setValue(newValue);
+        Value out=(Value)_map.put(key, in);
+        if (out==null) {
+            return null;
+        } else {
+            Object tmp=out.getValue();
+            out.setValue(null);
+            _config.getValuePool().put(out);
+            return tmp;
+        }
+    }
+
+    public int size() {return _map.size();}
+    public Set keySet() {return _map.keySet();}
+
+    public void clear() {
+        // should we null-out all Attributes - TODO
+        _map.clear();
+    }
+
+    public Session getSession() {return _config.getSession();}
+    
+    // Distributable - TODO - should not be here ?
+    public StreamingStrategy getStreamer() {return ((DistributableAttributesConfig)_config).getStreamer();}
+    public byte[] getBytes() {return Utils.safeGetContent(this, getStreamer());}
+    public void setBytes(byte[] bytes) {Utils.safeSetContent(this, bytes, getStreamer());}
+
+    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+        throw new NotSerializableException();
     }
 
     public void writeContent(ObjectOutput oo) throws IOException {
-        oo.writeInt(size());
-        for (Iterator i=_map.entrySet().iterator(); i.hasNext();) {
-            Map.Entry e=(Map.Entry)i.next();
-            Object key=e.getKey();
-            oo.writeObject(key);
-            DistributableValue val=(DistributableValue)e.getValue();
-            val.writeContent(oo);
-        }
+        throw new NotSerializableException();
     }
-    
-    public ValueHelper findHelper(Class type) {return ((DistributableAttributesConfig)_config).findHelper(type);}
-    
-    public boolean getContextHasListeners() {return ((DistributableAttributesConfig)_config).getHttpSessionAttributeListenersRegistered();}
-
-    public HttpSessionEvent getHttpSessionEvent() {return ((DistributableAttributesConfig)_config).getHttpSessionEvent();}
-
-    
-
 }
