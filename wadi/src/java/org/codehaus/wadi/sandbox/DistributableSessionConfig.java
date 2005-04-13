@@ -33,5 +33,4 @@ public interface DistributableSessionConfig extends SessionConfig {
 
     // Lazy
     boolean getHttpSessionAttributeListenersRegistered();
-    boolean getHttpSessionListenersRegistered();
 }

@@ -57,5 +57,4 @@ public class DistributableSession extends StandardSession implements Distributab
     
     // Lazy
     public boolean getHttpSessionAttributeListenersRegistered(){return ((DistributableSessionConfig)_config).getHttpSessionAttributeListenersRegistered();}
-    public boolean getHttpSessionListenersRegistered(){return ((DistributableSessionConfig)_config).getHttpSessionListenersRegistered();}
 }
