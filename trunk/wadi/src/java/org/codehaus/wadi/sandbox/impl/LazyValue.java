@@ -72,7 +72,7 @@ public class LazyValue extends DistributableValue {
     
     public synchronized Object setValue(Object newValue) {
         if (_bytes!=null) {
-            if (_listener || ((DistributableValueConfig)_config).getContextHasListeners())
+            if (_listener || ((DistributableValueConfig)_config).getHttpSessionAttributeListenersRegistered())
                 deserialise(); // oldValue needs deserialising before it is chucked...
         } else {
             _bytes=null; // evict cache anyway...

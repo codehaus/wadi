@@ -34,7 +34,7 @@ public interface DistributableValueConfig extends ValueConfig {
     ValueHelper findHelper(Class type);
     
     // Lazy
-    boolean getContextHasListeners();
+    boolean getHttpSessionAttributeListenersRegistered();
 
     // not yet used
     StreamingStrategy getStreamer();
