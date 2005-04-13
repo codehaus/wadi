@@ -984,6 +984,7 @@ extends TestCase
         String content="foo";
         NotSerializable val0=new NotSerializable(content);
         Class type=val0.getClass();
+        manager.registerHelper(Integer.class, new NotSerializableHelper()); // this one will not be used
         manager.registerHelper(type, new NotSerializableHelper());
         
         Session s0=manager.createSession();
@@ -995,6 +996,9 @@ extends TestCase
         
         assertTrue(manager.deregisterHelper(type));
         assertTrue(!manager.deregisterHelper(type));
+        assertTrue(manager.deregisterHelper(Integer.class));
+        assertTrue(!manager.deregisterHelper(Integer.class));
+        
     }
 
 //    public void
