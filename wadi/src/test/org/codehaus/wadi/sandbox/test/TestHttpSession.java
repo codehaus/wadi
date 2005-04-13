@@ -171,7 +171,20 @@ extends TestCase
             _log.trace("PASSIVATING");
         }
     }
-    
+
+    static class BindingListener
+    implements
+    HttpSessionBindingListener,
+    Serializable
+    {
+        public static List _events=new ArrayList();
+        protected static Log _log=LogFactory.getLog(BindingListener.class);
+        
+        // HttpSessionABindingListener
+        public void valueBound           (HttpSessionBindingEvent e) {e.getSession().getId();_events.add(new Pair("valueBound",e));}
+        public void valueUnbound         (HttpSessionBindingEvent e) {e.getSession().getId();_events.add(new Pair("valueUnbound",e));}
+    }
+
     protected void setUp() throws Exception {
         _listener=new Listener();
         _standardManager.addEventListener(_listener);
@@ -908,6 +921,10 @@ extends TestCase
         testDistributableValidation(_lazyManager);
         testCustomSerialisation((DistributableManager)_distributableManager);
         testCustomSerialisation((DistributableManager)_lazyManager);
+        testDeserialisationOnReplacementWithListener((DistributableManager)_distributableManager);
+        testDeserialisationOnReplacementWithListener((DistributableManager)_lazyManager);
+        testDeserialisationOnReplacementWithoutListener((DistributableManager)_distributableManager);
+        testDeserialisationOnReplacementWithoutListener((DistributableManager)_lazyManager);
     }
     
     public void
@@ -986,6 +1003,73 @@ extends TestCase
             assertTrue(s1.getAttribute(key).equals(s2.getAttribute(key)));
         }
             
+    }
+    
+    
+    public void testDeserialisationOnReplacementWithListener(DistributableManager manager) throws Exception {
+        testDeserialisationOnReplacement(manager);
+        // TODO - test context level events here...
+    }
+
+    public void testDeserialisationOnReplacementWithoutListener(DistributableManager manager) throws Exception {
+        manager.removeEventListener(_listener);
+        testDeserialisationOnReplacement(manager);
+        // TODO - test context level events here...
+    }
+
+    public void testDeserialisationOnReplacement(DistributableManager manager) throws Exception {
+        DistributableSession s0=(DistributableSession)manager.createSession();
+        DistributableSession s1=(DistributableSession)manager.createSession();
+        
+        s0.setAttribute("dummy", "dummy");
+        s0.setAttribute("binding-listener", new BindingListener());
+        s0.setAttribute("activation-listener", new ActivationListener());
+        _events.clear();
+        List activationEvents=ActivationListener._events;
+        activationEvents.clear();
+        List bindingEvents=BindingListener._events;
+        bindingEvents.clear();
+        
+        s1.copy(s0);
+        
+        s1.setAttribute("activation-listener", new ActivationListener());
+
+        assertTrue(activationEvents.size()==2);
+        {
+            Pair pair=(Pair)activationEvents.get(0);
+            assertTrue(pair!=null);
+            assertTrue(pair.getType().equals("sessionWillPassivate"));
+            HttpSessionEvent e=pair.getEvent();
+            assertTrue(s0.getWrapper()==e.getSession());
+        }
+        {
+            Pair pair=(Pair)activationEvents.get(1);
+            assertTrue(pair!=null);
+            assertTrue(pair.getType().equals("sessionDidActivate"));
+            HttpSessionEvent e=pair.getEvent();
+            assertTrue(s1.getWrapper()==e.getSession());
+        }
+        activationEvents.clear();
+        
+        s1.setAttribute("binding-listener", new BindingListener());
+
+        assertTrue(bindingEvents.size()==2);
+        {
+            Pair pair=(Pair)bindingEvents.get(0);
+            assertTrue(pair!=null);
+            assertTrue(pair.getType().equals("valueUnbound"));
+            HttpSessionEvent e=pair.getEvent();
+            assertTrue(s1.getWrapper()==e.getSession());
+        }
+        {
+            Pair pair=(Pair)bindingEvents.get(1);
+            assertTrue(pair!=null);
+            assertTrue(pair.getType().equals("valueBound"));
+            HttpSessionEvent e=pair.getEvent();
+            assertTrue(s1.getWrapper()==e.getSession());
+        }
+        bindingEvents.clear();
+        
     }
     
     public void

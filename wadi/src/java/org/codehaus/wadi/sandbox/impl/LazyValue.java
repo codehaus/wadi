@@ -74,8 +74,6 @@ public class LazyValue extends DistributableValue {
         if (_bytes!=null) {
             if (_listener || ((DistributableValueConfig)_config).getHttpSessionAttributeListenersRegistered())
                 deserialise(); // oldValue needs deserialising before it is chucked...
-        } else {
-            _bytes=null; // evict cache anyway...
         }
         
         Object tmp=super.setValue(newValue);
