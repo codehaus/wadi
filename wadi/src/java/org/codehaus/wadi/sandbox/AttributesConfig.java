@@ -18,7 +18,6 @@ package org.codehaus.wadi.sandbox;
 
 public interface AttributesConfig {
     
-    Session getSession();
     ValuePool getValuePool();
     
 }

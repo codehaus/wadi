@@ -524,6 +524,11 @@ extends TestCase
         _events.clear();
         assertTrue(_events.size()==0);
         assertTrue(session.getAttribute(key)==null);
+        
+        // try removing it again !
+        session.removeAttribute(key);
+        assertTrue(_events.size()==0);
+        
     }
     
     public void
