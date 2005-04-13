@@ -63,7 +63,7 @@ public class Manager implements SessionConfig {
     }
     
     public void destroySession(Session session) {
-        for (Iterator i=session.getAttributeNameSet().iterator(); i.hasNext();) // ALLOC ?
+        for (Iterator i=new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) // ALLOC ?
             session.removeAttribute((String)i.next()); // TODO - very inefficient
         // TODO - more here
         _sessionPool.put(session);
