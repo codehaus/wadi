@@ -36,6 +36,5 @@ public interface DistributableAttributesConfig extends AttributesConfig {
     
     // Lazy
     boolean getHttpSessionAttributeListenersRegistered();
-    boolean getHttpSessionListenersRegistered();
-    
+
 }
