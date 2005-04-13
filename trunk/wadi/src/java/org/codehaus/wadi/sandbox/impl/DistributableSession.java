@@ -41,12 +41,12 @@ public class DistributableSession extends StandardSession implements Distributab
     
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         super.readContent(oi);
-        _attributes.readContent(oi);
+        ((DistributableAttributes)_attributes).readContent(oi);
     }
     
     public void writeContent(ObjectOutput oo) throws IOException {
         super.writeContent(oo);
-        _attributes.writeContent(oo);
+        ((DistributableAttributes)_attributes).writeContent(oo);
     }
     
     public byte[] getBytes() throws Exception {return Utils.getContent(this, getStreamer());}

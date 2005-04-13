@@ -28,7 +28,7 @@ import org.codehaus.wadi.SerializableContent;
  * @version $Revision$
  */
 
-public interface Attributes extends SerializableContent {
+public interface Attributes {
 
     // Map-like
     Object get(Object key);

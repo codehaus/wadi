@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionEvent;
 
+import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
@@ -44,7 +45,7 @@ import org.codehaus.wadi.sandbox.ValueHelper;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DistributableAttributes extends StandardAttributes implements DistributableValueConfig {
+public class DistributableAttributes extends StandardAttributes implements SerializableContent, DistributableValueConfig {
 
     public DistributableAttributes(AttributesConfig config, Map map) {
         super(config, map);

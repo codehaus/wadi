@@ -239,170 +239,170 @@ public class TestAttributes extends TestCase {
         }
     }
     
-    public void testAttributes() throws Exception {
-            Dirtier dirtier=new WriteDirtier();
-            StreamingStrategy streamer=new SimpleStreamingStrategy();
-            boolean evictObjectRepASAP=false;
-            boolean evictByteRepASAP=false;
+//    public void testAttributes() throws Exception {
+//            Dirtier dirtier=new WriteDirtier();
+//            StreamingStrategy streamer=new SimpleStreamingStrategy();
+//            boolean evictObjectRepASAP=false;
+//            boolean evictByteRepASAP=false;
+//    
+//            evictObjectRepASAP=false;
+//            evictByteRepASAP=false;
+//            testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
+//            evictObjectRepASAP=true;
+//            evictByteRepASAP=false;
+//            testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
+//            evictObjectRepASAP=false;
+//            evictByteRepASAP=true;
+//            testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
+//            evictObjectRepASAP=true;
+//            evictByteRepASAP=true;
+//            testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
+//            
+//    //        dirtier=new ReadWriteDirtier();
+//    //        evictObjectRepASAP=false;
+//    //        evictByteRepASAP=false;
+//    //        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
+//    //        evictObjectRepASAP=true;
+//    //       evictByteRepASAP=false;
+//    //        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
+//    //        evictObjectRepASAP=false;
+//    //        evictByteRepASAP=true;
+//    //        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
+//    //        evictObjectRepASAP=true;
+//    //        evictByteRepASAP=true;
+//    //        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
+//        }
     
-            evictObjectRepASAP=false;
-            evictByteRepASAP=false;
-            testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
-            evictObjectRepASAP=true;
-            evictByteRepASAP=false;
-            testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
-            evictObjectRepASAP=false;
-            evictByteRepASAP=true;
-            testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
-            evictObjectRepASAP=true;
-            evictByteRepASAP=true;
-            testSerialisation(new WholeAttributes(dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, false);
-            
-    //        dirtier=new ReadWriteDirtier();
-    //        evictObjectRepASAP=false;
-    //        evictByteRepASAP=false;
-    //        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
-    //        evictObjectRepASAP=true;
-    //       evictByteRepASAP=false;
-    //        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
-    //        evictObjectRepASAP=false;
-    //        evictByteRepASAP=true;
-    //        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
-    //        evictObjectRepASAP=true;
-    //        evictByteRepASAP=true;
-    //        testSerialisation(new WholeAttributesWrapper(new SimpleAttributes(), dirtier, streamer, evictObjectRepASAP, evictByteRepASAP), evictObjectRepASAP, evictByteRepASAP, true);
-        }
-    
-    public void testWholeAttributes() throws Exception {
-        testAttributes(new SimpleAttributes());
-        testAttributes(new SimpleAttributes());
-        testAttributes(new SimpleAttributes());
-        testAttributes(new SimpleAttributes());
-        testAttributes(new SimpleAttributes());
-        testAttributes(new SimpleAttributes());
-        testAttributes(new SimpleAttributes());
-        testAttributes(new SimpleAttributes());
+//    public void testWholeAttributes() throws Exception {
+//        testAttributes(new SimpleAttributes());
+//        testAttributes(new SimpleAttributes());
+//        testAttributes(new SimpleAttributes());
+//        testAttributes(new SimpleAttributes());
+//        testAttributes(new SimpleAttributes());
+//        testAttributes(new SimpleAttributes());
+//        testAttributes(new SimpleAttributes());
+//        testAttributes(new SimpleAttributes());
+//
+//        testAttributes(new WholeAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), false, false));
+//        testAttributes(new WholeAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), true, false));
+//        testAttributes(new WholeAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), false, true));
+//        testAttributes(new WholeAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), true, true));
+//        testAttributes(new WholeAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), false, false));
+//        testAttributes(new WholeAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), true, false));
+//        testAttributes(new WholeAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), false, true));
+//        testAttributes(new WholeAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), true, true));
+//
+//        testAttributes(new PartAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), false, false));
+//        testAttributes(new PartAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), true, false));
+//        testAttributes(new PartAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), false, true));
+//        testAttributes(new PartAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), true, true));
+//        testAttributes(new PartAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), false, false));
+//        testAttributes(new PartAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), true, false));
+//        testAttributes(new PartAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), false, true));
+//        testAttributes(new PartAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), true, true));
+//
+//    }
 
-        testAttributes(new WholeAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), false, false));
-        testAttributes(new WholeAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), true, false));
-        testAttributes(new WholeAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), false, true));
-        testAttributes(new WholeAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), true, true));
-        testAttributes(new WholeAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), false, false));
-        testAttributes(new WholeAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), true, false));
-        testAttributes(new WholeAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), false, true));
-        testAttributes(new WholeAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), true, true));
-
-        testAttributes(new PartAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), false, false));
-        testAttributes(new PartAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), true, false));
-        testAttributes(new PartAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), false, true));
-        testAttributes(new PartAttributes(new WriteDirtier(), new SimpleStreamingStrategy(), true, true));
-        testAttributes(new PartAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), false, false));
-        testAttributes(new PartAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), true, false));
-        testAttributes(new PartAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), false, true));
-        testAttributes(new PartAttributes(new ReadWriteDirtier(), new SimpleStreamingStrategy(), true, true));
-
-    }
-
-    public void testAttributes(Attributes a) throws Exception {
-        // can we serialise an empty instance OK ?
-        byte[] bytes=a.getBytes();
-        // and then put the result back in ?
-        a.setBytes(bytes);
-        
-        String key="foo";
-        Object val=key;
-        a.put(key, val);
-        assertTrue(a.get(key).equals(val));
-        bytes=a.getBytes();
-        a.remove(key);
-        assertTrue(a.get(key)==null);
-        a.setBytes(bytes);
-        assertTrue(a.get(key).equals(val));
-    }
-    
-    public void testSerialisation(Attributes wrapper, boolean evictObjectRepASAP, boolean evictByteRepASAP, boolean readIsDirty) throws Exception {
-        String key="foo";
-        Counter val=new Counter();
-        int serialisations=0;
-        _serialisations=serialisations;
-        int deserialisations=0;
-        _deserialisations=deserialisations;
-        // check initial state
-        assertTrue(_serialisations==serialisations);
-        assertTrue(_deserialisations==deserialisations);
-        // insert into container and reinspect - expect no change
-        wrapper.put(key, val);
-        assertTrue(_serialisations==serialisations);
-        assertTrue(_deserialisations==deserialisations);
-        // can we retrieve the same reference ?
-        assertTrue(val==wrapper.get(key));
-        // try serialising container - should serialise content..
-        byte[] bytes=wrapper.getBytes();
-        serialisations++;
-        assertTrue(_serialisations==serialisations);
-        assertTrue(_deserialisations==deserialisations);
-        // serialise container again - should used cached serialised content
-        bytes=wrapper.getBytes();
-        assertTrue(_serialisations==serialisations);
-        assertTrue(_deserialisations==deserialisations);
-        // can we still retrieve the original reference ?
-        if (evictObjectRepASAP) {
-            assertTrue(val.equals(wrapper.get(key)));
-            deserialisations++;
-        } else {
-            assertTrue(val==wrapper.get(key));
-        }
-        // did this last operation affect effect the content ?
-        assertTrue(_serialisations==serialisations);
-        assertTrue(_deserialisations==deserialisations);
-        // serialise the container again - should still not alter contents ...
-        bytes=wrapper.getBytes();
-        if (evictObjectRepASAP && evictByteRepASAP)
-            serialisations++;
-        assertTrue(_serialisations==serialisations);
-        assertTrue(_deserialisations==deserialisations);
-        // reinsert content, should invalidate serialised cache...
-        wrapper.put(key, val);
-        assertTrue(val==wrapper.get(key));
-        if (evictObjectRepASAP && evictByteRepASAP)
-            deserialisations++;
-        assertTrue(_serialisations==serialisations);
-        _log.info(""+_deserialisations+"=="+deserialisations);
-        assertTrue(_deserialisations==deserialisations);
-        bytes=wrapper.getBytes();
-        serialisations++;
-        assertTrue(_serialisations==serialisations);
-        assertTrue(_deserialisations==deserialisations);
-        
-        // Looks good - now let's try deserialising...
-        
-        // populate the container - should not change old content state...
-        wrapper.setBytes(bytes);
-        assertTrue(_serialisations==serialisations);
-        assertTrue(_deserialisations==deserialisations);
-        // retrieve content - should cause deserialisation
-        val=(Counter)wrapper.get(key);
-        deserialisations++;
-        assertTrue(_serialisations==serialisations);
-        assertTrue(_deserialisations==deserialisations);
-        // retrieve content again - should be found in cache - no deserialisation...
-        val=(Counter)wrapper.get(key);
-        assertTrue(_serialisations==serialisations);
-        assertTrue(_deserialisations==deserialisations);
-        // reinitialise content - should invalidate object cache...
-        bytes=wrapper.getBytes();
-        if (evictByteRepASAP) {
-            serialisations++;
-        }
-        assertTrue(_serialisations==serialisations);
-        assertTrue(_deserialisations==deserialisations);
-        wrapper.setBytes(bytes);
-        assertTrue(_serialisations==serialisations);
-        assertTrue(_deserialisations==deserialisations);
-        // reretrieve content - should cause fresh deserialisation
-        val=(Counter)wrapper.get(key);
-        deserialisations++;
-        assertTrue(_serialisations==serialisations);
-        assertTrue(_deserialisations==deserialisations);
-    }
+//    public void testAttributes(Attributes a) throws Exception {
+//        // can we serialise an empty instance OK ?
+//        byte[] bytes=a.getBytes();
+//        // and then put the result back in ?
+//        a.setBytes(bytes);
+//        
+//        String key="foo";
+//        Object val=key;
+//        a.put(key, val);
+//        assertTrue(a.get(key).equals(val));
+//        bytes=a.getBytes();
+//        a.remove(key);
+//        assertTrue(a.get(key)==null);
+//        a.setBytes(bytes);
+//        assertTrue(a.get(key).equals(val));
+//    }
+//    
+//    public void testSerialisation(Attributes wrapper, boolean evictObjectRepASAP, boolean evictByteRepASAP, boolean readIsDirty) throws Exception {
+//        String key="foo";
+//        Counter val=new Counter();
+//        int serialisations=0;
+//        _serialisations=serialisations;
+//        int deserialisations=0;
+//        _deserialisations=deserialisations;
+//        // check initial state
+//        assertTrue(_serialisations==serialisations);
+//        assertTrue(_deserialisations==deserialisations);
+//        // insert into container and reinspect - expect no change
+//        wrapper.put(key, val);
+//        assertTrue(_serialisations==serialisations);
+//        assertTrue(_deserialisations==deserialisations);
+//        // can we retrieve the same reference ?
+//        assertTrue(val==wrapper.get(key));
+//        // try serialising container - should serialise content..
+//        byte[] bytes=wrapper.getBytes();
+//        serialisations++;
+//        assertTrue(_serialisations==serialisations);
+//        assertTrue(_deserialisations==deserialisations);
+//        // serialise container again - should used cached serialised content
+//        bytes=wrapper.getBytes();
+//        assertTrue(_serialisations==serialisations);
+//        assertTrue(_deserialisations==deserialisations);
+//        // can we still retrieve the original reference ?
+//        if (evictObjectRepASAP) {
+//            assertTrue(val.equals(wrapper.get(key)));
+//            deserialisations++;
+//        } else {
+//            assertTrue(val==wrapper.get(key));
+//        }
+//        // did this last operation affect effect the content ?
+//        assertTrue(_serialisations==serialisations);
+//        assertTrue(_deserialisations==deserialisations);
+//        // serialise the container again - should still not alter contents ...
+//        bytes=wrapper.getBytes();
+//        if (evictObjectRepASAP && evictByteRepASAP)
+//            serialisations++;
+//        assertTrue(_serialisations==serialisations);
+//        assertTrue(_deserialisations==deserialisations);
+//        // reinsert content, should invalidate serialised cache...
+//        wrapper.put(key, val);
+//        assertTrue(val==wrapper.get(key));
+//        if (evictObjectRepASAP && evictByteRepASAP)
+//            deserialisations++;
+//        assertTrue(_serialisations==serialisations);
+//        _log.info(""+_deserialisations+"=="+deserialisations);
+//        assertTrue(_deserialisations==deserialisations);
+//        bytes=wrapper.getBytes();
+//        serialisations++;
+//        assertTrue(_serialisations==serialisations);
+//        assertTrue(_deserialisations==deserialisations);
+//        
+//        // Looks good - now let's try deserialising...
+//        
+//        // populate the container - should not change old content state...
+//        wrapper.setBytes(bytes);
+//        assertTrue(_serialisations==serialisations);
+//        assertTrue(_deserialisations==deserialisations);
+//        // retrieve content - should cause deserialisation
+//        val=(Counter)wrapper.get(key);
+//        deserialisations++;
+//        assertTrue(_serialisations==serialisations);
+//        assertTrue(_deserialisations==deserialisations);
+//        // retrieve content again - should be found in cache - no deserialisation...
+//        val=(Counter)wrapper.get(key);
+//        assertTrue(_serialisations==serialisations);
+//        assertTrue(_deserialisations==deserialisations);
+//        // reinitialise content - should invalidate object cache...
+//        bytes=wrapper.getBytes();
+//        if (evictByteRepASAP) {
+//            serialisations++;
+//        }
+//        assertTrue(_serialisations==serialisations);
+//        assertTrue(_deserialisations==deserialisations);
+//        wrapper.setBytes(bytes);
+//        assertTrue(_serialisations==serialisations);
+//        assertTrue(_deserialisations==deserialisations);
+//        // reretrieve content - should cause fresh deserialisation
+//        val=(Counter)wrapper.get(key);
+//        deserialisations++;
+//        assertTrue(_serialisations==serialisations);
+//        assertTrue(_deserialisations==deserialisations);
+//    }
 }
