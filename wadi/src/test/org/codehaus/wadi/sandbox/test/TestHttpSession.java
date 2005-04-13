@@ -325,6 +325,22 @@ extends TestCase
         // track what is serialised and what is not...
     }
 
+    
+    public void
+    testInvalidate() throws Exception {
+        testInvalidate(_standardManager);
+        testInvalidate(_distributableManager);
+        testInvalidate(_lazyManager);
+    }
+
+    public void
+    testInvalidate(Manager manager)
+    {
+        HttpSession session=manager.newHttpSession();
+        session.invalidate();
+        // TODO - what should we test here ?
+    }
+    
     public void
     testSetAttribute()
     {  
@@ -838,17 +854,6 @@ extends TestCase
             assertTrue(session.getMaxInactiveInterval()==interval);
         }
     }
-    
-    // TODO
-//  public void
-//  testInvalidate()
-//  {
-//  HttpSession session=_manager.newHttpSession();
-//  session.getId();
-//  session.invalidate();
-//  try{session.getId();assertTrue(false);}catch(IllegalStateException e){}
-//  try{session.invalidate();assertTrue(false);}catch(IllegalStateException e){}
-//  }
     
     public void
     testIsNew()
