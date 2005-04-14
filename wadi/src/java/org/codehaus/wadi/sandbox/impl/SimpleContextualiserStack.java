@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.test;
+package org.codehaus.wadi.sandbox.impl;
 
 // Thoughts - 
 
@@ -54,22 +54,7 @@ import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
-import org.codehaus.wadi.sandbox.impl.AbsoluteEvicter;
-import org.codehaus.wadi.sandbox.impl.ClusterContextualiser;
-import org.codehaus.wadi.sandbox.impl.CustomCluster;
-import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
-import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
-import org.codehaus.wadi.sandbox.impl.HashingCollapser;
-import org.codehaus.wadi.sandbox.impl.HttpProxyLocation;
-import org.codehaus.wadi.sandbox.impl.ExclusiveDiscContextualiser;
-import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
-import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
-import org.codehaus.wadi.sandbox.impl.NeverEvicter;
-import org.codehaus.wadi.sandbox.impl.SerialContextualiser;
-import org.codehaus.wadi.sandbox.impl.SharedJDBCContextualiser;
-import org.codehaus.wadi.sandbox.impl.StandardHttpProxy;
-import org.codehaus.wadi.sandbox.impl.StatelessContextualiser;
-import org.codehaus.wadi.sandbox.impl.TimedOutEvicter;
+import org.codehaus.wadi.sandbox.test.SwitchableEvicter;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
