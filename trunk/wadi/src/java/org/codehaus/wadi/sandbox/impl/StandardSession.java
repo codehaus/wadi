@@ -54,6 +54,9 @@ public class StandardSession extends AbstractContext implements Session, Attribu
         _attributes=_config.getAttributesPool().take(this);
         _wrapper=_config.getSessionWrapperFactory().create(this);
         _httpSessionEvent=new HttpSessionEvent(_wrapper);
+        
+        _id=(String)_config.getSessionIdFactory().take();
+        // TODO - resolve different APIs used by Factories and Pools...
         }
     
     public void destroy() {

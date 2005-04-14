@@ -29,6 +29,8 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.IdGenerator;
+import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
 import org.codehaus.wadi.sandbox.ValuePool;
@@ -149,4 +151,7 @@ public class Manager implements SessionConfig {
     // this should really be abstract, but is useful for testing - TODO
     protected final SessionWrapperFactory _sessionWrapperFactory=new DummySessionWrapperFactory();
     public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperFactory;}
+    
+    protected final IdGenerator _sessionIdFactory=new TomcatIdGenerator();
+    public IdGenerator getSessionIdFactory() {return _sessionIdFactory;}
 }
