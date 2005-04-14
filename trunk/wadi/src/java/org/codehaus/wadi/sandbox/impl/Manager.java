@@ -30,6 +30,7 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Session;
+import org.codehaus.wadi.sandbox.SessionWrapperFactory;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.SessionConfig;
@@ -145,4 +146,7 @@ public class Manager implements SessionConfig {
     
     public Manager getManager(){return this;}
     
+    // this should really be abstract, but is useful for testing - TODO
+    protected final SessionWrapperFactory _sessionWrapperFactory=new DummySessionWrapperFactory();
+    public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperFactory;}
 }

@@ -45,12 +45,16 @@ public class StandardSession extends AbstractContext implements Session, Attribu
     protected final static Log _log = LogFactory.getLog(StandardSession.class);
     protected final Attributes _attributes;
     protected final SessionConfig _config;
+    protected final HttpSession _wrapper;
+    protected final HttpSessionEvent _httpSessionEvent;
     
     public StandardSession(SessionConfig config) {
         super();
         _config=config;
         _attributes=_config.getAttributesPool().take(this);
-    }
+        _wrapper=_config.getSessionWrapperFactory().create(this);
+        _httpSessionEvent=new HttpSessionEvent(_wrapper);
+        }
     
     public void destroy() {
         _attributes.clear();
@@ -71,11 +75,9 @@ public class StandardSession extends AbstractContext implements Session, Attribu
     }
     
     // public access to the contents of this session should all be directed via wrapper
-    protected final HttpSession _wrapper=new SessionWrapper(this);
     public HttpSession getWrapper() {return _wrapper;}
     
     // cached events...
-    protected final HttpSessionEvent _httpSessionEvent=new HttpSessionEvent(_wrapper);
     public HttpSessionEvent getHttpSessionEvent(){return _httpSessionEvent;}
     
     //public String getRealId() {return null;} // TODO - lose this method...
