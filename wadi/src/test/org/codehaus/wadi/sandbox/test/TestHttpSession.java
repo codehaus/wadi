@@ -161,24 +161,9 @@ extends TestCase
     Serializable
     {
         public static List _events=new ArrayList();
-        protected static Log _log=LogFactory.getLog(ActivationListener.class);
-        
         // HttpSessionActivationListener
-        public void
-        sessionDidActivate(HttpSessionEvent e)
-        {
-            e.getSession().getId();
-            _events.add(new Pair("sessionDidActivate",e));
-            _log.trace("ACTIVATING");
-        }
-        
-        public void
-        sessionWillPassivate(HttpSessionEvent e)
-        {
-            e.getSession().getId();
-            _events.add(new Pair("sessionWillPassivate",e));
-            _log.trace("PASSIVATING");
-        }
+        public void sessionDidActivate   (HttpSessionEvent e){e.getSession().getId();_events.add(new Pair("sessionDidActivate",e));}
+        public void sessionWillPassivate (HttpSessionEvent e){e.getSession().getId();_events.add(new Pair("sessionWillPassivate",e));}
     }
 
     static class BindingListener
@@ -187,8 +172,6 @@ extends TestCase
     Serializable
     {
         public static List _events=new ArrayList();
-        protected static Log _log=LogFactory.getLog(BindingListener.class);
-        
         // HttpSessionBindingListener
         public void valueBound           (HttpSessionBindingEvent e) {e.getSession().getId();_events.add(new Pair("valueBound",e));}
         public void valueUnbound         (HttpSessionBindingEvent e) {e.getSession().getId();_events.add(new Pair("valueUnbound",e));}
