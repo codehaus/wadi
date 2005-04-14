@@ -32,48 +32,78 @@ public class Manager extends org.codehaus.wadi.sandbox.impl.Manager implements S
 
     public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool) {
         super(sessionPool, attributesPool, valuePool, new SessionWrapperFactory(), new TomcatIdGenerator());
+        
+        // we should install our filter and inject refs into it
+        // we should probably manage the Contextualiser stack...
     }
 
     protected ServletHandler _handler;
-    public void initialize(ServletHandler handler) {
-        _handler=handler;
-    }
+    public void initialize(ServletHandler handler) {_handler=handler;}
 
     public ServletContext getServletContext() {return _handler.getServletContext();}
 
     public HttpSession getHttpSession(String id) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     public HttpSession newHttpSession(HttpServletRequest request) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
-    public boolean getSecureCookies() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    public boolean getHttpOnly() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    public Cookie getSessionCookie(HttpSession session, boolean requestIsSecure) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
+    // What are we going to do about a LifeCycle ?
     public void start() throws Exception {
         // TODO Auto-generated method stub
-
     }
 
     public void stop() throws InterruptedException {
         // TODO Auto-generated method stub
-
     }
+
+
+    // cut-n-pasted from Jetty src - aarg !
+    // Greg uses Apache-2.0 as well - so no licensing issue as yet - TODO
+    
+    public Cookie
+    getSessionCookie(javax.servlet.http.HttpSession session,boolean requestIsSecure)
+    {
+        if (_handler.isUsingCookies())
+        {
+            javax.servlet.http.Cookie cookie=getHttpOnly()
+            ?new org.mortbay.http.HttpOnlyCookie(SessionManager.__SessionCookie,session.getId())
+                    :new javax.servlet.http.Cookie(SessionManager.__SessionCookie,session.getId());
+            String domain=_handler.getServletContext().getInitParameter(SessionManager.__SessionDomain);
+            String maxAge=_handler.getServletContext().getInitParameter(SessionManager.__MaxAge);
+            String path=_handler.getServletContext().getInitParameter(SessionManager.__SessionPath);
+            if (path==null)
+                path=getUseRequestedId()?"/":_handler.getHttpContext().getContextPath();
+            if (path==null || path.length()==0)
+                path="/";
+            
+            if (domain!=null)
+                cookie.setDomain(domain);
+            if (maxAge!=null)
+                cookie.setMaxAge(Integer.parseInt(maxAge));
+            else
+                cookie.setMaxAge(-1);
+            
+            cookie.setSecure(requestIsSecure && getSecureCookies());
+            cookie.setPath(path);
+            
+            return cookie;
+        }
+        return null;
+    }
+    
+    protected boolean _httpOnly=true;
+    public boolean getHttpOnly() {return _httpOnly;}
+    public void setHttpOnly(boolean httpOnly) {_httpOnly=httpOnly;}
+    
+    protected boolean _secureCookies=false;
+    public boolean getSecureCookies() {return _secureCookies;}
+    public void setSecureCookies(boolean secureCookies) {_secureCookies=secureCookies;}
+    
+    protected boolean _useRequestedId=false;
+    public boolean getUseRequestedId() {return _useRequestedId;}
+    public void setUseRequestedId(boolean useRequestedId) {_useRequestedId=useRequestedId;}
     
 }
