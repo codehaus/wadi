@@ -86,6 +86,7 @@ public class DistributableAttributes extends StandardAttributes implements Seria
     }
 
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+        _listenerNames=(Set)oi.readObject();
         int size=oi.readInt();
         for (int i=0; i<size; i++) {
             Object key=oi.readObject();
@@ -96,6 +97,7 @@ public class DistributableAttributes extends StandardAttributes implements Seria
     }
 
     public void writeContent(ObjectOutput oo) throws IOException {
+        oo.writeObject(_listenerNames); // TODO - could be smaller...
         oo.writeInt(size());
         for (Iterator i=_map.entrySet().iterator(); i.hasNext();) {
             Map.Entry e=(Map.Entry)i.next();
