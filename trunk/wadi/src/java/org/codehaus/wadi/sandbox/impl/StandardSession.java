@@ -43,19 +43,20 @@ import org.codehaus.wadi.sandbox.SessionConfig;
 public class StandardSession extends AbstractContext implements Session, AttributesConfig {
     
     protected final static Log _log = LogFactory.getLog(StandardSession.class);
-    protected final Attributes _attributes;
     protected final SessionConfig _config;
+    protected final Attributes _attributes;
     protected final HttpSession _wrapper;
     protected final HttpSessionEvent _httpSessionEvent;
     
     public StandardSession(SessionConfig config) {
         super();
+        _maxInactiveInterval=config.getMaxInactiveInterval();
+        _id=(String)config.getSessionIdFactory().take();
         _config=config;
         _attributes=_config.getAttributesPool().take(this);
         _wrapper=_config.getSessionWrapperFactory().create(this);
         _httpSessionEvent=new HttpSessionEvent(_wrapper);
         
-        _id=(String)_config.getSessionIdFactory().take();
         // TODO - resolve different APIs used by Factories and Pools...
         }
     

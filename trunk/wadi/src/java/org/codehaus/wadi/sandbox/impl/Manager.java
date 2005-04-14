@@ -30,7 +30,6 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.IdGenerator;
-import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
 import org.codehaus.wadi.sandbox.ValuePool;
@@ -52,11 +51,15 @@ public class Manager implements SessionConfig {
     protected final SessionPool _sessionPool;
     protected final AttributesPool _attributesPool;
     protected final ValuePool _valuePool;
+    protected final SessionWrapperFactory _sessionWrapperFactory;
+    protected final IdGenerator _sessionIdFactory;
     
-    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool) {
+    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory) {
         _sessionPool=sessionPool;
         _attributesPool=attributesPool;
         _valuePool=valuePool;
+        _sessionWrapperFactory=sessionWrapperFactory;
+        _sessionIdFactory=sessionIdFactory;
     }
     
     public boolean isStarted(){return false;}
@@ -149,9 +152,13 @@ public class Manager implements SessionConfig {
     public Manager getManager(){return this;}
     
     // this should really be abstract, but is useful for testing - TODO
-    protected final SessionWrapperFactory _sessionWrapperFactory=new DummySessionWrapperFactory();
+
     public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperFactory;}
     
-    protected final IdGenerator _sessionIdFactory=new TomcatIdGenerator();
     public IdGenerator getSessionIdFactory() {return _sessionIdFactory;}
+    
+    protected int _maxInactiveInterval=30*60;
+    public int getMaxInactiveInterval(){return _maxInactiveInterval;}
+    public void setMaxInactiveInterval(int interval){_maxInactiveInterval=interval;}
+    
 }

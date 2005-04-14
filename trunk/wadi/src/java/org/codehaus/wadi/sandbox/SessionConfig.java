@@ -35,4 +35,6 @@ public interface SessionConfig {
     SessionWrapperFactory getSessionWrapperFactory();
     IdGenerator getSessionIdFactory();
     
+    int getMaxInactiveInterval();
+    
 }
