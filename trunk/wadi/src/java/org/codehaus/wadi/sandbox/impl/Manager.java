@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.Iterator;
@@ -36,6 +37,10 @@ import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.SessionConfig;
 import org.codehaus.wadi.sandbox.SessionPool;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.core.io.InputStreamResource;
 
 /**
  * TODO - JavaDoc this type
@@ -159,5 +164,5 @@ public class Manager implements SessionConfig {
     protected int _maxInactiveInterval=30*60;
     public int getMaxInactiveInterval(){return _maxInactiveInterval;}
     public void setMaxInactiveInterval(int interval){_maxInactiveInterval=interval;}
-    
+
 }

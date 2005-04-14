@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure 1.2//EN" "http://jetty.mortbay.org/configure_1_2.dtd">
+
+<Configure class="org.mortbay.jetty.Server">
+
+  <Call name="addListener">
+    <Arg>
+      <New class="org.codehaus.wadi.sandbox.impl.jetty.SocketListener">
+        <Set name="Port"><SystemProperty name="http.port" default="8080"/></Set>
+        <Set name="MinThreads">1</Set>
+        <Set name="MaxThreads">1000</Set>
+        <Set name="MaxIdleTimeMs">30000</Set>
+        <Set name="LowResourcePersistTimeMs">5000</Set>
+        <Set name="ConfidentialPort">8443</Set>
+        <Set name="IntegralPort">8443</Set>
+      </New>
+    </Arg>
+  </Call>
+
+  <Call name="addWebApplication">
+    <Arg>/wadi</Arg>
+    <Arg><SystemProperty name="wadi.home"/></Arg>
+  </Call>
+
+  <Set name="RequestLog">
+    <New class="org.mortbay.http.NCSARequestLog">
+      <Arg><SystemProperty name="wadi.home" default="."/>/logs/yyyy_mm_dd.request.0.log</Arg>
+      <Set name="retainDays">90</Set>
+      <Set name="append">true</Set>
+      <Set name="extended">false</Set>
+      <Set name="buffered">false</Set>
+      <Set name="LogTimeZone">GMT</Set>
+    </New>
+  </Set>
+
+
+</Configure>
