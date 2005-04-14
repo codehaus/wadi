@@ -144,7 +144,6 @@ public class Manager implements SessionConfig {
     
     // Context stuff
     public ServletContext getServletContext() {return null;}// TODO
-    public HttpSessionContext getSessionContext() {return null;} // TODO
     
     public AttributesPool getAttributesPool() {return _attributesPool;}
     public ValuePool getValuePool() {return _valuePool;}

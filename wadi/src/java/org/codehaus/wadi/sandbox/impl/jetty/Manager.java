@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.impl.jetty;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -33,10 +34,12 @@ public class Manager extends org.codehaus.wadi.sandbox.impl.Manager implements S
         super(sessionPool, attributesPool, valuePool, new SessionWrapperFactory(), new TomcatIdGenerator());
     }
 
+    protected ServletHandler _handler;
     public void initialize(ServletHandler handler) {
-        // TODO Auto-generated method stub
-
+        _handler=handler;
     }
+
+    public ServletContext getServletContext() {return _handler.getServletContext();}
 
     public HttpSession getHttpSession(String id) {
         // TODO Auto-generated method stub
