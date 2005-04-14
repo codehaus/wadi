@@ -21,17 +21,18 @@
 <!-- Set up the WADI Filter -->
 
   <Call name="getWebApplicationHandler">
+
    <Call name="defineFilter">
     <Arg>WadiFilter</Arg>
     <Arg>org.codehaus.wadi.sandbox.impl.Filter</Arg>
    </Call>
-  </Call>
-  <Call name="getWebApplicationHandler">
+
    <Call name="addFilterPathMapping">
     <Arg>/*</Arg>
     <Arg>WadiFilter</Arg>
     <Arg type="int">15</Arg> <!-- ALL dispatch types -->
    </Call>
+
   </Call>
   
 <!-- Set up the WADI Session Manager -->
@@ -42,6 +43,5 @@
       </New>
     </Set>
   </Get>
-  
 
 </Configure>
