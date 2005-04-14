@@ -66,6 +66,7 @@ import org.codehaus.wadi.sandbox.impl.RWLock;
 import org.codehaus.wadi.sandbox.impl.SerialContextualiser;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCContextualiser;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCMotable;
+import org.codehaus.wadi.sandbox.impl.SimpleContextualiserStack;
 import org.codehaus.wadi.sandbox.impl.SimpleEvictable;
 import org.codehaus.wadi.sandbox.impl.TimeToLiveEvicter;
 import org.codehaus.wadi.sandbox.impl.TimedOutEvicter;
