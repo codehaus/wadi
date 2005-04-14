@@ -23,6 +23,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
 
+import org.codehaus.wadi.sandbox.Session;
+
 /**
  * Wraps a Session instance, presenting ONLY an HttpSession facade to the application.
  *
@@ -32,9 +34,9 @@ import javax.servlet.http.HttpSessionContext;
 
 public class SessionWrapper implements HttpSession {
 
-    protected final StandardSession _session;
+    protected final Session _session;
 
-    public SessionWrapper(StandardSession session) {_session=session;}
+    public SessionWrapper(Session session) {_session=session;}
 
     // delegate to Session
     public long getCreationTime() {return _session.getCreationTime();}

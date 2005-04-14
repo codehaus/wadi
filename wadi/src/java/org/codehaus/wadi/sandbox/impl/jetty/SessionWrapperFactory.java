@@ -14,23 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox;
+package org.codehaus.wadi.sandbox.impl.jetty;
 
-import java.util.List;
+import org.codehaus.wadi.sandbox.Session;
 
-import javax.servlet.ServletContext;
+public class SessionWrapperFactory {
 
-import org.codehaus.wadi.sandbox.impl.Manager;
+    javax.servlet.http.HttpSession create(Session session) {return new HttpSession(session);}
 
-public interface SessionConfig {
-    
-    ValuePool getValuePool();
-    AttributesPool getAttributesPool();
-    List getSessionListeners();
-    List getAttributeListeners();
-    ServletContext getServletContext();
-    
-    Manager getManager(); // TODO - just for destroySession()...
-    SessionWrapperFactory getSessionWrapperFactory();
-    
 }

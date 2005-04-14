@@ -16,21 +16,10 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import java.util.List;
+import javax.servlet.http.HttpSession;
 
-import javax.servlet.ServletContext;
+public interface SessionWrapperFactory {
 
-import org.codehaus.wadi.sandbox.impl.Manager;
-
-public interface SessionConfig {
-    
-    ValuePool getValuePool();
-    AttributesPool getAttributesPool();
-    List getSessionListeners();
-    List getAttributeListeners();
-    ServletContext getServletContext();
-    
-    Manager getManager(); // TODO - just for destroySession()...
-    SessionWrapperFactory getSessionWrapperFactory();
+    HttpSession create(Session session);
     
 }
