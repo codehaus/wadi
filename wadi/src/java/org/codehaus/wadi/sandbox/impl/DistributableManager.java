@@ -94,7 +94,7 @@ public class DistributableManager extends Manager implements DistributableSessio
     public void destroySession(Session session) {
         // this destroySession method must not chain the one in super - otherwise the
         // notification aspect fires twice - once around each invocation... - DOH !
-        Collection names=(_attributeListeners.size()>0)?(Collection)new ArrayList(session.getAttributeNameSet()):((DistributableSession)session).getListenerNames();
+        Collection names=new ArrayList((_attributeListeners.size()>0)?(Collection)session.getAttributeNameSet():((DistributableSession)session).getListenerNames());
         for (Iterator i=names.iterator(); i.hasNext();) // ALLOC ?
             session.removeAttribute((String)i.next());
         

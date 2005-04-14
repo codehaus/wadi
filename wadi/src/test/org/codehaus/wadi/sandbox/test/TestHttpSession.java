@@ -17,6 +17,7 @@
 
 package org.codehaus.wadi.sandbox.test;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -188,9 +189,26 @@ extends TestCase
         public static List _events=new ArrayList();
         protected static Log _log=LogFactory.getLog(BindingListener.class);
         
-        // HttpSessionABindingListener
+        // HttpSessionBindingListener
         public void valueBound           (HttpSessionBindingEvent e) {e.getSession().getId();_events.add(new Pair("valueBound",e));}
         public void valueUnbound         (HttpSessionBindingEvent e) {e.getSession().getId();_events.add(new Pair("valueUnbound",e));}
+    }
+
+    static class SerialisationListener
+    implements
+    Serializable
+    {
+        public static List _events=new ArrayList();
+        protected static Log _log=LogFactory.getLog(SerialisationListener.class);
+        
+        private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+            _events.add(new Pair("serialised",null));
+        }
+        
+        private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+            _events.add(new Pair("deserialised",null));
+        }
+        
     }
 
     protected void setUp() throws Exception {
@@ -1463,6 +1481,115 @@ extends TestCase
         sess1.setBytes(bytes);
         assertTrue(sess1.getAttribute(key0)!=sess1.getAttribute(key1)); // after deserialisation values are no longer '='
         assertTrue(sess1.getAttribute(key0).equals(sess1.getAttribute(key1)));
+    }
+    
+    public void testLaziness() throws Exception {
+        // lazy attributes:
+
+        // (1) add an activation and a serialisation listener, migrate, get one, both should be called
+        {
+            Manager manager=_lazyAttributesManager;
+            manager.removeEventListener(_listener);
+            Session s0=manager.createSession();
+            s0.setAttribute("activation-listener", new ActivationListener());
+            s0.setAttribute("serialisation-listener", new SerialisationListener());
+            Session s1=manager.createSession();
+            s1.setBytes(s0.getBytes());
+            List activationEvents=ActivationListener._events;
+            activationEvents.clear();
+            List serialisationEvents=SerialisationListener._events;
+            serialisationEvents.clear();
+            
+            s1.getAttribute("serialisation-listener");
+            assertTrue(activationEvents.size()==1);
+            activationEvents.clear();
+            assertTrue(serialisationEvents.size()==1);
+            serialisationEvents.clear();
+        }
+        
+        // (2) add an activation, a binding and a serialisation listener, migrate, invalidate - all should be called
+        {
+            Manager manager=_lazyAttributesManager;
+            manager.removeEventListener(_listener);
+            Session s0=manager.createSession();
+            s0.setAttribute("activation-listener", new ActivationListener());
+            s0.setAttribute("binding-listener", new BindingListener());
+            s0.setAttribute("serialisation-listener", new SerialisationListener());
+            Session s1=manager.createSession();
+            s1.setBytes(s0.getBytes());
+            List activationEvents=ActivationListener._events;
+            activationEvents.clear();
+            List bindingEvents=BindingListener._events;
+            bindingEvents.clear();
+            List serialisationEvents=SerialisationListener._events;
+            serialisationEvents.clear();
+            
+            manager.destroySession(s1);
+            
+            assertTrue(activationEvents.size()==1);
+            activationEvents.clear();
+            assertTrue(bindingEvents.size()==1);
+            bindingEvents.clear();
+            assertTrue(serialisationEvents.size()==1);
+            serialisationEvents.clear();
+        }
+        
+        // LazyValue
+        // (1) add an activation and a serialisation listener, migrate, get one, only that one should be called
+        {
+            Manager manager=_lazyValueManager;
+            manager.removeEventListener(_listener);
+            Session s0=manager.createSession();
+            s0.setAttribute("activation-listener", new ActivationListener());
+            s0.setAttribute("serialisation-listener", new SerialisationListener());
+            Session s1=manager.createSession();
+            s1.setBytes(s0.getBytes());
+            List activationEvents=ActivationListener._events;
+            activationEvents.clear();
+            List serialisationEvents=SerialisationListener._events;
+            serialisationEvents.clear();
+            
+            s1.getAttribute("activation-listener");
+            assertTrue(activationEvents.size()==1);
+            assertTrue(serialisationEvents.size()==0);
+
+            s1.getAttribute("serialisation-listener");
+            assertTrue(activationEvents.size()==1);
+            assertTrue(serialisationEvents.size()==1);
+
+            activationEvents.clear();
+            serialisationEvents.clear();
+        }
+        
+        // (2) add an activation, a binding and a serialisation listener, migrate, invalidate - serialisation should not be called
+        // LATER - none should be called, until they are dereffed from the event itself...
+        {
+            Manager manager=_lazyValueManager;
+            manager.removeEventListener(_listener);
+            
+            Session s0=manager.createSession();
+            s0.setAttribute("activation-listener", new ActivationListener());
+            s0.setAttribute("binding-listener", new BindingListener());
+            s0.setAttribute("serialisation-listener", new SerialisationListener());
+            Session s1=manager.createSession();
+            s1.setBytes(s0.getBytes());
+            List activationEvents=ActivationListener._events;
+            activationEvents.clear();
+            List bindingEvents=BindingListener._events;
+            bindingEvents.clear();
+            List serialisationEvents=SerialisationListener._events;
+            serialisationEvents.clear();
+            
+            manager.destroySession(s1);
+            
+            assertTrue(activationEvents.size()==1);
+            assertTrue(bindingEvents.size()==1);
+            assertTrue(serialisationEvents.size()==0);
+
+            activationEvents.clear();
+            bindingEvents.clear();
+        }
+        
     }
     
     public void

@@ -96,6 +96,12 @@ public class LazyAttributes extends DistributableAttributes {
     public void clear(){
         _bytes=null;
     }
+    
+    public Set getListenerNames() {
+        if (_bytes!=null)
+            deserialise();
+        return _listenerNames;
+    }
         
     public synchronized void writeContent(ObjectOutput oo) throws IOException {
         if (_bytes==null)
