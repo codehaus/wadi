@@ -108,5 +108,7 @@ public class DistributableManager extends Manager implements DistributableSessio
     // Lazy
     
     public boolean getHttpSessionAttributeListenersRegistered(){return _attributeListeners.size()>0;}
+    
+    public boolean getDistributable(){return true;}
 
 }

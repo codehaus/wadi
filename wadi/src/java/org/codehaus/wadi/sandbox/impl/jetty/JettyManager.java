@@ -26,16 +26,17 @@ import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.ValuePool;
+import org.codehaus.wadi.sandbox.impl.Manager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.SessionManager;
 
-public class Manager extends org.codehaus.wadi.sandbox.impl.DistributableManager implements SessionManager {
+public class JettyManager extends org.codehaus.wadi.sandbox.impl.DistributableManager implements SessionManager {
 
     protected final Log _log = LogFactory.getLog(getClass());
     
-    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, StreamingStrategy streamer) {
+    public JettyManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, StreamingStrategy streamer) {
         super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, streamer);
         
         // we should install our filter and inject refs into it
