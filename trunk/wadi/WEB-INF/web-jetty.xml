@@ -39,8 +39,10 @@
 
   <Get name="ServletHandler">
     <Set name="SessionManager">
-      <New class="org.codehaus.wadi.sandbox.impl.jetty.Manager"> <!-- loads from WEB-INF/wadi2-web.xml -->
-      </New>
+      <Call class="org.codehaus.wadi.sandbox.SpringManagerFactory" name="create">
+	    <Arg>WEB-INF/wadi2-web.xml</Arg>
+	    <Arg>SessionManager</Arg>
+      </Call>
     </Set>
   </Get>
 

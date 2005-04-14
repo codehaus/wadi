@@ -16,40 +16,31 @@
  */
 package org.codehaus.wadi.sandbox.impl.jetty;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.EventListener;
-import java.util.List;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-//import org.codehaus.wadi.impl.TomcatIdGenerator;
-//import org.codehaus.wadi.sandbox.AttributesPool;
-//import org.codehaus.wadi.sandbox.SessionPool;
-//import org.codehaus.wadi.sandbox.ValuePool;
+import org.codehaus.wadi.IdGenerator;
+import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.AttributesPool;
+import org.codehaus.wadi.sandbox.SessionPool;
+import org.codehaus.wadi.sandbox.ValuePool;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.SessionManager;
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
-import org.springframework.core.io.InputStreamResource;
 
-public class Manager implements SessionManager {
+public class Manager extends org.codehaus.wadi.sandbox.impl.DistributableManager implements SessionManager {
 
     protected final Log _log = LogFactory.getLog(getClass());
-    protected org.codehaus.wadi.sandbox.impl.Manager _wadi;
     
-//    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool) {
-//        super(sessionPool, attributesPool, valuePool, new SessionWrapperFactory(), new TomcatIdGenerator());
+    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, StreamingStrategy streamer) {
+        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, streamer);
         
         // we should install our filter and inject refs into it
         // we should probably manage the Contextualiser stack...
-    //}
+    }
 
     protected ServletHandler _handler;
     public void initialize(ServletHandler handler) {_handler=handler;}
@@ -64,24 +55,18 @@ public class Manager implements SessionManager {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isStarted(){return _wadi.isStarted();}
-    
-    
     public void start() throws Exception {
-        // load Spring config
-        String localConfig=System.getProperty("wadi.config");
-        String config=localConfig==null?_defaultConfig:localConfig;
-        loadSpringConfig(config);
-        
         // pull out Manager
         // reference it...
         // pass the ServletContext to it somehow....
         // set up other stuff...
         getServletContext().setAttribute(Manager.class.getName(), this); // TODO - is putting ourselves in an attribute a security risk ?
+        //super.start();
     }
 
     public void stop() throws InterruptedException {
         // shut everything down...
+        // super.stop();
     }
 
 
@@ -130,39 +115,5 @@ public class Manager implements SessionManager {
     protected boolean _useRequestedId=false;
     public boolean getUseRequestedId() {return _useRequestedId;}
     public void setUseRequestedId(boolean useRequestedId) {_useRequestedId=useRequestedId;}
-    
-    protected int _maxInactiveInterval=30*60;
-    public int getMaxInactiveInterval(){return _maxInactiveInterval;}
-    public void setMaxInactiveInterval(int interval){_maxInactiveInterval=interval;}
-    
-    List _eventListeners=new ArrayList();
-    public void addEventListener(EventListener el){_eventListeners.add(el);}
-    public void removeEventListener(EventListener el){_eventListeners.remove(el);}
-    
-    
-    protected final String _defaultConfig="/WEB-INF/wadi2-web.xml"; // TODO - change name back later..
-    
-    public void loadSpringConfig(String config)   {
-        _log.debug("starting");
-        _log.info("WADI-2.0beta : Web Application Distribution Infrastructure (http://wadi.codehaus.org)");
-        
-        InputStream is=getServletContext().getResourceAsStream(config);
-        
-        if (is!=null)
-        {
-            DefaultListableBeanFactory dlbf=new DefaultListableBeanFactory();
-            PropertyPlaceholderConfigurer cfg=new PropertyPlaceholderConfigurer();
-            dlbf.registerSingleton("Manager", this);
-            new XmlBeanDefinitionReader(dlbf).loadBeanDefinitions(new InputStreamResource(is));
-            cfg.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
-            cfg.postProcessBeanFactory(dlbf);
-            
-            _wadi=(org.codehaus.wadi.sandbox.impl.Manager)dlbf.getBean("SessionManager");
-            
-            _log.info("configured from WADI descriptor: "+config);
-        }
-        else
-            _log.warn("could not find WADI descriptor: "+config);
-    }
-    
+
 }

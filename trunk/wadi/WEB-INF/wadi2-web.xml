@@ -72,7 +72,7 @@
 
   <bean
     id="SessionManager"
-    class="org.codehaus.wadi.sandbox.impl.DistributableManager"
+    class="org.codehaus.wadi.sandbox.impl.jetty.Manager"
     >
     <constructor-arg><ref bean="SessionPool"/></constructor-arg>
     <constructor-arg><ref bean="AttributesPool"/></constructor-arg>
