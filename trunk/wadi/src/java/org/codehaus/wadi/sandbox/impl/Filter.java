@@ -26,25 +26,40 @@ import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.impl.Manager;
 
 public class Filter implements javax.servlet.Filter {
 
     protected final Log _log = LogFactory.getLog(getClass());
 
-    public Filter() {
-        super();
+    protected Manager _manager;
+    protected boolean _distributable;
+
+    // Filter Lifecycle
+
+    public void
+      init(FilterConfig filterConfig) throws ServletException
+    {
+      _manager=(Manager)filterConfig.getServletContext().getAttribute(Manager.class.getName());
+      if (_manager==null)
+        _log.fatal("Manager not found");
+      else
+          _log.info("Manager found: "+_manager);
+
+      _manager.setFilter(this);
+      _distributable=_manager.getDistributable();
     }
 
-    public void init(FilterConfig filterConfig) throws ServletException {
-        _log.info("WADI Filter initialised");
+    public void
+      destroy()
+    {
+      _distributable=false;
+      _manager=null;
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         _log.info("WADI Filter handling...");
         chain.doFilter(request, response);
-    }
-
-    public void destroy() {
     }
 
 }

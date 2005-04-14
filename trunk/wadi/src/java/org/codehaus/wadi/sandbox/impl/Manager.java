@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.Iterator;
@@ -25,7 +24,6 @@ import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionContext;
 import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
@@ -37,10 +35,6 @@ import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.SessionConfig;
 import org.codehaus.wadi.sandbox.SessionPool;
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
-import org.springframework.core.io.InputStreamResource;
 
 /**
  * TODO - JavaDoc this type
@@ -164,5 +158,11 @@ public class Manager implements SessionConfig {
     protected int _maxInactiveInterval=30*60;
     public int getMaxInactiveInterval(){return _maxInactiveInterval;}
     public void setMaxInactiveInterval(int interval){_maxInactiveInterval=interval;}
+    
+    // integrate with Filter instance
+    protected Filter _filter;
+    public void setFilter(Filter filter){_filter=filter;}
+    
+    public boolean getDistributable(){return false;}
 
 }

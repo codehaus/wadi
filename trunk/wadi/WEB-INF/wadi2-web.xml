@@ -88,7 +88,7 @@
 	<!-- and finally - the SessionManager -->
   <bean
     id="SessionManager"
-    class="org.codehaus.wadi.sandbox.impl.jetty.Manager"
+    class="org.codehaus.wadi.sandbox.impl.jetty.JettyManager"
     >
     <constructor-arg><ref bean="SessionPool"/></constructor-arg>
     <constructor-arg><ref bean="AttributesPool"/></constructor-arg>
