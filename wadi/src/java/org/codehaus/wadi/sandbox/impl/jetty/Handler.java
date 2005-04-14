@@ -40,6 +40,7 @@ public class Handler extends AbstractHttpHandler {
 
 	public Handler(Pattern trustedIps) {
 		_trustedIps=trustedIps;
+        _log.info("WADI Handler in place: "+_trustedIps.pattern());
 	}
 
 	public void handle(String pathInContext, String pathParams, HttpRequest request, HttpResponse response) {

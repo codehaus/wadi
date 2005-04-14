@@ -1,0 +1,85 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+<!--
+  <bean
+    id="ConnectionFactory"
+    class="org.codehaus.activemq.ActiveMQConnectionFactory"
+    >
+    <constructor-arg><value>peer://WADI-0</value></constructor-arg>
+  </bean>
+-->
+
+  <bean
+    id="SessionFactory"
+    class="org.codehaus.wadi.sandbox.impl.DistributableSessionFactory"
+    >
+  </bean>
+
+  <bean
+    id="SessionPool"
+    class="org.codehaus.wadi.sandbox.impl.SimpleSessionPool"
+    >
+    <constructor-arg><ref bean="SessionFactory"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="AttributesFactory"
+    class="org.codehaus.wadi.sandbox.impl.DistributableAttributesFactory"
+    >
+  </bean>
+
+  <bean
+    id="AttributesPool"
+    class="org.codehaus.wadi.sandbox.impl.SimpleAttributesPool"
+    >
+    <constructor-arg><ref bean="AttributesFactory"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="ValueFactory"
+    class="org.codehaus.wadi.sandbox.impl.DistributableValueFactory"
+    >
+  </bean>
+
+  <bean
+    id="ValuePool"
+    class="org.codehaus.wadi.sandbox.impl.SimpleValuePool"
+    >
+    <constructor-arg><ref bean="ValueFactory"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="SessionWrapperFactory"
+    class="org.codehaus.wadi.sandbox.impl.jetty.SessionWrapperFactory"
+    >
+  </bean>
+
+  <bean
+    id="SessionIdFactory"
+    class="org.codehaus.wadi.impl.TomcatIdGenerator"
+    >
+  </bean>
+
+  <bean
+    id="Streamer"
+    class="org.codehaus.wadi.impl.SimpleStreamingStrategy"
+    >
+  </bean>
+
+  <bean
+    id="SessionManager"
+    class="org.codehaus.wadi.sandbox.impl.DistributableManager"
+    >
+    <constructor-arg><ref bean="SessionPool"/></constructor-arg>
+    <constructor-arg><ref bean="AttributesPool"/></constructor-arg>
+    <constructor-arg><ref bean="ValuePool"/></constructor-arg>
+    <constructor-arg><ref bean="SessionWrapperFactory"/></constructor-arg>
+    <constructor-arg><ref bean="SessionIdFactory"/></constructor-arg>
+    <constructor-arg><ref bean="Streamer"/></constructor-arg>
+  </bean>
+  
+</beans>
