@@ -37,7 +37,7 @@ public class MyContext extends AbstractContext {
 	}
 
 	MyContext() {
-		_lock=new RWLock();
+		//_lock=new RWLock();
 		}
 
 	public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {

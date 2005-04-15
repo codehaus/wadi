@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.impl.jetty;
 
+import java.util.Map;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -37,8 +39,8 @@ public class JettyManager extends org.codehaus.wadi.sandbox.impl.DistributableMa
 
     protected final Log _log = LogFactory.getLog(getClass());
     
-    public JettyManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, StreamingStrategy streamer, Contextualiser contextualiser) {
-        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, streamer);
+    public JettyManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map sessionMap, StreamingStrategy streamer) {
+        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, streamer);
     }
 
     protected ServletHandler _handler;
@@ -47,11 +49,12 @@ public class JettyManager extends org.codehaus.wadi.sandbox.impl.DistributableMa
     public ServletContext getServletContext() {return _handler.getServletContext();}
 
     public HttpSession getHttpSession(String id) {
-        throw new UnsupportedOperationException();
+        //throw new UnsupportedOperationException();
+        return null; // FIXME - this will be the container trying to 'refresh' a session...
     }
 
     public HttpSession newHttpSession(HttpServletRequest request) {
-        throw new UnsupportedOperationException();
+        return createSession().getWrapper();
     }
 
     public void start() throws Exception {

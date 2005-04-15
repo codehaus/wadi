@@ -40,7 +40,7 @@
   <Get name="ServletHandler">
     <Set name="SessionManager">
       <Call class="org.codehaus.wadi.sandbox.SpringManagerFactory" name="create">
-	    <Arg>WEB-INF/wadi2-web.xml</Arg>
+	    <Arg><SystemProperty name="wadi.home"/>/WEB-INF/wadi2-web.xml</Arg>
 	    <Arg>SessionManager</Arg>
       </Call>
     </Set>

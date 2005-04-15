@@ -30,7 +30,10 @@
 			<attribute value="file:/usr/local/java/junit3.8.1/javadoc/" name="javadoc_location"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/usr/local/java/jetty-5.1.2/ext/jasper-compiler.jar"/>
+	<classpathentry sourcepath="/home/jules/cvs/jetty/src" kind="lib" path="/usr/local/java/jetty-5.1.2/ext/jasper-compiler.jar">
+		<attributes>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="/usr/local/java/jetty-5.1.2/ext/jasper-runtime.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/jetty-5.1.2/lib/javax.servlet.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/server/lib/tomcat-util.jar"/>
