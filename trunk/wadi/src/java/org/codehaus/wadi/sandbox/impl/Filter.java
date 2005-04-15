@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Contextualiser;
+import org.codehaus.wadi.sandbox.StatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.impl.Manager;
 
 public class Filter implements javax.servlet.Filter {
@@ -38,6 +39,7 @@ public class Filter implements javax.servlet.Filter {
     protected Manager _manager;
     protected boolean _distributable;
     protected Contextualiser _contextualiser;
+    protected StatefulHttpServletRequestWrapperPool _pool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - init from _manager
     
     // Filter Lifecycle
 
@@ -76,11 +78,11 @@ public class Filter implements javax.servlet.Filter {
         
         if (sessionId==null) {
             // no session yet - but may initiate one...
-            StatefulHttpServletRequestWrapper wrapper=new StatefulHttpServletRequestWrapper(_manager); // TODO - pool
-            wrapper.initialise(request, null);
+            StatefulHttpServletRequestWrapper wrapper=_pool.take();
+            wrapper.init(request, null);
             chain.doFilter(wrapper, response);
             wrapper.destroy();
-            // TODO - put back in pool
+            _pool.put(wrapper);
         } else {
             // already associated with a session...
             _contextualiser.contextualise(request, response, chain, sessionId, null, null, false);

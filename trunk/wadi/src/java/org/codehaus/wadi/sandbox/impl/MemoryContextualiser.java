@@ -35,6 +35,7 @@ import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.Session;
+import org.codehaus.wadi.sandbox.StatefulHttpServletRequestWrapperPool;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
@@ -52,6 +53,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 	protected final Emoter _evictionEmoter;
+    protected final StatefulHttpServletRequestWrapperPool _requestPool;
 
 	public MemoryContextualiser(Contextualiser next, Evicter evicter, Map map, StreamingStrategy streamer, ContextPool pool) {
 		super(next, evicter, map);
@@ -63,6 +65,8 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 		_immoter=new MemoryImmoter(_map);
 		_emoter=new MemoryEmoter(_map);
 		_evictionEmoter=new AbstractMappedEmoter(_map){public String getInfo(){return "memory";}};
+        
+        _requestPool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - parameterise
 	}
 
 	public boolean isLocal(){return true;}
@@ -100,11 +104,11 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	        
             Manager manager=null; // FIXME - what should we do about this ?
             // take wrapper from pool...
-            StatefulHttpServletRequestWrapper wrapper=new StatefulHttpServletRequestWrapper(manager);
-            wrapper.initialise(req, (Session)motable);
+            StatefulHttpServletRequestWrapper wrapper=_requestPool.take();
+            wrapper.init(req, (Session)motable);
 	        chain.doFilter(wrapper, res);
             wrapper.destroy();
-            // put wrapper back in pool
+            _requestPool.put(wrapper);
 	        return true;
 	    } finally {
 	        if (acquired) lock.release();

@@ -26,16 +26,14 @@ import org.codehaus.wadi.sandbox.Session;
 public class StatefulHttpServletRequestWrapper extends HttpServletRequestWrapper {
     
     protected static final HttpServletRequest _dummy=new DummyHttpServletRequest();
-    protected final Manager _manager;
 	protected HttpSession _session; // I want to maintain a Session - but it's hard to get hold of it upon creation... - do we really need it ?
     
 	    
-	public StatefulHttpServletRequestWrapper(Manager manager) {
+	public StatefulHttpServletRequestWrapper() {
 	    super(_dummy);
-        _manager=manager;
 	}
 
-	void initialise(HttpServletRequest request, Session session) {
+	void init(HttpServletRequest request, Session session) {
 	    setRequest(request);
 	    _session=session==null?null:session.getWrapper();
 	}
