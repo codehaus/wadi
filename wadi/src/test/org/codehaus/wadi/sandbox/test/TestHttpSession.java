@@ -104,15 +104,18 @@ extends TestCase
     protected ValuePool               _distributableValuePool=new SimpleValuePool(_distributableValueFactory);
     protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesPool, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
     // LazyValue
+    protected SessionPool             _lazyValueSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _lazyValueFactory=new LazyValueFactory();
     protected ValuePool               _lazyValuePool=new SimpleValuePool(_lazyValueFactory);
-    protected Manager                 _lazyValueManager=new DistributableManager(_distributableSessionPool, _distributedAttributesPool, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
+    protected Manager                 _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesPool, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
     // LazyAttributes
+    protected SessionPool             _lazyAttributesSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected AttributesFactory       _lazyAttributesFactory=new LazyAttributesFactory();
     protected AttributesPool          _lazyAttributesPool=new SimpleAttributesPool(_lazyAttributesFactory);
-    protected Manager                 _lazyAttributesManager=new DistributableManager(_distributableSessionPool, _lazyAttributesPool,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
+    protected Manager                 _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesPool,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
     // LazyBoth
-    protected Manager                 _lazyBothManager=new DistributableManager(_distributableSessionPool, _lazyAttributesPool,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
+    protected SessionPool             _lazyBothSessionPool=new SimpleSessionPool(_distributableSessionFactory);
+    protected Manager                 _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesPool,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
     
     
     public TestHttpSession(String name)
@@ -942,7 +945,7 @@ extends TestCase
     public void
     testIsNew(Manager manager, SessionPool sessionPool)
     {
-        Session s=sessionPool.take(manager);
+        Session s=sessionPool.take();
         HttpSession session=s.getWrapper();
         assertTrue(session.isNew());
         s.setLastAccessedTime(System.currentTimeMillis()+1);
@@ -1008,7 +1011,7 @@ extends TestCase
     testActivation(Manager manager, SessionPool pool) // Distributable only
     throws Exception
     {
-        DistributableSession s0=(DistributableSession)pool.take(manager);
+        DistributableSession s0=(DistributableSession)pool.take();
         List events=ActivationListener._events;
         events.clear();
         
@@ -1026,7 +1029,7 @@ extends TestCase
         }
         events.clear();
         
-        DistributableSession s1=(DistributableSession)pool.take(manager);
+        DistributableSession s1=(DistributableSession)pool.take();
         s1.setBytes(bytes);
         // listsners may be activated lazily - so:
         s1.getAttribute(key);
@@ -1048,7 +1051,7 @@ extends TestCase
     {
         // test that a 'copy' (the basis of all motion/migration) completely copies
         // a sessions contents, by VALUE not reference...
-        DistributableSession s0=(DistributableSession)pool.take(manager);
+        DistributableSession s0=(DistributableSession)pool.take();
         s0.setLastAccessedTime(System.currentTimeMillis());
         s0.setMaxInactiveInterval(60*60);
         s0.setId("a-session");
@@ -1057,9 +1060,9 @@ extends TestCase
         
         Thread.sleep(1);
 
-        DistributableSession s1=(DistributableSession)pool.take(manager);
+        DistributableSession s1=(DistributableSession)pool.take();
         s1.copy(s0);
-        DistributableSession s2=(DistributableSession)pool.take(manager);
+        DistributableSession s2=(DistributableSession)pool.take();
         s2.copy(s0);
         
         assertTrue(s1.getCreationTime()==s2.getCreationTime());        

@@ -35,12 +35,13 @@ public class SessionToContextPoolAdapter implements ContextPool {
 
     protected final SessionPool _pool;
     
-    protected SessionConfig _config; // FIXME - how/when do we initialise this ?
-    public void setSessionConfig(SessionConfig config) {_config=config;}
-    
     public SessionToContextPoolAdapter(SessionPool pool) {
         super();
         _pool=pool;
+    }
+    
+    public void init(SessionConfig config) {
+        _pool.init(config);
     }
 
     public void put(Context context) {
@@ -48,6 +49,6 @@ public class SessionToContextPoolAdapter implements ContextPool {
     }
 
     public Context take() {
-        return _pool.take(_config);
+        return _pool.take();
     }
 }

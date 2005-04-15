@@ -18,7 +18,8 @@ package org.codehaus.wadi.sandbox;
 
 public interface SessionPool {
     
-    Session take(SessionConfig config);
+    void init(SessionConfig config);
+    Session take();
     void put(Session session);
 
 }
