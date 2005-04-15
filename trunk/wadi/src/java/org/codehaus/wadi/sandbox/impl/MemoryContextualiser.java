@@ -105,7 +105,9 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
             Manager manager=null; // FIXME - what should we do about this ?
             // take wrapper from pool...
             StatefulHttpServletRequestWrapper wrapper=_requestPool.take();
-            wrapper.init(req, (Session)motable);
+            Session session=(Session)motable;
+            session.setLastAccessedTime(System.currentTimeMillis());
+            wrapper.init(req, session);
 	        chain.doFilter(wrapper, res);
             wrapper.destroy();
             _requestPool.put(wrapper);
