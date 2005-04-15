@@ -57,6 +57,7 @@ public class Manager implements SessionConfig {
 
     public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser) {
         _sessionPool=sessionPool;
+        _sessionPool.init(this); // set up a backptr - yeugh !
         _attributesPool=attributesPool;
         _valuePool=valuePool;
         _sessionWrapperFactory=sessionWrapperFactory;
@@ -79,7 +80,7 @@ public class Manager implements SessionConfig {
     }
 
     public Session createSession() {
-        return _sessionPool.take(this);
+        return _sessionPool.take();
         // TODO - initialise ID !
     }
     

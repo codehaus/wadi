@@ -81,7 +81,7 @@
     id="Contextualiser"
     class="org.codehaus.wadi.sandbox.impl.SimpleContextualiserStack"
     >
-       <constructor-arg><ref bean="ContextPool"/></constructor-arg>
+       <constructor-arg><ref bean="ContextPool"/></constructor-arg> <!-- enclosed SessionPool will be init()-ed by Manager -->
        <constructor-arg><ref bean="DataSource"/></constructor-arg>
   </bean>
 

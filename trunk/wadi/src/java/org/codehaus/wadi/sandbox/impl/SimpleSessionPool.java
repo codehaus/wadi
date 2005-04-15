@@ -24,14 +24,20 @@ import org.codehaus.wadi.sandbox.SessionPool;
 public class SimpleSessionPool implements SessionPool {
 
     protected final SessionFactory _factory;
+    protected SessionConfig _config;
     
     public SimpleSessionPool(SessionFactory factory) {
         super();
         _factory=factory;
     }
     
-    public Session take(SessionConfig config) {
-        return _factory.create(config);
+    public void init(SessionConfig config) {
+        assert _config==null : "already initialised";
+        _config=config;
+    }
+    
+    public Session take() {
+        return _factory.create(_config);
     }
 
     public void put(Session session) {
