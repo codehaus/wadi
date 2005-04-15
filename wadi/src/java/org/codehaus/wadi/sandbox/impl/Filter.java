@@ -58,10 +58,12 @@ public class Filter implements javax.servlet.Filter {
     }
 
     public void
-      destroy()
+    destroy()
     {
-      _distributable=false;
-      _manager=null;
+        _pool=null;
+        _contextualiser=null;
+        _distributable=false;
+        _manager=null;
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -72,10 +74,9 @@ public class Filter implements javax.servlet.Filter {
     }
     
     public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        _log.info("WADI - potentially stateful request...");
-        
         String sessionId=request.getRequestedSessionId();
-        
+        _log.info("WADI - potentially stateful request: "+sessionId);
+                
         if (sessionId==null) {
             // no session yet - but may initiate one...
             StatefulHttpServletRequestWrapper wrapper=_pool.take();
