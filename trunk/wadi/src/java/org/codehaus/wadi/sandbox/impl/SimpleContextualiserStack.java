@@ -115,13 +115,13 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
         _clusterCluster=(CustomCluster)_clusterFactory.createCluster(_clusterName);
         _clusterCluster.start();
-        InetSocketAddress isa=new InetSocketAddress("localhost", 8080);
+        InetSocketAddress isa=new InetSocketAddress("localhost", 8080); // FIXME - hardwired port
         HttpProxy proxy=new StandardHttpProxy("jsessionid");
         _clusterLocation=new HttpProxyLocation(_clusterCluster.getLocalNode().getDestination(), isa, proxy);
-        _clusterRelocater=null;
         _clusterMap=new HashMap();
         _clusterEvicter=new SwitchableEvicter();
         _clusterDispatcher=new MessageDispatcher(_clusterCluster);
+        _clusterRelocater=new ImmigrateRelocationStrategy(_clusterDispatcher, _clusterLocation, 2000, _clusterMap);
         _cluster=new ClusterContextualiser(_database, _clusterEvicter, _clusterMap, _collapser, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation);
  
         _statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
