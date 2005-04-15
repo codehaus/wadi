@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
@@ -54,8 +55,9 @@ public class Manager implements SessionConfig {
     protected final SessionWrapperFactory _sessionWrapperFactory;
     protected final IdGenerator _sessionIdFactory;
     protected final Contextualiser _contextualiser;
+    protected final Map _map;
 
-    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser) {
+    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map map) {
         _sessionPool=sessionPool;
         _sessionPool.init(this); // set up a backptr - yeugh !
         _attributesPool=attributesPool;
@@ -63,25 +65,27 @@ public class Manager implements SessionConfig {
         _sessionWrapperFactory=sessionWrapperFactory;
         _sessionIdFactory=sessionIdFactory;
         _contextualiser=contextualiser;
+        _map=map;
     }
     
     public boolean isStarted(){return false;}
     
-    public HttpSession newHttpSession() {
-        return createSession().getWrapper();
-    }
-    
     public void destroySession(Session session) {
         for (Iterator i=new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) // ALLOC ?
             session.removeAttribute((String)i.next()); // TODO - very inefficient
-        // TODO - more here
+        String id=session.getId();
+        _map.remove(id);
+        // _sessionIdFactory.put(id); // we might reuse session ids ? - sounds like a BAD idea
         session.destroy();
         _sessionPool.put(session);
     }
 
     public Session createSession() {
-        return _sessionPool.take();
-        // TODO - initialise ID !
+        Session session=_sessionPool.take();
+        String id=(String)_sessionIdFactory.take(); // TODO - API on this class is wrong...
+        session.setId(id);
+        _map.put(id, session);
+        return session;
     }
     
     //----------------------------------------

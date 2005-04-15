@@ -23,6 +23,8 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -61,8 +63,27 @@ public class Filter implements javax.servlet.Filter {
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        _log.info("WADI Filter handling...");
-        chain.doFilter(request, response);
+        if (request instanceof HttpServletRequest)
+            doFilter((HttpServletRequest)request, (HttpServletResponse)response, chain);
+        else // this one is not HTTP - therefore it is and will remain, stateless - not for us...
+            chain.doFilter(request, response);
     }
-
+    
+    public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+        _log.info("WADI - potentially stateful request...");
+        
+        String sessionId=request.getRequestedSessionId();
+        
+        if (sessionId==null) {
+            // no session yet - but may initiate one...
+            StatefulHttpServletRequestWrapper wrapper=new StatefulHttpServletRequestWrapper(_manager); // TODO - pool
+            wrapper.initialise(request, null);
+            chain.doFilter(wrapper, response);
+            wrapper.destroy();
+            // TODO - put back in pool
+        } else {
+            // already associated with a session...
+            _contextualiser.contextualise(request, response, chain, sessionId, null, null, false);
+        }
+    }
 }

@@ -34,6 +34,7 @@ import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
+import org.codehaus.wadi.sandbox.Session;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
@@ -97,8 +98,13 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	            _log.trace("context disappeared whilst we were wating for lock: "+id);
 	        }
 	        
-	        // should we wrap req with a session-aware wrapper ?
-	        chain.doFilter(req, res);
+            Manager manager=null; // FIXME - what should we do about this ?
+            // take wrapper from pool...
+            StatefulHttpServletRequestWrapper wrapper=new StatefulHttpServletRequestWrapper(manager);
+            wrapper.initialise(req, (Session)motable);
+	        chain.doFilter(wrapper, res);
+            wrapper.destroy();
+            // put wrapper back in pool
 	        return true;
 	    } finally {
 	        if (acquired) lock.release();

@@ -26,18 +26,21 @@ import org.codehaus.wadi.sandbox.Session;
 public class StatefulHttpServletRequestWrapper extends HttpServletRequestWrapper {
     
     protected static final HttpServletRequest _dummy=new DummyHttpServletRequest();
-	protected Session _session;
+    protected final Manager _manager;
+	protected HttpSession _session; // I want to maintain a Session - but it's hard to get hold of it upon creation... - do we really need it ?
+    
 	    
-	public StatefulHttpServletRequestWrapper(HttpServletRequest request, Session state) {
+	public StatefulHttpServletRequestWrapper(Manager manager) {
 	    super(_dummy);
+        _manager=manager;
 	}
 
 	void initialise(HttpServletRequest request, Session session) {
 	    setRequest(request);
-	    _session=session;
+	    _session=session==null?null:session.getWrapper();
 	}
 	
-	void recycle() {
+	void destroy() {
 	    setRequest(_dummy);
 	    _session=null;
 	}
@@ -46,18 +49,13 @@ public class StatefulHttpServletRequestWrapper extends HttpServletRequestWrapper
 	
 	public HttpSession getSession(){return getSession(true);}
 
-	public HttpSession getSession(boolean create) {
-	    // TODO - I'm assuming single threaded access to request objects...
-
-	    if (null==_session) {
-	        if (create) {
-	            // create a new session...
-	            return null; // FIXME
-	        } else {
-	            return null;
-	        }
-	    } else {
-	        return _session.getWrapper();
-	    }
-	}
+    public HttpSession getSession(boolean create) {
+        // TODO - I'm assuming single threaded access to request objects...
+        // so no synchronization ?
+        
+        if (null==_session)
+            return (_session=((HttpServletRequest)getRequest()).getSession(create));
+            else
+                return _session;
+    }
 }

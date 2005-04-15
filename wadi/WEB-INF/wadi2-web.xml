@@ -64,6 +64,12 @@
 	<!-- the Contextualiser stack...(shorthand for now) -->
 
   <bean
+    id="SessionMap"
+    class="java.util.HashMap"
+    >
+  </bean>
+
+  <bean
     id="DataSource"
     class="org.axiondb.jdbc.AxionDataSource"
     >
@@ -81,6 +87,7 @@
     id="Contextualiser"
     class="org.codehaus.wadi.sandbox.impl.SimpleContextualiserStack"
     >
+       <constructor-arg><ref bean="SessionMap"/></constructor-arg>
        <constructor-arg><ref bean="ContextPool"/></constructor-arg> <!-- enclosed SessionPool will be init()-ed by Manager -->
        <constructor-arg><ref bean="DataSource"/></constructor-arg>
   </bean>
@@ -97,6 +104,7 @@
     <constructor-arg><ref bean="SessionWrapperFactory"/></constructor-arg>
     <constructor-arg><ref bean="SessionIdFactory"/></constructor-arg>
     <constructor-arg><ref bean="Contextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="SessionMap"/></constructor-arg>
     <constructor-arg><ref bean="Streamer"/></constructor-arg>
   </bean>
   

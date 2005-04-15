@@ -99,7 +99,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final Map _memoryMap;
     protected final MemoryContextualiser _memory;
     
-    public SimpleContextualiserStack(ContextPool pool, DataSource dataSource) throws JMSException, ClusterException {
+    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource) throws JMSException, ClusterException {
         super();
         _streamer=new SimpleStreamingStrategy();
         _collapser=new HashingCollapser(1, 2000);
@@ -139,7 +139,7 @@ public class SimpleContextualiserStack implements Contextualiser {
 
         _memoryPool=pool;
         _memoryEvicter=new AbsoluteEvicter(30*60*1000);
-        _memoryMap=new HashMap();
+        _memoryMap=sessionMap;
         _memory=new MemoryContextualiser(_serial, _memoryEvicter, _memoryMap, _streamer, _memoryPool);
         
         _cluster.setTop(_memory);

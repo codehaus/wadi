@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import org.apache.commons.logging.Log;
@@ -38,13 +40,17 @@ public class SpringManagerFactory {
         _bean=bean;
     }
 
-    public Manager create()   {
+    public Manager create() throws FileNotFoundException {
         return create(_descriptor, _bean);
     }
     
-    public static Manager create(String descriptor, String bean) {
-        InputStream is=Thread.currentThread().getContextClassLoader().getResourceAsStream(descriptor);
-        
+    public static Manager create(String descriptor, String bean) throws FileNotFoundException {
+        //ClassLoader cl=SpringManagerFactory.class.getClassLoader();
+        ClassLoader cl=Thread.currentThread().getContextClassLoader();
+        _log.info("Manager ClassLoader: "+cl);
+
+        //InputStream is=cl.getResourceAsStream(descriptor);
+        InputStream is=new FileInputStream(descriptor);
         if (is!=null) {
             DefaultListableBeanFactory dlbf=new DefaultListableBeanFactory();
             PropertyPlaceholderConfigurer cfg=new PropertyPlaceholderConfigurer();

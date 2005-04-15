@@ -36,18 +36,18 @@ public abstract class AbstractContext extends AbstractMotable implements Context
 
     protected static Log _log = LogFactory.getLog(AbstractContext.class);
 
-    protected RWLock _lock;
+    protected final RWLock _lock=new RWLock(); // TODO - initially - we will pool the lock with the session - risky :-)
 	public Sync getSharedLock(){return _lock.readLock();}
 	public Sync getExclusiveLock(){return _lock.writeLock();}
 
-	public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id, RWLock lock) {
-	    init(creationTime, lastAccessedTime, maxInactiveInterval, invalidated);
-	    _lock=lock;
-	}
+//	public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id, RWLock lock) {
+//	    init(creationTime, lastAccessedTime, maxInactiveInterval, invalidated);
+//	    _lock=lock;
+//	}
 	
 	public void destroy() {
 	    super.destroy();
-	    _lock=null;
+//	    _lock=null;
 	}
 
 	// Motable

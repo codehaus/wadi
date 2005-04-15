@@ -22,8 +22,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionActivationListener;
@@ -81,7 +83,7 @@ extends TestCase
     protected Log                     _log=LogFactory.getLog(TestHttpSession.class);
     protected Listener                _listener;
     protected List                    _events=new ArrayList();
-    
+    protected Map                     _sessionMap=new HashMap();
     // Standard
     protected Contextualiser          _standardContextualiser=null;
     protected SessionWrapperFactory   _standardSessionWrapperFactory=new DummySessionWrapperFactory();
@@ -92,7 +94,7 @@ extends TestCase
     protected SessionPool             _standardSessionPool=new SimpleSessionPool(_standardSessionFactory);
     protected ValueFactory            _standardValueFactory=new StandardValueFactory();
     protected ValuePool               _standardValuePool=new SimpleValuePool(_standardValueFactory);
-    protected Manager                 _standardManager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser);
+    protected Manager                 _standardManager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser, _sessionMap);
     // Distributable
     protected Contextualiser          _distributableContextualiser=null;
     protected StreamingStrategy       _streamer=new SimpleStreamingStrategy();
@@ -102,20 +104,20 @@ extends TestCase
     protected SessionPool             _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _distributableValueFactory=new DistributableValueFactory();
     protected ValuePool               _distributableValuePool=new SimpleValuePool(_distributableValueFactory);
-    protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesPool, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
+    protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesPool, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer);
     // LazyValue
     protected SessionPool             _lazyValueSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _lazyValueFactory=new LazyValueFactory();
     protected ValuePool               _lazyValuePool=new SimpleValuePool(_lazyValueFactory);
-    protected Manager                 _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesPool, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
+    protected Manager                 _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesPool, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer);
     // LazyAttributes
     protected SessionPool             _lazyAttributesSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected AttributesFactory       _lazyAttributesFactory=new LazyAttributesFactory();
     protected AttributesPool          _lazyAttributesPool=new SimpleAttributesPool(_lazyAttributesFactory);
-    protected Manager                 _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesPool,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
+    protected Manager                 _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesPool,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer);
     // LazyBoth
     protected SessionPool             _lazyBothSessionPool=new SimpleSessionPool(_distributableSessionFactory);
-    protected Manager                 _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesPool,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
+    protected Manager                 _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesPool,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer);
     
     
     public TestHttpSession(String name)
@@ -144,7 +146,7 @@ extends TestCase
     //   class Manager
     //     extends org.apache.catalina.session.StandardManager
     //   {
-    //     public HttpSession newHttpSession() {return createSession().getSession();}
+    //     public HttpSession createSession().getWrapper() {return createSession().getSession();}
     //     public void addEventListener(EventListener l){addSessionListener(l);}
     //   }
     
@@ -240,7 +242,7 @@ extends TestCase
         _events.clear();
         
         // create a session
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         assertTrue(!session.getAttributeNames().hasMoreElements());
         assertTrue(session.getValueNames().length==0);
         Pair pair=(Pair)_events.remove(0);
@@ -382,7 +384,7 @@ extends TestCase
     public void
     testInvalidate(Manager manager)
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         session.invalidate();
         // TODO - what should we test here ?
     }
@@ -400,7 +402,7 @@ extends TestCase
     public void
     testSetAttribute(Manager manager)
     {   
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         _events.clear();
         
@@ -445,7 +447,7 @@ extends TestCase
     public void
     testPutValue(Manager manager)
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         _events.clear();
         
@@ -490,7 +492,7 @@ extends TestCase
     public void
     testGetAttribute(Manager manager)
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         String key="foo";
         Object val=new Listener();
         session.setAttribute(key, val);
@@ -512,7 +514,7 @@ extends TestCase
     public void
     testGetValue(Manager manager)
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         String key="foo";
         Object val=new Listener();
         session.setAttribute(key, val);
@@ -534,7 +536,7 @@ extends TestCase
     public void
     testRemoveAttribute(Manager manager)
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         String key="foo";
         Object val=new Listener();
@@ -587,7 +589,7 @@ extends TestCase
     public void
     testRemoveValue(Manager manager)
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         String key="foo";
         Object val=new Listener();
@@ -636,7 +638,7 @@ extends TestCase
     public void
     testSetAttributeNull(Manager manager)
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         String key="foo";
         Object val=new Listener();
@@ -685,7 +687,7 @@ extends TestCase
     public void
     testPutValueNull(Manager manager)
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         String key="foo";
         Object val=new Listener();
@@ -734,7 +736,7 @@ extends TestCase
     public void
     testReplaceAttribute(Manager manager)
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         String key="foo";
         Object oldVal=new Listener();
@@ -794,7 +796,7 @@ extends TestCase
     public void
     testReplaceValue(Manager manager)
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         String key="foo";
         Object oldVal=new Listener();
         Object newVal=new Listener();
@@ -861,7 +863,7 @@ extends TestCase
     public void
     testGetAttributeNames(Manager manager)
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         assertTrue(enumerationLength(session.getAttributeNames())==0);
         session.setAttribute("foo", "bar");
         assertTrue(enumerationLength(session.getAttributeNames())==1);
@@ -890,7 +892,7 @@ extends TestCase
     public void
     testGetValueNames(Manager manager)
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         assertTrue(session.getValueNames().length==0);
         session.setAttribute("foo", "bar");
         assertTrue(session.getValueNames().length==1);
@@ -919,7 +921,7 @@ extends TestCase
     public void
     testMaxInactiveInterval(Manager manager)
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         {
             int interval=60*60;
             session.setMaxInactiveInterval(interval);
@@ -965,7 +967,7 @@ extends TestCase
     public void
     testNullName(Manager manager)
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         try{session.setAttribute(null,"a");assertTrue(false);}catch(IllegalArgumentException e){}
         try{session.getAttribute(null);assertTrue(false);}catch(IllegalArgumentException e){}
         try{session.removeAttribute(null);assertTrue(false);}catch(IllegalArgumentException e){}
@@ -1156,7 +1158,7 @@ extends TestCase
     testStandardValidation(Manager manager) // Distributable only
     throws Exception
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         // try some Serializables...
         session.setAttribute("0", "foo");
         session.setAttribute("1", new Integer(1));
@@ -1171,7 +1173,7 @@ extends TestCase
     testDistributableValidation(Manager manager) // Distributable only
     throws Exception
     {
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         // try some Serializables...
         session.setAttribute("0", "foo");
         session.setAttribute("1", new Integer(1));
@@ -1341,7 +1343,7 @@ extends TestCase
     
 //  for (int i=0;i<numSessions;i++)
 //  {
-//  sessions[i]=_manager.newHttpSession();
+//  sessions[i]=_manager.createSession().getWrapper();
 //  // session impls are locked, since they are assumed to still be
 //  // in use by the thread that created them...
 //  sessions[i].setAttribute("foo", "bar");
@@ -1373,7 +1375,7 @@ extends TestCase
     
     //     try
     //     {
-    //       HttpSession session=_manager.newHttpSession();
+    //       HttpSession session=_manager.createSession().getWrapper();
     //       javax.naming.InitialContext context=new javax.naming.InitialContext();
     //       // can session handle EJBHome ?
     //       session.setAttribute("home", javax.rmi.PortableRemoteObject.narrow(context.lookup("jetty/CMPState"), org.mortbay.j2ee.session.interfaces.CMPStateHome.class));
@@ -1389,7 +1391,7 @@ extends TestCase
     
     //     try
     //     {
-    //       HttpSession session=_manager.newHttpSession();
+    //       HttpSession session=_manager.createSession().getWrapper();
     //       int interval=2;
     //       String key="time-out test";
     //       session.setAttribute(key, ""+interval+" seconds");
@@ -1410,7 +1412,7 @@ extends TestCase
     
     //     try
     //     {
-    //       HttpSession session=_manager.newHttpSession();
+    //       HttpSession session=_manager.createSession().getWrapper();
     //       int interval=5;
     //       String key="time-out test";
     //       session.setAttribute(key, ""+interval+" seconds");
@@ -1601,7 +1603,7 @@ extends TestCase
     testRest(Manager manager)
     {
         long start=System.currentTimeMillis();
-        HttpSession session=manager.newHttpSession();
+        HttpSession session=manager.createSession().getWrapper();
         long end=System.currentTimeMillis();
         assertTrue(session.getSessionContext().getSession(null)==null);
         assertTrue(session.getSessionContext().getIds()!=null);

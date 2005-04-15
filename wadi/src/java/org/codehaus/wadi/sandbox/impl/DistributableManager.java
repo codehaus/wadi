@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.codehaus.wadi.IdGenerator;
 import org.codehaus.wadi.StreamingStrategy;
@@ -36,8 +37,8 @@ public class DistributableManager extends Manager implements DistributableSessio
 
     protected final StreamingStrategy _streamer;
 
-    public DistributableManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, StreamingStrategy streamer) {
-        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser);
+    public DistributableManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map sessionMap, StreamingStrategy streamer) {
+        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap);
         _streamer=streamer;
     }
 

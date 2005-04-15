@@ -499,7 +499,7 @@ public class TestContextualiser extends TestCase {
     
     public void testStack() throws Exception {
         _log.info("putting complete stack together...");
-        SimpleContextualiserStack stack=new SimpleContextualiserStack(new MyContextPool(), _ds);
+        SimpleContextualiserStack stack=new SimpleContextualiserStack(new HashMap(), new MyContextPool(), _ds);
         stack.start();
         Thread.sleep(2000);
         stack.stop();
