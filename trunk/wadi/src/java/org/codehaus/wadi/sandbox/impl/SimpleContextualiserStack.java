@@ -143,6 +143,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _memory=new MemoryContextualiser(_serial, _memoryEvicter, _memoryMap, _streamer, _memoryPool);
         
         _cluster.setTop(_memory);
+        _clusterRelocater.setTop(_memory);
         
         // ready to rock !
     }
