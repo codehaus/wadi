@@ -16,10 +16,6 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import java.io.Serializable;
-
-import org.codehaus.wadi.sandbox.impl.DistributableSession;
-
 public aspect AttributeNameValidater {
     
     pointcut validate(String name) : execution(Object Session+.*Attribute(..)) && args(name,..);

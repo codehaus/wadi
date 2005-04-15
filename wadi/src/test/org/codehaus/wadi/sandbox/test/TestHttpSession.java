@@ -43,6 +43,7 @@ import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.sandbox.AttributesFactory;
 import org.codehaus.wadi.sandbox.AttributesPool;
+import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
@@ -82,6 +83,7 @@ extends TestCase
     protected List                    _events=new ArrayList();
     
     // Standard
+    protected Contextualiser          _standardContextualiser=null;
     protected SessionWrapperFactory   _standardSessionWrapperFactory=new DummySessionWrapperFactory();
     protected IdGenerator             _standardSessionIdFactory=new TomcatIdGenerator();
     protected AttributesFactory       _standardAttributesFactory=new StandardAttributesFactory();
@@ -90,8 +92,9 @@ extends TestCase
     protected SessionPool             _standardSessionPool=new SimpleSessionPool(_standardSessionFactory);
     protected ValueFactory            _standardValueFactory=new StandardValueFactory();
     protected ValuePool               _standardValuePool=new SimpleValuePool(_standardValueFactory);
-    protected Manager                 _standardManager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory);
+    protected Manager                 _standardManager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser);
     // Distributable
+    protected Contextualiser          _distributableContextualiser=null;
     protected StreamingStrategy       _streamer=new SimpleStreamingStrategy();
     protected AttributesFactory       _distributedAttributesFactory=new DistributableAttributesFactory();
     protected AttributesPool          _distributedAttributesPool=new SimpleAttributesPool(_distributedAttributesFactory);
@@ -99,17 +102,17 @@ extends TestCase
     protected SessionPool             _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _distributableValueFactory=new DistributableValueFactory();
     protected ValuePool               _distributableValuePool=new SimpleValuePool(_distributableValueFactory);
-    protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesPool, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _streamer);
+    protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesPool, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
     // LazyValue
     protected ValueFactory            _lazyValueFactory=new LazyValueFactory();
     protected ValuePool               _lazyValuePool=new SimpleValuePool(_lazyValueFactory);
-    protected Manager                 _lazyValueManager=new DistributableManager(_distributableSessionPool, _distributedAttributesPool, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _streamer);
+    protected Manager                 _lazyValueManager=new DistributableManager(_distributableSessionPool, _distributedAttributesPool, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
     // LazyAttributes
     protected AttributesFactory       _lazyAttributesFactory=new LazyAttributesFactory();
     protected AttributesPool          _lazyAttributesPool=new SimpleAttributesPool(_lazyAttributesFactory);
-    protected Manager                 _lazyAttributesManager=new DistributableManager(_distributableSessionPool, _lazyAttributesPool,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _streamer);
+    protected Manager                 _lazyAttributesManager=new DistributableManager(_distributableSessionPool, _lazyAttributesPool,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
     // LazyBoth
-    protected Manager                 _lazyBothManager=new DistributableManager(_distributableSessionPool, _lazyAttributesPool,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _streamer);
+    protected Manager                 _lazyBothManager=new DistributableManager(_distributableSessionPool, _lazyAttributesPool,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _streamer);
     
     
     public TestHttpSession(String name)

@@ -17,7 +17,6 @@
 package org.codehaus.wadi.sandbox.test;
 
 import java.io.IOException;
-import java.io.NotSerializableException;
 import java.io.Serializable;
 
 import javax.servlet.http.HttpSessionActivationListener;
@@ -27,24 +26,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
-import org.codehaus.wadi.sandbox.PartAttributes;
-import org.codehaus.wadi.sandbox.ReadWriteDirtier;
-import org.codehaus.wadi.sandbox.SimpleAttributes;
 import org.codehaus.wadi.sandbox.Value;
 import org.codehaus.wadi.sandbox.ValueFactory;
 import org.codehaus.wadi.sandbox.ValueHelper;
 import org.codehaus.wadi.sandbox.ValuePool;
-import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.AttributesConfig;
-import org.codehaus.wadi.sandbox.AttributesFactory;
-import org.codehaus.wadi.sandbox.Dirtier;
-import org.codehaus.wadi.sandbox.WholeAttributes;
-import org.codehaus.wadi.sandbox.WriteDirtier;
 import org.codehaus.wadi.sandbox.impl.DistributableValue;
 import org.codehaus.wadi.sandbox.impl.DistributableValueFactory;
 import org.codehaus.wadi.sandbox.impl.SimpleValuePool;
-import org.codehaus.wadi.sandbox.impl.DistributableValue;
-import org.codehaus.wadi.sandbox.impl.DistributableValueFactory;
 import org.codehaus.wadi.sandbox.impl.Utils;
 
 import junit.framework.TestCase;

@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.HttpSessionSetters;
+//import org.codehaus.wadi.HttpSessionSetters;
 
 public aspect Replicater {
 

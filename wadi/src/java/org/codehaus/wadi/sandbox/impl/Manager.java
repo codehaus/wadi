@@ -29,6 +29,7 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.IdGenerator;
+import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
 import org.codehaus.wadi.sandbox.ValuePool;
@@ -52,13 +53,15 @@ public class Manager implements SessionConfig {
     protected final ValuePool _valuePool;
     protected final SessionWrapperFactory _sessionWrapperFactory;
     protected final IdGenerator _sessionIdFactory;
-    
-    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory) {
+    protected final Contextualiser _contextualiser;
+
+    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser) {
         _sessionPool=sessionPool;
         _attributesPool=attributesPool;
         _valuePool=valuePool;
         _sessionWrapperFactory=sessionWrapperFactory;
         _sessionIdFactory=sessionIdFactory;
+        _contextualiser=contextualiser;
     }
     
     public boolean isStarted(){return false;}
@@ -161,8 +164,11 @@ public class Manager implements SessionConfig {
     
     // integrate with Filter instance
     protected Filter _filter;
+
     public void setFilter(Filter filter){_filter=filter;}
     
     public boolean getDistributable(){return false;}
+
+    public Contextualiser getContextualiser() {return _contextualiser;}
 
 }

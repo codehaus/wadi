@@ -24,6 +24,7 @@ import javax.servlet.http.HttpSession;
 import org.codehaus.wadi.IdGenerator;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.AttributesPool;
+import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.impl.Manager;
@@ -36,11 +37,8 @@ public class JettyManager extends org.codehaus.wadi.sandbox.impl.DistributableMa
 
     protected final Log _log = LogFactory.getLog(getClass());
     
-    public JettyManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, StreamingStrategy streamer) {
-        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, streamer);
-        
-        // we should install our filter and inject refs into it
-        // we should probably manage the Contextualiser stack...
+    public JettyManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, StreamingStrategy streamer, Contextualiser contextualiser) {
+        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, streamer);
     }
 
     protected ServletHandler _handler;
