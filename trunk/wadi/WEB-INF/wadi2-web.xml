@@ -85,7 +85,8 @@
        <constructor-arg><ref bean="DataSource"/></constructor-arg>
   </bean>
 
-	<!-- and finally - the SessionManager -->
+	<!-- and finally - the SessionManager itself -->
+	
   <bean
     id="SessionManager"
     class="org.codehaus.wadi.sandbox.impl.jetty.JettyManager"
@@ -95,6 +96,7 @@
     <constructor-arg><ref bean="ValuePool"/></constructor-arg>
     <constructor-arg><ref bean="SessionWrapperFactory"/></constructor-arg>
     <constructor-arg><ref bean="SessionIdFactory"/></constructor-arg>
+    <constructor-arg><ref bean="Contextualiser"/></constructor-arg>
     <constructor-arg><ref bean="Streamer"/></constructor-arg>
   </bean>
   

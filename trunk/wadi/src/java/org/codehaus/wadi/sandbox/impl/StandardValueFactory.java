@@ -19,7 +19,6 @@ package org.codehaus.wadi.sandbox.impl;
 import org.codehaus.wadi.sandbox.Value;
 import org.codehaus.wadi.sandbox.ValueConfig;
 import org.codehaus.wadi.sandbox.ValueFactory;
-import org.codehaus.wadi.sandbox.DistributableValueConfig;
 
 /**
  * TODO - JavaDoc this type

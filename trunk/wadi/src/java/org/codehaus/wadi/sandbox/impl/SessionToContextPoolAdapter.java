@@ -19,11 +19,24 @@ package org.codehaus.wadi.sandbox.impl;
 import org.codehaus.wadi.sandbox.Context;
 import org.codehaus.wadi.sandbox.ContextPool;
 import org.codehaus.wadi.sandbox.Session;
+import org.codehaus.wadi.sandbox.SessionConfig;
 import org.codehaus.wadi.sandbox.SessionPool;
 
+
+/**
+ * Hack - plasters over a difference in the API between the Manager and Contextualiser
+ * stacks. Sessions appear in both stacks, and must be pooled by the same object, but with
+ * different APIs. To be resolved ASAP.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class SessionToContextPoolAdapter implements ContextPool {
 
     protected final SessionPool _pool;
+    
+    protected SessionConfig _config; // FIXME - how/when do we initialise this ?
+    public void setSessionConfig(SessionConfig config) {_config=config;}
     
     public SessionToContextPoolAdapter(SessionPool pool) {
         super();
@@ -35,6 +48,6 @@ public class SessionToContextPoolAdapter implements ContextPool {
     }
 
     public Context take() {
-        throw new UnsupportedOperationException();
+        return _pool.take(_config);
     }
 }

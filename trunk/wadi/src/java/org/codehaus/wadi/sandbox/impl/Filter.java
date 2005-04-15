@@ -26,6 +26,7 @@ import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.impl.Manager;
 
 public class Filter implements javax.servlet.Filter {
@@ -34,7 +35,8 @@ public class Filter implements javax.servlet.Filter {
 
     protected Manager _manager;
     protected boolean _distributable;
-
+    protected Contextualiser _contextualiser;
+    
     // Filter Lifecycle
 
     public void
@@ -48,6 +50,7 @@ public class Filter implements javax.servlet.Filter {
 
       _manager.setFilter(this);
       _distributable=_manager.getDistributable();
+      _contextualiser=_manager.getContextualiser();
     }
 
     public void

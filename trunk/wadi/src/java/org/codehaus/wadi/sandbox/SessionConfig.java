@@ -21,7 +21,6 @@ import java.util.List;
 import javax.servlet.ServletContext;
 
 import org.codehaus.wadi.IdGenerator;
-import org.codehaus.wadi.sandbox.impl.Manager;
 
 public interface SessionConfig {
     
@@ -31,7 +30,7 @@ public interface SessionConfig {
     List getAttributeListeners();
     ServletContext getServletContext();
     
-    Manager getManager(); // TODO - just for destroySession()...
+    void destroySession(Session session);
     SessionWrapperFactory getSessionWrapperFactory();
     IdGenerator getSessionIdFactory();
     
