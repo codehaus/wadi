@@ -55,7 +55,6 @@ import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
-import org.codehaus.wadi.sandbox.test.SwitchableEvicter;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -121,7 +120,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         HttpProxy proxy=new StandardHttpProxy("jsessionid");
         _clusterLocation=new HttpProxyLocation(_clusterCluster.getLocalNode().getDestination(), isa, proxy);
         _clusterMap=new HashMap();
-        _clusterEvicter=new SwitchableEvicter();
+        _clusterEvicter=new NeverEvicter();
         _clusterDispatcher=new MessageDispatcher(_clusterCluster);
         _clusterRelocater=new ImmigrateRelocationStrategy(_clusterDispatcher, _clusterLocation, 2000, _clusterMap, _collapser);
         _cluster=new ClusterContextualiser(_database, _clusterEvicter, _clusterMap, _collapser, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation);
