@@ -182,9 +182,9 @@ public class TestContextualiser extends TestCase {
 		assertTrue(d.containsKey("bar"));
 		assertTrue(d.size()==1);
 
-		Contextualiser serial=new SerialContextualiser(disc, collapser);
+        Map m=new HashMap();
+		Contextualiser serial=new SerialContextualiser(disc, collapser, m);
 
-		Map m=new HashMap();
 		Contextualiser memory=new MemoryContextualiser(serial, new NeverEvicter(), m, ss, new MyContextPool());
 		m.put("foo", new MyContext("foo", "foo"));
 		assertTrue(m.size()==1);
@@ -352,8 +352,8 @@ public class TestContextualiser extends TestCase {
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 		Map d=new HashMap();
 		Contextualiser disc=new ExclusiveDiscContextualiser(new DummyContextualiser(), new NeverEvicter(), d, collapser, ss, new File("/tmp"));
-		Contextualiser serial=new SerialContextualiser(disc, collapser);
-		Map m=new HashMap();
+        Map m=new HashMap();
+		Contextualiser serial=new SerialContextualiser(disc, collapser, m);
 		Evictable foo=new MyContext("foo", "foo");
 		//foo.setMaxInactiveInterval(100);
 		m.put("foo", foo);
@@ -377,8 +377,8 @@ public class TestContextualiser extends TestCase {
 		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), new NeverEvicter(), _ds, _table);
 		Map d=new HashMap();
 		Contextualiser disc=new ExclusiveDiscContextualiser(db, new TimeToLiveEvicter(0), d, collapser, ss, new File("/tmp"));
-		Contextualiser serial=new SerialContextualiser(disc, collapser);
-		Map m=new HashMap();
+        Map m=new HashMap();
+		Contextualiser serial=new SerialContextualiser(disc, collapser, m);
 		Context tmp=new MyContext("foo", "foo");
 		tmp.setMaxInactiveInterval(2);
 		m.put("foo", tmp); // times out 2 seconds from now...

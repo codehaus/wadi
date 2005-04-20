@@ -74,8 +74,8 @@ public class MyServlet implements Servlet {
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
 		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);
 		_statelessContextualiser=new StatelessContextualiser(_clusterContextualiser, methods, true, uris, false);
-		_serialContextualiser=new SerialContextualiser(_statelessContextualiser, _collapser);
 		_memoryMap=new HashMap();
+        _serialContextualiser=new SerialContextualiser(_statelessContextualiser, _collapser, _memoryMap);
 		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(), _memoryMap, new SimpleStreamingStrategy(), contextPool);
 		relocater.setTop(_memoryContextualiser);
 	}

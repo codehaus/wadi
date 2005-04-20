@@ -37,6 +37,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.activecluster.ClusterFactory;
 import org.codehaus.activemq.ActiveMQConnectionFactory;
+import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.HttpProxy;
 import org.codehaus.wadi.sandbox.Immoter;
@@ -45,6 +46,7 @@ import org.codehaus.wadi.sandbox.RelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.CommonsHttpProxy;
 import org.codehaus.wadi.sandbox.impl.CustomCluster;
 import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
+import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.impl.ImmigrateRelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
@@ -182,8 +184,9 @@ public class TestRelocation extends TestCase {
 		}
 
 	public void testMigrateInsecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, _servlet0.getClusterMap()));
-		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, _servlet1.getClusterMap()));
+        Collapser collapser=new HashingCollapser(10, 2000);
+		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, _servlet0.getClusterMap(), collapser));
+		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, _servlet1.getClusterMap(), collapser));
 		testInsecureRelocation(true);
 		}
 
@@ -320,8 +323,9 @@ public class TestRelocation extends TestCase {
 		}
 
 	public void testMigrateSecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, _servlet0.getClusterMap()));
-		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, _servlet1.getClusterMap()));
+        Collapser collapser=new HashingCollapser(10, 2000);
+		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, _servlet0.getClusterMap(), collapser));
+		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, _servlet1.getClusterMap(), collapser));
 		testSecureRelocation(true);
 		}
 
@@ -405,8 +409,9 @@ public class TestRelocation extends TestCase {
 		}
 
 	public void testMigrateStatelessContextualiser() throws Exception {
-		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, _servlet0.getClusterMap()));
-		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, _servlet1.getClusterMap()));
+        Collapser collapser=new HashingCollapser(10, 2000);
+		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, _servlet0.getClusterMap(), collapser));
+		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, _servlet1.getClusterMap(), collapser));
 		testStatelessContextualiser(true);
 		}
 

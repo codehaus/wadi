@@ -99,7 +99,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	        if (promotionLock!=null) promotionLock.release();
 	        
 	        if (motable.getInvalidated()) {
-	            _log.trace("context disappeared whilst we were wating for lock: "+id);
+	            _log.trace("context disappeared whilst we were waiting for lock: "+id);
 	        }
 	        
             Manager manager=null; // FIXME - what should we do about this ?

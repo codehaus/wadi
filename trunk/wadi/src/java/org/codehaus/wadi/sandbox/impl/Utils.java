@@ -63,13 +63,13 @@ public class Utils {
 			immoter.commit(id, immotable);
 			emoter.commit(id, emotable);
 			long elapsedTime=System.currentTimeMillis()-startTime;
-			_log.info("sucessful motion: "+id+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
+			_log.info("motion: "+id+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
 			return immotable;
 		} else {
 			if (e) emoter.rollback(id, emotable);
 			if (i) immoter.rollback(id, immotable);
 			long elapsedTime=System.currentTimeMillis()-startTime;
-			_log.warn("unsucessful motion: "+id+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
+			_log.warn("motion failed: "+id+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
 			return null;
 		}
 	}
