@@ -75,7 +75,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final CustomClusterFactory _clusterFactory;
     protected final String _clusterName;
     protected final CustomCluster _clusterCluster;
-    protected final SwitchableEvicter _clusterEvicter;
+    protected final Evicter _clusterEvicter;
     protected final Map _clusterMap;
     protected final MessageDispatcher _clusterDispatcher;
     protected final RelocationStrategy _clusterRelocater;
