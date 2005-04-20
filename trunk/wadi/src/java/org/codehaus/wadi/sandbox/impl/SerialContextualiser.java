@@ -44,62 +44,73 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 public class SerialContextualiser extends AbstractThinContextualiser {
     protected static final Log _log = LogFactory.getLog(AbstractImmoter.class);
-    
+
     protected final Collapser _collapser;
     protected final Sync _dummyLock=new NullSync();
     protected final Map _map;
-    
+
     public SerialContextualiser(Contextualiser next, Collapser collapser, Map map) {
         super(next);
         _collapser=collapser;
         _map=map;
     }
-    
-    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
-        promotionLock=_collapser.getLock(id);
-        boolean promotionAcquired=false;
-        Sync sharedLock=null;
-        boolean sharedAcquired=false;
-        try {
-            try {
-                Utils.acquireUninterrupted(promotionLock);
-                promotionAcquired=true;
-            } catch (TimeoutException e) {
-                _log.error("unexpected timeout - proceding without lock", e);
-            }
-            
-            // whilst we were waiting for the promotionLock, the session in question may have been promoted into memory.
-            // before we proceed, confirm that this has not happened.
-            Context context=(Context)_map.get(id);
-            if (null!=context) {
-                // oops - it HAS happened...
-                _log.debug("session was promoted whilst we were waiting: "+id); // TODO - downgrade..
-                // overlap two locking systems until we have secured the session in memory, then run the request
-                // and release the lock.
-                sharedLock=context.getSharedLock();
-                try {
-                    Utils.acquireUninterrupted(sharedLock);
-                    sharedAcquired=true;
-                } catch (TimeoutException e) {
-                    _log.error("unexpected timeout - proceding without lock", e);
-                }
-                     
-                promotionLock.release(); // release as soon as we know Context is available to other threads
-                promotionAcquired=false;
-                // TODO - we really need to take a read lock before we release the promotionLock...
-                immoter.contextualise(hreq, hres, chain, id, context);
-                return true;
-            } else {
-                // session was not promoted whilst we were waiting for promotionLock. Continue down Contextualiser stack
-                // it may be below us...
-                // lock is to be released as soon as context is available to subsequent contextualisations...
-                boolean found=_next.contextualise(hreq, hres, chain, id, immoter, promotionAcquired?promotionLock:_dummyLock, localOnly);
-                promotionAcquired=!found;
-                return found;
-            }
-        } finally {
-            if (promotionAcquired) promotionLock.release();
-            if (sharedAcquired) sharedLock.release();
-        }
+
+  public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
+    if (promotionLock!=null) {
+      // someone is already doing a promotion from further up the
+      // stack - do nothing other than delegate...
+      return _next.contextualise(hreq, hres, chain, id, immoter, promotionLock, localOnly);
+    } else {
+      // the promotion begins here...
+
+      boolean promotionAcquired=true;
+      boolean promotionIsLocal=false;
+
+      promotionLock=_collapser.getLock(id);
+      try {
+	Utils.acquireUninterrupted(promotionLock);
+	promotionAcquired=true;
+      } catch (TimeoutException e) {
+	promotionAcquired=false;
+	_log.error("unexpected timeout - proceding without lock", e);
+      }
+
+      Sync sharedLock=null;
+      boolean sharedAcquired=false;
+      try {
+	// whilst we were waiting for the promotionLock, the session in question may have been promoted into memory.
+	// before we proceed, confirm that this has not happened.
+	Context context=(Context)_map.get(id);
+	if (null!=context) {
+	// oops - it HAS happened...
+	  _log.debug("session was promoted whilst we were waiting: "+id); // TODO - downgrade..
+	  // overlap two locking systems until we have secured the session in memory, then run the request
+	  // and release the lock.
+	  sharedLock=context.getSharedLock();
+	  try {
+	    Utils.acquireUninterrupted(sharedLock);
+	    sharedAcquired=true;
+	  } catch (TimeoutException e) {
+	    _log.error("unexpected timeout - proceding without lock", e);
+	  }
+
+	  promotionLock.release(); // release as soon as we know Context is available to other threads
+	  promotionAcquired=false;
+	  // TODO - we really need to take a read lock before we release the promotionLock...
+	  immoter.contextualise(hreq, hres, chain, id, context);
+	  return true;
+	} else {
+	  // session was not promoted whilst we were waiting for promotionLock. Continue down Contextualiser stack
+	  // it may be below us...
+	  // lock is to be released as soon as context is available to subsequent contextualisations...
+	  boolean found=_next.contextualise(hreq, hres, chain, id, immoter, promotionLock, localOnly);
+	  promotionAcquired=!found;
+	  return found;
+	}
+      } finally {
+	if (sharedAcquired) sharedLock.release();
+	if (promotionAcquired) promotionLock.release();
+      }
     }
+  }
 }

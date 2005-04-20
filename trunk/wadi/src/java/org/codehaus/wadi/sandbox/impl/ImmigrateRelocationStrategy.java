@@ -85,6 +85,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {
 
 		Location location=(Location)locationMap.get(id);
+		location=null;
 		Destination destination;
 
 		if (location==null) {
@@ -182,7 +183,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
                     _log.error("exclusive access could not be guaranteed within timeframe: "+id, e);
                     return;
                 }
-                
+
                 MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
                 // reverse direction...
                 settingsInOut.to=om.getJMSReplyTo();
@@ -192,9 +193,11 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
                 //				long handShakePeriod=request.getHandOverPeriod();
                 // TODO - the peekTimeout should be specified by the remote node...
                 Immoter promoter=new ImmigrationImmoter(settingsInOut);
-                
+
                 RWLock.setPriority(RWLock.EMMIGRATION_PRIORITY);
-                acquired=!_top.contextualise(null,null,null,id, promoter, promotionLock, true);
+		boolean found=_top.contextualise(null,null,null,id, promoter, promotionLock, true);
+		if (found)
+		  acquired=false; // someone else has released the promotion lock...
             } catch (Exception e) {
                 _log.warn("problem handling immigration request: "+id, e);
             } finally {
@@ -239,7 +242,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 			mr.setMotable(immotable);
 			ImmigrationAcknowledgement ack=(ImmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _ackRvMap, mr, _settingsInOut, _timeout);
 			if (ack==null) {
-				_log.warn("no ack received for session immigration: "+id);
+			  _log.warn("no ack received for session immigration: "+id, new Exception());
 				// TODO - who owns the session now - consider a syn link to old owner to negotiate this..
 				return false;
 			}
