@@ -29,6 +29,7 @@ package org.codehaus.wadi.sandbox.impl;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -99,15 +100,16 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final Map _memoryMap;
     protected final MemoryContextualiser _memory;
     
-    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource) throws JMSException, ClusterException {
+    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource) throws SQLException, JMSException, ClusterException {
         super();
         _streamer=new SimpleStreamingStrategy();
-        _collapser=new HashingCollapser(1, 2000);
+        _collapser=new DebugCollapser();
 
         _dummy=new DummyContextualiser();
         _databaseEvicter=new NeverEvicter();
         _databaseDataSource=dataSource;
         _databaseTable="WADI";
+        SharedJDBCMotable.initialise(_databaseDataSource, _databaseTable);
         _database=new SharedJDBCContextualiser(_dummy, _databaseEvicter, _databaseDataSource, _databaseTable);
 
         _connectionFactory=new ActiveMQConnectionFactory("peer://WADI-TEST");
@@ -121,7 +123,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterMap=new HashMap();
         _clusterEvicter=new SwitchableEvicter();
         _clusterDispatcher=new MessageDispatcher(_clusterCluster);
-        _clusterRelocater=new ImmigrateRelocationStrategy(_clusterDispatcher, _clusterLocation, 2000, _clusterMap);
+        _clusterRelocater=new ImmigrateRelocationStrategy(_clusterDispatcher, _clusterLocation, 2000, _clusterMap, _collapser);
         _cluster=new ClusterContextualiser(_database, _clusterEvicter, _clusterMap, _collapser, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation);
  
         _statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
@@ -135,11 +137,11 @@ public class SimpleContextualiserStack implements Contextualiser {
         _discMap=new HashMap();
         _disc=new ExclusiveDiscContextualiser(_stateless, _discEvicter, _discMap, _collapser, _streamer, _discDirectory);
 
-        _serial=new SerialContextualiser(_disc, _collapser);
 
         _memoryPool=pool;
         _memoryEvicter=new AbsoluteEvicter(30*60*1000);
         _memoryMap=sessionMap;
+        _serial=new SerialContextualiser(_disc, _collapser, _memoryMap);
         _memory=new MemoryContextualiser(_serial, _memoryEvicter, _memoryMap, _streamer, _memoryPool);
         
         _cluster.setTop(_memory);

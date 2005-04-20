@@ -38,6 +38,7 @@ import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 // this needs to be split into several parts...
 
@@ -278,14 +279,26 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	}
 
 	public void onMessage(ObjectMessage om, EmigrationRequest er) {
-		String id=er.getId();
-		Emoter emoter=new ImmigrationEmoter(om, er);
-		Motable emotable=er.getMotable();
-		
-		if (!emotable.checkTimeframe(System.currentTimeMillis()))
-		    _log.warn("immigrating session has come from the future!: "+emotable.getId());
+        String id=er.getId();
+        Sync lock=_collapser.getLock(id);
+        boolean acquired=false;
+        try {
+            Utils.acquireUninterrupted(lock);
+            acquired=true;
+            
+            Emoter emoter=new ImmigrationEmoter(om, er);
+            Motable emotable=er.getMotable();
+            
+            if (!emotable.checkTimeframe(System.currentTimeMillis()))
+                _log.warn("immigrating session has come from the future!: "+emotable.getId());
 
-		Immoter immoter=_top.getDemoter(id, emotable);
-		Utils.mote(emoter, immoter, emotable, id);
+            Immoter immoter=_top.getDemoter(id, emotable);
+            Utils.mote(emoter, immoter, emotable, id);
+        } catch (TimeoutException e) {
+            _log.warn("could not acquire promotion lock for incoming session: "+id);
+        } finally {
+            if (acquired)
+                lock.release();
+        }
 	}
 }
