@@ -93,7 +93,9 @@ public class SerialContextualiser extends AbstractThinContextualiser {
                 // session was not promoted whilst we were waiting for promotionLock. Continue down Contextualiser stack
                 // it may be below us...
                 // lock is to be released as soon as context is available to subsequent contextualisations...
-                return (promotionAcquired=!_next.contextualise(hreq, hres, chain, id, immoter, promotionAcquired?promotionLock:_dummyLock, localOnly));
+                boolean found=_next.contextualise(hreq, hres, chain, id, immoter, promotionAcquired?promotionLock:_dummyLock, localOnly);
+                promotionAcquired=!found;
+                return found;
             }
         } finally {
             if (promotionAcquired) promotionLock.release();
