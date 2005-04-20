@@ -68,7 +68,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 
 	protected final Map _resRvMap=new HashMap();
 	protected final Map _ackRvMap=new HashMap();
-    
+
     protected final Collapser _collapser;
 
 	public ImmigrateRelocationStrategy(MessageDispatcher dispatcher, Location location, long timeout, Map locationMap, Collapser collapser) {
@@ -108,12 +108,12 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 
         if (response==null)
             return false;
-        
+
 		Motable emotable=response.getMotable();
-		
+
 		if (!emotable.checkTimeframe(System.currentTimeMillis()))
 		    _log.warn("immigrating session has come from the future!: "+emotable.getId());
-		
+
 		Emoter emoter=new ImmigrationEmoter(_locationMap, settingsInOut);
 		Motable immotable=Utils.mote(emoter, immoter, emotable, id);
 		if (immotable!=null) {
@@ -168,46 +168,46 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 	}
 
 	public void onMessage(ObjectMessage om, ImmigrationRequest request) {
-	    String id=request.getId();
-	    _log.info("receiving immigration request: "+id);
-	    if (_top==null) {
-	        _log.warn("no Contextualiser set - cannot respond to ImmigrationRequests");
-	    } else {
+	  String id=request.getId();
+	  _log.info("receiving immigration request: "+id);
+	  if (_top==null) {
+	    _log.warn("no Contextualiser set - cannot respond to ImmigrationRequests");
+	  } else {
             Sync promotionLock=_collapser.getLock(id);
             boolean acquired=false;
-	        try {
-                try {
-                    Utils.acquireUninterrupted(promotionLock);
-                    acquired=true;
-                } catch (TimeoutException e) {
-                    _log.error("exclusive access could not be guaranteed within timeframe: "+id, e);
-                    return;
-                }
+	    try {
+	      try {
+		Utils.acquireUninterrupted(promotionLock);
+		acquired=true;
+	      } catch (TimeoutException e) {
+		_log.error("exclusive access could not be guaranteed within timeframe: "+id, e);
+		return;
+	      }
 
-                MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-	            // reverse direction...
-	            settingsInOut.to=om.getJMSReplyTo();
-	            settingsInOut.from=_location.getDestination();
-	            settingsInOut.correlationId=om.getJMSCorrelationID();
-	            _log.info("receiving immigration request: "+id+" : "+settingsInOut);
-	            //				long handShakePeriod=request.getHandOverPeriod();
-	            // TODO - the peekTimeout should be specified by the remote node...
-	            Immoter promoter=new ImmigrationImmoter(settingsInOut);
-                
-	            RWLock.setPriority(RWLock.EMMIGRATION_PRIORITY);
-	            acquired=!_top.contextualise(null,null,null,id, promoter, promotionLock, true);
-	        } catch (Exception e) {
-	            _log.warn("problem handling immigration request: "+id, e);
-	        } finally {
-	            RWLock.setPriority(RWLock.NO_PRIORITY);
-                if (acquired) promotionLock.release();
-	        }
-	        // TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
+	      MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+	      // reverse direction...
+	      settingsInOut.to=om.getJMSReplyTo();
+	      settingsInOut.from=_location.getDestination();
+	      settingsInOut.correlationId=om.getJMSCorrelationID();
+	      _log.info("receiving immigration request: "+id+" : "+settingsInOut);
+	      //				long handShakePeriod=request.getHandOverPeriod();
+	      // TODO - the peekTimeout should be specified by the remote node...
+	      Immoter promoter=new ImmigrationImmoter(settingsInOut);
+
+	      RWLock.setPriority(RWLock.EMMIGRATION_PRIORITY);
+	      _top.contextualise(null,null,null,id, promoter, promotionLock, true);
+	    } catch (Exception e) {
+	      _log.warn("problem handling immigration request: "+id, e);
+	    } finally {
+	      RWLock.setPriority(RWLock.NO_PRIORITY);
+	      if (acquired) promotionLock.release();
 	    }
+	    // TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
+	  }
 	}
 
 	/**
-	 * Manage the immotion of a session into the Cluster tier and thence its Emigration 
+	 * Manage the immotion of a session into the Cluster tier and thence its Emigration
 	 * (in response to an ImmigrationRequest) thence to another node.
 	 *
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
