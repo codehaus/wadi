@@ -38,7 +38,6 @@ import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.SessionRelocationStrategy;
 
-import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
@@ -167,44 +166,44 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 		}
 	}
 
-	public void onMessage(ObjectMessage om, ImmigrationRequest request) {
-	  String id=request.getId();
-	  _log.info("receiving immigration request: "+id);
-	  if (_top==null) {
-	    _log.warn("no Contextualiser set - cannot respond to ImmigrationRequests");
-	  } else {
+    public void onMessage(ObjectMessage om, ImmigrationRequest request) {
+        String id=request.getId();
+        _log.info("receiving immigration request: "+id);
+        if (_top==null) {
+            _log.warn("no Contextualiser set - cannot respond to ImmigrationRequests");
+        } else {
             Sync promotionLock=_collapser.getLock(id);
             boolean acquired=false;
-	    try {
-	      try {
-		Utils.acquireUninterrupted(promotionLock);
-		acquired=true;
-	      } catch (TimeoutException e) {
-		_log.error("exclusive access could not be guaranteed within timeframe: "+id, e);
-		return;
-	      }
-
-	      MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-	      // reverse direction...
-	      settingsInOut.to=om.getJMSReplyTo();
-	      settingsInOut.from=_location.getDestination();
-	      settingsInOut.correlationId=om.getJMSCorrelationID();
-	      _log.info("receiving immigration request: "+id+" : "+settingsInOut);
-	      //				long handShakePeriod=request.getHandOverPeriod();
-	      // TODO - the peekTimeout should be specified by the remote node...
-	      Immoter promoter=new ImmigrationImmoter(settingsInOut);
-
-	      RWLock.setPriority(RWLock.EMMIGRATION_PRIORITY);
-	      _top.contextualise(null,null,null,id, promoter, promotionLock, true);
-	    } catch (Exception e) {
-	      _log.warn("problem handling immigration request: "+id, e);
-	    } finally {
-	      RWLock.setPriority(RWLock.NO_PRIORITY);
-	      if (acquired) promotionLock.release();
-	    }
-	    // TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
-	  }
-	}
+            try {
+                try {
+                    Utils.acquireUninterrupted(promotionLock);
+                    acquired=true;
+                } catch (TimeoutException e) {
+                    _log.error("exclusive access could not be guaranteed within timeframe: "+id, e);
+                    return;
+                }
+                
+                MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+                // reverse direction...
+                settingsInOut.to=om.getJMSReplyTo();
+                settingsInOut.from=_location.getDestination();
+                settingsInOut.correlationId=om.getJMSCorrelationID();
+                _log.info("receiving immigration request: "+id+" : "+settingsInOut);
+                //				long handShakePeriod=request.getHandOverPeriod();
+                // TODO - the peekTimeout should be specified by the remote node...
+                Immoter promoter=new ImmigrationImmoter(settingsInOut);
+                
+                RWLock.setPriority(RWLock.EMMIGRATION_PRIORITY);
+                acquired=!_top.contextualise(null,null,null,id, promoter, promotionLock, true);
+            } catch (Exception e) {
+                _log.warn("problem handling immigration request: "+id, e);
+            } finally {
+                RWLock.setPriority(RWLock.NO_PRIORITY);
+                if (acquired) promotionLock.release();
+            }
+            // TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
+        }
+    }
 
 	/**
 	 * Manage the immotion of a session into the Cluster tier and thence its Emigration
