@@ -20,7 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Collapser;
 
-import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
+import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
@@ -32,19 +32,19 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public class DebugCollapser implements Collapser {
 	protected final Log _log = LogFactory.getLog(getClass());
 
-    class DebugSync extends ReentrantLock {
+    class DebugSync extends Mutex {
         protected int _counter;
         public synchronized void acquire() throws InterruptedException {
             _log.info("acquiring: "+ _counter);
             super.acquire();
             _log.info("acquired: "+ (++_counter));
         }
-        
+
         public synchronized void release(){
             super.release();
             _log.info("released: "+ (--_counter));
         }
-        
+
         public synchronized boolean attempt(long timeout) throws InterruptedException {
             _log.info("attempting: "+_counter);
             boolean success=super.attempt(timeout);
