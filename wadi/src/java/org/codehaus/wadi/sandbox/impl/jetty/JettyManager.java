@@ -58,17 +58,16 @@ public class JettyManager extends org.codehaus.wadi.sandbox.impl.DistributableMa
     }
 
     public void start() throws Exception {
-        // pull out Manager
-        // reference it...
-        // pass the ServletContext to it somehow....
-        // set up other stuff...
         getServletContext().setAttribute(Manager.class.getName(), this); // TODO - is putting ourselves in an attribute a security risk ?
-        //super.start();
+        super.start();
     }
 
-    public void stop() throws InterruptedException {
-        // shut everything down...
-        // super.stop();
+    public void stop() {
+        try {
+            super.stop();
+        } catch (Exception e) {
+            _log.warn("unexpected problem shutting down", e);
+        }
     }
 
 

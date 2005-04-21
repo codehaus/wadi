@@ -34,7 +34,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Contextualiser {
+public interface Contextualiser extends Lifecycle {
 
 	// I'd like to add Manager to param list, but it bloats dependency tree - can we get along without it ?
 	// FilterChain.doFilter() throws IOException, ServletException...
@@ -52,5 +52,5 @@ public interface Contextualiser {
 	 * @return - a Demoter - a delegate capable of arranging immotion into the correct Contextualiser
 	 */
 	Immoter getDemoter(String id, Motable motable);
-
+    
 }

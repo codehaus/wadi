@@ -16,6 +16,9 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.Iterator;
@@ -30,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.IdGenerator;
 import org.codehaus.wadi.sandbox.Contextualiser;
+import org.codehaus.wadi.sandbox.Lifecycle;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
 import org.codehaus.wadi.sandbox.ValuePool;
@@ -44,7 +48,7 @@ import org.codehaus.wadi.sandbox.SessionPool;
  * @version $Revision$
  */
 
-public class Manager implements SessionConfig {
+public class Manager implements Lifecycle, SessionConfig {
 
     protected final Log _log = LogFactory.getLog(getClass());
 
@@ -67,7 +71,21 @@ public class Manager implements SessionConfig {
         _map=map;
     }
     
-    public boolean isStarted(){return false;}
+    protected boolean _started;
+    
+    public boolean isStarted(){return _started;}
+    
+    public void start() throws Exception {
+        _log.info("starting");
+        _contextualiser.start();
+        _started=true;
+    }
+    
+    public void stop() throws Exception {
+        _log.info("stopping"); // although this sometimes does not appear, it IS called...
+        _started=false;
+        _contextualiser.stop();
+    }
     
     public void destroySession(Session session) {
         for (Iterator i=new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) // ALLOC ?

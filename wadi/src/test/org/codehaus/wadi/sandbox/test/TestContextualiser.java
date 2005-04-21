@@ -247,6 +247,10 @@ public class TestContextualiser extends TestCase {
 	    public Immoter getDemoter(String id, Motable motable) {
 	        return null;
 	    }
+        
+        public void start(){/* empty */}
+        public void stop(){/* empty */}
+
 	}
 
 	class MyActiveContextualiser implements Contextualiser {
@@ -284,6 +288,10 @@ public class TestContextualiser extends TestCase {
 	    public Immoter getDemoter(String id, Motable motable) {
 	        return null;
 	    }
+        
+        public void start(){/* empty */}
+        public void stop(){/* empty */}
+
 	}
 
 	class MyRunnable implements Runnable {

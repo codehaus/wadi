@@ -172,11 +172,13 @@ public class SimpleContextualiserStack implements Contextualiser {
         return _memory.getDemoter(id, motable);
     }
     
-    public void start() throws JMSException {
+    public void start() throws Exception {
         _clusterCluster.start();
+        _memory.start();
     }
 
-    public void stop() throws JMSException {
+    public void stop() throws Exception {
         _clusterCluster.stop();
+        _memory.stop();
     }
 }
