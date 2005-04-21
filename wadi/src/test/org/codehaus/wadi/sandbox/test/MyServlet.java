@@ -38,7 +38,6 @@ import org.codehaus.wadi.sandbox.RelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.impl.CustomCluster;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
-import org.codehaus.wadi.sandbox.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;

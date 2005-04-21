@@ -58,7 +58,6 @@ import org.codehaus.wadi.sandbox.impl.CustomCluster;
 import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.impl.DummyHttpServletRequest;
-import org.codehaus.wadi.sandbox.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.ExclusiveDiscContextualiser;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;

@@ -49,6 +49,6 @@ public class RedirectRelocationStrategy implements RequestRelocationStrategy {
 		return false;
 	}
 
-	public void setTop(Contextualiser top){}
+	public void setTop(Contextualiser top){/* NYI */}
 	public Contextualiser getTop(){return null;}
 }

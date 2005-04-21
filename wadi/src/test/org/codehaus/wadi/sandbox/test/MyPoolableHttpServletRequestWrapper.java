@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.codehaus.wadi.sandbox.Context;
 import org.codehaus.wadi.sandbox.PoolableHttpServletRequestWrapper;
-import org.codehaus.wadi.sandbox.impl.DummyHttpServletRequest;
 
 class MyPoolableHttpServletRequestWrapper extends MyHttpServletRequest implements PoolableHttpServletRequestWrapper {
 

@@ -46,6 +46,6 @@ public class HybridRelocationStrategy implements RelocationStrategy {
 		return false;
 	}
 
-	public void setTop(Contextualiser top){}
+	public void setTop(Contextualiser top){/* NYI */}
 	public Contextualiser getTop(){return null;}
 }
