@@ -1,0 +1,308 @@
+
+discuss session events with distributed sessions
+session counting and monitoring
+etc..
+
+discuss :
+	static/stateless
+	dynamic/stateless - how to optimise...
+	dynamic/stateful
+
+
+BucketingStrategy needs :
+
+bucket list management
+session id -> bucket mapping
+bucket -> replicant mapping
+
+Node can use this to get a list of buckets, allocate one two each
+session and decide which buckets it is responsible for backing up.
+
+Node leaving/joining events should cause changes in
+bucket->replicant-mapping as nodes take the place of leaving nodes, or
+balance state between themselves...
+
+----------------------------------------
+
+two locking models :
+
+Memory - fine granularity, fast-access - lock owned by Context
+Other - configurable granularity, slower access - lock owned by external component (Collapser)
+
+----------------------------------------
+
+
+lookup is done through a tiered series of caches (hopefully jcaches).
+
+e.g.
+
+memory
+local [disc]
+shared [cluster]
+shared [db]
+
+As you cross from local to shared you MUST go through a barrier in
+which you negotiate ownership, with the rest of the cluster, of the
+resource, should you recover it successfully. This will prevent any
+contention for the same resource in e.g. a shared disc, db or
+misunderstandings about ownership occurring within the cluster. It
+also means that the code for this negotiation need only be written
+once at the cluster-level, rather than for every shared medium.
+
+
+----------------------------------------
+
+
+http-request or session-search message arrives at node where session is not present.
+
+It creates dummy session of said id, locks it exclusively, attaches timestamp and waits on it (with timeout)
+
+Node sends session-search-message to all other nodes, including timestamp of arrival of http-request, or brought by message.
+
+When subsequent http-request or session-search-message arrives on node where exclusive lock has already been taken:
+
+it compares tstamp with exclusive lock, if same age or older it gives up. if younger it waits.
+
+
+when request message arrives at node holding session - first come
+first served - session is granted to first thread to achieve lock.
+
+
+when thread gains lock, if session is valid, it may migrate it back
+whence it came. if it is invalid a message will give up (it will be
+more recent and may have missed session on this node, but shoud win it
+on a another). if it is a request, it will start the whole process again..
+
+Write a test to ensure tha this algorithm is bombproof.
+
+
+----------------------------------------
+
+
+Implement transparent e/in-viction - i.e. session stub is maintained
+in-vm, only data is evicted to LOCAL disk.
+
+CONs;
+
+- more data will be held in memory
+
+PROs:
+
+- no need to check disc - we will know immediately if we own a session
+- simpler code, sessions can be decorated with evictability
+
+- if a session is migrated, it will be loaded by its owner and the
+transferred - only the owner will have access to the copy on disc,
+therefore this disc can now be LOCAL.
+
+CONs:
+
+- if a node dies (without replication) all its sessions (not just
+active ones) will be lost.
+
+PROs:
+
+- when a node is asked for a session that it does not have, it only
+has to check the cluster - no more race conditions across NFS.
+
+
+----------------------------------------
+
+Latest plan is :
+
+Node n1 receives a request for a session s
+
+it checks local cache for s
+it checks eviction cache for s
+it checks recently-died (if it's there it gives up)
+it checks recently-migrating
+   if mentioned
+      if mentioned request is older than this request continue
+   else (mentioned request is younger than this one - this one may have been e.g. proxied) give up on migration and relocate request to mentioned node
+
+it takes a timestamp t1
+it sends a message to cluster saying  - 'I needed s at t1'
+
+
+node n2 receives message 'I needed s at t1' from n1
+it checks local cache for s and
+either
+	finds it
+	it takes a W-lock on s
+	when it has the lock
+
+	if session is still valid:
+	   it checks s.lastAccessedTime() t2
+	   if t1>t2, it migrates s to n1
+	   if t2>=t1 it messages n1 saying 'relocate your request for s at t1 to n2'
+	else
+	  it messages n1 saying 're your request for s at t1 - I had s but now it has gone'
+
+	doesn't find it
+	puts an entry in the searches table 'n1 at t1 looking for s' for x seconds
+
+n1 either :
+
+receives the migrated session and processes the request
+
+or
+
+receives message 'relocate your request for s at t1 to n2' and does so
+
+or
+
+receives message 're your request for s at t1 - I had s but now it has gone'
+
+or waits until timeout then decides that
+
+
+need a recently-migrating and a recently-died indexed and sorted sets
+of fixed size, things cease to become 'recent' when they fall of the
+end...
+
+
+
+
+Greg
+
+cannot redirect a  a post
+issues with adding metadata (original request time etc) to a redirection/proxy -
+can we arrange a lb-wc redirection protocol instead of client-lb-wc - is it quicker to proxy ?
+authorisation etc..
+
+----------------------------------------
+
+
+names:
+
+Jetty has :
+
+Handler
+
+Tomcat has :
+
+Processor
+
+Web Spec has :
+
+Contexts
+
+
+
+Handler - Jetty has them
+Context[ualiser] -  WebSpec has them
+Processor - Tomcat has them
+
+Realizer
+Renderer
+
+Session/Store
+Combiner/Session
+
+Executor ?
+Runner ?
+Actualiser
+Concretise
+Reify ?
+
+
+
+
+We can now serialise out a session with e.g. gzip, then load it back
+in, promote it up through the ranks and emmigrate it to another node,
+where we will sonn be able to demote it back down the ranks to
+e.g. LocalDisc - all without demarshalling it into its constituent
+objects and firing any listeners at all.
+
+
+
+Depending on how I implement replication, it may be the case that
+immediately after calling setAttribute(key, val), where val is an
+ActivationListener, the container will call willPassivate() on it,
+serialise it and send the result off-node, leaving the val in your
+hand deactivated.. It won't be reactivated, unless, (a) I do that
+immediately, or (b) you call getAttribute(name).
+
+If the container does (a), this implies that the val ref in your hand
+is valid to change - which it is not, since it now has nothing to do
+with the session, which has effectively taken a copy... - or...
+
+
+If you do (b), this will deserialise and activate the attribute,
+returning it ...
+
+I think we should go with (a)....
+
+----------------------------------------
+
+
+how about a way of applying for a W lock:
+
+if any R locks exist, you wait
+
+if another W lock is in place, you exit immediately - there is no
+point in hanging around, the session will be shipped off node or
+destroyed...
+
+----------------------------------------
+
+Open Source Load Balancers:
+
+1. http://siag.nu/pen/ (works on both windows and unix, you may need cygwin)
+2. http://balance.sourceforge.net (unix only)
+3. Apache mod_jk/mod_jk2 with load balancing
+
+pound
+jetty balancer
+
+----------------------------------------
+
+Bibliography:
+
+http://www.theserverside.com/articles/article.tss?l=Tomcat
+http://www.onjava.com/lpt/a/4649
+http://www.onjava.com/lpt/a/4702
+
+----------------------------------------
+
+Jetty LB - API:
+
+
+add vhost/host:port/context[/subcontext] (html -> node1, gif-> node2)
+remove ""
+setWeight
+
+----------------------------------------
+
+Logging Policy
+
+WADI logs information at the following levels :
+
+ERROR -
+
+something has really gone wrong - i.e. a session could not be served
+for some reason or another. The impact on WADI is functional and will
+impact correctness of service.
+
+WARN -
+
+something unexpected or sub-optimal has occurred. The impact will be
+in terms of performance rather than correctness. This level is useful
+for understanding a little more about what is going on inside WADI.
+
+INFO -
+
+general information about WADIs workings is logged at this level.
+
+DEBUG -
+
+this level is used to log session lifecycle - creation, destruction,
+peer-to-peer and peer-to-store migration etc...
+
+TRACE -
+
+exhaustive detail about WADI's inner workings ?
+
+
+----------------------------------------
+
