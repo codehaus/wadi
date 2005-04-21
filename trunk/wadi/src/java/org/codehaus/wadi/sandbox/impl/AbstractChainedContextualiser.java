@@ -103,4 +103,13 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
     	} else
     		return false;
     }
+    
+    public void start() throws Exception {
+        _next.start();
+    }
+    
+    public void stop() throws Exception {
+        _next.stop();
+    }
+    
 }

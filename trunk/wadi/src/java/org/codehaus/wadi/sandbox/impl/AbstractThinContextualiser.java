@@ -46,4 +46,12 @@ public abstract class AbstractThinContextualiser implements Contextualiser {
 
     public Immoter getDemoter(String id, Motable motable) {return _next.getDemoter(id, motable);}
 
+    public void start() throws Exception {
+        _next.start();
+    }
+    
+    public void stop() throws Exception {
+        _next.stop();
+    }
+    
 }
