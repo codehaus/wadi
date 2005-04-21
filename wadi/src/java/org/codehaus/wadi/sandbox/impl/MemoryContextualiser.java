@@ -161,10 +161,8 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	        return _pool.take();
 	    }
 
-	    public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
-	        // motable has just been promoted and promotionLock released, so we
-	        // pass in a null promotionLock...
-	        contextualiseLocally(hreq, hres, chain, id, null, immotable);
+	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync promotionLock) throws IOException, ServletException {
+            return contextualiseLocally(hreq, hres, chain, id, promotionLock, immotable);
 	    }
 
 	    public String getInfo() {
