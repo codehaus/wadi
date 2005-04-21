@@ -1,0 +1,36 @@
+WADI 1
+
+2004/10/08 16:41:47:074 BST [WARN] wadi - -/wadi/jsp/render.jsp:  <java.lang.NullPointerException>java.lang.NullPointerException
+	at org.codehaus.wadi.Filter.doFilter(Filter.java:164)
+	at org.mortbay.jetty.servlet.WebApplicationHandler$Chain.doFilter(WebApplicationHandler.java:511)
+	at org.mortbay.jetty.servlet.WebApplicationHandler.dispatch(WebApplicationHandler.java:463)
+	at org.mortbay.jetty.servlet.ServletHandler.handle(ServletHandler.java:525)
+	at org.mortbay.http.HttpContext.handle(HttpContext.java:1457)
+	at org.mortbay.jetty.servlet.WebApplicationContext.handle(WebApplicationContext.java:514)
+	at org.mortbay.http.HttpContext.handle(HttpContext.java:1409)
+	at org.mortbay.http.HttpServer.service(HttpServer.java:889)
+	at org.mortbay.http.HttpConnection.service(HttpConnection.java:831)
+	at org.mortbay.http.ajp.AJP13Connection.handleNext(AJP13Connection.java:287)
+	at org.mortbay.http.HttpConnection.handle(HttpConnection.java:848)
+	at org.mortbay.http.ajp.AJP13Listener.handleConnection(AJP13Listener.java:212)
+	at org.mortbay.util.ThreadedServer.handle(ThreadedServer.java:325)
+	at org.mortbay.util.ThreadPool$PoolThread.run(ThreadPool.java:520)
+
+2004/10/08 16:41:48:868 BST [WARN] Filter - -88F945EB24909A6D6CEAB2E440F7D563: local session emmigrated before it could be locked into container
+
+----------------------------------------
+
+WADI 2
+
+1). node0 sends out a request (R) for a session's immigration
+2). node1 receives R and sends the session back
+3). node0 acknowledges and migration commits
+4). node2 [in]directly acquires the same session from node1
+5). node2 receives R sometime later and sends the same session to node0
+6). node0 does not acknowledge - it no longer requires the session
+7). node2 times out and issues a warning :-(
+
+at (6), node0 could send a non-acknowledgement, explaining what has
+happened and preventing the warning...
+
+
