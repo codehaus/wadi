@@ -22,9 +22,10 @@ Implemented:
 NYI :
 
 - request relocation via redirection (routing lbs only)
+- LRU Eviction
 - integration of various lbs
+- replication
 - pluggable replication policies - immediate, request-group, timeout
 - pluggable auto-partitioning/healing strategies
-- LRU Eviction
 
 - OpenEJB
