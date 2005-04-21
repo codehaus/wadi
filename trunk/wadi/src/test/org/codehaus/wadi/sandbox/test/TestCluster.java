@@ -40,6 +40,7 @@ import org.codehaus.wadi.sandbox.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.impl.CustomCluster;
 import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
+import org.codehaus.wadi.sandbox.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
@@ -82,7 +83,7 @@ public class TestCluster extends TestCase {
 			//_relocater=new SwitchableRelocationStrategy();
 			_relocater=null;
 			_bottom=new ClusterContextualiser(new DummyContextualiser(), new NeverEvicter(), _cmap, _collapser, _cluster, _dispatcher, _relocater, _location);
-			_top=new MemoryContextualiser(_bottom, _evicter, _mmap, new SimpleStreamingStrategy(), new MyContextPool());
+			_top=new MemoryContextualiser(_bottom, _evicter, _mmap, new SimpleStreamingStrategy(), new MyContextPool(), new DummyStatefulHttpServletRequestWrapperPool());
 			_bottom.setTop(_top);
 		}
 

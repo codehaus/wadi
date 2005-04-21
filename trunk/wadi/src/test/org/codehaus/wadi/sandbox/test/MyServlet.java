@@ -38,6 +38,7 @@ import org.codehaus.wadi.sandbox.RelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.impl.CustomCluster;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
+import org.codehaus.wadi.sandbox.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
@@ -76,7 +77,7 @@ public class MyServlet implements Servlet {
 		_statelessContextualiser=new StatelessContextualiser(_clusterContextualiser, methods, true, uris, false);
 		_memoryMap=new HashMap();
         _serialContextualiser=new SerialContextualiser(_statelessContextualiser, _collapser, _memoryMap);
-		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(), _memoryMap, new SimpleStreamingStrategy(), contextPool);
+		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(), _memoryMap, new SimpleStreamingStrategy(), contextPool, new MyDummyHttpServletRequestWrapperPool());
 		relocater.setTop(_memoryContextualiser);
 	}
 

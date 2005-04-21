@@ -38,60 +38,59 @@ import javax.servlet.http.HttpSession;
  */
 
 public class DummyHttpServletRequest implements HttpServletRequest {
-	protected static final RuntimeException _exception=new UnsupportedOperationException();
 
-	public String getAuthType(){throw _exception;}
-	public Cookie[] getCookies(){throw _exception;}
-	public long getDateHeader(String name){throw _exception;}
-	public String getHeader(String name){throw _exception;}
-	public Enumeration getHeaders(String name){throw _exception;}
-	public Enumeration getHeaderNames(){throw _exception;}
-	public int getIntHeader(String name){throw _exception;}
-	public String getMethod(){throw _exception;}
-	public String getPathInfo(){throw _exception;}
-	public String getPathTranslated(){throw _exception;}
-	public String getContextPath(){throw _exception;}
-	public String getQueryString(){throw _exception;}
-	public String getRemoteUser(){throw _exception;}
-	public boolean isUserInRole(String role){throw _exception;}
-	public Principal getUserPrincipal(){throw _exception;}
-	public String getRequestedSessionId(){throw _exception;}
-	public String getRequestURI(){throw _exception;}
-	public StringBuffer getRequestURL(){throw _exception;}
-	public String getServletPath(){throw _exception;}
-	public HttpSession getSession(boolean create){throw _exception;}
-	public HttpSession getSession(){throw _exception;}
-	public boolean isRequestedSessionIdValid(){throw _exception;}
-	public boolean isRequestedSessionIdFromCookie(){throw _exception;}
-	public boolean isRequestedSessionIdFromURL(){throw _exception;}
-	public boolean isRequestedSessionIdFromUrl(){throw _exception;}
-	public Object getAttribute(String name){throw _exception;}
-	public Enumeration getAttributeNames(){throw _exception;}
-	public String getCharacterEncoding(){throw _exception;}
-	public void setCharacterEncoding(String en){throw _exception;}
-	public int getContentLength(){throw _exception;}
-	public String getContentType(){throw _exception;}
-	public ServletInputStream getInputStream(){throw _exception;}
-	public String getParameter(String name){throw _exception;}
-	public Enumeration getParameterNames(){throw _exception;}
-	public String[] getParameterValues(String name){throw _exception;}
-	public Map getParameterMap(){throw _exception;}
-	public String getProtocol(){throw _exception;}
-	public String getScheme(){throw _exception;}
-	public String getServerName(){throw _exception;}
-	public int getServerPort(){throw _exception;}
-	public BufferedReader getReader(){throw _exception;}
-	public String getRemoteAddr(){throw _exception;}
-	public String getRemoteHost(){throw _exception;}
-	public void setAttribute(String name, Object o){throw _exception;}
-	public void removeAttribute(String name){throw _exception;}
-	public Locale getLocale(){throw _exception;}
-	public Enumeration getLocales(){throw _exception;}
-	public boolean isSecure(){throw _exception;}
-	public RequestDispatcher getRequestDispatcher(String path){throw _exception;}
-	public String getRealPath(String path){throw _exception;}
-	public int getRemotePort(){throw _exception;}
-	public String getLocalName(){throw _exception;}
-	public String getLocalAddr(){throw _exception;}
-	public int getLocalPort(){throw _exception;}
+	public String getAuthType(){throw new UnsupportedOperationException();}
+	public Cookie[] getCookies(){throw new UnsupportedOperationException();}
+	public long getDateHeader(String name){throw new UnsupportedOperationException();}
+	public String getHeader(String name){throw new UnsupportedOperationException();}
+	public Enumeration getHeaders(String name){throw new UnsupportedOperationException();}
+	public Enumeration getHeaderNames(){throw new UnsupportedOperationException();}
+	public int getIntHeader(String name){throw new UnsupportedOperationException();}
+	public String getMethod(){throw new UnsupportedOperationException();}
+	public String getPathInfo(){throw new UnsupportedOperationException();}
+	public String getPathTranslated(){throw new UnsupportedOperationException();}
+	public String getContextPath(){throw new UnsupportedOperationException();}
+	public String getQueryString(){throw new UnsupportedOperationException();}
+	public String getRemoteUser(){throw new UnsupportedOperationException();}
+	public boolean isUserInRole(String role){throw new UnsupportedOperationException();}
+	public Principal getUserPrincipal(){throw new UnsupportedOperationException();}
+	public String getRequestedSessionId(){throw new UnsupportedOperationException();}
+	public String getRequestURI(){throw new UnsupportedOperationException();}
+	public StringBuffer getRequestURL(){throw new UnsupportedOperationException();}
+	public String getServletPath(){throw new UnsupportedOperationException();}
+	public HttpSession getSession(boolean create){throw new UnsupportedOperationException();}
+	public HttpSession getSession(){throw new UnsupportedOperationException();}
+	public boolean isRequestedSessionIdValid(){throw new UnsupportedOperationException();}
+	public boolean isRequestedSessionIdFromCookie(){throw new UnsupportedOperationException();}
+	public boolean isRequestedSessionIdFromURL(){throw new UnsupportedOperationException();}
+	public boolean isRequestedSessionIdFromUrl(){throw new UnsupportedOperationException();}
+	public Object getAttribute(String name){throw new UnsupportedOperationException();}
+	public Enumeration getAttributeNames(){throw new UnsupportedOperationException();}
+	public String getCharacterEncoding(){throw new UnsupportedOperationException();}
+	public void setCharacterEncoding(String en){throw new UnsupportedOperationException();}
+	public int getContentLength(){throw new UnsupportedOperationException();}
+	public String getContentType(){throw new UnsupportedOperationException();}
+	public ServletInputStream getInputStream(){throw new UnsupportedOperationException();}
+	public String getParameter(String name){throw new UnsupportedOperationException();}
+	public Enumeration getParameterNames(){throw new UnsupportedOperationException();}
+	public String[] getParameterValues(String name){throw new UnsupportedOperationException();}
+	public Map getParameterMap(){throw new UnsupportedOperationException();}
+	public String getProtocol(){throw new UnsupportedOperationException();}
+	public String getScheme(){throw new UnsupportedOperationException();}
+	public String getServerName(){throw new UnsupportedOperationException();}
+	public int getServerPort(){throw new UnsupportedOperationException();}
+	public BufferedReader getReader(){throw new UnsupportedOperationException();}
+	public String getRemoteAddr(){throw new UnsupportedOperationException();}
+	public String getRemoteHost(){throw new UnsupportedOperationException();}
+	public void setAttribute(String name, Object o){throw new UnsupportedOperationException();}
+	public void removeAttribute(String name){throw new UnsupportedOperationException();}
+	public Locale getLocale(){throw new UnsupportedOperationException();}
+	public Enumeration getLocales(){throw new UnsupportedOperationException();}
+	public boolean isSecure(){throw new UnsupportedOperationException();}
+	public RequestDispatcher getRequestDispatcher(String path){throw new UnsupportedOperationException();}
+	public String getRealPath(String path){throw new UnsupportedOperationException();}
+	public int getRemotePort(){throw new UnsupportedOperationException();}
+	public String getLocalName(){throw new UnsupportedOperationException();}
+	public String getLocalAddr(){throw new UnsupportedOperationException();}
+	public int getLocalPort(){throw new UnsupportedOperationException();}
 }
