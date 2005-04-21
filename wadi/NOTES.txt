@@ -306,3 +306,116 @@ exhaustive detail about WADI's inner workings ?
 
 ----------------------------------------
 
+QUESTIONS about Spec - to be resolved
+
+
+when notifying an HttpSessionAttributeListener.attributeReplaced(HttpSessionBindingEvent event) - should event.value be the new or oldValue (I am using new)
+should AttributeListeners be notified before or after BindingListeners ?
+
+
+----------------------------------------
+
+SERIALISATION
+
+We need to combine a number of features to allow session serialisation to be necessarily flexible.
+
+Object Identity Scope:
+----------------------
+
+Whole Session :
+ preserves object identity across whole session
+ any change to session marks whole session as dirty
+ when serialised, smallest unit stored/replicated is whole session
+ if any part of the session is needed in object form, whole session must be deserialised
+
+Part Session (Attribute) :
+ preserves object identity across a single attribute. Refs to the same object from more than one attribute may diverge
+ individual attributes may be marked as dirty
+ when serialised, dirty attributes are reserialised. Clean ones may use the result of a previous serialisation
+ smallest unit stored/replicated is attribute
+ if any part of the session is needed in object form, only that part need be deserialised
+
+
+When is a [part of a] session dirty:
+------------------------------------
+
+Explicit :
+ write access to an attribute has occurred
+
+Implicit :
+ read or write access to an attribute has occurred
+
+
+Distributable:
+-------------
+
+A session may be serialised (i.e. migrated to store or peer)
+
+
+Replicable:
+------------
+
+A session should maintain an off-node backup when 'at risk'
+
+
+When should a [part of a] session be replicated:
+------------------------------------------------
+
+ Immediately - as soon as the access marking the [part of the] session
+ dirty is complete. This is tricky if we are in Implicit mode, because
+ we are implying that references may be taken and used to modify
+ attribute contents... - Consider
+
+ End of Request group - as soon as the last overlapping stateful
+ request accessing a session completes, changes will be flushed off
+ node.
+
+ Needs more thought...
+
+OTHER THOUGHTS :
+
+Session should be divided into [application-]data and
+[container-]meta-data. Container changes can be considered 'explicit'
+since we control how access occurs.
+
+Upon expiry of a session in store, we need to try to avoid
+deserialising as much of it as we can :
+
+HttpSessionListeners :
+ - registered with Manager
+ - require session reference in the sessionDestroyed notification - but may not actually access session...
+
+HttpSessionAttributeListeners :
+- registered with Manager
+- require session, key and value references in their attributeRemoved notification - but may not actually access them...
+
+HttpSessionActivationListeners :
+- registered as attributes
+- internal rep of serialised session needs to be aware of their presence
+- will require the deserialisation of relevant attributes, so that they can be called
+
+HttpSessionBindingListeners
+- registered as attributes
+- internal rep of serialised session needs to be aware of their presence
+- will require the deserialisation of relevant attributes, so that they can be called
+
+If none of the above are present, a serialised session can be discarded without deserialising - a big win !
+
+
+Attributes	Dirtier	  Replicater
+none		-	   -
+Attr		Ex	   none
+Attr		Im	   none
+Sess		Ex	   none
+Sess		Im	   none
+Attr		Ex	   Imm [probably OK - think about it]
+Attr		Ex	   Req
+Attr		Im	   Imm [probably OK - think about it]
+Attr		Im	   Req
+Sess		Ex	   Imm [probably OK - think about it]
+Sess		Ex	   Req
+Sess		Im	   Imm [probably OK - think about it]
+Sess		Im	   Req
+
+----------------------------------------
+
