@@ -19,8 +19,8 @@ WADI 1
 2004/10/08 16:41:48:868 BST [WARN] Filter - -88F945EB24909A6D6CEAB2E440F7D563: local session emmigrated before it could be locked into container
 
 ----------------------------------------
-
 WADI 2
+----------------------------------------
 
 1). node0 sends out a request (R) for a session's immigration
 2). node1 receives R and sends the session back
@@ -34,3 +34,55 @@ at (6), node0 could send a non-acknowledgement, explaining what has
 happened and preventing the warning...
 
 
+2005/04/21 06:25:58:389 BST [WARN] MessageDispatcher - -no response to request within timeout (500 millis): 03A5A3A0B6A8874D483C767F1DBACB7E
+2005/04/21 06:25:58:389 BST [WARN] ImmigrateRelocationStrategy$ImmigrationImmoter - -no ack received for session immigration: 03A5A3A0B6A8874D483C767F1DBACB7E-19107-TemporaryTopic-{TD{ID:smilodon-36744-1114014573474-6:0}TD}ID:smilodon-36744-1114014573474-12:0
+2005/04/21 06:25:58:389 BST [WARN] Utils - -motion failed: 03A5A3A0B6A8874D483C767F1DBACB7E : memory -> emigration (504 millis)
+
+
+----------------------------------------
+
+not sure about this one :
+
+2005/04/20 17:56:57:627 BST [WARN] ImmigrateRelocationStrategy - -problem handling immigration request: FB1F0D58D581BE642D8E27CAF3D54F7C <EDU.oswego.cs.dl.util.concurrent.BrokenBarrierException>EDU.oswego.cs.dl.util.concurrent.BrokenBarrierException
+	at EDU.oswego.cs.dl.util.concurrent.Rendezvous.doRendezvous(Unknown Source)
+	at EDU.oswego.cs.dl.util.concurrent.Rendezvous.attemptRendezvous(Unknown Source)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher.exchangeMessages(MessageDispatcher.java:238)
+	at org.codehaus.wadi.sandbox.impl.ImmigrateRelocationStrategy$ImmigrationImmoter.prepare(ImmigrateRelocationStrategy.java:246)
+	at org.codehaus.wadi.sandbox.impl.Utils.mote(Utils.java:62)
+	at org.codehaus.wadi.sandbox.impl.AbstractChainedContextualiser.promote(AbstractChainedContextualiser.java:74)
+	at org.codehaus.wadi.sandbox.impl.MemoryContextualiser.handle(MemoryContextualiser.java:81)
+	at org.codehaus.wadi.sandbox.impl.AbstractChainedContextualiser.contextualise(AbstractChainedContextualiser.java:68)
+	at org.codehaus.wadi.sandbox.impl.ImmigrateRelocationStrategy.onMessage(ImmigrateRelocationStrategy.java:201)
+	at sun.reflect.GeneratedMethodAccessor7.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:324)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher$TargetDispatcher.dispatch(MessageDispatcher.java:86)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher$DispatchThread.run(MessageDispatcher.java:187)
+
+2005/04/20 17:56:59:827 BST [WARN] MessageDispatcher - -no response to request within timeout (500 millis): FB1F0D58D581BE642D8E27CAF3D54F7C
+
+----------------------------------------
+
+an activemq issue - probably resolved when lifecycle is introduced...
+
+2005/04/21 06:27:03:684 BST [INFO] Server - -Shutdown hook complete
+java.lang.NullPointerException
+	at org.mortbay.http.ContextLoader.loadClass(ContextLoader.java:202)
+	at org.mortbay.http.ContextLoader.loadClass(ContextLoader.java:186)
+	at org.codehaus.activemq.util.SerializationHelper$ObjectInputStreamExt.resolveClass(SerializationHelper.java:101)
+	at java.io.ObjectInputStream.readNonProxyDesc(ObjectInputStream.java:1513)
+	at java.io.ObjectInputStream.readClassDesc(ObjectInputStream.java:1435)
+	at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:1626)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1274)
+	at java.io.ObjectInputStream.readObject(ObjectInputStream.java:324)
+	at org.codehaus.activemq.util.SerializationHelper.readObject(SerializationHelper.java:74)
+	at org.codehaus.activemq.message.ActiveMQObjectMessage.readBody(ActiveMQObjectMessage.java:208)
+	at org.codehaus.activemq.message.ActiveMQMessage.buildBodyFromBytes(ActiveMQMessage.java:2284)
+	at org.codehaus.activemq.message.ActiveMQObjectMessage.getObject(ActiveMQObjectMessage.java:161)
+	at org.codehaus.activemq.message.ActiveMQObjectMessage.toString(ActiveMQObjectMessage.java:219)
+	at java.lang.String.valueOf(String.java:2131)
+	at java.lang.StringBuffer.append(StringBuffer.java:370)
+	at org.codehaus.activemq.ActiveMQMessageConsumer.processMessage(ActiveMQMessageConsumer.java:448)
+	at org.codehaus.activemq.ActiveMQSessionExecutor.dispatch(ActiveMQSessionExecutor.java:112)
+	at org.codehaus.activemq.ActiveMQSessionExecutor.run(ActiveMQSessionExecutor.java:97)
+	at java.lang.Thread.run(Thread.java:534)
