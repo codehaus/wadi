@@ -183,6 +183,7 @@ public abstract class
       }
       catch(InterruptedException ignore)
       {
+          // ignored
       }
     }
   }
@@ -199,6 +200,7 @@ public abstract class
       }
       catch(InterruptedException ignore)
       {
+          // ignored
       }
     }
   }

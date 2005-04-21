@@ -84,6 +84,7 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	protected final Location _location;
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
+    protected final int _ackTimeout=500; // TODO - parameterise
 
 	/**
 	 * @param next
@@ -106,7 +107,7 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	    // optimisation...
 
 	    _dispatcher.register(this, "onMessage");
-	    _dispatcher.register(EmigrationAcknowledgement.class, _emigrationRvMap, 3000);
+	    _dispatcher.register(EmigrationAcknowledgement.class, _emigrationRvMap, _ackTimeout);
 		}
 
 	public Immoter getImmoter(){return _immoter;}
@@ -193,7 +194,7 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 		    try {
 		        immotable.copy(emotable);
 		        EmigrationRequest er=new EmigrationRequest(id, immotable);
-		        EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emigrationRvMap, er, settingsInOut, 3000);
+		        EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emigrationRvMap, er, settingsInOut, _ackTimeout);
 		        
 		        if (ea==null) {
 		            return false;
@@ -215,9 +216,9 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 			// TODO - errr... HOW ?
 			}
 
-		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) {
-			// TODO
-			//contextualiseLocally(hreq, hres, chain, id, new ClusterImmoter(), new NullSync(), motable);
+		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync promotionLock) {
+            return false;
+            // TODO - perhaps this is how a proxied contextualisation should occur ?
 		}
 
 		public String getInfo() {
@@ -280,6 +281,7 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 
 	public void onMessage(ObjectMessage om, EmigrationRequest er) {
         String id=er.getId();
+        _log.info("EmigrationRequest received: "+id);
         Sync lock=_collapser.getLock(id);
         boolean acquired=false;
         try {

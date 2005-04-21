@@ -22,5 +22,5 @@ public class
   implements org.codehaus.wadi.HttpSessionImplFactory
 {
   public org.codehaus.wadi.HttpSessionImpl create(){return new HttpSessionImpl();}
-  public void destroy(org.codehaus.wadi.HttpSessionImpl impl){}
+  public void destroy(org.codehaus.wadi.HttpSessionImpl impl){ /* do nothing */}
 }

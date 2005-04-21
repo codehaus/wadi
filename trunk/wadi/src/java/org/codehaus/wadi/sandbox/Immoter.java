@@ -23,6 +23,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 /**
  * Basic API for motion of Motables IN to a container
  *
@@ -34,5 +36,5 @@ public interface Immoter extends Moter {
 
 	Motable nextMotable(String id, Motable emotable);
 
-	void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException;
+	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync promotionLock) throws IOException, ServletException;
 }
