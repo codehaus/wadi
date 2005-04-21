@@ -178,7 +178,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     }
 
     public void stop() throws Exception {
-        _clusterCluster.stop();
         _memory.stop();
+        _clusterCluster.stop();
     }
 }
