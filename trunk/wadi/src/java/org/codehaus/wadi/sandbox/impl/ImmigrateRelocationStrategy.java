@@ -104,7 +104,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
         settingsInOut.to=destination;
         settingsInOut.correlationId=id+"-"+(_counter++)+"-"+_dispatcher._cluster.getLocalNode().getDestination().toString(); // TODO - better correlationId
         _log.info("sending immigration request: "+settingsInOut.correlationId);
-        ImmigrationRequest request=new ImmigrationRequest(id, 2000); // TODO - timeout value
+        ImmigrationRequest request=new ImmigrationRequest(id, _resTimeout);
         ImmigrationResponse response=(ImmigrationResponse)_dispatcher.exchangeMessages(id, _resRvMap, request, settingsInOut, _resTimeout);
         _log.info("received immigration response: "+settingsInOut.correlationId);
         // take out session, prepare to promote it...
@@ -119,10 +119,11 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
         
         Emoter emoter=new ImmigrationEmoter(_locationMap, settingsInOut);
         Motable immotable=Utils.mote(emoter, immoter, emotable, id);
-        if (immotable!=null) {
-            return immoter.contextualise(hreq, hres, chain, id, immotable, promotionLock);
-        } else {
+        if (null==immotable)
             return false;
+        else {
+            boolean answer=immoter.contextualise(hreq, hres, chain, id, immotable, promotionLock);
+            return answer;
         }
     }
 
