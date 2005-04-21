@@ -35,7 +35,6 @@ import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.PoolableHttpServletRequestWrapper;
-import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.HttpServletRequestWrapperPool;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -103,7 +102,6 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	            _log.trace("context disappeared whilst we were waiting for lock: "+id);
 	        }
 	        
-            Manager manager=null; // FIXME - what should we do about this ?
             // take wrapper from pool...
             motable.setLastAccessedTime(System.currentTimeMillis());
             PoolableHttpServletRequestWrapper wrapper=_requestPool.take();

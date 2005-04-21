@@ -23,8 +23,6 @@ import java.io.ObjectOutput;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.impl.AbstractContext;
-import org.codehaus.wadi.sandbox.impl.RWLock;
-
 
 public class MyContext extends AbstractContext {
 	protected static Log _log = LogFactory.getLog(MyContext.class);

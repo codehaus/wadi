@@ -19,7 +19,7 @@ package org.codehaus.wadi.sandbox.test;
 import org.codehaus.wadi.sandbox.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.PoolableHttpServletRequestWrapper;
 
-class MyDummyHttpServletRequestWrapperPool implements HttpServletRequestWrapperPool {
+public class MyDummyHttpServletRequestWrapperPool implements HttpServletRequestWrapperPool {
 
     public PoolableHttpServletRequestWrapper take(){return new MyPoolableHttpServletRequestWrapper();}
     public void put(PoolableHttpServletRequestWrapper wrapper){/* empty */}
