@@ -73,8 +73,8 @@ public class DummyContextualiser implements Contextualiser {
 		    // nothing to do...
 		    }
 		
-		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) {
-		    // nothing to do...
+		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync promotionLock) {
+		        return false;
 		    }
 	}
 	

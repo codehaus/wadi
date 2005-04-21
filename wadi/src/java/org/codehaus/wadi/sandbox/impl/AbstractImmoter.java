@@ -28,6 +28,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
 
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 /**
  * Abstract base for Immoters
  *
@@ -63,7 +65,8 @@ public abstract class AbstractImmoter implements Immoter {
 	}
 	
 	// keep the throws clause - we are defining a method signature for our subtypes
-	public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) throws IOException, ServletException {
+	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync promotionLock) throws IOException, ServletException {
 	// most Contextualisers cannot contextualise locally...
+        return false;
 	}
 }

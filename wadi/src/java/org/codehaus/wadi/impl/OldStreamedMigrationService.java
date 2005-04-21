@@ -236,6 +236,7 @@ public class
 	  }
 	  catch (SocketTimeoutException ignore)
 	  {
+          // ignored
 	  }
 	}
       }

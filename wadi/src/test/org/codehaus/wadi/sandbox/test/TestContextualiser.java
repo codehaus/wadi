@@ -230,10 +230,8 @@ public class TestContextualiser extends TestCase {
 	        Emoter emoter=new EtherEmoter();
 	        Motable immotable=Utils.mote(emoter, immoter, emotable, id);
 	        if (immotable!=null) {
-	            promotionLock.release();
-	            immoter.contextualise(hreq, hres, chain, id, immotable);
-	            return true;
-	        } else {
+	            return immoter.contextualise(hreq, hres, chain, id, immotable, promotionLock);
+                } else {
 	            return false;
 	        }
 	    }

@@ -494,6 +494,7 @@ public class
       public void
 	process(Server server, ObjectInput oi, ObjectOutput oo, Destination peer)
 	{
+          // NYI
 	}
     }
 }

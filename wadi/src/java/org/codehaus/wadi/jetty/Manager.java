@@ -216,7 +216,6 @@ public class
    * @return a <code>String</code> value
    */
   public String getSessionCookieDomain(){return _servletContext.getInitParameter(__SessionDomain);}
-
   /**
    * return the key used for the session url path parameter
    *

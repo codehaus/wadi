@@ -84,49 +84,47 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 		_dispatcher.register(ImmigrationAcknowledgement.class, _ackRvMap, _ackTimeout);
 	}
 
-  protected int _counter;
-	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {
-
-		Location location=(Location)locationMap.get(id);
-		location=null;
-		Destination destination;
-
-		if (location==null) {
-			_log.info("immigration: no cached location - 1->n : "+id);
-			destination=_dispatcher.getCluster().getDestination();
-		} else {
-			_log.info("immigration: cached location - 1->1 : "+id);
-			destination=location.getDestination();
-		}
-
-		MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-		settingsInOut.from=_location.getDestination();
-		settingsInOut.to=destination;
-		settingsInOut.correlationId=id+"-"+(_counter++)+"-"+_dispatcher._cluster.getLocalNode().getDestination().toString(); // TODO - better correlationId
-		_log.info("sending immigration request: "+settingsInOut.correlationId);
-		ImmigrationRequest request=new ImmigrationRequest(id, 2000); // TODO - timeout value
-		ImmigrationResponse response=(ImmigrationResponse)_dispatcher.exchangeMessages(id, _resRvMap, request, settingsInOut, _resTimeout);
-		_log.info("received immigration response: "+settingsInOut.correlationId);
-		// take out session, prepare to promote it...
-
+    protected int _counter;
+    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {
+        
+        Location location=(Location)locationMap.get(id);
+        location=null;
+        Destination destination;
+        
+        if (location==null) {
+            _log.info("immigration: no cached location - 1->n : "+id);
+            destination=_dispatcher.getCluster().getDestination();
+        } else {
+            _log.info("immigration: cached location - 1->1 : "+id);
+            destination=location.getDestination();
+        }
+        
+        MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+        settingsInOut.from=_location.getDestination();
+        settingsInOut.to=destination;
+        settingsInOut.correlationId=id+"-"+(_counter++)+"-"+_dispatcher._cluster.getLocalNode().getDestination().toString(); // TODO - better correlationId
+        _log.info("sending immigration request: "+settingsInOut.correlationId);
+        ImmigrationRequest request=new ImmigrationRequest(id, 2000); // TODO - timeout value
+        ImmigrationResponse response=(ImmigrationResponse)_dispatcher.exchangeMessages(id, _resRvMap, request, settingsInOut, _resTimeout);
+        _log.info("received immigration response: "+settingsInOut.correlationId);
+        // take out session, prepare to promote it...
+        
         if (response==null)
             return false;
-
-		Motable emotable=response.getMotable();
-
-		if (!emotable.checkTimeframe(System.currentTimeMillis()))
-		    _log.warn("immigrating session has come from the future!: "+emotable.getId());
-
-		Emoter emoter=new ImmigrationEmoter(_locationMap, settingsInOut);
-		Motable immotable=Utils.mote(emoter, immoter, emotable, id);
-		if (immotable!=null) {
-			promotionLock.release();
-			immoter.contextualise(hreq, hres, chain, id, immotable);
-			return true;
-		} else {
-			return false;
-		}
-	}
+        
+        Motable emotable=response.getMotable();
+        
+        if (!emotable.checkTimeframe(System.currentTimeMillis()))
+            _log.warn("immigrating session has come from the future!: "+emotable.getId());
+        
+        Emoter emoter=new ImmigrationEmoter(_locationMap, settingsInOut);
+        Motable immotable=Utils.mote(emoter, immoter, emotable, id);
+        if (immotable!=null) {
+            return immoter.contextualise(hreq, hres, chain, id, immotable, promotionLock);
+        } else {
+            return false;
+        }
+    }
 
 	protected Contextualiser _top;
 	public void setTop(Contextualiser top){_top=top;}
@@ -267,8 +265,8 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 			// this probably has to by NYI... - nasty...
 		}
 
-		public void contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable) {
-			// does nothing - contextualisation will happen when the session arrives...
+		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync promotionLock) {
+			return false;
 		}
 
 		public String getInfo() {
