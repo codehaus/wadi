@@ -61,7 +61,8 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final MessageDispatcher _dispatcher;
-	protected final long _timeout;
+	protected final long _resTimeout;
+	protected final long _ackTimeout;
 	protected final Location _location;
 	protected final Map _locationMap;
 
@@ -72,16 +73,18 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 
 	public ImmigrateRelocationStrategy(MessageDispatcher dispatcher, Location location, long timeout, Map locationMap, Collapser collapser) {
 		_dispatcher=dispatcher;
-		_timeout=timeout;
+		_resTimeout=timeout;
+		_ackTimeout=500;
 		_location=location;
 		_locationMap=locationMap;
         _collapser=collapser;
 
 		_dispatcher.register(this, "onMessage");
-		_dispatcher.register(ImmigrationResponse.class, _resRvMap, _timeout);
-		_dispatcher.register(ImmigrationAcknowledgement.class, _ackRvMap, _timeout);
+		_dispatcher.register(ImmigrationResponse.class, _resRvMap, _resTimeout);
+		_dispatcher.register(ImmigrationAcknowledgement.class, _ackRvMap, _ackTimeout);
 	}
 
+  protected int _counter;
 	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {
 
 		Location location=(Location)locationMap.get(id);
@@ -99,11 +102,11 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 		MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
 		settingsInOut.from=_location.getDestination();
 		settingsInOut.to=destination;
-		settingsInOut.correlationId=id+_dispatcher._cluster.getLocalNode().toString()+"-"+Thread.currentThread().getName(); // TODO - better correlationId
-		_log.info("sending immigration request: "+id+" : "+settingsInOut);
+		settingsInOut.correlationId=id+"-"+(_counter++)+"-"+_dispatcher._cluster.getLocalNode().getDestination().toString(); // TODO - better correlationId
+		_log.info("sending immigration request: "+settingsInOut.correlationId);
 		ImmigrationRequest request=new ImmigrationRequest(id, 2000); // TODO - timeout value
-		ImmigrationResponse response=(ImmigrationResponse)_dispatcher.exchangeMessages(id, _resRvMap, request, settingsInOut, _timeout);
-		_log.info("received immigration response: "+id+" - "+response);
+		ImmigrationResponse response=(ImmigrationResponse)_dispatcher.exchangeMessages(id, _resRvMap, request, settingsInOut, _resTimeout);
+		_log.info("received immigration response: "+settingsInOut.correlationId);
 		// take out session, prepare to promote it...
 
         if (response==null)
@@ -148,7 +151,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 			emotable.tidy(); // remove copy in store
 
 			// TODO - move some of this to prepare()...
-			_log.info("sending immigration ack: "+id);
+			_log.info("sending immigration ack: "+_settingsInOut.correlationId);
 			ImmigrationAcknowledgement ack=new ImmigrationAcknowledgement(id, _location);
 			try {
 				_dispatcher.sendMessage(ack, _settingsInOut);
@@ -189,7 +192,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
                 settingsInOut.to=om.getJMSReplyTo();
                 settingsInOut.from=_location.getDestination();
                 settingsInOut.correlationId=om.getJMSCorrelationID();
-                _log.info("receiving immigration request: "+id+" : "+settingsInOut);
+                _log.info("receiving immigration request: "+settingsInOut.correlationId);
                 //				long handShakePeriod=request.getHandOverPeriod();
                 // TODO - the peekTimeout should be specified by the remote node...
                 Immoter promoter=new ImmigrationImmoter(settingsInOut);
@@ -230,7 +233,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			// send the message
-			_log.info("sending immigration response: "+id+" : "+_settingsInOut);
+			_log.info("sending immigration response: "+_settingsInOut.correlationId);
 			ImmigrationResponse mr=new ImmigrationResponse();
 			mr.setId(id);
 			try {
@@ -240,13 +243,13 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 			    return false;
 			}
 			mr.setMotable(immotable);
-			ImmigrationAcknowledgement ack=(ImmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _ackRvMap, mr, _settingsInOut, _timeout);
+			ImmigrationAcknowledgement ack=(ImmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _ackRvMap, mr, _settingsInOut, _ackTimeout);
 			if (ack==null) {
-			  _log.warn("no ack received for session immigration: "+id, new Exception());
+			  _log.warn("no ack received for session immigration: "+_settingsInOut.correlationId); // TODO - increment a couter somewhere...
 				// TODO - who owns the session now - consider a syn link to old owner to negotiate this..
 				return false;
 			}
-			_log.info("received immigration ack: "+id+" : "+_settingsInOut);
+			_log.info("received immigration ack: "+_settingsInOut.correlationId);
 			// update location cache...
 			Location tmp=ack.getLocation();
 			synchronized (_locationMap) {
