@@ -46,6 +46,7 @@ import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evictable;
 import org.codehaus.wadi.sandbox.Evicter;
+import org.codehaus.wadi.sandbox.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
@@ -56,6 +57,8 @@ import org.codehaus.wadi.sandbox.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.impl.CustomCluster;
 import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
+import org.codehaus.wadi.sandbox.impl.DummyHttpServletRequest;
+import org.codehaus.wadi.sandbox.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.ExclusiveDiscContextualiser;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
@@ -88,6 +91,8 @@ public class TestContextualiser extends TestCase {
     protected DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");	// db springs into existance in-vm beneath us
     protected String _table="MyTable";
 
+    protected final HttpServletRequest _request=new DummyHttpServletRequest();
+    protected final HttpServletRequestWrapperPool _requestPool=new MyDummyHttpServletRequestWrapperPool();
 
 	/*
 	 * @see TestCase#setUp()
@@ -185,12 +190,12 @@ public class TestContextualiser extends TestCase {
         Map m=new HashMap();
 		Contextualiser serial=new SerialContextualiser(disc, collapser, m);
 
-		Contextualiser memory=new MemoryContextualiser(serial, new NeverEvicter(), m, ss, new MyContextPool());
+		Contextualiser memory=new MemoryContextualiser(serial, new NeverEvicter(), m, ss, new MyContextPool(), _requestPool);
 		m.put("foo", new MyContext("foo", "foo"));
 		assertTrue(m.size()==1);
 
 		FilterChain fc=new MyFilterChain();
-		memory.contextualise(null,null,fc,"foo", null, null, false);
+		memory.contextualise(_request,null,fc,"foo", null, null, false);
 		memory.contextualise(null,null,fc,"bar", null, null, false);
 		memory.contextualise(null,null,fc,"baz", null, null, false);
 		assertTrue(d.size()==0);
@@ -200,14 +205,14 @@ public class TestContextualiser extends TestCase {
 		assertTrue(bar!=null);
 		assertTrue("bar".equals(bar._val));
 		assertTrue(bar.getCreationTime()==0);
-		assertTrue(bar.getLastAccessedTime()==1);
+		// assertTrue(bar.getLastAccessedTime()==1); // this is now set when contextualising...
 		assertTrue(bar.getMaxInactiveInterval()==2);
 
 		MyContext baz=(MyContext)m.get("baz");
 		assertTrue(baz!=null);
 		assertTrue("baz".equals(baz._val));
 		assertTrue(baz.getCreationTime()==3);
-		assertTrue(baz.getLastAccessedTime()==4);
+		// assertTrue(baz.getLastAccessedTime()==4); // this is now set when contextualising...
 		assertTrue(baz.getMaxInactiveInterval()==5);
 }
 
@@ -306,7 +311,7 @@ public class TestContextualiser extends TestCase {
 	}
 
 	public void testPromotion(Contextualiser c, int n) throws Exception {
-		Contextualiser mc=new MemoryContextualiser(c, new NeverEvicter(), new HashMap(), new GZIPStreamingStrategy(), new MyContextPool());
+		Contextualiser mc=new MemoryContextualiser(c, new NeverEvicter(), new HashMap(), new GZIPStreamingStrategy(), new MyContextPool(), _requestPool);
 		FilterChain fc=new MyFilterChain();
 
 		for (int i=0; i<n; i++)
@@ -325,7 +330,7 @@ public class TestContextualiser extends TestCase {
 	}
 
 	public void testCollapsing(Contextualiser c, int n) throws Exception {
-		Contextualiser mc=new MemoryContextualiser(c, new NeverEvicter(), new HashMap(), new GZIPStreamingStrategy(), new MyContextPool());
+		Contextualiser mc=new MemoryContextualiser(c, new NeverEvicter(), new HashMap(), new GZIPStreamingStrategy(), new MyContextPool(), _requestPool);
 		FilterChain fc=new MyFilterChain();
 
 		Runnable r=new MyRunnable(mc, fc, "baz");
@@ -357,7 +362,7 @@ public class TestContextualiser extends TestCase {
 		Evictable foo=new MyContext("foo", "foo");
 		//foo.setMaxInactiveInterval(100);
 		m.put("foo", foo);
-		Contextualiser memory=new MemoryContextualiser(serial, new AlwaysEvicter(), m, new GZIPStreamingStrategy(), new MyContextPool());
+		Contextualiser memory=new MemoryContextualiser(serial, new AlwaysEvicter(), m, new GZIPStreamingStrategy(), new MyContextPool(), _requestPool);
 
 		FilterChain fc=new MyFilterChain();
 
@@ -382,7 +387,7 @@ public class TestContextualiser extends TestCase {
 		Context tmp=new MyContext("foo", "foo");
 		tmp.setMaxInactiveInterval(2);
 		m.put("foo", tmp); // times out 2 seconds from now...
-		Contextualiser memory=new MemoryContextualiser(serial, new TimeToLiveEvicter(1000), m, new GZIPStreamingStrategy(), new MyContextPool());
+		Contextualiser memory=new MemoryContextualiser(serial, new TimeToLiveEvicter(1000), m, new GZIPStreamingStrategy(), new MyContextPool(), _requestPool);
 
 		FilterChain fc=new MyFilterChain();
 
@@ -440,7 +445,7 @@ public class TestContextualiser extends TestCase {
 		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), new SwitchableEvicter(), c0, collapser0, cluster0, dispatcher0, relocater0, location);
 		Map m0=new HashMap();
 		m0.put("foo", new MyContext());
-		Contextualiser memory0=new MemoryContextualiser(clstr0, new NeverEvicter(), m0, new GZIPStreamingStrategy(), new MyContextPool());
+		Contextualiser memory0=new MemoryContextualiser(clstr0, new NeverEvicter(), m0, new GZIPStreamingStrategy(), new MyContextPool(), _requestPool);
 		relocater0.setTop(memory0);
 
 		Map c1=new HashMap();
@@ -450,7 +455,7 @@ public class TestContextualiser extends TestCase {
 		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), new SwitchableEvicter(), c1, collapser1, cluster1, dispatcher1, relocater1, null);
 		Map m1=new HashMap();
 		m1.put("bar", new MyContext());
-		Contextualiser memory1=new MemoryContextualiser(clstr1, new NeverEvicter(), m1, new GZIPStreamingStrategy(), new MyContextPool());
+		Contextualiser memory1=new MemoryContextualiser(clstr1, new NeverEvicter(), m1, new GZIPStreamingStrategy(), new MyContextPool(), _requestPool);
 		relocater1.setTop(memory1);
 
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
@@ -484,7 +489,7 @@ public class TestContextualiser extends TestCase {
 		Map d=new HashMap();
 		ExclusiveDiscContextualiser disc=new ExclusiveDiscContextualiser(new DummyContextualiser(), new TimedOutEvicter(), d, collapser, streamer, new File("/tmp"));
 		Map m=new HashMap();
-		MemoryContextualiser memory=new MemoryContextualiser(disc, new AbsoluteEvicter(30*60*1000), m, streamer, new MyContextPool());
+		MemoryContextualiser memory=new MemoryContextualiser(disc, new AbsoluteEvicter(30*60*1000), m, streamer, new MyContextPool(), _requestPool);
 		Context foo=new MyContext("foo", "foo");
 		m.put("foo", foo);
 		assertTrue(m.size()==1);

@@ -51,6 +51,7 @@ import org.codehaus.wadi.sandbox.ContextPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.HttpProxy;
+import org.codehaus.wadi.sandbox.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
@@ -95,6 +96,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final SerialContextualiser _serial;
     
     protected final ContextPool _memoryPool;
+    protected final HttpServletRequestWrapperPool _requestPool;
     protected final Evicter _memoryEvicter;
     protected final Map _memoryMap;
     protected final MemoryContextualiser _memory;
@@ -141,7 +143,8 @@ public class SimpleContextualiserStack implements Contextualiser {
         _memoryEvicter=new AbsoluteEvicter(30*60*1000);
         _memoryMap=sessionMap;
         _serial=new SerialContextualiser(_disc, _collapser, _memoryMap);
-        _memory=new MemoryContextualiser(_serial, _memoryEvicter, _memoryMap, _streamer, _memoryPool);
+        _requestPool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - use a ThreadLocal based Pool
+        _memory=new MemoryContextualiser(_serial, _memoryEvicter, _memoryMap, _streamer, _memoryPool, _requestPool);
         
         _cluster.setTop(_memory);
         _clusterRelocater.setTop(_memory);

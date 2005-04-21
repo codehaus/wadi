@@ -14,20 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.impl;
+package org.codehaus.wadi.sandbox.test;
 
-import org.codehaus.wadi.sandbox.HttpServletRequestWrapperPool;
+import javax.servlet.http.HttpServletRequest;
+
+import org.codehaus.wadi.sandbox.Context;
 import org.codehaus.wadi.sandbox.PoolableHttpServletRequestWrapper;
+import org.codehaus.wadi.sandbox.impl.DummyHttpServletRequest;
 
-public class DummyStatefulHttpServletRequestWrapperPool implements
-        HttpServletRequestWrapperPool {
+class MyPoolableHttpServletRequestWrapper extends MyHttpServletRequest implements PoolableHttpServletRequestWrapper {
 
-    public PoolableHttpServletRequestWrapper take() {
-        return new StatefulHttpServletRequestWrapper();
-    }
-
-    public void put(PoolableHttpServletRequestWrapper wrapper) {
-        // just drop it...
-    }
+    public void init(HttpServletRequest request, Context context){ /* I KNOW */}
+    public void destroy(){/* I KNOW */}
 
 }

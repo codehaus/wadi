@@ -16,11 +16,11 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.impl.StatefulHttpServletRequestWrapper; // hmmm... i/face refers to class - bad
+import javax.servlet.http.HttpServletRequest;
 
-public interface StatefulHttpServletRequestWrapperPool {
+public interface PoolableHttpServletRequestWrapper extends HttpServletRequest {
 
-    StatefulHttpServletRequestWrapper take();
-    void put(StatefulHttpServletRequestWrapper wrapper);
+    void init(HttpServletRequest request, Context context);
+    void destroy();
     
 }

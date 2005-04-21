@@ -20,10 +20,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
+import org.codehaus.wadi.sandbox.Context;
+import org.codehaus.wadi.sandbox.PoolableHttpServletRequestWrapper;
 import org.codehaus.wadi.sandbox.Session;
 
 
-public class StatefulHttpServletRequestWrapper extends HttpServletRequestWrapper {
+public class StatefulHttpServletRequestWrapper extends HttpServletRequestWrapper implements PoolableHttpServletRequestWrapper {
     
     protected static final HttpServletRequest _dummy=new DummyHttpServletRequest();
 	protected HttpSession _session; // I want to maintain a Session - but it's hard to get hold of it upon creation... - do we really need it ?
@@ -33,12 +35,12 @@ public class StatefulHttpServletRequestWrapper extends HttpServletRequestWrapper
 	    super(_dummy);
 	}
 
-	void init(HttpServletRequest request, Session session) {
+	public void init(HttpServletRequest request, Context context) {
 	    setRequest(request);
-	    _session=session==null?null:session.getWrapper();
+	    _session=context==null?null:((Session)context).getWrapper();
 	}
 	
-	void destroy() {
+	public void destroy() {
 	    setRequest(_dummy);
 	    _session=null;
 	}

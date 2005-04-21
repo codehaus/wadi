@@ -34,8 +34,9 @@ import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
+import org.codehaus.wadi.sandbox.PoolableHttpServletRequestWrapper;
 import org.codehaus.wadi.sandbox.Session;
-import org.codehaus.wadi.sandbox.StatefulHttpServletRequestWrapperPool;
+import org.codehaus.wadi.sandbox.HttpServletRequestWrapperPool;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
@@ -53,9 +54,9 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 	protected final Emoter _evictionEmoter;
-    protected final StatefulHttpServletRequestWrapperPool _requestPool;
+    protected final HttpServletRequestWrapperPool _requestPool;
 
-	public MemoryContextualiser(Contextualiser next, Evicter evicter, Map map, StreamingStrategy streamer, ContextPool pool) {
+	public MemoryContextualiser(Contextualiser next, Evicter evicter, Map map, StreamingStrategy streamer, ContextPool pool, HttpServletRequestWrapperPool requestPool) {
 		super(next, evicter, map);
 		_pool=pool;
 		
@@ -66,7 +67,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 		_emoter=new MemoryEmoter(_map);
 		_evictionEmoter=new AbstractMappedEmoter(_map){public String getInfo(){return "memory";}};
         
-        _requestPool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - parameterise
+        _requestPool=requestPool;
 	}
 
 	public boolean isLocal(){return true;}
@@ -104,10 +105,9 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	        
             Manager manager=null; // FIXME - what should we do about this ?
             // take wrapper from pool...
-            StatefulHttpServletRequestWrapper wrapper=_requestPool.take();
-            Session session=(Session)motable;
-            session.setLastAccessedTime(System.currentTimeMillis());
-            wrapper.init(req, session);
+            motable.setLastAccessedTime(System.currentTimeMillis());
+            PoolableHttpServletRequestWrapper wrapper=_requestPool.take();
+            wrapper.init(req, (Context)motable);
 	        chain.doFilter(wrapper, res);
             wrapper.destroy();
             _requestPool.put(wrapper);
