@@ -37,37 +37,38 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class CustomClusterFactory extends DefaultClusterFactory {
-    
-    protected static final Log log=LogFactory.getLog(CustomClusterFactory.class);
 
-    public CustomClusterFactory(ConnectionFactory connectionFactory) {
-		super(connectionFactory);
-	}
+  protected static final Log log=LogFactory.getLog(CustomClusterFactory.class);
 
-    protected Cluster createCluster(Connection connection, Session session, Topic groupDestination) throws JMSException {
-        Topic dataTopic = session.createTopic(getDataTopicPrefix() + groupDestination.getTopicName());
+  public CustomClusterFactory(ConnectionFactory connectionFactory) {
+    super(connectionFactory);
+    System.setProperty("activemq.broker.disable-clean-shutdown", "true");
+  }
 
-        log.info("Creating cluster group producer on topic: " + groupDestination);
+  protected Cluster createCluster(Connection connection, Session session, Topic groupDestination) throws JMSException {
+    Topic dataTopic = session.createTopic(getDataTopicPrefix() + groupDestination.getTopicName());
 
-        MessageProducer producer = createProducer(session, null);
-        producer.setDeliveryMode(getDeliveryMode());
+    log.info("Creating cluster group producer on topic: " + groupDestination);
 
-        log.info("Creating cluster data producer on topic: " + dataTopic);
+    MessageProducer producer = createProducer(session, null);
+    producer.setDeliveryMode(getDeliveryMode());
 
-        MessageProducer keepAliveProducer = session.createProducer(dataTopic);
-        keepAliveProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-        StateService serviceStub = new StateServiceStub(session, keepAliveProducer);
+    log.info("Creating cluster data producer on topic: " + dataTopic);
 
-        Destination localInbox = null;
-        if (isUseQueueForInbox()) {
-            localInbox = session.createTemporaryQueue();
-        }
-        else {
-            localInbox = session.createTemporaryTopic();
-        }
-        ReplicatedLocalNode localNode = new ReplicatedLocalNode(localInbox, serviceStub);
-        Timer timer = new Timer();
-        DefaultCluster answer = new CustomCluster(localNode, dataTopic, groupDestination, connection, session, producer, timer, getInactiveTime());
-        return answer;
+    MessageProducer keepAliveProducer = session.createProducer(dataTopic);
+    keepAliveProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+    StateService serviceStub = new StateServiceStub(session, keepAliveProducer);
+
+    Destination localInbox = null;
+    if (isUseQueueForInbox()) {
+      localInbox = session.createTemporaryQueue();
     }
+    else {
+      localInbox = session.createTemporaryTopic();
+    }
+    ReplicatedLocalNode localNode = new ReplicatedLocalNode(localInbox, serviceStub);
+    Timer timer = new Timer();
+    DefaultCluster answer = new CustomCluster(localNode, dataTopic, groupDestination, connection, session, producer, timer, getInactiveTime());
+    return answer;
+  }
 }
