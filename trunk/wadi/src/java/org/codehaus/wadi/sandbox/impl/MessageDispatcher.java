@@ -119,36 +119,38 @@ public class MessageDispatcher implements MessageListener {
 	}
 
 	class RendezVousDispatcher implements Dispatcher {
-		protected final Map _rvMap;
-		protected final long _timeout;
+	  protected final Map _rvMap;
+	  protected final long _timeout;
 
-		public RendezVousDispatcher(Map rvMap, long timeout) {
-			_rvMap=rvMap;
-			_timeout=timeout;
-		}
+	  public RendezVousDispatcher(Map rvMap, long timeout) {
+	    _rvMap=rvMap;
+	    _timeout=timeout;
+	  }
 
-		public void dispatch(ObjectMessage om, Serializable obj) throws JMSException {
-			// rendez-vous with waiting thread...
-			String correlationId=om.getJMSCorrelationID();
-			synchronized (_rvMap) {
-				Rendezvous rv=(Rendezvous)_rvMap.get(correlationId);
-				if (rv!=null) {
-					do { // should we move this pattern into Utils ?
-						try {
-							rv.attemptRendezvous(om, _timeout);
-						} catch (TimeoutException toe) {
-							_log.info("rendez-vous timed out: "+correlationId, toe);
-						} catch (InterruptedException ignore) {
-							_log.info("rendez-vous interruption ignored: "+correlationId);
-						}
-					} while (Thread.interrupted()); // TODO - should really subtract from timeout each time...
-				}
-			}
-		}
+	  public void dispatch(ObjectMessage om, Serializable obj) throws JMSException {
+	    // rendez-vous with waiting thread...
+	    String correlationId=om.getJMSCorrelationID();
+	    synchronized (_rvMap) {
+	      Rendezvous rv=(Rendezvous)_rvMap.get(correlationId);
+	      if (rv==null) {
+		_log.warn("rendez-vous missed - no-one waiting: "+correlationId);
+	      } else {
+		do { // should we move this pattern into Utils ?
+		  try {
+		    rv.attemptRendezvous(om, _timeout);
+		  } catch (TimeoutException toe) {
+		    _log.warn("rendez-vous timed out: "+correlationId, toe);
+		  } catch (InterruptedException ignore) {
+		    _log.info("rendez-vous interruption ignored: "+correlationId);
+		  }
+		} while (Thread.interrupted()); // TODO - should really subtract from timeout each time...
+	      }
+	    }
+	  }
 
-		public String toString() {
-			return "<RendezVousDispatcher>";
-		}
+	  public String toString() {
+	    return "<RendezVousDispatcher>";
+	  }
 	}
 
 	/**
