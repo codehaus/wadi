@@ -44,6 +44,9 @@ import javax.sql.DataSource;
 
 import org.activecluster.ClusterException;
 import org.activemq.ActiveMQConnectionFactory;
+import org.activemq.broker.impl.BrokerContainerFactoryImpl;
+import org.activemq.store.vm.VMPersistenceAdapter;
+import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Collapser;
@@ -114,8 +117,10 @@ public class SimpleContextualiserStack implements Contextualiser {
         SharedJDBCMotable.initialise(_databaseDataSource, _databaseTable);
         _database=new SharedJDBCContextualiser(_dummy, _databaseEvicter, _databaseDataSource, _databaseTable);
 
-//        _connectionFactory=new ActiveMQConnectionFactory("peer://WADI-TEST");
-        _connectionFactory=new ActiveMQConnectionFactory("tcp://localhost:61616");
+        _connectionFactory=new ActiveMQConnectionFactory("peer://WADI-TEST");
+//        _connectionFactory=new ActiveMQConnectionFactory("tcp://localhost:61616");
+        ((ActiveMQConnectionFactory)_connectionFactory).setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter())); // peer protocol seems to ignore this...
+        System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
         _clusterFactory=new CustomClusterFactory(_connectionFactory);
         _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
         _clusterCluster=(CustomCluster)_clusterFactory.createCluster(_clusterName);
