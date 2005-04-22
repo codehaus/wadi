@@ -80,7 +80,7 @@ public class DummyContextualiser implements Contextualiser {
 	
 	protected final Immoter _immoter=new DummyImmoter();
 	public Immoter getDemoter(String id, Motable motable) {return _immoter;}
-    public Immoter getSharedDemoter(){throw new UnsupportedOperationException();}
+    public Immoter getSharedDemoter(){return _immoter;}
     
     public void start(){/* empty */}
     public void stop(){/* empty */}
