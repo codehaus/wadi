@@ -21,10 +21,9 @@ import junit.framework.TestCase;
 import org.activecluster.Cluster;
 import org.activecluster.impl.ActiveMQClusterFactory;
 import org.activemq.ActiveMQConnectionFactory;
-import org.activemq.broker.impl.BrokerContainerFactoryImpl;
-import org.activemq.store.vm.VMPersistenceAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.impl.Utils;
 
 
 public class TestSimpleCluster extends TestCase {
@@ -32,12 +31,7 @@ public class TestSimpleCluster extends TestCase {
 
 	public void testCluster() throws Exception {
 
-        //ActiveMQConnectionFactory connectionFactory=new ActiveMQConnectionFactory("peer://"+getClass().getName());
-        ActiveMQConnectionFactory connectionFactory=new ActiveMQConnectionFactory("tcp://localhost:61616");
-        //ActiveMQConnectionFactory connectionFactory=new ActiveMQConnectionFactory("peer://WADI_TEST");
-        //ActiveMQConnectionFactory connectionFactory=new ActiveMQConnectionFactory("vm://localhost");
-        //_connectionFactory.setBrokerName("myBroker");
-        connectionFactory.setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter()));
+        ActiveMQConnectionFactory connectionFactory=(ActiveMQConnectionFactory)Utils.getConnectionFactory();
         ActiveMQClusterFactory clusterFactory=new ActiveMQClusterFactory(connectionFactory);
         String clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
         Cluster cluster0=clusterFactory.createCluster(clusterName);

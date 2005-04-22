@@ -54,6 +54,7 @@ import org.codehaus.wadi.sandbox.impl.ImmigrateRelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.impl.ProxyRelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.StandardHttpProxy;
+import org.codehaus.wadi.sandbox.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -119,7 +120,7 @@ public class TestRelocation extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 //        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
-        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
+        ConnectionFactory connectionFactory = Utils.getConnectionFactory();
 //		ClusterFactory clusterFactory       = new DefaultClusterFactory(connectionFactory,false, Session.AUTO_ACKNOWLEDGE, "ACTIVECLUSTER.DATA.", 50000L);
 		ClusterFactory clusterFactory       = new CustomClusterFactory(connectionFactory);
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";

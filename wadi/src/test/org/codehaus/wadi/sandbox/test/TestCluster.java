@@ -26,7 +26,6 @@ import javax.jms.JMSException;
 import junit.framework.TestCase;
 
 import org.activecluster.ClusterException;
-import org.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
@@ -132,7 +131,7 @@ public class TestCluster extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 //        _connectionFactory=new ActiveMQConnectionFactory("peer://WADI-TEST");
-        _connectionFactory=new ActiveMQConnectionFactory("tcp://localhost:61616");
+        _connectionFactory=Utils.getConnectionFactory();
         
 		_clusterFactory=new CustomClusterFactory(_connectionFactory);
 		_clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";

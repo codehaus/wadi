@@ -22,6 +22,12 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import javax.jms.ConnectionFactory;
+
+import org.activemq.ActiveMQConnectionFactory;
+import org.activemq.broker.impl.BrokerContainerFactoryImpl;
+import org.activemq.store.vm.VMPersistenceAdapter;
+import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SerializableContent;
@@ -177,6 +183,16 @@ public class Utils {
             _log.error("unexpected problem whilst marshalling", e);
             return null;
         }
+    }
+    
+    public static ActiveMQConnectionFactory getConnectionFactory() {
+        // _connectionFactory=new ActiveMQConnectionFactory("peer://WADI-TEST");
+        // _connectionFactory=new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");
+        // _connectionFactory=new ActiveMQConnectionFactory("jgroups:default");
+        ActiveMQConnectionFactory cf=new ActiveMQConnectionFactory("tcp://localhost:61616");
+        cf.setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter())); // peer protocol seems to ignore this...
+        System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
+        return cf;
     }
 
 }

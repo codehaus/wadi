@@ -18,6 +18,7 @@ import org.activecluster.Cluster;
 import org.activecluster.ClusterException;
 import org.activecluster.ClusterFactory;
 import org.activecluster.impl.DefaultClusterFactory;
+import org.codehaus.wadi.sandbox.impl.Utils;
 
 /**
  * @author jules
@@ -80,7 +81,7 @@ public class TestDistributedOwnership extends TestCase {
 	protected Node[] _nodes=new Node[_numNodes];
 	
 	protected void setUp() throws Exception {
-		_connectionFactory = new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");
+		_connectionFactory = Utils.getConnectionFactory();
 		_clusterFactory = new DefaultClusterFactory(_connectionFactory);
 
 		for (int i=0; i<_numNodes; i++)

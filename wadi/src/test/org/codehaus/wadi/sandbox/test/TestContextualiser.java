@@ -439,7 +439,7 @@ public class TestContextualiser extends TestCase {
 
 	public void testCluster() throws Exception {
 //        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
-        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
+        ConnectionFactory connectionFactory = Utils.getConnectionFactory();
         ((ActiveMQConnectionFactory)connectionFactory).setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter()));
 		ClusterFactory clusterFactory       = new CustomClusterFactory(connectionFactory);
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";

@@ -116,13 +116,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _databaseTable="WADI";
         SharedJDBCMotable.initialise(_databaseDataSource, _databaseTable);
         _database=new SharedJDBCContextualiser(_dummy, _databaseEvicter, _databaseDataSource, _databaseTable);
-
-	// _connectionFactory=new ActiveMQConnectionFactory("peer://WADI-TEST");
-        // _connectionFactory=new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");
-	// _connectionFactory=new ActiveMQConnectionFactory("jgroups:default");
-	_connectionFactory=new ActiveMQConnectionFactory("tcp://localhost:61616");
-        ((ActiveMQConnectionFactory)_connectionFactory).setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter())); // peer protocol seems to ignore this...
-        System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
+        _connectionFactory=Utils.getConnectionFactory();
         _clusterFactory=new CustomClusterFactory(_connectionFactory);
         _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
         _clusterCluster=(CustomCluster)_clusterFactory.createCluster(_clusterName);
