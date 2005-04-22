@@ -64,7 +64,7 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 	    Motable emotable=get(id);
 	    if (emotable==null)
 	        return false; // we cannot proceed without the session...
-	    
+
 	    if (immoter!=null) {
 	        return promote(hreq, hres, chain, id, immoter, promotionLock, emotable); // promotionLock will be released here...
 	    } else {
@@ -74,7 +74,7 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 
 	public Emoter getEvictionEmoter(){return getEmoter();}
 	public abstract Sync getEvictionLock(String id, Motable motable);
-	
+
 	// FIXME - move this back to ChainedContextualiser
 	public void evict(String id, Motable emotable, long time) {
 	    Sync lock=getEvictionLock(id, emotable);
@@ -96,7 +96,7 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 	    RWLock.setPriority(RWLock.EVICTION_PRIORITY);
 	    Collection copy=null;
 	    synchronized (_map) {copy=new ArrayList(_map.entrySet());}
-	    
+
 	    long time=System.currentTimeMillis();
 	    for (Iterator i=copy.iterator(); i.hasNext(); ) {
 	        Map.Entry e=(Map.Entry)i.next();
@@ -108,19 +108,19 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 	    }
 	    RWLock.setPriority(RWLock.NO_PRIORITY);
 	}
-    
+
     public void stop() throws Exception {
         // get an immoter from the first shared Contextualiser
         Immoter immoter=_next.getSharedDemoter();
         Emoter emoter=getEmoter();
-        
+
         // emote all our Motables using it
-        _log.info("unloading sessions - starting: "+s);
         RWLock.setPriority(RWLock.EVICTION_PRIORITY);
         Collection copy=null;
         synchronized (_map) {copy=new ArrayList(_map.entrySet());}
         int s=copy.size();
-        
+        _log.info("unloading sessions - starting: "+s);
+
         for (Iterator i=copy.iterator(); i.hasNext(); ) {
             Map.Entry e=(Map.Entry)i.next();
             String id=(String)e.getKey();
@@ -129,7 +129,7 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
         }
         RWLock.setPriority(RWLock.NO_PRIORITY);
         _log.info("unloading sessions - finished: "+s);
-        
+
         // tell the next Contextualiser to stop()
         super.stop();
     }
