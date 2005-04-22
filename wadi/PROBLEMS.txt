@@ -86,3 +86,42 @@ java.lang.NullPointerException
 	at org.codehaus.activemq.ActiveMQSessionExecutor.dispatch(ActiveMQSessionExecutor.java:112)
 	at org.codehaus.activemq.ActiveMQSessionExecutor.run(ActiveMQSessionExecutor.java:97)
 	at java.lang.Thread.run(Thread.java:534)
+
+
+----------------------------------------
+
+2005/04/21 12:16:09:624 BST [WARN] MessageDispatcher - -rendez-vous timed out: 114875DB7B8B1F7117BB8BC19B60AB19-3734-TemporaryTopic-{TD{ID:smilodon-42112-1114079651086-7:0}TD}ID:smilodon-42112-1114079651086-19:0 <EDU.oswego.cs.dl.util.concurrent.TimeoutException>EDU.oswego.cs.dl.util.concurrent.TimeoutException
+	at EDU.oswego.cs.dl.util.concurrent.Rendezvous.doRendezvous(Unknown Source)
+	at EDU.oswego.cs.dl.util.concurrent.Rendezvous.attemptRendezvous(Unknown Source)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher$RendezVousDispatcher.dispatch(MessageDispatcher.java:140)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher$DispatchThread.run(MessageDispatcher.java:189)
+
+2005/04/21 12:16:04:942 BST [WARN] MessageDispatcher - -rendez-vous timed out: 114875DB7B8B1F7117BB8BC19B60AB19-3722-TemporaryTopic-{TD{ID:smilodon-42118-1114079653597-6:0}TD}ID:smilodon-42118-1114079653597-23:0 <EDU.oswego.cs.dl.util.concurrent.TimeoutException>EDU.oswego.cs.dl.util.concurrent.TimeoutException
+	at EDU.oswego.cs.dl.util.concurrent.Rendezvous.doRendezvous(Unknown Source)
+	at EDU.oswego.cs.dl.util.concurrent.Rendezvous.attemptRendezvous(Unknown Source)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher$RendezVousDispatcher.dispatch(MessageDispatcher.java:140)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher$DispatchThread.run(MessageDispatcher.java:189)
+
+2005/04/21 12:16:07:045 BST [WARN] MessageDispatcher - -rendez-vous timed out: 114875DB7B8B1F7117BB8BC19B60AB19-3727-TemporaryTopic-{TD{ID:smilodon-42136-1114079661576-6:0}TD}ID:smilodon-42136-1114079661576-16:0 <EDU.oswego.cs.dl.util.concurrent.TimeoutException>EDU.oswego.cs.dl.util.concurrent.TimeoutException
+	at EDU.oswego.cs.dl.util.concurrent.Rendezvous.doRendezvous(Unknown Source)
+	at EDU.oswego.cs.dl.util.concurrent.Rendezvous.attemptRendezvous(Unknown Source)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher$RendezVousDispatcher.dispatch(MessageDispatcher.java:140)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher$DispatchThread.run(MessageDispatcher.java:189)
+
+2005/04/21 12:16:12:328 BST [WARN] MessageDispatcher - -rendez-vous timed out: 114875DB7B8B1F7117BB8BC19B60AB19-3726-TemporaryTopic-{TD{ID:smilodon-42148-1114079675407-6:0}TD}ID:smilodon-42148-1114079675407-41:0 <EDU.oswego.cs.dl.util.concurrent.TimeoutException>EDU.oswego.cs.dl.util.concurrent.TimeoutException
+	at EDU.oswego.cs.dl.util.concurrent.Rendezvous.doRendezvous(Unknown Source)
+	at EDU.oswego.cs.dl.util.concurrent.Rendezvous.attemptRendezvous(Unknown Source)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher$RendezVousDispatcher.dispatch(MessageDispatcher.java:140)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher$DispatchThread.run(MessageDispatcher.java:189)
+
+2005/04/21 12:16:03:557 BST [WARN] MessageDispatcher - -rendez-vous timed out: 114875DB7B8B1F7117BB8BC19B60AB19-3723-TemporaryTopic-{TD{ID:smilodon-42162-1114079680144-10:0}TD}ID:smilodon-42162-1114079680144-47:0 <EDU.oswego.cs.dl.util.concurrent.TimeoutException>EDU.oswego.cs.dl.util.concurrent.TimeoutException
+	at EDU.oswego.cs.dl.util.concurrent.Rendezvous.doRendezvous(Unknown Source)
+	at EDU.oswego.cs.dl.util.concurrent.Rendezvous.attemptRendezvous(Unknown Source)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher$RendezVousDispatcher.dispatch(MessageDispatcher.java:140)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher$DispatchThread.run(MessageDispatcher.java:189)
+
+2005/04/21 12:16:02:771 BST [WARN] MessageDispatcher - -rendez-vous timed out: 114875DB7B8B1F7117BB8BC19B60AB19-3714-TemporaryTopic-{TD{ID:smilodon-42179-1114079684252-7:0}TD}ID:smilodon-42179-1114079684252-18:0 <EDU.oswego.cs.dl.util.concurrent.TimeoutException>EDU.oswego.cs.dl.util.concurrent.TimeoutException
+	at EDU.oswego.cs.dl.util.concurrent.Rendezvous.doRendezvous(Unknown Source)
+	at EDU.oswego.cs.dl.util.concurrent.Rendezvous.attemptRendezvous(Unknown Source)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher$RendezVousDispatcher.dispatch(MessageDispatcher.java:140)
+	at org.codehaus.wadi.sandbox.impl.MessageDispatcher$DispatchThread.run(MessageDispatcher.java:189)
