@@ -35,6 +35,7 @@ import org.activecluster.impl.DefaultClusterFactory;
 import org.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.impl.Utils;
 
 /**
  * Test ActiveCluster, ActiveMQ, with an eye to putting WADI on top of
@@ -66,7 +67,7 @@ public class
   {
     testResponsePassed=false;
 
-    _connectionFactory = new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");
+    _connectionFactory = Utils.getConnectionFactory();
     _clusterFactory    = new DefaultClusterFactory(_connectionFactory);
     _cluster0           = _clusterFactory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
     _cluster1           = _clusterFactory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");

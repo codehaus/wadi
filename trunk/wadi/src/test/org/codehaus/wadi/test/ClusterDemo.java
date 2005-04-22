@@ -31,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.cluster.NChooseKTopologyStrategy;
 import org.codehaus.wadi.cluster.TopologyStrategy;
+import org.codehaus.wadi.sandbox.impl.Utils;
 
 // originally based on James' ClusterDemo from activecluster...
 
@@ -41,7 +42,7 @@ public class
   ClusterDemo
 {
   protected Cluster                   _cluster;
-  protected ActiveMQConnectionFactory _connFactory = new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");
+  protected ActiveMQConnectionFactory _connFactory=Utils.getConnectionFactory();
   protected String                    _nodeId;
   protected TopologyStrategy          _topology;
   protected int                       _cellSize=2;
