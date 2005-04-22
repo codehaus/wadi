@@ -248,6 +248,8 @@ public class TestContextualiser extends TestCase {
 	        return null;
 	    }
         
+        public Immoter getSharedDemoter(){throw new UnsupportedOperationException();}
+
         public void start(){/* empty */}
         public void stop(){/* empty */}
 
@@ -288,6 +290,9 @@ public class TestContextualiser extends TestCase {
 	    public Immoter getDemoter(String id, Motable motable) {
 	        return null;
 	    }
+        
+        public Immoter getSharedDemoter(){throw new UnsupportedOperationException();}
+
         
         public void start(){/* empty */}
         public void stop(){/* empty */}

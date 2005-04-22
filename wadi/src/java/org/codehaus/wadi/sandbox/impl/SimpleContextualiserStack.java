@@ -170,6 +170,10 @@ public class SimpleContextualiserStack implements Contextualiser {
     public Immoter getDemoter(String id, Motable motable) {
         return _memory.getDemoter(id, motable);
     }
+    
+    public Immoter getSharedDemoter() {
+        return _memory.getSharedDemoter();
+    }
 
     public void start() throws Exception {
         _clusterCluster.start();

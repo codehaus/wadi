@@ -89,6 +89,13 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 		else
 			return getImmoter();
 	}
+    
+    public Immoter getSharedDemoter() {
+        if (isLocal())
+            return _next.getSharedDemoter();
+        else
+            return getImmoter();
+    }
 
 	public abstract void evict();
 

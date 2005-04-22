@@ -52,5 +52,6 @@ public interface Contextualiser extends Lifecycle {
 	 * @return - a Demoter - a delegate capable of arranging immotion into the correct Contextualiser
 	 */
 	Immoter getDemoter(String id, Motable motable);
+    Immoter getSharedDemoter();
     
 }
