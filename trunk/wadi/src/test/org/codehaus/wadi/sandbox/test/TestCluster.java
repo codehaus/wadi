@@ -23,10 +23,12 @@ import java.util.Map;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 
+import junit.framework.TestCase;
+
+import org.activecluster.ClusterException;
+import org.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.ClusterException;
-import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
@@ -48,8 +50,6 @@ import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.impl.StandardHttpProxy;
 import org.codehaus.wadi.sandbox.impl.Utils;
-
-import junit.framework.TestCase;
 
 /**
  * Test the shutdown of a Contextualiser stack as live sessions are distributed to other nodes in the cluster
@@ -124,7 +124,9 @@ public class TestCluster extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		_connectionFactory=new ActiveMQConnectionFactory("peer://WADI-TEST");
+//        _connectionFactory=new ActiveMQConnectionFactory("peer://WADI-TEST");
+        _connectionFactory=new ActiveMQConnectionFactory("tcp://localhost:61616");
+        
 		_clusterFactory=new CustomClusterFactory(_connectionFactory);
 		_clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
 		(_node0=new MyNode(_clusterFactory, _clusterName)).start();

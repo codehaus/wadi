@@ -19,8 +19,10 @@ package org.codehaus.wadi.impl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
+
 import javax.jms.Destination;
-import org.codehaus.activecluster.Cluster;
+
+import org.activecluster.Cluster;
 import org.codehaus.wadi.HttpSessionImpl;
 import org.codehaus.wadi.MigrationService;
 

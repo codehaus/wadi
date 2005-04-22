@@ -28,6 +28,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import junit.framework.TestCase;
+
+import org.activecluster.ClusterFactory;
+import org.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
@@ -35,8 +39,6 @@ import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.ClusterFactory;
-import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.HttpProxy;
@@ -54,8 +56,6 @@ import org.codehaus.wadi.sandbox.impl.ProxyRelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.StandardHttpProxy;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
-
-import junit.framework.TestCase;
 
 /**
  * Unit Tests requiring a pair of Jetty's. Each one is set up with a Filter and Servlet placeholder.
@@ -118,7 +118,8 @@ public class TestRelocation extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
+//        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
+        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
 //		ClusterFactory clusterFactory       = new DefaultClusterFactory(connectionFactory,false, Session.AUTO_ACKNOWLEDGE, "ACTIVECLUSTER.DATA.", 50000L);
 		ClusterFactory clusterFactory       = new CustomClusterFactory(connectionFactory);
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";

@@ -17,9 +17,9 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import javax.jms.JMSException;
-import org.codehaus.activemq.ActiveMQConnectionFactory;
-import org.codehaus.activemq.XmlConfigHelper;
-import org.codehaus.activemq.broker.BrokerContainerFactory;
+import org.activemq.ActiveMQConnectionFactory;
+import org.activemq.XmlConfigHelper;
+import org.activemq.broker.BrokerContainerFactory;
 
 public class CustomConnectionFactory extends ActiveMQConnectionFactory {
 

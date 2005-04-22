@@ -21,8 +21,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
-import org.codehaus.activecluster.ClusterFactory;
+import org.activecluster.Cluster;
+import org.activecluster.ClusterFactory;
 
 public class
   Cell

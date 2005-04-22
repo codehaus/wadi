@@ -16,10 +16,10 @@
  */
 package org.codehaus.wadi.sandbox.test;
 
+import org.activecluster.ClusterEvent;
+import org.activecluster.ClusterListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.ClusterEvent;
-import org.codehaus.activecluster.ClusterListener;
 
 
 public class MyClusterListener

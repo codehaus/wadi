@@ -18,7 +18,8 @@
 package org.codehaus.wadi.cluster;
 
 import javax.jms.Destination;
-import org.codehaus.activecluster.Node;
+
+import org.activecluster.Node;
 
 public class
   Peer

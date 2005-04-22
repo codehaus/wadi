@@ -8,9 +8,10 @@
     id="ConnectionFactory"
     class="org.codehaus.activemq.ActiveMQConnectionFactory"
     >
+    <!-- <constructor-arg><value>vm://localhost</value></constructor-arg> -->
     <!-- <constructor-arg><value>multicast://224.1.2.3:5123</value></constructor-arg> -->
-    <!-- <constructor-arg><value>tcp://localhost:61616</value></constructor-arg> -->
-    <constructor-arg><value>peer://WADI-0</value></constructor-arg>
+    <!-- <constructor-arg><value>peer://WADI-0</value></constructor-arg> -->
+    <constructor-arg><value>tcp://localhost:61616</value></constructor-arg>
   </bean>
 
   <bean
