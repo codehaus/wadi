@@ -108,38 +108,29 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 
 	    _dispatcher.register(this, "onMessage");
 	    _dispatcher.register(EmigrationAcknowledgement.class, _emigrationRvMap, _ackTimeout);
+        
+        _log.info("Destination is: "+_cluster.getLocalNode().getDestination());
 		}
 
-	public Immoter getImmoter(){return _immoter;}
-	public Emoter getEmoter(){return _emoter;}
+    public Immoter getImmoter(){return _immoter;}
+    public Emoter getEmoter(){return _emoter;}
 
-	public Immoter getDemoter(String id, Motable motable) {
-      _log.info("NUM NODES 2: "+_cluster.getNodes().size());
-	    if (_cluster.getNodes().size()>1) { // TODO - this probably does not need to be here anymore...
-
-	        // we are not the only node in the cluster - emote the incoming
-	        // motable to another node...
-	        ensureEmmigrationQueue();
-	        return getImmoter();
-	    } else {
-	        // we are the last node standing.
-	        // push the demotee down into the shared store below us...
-	        return _next.getDemoter(id, motable);
-	    }
-	}
-
-    public Immoter getSharedDemoter() {
-      _log.info("NUM NODES: "+_cluster.getNodes());
+    public Immoter getDemoter(String id, Motable motable) {
         if (_cluster.getNodes().size()>=1) {
-	  _log.info("sessions will be pushed out to peer nodes");
-            // we are not the only node in the cluster - emote the incoming
-            // motable to another node...
             ensureEmmigrationQueue();
+            return getImmoter();
         } else {
-	  _log.info("sessions will be pushed down to shared store");
-	}
-
-        return getImmoter();
+            return _next.getDemoter(id, motable);
+        }
+    }
+    
+    public Immoter getSharedDemoter() {
+        if (_cluster.getNodes().size()>=1) {
+            ensureEmmigrationQueue();
+            return getImmoter();
+        } else {
+            return _next.getSharedDemoter();
+        }
     }
 
 	// this field forms part of a circular dependency - so we need a setter rather than ctor param
@@ -163,14 +154,26 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 
 	protected Destination _emigrationQueue;
 
+    protected void createEmigrationQueue() throws JMSException {
+        _log.info("creating emigration queue");
+        _emigrationQueue=_cluster.createQueue("EMIGRATION"); // TODO - better queue name ?
+        MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
+        settings.to=_dispatcher.getCluster().getDestination();
+        _dispatcher.sendMessage(new EmigrationStartedNotification(_emigrationQueue), settings);
+    }
+    
+    protected void destroyEmigrationQueue() throws JMSException {
+        MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
+        settings.to=_dispatcher.getCluster().getDestination();
+        _dispatcher.sendMessage(new EmigrationEndedNotification(_emigrationQueue), settings);
+        // FIXME - can we destroy the queue ?
+        _log.info("emigration queue destroyed");
+    }
+    
 	protected synchronized void ensureEmmigrationQueue() {
 	    try {
 	        if (_emigrationQueue==null) {
-		        _log.info("initialising emmigration queue");
-	            _emigrationQueue=_cluster.createQueue("EMIGRATION"); // TODO - better queue name ?
-	            MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
-	            settings.to=_dispatcher.getCluster().getDestination();
-	            _dispatcher.sendMessage(new EmigrationStartedNotification(_emigrationQueue), settings);
+                createEmigrationQueue();
 	        }
 	    } catch (JMSException e) {
 	        _log.error("emmigration queue initialisation failed", e);
@@ -181,10 +184,11 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
     // we must not call super, or it will try to flush our location cache to the next Contextualiser
     // TODO - consider NOT inheriting from MappedContextualiser....
     public void stop() throws Exception {
-        MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
-        settings.to=_dispatcher.getCluster().getDestination();
-        _dispatcher.sendMessage(new EmigrationEndedNotification(_emigrationQueue), settings);
-        // FIXME - can we destroy the queue ?
+        // Heartbeat+1
+        Thread.sleep(6000); // TODO - parameterise - the danger is that this message may overtake its sessions...
+        if (_emigrationQueue!=null) {
+            destroyEmigrationQueue();
+        }
         _next.stop();
     }
 
