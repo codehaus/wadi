@@ -104,7 +104,8 @@ public class SimpleContextualiserStack implements Contextualiser {
     public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource) throws SQLException, JMSException, ClusterException {
         super();
         _streamer=new SimpleStreamingStrategy();
-        _collapser=new DebugCollapser();
+        //_collapser=new DebugCollapser();
+        _collapser=new HashingCollapser(200, 6000);
 
         _dummy=new DummyContextualiser();
         _databaseEvicter=new NeverEvicter();
