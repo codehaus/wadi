@@ -20,12 +20,13 @@ package org.codehaus.wadi.cluster;
 import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
+
+import org.activecluster.Cluster;
+import org.activecluster.ClusterEvent;
+import org.activecluster.LocalNode;
+import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
-import org.codehaus.activecluster.ClusterEvent;
-import org.codehaus.activecluster.LocalNode;
-import org.codehaus.activecluster.Node;
 
 
 // not sure how many layers to this API yet:

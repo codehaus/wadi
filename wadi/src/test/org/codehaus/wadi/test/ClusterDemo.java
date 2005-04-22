@@ -19,14 +19,16 @@ package org.codehaus.wadi.test;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.jms.JMSException;
+
+import org.activecluster.Cluster;
+import org.activecluster.ClusterException;
+import org.activecluster.ClusterFactory;
+import org.activecluster.impl.DefaultClusterFactory;
+import org.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
-import org.codehaus.activecluster.ClusterException;
-import org.codehaus.activecluster.ClusterFactory;
-import org.codehaus.activecluster.impl.DefaultClusterFactory;
-import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.cluster.NChooseKTopologyStrategy;
 import org.codehaus.wadi.cluster.TopologyStrategy;
 

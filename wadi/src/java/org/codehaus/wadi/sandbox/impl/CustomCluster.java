@@ -25,8 +25,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.Topic;
 
-import org.codehaus.activecluster.LocalNode;
-import org.codehaus.activecluster.impl.DefaultCluster;
+import org.activecluster.LocalNode;
+import org.activecluster.impl.DefaultCluster;
 
 public class CustomCluster extends DefaultCluster {
     public CustomCluster(final LocalNode localNode, Topic dataTopic, Topic destination, Connection connection, Session session, MessageProducer producer, Timer timer, long inactiveTime) throws JMSException {

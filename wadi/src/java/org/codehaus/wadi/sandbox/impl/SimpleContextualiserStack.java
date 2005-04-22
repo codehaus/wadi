@@ -42,8 +42,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
-import org.codehaus.activecluster.ClusterException;
-import org.codehaus.activemq.ActiveMQConnectionFactory;
+import org.activecluster.ClusterException;
+import org.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Collapser;
@@ -113,7 +113,8 @@ public class SimpleContextualiserStack implements Contextualiser {
         SharedJDBCMotable.initialise(_databaseDataSource, _databaseTable);
         _database=new SharedJDBCContextualiser(_dummy, _databaseEvicter, _databaseDataSource, _databaseTable);
 
-        _connectionFactory=new CustomConnectionFactory("peer://WADI-TEST");
+//        _connectionFactory=new ActiveMQConnectionFactory("peer://WADI-TEST");
+        _connectionFactory=new ActiveMQConnectionFactory("tcp://localhost:61616");
         _clusterFactory=new CustomClusterFactory(_connectionFactory);
         _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
         _clusterCluster=(CustomCluster)_clusterFactory.createCluster(_clusterName);

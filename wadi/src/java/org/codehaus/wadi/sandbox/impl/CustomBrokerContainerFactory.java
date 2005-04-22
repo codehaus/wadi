@@ -16,10 +16,10 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.activemq.broker.impl.BrokerContainerFactoryImpl;
-import org.codehaus.activemq.broker.BrokerContext;
-import org.codehaus.activemq.broker.BrokerContainer;
-import org.codehaus.activemq.store.PersistenceAdapter;
+import org.activemq.broker.impl.BrokerContainerFactoryImpl;
+import org.activemq.broker.BrokerContext;
+import org.activemq.broker.BrokerContainer;
+import org.activemq.store.PersistenceAdapter;
 
 public class CustomBrokerContainerFactory extends BrokerContainerFactoryImpl {
 

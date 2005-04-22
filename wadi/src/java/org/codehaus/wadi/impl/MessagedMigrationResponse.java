@@ -19,14 +19,16 @@ package org.codehaus.wadi.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
+
+import org.activecluster.Cluster;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
-import org.codehaus.wadi.HttpSessionImpl;
 import org.codehaus.wadi.Executable;
+import org.codehaus.wadi.HttpSessionImpl;
 import org.codehaus.wadi.MigrationService;
 import org.codehaus.wadi.ObjectInputStream;
 

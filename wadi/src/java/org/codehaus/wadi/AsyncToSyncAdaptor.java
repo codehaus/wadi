@@ -28,7 +28,7 @@ import javax.jms.Destination;
 import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
+import org.activecluster.Cluster;
 
 /**
  * Enable a thread to send a Command over an async medium and wait for

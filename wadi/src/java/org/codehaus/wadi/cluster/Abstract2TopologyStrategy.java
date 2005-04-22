@@ -21,8 +21,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import org.codehaus.activecluster.Cluster;
-import org.codehaus.activecluster.ClusterFactory;
+
+import org.activecluster.Cluster;
+import org.activecluster.ClusterFactory;
 
 public abstract class
   Abstract2TopologyStrategy

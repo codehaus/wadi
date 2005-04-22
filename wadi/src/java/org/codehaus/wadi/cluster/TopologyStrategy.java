@@ -17,7 +17,7 @@
 
 package org.codehaus.wadi.cluster;
 
-import org.codehaus.activecluster.ClusterListener;
+import org.activecluster.ClusterListener;
 
 public interface
   TopologyStrategy

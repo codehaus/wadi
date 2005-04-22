@@ -32,11 +32,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
+import junit.framework.TestCase;
+
+import org.activecluster.ClusterFactory;
+import org.activemq.ActiveMQConnectionFactory;
+import org.activemq.broker.impl.BrokerContainerFactoryImpl;
+import org.activemq.store.vm.VMPersistenceAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
-import org.codehaus.activecluster.ClusterFactory;
-import org.codehaus.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.GZIPStreamingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
@@ -58,8 +62,8 @@ import org.codehaus.wadi.sandbox.impl.CustomCluster;
 import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.impl.DummyHttpServletRequest;
-import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.ExclusiveDiscContextualiser;
+import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.impl.NeverEvicter;
@@ -76,8 +80,6 @@ import org.codehaus.wadi.sandbox.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
-
-import junit.framework.TestCase;
 
 /**
  * Test various Contualisers, evicters etc...
@@ -436,7 +438,9 @@ public class TestContextualiser extends TestCase {
 	}
 
 	public void testCluster() throws Exception {
-		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
+//        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
+        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
+        ((ActiveMQConnectionFactory)connectionFactory).setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter()));
 		ClusterFactory clusterFactory       = new CustomClusterFactory(connectionFactory);
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
 		CustomCluster cluster0              = (CustomCluster)clusterFactory.createCluster(clusterName);

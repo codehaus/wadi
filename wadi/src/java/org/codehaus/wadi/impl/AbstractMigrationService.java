@@ -18,14 +18,16 @@
 package org.codehaus.wadi.impl;
 
 import java.util.Map;
+
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+
+import org.activecluster.Cluster;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.activecluster.Cluster;
 import org.codehaus.wadi.AsyncToSyncAdaptor;
 import org.codehaus.wadi.Executable;
 import org.codehaus.wadi.HttpSessionImplFactory;
