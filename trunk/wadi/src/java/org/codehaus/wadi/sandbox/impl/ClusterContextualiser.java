@@ -114,7 +114,8 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	public Emoter getEmoter(){return _emoter;}
 
 	public Immoter getDemoter(String id, Motable motable) {
-	    if (_cluster.getNodes().size()>1) {
+	    if (_cluster.getNodes().size()>1) { // TODO - this probably does not need to be here anymore...
+            
 	        // we are not the only node in the cluster - emote the incoming
 	        // motable to another node...
 	        ensureEmmigrationQueue();
@@ -125,6 +126,16 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	        return _next.getDemoter(id, motable);
 	    }
 	}
+    
+    public Immoter getSharedImmoter() {
+        if (_cluster.getNodes().size()>1) {
+            // we are not the only node in the cluster - emote the incoming
+            // motable to another node...
+            ensureEmmigrationQueue();
+        }
+        
+        return super.getSharedDemoter();
+    }
 
 	// this field forms part of a circular dependency - so we need a setter rather than ctor param
 	protected Contextualiser _top;
@@ -160,10 +171,17 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	        _log.error("emmigration queue initialisation failed", e);
 	        _emigrationQueue=null;
 	    }
-	    
-	    // TODO - we need a stop() where we can do:
-	    //		_dispatcher.sendMessage(new ShutDownEndedNotification(_emigrationQueue), settings);
 	}
+    
+    // we must not call super, or it will try to flush our location cache to the next Contextualiser
+    // TODO - consider NOT inheriting from MappedContextualiser....
+    public void stop() throws Exception {
+        MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
+        settings.to=_dispatcher.getCluster().getDestination();
+        _dispatcher.sendMessage(new EmigrationEndedNotification(_emigrationQueue), settings);
+        // FIXME - can we destroy the queue ?
+        _next.stop();
+    }
 	
 	public void onMessage(ObjectMessage om, EmigrationStartedNotification sdsn) throws JMSException {
 		Destination emigrationQueue=sdsn.getDestination();
