@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-// Thoughts - 
+// Thoughts -
 
 // invalidation is tricky - stuff invalidated on disc needs may need to be unmarshalled so that the correct listeners may be notified...
 
@@ -60,17 +60,17 @@ import org.codehaus.wadi.sandbox.RelocationStrategy;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class SimpleContextualiserStack implements Contextualiser {
-    
+
     protected final StreamingStrategy _streamer;
     protected final Collapser _collapser;
 
     protected final DummyContextualiser _dummy;
- 
+
     protected final DataSource _databaseDataSource;
     protected final String _databaseTable;
     protected Evicter _databaseEvicter;
     protected final SharedJDBCContextualiser _database;
-    
+
     protected final ConnectionFactory _connectionFactory;
     protected final CustomClusterFactory _clusterFactory;
     protected final String _clusterName;
@@ -81,26 +81,26 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final RelocationStrategy _clusterRelocater;
     protected final Location _clusterLocation;
     protected final ClusterContextualiser _cluster;
-    
+
     protected final Pattern _statelessMethods;
     protected final boolean _statelessMethodFlag;
     protected final Pattern _statelessURIs;
     protected final boolean _statelessURIFlag;
     protected final StatelessContextualiser _stateless;
-      
+
     protected final File _discDirectory;
     protected final Evicter _discEvicter;
     protected final Map _discMap;
     protected final ExclusiveDiscContextualiser _disc;
-    
+
     protected final SerialContextualiser _serial;
-    
+
     protected final ContextPool _memoryPool;
     protected final HttpServletRequestWrapperPool _requestPool;
     protected final Evicter _memoryEvicter;
     protected final Map _memoryMap;
     protected final MemoryContextualiser _memory;
-    
+
     public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource) throws SQLException, JMSException, ClusterException {
         super();
         _streamer=new SimpleStreamingStrategy();
@@ -117,7 +117,6 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterFactory=new CustomClusterFactory(_connectionFactory);
         _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
         _clusterCluster=(CustomCluster)_clusterFactory.createCluster(_clusterName);
-        _clusterCluster.start();
         InetSocketAddress isa=new InetSocketAddress("localhost", 8080); // FIXME - hardwired port
         HttpProxy proxy=new StandardHttpProxy("jsessionid");
         _clusterLocation=new HttpProxyLocation(_clusterCluster.getLocalNode().getDestination(), isa, proxy);
@@ -126,13 +125,13 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterDispatcher=new MessageDispatcher(_clusterCluster);
         _clusterRelocater=new ImmigrateRelocationStrategy(_clusterDispatcher, _clusterLocation, 2000, _clusterMap, _collapser);
         _cluster=new ClusterContextualiser(_database, _clusterEvicter, _clusterMap, _collapser, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation);
- 
+
         _statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
         _statelessMethodFlag=true;
         _statelessURIs=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);
         _statelessURIFlag=false;
         _stateless=new StatelessContextualiser(_cluster, _statelessMethods, _statelessMethodFlag, _statelessURIs, _statelessURIFlag);
- 
+
         _discDirectory=new File("/tmp");
         _discEvicter=new TimedOutEvicter();
         _discMap=new HashMap();
@@ -145,10 +144,10 @@ public class SimpleContextualiserStack implements Contextualiser {
         _serial=new SerialContextualiser(_disc, _collapser, _memoryMap);
         _requestPool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - use a ThreadLocal based Pool
         _memory=new MemoryContextualiser(_serial, _memoryEvicter, _memoryMap, _streamer, _memoryPool, _requestPool);
-        
+
         _cluster.setTop(_memory);
         _clusterRelocater.setTop(_memory);
-        
+
         // ready to rock !
     }
 
@@ -171,9 +170,10 @@ public class SimpleContextualiserStack implements Contextualiser {
     public Immoter getDemoter(String id, Motable motable) {
         return _memory.getDemoter(id, motable);
     }
-    
+
     public void start() throws Exception {
         _clusterCluster.start();
+	// TODO - dispatcher probably needs a Lifecycle too... (and a thread pool)
         _memory.start();
     }
 
