@@ -113,7 +113,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         SharedJDBCMotable.initialise(_databaseDataSource, _databaseTable);
         _database=new SharedJDBCContextualiser(_dummy, _databaseEvicter, _databaseDataSource, _databaseTable);
 
-        _connectionFactory=new ActiveMQConnectionFactory("peer://WADI-TEST");
+        _connectionFactory=new CustomConnectionFactory("peer://WADI-TEST");
         _clusterFactory=new CustomClusterFactory(_connectionFactory);
         _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
         _clusterCluster=(CustomCluster)_clusterFactory.createCluster(_clusterName);
@@ -170,7 +170,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     public Immoter getDemoter(String id, Motable motable) {
         return _memory.getDemoter(id, motable);
     }
-    
+
     public Immoter getSharedDemoter() {
         return _memory.getSharedDemoter();
     }

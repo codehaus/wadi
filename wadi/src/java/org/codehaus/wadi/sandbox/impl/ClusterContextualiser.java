@@ -114,8 +114,9 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	public Emoter getEmoter(){return _emoter;}
 
 	public Immoter getDemoter(String id, Motable motable) {
+      _log.info("NUM NODES 2: "+_cluster.getNodes().size());
 	    if (_cluster.getNodes().size()>1) { // TODO - this probably does not need to be here anymore...
-            
+
 	        // we are not the only node in the cluster - emote the incoming
 	        // motable to another node...
 	        ensureEmmigrationQueue();
@@ -126,15 +127,19 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	        return _next.getDemoter(id, motable);
 	    }
 	}
-    
-    public Immoter getSharedImmoter() {
-        if (_cluster.getNodes().size()>1) {
+
+    public Immoter getSharedDemoter() {
+      _log.info("NUM NODES: "+_cluster.getNodes());
+        if (_cluster.getNodes().size()>=1) {
+	  _log.info("sessions will be pushed out to peer nodes");
             // we are not the only node in the cluster - emote the incoming
             // motable to another node...
             ensureEmmigrationQueue();
-        }
-        
-        return super.getSharedDemoter();
+        } else {
+	  _log.info("sessions will be pushed down to shared store");
+	}
+
+        return getImmoter();
     }
 
 	// this field forms part of a circular dependency - so we need a setter rather than ctor param
@@ -157,7 +162,7 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	public boolean isLocal(){return false;}
 
 	protected Destination _emigrationQueue;
-	
+
 	protected synchronized void ensureEmmigrationQueue() {
 	    try {
 	        if (_emigrationQueue==null) {
@@ -172,7 +177,7 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	        _emigrationQueue=null;
 	    }
 	}
-    
+
     // we must not call super, or it will try to flush our location cache to the next Contextualiser
     // TODO - consider NOT inheriting from MappedContextualiser....
     public void stop() throws Exception {
@@ -182,16 +187,16 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
         // FIXME - can we destroy the queue ?
         _next.stop();
     }
-	
+
 	public void onMessage(ObjectMessage om, EmigrationStartedNotification sdsn) throws JMSException {
 		Destination emigrationQueue=sdsn.getDestination();
-		//_log.info("received EmigrationStartedNotification: "+emigrationQueue);
+		_log.info("received EmigrationStartedNotification: "+emigrationQueue);
 		_dispatcher.addDestination(emigrationQueue);
 	}
 
 	public void onMessage(ObjectMessage om, EmigrationEndedNotification sden) {
 		Destination emigrationQueue=sden.getDestination();
-		//_log.info("received EmigrationEndedNotification: "+emigrationQueue);
+		_log.info("received EmigrationEndedNotification: "+emigrationQueue);
 		_dispatcher.removeDestination(emigrationQueue);
 	}
 
@@ -213,7 +218,7 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 		        immotable.copy(emotable);
 		        EmigrationRequest er=new EmigrationRequest(id, immotable);
 		        EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emigrationRvMap, er, settingsInOut, _ackTimeout);
-		        
+
 		        if (ea==null) {
 		            return false;
 		        } else {
@@ -305,10 +310,10 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
         try {
             Utils.acquireUninterrupted(lock);
             acquired=true;
-            
+
             Emoter emoter=new ImmigrationEmoter(om, er);
             Motable emotable=er.getMotable();
-            
+
             if (!emotable.checkTimeframe(System.currentTimeMillis()))
                 _log.warn("immigrating session has come from the future!: "+emotable.getId());
 
