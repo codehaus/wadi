@@ -45,6 +45,8 @@ public abstract class AbstractThinContextualiser implements Contextualiser {
     public boolean isLocal() {return _next.isLocal();}
 
     public Immoter getDemoter(String id, Motable motable) {return _next.getDemoter(id, motable);}
+    
+    public Immoter getSharedDemoter() {return _next.getSharedDemoter();}
 
     public void start() throws Exception {
         _next.start();

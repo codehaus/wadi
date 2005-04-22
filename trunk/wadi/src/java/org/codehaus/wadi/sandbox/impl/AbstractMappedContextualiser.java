@@ -108,4 +108,29 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 	    }
 	    RWLock.setPriority(RWLock.NO_PRIORITY);
 	}
+    
+    public void stop() throws Exception {
+        // get an immoter from the first shared Contextualiser
+        Immoter immoter=_next.getSharedDemoter();
+        Emoter emoter=getEmoter();
+        
+        // emote all our Motables using it
+        _log.info("unloading sessions - starting: "+s);
+        RWLock.setPriority(RWLock.EVICTION_PRIORITY);
+        Collection copy=null;
+        synchronized (_map) {copy=new ArrayList(_map.entrySet());}
+        int s=copy.size();
+        
+        for (Iterator i=copy.iterator(); i.hasNext(); ) {
+            Map.Entry e=(Map.Entry)i.next();
+            String id=(String)e.getKey();
+            Motable emotable=(Motable)e.getValue();
+            Utils.mote(emoter, immoter, emotable, id);
+        }
+        RWLock.setPriority(RWLock.NO_PRIORITY);
+        _log.info("unloading sessions - finished: "+s);
+        
+        // tell the next Contextualiser to stop()
+        super.stop();
+    }
 }
