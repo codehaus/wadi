@@ -157,10 +157,6 @@
 		<attributes>
 		</attributes>
 	</classpathentry>
-	<classpathentry sourcepath="/usr/local/java/activemq-3.0/modules/core/src/java" kind="lib" path="WEB-INF/lib/activemq-3.0.jar">
-		<attributes>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="WEB-INF/lib/activecluster-1.1-SNAPSHOT.jar">
 		<attributes>
 		</attributes>
