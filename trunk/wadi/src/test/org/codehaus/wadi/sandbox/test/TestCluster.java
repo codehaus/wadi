@@ -17,17 +17,20 @@
 package org.codehaus.wadi.sandbox.test;
 
 import java.net.InetSocketAddress;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
+import javax.sql.DataSource;
 
 import junit.framework.TestCase;
 
 import org.activecluster.ClusterException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
@@ -48,6 +51,8 @@ import org.codehaus.wadi.sandbox.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.impl.NeverEvicter;
+import org.codehaus.wadi.sandbox.impl.SharedJDBCContextualiser;
+import org.codehaus.wadi.sandbox.impl.SharedJDBCMotable;
 import org.codehaus.wadi.sandbox.impl.StandardHttpProxy;
 import org.codehaus.wadi.sandbox.impl.Utils;
 
@@ -71,9 +76,13 @@ public class TestCluster extends TestCase {
         protected final Map _mmap=new HashMap();
         protected final Evicter _evicter=new NeverEvicter();
         protected final MemoryContextualiser _top;
-        protected final ClusterContextualiser _bottom;
+        protected final ClusterContextualiser _middle;
+        protected final SharedJDBCContextualiser _bottom;
         
-        public MyNode(CustomClusterFactory factory, String clusterName) throws JMSException, ClusterException {
+        public MyNode(CustomClusterFactory factory, String clusterName) throws JMSException, ClusterException, SQLException {
+            DataSource ds=new AxionDataSource("jdbc:axiondb:testdb");
+            String table="WADISESSIONS";
+            _bottom=new SharedJDBCContextualiser(new DummyContextualiser(), new NeverEvicter(), ds, table);
             _cluster=(CustomCluster)factory.createCluster(clusterName);
             _cluster.addClusterListener(new MyClusterListener());
             _dispatcher=new MessageDispatcher(_cluster);
@@ -82,9 +91,9 @@ public class TestCluster extends TestCase {
             _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), isa, proxy);
             //_relocater=new SwitchableRelocationStrategy();
             _relocater=null;
-            _bottom=new ClusterContextualiser(new DummyContextualiser(), new NeverEvicter(), _cmap, _collapser, _cluster, _dispatcher, _relocater, _location);
-            _top=new MemoryContextualiser(_bottom, _evicter, _mmap, new SimpleStreamingStrategy(), new MyContextPool(), new DummyStatefulHttpServletRequestWrapperPool());
-            _bottom.setTop(_top);
+            _middle=new ClusterContextualiser(_bottom, new NeverEvicter(), _cmap, _collapser, _cluster, _dispatcher, _relocater, _location);
+            _top=new MemoryContextualiser(_middle, _evicter, _mmap, new SimpleStreamingStrategy(), new MyContextPool(), new DummyStatefulHttpServletRequestWrapperPool());
+            _middle.setTop(_top);
         }
         
         protected boolean _running;
@@ -93,6 +102,7 @@ public class TestCluster extends TestCase {
             if (!_running) {
                 _cluster.start();
                 _top.start();
+                _top.promoteToLocal(null);
                 _running=true;
             }
         }
@@ -112,7 +122,7 @@ public class TestCluster extends TestCase {
         
         public Map getClusterContextualiserMap() {return _cmap;}
         public CustomCluster getCluster(){return _cluster;}
-        public ClusterContextualiser getClusterContextualiser() {return _bottom;}
+        public ClusterContextualiser getClusterContextualiser() {return _middle;}
         
         public Map getMemoryContextualiserMap() {return _mmap;}
         public MemoryContextualiser getMemoryContextualiser(){return _top;}
@@ -169,8 +179,6 @@ public class TestCluster extends TestCase {
 
 	public void testStop() throws Exception {
 		Contextualiser c0=_node0.getMemoryContextualiser();
-		Contextualiser c1=_node1.getMemoryContextualiser();
-		Contextualiser c2=_node2.getMemoryContextualiser();
 
 		Map m0=_node0.getMemoryContextualiserMap();
 		Map m1=_node1.getMemoryContextualiserMap();
