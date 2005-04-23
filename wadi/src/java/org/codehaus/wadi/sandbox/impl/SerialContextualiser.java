@@ -41,7 +41,6 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-
 public class SerialContextualiser extends AbstractThinContextualiser {
     protected static final Log _log = LogFactory.getLog(AbstractImmoter.class);
     

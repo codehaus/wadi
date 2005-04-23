@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -182,10 +184,15 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterCluster.start();
 	// TODO - dispatcher probably needs a Lifecycle too... (and a thread pool)
         _memory.start();
+        _memory.promoteToLocal(null);
     }
 
     public void stop() throws Exception {
         _memory.stop();
         _clusterCluster.stop();
     }
+    
+    public void promoteToLocal(Immoter immoter){_memory.promoteToLocal(immoter);}
+    public Collection loadMotables() {return _memory.loadMotables();}
+
 }

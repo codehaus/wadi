@@ -20,6 +20,8 @@ package org.codehaus.wadi.sandbox.impl;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
 
 import javax.sql.DataSource;
 
@@ -188,4 +190,9 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 			return "shared database";
 		}
 	}
+
+    public Collection loadMotables() {
+        _log.info("LOADING FROM DB");
+        return Collections.EMPTY_SET; // FIXME - return all sessions from DB...
+    }
 }

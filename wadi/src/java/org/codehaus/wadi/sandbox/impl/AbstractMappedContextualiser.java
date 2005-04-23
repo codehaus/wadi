@@ -133,4 +133,8 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
         // tell the next Contextualiser to stop()
         super.stop();
     }
+    
+    // MappedContextualisers are all Local
+    public Collection loadMotables(){return null;}
+
 }

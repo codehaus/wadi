@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.util.Collection;
+
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
@@ -55,5 +57,9 @@ public abstract class AbstractThinContextualiser implements Contextualiser {
     public void stop() throws Exception {
         _next.stop();
     }
+    
+    public void promoteToLocal(Immoter immoter) {_next.promoteToLocal(immoter);}
+    
+    public Collection loadMotables() {return _next.loadMotables();}
     
 }

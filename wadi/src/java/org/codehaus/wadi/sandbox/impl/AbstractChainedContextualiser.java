@@ -17,6 +17,7 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -119,4 +120,18 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
         _next.stop();
     }
     
+    public void promoteToLocal(Immoter immoter) {
+        if (isLocal())
+            _next.promoteToLocal(_next.isLocal()?null:getImmoter());
+        else {
+            Emoter emoter=getEmoter();
+            for (Iterator i=loadMotables().iterator(); i.hasNext();) {
+                // TODO - consider expiring some immediately...
+                Motable emotable=(Motable)i.next();
+                String id=emotable.getId();
+                Utils.mote(emoter, immoter, emotable, id);
+            }
+            _next.promoteToLocal(immoter);
+        }
+    }
 }

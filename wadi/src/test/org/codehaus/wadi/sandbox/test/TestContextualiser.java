@@ -19,6 +19,8 @@ package org.codehaus.wadi.sandbox.test;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -255,6 +257,8 @@ public class TestContextualiser extends TestCase {
         public void start(){/* empty */}
         public void stop(){/* empty */}
 
+        public void promoteToLocal(Immoter immoter){/* empty */}
+        public Collection loadMotables() {return Collections.EMPTY_SET;}
 	}
 
 	class MyActiveContextualiser implements Contextualiser {
@@ -298,6 +302,9 @@ public class TestContextualiser extends TestCase {
         
         public void start(){/* empty */}
         public void stop(){/* empty */}
+        
+        public void promoteToLocal(Immoter immoter){/* empty */}
+        public Collection loadMotables() {return Collections.EMPTY_SET;}
 
 	}
 

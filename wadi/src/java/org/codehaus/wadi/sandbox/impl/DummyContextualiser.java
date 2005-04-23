@@ -16,6 +16,9 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -84,5 +87,8 @@ public class DummyContextualiser implements Contextualiser {
     
     public void start(){/* empty */}
     public void stop(){/* empty */}
+
+    public void promoteToLocal(Immoter immoter){/* empty */}
+    public Collection loadMotables() {return Collections.EMPTY_SET;}
     
 }
