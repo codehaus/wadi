@@ -8,7 +8,7 @@ export MAVEN_HOME
 
 if [ -z "$JAVA_HOME" ]
 then
-    JAVA_HOME=/usr/local/java/sun-j2sdk1.4.2_05
+    JAVA_HOME=/usr/local/java/sun-j2sdk1.4.2_08
 fi
 export JAVA_HOME
 
