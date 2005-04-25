@@ -81,10 +81,10 @@ public class StatelessContextualiser extends AbstractThinContextualiser {
         }
 	};
 
-	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean localOnly) throws IOException, ServletException {
+	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
 		if (hreq==null || isStateful(hreq)) {
 			// we cannot optimise...
-			return _next.contextualise(hreq, hres, chain, id, immoter, motionLock, localOnly);
+			return _next.contextualise(hreq, hres, chain, id, immoter, motionLock, exclusiveOnly);
 		} else {
 			// we know that we can run the request locally...
 			if (motionLock!=null) {

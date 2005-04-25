@@ -27,7 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Motable;
 
 /**
- * A Motable that represents its Bytes field as a File on LocalDisc.
+ * A Motable that represents its Bytes field as a File in a directory to which its node has Exclusive access.
  * N.B. The File field must be set before the Bytes field.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

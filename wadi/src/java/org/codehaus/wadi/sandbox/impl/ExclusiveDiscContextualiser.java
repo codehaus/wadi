@@ -54,11 +54,11 @@ public class ExclusiveDiscContextualiser extends AbstractCollapsingContextualise
 	    assert dir.canWrite();
 	    _dir=dir;
 	    
-	    _immoter=new LocalDiscImmoter(_map);
-	    _emoter=new LocalDiscEmoter(_map);
+	    _immoter=new ExclusiveDiscImmoter(_map);
+	    _emoter=new ExclusiveDiscEmoter(_map);
 	}
 	
-	public boolean isLocal(){return true;}
+	public boolean isExclusive(){return true;}
 
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
@@ -69,9 +69,9 @@ public class ExclusiveDiscContextualiser extends AbstractCollapsingContextualise
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$
 	 */
-	public class LocalDiscImmoter extends AbstractMappedImmoter {
+	public class ExclusiveDiscImmoter extends AbstractMappedImmoter {
 
-	    public LocalDiscImmoter(Map map) {
+	    public ExclusiveDiscImmoter(Map map) {
 	        super(map);
 	    }
 	    
@@ -97,9 +97,9 @@ public class ExclusiveDiscContextualiser extends AbstractCollapsingContextualise
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$
 	 */
-	class LocalDiscEmoter extends AbstractMappedEmoter {
+	class ExclusiveDiscEmoter extends AbstractMappedEmoter {
 
-		public LocalDiscEmoter(Map map) {super(map);}
+		public ExclusiveDiscEmoter(Map map) {super(map);}
 
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			if (super.prepare(id, emotable, immotable)) {

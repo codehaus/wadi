@@ -69,7 +69,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
         _requestPool=requestPool;
 	}
 
-	public boolean isLocal(){return true;}
+	public boolean isExclusive(){return true;}
 
 	// TODO - sometime figure out how to make this a wrapper around AbstractMappedContextualiser.handle() instead of a replacement...
 	public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock) throws IOException, ServletException {

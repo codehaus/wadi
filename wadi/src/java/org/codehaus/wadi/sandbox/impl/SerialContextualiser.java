@@ -54,11 +54,11 @@ public class SerialContextualiser extends AbstractThinContextualiser {
         _map=map;
     }
     
-    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean localOnly) throws IOException, ServletException {
+    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
         if (motionLock!=null) {
             // someone is already doing a promotion from further up the
             // stack - do nothing other than delegate...
-            return _next.contextualise(hreq, hres, chain, id, immoter, motionLock, localOnly);
+            return _next.contextualise(hreq, hres, chain, id, immoter, motionLock, exclusiveOnly);
         } else {
             // the promotion begins here...
             // allocate a lock and continue...
@@ -87,7 +87,7 @@ public class SerialContextualiser extends AbstractThinContextualiser {
                     // session was not promoted whilst we were waiting for motionLock. Continue down Contextualiser stack
                     // it may be below us...
                     // lock is to be released as soon as context is available to subsequent contextualisations...
-                    found=_next.contextualise(hreq, hres, chain, id, immoter, motionLock, localOnly);
+                    found=_next.contextualise(hreq, hres, chain, id, immoter, motionLock, exclusiveOnly);
                 }
                 needsRelease=!found;
                 return found;

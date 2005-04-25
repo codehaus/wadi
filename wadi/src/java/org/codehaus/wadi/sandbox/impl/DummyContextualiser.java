@@ -49,7 +49,7 @@ public class DummyContextualiser implements Contextualiser {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
-	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean localOnly) {
+	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) {
 		return false;
 	}
 
@@ -60,7 +60,7 @@ public class DummyContextualiser implements Contextualiser {
 	protected final Evicter _evicter=new NeverEvicter();
 	public Evicter getEvicter(){return _evicter;}
 
-	public boolean isLocal(){return false;}
+	public boolean isExclusive(){return false;}
 
 	public class DummyImmoter implements Immoter {
 		public Motable nextMotable(String id, Motable emotable){return null;}
@@ -88,7 +88,7 @@ public class DummyContextualiser implements Contextualiser {
     public void start(){/* empty */}
     public void stop(){/* empty */}
 
-    public void promoteToLocal(Immoter immoter){/* empty */}
+    public void promoteToExclusive(Immoter immoter){/* empty */}
     public Collection loadMotables() {return Collections.EMPTY_SET;}
     
 }

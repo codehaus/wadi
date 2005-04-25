@@ -51,7 +51,7 @@ public class MyFilter implements Filter {
 		HttpServletResponse hres=(HttpServletResponse)res;
 		String sessionId=hreq.getRequestedSessionId();
 		_log.info("Filter.doFilter("+((sessionId==null)?"":sessionId)+")"+(hreq.isSecure()?" - SECURE":""));
-		boolean found=_servlet.getContextualiser().contextualise(hreq, hres, chain, sessionId, null, null, _localOnly);
+		boolean found=_servlet.getContextualiser().contextualise(hreq, hres, chain, sessionId, null, null, _exclusiveOnly);
 
 		// only here for testing...
 		if (!found) {
@@ -69,6 +69,6 @@ public class MyFilter implements Filter {
 	    // can't be bothered...
 	    }
 
-	protected boolean _localOnly=false;
-	public void setLocalOnly(boolean localOnly){_localOnly=localOnly;}
+	protected boolean _exclusiveOnly=false;
+	public void setExclusiveOnly(boolean exclusiveOnly){_exclusiveOnly=exclusiveOnly;}
 }

@@ -208,10 +208,10 @@ public class TestRelocation extends TestCase {
 		assertTrue(c1.isEmpty());
 
 		// no sessions available locally
-		_filter0.setLocalOnly(true);
+		_filter0.setExclusiveOnly(true);
 		assertTrue(get(client, method0, "/test;jsessionid=foo")!=200);
 		assertTrue(get(client, method0, "/test;jsessionid=bar")!=200);
-		_filter1.setLocalOnly(true);
+		_filter1.setExclusiveOnly(true);
 		assertTrue(get(client, method1, "/test;jsessionid=foo")!=200);
 		assertTrue(get(client, method1, "/test;jsessionid=bar")!=200);
 
@@ -229,12 +229,12 @@ public class TestRelocation extends TestCase {
 		assertTrue(c1.isEmpty());
 
 		// 2/4 sessions available locally
-		_filter0.setLocalOnly(true);
+		_filter0.setExclusiveOnly(true);
 		int status=get(client, method0, "/test;jsessionid=foo");
 		_log.info("STATUS="+status);
 		assertTrue(status==200);
 		assertTrue(get(client, method0, "/test;jsessionid=bar")!=200);
-		_filter1.setLocalOnly(true);
+		_filter1.setExclusiveOnly(true);
 		assertTrue(get(client, method1, "/test;jsessionid=foo")!=200);
 		assertTrue(get(client, method1, "/test;jsessionid=bar")==200);
 
@@ -244,7 +244,7 @@ public class TestRelocation extends TestCase {
 		assertTrue(c1.isEmpty());
 
 		// 4/4 sessions available locally|remotely
-		_filter0.setLocalOnly(false);
+		_filter0.setExclusiveOnly(false);
 		assertTrue(get(client, method0, "/test;jsessionid=foo")==200);
 		assertTrue(get(client, method0, "/test;jsessionid=bar")==200);
 
@@ -261,7 +261,7 @@ public class TestRelocation extends TestCase {
 			assertTrue(c1.size()==0);
 		}
 
-		_filter1.setLocalOnly(false);
+		_filter1.setExclusiveOnly(false);
 		assertTrue(get(client, method1, "/test;jsessionid=foo")==200);
 		assertTrue(get(client, method1, "/test;jsessionid=bar")==200);
 
@@ -283,7 +283,7 @@ public class TestRelocation extends TestCase {
 		}
 
 		// ensure that cached locations work second time around...
-		_filter0.setLocalOnly(false);
+		_filter0.setExclusiveOnly(false);
 		assertTrue(get(client, method0, "/test;jsessionid=foo")==200);
 		assertTrue(get(client, method0, "/test;jsessionid=bar")==200);
 
@@ -300,7 +300,7 @@ public class TestRelocation extends TestCase {
 			assertTrue(c1.size()==1); // all locations...
 		}
 
-		_filter1.setLocalOnly(false);
+		_filter1.setExclusiveOnly(false);
 		assertTrue(get(client, method1, "/test;jsessionid=foo")==200);
 		assertTrue(get(client, method1, "/test;jsessionid=bar")==200);
 

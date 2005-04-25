@@ -65,9 +65,9 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
-	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean localOnly) throws IOException, ServletException {
+	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
 	    return (handle(hreq, hres, chain, id, immoter, motionLock) ||
-	            ((!(localOnly && !_next.isLocal())) && _next.contextualise(hreq, hres, chain, id, getPromoter(immoter), motionLock, localOnly)));
+	            ((!(exclusiveOnly && !_next.isExclusive())) && _next.contextualise(hreq, hres, chain, id, getPromoter(immoter), motionLock, exclusiveOnly)));
 	}
 
 	public boolean promote(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Motable emotable) throws IOException, ServletException {
@@ -92,7 +92,7 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
 	}
     
     public Immoter getSharedDemoter() {
-        if (isLocal())
+        if (isExclusive())
             return _next.getSharedDemoter();
         else
             return getImmoter();
@@ -120,9 +120,9 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
         _next.stop();
     }
     
-    public void promoteToLocal(Immoter immoter) {
-        if (isLocal())
-            _next.promoteToLocal(_next.isLocal()?null:getImmoter());
+    public void promoteToExclusive(Immoter immoter) {
+        if (isExclusive())
+            _next.promoteToExclusive(_next.isExclusive()?null:getImmoter());
         else {
             Emoter emoter=getEmoter();
             for (Iterator i=loadMotables().iterator(); i.hasNext();) {
@@ -131,7 +131,7 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
                 String id=emotable.getId();
                 Utils.mote(emoter, immoter, emotable, id);
             }
-            _next.promoteToLocal(immoter);
+            _next.promoteToExclusive(immoter);
         }
     }
 }
