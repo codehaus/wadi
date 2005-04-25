@@ -116,7 +116,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _databaseEvicter=new NeverEvicter();
         _databaseDataSource=dataSource;
         _databaseTable="WADI";
-        SharedJDBCMotable.initialise(_databaseDataSource, _databaseTable);
+        SharedJDBCMotable.init(_databaseDataSource, _databaseTable);
         _database=new SharedJDBCContextualiser(_dummy, _databaseEvicter, _databaseDataSource, _databaseTable);
         _connectionFactory=Utils.getConnectionFactory();
         _clusterFactory=new CustomClusterFactory(_connectionFactory);

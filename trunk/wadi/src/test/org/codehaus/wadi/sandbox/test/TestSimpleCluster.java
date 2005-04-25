@@ -29,15 +29,44 @@ import org.codehaus.wadi.sandbox.impl.Utils;
 public class TestSimpleCluster extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
 
-	public void testCluster() throws Exception {
+    public void testRestart() throws Exception {
+        testRestart("peer://WADI-TEST");
+        testRestart("multicast://224.1.2.3:5123");
+        testRestart("tcp://localhost:61616");
+//      testRestart("jgroups:default");
+    }
+    
+    public void testRestart(String protocol) throws Exception {
+        ActiveMQConnectionFactory connectionFactory=new ActiveMQConnectionFactory(protocol);
+        ActiveMQClusterFactory clusterFactory=new ActiveMQClusterFactory(connectionFactory);
+        String clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
+        Cluster cluster=clusterFactory.createCluster(clusterName);
 
-        ActiveMQConnectionFactory connectionFactory=(ActiveMQConnectionFactory)Utils.getConnectionFactory();
+        cluster.start();
+        cluster.stop();
+//        cluster.start();
+//       cluster.stop();
+    }
+    
+    public void testClusterCompletion() throws Exception {
+        testClusterCompletion("peer://WADI-TEST");
+        testClusterCompletion("multicast://224.1.2.3:5123");
+        testClusterCompletion("tcp://localhost:61616");
+//      testClusterCompletion("jgroups:default");
+        }
+     
+    public void testClusterCompletion(String protocol) throws Exception {
+
+        ActiveMQConnectionFactory connectionFactory=new ActiveMQConnectionFactory(protocol);
         ActiveMQClusterFactory clusterFactory=new ActiveMQClusterFactory(connectionFactory);
         String clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
         Cluster cluster0=clusterFactory.createCluster(clusterName);
         Cluster cluster1=clusterFactory.createCluster(clusterName);
 
-        cluster0.waitForClusterToComplete(1, 6000);
+        cluster0.start();
+        cluster1.start();
+        
+        cluster1.waitForClusterToComplete(1, 6000);
         
         
         Thread.sleep(6000);
@@ -46,4 +75,5 @@ public class TestSimpleCluster extends TestCase {
         cluster1.stop();
         cluster0.stop();
     }
+
 }
