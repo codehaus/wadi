@@ -36,7 +36,7 @@ public abstract class AbstractContext extends AbstractMotable implements Context
 
     protected static Log _log = LogFactory.getLog(AbstractContext.class);
 
-    protected final RWLock _lock=new RWLock(); // TODO - initially - we will pool the lock with the session - risky :-)
+    protected final RankedRWLock _lock=new RankedRWLock(); // TODO - initially - we will pool the lock with the session - risky :-)
 	public Sync getSharedLock(){return _lock.readLock();}
 	public Sync getExclusiveLock(){return _lock.writeLock();}
 

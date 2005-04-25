@@ -26,7 +26,7 @@ package org.codehaus.wadi.sandbox.impl;
  * @version $Revision$
  */
 
-public class RWLock extends org.codehaus.wadi.RWLock {
+public class RankedRWLock extends org.codehaus.wadi.RWLock {
     
     public final static int INVALIDATION_PRIORITY=5; // explicit invalidation by user
     public final static int EMMIGRATION_PRIORITY=4; // session is required on another node
@@ -37,7 +37,7 @@ public class RWLock extends org.codehaus.wadi.RWLock {
     
     protected final static int MAX_PRIORITY=INVALIDATION_PRIORITY;
     
-    public RWLock() {
+    public RankedRWLock() {
         super(MAX_PRIORITY);
     }
 

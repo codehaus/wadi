@@ -196,14 +196,14 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
                 // TODO - the peekTimeout should be specified by the remote node...
                 Immoter promoter=new ImmigrationImmoter(settingsInOut);
 
-                RWLock.setPriority(RWLock.EMMIGRATION_PRIORITY);
+                RankedRWLock.setPriority(RankedRWLock.EMMIGRATION_PRIORITY);
 		boolean found=_top.contextualise(null,null,null,id, promoter, motionLock, true);
 		if (found)
 		  acquired=false; // someone else has released the promotion lock...
             } catch (Exception e) {
                 _log.warn("problem handling immigration request: "+id, e);
             } finally {
-                RWLock.setPriority(RWLock.NO_PRIORITY);
+                RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
                 if (acquired) motionLock.release();
             }
             // TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
