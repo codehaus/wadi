@@ -101,7 +101,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 		return location;
 	}
 
-	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {
+	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
 		Location location;
 		boolean refreshed=false;
 
@@ -116,7 +116,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 		boolean recoverable=true;
 		try {
 			location.proxy(hreq, hres);
-			promotionLock.release();
+			motionLock.release();
 			return true;
 		} catch (RecoverableException e1) {
 			if (!refreshed) {
@@ -124,7 +124,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 					return false;
 				try {
 					location.proxy(hreq, hres);
-					promotionLock.release();
+					motionLock.release();
 					return true;
 				} catch (RecoverableException e2) {
 					recoverable=true;
@@ -143,14 +143,14 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 
 		if (recoverable) {
 			// we did find the session's location, but all attempts to proxy to it failed,,,
-			promotionLock.release();
+			motionLock.release();
 			_log.error("all attempts at proxying to session location failed - processing request without session: "+id+ " - "+location);
 			// we'll have to contextualise hreq here - stateless context ? TODO
 			chain.doFilter(hreq, hres);
 			return true; // looks wrong - but actually indicates that req should proceed no further down stack...
 		} else {
 			// TODO - is this correct ?
-			promotionLock.release();
+			motionLock.release();
 			return true;
 		}
 	}

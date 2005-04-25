@@ -36,5 +36,5 @@ public interface Immoter extends Moter {
 
 	Motable nextMotable(String id, Motable emotable);
 
-	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync promotionLock) throws IOException, ServletException;
+	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) throws IOException, ServletException;
 }

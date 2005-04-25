@@ -44,7 +44,7 @@ public class RedirectRelocationStrategy implements RequestRelocationStrategy {
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.RelocationStrategy#relocate(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync, java.util.Map)
 	 */
-	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {
+	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
 		// TODO Auto-generated method stub
 		return false;
 	}

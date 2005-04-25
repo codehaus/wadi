@@ -54,25 +54,25 @@ public class SerialContextualiser extends AbstractThinContextualiser {
         _map=map;
     }
     
-    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
-        if (promotionLock!=null) {
+    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean localOnly) throws IOException, ServletException {
+        if (motionLock!=null) {
             // someone is already doing a promotion from further up the
             // stack - do nothing other than delegate...
-            return _next.contextualise(hreq, hres, chain, id, immoter, promotionLock, localOnly);
+            return _next.contextualise(hreq, hres, chain, id, immoter, motionLock, localOnly);
         } else {
             // the promotion begins here...
             // allocate a lock and continue...
             boolean needsRelease=false;
-            promotionLock=_collapser.getLock(id);
+            motionLock=_collapser.getLock(id);
             try {
-                Utils.acquireUninterrupted(promotionLock);
+                Utils.acquireUninterrupted(motionLock);
                 needsRelease=true;
             } catch (TimeoutException e) {
                 _log.error("unexpected timeout - proceding without lock", e);
             }
             
             try {
-                // whilst we were waiting for the promotionLock, the session in question may have been promoted into memory.
+                // whilst we were waiting for the motionLock, the session in question may have been promoted into memory.
                 // before we proceed, confirm that this has not happened.
                 Context context=(Context)_map.get(id);
                 boolean found;
@@ -81,18 +81,18 @@ public class SerialContextualiser extends AbstractThinContextualiser {
                     _log.debug("session was promoted whilst we were waiting: "+id); // TODO - downgrade..
                     // overlap two locking systems until we have secured the session in memory, then run the request
                     // and release the lock.
-                    // TODO - we really need to take a read lock before we release the promotionLock...
-                    found=immoter.contextualise(hreq, hres, chain, id, context, promotionLock);
+                    // TODO - we really need to take a read lock before we release the motionLock...
+                    found=immoter.contextualise(hreq, hres, chain, id, context, motionLock);
                 } else {
-                    // session was not promoted whilst we were waiting for promotionLock. Continue down Contextualiser stack
+                    // session was not promoted whilst we were waiting for motionLock. Continue down Contextualiser stack
                     // it may be below us...
                     // lock is to be released as soon as context is available to subsequent contextualisations...
-                    found=_next.contextualise(hreq, hres, chain, id, immoter, promotionLock, localOnly);
+                    found=_next.contextualise(hreq, hres, chain, id, immoter, motionLock, localOnly);
                 }
                 needsRelease=!found;
                 return found;
             } finally {
-                if (needsRelease) promotionLock.release();
+                if (needsRelease) motionLock.release();
             }
         }
     }

@@ -65,7 +65,7 @@ public abstract class AbstractImmoter implements Immoter {
 	}
 	
 	// keep the throws clause - we are defining a method signature for our subtypes
-	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync promotionLock) throws IOException, ServletException {
+	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) throws IOException, ServletException {
 	// most Contextualisers cannot contextualise locally...
         return false;
 	}

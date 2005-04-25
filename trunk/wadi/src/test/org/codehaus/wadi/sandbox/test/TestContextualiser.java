@@ -227,14 +227,14 @@ public class TestContextualiser extends TestCase {
 	        _context=new MyContext(context, context);
 	    }
 	    
-	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
+	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean localOnly) throws IOException, ServletException {
 	        _counter++;
 	        
 	        Motable emotable=_context;
 	        Emoter emoter=new EtherEmoter();
 	        Motable immotable=Utils.mote(emoter, immoter, emotable, id);
 	        if (immotable!=null) {
-	            return immoter.contextualise(hreq, hres, chain, id, immotable, promotionLock);
+	            return immoter.contextualise(hreq, hres, chain, id, immotable, motionLock);
                 } else {
 	            return false;
 	        }
@@ -269,13 +269,13 @@ public class TestContextualiser extends TestCase {
 	        _context=new MyContext(context, context);
 	    }
 	    
-	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
+	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean localOnly) throws IOException, ServletException {
 	        _counter++;
 	        Context context=_context;
 	        Sync shared=context.getSharedLock();
 	        try {
 	            shared.acquire();
-	            promotionLock.release();
+	            motionLock.release();
 	            _log.info("running locally: "+id);
 	            chain.doFilter(hreq, hres);
 	            shared.release();

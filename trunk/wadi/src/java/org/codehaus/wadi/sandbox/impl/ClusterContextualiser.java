@@ -140,8 +140,8 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	public Contextualiser getTop() {return _top;}
 	public void setTop(Contextualiser top) {_top=top;}
 
-	public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
-		return _relocater.relocate(hreq, hres, chain, id, immoter, promotionLock, _map);
+	public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock) throws IOException, ServletException {
+		return _relocater.relocate(hreq, hres, chain, id, immoter, motionLock, _map);
 	}
 
 	// be careful here - there are two things going on, a map of cached locations, which needs management
@@ -245,7 +245,7 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 			// TODO - errr... HOW ?
 			}
 
-		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync promotionLock) {
+		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) {
             return false;
             // TODO - perhaps this is how a proxied contextualisation should occur ?
 		}

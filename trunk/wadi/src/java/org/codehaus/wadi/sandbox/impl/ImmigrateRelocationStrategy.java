@@ -85,7 +85,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 	}
 
     protected int _counter;
-    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, Map locationMap) throws IOException, ServletException {
+    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
         
         Location location=(Location)locationMap.get(id);
         location=null;
@@ -122,7 +122,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
         if (null==immotable)
             return false;
         else {
-            boolean answer=immoter.contextualise(hreq, hres, chain, id, immotable, promotionLock);
+            boolean answer=immoter.contextualise(hreq, hres, chain, id, immotable, motionLock);
             return answer;
         }
     }
@@ -175,11 +175,11 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
         if (_top==null) {
             _log.warn("no Contextualiser set - cannot respond to ImmigrationRequests");
         } else {
-            Sync promotionLock=_collapser.getLock(id);
+            Sync motionLock=_collapser.getLock(id);
             boolean acquired=false;
             try {
                 try {
-                    Utils.acquireUninterrupted(promotionLock);
+                    Utils.acquireUninterrupted(motionLock);
                     acquired=true;
                 } catch (TimeoutException e) {
                     _log.error("exclusive access could not be guaranteed within timeframe: "+id, e);
@@ -197,14 +197,14 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
                 Immoter promoter=new ImmigrationImmoter(settingsInOut);
 
                 RWLock.setPriority(RWLock.EMMIGRATION_PRIORITY);
-		boolean found=_top.contextualise(null,null,null,id, promoter, promotionLock, true);
+		boolean found=_top.contextualise(null,null,null,id, promoter, motionLock, true);
 		if (found)
 		  acquired=false; // someone else has released the promotion lock...
             } catch (Exception e) {
                 _log.warn("problem handling immigration request: "+id, e);
             } finally {
                 RWLock.setPriority(RWLock.NO_PRIORITY);
-                if (acquired) promotionLock.release();
+                if (acquired) motionLock.release();
             }
             // TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
         }
@@ -266,7 +266,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 			// this probably has to by NYI... - nasty...
 		}
 
-		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync promotionLock) {
+		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) {
 			return false;
 		}
 
