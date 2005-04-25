@@ -93,7 +93,7 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 	}
 
 	public void evict() {
-	    RWLock.setPriority(RWLock.EVICTION_PRIORITY);
+	    RankedRWLock.setPriority(RankedRWLock.EVICTION_PRIORITY);
 	    Collection copy=null;
 	    synchronized (_map) {copy=new ArrayList(_map.entrySet());}
 
@@ -106,7 +106,7 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 	            evict(id, emotable, time);
 	        }
 	    }
-	    RWLock.setPriority(RWLock.NO_PRIORITY);
+	    RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
 	}
 
     public void stop() throws Exception {
@@ -115,7 +115,7 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
         Emoter emoter=getEmoter();
 
         // emote all our Motables using it
-        RWLock.setPriority(RWLock.EVICTION_PRIORITY);
+        RankedRWLock.setPriority(RankedRWLock.EVICTION_PRIORITY);
         Collection copy=null;
         synchronized (_map) {copy=new ArrayList(_map.entrySet());}
         int s=copy.size();
@@ -127,7 +127,7 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
             Motable emotable=(Motable)e.getValue();
             Utils.mote(emoter, immoter, emotable, id);
         }
-        RWLock.setPriority(RWLock.NO_PRIORITY);
+        RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
         _log.info("unloading sessions - finished: "+s);
 
         // tell the next Contextualiser to stop()

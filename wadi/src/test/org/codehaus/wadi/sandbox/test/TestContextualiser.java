@@ -70,7 +70,7 @@ import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.impl.ProxyRelocationStrategy;
-import org.codehaus.wadi.sandbox.impl.RWLock;
+import org.codehaus.wadi.sandbox.impl.RankedRWLock;
 import org.codehaus.wadi.sandbox.impl.SerialContextualiser;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCContextualiser;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCMotable;
@@ -516,9 +516,9 @@ public class TestContextualiser extends TestCase {
 		assertTrue(m.size()==1);
 		
 		foo.setInvalidated(true);
-		RWLock.setPriority(RWLock.INVALIDATION_PRIORITY);
+		RankedRWLock.setPriority(RankedRWLock.INVALIDATION_PRIORITY);
 		memory.evict(foo.getId(), foo, System.currentTimeMillis());
-		RWLock.setPriority(RWLock.NO_PRIORITY);
+		RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
 		assertTrue(m.size()==0); // should not be in memory
 		assertTrue(d.size()==0); // should not be on disc - should have fallen though - since invalidated
 	}
