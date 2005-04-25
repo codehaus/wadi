@@ -44,7 +44,7 @@ public abstract class AbstractThinContextualiser implements Contextualiser {
 
     public Evicter getEvicter() {return _next.getEvicter();}
 
-    public boolean isLocal() {return _next.isLocal();}
+    public boolean isExclusive() {return _next.isExclusive();}
 
     public Immoter getDemoter(String id, Motable motable) {return _next.getDemoter(id, motable);}
     
@@ -58,7 +58,7 @@ public abstract class AbstractThinContextualiser implements Contextualiser {
         _next.stop();
     }
     
-    public void promoteToLocal(Immoter immoter) {_next.promoteToLocal(immoter);}
+    public void promoteToExclusive(Immoter immoter) {_next.promoteToExclusive(immoter);}
     
     public Collection loadMotables() {return _next.loadMotables();}
     

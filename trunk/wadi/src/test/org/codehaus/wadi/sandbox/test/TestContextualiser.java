@@ -227,7 +227,7 @@ public class TestContextualiser extends TestCase {
 	        _context=new MyContext(context, context);
 	    }
 	    
-	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean localOnly) throws IOException, ServletException {
+	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
 	        _counter++;
 	        
 	        Motable emotable=_context;
@@ -246,7 +246,7 @@ public class TestContextualiser extends TestCase {
 	    
 	    public Evicter getEvicter(){return null;}
 	    
-	    public boolean isLocal(){return false;}
+	    public boolean isExclusive(){return false;}
 	    
 	    public Immoter getDemoter(String id, Motable motable) {
 	        return null;
@@ -257,7 +257,7 @@ public class TestContextualiser extends TestCase {
         public void start(){/* empty */}
         public void stop(){/* empty */}
 
-        public void promoteToLocal(Immoter immoter){/* empty */}
+        public void promoteToExclusive(Immoter immoter){/* empty */}
         public Collection loadMotables() {return Collections.EMPTY_SET;}
 	}
 
@@ -269,7 +269,7 @@ public class TestContextualiser extends TestCase {
 	        _context=new MyContext(context, context);
 	    }
 	    
-	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean localOnly) throws IOException, ServletException {
+	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
 	        _counter++;
 	        Context context=_context;
 	        Sync shared=context.getSharedLock();
@@ -291,7 +291,7 @@ public class TestContextualiser extends TestCase {
 	    
 	    public Evicter getEvicter(){return null;}
 	    
-	    public boolean isLocal(){return false;}
+	    public boolean isExclusive(){return false;}
 	    
 	    public Immoter getDemoter(String id, Motable motable) {
 	        return null;
@@ -303,7 +303,7 @@ public class TestContextualiser extends TestCase {
         public void start(){/* empty */}
         public void stop(){/* empty */}
         
-        public void promoteToLocal(Immoter immoter){/* empty */}
+        public void promoteToExclusive(Immoter immoter){/* empty */}
         public Collection loadMotables() {return Collections.EMPTY_SET;}
 
 	}

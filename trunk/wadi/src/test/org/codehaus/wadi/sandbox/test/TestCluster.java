@@ -99,7 +99,7 @@ public class TestCluster extends TestCase {
             if (!_running) {
                 _cluster.start();
                 _top.start();
-                _top.promoteToLocal(null);
+                _top.promoteToExclusive(null);
                 _running=true;
             }
         }

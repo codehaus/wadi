@@ -156,8 +156,8 @@ public class SimpleContextualiserStack implements Contextualiser {
         // ready to rock !
     }
 
-    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean localOnly) throws IOException, ServletException {
-        return _memory.contextualise(hreq, hres, chain, id, immoter, motionLock, localOnly);
+    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
+        return _memory.contextualise(hreq, hres, chain, id, immoter, motionLock, exclusiveOnly);
     }
 
     public void evict() {
@@ -168,8 +168,8 @@ public class SimpleContextualiserStack implements Contextualiser {
         return _memory.getEvicter();
     }
 
-    public boolean isLocal() {
-        return _memory.isLocal();
+    public boolean isExclusive() {
+        return _memory.isExclusive();
     }
 
     public Immoter getDemoter(String id, Motable motable) {
@@ -184,7 +184,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterCluster.start();
 	// TODO - dispatcher probably needs a Lifecycle too... (and a thread pool)
         _memory.start();
-        _memory.promoteToLocal(null);
+        _memory.promoteToExclusive(null);
     }
 
     public void stop() throws Exception {
@@ -192,7 +192,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterCluster.stop();
     }
     
-    public void promoteToLocal(Immoter immoter){_memory.promoteToLocal(immoter);}
+    public void promoteToExclusive(Immoter immoter){_memory.promoteToExclusive(immoter);}
     public Collection loadMotables() {return _memory.loadMotables();}
 
 }

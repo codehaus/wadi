@@ -152,7 +152,7 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 		// or implement Chained instead of Mapped Contextualiser - consider....
 	}
 
-	public boolean isLocal(){return false;}
+	public boolean isExclusive(){return false;}
 
 	protected Destination _emigrationQueue;
 
