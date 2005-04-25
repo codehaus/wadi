@@ -21,6 +21,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -63,7 +67,34 @@ public class SharedJDBCMotable extends AbstractMotable {
 		store(_connection, _table, this);
 	}
 
-	protected static Motable load(Connection connection, String table, Motable motable) throws Exception {
+    protected static Collection list(Connection connection, String table) throws Exception {
+        List l=new ArrayList();
+        Statement s=null;
+        try {
+            s=connection.createStatement();
+            ResultSet rs=s.executeQuery("SELECT Id, CreationTime, LastAccessedTime, MaxInactiveInterval, Bytes FROM "+table);
+            while (rs.next()) {
+                int i=1;
+                Motable motable=new SharedJDBCMotable();
+                motable.setId((String)rs.getObject(i++));
+                motable.setCreationTime(rs.getLong(i++));
+                motable.setLastAccessedTime(rs.getLong(i++));
+                motable.setMaxInactiveInterval(rs.getInt(i++));
+                motable.setBytes((byte[])rs.getObject(i++));
+                l.add(motable);
+            }
+        } catch (SQLException e) {
+            _log.warn("list (shared database) failed", e);
+            throw e;
+        } finally {
+            if (s!=null)
+                s.close();
+        }
+        _log.info("list: "+l);
+        return l;
+    }
+    
+    protected static Motable load(Connection connection, String table, Motable motable) throws Exception {
 		String id=motable.getId();
 		Statement s=null;
 		try {
@@ -134,7 +165,7 @@ public class SharedJDBCMotable extends AbstractMotable {
 	    }
 	}
 
-	public static void initialise(DataSource dataSource, String table) throws SQLException {
+	public static void init(DataSource dataSource, String table) throws SQLException {
 		Connection c=dataSource.getConnection();
 		Statement s=c.createStatement();
 		s.execute("CREATE TABLE "+table+"(Id varchar, CreationTime long, LastAccessedTime long, MaxInactiveInterval int, Bytes java_object)");

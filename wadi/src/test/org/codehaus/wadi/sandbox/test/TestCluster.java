@@ -17,7 +17,6 @@
 package org.codehaus.wadi.sandbox.test;
 
 import java.net.InetSocketAddress;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,9 +78,7 @@ public class TestCluster extends TestCase {
         protected final ClusterContextualiser _middle;
         protected final SharedJDBCContextualiser _bottom;
         
-        public MyNode(CustomClusterFactory factory, String clusterName) throws JMSException, ClusterException, SQLException {
-            DataSource ds=new AxionDataSource("jdbc:axiondb:testdb");
-            String table="WADISESSIONS";
+        public MyNode(CustomClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
             _bottom=new SharedJDBCContextualiser(new DummyContextualiser(), new NeverEvicter(), ds, table);
             _cluster=(CustomCluster)factory.createCluster(clusterName);
             _cluster.addClusterListener(new MyClusterListener());
@@ -128,31 +125,48 @@ public class TestCluster extends TestCase {
         public MemoryContextualiser getMemoryContextualiser(){return _top;}
     }
 
-	protected ConnectionFactory _connectionFactory;
-	protected CustomClusterFactory _clusterFactory;
-	protected String _clusterName;
-	protected MyNode _node0;
-	protected MyNode _node1;
-	protected MyNode _node2;
+	protected final ConnectionFactory _connectionFactory=Utils.getConnectionFactory();
+	protected final CustomClusterFactory _clusterFactory=new CustomClusterFactory(_connectionFactory);
+	protected final String _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
+    protected final DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");
+    protected final String _table="WADISESSIONS";
+    protected boolean _preserveDB;
+
+    protected MyNode _node0;
+    protected MyNode _node1;
+    protected MyNode _node2;
+
+    /**
+     * Constructor for TestCluster.
+     * @param name
+     */
+    public TestCluster(String name) throws Exception {
+        super(name);
+        
+        String preserveDB=System.getProperty("preserve.db");
+        if (preserveDB!=null && preserveDB.equals("true"))
+            _preserveDB=true;      
+        
+        _log.info("TEST CTOR!");
+    }
 
 	/*
 	 * @see TestCase#setUp()
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-//        _connectionFactory=new ActiveMQConnectionFactory("peer://WADI-TEST");
-        _connectionFactory=Utils.getConnectionFactory();
-        
-		_clusterFactory=new CustomClusterFactory(_connectionFactory);
-		_clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
-		(_node0=new MyNode(_clusterFactory, _clusterName)).start();
-		(_node1=new MyNode(_clusterFactory, _clusterName)).start();
-		(_node2=new MyNode(_clusterFactory, _clusterName)).start();
+
+        if (!_preserveDB)
+            SharedJDBCMotable.init(_ds, _table);
+            
+		(_node0=new MyNode(_clusterFactory, _clusterName, _ds, _table)).start();
+		(_node1=new MyNode(_clusterFactory, _clusterName, _ds, _table)).start();
+		(_node2=new MyNode(_clusterFactory, _clusterName, _ds, _table)).start();
 
 		//_node0.getCluster().waitForClusterToComplete(3, 6000);
 		//_node1.getCluster().waitForClusterToComplete(3, 6000);
 		_node2.getCluster().waitForClusterToComplete(3, 6000);
-	}
+    }
 
 	/*
 	 * @see TestCase#tearDown()
@@ -167,17 +181,12 @@ public class TestCluster extends TestCase {
 //		Thread.sleep(6000);
 		_node0.stop();
 //		Thread.sleep(10000);
+        
+        if (!_preserveDB)
+            SharedJDBCMotable.destroy(_ds, _table);
 	}
 
-	/**
-	 * Constructor for TestCluster.
-	 * @param name
-	 */
-	public TestCluster(String name) {
-		super(name);
-	}
-
-	public void testStop() throws Exception {
+	public void testEvacuation() throws Exception {
 		Contextualiser c0=_node0.getMemoryContextualiser();
 
 		Map m0=_node0.getMemoryContextualiserMap();
@@ -248,8 +257,23 @@ public class TestCluster extends TestCase {
 		    //assertTrue(_node0.getClusterContextualiserMap().size()==numContexts); // node0 remembers where everything was sent...
 		}
 
-        // put something below node2 that will catch all the contexts, so we can restart...
-
         // TODO - figure out what should happen to location caches, implement and test it.
-	}
+        
+        
+        // restart nodes - first one up should reload saved contexts...
+        
+        // FIXME - sort this out ASAP
+//        assertTrue(m0.size()==0);
+//        _node0.start();
+//        assertTrue(m0.size()==numContexts);
+//
+//        assertTrue(m1.size()==0);
+//        _node1.start();
+//        assertTrue(m1.size()==0);
+//
+//        assertTrue(m2.size()==0);
+//        _node2.start();
+//        assertTrue(m2.size()==0);
+
+    }
 }

@@ -103,7 +103,7 @@ public class TestContextualiser extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		_log.info("starting ...");
-		SharedJDBCMotable.initialise(_ds, _table);
+		SharedJDBCMotable.init(_ds, _table);
 	}
 
 	/*

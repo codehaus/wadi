@@ -193,6 +193,13 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 
     public Collection loadMotables() {
         _log.info("LOADING FROM DB");
-        return Collections.EMPTY_SET; // FIXME - return all sessions from DB...
+        // this should only happen when we are the first node in the cluster...
+        Collection c=Collections.EMPTY_LIST;
+        try {
+            c=SharedJDBCMotable.list(_dataSource.getConnection(), _table);
+        } catch (Exception e) {
+            _log.error("problem loading data from db", e);
+        }
+        return c;
     }
 }
