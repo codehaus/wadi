@@ -156,8 +156,8 @@ public class SimpleContextualiserStack implements Contextualiser {
         // ready to rock !
     }
 
-    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
-        return _memory.contextualise(hreq, hres, chain, id, immoter, promotionLock, localOnly);
+    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean localOnly) throws IOException, ServletException {
+        return _memory.contextualise(hreq, hres, chain, id, immoter, motionLock, localOnly);
     }
 
     public void evict() {

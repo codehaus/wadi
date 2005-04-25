@@ -60,13 +60,13 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
 	public Motable get(String id) {return (Motable)_map.get(id);}
 
 	// TODO - sometime figure out how to make this a wrapper around AbstractChainedContextualiser.handle() instead of a replacement...
-	public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
+	public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock) throws IOException, ServletException {
 	    Motable emotable=get(id);
 	    if (emotable==null)
 	        return false; // we cannot proceed without the session...
 
 	    if (immoter!=null) {
-	        return promote(hreq, hres, chain, id, immoter, promotionLock, emotable); // promotionLock will be released here...
+	        return promote(hreq, hres, chain, id, immoter, motionLock, emotable); // motionLock will be released here...
 	    } else {
 	        return false;
 	    }

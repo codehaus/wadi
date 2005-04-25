@@ -72,19 +72,19 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	public boolean isLocal(){return true;}
 
 	// TODO - sometime figure out how to make this a wrapper around AbstractMappedContextualiser.handle() instead of a replacement...
-	public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock) throws IOException, ServletException {
+	public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock) throws IOException, ServletException {
 	    Motable emotable=get(id);
 	    if (emotable==null)
 	        return false; // we cannot proceed without the session...
 
 	    if (immoter!=null) {
-	        return promote(hreq, hres, chain, id, immoter, promotionLock, emotable); // promotionLock will be released here...
+	        return promote(hreq, hres, chain, id, immoter, motionLock, emotable); // motionLock will be released here...
 	    } else {
-	        return contextualiseLocally(hreq, hres, chain, id, promotionLock, emotable);
+	        return contextualiseLocally(hreq, hres, chain, id, motionLock, emotable);
 	    }
 	}
 
-	public boolean contextualiseLocally(HttpServletRequest req, HttpServletResponse res, FilterChain chain, String id, Sync promotionLock, Motable motable)  throws IOException, ServletException {
+	public boolean contextualiseLocally(HttpServletRequest req, HttpServletResponse res, FilterChain chain, String id, Sync motionLock, Motable motable)  throws IOException, ServletException {
 	    Sync lock=((Context)motable).getSharedLock();
 	    boolean acquired=false;
 	    try{
@@ -96,7 +96,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	            // give this some more thought - TODO
 	        }
 	        
-	        if (promotionLock!=null) promotionLock.release();
+	        if (motionLock!=null) motionLock.release();
 	        
 	        if (motable.getInvalidated()) {
 	            _log.trace("context disappeared whilst we were waiting for lock: "+id);
@@ -161,8 +161,8 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
 	        return _pool.take();
 	    }
 
-	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync promotionLock) throws IOException, ServletException {
-            return contextualiseLocally(hreq, hres, chain, id, promotionLock, immotable);
+	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) throws IOException, ServletException {
+            return contextualiseLocally(hreq, hres, chain, id, motionLock, immotable);
 	    }
 
 	    public String getInfo() {

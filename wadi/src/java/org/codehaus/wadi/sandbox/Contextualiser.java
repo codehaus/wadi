@@ -39,7 +39,7 @@ public interface Contextualiser extends Lifecycle {
 
 	// I'd like to add Manager to param list, but it bloats dependency tree - can we get along without it ?
 	// FilterChain.doFilter() throws IOException, ServletException...
-	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException;
+	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean localOnly) throws IOException, ServletException;
 
 	void evict();
 	Evicter getEvicter();

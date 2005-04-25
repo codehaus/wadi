@@ -81,14 +81,14 @@ public class StatelessContextualiser extends AbstractThinContextualiser {
         }
 	};
 
-	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync promotionLock, boolean localOnly) throws IOException, ServletException {
+	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean localOnly) throws IOException, ServletException {
 		if (hreq==null || isStateful(hreq)) {
 			// we cannot optimise...
-			return _next.contextualise(hreq, hres, chain, id, immoter, promotionLock, localOnly);
+			return _next.contextualise(hreq, hres, chain, id, immoter, motionLock, localOnly);
 		} else {
 			// we know that we can run the request locally...
-			if (promotionLock!=null) {
-				promotionLock.release();
+			if (motionLock!=null) {
+				motionLock.release();
 			}
 			// wrap the request so that session is inaccessible and process here...
 			HttpServletRequestWrapper wrapper=(HttpServletRequestWrapper)_wrapper.get();
