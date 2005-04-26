@@ -19,6 +19,7 @@ package org.codehaus.wadi.sandbox.test;
 import junit.framework.TestCase;
 
 import org.activecluster.Cluster;
+import org.activecluster.ClusterFactory;
 import org.activecluster.impl.ActiveMQClusterFactory;
 import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.broker.impl.BrokerContainerFactoryImpl;
@@ -26,9 +27,11 @@ import org.activemq.store.vm.VMPersistenceAdapter;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
+import org.codehaus.wadi.sandbox.impl.RestartableClusterFactory;
 
 
-public class TestSimpleCluster extends TestCase {
+public class TestActiveCluster extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
 
     public void testRestart() throws Exception {
@@ -43,14 +46,15 @@ public class TestSimpleCluster extends TestCase {
         ActiveMQConnectionFactory connectionFactory=new ActiveMQConnectionFactory(protocol);
         connectionFactory.setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter())); // peer protocol seems to ignore this...
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
-        ActiveMQClusterFactory clusterFactory=new ActiveMQClusterFactory(connectionFactory);
+        //ClusterFactory clusterFactory=new RestartableClusterFactory(new CustomClusterFactory(connectionFactory));
+        ClusterFactory clusterFactory=new ActiveMQClusterFactory(connectionFactory);
         String clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
         Cluster cluster=clusterFactory.createCluster(clusterName);
 
         cluster.start();
         cluster.stop();
-//        cluster.start();
-//        cluster.stop();
+        cluster.start();
+        cluster.stop();
     }
     
     public void testClusterCompletion() throws Exception {

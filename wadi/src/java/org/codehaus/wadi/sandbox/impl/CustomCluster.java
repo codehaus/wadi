@@ -27,8 +27,10 @@ import javax.jms.Topic;
 
 import org.activecluster.LocalNode;
 import org.activecluster.impl.DefaultCluster;
+import org.codehaus.wadi.sandbox.Cluster;
 
-public class CustomCluster extends DefaultCluster {
+public class CustomCluster extends DefaultCluster implements Cluster {
+    
     public CustomCluster(final LocalNode localNode, Topic dataTopic, Topic destination, Connection connection, Session session, MessageProducer producer, Timer timer, long inactiveTime) throws JMSException {
     	super(localNode, dataTopic, destination, connection, session, producer, timer, inactiveTime);
     }

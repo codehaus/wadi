@@ -28,6 +28,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.wadi.sandbox.Cluster;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
@@ -78,7 +79,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 
 	protected final HashMap _emigrationRvMap=new HashMap();
-	protected final CustomCluster _cluster;
+	protected final Cluster _cluster;
 	protected final MessageDispatcher _dispatcher;
 	protected final RelocationStrategy _relocater;
 	protected final Location _location;
@@ -92,7 +93,7 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	 * @param map
 	 * @param location TODO
 	 */
-	public ClusterContextualiser(Contextualiser next, Evicter evicter, Map map, Collapser collapser, CustomCluster cluster, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) {
+	public ClusterContextualiser(Contextualiser next, Evicter evicter, Map map, Collapser collapser, Cluster cluster, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) {
 		super(next, evicter, map, collapser);
 		_cluster=cluster;
 		_dispatcher=dispatcher;
@@ -184,9 +185,7 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
     // we must not call super, or it will try to flush our location cache to the next Contextualiser
     // TODO - consider NOT inheriting from MappedContextualiser....
     public void stop() throws Exception {
-        // Heartbeat+1
-        Thread.sleep(6000); // TODO - parameterise - the danger is that this message may overtake its sessions...
-        if (_emigrationQueue!=null) {
+        if (_emigrationQueue!=null) { // evacuation is synchronous, so we will not get to here until all sessions are gone...
             destroyEmigrationQueue();
         }
         _next.stop();

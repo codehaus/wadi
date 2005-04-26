@@ -27,10 +27,12 @@ import javax.sql.DataSource;
 import junit.framework.TestCase;
 
 import org.activecluster.ClusterException;
+import org.activecluster.ClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.sandbox.Cluster;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
@@ -41,7 +43,6 @@ import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.ClusterContextualiser;
-import org.codehaus.wadi.sandbox.impl.CustomCluster;
 import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.impl.DummyStatefulHttpServletRequestWrapperPool;
@@ -50,6 +51,7 @@ import org.codehaus.wadi.sandbox.impl.HttpProxyLocation;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.impl.NeverEvicter;
+import org.codehaus.wadi.sandbox.impl.RestartableClusterFactory;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCContextualiser;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCMotable;
 import org.codehaus.wadi.sandbox.impl.StandardHttpProxy;
@@ -66,7 +68,7 @@ public class TestCluster extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
 
     class MyNode {
-        protected final CustomCluster _cluster;
+        protected final Cluster _cluster;
         protected final MessageDispatcher _dispatcher;
         protected final Location _location;
         protected final RelocationStrategy _relocater;
@@ -78,9 +80,9 @@ public class TestCluster extends TestCase {
         protected final ClusterContextualiser _middle;
         protected final SharedJDBCContextualiser _bottom;
         
-        public MyNode(CustomClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
+        public MyNode(ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
             _bottom=new SharedJDBCContextualiser(new DummyContextualiser(), new NeverEvicter(), ds, table);
-            _cluster=(CustomCluster)factory.createCluster(clusterName);
+            _cluster=(Cluster)factory.createCluster(clusterName);
             _cluster.addClusterListener(new MyClusterListener());
             _dispatcher=new MessageDispatcher(_cluster);
             InetSocketAddress isa=new InetSocketAddress("localhost", 8080);
@@ -118,7 +120,7 @@ public class TestCluster extends TestCase {
         }
         
         public Map getClusterContextualiserMap() {return _cmap;}
-        public CustomCluster getCluster(){return _cluster;}
+        public Cluster getCluster(){return _cluster;}
         public ClusterContextualiser getClusterContextualiser() {return _middle;}
         
         public Map getMemoryContextualiserMap() {return _mmap;}
@@ -126,7 +128,7 @@ public class TestCluster extends TestCase {
     }
 
 	protected final ConnectionFactory _connectionFactory=Utils.getConnectionFactory();
-	protected final CustomClusterFactory _clusterFactory=new CustomClusterFactory(_connectionFactory);
+	protected final ClusterFactory _clusterFactory=new RestartableClusterFactory(new CustomClusterFactory(_connectionFactory));
 	protected final String _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
     protected final DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");
     protected final String _table="WADISESSIONS";
@@ -262,18 +264,17 @@ public class TestCluster extends TestCase {
         
         // restart nodes - first one up should reload saved contexts...
         
-        // FIXME - sort this out ASAP
-//        assertTrue(m0.size()==0);
-//        _node0.start();
-//        assertTrue(m0.size()==numContexts);
-//
-//        assertTrue(m1.size()==0);
-//        _node1.start();
-//        assertTrue(m1.size()==0);
-//
-//        assertTrue(m2.size()==0);
-//        _node2.start();
-//        assertTrue(m2.size()==0);
+        assertTrue(m0.size()==0);
+        _node0.start();
+        assertTrue(m0.size()==numContexts);
+
+        assertTrue(m1.size()==0);
+        _node1.start();
+        assertTrue(m1.size()==0);
+
+        assertTrue(m2.size()==0);
+        _node2.start();
+        assertTrue(m2.size()==0);
 
     }
 }
