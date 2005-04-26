@@ -31,6 +31,7 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.Cluster;
 
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
@@ -50,11 +51,11 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 public class MessageDispatcher implements MessageListener {
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final Map _map=new HashMap();
-	protected final CustomCluster _cluster;
+	protected final Cluster _cluster;
 	protected final MessageConsumer _clusterConsumer;
 	protected final MessageConsumer _nodeConsumer;
 
-	public MessageDispatcher(CustomCluster cluster) throws JMSException {
+	public MessageDispatcher(Cluster cluster) throws JMSException {
 		_cluster=cluster;
 		boolean excludeSelf;
 		excludeSelf=true;
@@ -263,7 +264,7 @@ public class MessageDispatcher implements MessageListener {
 		return response;
 	}
 
-	public CustomCluster getCluster(){return _cluster;}
+	public Cluster getCluster(){return _cluster;}
 
 	public void addDestination(Destination destination) throws JMSException {
 	    boolean excludeSelf=true;

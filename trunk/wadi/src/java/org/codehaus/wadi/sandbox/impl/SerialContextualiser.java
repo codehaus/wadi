@@ -42,7 +42,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @version $Revision$
  */
 public class SerialContextualiser extends AbstractDelegatingContextualiser {
-    protected static final Log _log = LogFactory.getLog(AbstractImmoter.class);
+    protected static final Log _log = LogFactory.getLog(AbstractDelegatingContextualiser.class);
     
     protected final Collapser _collapser;
     protected final Sync _dummyLock=new NullSync();
