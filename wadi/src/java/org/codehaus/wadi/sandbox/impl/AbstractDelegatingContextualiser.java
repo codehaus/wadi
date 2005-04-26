@@ -29,12 +29,10 @@ import org.codehaus.wadi.sandbox.Motable;
  * @version $Revision$
  */
 
-public abstract class AbstractThinContextualiser implements Contextualiser {
+public abstract class AbstractDelegatingContextualiser extends AbstractChainedContextualiser {
 
-    protected final Contextualiser _next;
-
-    public AbstractThinContextualiser(Contextualiser next) {
-        _next=next;
+    public AbstractDelegatingContextualiser(Contextualiser next) {
+        super(next);
     }
     
     public void evict() {
@@ -49,14 +47,6 @@ public abstract class AbstractThinContextualiser implements Contextualiser {
     
     public Immoter getSharedDemoter() {return _next.getSharedDemoter();}
 
-    public void start() throws Exception {
-        _next.start();
-    }
-    
-    public void stop() throws Exception {
-        _next.stop();
-    }
-    
     public void promoteToExclusive(Immoter immoter) {_next.promoteToExclusive(immoter);}
     
     public int loadMotables(Emoter emoter, Immoter immoter) {return _next.loadMotables(emoter, immoter);}
