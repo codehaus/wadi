@@ -31,6 +31,7 @@ import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
+import org.codehaus.wadi.sandbox.Locker;
 import org.codehaus.wadi.sandbox.Motable;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -43,11 +44,11 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractMappedContextualiser extends AbstractMotingContextualiser {
+public abstract class AbstractExclusiveContextualiser extends AbstractMotingContextualiser {
 	protected final Map _map;
 
-	public AbstractMappedContextualiser(Contextualiser next, Evicter evicter, Map map) {
-		super(next, evicter);
+	public AbstractExclusiveContextualiser(Contextualiser next, Locker locker, Evicter evicter, Map map) {
+		super(next, locker, evicter);
 		_map=map;
 	}
 
@@ -73,7 +74,6 @@ public abstract class AbstractMappedContextualiser extends AbstractMotingContext
 	}
 
 	public Emoter getEvictionEmoter(){return getEmoter();}
-	public abstract Sync getEvictionLock(String id, Motable motable);
 
 	// FIXME - move this back to ChainedContextualiser
 	public void evict(String id, Motable emotable, long time) {

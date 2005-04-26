@@ -112,7 +112,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _databaseDataSource=dataSource;
         _databaseTable="WADI";
         SharedJDBCMotable.init(_databaseDataSource, _databaseTable);
-        _database=new SharedJDBCContextualiser(_dummy, _databaseEvicter, _databaseDataSource, _databaseTable);
+        _database=new SharedJDBCContextualiser(_dummy, _collapser, _databaseEvicter, _databaseDataSource, _databaseTable);
         _connectionFactory=Utils.getConnectionFactory();
         _clusterFactory=new CustomClusterFactory(_connectionFactory);
         _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
@@ -124,7 +124,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterEvicter=new NeverEvicter();
         _clusterDispatcher=new MessageDispatcher(_clusterCluster);
         _clusterRelocater=new ImmigrateRelocationStrategy(_clusterDispatcher, _clusterLocation, 2000, _clusterMap, _collapser);
-        _cluster=new ClusterContextualiser(_database, _clusterEvicter, _clusterMap, _collapser, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation);
+        _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation);
 
         _statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
         _statelessMethodFlag=true;
@@ -138,7 +138,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _discDirectory=dir;
         _discEvicter=new TimedOutEvicter();
         _discMap=new HashMap();
-        _disc=new ExclusiveDiscContextualiser(_stateless, _discEvicter, _discMap, _collapser, _streamer, _discDirectory);
+        _disc=new ExclusiveDiscContextualiser(_stateless, _collapser, _discEvicter, _discMap, _streamer, _discDirectory);
 
 
         _memoryPool=pool;

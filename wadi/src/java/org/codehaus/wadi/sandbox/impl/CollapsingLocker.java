@@ -16,18 +16,23 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.sandbox.Contextualiser;
-import org.codehaus.wadi.sandbox.Evicter;
+import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Locker;
+import org.codehaus.wadi.sandbox.Motable;
 
-public abstract class AbstractSharedContextualiser extends
-        AbstractMotingContextualiser {
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-    public AbstractSharedContextualiser(Contextualiser next, Locker locker, Evicter evicter) {
-        super(next, locker, evicter);
-        // TODO Auto-generated constructor stub
+public class CollapsingLocker implements Locker {
+
+    protected final Collapser _collapser;
+    
+    public CollapsingLocker(Collapser collapser) {
+        super();
+        _collapser=collapser;
     }
 
-    public boolean isExclusive() {return false;}
-    
+    public Sync getLock(String id, Motable motable) {
+        return _collapser.getLock(id);
+    }
+
 }

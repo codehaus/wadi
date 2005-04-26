@@ -29,6 +29,7 @@ import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
+import org.codehaus.wadi.sandbox.Locker;
 import org.codehaus.wadi.sandbox.Motable;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -42,13 +43,19 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public abstract class AbstractMotingContextualiser extends AbstractChainedContextualiser {
 	protected final Log _log=LogFactory.getLog(getClass());
 
+    protected final Locker _locker;
 	protected final Evicter _evicter;
 
-	public AbstractMotingContextualiser(Contextualiser next, Evicter evicter) {
+	public AbstractMotingContextualiser(Contextualiser next, Locker locker, Evicter evicter) {
 		super(next);
-		_evicter=evicter;
+        _locker=locker;
+        _evicter=evicter;
 	}
 
+    public Sync getEvictionLock(String id, Motable motable) {
+        return _locker.getLock(id, motable);
+    }
+    
 	/**
 	 * @return - an Emoter that facilitates removal of Motables from this Contextualiser's own store
 	 */

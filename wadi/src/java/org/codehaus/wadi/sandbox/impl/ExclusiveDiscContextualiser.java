@@ -37,7 +37,7 @@ import org.codehaus.wadi.sandbox.Motable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ExclusiveDiscContextualiser extends AbstractCollapsingContextualiser {
+public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser {
 	protected static final Log _log = LogFactory.getLog(ExclusiveDiscContextualiser.class);
 
 	protected final StreamingStrategy _streamer;
@@ -45,8 +45,8 @@ public class ExclusiveDiscContextualiser extends AbstractCollapsingContextualise
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public ExclusiveDiscContextualiser(Contextualiser next, Evicter evicter, Map map, Collapser collapser, StreamingStrategy streamer, File dir) {
-	    super(next, evicter, map, collapser);
+	public ExclusiveDiscContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, StreamingStrategy streamer, File dir) {
+	    super(next, new CollapsingLocker(collapser), evicter, map);
 	    _streamer=streamer;
 	    assert dir.exists();
 	    assert dir.isDirectory();
