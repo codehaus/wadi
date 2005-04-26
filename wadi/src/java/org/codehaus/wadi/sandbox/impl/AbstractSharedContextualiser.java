@@ -27,4 +27,6 @@ public abstract class AbstractSharedContextualiser extends
         // TODO Auto-generated constructor stub
     }
 
+    public boolean isExclusive() {return false;}
+    
 }
