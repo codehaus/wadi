@@ -39,7 +39,7 @@ import org.codehaus.wadi.sandbox.Motable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class SharedJDBCContextualiser extends AbstractMotingContextualiser {
+public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final DataSource _dataSource;
 	protected final String _table;
