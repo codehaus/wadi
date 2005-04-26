@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import javax.jms.ConnectionFactory;
-
 import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.broker.impl.BrokerContainerFactoryImpl;
 import org.activemq.store.vm.VMPersistenceAdapter;

@@ -17,7 +17,6 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;

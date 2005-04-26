@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import junit.framework.TestCase;
 
 import org.activecluster.ClusterFactory;
-import org.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
