@@ -46,7 +46,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class MemoryContextualiser extends AbstractMappedContextualiser {
+public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	protected final Log _log = LogFactory.getLog(getClass());
 	protected final ContextPool _pool;
 	protected final StreamingStrategy _streamer;
@@ -56,7 +56,7 @@ public class MemoryContextualiser extends AbstractMappedContextualiser {
     protected final HttpServletRequestWrapperPool _requestPool;
 
 	public MemoryContextualiser(Contextualiser next, Evicter evicter, Map map, StreamingStrategy streamer, ContextPool pool, HttpServletRequestWrapperPool requestPool) {
-		super(next, evicter, map);
+		super(next, new RWLocker(), evicter, map);
 		_pool=pool;
 		
 		// TODO - streamer should be used inside Motables get/setBytes() methods  but that means a ref in every session :-(

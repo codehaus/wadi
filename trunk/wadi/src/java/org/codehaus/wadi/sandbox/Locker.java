@@ -14,20 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.impl;
+package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.Contextualiser;
-import org.codehaus.wadi.sandbox.Evicter;
-import org.codehaus.wadi.sandbox.Locker;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public abstract class AbstractSharedContextualiser extends
-        AbstractMotingContextualiser {
+public interface Locker {
 
-    public AbstractSharedContextualiser(Contextualiser next, Locker locker, Evicter evicter) {
-        super(next, locker, evicter);
-        // TODO Auto-generated constructor stub
-    }
-
-    public boolean isExclusive() {return false;}
+    Sync getLock(String id, Motable motable);
     
 }

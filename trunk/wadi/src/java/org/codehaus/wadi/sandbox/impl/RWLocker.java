@@ -16,32 +16,20 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import java.util.Map;
-
-import org.codehaus.wadi.sandbox.Collapser;
-import org.codehaus.wadi.sandbox.Contextualiser;
-import org.codehaus.wadi.sandbox.Evicter;
+import org.codehaus.wadi.sandbox.Context;
+import org.codehaus.wadi.sandbox.Locker;
 import org.codehaus.wadi.sandbox.Motable;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-/**
- * TODO - JavaDoc this type
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
+public class RWLocker implements Locker {
 
-public abstract class AbstractCollapsingContextualiser extends AbstractMappedContextualiser {
+    public RWLocker() {
+        super();
+    }
 
-    protected final Collapser _collapser;
-    
-    public AbstractCollapsingContextualiser(Contextualiser next, Evicter evicter, Map map, Collapser collapser) {
-        super(next, evicter, map);
-        _collapser=collapser;
+    public Sync getLock(String id, Motable motable) {
+        return ((Context)motable).getExclusiveLock();
     }
-    
-    public Sync getEvictionLock(String id, Motable motable) {
-        return _collapser.getLock(id);
-    }
+
 }

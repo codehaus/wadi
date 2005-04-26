@@ -87,7 +87,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 	protected final Emoter _emoter;
     protected final int _ackTimeout=500; // TODO - parameterise
     protected final Map _map;
-    protected final Collapser _collapser;
 
 	/**
 	 * @param next
@@ -95,14 +94,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 	 * @param map
 	 * @param location TODO
 	 */
-	public ClusterContextualiser(Contextualiser next, Evicter evicter, Map map, Collapser collapser, Cluster cluster, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) {
-		super(next, evicter);
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, Cluster cluster, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) {
+		super(next, new CollapsingLocker(collapser), evicter);
 		_cluster=cluster;
 		_dispatcher=dispatcher;
 	    _relocater=relocater;
 	    _location=location;
         _map=map;
-        _collapser=collapser;
 
 	    _immoter=new EmigrationImmoter();
 	    _emoter=null; // TODO - I think this should be something like the ImmigrationEmoter
@@ -310,7 +308,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 	public void onMessage(ObjectMessage om, EmigrationRequest er) {
         String id=er.getId();
         _log.info("EmigrationRequest received: "+id);
-        Sync lock=_collapser.getLock(id);
+        Sync lock=_locker.getLock(id, null);
         boolean acquired=false;
         try {
             Utils.acquireUninterrupted(lock);
