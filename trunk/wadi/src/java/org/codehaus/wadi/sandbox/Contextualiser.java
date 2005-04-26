@@ -17,7 +17,6 @@
 package org.codehaus.wadi.sandbox;
 
 import java.io.IOException;
-import java.util.Collection;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -54,9 +53,9 @@ public interface Contextualiser extends Lifecycle {
 	 */
 	Immoter getDemoter(String id, Motable motable);
     Immoter getSharedDemoter();
-    
+
+    // perhaps these two could be collapsed...
     void promoteToExclusive(Immoter immoter); // TODO - 'orrible name...
-    
-    Collection loadMotables();
+    int loadMotables(Emoter emoter, Immoter immoter);
     
 }

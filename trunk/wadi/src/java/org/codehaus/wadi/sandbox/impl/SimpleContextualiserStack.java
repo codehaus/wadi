@@ -54,6 +54,7 @@ import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.ContextPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
+import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.HttpProxy;
 import org.codehaus.wadi.sandbox.HttpServletRequestWrapperPool;
@@ -137,7 +138,10 @@ public class SimpleContextualiserStack implements Contextualiser {
         _statelessURIFlag=false;
         _stateless=new StatelessContextualiser(_cluster, _statelessMethods, _statelessMethodFlag, _statelessURIs, _statelessURIFlag);
 
-        _discDirectory=new File("/tmp");
+        File dir=new File("/tmp/wadi-exclusive");
+        dir.delete();
+        dir.mkdir();
+        _discDirectory=dir;
         _discEvicter=new TimedOutEvicter();
         _discMap=new HashMap();
         _disc=new ExclusiveDiscContextualiser(_stateless, _discEvicter, _discMap, _collapser, _streamer, _discDirectory);
@@ -193,6 +197,6 @@ public class SimpleContextualiserStack implements Contextualiser {
     }
     
     public void promoteToExclusive(Immoter immoter){_memory.promoteToExclusive(immoter);}
-    public Collection loadMotables() {return _memory.loadMotables();}
+    public int loadMotables(Emoter emoter, Immoter immoter) {return _memory.loadMotables(emoter, immoter);}
 
 }

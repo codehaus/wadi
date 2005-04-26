@@ -16,14 +16,12 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.wadi.sandbox.Contextualiser;
+import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
@@ -89,6 +87,6 @@ public class DummyContextualiser implements Contextualiser {
     public void stop(){/* empty */}
 
     public void promoteToExclusive(Immoter immoter){/* empty */}
-    public Collection loadMotables() {return Collections.EMPTY_SET;}
+    public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
     
 }

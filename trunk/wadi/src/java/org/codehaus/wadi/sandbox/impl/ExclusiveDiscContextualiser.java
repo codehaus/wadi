@@ -120,4 +120,20 @@ public class ExclusiveDiscContextualiser extends AbstractCollapsingContextualise
 
 		public String getInfo(){return "exclusive disc";}
 	}
+    
+    public void start() throws Exception {
+        // if our last incarnation suffered a catastrophic failure there may be some sessions
+        // in our directory - FIXME - if replicating, we may not want to reload these...
+        String[] list=_dir.list();
+        int l=list.length;
+        int suffixLength=".".length()+_streamer.getSuffix().length();
+        for (int i=0; i<l; i++) {
+            String name=list[i];
+            String id=name.substring(0, name.length()-suffixLength);
+            ExclusiveDiscMotable motable=new ExclusiveDiscMotable();
+            motable.setFile(new File(name));
+            _map.put(id, motable);
+        }
+        super.start(); // continue down chain...
+    }
 }

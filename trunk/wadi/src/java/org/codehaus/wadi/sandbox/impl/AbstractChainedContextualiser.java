@@ -125,12 +125,13 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
             _next.promoteToExclusive(_next.isExclusive()?null:getImmoter());
         else {
             Emoter emoter=getEmoter();
-            for (Iterator i=loadMotables().iterator(); i.hasNext();) {
-                // TODO - consider expiring some immediately...
-                Motable emotable=(Motable)i.next();
-                String id=emotable.getId();
-                Utils.mote(emoter, immoter, emotable, id);
-            }
+            loadMotables(emoter, immoter);
+//            for (Iterator i=.iterator(); i.hasNext();) {
+//                // TODO - consider expiring some immediately...
+//                Motable emotable=(Motable)i.next();
+//                String id=emotable.getId();
+//                Utils.mote(emoter, immoter, emotable, id);
+//            }
             _next.promoteToExclusive(immoter);
         }
     }
