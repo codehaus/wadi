@@ -16,9 +16,6 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.Iterator;

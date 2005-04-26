@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import java.util.Collection;
-
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;

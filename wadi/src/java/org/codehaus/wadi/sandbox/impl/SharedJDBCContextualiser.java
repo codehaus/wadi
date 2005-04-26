@@ -20,8 +20,6 @@ package org.codehaus.wadi.sandbox.impl;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
 
 import javax.sql.DataSource;
 
