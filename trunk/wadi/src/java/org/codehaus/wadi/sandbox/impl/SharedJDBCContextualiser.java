@@ -73,8 +73,6 @@ public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
 		// TODO - NYI
 	}
 
-	public boolean isExclusive(){return false;}
-	
 	/**
 	 * An Emoter that deals in terms of SharedJDBCMotables
 	 *
