@@ -51,7 +51,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class StatelessContextualiser extends AbstractThinContextualiser {
+public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 
 	protected final Pattern _methods; // =Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE); // TODO - |HEAD|PUT|DELETE ?
 	protected final boolean _methodFlag; //true

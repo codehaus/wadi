@@ -43,7 +43,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractMappedContextualiser extends AbstractChainedContextualiser {
+public abstract class AbstractMappedContextualiser extends AbstractMotingContextualiser {
 	protected final Map _map;
 
 	public AbstractMappedContextualiser(Contextualiser next, Evicter evicter, Map map) {

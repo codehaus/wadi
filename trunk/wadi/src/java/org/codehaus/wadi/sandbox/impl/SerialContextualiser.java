@@ -41,7 +41,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class SerialContextualiser extends AbstractThinContextualiser {
+public class SerialContextualiser extends AbstractDelegatingContextualiser {
     protected static final Log _log = LogFactory.getLog(AbstractImmoter.class);
     
     protected final Collapser _collapser;
