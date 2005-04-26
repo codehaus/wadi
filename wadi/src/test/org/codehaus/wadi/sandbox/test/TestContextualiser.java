@@ -258,7 +258,7 @@ public class TestContextualiser extends TestCase {
         public void stop(){/* empty */}
 
         public void promoteToExclusive(Immoter immoter){/* empty */}
-        public Collection loadMotables() {return Collections.EMPTY_SET;}
+        public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
 	}
 
 	class MyActiveContextualiser implements Contextualiser {
@@ -304,7 +304,7 @@ public class TestContextualiser extends TestCase {
         public void stop(){/* empty */}
         
         public void promoteToExclusive(Immoter immoter){/* empty */}
-        public Collection loadMotables() {return Collections.EMPTY_SET;}
+        public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
 
 	}
 

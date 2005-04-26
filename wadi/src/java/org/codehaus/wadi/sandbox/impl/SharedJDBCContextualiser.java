@@ -191,15 +191,14 @@ public class SharedJDBCContextualiser extends AbstractChainedContextualiser {
 		}
 	}
 
-    public Collection loadMotables() {
+    public int loadMotables(Emoter emoter, Immoter immoter) {
         _log.info("LOADING FROM DB");
         // this should only happen when we are the first node in the cluster...
-        Collection c=Collections.EMPTY_LIST;
         try {
-            c=SharedJDBCMotable.list(_dataSource.getConnection(), _table);
+            return SharedJDBCMotable.list(_dataSource.getConnection(), _table, emoter, immoter);
         } catch (Exception e) {
             _log.error("problem loading data from db", e);
+            return 0;
         }
-        return c;
     }
 }

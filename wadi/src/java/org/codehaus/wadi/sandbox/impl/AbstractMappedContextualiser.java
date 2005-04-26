@@ -134,7 +134,6 @@ public abstract class AbstractMappedContextualiser extends AbstractChainedContex
         super.stop();
     }
     
-    // MappedContextualisers are all Exclusive
-    public Collection loadMotables(){return null;}
+    public int loadMotables(Emoter emoter, Immoter immoter){return 0;} // MappedContextualisers are all Exclusive
 
 }

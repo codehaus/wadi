@@ -17,8 +17,6 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -334,6 +332,6 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	}
     
     // another hack, because this should not inherit from Mapped...
-    public Collection loadMotables(){return Collections.EMPTY_SET;}
+    public int loadMotables(Emoter emoter, Immoter immoter){return 0;}
 
 }

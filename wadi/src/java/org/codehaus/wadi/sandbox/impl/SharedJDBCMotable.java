@@ -24,12 +24,13 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.Emoter;
+import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
 
 /**
@@ -67,21 +68,23 @@ public class SharedJDBCMotable extends AbstractMotable {
 		store(_connection, _table, this);
 	}
 
-    protected static Collection list(Connection connection, String table) throws Exception {
-        List l=new ArrayList();
+    protected static int list(Connection connection, String table, Emoter emoter, Immoter immoter) throws Exception {
         Statement s=null;
+        int count=0;
         try {
             s=connection.createStatement();
             ResultSet rs=s.executeQuery("SELECT Id, CreationTime, LastAccessedTime, MaxInactiveInterval, Bytes FROM "+table);
             while (rs.next()) {
                 int i=1;
                 Motable motable=new SharedJDBCMotable();
-                motable.setId((String)rs.getObject(i++));
+                String id=(String)rs.getObject(i++);
+                motable.setId(id);
                 motable.setCreationTime(rs.getLong(i++));
                 motable.setLastAccessedTime(rs.getLong(i++));
                 motable.setMaxInactiveInterval(rs.getInt(i++));
                 motable.setBytes((byte[])rs.getObject(i++));
-                l.add(motable);
+                Utils.mote(emoter, immoter, motable, id);
+                count++;
             }
         } catch (SQLException e) {
             _log.warn("list (shared database) failed", e);
@@ -90,8 +93,7 @@ public class SharedJDBCMotable extends AbstractMotable {
             if (s!=null)
                 s.close();
         }
-        _log.info("list: "+l);
-        return l;
+        return count;
     }
     
     protected static Motable load(Connection connection, String table, Motable motable) throws Exception {
