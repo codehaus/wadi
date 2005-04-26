@@ -76,7 +76,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ClusterContextualiser extends AbstractCollapsingContextualiser {
+public class ClusterContextualiser extends AbstractSharedContextualiser {
 
 	protected final HashMap _emigrationRvMap=new HashMap();
 	protected final Cluster _cluster;
@@ -86,6 +86,8 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
     protected final int _ackTimeout=500; // TODO - parameterise
+    protected final Map _map;
+    protected final Collapser _collapser;
 
 	/**
 	 * @param next
@@ -94,11 +96,13 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 	 * @param location TODO
 	 */
 	public ClusterContextualiser(Contextualiser next, Evicter evicter, Map map, Collapser collapser, Cluster cluster, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) {
-		super(next, evicter, map, collapser);
+		super(next, evicter);
 		_cluster=cluster;
 		_dispatcher=dispatcher;
 	    _relocater=relocater;
 	    _location=location;
+        _map=map;
+        _collapser=collapser;
 
 	    _immoter=new EmigrationImmoter();
 	    _emoter=null; // TODO - I think this should be something like the ImmigrationEmoter
@@ -150,8 +154,6 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
 		// TODO - get timestamps working on Locations - write a hybrid Evicter ?
 		// or implement Chained instead of Mapped Contextualiser - consider....
 	}
-
-	public boolean isExclusive(){return false;}
 
 	protected Destination _emigrationQueue;
 
@@ -332,5 +334,8 @@ public class ClusterContextualiser extends AbstractCollapsingContextualiser {
     
     // another hack, because this should not inherit from Mapped...
     public int loadMotables(Emoter emoter, Immoter immoter){return 0;}
+    
+    // AbstractMotingContextualiser
+    public Motable get(String id) {return (Motable)_map.get(id);}
 
 }
