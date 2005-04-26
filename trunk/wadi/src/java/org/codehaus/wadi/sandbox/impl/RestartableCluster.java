@@ -30,7 +30,6 @@ import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
-import org.activecluster.ClusterException;
 import org.activecluster.ClusterFactory;
 import org.activecluster.ClusterListener;
 import org.activecluster.LocalNode;
