@@ -17,19 +17,37 @@
 package org.codehaus.wadi.sandbox;
 
 import org.codehaus.wadi.sandbox.Session;
+import org.codehaus.wadi.sandbox.impl.Manager;
 
 public aspect SessionEvicterNotifier {
-
-    pointcut setLastAccessedTime(Session session, long time) : execution(void Session+.setLastAccessedTime(long)) && args(time) && target(session);
     
-    after(Session session, long time) : setLastAccessedTime(session, time) {
-      session.getConfig().setLastAccessedTime(session, time);
-    }
-
-    pointcut setMaxInactiveInterval(Session session, int interval) : execution(void Session+.setMaxInactiveInterval(int)) && args(interval) && target(session);
+    pointcut setLastAccessedTime(Session session, long newTime) : execution(void Session+.setLastAccessedTime(long)) && args(newTime) && target(session);
     
-    after(Session session, int interval) : setMaxInactiveInterval(session, interval) {
-      session.getConfig().setMaxInactiveInterval(session, interval);
+    void around(Session session, long newTime) : setLastAccessedTime(session, newTime) {
+        long oldTime=session.getLastAccessedTime();
+        proceed(session, newTime);
+        session.getConfig().setLastAccessedTime(session, oldTime, newTime);
     }
-
+    
+    pointcut setMaxInactiveInterval(Session session, int newInterval) : execution(void Session+.setMaxInactiveInterval(int)) && args(newInterval) && target(session);
+    
+    void around(Session session, int newInterval) : setMaxInactiveInterval(session, newInterval) {
+        int oldInterval=session.getMaxInactiveInterval();
+        proceed(session, newInterval);
+        session.getConfig().setMaxInactiveInterval(session, oldInterval, newInterval);
+    }
+    
+    pointcut createSession(Manager manager) : execution(Session Manager+.createSession()) && target(manager);
+    
+    Session around(Manager manager) : createSession(manager) {
+        Session session=(Session)proceed(manager);
+        // notify Evicter of insertion
+        return session;
+    }
+    
+    pointcut destroySession(Manager manager, Session session) : execution(void Manager+.destroySession(Session)) && args(session) && target(manager);
+    
+    before(Manager manager, Session session) : destroySession(manager, session) {
+        // notify Evicter of removal
+    }
 }

@@ -20,28 +20,15 @@ import org.codehaus.wadi.sandbox.Evictable;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.EvicterConfig;
 
-/**
- * Abstract base for Evicters. This Evicter only evicts invalidated sessions.
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
-public abstract class AbstractEvicter implements Evicter {
+public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
 
-    public boolean evict(String id, Evictable evictable) {
-        return evict(id, evictable, System.currentTimeMillis());
-    }
-
-    public boolean evict(String id, Evictable evictable, long time) {
-        return evictable.getInvalidated();
-    }
+    // BestEffort Evicters pay no attention to these notifications - to do so would be very expensive.
+    // If you plan to build e.g. an LRU Evicter, by ordering Sessions according to time-to-live, use
+    // this notification to reorder your Sessions after each change/access...
     
-    public void init(EvicterConfig config) {/* do nothing */}
-    public void destroy() {/* do nothing */}
-    
-    // Lifecycle
-    
-    public void start() throws Exception {/* do nothing */}
-    public void stop() throws Exception {/* do nothing */}
+    public void insert(Evictable evictable) {/* do nothing */}
+    public void remove(Evictable evictable) {/* do nothing */}
+    public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {/* do nothing */}
+    public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
 
 }

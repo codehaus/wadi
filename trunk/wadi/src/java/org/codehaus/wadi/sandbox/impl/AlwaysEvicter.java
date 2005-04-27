@@ -26,19 +26,9 @@ import org.codehaus.wadi.sandbox.EvicterConfig;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class AlwaysEvicter implements Evicter {
+public class AlwaysEvicter extends AbstractBestEffortEvicter {
 
 	public boolean evict(String id, Evictable evictable) {return evict(id, evictable, 0);}
 	public boolean evict(String id, Evictable evictable, long time) {return true;}
 
-    public void setLastAccessedTime(Evictable evictable, long time) {/* do nothing */}
-    public void setMaxInactiveInterval(Evictable evictable, int interval) {/* do nothing */}
-
-    public void init(EvicterConfig config) {/* do nothing */}
-    public void destroy() {/* do nothing */}
-    
-    // Lifecycle
-    
-    public void start() throws Exception {/* do nothing */}
-    public void stop() throws Exception {/* do nothing */}
 }

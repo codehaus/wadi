@@ -25,7 +25,7 @@ import org.codehaus.wadi.sandbox.Evictable;
  * @version $Revision$
  */
 
-public class TimedOutEvicter extends AbstractEvicter {
+public class TimedOutEvicter extends AbstractBestEffortEvicter {
     
     public boolean evict(String id, Evictable evictable, long time) {
         return super.evict(id, evictable, time) || evictable.getTimedOut();

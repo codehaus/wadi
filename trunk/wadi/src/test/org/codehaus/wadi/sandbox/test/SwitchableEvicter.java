@@ -19,6 +19,7 @@ package org.codehaus.wadi.sandbox.test;
 import org.codehaus.wadi.sandbox.Evictable;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.EvicterConfig;
+import org.codehaus.wadi.sandbox.impl.AbstractBestEffortEvicter;
 
 // FIXME - this needs redoing ...
 
@@ -28,7 +29,7 @@ import org.codehaus.wadi.sandbox.EvicterConfig;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class SwitchableEvicter implements Evicter {
+public class SwitchableEvicter extends AbstractBestEffortEvicter {
 
 	protected boolean _switch=true;
 	public boolean getSwitch(){return _switch;}
@@ -37,14 +38,4 @@ public class SwitchableEvicter implements Evicter {
 	public boolean evict(String id, Evictable evictable) {return evict(id, evictable, 0);}
 	public boolean evict(String id, Evictable evictable, long time) {return _switch;}
     
-    public void setLastAccessedTime(Evictable evictable, long time) {/* do nothing */}
-    public void setMaxInactiveInterval(Evictable evictable, int interval)  {/* do nothing */}
-
-    public void init(EvicterConfig config) {/* do nothing */}
-    public void destroy() {/* do nothing */}
-    
-    // Lifecycle
-    
-    public void start() throws Exception {/* do nothing */}
-    public void stop() throws Exception {/* do nothing */}
 }

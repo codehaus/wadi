@@ -35,6 +35,6 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
         _next.stop();
     }
     
-    public void setLastAccessedTime(Evictable evictable, long time) {/* do nothing */}
-    public void setMaxInactiveInterval(Evictable evictable, int interval) {/* do nothing */}
+    public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {/* do nothing */}
+    public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newTime) {/* do nothing */}
 }

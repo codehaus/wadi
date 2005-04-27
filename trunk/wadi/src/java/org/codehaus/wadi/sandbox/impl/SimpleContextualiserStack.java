@@ -194,7 +194,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     public void promoteToExclusive(Immoter immoter){_memory.promoteToExclusive(immoter);}
     public int loadMotables(Emoter emoter, Immoter immoter) {return _memory.loadMotables(emoter, immoter);}
     
-    public void setLastAccessedTime(Evictable evictable, long time){_memory.setLastAccessedTime(evictable, time);}
-    public void setMaxInactiveInterval(Evictable evictable, int interval) {_memory.setMaxInactiveInterval(evictable, interval);}
+    public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){_memory.setLastAccessedTime(evictable, oldTime, newTime);}
+    public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_memory.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
 
 }
