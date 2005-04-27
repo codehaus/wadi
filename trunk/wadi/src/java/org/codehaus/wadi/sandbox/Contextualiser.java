@@ -42,7 +42,9 @@ public interface Contextualiser extends Lifecycle {
 
 	void evict();
 	Evicter getEvicter();
-
+    void setLastAccessedTime(Evictable evictable, long time);
+    void setMaxInactiveInterval(Evictable evictable, int interval);
+    
 	boolean isExclusive();
 
 	/**
@@ -57,5 +59,5 @@ public interface Contextualiser extends Lifecycle {
     // perhaps these two could be collapsed...
     void promoteToExclusive(Immoter immoter); // TODO - 'orrible name...
     int loadMotables(Emoter emoter, Immoter immoter);
-    
+
 }

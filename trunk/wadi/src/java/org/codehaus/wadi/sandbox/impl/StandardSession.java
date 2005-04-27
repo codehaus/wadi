@@ -129,4 +129,9 @@ public class StandardSession extends AbstractContext implements Session, Attribu
     
     public ValuePool getValuePool(){return _config.getValuePool();}
     
+    // if I don't actually have a method in this class, I cannot advise it, without runtime overhead...
+    // is this correct ?
+    public void setLastAccessedTime(long lastAccessedTime) {super.setLastAccessedTime(lastAccessedTime);}
+    public void setMaxInactiveInterval(int maxInactiveInterval) {super.setMaxInactiveInterval(maxInactiveInterval);}
+    
 }

@@ -54,6 +54,7 @@ import org.codehaus.wadi.sandbox.ValueFactory;
 import org.codehaus.wadi.sandbox.ValueHelper;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.impl.DistributableAttributesFactory;
+import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.impl.DummySessionWrapperFactory;
 import org.codehaus.wadi.sandbox.impl.LazyAttributesFactory;
 import org.codehaus.wadi.sandbox.impl.StandardAttributesFactory;
@@ -85,7 +86,7 @@ extends TestCase
     protected List                    _events=new ArrayList();
     protected Map                     _sessionMap=new HashMap();
     // Standard
-    protected Contextualiser          _standardContextualiser=null;
+    protected Contextualiser          _standardContextualiser=new DummyContextualiser();
     protected SessionWrapperFactory   _standardSessionWrapperFactory=new DummySessionWrapperFactory();
     protected IdGenerator             _standardSessionIdFactory=new TomcatIdGenerator();
     protected AttributesFactory       _standardAttributesFactory=new StandardAttributesFactory();
@@ -96,7 +97,7 @@ extends TestCase
     protected ValuePool               _standardValuePool=new SimpleValuePool(_standardValueFactory);
     protected Manager                 _standardManager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser, _sessionMap);
     // Distributable
-    protected Contextualiser          _distributableContextualiser=null;
+    protected Contextualiser          _distributableContextualiser=new DummyContextualiser();
     protected StreamingStrategy       _streamer=new SimpleStreamingStrategy();
     protected AttributesFactory       _distributedAttributesFactory=new DistributableAttributesFactory();
     protected AttributesPool          _distributedAttributesPool=new SimpleAttributesPool(_distributedAttributesFactory);

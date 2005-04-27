@@ -30,6 +30,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.IdGenerator;
 import org.codehaus.wadi.sandbox.Contextualiser;
+import org.codehaus.wadi.sandbox.Evictable;
+import org.codehaus.wadi.sandbox.EvicterConfig;
 import org.codehaus.wadi.sandbox.Lifecycle;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
@@ -45,7 +47,7 @@ import org.codehaus.wadi.sandbox.SessionPool;
  * @version $Revision$
  */
 
-public class Manager implements Lifecycle, SessionConfig {
+public class Manager implements Lifecycle, SessionConfig, EvicterConfig {
 
     protected final Log _log = LogFactory.getLog(getClass());
 
@@ -189,5 +191,8 @@ public class Manager implements Lifecycle, SessionConfig {
     public boolean getDistributable(){return false;}
 
     public Contextualiser getContextualiser() {return _contextualiser;}
+    
+    public void setLastAccessedTime(Evictable evictable, long time) {_contextualiser.setLastAccessedTime(evictable, time);}
+    public void setMaxInactiveInterval(Evictable evictable, int interval) {_contextualiser.setMaxInactiveInterval(evictable, interval);}
 
 }

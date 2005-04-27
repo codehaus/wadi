@@ -257,6 +257,10 @@ public class TestContextualiser extends TestCase {
 
         public void promoteToExclusive(Immoter immoter){/* empty */}
         public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
+        
+        public void setLastAccessedTime(Evictable evictable, long time){/* empty */}
+        public void setMaxInactiveInterval(Evictable evictable, int interval) {/* do nothing */}
+
 	}
 
 	class MyActiveContextualiser implements Contextualiser {
@@ -303,6 +307,9 @@ public class TestContextualiser extends TestCase {
         
         public void promoteToExclusive(Immoter immoter){/* empty */}
         public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
+        
+        public void setLastAccessedTime(Evictable evictable, long time){/* empty */}
+        public void setMaxInactiveInterval(Evictable evictable, int interval) {/* do nothing */}
 
 	}
 

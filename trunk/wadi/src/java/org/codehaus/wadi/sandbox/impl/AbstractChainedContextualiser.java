@@ -17,6 +17,7 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import org.codehaus.wadi.sandbox.Contextualiser;
+import org.codehaus.wadi.sandbox.Evictable;
 
 public abstract class AbstractChainedContextualiser implements Contextualiser {
     
@@ -34,4 +35,6 @@ public abstract class AbstractChainedContextualiser implements Contextualiser {
         _next.stop();
     }
     
+    public void setLastAccessedTime(Evictable evictable, long time) {/* do nothing */}
+    public void setMaxInactiveInterval(Evictable evictable, int interval) {/* do nothing */}
 }
