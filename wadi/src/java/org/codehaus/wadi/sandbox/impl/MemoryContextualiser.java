@@ -31,6 +31,7 @@ import org.codehaus.wadi.sandbox.Context;
 import org.codehaus.wadi.sandbox.ContextPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
+import org.codehaus.wadi.sandbox.Evictable;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
@@ -176,4 +177,6 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 
 	public Sync getEvictionLock(String id, Motable motable){return ((Context)motable).getExclusiveLock();}
 	public Emoter getEvictionEmoter(){return _evictionEmoter;} // leave lock-taking to evict()...
+    
+    public void setLastAccessTime(Evictable evictable, long time) {_evicter.setLastAccessedTime(evictable, time);}
 }

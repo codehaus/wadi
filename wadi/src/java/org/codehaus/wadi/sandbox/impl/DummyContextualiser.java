@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
+import org.codehaus.wadi.sandbox.Evictable;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
@@ -88,5 +89,8 @@ public class DummyContextualiser implements Contextualiser {
 
     public void promoteToExclusive(Immoter immoter){/* empty */}
     public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
+    
+    public void setLastAccessedTime(Evictable evictable, long time) {/* do nothing */}
+    public void setMaxInactiveInterval(Evictable evictable, int interval) {/* do nothing */}
     
 }

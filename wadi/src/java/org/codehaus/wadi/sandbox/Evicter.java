@@ -22,7 +22,14 @@ package org.codehaus.wadi.sandbox;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Evicter {
+public interface Evicter extends Lifecycle {
+
+    void init(EvicterConfig config);
+    void destroy();
+    
 	boolean evict(String id, Evictable evictable);
 	boolean evict(String id, Evictable evictable, long time);
+    
+    void setLastAccessedTime(Evictable evictable, long time);
+    void setMaxInactiveInterval(Evictable evictable, int interval);
 }

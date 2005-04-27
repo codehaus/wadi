@@ -16,27 +16,8 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import java.util.List;
+public interface EvicterConfig {
 
-import javax.servlet.ServletContext;
-
-import org.codehaus.wadi.IdGenerator;
-
-public interface SessionConfig {
-    
-    ValuePool getValuePool();
-    AttributesPool getAttributesPool();
-    List getSessionListeners();
-    List getAttributeListeners();
-    ServletContext getServletContext();
-    
-    void destroySession(Session session);
-    SessionWrapperFactory getSessionWrapperFactory();
-    IdGenerator getSessionIdFactory();
-    
     int getMaxInactiveInterval();
-    
-    void setLastAccessedTime(Evictable evictable, long time);
-    void setMaxInactiveInterval(Evictable evictable, int interval);
     
 }

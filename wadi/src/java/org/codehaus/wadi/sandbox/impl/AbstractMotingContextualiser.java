@@ -125,4 +125,14 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
             _next.promoteToExclusive(immoter);
         }
     }
+    
+    public void start() throws Exception {
+        super.start();
+        _evicter.start();
+    }
+
+    public void stop() throws Exception {
+        super.stop();
+        _evicter.stop();
+    }
 }
