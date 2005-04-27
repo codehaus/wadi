@@ -22,6 +22,6 @@ package org.codehaus.wadi.sandbox.impl;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class NeverEvicter extends AbstractEvicter {
+public class NeverEvicter extends AbstractBestEffortEvicter {
     // just the same as superclass - just a more comprehensible name...
 }

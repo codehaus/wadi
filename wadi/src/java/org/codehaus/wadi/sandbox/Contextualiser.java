@@ -42,8 +42,8 @@ public interface Contextualiser extends Lifecycle {
 
 	void evict();
 	Evicter getEvicter();
-    void setLastAccessedTime(Evictable evictable, long time);
-    void setMaxInactiveInterval(Evictable evictable, int interval);
+    void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
+    void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
     
 	boolean isExclusive();
 

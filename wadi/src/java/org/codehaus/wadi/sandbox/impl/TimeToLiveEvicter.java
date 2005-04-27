@@ -25,7 +25,7 @@ import org.codehaus.wadi.sandbox.Evictable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class TimeToLiveEvicter extends AbstractEvicter {
+public class TimeToLiveEvicter extends AbstractBestEffortEvicter {
 	protected final long _ttl;
 
 	public TimeToLiveEvicter(long ttl) {

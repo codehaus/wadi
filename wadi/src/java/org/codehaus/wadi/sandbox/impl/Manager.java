@@ -86,9 +86,19 @@ public class Manager implements Lifecycle, SessionConfig, EvicterConfig {
         _contextualiser.stop();
     }
     
+    public Session createSession() {
+        Session session=_sessionPool.take();
+        String id=(String)_sessionIdFactory.take(); // TODO - API on this class is wrong...
+        session.setId(id);
+        _map.put(id, session);
+        _contextualiser.getEvicter().insert(session);
+        return session;
+    }
+    
     public void destroySession(Session session) {
         for (Iterator i=new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) // ALLOC ?
             session.removeAttribute((String)i.next()); // TODO - very inefficient
+        _contextualiser.getEvicter().remove(session);
         String id=session.getId();
         _map.remove(id);
         // _sessionIdFactory.put(id); // we might reuse session ids ? - sounds like a BAD idea
@@ -96,14 +106,6 @@ public class Manager implements Lifecycle, SessionConfig, EvicterConfig {
         _sessionPool.put(session);
     }
 
-    public Session createSession() {
-        Session session=_sessionPool.take();
-        String id=(String)_sessionIdFactory.take(); // TODO - API on this class is wrong...
-        session.setId(id);
-        _map.put(id, session);
-        return session;
-    }
-    
     //----------------------------------------
     // Listeners
 
@@ -192,7 +194,7 @@ public class Manager implements Lifecycle, SessionConfig, EvicterConfig {
 
     public Contextualiser getContextualiser() {return _contextualiser;}
     
-    public void setLastAccessedTime(Evictable evictable, long time) {_contextualiser.setLastAccessedTime(evictable, time);}
-    public void setMaxInactiveInterval(Evictable evictable, int interval) {_contextualiser.setMaxInactiveInterval(evictable, interval);}
+    public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {_contextualiser.setLastAccessedTime(evictable, oldTime, newTime);}
+    public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_contextualiser.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
 
 }

@@ -90,7 +90,7 @@ public class DummyContextualiser implements Contextualiser {
     public void promoteToExclusive(Immoter immoter){/* empty */}
     public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
     
-    public void setLastAccessedTime(Evictable evictable, long time) {/* do nothing */}
-    public void setMaxInactiveInterval(Evictable evictable, int interval) {/* do nothing */}
+    public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {/* do nothing */}
+    public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
     
 }

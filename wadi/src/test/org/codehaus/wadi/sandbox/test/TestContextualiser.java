@@ -258,8 +258,8 @@ public class TestContextualiser extends TestCase {
         public void promoteToExclusive(Immoter immoter){/* empty */}
         public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
         
-        public void setLastAccessedTime(Evictable evictable, long time){/* empty */}
-        public void setMaxInactiveInterval(Evictable evictable, int interval) {/* do nothing */}
+        public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){/* empty */}
+        public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
 
 	}
 
@@ -308,8 +308,8 @@ public class TestContextualiser extends TestCase {
         public void promoteToExclusive(Immoter immoter){/* empty */}
         public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
         
-        public void setLastAccessedTime(Evictable evictable, long time){/* empty */}
-        public void setMaxInactiveInterval(Evictable evictable, int interval) {/* do nothing */}
+        public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){/* empty */}
+        public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
 
 	}
 

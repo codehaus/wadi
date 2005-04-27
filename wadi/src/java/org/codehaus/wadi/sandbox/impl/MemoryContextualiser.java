@@ -178,5 +178,6 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	public Sync getEvictionLock(String id, Motable motable){return ((Context)motable).getExclusiveLock();}
 	public Emoter getEvictionEmoter(){return _evictionEmoter;} // leave lock-taking to evict()...
     
-    public void setLastAccessTime(Evictable evictable, long time) {_evicter.setLastAccessedTime(evictable, time);}
+    public void setLastAccessTime(Evictable evictable, long oldTime, long newTime) {_evicter.setLastAccessedTime(evictable, oldTime, newTime);}
+    public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_evicter.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
 }
