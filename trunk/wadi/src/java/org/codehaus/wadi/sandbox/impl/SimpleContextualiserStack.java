@@ -123,7 +123,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         HttpProxy proxy=new StandardHttpProxy("jsessionid");
         _clusterLocation=new HttpProxyLocation(_clusterCluster.getLocalNode().getDestination(), isa, proxy);
         _clusterMap=new HashMap();
-        _clusterEvicter=new NeverEvicter(30000, true); // TODO - consider Cluster eviction carefully...
+        _clusterEvicter=new DummyEvicter(); // TODO - consider Cluster eviction carefully...
         _clusterDispatcher=new MessageDispatcher(_clusterCluster);
         _clusterRelocater=new ImmigrateRelocationStrategy(_clusterDispatcher, _clusterLocation, 2000, _clusterMap, _collapser);
         _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation);
@@ -139,13 +139,13 @@ public class SimpleContextualiserStack implements Contextualiser {
         dir.mkdir();
         _discDirectory=dir;
         // TODO - consider eviction on disc, indexing by ttl would be efficient enough...
-        _discEvicter=new NeverEvicter(30000, true); // sessions never pass below this point, unless the node is shutdown
+        _discEvicter=new NeverEvicter(20*1000, true); // sessions never pass below this point, unless the node is shutdown
         _discMap=new HashMap();
         _disc=new ExclusiveDiscContextualiser(_stateless, _collapser, _discEvicter, _discMap, _streamer, _discDirectory);
 
 
         _memoryPool=pool;
-        _memoryEvicter=new AbsoluteEvicter(30000, true, 30*60*1000);
+        _memoryEvicter=new AbsoluteEvicter(10*1000, true, 10*1000); // if a session is inactive for 10 secs, it moves to disc
         _memoryMap=sessionMap;
         _serial=new SerialContextualiser(_disc, _collapser, _memoryMap);
         _requestPool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - use a ThreadLocal based Pool

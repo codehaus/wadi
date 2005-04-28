@@ -62,7 +62,6 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         
         public void run() {
             evict();
-            _timer.schedule(this, _sweepInterval);
         }
     }
     
@@ -87,11 +86,13 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
     }
 
     public void start() throws Exception {
-        _timer.schedule(_task, _sweepInterval);
+        _log.info("starting (sweep interval: "+_sweepInterval+" millis)");
+        _timer.schedule(_task, _sweepInterval, _sweepInterval);
     }
     
     public void stop() throws Exception {
         _task.cancel();
+        _log.info("stopped");
     }
 
     public void destroy() {
