@@ -38,7 +38,8 @@ import org.codehaus.wadi.sandbox.Motable;
  * @version $Revision$
  */
 public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser {
-	protected static final Log _log = LogFactory.getLog(ExclusiveDiscContextualiser.class);
+
+    protected static final Log _log = LogFactory.getLog(ExclusiveDiscContextualiser.class);
 
 	protected final StreamingStrategy _streamer;
 	protected final File _dir;
@@ -136,4 +137,21 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
         }
         super.start(); // continue down chain...
     }
+    
+    // this should move up.....
+    public void expire(Motable motable) {
+        // decide whether session needs promotion
+        boolean needsPromotion=true; // FIXME
+        // if so promote to top and expire there
+        if (needsPromotion) {
+            Emoter emoter=getEvictionEmoter();
+            Immoter immoter=_config.getEvictionImmoter();
+            Utils.mote(emoter, immoter, motable, motable.getId());
+            _config.expire(motable);
+        } else {
+            // else, just drop it off the disc here...
+            throw new UnsupportedOperationException(); // FIXME
+        }
+    }
+
 }

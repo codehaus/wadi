@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import java.util.Map;
+
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Locker;
@@ -29,5 +31,10 @@ public abstract class AbstractSharedContextualiser extends
     }
 
     public boolean isExclusive() {return false;}
+    
+    // EvicterConfig
+    // BestEffortEvicters
+
+    public Map getMap(){throw new UnsupportedOperationException();}
     
 }

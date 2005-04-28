@@ -75,41 +75,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 
 	public Emoter getEvictionEmoter(){return getEmoter();}
 
-	// FIXME - move this back to ChainedContextualiser
-	public void evict(String id, Motable emotable, long time) {
-	    Sync lock=getEvictionLock(id, emotable);
-	    boolean acquired=false;
-	    try {
-	        if ((acquired=Utils.attemptUninterrupted(lock)) && _evicter.evict(id, emotable, time)) { // second confirmatory test with lock
-	            // TODO - how do we figure out whether, now we have the lock, the Context has not already moved as the result of some other operation ?
-	            Immoter immoter=_next.getDemoter(id, emotable);
-	            Emoter emoter=getEvictionEmoter();
-	            Utils.mote(emoter, immoter, emotable, id);
-	        }
-	    } finally {
-	        if (acquired)
-	            lock.release();
-	    }
-	}
-
-	public void evict() {
-	    RankedRWLock.setPriority(RankedRWLock.EVICTION_PRIORITY);
-	    Collection copy=null;
-	    synchronized (_map) {copy=new ArrayList(_map.entrySet());}
-
-	    long time=System.currentTimeMillis();
-	    for (Iterator i=copy.iterator(); i.hasNext(); ) {
-	        Map.Entry e=(Map.Entry)i.next();
-	        String id=(String)e.getKey();
-	        Motable emotable=(Motable)e.getValue();
-	        if (_evicter.evict(id, emotable, time)) { // first test without lock - cheap
-	            evict(id, emotable, time);
-	        }
-	    }
-	    RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
-	}
-
-    public void stop() throws Exception {
+	public void stop() throws Exception {
         // get an immoter from the first shared Contextualiser
         Immoter immoter=_next.getSharedDemoter();
         Emoter emoter=getEmoter();
@@ -135,5 +101,10 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
     }
     
     public int loadMotables(Emoter emoter, Immoter immoter){return 0;} // MappedContextualisers are all Exclusive
+    
+    // EvicterConfig
+    // BestEffortEvicters
+
+    public Map getMap(){return _map;}
 
 }

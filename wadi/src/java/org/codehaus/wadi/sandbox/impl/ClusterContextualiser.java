@@ -335,5 +335,12 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
     
     // AbstractMotingContextualiser
     public Motable get(String id) {return (Motable)_map.get(id);}
+    
+    // EvicterConfig
+    // BestEffortEvicters
+    public Map getMap() {return _map;}
+
+    public Emoter getEvictionEmoter() {throw new UnsupportedOperationException();} // FIXME
+    public void expire(Motable motable) {throw new UnsupportedOperationException();} // FIXME
 
 }

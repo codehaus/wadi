@@ -45,6 +45,7 @@ import org.codehaus.wadi.sandbox.RelocationStrategy;
 import org.codehaus.wadi.sandbox.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
+import org.codehaus.wadi.sandbox.impl.DummyEvicter;
 import org.codehaus.wadi.sandbox.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.HttpProxyLocation;
@@ -75,13 +76,13 @@ public class TestCluster extends TestCase {
         protected final Collapser _collapser=new HashingCollapser(10, 2000);
         protected final Map _cmap=new HashMap();
         protected final Map _mmap=new HashMap();
-        protected final Evicter _evicter=new NeverEvicter();
+        protected final Evicter _evicter=new DummyEvicter();
         protected final MemoryContextualiser _top;
         protected final ClusterContextualiser _middle;
         protected final SharedJDBCContextualiser _bottom;
         
         public MyNode(ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
-            _bottom=new SharedJDBCContextualiser(new DummyContextualiser(), null, new NeverEvicter(), ds, table);
+            _bottom=new SharedJDBCContextualiser(new DummyContextualiser(), null, new DummyEvicter(), ds, table);
             _cluster=(Cluster)factory.createCluster(clusterName);
             _cluster.addClusterListener(new MyClusterListener());
             _dispatcher=new MessageDispatcher(_cluster);
@@ -90,7 +91,7 @@ public class TestCluster extends TestCase {
             _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), isa, proxy);
             //_relocater=new SwitchableRelocationStrategy();
             _relocater=null;
-            _middle=new ClusterContextualiser(_bottom, _collapser, new NeverEvicter(), _cmap, _cluster, _dispatcher, _relocater, _location);
+            _middle=new ClusterContextualiser(_bottom, _collapser, new DummyEvicter(), _cmap, _cluster, _dispatcher, _relocater, _location);
             _top=new MemoryContextualiser(_middle, _evicter, _mmap, new SimpleStreamingStrategy(), new MyContextPool(), new DummyStatefulHttpServletRequestWrapperPool());
             _middle.setTop(_top);
         }

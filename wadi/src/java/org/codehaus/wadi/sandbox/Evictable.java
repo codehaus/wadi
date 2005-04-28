@@ -25,6 +25,7 @@ package org.codehaus.wadi.sandbox;
  */
 
 public interface Evictable {
+    
 	public long getCreationTime();
 	public void setCreationTime(long creationTime);
 	public long getLastAccessedTime();

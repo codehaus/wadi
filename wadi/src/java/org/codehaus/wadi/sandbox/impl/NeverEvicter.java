@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import org.codehaus.wadi.sandbox.Evictable;
+
 /**
  * An Evicter which never evicts (except explicitly invalidated sessions).
  *
@@ -23,5 +25,11 @@ package org.codehaus.wadi.sandbox.impl;
  * @version $Revision$
  */
 public class NeverEvicter extends AbstractBestEffortEvicter {
-    // just the same as superclass - just a more comprehensible name...
+
+    public NeverEvicter(int sweepInterval, boolean strictOrdering) {
+        super(sweepInterval, strictOrdering);
+    }
+    
+    public boolean test(Evictable evictable, long time, long ttl) {return false;}
+
 }

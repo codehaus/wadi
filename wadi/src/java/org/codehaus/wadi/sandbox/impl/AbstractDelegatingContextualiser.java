@@ -35,10 +35,6 @@ public abstract class AbstractDelegatingContextualiser extends AbstractChainedCo
         super(next);
     }
     
-    public void evict() {
-        // a 'Thin' Contextualiser caches no state...
-    }
-
     public Evicter getEvicter() {return _next.getEvicter();}
 
     public boolean isExclusive() {return _next.isExclusive();}

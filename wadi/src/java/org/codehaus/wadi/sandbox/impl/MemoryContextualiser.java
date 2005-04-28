@@ -116,41 +116,41 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	    }
 	}
 
-	class MemoryEmoter extends AbstractMappedEmoter {
+    class MemoryEmoter extends AbstractMappedEmoter {
 
-	    public MemoryEmoter(Map map) {
-	        super(map);
-	    }
+        public MemoryEmoter(Map map) {
+            super(map);
+        }
 
-	    public boolean prepare(String id, Motable emotable, Motable immotable) {
-	        Sync lock=((Context)emotable).getExclusiveLock();
-	        try {
-	            Utils.acquireUninterrupted(lock);
-	        } catch (TimeoutException e) {
-	            _log.error("unexpected timeout", e);
-	            return false;
-	        }
-	        
-	        if (emotable.getInvalidated())
-	            return false; // we lost race to motable and it has gone...
-	        
-	        return super.prepare(id, emotable, immotable);
-	    }
+        public boolean prepare(String id, Motable emotable, Motable immotable) {
+            Sync lock=((Context)emotable).getExclusiveLock();
+            try {
+                Utils.acquireUninterrupted(lock);
+            } catch (TimeoutException e) {
+                _log.error("unexpected timeout", e);
+                return false;
+            }
+            
+            if (emotable.getInvalidated())
+                return false; // we lost race to motable and it has gone...
+            
+            return super.prepare(id, emotable, immotable);
+        }
 
-	    public void commit(String id, Motable emotable) {
-	        super.commit(id, emotable);
-	        ((Context)emotable).getExclusiveLock().release();
-	    }
+        public void commit(String id, Motable emotable) {
+            super.commit(id, emotable);
+            ((Context)emotable).getExclusiveLock().release();
+        }
 
-	    public void rollback(String id, Motable emotable) {
-	        super.rollback(id, emotable);
-	        ((Context)emotable).getExclusiveLock().release();
-	    }
+        public void rollback(String id, Motable emotable) {
+            super.rollback(id, emotable);
+            ((Context)emotable).getExclusiveLock().release();
+        }
 
-	    public String getInfo() {
-	        return "memory";
-	    }
-	}
+        public String getInfo() {
+            return "memory";
+        }
+    }
 
 	class MemoryImmoter extends AbstractMappedImmoter {
 
@@ -180,4 +180,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
     
     public void setLastAccessTime(Evictable evictable, long oldTime, long newTime) {_evicter.setLastAccessedTime(evictable, oldTime, newTime);}
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_evicter.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
+    
+    public void expire(Motable motable) {_config.expire(motable);}
+
 }
