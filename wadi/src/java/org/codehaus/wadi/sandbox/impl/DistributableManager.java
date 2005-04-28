@@ -46,7 +46,7 @@ public class DistributableManager extends Manager implements DistributableSessio
     public StreamingStrategy getStreamer() {return _streamer;}
 
     static class HelperPair {
-        
+
         final Class _type;
         final ValueHelper _helper;
 
@@ -55,9 +55,9 @@ public class DistributableManager extends Manager implements DistributableSessio
             _helper=helper;
         }
     }
-    
+
     protected final List _helpers=new ArrayList();
-    
+
     /**
      * Register a ValueHelper for a particular type. During [de]serialisation
      * Objects flowing in/out of the persistance medium will be passed through this
@@ -65,15 +65,15 @@ public class DistributableManager extends Manager implements DistributableSessio
      * and non-Serializable representations. Helpers will be returned in their registration
      * order, so this is significant (as an Object may implement more than one interface
      * or registered type).
-     * 
+     *
      * @param type
      * @param helper
      */
-    
+
     public void registerHelper(Class type, ValueHelper helper) {
         _helpers.add(new HelperPair(type, helper));
     }
-    
+
     public boolean deregisterHelper(Class type) {
         int l=_helpers.size();
         for (int i=0; i<l; i++)
@@ -83,7 +83,7 @@ public class DistributableManager extends Manager implements DistributableSessio
             }
         return false;
     }
-    
+
     public ValueHelper findHelper(Class type) {
         int l=_helpers.size();
         for (int i=0; i<l; i++) {
@@ -100,16 +100,19 @@ public class DistributableManager extends Manager implements DistributableSessio
         Collection names=new ArrayList((_attributeListeners.size()>0)?(Collection)session.getAttributeNameSet():((DistributableSession)session).getListenerNames());
         for (Iterator i=names.iterator(); i.hasNext();) // ALLOC ?
             session.removeAttribute((String)i.next());
-        
-        // TODO - remove from Contextualiser....at end of initial request ?
+
+        // TODO - remove from Contextualiser....at end of initial request ? Think more about this
+        String id=session.getId();
+        _map.remove(id);
         session.destroy();
         _sessionPool.put(session);
+        _log.info("destroyed: "+id);
     }
-    
+
     // Lazy
-    
+
     public boolean getHttpSessionAttributeListenersRegistered(){return _attributeListeners.size()>0;}
-    
+
     public boolean getDistributable(){return true;}
 
 }
