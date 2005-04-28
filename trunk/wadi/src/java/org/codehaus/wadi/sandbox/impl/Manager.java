@@ -93,6 +93,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         Session session=_sessionPool.take();
         String id=(String)_sessionIdFactory.take(); // TODO - API on this class is wrong...
         session.setId(id);
+        session.setMaxInactiveInterval(_maxInactiveInterval);
         _map.put(id, session);
         _contextualiser.getEvicter().insert(session);
         return session;
@@ -184,7 +185,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     
     public IdGenerator getSessionIdFactory() {return _sessionIdFactory;}
     
-    protected int _maxInactiveInterval=30*60;
+    protected int _maxInactiveInterval=30*60; // 30 mins
     public int getMaxInactiveInterval(){return _maxInactiveInterval;}
     public void setMaxInactiveInterval(int interval){_maxInactiveInterval=interval;}
     
