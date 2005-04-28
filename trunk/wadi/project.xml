@@ -128,6 +128,9 @@
     <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
 
     <unitTest>
+      <excludes>
+        <exclude>**/sandbox/test/TestActiveCluster.java</exclude>
+      </excludes>
       <includes>
         <include>**/sandbox/test/Test*.java</include>
         <include>**/sandbox/distributable/test/Test*.java</include>
