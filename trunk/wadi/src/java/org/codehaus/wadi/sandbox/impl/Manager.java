@@ -96,6 +96,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         session.setMaxInactiveInterval(_maxInactiveInterval);
         _map.put(id, session);
         _contextualiser.getEvicter().insert(session);
+        _log.info("created: "+id);
         return session;
     }
     
@@ -108,6 +109,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         // _sessionIdFactory.put(id); // we might reuse session ids ? - sounds like a BAD idea
         session.destroy();
         _sessionPool.put(session);
+        _log.info("destroyed: "+id);
     }
 
     //----------------------------------------
