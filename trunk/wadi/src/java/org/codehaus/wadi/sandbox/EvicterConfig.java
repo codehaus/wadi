@@ -16,8 +16,20 @@
  */
 package org.codehaus.wadi.sandbox;
 
+import java.util.Map;
+
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 public interface EvicterConfig {
 
+    // BestEffortEvicters
+    Map getMap();
+    Sync getEvictionLock(String id, Motable motable);
+    void expire(Motable motable);
+    void demote(Motable motable);
+    Emoter getEvictionEmoter();
+
+    // StrictEvicters
     int getMaxInactiveInterval();
     
 }

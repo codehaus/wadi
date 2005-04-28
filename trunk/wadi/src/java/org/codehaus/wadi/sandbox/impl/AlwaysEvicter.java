@@ -17,8 +17,6 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import org.codehaus.wadi.sandbox.Evictable;
-import org.codehaus.wadi.sandbox.Evicter;
-import org.codehaus.wadi.sandbox.EvicterConfig;
 
 /**
  * An Evicter which always evicts
@@ -28,7 +26,10 @@ import org.codehaus.wadi.sandbox.EvicterConfig;
  */
 public class AlwaysEvicter extends AbstractBestEffortEvicter {
 
-	public boolean evict(String id, Evictable evictable) {return evict(id, evictable, 0);}
-	public boolean evict(String id, Evictable evictable, long time) {return true;}
+    public AlwaysEvicter(int sweepInterval, boolean strictOrdering) {
+        super(sweepInterval, strictOrdering);
+    }
+    
+	public boolean test(Evictable evictable, long time, long ttl) {return true;}
 
 }

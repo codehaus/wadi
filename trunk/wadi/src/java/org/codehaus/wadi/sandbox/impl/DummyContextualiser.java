@@ -36,11 +36,8 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DummyContextualiser implements Contextualiser {
+public class DummyContextualiser extends AbstractContextualiser {
 
-	/**
-	 *
-	 */
 	public DummyContextualiser() {
 		super();
 	}
@@ -52,11 +49,7 @@ public class DummyContextualiser implements Contextualiser {
 		return false;
 	}
 
-	public void evict(){
-	    // we carry no state...
-	    }
-	
-	protected final Evicter _evicter=new NeverEvicter();
+	protected final Evicter _evicter=new DummyEvicter();
 	public Evicter getEvicter(){return _evicter;}
 
 	public boolean isExclusive(){return false;}
@@ -84,9 +77,6 @@ public class DummyContextualiser implements Contextualiser {
 	public Immoter getDemoter(String id, Motable motable) {return _immoter;}
     public Immoter getSharedDemoter(){return _immoter;}
     
-    public void start(){/* empty */}
-    public void stop(){/* empty */}
-
     public void promoteToExclusive(Immoter immoter){/* empty */}
     public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
     

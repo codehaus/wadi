@@ -27,8 +27,8 @@ public interface Evicter extends Lifecycle {
     void init(EvicterConfig config);
     void destroy();
     
-	boolean evict(String id, Evictable evictable);
-	boolean evict(String id, Evictable evictable, long time);
+    void evict();
+	boolean test(Evictable evictable, long time, long ttl);
     
     void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
     void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);

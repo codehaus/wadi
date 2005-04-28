@@ -48,6 +48,7 @@ import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.ContextPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
+import org.codehaus.wadi.sandbox.ContextualiserConfig;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evictable;
 import org.codehaus.wadi.sandbox.Evicter;
@@ -109,7 +110,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _collapser=new HashingCollapser(200, 6000);
 
         _dummy=new DummyContextualiser();
-        _databaseEvicter=new NeverEvicter();
+        _databaseEvicter=new DummyEvicter(); // TODO - I don't think SharedContextualisers need an Evicter ?
         _databaseDataSource=dataSource;
         _databaseTable="WADI";
         SharedJDBCMotable.init(_databaseDataSource, _databaseTable);
@@ -122,7 +123,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         HttpProxy proxy=new StandardHttpProxy("jsessionid");
         _clusterLocation=new HttpProxyLocation(_clusterCluster.getLocalNode().getDestination(), isa, proxy);
         _clusterMap=new HashMap();
-        _clusterEvicter=new NeverEvicter();
+        _clusterEvicter=new NeverEvicter(30000, true); // TODO - consider Cluster eviction carefully...
         _clusterDispatcher=new MessageDispatcher(_clusterCluster);
         _clusterRelocater=new ImmigrateRelocationStrategy(_clusterDispatcher, _clusterLocation, 2000, _clusterMap, _collapser);
         _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation);
@@ -137,13 +138,14 @@ public class SimpleContextualiserStack implements Contextualiser {
         dir.delete();
         dir.mkdir();
         _discDirectory=dir;
-        _discEvicter=new TimedOutEvicter();
+        // TODO - consider eviction on disc, indexing by ttl would be efficient enough...
+        _discEvicter=new NeverEvicter(30000, true); // sessions never pass below this point, unless the node is shutdown
         _discMap=new HashMap();
         _disc=new ExclusiveDiscContextualiser(_stateless, _collapser, _discEvicter, _discMap, _streamer, _discDirectory);
 
 
         _memoryPool=pool;
-        _memoryEvicter=new AbsoluteEvicter(30*60*1000);
+        _memoryEvicter=new AbsoluteEvicter(30000, true, 30*60*1000);
         _memoryMap=sessionMap;
         _serial=new SerialContextualiser(_disc, _collapser, _memoryMap);
         _requestPool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - use a ThreadLocal based Pool
@@ -157,10 +159,6 @@ public class SimpleContextualiserStack implements Contextualiser {
 
     public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
         return _memory.contextualise(hreq, hres, chain, id, immoter, motionLock, exclusiveOnly);
-    }
-
-    public void evict() {
-        _memory.evict(); // TODO - consider
     }
 
     public Evicter getEvicter() {
@@ -179,6 +177,10 @@ public class SimpleContextualiserStack implements Contextualiser {
         return _memory.getSharedDemoter();
     }
 
+    public void init(ContextualiserConfig config) {
+        _memory.init(config);
+    }
+    
     public void start() throws Exception {
         _clusterCluster.start();
 	// TODO - dispatcher probably needs a Lifecycle too... (and a thread pool)
@@ -189,6 +191,10 @@ public class SimpleContextualiserStack implements Contextualiser {
     public void stop() throws Exception {
         _memory.stop();
         _clusterCluster.stop();
+    }
+    
+    public void destroy() {
+        _memory.destroy();
     }
     
     public void promoteToExclusive(Immoter immoter){_memory.promoteToExclusive(immoter);}

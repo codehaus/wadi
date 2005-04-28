@@ -16,23 +16,14 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import org.codehaus.wadi.sandbox.Evicter;
-import org.codehaus.wadi.sandbox.EvicterConfig;
+import org.codehaus.wadi.sandbox.Contextualiser;
+import org.codehaus.wadi.sandbox.ContextualiserConfig;
 
-/**
- * Abstract base for Evicters.
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
-public abstract class AbstractEvicter implements Evicter {
+public abstract class AbstractContextualiser implements Contextualiser {
 
-    public void init(EvicterConfig config) {/* do nothing */}
+    public void init(ContextualiserConfig config) {/* do nothing*/}
+    public void start() throws Exception {/* do nothing*/}
+    public void stop() throws Exception {/* do nothing*/}
     public void destroy() {/* do nothing */}
     
-    // Lifecycle
-    
-    public void start() throws Exception {/* do nothing */}
-    public void stop() throws Exception {/* do nothing */}
-
 }

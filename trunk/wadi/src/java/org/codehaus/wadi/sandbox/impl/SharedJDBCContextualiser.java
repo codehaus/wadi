@@ -198,4 +198,8 @@ public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
             return 0;
         }
     }
+    
+    public Emoter getEvictionEmoter() {throw new UnsupportedOperationException();} // FIXME
+    public void expire(Motable motable) {throw new UnsupportedOperationException();} // FIXME
+
 }

@@ -40,7 +40,6 @@ public interface Contextualiser extends Lifecycle {
 	// FilterChain.doFilter() throws IOException, ServletException...
 	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException;
 
-	void evict();
 	Evicter getEvicter();
     void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
     void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
@@ -59,5 +58,8 @@ public interface Contextualiser extends Lifecycle {
     // perhaps these two could be collapsed...
     void promoteToExclusive(Immoter immoter); // TODO - 'orrible name...
     int loadMotables(Emoter emoter, Immoter immoter);
+    
+    void init(ContextualiserConfig config);
+    void destroy();
 
 }

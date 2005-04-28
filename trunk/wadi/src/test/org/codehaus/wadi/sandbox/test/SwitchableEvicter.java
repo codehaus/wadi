@@ -17,8 +17,6 @@
 package org.codehaus.wadi.sandbox.test;
 
 import org.codehaus.wadi.sandbox.Evictable;
-import org.codehaus.wadi.sandbox.Evicter;
-import org.codehaus.wadi.sandbox.EvicterConfig;
 import org.codehaus.wadi.sandbox.impl.AbstractBestEffortEvicter;
 
 // FIXME - this needs redoing ...
@@ -32,10 +30,14 @@ import org.codehaus.wadi.sandbox.impl.AbstractBestEffortEvicter;
 public class SwitchableEvicter extends AbstractBestEffortEvicter {
 
 	protected boolean _switch=true;
+    
+    public SwitchableEvicter(int sweepInterval, boolean strictOrdering) {
+        super(sweepInterval, strictOrdering);
+    }
+    
 	public boolean getSwitch(){return _switch;}
 	public void setSwitch(boolean shwitch){_switch=shwitch;}
 
-	public boolean evict(String id, Evictable evictable) {return evict(id, evictable, 0);}
-	public boolean evict(String id, Evictable evictable, long time) {return _switch;}
+	public boolean test(Evictable evictable, long time, long ttl) {return _switch;}
     
 }

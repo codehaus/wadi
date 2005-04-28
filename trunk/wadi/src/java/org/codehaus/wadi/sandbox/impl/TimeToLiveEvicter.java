@@ -28,12 +28,12 @@ import org.codehaus.wadi.sandbox.Evictable;
 public class TimeToLiveEvicter extends AbstractBestEffortEvicter {
 	protected final long _ttl;
 
-	public TimeToLiveEvicter(long ttl) {
-	    super();
+    public TimeToLiveEvicter(int sweepInterval, boolean strictOrdering, long ttl) {
+	    super(sweepInterval, strictOrdering);
 		_ttl=ttl;
 	}
 
-	public boolean evict(String id, Evictable evictable, long time) {
-	    return super.evict(id, evictable, time) || evictable.getTimeToLive(time)<=_ttl;
-	    }
+	public boolean test(Evictable evictable, long time, long ttl) {
+	    return ttl<=_ttl;
+	}
 }

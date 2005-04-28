@@ -19,21 +19,21 @@ package org.codehaus.wadi.sandbox.impl;
 import org.codehaus.wadi.sandbox.Evictable;
 
 /**
- * An Evicter which also evicts Evictables after an absolute period of inactivity.
+ * An Evicter which evicts Evictables if they have timed out or after an absolute period of inactivity.
  * For example, using this Evicter, you could evict sessions after 30 minutes of inactivity.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public class AbsoluteEvicter extends AbstractBestEffortEvicter {
-    protected final long _interval;
+    protected final long _inactiveInterval;
     
-    public AbsoluteEvicter(long interval) {
-        super();
-        _interval=interval;
+    public AbsoluteEvicter(int sweepInterval, boolean strictOrdering, long inactivityInterval) {
+        super(sweepInterval, strictOrdering);
+        _inactiveInterval=inactivityInterval;
     }
     
-    public boolean evict(String id, Evictable evictable, long time) {
-        return super.evict(id, evictable, time) || time-evictable.getLastAccessedTime()>=_interval;
+    public boolean test(Evictable evictable, long time, long ttl) {
+        return time-evictable.getLastAccessedTime()>=_inactiveInterval;
     }
 }

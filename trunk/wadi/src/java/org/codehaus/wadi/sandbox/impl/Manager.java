@@ -30,9 +30,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.IdGenerator;
 import org.codehaus.wadi.sandbox.Contextualiser;
+import org.codehaus.wadi.sandbox.ContextualiserConfig;
 import org.codehaus.wadi.sandbox.Evictable;
-import org.codehaus.wadi.sandbox.EvicterConfig;
+import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Lifecycle;
+import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
 import org.codehaus.wadi.sandbox.ValuePool;
@@ -47,7 +49,7 @@ import org.codehaus.wadi.sandbox.SessionPool;
  * @version $Revision$
  */
 
-public class Manager implements Lifecycle, SessionConfig, EvicterConfig {
+public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
 
     protected final Log _log = LogFactory.getLog(getClass());
 
@@ -61,12 +63,13 @@ public class Manager implements Lifecycle, SessionConfig, EvicterConfig {
 
     public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map map) {
         _sessionPool=sessionPool;
-        _sessionPool.init(this); // set up a backptr - yeugh !
+        _sessionPool.init(this);
         _attributesPool=attributesPool;
         _valuePool=valuePool;
         _sessionWrapperFactory=sessionWrapperFactory;
         _sessionIdFactory=sessionIdFactory;
         _contextualiser=contextualiser;
+        _contextualiser.init(this);
         _map=map;
     }
     
@@ -197,4 +200,10 @@ public class Manager implements Lifecycle, SessionConfig, EvicterConfig {
     public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {_contextualiser.setLastAccessedTime(evictable, oldTime, newTime);}
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_contextualiser.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
 
+    public void expire(Motable motable) {
+        destroySession((Session)motable);
+    }
+    
+    public Immoter getEvictionImmoter() {return ((AbstractMotingContextualiser)_contextualiser).getImmoter();} // HACk - FIXME
+    
 }

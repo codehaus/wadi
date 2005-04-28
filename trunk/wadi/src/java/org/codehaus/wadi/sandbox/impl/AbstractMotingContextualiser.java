@@ -26,8 +26,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Contextualiser;
+import org.codehaus.wadi.sandbox.ContextualiserConfig;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;
+import org.codehaus.wadi.sandbox.EvicterConfig;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Locker;
 import org.codehaus.wadi.sandbox.Motable;
@@ -40,22 +42,20 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractMotingContextualiser extends AbstractChainedContextualiser {
+public abstract class AbstractMotingContextualiser extends AbstractChainedContextualiser implements EvicterConfig {
 	protected final Log _log=LogFactory.getLog(getClass());
 
     protected final Locker _locker;
 	protected final Evicter _evicter;
 
-	public AbstractMotingContextualiser(Contextualiser next, Locker locker, Evicter evicter) {
+    protected ContextualiserConfig _config;
+
+    public AbstractMotingContextualiser(Contextualiser next, Locker locker, Evicter evicter) {
 		super(next);
         _locker=locker;
         _evicter=evicter;
 	}
 
-    public Sync getEvictionLock(String id, Motable motable) {
-        return _locker.getLock(id, motable);
-    }
-    
 	/**
 	 * @return - an Emoter that facilitates removal of Motables from this Contextualiser's own store
 	 */
@@ -89,7 +89,8 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
 	}
 
 	public Immoter getDemoter(String id, Motable motable) {
-		if (getEvicter().evict(id, motable))
+        long time=System.currentTimeMillis();
+		if (getEvicter().test(motable, motable.getTimeToLive(time), time))
 			return _next.getDemoter(id, motable);
 		else
 			return getImmoter();
@@ -101,8 +102,6 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
         else
             return getImmoter();
     }
-
-	public abstract void evict();
 
 	public Evicter getEvicter(){return _evicter;}
 	
@@ -126,6 +125,12 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
         }
     }
     
+    public void init(ContextualiserConfig config) {
+        super.init(config);
+        _config=config;
+        _evicter.init(this);
+    }
+    
     public void start() throws Exception {
         super.start();
         _evicter.start();
@@ -135,4 +140,28 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
         super.stop();
         _evicter.stop();
     }
+    
+    public void destroy() {
+        _evicter.destroy();
+        _config=null;
+        super.destroy();
+    }
+    
+    // EvicterConfig
+    // BestEffortEvicters
+
+    public Sync getEvictionLock(String id, Motable motable) {
+        return _locker.getLock(id, motable);
+    }
+
+    public void demote(Motable emotable) {
+        String id=emotable.getId();
+        Immoter immoter=_next.getDemoter(id, emotable);
+        Emoter emoter=getEvictionEmoter();
+        Utils.mote(emoter, immoter, emotable, id);
+    }
+
+    // StrictEvicters
+    public int getMaxInactiveInterval() {return _config.getMaxInactiveInterval();}
+    
 }
