@@ -24,5 +24,6 @@ public interface ContextualiserConfig {
     void expire(Motable motable);
     Immoter getEvictionImmoter();
     Timer getTimer();
+    boolean getAccessOnLoad();
     
 }

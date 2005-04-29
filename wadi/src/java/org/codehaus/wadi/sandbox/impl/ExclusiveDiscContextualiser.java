@@ -122,9 +122,11 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
 		public String getInfo(){return "exclusive disc";}
 	}
     
-    public void start() throws Exception {
+    protected void load() {
         // if our last incarnation suffered a catastrophic failure there may be some sessions
         // in our directory - FIXME - if replicating, we may not want to reload these...
+        boolean accessOnLoad=_config.getAccessOnLoad();
+        long time=System.currentTimeMillis();
         String[] list=_dir.list();
         int l=list.length;
         int suffixLength=".".length()+_streamer.getSuffix().length();
@@ -133,8 +135,20 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
             String id=name.substring(0, name.length()-suffixLength);
             ExclusiveDiscMotable motable=new ExclusiveDiscMotable();
             motable.setFile(new File(name));
+            if (accessOnLoad)
+                motable.setLastAccessedTime(time);
+            else {
+                if (motable.getTimedOut()) {
+                    _log.info("LOADED DEAD SESSION: "+motable.getId());
+                    // TODO - something cleverer...
+                }
+            }
             _map.put(id, motable);
         }
+    }
+    
+    public void start() throws Exception {
+        load();
         super.start(); // continue down chain...
     }
     
