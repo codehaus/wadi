@@ -62,8 +62,9 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     protected final Contextualiser _contextualiser;
     protected final Map _map;
     protected final Timer _timer;
+    protected final boolean _accessOnLoad;
 
-    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map map) {
+    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map map, boolean accessOnLoad) {
         _sessionPool=sessionPool;
         _sessionPool.init(this);
         _attributesPool=attributesPool;
@@ -74,6 +75,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         _contextualiser.init(this);
         _map=map;
         _timer=new Timer();
+        _accessOnLoad=accessOnLoad;
     }
     
     protected boolean _started;
@@ -214,4 +216,5 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     
     public Timer getTimer() {return _timer;}
     
+    public boolean getAccessOnLoad() {return _accessOnLoad;}
 }

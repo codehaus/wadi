@@ -377,6 +377,7 @@ public class TestContextualiser extends TestCase {
         public void expire(Motable motable) {_map.remove(motable.getId());}
         public Immoter getEvictionImmoter() {return ((AbstractMotingContextualiser)_top).getImmoter();} // HACk - FIXME
         public Timer getTimer() {return _timer;}
+        public boolean getAccessOnLoad() {return true;}
         
     }
     

@@ -65,7 +65,8 @@ public class SharedJDBCMotable extends AbstractMotable {
 		store(_connection, _table, this);
 	}
 
-    protected static int list(Connection connection, String table, Emoter emoter, Immoter immoter) throws Exception {
+    protected static int load(Connection connection, String table, Emoter emoter, Immoter immoter, boolean accessOnLoad) throws Exception {
+        long time=System.currentTimeMillis();
         Statement s=null;
         int count=0;
         try {
@@ -77,9 +78,17 @@ public class SharedJDBCMotable extends AbstractMotable {
                 String id=(String)rs.getObject(i++);
                 motable.setId(id);
                 motable.setCreationTime(rs.getLong(i++));
-                motable.setLastAccessedTime(rs.getLong(i++));
+                long lat=rs.getLong(i++);
+                motable.setLastAccessedTime(accessOnLoad?time:lat);
                 motable.setMaxInactiveInterval(rs.getInt(i++));
                 motable.setBytes((byte[])rs.getObject(i++));
+                
+                if (motable.getTimedOut()) {
+                    _log.info("LOADED DEAD SESSION: "+motable.getId());
+                    // we should expire it immediately, rather than promoting it...
+                    // perhaps we could be even cleverer ?
+                }
+                
                 Utils.mote(emoter, immoter, motable, id);
                 count++;
             }

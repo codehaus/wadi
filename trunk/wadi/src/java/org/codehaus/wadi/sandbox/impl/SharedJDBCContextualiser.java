@@ -69,10 +69,6 @@ public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
 		return motable;
 	}
 	
-	public void evict() {
-		// TODO - NYI
-	}
-
 	/**
 	 * An Emoter that deals in terms of SharedJDBCMotables
 	 *
@@ -191,7 +187,7 @@ public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
         _log.info("LOADING FROM DB");
         // this should only happen when we are the first node in the cluster...
         try {
-            return SharedJDBCMotable.list(_dataSource.getConnection(), _table, emoter, immoter);
+            return SharedJDBCMotable.load(_dataSource.getConnection(), _table, emoter, immoter, _config.getAccessOnLoad());
         } catch (Exception e) {
             _log.error("problem loading data from db", e);
             return 0;
