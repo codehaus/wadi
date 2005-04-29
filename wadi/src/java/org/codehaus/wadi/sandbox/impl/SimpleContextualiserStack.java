@@ -107,7 +107,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         super();
         _streamer=new SimpleStreamingStrategy();
         //_collapser=new DebugCollapser();
-        _collapser=new HashingCollapser(200, 6000);
+        _collapser=new HashingCollapser(1000, 6000);
 
         _dummy=new DummyContextualiser();
         _databaseDataSource=dataSource;
