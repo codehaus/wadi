@@ -110,11 +110,10 @@ public class SimpleContextualiserStack implements Contextualiser {
         _collapser=new HashingCollapser(200, 6000);
 
         _dummy=new DummyContextualiser();
-        _databaseEvicter=new DummyEvicter(); // TODO - I don't think SharedContextualisers need an Evicter ?
         _databaseDataSource=dataSource;
         _databaseTable="WADI";
         SharedJDBCMotable.init(_databaseDataSource, _databaseTable);
-        _database=new SharedJDBCContextualiser(_dummy, _collapser, _databaseEvicter, _databaseDataSource, _databaseTable);
+        _database=new SharedJDBCContextualiser(_dummy, _collapser, _databaseDataSource, _databaseTable);
         _connectionFactory=Utils.getConnectionFactory();
         _clusterFactory=new CustomClusterFactory(_connectionFactory);
         _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
@@ -202,5 +201,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     
     public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){_memory.setLastAccessedTime(evictable, oldTime, newTime);}
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_memory.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
+    
+    public Contextualiser getTop() {return _memory;}
 
 }

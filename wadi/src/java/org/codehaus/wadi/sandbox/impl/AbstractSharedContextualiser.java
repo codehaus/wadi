@@ -16,25 +16,24 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
-import java.util.Map;
-
 import org.codehaus.wadi.sandbox.Contextualiser;
-import org.codehaus.wadi.sandbox.Evicter;
+import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Locker;
+import org.codehaus.wadi.sandbox.Motable;
 
-public abstract class AbstractSharedContextualiser extends
-        AbstractMotingContextualiser {
 
-    public AbstractSharedContextualiser(Contextualiser next, Locker locker, Evicter evicter) {
-        super(next, locker, evicter);
-        // TODO Auto-generated constructor stub
+public abstract class AbstractSharedContextualiser extends AbstractMotingContextualiser {
+
+    public AbstractSharedContextualiser(Contextualiser next, Locker locker) {
+        super(next, locker);
     }
 
-    public boolean isExclusive() {return false;}
-    
-    // EvicterConfig
-    // BestEffortEvicters
+    public Immoter getDemoter(String id, Motable motable) {
+        return getImmoter();
+    }
 
-    public Map getMap(){throw new UnsupportedOperationException();}
+    public boolean isExclusive() {
+        return false;
+    }
     
 }

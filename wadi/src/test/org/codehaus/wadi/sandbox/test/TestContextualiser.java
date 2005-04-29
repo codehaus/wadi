@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -72,7 +73,6 @@ import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
 import org.codehaus.wadi.sandbox.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.impl.ProxyRelocationStrategy;
-import org.codehaus.wadi.sandbox.impl.RankedRWLock;
 import org.codehaus.wadi.sandbox.impl.SerialContextualiser;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCContextualiser;
 import org.codehaus.wadi.sandbox.impl.SharedJDBCMotable;
@@ -162,7 +162,7 @@ public class TestContextualiser extends TestCase {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 
-		SharedJDBCContextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), collapser, new DummyEvicter(), _ds, _table);
+		SharedJDBCContextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), collapser, _ds, _table);
 		{
 			// place a "baz" item into database
 			String id="baz";
@@ -370,10 +370,13 @@ public class TestContextualiser extends TestCase {
 
         protected final Contextualiser _top;
         protected final Map _map;
+        protected final Timer _timer=new Timer();
+        
         public MyContextualiserConfig(Contextualiser top, Map map) {_top=top;_map=map;}
         public int getMaxInactiveInterval() {return 30*60*60;}
         public void expire(Motable motable) {_map.remove(motable.getId());}
         public Immoter getEvictionImmoter() {return ((AbstractMotingContextualiser)_top).getImmoter();} // HACk - FIXME
+        public Timer getTimer() {return _timer;}
         
     }
     
@@ -406,7 +409,7 @@ public class TestContextualiser extends TestCase {
 	public void testEviction3() throws Exception {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
-		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), null, new DummyEvicter(), _ds, _table);
+		Contextualiser db=new SharedJDBCContextualiser(new DummyContextualiser(), null, _ds, _table);
 		Map d=new HashMap();
         Evicter discEvicter=new TimeToLiveEvicter(30000, true, 0);
 		Contextualiser disc=new ExclusiveDiscContextualiser(db, collapser, discEvicter, d, ss, new File("/tmp"));
@@ -530,7 +533,9 @@ public class TestContextualiser extends TestCase {
     
     public void testStack() throws Exception {
         _log.info("putting complete stack together...");
-        SimpleContextualiserStack stack=new SimpleContextualiserStack(new HashMap(), new MyContextPool(), _ds);
+        Map map=new HashMap();
+        SimpleContextualiserStack stack=new SimpleContextualiserStack(map, new MyContextPool(), _ds);
+        stack.init(new MyContextualiserConfig(stack.getTop(), map)); // clumsy
         stack.start();
         Thread.sleep(2000);
         stack.stop();

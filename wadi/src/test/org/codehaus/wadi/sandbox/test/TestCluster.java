@@ -82,7 +82,7 @@ public class TestCluster extends TestCase {
         protected final SharedJDBCContextualiser _bottom;
         
         public MyNode(ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
-            _bottom=new SharedJDBCContextualiser(new DummyContextualiser(), null, new DummyEvicter(), ds, table);
+            _bottom=new SharedJDBCContextualiser(new DummyContextualiser(), null, ds, table);
             _cluster=(Cluster)factory.createCluster(clusterName);
             _cluster.addClusterListener(new MyClusterListener());
             _dispatcher=new MessageDispatcher(_cluster);

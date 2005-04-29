@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Timer;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -28,8 +29,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.wadi.sandbox.Contextualiser;
+import org.codehaus.wadi.sandbox.ContextualiserConfig;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;
+import org.codehaus.wadi.sandbox.EvicterConfig;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Locker;
 import org.codehaus.wadi.sandbox.Motable;
@@ -44,12 +47,14 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractExclusiveContextualiser extends AbstractMotingContextualiser {
+public abstract class AbstractExclusiveContextualiser extends AbstractMotingContextualiser implements EvicterConfig {
 	protected final Map _map;
+    protected final Evicter _evicter;
 
 	public AbstractExclusiveContextualiser(Contextualiser next, Locker locker, Evicter evicter, Map map) {
-		super(next, locker, evicter);
+		super(next, locker);
 		_map=map;
+        _evicter=evicter;
 	}
 
 	protected String _stringPrefix="<"+getClass().getName()+":";
@@ -75,7 +80,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 
 	public Emoter getEvictionEmoter(){return getEmoter();}
 
-	public void stop() throws Exception {
+    protected void unload() {
         // get an immoter from the first shared Contextualiser
         Immoter immoter=_next.getSharedDemoter();
         Emoter emoter=getEmoter();
@@ -95,16 +100,66 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         }
         RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
         _log.info("unloading sessions - finished: "+s);
+    }
+    
+    public void init(ContextualiserConfig config) {
+        super.init(config);
+        _evicter.init(this);
+    }
+    
+    public void start() throws Exception {
+        super.start();
+        _evicter.start();
+    }
 
-        // tell the next Contextualiser to stop()
+    public void stop() throws Exception {
+        unload();
+        _evicter.stop();
         super.stop();
+    }
+    
+    public void destroy() {
+        _evicter.destroy();
+        super.destroy();
     }
     
     public int loadMotables(Emoter emoter, Immoter immoter){return 0;} // MappedContextualisers are all Exclusive
     
+    public Evicter getEvicter(){return _evicter;}
+    
+    public Immoter getDemoter(String id, Motable motable) {
+        long time=System.currentTimeMillis();
+        if (getEvicter().test(motable, motable.getTimeToLive(time), time))
+            return _next.getDemoter(id, motable);
+        else
+            return getImmoter();
+    }
+    
     // EvicterConfig
+    
     // BestEffortEvicters
 
     public Map getMap(){return _map;}
+
+    // EvicterConfig
+    
+    public Timer getTimer() {return _config.getTimer();}
+
+    // BestEffortEvicters
+    
+    public Sync getEvictionLock(String id, Motable motable) {
+        return _locker.getLock(id, motable);
+    }
+
+    public void demote(Motable emotable) {
+        String id=emotable.getId();
+        Immoter immoter=_next.getDemoter(id, emotable);
+        Emoter emoter=getEvictionEmoter();
+        Utils.mote(emoter, immoter, emotable, id);
+    }
+
+    // StrictEvicters
+    public int getMaxInactiveInterval() {return _config.getMaxInactiveInterval();}
+
 
 }

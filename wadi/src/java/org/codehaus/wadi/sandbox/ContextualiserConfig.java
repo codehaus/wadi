@@ -16,10 +16,13 @@
  */
 package org.codehaus.wadi.sandbox;
 
+import java.util.Timer;
+
 public interface ContextualiserConfig {
 
     int getMaxInactiveInterval();
     void expire(Motable motable);
     Immoter getEvictionImmoter();
+    Timer getTimer();
     
 }

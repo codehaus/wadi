@@ -35,8 +35,6 @@ public abstract class AbstractDelegatingContextualiser extends AbstractChainedCo
         super(next);
     }
     
-    public Evicter getEvicter() {return _next.getEvicter();}
-
     public boolean isExclusive() {return _next.isExclusive();}
 
     public Immoter getDemoter(String id, Motable motable) {return _next.getDemoter(id, motable);}

@@ -17,11 +17,14 @@
 package org.codehaus.wadi.sandbox;
 
 import java.util.Map;
+import java.util.Timer;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public interface EvicterConfig {
 
+    Timer getTimer();
+    
     // BestEffortEvicters
     Map getMap();
     Sync getEvictionLock(String id, Motable motable);
