@@ -33,6 +33,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Cluster;
 
+import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
+import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
@@ -54,6 +56,7 @@ public class MessageDispatcher implements MessageListener {
 	protected final Cluster _cluster;
 	protected final MessageConsumer _clusterConsumer;
 	protected final MessageConsumer _nodeConsumer;
+    protected final PooledExecutor _executor;
 
 	public MessageDispatcher(Cluster cluster) throws JMSException {
 		_cluster=cluster;
@@ -64,6 +67,8 @@ public class MessageDispatcher implements MessageListener {
 	    excludeSelf=false;
 	    _nodeConsumer=_cluster.createConsumer(_cluster.getLocalNode().getDestination(), null, excludeSelf);
 	    _nodeConsumer.setMessageListener(this);
+        _executor=new PooledExecutor(new BoundedBuffer(10), 100); // parameterise
+        _executor.setMinimumPoolSize(4);
 	    }
 
 	interface Dispatcher {
@@ -169,10 +174,16 @@ public class MessageDispatcher implements MessageListener {
 		// any allocs should be cached as ThreadLocals and reused
 		// we need a way of indicating which messages should be threaded and which not...
 		// how about a producer/consumer arrangement...
-		new DispatchThread(message).start();
+        do {
+            try {
+                _executor.execute(new DispatchThread(message));
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        } while (Thread.interrupted());
 	}
 
-	class DispatchThread extends Thread {
+	class DispatchThread implements Runnable {
 		protected final Message _message;
 
 		public DispatchThread(Message message) {
