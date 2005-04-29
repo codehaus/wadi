@@ -176,17 +176,17 @@ public class MessageDispatcher implements MessageListener {
 		// how about a producer/consumer arrangement...
         do {
             try {
-                _executor.execute(new DispatchThread(message));
+                _executor.execute(new DispatchRunner(message));
             } catch (InterruptedException e) {
                 // ignore
             }
         } while (Thread.interrupted());
 	}
 
-	class DispatchThread implements Runnable {
+	class DispatchRunner implements Runnable {
 		protected final Message _message;
 
-		public DispatchThread(Message message) {
+		public DispatchRunner(Message message) {
 			_message=message;
 		}
 
