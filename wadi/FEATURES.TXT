@@ -12,6 +12,7 @@ Implemented:
 - Switchable Session serialisation strategies (Whole-Session, Per-Attribute)
 - Transparent peer-to-peers session redistribution upon node shutdown
 - Transparent on-demand session migration between nodes
+- Migration of passivated session on node A to node B, without deserialisation ocurring on node A
 - Transparent on-demand request proxying[/redirection] between nodes
 - Pluggable session/request relocation strategies (migrate, proxy (HttpUrlConnection/Commons-HttpClient)[, redirect])
 - Fully IOC
@@ -21,6 +22,7 @@ Implemented:
 
 NYI :
 
+- true p2p network - no single point of failure or contention
 - request relocation via redirection (routing lbs only)
 - integration of various lbs
 - replication
