@@ -20,7 +20,7 @@ public aspect Precedence {
     declare precedence :
         
         SessionLifecycleNotifier,
-        Replicater,
+        ReplicationNotifier,
         AttributeNameValidater,
         AttributeLifecycleNotifier,
         AttributeBindingNotifier;
