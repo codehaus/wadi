@@ -87,6 +87,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 	protected final Emoter _emoter;
     protected final int _ackTimeout=500; // TODO - parameterise
     protected final Map _map;
+    protected final Evicter _evicter;
 
 	/**
 	 * @param next
@@ -95,12 +96,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 	 * @param location TODO
 	 */
 	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, Cluster cluster, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) {
-		super(next, new CollapsingLocker(collapser), evicter);
+		super(next, new CollapsingLocker(collapser));
 		_cluster=cluster;
 		_dispatcher=dispatcher;
 	    _relocater=relocater;
 	    _location=location;
         _map=map;
+        _evicter=evicter;
 
 	    _immoter=new EmigrationImmoter();
 	    _emoter=null; // TODO - I think this should be something like the ImmigrationEmoter

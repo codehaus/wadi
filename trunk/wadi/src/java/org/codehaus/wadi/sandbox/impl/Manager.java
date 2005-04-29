@@ -21,6 +21,7 @@ import java.util.EventListener;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSessionAttributeListener;
@@ -60,6 +61,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     protected final IdGenerator _sessionIdFactory;
     protected final Contextualiser _contextualiser;
     protected final Map _map;
+    protected final Timer _timer;
 
     public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map map) {
         _sessionPool=sessionPool;
@@ -71,6 +73,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         _contextualiser=contextualiser;
         _contextualiser.init(this);
         _map=map;
+        _timer=new Timer();
     }
     
     protected boolean _started;
@@ -95,7 +98,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         session.setId(id);
         session.setMaxInactiveInterval(_maxInactiveInterval);
         _map.put(id, session);
-        _contextualiser.getEvicter().insert(session);
+        // _contextualiser.getEvicter().insert(session);
         _log.info("created: "+id);
         return session;
     }
@@ -103,7 +106,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     public void destroySession(Session session) {
         for (Iterator i=new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) // ALLOC ?
             session.removeAttribute((String)i.next()); // TODO - very inefficient
-        _contextualiser.getEvicter().remove(session);
+        // _contextualiser.getEvicter().remove(session);
         String id=session.getId();
         _map.remove(id);
         // _sessionIdFactory.put(id); // we might reuse session ids ? - sounds like a BAD idea
@@ -207,6 +210,8 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         destroySession((Session)motable);
     }
     
-    public Immoter getEvictionImmoter() {return ((AbstractMotingContextualiser)_contextualiser).getImmoter();} // HACk - FIXME
+    public Immoter getEvictionImmoter() {return ((AbstractMotingContextualiser)_contextualiser).getImmoter();} // HACK - FIXME
+    
+    public Timer getTimer() {return _timer;}
     
 }

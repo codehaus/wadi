@@ -17,6 +17,7 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
+import java.util.Timer;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -42,18 +43,16 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractMotingContextualiser extends AbstractChainedContextualiser implements EvicterConfig {
+public abstract class AbstractMotingContextualiser extends AbstractChainedContextualiser {
 	protected final Log _log=LogFactory.getLog(getClass());
 
     protected final Locker _locker;
-	protected final Evicter _evicter;
 
     protected ContextualiserConfig _config;
 
-    public AbstractMotingContextualiser(Contextualiser next, Locker locker, Evicter evicter) {
+    public AbstractMotingContextualiser(Contextualiser next, Locker locker) {
 		super(next);
         _locker=locker;
-        _evicter=evicter;
 	}
 
 	/**
@@ -88,14 +87,6 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
 		return immoter; // just pass contexts straight through...
 	}
 
-	public Immoter getDemoter(String id, Motable motable) {
-        long time=System.currentTimeMillis();
-		if (getEvicter().test(motable, motable.getTimeToLive(time), time))
-			return _next.getDemoter(id, motable);
-		else
-			return getImmoter();
-	}
-    
     public Immoter getSharedDemoter() {
         if (isExclusive())
             return _next.getSharedDemoter();
@@ -103,8 +94,6 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
             return getImmoter();
     }
 
-	public Evicter getEvicter(){return _evicter;}
-	
 	public abstract Motable get(String id);
 
     public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock) throws IOException, ServletException {
@@ -128,40 +117,11 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
     public void init(ContextualiserConfig config) {
         super.init(config);
         _config=config;
-        _evicter.init(this);
-    }
-    
-    public void start() throws Exception {
-        super.start();
-        _evicter.start();
-    }
-
-    public void stop() throws Exception {
-        super.stop();
-        _evicter.stop();
     }
     
     public void destroy() {
-        _evicter.destroy();
         _config=null;
         super.destroy();
     }
-    
-    // EvicterConfig
-    // BestEffortEvicters
-
-    public Sync getEvictionLock(String id, Motable motable) {
-        return _locker.getLock(id, motable);
-    }
-
-    public void demote(Motable emotable) {
-        String id=emotable.getId();
-        Immoter immoter=_next.getDemoter(id, emotable);
-        Emoter emoter=getEvictionEmoter();
-        Utils.mote(emoter, immoter, emotable, id);
-    }
-
-    // StrictEvicters
-    public int getMaxInactiveInterval() {return _config.getMaxInactiveInterval();}
     
 }

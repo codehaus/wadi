@@ -28,7 +28,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
-import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
 
@@ -47,8 +46,8 @@ public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public SharedJDBCContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, DataSource dataSource, String table) {
-		super(next, new CollapsingLocker(collapser), evicter);
+	public SharedJDBCContextualiser(Contextualiser next, Collapser collapser, DataSource dataSource, String table) {
+		super(next, new CollapsingLocker(collapser));
 		_dataSource=dataSource;
 		_table=table;
 
