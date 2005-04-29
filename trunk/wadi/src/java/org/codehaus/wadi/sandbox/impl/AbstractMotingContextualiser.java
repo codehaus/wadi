@@ -17,7 +17,6 @@
 package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
-import java.util.Timer;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -29,8 +28,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.ContextualiserConfig;
 import org.codehaus.wadi.sandbox.Emoter;
-import org.codehaus.wadi.sandbox.Evicter;
-import org.codehaus.wadi.sandbox.EvicterConfig;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Locker;
 import org.codehaus.wadi.sandbox.Motable;
