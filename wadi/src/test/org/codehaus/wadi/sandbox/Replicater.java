@@ -16,14 +16,11 @@
  */
 package org.codehaus.wadi.sandbox;
 
-//import org.codehaus.wadi.HttpSessionSetters;
 
-public aspect Replicater {
+public interface Replicater {
 
-  //    pointcut replicate(AtomicReplicatedSession session) : execution(* HttpSessionSetters.set*(..)) && target(session);
-
-  //    after(AtomicReplicatedSession session) : replicate(session) {
-  //        session.setDirty(true);
-  //    }
+    Object getAttribute(String id, Attributes attributes, String name);
+    Object setAttribute(String id, Attributes attributes, String name, Object newValue);
+    Object removeAttribute(String id, Attributes attributes, String name);
 
 }

@@ -18,7 +18,7 @@ package org.codehaus.wadi.sandbox;
 
 
 import org.codehaus.wadi.sandbox.Attributes;
-import org.codehaus.wadi.sandbox.Replicaterr;
+import org.codehaus.wadi.sandbox.Replicater;
 
 /**
  * TODO - JavaDoc this type
@@ -27,7 +27,7 @@ import org.codehaus.wadi.sandbox.Replicaterr;
  * @version $Revision$
  */
 
-public class ImmediateReplicater implements Replicaterr {
+public class ImmediateReplicater implements Replicater {
 
     public Object getAttribute(String id, Attributes attributes, String name) {
         return attributes.get(name);

@@ -16,16 +16,16 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.sandbox.Replicaterr;
+import org.codehaus.wadi.sandbox.Replicater;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionConfig;
 import org.codehaus.wadi.sandbox.impl.DistributableSessionFactory;
 
 public class ReplicableSessionFactory extends DistributableSessionFactory {
 
-    protected final Replicaterr _replicater; // duplicate of super's _distributer field - clumsy
+    protected final Replicater _replicater; // duplicate of super's _distributer field - clumsy
     
-    public ReplicableSessionFactory(Replicaterr replicater) {
+    public ReplicableSessionFactory(Replicater replicater) {
         super();
         _replicater=replicater;
     }
