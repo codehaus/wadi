@@ -212,7 +212,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         destroySession((Session)motable);
     }
     
-    public Immoter getEvictionImmoter() {return ((AbstractMotingContextualiser)_contextualiser).getImmoter();} // HACK - FIXME
+    public Immoter getEvictionImmoter() {return ((AbstractExclusiveContextualiser)_contextualiser).getImmoter();} // HACK - FIXME
     
     public Timer getTimer() {return _timer;}
     
