@@ -57,6 +57,7 @@ import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
+import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.impl.AbsoluteEvicter;
 import org.codehaus.wadi.sandbox.impl.AbstractContextualiser;
 import org.codehaus.wadi.sandbox.impl.AbstractMotingContextualiser;
@@ -379,6 +380,8 @@ public class TestContextualiser extends TestCase {
         public Timer getTimer() {return _timer;}
         public boolean getAccessOnLoad() {return true;}
         
+        public SessionPool getSessionPool(){return null;}
+        
     }
     
 	public void testEviction2() throws Exception {
@@ -518,7 +521,7 @@ public class TestContextualiser extends TestCase {
 		Map d=new HashMap();
 		ExclusiveDiscContextualiser disc=new ExclusiveDiscContextualiser(new DummyContextualiser(), collapser, new NeverEvicter(30000, true), d, streamer, new File("/tmp"));
 		Map m=new HashMap();
-        Evicter memoryEvicter=new AbsoluteEvicter(30000, true, 30*60*1000);
+        Evicter memoryEvicter=new AbsoluteEvicter(30000, true, 30*60); // 30 mins
 		MemoryContextualiser memory=new MemoryContextualiser(disc, memoryEvicter, m, streamer, new MyContextPool(), _requestPool);
         memory.init(new MyContextualiserConfig(memory, m));
 		Context foo=new MyContext("foo", "foo");

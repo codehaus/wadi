@@ -18,7 +18,7 @@ package org.codehaus.wadi.sandbox.impl.jetty;
 
 import org.codehaus.wadi.sandbox.Session;
 
-public class SessionWrapperFactory implements org.codehaus.wadi.sandbox.SessionWrapperFactory {
+public class JettySessionWrapperFactory implements org.codehaus.wadi.sandbox.SessionWrapperFactory {
 
     public javax.servlet.http.HttpSession create(Session session) {return new HttpSession(session);}
 

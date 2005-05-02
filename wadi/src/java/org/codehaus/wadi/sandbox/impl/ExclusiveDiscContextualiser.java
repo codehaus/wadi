@@ -155,13 +155,21 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
     // this should move up.....
     public void expire(Motable motable) {
         // decide whether session needs promotion
-        boolean needsPromotion=true; // FIXME
+        boolean needsLoading=true; // FIXME
         // if so promote to top and expire there
-        if (needsPromotion) {
-            Emoter emoter=getEvictionEmoter();
-            Immoter immoter=_config.getEvictionImmoter();
-            Utils.mote(emoter, immoter, motable, motable.getId());
-            _config.expire(motable);
+        String id=motable.getId();
+        _log.info("expiring from disc: "+id);
+        if (needsLoading) {
+            _map.remove(id);
+            Motable loaded=_config.getSessionPool().take();
+            try {
+                loaded.copy(motable);
+                motable=null;
+                _config.expire(loaded);
+            } catch (Exception e) {
+                _log.error("unexpected problem expiring from disc", e);
+            }
+            loaded=null;
         } else {
             // else, just drop it off the disc here...
             throw new UnsupportedOperationException(); // FIXME

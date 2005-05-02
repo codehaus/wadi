@@ -39,7 +39,7 @@ public class JettyManager extends org.codehaus.wadi.sandbox.impl.DistributableMa
 
     protected final Log _log = LogFactory.getLog(getClass());
     
-    public JettyManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map sessionMap, StreamingStrategy streamer) {
+    public JettyManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, JettySessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map sessionMap, StreamingStrategy streamer) {
         super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, streamer);
     }
 

@@ -28,9 +28,9 @@ import org.codehaus.wadi.sandbox.Evictable;
 public class AbsoluteEvicter extends AbstractBestEffortEvicter {
     protected final long _inactiveInterval;
     
-    public AbsoluteEvicter(int sweepInterval, boolean strictOrdering, long inactivityInterval) {
+    public AbsoluteEvicter(int sweepInterval, boolean strictOrdering, int inactivityInterval) {
         super(sweepInterval, strictOrdering);
-        _inactiveInterval=inactivityInterval;
+        _inactiveInterval=inactivityInterval*1000;
     }
     
     public boolean test(Evictable evictable, long time, long ttl) {

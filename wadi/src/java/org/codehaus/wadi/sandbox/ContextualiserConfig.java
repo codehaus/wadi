@@ -25,5 +25,6 @@ public interface ContextualiserConfig {
     Immoter getEvictionImmoter();
     Timer getTimer();
     boolean getAccessOnLoad();
+    SessionPool getSessionPool();
     
 }
