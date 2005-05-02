@@ -45,7 +45,7 @@
 
   <bean
     id="SessionWrapperFactory"
-    class="org.codehaus.wadi.sandbox.impl.jetty.SessionWrapperFactory"
+    class="org.codehaus.wadi.sandbox.impl.jetty.JettySessionWrapperFactory"
     >
   </bean>
 
@@ -93,7 +93,7 @@
   </bean>
 
 	<!-- and finally - the SessionManager itself -->
-	
+
   <bean
     id="SessionManager"
     class="org.codehaus.wadi.sandbox.impl.jetty.JettyManager"
@@ -107,5 +107,5 @@
     <constructor-arg><ref bean="SessionMap"/></constructor-arg>
     <constructor-arg><ref bean="Streamer"/></constructor-arg>
   </bean>
-  
+
 </beans>
