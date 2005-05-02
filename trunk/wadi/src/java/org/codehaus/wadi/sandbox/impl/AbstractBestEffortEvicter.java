@@ -83,8 +83,9 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
     }
 
     public void start() throws Exception {
-        _log.info("starting (sweep interval: "+_sweepInterval+" millis)");
-        _config.getTimer().schedule(_task, _sweepInterval, _sweepInterval);
+        _log.info("starting (sweep interval: "+_sweepInterval+" sec[s])");
+        long interval=_sweepInterval*1000;
+        _config.getTimer().schedule(_task, interval, interval);
     }
     
     public void stop() throws Exception {

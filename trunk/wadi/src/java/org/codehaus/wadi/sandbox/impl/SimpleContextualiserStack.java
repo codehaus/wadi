@@ -144,7 +144,7 @@ public class SimpleContextualiserStack implements Contextualiser {
 
 
         _memoryPool=pool;
-        _memoryEvicter=new AbsoluteEvicter(10*1000, true, 10*1000); // if a session is inactive for 10 secs, it moves to disc
+        _memoryEvicter=new AbsoluteEvicter(10*1000, true, 10); // if a session is inactive for 10 secs, it moves to disc
         _memoryMap=sessionMap;
         _serial=new SerialContextualiser(_disc, _collapser, _memoryMap);
         _requestPool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - use a ThreadLocal based Pool

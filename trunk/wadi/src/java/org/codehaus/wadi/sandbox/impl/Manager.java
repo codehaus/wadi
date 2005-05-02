@@ -73,7 +73,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         _sessionIdFactory=sessionIdFactory;
         _contextualiser=contextualiser;
         _contextualiser.init(this);
-        _map=map;
+        _map=map; // TODO - can we get this from Contextualiser
         _timer=new Timer();
         _accessOnLoad=accessOnLoad;
     }
@@ -212,9 +212,14 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         destroySession((Session)motable);
     }
     
-    public Immoter getEvictionImmoter() {return ((AbstractExclusiveContextualiser)_contextualiser).getImmoter();} // HACK - FIXME
+    public Immoter getEvictionImmoter() {
+        _log.info("CLASS: "+_contextualiser.getClass().getName());
+        return ((AbstractExclusiveContextualiser)_contextualiser).getImmoter();
+        } // HACK - FIXME
     
     public Timer getTimer() {return _timer;}
     
     public boolean getAccessOnLoad() {return _accessOnLoad;}
+    
+    public SessionPool getSessionPool() {return _sessionPool;}
 }
