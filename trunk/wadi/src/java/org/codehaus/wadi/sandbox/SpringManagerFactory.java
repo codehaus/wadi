@@ -29,12 +29,12 @@ import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.InputStreamResource;
 
 public class SpringManagerFactory {
-    
+
     protected final static Log _log = LogFactory.getLog(SpringManagerFactory.class);
-    
+
     protected final String _descriptor;
     protected final String _bean;
-    
+
     public SpringManagerFactory(String descriptor, String bean) {
         _descriptor=descriptor;
         _bean=bean;
@@ -43,11 +43,11 @@ public class SpringManagerFactory {
     public Manager create() throws FileNotFoundException {
         return create(_descriptor, _bean);
     }
-    
+
     public static Manager create(String descriptor, String bean) throws FileNotFoundException {
         //ClassLoader cl=SpringManagerFactory.class.getClassLoader();
         ClassLoader cl=Thread.currentThread().getContextClassLoader();
-        _log.info("Manager ClassLoader: "+cl);
+        _log.trace("Manager ClassLoader: "+cl);
 
         //InputStream is=cl.getResourceAsStream(descriptor);
         InputStream is=new FileInputStream(descriptor);
@@ -63,8 +63,8 @@ public class SpringManagerFactory {
             if (manager==null)
                 _log.error("could not find WADI Manager bean: "+bean);
             else
-                _log.info("loaded bean: "+bean+" from WADI descriptor: "+descriptor);
-            
+	      if (_log.isInfoEnabled()) _log.info("loaded bean: "+bean+" from WADI descriptor: "+descriptor);
+
             return manager;
         } else {
             _log.error("could not find WADI descriptor: "+descriptor);

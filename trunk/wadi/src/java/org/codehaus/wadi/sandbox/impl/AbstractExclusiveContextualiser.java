@@ -90,7 +90,6 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         Collection copy=null;
         synchronized (_map) {copy=new ArrayList(_map.entrySet());}
         int s=copy.size();
-        _log.info("unloading sessions - starting: "+s);
 
         for (Iterator i=copy.iterator(); i.hasNext(); ) {
             Map.Entry e=(Map.Entry)i.next();
@@ -99,14 +98,14 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
             Utils.mote(emoter, immoter, emotable, id);
         }
         RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
-        _log.info("unloading sessions - finished: "+s);
+        if (_log.isInfoEnabled()) _log.info("distributed sessions: "+s);
     }
-    
+
     public void init(ContextualiserConfig config) {
         super.init(config);
         _evicter.init(this);
     }
-    
+
     public void start() throws Exception {
         super.start();
         _evicter.start();
@@ -117,16 +116,16 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         _evicter.stop();
         super.stop();
     }
-    
+
     public void destroy() {
         _evicter.destroy();
         super.destroy();
     }
-    
+
     public int loadMotables(Emoter emoter, Immoter immoter){return 0;} // MappedContextualisers are all Exclusive
-    
+
     public Evicter getEvicter(){return _evicter;}
-    
+
     public Immoter getDemoter(String id, Motable motable) {
         long time=System.currentTimeMillis();
         if (getEvicter().test(motable, motable.getTimeToLive(time), time))
@@ -134,19 +133,19 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         else
             return getImmoter();
     }
-    
+
     // EvicterConfig
-    
+
     // BestEffortEvicters
 
     public Map getMap(){return _map;}
 
     // EvicterConfig
-    
+
     public Timer getTimer() {return _config.getTimer();}
 
     // BestEffortEvicters
-    
+
     public Sync getEvictionLock(String id, Motable motable) {
         return _locker.getLock(id, motable);
     }

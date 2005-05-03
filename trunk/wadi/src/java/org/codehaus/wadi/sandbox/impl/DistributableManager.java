@@ -106,7 +106,7 @@ public class DistributableManager extends Manager implements DistributableSessio
         _map.remove(id);
         session.destroy();
         _sessionPool.put(session);
-        _log.info("destroyed: "+id);
+        if (_log.isDebugEnabled()) _log.debug("destroyed: "+id);
     }
 
     // Lazy

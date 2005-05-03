@@ -21,29 +21,33 @@ import org.codehaus.wadi.sandbox.ContextualiserConfig;
 import org.codehaus.wadi.sandbox.Evictable;
 
 public abstract class AbstractChainedContextualiser extends AbstractContextualiser {
-    
-    protected final Contextualiser _next;
-    
-    public AbstractChainedContextualiser(Contextualiser next) {
-        _next=next;
-    }
-    
-    public void init(ContextualiserConfig config) {
-        _next.init(config);
-    }
-    
-    public void start() throws Exception {
-        _next.start();
-    }
-    
-    public void stop() throws Exception {
-        _next.stop();
-    }
-    
-    public void destroy() {
-        _next.destroy();
-    }
-    
-    public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {/* do nothing */}
-    public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newTime) {/* do nothing */}
+
+  protected final Contextualiser _next;
+
+  public AbstractChainedContextualiser(Contextualiser next) {
+    _next=next;
+  }
+
+  public void init(ContextualiserConfig config) {
+    super.init(config);
+    _next.init(config);
+  }
+
+  public void start() throws Exception {
+    super.start();
+    _next.start();
+  }
+
+  public void stop() throws Exception {
+    _next.stop();
+    super.stop();
+  }
+
+  public void destroy() {
+    _next.destroy();
+    super.destroy();
+  }
+
+  public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {/* do nothing */}
+  public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newTime) {/* do nothing */}
 }

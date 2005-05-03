@@ -67,7 +67,7 @@ public class Utils {
 			immoter.commit(id, immotable);
 			emoter.commit(id, emotable);
 			long elapsedTime=System.currentTimeMillis()-startTime;
-			_log.info("motion: "+id+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
+			if (_log.isDebugEnabled())_log.debug("motion: "+id+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
 			return immotable;
 		} else {
 			if (e) emoter.rollback(id, emotable);
@@ -77,10 +77,10 @@ public class Utils {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Ignore any interruptions whilst acquiring a lock.
-	 * 
+	 *
 	 * @param sync - the lock
 	 * @throws TimeoutException - some Syncs (TimeoutSync) may timeout during acquisition
 	 */
@@ -96,10 +96,10 @@ public class Utils {
 	        }
 	    } while (Thread.interrupted());
 	}
-	
+
 	/**
 	 * If a lock is free, acquire it, ignoring any interruptions, else fail.
-	 * 
+	 *
 	 * @param sync - the lock
 	 * @return - whether or not the lock was acquired
 	 */
@@ -114,7 +114,7 @@ public class Utils {
 	    } while (Thread.interrupted());
 	    return acquired;
 	}
-	
+
 	public static Object byteArrayToObject(byte[] bytes, StreamingStrategy streamer) throws IOException, ClassNotFoundException {
 	    ByteArrayInputStream bais=new ByteArrayInputStream(bytes);
 	    ObjectInput oi=streamer.getInputStream(bais);
@@ -122,7 +122,7 @@ public class Utils {
 	    oi.close();
 	    return tmp;
 	}
-	
+
 	public static Object safeByteArrayToObject(byte[] bytes, StreamingStrategy streamer) {
 	    try {
 	        return byteArrayToObject(bytes, streamer);
@@ -131,7 +131,7 @@ public class Utils {
 	        return null;
 	    }
 	}
-	
+
 	public static byte[] objectToByteArray(Object object, StreamingStrategy streamer) throws IOException {
 	    ByteArrayOutputStream baos=new ByteArrayOutputStream();
 	    ObjectOutput oo=streamer.getOutputStream(baos);
@@ -156,7 +156,7 @@ public class Utils {
         oo.close();
         return baos.toByteArray();
     }
-    
+
     public static byte[] safeGetContent(SerializableContent object, StreamingStrategy streamer) {
         try {
             return getContent(object, streamer);
@@ -165,7 +165,7 @@ public class Utils {
             return null;
         }
     }
-    
+
     public static SerializableContent setContent(SerializableContent object, byte[] content, StreamingStrategy streamer) throws IOException, ClassNotFoundException {
         ByteArrayInputStream bais=new ByteArrayInputStream(content);
         ObjectInput oi=streamer.getInputStream(bais);
@@ -173,7 +173,7 @@ public class Utils {
         oi.close();
         return object;
     }
-    
+
     public static SerializableContent safeSetContent(SerializableContent object, byte[] content, StreamingStrategy streamer) {
         try {
             return setContent(object, content, streamer);
@@ -182,7 +182,7 @@ public class Utils {
             return null;
         }
     }
-    
+
     public static ActiveMQConnectionFactory getConnectionFactory() {
         // _connectionFactory=new ActiveMQConnectionFactory("peer://WADI-TEST");
         // _connectionFactory=new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");

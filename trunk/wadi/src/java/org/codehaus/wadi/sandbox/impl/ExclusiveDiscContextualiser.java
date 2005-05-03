@@ -19,8 +19,6 @@ package org.codehaus.wadi.sandbox.impl;
 import java.io.File;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
@@ -39,8 +37,6 @@ import org.codehaus.wadi.sandbox.Motable;
  */
 public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser {
 
-    protected static final Log _log = LogFactory.getLog(ExclusiveDiscContextualiser.class);
-
 	protected final StreamingStrategy _streamer;
 	protected final File _dir;
 	protected final Immoter _immoter;
@@ -54,11 +50,11 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
 	    assert dir.canRead();
 	    assert dir.canWrite();
 	    _dir=dir;
-	    
+
 	    _immoter=new ExclusiveDiscImmoter(_map);
 	    _emoter=new ExclusiveDiscEmoter(_map);
 	}
-	
+
 	public boolean isExclusive(){return true;}
 
 	public Immoter getImmoter(){return _immoter;}
@@ -75,7 +71,7 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
 	    public ExclusiveDiscImmoter(Map map) {
 	        super(map);
 	    }
-	    
+
 		public Motable nextMotable(String id, Motable emotable) {
 			ExclusiveDiscMotable ldm=new ExclusiveDiscMotable();
 			ldm.setId(id);
@@ -121,7 +117,7 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
 
 		public String getInfo(){return "exclusive disc";}
 	}
-    
+
     protected void load() {
         // if our last incarnation suffered a catastrophic failure there may be some sessions
         // in our directory - FIXME - if replicating, we may not want to reload these...
@@ -139,26 +135,27 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
                 motable.setLastAccessedTime(time);
             else {
                 if (motable.getTimedOut()) {
-                    _log.info("LOADED DEAD SESSION: "+motable.getId());
+                    _log.warn("LOADED DEAD SESSION: "+motable.getId());
                     // TODO - something cleverer...
                 }
             }
             _map.put(id, motable);
         }
+	_log.info("loaded sessions: "+list.length);
     }
-    
+
     public void start() throws Exception {
         load();
         super.start(); // continue down chain...
     }
-    
+
     // this should move up.....
     public void expire(Motable motable) {
         // decide whether session needs promotion
         boolean needsLoading=true; // FIXME
         // if so promote to top and expire there
         String id=motable.getId();
-        _log.info("expiring from disc: "+id);
+        _log.trace("expiring from disc: "+id);
         if (needsLoading) {
             _map.remove(id);
             Motable loaded=_config.getSessionPool().take();

@@ -23,8 +23,6 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
@@ -40,7 +38,6 @@ import org.codehaus.wadi.sandbox.Motable;
  * @version $Revision$
  */
 public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
-	protected final Log _log=LogFactory.getLog(getClass());
 	protected final DataSource _dataSource;
 	protected final String _table;
 	protected final Immoter _immoter;
@@ -68,7 +65,7 @@ public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
 		motable.setId(id);
 		return motable;
 	}
-	
+
 	/**
 	 * An Emoter that deals in terms of SharedJDBCMotables
 	 *
@@ -184,7 +181,7 @@ public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
 	}
 
     public int loadMotables(Emoter emoter, Immoter immoter) {
-        _log.info("LOADING FROM DB");
+        _log.trace("LOADING FROM DB");
         // this should only happen when we are the first node in the cluster...
         try {
             return SharedJDBCMotable.load(_dataSource.getConnection(), _table, emoter, immoter, _config.getAccessOnLoad());
@@ -193,7 +190,7 @@ public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
             return 0;
         }
     }
-    
+
     public Emoter getEvictionEmoter() {throw new UnsupportedOperationException();} // FIXME
     public void expire(Motable motable) {throw new UnsupportedOperationException();} // FIXME
 

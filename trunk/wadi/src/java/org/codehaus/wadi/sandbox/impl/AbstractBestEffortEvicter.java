@@ -83,14 +83,14 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
     }
 
     public void start() throws Exception {
-        _log.info("starting (sweep interval: "+_sweepInterval+" sec[s])");
+        _log.trace("starting (sweep interval: "+_sweepInterval+" sec[s])");
         long interval=_sweepInterval*1000;
         _config.getTimer().schedule(_task, interval, interval);
     }
 
     public void stop() throws Exception {
         _task.cancel();
-        _log.info("stopped");
+        _log.trace("stopped");
     }
 
     public void destroy() {
@@ -98,7 +98,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
     }
 
     public void evict() {
-        _log.debug("sweep started");
+        _log.trace("sweep started");
 
         RankedRWLock.setPriority(RankedRWLock.EVICTION_PRIORITY); // TODO - shouldn't really be here, but...
 
@@ -158,7 +158,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
 		}
 		sync.release();
 	      } else {
-		_log.debug("could not acquire expiration lock: "+id);
+		_log.trace("could not acquire expiration lock: "+id);
 	      }
 	    }
 	  }
@@ -180,7 +180,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
                     }
                     sync.release();
                 } else {
-                    _log.debug("could not acquire demotion lock: "+id);
+                    _log.trace("could not acquire demotion lock: "+id);
                 }
             }
             toDemote=null;
@@ -188,7 +188,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
 
         RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY); // TODO - shouldn't really be here, but...
 
-        _log.debug("sweep completed ("+(System.currentTimeMillis()-time)+" millis) - expirations:"+expirations+", demotions:"+demotions);
+        if (_log.isDebugEnabled()) _log.debug("sweep completed ("+(System.currentTimeMillis()-time)+" millis) - expirations:"+expirations+", demotions:"+demotions);
     }
 
     // BestEffort Evicters pay no attention to these notifications - to do so would be very expensive.

@@ -24,8 +24,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Context;
 import org.codehaus.wadi.sandbox.Contextualiser;
@@ -42,18 +40,17 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @version $Revision$
  */
 public class SerialContextualiser extends AbstractDelegatingContextualiser {
-    protected static final Log _log = LogFactory.getLog(AbstractDelegatingContextualiser.class);
-    
+
     protected final Collapser _collapser;
     protected final Sync _dummyLock=new NullSync();
     protected final Map _map;
-    
+
     public SerialContextualiser(Contextualiser next, Collapser collapser, Map map) {
         super(next);
         _collapser=collapser;
         _map=map;
     }
-    
+
     public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
         if (motionLock!=null) {
             // someone is already doing a promotion from further up the
@@ -70,7 +67,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
             } catch (TimeoutException e) {
                 _log.error("unexpected timeout - proceding without lock", e);
             }
-            
+
             try {
                 // whilst we were waiting for the motionLock, the session in question may have been promoted into memory.
                 // before we proceed, confirm that this has not happened.
@@ -78,7 +75,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
                 boolean found;
                 if (null!=context) {
                     // oops - it HAS happened...
-                    _log.debug("session was promoted whilst we were waiting: "+id); // TODO - downgrade..
+                    _log.warn("session was promoted whilst we were waiting: "+id); // TODO - downgrade..
                     // overlap two locking systems until we have secured the session in memory, then run the request
                     // and release the lock.
                     // TODO - we really need to take a read lock before we release the motionLock...

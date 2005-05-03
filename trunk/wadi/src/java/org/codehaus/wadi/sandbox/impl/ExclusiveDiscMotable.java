@@ -68,7 +68,7 @@ public class ExclusiveDiscMotable extends AbstractMotable {
 			if (!motable.checkTimeframe(System.currentTimeMillis()))
 			    _log.warn("loaded session from the future!: "+motable.getId());
 
-			_log.info("loaded (exclusive disc): "+file);
+			if (_log.isTraceEnabled()) _log.trace("loaded (exclusive disc): "+file);
 			return motable;
 		} catch (Exception e) {
 			_log.warn("load (exclusive disc) failed: "+file, e);
@@ -90,7 +90,7 @@ public class ExclusiveDiscMotable extends AbstractMotable {
 			oos.writeInt(motable.getMaxInactiveInterval());
 			oos.writeObject(motable.getBytes());
 			oos.flush();
-			_log.info("stored (exclusive disc): "+file);
+			if (_log.isTraceEnabled()) _log.trace("stored (exclusive disc): "+file);
 		} catch (Exception e) {
 			_log.warn("store (exclusive disc) failed: "+file, e);
 			throw e;
@@ -102,6 +102,6 @@ public class ExclusiveDiscMotable extends AbstractMotable {
 
 	protected static void remove(File file) {
 		file.delete();
-		_log.info("removed (exclusive disc): "+file);
+		if (_log.isTraceEnabled()) _log.trace("removed (exclusive disc): "+file);
 	}
 }

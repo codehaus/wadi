@@ -54,8 +54,8 @@ import org.codehaus.wadi.sandbox.ProxyingException;
 import org.codehaus.wadi.sandbox.RecoverableException;
 
 // My choice of proxy - still suboptimal - servlet spec imposes a very clumsy API
-// for copying the headers out of the HttpServletRequest (a proprietary solution 
-// would be faster), but at least the Cookie headers can be copied straight across 
+// for copying the headers out of the HttpServletRequest (a proprietary solution
+// would be faster), but at least the Cookie headers can be copied straight across
 // (see CommonsHttpProxy where they cannot...).
 
 // This does not yet support e.g. WebDav methods like PROPFIND etc...
@@ -74,7 +74,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 	public StandardHttpProxy(String sessionPathParamKey) {
 		super(sessionPathParamKey);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 *
@@ -88,14 +88,14 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		if (qs!=null) {
 			uri=new StringBuffer(uri).append("?").append(qs).toString();
 		}
- 
+
 		URL url=null;
 		try {
 			url=new URL("http", location.getAddress().getHostAddress(), location.getPort(), uri);
 		} catch (MalformedURLException e) {
 			throw new IrrecoverableException("bad proxy url", e);
 		}
-		
+
 		long startTime=System.currentTimeMillis();
 
 		HttpURLConnection huc=null;
@@ -109,7 +109,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 			throw new RecoverableException("could not open proxy connection", e);
 		}
 
-		huc.setAllowUserInteraction(false);	
+		huc.setAllowUserInteraction(false);
 		huc.setInstanceFollowRedirects(false);
 
 		// check connection header
@@ -120,21 +120,21 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 			if (connectionHdr.equals("keep-alive")|| connectionHdr.equals("close"))
 				connectionHdr = null; // TODO  ??
 		}
-		
+
 		// copy headers - inefficient, but we are constrained by servlet API
 		{
 			for (Enumeration e=req.getHeaderNames(); e.hasMoreElements();) {
 				String hdr = (String) e.nextElement();
 				String lhdr = hdr.toLowerCase();
-				
+
 				if (_DontProxyHeaders.contains(lhdr))
 					continue;
 				if (connectionHdr != null && connectionHdr.indexOf(lhdr) >= 0) // what is going on here ?
 					continue;
-				// HTTP/1.1 proxies MUST parse the Connection header field before a message is forwarded and, for each connection-token in this field, remove any header field(s) from the message with the same name as the connection-token. Connection options are signaled by the presence of a connection-token in the Connection header field, not by any corresponding additional header field(s), since the additional header field may not be sent if there are no parameters associated with that connection option		
+				// HTTP/1.1 proxies MUST parse the Connection header field before a message is forwarded and, for each connection-token in this field, remove any header field(s) from the message with the same name as the connection-token. Connection options are signaled by the presence of a connection-token in the Connection header field, not by any corresponding additional header field(s), since the additional header field may not be sent if there are no parameters associated with that connection option
 				if (_WADI_IsSecure.equals(hdr)) // don't worry about case - we should be the only one messing with this header...
 					continue; // strip this out - we may be being spoofed
-				
+
 				for (Enumeration f=req.getHeaders(hdr); f.hasMoreElements();) {
 					String val=(String)f.nextElement();
 					if (val!=null) {
@@ -143,7 +143,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 				}
 			}
 		}
-		
+
 		// content ?
 		boolean hasContent=false;
 		{
@@ -156,40 +156,40 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 					// ignore
 				}
 			}
-			
+
 			if (contentLength>0)
 				hasContent=true;
 			else
 				hasContent=(huc.getRequestProperty("Content-Type")!=null);
 		}
-		
+
 		// proxy
 		{
 			huc.addRequestProperty("Via", "1.1 "+req.getLocalName()+":"+req.getLocalPort()+" \"WADI\""); // TODO - should we be giving out personal details ?
 			huc.addRequestProperty("X-Forwarded-For", req.getRemoteAddr()); // adds last link in request chain...
 			// String tmp=uc.getRequestProperty("Max-Forwards"); // TODO - do we really need to bother with this ?
 		}
-		
+
 		// cache-control
 		{
 			String cacheControl=huc.getRequestProperty("Cache-Control");
 			if (cacheControl!=null && (cacheControl.indexOf("no-cache")>=0 || cacheControl.indexOf("no-store")>=0))
 				huc.setUseCaches(false);
 		}
-		
+
 		// confidentiality
 		{
 			if (req.isSecure()) {
 				huc.addRequestProperty(_WADI_IsSecure, req.getLocalAddr().toString());
 			}
-			
+
 			// at the other end, if this header is present we must :
-			
+
 			// wrap the request so that req.isSecure()=true, before processing...
 			// mask the header - so it is never seen by the app.
-			
+
 			// the code for the other end should live in this class.
-			
+
 			// this code should also confirm that it not being spoofed by confirming that req.getRemoteAddress() is a cluster member...
 		}
 		// customize Connection
@@ -200,7 +200,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		{
 			if (hasContent) {
 				huc.setDoOutput(true);
-				
+
 				OutputStream toServer=null;
 				try {
 					InputStream fromClient=req.getInputStream(); // IOException
@@ -213,13 +213,13 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 						try {
 							toServer.close(); // IOException
 						} catch (IOException e) {
-							_log.info("problem closing server request stream", e);
+							_log.warn("problem closing server request stream", e);
 						}
 					}
 				}
 			}
 		}
-		
+
 		// Connect
 		try {
 			huc.connect(); // IOException
@@ -277,14 +277,14 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 				String lhdr = (hdr != null) ? hdr.toLowerCase() : null;
 				if (hdr != null && val != null && !_DontProxyHeaders.contains(lhdr))
 					res.addHeader(hdr, val);
-				
+
 				//_log.debug("res " + hdr + ": " + val);
-				
+
 				h++;
 				hdr = huc.getHeaderFieldKey(h);
 				val = huc.getHeaderField(h);
 			}
-		} else {	
+		} else {
 			// TODO - is it a bug in Jetty that I have to start my loop at 1 ? or that key[0]==null ?
 			// Try this inside Tomcat...
 			String key;
@@ -296,9 +296,9 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 				}
 			}
 		}
-		
+
 		// do we need another Via header in the response...
-		
+
 		// server->client
 		int server2ClientTotal=0;
 		{
@@ -313,16 +313,16 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 						fromServer.close();
 					} catch (IOException e) {
 						// well - we did our best...
-						_log.info("problem closing server response stream", e);
+						_log.warn("problem closing server response stream", e);
 					}
 				}
 			}
 		}
-		
+
 		huc.disconnect();
-		
+
 		long endTime=System.currentTimeMillis();
 		long elapsed=endTime-startTime;
-		_log.info("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:"+url);
+		_log.trace("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:"+url);
 	}
 }

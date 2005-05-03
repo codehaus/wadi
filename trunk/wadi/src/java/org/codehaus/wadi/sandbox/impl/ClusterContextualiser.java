@@ -113,8 +113,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 
 	    _dispatcher.register(this, "onMessage");
 	    _dispatcher.register(EmigrationAcknowledgement.class, _emigrationRvMap, _ackTimeout);
-        
-        _log.info("Destination is: "+_cluster.getLocalNode().getDestination());
+
+        _log.trace("Destination is: "+_cluster.getLocalNode().getDestination());
 		}
 
     public Immoter getImmoter(){return _immoter;}
@@ -128,7 +128,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
             return _next.getDemoter(id, motable);
         }
     }
-    
+
     public Immoter getSharedDemoter() {
         if (_cluster.getNodes().size()>=1) {
             ensureEmmigrationQueue();
@@ -158,21 +158,21 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 	protected Destination _emigrationQueue;
 
     protected void createEmigrationQueue() throws JMSException {
-        _log.info("creating emigration queue");
+        _log.trace("creating emigration queue");
         _emigrationQueue=_cluster.createQueue("EMIGRATION"); // TODO - better queue name ?
         MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
         settings.to=_dispatcher.getCluster().getDestination();
         _dispatcher.sendMessage(new EmigrationStartedNotification(_emigrationQueue), settings);
     }
-    
+
     protected void destroyEmigrationQueue() throws JMSException {
         MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
         settings.to=_dispatcher.getCluster().getDestination();
         _dispatcher.sendMessage(new EmigrationEndedNotification(_emigrationQueue), settings);
         // FIXME - can we destroy the queue ?
-        _log.info("emigration queue destroyed");
+        _log.trace("emigration queue destroyed");
     }
-    
+
 	protected synchronized void ensureEmmigrationQueue() {
 	    try {
 	        if (_emigrationQueue==null) {
@@ -184,24 +184,22 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 	    }
 	}
 
-    // we must not call super, or it will try to flush our location cache to the next Contextualiser
-    // TODO - consider NOT inheriting from MappedContextualiser....
     public void stop() throws Exception {
         if (_emigrationQueue!=null) { // evacuation is synchronous, so we will not get to here until all sessions are gone...
             destroyEmigrationQueue();
         }
-        _next.stop();
+        super.stop();
     }
 
 	public void onMessage(ObjectMessage om, EmigrationStartedNotification sdsn) throws JMSException {
 		Destination emigrationQueue=sdsn.getDestination();
-		_log.info("received EmigrationStartedNotification: "+emigrationQueue);
+		_log.trace("received EmigrationStartedNotification: "+emigrationQueue);
 		_dispatcher.addDestination(emigrationQueue);
 	}
 
 	public void onMessage(ObjectMessage om, EmigrationEndedNotification sden) {
 		Destination emigrationQueue=sden.getDestination();
-		_log.info("received EmigrationEndedNotification: "+emigrationQueue);
+		_log.trace("received EmigrationEndedNotification: "+emigrationQueue);
 		_dispatcher.removeDestination(emigrationQueue);
 	}
 
@@ -294,7 +292,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 				_log.error("could not acknowledge safe receipt: "+id, e);
 			}
 
-			//_log.info("immigration (cluster): "+id);
 		}
 
 		public void rollback(String id, Motable emotable) {
@@ -309,7 +306,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 
 	public void onMessage(ObjectMessage om, EmigrationRequest er) {
         String id=er.getId();
-        _log.info("EmigrationRequest received: "+id);
+        _log.trace("EmigrationRequest received: "+id);
         Sync lock=_locker.getLock(id, null);
         boolean acquired=false;
         try {
@@ -331,13 +328,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
                 lock.release();
         }
 	}
-    
+
     // another hack, because this should not inherit from Mapped...
     public int loadMotables(Emoter emoter, Immoter immoter){return 0;}
-    
+
     // AbstractMotingContextualiser
     public Motable get(String id) {return (Motable)_map.get(id);}
-    
+
     // EvicterConfig
     // BestEffortEvicters
     public Map getMap() {return _map;}

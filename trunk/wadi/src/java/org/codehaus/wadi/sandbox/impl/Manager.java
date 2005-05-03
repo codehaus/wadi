@@ -77,23 +77,23 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         _timer=new Timer();
         _accessOnLoad=accessOnLoad;
     }
-    
+
     protected boolean _started;
-    
+
     public boolean isStarted(){return _started;}
-    
+
     public void start() throws Exception {
         _log.info("starting");
         _contextualiser.start();
         _started=true;
     }
-    
+
     public void stop() throws Exception {
-        _log.info("stopping"); // although this sometimes does not appear, it IS called...
         _started=false;
         _contextualiser.stop();
+        _log.info("stopped"); // although this sometimes does not appear, it IS called...
     }
-    
+
     public Session createSession() {
         Session session=_sessionPool.take();
         String id=(String)_sessionIdFactory.take(); // TODO - API on this class is wrong...
@@ -101,10 +101,10 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         session.setMaxInactiveInterval(_maxInactiveInterval);
         _map.put(id, session);
         // _contextualiser.getEvicter().insert(session);
-        _log.info("created: "+id);
+        if (_log.isDebugEnabled()) _log.debug("created: "+id);
         return session;
     }
-    
+
     public void destroySession(Session session) {
         for (Iterator i=new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) // ALLOC ?
             session.removeAttribute((String)i.next()); // TODO - very inefficient
@@ -114,7 +114,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         // _sessionIdFactory.put(id); // we might reuse session ids ? - sounds like a BAD idea
         session.destroy();
         _sessionPool.put(session);
-        _log.info("destroyed: "+id);
+        if (_log.isDebugEnabled()) _log.debug("destroyed: "+id);
     }
 
     //----------------------------------------
@@ -177,49 +177,48 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
       if (!known)
         if (_log.isWarnEnabled()) _log.warn("EventListener not registered: "+listener);
     }
-    
+
     // Context stuff
     public ServletContext getServletContext() {return null;}// TODO
-    
+
     public AttributesPool getAttributesPool() {return _attributesPool;}
     public ValuePool getValuePool() {return _valuePool;}
-    
+
     public Manager getManager(){return this;}
-    
+
     // this should really be abstract, but is useful for testing - TODO
 
     public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperFactory;}
-    
+
     public IdGenerator getSessionIdFactory() {return _sessionIdFactory;}
-    
+
     protected int _maxInactiveInterval=30*60; // 30 mins
     public int getMaxInactiveInterval(){return _maxInactiveInterval;}
     public void setMaxInactiveInterval(int interval){_maxInactiveInterval=interval;}
-    
+
     // integrate with Filter instance
     protected Filter _filter;
 
     public void setFilter(Filter filter){_filter=filter;}
-    
+
     public boolean getDistributable(){return false;}
 
     public Contextualiser getContextualiser() {return _contextualiser;}
-    
+
     public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {_contextualiser.setLastAccessedTime(evictable, oldTime, newTime);}
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_contextualiser.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
 
     public void expire(Motable motable) {
         destroySession((Session)motable);
     }
-    
+
     public Immoter getEvictionImmoter() {
-        _log.info("CLASS: "+_contextualiser.getClass().getName());
         return ((AbstractExclusiveContextualiser)_contextualiser).getImmoter();
         } // HACK - FIXME
-    
+
     public Timer getTimer() {return _timer;}
-    
+
     public boolean getAccessOnLoad() {return _accessOnLoad;}
-    
+
     public SessionPool getSessionPool() {return _sessionPool;}
 }

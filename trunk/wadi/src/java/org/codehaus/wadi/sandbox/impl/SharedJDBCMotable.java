@@ -82,13 +82,13 @@ public class SharedJDBCMotable extends AbstractMotable {
                 motable.setLastAccessedTime(accessOnLoad?time:lat);
                 motable.setMaxInactiveInterval(rs.getInt(i++));
                 motable.setBytes((byte[])rs.getObject(i++));
-                
+
                 if (motable.getTimedOut()) {
-                    _log.info("LOADED DEAD SESSION: "+motable.getId());
+                    _log.warn("LOADED DEAD SESSION: "+motable.getId());
                     // we should expire it immediately, rather than promoting it...
                     // perhaps we could be even cleverer ?
                 }
-                
+
                 Utils.mote(emoter, immoter, motable, id);
                 count++;
             }
@@ -101,7 +101,7 @@ public class SharedJDBCMotable extends AbstractMotable {
         }
         return count;
     }
-    
+
     protected static Motable load(Connection connection, String table, Motable motable) throws Exception {
 		String id=motable.getId();
 		Statement s=null;
@@ -117,8 +117,8 @@ public class SharedJDBCMotable extends AbstractMotable {
 
 				if (!motable.checkTimeframe(System.currentTimeMillis()))
 				    _log.warn("loaded session from the future!: "+id);
-				
-				_log.info("loaded (shared database): "+id);
+
+				if (_log.isTraceEnabled()) _log.trace("loaded (shared database): "+id);
 				return motable;
 			} else {
 				return null;
@@ -144,7 +144,7 @@ public class SharedJDBCMotable extends AbstractMotable {
 			ps.setInt(i++, motable.getMaxInactiveInterval());
 			ps.setObject(i++, motable.getBytes());
 			ps.executeUpdate();
-			_log.info("stored (shared database): "+id);
+			if (_log.isTraceEnabled()) _log.trace("stored (shared database): "+id);
 		} catch (SQLException e) {
 			_log.error("store (shared database) failed: "+id, e);
 			throw e;
@@ -160,7 +160,7 @@ public class SharedJDBCMotable extends AbstractMotable {
 	    try {
 	        s=connection.createStatement();
 	        s.executeUpdate("DELETE FROM "+table+" WHERE Id='"+id+"'");
-	        _log.info("removed (shared database): "+id);
+	        if (_log.isTraceEnabled()) _log.trace("removed (shared database): "+id);
 	    } catch (SQLException e) {
 	        _log.error("remove (shared database) failed: "+id);
 	    } finally {

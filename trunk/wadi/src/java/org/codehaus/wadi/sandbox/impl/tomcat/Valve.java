@@ -62,7 +62,7 @@ public class Valve extends ValveBase {
 				String ip=hreq.getRemoteAddr();
 				//  from a trusted IP...
 				if (_trustedIps.matcher(ip).matches()) {
-					_log.info("securing proxied request: "+hreq.getRequestURL());
+					_log.trace("securing proxied request: "+hreq.getRequestURL());
 					request.setSecure(true);
 				} else {
 					// otherwise we have a configuration issue or are being spoofed...
