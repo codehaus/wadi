@@ -65,7 +65,7 @@
 
   <bean
     id="SessionMap"
-    class="java.util.HashMap"
+    class="EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap"
     >
   </bean>
 
