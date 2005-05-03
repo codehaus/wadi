@@ -37,11 +37,11 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
     static class TimeToLiveComparator implements Comparator {
 
         protected final long _time;
-        
+
         public TimeToLiveComparator(long time) {
             _time=time;
         }
-        
+
         public boolean equals(Object obj) {
             return (this==obj) || ((obj instanceof TimeToLiveComparator) && this._time==((TimeToLiveComparator)obj)._time);
         }
@@ -50,33 +50,33 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         public int compare(Object o1, Object o2) {
             return (int)(((Evictable)o1).getTimeToLive(_time)-((Evictable)o2).getTimeToLive(_time));
         }
-        
+
     }
-    
+
     public Comparator getComparator(long time) {
         return new TimeToLiveComparator(time);
     }
-    
+
     class BestEffortTask extends TimerTask {
-        
+
         public void run() {
             evict();
         }
     }
-    
+
     protected final Log _log=LogFactory.getLog(getClass());
     protected final int _sweepInterval;
     protected final boolean _strictOrdering;
     protected final TimerTask _task;
-    
+
     protected EvicterConfig _config;
 
     public AbstractBestEffortEvicter(int sweepInterval, boolean strictOrdering) {
         _sweepInterval=sweepInterval;
         _strictOrdering=strictOrdering;
-        _task=new BestEffortTask();            
+        _task=new BestEffortTask();
     }
-    
+
     public void init(EvicterConfig config) {
         super.init(config);
         _config=config;
@@ -87,7 +87,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         long interval=_sweepInterval*1000;
         _config.getTimer().schedule(_task, interval, interval);
     }
-    
+
     public void stop() throws Exception {
         _task.cancel();
         _log.info("stopped");
@@ -96,16 +96,16 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
     public void destroy() {
         _config=null;
     }
-    
+
     public void evict() {
         _log.debug("sweep started");
-        
+
         RankedRWLock.setPriority(RankedRWLock.EVICTION_PRIORITY); // TODO - shouldn't really be here, but...
 
         // get candidates
         long time=System.currentTimeMillis();
         Map candidates=_config.getMap();
-        
+
         // perform a cheap first pass, remembering those candidates
         // which look as if they should be expired/demoted...
         List toExpireList=new ArrayList();
@@ -119,12 +119,12 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
             else if (test(e, time, ttl))
                 toDemoteList.add(e);
         }
-        
+
         Object[] toExpire=toExpireList.toArray();
         toExpireList=null;
         Object[] toDemote=toDemoteList.toArray();
         toDemoteList=null;
-        
+
         // if strict ordering is required we sort the candidate lists
         // before the next stage.
         if (_strictOrdering) {
@@ -133,7 +133,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
             Arrays.sort(toDemote, comparator);
             comparator=null;
         }
-        
+
         // perform a more expensive second pass, retesting each of the
         // remembered candidates within a lock. If the test proves positive
         // they will be expired/demoted within this same lock. Thus a session
@@ -141,28 +141,30 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         // to it within the container, as these two events are mutually exclusive.
         // If we cannot acquire the lock immediately, we assume that a request has
         // taken it during the intervening period, and ignore this candidate.
-        
+
         // deal with expirations...
         int expirations=0;
         {
-            int l=toExpire.length;
-            for (int i=0; i<l; i++) {
-                Motable motable=(Motable)toExpire[i]; // TODO - not happy about an Evicter knowing about Motables
-                String id=motable.getId();
-                Sync sync=_config.getEvictionLock(id, motable);
-                if (Utils.attemptUninterrupted(sync)) {
-                    if (motable.getTimedOut(time)) {
-                        _config.expire(motable);
-                        expirations++;
-                    }
-                    sync.release();
-                } else {
-                    _log.debug("could not acquire expiration lock: "+id);
-                }
-            }
-            toExpire=null;
+	  int l=toExpire.length;
+	  for (int i=0; i<l; i++) {
+	    Motable motable=(Motable)toExpire[i]; // TODO - not happy about an Evicter knowing about Motables
+	    String id=motable.getId();
+	    if (id!=null) {
+	      Sync sync=_config.getEvictionLock(id, motable);
+	      if (Utils.attemptUninterrupted(sync)) {
+		if (motable.getTimedOut(time)) {
+		  _config.expire(motable);
+		  expirations++;
+		}
+		sync.release();
+	      } else {
+		_log.debug("could not acquire expiration lock: "+id);
+	      }
+	    }
+	  }
+	  toExpire=null;
         }
-        
+
         // and the same again for demotions...
         int demotions=0;
         {
@@ -183,19 +185,19 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
             }
             toDemote=null;
         }
-        
+
         RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY); // TODO - shouldn't really be here, but...
-        
+
         _log.debug("sweep completed ("+(System.currentTimeMillis()-time)+" millis) - expirations:"+expirations+", demotions:"+demotions);
     }
-    
+
     // BestEffort Evicters pay no attention to these notifications - to do so would be very expensive.
     // If you plan to build e.g. an LRU Evicter, by ordering Sessions according to time-to-live, use
     // this notification to reorder your Sessions after each change/access...
-    
+
     public void insert(Evictable evictable) {/* do nothing */}
     public void remove(Evictable evictable) {/* do nothing */}
     public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {/* do nothing */}
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
-    
+
 }
