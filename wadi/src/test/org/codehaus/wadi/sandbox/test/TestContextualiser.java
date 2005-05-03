@@ -82,6 +82,7 @@ import org.codehaus.wadi.sandbox.impl.SimpleEvictable;
 import org.codehaus.wadi.sandbox.impl.TimeToLiveEvicter;
 import org.codehaus.wadi.sandbox.impl.Utils;
 
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -224,14 +225,14 @@ public class TestContextualiser extends TestCase {
 	class MyPromotingContextualiser extends AbstractContextualiser {
 	    int _counter=0;
 	    MyContext _context;
-	    
+
 	    public MyPromotingContextualiser(String context) {
 	        _context=new MyContext(context, context);
 	    }
-	    
+
 	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
 	        _counter++;
-	        
+
 	        Motable emotable=_context;
 	        Emoter emoter=new EtherEmoter();
 	        Motable immotable=Utils.mote(emoter, immoter, emotable, id);
@@ -241,20 +242,20 @@ public class TestContextualiser extends TestCase {
 	            return false;
 	        }
 	    }
-	    
+
 	    public Evicter getEvicter(){return null;}
-	    
+
 	    public boolean isExclusive(){return false;}
-	    
+
 	    public Immoter getDemoter(String id, Motable motable) {
 	        return null;
 	    }
-        
+
         public Immoter getSharedDemoter(){throw new UnsupportedOperationException();}
 
         public void promoteToExclusive(Immoter immoter){/* empty */}
         public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
-        
+
         public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){/* empty */}
         public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
 
@@ -263,11 +264,11 @@ public class TestContextualiser extends TestCase {
 	class MyActiveContextualiser extends AbstractContextualiser {
 	    int _counter=0;
 	    MyContext _context;
-	    
+
 	    public MyActiveContextualiser(String context) {
 	        _context=new MyContext(context, context);
 	    }
-	    
+
 	    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
 	        _counter++;
 	        Context context=_context;
@@ -283,20 +284,20 @@ public class TestContextualiser extends TestCase {
 	            throw new ServletException("problem processing request for: "+id, e);
 	        }
 	    }
-	    
+
 	    public Evicter getEvicter(){return null;}
-	    
+
 	    public boolean isExclusive(){return false;}
-	    
+
 	    public Immoter getDemoter(String id, Motable motable) {
 	        return null;
 	    }
-        
+
         public Immoter getSharedDemoter(){throw new UnsupportedOperationException();}
 
         public void promoteToExclusive(Immoter immoter){/* empty */}
         public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
-        
+
         public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){/* empty */}
         public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
 
@@ -372,18 +373,18 @@ public class TestContextualiser extends TestCase {
         protected final Contextualiser _top;
         protected final Map _map;
         protected final Timer _timer=new Timer();
-        
+
         public MyContextualiserConfig(Contextualiser top, Map map) {_top=top;_map=map;}
         public int getMaxInactiveInterval() {return 30*60*60;}
         public void expire(Motable motable) {_map.remove(motable.getId());}
         public Immoter getEvictionImmoter() {return ((AbstractMotingContextualiser)_top).getImmoter();} // HACk - FIXME
         public Timer getTimer() {return _timer;}
         public boolean getAccessOnLoad() {return true;}
-        
+
         public SessionPool getSessionPool(){return null;}
-        
+
     }
-    
+
 	public void testEviction2() throws Exception {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
@@ -514,7 +515,7 @@ public class TestContextualiser extends TestCase {
 		clusterFactory=null;
 		connectionFactory=null;
 	}
-	
+
 	public void testTimeOut() throws Exception {
 	    StreamingStrategy streamer=new SimpleStreamingStrategy();
 	    Collapser collapser=new HashingCollapser(1, 2000);
@@ -534,10 +535,10 @@ public class TestContextualiser extends TestCase {
 		assertTrue(m.size()==0); // should not be in memory
 		assertTrue(d.size()==0); // should not be on disc - should have fallen though - since invalidated
 	}
-    
+
     public void testStack() throws Exception {
         _log.info("putting complete stack together...");
-        Map map=new HashMap();
+        Map map=new ConcurrentHashMap();
         SimpleContextualiserStack stack=new SimpleContextualiserStack(map, new MyContextPool(), _ds);
         stack.init(new MyContextualiserConfig(stack.getTop(), map)); // clumsy
         stack.start();

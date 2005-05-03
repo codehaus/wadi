@@ -59,6 +59,7 @@ import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
 
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class SimpleContextualiserStack implements Contextualiser {
@@ -121,7 +122,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         InetSocketAddress isa=new InetSocketAddress("localhost", 8080); // FIXME - hardwired port
         HttpProxy proxy=new StandardHttpProxy("jsessionid");
         _clusterLocation=new HttpProxyLocation(_clusterCluster.getLocalNode().getDestination(), isa, proxy);
-        _clusterMap=new HashMap();
+        _clusterMap=new ConcurrentHashMap();
         _clusterEvicter=new DummyEvicter(); // TODO - consider Cluster eviction carefully...
         _clusterDispatcher=new MessageDispatcher(_clusterCluster);
         _clusterRelocater=new ImmigrateRelocationStrategy(_clusterDispatcher, _clusterLocation, 2000, _clusterMap, _collapser);
@@ -139,7 +140,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _discDirectory=dir;
         // TODO - consider eviction on disc, indexing by ttl would be efficient enough...
         _discEvicter=new NeverEvicter(20, true); // sessions never pass below this point, unless the node is shutdown
-        _discMap=new HashMap();
+        _discMap=new ConcurrentHashMap();
         _disc=new ExclusiveDiscContextualiser(_stateless, _collapser, _discEvicter, _discMap, _streamer, _discDirectory);
 
 
