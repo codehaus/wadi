@@ -95,11 +95,11 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		_methods.put("PUT",PutMethod.class);
 		// WebDav methods ? e.g. PROCFIND ?
 	}
-	
+
 	public CommonsHttpProxy(String sessionPathParamKey) {
 		super(sessionPathParamKey);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 *
@@ -114,23 +114,23 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 	    if (clazz==null) {
 	    	throw new IrrecoverableException("unsupported http method: "+m);
 	    }
-	    
+
 	    HttpMethod hm=null;
 	    try {
 	    	hm=(HttpMethod)clazz.newInstance();
 	    } catch (Exception e) {
 	    	throw new IrrecoverableException("could not create HttpMethod instance", e); // should never happen
 	    }
-	    
+
 	    String uri=getRequestURI(hreq);
 	    hm.setPath(uri);
-	    
+
 	    String queryString=hreq.getQueryString();
 	    if (queryString!=null) {
 	    	hm.setQueryString(queryString);
 	    	uri+=queryString;
 	    }
-	    
+
 	    hm.setFollowRedirects(false);
 	    //hm.setURI(new URI(uri));
 	    hm.setStrictMode(false);
@@ -142,7 +142,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 			if (connectionHdr.equals("keep-alive")|| connectionHdr.equals("close"))
 				connectionHdr = null; // TODO  ??
 		}
-		
+
 		// copy headers
 		boolean xForwardedFor = false;
 		boolean hasContent = false;
@@ -163,14 +163,14 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 					contentLength=hreq.getIntHeader(hdr);
 					hasContent=contentLength>0;
 				} catch (NumberFormatException e) {
-					_log.info("bad Content-Length header value: "+hreq.getHeader(hdr), e);
+					_log.warn("bad Content-Length header value: "+hreq.getHeader(hdr), e);
 				}
 			}
-				
+
 			if ("content-type".equals(lhdr)) {
 				hasContent=true;
 			}
-			
+
 			Enumeration vals = hreq.getHeaders(hdr);
 			while (vals.hasMoreElements()) {
 				String val = (String) vals.nextElement();
@@ -179,14 +179,14 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 					//_log.info("Request " + hdr + ": " + val);
 					xForwardedFor |= "X-Forwarded-For".equalsIgnoreCase(hdr); // why is this not in the outer loop ?
 				}
-			}	
+			}
 		}
-		
+
 		// cookies...
-		
+
 		// although we copy cookie headers into the request abover - commons-httpclient thinks it knows better and strips them out before sending.
 		// we have to explicitly use their interface to add the cookies - painful...
-		
+
 		// DOH! - an org.apache.commons.httpclient.Cookie is NOT a
 		// javax.servlet.http.Cookie - and it looks like the two don't
 		// map onto each other without data loss...
@@ -215,7 +215,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 				//if (_log.isTraceEnabled()) _log.trace("Cookie: "+cookie.toString());
 			}
 		}
-		
+
 		// Proxy headers
 		hm.addRequestHeader("Via", "1.1 "+hreq.getLocalName()+":"+hreq.getLocalPort()+" \"WADI\"");
 		if (!xForwardedFor)
@@ -233,7 +233,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		int client2ServerTotal=0;
 		if (hasContent) {
 //			uc.setDoOutput(true);
-			
+
 			try {
 				if (hm instanceof EntityEnclosingMethod)
 					((EntityEnclosingMethod)hm).setRequestBody(hreq.getInputStream());
@@ -256,29 +256,29 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		{
 			_log.warn("problem proxying connection:",e);
 		}
-		
+
 		InputStream fromServer = null;
-		
+
 		// handler status codes etc.
 		int code=502;
 //		String message="Bad Gateway: could not read server response code or message";
-		
+
 		code=hm.getStatusCode(); // IOException
 //		message=hm.getStatusText(); // IOException
 		hres.setStatus(code);
 //		hres.setStatus(code, message); - deprecated...
-		
+
 		try {
 			fromServer=hm.getResponseBodyAsStream(); // IOException
 		} catch (IOException e) {
-			_log.info("problem acquiring http client output", e);
+			_log.warn("problem acquiring http client output", e);
 		}
-		
-		
+
+
 		// clear response defaults.
 		hres.setHeader("Date", null);
 		hres.setHeader("Server", null);
-		
+
 		// set response headers
 		// TODO - is it a bug in Jetty that I have to start my loop at 1 ? or that key[0]==null ?
 		// Try this inside Tomcat...
@@ -293,7 +293,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 				//_log.info("Response: "+key+" - "+val);
 			}
 		}
-		
+
 		hres.addHeader("Via", "1.1 (WADI)");
 
 		// copy server->client
@@ -303,19 +303,19 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 				OutputStream toClient=hres.getOutputStream();// IOException
 				server2ClientTotal+=copy(fromServer, toClient, 8192);// IOException
 			} catch (IOException e) {
-				_log.info("problem proxying server response back to client", e);
+				_log.warn("problem proxying server response back to client", e);
 			} finally {
 				try {
 					fromServer.close();
 				} catch (IOException e) {
 					// well - we did our best...
-					_log.info("problem closing server response stream", e);
+					_log.warn("problem closing server response stream", e);
 				}
 			}
 		}
 
 		long endTime=System.currentTimeMillis();
 		long elapsed=endTime-startTime;
-		_log.info("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:http://"+location.getHostName()+":"+location.getPort()+uri);
+		if (_log.isDebugEnabled()) _log.debug("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:http://"+location.getHostName()+":"+location.getPort()+uri);
 	}
 }

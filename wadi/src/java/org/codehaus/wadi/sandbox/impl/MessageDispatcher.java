@@ -111,13 +111,12 @@ public class MessageDispatcher implements MessageListener {
 			Class[] pts=null;
 			if (methodName.equals(m.getName()) && (pts=m.getParameterTypes()).length==2 && pts[0]==ObjectMessage.class) {
 				// return type should be void...
-				//_log.info("caching method: "+m+" for class: "+pts[1]);
 				Dispatcher old;
 				Dispatcher nuw=new TargetDispatcher(target, m);
 				if ((old=(Dispatcher)_map.put(pts[1], nuw))!=null) {
 					_log.warn("later registration replaces earlier - multiple dispatch NYI: "+old+" -> "+nuw);
 				}
-				_log.info("registering class: "+pts[1].getName());
+				_log.trace("registering class: "+pts[1].getName());
 				n++;
 			}
 		}
@@ -147,7 +146,7 @@ public class MessageDispatcher implements MessageListener {
 		  } catch (TimeoutException toe) {
 		    _log.warn("rendez-vous timed out: "+correlationId, toe);
 		  } catch (InterruptedException ignore) {
-		    _log.info("rendez-vous interruption ignored: "+correlationId);
+		    _log.trace("rendez-vous interruption ignored: "+correlationId);
 		  }
 		} while (Thread.interrupted()); // TODO - should really subtract from timeout each time...
 	      }
@@ -202,7 +201,7 @@ public class MessageDispatcher implements MessageListener {
 						// if a message is of unrecognised type, we should recurse up its class hierarchy, memoizing the result
 						// if we find a class that matches - TODO - This would enable message subtyping...
 					} else {
-						_log.debug("no dispatcher registered for message: "+obj);
+						_log.trace("no dispatcher registered for message: "+obj);
 					}
 				}
 			} catch (Exception e) {

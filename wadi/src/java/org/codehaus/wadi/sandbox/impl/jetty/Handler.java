@@ -40,7 +40,7 @@ public class Handler extends AbstractHttpHandler {
 
 	public Handler(Pattern trustedIps) {
 		_trustedIps=trustedIps;
-        _log.info("WADI Handler in place: "+_trustedIps.pattern());
+		if (_log.isInfoEnabled()) _log.info("WADI Handler in place: "+_trustedIps.pattern());
 	}
 
 	public void handle(String pathInContext, String pathParams, HttpRequest request, HttpResponse response) {
@@ -51,7 +51,7 @@ public class Handler extends AbstractHttpHandler {
 			String ip=request.getRemoteAddr();
 			//  from a trusted IP...
 			if (_trustedIps.matcher(ip).matches()) {
-				_log.info("securing proxied request: "+request.getRequestURL());
+				_log.trace("securing proxied request: "+request.getRequestURL());
 				((Securable)request.getHttpConnection()).setSecure(true);
 			} else {
 				// otherwise we have a configuration issue or are being spoofed...

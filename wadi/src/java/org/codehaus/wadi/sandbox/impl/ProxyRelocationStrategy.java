@@ -73,7 +73,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 	}
 
 	protected Location locate(String id, Map locationMap) {
-		_log.info("sending location request: "+id);
+		_log.trace("sending location request: "+id);
 		MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
 		settingsInOut.from=_location.getDestination();
 		settingsInOut.to=_dispatcher.getCluster().getDestination();
@@ -96,7 +96,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 				locationMap.put(i.next(), location);
 			}
 		}
-		_log.info("updated cache for: "+ids);
+		_log.trace("updated cache for: "+ids);
 
 		return location;
 	}
@@ -157,7 +157,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 
 	public void onMessage(ObjectMessage message, LocationRequest request) {
 		String id=request.getId();
-		_log.info("receiving location request: "+id);
+		_log.trace("receiving location request: "+id);
 		if (_top==null) {
 			_log.warn("no Contextualiser set - cannot respond to LocationRequests");
 		} else {
@@ -194,7 +194,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 
 		public void
 		doFilter(ServletRequest request, ServletResponse response) {
-			_log.info("sending location response: "+_id);
+			_log.trace("sending location response: "+_id);
 			LocationResponse lr=new LocationResponse(_location, Collections.singleton(_id));
 			try {
 				ObjectMessage m=_dispatcher.getCluster().createObjectMessage();
@@ -206,9 +206,9 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 				// Now wait for a while so that the session is locked into this container, giving the other node a chance to proxy to this location and still find it here...
 				// instead of just waiting a set period, we could use a Rendezvous object with a timeout - more complexity - consider...
 				try {
-					_log.info("waiting for proxy ("+_handOverPeriod+" millis)...: "+_id);
+					_log.trace("waiting for proxy ("+_handOverPeriod+" millis)...: "+_id);
 					Thread.sleep(_handOverPeriod);
-					_log.info("...waiting over: "+_id);
+					_log.trace("...waiting over: "+_id);
 				} catch (InterruptedException ignore) {
 					// ignore
 					// TODO - should we loop here until timeout is up ?

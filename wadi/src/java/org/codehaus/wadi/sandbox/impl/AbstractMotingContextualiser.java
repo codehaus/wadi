@@ -23,8 +23,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.ContextualiserConfig;
 import org.codehaus.wadi.sandbox.Emoter;
@@ -41,7 +39,6 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public abstract class AbstractMotingContextualiser extends AbstractChainedContextualiser {
-	protected final Log _log=LogFactory.getLog(getClass());
 
     protected final Locker _locker;
 
@@ -100,7 +97,7 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
     	} else
     		return false;
     }
-    
+
     public void promoteToExclusive(Immoter immoter) {
         if (isExclusive())
             _next.promoteToExclusive(_next.isExclusive()?null:getImmoter());
@@ -110,15 +107,15 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
             _next.promoteToExclusive(immoter);
         }
     }
-    
+
     public void init(ContextualiserConfig config) {
         super.init(config);
         _config=config;
     }
-    
+
     public void destroy() {
         _config=null;
         super.destroy();
     }
-    
+
 }

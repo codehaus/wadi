@@ -41,7 +41,7 @@ public class Filter implements javax.servlet.Filter {
     protected boolean _distributable;
     protected Contextualiser _contextualiser;
     protected HttpServletRequestWrapperPool _pool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - init from _manager
-    
+
     // Filter Lifecycle
 
     public void
@@ -51,7 +51,7 @@ public class Filter implements javax.servlet.Filter {
       if (_manager==null)
         _log.fatal("Manager not found");
       else
-          _log.info("Manager found: "+_manager);
+          if (_log.isInfoEnabled())_log.info("Manager found: "+_manager);
 
       _manager.setFilter(this);
       _distributable=_manager.getDistributable();
@@ -73,11 +73,11 @@ public class Filter implements javax.servlet.Filter {
         else // this one is not HTTP - therefore it is and will remain, stateless - not for us...
             chain.doFilter(request, response);
     }
-    
+
     public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         String sessionId=request.getRequestedSessionId();
-        _log.info("WADI - potentially stateful request: "+sessionId);
-                
+        _log.trace("potentially stateful request: "+sessionId);
+
         if (sessionId==null) {
             // no session yet - but may initiate one...
             PoolableHttpServletRequestWrapper wrapper=_pool.take();

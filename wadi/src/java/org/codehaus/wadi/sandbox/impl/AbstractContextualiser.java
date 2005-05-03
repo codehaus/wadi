@@ -16,14 +16,28 @@
  */
 package org.codehaus.wadi.sandbox.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.ContextualiserConfig;
 
 public abstract class AbstractContextualiser implements Contextualiser {
+  protected final Log _log = LogFactory.getLog(getClass());
 
-    public void init(ContextualiserConfig config) {/* do nothing*/}
-    public void start() throws Exception {/* do nothing*/}
-    public void stop() throws Exception {/* do nothing*/}
-    public void destroy() {/* do nothing */}
-    
+  public void init(ContextualiserConfig config) {
+    _log.info("initialising");
+  }
+
+  public void start() throws Exception {
+    _log.info("starting");
+  }
+
+  public void stop() throws Exception {
+    _log.info("stopped");
+  }
+
+  public void destroy() {
+    _log.info("destroyed");
+  }
+
 }

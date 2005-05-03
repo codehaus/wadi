@@ -24,8 +24,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Context;
 import org.codehaus.wadi.sandbox.ContextPool;
@@ -48,7 +46,6 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @version $Revision$
  */
 public class MemoryContextualiser extends AbstractExclusiveContextualiser {
-	protected final Log _log = LogFactory.getLog(getClass());
 	protected final ContextPool _pool;
 	protected final StreamingStrategy _streamer;
 	protected final Immoter _immoter;
@@ -59,14 +56,14 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	public MemoryContextualiser(Contextualiser next, Evicter evicter, Map map, StreamingStrategy streamer, ContextPool pool, HttpServletRequestWrapperPool requestPool) {
 		super(next, new RWLocker(), evicter, map);
 		_pool=pool;
-		
+
 		// TODO - streamer should be used inside Motables get/setBytes() methods  but that means a ref in every session :-(
 		_streamer=streamer;
 
 		_immoter=new MemoryImmoter(_map);
 		_emoter=new MemoryEmoter(_map);
 		_evictionEmoter=new AbstractMappedEmoter(_map){public String getInfo(){return "memory";}};
-        
+
         _requestPool=requestPool;
 	}
 
@@ -96,13 +93,13 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	            _log.error("unexpected timeout - continuing without lock: "+id, e);
 	            // give this some more thought - TODO
 	        }
-	        
+
 	        if (motionLock!=null) motionLock.release();
-	        
+
 	        if (motable.getInvalidated()) {
 	            _log.trace("context disappeared whilst we were waiting for lock: "+id);
 	        }
-	        
+
             // take wrapper from pool...
             motable.setLastAccessedTime(System.currentTimeMillis());
             PoolableHttpServletRequestWrapper wrapper=_requestPool.take();
@@ -130,10 +127,10 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
                 _log.error("unexpected timeout", e);
                 return false;
             }
-            
+
             if (emotable.getInvalidated())
                 return false; // we lost race to motable and it has gone...
-            
+
             return super.prepare(id, emotable, immotable);
         }
 
@@ -177,10 +174,10 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 
 	public Sync getEvictionLock(String id, Motable motable){return ((Context)motable).getExclusiveLock();}
 	public Emoter getEvictionEmoter(){return _evictionEmoter;} // leave lock-taking to evict()...
-    
+
     public void setLastAccessTime(Evictable evictable, long oldTime, long newTime) {_evicter.setLastAccessedTime(evictable, oldTime, newTime);}
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_evicter.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
-    
+
     public void expire(Motable motable) {_config.expire(motable);}
 
 }

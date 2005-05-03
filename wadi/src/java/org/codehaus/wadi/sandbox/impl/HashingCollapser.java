@@ -53,7 +53,7 @@ public class HashingCollapser implements Collapser {
 	 */
 	public Sync getLock(String id) {
 		int index=Math.abs(id.hashCode()%_numSyncs); // Jetty seems to generate negative session id hashcodes...
-		_log.info("collapsed "+id+" to index: "+index);
+		_log.trace("collapsed "+id+" to index: "+index);
 		return _syncs[index];
 	}
 }
