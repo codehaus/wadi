@@ -35,20 +35,20 @@ public class DebugCollapser implements Collapser {
     class DebugSync extends Mutex {
         protected int _counter;
         public synchronized void acquire() throws InterruptedException {
-            _log.trace("acquiring: "+ _counter);
+            if (_log.isTraceEnabled()) _log.trace("acquiring: "+ _counter);
             super.acquire();
-            _log.trace("acquired: "+ (++_counter));
+            if (_log.isTraceEnabled()) _log.trace("acquired: "+ (++_counter));
         }
 
         public synchronized void release(){
             super.release();
-            _log.trace("released: "+ (--_counter));
+            if (_log.isTraceEnabled()) _log.trace("released: "+ (--_counter));
         }
 
         public synchronized boolean attempt(long timeout) throws InterruptedException {
-            _log.trace("attempting: "+_counter);
+            if (_log.isTraceEnabled()) _log.trace("attempting: "+_counter);
             boolean success=super.attempt(timeout);
-            _log.trace("attempted: "+(++_counter));
+            if (_log.isTraceEnabled()) _log.trace("attempted: "+(++_counter));
             return success;
         }
     }

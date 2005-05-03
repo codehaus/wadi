@@ -135,13 +135,13 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
                 motable.setLastAccessedTime(time);
             else {
                 if (motable.getTimedOut()) {
-                    _log.warn("LOADED DEAD SESSION: "+motable.getId());
+                    if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getId());
                     // TODO - something cleverer...
                 }
             }
             _map.put(id, motable);
         }
-	_log.info("loaded sessions: "+list.length);
+	if (_log.isInfoEnabled())_log.info("loaded sessions: "+list.length);
     }
 
     public void start() throws Exception {
@@ -155,7 +155,7 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
         boolean needsLoading=true; // FIXME
         // if so promote to top and expire there
         String id=motable.getId();
-        _log.trace("expiring from disc: "+id);
+        if (_log.isTraceEnabled()) _log.trace("expiring from disc: "+id);
         if (needsLoading) {
             _map.remove(id);
             Motable loaded=_config.getSessionPool().take();

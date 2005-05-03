@@ -278,7 +278,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 				if (hdr != null && val != null && !_DontProxyHeaders.contains(lhdr))
 					res.addHeader(hdr, val);
 
-				//_log.debug("res " + hdr + ": " + val);
+				// if (_log.isDebugEnabled()) _log.debug("res " + hdr + ": " + val);
 
 				h++;
 				hdr = huc.getHeaderFieldKey(h);
@@ -323,6 +323,6 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 
 		long endTime=System.currentTimeMillis();
 		long elapsed=endTime-startTime;
-		_log.trace("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:"+url);
+		if (_log.isDebugEnabled()) _log.debug("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:"+url);
 	}
 }

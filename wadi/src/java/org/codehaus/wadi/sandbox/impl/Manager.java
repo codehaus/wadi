@@ -101,7 +101,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         session.setMaxInactiveInterval(_maxInactiveInterval);
         _map.put(id, session);
         // _contextualiser.getEvicter().insert(session);
-        if (_log.isDebugEnabled()) _log.debug("created: "+id);
+        if (_log.isDebugEnabled()) _log.debug("creation: "+id);
         return session;
     }
 
@@ -114,7 +114,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         // _sessionIdFactory.put(id); // we might reuse session ids ? - sounds like a BAD idea
         session.destroy();
         _sessionPool.put(session);
-        if (_log.isDebugEnabled()) _log.debug("destroyed: "+id);
+        if (_log.isDebugEnabled()) _log.debug("destruction: "+id);
     }
 
     //----------------------------------------

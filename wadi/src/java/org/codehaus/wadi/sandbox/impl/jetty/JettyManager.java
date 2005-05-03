@@ -38,7 +38,7 @@ import org.mortbay.jetty.servlet.SessionManager;
 public class JettyManager extends org.codehaus.wadi.sandbox.impl.DistributableManager implements SessionManager {
 
     protected final Log _log = LogFactory.getLog(getClass());
-    
+
     public JettyManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, JettySessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map sessionMap, StreamingStrategy streamer) {
         super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, streamer);
     }
@@ -66,14 +66,14 @@ public class JettyManager extends org.codehaus.wadi.sandbox.impl.DistributableMa
         try {
             super.stop();
         } catch (Exception e) {
-            _log.warn("unexpected problem shutting down", e);
+	  _log.warn("unexpected problem shutting down", e);
         }
     }
 
 
     // cut-n-pasted from Jetty src - aarg !
     // Greg uses Apache-2.0 as well - so no licensing issue as yet - TODO
-    
+
     public Cookie
     getSessionCookie(javax.servlet.http.HttpSession session,boolean requestIsSecure)
     {
@@ -89,30 +89,30 @@ public class JettyManager extends org.codehaus.wadi.sandbox.impl.DistributableMa
                 path=getUseRequestedId()?"/":_handler.getHttpContext().getContextPath();
             if (path==null || path.length()==0)
                 path="/";
-            
+
             if (domain!=null)
                 cookie.setDomain(domain);
             if (maxAge!=null)
                 cookie.setMaxAge(Integer.parseInt(maxAge));
             else
                 cookie.setMaxAge(-1);
-            
+
             cookie.setSecure(requestIsSecure && getSecureCookies());
             cookie.setPath(path);
-            
+
             return cookie;
         }
         return null;
     }
-    
+
     protected boolean _httpOnly=true;
     public boolean getHttpOnly() {return _httpOnly;}
     public void setHttpOnly(boolean httpOnly) {_httpOnly=httpOnly;}
-    
+
     protected boolean _secureCookies=false;
     public boolean getSecureCookies() {return _secureCookies;}
     public void setSecureCookies(boolean secureCookies) {_secureCookies=secureCookies;}
-    
+
     protected boolean _useRequestedId=false;
     public boolean getUseRequestedId() {return _useRequestedId;}
     public void setUseRequestedId(boolean useRequestedId) {_useRequestedId=useRequestedId;}

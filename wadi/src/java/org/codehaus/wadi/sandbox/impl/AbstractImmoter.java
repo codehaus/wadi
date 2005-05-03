@@ -45,7 +45,7 @@ public abstract class AbstractImmoter implements Immoter {
 			immotable.copy(emotable);
 			return true;
 		} catch (Exception e) {
-			_log.warn("problem during insertion: "+id, e);
+			if (_log.isWarnEnabled()) _log.warn("problem during insertion: "+id, e);
 			return false;
 		}
 	}
@@ -60,10 +60,10 @@ public abstract class AbstractImmoter implements Immoter {
 		try {
 			immotable.tidy();
 		} catch (Exception e) {
-			_log.error("problem rolling back insertion: "+id, e);
+			if (_log.isErrorEnabled()) _log.error("problem rolling back insertion: "+id, e);
 		}
 	}
-	
+
 	// keep the throws clause - we are defining a method signature for our subtypes
 	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) throws IOException, ServletException {
 	// most Contextualisers cannot contextualise locally...

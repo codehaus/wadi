@@ -163,7 +163,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 					contentLength=hreq.getIntHeader(hdr);
 					hasContent=contentLength>0;
 				} catch (NumberFormatException e) {
-					_log.warn("bad Content-Length header value: "+hreq.getHeader(hdr), e);
+					if (_log.isWarnEnabled()) _log.warn("bad Content-Length header value: "+hreq.getHeader(hdr), e);
 				}
 			}
 
@@ -176,7 +176,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 				String val = (String) vals.nextElement();
 				if (val != null) {
 					hm.addRequestHeader(hdr, val);
-					//_log.info("Request " + hdr + ": " + val);
+					// if (_log.isInfoEnabled()) _log.info("Request " + hdr + ": " + val);
 					xForwardedFor |= "X-Forwarded-For".equalsIgnoreCase(hdr); // why is this not in the outer loop ?
 				}
 			}
@@ -200,13 +200,13 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 				String domain=c.getDomain();
 				if (domain==null) {
 					domain=hreq.getServerName(); // TODO - tmp test
-					//_log.warn("defaulting cookie domain");
+					// _log.warn("defaulting cookie domain");
 				}
 				//	  domain=null;
 				String cpath=c.getPath();
 				if (cpath==null) {
 					cpath=hreq.getContextPath(); // fix for Jetty
-					//_log.warn("defaulting cookie path");
+					// _log.warn("defaulting cookie path");
 				}
 				//if (_log.isTraceEnabled()) _log.trace("PATH: value="+path+" length="+(path==null?0:path.length()));
 				Cookie cookie=new Cookie(domain, c.getName(), c.getValue(), cpath, c.getMaxAge(), c.getSecure()); // TODO - sort out domain
@@ -290,7 +290,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 			String val=h.substring(index+1, h.length()).trim();
 			if (val!=null && !_DontProxyHeaders.contains(key)) {
 				hres.addHeader(key, val);
-				//_log.info("Response: "+key+" - "+val);
+				// if (_log.isInfoEnabled()) _log.info("Response: "+key+" - "+val);
 			}
 		}
 

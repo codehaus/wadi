@@ -84,7 +84,7 @@ public class SharedJDBCMotable extends AbstractMotable {
                 motable.setBytes((byte[])rs.getObject(i++));
 
                 if (motable.getTimedOut()) {
-                    _log.warn("LOADED DEAD SESSION: "+motable.getId());
+                    if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getId());
                     // we should expire it immediately, rather than promoting it...
                     // perhaps we could be even cleverer ?
                 }
@@ -116,7 +116,7 @@ public class SharedJDBCMotable extends AbstractMotable {
 				motable.setBytes((byte[])rs.getObject(i++));
 
 				if (!motable.checkTimeframe(System.currentTimeMillis()))
-				    _log.warn("loaded session from the future!: "+id);
+				    if (_log.isWarnEnabled()) _log.warn("loaded session from the future!: "+id);
 
 				if (_log.isTraceEnabled()) _log.trace("loaded (shared database): "+id);
 				return motable;
@@ -124,7 +124,7 @@ public class SharedJDBCMotable extends AbstractMotable {
 				return null;
 			}
 		} catch (SQLException e) {
-			_log.warn("load (shared database) failed: "+id, e);
+			if (_log.isWarnEnabled()) _log.warn("load (shared database) failed: "+id, e);
 			throw e;
 		} finally {
 			if (s!=null)
@@ -146,7 +146,7 @@ public class SharedJDBCMotable extends AbstractMotable {
 			ps.executeUpdate();
 			if (_log.isTraceEnabled()) _log.trace("stored (shared database): "+id);
 		} catch (SQLException e) {
-			_log.error("store (shared database) failed: "+id, e);
+			if (_log.isErrorEnabled()) _log.error("store (shared database) failed: "+id, e);
 			throw e;
 		} finally {
 			if (ps!=null)
@@ -162,7 +162,7 @@ public class SharedJDBCMotable extends AbstractMotable {
 	        s.executeUpdate("DELETE FROM "+table+" WHERE Id='"+id+"'");
 	        if (_log.isTraceEnabled()) _log.trace("removed (shared database): "+id);
 	    } catch (SQLException e) {
-	        _log.error("remove (shared database) failed: "+id);
+	        if (_log.isErrorEnabled()) _log.error("remove (shared database) failed: "+id);
 	    } finally {
 	        try {
 	            if (s!=null)

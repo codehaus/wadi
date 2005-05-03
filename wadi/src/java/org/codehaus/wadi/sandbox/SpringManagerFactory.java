@@ -47,7 +47,7 @@ public class SpringManagerFactory {
     public static Manager create(String descriptor, String bean) throws FileNotFoundException {
         //ClassLoader cl=SpringManagerFactory.class.getClassLoader();
         ClassLoader cl=Thread.currentThread().getContextClassLoader();
-        _log.trace("Manager ClassLoader: "+cl);
+        if (_log.isTraceEnabled()) _log.trace("Manager ClassLoader: "+cl);
 
         //InputStream is=cl.getResourceAsStream(descriptor);
         InputStream is=new FileInputStream(descriptor);
@@ -61,13 +61,13 @@ public class SpringManagerFactory {
             Manager manager=(Manager)dlbf.getBean(bean);
 
             if (manager==null)
-                _log.error("could not find WADI Manager bean: "+bean);
+                if (_log.isErrorEnabled()) _log.error("could not find WADI Manager bean: "+bean);
             else
 	      if (_log.isInfoEnabled()) _log.info("loaded bean: "+bean+" from WADI descriptor: "+descriptor);
 
             return manager;
         } else {
-            _log.error("could not find WADI descriptor: "+descriptor);
+            if (_log.isErrorEnabled())_log.error("could not find WADI descriptor: "+descriptor);
             return null;
         }
     }
