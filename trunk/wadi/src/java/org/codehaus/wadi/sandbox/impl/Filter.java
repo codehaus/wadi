@@ -76,7 +76,7 @@ public class Filter implements javax.servlet.Filter {
 
     public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         String sessionId=request.getRequestedSessionId();
-        _log.trace("potentially stateful request: "+sessionId);
+        if (_log.isTraceEnabled()) _log.trace("potentially stateful request: "+sessionId);
 
         if (sessionId==null) {
             // no session yet - but may initiate one...

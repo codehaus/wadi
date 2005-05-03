@@ -90,14 +90,14 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	            Utils.acquireUninterrupted(lock);
 	            acquired=true;
 	        } catch (TimeoutException e) {
-	            _log.error("unexpected timeout - continuing without lock: "+id, e);
+	            if (_log.isErrorEnabled()) _log.error("unexpected timeout - continuing without lock: "+id, e);
 	            // give this some more thought - TODO
 	        }
 
 	        if (motionLock!=null) motionLock.release();
 
 	        if (motable.getInvalidated()) {
-	            _log.trace("context disappeared whilst we were waiting for lock: "+id);
+	            if (_log.isTraceEnabled()) _log.trace("context disappeared whilst we were waiting for lock: "+id);
 	        }
 
             // take wrapper from pool...

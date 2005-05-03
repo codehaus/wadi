@@ -114,7 +114,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 	    _dispatcher.register(this, "onMessage");
 	    _dispatcher.register(EmigrationAcknowledgement.class, _emigrationRvMap, _ackTimeout);
 
-        _log.trace("Destination is: "+_cluster.getLocalNode().getDestination());
+	    if (_log.isTraceEnabled()) _log.trace("Destination is: "+_cluster.getLocalNode().getDestination());
 		}
 
     public Immoter getImmoter(){return _immoter;}
@@ -193,13 +193,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 
 	public void onMessage(ObjectMessage om, EmigrationStartedNotification sdsn) throws JMSException {
 		Destination emigrationQueue=sdsn.getDestination();
-		_log.trace("received EmigrationStartedNotification: "+emigrationQueue);
+		if (_log.isTraceEnabled()) _log.trace("received EmigrationStartedNotification: "+emigrationQueue);
 		_dispatcher.addDestination(emigrationQueue);
 	}
 
 	public void onMessage(ObjectMessage om, EmigrationEndedNotification sden) {
 		Destination emigrationQueue=sden.getDestination();
-		_log.trace("received EmigrationEndedNotification: "+emigrationQueue);
+		if (_log.isTraceEnabled()) _log.trace("received EmigrationEndedNotification: "+emigrationQueue);
 		_dispatcher.removeDestination(emigrationQueue);
 	}
 
@@ -229,7 +229,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 		            return true;
 		        }
 		    } catch (Exception e) {
-		        _log.warn("problem sending emigration request: "+id, e);
+		        if (_log.isWarnEnabled()) _log.warn("problem sending emigration request: "+id, e);
 		        return false;
 		    }
 		}
@@ -289,7 +289,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 				ea.setLocation(_location);
 				_dispatcher.sendMessage(ea, _settingsInOut);
 			} catch (JMSException e) {
-				_log.error("could not acknowledge safe receipt: "+id, e);
+				if (_log.isErrorEnabled()) _log.error("could not acknowledge safe receipt: "+id, e);
 			}
 
 		}
@@ -306,7 +306,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 
 	public void onMessage(ObjectMessage om, EmigrationRequest er) {
         String id=er.getId();
-        _log.trace("EmigrationRequest received: "+id);
+        if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+id);
         Sync lock=_locker.getLock(id, null);
         boolean acquired=false;
         try {
@@ -317,12 +317,12 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
             Motable emotable=er.getMotable();
 
             if (!emotable.checkTimeframe(System.currentTimeMillis()))
-                _log.warn("immigrating session has come from the future!: "+emotable.getId());
+                if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getId());
 
             Immoter immoter=_top.getDemoter(id, emotable);
             Utils.mote(emoter, immoter, emotable, id);
         } catch (TimeoutException e) {
-            _log.warn("could not acquire promotion lock for incoming session: "+id);
+            if (_log.isWarnEnabled()) _log.warn("could not acquire promotion lock for incoming session: "+id);
         } finally {
             if (acquired)
                 lock.release();

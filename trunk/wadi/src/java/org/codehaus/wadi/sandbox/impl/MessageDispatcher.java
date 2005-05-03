@@ -114,9 +114,9 @@ public class MessageDispatcher implements MessageListener {
 				Dispatcher old;
 				Dispatcher nuw=new TargetDispatcher(target, m);
 				if ((old=(Dispatcher)_map.put(pts[1], nuw))!=null) {
-					_log.warn("later registration replaces earlier - multiple dispatch NYI: "+old+" -> "+nuw);
+					if (_log.isWarnEnabled()) _log.warn("later registration replaces earlier - multiple dispatch NYI: "+old+" -> "+nuw);
 				}
-				_log.trace("registering class: "+pts[1].getName());
+				if (_log.isTraceEnabled()) _log.trace("registering class: "+pts[1].getName());
 				n++;
 			}
 		}
@@ -138,15 +138,15 @@ public class MessageDispatcher implements MessageListener {
 	    synchronized (_rvMap) {
 	      Rendezvous rv=(Rendezvous)_rvMap.get(correlationId);
 	      if (rv==null) {
-		_log.warn("rendez-vous missed - no-one waiting: "+correlationId);
+		if (_log.isWarnEnabled()) _log.warn("rendez-vous missed - no-one waiting: "+correlationId);
 	      } else {
 		do { // should we move this pattern into Utils ?
 		  try {
 		    rv.attemptRendezvous(om, _timeout);
 		  } catch (TimeoutException toe) {
-		    _log.warn("rendez-vous timed out: "+correlationId, toe);
+		    if (_log.isWarnEnabled()) _log.warn("rendez-vous timed out: "+correlationId, toe);
 		  } catch (InterruptedException ignore) {
-		    _log.trace("rendez-vous interruption ignored: "+correlationId);
+		    if (_log.isTraceEnabled()) _log.trace("rendez-vous interruption ignored: "+correlationId);
 		  }
 		} while (Thread.interrupted()); // TODO - should really subtract from timeout each time...
 	      }
@@ -165,7 +165,7 @@ public class MessageDispatcher implements MessageListener {
 	 */
 	public void register(Class type, Map rvMap, long timeout) {
 		_map.put(type, new RendezVousDispatcher(rvMap, timeout));
-		_log.trace("registering class: "+type.getName());
+		if (_log.isTraceEnabled()) _log.trace("registering class: "+type.getName());
 	}
 
 	public void onMessage(Message message) {
@@ -201,7 +201,7 @@ public class MessageDispatcher implements MessageListener {
 						// if a message is of unrecognised type, we should recurse up its class hierarchy, memoizing the result
 						// if we find a class that matches - TODO - This would enable message subtyping...
 					} else {
-						_log.trace("no dispatcher registered for message: "+obj);
+						if (_log.isTraceEnabled()) _log.trace("no dispatcher registered for message: "+obj);
 					}
 				}
 			} catch (Exception e) {
@@ -255,15 +255,15 @@ public class MessageDispatcher implements MessageListener {
 					settingsInOut.from=_cluster.getLocalNode().getDestination();
 					assert settingsInOut.correlationId.equals(om.getJMSCorrelationID());
 					long elapsedTime=System.currentTimeMillis()-startTime;
-					_log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis): "+id); // session does not exist
+					if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis): "+id); // session does not exist
 				} catch (TimeoutException toe) {
-					_log.warn("no response to request within timeout ("+timeout+" millis): "+id); // session does not exist
+					if (_log.isWarnEnabled()) _log.warn("no response to request within timeout ("+timeout+" millis): "+id); // session does not exist
 				} catch (InterruptedException ignore) {
-					_log.warn("waiting for response - interruption ignored: "+id);
+					if (_log.isWarnEnabled()) _log.warn("waiting for response - interruption ignored: "+id);
 				}
 			} while (Thread.interrupted());
 		} catch (JMSException e) {
-			_log.warn("problem sending request message: "+id, e);
+			if (_log.isWarnEnabled()) _log.warn("problem sending request message: "+id, e);
 		} finally {
 			// tidy up rendez-vous
 			synchronized (rvMap) {

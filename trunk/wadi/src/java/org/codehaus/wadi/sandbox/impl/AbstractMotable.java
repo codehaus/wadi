@@ -43,21 +43,21 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
 	protected String _id;
 	public String getId(){return _id;}
 	public void setId(String id){_id=id;}
-	
+
 	public void tidy(){setInvalidated(true);}
 
 	public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id) {
 	    init(creationTime, lastAccessedTime, maxInactiveInterval, invalidated);
 	    _id=id;
 	}
-	
+
 	public void destroy() {
 	    super.destroy();
 	    _id=null;
 	}
-	
+
 	// N.B. implementation of Bytes field is left abstract...
-    
+
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         super.readContent(oi);
         _id=(String)oi.readObject();
@@ -65,14 +65,14 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
 //        byte[] bytes=new byte[length];
 //        int actualLength=oi.read(bytes);
 //        if (actualLength!=length)
-//            _log.error("serialized session truncated - "+(length-actualLength)+" bytes lost");
+//            if (_log.isErrorEnabled()) _log.error("serialized session truncated - "+(length-actualLength)+" bytes lost");
 //        try {
 //            setBytes(bytes);
 //        } catch (Exception e) {
 //            _log.error("unexpected problem deserializing session - data lost", e);
 //        }
     }
-    
+
     public void writeContent(ObjectOutput oo) throws IOException {
         super.writeContent(oo);
         oo.writeObject(_id);

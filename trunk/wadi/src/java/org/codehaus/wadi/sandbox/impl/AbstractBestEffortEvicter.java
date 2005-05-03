@@ -83,7 +83,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
     }
 
     public void start() throws Exception {
-        _log.trace("starting (sweep interval: "+_sweepInterval+" sec[s])");
+        if (_log.isTraceEnabled()) _log.trace("starting (sweep interval: "+_sweepInterval+" sec[s])");
         long interval=_sweepInterval*1000;
         _config.getTimer().schedule(_task, interval, interval);
     }
@@ -158,7 +158,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
 		}
 		sync.release();
 	      } else {
-		_log.trace("could not acquire expiration lock: "+id);
+		if (_log.isTraceEnabled()) _log.trace("could not acquire expiration lock: "+id);
 	      }
 	    }
 	  }
@@ -180,7 +180,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
                     }
                     sync.release();
                 } else {
-                    _log.trace("could not acquire demotion lock: "+id);
+                    if (_log.isTraceEnabled()) _log.trace("could not acquire demotion lock: "+id);
                 }
             }
             toDemote=null;

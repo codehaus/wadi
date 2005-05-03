@@ -51,11 +51,11 @@ public class Handler extends AbstractHttpHandler {
 			String ip=request.getRemoteAddr();
 			//  from a trusted IP...
 			if (_trustedIps.matcher(ip).matches()) {
-				_log.trace("securing proxied request: "+request.getRequestURL());
+				if (_log.isTraceEnabled()) _log.trace("securing proxied request: "+request.getRequestURL());
 				((Securable)request.getHttpConnection()).setSecure(true);
 			} else {
 				// otherwise we have a configuration issue or are being spoofed...
-				_log.warn("purported WADI request arrived from suspect IP address: "+_trustedIps.pattern()+" !~ "+ip);
+			  if (_log.isWarnEnabled()) _log.warn("purported WADI request arrived from suspect IP address: "+_trustedIps.pattern()+" !~ "+ip);
 			}
 		}
 	}

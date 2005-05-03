@@ -73,7 +73,7 @@ public class Utils {
 			if (e) emoter.rollback(id, emotable);
 			if (i) immoter.rollback(id, immotable);
 			long elapsedTime=System.currentTimeMillis()-startTime;
-			_log.warn("motion failed: "+id+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
+			if (_log.isWarnEnabled()) _log.warn("motion failed: "+id+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
 			return null;
 		}
 	}

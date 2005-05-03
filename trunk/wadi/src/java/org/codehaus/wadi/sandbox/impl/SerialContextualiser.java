@@ -75,7 +75,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
                 boolean found;
                 if (null!=context) {
                     // oops - it HAS happened...
-                    _log.warn("session was promoted whilst we were waiting: "+id); // TODO - downgrade..
+                    if (_log.isWarnEnabled()) _log.warn("session was promoted whilst we were waiting: "+id); // TODO - downgrade..
                     // overlap two locking systems until we have secured the session in memory, then run the request
                     // and release the lock.
                     // TODO - we really need to take a read lock before we release the motionLock...

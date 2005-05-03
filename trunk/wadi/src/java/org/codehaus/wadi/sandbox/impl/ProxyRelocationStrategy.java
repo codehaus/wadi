@@ -73,7 +73,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 	}
 
 	protected Location locate(String id, Map locationMap) {
-		_log.trace("sending location request: "+id);
+		if (_log.isTraceEnabled()) _log.trace("sending location request: "+id);
 		MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
 		settingsInOut.from=_location.getDestination();
 		settingsInOut.to=_dispatcher.getCluster().getDestination();
@@ -96,7 +96,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 				locationMap.put(i.next(), location);
 			}
 		}
-		_log.trace("updated cache for: "+ids);
+		if (_log.isTraceEnabled()) _log.trace("updated cache for: "+ids);
 
 		return location;
 	}
@@ -129,7 +129,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 				} catch (RecoverableException e2) {
 					recoverable=true;
 				} catch (ProxyingException e2) {
-					_log.error("irrecoverable proxying problem: "+id, e2);
+					if (_log.isErrorEnabled()) _log.error("irrecoverable proxying problem: "+id, e2);
 					recoverable=false;
 				}
 			} else {
@@ -137,14 +137,14 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 			}
 
 		} catch (ProxyingException e) {
-			_log.error("irrecoverable proxying problem: "+id, e);
+			if (_log.isErrorEnabled()) _log.error("irrecoverable proxying problem: "+id, e);
 			recoverable=false;
 		}
 
 		if (recoverable) {
 			// we did find the session's location, but all attempts to proxy to it failed,,,
 			motionLock.release();
-			_log.error("all attempts at proxying to session location failed - processing request without session: "+id+ " - "+location);
+			if (_log.isErrorEnabled()) _log.error("all attempts at proxying to session location failed - processing request without session: "+id+ " - "+location);
 			// we'll have to contextualise hreq here - stateless context ? TODO
 			chain.doFilter(hreq, hres);
 			return true; // looks wrong - but actually indicates that req should proceed no further down stack...
@@ -157,7 +157,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 
 	public void onMessage(ObjectMessage message, LocationRequest request) {
 		String id=request.getId();
-		_log.trace("receiving location request: "+id);
+		if (_log.isTraceEnabled()) _log.trace("receiving location request: "+id);
 		if (_top==null) {
 			_log.warn("no Contextualiser set - cannot respond to LocationRequests");
 		} else {
@@ -169,7 +169,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 				FilterChain fc=new LocationResponseFilterChain(replyTo, correlationId, _location, id, handShakePeriod);
 				_top.contextualise(null,null,fc,id, null, null, true);
 			} catch (Exception e) {
-				_log.warn("problem handling location request: "+id);
+				if (_log.isWarnEnabled()) _log.warn("problem handling location request: "+id);
 			}
 			// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
 		}
@@ -194,7 +194,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 
 		public void
 		doFilter(ServletRequest request, ServletResponse response) {
-			_log.trace("sending location response: "+_id);
+			if (_log.isTraceEnabled()) _log.trace("sending location response: "+_id);
 			LocationResponse lr=new LocationResponse(_location, Collections.singleton(_id));
 			try {
 				ObjectMessage m=_dispatcher.getCluster().createObjectMessage();
@@ -206,16 +206,16 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 				// Now wait for a while so that the session is locked into this container, giving the other node a chance to proxy to this location and still find it here...
 				// instead of just waiting a set period, we could use a Rendezvous object with a timeout - more complexity - consider...
 				try {
-					_log.trace("waiting for proxy ("+_handOverPeriod+" millis)...: "+_id);
+					if (_log.isTraceEnabled()) _log.trace("waiting for proxy ("+_handOverPeriod+" millis)...: "+_id);
 					Thread.sleep(_handOverPeriod);
-					_log.trace("...waiting over: "+_id);
+					if (_log.isTraceEnabled()) _log.trace("...waiting over: "+_id);
 				} catch (InterruptedException ignore) {
 					// ignore
 					// TODO - should we loop here until timeout is up ?
 				}
 
 			} catch (JMSException e) {
-				_log.error("problem sending location response: "+_id, e);
+				if (_log.isErrorEnabled()) _log.error("problem sending location response: "+_id, e);
 			}
 		}
 	}
