@@ -30,12 +30,14 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.IdGenerator;
+import org.codehaus.wadi.RoutingStrategy;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.ContextualiserConfig;
 import org.codehaus.wadi.sandbox.Evictable;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Lifecycle;
 import org.codehaus.wadi.sandbox.Motable;
+import org.codehaus.wadi.sandbox.Router;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
 import org.codehaus.wadi.sandbox.ValuePool;
@@ -63,8 +65,9 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     protected final Map _map;
     protected final Timer _timer;
     protected final boolean _accessOnLoad;
+    protected Router _router;
 
-    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map map, boolean accessOnLoad) {
+    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map map, boolean accessOnLoad, Router router) {
         _sessionPool=sessionPool;
         _sessionPool.init(this);
         _attributesPool=attributesPool;
@@ -76,6 +79,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         _map=map; // TODO - can we get this from Contextualiser
         _timer=new Timer();
         _accessOnLoad=accessOnLoad;
+        _router=router;
     }
 
     protected boolean _started;
@@ -221,4 +225,6 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     public boolean getAccessOnLoad() {return _accessOnLoad;}
 
     public SessionPool getSessionPool() {return _sessionPool;}
+    
+    public Router getRouter() {return _router;}
 }

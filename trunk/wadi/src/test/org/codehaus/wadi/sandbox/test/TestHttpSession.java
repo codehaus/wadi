@@ -40,12 +40,15 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.IdGenerator;
+import org.codehaus.wadi.RoutingStrategy;
 import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.impl.NoRoutingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.sandbox.AttributesFactory;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
+import org.codehaus.wadi.sandbox.Router;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
@@ -55,6 +58,7 @@ import org.codehaus.wadi.sandbox.ValueHelper;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
+import org.codehaus.wadi.sandbox.impl.DummyRouter;
 import org.codehaus.wadi.sandbox.impl.DummySessionWrapperFactory;
 import org.codehaus.wadi.sandbox.impl.LazyAttributesFactory;
 import org.codehaus.wadi.sandbox.impl.StandardAttributesFactory;
@@ -85,6 +89,8 @@ extends TestCase
     protected Listener                _listener;
     protected List                    _events=new ArrayList();
     protected Map                     _sessionMap=new HashMap();
+    protected boolean                 _accessOnLoad=true;
+    protected Router                  _router=new DummyRouter();
     // Standard
     protected Contextualiser          _standardContextualiser=new DummyContextualiser();
     protected SessionWrapperFactory   _standardSessionWrapperFactory=new DummySessionWrapperFactory();
@@ -95,7 +101,7 @@ extends TestCase
     protected SessionPool             _standardSessionPool=new SimpleSessionPool(_standardSessionFactory);
     protected ValueFactory            _standardValueFactory=new StandardValueFactory();
     protected ValuePool               _standardValuePool=new SimpleValuePool(_standardValueFactory);
-    protected Manager                 _standardManager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser, _sessionMap, true);
+    protected Manager                 _standardManager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser, _sessionMap, _accessOnLoad, _router);
     // Distributable
     protected Contextualiser          _distributableContextualiser=new DummyContextualiser();
     protected StreamingStrategy       _streamer=new SimpleStreamingStrategy();
@@ -105,20 +111,20 @@ extends TestCase
     protected SessionPool             _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _distributableValueFactory=new DistributableValueFactory();
     protected ValuePool               _distributableValuePool=new SimpleValuePool(_distributableValueFactory);
-    protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesPool, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer);
+    protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesPool, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer, _accessOnLoad, _router);
     // LazyValue
     protected SessionPool             _lazyValueSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _lazyValueFactory=new LazyValueFactory();
     protected ValuePool               _lazyValuePool=new SimpleValuePool(_lazyValueFactory);
-    protected Manager                 _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesPool, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer);
+    protected Manager                 _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesPool, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer, _accessOnLoad, _router);
     // LazyAttributes
     protected SessionPool             _lazyAttributesSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected AttributesFactory       _lazyAttributesFactory=new LazyAttributesFactory();
     protected AttributesPool          _lazyAttributesPool=new SimpleAttributesPool(_lazyAttributesFactory);
-    protected Manager                 _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesPool,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer);
+    protected Manager                 _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesPool,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer, _accessOnLoad, _router);
     // LazyBoth
     protected SessionPool             _lazyBothSessionPool=new SimpleSessionPool(_distributableSessionFactory);
-    protected Manager                 _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesPool,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer);
+    protected Manager                 _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesPool,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer, _accessOnLoad, _router);
     
     
     public TestHttpSession(String name)

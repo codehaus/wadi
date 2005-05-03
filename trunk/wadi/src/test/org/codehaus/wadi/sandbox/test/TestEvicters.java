@@ -26,7 +26,9 @@ import java.util.Timer;
 import javax.servlet.ServletContext;
 
 import org.codehaus.wadi.IdGenerator;
+import org.codehaus.wadi.RoutingStrategy;
 import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.impl.NoRoutingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.sandbox.AttributesPool;
@@ -39,6 +41,7 @@ import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.EvicterConfig;
 import org.codehaus.wadi.sandbox.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.Motable;
+import org.codehaus.wadi.sandbox.Router;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionConfig;
 import org.codehaus.wadi.sandbox.SessionPool;
@@ -52,6 +55,7 @@ import org.codehaus.wadi.sandbox.impl.DistributableSession;
 import org.codehaus.wadi.sandbox.impl.DistributableSessionFactory;
 import org.codehaus.wadi.sandbox.impl.DistributableValueFactory;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
+import org.codehaus.wadi.sandbox.impl.DummyRouter;
 import org.codehaus.wadi.sandbox.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.impl.ExclusiveDiscContextualiser;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
@@ -124,7 +128,8 @@ public class TestEvicters extends TestCase {
         public int getMaxInactiveInterval() {return 2;}
         public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){}
         public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval){}
-
+        protected final Router _router=new DummyRouter();
+        public Router getRouter() {return _router;}
     }
     
 //    public void testExpiry() throws Exception {
@@ -197,7 +202,7 @@ public class TestEvicters extends TestCase {
         ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
         SessionWrapperFactory wrapperFactory=new JettySessionWrapperFactory();
         IdGenerator idFactory=new TomcatIdGenerator();
-        DistributableManager manager=new DistributableManager(sessionPool, attributesPool, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), streamer);
+        DistributableManager manager=new DistributableManager(sessionPool, attributesPool, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), streamer, true, new DummyRouter());
         manager.setMaxInactiveInterval(2);
         //manager.start();
         //mevicter.stop(); // we'll run it by hand...

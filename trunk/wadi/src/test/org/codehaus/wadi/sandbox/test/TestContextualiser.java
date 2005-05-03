@@ -42,8 +42,10 @@ import org.activemq.store.vm.VMPersistenceAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
+import org.codehaus.wadi.RoutingStrategy;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.GZIPStreamingStrategy;
+import org.codehaus.wadi.impl.NoRoutingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Context;
@@ -57,6 +59,7 @@ import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
+import org.codehaus.wadi.sandbox.Router;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.impl.AbsoluteEvicter;
 import org.codehaus.wadi.sandbox.impl.AbstractContextualiser;
@@ -68,6 +71,7 @@ import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.impl.DummyEvicter;
 import org.codehaus.wadi.sandbox.impl.DummyHttpServletRequest;
+import org.codehaus.wadi.sandbox.impl.DummyRouter;
 import org.codehaus.wadi.sandbox.impl.ExclusiveDiscContextualiser;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
@@ -382,6 +386,9 @@ public class TestContextualiser extends TestCase {
         public boolean getAccessOnLoad() {return true;}
 
         public SessionPool getSessionPool(){return null;}
+        
+        protected final Router _router=new DummyRouter();
+        public Router getRouter() {return _router;}
 
     }
 

@@ -92,6 +92,16 @@
        <constructor-arg><ref bean="DataSource"/></constructor-arg>
   </bean>
 
+	<!-- the Router (load-balancer integration) -->
+
+  <bean
+    id="Router"
+    class="org.codehaus.wadi.sandbox.impl.JkRouter"
+    >
+       <constructor-arg><value>${wadi.colour}</value></constructor-arg>
+  </bean>
+
+	
 	<!-- and finally - the SessionManager itself -->
 
   <bean
@@ -106,6 +116,8 @@
     <constructor-arg><ref bean="Contextualiser"/></constructor-arg>
     <constructor-arg><ref bean="SessionMap"/></constructor-arg>
     <constructor-arg><ref bean="Streamer"/></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg><ref bean="Router"/></constructor-arg>
   </bean>
 
 </beans>

@@ -28,9 +28,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.RoutingStrategy;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.PoolableHttpServletRequestWrapper;
+import org.codehaus.wadi.sandbox.Router;
 import org.codehaus.wadi.sandbox.impl.Manager;
 
 public class Filter implements javax.servlet.Filter {
@@ -40,6 +42,7 @@ public class Filter implements javax.servlet.Filter {
     protected Manager _manager;
     protected boolean _distributable;
     protected Contextualiser _contextualiser;
+    protected Router _router;
     protected HttpServletRequestWrapperPool _pool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - init from _manager
 
     // Filter Lifecycle
@@ -56,6 +59,7 @@ public class Filter implements javax.servlet.Filter {
       _manager.setFilter(this);
       _distributable=_manager.getDistributable();
       _contextualiser=_manager.getContextualiser();
+      _router=_manager.getRouter();
     }
 
     public void
@@ -87,6 +91,8 @@ public class Filter implements javax.servlet.Filter {
             _pool.put(wrapper);
         } else {
             // already associated with a session...
+            sessionId=_router.strip(sessionId); // strip off any routing info...
+            // _router.rerouteCookie(request, response, null, sessionId); // TODO - do we 'restick' client ?
             _contextualiser.contextualise(request, response, chain, sessionId, null, null, false);
         }
     }
