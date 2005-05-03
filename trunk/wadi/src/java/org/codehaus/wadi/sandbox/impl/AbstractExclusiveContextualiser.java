@@ -95,7 +95,8 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
             Map.Entry e=(Map.Entry)i.next();
             String id=(String)e.getKey();
             Motable emotable=(Motable)e.getValue();
-            Utils.mote(emoter, immoter, emotable, id);
+	    if (emotable!=null) // seems to happen at shutdown under stress...
+	      Utils.mote(emoter, immoter, emotable, id);
         }
         RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
         if (_log.isInfoEnabled()) _log.info("distributed sessions: "+s);
