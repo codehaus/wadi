@@ -21,6 +21,7 @@ import java.util.List;
 import javax.servlet.ServletContext;
 
 import org.codehaus.wadi.IdGenerator;
+import org.codehaus.wadi.RoutingStrategy;
 
 public interface SessionConfig {
     
@@ -38,5 +39,7 @@ public interface SessionConfig {
     
     void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
     void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
+    
+    Router getRouter();
     
 }

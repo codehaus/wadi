@@ -27,6 +27,7 @@ import org.codehaus.wadi.IdGenerator;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
+import org.codehaus.wadi.sandbox.Router;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.impl.Manager;
@@ -39,8 +40,8 @@ public class JettyManager extends org.codehaus.wadi.sandbox.impl.DistributableMa
 
     protected final Log _log = LogFactory.getLog(getClass());
 
-    public JettyManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, JettySessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map sessionMap, StreamingStrategy streamer) {
-        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, streamer);
+    public JettyManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, JettySessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map sessionMap, StreamingStrategy streamer, boolean accessOnLoad, Router router) {
+        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, streamer, accessOnLoad, router);
     }
 
     protected ServletHandler _handler;

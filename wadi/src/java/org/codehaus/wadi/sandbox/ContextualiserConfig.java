@@ -26,5 +26,6 @@ public interface ContextualiserConfig {
     Timer getTimer();
     boolean getAccessOnLoad();
     SessionPool getSessionPool();
+    Router getRouter();
     
 }

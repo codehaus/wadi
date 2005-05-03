@@ -36,11 +36,15 @@ public class SessionWrapper implements HttpSession {
 
     protected final Session _session;
 
-    public SessionWrapper(Session session) {_session=session;}
+    public SessionWrapper(Session session) {
+        _session=session;
+    }
+
+    // from cache
+    public String getId() {return _session.getConfig().getRouter().augment(_session.getId());} // TODO - cache this...
 
     // delegate to Session
     public long getCreationTime() {return _session.getCreationTime();}
-    public String getId() {return _session.getId();}
     public long getLastAccessedTime() {return _session.getLastAccessedTime();} 
     public void setMaxInactiveInterval(int interval) {_session.setMaxInactiveInterval(interval);}
     public int getMaxInactiveInterval() {return _session.getMaxInactiveInterval();}

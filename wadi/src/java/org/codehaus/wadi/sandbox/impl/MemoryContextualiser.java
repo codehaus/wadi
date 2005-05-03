@@ -100,6 +100,8 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	            if (_log.isTraceEnabled()) _log.trace("context disappeared whilst we were waiting for lock: "+id);
 	        }
 
+            // restick clients whose session is here, but whose routing info points elsewhere...
+            _config.getRouter().reroute(req, res); // TODO - hmm... still thinking
             // take wrapper from pool...
             motable.setLastAccessedTime(System.currentTimeMillis());
             PoolableHttpServletRequestWrapper wrapper=_requestPool.take();

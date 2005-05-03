@@ -23,10 +23,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.wadi.IdGenerator;
+import org.codehaus.wadi.RoutingStrategy;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.DistributableSessionConfig;
+import org.codehaus.wadi.sandbox.Router;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
@@ -37,8 +39,8 @@ public class DistributableManager extends Manager implements DistributableSessio
 
     protected final StreamingStrategy _streamer;
 
-    public DistributableManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map sessionMap, StreamingStrategy streamer) {
-        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, true);
+    public DistributableManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map sessionMap, StreamingStrategy streamer, boolean accessOnLoad, Router router) {
+        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, accessOnLoad, router);
         _streamer=streamer;
     }
 
