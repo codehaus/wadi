@@ -133,18 +133,18 @@ public class SimpleContextualiserStack implements Contextualiser {
         _statelessURIFlag=false;
         _stateless=new StatelessContextualiser(_cluster, _statelessMethods, _statelessMethodFlag, _statelessURIs, _statelessURIFlag);
 
-        File dir=new File("/tmp/wadi-exclusive");
+        File dir=new File("/tmp/wadi/"+System.getProperty("wadi.colour"));
         dir.delete();
         dir.mkdir();
         _discDirectory=dir;
         // TODO - consider eviction on disc, indexing by ttl would be efficient enough...
-        _discEvicter=new NeverEvicter(20*1000, true); // sessions never pass below this point, unless the node is shutdown
+        _discEvicter=new NeverEvicter(20, true); // sessions never pass below this point, unless the node is shutdown
         _discMap=new HashMap();
         _disc=new ExclusiveDiscContextualiser(_stateless, _collapser, _discEvicter, _discMap, _streamer, _discDirectory);
 
 
         _memoryPool=pool;
-        _memoryEvicter=new AbsoluteEvicter(10*1000, true, 10); // if a session is inactive for 10 secs, it moves to disc
+        _memoryEvicter=new AbsoluteEvicter(10, true, 10); // if a session is inactive for 10 secs, it moves to disc
         _memoryMap=sessionMap;
         _serial=new SerialContextualiser(_disc, _collapser, _memoryMap);
         _requestPool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - use a ThreadLocal based Pool
@@ -179,7 +179,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     public void init(ContextualiserConfig config) {
         _memory.init(config);
     }
-    
+
     public void start() throws Exception {
         _clusterCluster.start();
 	// TODO - dispatcher probably needs a Lifecycle too... (and a thread pool)
@@ -191,17 +191,17 @@ public class SimpleContextualiserStack implements Contextualiser {
         _memory.stop();
         _clusterCluster.stop();
     }
-    
+
     public void destroy() {
         _memory.destroy();
     }
-    
+
     public void promoteToExclusive(Immoter immoter){_memory.promoteToExclusive(immoter);}
     public int loadMotables(Emoter emoter, Immoter immoter) {return _memory.loadMotables(emoter, immoter);}
-    
+
     public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){_memory.setLastAccessedTime(evictable, oldTime, newTime);}
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_memory.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
-    
+
     public Contextualiser getTop() {return _memory;}
 
 }
