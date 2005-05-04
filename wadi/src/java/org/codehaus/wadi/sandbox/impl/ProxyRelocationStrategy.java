@@ -169,7 +169,7 @@ public class ProxyRelocationStrategy implements RequestRelocationStrategy {
 				FilterChain fc=new LocationResponseFilterChain(replyTo, correlationId, _location, id, handShakePeriod);
 				_top.contextualise(null,null,fc,id, null, null, true);
 			} catch (Exception e) {
-				if (_log.isWarnEnabled()) _log.warn("problem handling location request: "+id);
+				if (_log.isWarnEnabled()) _log.warn("problem handling location request: "+id, e);
 			}
 			// TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
 		}

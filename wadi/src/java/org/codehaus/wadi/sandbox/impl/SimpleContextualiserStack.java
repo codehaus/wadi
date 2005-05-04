@@ -28,7 +28,9 @@ package org.codehaus.wadi.sandbox.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -103,7 +105,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final Map _memoryMap;
     protected final MemoryContextualiser _memory;
 
-    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource) throws SQLException, JMSException, ClusterException {
+    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource) throws SQLException, JMSException, ClusterException, UnknownHostException {
         super();
         _streamer=new SimpleStreamingStrategy();
         //_collapser=new DebugCollapser();
@@ -118,13 +120,17 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterFactory=new CustomClusterFactory(_connectionFactory);
         _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
         _clusterCluster=(CustomCluster)_clusterFactory.createCluster(_clusterName);
-        InetSocketAddress isa=new InetSocketAddress("localhost", 8080); // FIXME - hardwired port
+        InetAddress localhost=InetAddress.getLocalHost();
+        System.out.println("LOCALHOST: "+localhost);
+        InetSocketAddress isa=new InetSocketAddress(localhost, Integer.parseInt(System.getProperty("http.port"))); // FIXME  - parameterise host and port somehow...
         HttpProxy proxy=new StandardHttpProxy("jsessionid");
         _clusterLocation=new HttpProxyLocation(_clusterCluster.getLocalNode().getDestination(), isa, proxy);
         _clusterMap=new ConcurrentHashMap();
         _clusterEvicter=new DummyEvicter(); // TODO - consider Cluster eviction carefully...
         _clusterDispatcher=new MessageDispatcher(_clusterCluster);
-        _clusterRelocater=new ImmigrateRelocationStrategy(_clusterDispatcher, _clusterLocation, 2000, _clusterMap, _collapser);
+//        _clusterRelocater=new ImmigrateRelocationStrategy(_clusterDispatcher, _clusterLocation, 2000, _clusterMap, _collapser);
+        //(MessageDispatcher dispatcher, Location location, long timeout, long proxyHandOverPeriod) {
+        _clusterRelocater=new ProxyRelocationStrategy(_clusterDispatcher, _clusterLocation, 2000, 2000);
         _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation);
 
         _statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);

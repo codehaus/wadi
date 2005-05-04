@@ -92,6 +92,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		URL url=null;
 		try {
 			url=new URL("http", location.getAddress().getHostAddress(), location.getPort(), uri);
+            if (_log.isTraceEnabled()) _log.trace("proxying to: "+url);
 		} catch (MalformedURLException e) {
 			throw new IrrecoverableException("bad proxy url", e);
 		}
