@@ -223,8 +223,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 		        EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emigrationRvMap, er, settingsInOut, _ackTimeout);
 
 		        if (ea==null) {
+                    if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+_ackTimeout+" millis): "+id);
 		            return false;
 		        } else {
+                    if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+_ackTimeout+" millis): "+id);
 		            _map.put(id, ea.getLocation()); // cache new Location of Session
 		            return true;
 		        }

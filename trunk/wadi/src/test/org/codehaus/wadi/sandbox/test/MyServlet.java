@@ -77,6 +77,7 @@ public class MyServlet implements Servlet {
 		_memoryMap=new HashMap();
         _serialContextualiser=new SerialContextualiser(_statelessContextualiser, _collapser, _memoryMap);
 		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamingStrategy(), contextPool, new MyDummyHttpServletRequestWrapperPool());
+        _clusterContextualiser.setTop(_memoryContextualiser);
 		relocater.setTop(_memoryContextualiser);
 	}
 
@@ -85,6 +86,12 @@ public class MyServlet implements Servlet {
 	public void init(ServletConfig config) {
 		_config = config;
 		_log.info("Servlet.init()");
+        _memoryContextualiser.init(new DummyContextualiserConfig(_memoryContextualiser, _memoryMap));
+        try {
+            _memoryContextualiser.start();
+        } catch (Exception e) {
+            _log.warn(e);
+        }
 	}
 
 	public ServletConfig getServletConfig() {
@@ -105,8 +112,9 @@ public class MyServlet implements Servlet {
 
 	public void destroy() {
 		try {
-		_cluster.stop();
-		} catch (JMSException e) {
+            _memoryContextualiser.stop();
+            _cluster.stop();
+		} catch (Exception e) {
 			_log.warn(e);
 		}
 	}

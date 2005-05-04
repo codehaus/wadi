@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -42,15 +41,12 @@ import org.activemq.store.vm.VMPersistenceAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
-import org.codehaus.wadi.RoutingStrategy;
 import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.GZIPStreamingStrategy;
-import org.codehaus.wadi.impl.NoRoutingStrategy;
 import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Context;
 import org.codehaus.wadi.sandbox.Contextualiser;
-import org.codehaus.wadi.sandbox.ContextualiserConfig;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evictable;
 import org.codehaus.wadi.sandbox.Evicter;
@@ -59,11 +55,8 @@ import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
-import org.codehaus.wadi.sandbox.Router;
-import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.impl.AbsoluteEvicter;
 import org.codehaus.wadi.sandbox.impl.AbstractContextualiser;
-import org.codehaus.wadi.sandbox.impl.AbstractMotingContextualiser;
 import org.codehaus.wadi.sandbox.impl.AlwaysEvicter;
 import org.codehaus.wadi.sandbox.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.impl.CustomCluster;
@@ -71,7 +64,6 @@ import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.impl.DummyEvicter;
 import org.codehaus.wadi.sandbox.impl.DummyHttpServletRequest;
-import org.codehaus.wadi.sandbox.impl.DummyRouter;
 import org.codehaus.wadi.sandbox.impl.ExclusiveDiscContextualiser;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
@@ -164,7 +156,7 @@ public class TestContextualiser extends TestCase {
 	  }
 	}
 
-	public void testConceptualiser() throws Exception {
+	public void testConctextualiser() throws Exception {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 
@@ -201,6 +193,9 @@ public class TestContextualiser extends TestCase {
 		Contextualiser serial=new SerialContextualiser(disc, collapser, m);
 
 		Contextualiser memory=new MemoryContextualiser(serial, new DummyEvicter(), m, ss, new MyContextPool(), _requestPool);
+        
+        memory.init(new DummyContextualiserConfig(memory, m));
+        
 		m.put("foo", new MyContext("foo", "foo"));
 		assertTrue(m.size()==1);
 
@@ -372,27 +367,7 @@ public class TestContextualiser extends TestCase {
 		assertTrue(mxc._counter==n);
 		}
 
-    static class MyContextualiserConfig implements ContextualiserConfig {
-
-        protected final Contextualiser _top;
-        protected final Map _map;
-        protected final Timer _timer=new Timer();
-
-        public MyContextualiserConfig(Contextualiser top, Map map) {_top=top;_map=map;}
-        public int getMaxInactiveInterval() {return 30*60*60;}
-        public void expire(Motable motable) {_map.remove(motable.getId());}
-        public Immoter getEvictionImmoter() {return ((AbstractMotingContextualiser)_top).getImmoter();} // HACk - FIXME
-        public Timer getTimer() {return _timer;}
-        public boolean getAccessOnLoad() {return true;}
-
-        public SessionPool getSessionPool(){return null;}
-        
-        protected final Router _router=new DummyRouter();
-        public Router getRouter() {return _router;}
-
-    }
-
-	public void testEviction2() throws Exception {
+    public void testEviction2() throws Exception {
 		Collapser collapser=new HashingCollapser(10, 2000);
 		StreamingStrategy ss=new SimpleStreamingStrategy();
 		Map d=new HashMap();
@@ -404,7 +379,7 @@ public class TestContextualiser extends TestCase {
 		m.put("foo", foo);
         Evicter memoryEvicter=new AlwaysEvicter(30000, true);
 		Contextualiser memory=new MemoryContextualiser(serial, memoryEvicter, m, new GZIPStreamingStrategy(), new MyContextPool(), _requestPool);
-        memory.init(new MyContextualiserConfig(memory, m));
+        memory.init(new DummyContextualiserConfig(memory, m));
 
 		FilterChain fc=new MyFilterChain();
 
@@ -432,7 +407,7 @@ public class TestContextualiser extends TestCase {
 		m.put("foo", tmp); // times out 2 seconds from now...
         Evicter memoryEvicter=new TimeToLiveEvicter(30000, true, 1000);
 		Contextualiser memory=new MemoryContextualiser(serial, memoryEvicter, m, new GZIPStreamingStrategy(), new MyContextPool(), _requestPool);
-        memory.init(new MyContextualiserConfig(memory, m));
+        memory.init(new DummyContextualiserConfig(memory, m));
 
 		FilterChain fc=new MyFilterChain();
 
@@ -531,7 +506,7 @@ public class TestContextualiser extends TestCase {
 		Map m=new HashMap();
         Evicter memoryEvicter=new AbsoluteEvicter(30000, true, 30*60); // 30 mins
 		MemoryContextualiser memory=new MemoryContextualiser(disc, memoryEvicter, m, streamer, new MyContextPool(), _requestPool);
-        memory.init(new MyContextualiserConfig(memory, m));
+        memory.init(new DummyContextualiserConfig(memory, m));
 		Context foo=new MyContext("foo", "foo");
         foo.setMaxInactiveInterval(1);
 		m.put("foo", foo);
@@ -546,8 +521,8 @@ public class TestContextualiser extends TestCase {
     public void testStack() throws Exception {
         _log.info("putting complete stack together...");
         Map map=new ConcurrentHashMap();
-        SimpleContextualiserStack stack=new SimpleContextualiserStack(map, new MyContextPool(), _ds);
-        stack.init(new MyContextualiserConfig(stack.getTop(), map)); // clumsy
+        SimpleContextualiserStack stack=new SimpleContextualiserStack(map, new MyContextPool(), _ds, 8080);
+        stack.init(new DummyContextualiserConfig(stack.getTop(), map)); // clumsy
         stack.start();
         Thread.sleep(2000);
         stack.stop();

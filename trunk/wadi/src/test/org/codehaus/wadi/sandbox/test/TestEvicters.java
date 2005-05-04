@@ -17,13 +17,10 @@
 package org.codehaus.wadi.sandbox.test;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 
-import javax.servlet.ServletContext;
 
 import org.codehaus.wadi.IdGenerator;
 import org.codehaus.wadi.RoutingStrategy;
@@ -36,14 +33,10 @@ import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.ContextPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
-import org.codehaus.wadi.sandbox.Evictable;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.EvicterConfig;
 import org.codehaus.wadi.sandbox.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.Motable;
-import org.codehaus.wadi.sandbox.Router;
-import org.codehaus.wadi.sandbox.Session;
-import org.codehaus.wadi.sandbox.SessionConfig;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
 import org.codehaus.wadi.sandbox.ValuePool;
@@ -112,71 +105,6 @@ public class TestEvicters extends TestCase {
         public int getExpirations() {return _expirations;}
         public void expire(Motable motable) {_expirations++; _map.remove(motable.getId());}
     }
-    
-    static class MySessionConfig implements SessionConfig {
-
-        protected final EvicterConfig _config;
-        public MySessionConfig(EvicterConfig config) {_config=config;}
-        public ValuePool getValuePool() {return new SimpleValuePool(new DistributableValueFactory());}
-        public AttributesPool getAttributesPool() {return new SimpleAttributesPool(new DistributableAttributesFactory());}
-        public List getSessionListeners() {return Collections.EMPTY_LIST;}
-        public List getAttributeListeners() {return Collections.EMPTY_LIST;}
-        public ServletContext getServletContext() {return null;}
-        public void destroySession(Session session) {_config.expire(session);}
-        public SessionWrapperFactory getSessionWrapperFactory() {return new org.codehaus.wadi.sandbox.impl.jetty.JettySessionWrapperFactory();}
-        public IdGenerator getSessionIdFactory() {return new TomcatIdGenerator();}
-        public int getMaxInactiveInterval() {return 2;}
-        public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){}
-        public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval){}
-        protected final Router _router=new DummyRouter();
-        public Router getRouter() {return _router;}
-    }
-    
-//    public void testExpiry() throws Exception {
-//        int sweepInterval=1;
-//        boolean strictOrdering=true;
-//        Evicter evicter=new NeverEvicter(sweepInterval, strictOrdering);
-//        EvicterConfig econfig=new MyEvicterConfig();
-//        SessionConfig sconfig=new MySessionConfig(econfig);
-//        Session session=new StandardSession(sconfig);
-//        econfig.getMap().put(session.getId(), session);
-//        evicter.init(econfig);
-//        evicter.start();
-//        Thread.sleep(4000);
-//        evicter.stop();
-//        assertTrue(econfig.getMap().size()==0);
-//    }
-//    
-//    public void testExpiryFromMemory() throws Exception {
-//        // Contextualiser
-//        Contextualiser next=new DummyContextualiser();
-//        int sweepInterval=1;
-//        boolean strictOrdering=true;
-//        Evicter evicter=new NeverEvicter(sweepInterval, strictOrdering);
-//        Map map=new HashMap();
-//        StreamingStrategy streamer=new SimpleStreamingStrategy();
-//        SessionPool sessionPool=new SimpleSessionPool(new DistributableSessionFactory());
-//        ContextPool contextPool=new SessionToContextPoolAdapter(sessionPool);
-//        HttpServletRequestWrapperPool requestPool=new DummyStatefulHttpServletRequestWrapperPool();
-//        AbstractExclusiveContextualiser memory=new MemoryContextualiser(next, evicter, map, streamer, contextPool, requestPool);
-//        // Manager
-//        AttributesPool attributesPool=new SimpleAttributesPool(new DistributableAttributesFactory());
-//        ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
-//        SessionWrapperFactory wrapperFactory=new JettySessionWrapperFactory();
-//        IdGenerator idFactory=new TomcatIdGenerator();
-//        DistributableManager manager=new DistributableManager(sessionPool, attributesPool, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), streamer);
-//        manager.setMaxInactiveInterval(2);
-//        manager.start();
-//
-//        manager.createSession();
-//        assertTrue(memory.getMap().size()==1);
-//        Thread.sleep(4000);
-//        manager.stop();
-//        assertTrue(memory.getMap().size()==0);
-//        
-//        // rename/use IdGenerator and StreamingStrategy...
-//        
-//    }
     
     public void testExpiryFromStorage() throws Exception {
         // Contextualiser

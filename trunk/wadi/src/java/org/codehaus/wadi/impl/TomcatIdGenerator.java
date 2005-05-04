@@ -108,8 +108,15 @@ import java.util.Random;
 public class TomcatIdGenerator
   implements IdGenerator
 {
-  public Object poll(long millis){return take();}
-  public Object take() {return generateSessionId();}
+  public Object poll(long millis) {
+      return take();
+      }
+  
+  public Object take() {
+      String id=generateSessionId();
+      if (log.isTraceEnabled()) log.trace("generated: "+id);
+      return id;
+      }
 
 //   // we should be able to better than this - can't we work out the
 //   // size of the ID ?
@@ -260,9 +267,9 @@ public class TomcatIdGenerator
 	    this.random.setSeed(seed);
 	  }
 	  long t2=System.currentTimeMillis();
-	  if( (t2-t1) > 100 )
-	    if (log.isTraceEnabled())
-	      log.trace(sm.getString("managerBase.seeding", randomClass) + " " + (t2-t1));
+//	  if( (t2-t1) > 100 )
+//	    if (log.isTraceEnabled())
+//	      log.trace(sm.getString("managerBase.seeding", randomClass) + " " + (t2-t1));
 	}
       }
     }
@@ -279,8 +286,8 @@ public class TomcatIdGenerator
 	if( ! f.exists() ) return null;
 	randomIS= new DataInputStream( new FileInputStream(f));
 	randomIS.readLong();
-	if( log.isTraceEnabled() )
-	  log.trace( "Opening " + devRandomSource );
+//	if( log.isTraceEnabled() )
+//	  log.trace( "Opening " + devRandomSource );
 	return randomIS;
       } catch (IOException ex){
 	return null;
@@ -313,8 +320,8 @@ public class TomcatIdGenerator
 	if( ! f.exists() ) return;
 	randomIS= new DataInputStream( new FileInputStream(f));
 	randomIS.readLong();
-	if( log.isTraceEnabled() )
-	  log.trace( "Opening " + devRandomSource );
+//	if( log.isTraceEnabled() )
+//	  log.trace( "Opening " + devRandomSource );
       } catch( IOException ex ) {
 	randomIS=null;
       }
@@ -356,8 +363,8 @@ public class TomcatIdGenerator
 
     if (this.digest == null) {
       long t1=System.currentTimeMillis();
-      if (log.isTraceEnabled())
-	log.trace(sm.getString("managerBase.getting", algorithm));
+//      if (log.isTraceEnabled())
+//	log.trace(sm.getString("managerBase.getting", algorithm));
       try {
 	this.digest = MessageDigest.getInstance(algorithm);
       } catch (NoSuchAlgorithmException e) {
@@ -370,11 +377,11 @@ public class TomcatIdGenerator
 	  this.digest = null;
 	}
       }
-      if (log.isTraceEnabled())
-	log.trace(sm.getString("managerBase.gotten"));
+//      if (log.isTraceEnabled())
+//	log.trace(sm.getString("managerBase.gotten"));
       long t2=System.currentTimeMillis();
-      if( log.isTraceEnabled() )
-	log.trace("getDigest() " + (t2-t1));
+//      if( log.isTraceEnabled() )
+//	log.trace("getDigest() " + (t2-t1));
     }
 
     return (this.digest);
@@ -392,8 +399,8 @@ public class TomcatIdGenerator
 	if( len==bytes.length ) {
 	  return;
 	}
-	if (log.isTraceEnabled())
-	  log.trace("Got " + len + " " + bytes.length );
+//	if (log.isTraceEnabled())
+//	  log.trace("Got " + len + " " + bytes.length );
       } catch( Exception ex ) {
       }
       devRandomSource=null;

@@ -50,8 +50,8 @@ public class StandardSession extends AbstractContext implements Session, Attribu
     
     public StandardSession(SessionConfig config) {
         super();
-        _maxInactiveInterval=config.getMaxInactiveInterval();
-        _id=(String)config.getSessionIdFactory().take();
+        //_maxInactiveInterval=config.getMaxInactiveInterval();
+        //_id=(String)config.getSessionIdFactory().take();
         _config=config;
         _attributes=_config.getAttributesPool().take(this);
         _wrapper=_config.getSessionWrapperFactory().create(this);

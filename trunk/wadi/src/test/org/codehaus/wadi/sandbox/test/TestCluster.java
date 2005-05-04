@@ -99,6 +99,7 @@ public class TestCluster extends TestCase {
         
         public synchronized void start() throws Exception {
             if (!_running) {
+                _top.init(new DummyContextualiserConfig(_top, _mmap));
                 _cluster.start();
                 _top.start();
                 _top.promoteToExclusive(null);
