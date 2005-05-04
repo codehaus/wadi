@@ -105,7 +105,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final Map _memoryMap;
     protected final MemoryContextualiser _memory;
 
-    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource) throws SQLException, JMSException, ClusterException, UnknownHostException {
+    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource, int port) throws SQLException, JMSException, ClusterException, UnknownHostException {
         super();
         _streamer=new SimpleStreamingStrategy();
         //_collapser=new DebugCollapser();
@@ -122,7 +122,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterCluster=(CustomCluster)_clusterFactory.createCluster(_clusterName);
         InetAddress localhost=InetAddress.getLocalHost();
         System.out.println("LOCALHOST: "+localhost);
-        InetSocketAddress isa=new InetSocketAddress(localhost, Integer.parseInt(System.getProperty("http.port"))); // FIXME  - parameterise host and port somehow...
+        InetSocketAddress isa=new InetSocketAddress(localhost, port);
         HttpProxy proxy=new StandardHttpProxy("jsessionid");
         _clusterLocation=new HttpProxyLocation(_clusterCluster.getLocalNode().getDestination(), isa, proxy);
         _clusterMap=new ConcurrentHashMap();

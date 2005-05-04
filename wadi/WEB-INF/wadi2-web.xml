@@ -90,6 +90,7 @@
        <constructor-arg><ref bean="SessionMap"/></constructor-arg>
        <constructor-arg><ref bean="ContextPool"/></constructor-arg> <!-- enclosed SessionPool will be init()-ed by Manager -->
        <constructor-arg><ref bean="DataSource"/></constructor-arg>
+       <constructor-arg type="int"><value>${http.port}</value></constructor-arg>
   </bean>
 
 	<!-- the Router (load-balancer integration) -->

@@ -181,7 +181,6 @@ public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
 	}
 
     public int loadMotables(Emoter emoter, Immoter immoter) {
-        _log.trace("LOADING FROM DB");
         // this should only happen when we are the first node in the cluster...
         try {
             return SharedJDBCMotable.load(_dataSource.getConnection(), _table, emoter, immoter, _config.getAccessOnLoad());

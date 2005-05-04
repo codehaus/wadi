@@ -92,6 +92,7 @@ public class SharedJDBCMotable extends AbstractMotable {
                 Utils.mote(emoter, immoter, motable, id);
                 count++;
             }
+            _log.info("loaded sessions: "+count);
         } catch (SQLException e) {
             _log.warn("list (shared database) failed", e);
             throw e;
@@ -176,7 +177,11 @@ public class SharedJDBCMotable extends AbstractMotable {
 	public static void init(DataSource dataSource, String table) throws SQLException {
 		Connection c=dataSource.getConnection();
 		Statement s=c.createStatement();
-		s.execute("CREATE TABLE "+table+"(Id varchar, CreationTime long, LastAccessedTime long, MaxInactiveInterval int, Bytes java_object)");
+        try {
+            s.execute("CREATE TABLE "+table+"(Id varchar, CreationTime long, LastAccessedTime long, MaxInactiveInterval int, Bytes java_object)");
+        } catch (SQLException e) {
+            // ignore - table may already exist...
+        }
 		s.close();
 		c.close();
 	}
@@ -184,7 +189,11 @@ public class SharedJDBCMotable extends AbstractMotable {
 	public static void destroy(DataSource dataSource, String table) throws SQLException {
 		Connection c=dataSource.getConnection();
 		Statement s=c.createStatement();
-		s.execute("DROP TABLE "+table);
+        try {
+            s.execute("DROP TABLE "+table);
+        } catch (SQLException e) {
+            // ignore - table may have already been deleted...
+        }
 //		s.execute("SHUTDOWN");
 		s.close();
 		c.close();

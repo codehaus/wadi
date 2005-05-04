@@ -100,9 +100,12 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
 
     public Session createSession() {
         Session session=_sessionPool.take();
+        long time=System.currentTimeMillis();
+        session.setCreationTime(time);
+        session.setLastAccessedTime(time);
+        session.setMaxInactiveInterval(_maxInactiveInterval);
         String id=(String)_sessionIdFactory.take(); // TODO - API on this class is wrong...
         session.setId(id);
-        session.setMaxInactiveInterval(_maxInactiveInterval);
         _map.put(id, session);
         // _contextualiser.getEvicter().insert(session);
         if (_log.isDebugEnabled()) _log.debug("creation: "+id);
