@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.test;
 
+import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -69,11 +70,30 @@ public class TestNodes extends TestCase {
 
         HttpConnection connection=new HttpConnection("localhost", 8080);
         HttpState state=new HttpState();
+        assertTrue(state.getCookies().length==0);
         GetMethod get=new GetMethod("/wadi/jsp/create.jsp");
         get.execute(state, connection);
+        
+        // how do the cookies look ?
+        Cookie[] cookies=state.getCookies();
+        assertTrue(cookies.length==1);
+        Cookie session=cookies[0];
+        String oldValue=session.getValue();
+        assertTrue(oldValue.endsWith(".red"));
+        String root=oldValue.substring(0, oldValue.lastIndexOf("."));
+        String newValue=root+"."+"green";
+        session.setValue(newValue);
         Thread.sleep(2000);
         System.out.println("");
         
+        get=new GetMethod("/wadi/jsp/create.jsp");
+        get.execute(state, new HttpConnection("localhost", 8081));
+        // how do the cookies look ?
+        cookies=state.getCookies();
+        assertTrue(cookies.length==1);
+        assertTrue(cookies[0].getValue().endsWith(".red"));
+        Thread.sleep(2000);
+        System.out.println("");
         
         red.stop();
         Thread.sleep(2000);
