@@ -32,7 +32,7 @@ public class JkRouter implements Router {
     protected final String _cookieDomain=null;
     protected final String _info;
     protected final String _suffix;
-    
+
     public JkRouter(String info) {
         _info=info;
         _suffix="."+_info;
@@ -49,7 +49,7 @@ public class JkRouter implements Router {
     public String augment(String id) {
         return augment(id, _suffix);
     }
-    
+
     public String augment(String id, String target) {
         assert target.startsWith(".");
         int i=id.lastIndexOf(".");
@@ -70,18 +70,18 @@ public class JkRouter implements Router {
     public boolean canReroute() {
         return true;
     }
-    
-    public boolean reroute(HttpServletRequest req, HttpServletResponse res) {
-        String id=req.getRequestedSessionId();
 
-        if (id.endsWith(_suffix))
-            return false;
-        
-        if (req.isRequestedSessionIdFromCookie())
-            return rerouteCookie(req, res, id);
-        else
-            return false;
-    }
+  public boolean reroute(HttpServletRequest req, HttpServletResponse res) {
+    String id=req.getRequestedSessionId();
+
+    if (id.endsWith(_suffix))
+      return false;
+
+    if (req.isRequestedSessionIdFromCookie())
+      return rerouteCookie(req, res, id);
+    else
+      return false;
+  }
 
     public boolean rerouteCookie(HttpServletRequest req, HttpServletResponse res, String id) {
         return rerouteCookie(req, res, id, _suffix);
@@ -89,14 +89,14 @@ public class JkRouter implements Router {
 
     public boolean rerouteCookie(HttpServletRequest req, HttpServletResponse res, String id, String target) {
         assert target.startsWith(".");
-        
+
         String oldId=id;
         String newId=augment(id);
-        
+
         _log.info("rerouting cookie: "+oldId+" -> "+newId);
-        
+
         Cookie[] cookies=req.getCookies();
-        
+
         // TODO - what about case sensitivity on value ?
         for (int i=0;i<cookies.length;i++)
         {
@@ -105,20 +105,20 @@ public class JkRouter implements Router {
             {
                 // name, path and domain must match those on client side,
                 // for cookie to be updated in browser...
-                
+
                 //String cookiePath=manager.getSessionCookiePath(req);
                 if (_cookiePath!=null)
                     cookie.setPath(_cookiePath);
-                
+
                 if (_cookieDomain!=null)
                     cookie.setDomain(_cookieDomain);
-                
+
                 cookie.setValue(newId); // the session id with redirected routing info
-                
+
                 res.addCookie(cookie);
             }
         }
-        
+
         return false;
     }
 
