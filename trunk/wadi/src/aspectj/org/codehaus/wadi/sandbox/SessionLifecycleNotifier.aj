@@ -14,14 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox;
+package org.codehaus.wadi;
 
 import java.util.List;
 
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
-import org.codehaus.wadi.sandbox.impl.Manager;
+import org.codehaus.wadi.impl.Manager;
 
 // TODO - do we really want to use aspects for all notifications ?
 

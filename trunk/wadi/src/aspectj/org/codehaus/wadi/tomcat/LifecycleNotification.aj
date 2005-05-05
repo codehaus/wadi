@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.tomcat;
+package org.codehaus.wadi.old.tomcat;
 
 import org.apache.catalina.Lifecycle;
 import org.apache.commons.logging.Log;

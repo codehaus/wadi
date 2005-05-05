@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi;
+package org.codehaus.wadi.old;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

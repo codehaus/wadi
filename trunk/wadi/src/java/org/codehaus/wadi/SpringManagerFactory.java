@@ -14,14 +14,62 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package org.codehaus.wadi;
 
-public class
-  SpringManagerFactory
-{
-  protected Manager _manager;
-  public SpringManagerFactory(Manager manager){_manager=manager;}
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
-  public Manager getManager(){return _manager;}
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.impl.Manager;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.core.io.InputStreamResource;
+
+public class SpringManagerFactory {
+
+    protected final static Log _log = LogFactory.getLog(SpringManagerFactory.class);
+
+    protected final String _descriptor;
+    protected final String _bean;
+
+    public SpringManagerFactory(String descriptor, String bean) {
+        _descriptor=descriptor;
+        _bean=bean;
+    }
+
+    public Manager create() throws FileNotFoundException {
+        return create(_descriptor, _bean);
+    }
+
+    public static Manager create(String descriptor, String bean) throws FileNotFoundException {
+        //ClassLoader cl=SpringManagerFactory.class.getClassLoader();
+        ClassLoader cl=Thread.currentThread().getContextClassLoader();
+        if (_log.isTraceEnabled()) _log.trace("Manager ClassLoader: "+cl);
+
+        //InputStream is=cl.getResourceAsStream(descriptor);
+        InputStream is=new FileInputStream(descriptor);
+        if (is!=null) {
+            DefaultListableBeanFactory dlbf=new DefaultListableBeanFactory();
+            PropertyPlaceholderConfigurer cfg=new PropertyPlaceholderConfigurer();
+            new XmlBeanDefinitionReader(dlbf).loadBeanDefinitions(new InputStreamResource(is));
+            cfg.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
+            cfg.postProcessBeanFactory(dlbf);
+
+            Manager manager=(Manager)dlbf.getBean(bean);
+
+            if (manager==null)
+                if (_log.isErrorEnabled()) _log.error("could not find WADI Manager bean: "+bean);
+            else
+	      if (_log.isInfoEnabled()) _log.info("loaded bean: "+bean+" from WADI descriptor: "+descriptor);
+
+            return manager;
+        } else {
+            if (_log.isErrorEnabled())_log.error("could not find WADI descriptor: "+descriptor);
+            return null;
+        }
+    }
+
 }

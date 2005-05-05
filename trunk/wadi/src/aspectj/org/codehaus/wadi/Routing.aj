@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi;
+package org.codehaus.wadi.old;
 
 // now done by HttpSession facade... - which knows about bucket name
 

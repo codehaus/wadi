@@ -14,279 +14,302 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package org.codehaus.wadi.test;
 
+import java.io.File;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
+import javax.sql.DataSource;
 
 import junit.framework.TestCase;
 
-import org.activecluster.Cluster;
-import org.activecluster.ClusterEvent;
-import org.activecluster.ClusterListener;
-import org.activecluster.impl.DefaultClusterFactory;
-import org.activemq.ActiveMQConnectionFactory;
+import org.activecluster.ClusterException;
+import org.activecluster.ClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.impl.Utils;
+import org.axiondb.jdbc.AxionDataSource;
+import org.codehaus.wadi.AttributesPool;
+import org.codehaus.wadi.Cluster;
+import org.codehaus.wadi.Collapser;
+import org.codehaus.wadi.ContextPool;
+import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.Emoter;
+import org.codehaus.wadi.Evicter;
+import org.codehaus.wadi.HttpProxy;
+import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.Location;
+import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.Relocater;
+import org.codehaus.wadi.Router;
+import org.codehaus.wadi.SessionIdFactory;
+import org.codehaus.wadi.SessionPool;
+import org.codehaus.wadi.SessionWrapperFactory;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.impl.ClusterContextualiser;
+import org.codehaus.wadi.impl.CustomClusterFactory;
+import org.codehaus.wadi.impl.DistributableAttributesFactory;
+import org.codehaus.wadi.impl.DistributableManager;
+import org.codehaus.wadi.impl.DistributableSessionFactory;
+import org.codehaus.wadi.impl.DistributableValueFactory;
+import org.codehaus.wadi.impl.DummyContextualiser;
+import org.codehaus.wadi.impl.DummyEvicter;
+import org.codehaus.wadi.impl.DummyRouter;
+import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
+import org.codehaus.wadi.impl.HashingCollapser;
+import org.codehaus.wadi.impl.HttpProxyLocation;
+import org.codehaus.wadi.impl.Manager;
+import org.codehaus.wadi.impl.MemoryContextualiser;
+import org.codehaus.wadi.impl.MessageDispatcher;
+import org.codehaus.wadi.impl.RestartableClusterFactory;
+import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
+import org.codehaus.wadi.impl.SharedJDBCContextualiser;
+import org.codehaus.wadi.impl.SharedJDBCMotable;
+import org.codehaus.wadi.impl.SimpleAttributesPool;
+import org.codehaus.wadi.impl.SimpleSessionPool;
+import org.codehaus.wadi.impl.SimpleStreamer;
+import org.codehaus.wadi.impl.SimpleValuePool;
+import org.codehaus.wadi.impl.StandardHttpProxy;
+import org.codehaus.wadi.impl.TomcatSessionIdFactory;
+import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory;
 
 /**
- * Test ActiveCluster, ActiveMQ, with an eye to putting WADI on top of
- * them.
+ * Test the shutdown of a Contextualiser stack as live sessions are distributed to other nodes in the cluster
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class
-  TestCluster
-  extends TestCase
-{
-  protected Log _log=LogFactory.getLog(TestCluster.class);
 
-  public TestCluster(String name)
-  {
-    super(name);
-  }
+public class TestCluster extends TestCase {
+	protected Log _log = LogFactory.getLog(getClass());
 
-  protected ActiveMQConnectionFactory _connectionFactory;
-  protected Connection                _connection;
-  protected DefaultClusterFactory     _clusterFactory;
-  protected Cluster                   _cluster0;
-  protected Cluster                   _cluster1;
+    protected final Streamer _streamer=new SimpleStreamer();
+    protected final Contextualiser _dummyContextualiser=new DummyContextualiser();
+    protected final Collapser _collapser=new HashingCollapser(10, 2000);
+    protected final SessionWrapperFactory _sessionWrapperFactory=new JettySessionWrapperFactory();
+    protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
+    protected final boolean _accessOnLoad=true;
+    protected final Router _router=new DummyRouter();
+    protected final SessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory()); 
+    protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool); 
+    protected final AttributesPool _distributableAttributesPool=new SimpleAttributesPool(new DistributableAttributesFactory());
+    protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
 
-  protected void
-    setUp()
-    throws Exception
-  {
-    testResponsePassed=false;
-
-    _connectionFactory = Utils.getConnectionFactory();
-    _clusterFactory    = new DefaultClusterFactory(_connectionFactory);
-    _cluster0           = _clusterFactory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
-    _cluster1           = _clusterFactory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
-
-    _cluster0.start();
-    _log.info("started node0: "+_cluster0.getLocalNode().getDestination());
-    _cluster1.start();
-    _log.info("started node1: "+_cluster1.getLocalNode().getDestination());
-  }
-
-  protected void
-    tearDown()
-    throws JMSException
-  {
-    //      _cluster1.stop();
-    _cluster1=null;
-    //      _cluster0.stop();
-    _cluster0=null;
-    _clusterFactory=null;
-    //      _connection.stop();
-    _connection=null;
-    //      _connectionFactory.stop();
-  }
-
-  //----------------------------------------
-
-  class MyClusterListener
-    implements ClusterListener
-  {
-    public void
-      onNodeAdd(ClusterEvent ce)
-    {
-      _log.info("node added: " + ce.getNode());
+    class MyNode {
+    
+        protected final Cluster _cluster;
+        protected final MessageDispatcher _dispatcher;
+        protected final Location _location;
+        protected final Relocater _relocater;
+        protected final Map _cmap=new HashMap();
+        protected final Map _mmap=new HashMap();
+        protected final Evicter _evicter=new DummyEvicter();
+        protected final MemoryContextualiser _top;
+        protected final ClusterContextualiser _middle;
+        protected final SharedJDBCContextualiser _bottom;
+        protected final Manager _manager;
+        
+        public MyNode(ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
+            _bottom=new SharedJDBCContextualiser(_dummyContextualiser, _collapser, ds, table);
+            _cluster=(Cluster)factory.createCluster(clusterName);
+            _cluster.addClusterListener(new MyClusterListener());
+            _dispatcher=new MessageDispatcher(_cluster);
+            InetSocketAddress isa=new InetSocketAddress("localhost", 8080);
+            HttpProxy proxy=new StandardHttpProxy("jsessionid");
+            _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), isa, proxy);
+            //_relocater=new SwitchableRelocationStrategy();
+            _relocater=null;
+            _middle=new ClusterContextualiser(_bottom, _collapser, new DummyEvicter(), _cmap, _cluster, _dispatcher, _relocater, _location);
+            _top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
+            _middle.setTop(_top);
+            _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesPool, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, _streamer, _accessOnLoad);
+        }
+        
+        protected boolean _running;
+        
+        public synchronized void start() throws Exception {
+            if (!_running) {
+                _cluster.start();
+                _manager.start();
+                _running=true;
+            }
+        }
+        
+        public synchronized void stop() throws Exception {
+            if (_running) {
+                _log.info("stopping contextualiser stack...");
+                _top.stop();
+                _log.info("contextualiser stack stopped");
+                _log.info("stopping cluster...");
+                _cluster.stop();
+                Thread.sleep(6000);
+                _log.info("cluster stopped");
+                _running=false;
+            }
+        }
+        
+        public Map getClusterContextualiserMap() {return _cmap;}
+        public Cluster getCluster(){return _cluster;}
+        public ClusterContextualiser getClusterContextualiser() {return _middle;}
+        
+        public Map getMemoryContextualiserMap() {return _mmap;}
+        public MemoryContextualiser getMemoryContextualiser(){return _top;}
     }
 
-    public void
-      onNodeFailed(ClusterEvent ce)
-    {
-      _log.info("node failed: " + ce.getNode());
+	protected final ConnectionFactory _connectionFactory=Utils.getConnectionFactory();
+	protected final ClusterFactory _clusterFactory=new RestartableClusterFactory(new CustomClusterFactory(_connectionFactory));
+	protected final String _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
+    protected final DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");
+    protected final String _table="WADISESSIONS";
+    protected boolean _preserveDB;
+
+    protected MyNode _node0;
+    protected MyNode _node1;
+    protected MyNode _node2;
+
+    /**
+     * Constructor for TestCluster.
+     * @param name
+     */
+    public TestCluster(String name) throws Exception {
+        super(name);
+        
+        String preserveDB=System.getProperty("preserve.db");
+        if (preserveDB!=null && preserveDB.equals("true"))
+            _preserveDB=true;      
+        
+        _log.info("TEST CTOR!");
     }
 
-    public void
-      onNodeRemoved(ClusterEvent ce)
-    {
-      _log.info("node removed: " + ce.getNode());
+	/*
+	 * @see TestCase#setUp()
+	 */
+	protected void setUp() throws Exception {
+		super.setUp();
+
+        if (!_preserveDB)
+            SharedJDBCMotable.init(_ds, _table);
+            
+		(_node0=new MyNode(_clusterFactory, _clusterName, _ds, _table)).start();
+		(_node1=new MyNode(_clusterFactory, _clusterName, _ds, _table)).start();
+		(_node2=new MyNode(_clusterFactory, _clusterName, _ds, _table)).start();
+
+		//_node0.getCluster().waitForClusterToComplete(3, 6000);
+		//_node1.getCluster().waitForClusterToComplete(3, 6000);
+		_node2.getCluster().waitForClusterToComplete(3, 6000);
     }
 
-    public void
-      onNodeUpdate(ClusterEvent ce)
-    {
-      _log.info("node updated: " + ce.getNode());
-    }
+	/*
+	 * @see TestCase#tearDown()
+	 */
+	protected void tearDown() throws Exception {
+		Thread.sleep(1000);
 
-    public void
-      onCoordinatorChanged(ClusterEvent ce)
-    {
-      _log.info("coordinator changed: " + ce.getNode());
-    }
-  }
-
-  public void
-    testCluster()
-    throws Exception
-  {
-    _cluster0.addClusterListener(new MyClusterListener());
-
-    Map map = new HashMap();
-    map.put("text", "testing123");
-    _cluster0.getLocalNode().setState(map);
-
-    _log.info("nodes: " + _cluster0.getNodes());
-    Thread.sleep(10000);
-    assertTrue(true);
-  }
-
-  /**
-   * An invokable piece of work.
-   *
-   */
-  static interface Invocation extends java.io.Serializable
-  {
-    public void invoke(Cluster cluster, ObjectMessage om);
-  }
-
-  /**
-   * Listen for messages, if they contain Invocations, invoke() them.
-   *
-   */
-  class
-    InvocationListener
-    implements MessageListener
-  {
-    protected Cluster _cluster;
-
-    public
-      InvocationListener(Cluster cluster)
-    {
-      _cluster=cluster;
-    }
-
-    public void
-      onMessage(Message message)
-    {
-      _log.info("message received: "+message);
-
-      ObjectMessage om=null;
-      Object tmp=null;
-      Invocation invocation=null;
-
-      try
-      {
-	if (message instanceof ObjectMessage &&
-	    (om=(ObjectMessage)message)!=null &&
-	    (tmp=om.getObject())!=null &&
-	    tmp instanceof Invocation &&
-	    (invocation=(Invocation)tmp)!=null)
-	{
-	  _log.info("invoking message on: "+_cluster.getLocalNode());
-	  invocation.invoke(_cluster, om);
-	  _log.info("message successfully invoked on: "+_cluster.getLocalNode());
+		super.tearDown();
+//		_node2.stop();
+		Thread.sleep(6000);
+		_node1.stop();
+//		Thread.sleep(6000);
+		_node0.stop();
+//		Thread.sleep(10000);
+        
+        if (!_preserveDB)
+            SharedJDBCMotable.destroy(_ds, _table);
 	}
-	else
-	{
-	  _log.warn("bad message: "+message);
-	}
-      }
-      catch (JMSException e)
-      {
-	_log.warn("unexpected problem", e);
-      }
+
+	public void testEvacuation() throws Exception {
+		Contextualiser c0=_node0.getMemoryContextualiser();
+
+		Map m0=_node0.getMemoryContextualiserMap();
+		Map m1=_node1.getMemoryContextualiserMap();
+		Map m2=_node2.getMemoryContextualiserMap();
+        
+
+        // populate node0
+		int numContexts=3;
+		for (int i=0; i<numContexts; i++) {
+			String id="session-"+i;
+			Motable emotable=_distributableSessionPool.take();
+            emotable.setId(id);
+			Immoter immoter=c0.getDemoter(id, emotable);
+			Emoter emoter=new EtherEmoter();
+			Utils.mote(emoter, immoter, emotable, id);
+		}
+		assertTrue(m0.size()==numContexts); // all sessions are on node0
+
+        // shutdown node0
+        // sessions should be evacuated to remaining two nodes...
+        _log.info("NODES: "+_node0.getCluster().getNodes().size());
+		_node0.stop();
+        _log.info("NODES: "+_node1.getCluster().getNodes().size());
+
+		// where are all the sessions now ?
+		// the sum of nodes 1 and 2 should total n Contexts
+		{
+		    int s0=m0.size();
+		    int s1=m1.size();
+		    int s2=m2.size();
+		    _log.info("dispersal - n0:"+s0+", n1:"+s1+", n2:"+s2);
+		    assertTrue(s0==0);
+		    assertTrue(s1+s2==numContexts);
+            // TODO - hmmmm...
+		    assertTrue(_node0.getClusterContextualiserMap().size()==numContexts); // node0 remembers where everything was sent...
+		}
+
+        // shutdown node1
+        // sessions should all be evacuated to node2
+        _log.info("NODES: "+_node1.getCluster().getNodes().size());
+		_node1.stop();
+        _log.info("NODES: "+_node2.getCluster().getNodes().size());
+		{
+		    int s0=m0.size();
+		    int s1=m1.size();
+		    int s2=m2.size();
+		    _log.info("dispersal - n0:"+s0+", n1:"+s1+", n2:"+s2);
+		    assertTrue(s0==0);
+		    assertTrue(s1==0);
+		    assertTrue(s2==numContexts);
+            // TODO - hmmmm...
+		    //assertTrue(_node0.getClusterContextualiserMap().size()==numContexts); // node0 remembers where everything was sent...
+		}
+		
+        // shutdown node2
+        _log.info("NODES: "+_node2.getCluster().getNodes().size());
+		_node2.stop();
+        _log.info("NODES: should be 0");
+		Thread.sleep(6000); // give everything some time to happen...
+		{
+		    int s0=m0.size();
+		    int s1=m1.size();
+		    int s2=m2.size();
+		    _log.info("dispersal - n0:"+s0+", n1:"+s1+", n2:"+s2);
+		    assertTrue(s0==0);
+		    assertTrue(s1==0);
+		    assertTrue(s2==0);
+		    //assertTrue(_node0.getClusterContextualiserMap().size()==numContexts); // node0 remembers where everything was sent...
+		}
+
+        // TODO - figure out what should happen to location caches, implement and test it.
+        
+        
+        // restart nodes - first one up should reload saved contexts...
+        
+        assertTrue(m0.size()==0);
+        _node0.start();
+        assertTrue(m0.size()==numContexts);
+
+        assertTrue(m1.size()==0);
+        _node1.start();
+        assertTrue(m1.size()==0);
+
+        assertTrue(m2.size()==0);
+        _node2.start();
+        assertTrue(m2.size()==0);
+
     }
-  }
-
-  /**
-   *   A request for a piece of work which involves sending a response
-   *   back to the original requester.
-   *
-   */
-  static class Request
-    implements Invocation
-  {
-    public void
-      invoke(Cluster cluster, ObjectMessage om2)
-    {
-      try
-      {
-	System.out.println("request received");
-	ObjectMessage om = cluster.createObjectMessage();
-	om.setJMSReplyTo(cluster.getLocalNode().getDestination());
-	om.setObject(new Response());
-	System.out.println("sending response");
-	cluster.send(om2.getJMSReplyTo(), om);
-	System.out.println("request processed");
-      }
-      catch (JMSException e)
-      {
-	System.err.println("problem sending response");
-	e.printStackTrace();
-      }
-    }
-  }
-
-  static boolean testResponsePassed=false;
-
-  /**
-   * A response containing a piece of work.
-   *
-   */
-  static class Response
-    implements Invocation
-  {
-    public void
-      invoke(Cluster cluster, ObjectMessage om)
-    {
-      try
-      {
-	System.out.println("response arrived from: "+om.getJMSReplyTo());
-	// set a flag to test later
-	TestCluster.testResponsePassed=true;
-	System.out.println("response processed on: "+cluster.getLocalNode().getDestination());
-      }
-      catch (JMSException e)
-      {
-	System.err.println("problem processing response");
-      }
-    }
-  }
-
-  public void
-    testResponse()
-    throws Exception
-  {
-
-    MessageListener listener0=new InvocationListener(_cluster0);
-    MessageListener listener1=new InvocationListener(_cluster1);
-
-    // 1->(n-1) messages (excludes self)
-    _cluster0.createConsumer(_cluster0.getDestination(), null, true).setMessageListener(listener0);
-    // 1->1 messages
-    _cluster0.createConsumer(_cluster0.getLocalNode().getDestination()).setMessageListener(listener0);
-    // 1->(n-1) messages (excludes self)
-    _cluster1.createConsumer(_cluster1.getDestination(), null, true).setMessageListener(listener1);
-    // 1->1 messages
-    _cluster1.createConsumer(_cluster1.getLocalNode().getDestination()).setMessageListener(listener1);
-
-    ObjectMessage om = _cluster0.createObjectMessage();
-    om.setJMSReplyTo(_cluster0.getLocalNode().getDestination());
-    om.setObject(new Request());
-
-    testResponsePassed=false;
-    _cluster0.send(_cluster0.getLocalNode().getDestination(), om);
-    Thread.sleep(3000);
-    assertTrue(testResponsePassed);
-    _log.info("request/response between same node OK");
-
-    testResponsePassed=false;
-    _cluster0.send(_cluster1.getLocalNode().getDestination(), om);
-    Thread.sleep(3000);
-    assertTrue(testResponsePassed);
-    _log.info("request/response between two different nodes OK");
-  }
 }
