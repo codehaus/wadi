@@ -4,7 +4,7 @@
   <pomVersion>3</pomVersion>
   <name>WADI</name>
   <id>wadi</id>
-  <currentVersion>0.91</currentVersion>
+  <currentVersion>2.0-SNAPSHOT</currentVersion>
 
   <organization>
     <name>Core Developers Network</name>
@@ -36,6 +36,7 @@
     HttpSession</li>
     <li>HttpSession Migration (inter-node and node-store-node)</li>
     <li>HttpRequest relocation (by redirection and proxying)</li>
+    <li>Pluggable/Stackable HttpSession persistance mechanisms (File, Database, etc.)</li>
     <li>NYI - pluggable HttpSession state replication strategies - in-vm, db, file etc..</li>
     <li>NYI - pluggable self-partitioning, self-healing clustering substrate.</li>
     </ul>
@@ -43,12 +44,14 @@
     <p>WADI can currently be plugged into the following J2EE web
     containers:</p>
     <ul>
-    <li>Tomcat 5</li>
-    <li>Jetty 5</li>
+    <li>Tomcat 5.1.28+</li>
+    <li>Jetty 5.1.3+</li>
     </ul>
 
-    <p>WADI is a new project and this site is very much under
-    development - please be patient with us</p>
+    <p>WADI is currently undergoing a major rearchitecture. New
+    documentation is being entered into the
+    <a href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI">WADI WIKI</a>
+    . We hope to have a 2.0 release out shortly.</p>
 
     <p>Please browse our <a href="./faq.html">FAQ</a> for further detail.</p>
 
@@ -110,9 +113,9 @@
       <tag>WADI_0_9</tag>
     </version>
   <version>
-      <id>0.91</id>
+      <id>2.0</id>
       <name>lipleurodon</name>
-      <tag>WADI_0_91</tag>
+      <tag>WADI_2_0</tag>
     </version>
   </versions>
   <branches>
