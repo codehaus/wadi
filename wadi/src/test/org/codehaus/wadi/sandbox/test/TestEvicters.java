@@ -130,7 +130,7 @@ public class TestEvicters extends TestCase {
         ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
         SessionWrapperFactory wrapperFactory=new JettySessionWrapperFactory();
         IdGenerator idFactory=new TomcatIdGenerator();
-        DistributableManager manager=new DistributableManager(sessionPool, attributesPool, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), streamer, true, new DummyRouter());
+        DistributableManager manager=new DistributableManager(sessionPool, attributesPool, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true);
         manager.setMaxInactiveInterval(2);
         //manager.start();
         //mevicter.stop(); // we'll run it by hand...

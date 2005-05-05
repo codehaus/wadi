@@ -67,6 +67,8 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
 	            ((!(exclusiveOnly && !_next.isExclusive())) && _next.contextualise(hreq, hres, chain, id, getPromoter(immoter), motionLock, exclusiveOnly)));
 	}
 
+    // TODO - I don't think that we need test isExclusive anymore - or even need this flag...
+    
 	public boolean promote(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Motable emotable) throws IOException, ServletException {
 		Emoter emoter=getEmoter();
 		Motable immotable=Utils.mote(emoter, immoter, emotable, id);

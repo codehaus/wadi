@@ -39,8 +39,8 @@ public class DistributableManager extends Manager implements DistributableSessio
 
     protected final StreamingStrategy _streamer;
 
-    public DistributableManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map sessionMap, StreamingStrategy streamer, boolean accessOnLoad, Router router) {
-        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, accessOnLoad, router);
+    public DistributableManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, StreamingStrategy streamer, boolean accessOnLoad) {
+        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, accessOnLoad);
         _streamer=streamer;
     }
 

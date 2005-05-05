@@ -21,7 +21,6 @@ import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Locker;
 import org.codehaus.wadi.sandbox.Motable;
 
-
 public abstract class AbstractSharedContextualiser extends AbstractMotingContextualiser {
 
     public AbstractSharedContextualiser(Contextualiser next, Locker locker) {

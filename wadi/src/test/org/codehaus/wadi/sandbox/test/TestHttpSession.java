@@ -101,7 +101,7 @@ extends TestCase
     protected SessionPool             _standardSessionPool=new SimpleSessionPool(_standardSessionFactory);
     protected ValueFactory            _standardValueFactory=new StandardValueFactory();
     protected ValuePool               _standardValuePool=new SimpleValuePool(_standardValueFactory);
-    protected Manager                 _standardManager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser, _sessionMap, _accessOnLoad, _router);
+    protected Manager                 _standardManager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser, _sessionMap, _router, _accessOnLoad);
     // Distributable
     protected Contextualiser          _distributableContextualiser=new DummyContextualiser();
     protected StreamingStrategy       _streamer=new SimpleStreamingStrategy();
@@ -111,20 +111,20 @@ extends TestCase
     protected SessionPool             _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _distributableValueFactory=new DistributableValueFactory();
     protected ValuePool               _distributableValuePool=new SimpleValuePool(_distributableValueFactory);
-    protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesPool, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer, _accessOnLoad, _router);
+    protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesPool, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
     // LazyValue
     protected SessionPool             _lazyValueSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _lazyValueFactory=new LazyValueFactory();
     protected ValuePool               _lazyValuePool=new SimpleValuePool(_lazyValueFactory);
-    protected Manager                 _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesPool, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer, _accessOnLoad, _router);
+    protected Manager                 _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesPool, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
     // LazyAttributes
     protected SessionPool             _lazyAttributesSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected AttributesFactory       _lazyAttributesFactory=new LazyAttributesFactory();
     protected AttributesPool          _lazyAttributesPool=new SimpleAttributesPool(_lazyAttributesFactory);
-    protected Manager                 _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesPool,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer, _accessOnLoad, _router);
+    protected Manager                 _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesPool,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
     // LazyBoth
     protected SessionPool             _lazyBothSessionPool=new SimpleSessionPool(_distributableSessionFactory);
-    protected Manager                 _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesPool,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _streamer, _accessOnLoad, _router);
+    protected Manager                 _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesPool,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
     
     
     public TestHttpSession(String name)
