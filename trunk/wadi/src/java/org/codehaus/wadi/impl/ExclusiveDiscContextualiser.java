@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
@@ -39,10 +40,11 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
 
 	protected final Streamer _streamer;
 	protected final File _dir;
+    protected final boolean _clean;
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public ExclusiveDiscContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, Streamer streamer, File dir) {
+	public ExclusiveDiscContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, Streamer streamer, File dir, boolean clean) {
 	    super(next, new CollapsingLocker(collapser), evicter, map);
 	    _streamer=streamer;
 	    assert dir.exists();
@@ -50,11 +52,25 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
 	    assert dir.canRead();
 	    assert dir.canWrite();
 	    _dir=dir;
+        _clean=clean;
 
 	    _immoter=new ExclusiveDiscImmoter(_map);
 	    _emoter=new ExclusiveDiscEmoter(_map);
 	}
 
+    public void init(ContextualiserConfig config) {
+        super.init(config);
+        // perhaps this should be done in start() ?
+        if (_clean) {
+            File[] files=_dir.listFiles();
+            int l=files.length;
+            for (int i=0; i<l; i++) {
+                files[i].delete();
+            }
+            _log.info("cleaned persistant sessions: "+l);
+        }
+    }
+    
 	public boolean isExclusive(){return true;}
 
 	public Immoter getImmoter(){return _immoter;}
