@@ -20,8 +20,6 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 
-import org.codehaus.wadi.IdGenerator;
-import org.codehaus.wadi.RoutingStrategy;
 
 public interface SessionConfig {
     
@@ -33,7 +31,7 @@ public interface SessionConfig {
     
     void destroySession(Session session);
     SessionWrapperFactory getSessionWrapperFactory();
-    IdGenerator getSessionIdFactory();
+    SessionIdFactory getSessionIdFactory();
     
     int getMaxInactiveInterval();
     

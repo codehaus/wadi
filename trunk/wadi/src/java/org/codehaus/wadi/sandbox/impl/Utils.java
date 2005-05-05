@@ -29,10 +29,10 @@ import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SerializableContent;
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
+import org.codehaus.wadi.sandbox.Streamer;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
@@ -115,7 +115,7 @@ public class Utils {
 	    return acquired;
 	}
 
-	public static Object byteArrayToObject(byte[] bytes, StreamingStrategy streamer) throws IOException, ClassNotFoundException {
+	public static Object byteArrayToObject(byte[] bytes, Streamer streamer) throws IOException, ClassNotFoundException {
 	    ByteArrayInputStream bais=new ByteArrayInputStream(bytes);
 	    ObjectInput oi=streamer.getInputStream(bais);
 	    Object tmp=oi.readObject(); // TODO - ClassLoading ?
@@ -123,7 +123,7 @@ public class Utils {
 	    return tmp;
 	}
 
-	public static Object safeByteArrayToObject(byte[] bytes, StreamingStrategy streamer) {
+	public static Object safeByteArrayToObject(byte[] bytes, Streamer streamer) {
 	    try {
 	        return byteArrayToObject(bytes, streamer);
 	    } catch (Exception e) {
@@ -132,7 +132,7 @@ public class Utils {
 	    }
 	}
 
-	public static byte[] objectToByteArray(Object object, StreamingStrategy streamer) throws IOException {
+	public static byte[] objectToByteArray(Object object, Streamer streamer) throws IOException {
 	    ByteArrayOutputStream baos=new ByteArrayOutputStream();
 	    ObjectOutput oo=streamer.getOutputStream(baos);
 	    oo.writeObject(object);
@@ -140,7 +140,7 @@ public class Utils {
 	    return baos.toByteArray();
 	}
 
-    public static byte[] safeObjectToByteArray(Object object, StreamingStrategy streamer) {
+    public static byte[] safeObjectToByteArray(Object object, Streamer streamer) {
         try {
             return objectToByteArray(object, streamer);
         } catch (Exception e) {
@@ -149,7 +149,7 @@ public class Utils {
         }
     }
 
-    public static byte[] getContent(SerializableContent object, StreamingStrategy streamer) throws IOException {
+    public static byte[] getContent(SerializableContent object, Streamer streamer) throws IOException {
         ByteArrayOutputStream baos=new ByteArrayOutputStream();
         ObjectOutput oo=streamer.getOutputStream(baos);
         object.writeContent(oo);
@@ -157,7 +157,7 @@ public class Utils {
         return baos.toByteArray();
     }
 
-    public static byte[] safeGetContent(SerializableContent object, StreamingStrategy streamer) {
+    public static byte[] safeGetContent(SerializableContent object, Streamer streamer) {
         try {
             return getContent(object, streamer);
         } catch (Exception e) {
@@ -166,7 +166,7 @@ public class Utils {
         }
     }
 
-    public static SerializableContent setContent(SerializableContent object, byte[] content, StreamingStrategy streamer) throws IOException, ClassNotFoundException {
+    public static SerializableContent setContent(SerializableContent object, byte[] content, Streamer streamer) throws IOException, ClassNotFoundException {
         ByteArrayInputStream bais=new ByteArrayInputStream(content);
         ObjectInput oi=streamer.getInputStream(bais);
         object.readContent(oi);
@@ -174,7 +174,7 @@ public class Utils {
         return object;
     }
 
-    public static SerializableContent safeSetContent(SerializableContent object, byte[] content, StreamingStrategy streamer) {
+    public static SerializableContent safeSetContent(SerializableContent object, byte[] content, Streamer streamer) {
         try {
             return setContent(object, content, streamer);
         } catch (Exception e) {

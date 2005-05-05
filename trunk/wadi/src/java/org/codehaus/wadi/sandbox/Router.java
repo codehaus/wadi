@@ -44,7 +44,7 @@ public interface Router {
     //String getInfo();
     
     /**
-     * Is this RoutingStrategy sufficiently integrated with its
+     * Is this Router sufficiently integrated with its
      * corresponding load-balancer as to be able to 'stick' subsequent
      * requests for the same session to this node?
      *

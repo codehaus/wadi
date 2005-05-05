@@ -19,13 +19,13 @@ package org.codehaus.wadi.sandbox.impl;
 import java.io.File;
 import java.util.Map;
 
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
+import org.codehaus.wadi.sandbox.Streamer;
 
 // TODO - a JDBC-based equivalent
 
@@ -37,12 +37,12 @@ import org.codehaus.wadi.sandbox.Motable;
  */
 public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser {
 
-	protected final StreamingStrategy _streamer;
+	protected final Streamer _streamer;
 	protected final File _dir;
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public ExclusiveDiscContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, StreamingStrategy streamer, File dir) {
+	public ExclusiveDiscContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, Streamer streamer, File dir) {
 	    super(next, new CollapsingLocker(collapser), evicter, map);
 	    _streamer=streamer;
 	    assert dir.exists();

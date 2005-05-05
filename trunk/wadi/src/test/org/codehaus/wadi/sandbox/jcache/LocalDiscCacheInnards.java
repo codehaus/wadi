@@ -27,7 +27,7 @@ import javax.cache.Cache;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SerializableContent;
-import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.Streamer;
 
 //----------------------------------------
 
@@ -51,7 +51,7 @@ public class
   //----------------------------------------
 
   public
-    LocalDiscCacheInnards(File dir, SerializableContentPool valuePool, StreamingStrategy streamingStrategy, Cache cache, EvictionPolicy evictionPolicy)
+    LocalDiscCacheInnards(File dir, SerializableContentPool valuePool, Streamer streamingStrategy, Cache cache, EvictionPolicy evictionPolicy)
   {
     super(valuePool, streamingStrategy, cache, evictionPolicy);
     assert dir.exists();

@@ -15,23 +15,27 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox;
 
-import EDU.oswego.cs.dl.util.concurrent.Takable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
 
 /**
- * Abstract out the API for session id generation
+ * Abstract factory/pool. Allows pluggable implementations of various
+ * input/output streaming mechanisms to support e.g. compression,
+ * encryption etc...
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface IdGenerator
-  extends Takable
-{
-  public abstract Object take();
-  public abstract Object poll(long millis);
-
-  //   public String getId(String id, String route);
-  //   public String getIdId(String both);
-  //   public String getIdRoute(String both);
+public interface Streamer {
+    
+  ObjectInput getInputStream(InputStream is) throws IOException;
+  ObjectOutput getOutputStream(OutputStream os) throws IOException;
+  String getSuffix();
+  
 }
+

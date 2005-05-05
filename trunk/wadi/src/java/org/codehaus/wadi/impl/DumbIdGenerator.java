@@ -17,7 +17,7 @@
 
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.IdGenerator;
+import org.codehaus.wadi.sandbox.SessionIdFactory;
 
 /**
  * A really simple session id generator - NOT for production use :-)
@@ -26,11 +26,10 @@ import org.codehaus.wadi.IdGenerator;
  * @version $Revision$
  */
 public class DumbIdGenerator
-    implements IdGenerator
+    implements SessionIdFactory
   {
     protected int _tmpHack=0;
-    public synchronized Object take(){return System.currentTimeMillis()+"."+_tmpHack++;}
-    public synchronized Object poll(long millis){return take();}
+    public synchronized Object create(){return System.currentTimeMillis()+"."+_tmpHack++;}
 
     // this could be moved into a SeparatingByChar strategy
 

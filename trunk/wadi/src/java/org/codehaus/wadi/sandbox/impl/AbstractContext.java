@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Context;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -52,11 +51,11 @@ public abstract class AbstractContext extends AbstractMotable implements Context
 
 	// Motable
 	public byte[] getBytes() throws Exception {
-        return Utils.getContent(this, new SimpleStreamingStrategy());
+        return Utils.getContent(this, new SimpleStreamer());
 	}
 
 	public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {
-		Utils.setContent(this, bytes, new SimpleStreamingStrategy());
+		Utils.setContent(this, bytes, new SimpleStreamer());
 	}
 	
 }

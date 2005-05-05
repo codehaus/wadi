@@ -44,8 +44,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import org.activecluster.ClusterException;
-import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.ContextPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
@@ -59,13 +57,14 @@ import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
+import org.codehaus.wadi.sandbox.Streamer;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class SimpleContextualiserStack implements Contextualiser {
 
-    protected final StreamingStrategy _streamer;
+    protected final Streamer _streamer;
     protected final Collapser _collapser;
 
     protected final DummyContextualiser _dummy;
@@ -107,7 +106,7 @@ public class SimpleContextualiserStack implements Contextualiser {
 
     public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource, int port) throws SQLException, JMSException, ClusterException, UnknownHostException {
         super();
-        _streamer=new SimpleStreamingStrategy();
+        _streamer=new SimpleStreamer();
         //_collapser=new DebugCollapser();
         _collapser=new HashingCollapser(1000, 6000);
 

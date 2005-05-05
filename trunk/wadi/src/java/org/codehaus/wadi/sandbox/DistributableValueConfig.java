@@ -18,7 +18,6 @@ package org.codehaus.wadi.sandbox;
 
 import javax.servlet.http.HttpSessionEvent;
 
-import org.codehaus.wadi.StreamingStrategy;
 
 /**
  * TODO - JavaDoc this type
@@ -37,6 +36,6 @@ public interface DistributableValueConfig extends ValueConfig {
     boolean getHttpSessionAttributeListenersRegistered();
 
     // not yet used
-    StreamingStrategy getStreamer();
+    Streamer getStreamer();
 
 }

@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Map;
 import javax.jms.Destination;
 
+import org.codehaus.wadi.sandbox.Streamer;
+
 /**
  * Abstracts out mechanism for i/emmigration of sessions between WADI
  * peers.
@@ -34,8 +36,8 @@ public interface
   public Map getHttpSessionImplMap();
   public void setHttpSessionImplMap(Map sessions);
 
-  public StreamingStrategy getStreamingStrategy();
-  public void setStreamingStrategy(StreamingStrategy strategy);
+  public Streamer getStreamingStrategy();
+  public void setStreamingStrategy(Streamer strategy);
 
   public Manager getManager();
   public void setManager(Manager manager);

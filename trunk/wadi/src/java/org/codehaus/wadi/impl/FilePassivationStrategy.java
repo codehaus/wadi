@@ -32,7 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.HttpSessionImpl;
 import org.codehaus.wadi.PassivationStrategy;
-import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.Streamer;
 
 // TODO - should use NIO all the way through. Sessions should be
 // written into a byte[] that is just stuck on the Channel etc... This
@@ -302,7 +302,7 @@ public class
       }
     }
 
-  protected StreamingStrategy _streamingStrategy;
-  public StreamingStrategy getStreamingStrategy(){return _streamingStrategy;}
-  public void setStreamingStrategy(StreamingStrategy streamingStrategy){_streamingStrategy=streamingStrategy;}
+  protected Streamer _streamingStrategy;
+  public Streamer getStreamingStrategy(){return _streamingStrategy;}
+  public void setStreamingStrategy(Streamer streamingStrategy){_streamingStrategy=streamingStrategy;}
 }

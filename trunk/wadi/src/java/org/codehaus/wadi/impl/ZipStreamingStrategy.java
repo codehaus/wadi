@@ -27,7 +27,7 @@ import java.io.OutputStream;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.Streamer;
 
 /**
  * Pluggable support for [un]Zip-ing sessions as they are exchanged with
@@ -38,7 +38,7 @@ import org.codehaus.wadi.StreamingStrategy;
  */
 public class
   ZipStreamingStrategy
-  implements StreamingStrategy
+  implements Streamer
 {
   public ObjectInput getInputStream(InputStream is) throws IOException {return new ObjectInputStream(new ZipInputStream(is));}
   public ObjectOutput getOutputStream(OutputStream os) throws IOException {return new ObjectOutputStream(new ZipOutputStream(os));}

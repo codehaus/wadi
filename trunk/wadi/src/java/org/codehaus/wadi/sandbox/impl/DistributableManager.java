@@ -22,30 +22,29 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.wadi.IdGenerator;
-import org.codehaus.wadi.RoutingStrategy;
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.DistributableSessionConfig;
 import org.codehaus.wadi.sandbox.Router;
 import org.codehaus.wadi.sandbox.Session;
+import org.codehaus.wadi.sandbox.SessionIdFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
+import org.codehaus.wadi.sandbox.Streamer;
 import org.codehaus.wadi.sandbox.ValueHelper;
 import org.codehaus.wadi.sandbox.ValuePool;
 
 public class DistributableManager extends Manager implements DistributableSessionConfig {
 
-    protected final StreamingStrategy _streamer;
+    protected final Streamer _streamer;
 
-    public DistributableManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, StreamingStrategy streamer, boolean accessOnLoad) {
+    public DistributableManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad) {
         super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, accessOnLoad);
         _streamer=streamer;
     }
 
     // Distributable
-    public StreamingStrategy getStreamer() {return _streamer;}
+    public Streamer getStreamer() {return _streamer;}
 
     static class HelperPair {
 

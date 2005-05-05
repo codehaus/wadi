@@ -83,11 +83,11 @@
 
 // How hard can it be to generate a secure session id ? :-)
 
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.sandbox.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.IdGenerator;
+import org.codehaus.wadi.sandbox.SessionIdFactory;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -105,14 +105,11 @@ import java.util.Random;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class TomcatIdGenerator
-  implements IdGenerator
+public class TomcatSessionIdFactory
+  implements SessionIdFactory
 {
-  public Object poll(long millis) {
-      return take();
-      }
   
-  public Object take() {
+  public Object create() {
       String id=generateSessionId();
       if (log.isTraceEnabled()) log.trace("generated: "+id);
       return id;

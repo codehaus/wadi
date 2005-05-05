@@ -21,9 +21,9 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Set;
 
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableSessionConfig;
+import org.codehaus.wadi.sandbox.Streamer;
 import org.codehaus.wadi.sandbox.ValueHelper;
 
 /**
@@ -37,7 +37,7 @@ public class DistributableSession extends StandardSession implements Distributab
 
     public DistributableSession(DistributableSessionConfig config) {super(config);}
 
-    public StreamingStrategy getStreamer() {return ((DistributableSessionConfig)_config).getStreamer();}
+    public Streamer getStreamer() {return ((DistributableSessionConfig)_config).getStreamer();}
     
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         super.readContent(oi);

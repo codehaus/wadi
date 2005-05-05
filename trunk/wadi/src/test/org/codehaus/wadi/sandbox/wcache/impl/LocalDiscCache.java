@@ -11,7 +11,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectOutput;
 
 import org.codehaus.wadi.SerializableContent;
-import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.Streamer;
 import org.codehaus.wadi.sandbox.wcache.Cache;
 import org.codehaus.wadi.sandbox.wcache.RequestProcessor;
 
@@ -32,9 +32,9 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 public class LocalDiscCache extends AbstractMappedCache {
 
 	protected File _dir;
-	protected StreamingStrategy _streamingStrategy;
+	protected Streamer _streamingStrategy;
 	
-	public LocalDiscCache(File dir, StreamingStrategy streamingStrategy, Evicter evicter, Cache subcache) {
+	public LocalDiscCache(File dir, Streamer streamingStrategy, Evicter evicter, Cache subcache) {
 		super(new ConcurrentHashMap(), evicter, subcache);
 	    assert dir.exists();
 	    assert dir.isDirectory();

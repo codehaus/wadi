@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +25,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
-import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.Streamer;
 
 /**
  * Don't do anything extra, just connect streams up directly.
@@ -34,8 +34,8 @@ import org.codehaus.wadi.StreamingStrategy;
  * @version $Revision$
  */
 public class
-  SimpleStreamingStrategy
-  implements StreamingStrategy
+  SimpleStreamer
+  implements Streamer
 {
   public ObjectInput getInputStream(InputStream is) throws IOException {return new ObjectInputStream(is);}
   public ObjectOutput getOutputStream(OutputStream os) throws IOException {return new ObjectOutputStream(os);}
