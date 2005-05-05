@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.StreamingStrategy;
 
 /**
  * TODO - JavaDoc this type
@@ -28,7 +27,7 @@ import org.codehaus.wadi.StreamingStrategy;
 public interface DistributableSessionConfig extends SessionConfig {
 
     // Distributable
-    StreamingStrategy getStreamer();
+    Streamer getStreamer();
     ValueHelper findHelper(Class type);
 
     // Lazy

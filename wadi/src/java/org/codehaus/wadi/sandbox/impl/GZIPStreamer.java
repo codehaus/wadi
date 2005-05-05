@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +27,7 @@ import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.Streamer;
 
 /**
  * Pluggable support for [un]GZIP-ing sessions as they are exchanged with
@@ -37,8 +37,8 @@ import org.codehaus.wadi.StreamingStrategy;
  * @version $Revision$
  */
 public class
-  GZIPStreamingStrategy
-  implements StreamingStrategy
+  GZIPStreamer
+  implements Streamer
 {
   public ObjectInput getInputStream(InputStream is) throws IOException {return new ObjectInputStream(new GZIPInputStream(is));}
   public ObjectOutput getOutputStream(OutputStream os) throws IOException {return new ObjectOutputStream(new GZIPOutputStream(os));}

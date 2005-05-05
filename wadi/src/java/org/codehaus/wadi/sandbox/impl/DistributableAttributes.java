@@ -29,10 +29,10 @@ import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionEvent;
 
 import org.codehaus.wadi.SerializableContent;
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
+import org.codehaus.wadi.sandbox.Streamer;
 import org.codehaus.wadi.sandbox.ValueHelper;
 
 /**
@@ -114,6 +114,6 @@ public class DistributableAttributes extends StandardAttributes implements Seria
 
     public HttpSessionEvent getHttpSessionEvent() {return ((DistributableAttributesConfig)_config).getHttpSessionEvent();}
     
-    public StreamingStrategy getStreamer(){return ((DistributableAttributesConfig)_config).getStreamer();}
+    public Streamer getStreamer(){return ((DistributableAttributesConfig)_config).getStreamer();}
     
 }

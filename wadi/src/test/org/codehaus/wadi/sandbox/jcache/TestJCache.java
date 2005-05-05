@@ -32,7 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.SerializableContent;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.sandbox.impl.SimpleStreamer;
 
 import ri.cache.BasicCache;
 
@@ -261,7 +261,7 @@ public class
     assertTrue(dir.mkdirs());
 
     Cache backing=new BasicCache();
-    CacheInnards ci=new LocalDiscCacheInnards(dir, new Pool(), new SimpleStreamingStrategy(), backing, new NoEvictionPolicy());
+    CacheInnards ci=new LocalDiscCacheInnards(dir, new Pool(), new SimpleStreamer(), backing, new NoEvictionPolicy());
     Cache cache=new BasicCache(ci, ci);
 
     testJCache(cache, false);
@@ -293,7 +293,7 @@ public class
       }
 
       Cache backing=new BasicCache();
-      CacheInnards ci=new SharedDBCacheInnards(ds, table, new Pool(), new SimpleStreamingStrategy(), backing, new NoEvictionPolicy());
+      CacheInnards ci=new SharedDBCacheInnards(ds, table, new Pool(), new SimpleStreamer(), backing, new NoEvictionPolicy());
       Cache cache=new BasicCache(ci, ci);
 
       testJCache(cache, false);

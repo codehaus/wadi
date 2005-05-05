@@ -31,7 +31,7 @@ import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SerializableContent;
-import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.Streamer;
 
 //----------------------------------------
 
@@ -55,7 +55,7 @@ class
   //----------------------------------------
 
   public
-    SharedDBCacheInnards(DataSource ds, String table, SerializableContentPool valuePool, StreamingStrategy streamingStrategy, Cache cache, EvictionPolicy evictionPolicy)
+    SharedDBCacheInnards(DataSource ds, String table, SerializableContentPool valuePool, Streamer streamingStrategy, Cache cache, EvictionPolicy evictionPolicy)
   {
     super(valuePool, streamingStrategy, cache, evictionPolicy);
     assert ds!=null;

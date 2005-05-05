@@ -22,12 +22,8 @@ import java.util.Map;
 import java.util.Timer;
 
 
-import org.codehaus.wadi.IdGenerator;
 import org.codehaus.wadi.RoutingStrategy;
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.NoRoutingStrategy;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
-import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.ContextPool;
@@ -37,8 +33,10 @@ import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.EvicterConfig;
 import org.codehaus.wadi.sandbox.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.Motable;
+import org.codehaus.wadi.sandbox.SessionIdFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
+import org.codehaus.wadi.sandbox.Streamer;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.impl.AbsoluteEvicter;
 import org.codehaus.wadi.sandbox.impl.AbstractExclusiveContextualiser;
@@ -57,8 +55,10 @@ import org.codehaus.wadi.sandbox.impl.NeverEvicter;
 import org.codehaus.wadi.sandbox.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.sandbox.impl.SimpleAttributesPool;
 import org.codehaus.wadi.sandbox.impl.SimpleSessionPool;
+import org.codehaus.wadi.sandbox.impl.SimpleStreamer;
 import org.codehaus.wadi.sandbox.impl.SimpleValuePool;
 import org.codehaus.wadi.sandbox.impl.StandardSession;
+import org.codehaus.wadi.sandbox.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.sandbox.impl.jetty.JettySessionWrapperFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
@@ -113,7 +113,7 @@ public class TestEvicters extends TestCase {
         boolean strictOrdering=true;
         Evicter devicter=new NeverEvicter(sweepInterval, strictOrdering);
         Map dmap=new HashMap();
-        StreamingStrategy streamer=new SimpleStreamingStrategy();
+        Streamer streamer=new SimpleStreamer();
         // (Contextualiser next, Collapser collapser, Evicter evicter, Map map, StreamingStrategy streamer, File dir) {
         Collapser collapser=new HashingCollapser(100, 1000);
         File dir=new File("/tmp");
@@ -129,7 +129,7 @@ public class TestEvicters extends TestCase {
         AttributesPool attributesPool=new SimpleAttributesPool(new DistributableAttributesFactory());
         ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
         SessionWrapperFactory wrapperFactory=new JettySessionWrapperFactory();
-        IdGenerator idFactory=new TomcatIdGenerator();
+        SessionIdFactory idFactory=new TomcatSessionIdFactory();
         DistributableManager manager=new DistributableManager(sessionPool, attributesPool, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true);
         manager.setMaxInactiveInterval(2);
         //manager.start();

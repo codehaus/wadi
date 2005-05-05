@@ -53,9 +53,11 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.FilePassivationStrategy;
 import org.codehaus.wadi.impl.NoRoutingStrategy;
 import org.codehaus.wadi.impl.RelativeEvictionPolicy;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
-import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.impl.TotalEvictionPolicy;
+import org.codehaus.wadi.sandbox.SessionIdFactory;
+import org.codehaus.wadi.sandbox.Streamer;
+import org.codehaus.wadi.sandbox.impl.SimpleStreamer;
+import org.codehaus.wadi.sandbox.impl.TomcatSessionIdFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
@@ -390,12 +392,12 @@ public abstract class
       // default migration policy
       if (_migrationService==null) _migrationService=new org.codehaus.wadi.impl.MessagedMigrationService();
       if (_passivationStrategy==null) _passivationStrategy=new FilePassivationStrategy(new File("/tmp/wadi"));
-      if (_streamingStrategy==null) _streamingStrategy=new SimpleStreamingStrategy();
+      if (_streamingStrategy==null) _streamingStrategy=new SimpleStreamer();
       if (_passivationStrategy.getStreamingStrategy()==null) _passivationStrategy.setStreamingStrategy(_streamingStrategy);
       // default eviction policy
       if (_evictionPolicy==null) _evictionPolicy=new RelativeEvictionPolicy(0.5F);
       //default id generation strategy
-      if (_idGenerator==null) _idGenerator=new TomcatIdGenerator();
+      if (_idGenerator==null) _idGenerator=new TomcatSessionIdFactory();
       // default routing strategy
       if (_routingStrategy==null) _routingStrategy=new NoRoutingStrategy();
       
@@ -614,9 +616,9 @@ public abstract class
 
   public String getSpecificationVersion(){return "2.4";} // TODO - read from DD
 
-  protected IdGenerator _idGenerator;
-  public IdGenerator getIdGenerator(){return _idGenerator;}
-  public void setIdGenerator(IdGenerator generator){_idGenerator=generator;}
+  protected SessionIdFactory _idGenerator;
+  public SessionIdFactory getIdGenerator(){return _idGenerator;}
+  public void setIdGenerator(SessionIdFactory generator){_idGenerator=generator;}
 
   //----------------------------------------
   // Listeners
@@ -947,7 +949,7 @@ public abstract class
     acquireImpl(Manager manager, String realId)
   {
     if (realId==null)
-      realId=(String)getIdGenerator().take();
+      realId=(String)getIdGenerator().create();
 
     HttpSessionImpl impl=createImpl();
     impl.init(Manager.this, realId, System.currentTimeMillis(), _maxInactiveInterval, _maxInactiveInterval); // TODO need actual...
@@ -1040,9 +1042,9 @@ public abstract class
   public void setReuseSessionIds(boolean reuseSessionIds){_reuseSessionIds=reuseSessionIds;}
   public boolean getReuseSessionIds(){return _reuseSessionIds;}
 
-  protected StreamingStrategy _streamingStrategy;
-  public StreamingStrategy getStreamingStrategy(){return _streamingStrategy;}
-  public void setStreamingStrategy(StreamingStrategy streamingStrategy){_streamingStrategy=streamingStrategy;}
+  protected Streamer _streamingStrategy;
+  public Streamer getStreamingStrategy(){return _streamingStrategy;}
+  public void setStreamingStrategy(Streamer streamingStrategy){_streamingStrategy=streamingStrategy;}
 
   protected Filter _filter;
   public void setFilter(Filter filter){_filter=filter;}

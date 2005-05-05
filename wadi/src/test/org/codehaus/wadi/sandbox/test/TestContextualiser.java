@@ -41,11 +41,6 @@ import org.activemq.store.vm.VMPersistenceAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
-import org.codehaus.wadi.IdGenerator;
-import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.impl.GZIPStreamingStrategy;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
-import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.Context;
@@ -61,8 +56,10 @@ import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
 import org.codehaus.wadi.sandbox.Router;
 import org.codehaus.wadi.sandbox.Session;
+import org.codehaus.wadi.sandbox.SessionIdFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
+import org.codehaus.wadi.sandbox.Streamer;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.impl.AbsoluteEvicter;
 import org.codehaus.wadi.sandbox.impl.AbstractContextualiser;
@@ -78,6 +75,7 @@ import org.codehaus.wadi.sandbox.impl.DummyEvicter;
 import org.codehaus.wadi.sandbox.impl.DummyHttpServletRequest;
 import org.codehaus.wadi.sandbox.impl.DummyRouter;
 import org.codehaus.wadi.sandbox.impl.ExclusiveDiscContextualiser;
+import org.codehaus.wadi.sandbox.impl.GZIPStreamer;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.Manager;
 import org.codehaus.wadi.sandbox.impl.MemoryContextualiser;
@@ -92,10 +90,12 @@ import org.codehaus.wadi.sandbox.impl.SimpleAttributesPool;
 import org.codehaus.wadi.sandbox.impl.SimpleContextualiserStack;
 import org.codehaus.wadi.sandbox.impl.SimpleEvictable;
 import org.codehaus.wadi.sandbox.impl.SimpleSessionPool;
+import org.codehaus.wadi.sandbox.impl.SimpleStreamer;
 import org.codehaus.wadi.sandbox.impl.SimpleValuePool;
 import org.codehaus.wadi.sandbox.impl.StandardAttributesFactory;
 import org.codehaus.wadi.sandbox.impl.StandardSessionFactory;
 import org.codehaus.wadi.sandbox.impl.StandardValueFactory;
+import org.codehaus.wadi.sandbox.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.sandbox.impl.Utils;
 import org.codehaus.wadi.sandbox.impl.jetty.JettySessionWrapperFactory;
 
@@ -396,7 +396,7 @@ public class TestContextualiser extends TestCase {
     }
     
     public void testPromotion(Contextualiser c, int n) throws Exception {
-        Contextualiser mc=new MemoryContextualiser(c, new DummyEvicter(), new HashMap(), new GZIPStreamingStrategy(), new MyContextPool(), _requestPool);
+        Contextualiser mc=new MemoryContextualiser(c, new DummyEvicter(), new HashMap(), new GZIPStreamer(), new MyContextPool(), _requestPool);
         FilterChain fc=new MyFilterChain();
         
         for (int i=0; i<n; i++)
@@ -417,7 +417,7 @@ public class TestContextualiser extends TestCase {
     public void testCollapsing(Contextualiser c, int n) throws Exception {
         Map map=new HashMap();
         Contextualiser sc=new SerialContextualiser(c, new HashingCollapser(1, 1000), map);
-        Contextualiser mc=new MemoryContextualiser(sc, new DummyEvicter(), map, new GZIPStreamingStrategy(), new MyContextPool(), _requestPool);
+        Contextualiser mc=new MemoryContextualiser(sc, new DummyEvicter(), map, new GZIPStreamer(), new MyContextPool(), _requestPool);
         FilterChain fc=new MyFilterChain();
         
         Runnable r=new MyRunnable(mc, fc, "baz");
@@ -441,12 +441,12 @@ public class TestContextualiser extends TestCase {
     
     // reusable components...
     // shared
-    protected final StreamingStrategy _streamer=new SimpleStreamingStrategy();
+    protected final Streamer _streamer=new SimpleStreamer();
     protected final Contextualiser _dummyContextualiser=new DummyContextualiser();
     protected final File _dir=new File("/tmp");
     protected final Collapser _collapser=new HashingCollapser(1, 2000);
     protected final SessionWrapperFactory _sessionWrapperFactory=new JettySessionWrapperFactory();
-    protected final IdGenerator _sessionIdFactory=new TomcatIdGenerator();
+    protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
     protected final boolean _accessOnLoad=true;
     protected final Router _router=new DummyRouter();
     
@@ -567,7 +567,7 @@ public class TestContextualiser extends TestCase {
         ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, new SwitchableEvicter(30000, true), c0, cluster0, dispatcher0, relocater0, location);
         Map m0=new HashMap();
         m0.put("foo", new MyContext());
-        Contextualiser memory0=new MemoryContextualiser(clstr0, new NeverEvicter(30000, true), m0, new GZIPStreamingStrategy(), new MyContextPool(), _requestPool);
+        Contextualiser memory0=new MemoryContextualiser(clstr0, new NeverEvicter(30000, true), m0, new GZIPStreamer(), new MyContextPool(), _requestPool);
         relocater0.setTop(memory0);
         
         Map c1=new HashMap();
@@ -577,7 +577,7 @@ public class TestContextualiser extends TestCase {
         ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, new SwitchableEvicter(30000, true), c1, cluster1, dispatcher1, relocater1, null);
         Map m1=new HashMap();
         m1.put("bar", new MyContext());
-        Contextualiser memory1=new MemoryContextualiser(clstr1, new NeverEvicter(30000, true), m1, new GZIPStreamingStrategy(), new MyContextPool(), _requestPool);
+        Contextualiser memory1=new MemoryContextualiser(clstr1, new NeverEvicter(30000, true), m1, new GZIPStreamer(), new MyContextPool(), _requestPool);
         relocater1.setTop(memory1);
         
         Thread.sleep(2000); // activecluster needs a little time to sort itself out...

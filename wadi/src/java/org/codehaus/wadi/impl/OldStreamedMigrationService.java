@@ -30,7 +30,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.HttpSessionImpl;
-import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.Streamer;
 
 // TODO - maybe use NIO as discussed with Jeremy.
 // TODO - could our connection be to a filedescriptor instead of another node ?
@@ -56,7 +56,7 @@ public class
 
     // TODO - LOCKING INCOMPLETE HERE - NEEDS FIXING...
     public boolean
-      run(String id, HttpSessionImpl session, InetAddress remoteAddress, int remotePort, StreamingStrategy streamingStrategy)
+      run(String id, HttpSessionImpl session, InetAddress remoteAddress, int remotePort, Streamer streamingStrategy)
     {
       Sync lock=null;
       boolean acquired=false;
@@ -148,9 +148,9 @@ public class
     public InetAddress getAddress(){return _address;}
     public void setAddress(InetAddress address){_address=address;}
 
-    protected StreamingStrategy _streamingStrategy;
+    protected Streamer _streamingStrategy;
 
-    public Server(Map sessions, StreamingStrategy streamingStrategy)
+    public Server(Map sessions, Streamer streamingStrategy)
     {
       _sessions=sessions;
       _streamingStrategy=streamingStrategy;

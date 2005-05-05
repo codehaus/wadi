@@ -21,11 +21,11 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.MigrationService;
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.MessagedMigrationService;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.impl.StreamedMigrationService;
 import org.codehaus.wadi.jetty.HttpSessionImplFactory;
+import org.codehaus.wadi.sandbox.Streamer;
+import org.codehaus.wadi.sandbox.impl.SimpleStreamer;
 
 /**
  * Test the Migration Service
@@ -44,7 +44,7 @@ public class
   protected MigrationService        _mms0=new MessagedMigrationService();
   protected MigrationService        _mms1=new MessagedMigrationService();
 
-  protected StreamingStrategy _streamingStrategy=new SimpleStreamingStrategy();
+  protected Streamer _streamingStrategy=new SimpleStreamer();
   protected HttpSessionImplFactory _factory=new HttpSessionImplFactory();
 
   public

@@ -29,8 +29,6 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.IdGenerator;
-import org.codehaus.wadi.RoutingStrategy;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.ContextualiserConfig;
 import org.codehaus.wadi.sandbox.Evictable;
@@ -39,6 +37,7 @@ import org.codehaus.wadi.sandbox.Lifecycle;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.Router;
 import org.codehaus.wadi.sandbox.Session;
+import org.codehaus.wadi.sandbox.SessionIdFactory;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.AttributesPool;
@@ -60,14 +59,14 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     protected final AttributesPool _attributesPool;
     protected final ValuePool _valuePool;
     protected final SessionWrapperFactory _sessionWrapperFactory;
-    protected final IdGenerator _sessionIdFactory;
+    protected final SessionIdFactory _sessionIdFactory;
     protected final Contextualiser _contextualiser;
     protected final Map _map;
     protected final Timer _timer;
     protected Router _router;
     protected final boolean _accessOnLoad; // TODO - should only be available on DistributableManager
 
-    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean accessOnLoad) {
+    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean accessOnLoad) {
         _sessionPool=sessionPool;
         _sessionPool.init(this);
         _attributesPool=attributesPool;
@@ -105,7 +104,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         session.setCreationTime(time);
         session.setLastAccessedTime(time);
         session.setMaxInactiveInterval(_maxInactiveInterval);
-        String id=(String)_sessionIdFactory.take(); // TODO - API on this class is wrong...
+        String id=(String)_sessionIdFactory.create(); // TODO - API on this class is wrong...
         session.setId(id);
         _map.put(id, session);
         // _contextualiser.getEvicter().insert(session);
@@ -198,7 +197,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
 
     public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperFactory;}
 
-    public IdGenerator getSessionIdFactory() {return _sessionIdFactory;}
+    public SessionIdFactory getSessionIdFactory() {return _sessionIdFactory;}
 
     protected int _maxInactiveInterval=30*60; // 30 mins
     public int getMaxInactiveInterval(){return _maxInactiveInterval;}

@@ -24,7 +24,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Context;
 import org.codehaus.wadi.sandbox.ContextPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
@@ -35,6 +34,7 @@ import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
 import org.codehaus.wadi.sandbox.PoolableHttpServletRequestWrapper;
 import org.codehaus.wadi.sandbox.HttpServletRequestWrapperPool;
+import org.codehaus.wadi.sandbox.Streamer;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
@@ -47,13 +47,13 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  */
 public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	protected final ContextPool _pool;
-	protected final StreamingStrategy _streamer;
+	protected final Streamer _streamer;
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 	protected final Emoter _evictionEmoter;
     protected final HttpServletRequestWrapperPool _requestPool;
 
-	public MemoryContextualiser(Contextualiser next, Evicter evicter, Map map, StreamingStrategy streamer, ContextPool pool, HttpServletRequestWrapperPool requestPool) {
+	public MemoryContextualiser(Contextualiser next, Evicter evicter, Map map, Streamer streamer, ContextPool pool, HttpServletRequestWrapperPool requestPool) {
 		super(next, new RWLocker(), evicter, map);
 		_pool=pool;
 

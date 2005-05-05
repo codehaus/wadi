@@ -34,7 +34,6 @@ import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.Dirtier;
 
@@ -45,7 +44,7 @@ public class WholeAttributes implements Attributes {
 	protected static final Log _log = LogFactory.getLog(WholeAttributes.class);
     
     protected final Dirtier _dirtier;
-    protected final StreamingStrategy _streamer;
+    protected final Streamer _streamer;
     protected final boolean _evictObjectRepASAP;
     protected final boolean _evictByteRepASAP;
     
@@ -55,7 +54,7 @@ public class WholeAttributes implements Attributes {
     protected boolean _objectRepValid;
     protected boolean _hasListeners;
     
-    public WholeAttributes(Dirtier dirtier, StreamingStrategy streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
+    public WholeAttributes(Dirtier dirtier, Streamer streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
         _dirtier=dirtier;
         _streamer=streamer;
         _evictObjectRepASAP=evictObjectRepASAP;
@@ -192,7 +191,7 @@ public class WholeAttributes implements Attributes {
     public Set getActivationListenerNames() {return null;} // NYI
 
     public HttpSessionEvent getHttpSessionEvent() {return null;} // NYI
-    public StreamingStrategy getStreamer() {return _streamer;}
+    public Streamer getStreamer() {return _streamer;}
     public Dirtier getDirtier() {return _dirtier;}
 
     // NYI

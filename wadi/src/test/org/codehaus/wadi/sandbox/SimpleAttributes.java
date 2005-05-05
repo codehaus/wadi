@@ -25,9 +25,8 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSessionEvent;
 
-import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
+import org.codehaus.wadi.sandbox.impl.SimpleStreamer;
 import org.codehaus.wadi.sandbox.impl.Utils;
 
 /**
@@ -39,7 +38,7 @@ import org.codehaus.wadi.sandbox.impl.Utils;
 
 public class SimpleAttributes extends HashMap implements Attributes {
     
-    protected final static StreamingStrategy _streamer=new SimpleStreamingStrategy(); // TODO - parameterise 
+    protected final static Streamer _streamer=new SimpleStreamer(); // TODO - parameterise 
     
     public byte[] getBytes() {
         return Utils.safeObjectToByteArray(this, _streamer);

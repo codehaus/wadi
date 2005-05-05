@@ -39,20 +39,18 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.IdGenerator;
 import org.codehaus.wadi.RoutingStrategy;
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.impl.NoRoutingStrategy;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
-import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.sandbox.AttributesFactory;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Router;
 import org.codehaus.wadi.sandbox.Session;
 import org.codehaus.wadi.sandbox.SessionFactory;
+import org.codehaus.wadi.sandbox.SessionIdFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
+import org.codehaus.wadi.sandbox.Streamer;
 import org.codehaus.wadi.sandbox.ValueFactory;
 import org.codehaus.wadi.sandbox.ValueHelper;
 import org.codehaus.wadi.sandbox.ValuePool;
@@ -61,6 +59,7 @@ import org.codehaus.wadi.sandbox.impl.DummyContextualiser;
 import org.codehaus.wadi.sandbox.impl.DummyRouter;
 import org.codehaus.wadi.sandbox.impl.DummySessionWrapperFactory;
 import org.codehaus.wadi.sandbox.impl.LazyAttributesFactory;
+import org.codehaus.wadi.sandbox.impl.SimpleStreamer;
 import org.codehaus.wadi.sandbox.impl.StandardAttributesFactory;
 import org.codehaus.wadi.sandbox.impl.SimpleAttributesPool;
 import org.codehaus.wadi.sandbox.impl.DistributableManager;
@@ -73,6 +72,7 @@ import org.codehaus.wadi.sandbox.impl.SimpleSessionPool;
 import org.codehaus.wadi.sandbox.impl.SimpleValuePool;
 import org.codehaus.wadi.sandbox.impl.StandardSessionFactory;
 import org.codehaus.wadi.sandbox.impl.StandardValueFactory;
+import org.codehaus.wadi.sandbox.impl.TomcatSessionIdFactory;
 
 /**
  * Test WADI's HttpSession implementation
@@ -94,7 +94,7 @@ extends TestCase
     // Standard
     protected Contextualiser          _standardContextualiser=new DummyContextualiser();
     protected SessionWrapperFactory   _standardSessionWrapperFactory=new DummySessionWrapperFactory();
-    protected IdGenerator             _standardSessionIdFactory=new TomcatIdGenerator();
+    protected SessionIdFactory             _standardSessionIdFactory=new TomcatSessionIdFactory();
     protected AttributesFactory       _standardAttributesFactory=new StandardAttributesFactory();
     protected AttributesPool          _standardAttributesPool=new SimpleAttributesPool(_standardAttributesFactory);
     protected SessionFactory          _standardSessionFactory=new StandardSessionFactory();
@@ -104,7 +104,7 @@ extends TestCase
     protected Manager                 _standardManager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser, _sessionMap, _router, _accessOnLoad);
     // Distributable
     protected Contextualiser          _distributableContextualiser=new DummyContextualiser();
-    protected StreamingStrategy       _streamer=new SimpleStreamingStrategy();
+    protected Streamer       _streamer=new SimpleStreamer();
     protected AttributesFactory       _distributedAttributesFactory=new DistributableAttributesFactory();
     protected AttributesPool          _distributedAttributesPool=new SimpleAttributesPool(_distributedAttributesFactory);
     protected SessionFactory          _distributableSessionFactory=new DistributableSessionFactory();

@@ -19,8 +19,8 @@ package org.codehaus.wadi.sandbox.test;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.codehaus.wadi.IdGenerator;
-import org.codehaus.wadi.impl.TomcatIdGenerator;
+import org.codehaus.wadi.sandbox.SessionIdFactory;
+import org.codehaus.wadi.sandbox.impl.TomcatSessionIdFactory;
 
 import junit.framework.TestCase;
 
@@ -39,11 +39,11 @@ public class TestSessionIdFactory extends TestCase {
     }
 
   public void testIdFactory() throws Exception {
-      IdGenerator factory=new TomcatIdGenerator();
+      SessionIdFactory factory=new TomcatSessionIdFactory();
       Set ids=new TreeSet();
       int numIds=100000;
       for (int i=0; i<numIds; i++)
-          ids.add(factory.take());
+          ids.add(factory.create());
       assertTrue(ids.size()==numIds);
   }
 }

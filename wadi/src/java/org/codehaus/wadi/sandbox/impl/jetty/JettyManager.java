@@ -23,12 +23,12 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.codehaus.wadi.IdGenerator;
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Router;
+import org.codehaus.wadi.sandbox.SessionIdFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
+import org.codehaus.wadi.sandbox.Streamer;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.impl.Manager;
 import org.apache.commons.logging.Log;
@@ -40,7 +40,7 @@ public class JettyManager extends org.codehaus.wadi.sandbox.impl.DistributableMa
 
     protected final Log _log = LogFactory.getLog(getClass());
 
-    public JettyManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, JettySessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map sessionMap, StreamingStrategy streamer, boolean accessOnLoad, Router router) {
+    public JettyManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, JettySessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Streamer streamer, boolean accessOnLoad, Router router) {
         super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad);
     }
 

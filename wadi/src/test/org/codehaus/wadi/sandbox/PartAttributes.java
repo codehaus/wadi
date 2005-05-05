@@ -20,7 +20,6 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSessionEvent;
 
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Dirtier;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
 import org.codehaus.wadi.sandbox.ValueHelper;
@@ -34,7 +33,7 @@ import org.codehaus.wadi.sandbox.ValueHelper;
 
 public class PartAttributes extends SimpleAttributes implements DistributableValueConfig {
 
-    public PartAttributes(Dirtier dirtier, StreamingStrategy streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
+    public PartAttributes(Dirtier dirtier, Streamer streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
         // NYI
     }
     
@@ -42,7 +41,7 @@ public class PartAttributes extends SimpleAttributes implements DistributableVal
     public Set getActivationListenerNames() {return null;} //NYI
     
     public HttpSessionEvent getHttpSessionEvent() {return null;} //NYI
-    public StreamingStrategy getStreamer() {return null;} //NYI
+    public Streamer getStreamer() {return null;} //NYI
     public Dirtier getDirtier() {return null;} //NYI
     public ValueHelper findHelper(Class type) {return null;} //NYI
     public boolean getHttpSessionAttributeListenersRegistered(){return false;}// NYI

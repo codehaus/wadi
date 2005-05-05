@@ -27,7 +27,7 @@ import javax.cache.CacheEntry;
 import javax.cache.CacheException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.Streamer;
 
 //----------------------------------------
 
@@ -57,14 +57,14 @@ public abstract class
   protected final Log _log=LogFactory.getLog(getClass());
 
   protected final SerializableContentPool _valuePool;
-  protected final StreamingStrategy       _streamingStrategy;
+  protected final Streamer       _streamingStrategy;
   protected final Cache                   _cache;
   protected final EvictionPolicy          _evictionPolicy;
 
   //----------------------------------------
 
   public
-    AbstractCacheInnards(SerializableContentPool valuePool, StreamingStrategy streamingStrategy, Cache cache, EvictionPolicy evictionPolicy)
+    AbstractCacheInnards(SerializableContentPool valuePool, Streamer streamingStrategy, Cache cache, EvictionPolicy evictionPolicy)
   {
     assert valuePool!=null;
     assert streamingStrategy!=null;

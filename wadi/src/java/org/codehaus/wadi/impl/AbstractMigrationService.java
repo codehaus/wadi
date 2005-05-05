@@ -33,7 +33,8 @@ import org.codehaus.wadi.Executable;
 import org.codehaus.wadi.HttpSessionImplFactory;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.MigrationService;
-import org.codehaus.wadi.StreamingStrategy;
+import org.codehaus.wadi.sandbox.Streamer;
+import org.codehaus.wadi.sandbox.impl.SimpleStreamer;
 
 /**
  * Describe AbstractMigrationService here...
@@ -51,9 +52,9 @@ public abstract class
   protected AsyncToSyncAdaptor _adaptor = new AsyncToSyncAdaptor();
   public AsyncToSyncAdaptor getAsyncToSyncAdaptor(){return _adaptor;}
 
-  protected StreamingStrategy _streamingStrategy=new SimpleStreamingStrategy();
-  public StreamingStrategy getStreamingStrategy(){return _streamingStrategy;}
-  public void setStreamingStrategy(StreamingStrategy strategy){_streamingStrategy=strategy;}
+  protected Streamer _streamingStrategy=new SimpleStreamer();
+  public Streamer getStreamingStrategy(){return _streamingStrategy;}
+  public void setStreamingStrategy(Streamer strategy){_streamingStrategy=strategy;}
 
   protected Map _sessions;
   public Map getHttpSessionImplMap(){return _sessions;}

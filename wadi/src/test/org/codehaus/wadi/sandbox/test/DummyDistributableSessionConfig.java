@@ -21,29 +21,29 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 
-import org.codehaus.wadi.IdGenerator;
-import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
-import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.DistributableSessionConfig;
 import org.codehaus.wadi.sandbox.Evictable;
 import org.codehaus.wadi.sandbox.Router;
 import org.codehaus.wadi.sandbox.Session;
+import org.codehaus.wadi.sandbox.SessionIdFactory;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
+import org.codehaus.wadi.sandbox.Streamer;
 import org.codehaus.wadi.sandbox.ValueHelper;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.sandbox.impl.DistributableValueFactory;
 import org.codehaus.wadi.sandbox.impl.DummyRouter;
 import org.codehaus.wadi.sandbox.impl.SimpleAttributesPool;
+import org.codehaus.wadi.sandbox.impl.SimpleStreamer;
 import org.codehaus.wadi.sandbox.impl.SimpleValuePool;
+import org.codehaus.wadi.sandbox.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.sandbox.impl.jetty.JettySessionWrapperFactory;
 
 public class DummyDistributableSessionConfig implements DistributableSessionConfig {
 
-    protected final StreamingStrategy _streamer=new SimpleStreamingStrategy();
-    public StreamingStrategy getStreamer() {return _streamer;}
+    protected final Streamer _streamer=new SimpleStreamer();
+    public Streamer getStreamer() {return _streamer;}
 
     public ValueHelper findHelper(Class type) {
         throw new UnsupportedOperationException();
@@ -74,8 +74,8 @@ public class DummyDistributableSessionConfig implements DistributableSessionConf
     protected final SessionWrapperFactory _sessionWrapperFactory=new JettySessionWrapperFactory();
     public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperFactory;}
 
-    protected final IdGenerator _sessionIdFactory=new TomcatIdGenerator();
-    public IdGenerator getSessionIdFactory() {return _sessionIdFactory;}
+    protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
+    public SessionIdFactory getSessionIdFactory() {return _sessionIdFactory;}
 
     protected final int _maxInactiveInterval=30*60;
     public int getMaxInactiveInterval() {return _maxInactiveInterval;}

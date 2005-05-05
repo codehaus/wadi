@@ -17,7 +17,7 @@ import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.sandbox.impl.SimpleStreamer;
 import org.codehaus.wadi.sandbox.wcache.impl.ClusterCache;
 import org.codehaus.wadi.sandbox.wcache.impl.InactiveEvicter;
 import org.codehaus.wadi.sandbox.wcache.impl.InvalidEvicter;
@@ -115,7 +115,7 @@ public class TestCache extends TestCase {
 	    // TODO - insert Replicated and DB cache tiers here...
 		Cache database=new JDBCCache(new NeverEvicter(), null);
 		Cache cluster=new ClusterCache(new InvalidEvicter(), database);
-		Cache disc=new LocalDiscCache(dir, new SimpleStreamingStrategy(), new MaxInactiveIntervalEvicter(), cluster);
+		Cache disc=new LocalDiscCache(dir, new SimpleStreamer(), new MaxInactiveIntervalEvicter(), cluster);
 		Cache cache=new MemoryCache(new InactiveEvicter(), disc);
 		
 		String key="xxx";

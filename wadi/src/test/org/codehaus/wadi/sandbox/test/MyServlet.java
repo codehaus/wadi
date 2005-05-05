@@ -28,10 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.IdGenerator;
-import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
-import org.codehaus.wadi.impl.TomcatIdGenerator;
 import org.codehaus.wadi.sandbox.AttributesPool;
 import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.ContextPool;
@@ -39,8 +35,10 @@ import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.RelocationStrategy;
 import org.codehaus.wadi.sandbox.Router;
+import org.codehaus.wadi.sandbox.SessionIdFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
 import org.codehaus.wadi.sandbox.SessionWrapperFactory;
+import org.codehaus.wadi.sandbox.Streamer;
 import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.impl.ClusterContextualiser;
 import org.codehaus.wadi.sandbox.impl.CustomCluster;
@@ -59,8 +57,10 @@ import org.codehaus.wadi.sandbox.impl.SerialContextualiser;
 import org.codehaus.wadi.sandbox.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.sandbox.impl.SimpleAttributesPool;
 import org.codehaus.wadi.sandbox.impl.SimpleSessionPool;
+import org.codehaus.wadi.sandbox.impl.SimpleStreamer;
 import org.codehaus.wadi.sandbox.impl.SimpleValuePool;
 import org.codehaus.wadi.sandbox.impl.StatelessContextualiser;
+import org.codehaus.wadi.sandbox.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.sandbox.impl.jetty.JettySessionWrapperFactory;
 
 public class MyServlet implements Servlet {
@@ -76,11 +76,11 @@ public class MyServlet implements Servlet {
 	protected final SerialContextualiser _serialContextualiser;
 	protected final MemoryContextualiser _memoryContextualiser;
 	protected final Location _location;
-    protected final StreamingStrategy _streamer=new SimpleStreamingStrategy();
+    protected final Streamer _streamer=new SimpleStreamer();
     protected final Contextualiser _dummyContextualiser=new DummyContextualiser();
     protected final Collapser _collapser=new HashingCollapser(10, 2000);
     protected final SessionWrapperFactory _sessionWrapperFactory=new JettySessionWrapperFactory();
-    protected final IdGenerator _sessionIdFactory=new TomcatIdGenerator();
+    protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
     protected final boolean _accessOnLoad=true;
     protected final Router _router=new DummyRouter();
     protected final SessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory()); 
@@ -105,7 +105,7 @@ public class MyServlet implements Servlet {
 		_statelessContextualiser=new StatelessContextualiser(_clusterContextualiser, methods, true, uris, false);
 		_memoryMap=new HashMap();
         _serialContextualiser=new SerialContextualiser(_statelessContextualiser, _collapser, _memoryMap);
-		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamingStrategy(), contextPool, new MyDummyHttpServletRequestWrapperPool());
+		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamer(), contextPool, new MyDummyHttpServletRequestWrapperPool());
         _clusterContextualiser.setTop(_memoryContextualiser);
 		relocater.setTop(_memoryContextualiser);
         _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesPool, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad);

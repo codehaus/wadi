@@ -24,8 +24,7 @@ import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.StreamingStrategy;
-import org.codehaus.wadi.impl.SimpleStreamingStrategy;
+import org.codehaus.wadi.sandbox.Streamer;
 import org.codehaus.wadi.sandbox.Value;
 import org.codehaus.wadi.sandbox.ValueFactory;
 import org.codehaus.wadi.sandbox.ValueHelper;
@@ -33,6 +32,7 @@ import org.codehaus.wadi.sandbox.ValuePool;
 import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.impl.DistributableValue;
 import org.codehaus.wadi.sandbox.impl.DistributableValueFactory;
+import org.codehaus.wadi.sandbox.impl.SimpleStreamer;
 import org.codehaus.wadi.sandbox.impl.SimpleValuePool;
 import org.codehaus.wadi.sandbox.impl.Utils;
 
@@ -185,7 +185,7 @@ public class TestAttributes extends TestCase {
 //    }
     
     public void testAttributeSerialisation(DistributableValue a, DistributableValue b, Object s) throws Exception {
-        StreamingStrategy streamer=new SimpleStreamingStrategy();
+        Streamer streamer=new SimpleStreamer();
         a.setValue(s);
         byte[] bytes=Utils.getContent(a, streamer);
         assertTrue(a.getValue()==s); // activation

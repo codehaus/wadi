@@ -22,6 +22,8 @@ package org.codehaus.wadi;
 
 import java.util.Collection;
 
+import org.codehaus.wadi.sandbox.Streamer;
+
 
 /**
  * Abstracts out the mechanism whereby sessions may be e/immigrated to
@@ -79,6 +81,6 @@ public interface
    */
   void standDown();
 
-  StreamingStrategy getStreamingStrategy();
-  void setStreamingStrategy(StreamingStrategy streamingStrategy);
+  Streamer getStreamingStrategy();
+  void setStreamingStrategy(Streamer streamingStrategy);
 }

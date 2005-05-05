@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.StreamingStrategy;
 import org.codehaus.wadi.sandbox.Attributes;
 import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.AttributesFactory;
@@ -32,11 +31,11 @@ import org.codehaus.wadi.sandbox.Dirtier;
 public class WholeAttributesFactory implements AttributesFactory {
 
     protected final Dirtier _dirtier;
-    protected final StreamingStrategy _streamer;
+    protected final Streamer _streamer;
     protected final boolean _evictObjectRepASAP;
     protected final boolean _evictByteRepASAP;
     
-    public WholeAttributesFactory(Dirtier dirtier, StreamingStrategy streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
+    public WholeAttributesFactory(Dirtier dirtier, Streamer streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
         _dirtier=dirtier;
         _streamer=streamer;
         _evictObjectRepASAP=evictObjectRepASAP;
