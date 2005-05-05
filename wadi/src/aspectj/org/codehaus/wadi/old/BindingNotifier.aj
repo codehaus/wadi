@@ -26,7 +26,7 @@ import org.apache.commons.logging.LogFactory;
  * Notifies HttpSessionBindingListeners of session mutation
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public aspect
   BindingNotifier

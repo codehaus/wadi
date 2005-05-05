@@ -42,7 +42,7 @@ import org.apache.commons.logging.LogFactory;
  * Performs internal Tomcat bean-level mutation notifications.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1.7 $
+ * @version $Revision$
  */
 public aspect
   PropertyNotification

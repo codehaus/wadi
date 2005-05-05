@@ -25,7 +25,7 @@ import org.aspectj.lang.Signature;
  * Tracing utility - development use ONLY
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1.8 $
+ * @version $Revision$
  */
 public aspect
   Tracing

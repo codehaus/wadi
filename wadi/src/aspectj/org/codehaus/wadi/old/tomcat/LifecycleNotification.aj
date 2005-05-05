@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
  * Performs Tomcat proprietary container lifecycle notifications
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public aspect
   LifecycleNotification

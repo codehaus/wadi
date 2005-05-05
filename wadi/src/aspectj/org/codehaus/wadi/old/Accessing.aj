@@ -38,7 +38,7 @@ import org.codehaus.wadi.old.AbstractHttpSessionImpl;
  * generated.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public aspect
   Accessing
