@@ -14,25 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package org.codehaus.wadi;
 
-package org.codehaus.wadi.old;
-
-/**
- * Manages aspect precedence arounf HttpSessionImpl
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1.2 $
- */
-public aspect
-  Precedence
-{
-  declare precedence :
-    Routing,
-    Validating,
-    Accessing,
-    NameChecking,
-    AttributeNotifier,
-    BindingNotifier,
-    Wrapping,
-    Replicating;
+public aspect Precedence {
+    declare precedence :
+        
+        SessionLifecycleNotifier,
+        ReplicationNotifier,
+        AttributeNameValidater,
+        AttributeLifecycleNotifier,
+        AttributeBindingNotifier;
 }

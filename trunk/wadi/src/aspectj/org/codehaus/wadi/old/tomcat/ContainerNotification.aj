@@ -38,7 +38,7 @@ import org.apache.catalina.core.StandardContext;
  * Performs Tomcat container-level notifications of session lifecycle events
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public aspect
   ContainerNotification

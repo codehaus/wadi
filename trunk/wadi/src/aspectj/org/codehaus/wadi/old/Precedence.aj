@@ -17,31 +17,22 @@
 
 package org.codehaus.wadi.old;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
- * Guards against insertion of a null key into session
+ * Manages aspect precedence arounf HttpSessionImpl
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
-privileged public aspect
-  NameChecking
+public aspect
+  Precedence
 {
-  private static final Log _log=LogFactory.getLog(NameChecking.class);
-
-  pointcut checkName(String name) :
-    execution(* HttpSessionImpl.*Attribute(..)) &&
-    args(name,..);
-
-  before(String name)
-    : checkName(name)
-    {
-      if (name==null)
-      {
-	_log.debug("HttpSession attribute name was null");
-	throw new IllegalArgumentException("HttpSession attribute name was null");
-      }
-    }
+  declare precedence :
+    Routing,
+    Validating,
+    Accessing,
+    NameChecking,
+    AttributeNotifier,
+    BindingNotifier,
+    Wrapping,
+    Replicating;
 }

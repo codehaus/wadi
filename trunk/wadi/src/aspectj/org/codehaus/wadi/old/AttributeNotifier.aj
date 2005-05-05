@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory;
  * Notifies HttpSessionAttributeListeners of session mutation.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public aspect
   AttributeNotifier

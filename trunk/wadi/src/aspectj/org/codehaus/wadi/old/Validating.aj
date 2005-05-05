@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory;
  * Tests session validity upon every relevant interraction
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 privileged public aspect
   Validating
