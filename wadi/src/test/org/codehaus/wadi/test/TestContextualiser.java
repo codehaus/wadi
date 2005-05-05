@@ -187,7 +187,8 @@ public class TestContextualiser extends TestCase {
         Map m=new HashMap();
         Contextualiser serial=new SerialContextualiser(disc1, _collapser, m);
         Contextualiser memory=new MemoryContextualiser(serial, _dummyEvicter, m, _streamer, _distributableContextPool, _requestPool);
-        new DistributableManager(_distributableSessionPool, _distributableAttributesPool, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, _streamer, _accessOnLoad);
+        Manager manager=new DistributableManager(_distributableSessionPool, _distributableAttributesPool, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, _streamer, _accessOnLoad);
+        manager.init();
         
         {
             // place a "baz" item onto second local disc
@@ -262,6 +263,7 @@ public class TestContextualiser extends TestCase {
         Contextualiser serial=new SerialContextualiser(db, _collapser, m);
         Contextualiser memory=new MemoryContextualiser(serial, _dummyEvicter, m, _streamer, _distributableContextPool, _requestPool);
         Manager manager=new DistributableManager(_distributableSessionPool, _distributableAttributesPool, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, _streamer, _accessOnLoad);
+        manager.init();
         
         {
             // place a "foo" item into shared database
@@ -467,6 +469,7 @@ public class TestContextualiser extends TestCase {
         Evicter memoryEvicter=new NeverEvicter(30, true);
         MemoryContextualiser memory=new MemoryContextualiser(_dummyContextualiser, memoryEvicter, m, _streamer, _standardContextPool, _requestPool);
         Manager manager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, _accessOnLoad);
+        manager.init();
         Session session=manager.createSession();
         session.setMaxInactiveInterval(1);
         assertTrue(m.size()==1); // in memory
@@ -486,6 +489,7 @@ public class TestContextualiser extends TestCase {
         Evicter memoryEvicter=new AbsoluteEvicter(30, true, 1);
         Contextualiser memory=new MemoryContextualiser(serial, memoryEvicter, m, _streamer, _distributableContextPool, _requestPool);
         Manager manager=new DistributableManager(_distributableSessionPool, _distributableAttributesPool, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, _streamer, _accessOnLoad);
+        manager.init();
         
         Session session=manager.createSession();
         session.setMaxInactiveInterval(2);// times out 2 seconds from now...
@@ -521,6 +525,7 @@ public class TestContextualiser extends TestCase {
         Evicter memoryEvicter=new AbsoluteEvicter(30, true, 1);
         Contextualiser memory=new MemoryContextualiser(serial, memoryEvicter, m, _streamer, _distributableContextPool, _requestPool);
         Manager manager=new DistributableManager(_distributableSessionPool, _distributableAttributesPool, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, _streamer, _accessOnLoad);
+        manager.init();
         
         Session session=manager.createSession();
         String id=session.getId();
@@ -611,6 +616,7 @@ public class TestContextualiser extends TestCase {
         Map map=new ConcurrentHashMap();
         SimpleContextualiserStack stack=new SimpleContextualiserStack(map, _standardContextPool, _ds, 8080);
         Manager manager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool, _sessionWrapperFactory, _sessionIdFactory, stack, map, _router, _accessOnLoad);
+        manager.init();
         manager.start();
         Thread.sleep(2000);
         stack.stop();

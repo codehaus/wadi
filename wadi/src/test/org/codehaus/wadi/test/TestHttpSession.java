@@ -94,7 +94,7 @@ extends TestCase
     // Standard
     protected Contextualiser          _standardContextualiser=new DummyContextualiser();
     protected SessionWrapperFactory   _standardSessionWrapperFactory=new DummySessionWrapperFactory();
-    protected SessionIdFactory             _standardSessionIdFactory=new TomcatSessionIdFactory();
+    protected SessionIdFactory        _standardSessionIdFactory=new TomcatSessionIdFactory();
     protected AttributesFactory       _standardAttributesFactory=new StandardAttributesFactory();
     protected AttributesPool          _standardAttributesPool=new SimpleAttributesPool(_standardAttributesFactory);
     protected SessionFactory          _standardSessionFactory=new StandardSessionFactory();
@@ -104,7 +104,7 @@ extends TestCase
     protected Manager                 _standardManager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser, _sessionMap, _router, _accessOnLoad);
     // Distributable
     protected Contextualiser          _distributableContextualiser=new DummyContextualiser();
-    protected Streamer       _streamer=new SimpleStreamer();
+    protected Streamer                _streamer=new SimpleStreamer();
     protected AttributesFactory       _distributedAttributesFactory=new DistributableAttributesFactory();
     protected AttributesPool          _distributedAttributesPool=new SimpleAttributesPool(_distributedAttributesFactory);
     protected SessionFactory          _distributableSessionFactory=new DistributableSessionFactory();
@@ -218,18 +218,28 @@ extends TestCase
     protected void setUp() throws Exception {
         _listener=new Listener();
         _standardManager.addEventListener(_listener);
+        _standardManager.init();
         _distributableManager.addEventListener(_listener);
+        _distributableManager.init();
         _lazyValueManager.addEventListener(_listener);
+        _lazyValueManager.init();
         _lazyAttributesManager.addEventListener(_listener);
+        _lazyAttributesManager.init();
         _lazyBothManager.addEventListener(_listener);
+        _lazyBothManager.init();
     }
     
     protected void tearDown() {
         _lazyBothManager.removeEventListener(_listener);
+        _lazyBothManager.destroy();
         _lazyAttributesManager.removeEventListener(_listener);
+        _lazyAttributesManager.destroy();
         _lazyValueManager.removeEventListener(_listener);
+        _lazyValueManager.destroy();
         _distributableManager.removeEventListener(_listener);
+        _distributableManager.destroy();
         _standardManager.removeEventListener(_listener);
+        _standardManager.destroy();
         _listener=null;
     }
     

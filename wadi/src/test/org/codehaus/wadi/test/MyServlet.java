@@ -117,6 +117,7 @@ public class MyServlet implements Servlet {
 		_config = config;
 		_log.info("Servlet.init()");
         try {
+            _manager.init();
             _manager.start();
         } catch (Exception e) {
             _log.warn(e);
@@ -141,7 +142,8 @@ public class MyServlet implements Servlet {
 
 	public void destroy() {
 		try {
-            _memoryContextualiser.stop();
+            _manager.stop();
+            _manager.destroy();
             _cluster.stop();
 		} catch (Exception e) {
 			_log.warn(e);
