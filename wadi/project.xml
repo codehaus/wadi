@@ -131,6 +131,7 @@
       <excludes>
         <exclude>**/old/**</exclude>
         <exclude>**/test/TestActiveCluster.java</exclude>
+        <exclude>**/test/TestSessionIdFactory.java</exclude>
       </excludes>
       <includes>
         <include>**/test/Test*.java</include>
