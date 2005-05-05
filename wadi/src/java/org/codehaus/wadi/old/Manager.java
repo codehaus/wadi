@@ -52,6 +52,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.impl.RWLock;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.old.impl.FilePassivationStrategy;

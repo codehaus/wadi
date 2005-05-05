@@ -32,7 +32,7 @@
 
 */
 
-package org.codehaus.wadi.old;
+package org.codehaus.wadi.impl;
 
 // This started off life as a straight copy of Doug Lea's
 // WriterPreferenceReadWriteLock in

@@ -28,7 +28,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.old.RWLock;
+import org.codehaus.wadi.impl.RWLock;
 
 
 /**

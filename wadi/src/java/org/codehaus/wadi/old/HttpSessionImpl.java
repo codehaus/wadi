@@ -30,6 +30,7 @@ import javax.servlet.http.HttpSessionContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SerializableContent;
+import org.codehaus.wadi.impl.RWLock;
 
 /**
  * Common HttpSessionImpl fn-ality

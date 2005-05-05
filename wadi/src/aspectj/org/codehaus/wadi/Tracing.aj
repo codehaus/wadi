@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2005 Core Developers Network Ltd.
+n * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.aspectj.lang.Signature;
  * Tracing utility - development use ONLY
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1.1 $
  */
 public aspect
   Tracing
@@ -38,8 +38,8 @@ public aspect
    call(* EDU.oswego.cs.dl.util.concurrent.Sync+.*(..)) &&
    //   call(* RWLock.startRead(..)) ||
    //      call(* RoutingStrategy+.*(..))
-   (target(org.codehaus.wadi.old.RWLock$ReaderLock) ||
-    target(org.codehaus.wadi.old.RWLock$WriterLock)) &&
+   (target(org.codehaus.wadi.impl.RWLock$ReaderLock) ||
+    target(org.codehaus.wadi.impl.RWLock$WriterLock)) &&
    within(Tracing)		// this will never be true
    )
     && target(lock)
