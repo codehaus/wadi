@@ -26,24 +26,18 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Immoter;
-import org.codehaus.wadi.sandbox.RequestRelocationStrategy;
+import org.codehaus.wadi.sandbox.Relocater;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * Relocate the request to its state, by redirecting it to another node.
- * This is only possible if, for example, the load balancer is using routing information
- * to decide which node to dispatch stateful requests to. If this is the case, we may be
- * able rewrite this to achieve our desired effect.
+ * Combine various RelocationStrategies to produce a cleverer one
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class RedirectRelocationStrategy implements RequestRelocationStrategy {
+public class HybridRelocater implements Relocater {
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.RelocationStrategy#relocate(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync, java.util.Map)
-	 */
 	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
 		// TODO Auto-generated method stub
 		return false;

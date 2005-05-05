@@ -33,7 +33,7 @@ import org.codehaus.wadi.sandbox.Collapser;
 import org.codehaus.wadi.sandbox.ContextPool;
 import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Location;
-import org.codehaus.wadi.sandbox.RelocationStrategy;
+import org.codehaus.wadi.sandbox.Relocater;
 import org.codehaus.wadi.sandbox.Router;
 import org.codehaus.wadi.sandbox.SessionIdFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
@@ -70,7 +70,7 @@ public class MyServlet implements Servlet {
 	protected final Map _clusterMap;
 	protected final Map _memoryMap;
 	protected final MessageDispatcher _dispatcher;
-	protected final RelocationStrategy _relocater;
+	protected final Relocater _relocater;
 	protected final ClusterContextualiser _clusterContextualiser;
 	protected final StatelessContextualiser _statelessContextualiser;
 	protected final SerialContextualiser _serialContextualiser;
@@ -90,7 +90,7 @@ public class MyServlet implements Servlet {
     protected final Manager _manager;
 
 
-	public MyServlet(String name, CustomCluster cluster, ContextPool contextPool, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) throws Exception {
+	public MyServlet(String name, CustomCluster cluster, ContextPool contextPool, MessageDispatcher dispatcher, Relocater relocater, Location location) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 		_cluster=cluster;
 		_cluster.start();

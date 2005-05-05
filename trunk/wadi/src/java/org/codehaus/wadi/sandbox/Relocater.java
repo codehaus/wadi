@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.impl;
+package org.codehaus.wadi.sandbox;
 
 import java.io.IOException;
 import java.util.Map;
@@ -24,28 +24,29 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.wadi.sandbox.Contextualiser;
-import org.codehaus.wadi.sandbox.Immoter;
-import org.codehaus.wadi.sandbox.RelocationStrategy;
-
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * Combine various RelocationStrategies to produce a cleverer one
+ * Abstracts out a strategy for either request or state relocation. This is necessary to
+ * ensure that a request is processed in the same node as its state.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class HybridRelocationStrategy implements RelocationStrategy {
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.RelocationStrategy#relocate(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Promoter, EDU.oswego.cs.dl.util.concurrent.Sync, java.util.Map)
+public interface Relocater {
+
+	/** Either relocate the request to the session by proxying/redirection, or the session to the request, by migration...
+	 * @param hreq
+	 * @param hres
+	 * @param chain
+	 * @param id
+	 * @param immoter
+	 * @param motionLock
+	 * @param locationMap
+	 * @return - whether, or not, the request was contextualised
 	 */
-	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public void setTop(Contextualiser top){/* NYI */}
-	public Contextualiser getTop(){return null;}
+	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException;
+	public void setTop(Contextualiser top);
+	public Contextualiser getTop();
 }

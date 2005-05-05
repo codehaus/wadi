@@ -43,15 +43,15 @@ import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.HttpProxy;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
-import org.codehaus.wadi.sandbox.RelocationStrategy;
+import org.codehaus.wadi.sandbox.Relocater;
 import org.codehaus.wadi.sandbox.impl.CommonsHttpProxy;
 import org.codehaus.wadi.sandbox.impl.CustomCluster;
 import org.codehaus.wadi.sandbox.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.impl.HashingCollapser;
 import org.codehaus.wadi.sandbox.impl.HttpProxyLocation;
-import org.codehaus.wadi.sandbox.impl.ImmigrateRelocationStrategy;
+import org.codehaus.wadi.sandbox.impl.ImmigrateRelocater;
 import org.codehaus.wadi.sandbox.impl.MessageDispatcher;
-import org.codehaus.wadi.sandbox.impl.ProxyRelocationStrategy;
+import org.codehaus.wadi.sandbox.impl.ProxyRelocater;
 import org.codehaus.wadi.sandbox.impl.StandardHttpProxy;
 import org.codehaus.wadi.sandbox.impl.Utils;
 
@@ -82,18 +82,18 @@ public class TestRelocation extends TestCase {
 	protected Location _location1;
 	protected MessageDispatcher _dispatcher0;
 	protected MessageDispatcher _dispatcher1;
-	protected SwitchableRelocationStrategy _relocater0;
-	protected SwitchableRelocationStrategy _relocater1;
+	protected SwitchableRelocater _relocater0;
+	protected SwitchableRelocater _relocater1;
 
-	  class SwitchableRelocationStrategy implements RelocationStrategy {
-	  	protected RelocationStrategy _delegate=new DummyRelocationStrategy();
+	  class SwitchableRelocater implements Relocater {
+	  	protected Relocater _delegate=new DummyRelocater();
 
-	  	public void setRelocationStrategy(RelocationStrategy delegate){
+	  	public void setRelocationStrategy(Relocater delegate){
 	  		delegate.setTop(_delegate.getTop());
 	  		_delegate=delegate;
 	  	}
 
-	  	// RelocationStrategy
+	  	// Relocater
 
 		public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
 			return _delegate.relocate(hreq, hres, chain, id, immoter, motionLock, locationMap);
@@ -106,7 +106,7 @@ public class TestRelocation extends TestCase {
 		public Contextualiser getTop(){return _delegate.getTop();}
 	}
 
-	  class DummyRelocationStrategy implements RelocationStrategy {
+	  class DummyRelocater implements Relocater {
 		public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) {return false;}
 		protected Contextualiser _top;
 		public void setTop(Contextualiser top) {_top=top;}
@@ -130,7 +130,7 @@ public class TestRelocation extends TestCase {
 		HttpProxy proxy0=new StandardHttpProxy("jsessionid");
 		_dispatcher0=new MessageDispatcher(_cluster0);
 		_location0=new HttpProxyLocation(_cluster0.getLocalNode().getDestination(), isa0, proxy0);
-		_relocater0=new SwitchableRelocationStrategy();
+		_relocater0=new SwitchableRelocater();
 		_servlet0=new MyServlet("0", _cluster0, new MyContextPool(), _dispatcher0, _relocater0, _location0);
 		_filter0=new MyFilter("0", _servlet0);
 		// TODO - I'd like to use a TomcatNode - but using 5.0.18 it fails TestRelocation - investigate...
@@ -142,7 +142,7 @@ public class TestRelocation extends TestCase {
 		HttpProxy proxy1=new CommonsHttpProxy("jsessionid");
 		_dispatcher1=new MessageDispatcher(_cluster1);
 		_location1=new HttpProxyLocation(_cluster1.getLocalNode().getDestination(), isa1, proxy1);
-		_relocater1=new SwitchableRelocationStrategy();
+		_relocater1=new SwitchableRelocater();
 		_servlet1=new MyServlet("1", _cluster1, new MyContextPool(), _dispatcher1, _relocater1, _location1);
 		_filter1=new MyFilter("1", _servlet1);
 		(_node1=new JettyNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
@@ -179,15 +179,15 @@ public class TestRelocation extends TestCase {
 	}
 
 	public void testProxyInsecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_dispatcher0, _location0, 2000, 3000));
-		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_dispatcher1, _location1, 2000, 3000));
+		_relocater0.setRelocationStrategy(new ProxyRelocater(_dispatcher0, _location0, 2000, 3000));
+		_relocater1.setRelocationStrategy(new ProxyRelocater(_dispatcher1, _location1, 2000, 3000));
 		testInsecureRelocation(false);
 		}
 
 	public void testMigrateInsecureRelocation() throws Exception {
         Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, _servlet0.getClusterMap(), collapser));
-		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, _servlet1.getClusterMap(), collapser));
+		_relocater0.setRelocationStrategy(new ImmigrateRelocater(_dispatcher0, _location0, 2000, _servlet0.getClusterMap(), collapser));
+		_relocater1.setRelocationStrategy(new ImmigrateRelocater(_dispatcher1, _location1, 2000, _servlet1.getClusterMap(), collapser));
 		testInsecureRelocation(true);
 		}
 
@@ -318,15 +318,15 @@ public class TestRelocation extends TestCase {
 	}
 
 	public void testProxySecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_dispatcher0, _location0, 2000, 3000));
-		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_dispatcher1, _location1, 2000, 3000));
+		_relocater0.setRelocationStrategy(new ProxyRelocater(_dispatcher0, _location0, 2000, 3000));
+		_relocater1.setRelocationStrategy(new ProxyRelocater(_dispatcher1, _location1, 2000, 3000));
 		testSecureRelocation(false);
 		}
 
 	public void testMigrateSecureRelocation() throws Exception {
         Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, _servlet0.getClusterMap(), collapser));
-		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, _servlet1.getClusterMap(), collapser));
+		_relocater0.setRelocationStrategy(new ImmigrateRelocater(_dispatcher0, _location0, 2000, _servlet0.getClusterMap(), collapser));
+		_relocater1.setRelocationStrategy(new ImmigrateRelocater(_dispatcher1, _location1, 2000, _servlet1.getClusterMap(), collapser));
 		testSecureRelocation(true);
 		}
 
@@ -404,15 +404,15 @@ public class TestRelocation extends TestCase {
 	}
 
 	public void testRelocationStatelessContextualiser() throws Exception {
-		_relocater0.setRelocationStrategy(new ProxyRelocationStrategy(_dispatcher0, _location0, 2000, 3000));
-		_relocater1.setRelocationStrategy(new ProxyRelocationStrategy(_dispatcher1, _location1, 2000, 3000));
+		_relocater0.setRelocationStrategy(new ProxyRelocater(_dispatcher0, _location0, 2000, 3000));
+		_relocater1.setRelocationStrategy(new ProxyRelocater(_dispatcher1, _location1, 2000, 3000));
 		testStatelessContextualiser(false);
 		}
 
 	public void testMigrateStatelessContextualiser() throws Exception {
         Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher0, _location0, 2000, _servlet0.getClusterMap(), collapser));
-		_relocater1.setRelocationStrategy(new ImmigrateRelocationStrategy(_dispatcher1, _location1, 2000, _servlet1.getClusterMap(), collapser));
+		_relocater0.setRelocationStrategy(new ImmigrateRelocater(_dispatcher0, _location0, 2000, _servlet0.getClusterMap(), collapser));
+		_relocater1.setRelocationStrategy(new ImmigrateRelocater(_dispatcher1, _location1, 2000, _servlet1.getClusterMap(), collapser));
 		testStatelessContextualiser(true);
 		}
 

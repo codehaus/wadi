@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox;
+package org.codehaus.wadi.sandbox.impl;
 
 import java.io.IOException;
 import java.util.Map;
@@ -24,29 +24,28 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.wadi.sandbox.Contextualiser;
+import org.codehaus.wadi.sandbox.Immoter;
+import org.codehaus.wadi.sandbox.RequestRelocater;
+
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * Abstracts out a strategy for either request or state relocation. This is necessary to
- * ensure that a request is processed in the same node as its state.
+ * Relocate the request to its state, by redirecting it to another node.
+ * This is only possible if, for example, the load balancer is using routing information
+ * to decide which node to dispatch stateful requests to. If this is the case, we may be
+ * able rewrite this to achieve our desired effect.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
+public class RedirectRelocater implements RequestRelocater {
 
-public interface RelocationStrategy {
+	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
-	/** Either relocate the request to the session by proxying/redirection, or the session to the request, by migration...
-	 * @param hreq
-	 * @param hres
-	 * @param chain
-	 * @param id
-	 * @param immoter
-	 * @param motionLock
-	 * @param locationMap
-	 * @return - whether, or not, the request was contextualised
-	 */
-	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException;
-	public void setTop(Contextualiser top);
-	public Contextualiser getTop();
+	public void setTop(Contextualiser top){/* NYI */}
+	public Contextualiser getTop(){return null;}
 }
