@@ -35,9 +35,9 @@ import javax.servlet.http.HttpSessionListener;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.jetty.HttpSessionImpl;
 import org.codehaus.wadi.jetty.Manager;
+import org.codehaus.wadi.sandbox.SerializableContent;
 
 /**
  * Test WADI's HttpSession implementation

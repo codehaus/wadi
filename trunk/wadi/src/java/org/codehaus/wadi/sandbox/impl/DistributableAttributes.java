@@ -28,10 +28,10 @@ import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionEvent;
 
-import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.sandbox.AttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableAttributesConfig;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
+import org.codehaus.wadi.sandbox.SerializableContent;
 import org.codehaus.wadi.sandbox.Streamer;
 import org.codehaus.wadi.sandbox.ValueHelper;
 

@@ -10,7 +10,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.codehaus.wadi.SerializableContent;
+import org.codehaus.wadi.sandbox.SerializableContent;
 
 /**
  * @author jules

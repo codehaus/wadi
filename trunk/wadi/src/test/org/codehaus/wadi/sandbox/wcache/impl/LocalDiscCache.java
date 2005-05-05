@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutput;
 
-import org.codehaus.wadi.SerializableContent;
+import org.codehaus.wadi.sandbox.SerializableContent;
 import org.codehaus.wadi.sandbox.Streamer;
 import org.codehaus.wadi.sandbox.wcache.Cache;
 import org.codehaus.wadi.sandbox.wcache.RequestProcessor;

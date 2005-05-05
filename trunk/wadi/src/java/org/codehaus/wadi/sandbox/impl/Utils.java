@@ -28,10 +28,10 @@ import org.activemq.store.vm.VMPersistenceAdapter;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
+import org.codehaus.wadi.sandbox.SerializableContent;
 import org.codehaus.wadi.sandbox.Streamer;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;

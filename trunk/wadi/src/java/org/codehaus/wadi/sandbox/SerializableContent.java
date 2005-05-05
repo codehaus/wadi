@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox;
 
 import java.io.IOException;
 
@@ -26,9 +26,7 @@ import java.io.IOException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface
-  SerializableContent
-{
+public interface SerializableContent {
   void readContent(java.io.ObjectInput is)
     throws IOException, ClassNotFoundException;
 
