@@ -445,6 +445,19 @@
     </dependency>
 
     <dependency>
+      <groupId>jdk</groupId>
+      <artifactId>tools</artifactId>
+      <version>1.4.2_08</version>
+      <url>http://java.sun.com/j2se/1.4.2/download.html</url>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-el</groupId>
+      <artifactId>commons-el</artifactId>
+      <version>1.0</version>
+    </dependency>
+
+    <dependency>
       <groupId>tomcat</groupId>
       <artifactId>naming-resources</artifactId>
       <version>5.0.18</version>
