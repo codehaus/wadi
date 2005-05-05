@@ -26,7 +26,7 @@ import java.io.ObjectOutput;
 import javax.cache.Cache;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.SerializableContent;
+import org.codehaus.wadi.sandbox.SerializableContent;
 import org.codehaus.wadi.sandbox.Streamer;
 
 //----------------------------------------

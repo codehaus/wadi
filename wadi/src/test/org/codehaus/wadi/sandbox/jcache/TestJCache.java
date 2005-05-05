@@ -31,7 +31,7 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
-import org.codehaus.wadi.SerializableContent;
+import org.codehaus.wadi.sandbox.SerializableContent;
 import org.codehaus.wadi.sandbox.impl.SimpleStreamer;
 
 import ri.cache.BasicCache;

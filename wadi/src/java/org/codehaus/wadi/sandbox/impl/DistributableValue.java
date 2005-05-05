@@ -23,8 +23,8 @@ import java.io.Serializable;
 
 import javax.servlet.http.HttpSessionActivationListener;
 
-import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.sandbox.DistributableValueConfig;
+import org.codehaus.wadi.sandbox.SerializableContent;
 import org.codehaus.wadi.sandbox.ValueHelper;
 
 /**

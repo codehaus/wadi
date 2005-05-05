@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.sandbox;
 
-import org.codehaus.wadi.SerializableContent;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 

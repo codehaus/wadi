@@ -6,7 +6,7 @@
  */
 package org.codehaus.wadi.sandbox.jcache;
 
-import org.codehaus.wadi.SerializableContent;
+import org.codehaus.wadi.sandbox.SerializableContent;
 
 /**
  * @author jules
