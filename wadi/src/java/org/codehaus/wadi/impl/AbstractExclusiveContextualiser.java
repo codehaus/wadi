@@ -51,8 +51,8 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 	protected final Map _map;
     protected final Evicter _evicter;
 
-	public AbstractExclusiveContextualiser(Contextualiser next, Locker locker, Evicter evicter, Map map) {
-		super(next, locker);
+	public AbstractExclusiveContextualiser(Contextualiser next, Locker locker, boolean clean, Evicter evicter, Map map) {
+		super(next, locker, clean);
 		_map=map;
         _evicter=evicter;
 	}

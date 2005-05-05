@@ -21,6 +21,7 @@ package org.codehaus.wadi.impl;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -30,6 +31,7 @@ import javax.sql.DataSource;
 
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
@@ -50,8 +52,8 @@ public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public SharedJDBCContextualiser(Contextualiser next, Collapser collapser, DataSource dataSource, String table) {
-		super(next, new CollapsingLocker(collapser));
+	public SharedJDBCContextualiser(Contextualiser next, Collapser collapser, boolean clean, DataSource dataSource, String table) {
+		super(next, new CollapsingLocker(collapser), clean);
 		_dataSource=dataSource;
 		_table=table;
 
@@ -59,6 +61,36 @@ public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
 		_emoter=new SharedJDBCEmoter();
 	}
 
+    public void init(ContextualiserConfig config) {
+        super.init(config);
+        
+        if (_clean) {
+            Connection connection=null;
+            Statement s=null;
+            try {
+                connection=_dataSource.getConnection();
+                s=connection.createStatement();
+                s.executeUpdate("DELETE FROM "+_table);
+                if (_log.isTraceEnabled()) _log.trace("removed (shared database) sessions"); // TODO - how many ?
+            } catch (SQLException e) {
+                if (_log.isErrorEnabled()) _log.error("remove (shared database) failed", e);
+            } finally {
+                try {
+                    if (s!=null)
+                        s.close();
+                } catch (SQLException e) {
+                    _log.warn("problem closing database statement", e);
+                }
+                try {
+                    if (connection!=null)
+                        connection.close();
+                } catch (SQLException e) {
+                    _log.warn("problem closing database connection", e);
+                }
+            }
+        }
+    }
+    
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
 

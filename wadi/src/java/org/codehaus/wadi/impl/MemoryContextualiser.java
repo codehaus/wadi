@@ -54,7 +54,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
     protected final HttpServletRequestWrapperPool _requestPool;
 
 	public MemoryContextualiser(Contextualiser next, Evicter evicter, Map map, Streamer streamer, ContextPool pool, HttpServletRequestWrapperPool requestPool) {
-		super(next, new RWLocker(), evicter, map);
+		super(next, new RWLocker(), false, evicter, map);
 		_pool=pool;
 
 		// TODO - streamer should be used inside Motables get/setBytes() methods  but that means a ref in every session :-(

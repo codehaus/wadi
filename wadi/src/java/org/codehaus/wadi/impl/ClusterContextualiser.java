@@ -96,7 +96,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 	 * @param location TODO
 	 */
 	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, Cluster cluster, MessageDispatcher dispatcher, Relocater relocater, Location location) {
-		super(next, new CollapsingLocker(collapser));
+		super(next, new CollapsingLocker(collapser), false);
 		_cluster=cluster;
 		_dispatcher=dispatcher;
 	    _relocater=relocater;

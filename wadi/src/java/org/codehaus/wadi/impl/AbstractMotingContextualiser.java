@@ -44,9 +44,12 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
 
     protected ContextualiserConfig _config;
 
-    public AbstractMotingContextualiser(Contextualiser next, Locker locker) {
+    protected final boolean _clean;
+
+    public AbstractMotingContextualiser(Contextualiser next, Locker locker, boolean clean) {
 		super(next);
         _locker=locker;
+        _clean=clean;
 	}
 
 	/**

@@ -40,19 +40,17 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
 
 	protected final Streamer _streamer;
 	protected final File _dir;
-    protected final boolean _clean;
-	protected final Immoter _immoter;
+    protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public ExclusiveDiscContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, Streamer streamer, File dir, boolean clean) {
-	    super(next, new CollapsingLocker(collapser), evicter, map);
+	public ExclusiveDiscContextualiser(Contextualiser next, Collapser collapser, boolean clean, Evicter evicter, Map map, Streamer streamer, File dir) {
+	    super(next, new CollapsingLocker(collapser), clean, evicter, map);
 	    _streamer=streamer;
 	    assert dir.exists();
 	    assert dir.isDirectory();
 	    assert dir.canRead();
 	    assert dir.canWrite();
 	    _dir=dir;
-        _clean=clean;
 
 	    _immoter=new ExclusiveDiscImmoter(_map);
 	    _emoter=new ExclusiveDiscEmoter(_map);
@@ -67,7 +65,7 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
             for (int i=0; i<l; i++) {
                 files[i].delete();
             }
-            _log.info("cleaned persistant sessions: "+l);
+            _log.info("removed (exclusive disc) sessions: "+l);
         }
     }
     

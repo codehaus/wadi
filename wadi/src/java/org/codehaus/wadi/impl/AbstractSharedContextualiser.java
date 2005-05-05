@@ -23,8 +23,8 @@ import org.codehaus.wadi.Motable;
 
 public abstract class AbstractSharedContextualiser extends AbstractMotingContextualiser {
 
-    public AbstractSharedContextualiser(Contextualiser next, Locker locker) {
-        super(next, locker);
+    public AbstractSharedContextualiser(Contextualiser next, Locker locker, boolean clean) {
+        super(next, locker, clean);
     }
 
     public Immoter getDemoter(String id, Motable motable) {
