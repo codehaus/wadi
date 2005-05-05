@@ -56,7 +56,7 @@ import org.codehaus.wadi.sandbox.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
-import org.codehaus.wadi.sandbox.RelocationStrategy;
+import org.codehaus.wadi.sandbox.Relocater;
 import org.codehaus.wadi.sandbox.Streamer;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
@@ -81,7 +81,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final Evicter _clusterEvicter;
     protected final Map _clusterMap;
     protected final MessageDispatcher _clusterDispatcher;
-    protected final RelocationStrategy _clusterRelocater;
+    protected final Relocater _clusterRelocater;
     protected final Location _clusterLocation;
     protected final ClusterContextualiser _cluster;
 
@@ -127,9 +127,9 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterMap=new ConcurrentHashMap();
         _clusterEvicter=new DummyEvicter(); // TODO - consider Cluster eviction carefully...
         _clusterDispatcher=new MessageDispatcher(_clusterCluster);
-//        _clusterRelocater=new ImmigrateRelocationStrategy(_clusterDispatcher, _clusterLocation, 2000, _clusterMap, _collapser);
+//        _clusterRelocater=new ImmigrateRelocater(_clusterDispatcher, _clusterLocation, 2000, _clusterMap, _collapser);
         //(MessageDispatcher dispatcher, Location location, long timeout, long proxyHandOverPeriod) {
-        _clusterRelocater=new ProxyRelocationStrategy(_clusterDispatcher, _clusterLocation, 2000, 2000);
+        _clusterRelocater=new ProxyRelocater(_clusterDispatcher, _clusterLocation, 2000, 2000);
         _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation);
 
         _statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);

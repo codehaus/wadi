@@ -43,7 +43,7 @@ import org.codehaus.wadi.sandbox.HttpProxy;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
-import org.codehaus.wadi.sandbox.RelocationStrategy;
+import org.codehaus.wadi.sandbox.Relocater;
 import org.codehaus.wadi.sandbox.Router;
 import org.codehaus.wadi.sandbox.SessionIdFactory;
 import org.codehaus.wadi.sandbox.SessionPool;
@@ -105,7 +105,7 @@ public class TestCluster extends TestCase {
         protected final Cluster _cluster;
         protected final MessageDispatcher _dispatcher;
         protected final Location _location;
-        protected final RelocationStrategy _relocater;
+        protected final Relocater _relocater;
         protected final Map _cmap=new HashMap();
         protected final Map _mmap=new HashMap();
         protected final Evicter _evicter=new DummyEvicter();

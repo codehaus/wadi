@@ -36,7 +36,7 @@ import org.codehaus.wadi.sandbox.Evicter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
-import org.codehaus.wadi.sandbox.RelocationStrategy;
+import org.codehaus.wadi.sandbox.Relocater;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
@@ -69,7 +69,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  *
  * The promotion mutex is held correctly during the initial Location lookup, so that searches for the same Context are correctly collapsed.
  *
- * ProxyStrategy should be applied before MigrationStrategy - if it succeeds, we don't migrate...
+ * Proxy should be applied before Migration- if it succeeds, we don't migrate...
  *
  * This class is getting out of hand !
  *
@@ -81,7 +81,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 	protected final HashMap _emigrationRvMap=new HashMap();
 	protected final Cluster _cluster;
 	protected final MessageDispatcher _dispatcher;
-	protected final RelocationStrategy _relocater;
+	protected final Relocater _relocater;
 	protected final Location _location;
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
@@ -95,7 +95,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 	 * @param map
 	 * @param location TODO
 	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, Cluster cluster, MessageDispatcher dispatcher, RelocationStrategy relocater, Location location) {
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, Cluster cluster, MessageDispatcher dispatcher, Relocater relocater, Location location) {
 		super(next, new CollapsingLocker(collapser));
 		_cluster=cluster;
 		_dispatcher=dispatcher;

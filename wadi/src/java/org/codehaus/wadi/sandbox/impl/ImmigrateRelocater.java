@@ -36,7 +36,7 @@ import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Location;
 import org.codehaus.wadi.sandbox.Motable;
-import org.codehaus.wadi.sandbox.SessionRelocationStrategy;
+import org.codehaus.wadi.sandbox.SessionRelocater;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
@@ -58,7 +58,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
+public class ImmigrateRelocater implements SessionRelocater {
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final MessageDispatcher _dispatcher;
 	protected final long _resTimeout;
@@ -71,7 +71,7 @@ public class ImmigrateRelocationStrategy implements SessionRelocationStrategy {
 
     protected final Collapser _collapser;
 
-	public ImmigrateRelocationStrategy(MessageDispatcher dispatcher, Location location, long timeout, Map locationMap, Collapser collapser) {
+	public ImmigrateRelocater(MessageDispatcher dispatcher, Location location, long timeout, Map locationMap, Collapser collapser) {
 		_dispatcher=dispatcher;
 		_resTimeout=timeout;
 		_ackTimeout=500;
