@@ -117,7 +117,7 @@ public class TestEvicters extends TestCase {
         // (Contextualiser next, Collapser collapser, Evicter evicter, Map map, StreamingStrategy streamer, File dir) {
         Collapser collapser=new HashingCollapser(100, 1000);
         File dir=new File("/tmp");
-        Contextualiser disc=new ExclusiveDiscContextualiser(next, collapser, devicter, dmap, streamer, dir);
+        Contextualiser disc=new ExclusiveDiscContextualiser(next, collapser, devicter, dmap, streamer, dir, true);
         Map mmap=new HashMap();
         int inactivityInterval=1; // second
         Evicter mevicter=new AbsoluteEvicter(sweepInterval, strictOrdering, inactivityInterval);

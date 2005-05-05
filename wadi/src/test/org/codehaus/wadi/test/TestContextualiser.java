@@ -181,9 +181,9 @@ public class TestContextualiser extends TestCase {
     
     public void testExclusivePromotion() throws Exception {
         Map d2=new HashMap();
-        ExclusiveDiscContextualiser disc2=new ExclusiveDiscContextualiser(_dummyContextualiser, _collapser, _dummyEvicter, d2, _streamer, _dir);
+        ExclusiveDiscContextualiser disc2=new ExclusiveDiscContextualiser(_dummyContextualiser, _collapser, _dummyEvicter, d2, _streamer, _dir, true);
         Map d1=new HashMap();
-        ExclusiveDiscContextualiser disc1=new ExclusiveDiscContextualiser(disc2, _collapser, _dummyEvicter, d1, _streamer, _dir);
+        ExclusiveDiscContextualiser disc1=new ExclusiveDiscContextualiser(disc2, _collapser, _dummyEvicter, d1, _streamer, _dir, true);
         Map m=new HashMap();
         Contextualiser serial=new SerialContextualiser(disc1, _collapser, m);
         Contextualiser memory=new MemoryContextualiser(serial, _dummyEvicter, m, _streamer, _distributableContextPool, _requestPool);
@@ -483,7 +483,7 @@ public class TestContextualiser extends TestCase {
     public void testDemotionAndExpiry() throws Exception {
         Map d=new HashMap();
         Evicter discEvicter=new NeverEvicter(30, true);
-        Contextualiser disc=new ExclusiveDiscContextualiser(_dummyContextualiser, _collapser, discEvicter, d, _streamer, _dir);
+        Contextualiser disc=new ExclusiveDiscContextualiser(_dummyContextualiser, _collapser, discEvicter, d, _streamer, _dir, true);
         Map m=new HashMap();
         Contextualiser serial=new SerialContextualiser(disc, _collapser, m);
         Evicter memoryEvicter=new AbsoluteEvicter(30, true, 1);
@@ -519,7 +519,7 @@ public class TestContextualiser extends TestCase {
     public void testDemotionAndPromotion() throws Exception {
         Map d=new HashMap();
         Evicter discEvicter=new NeverEvicter(30, true);
-        Contextualiser disc=new ExclusiveDiscContextualiser(_dummyContextualiser, _collapser, discEvicter, d, _streamer, _dir);
+        Contextualiser disc=new ExclusiveDiscContextualiser(_dummyContextualiser, _collapser, discEvicter, d, _streamer, _dir, true);
         Map m=new HashMap();
         Contextualiser serial=new SerialContextualiser(disc, _collapser, m);
         Evicter memoryEvicter=new AbsoluteEvicter(30, true, 1);
