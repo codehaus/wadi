@@ -81,22 +81,22 @@ public class TestEvicters extends TestCase {
     }
 
     public static class MyEvicterConfig implements EvicterConfig {
-        
+
         protected final Timer _timer=new Timer();
         public Timer getTimer() {return _timer;}
 
         protected final Map _map=new HashMap();
         public Map getMap() {return _map;}
-        
+
         protected final Sync _sync=new NullSync();
         public Sync getEvictionLock(String id, Motable motable) {return _sync;}
-        
+
         protected final Emoter _emoter=new EtherEmoter();
         public Emoter getEvictionEmoter() {return _emoter;}
 
         protected final int _maxInactiveInterval=4;
         public int getMaxInactiveInterval() {return _maxInactiveInterval;}
-        
+
         protected int _demotions;
         public int getDemotions() {return _demotions;}
         public void demote(Motable motable) {_demotions++;}
@@ -105,7 +105,7 @@ public class TestEvicters extends TestCase {
         public int getExpirations() {return _expirations;}
         public void expire(Motable motable) {_expirations++; _map.remove(motable.getId());}
     }
-    
+
     public void testExpiryFromStorage() throws Exception {
         // Contextualiser
         Contextualiser next=new DummyContextualiser();
@@ -116,7 +116,7 @@ public class TestEvicters extends TestCase {
         Streamer streamer=new SimpleStreamer();
         // (Contextualiser next, Collapser collapser, Evicter evicter, Map map, StreamingStrategy streamer, File dir) {
         Collapser collapser=new HashingCollapser(100, 1000);
-        File dir=new File("/tmp");
+        File dir=new File("/tmp/wadi/"+System.getProperty("wadi.colour"));
         Contextualiser disc=new ExclusiveDiscContextualiser(next, collapser, devicter, dmap, streamer, dir, true);
         Map mmap=new HashMap();
         int inactivityInterval=1; // second
@@ -149,8 +149,8 @@ public class TestEvicters extends TestCase {
         assertTrue(mmap.size()==0);
         assertTrue(dmap.size()==0);
         manager.stop();
-        
+
         // rename/use IdGenerator and StreamingStrategy...
-        
+
     }
 }

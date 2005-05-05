@@ -125,30 +125,30 @@ extends TestCase
     // LazyBoth
     protected SessionPool             _lazyBothSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected Manager                 _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesPool,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
-    
-    
+
+
     public TestHttpSession(String name)
     {
         super(name);
     }
-    
+
     static class Pair
     implements Serializable
     {
         String _type;
         HttpSessionEvent _event;
-        
+
         Pair(String type, HttpSessionEvent event)
         {
             _type=type;
             _event=event;
         }
-        
+
         String getType(){return _type;}
         HttpSessionEvent getEvent(){return _event;}
         public String toString() {return "<"+_event.getSession().getId()+":"+_type+">";}
     }
-    
+
     // try to run up TC session manager within this test - how the hell does it work ?
     //   class Manager
     //     extends org.apache.catalina.session.StandardManager
@@ -156,7 +156,7 @@ extends TestCase
     //     public HttpSession createSession().getWrapper() {return createSession().getSession();}
     //     public void addEventListener(EventListener l){addSessionListener(l);}
     //   }
-    
+
     class Listener
     implements
     HttpSessionListener,
@@ -175,7 +175,7 @@ extends TestCase
         public void valueBound           (HttpSessionBindingEvent e) {e.getSession().getId();_events.add(new Pair("valueBound",e));}
         public void valueUnbound         (HttpSessionBindingEvent e) {e.getSession().getId();_events.add(new Pair("valueUnbound",e));}
     }
-    
+
     static class ActivationListener
     implements
     HttpSessionActivationListener,
@@ -204,15 +204,15 @@ extends TestCase
     {
         public static List _events=new ArrayList();
         protected static Log _log=LogFactory.getLog(SerialisationListener.class);
-        
+
         private void writeObject(java.io.ObjectOutputStream out) throws IOException {
             _events.add(new Pair("serialised",null));
         }
-        
+
         private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
             _events.add(new Pair("deserialised",null));
         }
-        
+
     }
 
     protected void setUp() throws Exception {
@@ -228,7 +228,7 @@ extends TestCase
         _lazyBothManager.addEventListener(_listener);
         _lazyBothManager.init();
     }
-    
+
     protected void tearDown() {
         _lazyBothManager.removeEventListener(_listener);
         _lazyBothManager.destroy();
@@ -242,9 +242,9 @@ extends TestCase
         _standardManager.destroy();
         _listener=null;
     }
-    
+
     //----------------------------------------
-    
+
     public void testCreateHttpSession() {
         testCreateHttpSession(_standardManager);
         testCreateHttpSession(_distributableManager);
@@ -252,12 +252,12 @@ extends TestCase
         testCreateHttpSession(_lazyAttributesManager);
         testCreateHttpSession(_lazyBothManager);
     }
-    
+
     public void
     testCreateHttpSession(Manager manager)
     {
         _events.clear();
-        
+
         // create a session
         HttpSession session=manager.createSession().getWrapper();
         assertTrue(!session.getAttributeNames().hasMoreElements());
@@ -268,7 +268,7 @@ extends TestCase
         assertTrue(pair.getEvent().getSession()==session);
         assertTrue(_events.size()==0);
     }
-    
+
     public void
     testDestroyHttpSessionWithListener() throws Exception {
         testDestroyHttpSessionWithListener(_standardManager);
@@ -277,7 +277,7 @@ extends TestCase
         testDestroyHttpSessionWithListener(_lazyAttributesManager);
         testDestroyHttpSessionWithListener(_lazyBothManager);
     }
-    
+
     public void
     testDestroyHttpSessionWithListener(Manager manager)
     throws Exception
@@ -295,7 +295,7 @@ extends TestCase
 
         // destroy session
         manager.destroySession(session);
-        
+
         // analyse results
         assertTrue(_events.size()==4);
         {
@@ -332,8 +332,8 @@ extends TestCase
             assertTrue(wrapper==e.getSession());
         }
         _events.clear();
-        
-        // TODO - 
+
+        // TODO -
         // try without an HttpSessionAttributeListener registered
         // try with a serialised session
         // track what is serialised and what is not...
@@ -346,14 +346,14 @@ extends TestCase
         testDestroyHttpSessionWithoutListener(_lazyAttributesManager);
         testDestroyHttpSessionWithoutListener(_lazyBothManager);
     }
-    
+
     public void
     testDestroyHttpSessionWithoutListener(Manager manager)
     throws Exception
     {
         // remove Listener
         manager.removeEventListener(_listener);
-        
+
         // create session
         Session session=manager.createSession();
         HttpSession wrapper=session.getWrapper();
@@ -367,7 +367,7 @@ extends TestCase
 
         // destroy session
         manager.destroySession(session);
-        
+
         // analyse results
         assertTrue(_events.size()==1);
         {
@@ -381,14 +381,14 @@ extends TestCase
             assertTrue(be.getValue()==val);
         }
         _events.clear();
-        
-        // TODO - 
+
+        // TODO -
         // try without an HttpSessionAttributeListener registered
         // try with a serialised session
         // track what is serialised and what is not...
     }
 
-    
+
     public void
     testInvalidate() throws Exception {
         testInvalidate(_standardManager);
@@ -405,24 +405,24 @@ extends TestCase
         session.invalidate();
         // TODO - what should we test here ?
     }
-    
+
     public void
     testSetAttribute()
-    {  
+    {
         testSetAttribute(_standardManager);
         testSetAttribute(_distributableManager);
         testSetAttribute(_lazyValueManager);
         testSetAttribute(_lazyAttributesManager);
         testSetAttribute(_lazyBothManager);
     }
-    
+
     public void
     testSetAttribute(Manager manager)
-    {   
+    {
         HttpSession session=manager.createSession().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         _events.clear();
-        
+
         String key="foo";
         Object val=new Listener();
         session.setAttribute(key, val);
@@ -450,7 +450,7 @@ extends TestCase
         _events.clear();
         assertTrue(_events.size()==0);
     }
-    
+
     public void
     testPutValue()
     {
@@ -460,14 +460,14 @@ extends TestCase
         testPutValue(_lazyAttributesManager);
         testPutValue(_lazyBothManager);
     }
-    
+
     public void
     testPutValue(Manager manager)
     {
         HttpSession session=manager.createSession().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         _events.clear();
-        
+
         String key="foo";
         Object val=new Listener();
         session.putValue(key, val);
@@ -495,7 +495,7 @@ extends TestCase
         _events.clear();
         assertTrue(_events.size()==0);
     }
-    
+
     public void
     testGetAttribute()
     {
@@ -505,7 +505,7 @@ extends TestCase
         testGetAttribute(_lazyAttributesManager);
         testGetAttribute(_lazyBothManager);
     }
-    
+
     public void
     testGetAttribute(Manager manager)
     {
@@ -514,10 +514,10 @@ extends TestCase
         Object val=new Listener();
         session.setAttribute(key, val);
         _events.clear();
-        
+
         assertTrue(session.getAttribute(key)==val);
     }
-    
+
     public void
     testGetValue()
     {
@@ -527,7 +527,7 @@ extends TestCase
         testGetValue(_lazyAttributesManager);
         testGetValue(_lazyBothManager);
     }
-    
+
     public void
     testGetValue(Manager manager)
     {
@@ -536,10 +536,10 @@ extends TestCase
         Object val=new Listener();
         session.setAttribute(key, val);
         _events.clear();
-        
+
         assertTrue(session.getValue(key)==val);
     }
-    
+
     public void
     testRemoveAttribute()
     {
@@ -549,7 +549,7 @@ extends TestCase
         testRemoveAttribute(_lazyAttributesManager);
         testRemoveAttribute(_lazyBothManager);
     }
-    
+
     public void
     testRemoveAttribute(Manager manager)
     {
@@ -560,7 +560,7 @@ extends TestCase
         session.setAttribute(key, val);
         assertTrue(_events.size()==3); // valueBound, attributeAdded
         _events.clear();
-        
+
         session.removeAttribute(key);
         assertTrue(_events.size()==2); // valueUnBound, attributeRemoved
         {
@@ -586,13 +586,13 @@ extends TestCase
         _events.clear();
         assertTrue(_events.size()==0);
         assertTrue(session.getAttribute(key)==null);
-        
+
         // try removing it again !
         session.removeAttribute(key);
         assertTrue(_events.size()==0);
-        
+
     }
-    
+
     public void
     testRemoveValue()
     {
@@ -602,7 +602,7 @@ extends TestCase
         testRemoveValue(_lazyAttributesManager);
         testRemoveValue(_lazyBothManager);
     }
-    
+
     public void
     testRemoveValue(Manager manager)
     {
@@ -613,10 +613,10 @@ extends TestCase
         session.setAttribute(key, val);
         assertTrue(_events.size()==3); // valueBound, attributeAdded
         _events.clear();
-        
+
         session.removeValue(key);
         assertTrue(_events.size()==2); // valueUnBound, attributeRemoved
-        
+
         {
             Pair pair=(Pair)_events.get(0);
             assertTrue(pair!=null);
@@ -641,7 +641,7 @@ extends TestCase
         assertTrue(_events.size()==0);
         assertTrue(session.getAttribute(key)==null);
     }
-    
+
     public void
     testSetAttributeNull()
     {
@@ -651,7 +651,7 @@ extends TestCase
         testSetAttributeNull(_lazyAttributesManager);
         testSetAttributeNull(_lazyBothManager);
     }
-    
+
     public void
     testSetAttributeNull(Manager manager)
     {
@@ -662,10 +662,10 @@ extends TestCase
         session.setAttribute(key, val);
         assertTrue(_events.size()==3); // valueBound, attributeAdded
         _events.clear();
-        
+
         session.setAttribute(key, null);
         assertTrue(_events.size()==2); // valueUnBound, attributeRemoved
-        
+
         {
             Pair pair=(Pair)_events.get(0);
             assertTrue(pair!=null);
@@ -690,7 +690,7 @@ extends TestCase
         assertTrue(_events.size()==0);
         assertTrue(session.getAttribute(key)==null);
     }
-    
+
     public void
     testPutValueNull()
     {
@@ -700,7 +700,7 @@ extends TestCase
         testPutValueNull(_lazyAttributesManager);
         testPutValueNull(_lazyBothManager);
     }
-    
+
     public void
     testPutValueNull(Manager manager)
     {
@@ -711,10 +711,10 @@ extends TestCase
         session.setAttribute(key, val);
         assertTrue(_events.size()==3); // valueBound, attributeAdded
         _events.clear();
-        
+
         session.putValue(key, null);
         assertTrue(_events.size()==2); // valueUnBound, attributeRemoved
-        
+
         {
             Pair pair=(Pair)_events.get(0);
             assertTrue(pair!=null);
@@ -739,7 +739,7 @@ extends TestCase
         assertTrue(_events.size()==0);
         assertTrue(session.getAttribute(key)==null);
     }
-    
+
     public void
     testReplaceAttribute()
     {
@@ -749,7 +749,7 @@ extends TestCase
         testReplaceAttribute(_lazyAttributesManager);
         testReplaceAttribute(_lazyBothManager);
     }
-    
+
     public void
     testReplaceAttribute(Manager manager)
     {
@@ -761,7 +761,7 @@ extends TestCase
         session.setAttribute(key, oldVal);
         assertTrue(_events.size()==3); // valueBound, attributeAdded
         _events.clear();
-        
+
         session.setAttribute(key, newVal);
         assertTrue(_events.size()==3); // valueUnbound, valueBound, attributeReplaced
         {
@@ -798,8 +798,8 @@ extends TestCase
         assertTrue(_events.size()==0);
         assertTrue(session.getValue(key)==newVal);
     }
-    
-    
+
+
     public void
     testReplaceValue()
     {
@@ -809,7 +809,7 @@ extends TestCase
         testReplaceValue(_lazyAttributesManager);
         testReplaceValue(_lazyBothManager);
     }
-    
+
     public void
     testReplaceValue(Manager manager)
     {
@@ -819,7 +819,7 @@ extends TestCase
         Object newVal=new Listener();
         session.setAttribute(key, oldVal);
         _events.clear();
-        
+
         session.putValue(key, newVal);
         {
             Pair pair=(Pair)_events.remove(0);
@@ -854,7 +854,7 @@ extends TestCase
         assertTrue(session.getValue(key)==newVal);
         assertTrue(_events.size()==0);
     }
-    
+
     protected int
     enumerationLength(Enumeration e)
     {
@@ -866,7 +866,7 @@ extends TestCase
         }
         return i;
     }
-    
+
     public void
     testGetAttributeNames()
     {
@@ -876,7 +876,7 @@ extends TestCase
         testGetAttributeNames(_lazyAttributesManager);
         testGetAttributeNames(_lazyBothManager);
     }
-    
+
     public void
     testGetAttributeNames(Manager manager)
     {
@@ -895,7 +895,7 @@ extends TestCase
         session.setAttribute("foo", null);
         assertTrue(enumerationLength(session.getAttributeNames())==0);
     }
-    
+
     public void
     testGetValueNames()
     {
@@ -905,7 +905,7 @@ extends TestCase
         testGetValueNames(_lazyAttributesManager);
         testGetValueNames(_lazyBothManager);
     }
-    
+
     public void
     testGetValueNames(Manager manager)
     {
@@ -924,7 +924,7 @@ extends TestCase
         session.setAttribute("foo", null);
         assertTrue(session.getValueNames().length==0);
     }
-    
+
     public void
     testMaxInactiveInterval()
     {
@@ -934,7 +934,7 @@ extends TestCase
         testMaxInactiveInterval(_lazyAttributesManager);
         testMaxInactiveInterval(_lazyBothManager);
     }
-    
+
     public void
     testMaxInactiveInterval(Manager manager)
     {
@@ -950,7 +950,7 @@ extends TestCase
             assertTrue(session.getMaxInactiveInterval()==interval);
         }
     }
-    
+
     public void
     testIsNew()
     {
@@ -960,7 +960,7 @@ extends TestCase
         testIsNew(_lazyAttributesManager, _distributableSessionPool);
         testIsNew(_lazyBothManager, _distributableSessionPool);
     }
-    
+
     public void
     testIsNew(Manager manager, SessionPool sessionPool)
     {
@@ -970,7 +970,7 @@ extends TestCase
         s.setLastAccessedTime(System.currentTimeMillis()+1);
         assertTrue(!session.isNew());
     }
-    
+
     public void
     testNullName()
     {
@@ -980,7 +980,7 @@ extends TestCase
         testNullName(_lazyAttributesManager);
         testNullName(_lazyBothManager);
     }
-    
+
     public void
     testNullName(Manager manager)
     {
@@ -992,12 +992,12 @@ extends TestCase
         try{session.getValue(null);assertTrue(false);}catch(IllegalArgumentException e){}
         try{session.removeValue(null);assertTrue(false);}catch(IllegalArgumentException e){}
     }
-    
+
     public void testStandard() throws Exception
     {
         testStandardValidation(_standardManager);
     }
-    
+
     public void testDistributable() throws Exception
     {
         testActivation(_distributableManager, _distributableSessionPool);
@@ -1025,7 +1025,7 @@ extends TestCase
         testDeserialisationOnReplacementWithoutListener((DistributableManager)_lazyAttributesManager);
         testDeserialisationOnReplacementWithoutListener((DistributableManager)_lazyBothManager);
     }
-    
+
     public void
     testActivation(Manager manager, SessionPool pool) // Distributable only
     throws Exception
@@ -1033,7 +1033,7 @@ extends TestCase
         DistributableSession s0=(DistributableSession)pool.take();
         List events=ActivationListener._events;
         events.clear();
-        
+
         String key="test";
         ActivationListener l=new ActivationListener();
         s0.setAttribute(key, l);
@@ -1047,7 +1047,7 @@ extends TestCase
             assertTrue(s0.getWrapper()==e.getSession());
         }
         events.clear();
-        
+
         DistributableSession s1=(DistributableSession)pool.take();
         s1.setBytes(bytes);
         // listsners may be activated lazily - so:
@@ -1063,7 +1063,7 @@ extends TestCase
         }
         events.clear();
     }
-    
+
     public void
     testMigration(Manager manager, SessionPool pool) // Distributable only
     throws Exception
@@ -1076,19 +1076,19 @@ extends TestCase
         s0.setId("a-session");
         for (int i=0; i<10; i++)
             s0.setAttribute("key-"+i, "val-"+i);
-        
+
         Thread.sleep(1);
 
         DistributableSession s1=(DistributableSession)pool.take();
         s1.copy(s0);
         DistributableSession s2=(DistributableSession)pool.take();
         s2.copy(s0);
-        
-        assertTrue(s1.getCreationTime()==s2.getCreationTime());        
-        assertTrue(s1.getLastAccessedTime()==s2.getLastAccessedTime());        
-        assertTrue(s1.getMaxInactiveInterval()==s2.getMaxInactiveInterval());        
-        assertTrue(s1.getId()!=s2.getId());        
-        assertTrue(s1.getId().equals(s2.getId()));        
+
+        assertTrue(s1.getCreationTime()==s2.getCreationTime());
+        assertTrue(s1.getLastAccessedTime()==s2.getLastAccessedTime());
+        assertTrue(s1.getMaxInactiveInterval()==s2.getMaxInactiveInterval());
+        assertTrue(s1.getId()!=s2.getId());
+        assertTrue(s1.getId().equals(s2.getId()));
         assertTrue(s1.getAttributeNameSet().equals(s2.getAttributeNameSet()));
         {
             Iterator i=s1.getAttributeNameSet().iterator();
@@ -1101,10 +1101,10 @@ extends TestCase
             assertTrue(s1.getAttribute(key)!=s2.getAttribute(key));
             assertTrue(s1.getAttribute(key).equals(s2.getAttribute(key)));
         }
-            
+
     }
-    
-    
+
+
     public void testDeserialisationOnReplacementWithListener(DistributableManager manager) throws Exception {
         testDeserialisationOnReplacement(manager);
         // TODO - test context level events here...
@@ -1119,7 +1119,7 @@ extends TestCase
     public void testDeserialisationOnReplacement(DistributableManager manager) throws Exception {
         DistributableSession s0=(DistributableSession)manager.createSession();
         DistributableSession s1=(DistributableSession)manager.createSession();
-        
+
         s0.setAttribute("dummy", "dummy");
         s0.setAttribute("binding-listener", new BindingListener());
         s0.setAttribute("activation-listener", new ActivationListener());
@@ -1128,9 +1128,9 @@ extends TestCase
         activationEvents.clear();
         List bindingEvents=BindingListener._events;
         bindingEvents.clear();
-        
+
         s1.copy(s0);
-        
+
         s1.setAttribute("activation-listener", new ActivationListener());
 
         assertTrue(activationEvents.size()==2);
@@ -1149,7 +1149,7 @@ extends TestCase
             assertTrue(s1.getWrapper()==e.getSession());
         }
         activationEvents.clear();
-        
+
         s1.setAttribute("binding-listener", new BindingListener());
 
         assertTrue(bindingEvents.size()==2);
@@ -1168,9 +1168,9 @@ extends TestCase
             assertTrue(s1.getWrapper()==e.getSession());
         }
         bindingEvents.clear();
-        
+
     }
-    
+
     public void
     testStandardValidation(Manager manager) // Distributable only
     throws Exception
@@ -1185,7 +1185,7 @@ extends TestCase
         // and some non-Serializables...
         session.setAttribute("5", new Object());
     }
-    
+
     public void
     testDistributableValidation(Manager manager) // Distributable only
     throws Exception
@@ -1210,37 +1210,37 @@ extends TestCase
         final String _content;
         public NotSerializable(String content) {_content=content;}
     }
-    
+
     static class IsSerializable implements Serializable {
         String _content;
         public IsSerializable(){/* empty */} // for Serialising...
         public IsSerializable(String content){_content=content;} // for Helper
         private Object readResolve() {return new NotSerializable(_content);}
-    }   
-    
+    }
+
     static class NotSerializableHelper implements ValueHelper {
         public Serializable replace(Object object) {return new IsSerializable(((NotSerializable)object)._content);}
     }
-    
+
     public void testCustomSerialisation(DistributableManager manager) throws Exception {
         String content="foo";
         NotSerializable val0=new NotSerializable(content);
         Class type=val0.getClass();
         manager.registerHelper(Integer.class, new NotSerializableHelper()); // this one will not be used
         manager.registerHelper(type, new NotSerializableHelper());
-        
+
         Session s0=manager.createSession();
         s0.setAttribute(content, val0);
         Session s1=manager.createSession();
         s1.setBytes(s0.getBytes());
         NotSerializable val1=(NotSerializable)s1.getAttribute(content);
         assertTrue(val0._content.equals(val1._content));
-        
+
         assertTrue(manager.deregisterHelper(type));
         assertTrue(!manager.deregisterHelper(type));
         assertTrue(manager.deregisterHelper(Integer.class));
         assertTrue(!manager.deregisterHelper(Integer.class));
-        
+
     }
 
 //    public void
@@ -1251,7 +1251,7 @@ extends TestCase
 //        //s0.init(_manager, "1234", 0L, 60, 60);
 //        List events=ActivationListener._events;
 //        events.clear();
-//        
+//
 //        String key="test";
 //        ActivationListener l=new ActivationListener();
 //        s0.setAttribute(key, l);
@@ -1273,7 +1273,7 @@ extends TestCase
 //            HttpSessionEvent e=pair.getEvent();
 //            assertTrue(s0.getWrapper()==e.getSession());
 //        }
-//        
+//
 //        Session s1=_distributableSessionPool.take(_distributableManager);
 //        demarshall(s1, buffer);
 //        //s1.setWadiManager(_manager); // TODO - yeugh!
@@ -1290,7 +1290,7 @@ extends TestCase
 //            assertTrue(s1.getWrapper()==e.getSession());
 //        }
 //    }
-    
+
 //  public void
 //  testMigration()
 //  {
@@ -1301,15 +1301,15 @@ extends TestCase
 //  HttpSession s1=impl1.getWrapper();
 //  List events=ActivationListener._events;
 //  events.clear();
-//  
+//
 //  String key="test";
 //  ActivationListener l=new ActivationListener();
 //  impl1.setAttribute(key, l, false);
-//  
-//  FilePassivationStrategy fmp=new FilePassivationStrategy(new File("/tmp"));
+//
+//  FilePassivationStrategy fmp=new FilePassivationStrategy(new File("/tmp/wadi/"+System.getProperty("wadi.colour")));
 //  fmp.setStreamingStrategy(new GZIPStreamingStrategy());
 //  assertTrue(fmp.passivate(impl1));
-//  
+//
 //  // listener should now have been passivated
 //  assertTrue(events.size()==1);
 //  {
@@ -1319,7 +1319,7 @@ extends TestCase
 //  HttpSessionEvent e=pair.getEvent();
 //  assertTrue(s1==e.getSession());
 //  }
-//  
+//
 //  Session impl2=new Session();
 //  assertTrue(fmp.activate(id, impl2));
 //  impl2.setWadiManager(_manager);
@@ -1337,14 +1337,14 @@ extends TestCase
 //  assertTrue(s2==e.getSession());
 //  }
 //  assertTrue(events.size()==0);
-//  
+//
 //  assertTrue(s1.getValueNames().length==s2.getValueNames().length);
 //  Enumeration e1=s1.getAttributeNames();
 //  Enumeration e2=s2.getAttributeNames();
 //  while (e1.hasMoreElements() && e2.hasMoreElements())
 //  assertTrue(((String)e1.nextElement()).equals((String)e2.nextElement()));
 //  }
-    
+
 //  public void
 //  testLotsOfSessions()
 //  throws Exception
@@ -1352,12 +1352,12 @@ extends TestCase
 //  _manager.stop();
 //  _manager.removeEventListener(_listener); //  otherwise we get lots of events :-)
 //  _manager.start();
-    
+
 //  //  put some code in here to figure out how much mem they use...
 //  long start=System.currentTimeMillis();
 //  int numSessions=100;	//000;
 //  HttpSession[] sessions=new HttpSession[numSessions];
-    
+
 //  for (int i=0;i<numSessions;i++)
 //  {
 //  sessions[i]=_manager.createSession().getWrapper();
@@ -1365,7 +1365,7 @@ extends TestCase
 //  // in use by the thread that created them...
 //  sessions[i].setAttribute("foo", "bar");
 //  }
-    
+
 //  for (int i=0;i<numSessions;i++)
 //  {
 //  String id=sessions[i].getId();
@@ -1373,23 +1373,23 @@ extends TestCase
 //  sessions[i]=null;
 //  _manager.remove(id);
 //  }
-    
+
 //  sessions=null;
 //  long stop=System.currentTimeMillis();
-    
+
 //  if (_log.isInfoEnabled()) _log.info("create/destroy "+numSessions+" sessions: "+(stop-start)+" millis");
-    
+
 //  _manager.stop();
 //  _manager.addEventListener(_listener);
 //  _manager.start();
 //  }
-    
+
     //   public void
     //     testDistributedSessions()
     //   {
     //     _manager.start();
     //     _log.info("Testing Distributed Sessions");
-    
+
     //     try
     //     {
     //       HttpSession session=_manager.createSession().getWrapper();
@@ -1405,7 +1405,7 @@ extends TestCase
     //     {
     //       System.err.println("something went wrong"+e);
     //     }
-    
+
     //     try
     //     {
     //       HttpSession session=_manager.createSession().getWrapper();
@@ -1426,7 +1426,7 @@ extends TestCase
     //     {
     //       System.err.println("something went wrong"+e);
     //     }
-    
+
     //     try
     //     {
     //       HttpSession session=_manager.createSession().getWrapper();
@@ -1449,11 +1449,11 @@ extends TestCase
     //     {
     //       System.err.println("something went wrong"+e);
     //     }
-    
+
     //     _log.info("Tested Distributed Sessions");
     //     _manager.stop();
     //   }
-    
+
     public void testAtomicAttributes() throws Exception {
         testAtomicAttributes(_distributableManager);
         testAtomicAttributes(_lazyAttributesManager);
@@ -1496,7 +1496,7 @@ extends TestCase
         assertTrue(sess1.getAttribute(key0)!=sess1.getAttribute(key1)); // after deserialisation values are no longer '='
         assertTrue(sess1.getAttribute(key0).equals(sess1.getAttribute(key1)));
     }
-    
+
     public void testLaziness() throws Exception {
         // lazy attributes:
 
@@ -1513,14 +1513,14 @@ extends TestCase
             activationEvents.clear();
             List serialisationEvents=SerialisationListener._events;
             serialisationEvents.clear();
-            
+
             s1.getAttribute("serialisation-listener");
             assertTrue(activationEvents.size()==1);
             activationEvents.clear();
             assertTrue(serialisationEvents.size()==1);
             serialisationEvents.clear();
         }
-        
+
         // (2) add an activation, a binding and a serialisation listener, migrate, invalidate - all should be called
         {
             Manager manager=_lazyAttributesManager;
@@ -1537,9 +1537,9 @@ extends TestCase
             bindingEvents.clear();
             List serialisationEvents=SerialisationListener._events;
             serialisationEvents.clear();
-            
+
             manager.destroySession(s1);
-            
+
             assertTrue(activationEvents.size()==1);
             activationEvents.clear();
             assertTrue(bindingEvents.size()==1);
@@ -1547,7 +1547,7 @@ extends TestCase
             assertTrue(serialisationEvents.size()==1);
             serialisationEvents.clear();
         }
-        
+
         // LazyValue
         // (1) add an activation and a serialisation listener, migrate, get one, only that one should be called
         {
@@ -1562,7 +1562,7 @@ extends TestCase
             activationEvents.clear();
             List serialisationEvents=SerialisationListener._events;
             serialisationEvents.clear();
-            
+
             s1.getAttribute("activation-listener");
             assertTrue(activationEvents.size()==1);
             assertTrue(serialisationEvents.size()==0);
@@ -1574,13 +1574,13 @@ extends TestCase
             activationEvents.clear();
             serialisationEvents.clear();
         }
-        
+
         // (2) add an activation, a binding and a serialisation listener, migrate, invalidate - serialisation should not be called
         // LATER - none should be called, until they are dereffed from the event itself...
         {
             Manager manager=_lazyValueManager;
             manager.removeEventListener(_listener);
-            
+
             Session s0=manager.createSession();
             s0.setAttribute("activation-listener", new ActivationListener());
             s0.setAttribute("binding-listener", new BindingListener());
@@ -1593,9 +1593,9 @@ extends TestCase
             bindingEvents.clear();
             List serialisationEvents=SerialisationListener._events;
             serialisationEvents.clear();
-            
+
             manager.destroySession(s1);
-            
+
             assertTrue(activationEvents.size()==1);
             assertTrue(bindingEvents.size()==1);
             assertTrue(serialisationEvents.size()==0);
@@ -1603,9 +1603,9 @@ extends TestCase
             activationEvents.clear();
             bindingEvents.clear();
         }
-        
+
     }
-    
+
     public void
     testRest()
     {
@@ -1615,7 +1615,7 @@ extends TestCase
         testRest(_lazyAttributesManager);
         testRest(_lazyBothManager);
     }
-    
+
     public void
     testRest(Manager manager)
     {
