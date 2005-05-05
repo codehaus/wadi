@@ -6,58 +6,58 @@
 
   <bean
     id="SessionFactory"
-    class="org.codehaus.wadi.sandbox.impl.DistributableSessionFactory"
+    class="org.codehaus.wadi.impl.DistributableSessionFactory"
     >
   </bean>
 
   <bean
     id="SessionPool"
-    class="org.codehaus.wadi.sandbox.impl.SimpleSessionPool"
+    class="org.codehaus.wadi.impl.SimpleSessionPool"
     >
     <constructor-arg><ref bean="SessionFactory"/></constructor-arg>
   </bean>
 
   <bean
     id="AttributesFactory"
-    class="org.codehaus.wadi.sandbox.impl.DistributableAttributesFactory"
+    class="org.codehaus.wadi.impl.DistributableAttributesFactory"
     >
   </bean>
 
   <bean
     id="AttributesPool"
-    class="org.codehaus.wadi.sandbox.impl.SimpleAttributesPool"
+    class="org.codehaus.wadi.impl.SimpleAttributesPool"
     >
     <constructor-arg><ref bean="AttributesFactory"/></constructor-arg>
   </bean>
 
   <bean
     id="ValueFactory"
-    class="org.codehaus.wadi.sandbox.impl.DistributableValueFactory"
+    class="org.codehaus.wadi.impl.DistributableValueFactory"
     >
   </bean>
 
   <bean
     id="ValuePool"
-    class="org.codehaus.wadi.sandbox.impl.SimpleValuePool"
+    class="org.codehaus.wadi.impl.SimpleValuePool"
     >
     <constructor-arg><ref bean="ValueFactory"/></constructor-arg>
   </bean>
 
   <bean
     id="SessionWrapperFactory"
-    class="org.codehaus.wadi.sandbox.impl.jetty.JettySessionWrapperFactory"
+    class="org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory"
     >
   </bean>
 
   <bean
     id="SessionIdFactory"
-    class="org.codehaus.wadi.impl.TomcatIdGenerator"
+    class="org.codehaus.wadi.impl.TomcatSessionIdFactory"
     >
   </bean>
 
   <bean
     id="Streamer"
-    class="org.codehaus.wadi.impl.SimpleStreamingStrategy"
+    class="org.codehaus.wadi.impl.SimpleStreamer"
     >
   </bean>
 
@@ -78,14 +78,14 @@
 
   <bean
     id="ContextPool"
-    class="org.codehaus.wadi.sandbox.impl.SessionToContextPoolAdapter"
+    class="org.codehaus.wadi.impl.SessionToContextPoolAdapter"
     >
      <constructor-arg><ref bean="SessionPool"/></constructor-arg>
   </bean>
 
   <bean
     id="Contextualiser"
-    class="org.codehaus.wadi.sandbox.impl.SimpleContextualiserStack"
+    class="org.codehaus.wadi.impl.SimpleContextualiserStack"
     >
        <constructor-arg><ref bean="SessionMap"/></constructor-arg>
        <constructor-arg><ref bean="ContextPool"/></constructor-arg> <!-- enclosed SessionPool will be init()-ed by Manager -->
@@ -97,7 +97,7 @@
 
   <bean
     id="Router"
-    class="org.codehaus.wadi.sandbox.impl.JkRouter"
+    class="org.codehaus.wadi.impl.JkRouter"
     >
        <constructor-arg><value>${wadi.colour}</value></constructor-arg>
   </bean>
@@ -107,7 +107,7 @@
 
   <bean
     id="SessionManager"
-    class="org.codehaus.wadi.sandbox.impl.jetty.JettyManager"
+    class="org.codehaus.wadi.impl.jetty.JettyManager"
     >
     <constructor-arg><ref bean="SessionPool"/></constructor-arg>
     <constructor-arg><ref bean="AttributesPool"/></constructor-arg>

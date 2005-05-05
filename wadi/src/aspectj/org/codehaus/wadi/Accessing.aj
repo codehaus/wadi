@@ -15,7 +15,10 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi;
+package org.codehaus.wadi.old;
+
+import org.codehaus.wadi.old.HttpSessionImpl;
+import org.codehaus.wadi.old.AbstractHttpSessionImpl;
 
 // TODO - probably only distributable sessions..? depends on session
 // container impl..

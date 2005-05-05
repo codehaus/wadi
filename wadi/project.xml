@@ -129,11 +129,11 @@
 
     <unitTest>
       <excludes>
-        <exclude>**/sandbox/test/TestActiveCluster.java</exclude>
+        <exclude>**/old/**</exclude>
+        <exclude>**/test/TestActiveCluster.java</exclude>
       </excludes>
       <includes>
-        <include>**/sandbox/test/Test*.java</include>
-        <include>**/sandbox/distributable/test/Test*.java</include>
+        <include>**/test/Test*.java</include>
 	<!-- work -->
 <!--
         <include>**/TestJCache.java</include>

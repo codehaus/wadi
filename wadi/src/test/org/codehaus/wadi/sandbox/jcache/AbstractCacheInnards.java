@@ -27,7 +27,7 @@ import javax.cache.CacheEntry;
 import javax.cache.CacheException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.Streamer;
+import org.codehaus.wadi.Streamer;
 
 //----------------------------------------
 

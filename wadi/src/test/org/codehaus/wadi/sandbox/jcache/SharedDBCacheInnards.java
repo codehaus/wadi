@@ -30,8 +30,8 @@ import javax.cache.Cache;
 import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.SerializableContent;
-import org.codehaus.wadi.sandbox.Streamer;
+import org.codehaus.wadi.SerializableContent;
+import org.codehaus.wadi.Streamer;
 
 //----------------------------------------
 

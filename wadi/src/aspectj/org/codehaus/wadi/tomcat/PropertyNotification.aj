@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.tomcat;
+package org.codehaus.wadi.old.tomcat;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;

@@ -17,7 +17,7 @@ import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.impl.SimpleStreamer;
+import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.sandbox.wcache.impl.ClusterCache;
 import org.codehaus.wadi.sandbox.wcache.impl.InactiveEvicter;
 import org.codehaus.wadi.sandbox.wcache.impl.InvalidEvicter;

@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi;
+package org.codehaus.wadi.old;
 
 /**
  * Manages aspect precedence arounf HttpSessionImpl

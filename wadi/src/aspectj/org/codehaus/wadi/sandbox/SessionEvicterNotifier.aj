@@ -14,10 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox;
+package org.codehaus.wadi;
 
-import org.codehaus.wadi.sandbox.Session;
-import org.codehaus.wadi.sandbox.impl.Manager;
+import org.codehaus.wadi.Session;
+import org.codehaus.wadi.impl.Manager;
 
 public aspect SessionEvicterNotifier {
     
