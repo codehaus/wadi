@@ -38,8 +38,8 @@ public aspect
    call(* EDU.oswego.cs.dl.util.concurrent.Sync+.*(..)) &&
    //   call(* RWLock.startRead(..)) ||
    //      call(* RoutingStrategy+.*(..))
-   (target(org.codehaus.wadi.RWLock$ReaderLock) ||
-    target(org.codehaus.wadi.RWLock$WriterLock)) &&
+   (target(org.codehaus.wadi.old.RWLock$ReaderLock) ||
+    target(org.codehaus.wadi.old.RWLock$WriterLock)) &&
    within(Tracing)		// this will never be true
    )
     && target(lock)
