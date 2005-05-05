@@ -36,12 +36,13 @@ class DummyContextualiserConfig implements ContextualiserConfig {
     protected final Contextualiser _top;
     protected final Map _map;
     protected final Timer _timer=new Timer();
+    protected final SessionPool _sessionPool;
     protected final SessionConfig _sessionConfig=new DummyDistributableSessionConfig();
-    protected final SessionPool _sessionPool=new SimpleSessionPool(new DistributableSessionFactory()); // needs init()-ing
     
-    public DummyContextualiserConfig(Contextualiser top, Map map) {
+    public DummyContextualiserConfig(Contextualiser top, Map map, SessionPool sessionPool) {
         _top=top;
         _map=map;
+        _sessionPool=sessionPool;
         _sessionPool.init(_sessionConfig);
         }
     

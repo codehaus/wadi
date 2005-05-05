@@ -64,10 +64,10 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     protected final Contextualiser _contextualiser;
     protected final Map _map;
     protected final Timer _timer;
-    protected final boolean _accessOnLoad;
     protected Router _router;
+    protected final boolean _accessOnLoad; // TODO - should only be available on DistributableManager
 
-    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map map, boolean accessOnLoad, Router router) {
+    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, IdGenerator sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean accessOnLoad) {
         _sessionPool=sessionPool;
         _sessionPool.init(this);
         _attributesPool=attributesPool;
@@ -88,6 +88,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
 
     public void start() throws Exception {
         _log.info("starting");
+        _contextualiser.promoteToExclusive(null);
         _contextualiser.start();
         _started=true;
     }

@@ -190,7 +190,6 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterCluster.start();
 	// TODO - dispatcher probably needs a Lifecycle too... (and a thread pool)
         _memory.start();
-        _memory.promoteToExclusive(null);
     }
 
     public void stop() throws Exception {

@@ -18,9 +18,14 @@ package org.codehaus.wadi.sandbox.impl;
 
 // TODO - a Disc-based equivalent...
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import org.codehaus.wadi.sandbox.Collapser;
@@ -28,6 +33,8 @@ import org.codehaus.wadi.sandbox.Contextualiser;
 import org.codehaus.wadi.sandbox.Emoter;
 import org.codehaus.wadi.sandbox.Immoter;
 import org.codehaus.wadi.sandbox.Motable;
+
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * A Contextualiser which stores its Contexts in a shared database via JDBC.
@@ -193,4 +200,11 @@ public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
     public Emoter getEvictionEmoter() {throw new UnsupportedOperationException();} // FIXME
     public void expire(Motable motable) {throw new UnsupportedOperationException();} // FIXME
 
+    /**
+     * Shared Contextualisers do nothing at runtime. They exist only to load data at startup and store it at shutdown.
+     */
+    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
+        return false;
+    }
+    
 }
