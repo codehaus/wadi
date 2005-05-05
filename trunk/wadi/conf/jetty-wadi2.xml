@@ -5,7 +5,7 @@
 
   <Call name="addListener">
     <Arg>
-      <New class="org.codehaus.wadi.sandbox.impl.jetty.SocketListener">
+      <New class="org.codehaus.wadi.impl.jetty.SocketListener">
         <Set name="Port"><SystemProperty name="http.port" default="8080"/></Set>
         <Set name="MinThreads">1</Set>
         <Set name="MaxThreads">1000</Set>
