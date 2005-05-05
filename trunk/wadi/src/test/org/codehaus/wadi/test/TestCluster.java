@@ -95,10 +95,7 @@ public class TestCluster extends TestCase {
     protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
     protected final boolean _accessOnLoad=true;
     protected final Router _router=new DummyRouter();
-    protected final SessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory()); 
-    protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool); 
-    protected final AttributesPool _distributableAttributesPool=new SimpleAttributesPool(new DistributableAttributesFactory());
-    protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
+
 
     class MyNode {
     
@@ -112,7 +109,10 @@ public class TestCluster extends TestCase {
         protected final MemoryContextualiser _top;
         protected final ClusterContextualiser _middle;
         protected final SharedJDBCContextualiser _bottom;
-        protected final Manager _manager;
+        protected final SessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory()); 
+        protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool); 
+        protected final AttributesPool _distributableAttributesPool=new SimpleAttributesPool(new DistributableAttributesFactory());
+        protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());        protected final Manager _manager;
         
         public MyNode(ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
             _bottom=new SharedJDBCContextualiser(_dummyContextualiser, _collapser, ds, table);
@@ -134,7 +134,10 @@ public class TestCluster extends TestCase {
         
         public synchronized void start() throws Exception {
             if (!_running) {
+                _log.info("starting cluster...");
                 _cluster.start();
+                _log.info("cluster started");
+                _manager.init();
                 _manager.start();
                 _running=true;
             }
@@ -142,9 +145,8 @@ public class TestCluster extends TestCase {
         
         public synchronized void stop() throws Exception {
             if (_running) {
-                _log.info("stopping contextualiser stack...");
-                _top.stop();
-                _log.info("contextualiser stack stopped");
+                _manager.stop();
+                _manager.destroy();
                 _log.info("stopping cluster...");
                 _cluster.stop();
                 Thread.sleep(6000);
@@ -211,7 +213,7 @@ public class TestCluster extends TestCase {
 		Thread.sleep(1000);
 
 		super.tearDown();
-//		_node2.stop();
+		_node2.stop();
 		Thread.sleep(6000);
 		_node1.stop();
 //		Thread.sleep(6000);
@@ -234,7 +236,7 @@ public class TestCluster extends TestCase {
 		int numContexts=3;
 		for (int i=0; i<numContexts; i++) {
 			String id="session-"+i;
-			Motable emotable=_distributableSessionPool.take();
+			Motable emotable=_node0._distributableSessionPool.take();
             emotable.setId(id);
 			Immoter immoter=c0.getDemoter(id, emotable);
 			Emoter emoter=new EtherEmoter();

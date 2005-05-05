@@ -45,7 +45,7 @@ public class JettyManager extends org.codehaus.wadi.impl.DistributableManager im
     }
 
     protected ServletHandler _handler;
-    public void initialize(ServletHandler handler) {_handler=handler;}
+    public void initialize(ServletHandler handler) {_handler=handler; init();}
 
     public ServletContext getServletContext() {return _handler.getServletContext();}
 

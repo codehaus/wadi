@@ -36,6 +36,11 @@ public class SimpleSessionPool implements SessionPool {
         _config=config;
     }
     
+    public void destroy() {
+        assert _config!=null : "not yet initialised";
+        _config=null;
+    }
+    
     public Session take() {
         return _factory.create(_config);
     }

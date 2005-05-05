@@ -68,13 +68,11 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
 
     public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean accessOnLoad) {
         _sessionPool=sessionPool;
-        _sessionPool.init(this);
         _attributesPool=attributesPool;
         _valuePool=valuePool;
         _sessionWrapperFactory=sessionWrapperFactory;
         _sessionIdFactory=sessionIdFactory;
         _contextualiser=contextualiser;
-        _contextualiser.init(this);
         _map=map; // TODO - can we get this from Contextualiser
         _timer=new Timer();
         _accessOnLoad=accessOnLoad;
@@ -84,6 +82,11 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     protected boolean _started;
 
     public boolean isStarted(){return _started;}
+    
+    public void init() {
+        _sessionPool.init(this);
+        _contextualiser.init(this);
+    }
 
     public void start() throws Exception {
         _log.info("starting");
@@ -98,6 +101,11 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         _log.info("stopped"); // although this sometimes does not appear, it IS called...
     }
 
+    public void destroy() {
+        _contextualiser.destroy();
+        _sessionPool.destroy();
+    }
+    
     public Session createSession() {
         Session session=_sessionPool.take();
         long time=System.currentTimeMillis();

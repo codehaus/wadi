@@ -132,6 +132,7 @@ public class TestEvicters extends TestCase {
         SessionIdFactory idFactory=new TomcatSessionIdFactory();
         DistributableManager manager=new DistributableManager(sessionPool, attributesPool, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true);
         manager.setMaxInactiveInterval(2);
+        manager.init();
         //manager.start();
         //mevicter.stop(); // we'll run it by hand...
         //devicter.stop();
