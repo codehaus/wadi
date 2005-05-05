@@ -115,7 +115,7 @@ public class TestCluster extends TestCase {
         protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());        protected final Manager _manager;
         
         public MyNode(ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
-            _bottom=new SharedJDBCContextualiser(_dummyContextualiser, _collapser, ds, table);
+            _bottom=new SharedJDBCContextualiser(_dummyContextualiser, _collapser, true, ds, table);
             _cluster=(Cluster)factory.createCluster(clusterName);
             _cluster.addClusterListener(new MyClusterListener());
             _dispatcher=new MessageDispatcher(_cluster);

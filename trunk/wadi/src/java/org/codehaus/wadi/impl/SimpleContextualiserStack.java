@@ -114,7 +114,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _databaseDataSource=dataSource;
         _databaseTable="WADI";
         SharedJDBCMotable.init(_databaseDataSource, _databaseTable);
-        _database=new SharedJDBCContextualiser(_dummy, _collapser, _databaseDataSource, _databaseTable);
+        _database=new SharedJDBCContextualiser(_dummy, _collapser, true, _databaseDataSource, _databaseTable);
         _connectionFactory=Utils.getConnectionFactory();
         _clusterFactory=new CustomClusterFactory(_connectionFactory);
         _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
@@ -145,7 +145,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         // TODO - consider eviction on disc, indexing by ttl would be efficient enough...
         _discEvicter=new NeverEvicter(20, true); // sessions never pass below this point, unless the node is shutdown
         _discMap=new ConcurrentHashMap();
-        _disc=new ExclusiveDiscContextualiser(_stateless, _collapser, _discEvicter, _discMap, _streamer, _discDirectory, true);
+        _disc=new ExclusiveDiscContextualiser(_stateless, _collapser, true, _discEvicter, _discMap, _streamer, _discDirectory);
 
 
         _memoryPool=pool;
