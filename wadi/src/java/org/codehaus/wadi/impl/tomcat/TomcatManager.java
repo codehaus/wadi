@@ -25,9 +25,7 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionContext;
-import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionContext; // deprecated
 import javax.servlet.http.HttpSessionListener;
 
 import org.apache.catalina.Container;
@@ -60,7 +58,40 @@ import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 
 public class TomcatManager extends DistributableManager implements Manager, Lifecycle {
 
-    //(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad) {
+    protected static Object springLoad(String id) {
+        return null;
+    }
+    
+    public TomcatManager() {
+        this(
+                (SessionPool)springLoad("SessionPool"),
+                (AttributesPool)springLoad("AttributesPool"),
+                (ValuePool)springLoad("ValuePool"),
+                (SessionWrapperFactory)springLoad("SessionWrapperFactory"),
+                (SessionIdFactory)springLoad("SessionIdFactory"), 
+                (Contextualiser)springLoad("Contextualiser"),
+                (Map)springLoad("SessionMap"),
+                (Router)springLoad("Router"),
+                (Streamer)springLoad("Streamer"),
+                ((Boolean)springLoad("AccessOnLoad")).booleanValue()
+        );
+    }
+    
+    public TomcatManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad) {
+        super(
+                sessionPool,
+                attributesPool,
+                valuePool,
+                sessionWrapperFactory,
+                sessionIdFactory,
+                contextualiser,
+                sessionMap,
+                router,
+                streamer,
+                accessOnLoad
+                );        
+    }
+    
     public TomcatManager(Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad) {
         super(
                 new SimpleSessionPool(new TomcatSessionFactory()),
@@ -74,7 +105,6 @@ public class TomcatManager extends DistributableManager implements Manager, Life
                 streamer,
                 accessOnLoad
                 );
-        // TODO Auto-generated constructor stub
     }
 
     // org.apache.catalina.Lifecycle

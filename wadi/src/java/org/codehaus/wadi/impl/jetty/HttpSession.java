@@ -32,13 +32,14 @@ public class HttpSession extends SessionWrapper implements SessionManager.Sessio
     HttpSession(Session session) {super(session);}
     
     public boolean isValid() {
-        // NYI
-        return false;
+        return _session.getId()!=null;
     }
     
     public void access() {
-        // TODO - this will do it - but not sure that we want to ?
-        _session.setLastAccessedTime(System.currentTimeMillis());
+        // used by Jetty to update a Session's lastAccessedTime on each request.
+        // we want to do this ourselves.
+        
+        // ignore
     }
 
 }
