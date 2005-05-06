@@ -99,7 +99,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 	      Utils.mote(emoter, immoter, emotable, id);
         }
         RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
-        if (_log.isInfoEnabled()) _log.info("distributed sessions: "+s);
+        if (_log.isInfoEnabled()) _log.info("evacuated sessions to "+immoter.getInfo()+": "+s);
     }
 
     public void init(ContextualiserConfig config) {
