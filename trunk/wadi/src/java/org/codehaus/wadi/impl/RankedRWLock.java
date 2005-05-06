@@ -20,23 +20,23 @@ package org.codehaus.wadi.impl;
 
 /**
  * A ReadWriteLock with prioritisable writer threads. The set of priority ranks is tailored
- * to WADI. 
+ * to WADI.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 
 public class RankedRWLock extends org.codehaus.wadi.impl.RWLock {
-    
+
     public final static int INVALIDATION_PRIORITY=5; // explicit invalidation by user
-    public final static int EMMIGRATION_PRIORITY=4; // session is required on another node
+    public final static int EMIGRATION_PRIORITY=4; // session is required on another node
     public final static int EVICTION_PRIORITY=3; // session is being evicted (implicit timeout)
     public final static int IMMIGRATION_PRIORITY=2; // TODO - do we need this ?
     public final static int CREATION_PRIORITY=1; // TODO - do we need this ?
     public final static int NO_PRIORITY=0; // used to remove any of the above from a thread...
-    
+
     protected final static int MAX_PRIORITY=INVALIDATION_PRIORITY;
-    
+
     public RankedRWLock() {
         super(MAX_PRIORITY);
     }
