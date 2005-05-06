@@ -55,7 +55,7 @@ class DummyStandardSessionConfig implements SessionConfig {
     
     public ServletContext getServletContext() {return null;}
     
-    public void destroySession(Session session) {_config.expire(session);}
+    public void destroy(Session session) {_config.expire(session);}
     
     protected final SessionWrapperFactory _sessionWrapperfactory=new JettySessionWrapperFactory();
     public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperfactory;}

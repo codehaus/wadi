@@ -17,6 +17,8 @@
 
 package org.codehaus.wadi.old.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SessionIdFactory;
 
 /**
@@ -28,9 +30,19 @@ import org.codehaus.wadi.SessionIdFactory;
 public class DumbIdGenerator
     implements SessionIdFactory
   {
+    protected final Log _log = LogFactory.getLog(getClass());
+    
     protected int _tmpHack=0;
     public synchronized Object create(){return System.currentTimeMillis()+"."+_tmpHack++;}
 
+    public int getSessionIdLength() {
+        return -1; // variable :-)
+    }
+    
+    public void setSessionIdLength(int l) {
+        _log.warn("session id length is not a writeable attribute - ignoring new setting: "+l);
+    }
+    
     // this could be moved into a SeparatingByChar strategy
 
 //     public String

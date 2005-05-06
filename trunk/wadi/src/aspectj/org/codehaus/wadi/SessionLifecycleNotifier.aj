@@ -27,9 +27,9 @@ import org.codehaus.wadi.impl.Manager;
 
 public aspect SessionLifecycleNotifier {
     
-    pointcut createSession(Manager manager) : execution(Session Manager+.createSession()) && target(manager);
+    pointcut create(Manager manager) : execution(Session Manager+.create()) && target(manager);
     
-    Session around(Manager manager) : createSession(manager) {
+    Session around(Manager manager) : create(manager) {
         Session session=(Session)proceed(manager);
         List l=manager.getSessionListeners();
         int s=l.size();
@@ -41,9 +41,9 @@ public aspect SessionLifecycleNotifier {
         return session;
     }
     
-    pointcut destroySession(Manager manager, Session session) : execution(void Manager+.destroySession(Session)) && args(session) && target(manager);
+    pointcut destroy(Manager manager, Session session) : execution(void Manager+.destroy(Session)) && args(session) && target(manager);
     
-    void around(Manager manager, Session session) : destroySession(manager, session) {
+    void around(Manager manager, Session session) : destroy(manager, session) {
         proceed(manager, session);
         List l=manager.getSessionListeners();
         int s=l.size();

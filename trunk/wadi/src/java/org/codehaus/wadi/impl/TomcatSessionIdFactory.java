@@ -107,13 +107,23 @@ import java.util.Random;
  */
 public class TomcatSessionIdFactory
   implements SessionIdFactory
-{
-  
-  public Object create() {
-      String id=generateSessionId();
-      if (log.isTraceEnabled()) log.trace("generated: "+id);
-      return id;
-      }
+  {
+    protected final Log _log = LogFactory.getLog(getClass());
+    
+    public Object create() {
+        String id=generateSessionId();
+        if (log.isTraceEnabled()) log.trace("generated: "+id);
+        return id;
+    }
+    
+    public int getSessionIdLength() {
+        return 32;
+    }
+    
+    public void setSessionIdLength(int l) {
+        if (l!=getSessionIdLength())
+            _log.warn("session id length is not a writeable attribute - ignoring new setting: "+l);
+    }
 
 //   // we should be able to better than this - can't we work out the
 //   // size of the ID ?

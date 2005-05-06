@@ -25,7 +25,6 @@ public aspect AttributeBindingNotifier {
     
     Object around(Session session, String name, Object newValue) : setAttribute(session, name, newValue) {
         Object oldValue=proceed(session, name, newValue);
-        // having to pass the value in the event is really stupid. The target of the call IS the same object - it just means more allocation...
         if (null!=oldValue && oldValue instanceof HttpSessionBindingListener)
             ((HttpSessionBindingListener)oldValue).valueUnbound(new HttpSessionBindingEvent(session.getWrapper(), name, oldValue));
         if (newValue instanceof HttpSessionBindingListener)
