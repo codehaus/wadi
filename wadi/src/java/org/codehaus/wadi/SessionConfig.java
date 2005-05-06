@@ -29,7 +29,7 @@ public interface SessionConfig {
     List getAttributeListeners();
     ServletContext getServletContext();
     
-    void destroySession(Session session);
+    void destroy(Session session);
     SessionWrapperFactory getSessionWrapperFactory();
     SessionIdFactory getSessionIdFactory();
     

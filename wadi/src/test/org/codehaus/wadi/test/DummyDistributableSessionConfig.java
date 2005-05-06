@@ -67,7 +67,7 @@ public class DummyDistributableSessionConfig implements DistributableSessionConf
         throw new UnsupportedOperationException();
     }
 
-    public void destroySession(Session session) {
+    public void destroy(Session session) {
         throw new UnsupportedOperationException();
     }
     

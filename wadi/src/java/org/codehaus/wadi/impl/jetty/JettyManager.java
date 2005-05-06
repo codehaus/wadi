@@ -55,7 +55,7 @@ public class JettyManager extends org.codehaus.wadi.impl.DistributableManager im
     }
 
     public HttpSession newHttpSession(HttpServletRequest request) {
-        return createSession().getWrapper();
+        return create().getWrapper();
     }
 
     public void start() throws Exception {

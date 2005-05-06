@@ -106,7 +106,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         _sessionPool.destroy();
     }
     
-    public Session createSession() {
+    public Session create() {
         Session session=_sessionPool.take();
         long time=System.currentTimeMillis();
         session.setCreationTime(time);
@@ -120,7 +120,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         return session;
     }
 
-    public void destroySession(Session session) {
+    public void destroy(Session session) {
         for (Iterator i=new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) // ALLOC ?
             session.removeAttribute((String)i.next()); // TODO - very inefficient
         // _contextualiser.getEvicter().remove(session);
@@ -224,7 +224,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_contextualiser.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
 
     public void expire(Motable motable) {
-        destroySession((Session)motable);
+        destroy((Session)motable);
     }
 
     public Immoter getEvictionImmoter() {

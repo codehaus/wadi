@@ -470,7 +470,7 @@ public class TestContextualiser extends TestCase {
         MemoryContextualiser memory=new MemoryContextualiser(_dummyContextualiser, memoryEvicter, m, _streamer, _standardContextPool, _requestPool);
         Manager manager=new Manager(_standardSessionPool, _standardAttributesPool, _standardValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, _accessOnLoad);
         manager.init();
-        Session session=manager.createSession();
+        Session session=manager.create();
         session.setMaxInactiveInterval(1);
         assertTrue(m.size()==1); // in memory
         memoryEvicter.evict();
@@ -491,7 +491,7 @@ public class TestContextualiser extends TestCase {
         Manager manager=new DistributableManager(_distributableSessionPool, _distributableAttributesPool, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, _streamer, _accessOnLoad);
         manager.init();
 
-        Session session=manager.createSession();
+        Session session=manager.create();
         session.setMaxInactiveInterval(2);// times out 2 seconds from now...
 
         assertTrue(m.size()==1); // in memory
@@ -527,7 +527,7 @@ public class TestContextualiser extends TestCase {
         Manager manager=new DistributableManager(_distributableSessionPool, _distributableAttributesPool, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, _streamer, _accessOnLoad);
         manager.init();
 
-        Session session=manager.createSession();
+        Session session=manager.create();
         String id=session.getId();
         session.setMaxInactiveInterval(2);// times out 2 seconds from now...
 

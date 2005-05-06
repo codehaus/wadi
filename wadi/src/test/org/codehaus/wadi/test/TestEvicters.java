@@ -137,7 +137,7 @@ public class TestEvicters extends TestCase {
         //mevicter.stop(); // we'll run it by hand...
         //devicter.stop();
 
-        manager.createSession();
+        manager.create();
         assertTrue(mmap.size()==1);
         assertTrue(dmap.size()==0);
         Thread.sleep(1100);

@@ -14,21 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package org.codehaus.wadi.impl.tomcat;
 
-package org.codehaus.wadi;
+import org.codehaus.wadi.Session;
+import org.codehaus.wadi.SessionWrapperFactory;
 
-/**
- * Abstract out the API for session id generation
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
+public class TomcatSessionWrapperFactory implements SessionWrapperFactory {
 
-public interface SessionIdFactory {
-    
-    Object create();
-    
-    int getSessionIdLength();
-    void setSessionIdLength(int l);    
-    
+    public javax.servlet.http.HttpSession create(Session session) {return new HttpSession(session);}
+
 }
