@@ -196,7 +196,7 @@ public class ImmigrateRelocater implements SessionRelocater {
                 // TODO - the peekTimeout should be specified by the remote node...
                 Immoter promoter=new ImmigrationImmoter(settingsInOut);
 
-                RankedRWLock.setPriority(RankedRWLock.EMMIGRATION_PRIORITY);
+                RankedRWLock.setPriority(RankedRWLock.EMIGRATION_PRIORITY);
 		boolean found=_top.contextualise(null,null,null,id, promoter, motionLock, true);
 		if (found)
 		  acquired=false; // someone else has released the promotion lock...
