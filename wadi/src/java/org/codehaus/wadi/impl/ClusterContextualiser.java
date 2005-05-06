@@ -159,7 +159,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 
     protected void createEmigrationQueue() throws JMSException {
         _log.trace("creating emigration queue");
-        _emigrationQueue=_cluster.createQueue("EMIGRATION"); // TODO - better queue name ?
+        _emigrationQueue=_cluster.createQueue("EMIGRATION-"+System.currentTimeMillis()); // TODO - better queue name ?
         MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
         settings.to=_dispatcher.getCluster().getDestination();
         _dispatcher.sendMessage(new EmigrationStartedNotification(_emigrationQueue), settings);
