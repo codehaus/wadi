@@ -58,67 +58,23 @@ import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 
 public class TomcatManager extends DistributableManager implements Manager, Lifecycle {
 
-    protected static Object springLoad(String id) {
-        return null;
-    }
-    
-    public TomcatManager() {
-        this(
-                (SessionPool)springLoad("SessionPool"),
-                (AttributesPool)springLoad("AttributesPool"),
-                (ValuePool)springLoad("ValuePool"),
-                (SessionWrapperFactory)springLoad("SessionWrapperFactory"),
-                (SessionIdFactory)springLoad("SessionIdFactory"), 
-                (Contextualiser)springLoad("Contextualiser"),
-                (Map)springLoad("SessionMap"),
-                (Router)springLoad("Router"),
-                (Streamer)springLoad("Streamer"),
-                ((Boolean)springLoad("AccessOnLoad")).booleanValue()
-        );
-    }
-    
     public TomcatManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad) {
-        super(
-                sessionPool,
-                attributesPool,
-                valuePool,
-                sessionWrapperFactory,
-                sessionIdFactory,
-                contextualiser,
-                sessionMap,
-                router,
-                streamer,
-                accessOnLoad
-                );        
-    }
-    
-    public TomcatManager(Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad) {
-        super(
-                new SimpleSessionPool(new TomcatSessionFactory()),
-                new SimpleAttributesPool(new DistributableAttributesFactory()),
-                new SimpleValuePool(new DistributableValueFactory()),
-                new TomcatSessionWrapperFactory(),
-                new TomcatSessionIdFactory(),
-                contextualiser,
-                sessionMap,
-                router,
-                streamer,
-                accessOnLoad
-                );
+        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad);
     }
 
     // org.apache.catalina.Lifecycle
-    
+
     public void start() throws LifecycleException {
+      init();
         try {
             super.start();
-            
+
             if (_container==null)
                 _log.warn("container not set - fn-ality will be limited");
             else
             {
                 Context context=((Context)_container);
-                
+
                 // install filter
                 String filterName="WadiFilter";
                 FilterDef fd=new FilterDef();
@@ -129,18 +85,18 @@ public class TomcatManager extends DistributableManager implements Manager, Life
                 fm.setFilterName(filterName);
                 fm.setURLPattern("/*");
                 context.addFilterMap(fm);
-                
+
 //              // is this a distributable webapp ?
 //              boolean distributable=context.getDistributable();
 //              if (distributable && !_distributable)
 //              setDistributable(distributable);
-            }            
-            
+            }
+
         } catch (Exception e) {
             throw new LifecycleException(e);
         }
     }
-    
+
     public void stop() throws LifecycleException {
         try {
             super.stop();
@@ -148,7 +104,7 @@ public class TomcatManager extends DistributableManager implements Manager, Life
             throw new LifecycleException(e);
         }
     }
-    
+
     // actual notifications are done by aspects...
     protected LifecycleSupport _lifecycleListeners=new LifecycleSupport(this);
 
@@ -165,7 +121,7 @@ public class TomcatManager extends DistributableManager implements Manager, Life
     }
 
     // org.apache.catalina.Manager
-    
+
     public String getInfo() {
         return "<code>&lt;"+getClass().getName()+"&gt;/&lt;1.0b&gt;</code>";
     }
@@ -208,12 +164,12 @@ public class TomcatManager extends DistributableManager implements Manager, Life
 
     public void setDistributable(boolean distributable) {
         // TODO Auto-generated method stub
-    
+
     }
 
     protected Container _container;
     protected ServletContext _servletContext; // TODO - push back
-    
+
     public Container getContainer() {
         return _container;
     }
@@ -221,10 +177,11 @@ public class TomcatManager extends DistributableManager implements Manager, Life
     public void setContainer(Container container) {
         _container=container;
         _servletContext=((Context)_container).getServletContext();
+	_servletContext.setAttribute(org.codehaus.wadi.impl.Manager.class.getName(), this);
     }
 
     protected DefaultContext _defaultContext;
-    
+
     public DefaultContext getDefaultContext() {
         return _defaultContext;
     }
@@ -242,7 +199,7 @@ public class TomcatManager extends DistributableManager implements Manager, Life
     }
 
     protected int _sessionCounter; // push back into shared code - TODO
-    
+
     public int getSessionCounter() {
         return _sessionCounter;
     }
@@ -252,7 +209,7 @@ public class TomcatManager extends DistributableManager implements Manager, Life
     }
 
     protected int _maxActive; // exactly what does this mean ? - probably only valid for some Evicter types...
-    
+
     public int getMaxActive() {
         return _maxActive;
     }
@@ -267,7 +224,7 @@ public class TomcatManager extends DistributableManager implements Manager, Life
     }
 
     protected int _expiredSessions; // TODO - wire up
-    
+
     public int getExpiredSessions() {
         return _expiredSessions;
     }
@@ -277,7 +234,7 @@ public class TomcatManager extends DistributableManager implements Manager, Life
     }
 
     protected int _rejectedSessions; // TODO - wire up
-    
+
     public int getRejectedSessions() {
         return _rejectedSessions;
     }
@@ -288,7 +245,7 @@ public class TomcatManager extends DistributableManager implements Manager, Life
 
     // actual notifications are done by aspects...
     protected PropertyChangeSupport _propertyChangeListeners=new PropertyChangeSupport(this);
- 
+
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         _propertyChangeListeners.addPropertyChangeListener(listener);
     }
@@ -296,25 +253,25 @@ public class TomcatManager extends DistributableManager implements Manager, Life
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         _propertyChangeListeners.removePropertyChangeListener(listener);
     }
-    
+
     // org.codehaus.impl.Manager
-    
+
     public void
     setFilter(Filter filter)
     {
         super.setFilter(filter);
-        
+
         // this is a hack - but the last place where we get a chance to do
         // something during TC's startup routine - we have to wait until
         // this point, because TC does not instantiate these listeners
         // until after starting the session manager...
         initialiseListeners();
     }
-    
+
     protected interface Test { public boolean test(Object o); }
     protected static final Test _sessionListenerTest=new Test(){ public boolean test(Object o){return o instanceof HttpSessionListener;} };
     protected static final Test _attributeListenerTest=new Test(){ public boolean test(Object o){return o instanceof HttpSessionAttributeListener;} };
-    
+
     protected void
     copySubset(Object[] src, List tgt, Test test)
     {
@@ -326,7 +283,7 @@ public class TomcatManager extends DistributableManager implements Manager, Life
                     tgt.add(tmp);
             }
     }
-    
+
     protected void
     initialiseListeners()
     {
@@ -337,25 +294,25 @@ public class TomcatManager extends DistributableManager implements Manager, Life
             copySubset(context.getApplicationEventListeners(),     _attributeListeners, _attributeListenerTest);
         }
     }
-    
+
     //----------------------------------------
-    
+
     // These should be Abstract in our superclass...
-    
+
     // TODO - these need to be hooked up...
     public String getSessionCookieName()  {return "JSESSIONID";}
     public String getSessionCookiePath(HttpServletRequest req){return req.getContextPath();}
     public String getSessionCookieDomain(){return null;}
-    
+
     public String getSessionUrlParamName(){return "jsessionid";};
-    
+
     public int getHttpPort(){return Integer.parseInt(System.getProperty("http.port"));} // TODO - temporary hack...
-    
+
     public HttpSessionContext getSessionContext() {return null;}
-    
-    
+
+
     // may not need these...
-    
+
     // TODO - These are here so that Container and Session Notification
     // aspects can get a grip on them. If I write the aspects on
     // shared/Manager it pulls all the tomcat stuff into the shared
@@ -365,7 +322,7 @@ public class TomcatManager extends DistributableManager implements Manager, Life
 //    public void notifySessionAttributeAdded(HttpSessionAttributeListener listener, HttpSessionBindingEvent event){super.notifySessionAttributeAdded(listener, event);}
 //    public void notifySessionAttributeRemoved(HttpSessionAttributeListener listener, HttpSessionBindingEvent event){super.notifySessionAttributeRemoved(listener, event);}
 //    public void notifySessionAttributeReplaced(HttpSessionAttributeListener listener, HttpSessionBindingEvent event){super.notifySessionAttributeReplaced(listener, event);}
-    
+
     //----------------------------------------------------------
-    
+
 }

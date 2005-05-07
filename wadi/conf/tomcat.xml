@@ -80,7 +80,7 @@
 	>
 
 	<Context path="/wadi" docBase="${wadi.home}">
-	  <Manager className="org.codehaus.wadi.tomcat.Manager"/>
+	  <Manager className="org.codehaus.wadi.impl.tomcat.TomcatManagerLoader"/>
 	</Context>
 
 <!--

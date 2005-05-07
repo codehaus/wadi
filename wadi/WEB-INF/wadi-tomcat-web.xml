@@ -1,0 +1,124 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+  <bean
+    id="SessionFactory"
+    class="org.codehaus.wadi.impl.tomcat.TomcatSessionFactory"
+    >
+  </bean>
+
+  <bean
+    id="SessionPool"
+    class="org.codehaus.wadi.impl.SimpleSessionPool"
+    >
+    <constructor-arg><ref bean="SessionFactory"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="AttributesFactory"
+    class="org.codehaus.wadi.impl.DistributableAttributesFactory"
+    >
+  </bean>
+
+  <bean
+    id="AttributesPool"
+    class="org.codehaus.wadi.impl.SimpleAttributesPool"
+    >
+    <constructor-arg><ref bean="AttributesFactory"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="ValueFactory"
+    class="org.codehaus.wadi.impl.DistributableValueFactory"
+    >
+  </bean>
+
+  <bean
+    id="ValuePool"
+    class="org.codehaus.wadi.impl.SimpleValuePool"
+    >
+    <constructor-arg><ref bean="ValueFactory"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="SessionWrapperFactory"
+    class="org.codehaus.wadi.impl.tomcat.TomcatSessionWrapperFactory"
+    >
+  </bean>
+
+  <bean
+    id="SessionIdFactory"
+    class="org.codehaus.wadi.impl.TomcatSessionIdFactory"
+    >
+  </bean>
+
+  <bean
+    id="Streamer"
+    class="org.codehaus.wadi.impl.SimpleStreamer"
+    >
+  </bean>
+
+	<!-- the Contextualiser stack...(shorthand for now) -->
+
+  <bean
+    id="SessionMap"
+    class="EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap"
+    >
+  </bean>
+
+  <bean
+    id="DataSource"
+    class="org.axiondb.jdbc.AxionDataSource"
+    >
+     <constructor-arg><value>jdbc:axiondb:testdb</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="ContextPool"
+    class="org.codehaus.wadi.impl.SessionToContextPoolAdapter"
+    >
+     <constructor-arg><ref bean="SessionPool"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="Contextualiser"
+    class="org.codehaus.wadi.impl.SimpleContextualiserStack"
+    >
+       <constructor-arg><ref bean="SessionMap"/></constructor-arg>
+       <constructor-arg><ref bean="ContextPool"/></constructor-arg> <!-- enclosed SessionPool will be init()-ed by Manager -->
+       <constructor-arg><ref bean="DataSource"/></constructor-arg>
+       <constructor-arg type="int"><value>${http.port}</value></constructor-arg>
+  </bean>
+
+	<!-- the Router (load-balancer integration) -->
+
+  <bean
+    id="Router"
+    class="org.codehaus.wadi.impl.JkRouter"
+    >
+       <constructor-arg><value>${wadi.colour}</value></constructor-arg>
+  </bean>
+
+
+	<!-- and finally - the SessionManager itself -->
+
+  <bean
+    id="SessionManager"
+    class="org.codehaus.wadi.impl.tomcat.TomcatManager"
+    >
+    <constructor-arg><ref bean="SessionPool"/></constructor-arg>
+    <constructor-arg><ref bean="AttributesPool"/></constructor-arg>
+    <constructor-arg><ref bean="ValuePool"/></constructor-arg>
+    <constructor-arg><ref bean="SessionWrapperFactory"/></constructor-arg>
+    <constructor-arg><ref bean="SessionIdFactory"/></constructor-arg>
+    <constructor-arg><ref bean="Contextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="SessionMap"/></constructor-arg>
+    <constructor-arg><ref bean="Streamer"/></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg><ref bean="Router"/></constructor-arg>
+  </bean>
+
+</beans>

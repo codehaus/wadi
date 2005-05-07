@@ -30,20 +30,27 @@ import org.codehaus.wadi.SpringManagerFactory;
 
 public class TomcatManagerLoader implements Manager, Lifecycle {
 
-  protected final TomcatManager _peer;
+  protected TomcatManager _peer;
 
   public TomcatManagerLoader() throws Exception {
-      super();
-      _peer=(TomcatManager)SpringManagerFactory.create("WEB-INF/wadi-tomcat-web.xml", "SessionManager");
+    super();
+    try {
+      _peer=(TomcatManager)SpringManagerFactory.create("/home/jules/cvs/wadi/WEB-INF/wadi-tomcat-web.xml", "SessionManager");
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
+  public void                start() throws LifecycleException                             {_peer.start();}
+  public void                stop() throws LifecycleException                              {_peer.stop();}
+
+  public String              getInfo()                                                     {return _peer.getInfo();}
   public Container           getContainer()                                                {return _peer.getContainer();}
   public void                setContainer(Container container)                             {_peer.setContainer(container);}
   public DefaultContext      getDefaultContext()                                           {return _peer.getDefaultContext();}
   public void                setDefaultContext(DefaultContext defaultContext)              {_peer.setDefaultContext(defaultContext);}
   public boolean             getDistributable()                                            {return _peer.getDistributable();}
   public void                setDistributable(boolean distributable)                       {_peer.setDistributable(distributable);}
-  public String              getInfo()                                                     {return _peer.getInfo();}
   public int                 getMaxInactiveInterval()                                      {return _peer.getMaxInactiveInterval();}
   public void                setMaxInactiveInterval(int interval)                          {_peer.setMaxInactiveInterval(interval);}
   public int                 getSessionIdLength()                                          {return _peer.getSessionIdLength();}
@@ -71,7 +78,5 @@ public class TomcatManagerLoader implements Manager, Lifecycle {
   public void                addLifecycleListener(LifecycleListener listener)              {_peer.addLifecycleListener(listener);}
   public LifecycleListener[] findLifecycleListeners()                                      {return _peer.findLifecycleListeners();}
   public void                removeLifecycleListener(LifecycleListener listener)           {_peer.removeLifecycleListener(listener);}
-  public void                start() throws LifecycleException                             {_peer.start();}
-  public void                stop() throws LifecycleException                              {_peer.stop();}
 
 }
