@@ -33,7 +33,7 @@ public class DumbIdGenerator
     protected final Log _log = LogFactory.getLog(getClass());
     
     protected int _tmpHack=0;
-    public synchronized Object create(){return System.currentTimeMillis()+"."+_tmpHack++;}
+    public synchronized String create(){return System.currentTimeMillis()+"."+_tmpHack++;}
 
     public int getSessionIdLength() {
         return -1; // variable :-)

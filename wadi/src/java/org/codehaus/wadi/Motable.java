@@ -23,6 +23,9 @@ package org.codehaus.wadi;
  * @version $Revision$
  */
 public interface Motable extends Evictable {
+    
+    void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id);
+
 	void copy(Motable motable) throws Exception;
 	void tidy();
 

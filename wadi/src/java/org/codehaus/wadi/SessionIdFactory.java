@@ -26,7 +26,7 @@ package org.codehaus.wadi;
 
 public interface SessionIdFactory {
     
-    Object create();
+    String create();
     
     int getSessionIdLength();
     void setSessionIdLength(int l);    

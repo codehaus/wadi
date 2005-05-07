@@ -110,7 +110,7 @@ public class TomcatSessionIdFactory
   {
     protected final Log _log = LogFactory.getLog(getClass());
     
-    public Object create() {
+    public String create() {
         String id=generateSessionId();
         if (log.isTraceEnabled()) log.trace("generated: "+id);
         return id;
