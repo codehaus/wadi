@@ -19,6 +19,7 @@ package org.codehaus.wadi.impl;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Serializable;
 
 import org.codehaus.wadi.Evictable;
 
@@ -29,7 +30,7 @@ import org.codehaus.wadi.Evictable;
  * @version $Revision$
  */
 
-public abstract class SimpleEvictable implements Evictable {
+public abstract class SimpleEvictable implements Evictable, Serializable {
 
 	public SimpleEvictable() {
 		_creationTime=System.currentTimeMillis();

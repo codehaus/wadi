@@ -26,7 +26,7 @@ import java.io.Serializable;
  */
 
 public class SimpleMotable extends AbstractMotable implements Serializable {
-    // TODO - why does this have to be Serializable ?
+
 	protected byte[] _bytes;
 	public byte[] getBytes() {return _bytes;}
 	public void setBytes(byte[] bytes){_bytes=bytes;}
