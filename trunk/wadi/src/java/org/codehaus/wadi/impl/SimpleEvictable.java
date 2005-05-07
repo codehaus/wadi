@@ -32,11 +32,6 @@ import org.codehaus.wadi.Evictable;
 
 public abstract class SimpleEvictable implements Evictable, Serializable {
 
-	public SimpleEvictable() {
-		_creationTime=System.currentTimeMillis();
-		_lastAccessedTime=_creationTime;
-	}
-
 	protected long _creationTime;
 	public long getCreationTime() {return _creationTime;}
 	public void setCreationTime(long creationTime){_creationTime=creationTime;}
@@ -58,7 +53,7 @@ public abstract class SimpleEvictable implements Evictable, Serializable {
 	public boolean getTimedOut() {return getTimedOut(System.currentTimeMillis());}
 	public boolean getTimedOut(long time) {return getTimeToLive(time)<=0;}
 	
-	protected boolean _invalidated;
+	protected boolean _invalidated; // TODO - need to lose this...
 	public boolean getInvalidated(){return _invalidated;}
 	public void setInvalidated(boolean invalidated){_invalidated=invalidated;}
 	
