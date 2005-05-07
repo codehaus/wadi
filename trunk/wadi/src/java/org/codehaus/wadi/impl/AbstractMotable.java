@@ -19,6 +19,7 @@ package org.codehaus.wadi.impl;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Serializable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,7 +32,7 @@ import org.codehaus.wadi.Motable;
  * @version $Revision$
  */
 
-public abstract class AbstractMotable extends SimpleEvictable implements Motable {
+public abstract class AbstractMotable extends SimpleEvictable implements Motable, Serializable {
     protected static Log _log = LogFactory.getLog(AbstractMotable.class);
 
 	public void copy(Motable motable) throws Exception {
