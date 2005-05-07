@@ -129,7 +129,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 
     public Immoter getDemoter(String id, Motable motable) {
         long time=System.currentTimeMillis();
-        if (getEvicter().test(motable, motable.getTimeToLive(time), time))
+        if (getEvicter().test(motable, time, motable.getTimeToLive(time)))
             return _next.getDemoter(id, motable);
         else
             return getImmoter();
