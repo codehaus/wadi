@@ -219,7 +219,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 		    settingsInOut.from=_cluster.getLocalNode().getDestination();
 		    try {
 		        immotable.copy(emotable);
-		        EmigrationRequest er=new EmigrationRequest(id, immotable);
+		        EmigrationRequest er=new EmigrationRequest(immotable);
 		        EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emigrationRvMap, er, settingsInOut, _ackTimeout);
 
 		        if (ea==null) {
@@ -307,16 +307,16 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 	}
 
 	public void onMessage(ObjectMessage om, EmigrationRequest er) {
-        String id=er.getId();
+        Motable emotable=er.getMotable();
+        String id=emotable.getId();
         if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+id);
-        Sync lock=_locker.getLock(id, null);
+        Sync lock=_locker.getLock(id, emotable);
         boolean acquired=false;
         try {
             Utils.acquireUninterrupted(lock);
             acquired=true;
 
             Emoter emoter=new ImmigrationEmoter(om, er);
-            Motable emotable=er.getMotable();
 
             if (!emotable.checkTimeframe(System.currentTimeMillis()))
                 if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getId());

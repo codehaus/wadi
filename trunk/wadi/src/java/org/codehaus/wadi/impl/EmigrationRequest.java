@@ -28,15 +28,13 @@ import org.codehaus.wadi.Motable;
  * @version $Revision$
  */
 public class EmigrationRequest implements Serializable {
-	protected String _id;
 	protected Motable _motable;
 
 	/**
 	 *
 	 */
-	public EmigrationRequest(String id, Motable motable) {
+	public EmigrationRequest(Motable motable) {
 		super();
-		_id=id;
 		_motable=motable;
 	}
 
@@ -44,6 +42,5 @@ public class EmigrationRequest implements Serializable {
 		// for use when demarshalling...
 	}
 
-	public String getId(){return _id;}
 	public Motable getMotable(){return _motable;}
 }
