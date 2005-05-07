@@ -21,6 +21,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -36,6 +37,7 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
+import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.util.LifecycleSupport;
@@ -74,6 +76,9 @@ public class TomcatManager extends DistributableManager implements Manager, Life
             else
             {
                 Context context=((Context)_container);
+
+		// install Valve
+		((StandardContext)context).addValve(new Valve(Pattern.compile("127\\.0\\.0\\.1|192\\.168\\.0\\.\\d{1,3}")));
 
                 // install filter
                 String filterName="WadiFilter";
