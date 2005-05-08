@@ -147,7 +147,7 @@ public class ImmigrateRelocater implements SessionRelocater {
 		}
 
 		public void commit(String id, Motable emotable) {
-			emotable.tidy(); // remove copy in store
+			emotable.destroy(); // remove copy in store
 
 			// TODO - move some of this to prepare()...
 			if (_log.isTraceEnabled()) _log.trace("sending immigration ack: "+_settingsInOut.correlationId);

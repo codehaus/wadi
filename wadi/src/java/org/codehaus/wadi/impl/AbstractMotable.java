@@ -33,7 +33,19 @@ import org.codehaus.wadi.Motable;
  */
 
 public abstract class AbstractMotable extends SimpleEvictable implements Motable, Serializable {
+ 
     protected static Log _log = LogFactory.getLog(AbstractMotable.class);
+
+    public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id) {
+        init(creationTime, lastAccessedTime, maxInactiveInterval);
+        _id=id;
+    }
+
+    public void destroy() {
+        super.destroy();
+        _id=null;
+        // should setBytes(null)... - TODO - although init() does not initialise them...
+    }
 
 	public void copy(Motable motable) throws Exception {
 		super.copy(motable); // Evictable fields
@@ -44,18 +56,6 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
 	protected String _id;
 	public String getId(){return _id;}
 	public void setId(String id){_id=id;}
-
-	public void tidy(){setInvalidated(true);}
-
-	public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id) {
-	    init(creationTime, lastAccessedTime, maxInactiveInterval, invalidated);
-	    _id=id;
-	}
-
-	public void destroy() {
-	    super.destroy();
-	    _id=null;
-	}
 
 	// N.B. implementation of Bytes field is left abstract...
 

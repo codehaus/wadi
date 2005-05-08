@@ -96,7 +96,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 
 	        if (motionLock!=null) motionLock.release();
 
-	        if (motable.getInvalidated()) {
+	        if (motable.getId()==null) {
 	            if (_log.isTraceEnabled()) _log.trace("context disappeared whilst we were waiting for lock: "+id);
 	        }
 
@@ -134,7 +134,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
                 return false;
             }
 
-            if (emotable.getInvalidated())
+            if (emotable.getId()==null)
                 return false; // we lost race to motable and it has gone...
 
             return super.prepare(id, emotable, immotable);

@@ -33,7 +33,7 @@ public abstract class AbstractChainedEmoter implements Emoter {
 	}
 
 	public void commit(String id, Motable emotable) {
-		emotable.tidy(); // remove copy in store
+		emotable.destroy(); // remove copy in store
 	}
 
 	public void rollback(String id, Motable emotable) {

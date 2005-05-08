@@ -18,6 +18,7 @@ package org.codehaus.wadi;
 
 /**
  * Lit. 'able to be moved' - an Object the can be [promoted and] demoted.
+ * An Evictable with an ID and a payload.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -25,13 +26,13 @@ package org.codehaus.wadi;
 public interface Motable extends Evictable {
     
     void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id);
-
+    void destroy();
 	void copy(Motable motable) throws Exception;
-	void tidy();
 
 	String getId();
 	void setId(String id);
 
+     // TODO - should byes[] include simply payload, or entire Motable - decide..
 	byte[] getBytes() throws Exception;
 	void setBytes(byte[] bytes) throws Exception;
 }

@@ -55,8 +55,8 @@ public class SharedJDBCMotable extends AbstractMotable {
 	public Connection getConnection(){return _connection;}
 	public void setConnection(Connection connection){_connection=connection;}
 
-	public void tidy() {
-	    super.tidy();
+	public void destroy() {
+	    super.destroy();
 	    remove(_connection, _table, this);
 	}
 
@@ -83,7 +83,7 @@ public class SharedJDBCMotable extends AbstractMotable {
                 motable.setMaxInactiveInterval(rs.getInt(i++));
                 motable.setBytes((byte[])rs.getObject(i++));
 
-                if (motable.getTimedOut()) {
+                if (motable.getTimedOut(time)) {
                     if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getId());
                     // we should expire it immediately, rather than promoting it...
                     // perhaps we could be even cleverer ?
