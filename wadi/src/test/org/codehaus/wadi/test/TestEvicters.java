@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Timer;
 
 
-import org.codehaus.wadi.AttributesPool;
+import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
@@ -40,7 +40,6 @@ import org.codehaus.wadi.impl.AbsoluteEvicter;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableManager;
-import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
@@ -51,15 +50,11 @@ import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
-import org.codehaus.wadi.impl.SimpleAttributesPool;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
-import org.codehaus.wadi.impl.StandardSession;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory;
-import org.codehaus.wadi.old.RoutingStrategy;
-import org.codehaus.wadi.old.impl.NoRoutingStrategy;
 
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -126,11 +121,11 @@ public class TestEvicters extends TestCase {
         HttpServletRequestWrapperPool requestPool=new DummyStatefulHttpServletRequestWrapperPool();
         AbstractExclusiveContextualiser memory=new MemoryContextualiser(disc, mevicter, mmap, streamer, contextPool, requestPool);
         // Manager
-        AttributesPool attributesPool=new SimpleAttributesPool(new DistributableAttributesFactory());
+        AttributesFactory attributesFactory=new DistributableAttributesFactory();
         ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
         SessionWrapperFactory wrapperFactory=new JettySessionWrapperFactory();
         SessionIdFactory idFactory=new TomcatSessionIdFactory();
-        DistributableManager manager=new DistributableManager(sessionPool, attributesPool, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true);
+        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true);
         manager.setMaxInactiveInterval(2);
         manager.init();
         //manager.start();

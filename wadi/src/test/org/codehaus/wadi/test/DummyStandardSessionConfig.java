@@ -21,7 +21,7 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 
-import org.codehaus.wadi.AttributesPool;
+import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.EvicterConfig;
 import org.codehaus.wadi.Router;
@@ -33,7 +33,6 @@ import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyRouter;
-import org.codehaus.wadi.impl.SimpleAttributesPool;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory;
@@ -46,8 +45,8 @@ class DummyStandardSessionConfig implements SessionConfig {
     protected final ValuePool _valuePool=new SimpleValuePool(new DistributableValueFactory());
     public ValuePool getValuePool() {return _valuePool;}
     
-    protected final AttributesPool _attributesPool=new SimpleAttributesPool(new DistributableAttributesFactory());
-    public AttributesPool getAttributesPool() {return _attributesPool;}
+    protected final AttributesFactory _attributesFactory=new DistributableAttributesFactory();
+    public AttributesFactory getAttributesFactory() {return _attributesFactory;}
     
     public List getSessionListeners() {return Collections.EMPTY_LIST;}
     
