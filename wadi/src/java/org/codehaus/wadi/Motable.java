@@ -25,12 +25,12 @@ package org.codehaus.wadi;
  */
 public interface Motable extends Evictable {
     
-    void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id);
+    void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String id);
     void destroy();
 	void copy(Motable motable) throws Exception;
 
 	String getId();
-	void setId(String id);
+	//void setId(String id);
 
      // TODO - should byes[] include simply payload, or entire Motable - decide..
 	byte[] getBytes() throws Exception;

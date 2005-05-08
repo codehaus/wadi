@@ -194,9 +194,7 @@ public class TestContextualiser extends TestCase {
             // place a "baz" item onto second local disc
             String id="baz";
             Motable emotable=_distributableSessionPool.take();
-            emotable.setId(id);
-            emotable.setCreationTime(3);
-            emotable.setMaxInactiveInterval(6);
+            emotable.init(3, 3, 6, id);
             Immoter immoter=disc2.getDemoter(id, emotable);
             Emoter emoter=new EtherEmoter();
             Utils.mote(emoter, immoter, emotable, id);
@@ -207,9 +205,7 @@ public class TestContextualiser extends TestCase {
             // place a "bar" item onto first local disc
             String id="bar";
             Motable emotable=_distributableSessionPool.take();
-            emotable.setId(id);
-            emotable.setCreationTime(2);
-            emotable.setMaxInactiveInterval(4);
+            emotable.init(2, 2, 4, id);
             Immoter immoter=disc1.getDemoter(id, emotable);
             Emoter emoter=new EtherEmoter();
             Utils.mote(emoter, immoter, emotable, id);
@@ -220,9 +216,7 @@ public class TestContextualiser extends TestCase {
             // place a "foo" item into memory
             String id="foo";
             Motable emotable=_distributableSessionPool.take();
-            emotable.setId(id);
-            emotable.setCreationTime(1);
-            emotable.setMaxInactiveInterval(2);
+            emotable.init(1, 1, 2, id);
             m.put(id, emotable);
             assertTrue(m.containsKey(id));
             assertTrue(m.size()==1);
@@ -269,9 +263,7 @@ public class TestContextualiser extends TestCase {
             // place a "foo" item into shared database
             String id="foo";
             Motable emotable=_distributableSessionPool.take();
-            emotable.setId(id);
-            emotable.setCreationTime(2);
-            emotable.setMaxInactiveInterval(4);
+            emotable.init(2, 2, 4, id);
             Immoter immoter=db.getDemoter(id, emotable);
             Emoter emoter=new EtherEmoter();
             Utils.mote(emoter, immoter, emotable, id);

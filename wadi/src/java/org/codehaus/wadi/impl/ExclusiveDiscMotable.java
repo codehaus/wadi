@@ -59,10 +59,11 @@ public class ExclusiveDiscMotable extends AbstractMotable {
 		ObjectInputStream ois=null;
 		try {
 			ois=new ObjectInputStream(new FileInputStream(file));
-			motable.setId((String)ois.readObject());
-			motable.setCreationTime(ois.readLong());
-			motable.setLastAccessedTime(ois.readLong());
-			motable.setMaxInactiveInterval(ois.readInt());
+			String id=(String)ois.readObject(); // should this be first ?
+			long creationTime=ois.readLong();
+			long lastAccessedTime=ois.readLong();
+			int maxInactiveInterval=ois.readInt();
+            motable.init(creationTime, lastAccessedTime, maxInactiveInterval, id);
 			motable.setBytes((byte[])ois.readObject());
 
 			if (!motable.checkTimeframe(System.currentTimeMillis()))
