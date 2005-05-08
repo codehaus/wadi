@@ -80,7 +80,7 @@ public class SharedJDBCMotable extends AbstractMotable {
                 motable.setBytes((byte[])rs.getObject(i++));
 
                 if (motable.getTimedOut(time)) {
-                    if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getId());
+                    if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getName());
                     // we should expire it immediately, rather than promoting it...
                     // perhaps we could be even cleverer ?
                 }
@@ -100,7 +100,7 @@ public class SharedJDBCMotable extends AbstractMotable {
     }
 
     protected static Motable load(Connection connection, String table, Motable motable) throws Exception {
-		String id=motable.getId();
+		String id=motable.getName();
 		Statement s=null;
 		try {
 			s=connection.createStatement();
@@ -131,7 +131,7 @@ public class SharedJDBCMotable extends AbstractMotable {
 	}
 
 	protected static void store(Connection connection, String table, Motable motable) throws Exception {
-		String id=motable.getId();
+		String id=motable.getName();
 		PreparedStatement ps=null;
 		try {
 			ps=connection.prepareStatement("INSERT INTO "+table+" (Id, CreationTime, LastAccessedTime, MaxInactiveInterval, Bytes) VALUES (?, ?, ?, ?, ?)");
@@ -153,7 +153,7 @@ public class SharedJDBCMotable extends AbstractMotable {
 	}
 
 	protected static void remove(Connection connection, String table, Motable motable) {
-	    String id=motable.getId();
+	    String id=motable.getName();
 	    Statement s=null;
 	    try {
 	        s=connection.createStatement();

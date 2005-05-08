@@ -148,7 +148,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
 	  int l=toExpire.length;
 	  for (int i=0; i<l; i++) {
 	    Motable motable=(Motable)toExpire[i]; // TODO - not happy about an Evicter knowing about Motables
-	    String id=motable.getId();
+	    String id=motable.getName();
 	    if (id!=null) {
 	      Sync sync=_config.getEvictionLock(id, motable);
 	      if (Utils.attemptUninterrupted(sync)) {
@@ -171,7 +171,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
             int l=toDemote.length;
             for (int i=0; i<l; i++) {
                 Motable motable=(Motable)toDemote[i]; // TODO - not happy about an Evicter knowing about Motables
-                String id=motable.getId();
+                String id=motable.getName();
                 Sync sync=_config.getEvictionLock(id, motable);
                 if (Utils.attemptUninterrupted(sync)) {
                     if (test(motable, time, motable.getTimeToLive(time))) { // IDEA - could have remembered ttl

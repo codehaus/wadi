@@ -24,6 +24,8 @@ import javax.servlet.http.HttpSessionEvent;
 
 public interface Session extends Context {
 
+    String getId();
+    
     HttpSession getWrapper();
 
     HttpSessionEvent getHttpSessionEvent();

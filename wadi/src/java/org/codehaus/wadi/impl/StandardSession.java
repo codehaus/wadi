@@ -48,10 +48,10 @@ public class StandardSession extends AbstractContext implements Session, Attribu
     protected final HttpSession _wrapper;
     protected final HttpSessionEvent _httpSessionEvent;
     
+    protected String _id; // like name, but possibly augmented with routing info...
+
     public StandardSession(SessionConfig config) {
         super();
-        //_maxInactiveInterval=config.getMaxInactiveInterval();
-        //_id=(String)config.getSessionIdFactory().take();
         _config=config;
         _attributes=_config.getAttributesPool().take(this);
         _wrapper=_config.getSessionWrapperFactory().create(this);
@@ -59,6 +59,12 @@ public class StandardSession extends AbstractContext implements Session, Attribu
         
         // TODO - resolve different APIs used by Factories and Pools...
         }
+    
+    public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name) {
+        super.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
+        _id=_config.getRouter().augment(_name);
+    }
+
     
     public void destroy() {
         super.destroy();
@@ -129,5 +135,7 @@ public class StandardSession extends AbstractContext implements Session, Attribu
     // is this correct ?
     public void setLastAccessedTime(long lastAccessedTime) {super.setLastAccessedTime(lastAccessedTime);}
     public void setMaxInactiveInterval(int maxInactiveInterval) {super.setMaxInactiveInterval(maxInactiveInterval);}
+    
+    public String getId() {return _id;}
     
 }

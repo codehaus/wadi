@@ -103,7 +103,7 @@ public class TestEvicters extends TestCase {
 
         protected int _expirations;
         public int getExpirations() {return _expirations;}
-        public void expire(Motable motable) {_expirations++; _map.remove(motable.getId());}
+        public void expire(Motable motable) {_expirations++; _map.remove(motable.getName());}
     }
 
     public void testExpiryFromStorage() throws Exception {

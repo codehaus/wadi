@@ -121,7 +121,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         for (Iterator i=new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) // ALLOC ?
             session.removeAttribute((String)i.next()); // TODO - very inefficient
         // _contextualiser.getEvicter().remove(session);
-        String id=session.getId();
+        String id=session.getName();
         _map.remove(id);
         // _sessionIdFactory.put(id); // we might reuse session ids ? - sounds like a BAD idea
         session.destroy();

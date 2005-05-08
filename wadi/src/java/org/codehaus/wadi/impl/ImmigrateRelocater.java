@@ -115,7 +115,7 @@ public class ImmigrateRelocater implements SessionRelocater {
         Motable emotable=response.getMotable();
 
         if (!emotable.checkTimeframe(System.currentTimeMillis()))
-            if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getId());
+            if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
 
         Emoter emoter=new ImmigrationEmoter(_locationMap, settingsInOut);
         Motable immotable=Utils.mote(emoter, immoter, emotable, id);
