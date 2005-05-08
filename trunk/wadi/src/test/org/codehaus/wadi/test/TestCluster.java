@@ -32,7 +32,7 @@ import org.activecluster.ClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
-import org.codehaus.wadi.AttributesPool;
+import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Cluster;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
@@ -69,7 +69,6 @@ import org.codehaus.wadi.impl.RestartableClusterFactory;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SharedJDBCContextualiser;
 import org.codehaus.wadi.impl.SharedJDBCMotable;
-import org.codehaus.wadi.impl.SimpleAttributesPool;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
@@ -111,8 +110,9 @@ public class TestCluster extends TestCase {
         protected final SharedJDBCContextualiser _bottom;
         protected final SessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory()); 
         protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool); 
-        protected final AttributesPool _distributableAttributesPool=new SimpleAttributesPool(new DistributableAttributesFactory());
-        protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());        protected final Manager _manager;
+        protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
+        protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
+        protected final Manager _manager;
         
         public MyNode(ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
             _bottom=new SharedJDBCContextualiser(_dummyContextualiser, _collapser, true, ds, table);
@@ -127,7 +127,7 @@ public class TestCluster extends TestCase {
             _middle=new ClusterContextualiser(_bottom, _collapser, new DummyEvicter(), _cmap, _cluster, _dispatcher, _relocater, _location);
             _top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
             _middle.setTop(_top);
-            _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesPool, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, _streamer, _accessOnLoad);
+            _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, _streamer, _accessOnLoad);
         }
         
         protected boolean _running;

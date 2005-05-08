@@ -23,7 +23,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.codehaus.wadi.AttributesPool;
+import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.SessionIdFactory;
@@ -40,8 +40,8 @@ public class JettyManager extends org.codehaus.wadi.impl.DistributableManager im
 
     protected final Log _log = LogFactory.getLog(getClass());
 
-    public JettyManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, JettySessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Streamer streamer, boolean accessOnLoad, Router router) {
-        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad);
+    public JettyManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, JettySessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Streamer streamer, boolean accessOnLoad, Router router) {
+        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad);
     }
 
     protected ServletHandler _handler;

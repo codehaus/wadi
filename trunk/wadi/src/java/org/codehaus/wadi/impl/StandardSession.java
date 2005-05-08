@@ -51,7 +51,7 @@ public class StandardSession extends AbstractContext implements Session, Attribu
     public StandardSession(SessionConfig config) {
         super();
         _config=config;
-        _attributes=_config.getAttributesPool().take(this);
+        _attributes=_config.getAttributesFactory().create(this);
         _wrapper=_config.getSessionWrapperFactory().create(this);
         _httpSessionEvent=new HttpSessionEvent(_wrapper);
         

@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.AttributesPool;
+import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
@@ -55,7 +55,6 @@ import org.codehaus.wadi.impl.MessageDispatcher;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SerialContextualiser;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
-import org.codehaus.wadi.impl.SimpleAttributesPool;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
@@ -85,7 +84,7 @@ public class MyServlet implements Servlet {
     protected final Router _router=new DummyRouter();
     protected final SessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory()); 
     protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool); 
-    protected final AttributesPool _distributableAttributesPool=new SimpleAttributesPool(new DistributableAttributesFactory());
+    protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
     protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
     protected final Manager _manager;
 
@@ -108,7 +107,7 @@ public class MyServlet implements Servlet {
 		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamer(), contextPool, new MyDummyHttpServletRequestWrapperPool());
         _clusterContextualiser.setTop(_memoryContextualiser);
 		relocater.setTop(_memoryContextualiser);
-        _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesPool, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad);
+        _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad);
 	}
 
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}

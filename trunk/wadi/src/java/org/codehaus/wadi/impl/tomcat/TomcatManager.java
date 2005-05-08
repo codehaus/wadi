@@ -41,7 +41,7 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.util.LifecycleSupport;
-import org.codehaus.wadi.AttributesPool;
+import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.SessionIdFactory;
@@ -49,19 +49,13 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableManager;
-import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.Filter;
-import org.codehaus.wadi.impl.SimpleAttributesPool;
-import org.codehaus.wadi.impl.SimpleSessionPool;
-import org.codehaus.wadi.impl.SimpleValuePool;
-import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 
 public class TomcatManager extends DistributableManager implements Manager, Lifecycle {
 
-    public TomcatManager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad) {
-        super(sessionPool, attributesPool, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad);
+    public TomcatManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad) {
+        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad);
     }
 
     // org.apache.catalina.Lifecycle

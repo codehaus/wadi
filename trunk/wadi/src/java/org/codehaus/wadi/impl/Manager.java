@@ -29,7 +29,7 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.AttributesPool;
+import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Evictable;
@@ -56,7 +56,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     protected final Log _log = LogFactory.getLog(getClass());
 
     protected final SessionPool _sessionPool;
-    protected final AttributesPool _attributesPool;
+    protected final AttributesFactory _attributesFactory;
     protected final ValuePool _valuePool;
     protected final SessionWrapperFactory _sessionWrapperFactory;
     protected final SessionIdFactory _sessionIdFactory;
@@ -66,9 +66,9 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     protected Router _router;
     protected final boolean _accessOnLoad; // TODO - should only be available on DistributableManager
 
-    public Manager(SessionPool sessionPool, AttributesPool attributesPool, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean accessOnLoad) {
+    public Manager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean accessOnLoad) {
         _sessionPool=sessionPool;
-        _attributesPool=attributesPool;
+        _attributesFactory=attributesFactory;
         _valuePool=valuePool;
         _sessionWrapperFactory=sessionWrapperFactory;
         _sessionIdFactory=sessionIdFactory;
@@ -109,11 +109,11 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     public Session create() {
         Session session=_sessionPool.take();
         long time=System.currentTimeMillis();
-        String id=_sessionIdFactory.create(); // TODO - API on this class is wrong...
-        session.init(time, time, _maxInactiveInterval, id);
-        _map.put(id, session);
+        String name=_sessionIdFactory.create(); // TODO - API on this class is wrong...
+        session.init(time, time, _maxInactiveInterval, name);
+        _map.put(name, session);
         // _contextualiser.getEvicter().insert(session);
-        if (_log.isDebugEnabled()) _log.debug("creation: "+id);
+        if (_log.isDebugEnabled()) _log.debug("creation: "+name);
         return session;
     }
 
@@ -121,12 +121,11 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         for (Iterator i=new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) // ALLOC ?
             session.removeAttribute((String)i.next()); // TODO - very inefficient
         // _contextualiser.getEvicter().remove(session);
-        String id=session.getName();
-        _map.remove(id);
-        // _sessionIdFactory.put(id); // we might reuse session ids ? - sounds like a BAD idea
+        String name=session.getName();
+        _map.remove(name);
         session.destroy();
         _sessionPool.put(session);
-        if (_log.isDebugEnabled()) _log.debug("destruction: "+id);
+        if (_log.isDebugEnabled()) _log.debug("destruction: "+name);
     }
 
     //----------------------------------------
@@ -193,7 +192,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     // Context stuff
     public ServletContext getServletContext() {return null;}// TODO
 
-    public AttributesPool getAttributesPool() {return _attributesPool;}
+    public AttributesFactory getAttributesFactory() {return _attributesFactory;}
     public ValuePool getValuePool() {return _valuePool;}
 
     public Manager getManager(){return this;}

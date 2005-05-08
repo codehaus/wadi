@@ -24,7 +24,7 @@ import javax.servlet.ServletContext;
 public interface SessionConfig {
     
     ValuePool getValuePool();
-    AttributesPool getAttributesPool();
+    AttributesFactory getAttributesFactory();
     List getSessionListeners();
     List getAttributeListeners();
     ServletContext getServletContext();
