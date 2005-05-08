@@ -237,7 +237,8 @@ public class TestCluster extends TestCase {
 		for (int i=0; i<numContexts; i++) {
 			String id="session-"+i;
 			Motable emotable=_node0._distributableSessionPool.take();
-            emotable.setId(id);
+            long time=System.currentTimeMillis();
+            emotable.init(time, time, 30*60, id);
 			Immoter immoter=c0.getDemoter(id, emotable);
 			Emoter emoter=new EtherEmoter();
 			Utils.mote(emoter, immoter, emotable, id);

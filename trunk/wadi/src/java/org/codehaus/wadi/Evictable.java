@@ -31,7 +31,7 @@ public interface Evictable {
     public void copy(Evictable evictable) throws Exception;
     
 	public long getCreationTime();
-	public void setCreationTime(long creationTime);
+	//public void setCreationTime(long creationTime);
 	public long getLastAccessedTime();
 	public void setLastAccessedTime(long lastAccessedTime);
 	public int  getMaxInactiveInterval();

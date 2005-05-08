@@ -100,9 +100,7 @@ public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
 	}
 
 	public Motable get(String id) {
-	    Motable motable=new SharedJDBCMotable();
-		motable.setId(id);
-		return motable;
+        throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -170,9 +168,7 @@ public class SharedJDBCContextualiser extends AbstractSharedContextualiser {
 	public class SharedJDBCImmoter extends AbstractImmoter {
 
 		public Motable nextMotable(String id, Motable emotable) {
-			Motable motable=new SharedJDBCMotable(); // TODO - could be a thread local... - used then discarded immediately
-			motable.setId(id);
-			return motable;
+            return new SharedJDBCMotable();  // TODO - Pool this - could be ThreadLocal...
 		}
 
 		public boolean prepare(String id, Motable emotable, Motable immotable) {

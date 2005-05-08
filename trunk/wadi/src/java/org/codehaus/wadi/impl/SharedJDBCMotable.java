@@ -39,10 +39,6 @@ import org.codehaus.wadi.Motable;
 public class SharedJDBCMotable extends AbstractMotable {
 	protected static final Log _log = LogFactory.getLog(SharedJDBCMotable.class);
 
-	protected String _id;
-	public String getId(){return _id;}
-	public void setId(String id){_id=id;}
-
 	protected byte[] _bytes;
 	public byte[] getBytes(){return _bytes;}
 	public void setBytes(byte[] bytes){_bytes=bytes;}
@@ -76,11 +72,11 @@ public class SharedJDBCMotable extends AbstractMotable {
                 int i=1;
                 Motable motable=new SharedJDBCMotable();
                 String id=(String)rs.getObject(i++);
-                motable.setId(id);
-                motable.setCreationTime(rs.getLong(i++));
-                long lat=rs.getLong(i++);
-                motable.setLastAccessedTime(accessOnLoad?time:lat);
-                motable.setMaxInactiveInterval(rs.getInt(i++));
+                long creationTime=rs.getLong(i++);
+                long lastAccessedTime=rs.getLong(i++);
+                lastAccessedTime=accessOnLoad?time:lastAccessedTime;
+                int maxInactiveInterval=rs.getInt(i++);
+                motable.init(creationTime, lastAccessedTime, maxInactiveInterval, id);
                 motable.setBytes((byte[])rs.getObject(i++));
 
                 if (motable.getTimedOut(time)) {
@@ -111,9 +107,10 @@ public class SharedJDBCMotable extends AbstractMotable {
 			ResultSet rs=s.executeQuery("SELECT CreationTime, LastAccessedTime, MaxInactiveInterval, Bytes FROM "+table+" WHERE Id='"+id+"'");
 			int i=1;
 			if (rs.next()) {
-				motable.setCreationTime(rs.getLong(i++));
-				motable.setLastAccessedTime(rs.getLong(i++));
-				motable.setMaxInactiveInterval(rs.getInt(i++));
+				long creationTime=rs.getLong(i++);
+				long lastAccessedTime=rs.getLong(i++);
+				int maxInactiveInterval=rs.getInt(i++);
+                motable.init(creationTime, lastAccessedTime, maxInactiveInterval, id);
 				motable.setBytes((byte[])rs.getObject(i++));
 
 				if (!motable.checkTimeframe(System.currentTimeMillis()))

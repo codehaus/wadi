@@ -36,7 +36,7 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
  
     protected static Log _log = LogFactory.getLog(AbstractMotable.class);
 
-    public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id) {
+    public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String id) {
         init(creationTime, lastAccessedTime, maxInactiveInterval);
         _id=id;
     }
