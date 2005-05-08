@@ -51,6 +51,16 @@ public class TomcatSession extends DistributableSession implements Session {
         super(config);
     }
 
+    public void setId(String id) {
+        // we set our id via init() method...
+        throw new UnsupportedOperationException("WADI does not support the use of Session.setId(String)"); 
+    }
+    
+    public void setCreationTime(long creationTime) {
+        // we set our creationTime via init() method...
+        throw new UnsupportedOperationException("WADI does not support the use of Session.setCreationTime(long)"); 
+    }
+    
     public String getInfo() {
         return getClass().getName()+" v2.0";
     }

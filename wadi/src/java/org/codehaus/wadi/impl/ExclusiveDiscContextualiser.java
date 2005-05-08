@@ -87,9 +87,7 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
 	    }
 
 		public Motable nextMotable(String id, Motable emotable) {
-			ExclusiveDiscMotable ldm=new ExclusiveDiscMotable();
-			ldm.setId(id);
-			return ldm;
+            return new ExclusiveDiscMotable(); // TODO - Pool, maybe as ThreadLocal
 		}
 
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
