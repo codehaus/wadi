@@ -24,13 +24,6 @@
   </bean>
 
   <bean
-    id="AttributesPool"
-    class="org.codehaus.wadi.impl.SimpleAttributesPool"
-    >
-    <constructor-arg><ref bean="AttributesFactory"/></constructor-arg>
-  </bean>
-
-  <bean
     id="ValueFactory"
     class="org.codehaus.wadi.impl.DistributableValueFactory"
     >
@@ -110,7 +103,7 @@
     class="org.codehaus.wadi.impl.tomcat.TomcatManager"
     >
     <constructor-arg><ref bean="SessionPool"/></constructor-arg>
-    <constructor-arg><ref bean="AttributesPool"/></constructor-arg>
+    <constructor-arg><ref bean="AttributesFactory"/></constructor-arg>
     <constructor-arg><ref bean="ValuePool"/></constructor-arg>
     <constructor-arg><ref bean="SessionWrapperFactory"/></constructor-arg>
     <constructor-arg><ref bean="SessionIdFactory"/></constructor-arg>
