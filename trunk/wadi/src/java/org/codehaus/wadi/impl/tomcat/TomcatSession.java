@@ -51,6 +51,14 @@ public class TomcatSession extends DistributableSession implements Session {
         super(config);
     }
 
+    public void destroy() {
+        _authType=null;
+        _principal=null;
+        _notes.clear();
+        _listeners.clear();
+        super.destroy();
+    }
+    
     public void setId(String id) {
         // we set our id via init() method...
         throw new UnsupportedOperationException("WADI does not support the use of Session.setId(String)"); 
