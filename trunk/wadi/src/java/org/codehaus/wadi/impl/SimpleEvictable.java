@@ -64,7 +64,6 @@ public abstract class SimpleEvictable implements Evictable, Serializable {
     
     protected long _creationTime;
 	public long getCreationTime() {return _creationTime;}
-	public void setCreationTime(long creationTime){_creationTime=creationTime;}
 
 	protected long _lastAccessedTime;
 	public long getLastAccessedTime(){return _lastAccessedTime;}

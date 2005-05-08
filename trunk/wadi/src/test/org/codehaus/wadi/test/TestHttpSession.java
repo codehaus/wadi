@@ -1071,9 +1071,8 @@ extends TestCase
         // test that a 'copy' (the basis of all motion/migration) completely copies
         // a sessions contents, by VALUE not reference...
         DistributableSession s0=(DistributableSession)pool.take();
-        s0.setLastAccessedTime(System.currentTimeMillis());
-        s0.setMaxInactiveInterval(60*60);
-        s0.setId("a-session");
+        long time=System.currentTimeMillis();
+        s0.init(time, time, 60*60, "a-session");
         for (int i=0; i<10; i++)
             s0.setAttribute("key-"+i, "val-"+i);
 

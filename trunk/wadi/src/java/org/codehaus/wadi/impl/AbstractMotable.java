@@ -55,7 +55,6 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
 
 	protected String _id;
 	public String getId(){return _id;}
-	public void setId(String id){_id=id;}
 
 	// N.B. implementation of Bytes field is left abstract...
 
