@@ -32,52 +32,23 @@ import org.codehaus.wadi.Evictable;
 
 public abstract class SimpleEvictable implements Evictable, Serializable {
 
-	protected long _creationTime;
-	public long getCreationTime() {return _creationTime;}
-	public void setCreationTime(long creationTime){_creationTime=creationTime;}
-
-	protected long _lastAccessedTime;
-	public long getLastAccessedTime(){return _lastAccessedTime;}
-	public void setLastAccessedTime(long lastAccessedTime){_lastAccessedTime=lastAccessedTime;}
-
-	public boolean isNew(){return _lastAccessedTime==_creationTime;} // assumes lastAccessedTime is only updated once per request...
-	
-	protected int _maxInactiveInterval;
-	public int  getMaxInactiveInterval(){return _maxInactiveInterval;}
-	public void setMaxInactiveInterval(int maxInactiveInterval){_maxInactiveInterval=maxInactiveInterval;}
-
-	public boolean checkTimeframe(long currentTime) {return !(_creationTime>currentTime || _lastAccessedTime>currentTime);}
-	
-	public long getTimeToLive(long time) {return _maxInactiveInterval<0?Long.MAX_VALUE:(_maxInactiveInterval*1000)-(time-_lastAccessedTime);}
-
-	public boolean getTimedOut() {return getTimedOut(System.currentTimeMillis());}
-	public boolean getTimedOut(long time) {return getTimeToLive(time)<=0;}
-	
-	protected boolean _invalidated; // TODO - need to lose this...
-	public boolean getInvalidated(){return _invalidated;}
-	public void setInvalidated(boolean invalidated){_invalidated=invalidated;}
-	
-	public boolean getValid() {return !getInvalidated() && !getTimedOut();}
-
-	public void copy(Evictable evictable) throws Exception {
-		_creationTime=evictable.getCreationTime();
-		_lastAccessedTime=evictable.getLastAccessedTime();
-		_maxInactiveInterval=evictable.getMaxInactiveInterval();
-	}
-	
-	public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated) {
-	    _creationTime=creationTime;
-	    _lastAccessedTime=lastAccessedTime;
-	    _maxInactiveInterval=maxInactiveInterval;
-	    _invalidated=invalidated;	    
-	}
-	
-	public void destroy() {
-	    _creationTime=0;
-	    _lastAccessedTime=0;
-	    _maxInactiveInterval=0;
-	    _invalidated=true;
-	}
+    public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval) {
+        _creationTime=creationTime;
+        _lastAccessedTime=lastAccessedTime;
+        _maxInactiveInterval=maxInactiveInterval;
+    }
+    
+    public void destroy() {
+        _creationTime=0;
+        _lastAccessedTime=0;
+        _maxInactiveInterval=0;
+    }
+    
+    public void copy(Evictable evictable) throws Exception {
+        _creationTime=evictable.getCreationTime();
+        _lastAccessedTime=evictable.getLastAccessedTime();
+        _maxInactiveInterval=evictable.getMaxInactiveInterval();
+    }
     
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         _creationTime=oi.readLong();
@@ -90,5 +61,25 @@ public abstract class SimpleEvictable implements Evictable, Serializable {
         oo.writeLong(_lastAccessedTime);
         oo.writeInt(_maxInactiveInterval);
     }
+    
+    protected long _creationTime;
+	public long getCreationTime() {return _creationTime;}
+	public void setCreationTime(long creationTime){_creationTime=creationTime;}
+
+	protected long _lastAccessedTime;
+	public long getLastAccessedTime(){return _lastAccessedTime;}
+	public void setLastAccessedTime(long lastAccessedTime){_lastAccessedTime=lastAccessedTime;}
+
+	protected int _maxInactiveInterval;
+	public int  getMaxInactiveInterval(){return _maxInactiveInterval;}
+	public void setMaxInactiveInterval(int maxInactiveInterval){_maxInactiveInterval=maxInactiveInterval;}
+    
+    public boolean isNew(){return _lastAccessedTime==_creationTime;} // assumes lastAccessedTime is only updated once per request...
+    
+	public boolean checkTimeframe(long time) {return !(_creationTime>time || _lastAccessedTime>time);}
+	
+	public long getTimeToLive(long time) {return _maxInactiveInterval<0?Long.MAX_VALUE:(_maxInactiveInterval*1000)-(time-_lastAccessedTime);}
+
+	public boolean getTimedOut(long time) {return getTimeToLive(time)<=0;}
 	
 }

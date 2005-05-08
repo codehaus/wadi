@@ -31,8 +31,8 @@ public class SimpleMotable extends AbstractMotable implements Serializable {
 	public byte[] getBytes() {return _bytes;}
 	public void setBytes(byte[] bytes){_bytes=bytes;}
 
-	public void tidy() {
-	    super.tidy();
+	public void destroy() {
+	    super.destroy();
 	    _bytes=null;
 	}
 }

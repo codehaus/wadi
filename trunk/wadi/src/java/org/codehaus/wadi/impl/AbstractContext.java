@@ -39,16 +39,6 @@ public abstract class AbstractContext extends AbstractMotable implements Context
 	public Sync getSharedLock(){return _lock.readLock();}
 	public Sync getExclusiveLock(){return _lock.writeLock();}
 
-//	public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, boolean invalidated, String id, RWLock lock) {
-//	    init(creationTime, lastAccessedTime, maxInactiveInterval, invalidated);
-//	    _lock=lock;
-//	}
-	
-	public void destroy() {
-	    super.destroy();
-//	    _lock=null;
-	}
-
 	// Motable
 	public byte[] getBytes() throws Exception {
         return Utils.getContent(this, new SimpleStreamer());

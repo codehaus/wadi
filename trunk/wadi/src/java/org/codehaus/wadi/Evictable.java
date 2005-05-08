@@ -26,21 +26,21 @@ package org.codehaus.wadi;
 
 public interface Evictable {
     
+    void init(long creationTime, long lastAccessedTime, int maxInactiveInterval);
+    void destroy();
+    public void copy(Evictable evictable) throws Exception;
+    
 	public long getCreationTime();
 	public void setCreationTime(long creationTime);
 	public long getLastAccessedTime();
 	public void setLastAccessedTime(long lastAccessedTime);
 	public int  getMaxInactiveInterval();
 	public void setMaxInactiveInterval(int maxInactiveInterval);
-	public boolean isNew();
-	public long getTimeToLive(long time);
+	
+    public boolean isNew();
 
-	public boolean getTimedOut(); // implicitly invalid via timeout
-	public boolean getTimedOut(long time); // implicitly invalid via timeout
-	public boolean getInvalidated(); // explicitly invalidated by application
-	public void setInvalidated(boolean invalidate);
-	
-	public boolean getValid(); // invalid, either implicitly or explicitly
-	
-	public boolean checkTimeframe(long currentTime);
+    public long getTimeToLive(long time);
+	public boolean getTimedOut(long time);
+    public boolean checkTimeframe(long time);
+
 }

@@ -44,8 +44,8 @@ public class ExclusiveDiscMotable extends AbstractMotable {
 	public byte[] getBytes(){return _bytes;}
 	public void setBytes(byte[] bytes){_bytes=bytes;}
 
-	public void tidy() {
-	    super.tidy();
+	public void destroy() {
+	    super.destroy();
 		if (_file!=null && _file.exists())
 			remove(_file);
 	}

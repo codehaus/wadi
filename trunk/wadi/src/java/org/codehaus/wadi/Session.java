@@ -24,10 +24,6 @@ import javax.servlet.http.HttpSessionEvent;
 
 public interface Session extends Context {
 
-    void destroy();
-
-    void tidy();
-
     HttpSession getWrapper();
 
     HttpSessionEvent getHttpSessionEvent();

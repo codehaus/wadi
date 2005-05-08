@@ -148,7 +148,7 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
             if (accessOnLoad)
                 motable.setLastAccessedTime(time);
             else {
-                if (motable.getTimedOut()) {
+                if (motable.getTimedOut(time)) {
                     if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getId());
                     // TODO - something cleverer...
                 }

@@ -61,6 +61,7 @@ public class StandardSession extends AbstractContext implements Session, Attribu
         }
     
     public void destroy() {
+        super.destroy();
         _attributes.clear();
         // NYI - other fields...
     }
@@ -71,11 +72,6 @@ public class StandardSession extends AbstractContext implements Session, Attribu
 
     public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {
         throw new NotSerializableException();
-    }
-    
-    public void tidy() { // TODO - merge with destroy()
-        super.tidy();
-        _attributes.clear();
     }
     
     // public access to the contents of this session should all be directed via wrapper
