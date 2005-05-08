@@ -30,7 +30,7 @@ public class MyContext extends AbstractContext {
 	protected String _val;
 	MyContext(String id, String val) {
 		this();
-		_id=id;
+		_name=id;
 		_val=val;
 	}
 
@@ -39,12 +39,12 @@ public class MyContext extends AbstractContext {
 		}
 
 	public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-	    _id=(String)oi.readObject();
+	    _name=(String)oi.readObject();
 		_val=(String)oi.readObject();
 	}
 
 	public void writeContent(ObjectOutput oo) throws IOException {
-		oo.writeObject(_id);
+		oo.writeObject(_name);
 		oo.writeObject(_val);
 	}
 

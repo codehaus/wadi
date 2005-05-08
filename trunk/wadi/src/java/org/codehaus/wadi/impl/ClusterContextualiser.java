@@ -308,7 +308,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 
 	public void onMessage(ObjectMessage om, EmigrationRequest er) {
         Motable emotable=er.getMotable();
-        String id=emotable.getId();
+        String id=emotable.getName();
         if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+id);
         Sync lock=_locker.getLock(id, emotable);
         boolean acquired=false;
@@ -319,7 +319,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
             Emoter emoter=new ImmigrationEmoter(om, er);
 
             if (!emotable.checkTimeframe(System.currentTimeMillis()))
-                if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getId());
+                if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
 
             Immoter immoter=_top.getDemoter(id, emotable);
             Utils.mote(emoter, immoter, emotable, id);

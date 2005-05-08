@@ -32,7 +32,7 @@ public class HttpSession extends SessionWrapper implements SessionManager.Sessio
     HttpSession(Session session) {super(session);}
     
     public boolean isValid() {
-        return _session.getId()!=null;
+        return _session.getName()!=null;
     }
     
     public void access() {

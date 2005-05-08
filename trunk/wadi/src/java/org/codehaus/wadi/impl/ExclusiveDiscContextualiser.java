@@ -147,7 +147,7 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
                 motable.setLastAccessedTime(time);
             else {
                 if (motable.getTimedOut(time)) {
-                    if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getId());
+                    if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getName());
                     // TODO - something cleverer...
                 }
             }
@@ -166,7 +166,7 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
         // decide whether session needs promotion
         boolean needsLoading=true; // FIXME
         // if so promote to top and expire there
-        String id=motable.getId();
+        String id=motable.getName();
         if (_log.isTraceEnabled()) _log.trace("expiring from disc: "+id);
         if (needsLoading) {
             _map.remove(id);

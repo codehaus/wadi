@@ -234,19 +234,19 @@ public class TestContextualiser extends TestCase {
         // check their content...
         Session baz=(Session)m.get("baz");
         assertTrue(baz!=null);
-        assertTrue("baz".equals(baz.getId()));
+        assertTrue("baz".equals(baz.getName()));
         assertTrue(baz.getCreationTime()==3);
         assertTrue(baz.getMaxInactiveInterval()==6);
 
         Session bar=(Session)m.get("bar");
         assertTrue(bar!=null);
-        assertTrue("bar".equals(bar.getId()));
+        assertTrue("bar".equals(bar.getName()));
         assertTrue(bar.getCreationTime()==2);
         assertTrue(bar.getMaxInactiveInterval()==4);
 
         Session foo=(Session)m.get("foo");
         assertTrue(foo!=null);
-        assertTrue("foo".equals(foo.getId()));
+        assertTrue("foo".equals(foo.getName()));
         assertTrue(foo.getCreationTime()==1);
         assertTrue(foo.getMaxInactiveInterval()==2);
     }
@@ -282,7 +282,7 @@ public class TestContextualiser extends TestCase {
         // check it's content
         Session foo=(Session)m.get("foo");
         assertTrue(foo!=null);
-        assertTrue("foo".equals(foo.getId()));
+        assertTrue("foo".equals(foo.getName()));
         assertTrue(foo.getCreationTime()==2);
         assertTrue(foo.getMaxInactiveInterval()==4);
     }
@@ -520,7 +520,7 @@ public class TestContextualiser extends TestCase {
         manager.init();
 
         Session session=manager.create();
-        String id=session.getId();
+        String id=session.getName();
         session.setMaxInactiveInterval(2);// times out 2 seconds from now...
 
         Thread.sleep(1000);

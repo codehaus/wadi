@@ -1086,8 +1086,8 @@ extends TestCase
         assertTrue(s1.getCreationTime()==s2.getCreationTime());
         assertTrue(s1.getLastAccessedTime()==s2.getLastAccessedTime());
         assertTrue(s1.getMaxInactiveInterval()==s2.getMaxInactiveInterval());
-        assertTrue(s1.getId()!=s2.getId());
-        assertTrue(s1.getId().equals(s2.getId()));
+        assertTrue(s1.getName()!=s2.getName());
+        assertTrue(s1.getName().equals(s2.getName()));
         assertTrue(s1.getAttributeNameSet().equals(s2.getAttributeNameSet()));
         {
             Iterator i=s1.getAttributeNameSet().iterator();

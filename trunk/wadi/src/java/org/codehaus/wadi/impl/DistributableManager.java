@@ -103,7 +103,7 @@ public class DistributableManager extends Manager implements DistributableSessio
             session.removeAttribute((String)i.next());
 
         // TODO - remove from Contextualiser....at end of initial request ? Think more about this
-        String id=session.getId();
+        String id=session.getName();
         _map.remove(id);
         session.destroy();
         _sessionPool.put(session);

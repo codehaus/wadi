@@ -36,31 +36,31 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
  
     protected static Log _log = LogFactory.getLog(AbstractMotable.class);
 
-    public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String id) {
+    public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name) {
         init(creationTime, lastAccessedTime, maxInactiveInterval);
-        _id=id;
+        _name=name;
     }
 
     public void destroy() {
         super.destroy();
-        _id=null;
+        _name=null;
         // should setBytes(null)... - TODO - although init() does not initialise them...
     }
 
 	public void copy(Motable motable) throws Exception {
 		super.copy(motable); // Evictable fields
-		_id=motable.getId();
+		_name=motable.getName();
 		setBytes(motable.getBytes());
 	}
 
-	protected String _id;
-	public String getId(){return _id;}
+	protected String _name;
+	public String getName(){return _name;}
 
 	// N.B. implementation of Bytes field is left abstract...
 
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         super.readContent(oi);
-        _id=(String)oi.readObject();
+        _name=(String)oi.readObject();
 //        int length=oi.readInt();
 //        byte[] bytes=new byte[length];
 //        int actualLength=oi.read(bytes);
@@ -75,7 +75,7 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
 
     public void writeContent(ObjectOutput oo) throws IOException {
         super.writeContent(oo);
-        oo.writeObject(_id);
+        oo.writeObject(_name);
 //        try {
 //            byte[] bytes=getBytes();
 //            oo.writeInt(bytes.length);

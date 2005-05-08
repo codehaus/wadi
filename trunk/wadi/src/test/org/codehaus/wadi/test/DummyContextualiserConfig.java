@@ -47,7 +47,7 @@ class DummyContextualiserConfig implements ContextualiserConfig {
         }
     
     public int getMaxInactiveInterval() {return 30*60*60;}
-    public void expire(Motable motable) {_map.remove(motable.getId());}
+    public void expire(Motable motable) {_map.remove(motable.getName());}
     public Immoter getEvictionImmoter() {return ((AbstractMotingContextualiser)_top).getImmoter();} // HACK - FIXME
     public Timer getTimer() {return _timer;}
     public boolean getAccessOnLoad() {return true;}

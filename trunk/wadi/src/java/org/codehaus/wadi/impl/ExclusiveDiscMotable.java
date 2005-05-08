@@ -67,7 +67,7 @@ public class ExclusiveDiscMotable extends AbstractMotable {
 			motable.setBytes((byte[])ois.readObject());
 
 			if (!motable.checkTimeframe(System.currentTimeMillis()))
-			    if (_log.isWarnEnabled()) _log.warn("loaded session from the future!: "+motable.getId());
+			    if (_log.isWarnEnabled()) _log.warn("loaded session from the future!: "+motable.getName());
 
 			if (_log.isTraceEnabled()) _log.trace("loaded (exclusive disc): "+file);
 			return motable;
@@ -85,7 +85,7 @@ public class ExclusiveDiscMotable extends AbstractMotable {
 		ObjectOutputStream oos=null;
 		try {
 			oos=new ObjectOutputStream(new FileOutputStream(file));
-			oos.writeObject(motable.getId());
+			oos.writeObject(motable.getName());
 			oos.writeLong(motable.getCreationTime());
 			oos.writeLong(motable.getLastAccessedTime());
 			oos.writeInt(motable.getMaxInactiveInterval());
