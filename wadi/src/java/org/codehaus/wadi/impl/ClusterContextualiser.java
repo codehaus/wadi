@@ -206,8 +206,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         
         // whilst we are evacuating...
         // 1) do not form any further asylum agreements...
-        _dispatcher.register(this, "onMessage", EmigrationEndedNotification.class);
-        _dispatcher.register(this, "onMessage", EmigrationStartedNotification.class);
+        _dispatcher.deregister("onMessage", EmigrationEndedNotification.class);
+        _dispatcher.deregister("onMessage", EmigrationStartedNotification.class);
         _log.info("ignoring further asylum agreement negotiotiations");
         // 2) rescind existing agreements existing agreements...
         _log.info("pulling out of existing asylum agreements: "+_asylumAgreements.size());
