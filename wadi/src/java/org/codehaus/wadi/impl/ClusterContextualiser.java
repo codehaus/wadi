@@ -28,9 +28,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.activecluster.ClusterEvent;
+import org.activecluster.ClusterListener;
 import org.codehaus.wadi.Cluster;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
@@ -76,7 +79,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ClusterContextualiser extends AbstractSharedContextualiser {
+public class ClusterContextualiser extends AbstractSharedContextualiser implements ClusterListener {
 
 	protected final HashMap _emigrationRvMap=new HashMap();
 	protected final Cluster _cluster;
@@ -117,6 +120,18 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 	    if (_log.isTraceEnabled()) _log.trace("Destination is: "+_cluster.getLocalNode().getDestination());
 		}
 
+    public void init(ContextualiserConfig config) {
+        super.init(config);
+        Map state=new HashMap();
+        state.put("id", System.getProperty("wadi.colour")); // TODO - parameterise
+        try {
+            _cluster.getLocalNode().setState(state);
+        } catch (JMSException e){
+            _log.error("could not initialise node state", e);
+        }
+        _cluster.addClusterListener(this);
+    }
+    
     public Immoter getImmoter(){return _immoter;}
     public Emoter getEmoter(){return _emoter;}
 
@@ -343,5 +358,27 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
 
     public Emoter getEvictionEmoter() {throw new UnsupportedOperationException();} // FIXME
     public void expire(Motable motable) {throw new UnsupportedOperationException();} // FIXME
+    
+    // ClusterListener
+    
+    public void onNodeAdd(ClusterEvent event) {
+        _log.info("node joined: "+event.getNode().getState().get("id"));
+    }
+
+    public void onNodeUpdate(ClusterEvent event) {
+        _log.info("node updated: "+event.getNode().getState().get("id"));
+    }
+
+    public void onNodeRemoved(ClusterEvent event) {
+        _log.info("node left: "+event.getNode().getState().get("id"));
+    }
+
+    public void onNodeFailed(ClusterEvent event)  {
+        _log.info("node failed: "+event.getNode().getState().get("id"));
+    }
+    
+    public void onCoordinatorChanged(ClusterEvent event) {
+        _log.info("coordinator changed: "+event.getNode().getState().get("id"));
+    }
 
 }
