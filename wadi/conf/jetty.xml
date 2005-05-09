@@ -72,5 +72,7 @@
     </New>
   </Set>
 
+  <!-- When shutting down a Context, wait for the number of outstanding requests to drop to 0 -->
+  <Set name="StopGracefully">true</Set>
 
 </Configure>
