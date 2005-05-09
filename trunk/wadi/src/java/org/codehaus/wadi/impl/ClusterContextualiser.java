@@ -145,18 +145,18 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         // _evicter ?
         _relocater.init(this);
     }
-    
+
     public String getStartInfo() {
         return "["+_nodeId+"]";
     }
-    
+
     public void destroy() {
         _relocater.destroy();
         // TODO - what else ?
         // _evicter ?
         super.destroy();
     }
-    
+
     public Immoter getImmoter(){return _immoter;}
     public Emoter getEmoter(){return _emoter;}
 
@@ -203,11 +203,11 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
         settings.to=_dispatcher.getCluster().getDestination();
         _dispatcher.sendMessage(new EmigrationStartedNotification(_emigrationQueue), settings);
-        
+
         // whilst we are evacuating...
         // 1) do not form any further asylum agreements...
-        _dispatcher.deregister("onMessage", EmigrationEndedNotification.class);
-        _dispatcher.deregister("onMessage", EmigrationStartedNotification.class);
+        _dispatcher.deregister("onMessage", EmigrationEndedNotification.class, 30);
+        _dispatcher.deregister("onMessage", EmigrationStartedNotification.class, 30);
         _log.info("ignoring further asylum agreement negotiotiations");
         // 2) rescind existing agreements existing agreements...
         _log.info("pulling out of existing asylum agreements: "+_asylumAgreements.size());
@@ -216,6 +216,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
             _dispatcher.removeDestination(queue);
         }
         _asylumAgreements.clear();
+	try {
+	  // give everyone a chance to open up on our emigration queue... - TODO - parameterise
+	  // give time for threads that are already processing asylum applications to finish - can we join them ? - TODO - use shutdownAfterProcessingCurrentlyQueuedTasks() and a separate ThreadPool...
+	  Thread.sleep(2000);
+	} catch (InterruptedException e) {
+	  _log.info("AAAAARCH!"); // FIXME
+	}
     }
 
     protected void destroyEmigrationQueue() throws JMSException {
@@ -245,7 +252,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     }
 
     protected List _asylumAgreements=Collections.synchronizedList(new ArrayList());
-    
+
 	public void onMessage(ObjectMessage om, EmigrationStartedNotification sdsn) throws JMSException {
 		Destination emigrationQueue=sdsn.getDestination();
 		if (_log.isTraceEnabled()) _log.trace("received EmigrationStartedNotification: "+emigrationQueue);
@@ -364,28 +371,28 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	}
 
 	public void onMessage(ObjectMessage om, EmigrationRequest er) {
-        Motable emotable=er.getMotable();
-        String id=emotable.getName();
-        if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+id);
-        Sync lock=_locker.getLock(id, emotable);
-        boolean acquired=false;
-        try {
+	  Motable emotable=er.getMotable();
+	  String id=emotable.getName();
+	  if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+id);
+	  Sync lock=_locker.getLock(id, emotable);
+	  boolean acquired=false;
+	  try {
             Utils.acquireUninterrupted(lock);
             acquired=true;
 
             Emoter emoter=new ImmigrationEmoter(om, er);
 
             if (!emotable.checkTimeframe(System.currentTimeMillis()))
-                if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
+	      if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
 
             Immoter immoter=_top.getDemoter(id, emotable);
             Utils.mote(emoter, immoter, emotable, id);
-        } catch (TimeoutException e) {
+	  } catch (TimeoutException e) {
             if (_log.isWarnEnabled()) _log.warn("could not acquire promotion lock for incoming session: "+id);
-        } finally {
+	  } finally {
             if (acquired)
-                lock.release();
-        }
+	      lock.release();
+	  }
 	}
 
     // another hack, because this should not inherit from Mapped...
@@ -400,9 +407,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     public Emoter getEvictionEmoter() {throw new UnsupportedOperationException();} // FIXME
     public void expire(Motable motable) {throw new UnsupportedOperationException();} // FIXME
-    
+
     // ClusterListener
-    
+
     public void onNodeAdd(ClusterEvent event) {
         _log.info("node joined: "+event.getNode().getState().get("id"));
     }
@@ -413,18 +420,20 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     public void onNodeRemoved(ClusterEvent event) {
         _log.info("node left: "+event.getNode().getState().get("id"));
+	// TODO - remove existing asylum agreements
     }
 
     public void onNodeFailed(ClusterEvent event)  {
         _log.info("node failed: "+event.getNode().getState().get("id"));
+	// TODO - remove existing asylum agreements
     }
-    
+
     public void onCoordinatorChanged(ClusterEvent event) {
         _log.trace("coordinator changed: "+event.getNode().getState().get("id")); // we don't use this...
     }
-    
+
     // RelocaterConfig
-    
+
     public Collapser getCollapser() {return _collapser;}
     public MessageDispatcher getDispatcher() {return _dispatcher;}
     public Location getLocation() {return _location;}
