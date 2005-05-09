@@ -29,11 +29,19 @@ public abstract class AbstractContextualiser implements Contextualiser {
   }
 
   public void start() throws Exception {
-    _log.info("starting");
+    _log.info("starting: "+getStartInfo());
   }
 
+  public String getStartInfo() {
+      return "";
+  }
+  
   public void stop() throws Exception {
-    _log.info("stopped");
+    _log.info("stopped: "+getStopInfo());
+  }
+  
+  public String getStopInfo() {
+      return "";
   }
 
   public void destroy() {

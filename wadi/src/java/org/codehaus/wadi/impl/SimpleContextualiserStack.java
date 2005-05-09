@@ -130,7 +130,8 @@ public class SimpleContextualiserStack implements Contextualiser {
 //        _clusterRelocater=new ImmigrateRelocater(_clusterDispatcher, _clusterLocation, 2000, _clusterMap, _collapser);
         //(MessageDispatcher dispatcher, Location location, long timeout, long proxyHandOverPeriod) {
         _clusterRelocater=new ProxyRelocater(2000, 2000);
-        _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation);
+        String nodeId=System.getProperty("wadi.colour");
+        _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation, nodeId);
 
         _statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
         _statelessMethodFlag=true;
