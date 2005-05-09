@@ -69,6 +69,10 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
         }
     }
     
+    public String getStartInfo() {
+        return "["+_dir+"]";
+    }
+    
 	public boolean isExclusive(){return true;}
 
 	public Immoter getImmoter(){return _immoter;}
