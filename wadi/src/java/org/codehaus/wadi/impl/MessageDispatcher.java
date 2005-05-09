@@ -123,6 +123,30 @@ public class MessageDispatcher implements MessageListener {
 		return n;
 	}
 
+    public boolean register(Object target, String methodName, Class type) {
+        try {
+            int n=0;
+            Method method=target.getClass().getMethod(methodName, new Class[] {ObjectMessage.class, type});
+            if (method==null) return false;
+            
+            Dispatcher nuw=new TargetDispatcher(target, method);
+            
+            Dispatcher old=(Dispatcher)_map.put(type, nuw);
+            if (old!=null) 
+                if (_log.isWarnEnabled()) _log.warn("later registration replaces earlier - multiple dispatch NYI: "+old+" -> "+nuw);
+            
+            if (_log.isTraceEnabled()) _log.trace("registering: "+type.getName()+"."+methodName+"()");
+            return true;
+        } catch (NoSuchMethodException e) {
+            // ignore
+            return false;
+        }
+    }
+    
+    public boolean deregister(String methodName, Class type) {
+        return (_map.remove(type)!=null);
+    }
+    
 	class RendezVousDispatcher implements Dispatcher {
 	  protected final Map _rvMap;
 	  protected final long _timeout;

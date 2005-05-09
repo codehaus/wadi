@@ -58,6 +58,7 @@ import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyEvicter;
+import org.codehaus.wadi.impl.DummyRelocater;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.impl.HashingCollapser;
@@ -123,7 +124,7 @@ public class TestCluster extends TestCase {
             HttpProxy proxy=new StandardHttpProxy("jsessionid");
             _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), isa, proxy);
             //_relocater=new SwitchableRelocationStrategy();
-            _relocater=null;
+            _relocater=new DummyRelocater();
             _middle=new ClusterContextualiser(_bottom, _collapser, new DummyEvicter(), _cmap, _cluster, _dispatcher, _relocater, _location, nodeId);
             _top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
             _middle.setTop(_top);
