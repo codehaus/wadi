@@ -36,6 +36,9 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public interface Relocater {
 
+    void init(RelocaterConfig config);
+    void destroy();
+    
 	/** Either relocate the request to the session by proxying/redirection, or the session to the request, by migration...
 	 * @param hreq
 	 * @param hres
@@ -47,6 +50,4 @@ public interface Relocater {
 	 * @return - whether, or not, the request was contextualised
 	 */
 	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException;
-	public void setTop(Contextualiser top);
-	public Contextualiser getTop();
 }

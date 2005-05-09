@@ -40,6 +40,7 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.ProxyingException;
 import org.codehaus.wadi.RecoverableException;
+import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.RequestRelocater;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -50,36 +51,32 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ProxyRelocater implements RequestRelocater {
+public class ProxyRelocater extends AbstractRelocater implements RequestRelocater {
 	protected final Log _log = LogFactory.getLog(getClass());
-	protected final MessageDispatcher _dispatcher;
+    protected final long _timeout;
 	protected final long _proxyHandOverPeriod;
-	protected final long _timeout;
-	protected final Map _rvMap=new HashMap();
-	protected final Location _location;
-	protected Contextualiser _top;
+    protected final Map _rvMap=new HashMap();
 
-	public void setTop(Contextualiser top){_top=top;}
-	public Contextualiser getTop(){return _top;}
-
-	public ProxyRelocater(MessageDispatcher dispatcher, Location location, long timeout, long proxyHandOverPeriod) {
-		_dispatcher=dispatcher;
+	public ProxyRelocater(long timeout, long proxyHandOverPeriod) {
+        _timeout=timeout;
 		_proxyHandOverPeriod=proxyHandOverPeriod;
-		_timeout=timeout;
-		_location=location;
-
-		_dispatcher.register(this, "onMessage"); // dispatch LocationRequest messages onto our onMessage() method
-		_dispatcher.register(LocationResponse.class, _rvMap, _timeout); // dispatch LocationResponse classes via synchronous rendez-vous
 	}
 
+    public void init(RelocaterConfig config) {
+        super.init(config);
+        MessageDispatcher dispatcher=_config.getDispatcher();
+        dispatcher.register(this, "onMessage"); // dispatch LocationRequest messages onto our onMessage() method
+        dispatcher.register(LocationResponse.class, _rvMap, _timeout); // dispatch LocationResponse classes via synchronous rendez-vous
+    }
+    
 	protected Location locate(String id, Map locationMap) {
 		if (_log.isTraceEnabled()) _log.trace("sending location request: "+id);
 		MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-		settingsInOut.from=_location.getDestination();
-		settingsInOut.to=_dispatcher.getCluster().getDestination();
+		settingsInOut.from=_config.getLocation().getDestination();
+		settingsInOut.to=_config.getDispatcher().getCluster().getDestination();
 		settingsInOut.correlationId=id; // TODO - better correlation id
 		LocationRequest request=new LocationRequest(id, _proxyHandOverPeriod);
-		LocationResponse response=(LocationResponse)_dispatcher.exchangeMessages(id, _rvMap, request, settingsInOut, _timeout);
+		LocationResponse response=(LocationResponse)_config.getDispatcher().exchangeMessages(id, _rvMap, request, settingsInOut, _timeout);
 
 		if (response==null)
 			return null;
@@ -158,7 +155,8 @@ public class ProxyRelocater implements RequestRelocater {
 	public void onMessage(ObjectMessage message, LocationRequest request) {
 		String id=request.getId();
 		if (_log.isTraceEnabled()) _log.trace("receiving location request: "+id);
-		if (_top==null) {
+        Contextualiser top=_config.getContextualiser();
+		if (top==null) {
 			_log.warn("no Contextualiser set - cannot respond to LocationRequests");
 		} else {
 			try {
@@ -166,8 +164,8 @@ public class ProxyRelocater implements RequestRelocater {
 				String correlationId=message.getJMSCorrelationID();
 				long handShakePeriod=request.getHandOverPeriod();
 				// TODO - the peekTimeout should be specified by the remote node...
-				FilterChain fc=new LocationResponseFilterChain(replyTo, correlationId, _location, id, handShakePeriod);
-				_top.contextualise(null,null,fc,id, null, null, true);
+				FilterChain fc=new LocationResponseFilterChain(replyTo, correlationId, _config.getLocation(), id, handShakePeriod);
+				top.contextualise(null,null,fc,id, null, null, true);
 			} catch (Exception e) {
 				if (_log.isWarnEnabled()) _log.warn("problem handling location request: "+id, e);
 			}
@@ -195,13 +193,13 @@ public class ProxyRelocater implements RequestRelocater {
 		public void
 		doFilter(ServletRequest request, ServletResponse response) {
 			if (_log.isTraceEnabled()) _log.trace("sending location response: "+_id);
-			LocationResponse lr=new LocationResponse(_location, Collections.singleton(_id));
+			LocationResponse lr=new LocationResponse(_config.getLocation(), Collections.singleton(_id));
 			try {
-				ObjectMessage m=_dispatcher.getCluster().createObjectMessage();
+				ObjectMessage m=_config.getDispatcher().getCluster().createObjectMessage();
 				m.setJMSReplyTo(_replyTo);
 				m.setJMSCorrelationID(_correlationId);
 				m.setObject(lr);
-				_dispatcher.getCluster().send(_replyTo, m);
+				_config.getDispatcher().getCluster().send(_replyTo, m);
 
 				// Now wait for a while so that the session is locked into this container, giving the other node a chance to proxy to this location and still find it here...
 				// instead of just waiting a set period, we could use a Rendezvous object with a timeout - more complexity - consider...

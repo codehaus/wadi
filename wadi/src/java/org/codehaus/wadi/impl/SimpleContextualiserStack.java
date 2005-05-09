@@ -129,7 +129,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterDispatcher=new MessageDispatcher(_clusterCluster);
 //        _clusterRelocater=new ImmigrateRelocater(_clusterDispatcher, _clusterLocation, 2000, _clusterMap, _collapser);
         //(MessageDispatcher dispatcher, Location location, long timeout, long proxyHandOverPeriod) {
-        _clusterRelocater=new ProxyRelocater(_clusterDispatcher, _clusterLocation, 2000, 2000);
+        _clusterRelocater=new ProxyRelocater(2000, 2000);
         _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation);
 
         _statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
@@ -156,8 +156,6 @@ public class SimpleContextualiserStack implements Contextualiser {
         _memory=new MemoryContextualiser(_serial, _memoryEvicter, _memoryMap, _streamer, _memoryPool, _requestPool);
 
         _cluster.setTop(_memory);
-        _clusterRelocater.setTop(_memory);
-
         // ready to rock !
     }
 
