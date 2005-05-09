@@ -44,20 +44,12 @@ public class JettyManager extends org.codehaus.wadi.impl.DistributableManager im
         super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad);
     }
 
-    protected ServletHandler _handler;
-    public void initialize(ServletHandler handler) {_handler=handler; init();}
-
+    // DistributableManager - WADI
+    
     public ServletContext getServletContext() {return _handler.getServletContext();}
 
-    public HttpSession getHttpSession(String id) {
-        //throw new UnsupportedOperationException();
-        return null; // FIXME - this will be the container trying to 'refresh' a session...
-    }
-
-    public HttpSession newHttpSession(HttpServletRequest request) {
-        return create().getWrapper();
-    }
-
+    // Lifecyle - Jetty & WADI
+    
     public void start() throws Exception {
         getServletContext().setAttribute(Manager.class.getName(), this); // TODO - is putting ourselves in an attribute a security risk ?
         super.start();
@@ -67,14 +59,39 @@ public class JettyManager extends org.codehaus.wadi.impl.DistributableManager im
         try {
             super.stop();
         } catch (Exception e) {
-	  _log.warn("unexpected problem shutting down", e);
+      _log.warn("unexpected problem shutting down", e);
         }
     }
 
+    // SessionManager - Jetty
+    
+    protected ServletHandler _handler;
+    public void initialize(ServletHandler handler) {_handler=handler; init();}
+
+    protected boolean _httpOnly=true;
+    public boolean getHttpOnly() {return _httpOnly;}
+    public void setHttpOnly(boolean httpOnly) {_httpOnly=httpOnly;}
+
+    protected boolean _secureCookies=false;
+    public boolean getSecureCookies() {return _secureCookies;}
+    public void setSecureCookies(boolean secureCookies) {_secureCookies=secureCookies;}
+
+    protected boolean _useRequestedId=false;
+    public boolean getUseRequestedId() {return _useRequestedId;}
+    public void setUseRequestedId(boolean useRequestedId) {_useRequestedId=useRequestedId;}
+
+    public HttpSession newHttpSession(HttpServletRequest request) {
+        return create().getWrapper();
+    }
+
+    public HttpSession getHttpSession(String id) {
+        //throw new UnsupportedOperationException();
+        return null; // FIXME - this will be the container trying to 'refresh' a session...
+    }
 
     // cut-n-pasted from Jetty src - aarg !
     // Greg uses Apache-2.0 as well - so no licensing issue as yet - TODO
-
+    
     public Cookie
     getSessionCookie(javax.servlet.http.HttpSession session,boolean requestIsSecure)
     {
@@ -90,32 +107,20 @@ public class JettyManager extends org.codehaus.wadi.impl.DistributableManager im
                 path=getUseRequestedId()?"/":_handler.getHttpContext().getContextPath();
             if (path==null || path.length()==0)
                 path="/";
-
+    
             if (domain!=null)
                 cookie.setDomain(domain);
             if (maxAge!=null)
                 cookie.setMaxAge(Integer.parseInt(maxAge));
             else
                 cookie.setMaxAge(-1);
-
+    
             cookie.setSecure(requestIsSecure && getSecureCookies());
             cookie.setPath(path);
-
+    
             return cookie;
         }
         return null;
     }
-
-    protected boolean _httpOnly=true;
-    public boolean getHttpOnly() {return _httpOnly;}
-    public void setHttpOnly(boolean httpOnly) {_httpOnly=httpOnly;}
-
-    protected boolean _secureCookies=false;
-    public boolean getSecureCookies() {return _secureCookies;}
-    public void setSecureCookies(boolean secureCookies) {_secureCookies=secureCookies;}
-
-    protected boolean _useRequestedId=false;
-    public boolean getUseRequestedId() {return _useRequestedId;}
-    public void setUseRequestedId(boolean useRequestedId) {_useRequestedId=useRequestedId;}
 
 }

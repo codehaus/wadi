@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Timer;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
@@ -37,6 +38,7 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Router;
+import org.codehaus.wadi.RouterConfig;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionConfig;
 import org.codehaus.wadi.SessionIdFactory;
@@ -51,7 +53,7 @@ import org.codehaus.wadi.ValuePool;
  * @version $Revision$
  */
 
-public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
+public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig, RouterConfig {
 
     protected final Log _log = LogFactory.getLog(getClass());
 
@@ -63,7 +65,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     protected final Contextualiser _contextualiser;
     protected final Map _map;
     protected final Timer _timer;
-    protected Router _router;
+    protected final Router _router;
     protected final boolean _accessOnLoad; // TODO - should only be available on DistributableManager
 
     public Manager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean accessOnLoad) {
@@ -75,8 +77,8 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
         _contextualiser=contextualiser;
         _map=map; // TODO - can we get this from Contextualiser
         _timer=new Timer();
-        _accessOnLoad=accessOnLoad;
         _router=router;
+        _accessOnLoad=accessOnLoad;
     }
 
     protected boolean _started;
@@ -86,6 +88,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     public void init() {
         _sessionPool.init(this);
         _contextualiser.init(this);
+        _router.init(this);
     }
 
     public void start() throws Exception {
@@ -102,6 +105,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     }
 
     public void destroy() {
+        _router.destroy();
         _contextualiser.destroy();
         _sessionPool.destroy();
     }
@@ -234,4 +238,17 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig {
     public SessionPool getSessionPool() {return _sessionPool;}
     
     public Router getRouter() {return _router;}
+
+    // Container integration... - override if a particular Container can do better... 
+    
+    public int getHttpPort(){return Integer.parseInt(System.getProperty("http.port"));} // TODO - temporary hack...
+
+    public String getSessionCookieName()  {return "JSESSIONID";}
+
+    public String getSessionCookiePath(HttpServletRequest req){return req.getContextPath();}
+
+    public String getSessionCookieDomain(){return null;}
+
+    public String getSessionUrlParamName(){return "jsessionid";}
+
 }

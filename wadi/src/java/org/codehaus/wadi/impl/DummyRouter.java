@@ -20,9 +20,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.wadi.Router;
+import org.codehaus.wadi.RouterConfig;
 
 public class DummyRouter implements Router {
 
+    protected RouterConfig _config;
+    
+    public void init(RouterConfig config) {
+        _config=config;
+    }
+    
+    public void destroy() {
+        _config=null;
+    }
+    
     public String strip(String session) {
         return session;
     }

@@ -176,7 +176,7 @@ public class TomcatManager extends DistributableManager implements Manager, Life
     public void setContainer(Container container) {
         _container=container;
         _servletContext=((Context)_container).getServletContext();
-	_servletContext.setAttribute(org.codehaus.wadi.impl.Manager.class.getName(), this);
+        _servletContext.setAttribute(org.codehaus.wadi.impl.Manager.class.getName(), this); // TODO - perhaps init() ?
     }
 
     protected DefaultContext _defaultContext;
@@ -293,21 +293,6 @@ public class TomcatManager extends DistributableManager implements Manager, Life
             copySubset(context.getApplicationEventListeners(),     _attributeListeners, _attributeListenerTest);
         }
     }
-
-    //----------------------------------------
-
-    // These should be Abstract in our superclass...
-
-    // TODO - these need to be hooked up...
-    public String getSessionCookieName()  {return "JSESSIONID";}
-    public String getSessionCookiePath(HttpServletRequest req){return req.getContextPath();}
-    public String getSessionCookieDomain(){return null;}
-
-    public String getSessionUrlParamName(){return "jsessionid";};
-
-    public int getHttpPort(){return Integer.parseInt(System.getProperty("http.port"));} // TODO - temporary hack...
-
-    public HttpSessionContext getSessionContext() {return null;}
 
 
     // may not need these...
