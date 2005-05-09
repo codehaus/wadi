@@ -40,6 +40,7 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Relocater;
+import org.codehaus.wadi.RelocaterConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
@@ -79,8 +80,9 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ClusterContextualiser extends AbstractSharedContextualiser implements ClusterListener {
+public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, ClusterListener {
 
+    protected final Collapser _collapser;
 	protected final HashMap _emigrationRvMap=new HashMap();
 	protected final Cluster _cluster;
 	protected final MessageDispatcher _dispatcher;
@@ -100,6 +102,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	 */
 	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, Cluster cluster, MessageDispatcher dispatcher, Relocater relocater, Location location) {
 		super(next, new CollapsingLocker(collapser), false);
+        _collapser=collapser;
 		_cluster=cluster;
 		_dispatcher=dispatcher;
 	    _relocater=relocater;
@@ -130,6 +133,16 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
             _log.error("could not initialise node state", e);
         }
         _cluster.addClusterListener(this);
+        
+        // _evicter ?
+        _relocater.init(this);
+    }
+    
+    public void destroy() {
+        _relocater.destroy();
+        // TODO - what else ?
+        // _evicter ?
+        super.destroy();
     }
     
     public Immoter getImmoter(){return _immoter;}
@@ -137,7 +150,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     public Immoter getDemoter(String id, Motable motable) {
         if (_cluster.getNodes().size()>=1) {
-            ensureEmmigrationQueue();
+            ensureEmigrationQueue();
             return getImmoter();
         } else {
             return _next.getDemoter(id, motable);
@@ -146,7 +159,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     public Immoter getSharedDemoter() {
         if (_cluster.getNodes().size()>=1) {
-            ensureEmmigrationQueue();
+            ensureEmigrationQueue();
             return getImmoter();
         } else {
             return _next.getSharedDemoter();
@@ -188,7 +201,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         _log.trace("emigration queue destroyed");
     }
 
-	protected synchronized void ensureEmmigrationQueue() {
+	protected synchronized void ensureEmigrationQueue() {
 	    try {
 	        if (_emigrationQueue==null) {
                 createEmigrationQueue();
@@ -380,5 +393,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     public void onCoordinatorChanged(ClusterEvent event) {
         _log.trace("coordinator changed: "+event.getNode().getState().get("id")); // we don't use this...
     }
+    
+    // RelocaterConfig
+    
+    public Collapser getCollapser() {return _collapser;}
+    public MessageDispatcher getDispatcher() {return _dispatcher;}
+    public Location getLocation() {return _location;}
+    public Cluster getCluster() {return _cluster;}
+    public Contextualiser getContextualiser() {return _top;}
 
 }

@@ -555,27 +555,30 @@ public class TestContextualiser extends TestCase {
         //-------------------
         // do the test
 
-        Location location=new MyLocation();
+        Location location0=new MyLocation();
         Map c0=new HashMap();
         MessageDispatcher dispatcher0=new MessageDispatcher(cluster0);
-        Relocater relocater0=new ProxyRelocater(dispatcher0, location, 2000, 3000);
+        Relocater relocater0=new ProxyRelocater(2000, 3000);
         Collapser collapser0=new HashingCollapser(10, 2000);
-        ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, new SwitchableEvicter(30000, true), c0, cluster0, dispatcher0, relocater0, location);
+        ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, new SwitchableEvicter(30000, true), c0, cluster0, dispatcher0, relocater0, location0);
         Map m0=new HashMap();
         m0.put("foo", new MyContext());
         Contextualiser memory0=new MemoryContextualiser(clstr0, new NeverEvicter(30000, true), m0, new GZIPStreamer(), new MyContextPool(), _requestPool);
-        relocater0.setTop(memory0);
-
+        clstr0.setTop(memory0);
+        memory0.init(null);
+        
+        Location location1=new MyLocation();
         Map c1=new HashMap();
         MessageDispatcher dispatcher1=new MessageDispatcher(cluster1);
-        Relocater relocater1=new ProxyRelocater(dispatcher1, location, 2000, 3000);
+        Relocater relocater1=new ProxyRelocater(2000, 3000);
         Collapser collapser1=new HashingCollapser(10, 2000);
-        ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, new SwitchableEvicter(30000, true), c1, cluster1, dispatcher1, relocater1, null);
+        ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, new SwitchableEvicter(30000, true), c1, cluster1, dispatcher1, relocater1, location1);
         Map m1=new HashMap();
         m1.put("bar", new MyContext());
         Contextualiser memory1=new MemoryContextualiser(clstr1, new NeverEvicter(30000, true), m1, new GZIPStreamer(), new MyContextPool(), _requestPool);
-        relocater1.setTop(memory1);
-
+        clstr1.setTop(memory1);
+        memory1.init(null);
+        
         Thread.sleep(2000); // activecluster needs a little time to sort itself out...
         _log.info("STARTING NOW!");
         FilterChain fc=new MyFilterChain();
