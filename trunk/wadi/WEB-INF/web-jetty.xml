@@ -35,7 +35,7 @@
 
   </Call>
 
-<!-- needed for StopGracefully to work -->
+<!-- needed for StopGracefully (set on Server) to work -->
   <Set name="StatsOn">true</Set>
 <!-- needed for session evacuation under load -->
 <!--  <Set name="StopGracefully">true</Set> -->
