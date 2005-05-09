@@ -71,54 +71,60 @@ public class MessageDispatcher implements MessageListener {
         _executor.setMinimumPoolSize(4);
 	    }
 
-	interface Dispatcher {
-	  void dispatch(ObjectMessage om, Serializable obj) throws Exception;
-	}
+    interface Dispatcher {
+        void dispatch(ObjectMessage om, Serializable obj) throws Exception;
+        void incCount();
+        void decCount();
+        int getCount();
+    }
+    
+    class TargetDispatcher implements Dispatcher {
+        protected final Object _target;
+        protected final Method _method;
+        protected final ThreadLocal _pair=new ThreadLocal(){protected Object initialValue() {return new Object[2];}};
+        
+        public TargetDispatcher(Object target, Method method) {
+            _target=target;
+            _method=method;
+        }
+        
+        public void dispatch(ObjectMessage om, Serializable obj) throws InvocationTargetException, IllegalAccessException {
+            Object[] pair=(Object[])_pair.get();
+            pair[0]=om;
+            pair[1]=obj;
+            _method.invoke(_target, pair);
+        }
+        
+        public String toString() {
+            return "<TargetDispatcher: "+_method+" dispatched on: "+_target+">";
+        }
+        
+        protected int _count;
+        public void incCount() {_count++;}
+        public void decCount() {_count--;}
+        public synchronized int getCount() {return _count;}
+    }
 
-	class TargetDispatcher implements Dispatcher {
-	  protected final Object _target;
-	  protected final Method _method;
-	  protected final ThreadLocal _pair=new ThreadLocal(){protected Object initialValue() {return new Object[2];}};
 
-	  protected int _count;
 
-	  public TargetDispatcher(Object target, Method method) {
-	    _target=target;
-	    _method=method;
-	  }
-
-	  public void dispatch(ObjectMessage om, Serializable obj) throws InvocationTargetException, IllegalAccessException {
-	    _count++;
-	    Object[] pair=(Object[])_pair.get();
-	    pair[0]=om;
-	    pair[1]=obj;
-	    _method.invoke(_target, pair);
-	    _count--;
-	  }
-
-	  public String toString() {
-	    return "<TargetDispatcher: "+_method+" dispatched on: "+_target+">";
-	  }
-	}
-
-    public boolean register(Object target, String methodName, Class type) {
-      try {
-	int n=0;
-	Method method=target.getClass().getMethod(methodName, new Class[] {ObjectMessage.class, type});
-	if (method==null) return false;
-
-	Dispatcher nuw=new TargetDispatcher(target, method);
-
-	Dispatcher old=(Dispatcher)_map.put(type, nuw);
-	if (old!=null)
-	  if (_log.isWarnEnabled()) _log.warn("later registration replaces earlier - multiple dispatch NYI: "+old+" -> "+nuw);
-
-	if (_log.isTraceEnabled()) _log.trace("registering: "+type.getName()+"."+methodName+"()");
-	return true;
-      } catch (NoSuchMethodException e) {
-	// ignore
-	return false;
-      }
+    public Dispatcher register(Object target, String methodName, Class type) {
+        try {
+            int n=0;
+            Method method=target.getClass().getMethod(methodName, new Class[] {ObjectMessage.class, type});
+            if (method==null) return null;
+            
+            Dispatcher nuw=new TargetDispatcher(target, method);
+            
+            Dispatcher old=(Dispatcher)_map.put(type, nuw);
+            if (old!=null) 
+                if (_log.isWarnEnabled()) _log.warn("later registration replaces earlier - multiple dispatch NYI: "+old+" -> "+nuw);
+            
+            if (_log.isTraceEnabled()) _log.trace("registering: "+type.getName()+"."+methodName+"()");
+            return nuw;
+        } catch (NoSuchMethodException e) {
+            // ignore
+            return null;
+        }
     }
 
   public boolean deregister(String methodName, Class type, int timeout) {
@@ -126,8 +132,8 @@ public class MessageDispatcher implements MessageListener {
     if (td==null)
       return false;
     else
-      // this isn't failproof - if the task has not yet been started,
-      // the counter may still read 0 :-( - FIXME
+      // this isn't failproof - if onMessage has not yet been called,
+      // the counter may still read 0 - but it's the best we can do...
       for (int i=timeout; td._count>0 && i>0; i--) {
 	try {
 	  Thread.sleep(1000);
@@ -173,6 +179,11 @@ public class MessageDispatcher implements MessageListener {
 	  public String toString() {
 	    return "<RendezVousDispatcher>";
 	  }
+      
+      protected int _count;
+      public void incCount() {_count++;}
+      public void decCount() {_count--;}
+      public synchronized int getCount() {return _count;}
 	}
 
 	/**
@@ -185,45 +196,55 @@ public class MessageDispatcher implements MessageListener {
 		if (_log.isTraceEnabled()) _log.trace("registering class: "+type.getName());
 	}
 
-	public void onMessage(Message message) {
-		//TODO -  Threads should be pooled and reusable
-		// any allocs should be cached as ThreadLocals and reused
-		// we need a way of indicating which messages should be threaded and which not...
-		// how about a producer/consumer arrangement...
-        do {
-            try {
-                _executor.execute(new DispatchRunner(message));
-            } catch (InterruptedException e) {
-                // ignore
+    public void onMessage(Message message) {
+        try {
+            ObjectMessage objectMessage=null;
+            Serializable serializable=null;
+            Dispatcher dispatcher;
+            if (
+                    message instanceof ObjectMessage &&
+                    (objectMessage=(ObjectMessage)message)!=null &&
+                    (serializable=objectMessage.getObject())!=null &&
+                    (dispatcher=(Dispatcher)_map.get(serializable.getClass()))!=null
+            ) {
+                do {
+                    try {
+                        synchronized (dispatcher) {
+                            _executor.execute(new DispatchRunner(dispatcher, objectMessage, serializable)); // TODO - pool DispatchRunner ?
+                            dispatcher.incCount();
+                        }
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
+                } while (Thread.interrupted());
+            } else {
+                _log.warn("spurious message received: "+message);
             }
-        } while (Thread.interrupted());
-	}
+        } catch (JMSException e) {
+            _log.warn("bad message", e);
+        }
+    }
 
 	class DispatchRunner implements Runnable {
-		protected final Message _message;
+        protected final Dispatcher _dispatcher;
+        protected final ObjectMessage _objectMessage;
+        protected final Serializable _serializable;
 
-		public DispatchRunner(Message message) {
-			_message=message;
+		public DispatchRunner(Dispatcher dispatcher, ObjectMessage objectMessage, Serializable serializable) {
+            _dispatcher=dispatcher;
+            _objectMessage=objectMessage;
+            _serializable=serializable;
 		}
 
 		public void run() {
-			ObjectMessage om=null;
-			Serializable obj=null;
-			Dispatcher d;
-
-			try {
-				if (_message instanceof ObjectMessage && (om=(ObjectMessage)_message)!=null && (obj=om.getObject())!=null) {
-					if ((d=(Dispatcher)_map.get(obj.getClass()))!=null) {
-						d.dispatch(om, obj);
-						// if a message is of unrecognised type, we should recurse up its class hierarchy, memoizing the result
-						// if we find a class that matches - TODO - This would enable message subtyping...
-					} else {
-						if (_log.isTraceEnabled()) _log.trace("no dispatcher registered for message: "+obj);
-					}
-				}
-			} catch (Exception e) {
-				_log.error("problem processing incoming message", e);
-			}
+            try {
+            _dispatcher.dispatch(_objectMessage, _serializable);
+            synchronized (_dispatcher) {
+                _dispatcher.decCount();
+            }
+            } catch (Exception e) {
+                _log.error("problem dispatching message", e);
+            }
 		}
 	}
 
