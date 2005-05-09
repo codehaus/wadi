@@ -93,6 +93,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     protected final int _ackTimeout=500; // TODO - parameterise
     protected final Map _map;
     protected final Evicter _evicter;
+    protected final String _nodeId;
 
 	/**
 	 * @param next
@@ -100,7 +101,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	 * @param map
 	 * @param location TODO
 	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, Cluster cluster, MessageDispatcher dispatcher, Relocater relocater, Location location) {
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, Cluster cluster, MessageDispatcher dispatcher, Relocater relocater, Location location, String nodeId) {
 		super(next, new CollapsingLocker(collapser), false);
         _collapser=collapser;
 		_cluster=cluster;
@@ -109,6 +110,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	    _location=location;
         _map=map;
         _evicter=evicter;
+        _nodeId=nodeId;
 
 	    _immoter=new EmigrationImmoter();
 	    _emoter=null; // TODO - I think this should be something like the ImmigrationEmoter
@@ -126,7 +128,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     public void init(ContextualiserConfig config) {
         super.init(config);
         Map state=new HashMap();
-        state.put("id", System.getProperty("wadi.colour")); // TODO - parameterise
+        state.put("id", _nodeId); // TODO - parameterise
         try {
             _cluster.getLocalNode().setState(state);
         } catch (JMSException e){
@@ -136,6 +138,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         
         // _evicter ?
         _relocater.init(this);
+    }
+    
+    public String getStartInfo() {
+        return "["+_nodeId+"]";
     }
     
     public void destroy() {

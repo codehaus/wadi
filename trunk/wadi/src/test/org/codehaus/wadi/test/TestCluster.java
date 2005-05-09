@@ -114,7 +114,7 @@ public class TestCluster extends TestCase {
         protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
         protected final Manager _manager;
         
-        public MyNode(ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
+        public MyNode(String nodeId, ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
             _bottom=new SharedJDBCContextualiser(_dummyContextualiser, _collapser, true, ds, table);
             _cluster=(Cluster)factory.createCluster(clusterName);
             _cluster.addClusterListener(new MyClusterListener());
@@ -124,7 +124,7 @@ public class TestCluster extends TestCase {
             _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), isa, proxy);
             //_relocater=new SwitchableRelocationStrategy();
             _relocater=null;
-            _middle=new ClusterContextualiser(_bottom, _collapser, new DummyEvicter(), _cmap, _cluster, _dispatcher, _relocater, _location);
+            _middle=new ClusterContextualiser(_bottom, _collapser, new DummyEvicter(), _cmap, _cluster, _dispatcher, _relocater, _location, nodeId);
             _top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
             _middle.setTop(_top);
             _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, _streamer, _accessOnLoad);
@@ -197,9 +197,9 @@ public class TestCluster extends TestCase {
         if (!_preserveDB)
             SharedJDBCMotable.init(_ds, _table);
             
-		(_node0=new MyNode(_clusterFactory, _clusterName, _ds, _table)).start();
-		(_node1=new MyNode(_clusterFactory, _clusterName, _ds, _table)).start();
-		(_node2=new MyNode(_clusterFactory, _clusterName, _ds, _table)).start();
+		(_node0=new MyNode("node0", _clusterFactory, _clusterName, _ds, _table)).start();
+		(_node1=new MyNode("node1", _clusterFactory, _clusterName, _ds, _table)).start();
+		(_node2=new MyNode("node2", _clusterFactory, _clusterName, _ds, _table)).start();
 
 		//_node0.getCluster().waitForClusterToComplete(3, 6000);
 		//_node1.getCluster().waitForClusterToComplete(3, 6000);

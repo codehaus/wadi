@@ -560,7 +560,7 @@ public class TestContextualiser extends TestCase {
         MessageDispatcher dispatcher0=new MessageDispatcher(cluster0);
         Relocater relocater0=new ProxyRelocater(2000, 3000);
         Collapser collapser0=new HashingCollapser(10, 2000);
-        ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, new SwitchableEvicter(30000, true), c0, cluster0, dispatcher0, relocater0, location0);
+        ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, new SwitchableEvicter(30000, true), c0, cluster0, dispatcher0, relocater0, location0, "node0");
         Map m0=new HashMap();
         m0.put("foo", new MyContext());
         Contextualiser memory0=new MemoryContextualiser(clstr0, new NeverEvicter(30000, true), m0, new GZIPStreamer(), new MyContextPool(), _requestPool);
@@ -572,7 +572,7 @@ public class TestContextualiser extends TestCase {
         MessageDispatcher dispatcher1=new MessageDispatcher(cluster1);
         Relocater relocater1=new ProxyRelocater(2000, 3000);
         Collapser collapser1=new HashingCollapser(10, 2000);
-        ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, new SwitchableEvicter(30000, true), c1, cluster1, dispatcher1, relocater1, location1);
+        ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, new SwitchableEvicter(30000, true), c1, cluster1, dispatcher1, relocater1, location1, "node1");
         Map m1=new HashMap();
         m1.put("bar", new MyContext());
         Contextualiser memory1=new MemoryContextualiser(clstr1, new NeverEvicter(30000, true), m1, new GZIPStreamer(), new MyContextPool(), _requestPool);
