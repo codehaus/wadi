@@ -74,11 +74,11 @@ public class ImmigrateRelocater extends AbstractRelocater implements SessionRelo
     public void init(RelocaterConfig config) {
         super.init(config);
         MessageDispatcher dispatcher=_config.getDispatcher();
-        dispatcher.register(this, "onMessage");
+        dispatcher.register(this, "onMessage", ImmigrationRequest.class);
         dispatcher.register(ImmigrationResponse.class, _resRvMap, _resTimeout);
         dispatcher.register(ImmigrationAcknowledgement.class, _ackRvMap, _ackTimeout);
     }
-    
+
     protected int _counter;
     public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
 

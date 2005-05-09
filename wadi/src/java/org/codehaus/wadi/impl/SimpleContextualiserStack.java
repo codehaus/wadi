@@ -127,9 +127,9 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterMap=new ConcurrentHashMap();
         _clusterEvicter=new DummyEvicter(); // TODO - consider Cluster eviction carefully...
         _clusterDispatcher=new MessageDispatcher(_clusterCluster);
-//        _clusterRelocater=new ImmigrateRelocater(_clusterDispatcher, _clusterLocation, 2000, _clusterMap, _collapser);
-        //(MessageDispatcher dispatcher, Location location, long timeout, long proxyHandOverPeriod) {
-        _clusterRelocater=new ProxyRelocater(2000, 2000);
+	long ackTimeout=250; // MUST be shorter than other nodes EmigrationReq.resTimeout, or they will timeout waiting for us...
+        _clusterRelocater=new ImmigrateRelocater(2000, 1000);
+	//        _clusterRelocater=new ProxyRelocater(2000, 2000);
         String nodeId=System.getProperty("wadi.colour");
         _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation, nodeId);
 

@@ -65,10 +65,10 @@ public class ProxyRelocater extends AbstractRelocater implements RequestRelocate
     public void init(RelocaterConfig config) {
         super.init(config);
         MessageDispatcher dispatcher=_config.getDispatcher();
-        dispatcher.register(this, "onMessage"); // dispatch LocationRequest messages onto our onMessage() method
+        dispatcher.register(this, "onMessage", LocationRequest.class); // dispatch LocationRequest messages onto our onMessage() method
         dispatcher.register(LocationResponse.class, _rvMap, _timeout); // dispatch LocationResponse classes via synchronous rendez-vous
     }
-    
+
 	protected Location locate(String id, Map locationMap) {
 		if (_log.isTraceEnabled()) _log.trace("sending location request: "+id);
 		MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();

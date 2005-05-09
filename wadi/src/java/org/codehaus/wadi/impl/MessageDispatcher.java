@@ -72,81 +72,74 @@ public class MessageDispatcher implements MessageListener {
 	    }
 
 	interface Dispatcher {
-		void dispatch(ObjectMessage om, Serializable obj) throws Exception;
+	  void dispatch(ObjectMessage om, Serializable obj) throws Exception;
 	}
 
 	class TargetDispatcher implements Dispatcher {
-		protected final Object _target;
-		protected final Method _method;
-		protected final ThreadLocal _pair=new ThreadLocal(){protected Object initialValue() {return new Object[2];}};
+	  protected final Object _target;
+	  protected final Method _method;
+	  protected final ThreadLocal _pair=new ThreadLocal(){protected Object initialValue() {return new Object[2];}};
 
-		public TargetDispatcher(Object target, Method method) {
-			_target=target;
-			_method=method;
-		}
+	  protected int _count;
 
-		public void dispatch(ObjectMessage om, Serializable obj) throws InvocationTargetException, IllegalAccessException {
-			Object[] pair=(Object[])_pair.get();
-			pair[0]=om;
-			pair[1]=obj;
-			_method.invoke(_target, pair);
-		}
+	  public TargetDispatcher(Object target, Method method) {
+	    _target=target;
+	    _method=method;
+	  }
 
-		public String toString() {
-			return "<TargetDispatcher: "+_method+" dispatched on: "+_target+">";
-		}
-	}
+	  public void dispatch(ObjectMessage om, Serializable obj) throws InvocationTargetException, IllegalAccessException {
+	    _count++;
+	    Object[] pair=(Object[])_pair.get();
+	    pair[0]=om;
+	    pair[1]=obj;
+	    _method.invoke(_target, pair);
+	    _count--;
+	  }
 
-	/**
-	 * @param target - the object on which to dispatch messages
-	 * @param methodName - the name of the overloaded method to call
-	 * @return - the number of methods registered
-	 */
-	public int register(Object target, String methodName) {
-		// TODO - allow multiple registrations for same message type ?
-		int n=0;
-		Method[] ms=target.getClass().getMethods();
-		for (int i=ms.length-1; i>=0; i--) {
-			Method m=ms[i];
-			Class[] pts=null;
-			if (methodName.equals(m.getName()) && (pts=m.getParameterTypes()).length==2 && pts[0]==ObjectMessage.class) {
-				// return type should be void...
-				Dispatcher old;
-				Dispatcher nuw=new TargetDispatcher(target, m);
-				if ((old=(Dispatcher)_map.put(pts[1], nuw))!=null) {
-					if (_log.isWarnEnabled()) _log.warn("later registration replaces earlier - multiple dispatch NYI: "+old+" -> "+nuw);
-				}
-				if (_log.isTraceEnabled()) _log.trace("registering class: "+pts[1].getName());
-				n++;
-			}
-		}
-		return n;
+	  public String toString() {
+	    return "<TargetDispatcher: "+_method+" dispatched on: "+_target+">";
+	  }
 	}
 
     public boolean register(Object target, String methodName, Class type) {
-        try {
-            int n=0;
-            Method method=target.getClass().getMethod(methodName, new Class[] {ObjectMessage.class, type});
-            if (method==null) return false;
-            
-            Dispatcher nuw=new TargetDispatcher(target, method);
-            
-            Dispatcher old=(Dispatcher)_map.put(type, nuw);
-            if (old!=null) 
-                if (_log.isWarnEnabled()) _log.warn("later registration replaces earlier - multiple dispatch NYI: "+old+" -> "+nuw);
-            
-            if (_log.isTraceEnabled()) _log.trace("registering: "+type.getName()+"."+methodName+"()");
-            return true;
-        } catch (NoSuchMethodException e) {
-            // ignore
-            return false;
-        }
+      try {
+	int n=0;
+	Method method=target.getClass().getMethod(methodName, new Class[] {ObjectMessage.class, type});
+	if (method==null) return false;
+
+	Dispatcher nuw=new TargetDispatcher(target, method);
+
+	Dispatcher old=(Dispatcher)_map.put(type, nuw);
+	if (old!=null)
+	  if (_log.isWarnEnabled()) _log.warn("later registration replaces earlier - multiple dispatch NYI: "+old+" -> "+nuw);
+
+	if (_log.isTraceEnabled()) _log.trace("registering: "+type.getName()+"."+methodName+"()");
+	return true;
+      } catch (NoSuchMethodException e) {
+	// ignore
+	return false;
+      }
     }
-    
-    public boolean deregister(String methodName, Class type) {
-        return (_map.remove(type)!=null);
-    }
-    
+
+  public boolean deregister(String methodName, Class type, int timeout) {
+    TargetDispatcher td=(TargetDispatcher)_map.get(type);
+    if (td==null)
+      return false;
+    else
+      // this isn't failproof - if the task has not yet been started,
+      // the counter may still read 0 :-( - FIXME
+      for (int i=timeout; td._count>0 && i>0; i--) {
+	try {
+	  Thread.sleep(1000);
+	} catch (InterruptedException e) {
+	  // ignore - TODO
+	}
+      }
+
+    _map.remove(type);
+    return td._count<=0;
+  }
+
 	class RendezVousDispatcher implements Dispatcher {
 	  protected final Map _rvMap;
 	  protected final long _timeout;

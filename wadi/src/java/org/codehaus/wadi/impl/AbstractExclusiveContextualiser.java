@@ -100,6 +100,9 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         }
         RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
         if (_log.isInfoEnabled()) _log.info("evacuated sessions to "+immoter.getInfo()+": "+s);
+	int size=_map.size();
+	if (size>0)
+	  _log.error("sessions did not find asylum: "+size);
     }
 
     public void init(ContextualiserConfig config) {
