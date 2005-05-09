@@ -23,13 +23,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Router;
+import org.codehaus.wadi.RouterConfig;
 
 public class JkRouter implements Router {
 
     protected final Log _log=LogFactory.getLog(getClass());
-    protected final String _cookieName="JSESSIONID";
-    protected final String _cookiePath="/wadi";
-    protected final String _cookieDomain=null;
     protected final String _info;
     protected final String _suffix;
 
@@ -38,6 +36,16 @@ public class JkRouter implements Router {
         _suffix="."+_info;
     }
 
+    protected RouterConfig _config;
+    
+    public void init(RouterConfig config) {
+        _config=config;
+    }
+    
+    public void destroy() {
+        _config=null;
+    }
+    
     public String strip(String session) {
         int i=session.lastIndexOf(".");
         if (i<0)
@@ -103,17 +111,18 @@ public class JkRouter implements Router {
         for (int i=0;i<cookies.length;i++)
         {
             Cookie cookie=cookies[i];
-            if (cookie.getName().equalsIgnoreCase(_cookieName) && cookie.getValue().equals(oldId))
+            if (cookie.getName().equalsIgnoreCase(_config.getSessionCookieName()) && cookie.getValue().equals(oldId))
             {
                 // name, path and domain must match those on client side,
                 // for cookie to be updated in browser...
 
-                //String cookiePath=manager.getSessionCookiePath(req);
-                if (_cookiePath!=null)
-                    cookie.setPath(_cookiePath);
+                String cookiePath=_config.getSessionCookiePath(req);
+                if (cookiePath!=null)
+                    cookie.setPath(cookiePath);
 
-                if (_cookieDomain!=null)
-                    cookie.setDomain(_cookieDomain);
+                String cookieDomain=_config.getSessionCookieDomain();
+                if (cookieDomain!=null)
+                    cookie.setDomain(cookieDomain);
 
                 cookie.setValue(newId); // the session id with redirected routing info
 
