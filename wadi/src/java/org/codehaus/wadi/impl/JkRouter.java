@@ -51,7 +51,9 @@ public class JkRouter implements Router {
     }
 
     public String augment(String id, String target) {
+        assert id!=null;
         assert target.startsWith(".");
+
         int i=id.lastIndexOf(".");
         if (i<0) // id has no routing info
             return id+target;
