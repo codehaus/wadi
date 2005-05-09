@@ -18,6 +18,7 @@ package org.codehaus.wadi.test;
 
 import java.io.File;
 import java.net.InetSocketAddress;
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -116,7 +117,7 @@ public class TestCluster extends TestCase {
         protected final Manager _manager;
         
         public MyNode(String nodeId, ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
-            _bottom=new SharedJDBCContextualiser(_dummyContextualiser, _collapser, true, ds, table);
+            _bottom=new SharedJDBCContextualiser(_dummyContextualiser, _collapser, false, ds, table);
             _cluster=(Cluster)factory.createCluster(clusterName);
             _cluster.addClusterListener(new MyClusterListener());
             _dispatcher=new MessageDispatcher(_cluster);
@@ -174,7 +175,7 @@ public class TestCluster extends TestCase {
     protected MyNode _node0;
     protected MyNode _node1;
     protected MyNode _node2;
-
+    
     /**
      * Constructor for TestCluster.
      * @param name
@@ -250,6 +251,7 @@ public class TestCluster extends TestCase {
         // sessions should be evacuated to remaining two nodes...
         _log.info("NODES: "+_node0.getCluster().getNodes().size());
 		_node0.stop();
+        Thread.sleep(6000); // time for other nodes to notice...
         _log.info("NODES: "+_node1.getCluster().getNodes().size());
 
 		// where are all the sessions now ?
@@ -269,6 +271,7 @@ public class TestCluster extends TestCase {
         // sessions should all be evacuated to node2
         _log.info("NODES: "+_node1.getCluster().getNodes().size());
 		_node1.stop();
+        Thread.sleep(6000); // time for other nodes to notice...
         _log.info("NODES: "+_node2.getCluster().getNodes().size());
 		{
 		    int s0=m0.size();
@@ -285,8 +288,8 @@ public class TestCluster extends TestCase {
         // shutdown node2
         _log.info("NODES: "+_node2.getCluster().getNodes().size());
 		_node2.stop();
+        Thread.sleep(6000); // time for other nodes to notice...
         _log.info("NODES: should be 0");
-		Thread.sleep(6000); // give everything some time to happen...
 		{
 		    int s0=m0.size();
 		    int s1=m1.size();
@@ -299,7 +302,6 @@ public class TestCluster extends TestCase {
 		}
 
         // TODO - figure out what should happen to location caches, implement and test it.
-        
         
         // restart nodes - first one up should reload saved contexts...
         

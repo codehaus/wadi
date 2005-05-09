@@ -96,6 +96,18 @@ public class SharedJDBCMotable extends AbstractMotable {
             if (s!=null)
                 s.close();
         }
+
+        try {
+            s=connection.createStatement();
+            s.executeUpdate("DELETE FROM "+table);
+        } catch (SQLException e) {
+            _log.warn("removal (shared database) failed", e);
+            throw e;
+        } finally {
+            if (s!=null)
+                s.close();
+        }
+        
         return count;
     }
 
