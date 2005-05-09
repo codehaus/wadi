@@ -378,7 +378,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     }
     
     public void onCoordinatorChanged(ClusterEvent event) {
-        _log.info("coordinator changed: "+event.getNode().getState().get("id"));
+        _log.trace("coordinator changed: "+event.getNode().getState().get("id")); // we don't use this...
     }
 
 }
