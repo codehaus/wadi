@@ -15,9 +15,9 @@
 	   </Call>
 	  </Arg>
      </New>
-    </Arg>  
-  </Call>      
- 
+    </Arg>
+  </Call>
+
 <!-- Set up the WADI Filter -->
 
   <Call name="getWebApplicationHandler">
@@ -34,7 +34,13 @@
    </Call>
 
   </Call>
-  
+
+<!-- needed for StopGracefully to work -->
+  <Set name="StatsOn">true</Set>
+<!-- needed for session evacuation under load -->
+<!--  <Set name="StopGracefully">true</Set> -->
+
+
 <!-- Set up the WADI Session Manager -->
 
   <Get name="ServletHandler">
