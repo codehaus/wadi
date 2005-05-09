@@ -17,7 +17,12 @@
 package org.codehaus.wadi.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -119,9 +124,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	    // so session relocation should be the basic strategy, with request relocation as a pluggable
 	    // optimisation...
 
-	    _dispatcher.register(this, "onMessage");
-	    _dispatcher.register(EmigrationAcknowledgement.class, _emigrationRvMap, _ackTimeout);
-
 	    if (_log.isTraceEnabled()) _log.trace("Destination is: "+_cluster.getLocalNode().getDestination());
 		}
 
@@ -135,7 +137,11 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
             _log.error("could not initialise node state", e);
         }
         _cluster.addClusterListener(this);
-        
+        _dispatcher.register(this, "onMessage", EmigrationEndedNotification.class);
+        _dispatcher.register(this, "onMessage", EmigrationRequest.class);
+        _dispatcher.register(this, "onMessage", EmigrationStartedNotification.class);
+        _dispatcher.register(EmigrationAcknowledgement.class, _emigrationRvMap, _ackTimeout);
+
         // _evicter ?
         _relocater.init(this);
     }
@@ -193,10 +199,23 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     protected void createEmigrationQueue() throws JMSException {
         _log.trace("creating emigration queue");
-        _emigrationQueue=_cluster.createQueue("EMIGRATION-"+System.currentTimeMillis()); // TODO - better queue name ?
+        _emigrationQueue=_cluster.createQueue("org.codehaus.wadi."+_nodeId+"."+"EMIGRATION");
         MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
         settings.to=_dispatcher.getCluster().getDestination();
         _dispatcher.sendMessage(new EmigrationStartedNotification(_emigrationQueue), settings);
+        
+        // whilst we are evacuating...
+        // 1) do not form any further asylum agreements...
+        _dispatcher.register(this, "onMessage", EmigrationEndedNotification.class);
+        _dispatcher.register(this, "onMessage", EmigrationStartedNotification.class);
+        _log.info("ignoring further asylum agreement negotiotiations");
+        // 2) rescind existing agreements existing agreements...
+        _log.info("pulling out of existing asylum agreements: "+_asylumAgreements.size());
+        for (Iterator i=_asylumAgreements.iterator(); i.hasNext(); ) {
+            Destination queue=(Destination)i.next();
+            _dispatcher.removeDestination(queue);
+        }
+        _asylumAgreements.clear();
     }
 
     protected void destroyEmigrationQueue() throws JMSException {
@@ -225,9 +244,12 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         super.stop();
     }
 
+    protected List _asylumAgreements=Collections.synchronizedList(new ArrayList());
+    
 	public void onMessage(ObjectMessage om, EmigrationStartedNotification sdsn) throws JMSException {
 		Destination emigrationQueue=sdsn.getDestination();
 		if (_log.isTraceEnabled()) _log.trace("received EmigrationStartedNotification: "+emigrationQueue);
+        _asylumAgreements.add(emigrationQueue);
 		_dispatcher.addDestination(emigrationQueue);
 	}
 
@@ -235,6 +257,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		Destination emigrationQueue=sden.getDestination();
 		if (_log.isTraceEnabled()) _log.trace("received EmigrationEndedNotification: "+emigrationQueue);
 		_dispatcher.removeDestination(emigrationQueue);
+        _asylumAgreements.remove(emigrationQueue);
 	}
 
 	/**
