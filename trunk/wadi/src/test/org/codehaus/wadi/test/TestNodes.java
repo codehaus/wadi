@@ -48,7 +48,7 @@ public class TestNodes extends TestCase {
     // ask for session at other
     // confirm that request was proxied
     // confirm that cookie has been rerouted
-    public void testRequestRelocation() throws Exception {
+    public void testCookieRerouting() throws Exception {
         assertTrue(true);
         System.setProperty("http.port", "8080");
         System.setProperty("ajp.port", "8009");
@@ -59,14 +59,14 @@ public class TestNodes extends TestCase {
         Thread.sleep(2000);
         System.out.println("");
         
-        System.setProperty("http.port", "8081");
-        System.setProperty("ajp.port", "8010");
-        System.setProperty("STOP.PORT", "8041");
-        System.setProperty("wadi.colour", "green");
-        Server green=new Server("/home/jules/workspace/wadi/conf/jetty-wadi2.xml");
-        green.start();
-        Thread.sleep(2000);
-        System.out.println("");
+//        System.setProperty("http.port", "8081");
+//        System.setProperty("ajp.port", "8010");
+//        System.setProperty("STOP.PORT", "8041");
+//        System.setProperty("wadi.colour", "green");
+//        Server green=new Server("/home/jules/workspace/wadi/conf/jetty-wadi2.xml");
+//        green.start();
+//        Thread.sleep(2000);
+//        System.out.println("");
 
         HttpConnection connection=new HttpConnection("localhost", 8080);
         HttpState state=new HttpState();
@@ -87,7 +87,7 @@ public class TestNodes extends TestCase {
         System.out.println("");
         
         get=new GetMethod("/wadi/jsp/create.jsp");
-        get.execute(state, new HttpConnection("localhost", 8081));
+        get.execute(state, new HttpConnection("localhost", 8080));
         // how do the cookies look ?
         cookies=state.getCookies();
         assertTrue(cookies.length==1);
@@ -98,8 +98,8 @@ public class TestNodes extends TestCase {
         red.stop();
         Thread.sleep(2000);
         System.out.println("");
-        //green.stop();
-        Thread.sleep(2000);
-        System.out.println("");
+//        //green.stop();
+//        Thread.sleep(2000);
+//        System.out.println("");
     }
 }
