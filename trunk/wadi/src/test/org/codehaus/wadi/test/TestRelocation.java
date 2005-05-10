@@ -216,8 +216,8 @@ public class TestRelocation extends TestCase {
 		assertTrue(c0.isEmpty());
 		assertTrue(c1.isEmpty());
 
-		m0.put("foo", new MyContext());
-		m1.put("bar", new MyContext());
+		m0.put("foo", new MyContext("foo", "1"));
+		m1.put("bar", new MyContext("bar", "2"));
 
 		assertTrue(m0.size()==1);
 		assertTrue(m1.size()==1);
@@ -342,8 +342,8 @@ public class TestRelocation extends TestCase {
 		assertTrue(c0.isEmpty());
 		assertTrue(c1.isEmpty());
 
-		m0.put("foo", new MyContext());
-		m1.put("bar", new MyContext());
+		m0.put("foo", new MyContext("foo", "1"));
+		m1.put("bar", new MyContext("bar", "2"));
 
 		assertTrue(m0.size()==1);
 		assertTrue(m1.size()==1);
@@ -422,8 +422,8 @@ public class TestRelocation extends TestCase {
 		Map m0=_servlet0.getMemoryMap();
 		Map m1=_servlet1.getMemoryMap();
 
-		m0.put("foo", new MyContext());
-		m1.put("bar", new MyContext());
+		m0.put("foo", new MyContext("foo", "1"));
+		m1.put("bar", new MyContext("bar", "2"));
 
 		Test test;
 

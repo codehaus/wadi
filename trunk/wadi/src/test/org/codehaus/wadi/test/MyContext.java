@@ -29,7 +29,7 @@ public class MyContext extends AbstractContext {
 
 	protected String _val;
 	MyContext(String id, String val) {
-		this();
+		//this();
 		_name=id;
 		_val=val;
 	}
