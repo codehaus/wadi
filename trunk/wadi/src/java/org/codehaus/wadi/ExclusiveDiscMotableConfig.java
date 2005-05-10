@@ -14,29 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package org.codehaus.wadi;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.OutputStream;
+import java.io.File;
 
-/**
- * Abstract factory/pool. Allows pluggable implementations of various
- * input/output streaming mechanisms to support e.g. compression,
- * encryption etc...
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
-public interface Streamer {
+public interface ExclusiveDiscMotableConfig {
     
-  ObjectInput getInputStream(InputStream is) throws IOException;
-  ObjectOutput getOutputStream(OutputStream os) throws IOException;
-  String getSuffix();
-  String getSuffixWithDot();
-  
-}
+    File getDirectory();
+    String getSuffix();
 
+}

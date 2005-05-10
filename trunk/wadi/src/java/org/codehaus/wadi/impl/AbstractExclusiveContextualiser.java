@@ -38,6 +38,7 @@ import org.codehaus.wadi.Locker;
 import org.codehaus.wadi.Motable;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 
 /**
@@ -84,25 +85,40 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         // get an immoter from the first shared Contextualiser
         Immoter immoter=_next.getSharedDemoter();
         Emoter emoter=getEmoter();
-
+        
         // emote all our Motables using it
         RankedRWLock.setPriority(RankedRWLock.EVICTION_PRIORITY);
         Collection copy=null;
         synchronized (_map) {copy=new ArrayList(_map.entrySet());}
         int s=copy.size();
-
+        
         for (Iterator i=copy.iterator(); i.hasNext(); ) {
-            Map.Entry e=(Map.Entry)i.next();
-            String id=(String)e.getKey();
-            Motable emotable=(Motable)e.getValue();
-	    if (emotable!=null) // seems to happen at shutdown under stress...
-	      Utils.mote(emoter, immoter, emotable, id);
+            Map.Entry entry=(Map.Entry)i.next();
+            String id=(String)entry.getKey();
+            Motable emotable=(Motable)entry.getValue();
+            
+            Sync lock=_locker.getLock(id, emotable);
+            boolean acquired=false;
+            
+            // HERE !
+            
+            try {
+                //Utils.acquireUninterrupted(lock);
+                //acquired=true;
+                if (emotable.getName()!=null) // it may have disappeared whlist we were waiting for lock
+                    Utils.mote(emoter, immoter, emotable, id);
+            } /*catch (TimeoutException e) {
+                // come back to this one later ?
+                _log.warn("could not acquire lock within timeframe");
+            } */ finally {
+                if (acquired) lock.release();
+            }
         }
         RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
         if (_log.isInfoEnabled()) _log.info("evacuated sessions to "+immoter.getInfo()+": "+s);
-	int size=_map.size();
-	if (size>0)
-	  _log.error("sessions did not find asylum: "+size);
+        int size=_map.size();
+        if (size>0)
+            _log.error("sessions did not find asylum: "+size);
     }
 
     public void init(ContextualiserConfig config) {
