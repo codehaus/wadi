@@ -24,6 +24,7 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
+import org.codehaus.wadi.ExclusiveDiscMotableConfig;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Streamer;
@@ -36,7 +37,7 @@ import org.codehaus.wadi.Streamer;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser {
+public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser implements ExclusiveDiscMotableConfig {
 
 	protected final Streamer _streamer;
 	protected final File _dir;
@@ -65,7 +66,7 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
             for (int i=0; i<l; i++) {
                 files[i].delete();
             }
-            _log.info("removed (exclusive disc) sessions: "+l);
+            _log.info("removed (exclusive disc): "+l);
         }
     }
     
@@ -95,7 +96,12 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
 		}
 
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
-			((ExclusiveDiscMotable)immotable).setFile(new File(_dir, id+"."+_streamer.getSuffix()));
+			try {
+                ((ExclusiveDiscMotable)immotable).init(ExclusiveDiscContextualiser.this);
+            } catch (Exception e) {
+                _log.error("problem storing (exclusive disc)", e);
+                return false;
+            }
 			return super.prepare(id, emotable, immotable);
 		}
 
@@ -114,22 +120,20 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
 
 		public ExclusiveDiscEmoter(Map map) {super(map);}
 
-		public boolean prepare(String id, Motable emotable, Motable immotable) {
-			if (super.prepare(id, emotable, immotable)) {
-				try {
-					ExclusiveDiscMotable ldm=(ExclusiveDiscMotable)emotable;
-					ldm.setFile(new File(_dir, id+"."+_streamer.getSuffix()));
-				if (ExclusiveDiscMotable.load(ldm.getFile(), emotable)==null)
-					return false;
-				} catch (Exception e) {
-					_log.error("could not load item from file", e);
-					return false;
-				}
-			} else
-				return false;
-
-			return true;
-		}
+        public boolean prepare(String id, Motable emotable, Motable immotable) {
+            if (super.prepare(id, emotable, immotable)) {
+                try {
+                    ExclusiveDiscMotable edm=(ExclusiveDiscMotable)emotable;
+                    edm.init(ExclusiveDiscContextualiser.this, id);
+                } catch (Exception e) {
+                    _log.error("problem loading (exclusive disc)", e);
+                    return false;
+                }
+            } else
+                return false;
+            
+            return true;
+        }
 
 		public String getInfo(){return "exclusive disc";}
 	}
@@ -146,16 +150,20 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
             String name=list[i];
             String id=name.substring(0, name.length()-suffixLength);
             ExclusiveDiscMotable motable=new ExclusiveDiscMotable();
-            motable.setFile(new File(name));
-            if (accessOnLoad)
-                motable.setLastAccessedTime(time);
-            else {
-                if (motable.getTimedOut(time)) {
-                    if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getName());
-                    // TODO - something cleverer...
+            try {
+                motable.init(this, id);
+                if (accessOnLoad) {
+                    motable.setLastAccessedTime(time);
+                } else {
+                    if (motable.getTimedOut(time)) {
+                        if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getName());
+                        // TODO - something cleverer...
+                    }
                 }
+                _map.put(id, motable);
+            } catch (Exception e) {
+                if (_log.isErrorEnabled()) _log.error("failed to load: "+name);
             }
-            _map.put(id, motable);
         }
 	if (_log.isInfoEnabled())_log.info("loaded sessions: "+list.length);
     }
@@ -188,5 +196,10 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
             throw new UnsupportedOperationException(); // FIXME
         }
     }
+    
+    // ExclusiveDiscMotableConfig
+    
+    public File getDirectory() {return _dir;}
+    public String getSuffix() {return _streamer.getSuffixWithDot();}
 
 }

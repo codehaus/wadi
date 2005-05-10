@@ -24,6 +24,7 @@ import java.io.ObjectOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.ExclusiveDiscMotableConfig;
 import org.codehaus.wadi.Motable;
 
 /**
@@ -36,41 +37,51 @@ import org.codehaus.wadi.Motable;
 public class ExclusiveDiscMotable extends AbstractMotable {
 	protected static final Log _log = LogFactory.getLog(ExclusiveDiscMotable.class);
 
-	protected File _file;
-	public File getFile() {return _file;}
-	public void setFile(File file){_file=file;}
+    protected ExclusiveDiscMotableConfig _config;
+    protected File _file;
+    
+    public void init(ExclusiveDiscMotableConfig config) { // used when we are going to store something...
+        _config=config;
+    }
+ 
+    public void init(ExclusiveDiscMotableConfig config, String name) throws Exception { // used when we are going to load something...
+        _config=config;
+        _file=new File(_config.getDirectory(), name+_config.getSuffix());
+        load(_file, this);
+        assert(name.equals(_name));
+    }
 
 	protected byte[] _bytes;
 	public byte[] getBytes(){return _bytes;}
-	public void setBytes(byte[] bytes){_bytes=bytes;}
+	public void setBytes(byte[] bytes) throws Exception {_bytes=bytes;}
 
-	public void destroy() {
+    public void copy(Motable motable) throws Exception {
+        super.copy(motable);
+        _file=new File(_config.getDirectory(), _name+_config.getSuffix());
+        store(_file, this);
+    }
+    
+	public void destroy() { // causes a 'remove'
 	    super.destroy();
 		if (_file!=null && _file.exists())
 			remove(_file);
 	}
 
-	public void copy(Motable motable) throws Exception {
-		super.copy(motable);
-		store(_file, this);
-	}
-
-	protected static Motable load(File file, Motable motable) throws Exception {
+	protected static void load(File file, ExclusiveDiscMotable motable) throws Exception {
 		ObjectInputStream ois=null;
 		try {
 			ois=new ObjectInputStream(new FileInputStream(file));
-			String id=(String)ois.readObject(); // should this be first ?
-			long creationTime=ois.readLong();
-			long lastAccessedTime=ois.readLong();
-			int maxInactiveInterval=ois.readInt();
-            motable.init(creationTime, lastAccessedTime, maxInactiveInterval, id);
-			motable.setBytes((byte[])ois.readObject());
+
+			motable._creationTime=ois.readLong();
+            motable._lastAccessedTime=ois.readLong();
+            motable._maxInactiveInterval=ois.readInt();
+            motable._name=(String)ois.readObject();
+			motable._bytes=(byte[])ois.readObject();
 
 			if (!motable.checkTimeframe(System.currentTimeMillis()))
-			    if (_log.isWarnEnabled()) _log.warn("loaded session from the future!: "+motable.getName());
+			    if (_log.isWarnEnabled()) _log.warn("loaded (exclusive disc) from the future!: "+motable.getName());
 
 			if (_log.isTraceEnabled()) _log.trace("loaded (exclusive disc): "+file);
-			return motable;
 		} catch (Exception e) {
 			if (_log.isWarnEnabled()) _log.warn("load (exclusive disc) failed: "+file, e);
 			throw e;
@@ -81,16 +92,18 @@ public class ExclusiveDiscMotable extends AbstractMotable {
 		}
 	}
 
-	protected static void store(File file, Motable motable) throws Exception {
+	protected static void store(File file, ExclusiveDiscMotable motable) throws Exception {
 		ObjectOutputStream oos=null;
 		try {
 			oos=new ObjectOutputStream(new FileOutputStream(file));
-			oos.writeObject(motable.getName());
-			oos.writeLong(motable.getCreationTime());
-			oos.writeLong(motable.getLastAccessedTime());
-			oos.writeInt(motable.getMaxInactiveInterval());
-			oos.writeObject(motable.getBytes());
+
+			oos.writeLong(motable._creationTime);
+			oos.writeLong(motable._lastAccessedTime);
+			oos.writeInt(motable._maxInactiveInterval);
+            oos.writeObject(motable._name);
+			oos.writeObject(motable._bytes);
 			oos.flush();
+            
 			if (_log.isTraceEnabled()) _log.trace("stored (exclusive disc): "+file);
 		} catch (Exception e) {
 			if (_log.isWarnEnabled()) _log.warn("store (exclusive disc) failed: "+file, e);

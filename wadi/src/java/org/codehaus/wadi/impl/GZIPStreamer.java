@@ -43,5 +43,6 @@ public class
   public ObjectInput getInputStream(InputStream is) throws IOException {return new ObjectInputStream(new GZIPInputStream(is));}
   public ObjectOutput getOutputStream(OutputStream os) throws IOException {return new ObjectOutputStream(new GZIPOutputStream(os));}
   public String getSuffix(){return "gz";}
+  public String getSuffixWithDot() {return ".gz";}
 }
 

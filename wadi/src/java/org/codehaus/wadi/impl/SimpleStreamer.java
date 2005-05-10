@@ -40,5 +40,6 @@ public class
   public ObjectInput getInputStream(InputStream is) throws IOException {return new ObjectInputStream(is);}
   public ObjectOutput getOutputStream(OutputStream os) throws IOException {return new ObjectOutputStream(os);}
   public String getSuffix(){return "ser";}
+  public String getSuffixWithDot(){return ".ser";}
 }
 
