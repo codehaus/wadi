@@ -19,105 +19,184 @@ package org.codehaus.wadi.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ExclusiveDiscMotableConfig;
-import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.StoreMotable;
 import org.codehaus.wadi.StoreMotableConfig;
 
-/**
- * A Motable that represents its Bytes field as a File in a directory to which its node has Exclusive access.
- * N.B. The File field must be set before the Bytes field.
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
 public class ExclusiveDiscMotable extends AbstractMotable implements StoreMotable {
-	protected static final Log _log = LogFactory.getLog(ExclusiveDiscMotable.class);
-
+    
+    protected static final Log _log=LogFactory.getLog(ExclusiveDiscMotable.class);
+    
     protected ExclusiveDiscMotableConfig _config;
     protected File _file;
+    protected int _bodyLength;
+    protected long _offset;
     
     public void init(StoreMotableConfig config) { // used when we are going to store something...
         _config=(ExclusiveDiscMotableConfig)config;
     }
- 
+    
     public void init(StoreMotableConfig config, String name) throws Exception { // used when we are going to load something...
         _config=(ExclusiveDiscMotableConfig)config;
         _file=new File(_config.getDirectory(), name+_config.getSuffix());
-        load(_file, this);
+        _offset=loadHeader();
+
         assert(name.equals(_name));
     }
-
-	protected byte[] _bytes;
-	public byte[] getBytes(){return _bytes;}
-	public void setBytes(byte[] bytes) throws Exception {_bytes=bytes;}
-
-    public void copy(Motable motable) throws Exception {
-        super.copy(motable);
-        _file=new File(_config.getDirectory(), _name+_config.getSuffix());
-        store(_file, this);
+    
+    public byte[] getBytes() throws Exception {
+        boolean useNIO=_config.getUseNIO();
+        Object body=loadBody(useNIO);
+        if (useNIO)
+            return ((ByteBuffer)body).array();
+        else
+            return (byte[])body;
     }
     
-	public void destroy() { // causes a 'remove'
-	    super.destroy();
-		if (_file!=null && _file.exists())
-			remove(_file);
-	}
+    public void setBytes(byte[] bytes) throws Exception {
+        ensureFile();
+        _bodyLength=bytes.length;
+        boolean useNIO=_config.getUseNIO();
+        Object body;
+        if (useNIO) {
+            ByteBuffer buffer=_config.take(_bodyLength);
+            buffer.put(bytes);
+            buffer.flip();
+            body=buffer;
+        } else {
+            body=bytes;
+        }
+        store(useNIO, body);
+    }
+    
+    public void destroy() {
+        super.destroy();
+        if (_file!=null && _file.exists()) {
+            _file.delete();
+            if (_log.isTraceEnabled()) _log.trace("removed (exclusive disc): "+_file+": "+_bodyLength+" bytes");
+        }
+    }
+    
+    protected void ensureFile() {
+        if (_file==null)
+            _file=new File(_config.getDirectory(), _name+_config.getSuffix());
+    }
 
-	protected static void load(File file, ExclusiveDiscMotable motable) throws Exception {
-		ObjectInputStream ois=null;
-		try {
-			ois=new ObjectInputStream(new FileInputStream(file));
-
-			motable._creationTime=ois.readLong();
-            motable._lastAccessedTime=ois.readLong();
-            motable._maxInactiveInterval=ois.readInt();
-            motable._name=(String)ois.readObject();
-			motable._bytes=(byte[])ois.readObject();
-
-			if (!motable.checkTimeframe(System.currentTimeMillis()))
-			    if (_log.isWarnEnabled()) _log.warn("loaded (exclusive disc) from the future!: "+motable.getName());
-
-			if (_log.isTraceEnabled()) _log.trace("loaded (exclusive disc): "+file);
-		} catch (Exception e) {
-			if (_log.isWarnEnabled()) _log.warn("load (exclusive disc) failed: "+file, e);
-			throw e;
-		}
-		finally {
-			if (ois!=null)
-				ois.close();
-		}
-	}
-
-	protected static void store(File file, ExclusiveDiscMotable motable) throws Exception {
-		ObjectOutputStream oos=null;
-		try {
-			oos=new ObjectOutputStream(new FileOutputStream(file));
-
-			oos.writeLong(motable._creationTime);
-			oos.writeLong(motable._lastAccessedTime);
-			oos.writeInt(motable._maxInactiveInterval);
-            oos.writeObject(motable._name);
-			oos.writeObject(motable._bytes);
-			oos.flush();
+    protected long loadHeader() {
+        ensureFile();
+        FileInputStream fis=null;
+        ObjectInputStream ois=null;
+        try {
+            fis=new FileInputStream(_file);
+            ois=new ObjectInputStream(fis);
+            _creationTime=ois.readLong();
+            _lastAccessedTime=ois.readLong();
+            _maxInactiveInterval=ois.readInt();
+            _name=(String)ois.readObject();
+            _bodyLength=ois.readInt();
             
-			if (_log.isTraceEnabled()) _log.trace("stored (exclusive disc): "+file);
-		} catch (Exception e) {
-			if (_log.isWarnEnabled()) _log.warn("store (exclusive disc) failed: "+file, e);
-			throw e;
-		} finally {
-			if (oos!=null)
-				oos.close();
-		}
-	}
+            if (!checkTimeframe(System.currentTimeMillis()))
+                if (_log.isWarnEnabled()) _log.warn("loaded (exclusive disc) from the future!: "+_name);
+            
+            return fis.getChannel().position();
+        } catch (Exception e) {
+            if (_log.isErrorEnabled()) _log.warn("load (exclusive disc) failed: "+_file, e);
+            return -1;
+        }
+        finally {
+            if (ois!=null)
+                try {
+                    ois.close();
+                } catch (IOException e) {
+                    if (_log.isWarnEnabled()) _log.warn("load (exclusive disc) problem: "+_file, e); 
+                }
+        }
+    }
+    
+    public Object loadBody(boolean useNIO) throws Exception {
+        ensureFile();
+        FileInputStream fis=null;
+        try {
+            Object body;
+            fis=new FileInputStream(_file);
+            
+            FileChannel channel=fis.getChannel();
+            channel.position(_offset);
+            if (useNIO) {
+                ByteBuffer buffer=_config.take(_bodyLength);
+                channel.read(buffer);
+                buffer.flip();
+                body=buffer;
+            } else {
+                byte[] array=new byte[_bodyLength];
+                fis.read(array);
+                body=array;
+            }
+            long position=channel.position();
+            long bytesLoaded=position-_offset;
+            assert (bytesLoaded==_bodyLength);
+            if (_log.isTraceEnabled()) _log.trace("loaded ("+(useNIO?"NIO ":"")+"exclusive disc): "+_file+": "+bytesLoaded+" bytes");
+            return body;
+        } catch (Exception e) {
+            if (_log.isErrorEnabled()) _log.error("load ("+(useNIO?"NIO ":"")+"exclusive disc) failed: "+_file);
+            throw e;
+        } finally {
+            try {
+                fis.close();
+            } catch (IOException e) {
+                if (_log.isWarnEnabled()) _log.warn("load ("+(useNIO?"NIO ":"")+"exclusive disc) problem: "+_file, e);
+            }
+        }
+    }
+    
+    protected void store(boolean useNIO, Object body) throws Exception {
+        ensureFile();
+        ObjectOutputStream oos=null;
+        FileOutputStream fos=null;
+        try {
+            fos=new FileOutputStream(_file);
+            oos=new ObjectOutputStream(fos);
+            
+            oos.writeLong(_creationTime);
+            oos.writeLong(_lastAccessedTime);
+            oos.writeInt(_maxInactiveInterval);
+            oos.writeObject(_name);
+            oos.writeInt(_bodyLength);
+            oos.flush();
+            FileChannel channel=fos.getChannel();
+            _offset=channel.position();
+            if (_bodyLength>0) {
+                if (useNIO) {
+                    ByteBuffer buffer=(ByteBuffer)body;
+                    channel.write(buffer);
+                    _config.put(buffer);
+                } else {
+                    fos.write((byte[])body);
+                }
+            }
+            long bytesStored=channel.position()-_offset;
+            assert(_bodyLength==bytesStored);
+            if (_log.isTraceEnabled()) _log.trace("stored ("+(useNIO?"NIO ":"")+"exclusive disc): "+_file+": "+bytesStored+" bytes");
+        } catch (Exception e) {
+            if (_log.isWarnEnabled()) _log.warn("store ("+(useNIO?"NIO ":"")+"exclusive disc) failed: "+_file);
+            throw e;
+        } finally {
+            try {
+                if (oos!=null)
+                    oos.close();
+            } catch (IOException e) {
+                if (_log.isWarnEnabled()) _log.warn("store ("+(useNIO?"NIO ":"")+"exclusive disc) problem: "+_file, e);
+            }
+        }
+    }
 
-	protected static void remove(File file) {
-		file.delete();
-		if (_log.isTraceEnabled()) _log.trace("removed (exclusive disc): "+file);
-	}
 }
+

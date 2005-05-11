@@ -14,18 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.impl;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 
-public interface ExclusiveDiscMotableConfig extends StoreMotableConfig {
+public class DirectByteBufferCache {
+
+    public ByteBuffer take(int size) {
+        return ByteBuffer.allocate(size); // TODO - change to Direct later...
+    }
     
-    File getDirectory();
-    String getSuffix();
-    boolean getUseNIO();
-    
-    ByteBuffer take(int size);
-    void put(ByteBuffer buffer);
+    public void put(ByteBuffer buffer) {
+        // do nothing yet...
+    }
 
 }
