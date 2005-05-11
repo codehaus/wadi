@@ -16,8 +16,11 @@
  */
 package org.codehaus.wadi;
 
-public interface StoreMotableConfig {
+import javax.sql.DataSource;
 
-    boolean getUseNIO();
+public interface DatabaseMotableConfig extends StoreMotableConfig {
 
+    DataSource getDataSource();
+    String getTable();
+    
 }

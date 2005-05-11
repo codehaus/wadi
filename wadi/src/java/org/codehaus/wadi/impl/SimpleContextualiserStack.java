@@ -113,7 +113,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _dummy=new DummyContextualiser();
         _databaseDataSource=dataSource;
         _databaseTable="WADI";
-        SharedJDBCMotable.init(_databaseDataSource, _databaseTable);
+        DatabaseMotable.init(_databaseDataSource, _databaseTable);
         _database=new SharedStoreContextualiser(_dummy, _collapser, true, _databaseDataSource, _databaseTable);
         _connectionFactory=Utils.getConnectionFactory();
         _clusterFactory=new CustomClusterFactory(_connectionFactory);

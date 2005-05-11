@@ -16,14 +16,9 @@
  */
 package org.codehaus.wadi.impl;
 
-// TODO - a Disc-based equivalent...
-
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -31,8 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
@@ -40,7 +33,6 @@ import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Store;
-import org.codehaus.wadi.StoreMotable;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -55,128 +47,13 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class SharedStoreContextualiser extends AbstractSharedContextualiser {
     
-    public static class DatabaseStore implements Store {
-
-        protected final Log _log=LogFactory.getLog(getClass());
-        protected final DataSource _dataSource;
-        protected final String _table;
-       
-        public DatabaseStore(DataSource dataSource, String table) {
-            _dataSource=dataSource;
-            _table=table;
-        }
-        
-        public DataSource getDataSource() {return _dataSource;}
-        public String getTable() {return _table;}
-        
-        // Store
-        
-        public void clean() {
-            Connection connection=null;
-            Statement s=null;
-            try {
-                connection=_dataSource.getConnection();
-                s=connection.createStatement();
-                s.executeUpdate("DELETE FROM "+_table);
-                if (_log.isTraceEnabled()) _log.trace("removed (shared database) sessions"); // TODO - how many ?
-            } catch (SQLException e) {
-                if (_log.isErrorEnabled()) _log.error("remove (shared database) failed", e);
-            } finally {
-                try {
-                    if (s!=null)
-                        s.close();
-                } catch (SQLException e) {
-                    _log.warn("problem closing database statement", e);
-                }
-                try {
-                    if (connection!=null)
-                        connection.close();
-                } catch (SQLException e) {
-                    _log.warn("problem closing database connection", e);
-                }
-            }
-        }
-        
-        public void load(Putter putter, boolean accessOnLoad) {
-            long time=System.currentTimeMillis();
-            Statement s=null;
-            int count=0;
-            Connection connection=null;
-            try {
-                connection=_dataSource.getConnection();
-                s=connection.createStatement();
-                ResultSet rs=s.executeQuery("SELECT Id, CreationTime, LastAccessedTime, MaxInactiveInterval, Bytes FROM "+_table);
-                String name=null;
-                while (rs.next()) {
-                    try {
-                        int i=1;
-                        Motable motable=new SharedJDBCMotable();
-                        name=(String)rs.getObject(i++);
-                        long creationTime=rs.getLong(i++);
-                        long lastAccessedTime=rs.getLong(i++);
-                        lastAccessedTime=accessOnLoad?time:lastAccessedTime;
-                        int maxInactiveInterval=rs.getInt(i++);
-                        motable.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
-                        motable.setBodyAsByteArray((byte[])rs.getObject(i++));
-                        if (motable.getTimedOut(time)) {
-                            if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getName());
-                            // we should expire it immediately, rather than promoting it...
-                            // perhaps we could be even cleverer ?
-                        }
-                        putter.put(name, motable);
-                        count++;
-                    } catch (Exception e) {
-                       if (_log.isErrorEnabled()) _log.error("load (shared database) failed: "+name, e);
-                    }
-                }
-                _log.info("loaded sessions: "+count);
-            } catch (SQLException e) {
-                _log.warn("list (shared database) failed", e);
-            } finally {
-                if (s!=null)
-                    try {
-                        s.close();
-                    } catch (SQLException e) {
-                        if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
-                    }
-            }
-
-            try {
-                s=connection.createStatement();
-                s.executeUpdate("DELETE FROM "+_table);
-            } catch (SQLException e) {
-                _log.warn("removal (shared database) failed", e);
-            } finally {
-                if (s!=null)
-                    try {
-                        s.close();
-                    } catch (SQLException e) {
-                        if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
-                    }
-            }
-        }
-
-        public String getStartInfo() {
-            return _dataSource.toString();
-        }
-
-        public String getDescription() {
-            return "shared database";
-        }
-
-        public StoreMotable create() {
-            return null; //new SharedJDBCImmoter(); - TODO
-        }
-    }
-    
-    
     protected final DatabaseStore _store;
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
 	public SharedStoreContextualiser(Contextualiser next, Collapser collapser, boolean clean, DataSource dataSource, String table) {
 		super(next, new CollapsingLocker(collapser), clean);
-        _store=new DatabaseStore(dataSource, table);
+        _store=new DatabaseStore(dataSource, table, false);
 		_immoter=new SharedJDBCImmoter();
 		_emoter=new SharedJDBCEmoter();
 	}
@@ -207,45 +84,44 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 	 */
 	public class SharedJDBCEmoter extends AbstractChainedEmoter {
 
-		public boolean prepare(String id, Motable emotable, Motable immotable) {
-			if (super.prepare(id, emotable, immotable)) {
-				try {
-					Connection connection=_store.getDataSource().getConnection();
-					((SharedJDBCMotable)emotable).setTable(_store.getTable());
-					((SharedJDBCMotable)emotable).setConnection(connection);
-					if (SharedJDBCMotable.load(connection, _store.getTable(), emotable)==null)
-						return false;
-				} catch (Exception e) {
-					_log.error("could not establish database connection", e);
-					return false;
-				}
-				return true;
-			} else
-				return false;
-		}
-
-		public void commit(String id, Motable emotable) {
-			super.commit(id, emotable);
-			SharedJDBCMotable sjm=((SharedJDBCMotable)emotable);
-			Connection connection=sjm.getConnection();
-			sjm.setConnection(null);
+        public boolean prepare(String name, Motable emotable, Motable immotable) {
+            if (super.prepare(name, emotable, immotable)) {
+                try {
+                    DatabaseMotable motable=(DatabaseMotable)emotable;
+                    motable.setConnection(_store.getConnection());
+                    motable.init(_store, name);
+                } catch (Exception e) {
+                    if (_log.isErrorEnabled()) _log.error("load ("+_store.getDescription()+") failed", e);
+                    return false;
+                }
+            } else
+                return false;
+            
+            return true;
+        }
+        
+		public void commit(String name, Motable emotable) {
+			super.commit(name, emotable);
+			DatabaseMotable motable=((DatabaseMotable)emotable);
+			Connection connection=motable.getConnection();
+			motable.setConnection(null);
 			try {
 				connection.close();
 			} catch (SQLException e) {
-				_log.error("could not close database connection", e);
+				if (_log.isWarnEnabled()) _log.warn("load ("+_store.getDescription()+") problem", e);
 			}
 		}
 
-		public void rollback(String id, Motable emotable) {
-			super.rollback(id, emotable);
-			SharedJDBCMotable sjm=((SharedJDBCMotable)emotable);
-			Connection connection=sjm.getConnection();
-			sjm.setConnection(null);
+		public void rollback(String name, Motable emotable) {
+			super.rollback(name, emotable);
+			DatabaseMotable motable=((DatabaseMotable)emotable);
+			Connection connection=motable.getConnection();
+			motable.setConnection(null);
 			try {
 				connection.rollback();
 				connection.close();
 			} catch (SQLException e) {
-				_log.error("could not rollback database connection", e);
+                if (_log.isWarnEnabled()) _log.warn("load ("+_store.getDescription()+") problem", e);
 			}
 		}
 
@@ -269,51 +145,51 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 	 */
 	public class SharedJDBCImmoter extends AbstractImmoter {
 
-		public Motable nextMotable(String id, Motable emotable) {
-            return new SharedJDBCMotable();  // TODO - Pool this - could be ThreadLocal...
+		public Motable nextMotable(String name, Motable emotable) {
+            return new DatabaseMotable();  // TODO - Pool this - could be ThreadLocal...
 		}
 
-		public boolean prepare(String id, Motable emotable, Motable immotable) {
+		public boolean prepare(String name, Motable emotable, Motable immotable) {
 			try {
 				Connection connection=_store.getDataSource().getConnection();
-				SharedJDBCMotable sjm=(SharedJDBCMotable)immotable;
-				sjm.setTable(_store.getTable());
-				sjm.setConnection(connection);
+				DatabaseMotable motable=(DatabaseMotable)immotable;
+				motable.setConnection(connection);
+                motable.init(_store);
 			} catch (Exception e) {
-				_log.error("could not establish database connection", e);
+                if (_log.isErrorEnabled()) _log.error("store ("+_store.getDescription()+") failed", e);
 				return false;
 			}
 
-			return super.prepare(id, emotable, immotable);
+			return super.prepare(name, emotable, immotable);
 		}
 
-		public void commit(String id, Motable immotable) {
-			super.commit(id, immotable);
-			SharedJDBCMotable sjm=((SharedJDBCMotable)immotable);
-			Connection connection=sjm.getConnection();
-			sjm.setConnection(null);
+		public void commit(String name, Motable immotable) {
+			super.commit(name, immotable);
+			DatabaseMotable motable=((DatabaseMotable)immotable);
+			Connection connection=motable.getConnection();
+			motable.setConnection(null);
 			try {
 				connection.close();
 			} catch (SQLException e) {
-				_log.error("could not close database connection", e);
+                if (_log.isWarnEnabled()) _log.warn("store ("+_store.getDescription()+") problem", e);
 			}
 		}
 
-		public void rollback(String id, Motable immotable) {
-			super.rollback(id, immotable);
-			SharedJDBCMotable sjm=((SharedJDBCMotable)immotable);
-			Connection connection=sjm.getConnection();
-			sjm.setConnection(null);
+		public void rollback(String name, Motable immotable) {
+			super.rollback(name, immotable);
+			DatabaseMotable motable=((DatabaseMotable)immotable);
+			Connection connection=motable.getConnection();
+			motable.setConnection(null);
 			try {
 				connection.rollback();
 				connection.close();
 			} catch (SQLException e) {
-				_log.error("could not rollback database connection", e);
+                if (_log.isWarnEnabled()) _log.warn("store ("+_store.getDescription()+") problem", e);
 			}
 		}
 
 		public String getInfo() {
-			return "shared database";
+			return "database";
 		}
 	}
 
@@ -330,7 +206,7 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
         public void put(String name, Motable motable) {
             Utils.mote(_emoter, _immoter, motable, name);
         }
-    };
+    }
     
     public void load(Emoter emoter, Immoter immoter) {
         // this should only happen when we are the first node in the cluster...
