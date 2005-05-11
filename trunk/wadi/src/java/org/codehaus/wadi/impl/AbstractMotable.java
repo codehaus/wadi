@@ -50,7 +50,7 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
 	public void copy(Motable motable) throws Exception {
 		super.copy(motable); // Evictable fields
 		_name=motable.getName();
-		setBytes(motable.getBytes());
+		setBodyAsByteArray(motable.getBodyAsByteArray());
 	}
 
 	protected String _name;

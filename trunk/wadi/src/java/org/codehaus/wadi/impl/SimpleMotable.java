@@ -17,6 +17,7 @@
 package org.codehaus.wadi.impl;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 
 import org.codehaus.wadi.Motable;
 
@@ -30,8 +31,11 @@ import org.codehaus.wadi.Motable;
 public class SimpleMotable extends AbstractMotable implements Serializable {
 
 	protected byte[] _bytes;
-	public byte[] getBytes() {return _bytes;}
-	public void setBytes(byte[] bytes){_bytes=bytes;}
+	public byte[] getBodyAsByteArray() {return _bytes;}
+	public void setBodyAsByteArray(byte[] bytes){_bytes=bytes;}
+    
+    public ByteBuffer getBodyAsByteBuffer() throws Exception {throw new UnsupportedOperationException();}
+    public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {throw new UnsupportedOperationException();}
 
 	public void destroy() {
 	    super.destroy();
@@ -45,7 +49,7 @@ public class SimpleMotable extends AbstractMotable implements Serializable {
             return false;
         try {
             Motable motable = (Motable) object;
-            byte[] bytes=motable.getBytes();
+            byte[] bytes=motable.getBodyAsByteArray();
             int l=_bytes.length;
             if (l!=bytes.length)
                 return false;

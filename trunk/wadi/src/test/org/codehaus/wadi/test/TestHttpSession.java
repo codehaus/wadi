@@ -1030,7 +1030,7 @@ extends TestCase
         String key="test";
         ActivationListener l=new ActivationListener();
         s0.setAttribute(key, l);
-        byte[] bytes=s0.getBytes();
+        byte[] bytes=s0.getBodyAsByteArray();
         assertTrue(events.size()==1);
         {
             Pair pair=(Pair)events.get(0);
@@ -1042,7 +1042,7 @@ extends TestCase
         events.clear();
 
         DistributableSession s1=(DistributableSession)pool.take();
-        s1.setBytes(bytes);
+        s1.setBodyAsByteArray(bytes);
         // listsners may be activated lazily - so:
         s1.getAttribute(key);
         // now activation MUST have occurred
@@ -1224,7 +1224,7 @@ extends TestCase
         Session s0=manager.create();
         s0.setAttribute(content, val0);
         Session s1=manager.create();
-        s1.setBytes(s0.getBytes());
+        s1.setBodyAsByteArray(s0.getBodyAsByteArray());
         NotSerializable val1=(NotSerializable)s1.getAttribute(content);
         assertTrue(val0._content.equals(val1._content));
 
@@ -1459,9 +1459,9 @@ extends TestCase
         sess0.setAttribute(key0, val);
         sess0.setAttribute(key1, val);
         assertTrue(sess0.getAttribute(key0)==sess0.getAttribute(key1));
-        byte[] bytes=sess0.getBytes();
+        byte[] bytes=sess0.getBodyAsByteArray();
         Session sess1=manager.create();
-        sess1.setBytes(bytes);
+        sess1.setBodyAsByteArray(bytes);
         assertTrue(sess1.getAttribute(key0)==sess1.getAttribute(key1)); // after deserialisation values are still '='
         assertTrue(sess0.getAttribute(key0)!=sess1.getAttribute(key1));
         assertTrue(sess0.getAttribute(key0).equals(sess1.getAttribute(key1)));
@@ -1482,9 +1482,9 @@ extends TestCase
         sess0.setAttribute(key0, val);
         sess0.setAttribute(key1, val);
         assertTrue(sess0.getAttribute(key0)==sess0.getAttribute(key1));
-        byte[] bytes=sess0.getBytes();
+        byte[] bytes=sess0.getBodyAsByteArray();
         Session sess1=manager.create();
-        sess1.setBytes(bytes);
+        sess1.setBodyAsByteArray(bytes);
         assertTrue(sess1.getAttribute(key0)!=sess1.getAttribute(key1)); // after deserialisation values are no longer '='
         assertTrue(sess1.getAttribute(key0).equals(sess1.getAttribute(key1)));
     }
@@ -1500,7 +1500,7 @@ extends TestCase
             s0.setAttribute("activation-listener", new ActivationListener());
             s0.setAttribute("serialisation-listener", new SerialisationListener());
             Session s1=manager.create();
-            s1.setBytes(s0.getBytes());
+            s1.setBodyAsByteArray(s0.getBodyAsByteArray());
             List activationEvents=ActivationListener._events;
             activationEvents.clear();
             List serialisationEvents=SerialisationListener._events;
@@ -1522,7 +1522,7 @@ extends TestCase
             s0.setAttribute("binding-listener", new BindingListener());
             s0.setAttribute("serialisation-listener", new SerialisationListener());
             Session s1=manager.create();
-            s1.setBytes(s0.getBytes());
+            s1.setBodyAsByteArray(s0.getBodyAsByteArray());
             List activationEvents=ActivationListener._events;
             activationEvents.clear();
             List bindingEvents=BindingListener._events;
@@ -1549,7 +1549,7 @@ extends TestCase
             s0.setAttribute("activation-listener", new ActivationListener());
             s0.setAttribute("serialisation-listener", new SerialisationListener());
             Session s1=manager.create();
-            s1.setBytes(s0.getBytes());
+            s1.setBodyAsByteArray(s0.getBodyAsByteArray());
             List activationEvents=ActivationListener._events;
             activationEvents.clear();
             List serialisationEvents=SerialisationListener._events;
@@ -1578,7 +1578,7 @@ extends TestCase
             s0.setAttribute("binding-listener", new BindingListener());
             s0.setAttribute("serialisation-listener", new SerialisationListener());
             Session s1=manager.create();
-            s1.setBytes(s0.getBytes());
+            s1.setBodyAsByteArray(s0.getBodyAsByteArray());
             List activationEvents=ActivationListener._events;
             activationEvents.clear();
             List bindingEvents=BindingListener._events;

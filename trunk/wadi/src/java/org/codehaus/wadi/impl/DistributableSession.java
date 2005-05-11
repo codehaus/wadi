@@ -49,8 +49,8 @@ public class DistributableSession extends StandardSession implements Distributab
         ((DistributableAttributes)_attributes).writeContent(oo);
     }
     
-    public byte[] getBytes() throws Exception {return Utils.getContent(this, getStreamer());}
-    public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {Utils.setContent(this, bytes, getStreamer());}
+    public byte[] getBodyAsByteArray() throws Exception {return Utils.getContent(this, getStreamer());}
+    public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {Utils.setContent(this, bytes, getStreamer());}
     
     public ValueHelper findHelper(Class type){return ((DistributableSessionConfig)_config).findHelper(type);}
     public Set getListenerNames(){return ((DistributableAttributes)_attributes).getListenerNames();}

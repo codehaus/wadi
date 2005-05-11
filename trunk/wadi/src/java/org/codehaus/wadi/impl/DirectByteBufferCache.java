@@ -21,7 +21,7 @@ import java.nio.ByteBuffer;
 public class DirectByteBufferCache {
 
     public ByteBuffer take(int size) {
-        return ByteBuffer.allocate(size); // TODO - change to Direct later...
+        return ByteBuffer.allocateDirect(size);
     }
     
     public void put(ByteBuffer buffer) {

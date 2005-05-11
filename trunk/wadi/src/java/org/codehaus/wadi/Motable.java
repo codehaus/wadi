@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi;
 
+import java.nio.ByteBuffer;
+
 /**
  * Lit. 'able to be moved' - an Object the can be [promoted and] demoted.
  * An Evictable with an ID and a payload.
@@ -31,7 +33,15 @@ public interface Motable extends Evictable {
 
 	String getName();
 
-     // TODO - should bytes[] include simply payload, or entire Motable - decide..
-	byte[] getBytes() throws Exception;
-	void setBytes(byte[] bytes) throws Exception;
+    // Motable has two parts :
+    // Head - metadata describing...
+    // Body - application data
+    
+    // Body may be represented in a number of ways...
+    
+    byte[] getBodyAsByteArray() throws Exception;
+    void setBodyAsByteArray(byte[] bytes) throws Exception;
+
+    ByteBuffer getBodyAsByteBuffer() throws Exception;
+    void setBodyAsByteBuffer(ByteBuffer body) throws Exception;
 }
