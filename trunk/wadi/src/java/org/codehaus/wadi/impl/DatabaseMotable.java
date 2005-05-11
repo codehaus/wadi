@@ -53,6 +53,8 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
         loadHeader();
     }
 
+    // Control of what gets done on the same connection is controlled externally, by set/get-ting
+    // the Connection through this API...
     protected Connection _connection;
     public Connection getConnection() {return _connection;}
     public void setConnection(Connection connection) {_connection=connection;}
@@ -65,12 +67,15 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
         store(false, body);
     }
     
+    // is there a way to use direct ByteBuffers for DB access? - there must be ....
+    
     public ByteBuffer getBodyAsByteBuffer() throws Exception {
-        throw new UnsupportedOperationException();
+        //return (ByteBuffer)loadBody(true);
+        return null;
     }
     
     public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {
-        throw new UnsupportedOperationException();
+        //store(true, body);
     }
     
     public void destroy() {
