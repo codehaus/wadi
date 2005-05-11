@@ -395,8 +395,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	  }
 	}
 
-    // another hack, because this should not inherit from Mapped...
-    public int loadMotables(Emoter emoter, Immoter immoter){return 0;}
+    public void load(Emoter emoter, Immoter immoter) {
+        // currently - we don't load anything from the Cluster - we could do state-balancing here
+        // i.e. on startup, take ownership of a number of active sessions - affinity implications etc...
+    }
 
     // AbstractMotingContextualiser
     public Motable get(String id) {return (Motable)_map.get(id);}

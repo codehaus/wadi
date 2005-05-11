@@ -77,7 +77,7 @@ public class DummyContextualiser extends AbstractContextualiser {
     public Immoter getSharedDemoter(){return _immoter;}
     
     public void promoteToExclusive(Immoter immoter){/* empty */}
-    public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
+    public void load(Emoter emoter, Immoter immoter) {/* empty */}
     
     public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {/* do nothing */}
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}

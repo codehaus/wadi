@@ -142,7 +142,9 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         super.destroy();
     }
 
-    public int loadMotables(Emoter emoter, Immoter immoter){return 0;} // MappedContextualisers are all Exclusive
+    public void load(Emoter emoter, Immoter immoter) { // - TODO - is this where we should do our own load ?
+        // MappedContextualisers are all Exclusive
+    }
 
     public Evicter getEvicter(){return _evicter;}
 

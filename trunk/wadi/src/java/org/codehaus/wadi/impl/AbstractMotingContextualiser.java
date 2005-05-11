@@ -108,7 +108,7 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
             _next.promoteToExclusive(_next.isExclusive()?null:getImmoter());
         else {
             Emoter emoter=getEmoter();
-            loadMotables(emoter, immoter);
+            load(emoter, immoter);
             _next.promoteToExclusive(immoter);
         }
     }

@@ -69,7 +69,7 @@ import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.MessageDispatcher;
 import org.codehaus.wadi.impl.RestartableClusterFactory;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
-import org.codehaus.wadi.impl.SharedJDBCContextualiser;
+import org.codehaus.wadi.impl.SharedStoreContextualiser;
 import org.codehaus.wadi.impl.SharedJDBCMotable;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
@@ -109,7 +109,7 @@ public class TestCluster extends TestCase {
         protected final Evicter _evicter=new DummyEvicter();
         protected final MemoryContextualiser _top;
         protected final ClusterContextualiser _middle;
-        protected final SharedJDBCContextualiser _bottom;
+        protected final SharedStoreContextualiser _bottom;
         protected final SessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory()); 
         protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool); 
         protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
@@ -117,7 +117,7 @@ public class TestCluster extends TestCase {
         protected final Manager _manager;
         
         public MyNode(String nodeId, ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
-            _bottom=new SharedJDBCContextualiser(_dummyContextualiser, _collapser, false, ds, table);
+            _bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, ds, table);
             _cluster=(Cluster)factory.createCluster(clusterName);
             _cluster.addClusterListener(new MyClusterListener());
             _dispatcher=new MessageDispatcher(_cluster);
