@@ -18,8 +18,14 @@ package org.codehaus.wadi.test;
 
 import java.io.File;
 
+import javax.sql.DataSource;
+
+import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.Store;
 import org.codehaus.wadi.StoreMotable;
+import org.codehaus.wadi.impl.DatabaseMotable;
+import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DiscStore;
 import org.codehaus.wadi.impl.SimpleMotable;
 import org.codehaus.wadi.impl.SimpleStreamer;
@@ -40,12 +46,23 @@ public class TestMotables extends TestCase {
         super.tearDown();
     }
     
+    public void testDatabaseMotables() throws Exception {
+        DataSource ds=new AxionDataSource("jdbc:axiondb:testdb");
+        String table="SESSIONS";
+        DatabaseMotable.init(ds, table);
+        testDatabaseMotables(new DatabaseStore(ds, table, false));
+//        testDatabaseMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), true));
+    }
+
+    public void testDatabaseMotables(Store store) throws Exception {
+    }
+    
     public void testDiscMotables() throws Exception {
         testDiscMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), false));
         testDiscMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), true));
     }
  
-    public void testDiscMotables(DiscStore store) throws Exception {
+    public void testDiscMotables(Store store) throws Exception {
         assertTrue(true);
         
         Motable sm0=new SimpleMotable();

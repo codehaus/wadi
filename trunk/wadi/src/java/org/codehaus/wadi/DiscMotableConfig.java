@@ -23,7 +23,6 @@ public interface DiscMotableConfig extends StoreMotableConfig {
     
     File getDirectory();
     String getSuffix();
-    boolean getUseNIO();
     
     ByteBuffer take(int size);
     void put(ByteBuffer buffer);

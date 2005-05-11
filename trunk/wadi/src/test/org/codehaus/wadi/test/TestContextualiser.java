@@ -85,7 +85,7 @@ import org.codehaus.wadi.impl.ProxyRelocater;
 import org.codehaus.wadi.impl.SerialContextualiser;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SharedStoreContextualiser;
-import org.codehaus.wadi.impl.SharedJDBCMotable;
+import org.codehaus.wadi.impl.DatabaseMotable;
 import org.codehaus.wadi.impl.SimpleContextualiserStack;
 import org.codehaus.wadi.impl.SimpleEvictable;
 import org.codehaus.wadi.impl.SimpleSessionPool;
@@ -122,7 +122,7 @@ public class TestContextualiser extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         _log.info("starting ...");
-        SharedJDBCMotable.init(_ds, _table);
+        DatabaseMotable.init(_ds, _table);
     }
 
     /*
@@ -130,7 +130,7 @@ public class TestContextualiser extends TestCase {
      */
     protected void tearDown() throws Exception {
         super.tearDown();
-        SharedJDBCMotable.destroy(_ds, _table);
+        DatabaseMotable.destroy(_ds, _table);
         _log.info("...stopped");
     }
 

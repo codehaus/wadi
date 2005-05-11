@@ -70,7 +70,7 @@ import org.codehaus.wadi.impl.MessageDispatcher;
 import org.codehaus.wadi.impl.RestartableClusterFactory;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SharedStoreContextualiser;
-import org.codehaus.wadi.impl.SharedJDBCMotable;
+import org.codehaus.wadi.impl.DatabaseMotable;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
@@ -197,7 +197,7 @@ public class TestCluster extends TestCase {
 		super.setUp();
 
         if (!_preserveDB)
-            SharedJDBCMotable.init(_ds, _table);
+            DatabaseMotable.init(_ds, _table);
             
 		(_node0=new MyNode("node0", _clusterFactory, _clusterName, _ds, _table)).start();
 		(_node1=new MyNode("node1", _clusterFactory, _clusterName, _ds, _table)).start();
@@ -223,7 +223,7 @@ public class TestCluster extends TestCase {
 //		Thread.sleep(10000);
         
         if (!_preserveDB)
-            SharedJDBCMotable.destroy(_ds, _table);
+            DatabaseMotable.destroy(_ds, _table);
 	}
 
 	public void testEvacuation() throws Exception {

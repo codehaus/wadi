@@ -46,9 +46,8 @@ public class DiscMotable extends AbstractMotable implements StoreMotable {
     
     public void init(StoreMotableConfig config, String name) throws Exception { // used when we are going to load something...
         _config=(DiscMotableConfig)config;
-        _file=new File(_config.getDirectory(), name+_config.getSuffix());
+        _name=name;
         _offset=loadHeader();
-
         assert(name.equals(_name));
     }
     

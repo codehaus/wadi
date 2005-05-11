@@ -111,8 +111,8 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
         public boolean prepare(String id, Motable emotable, Motable immotable) {
             if (super.prepare(id, emotable, immotable)) {
                 try {
-                    StoreMotable edm=(StoreMotable)emotable;
-                    edm.init(_store, id);
+                    StoreMotable motable=(StoreMotable)emotable;
+                    motable.init(_store, id);
                 } catch (Exception e) {
                     _log.error("problem loading ("+_store.getDescription()+")", e);
                     return false;
