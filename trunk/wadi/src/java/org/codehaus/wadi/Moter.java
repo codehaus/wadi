@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi;
 
-
 /**
  * Basic API for Motion (promotion and demotion) of Motables
  *
@@ -24,9 +23,10 @@ package org.codehaus.wadi;
  * @version $Revision$
  */
 public interface Moter {
-	boolean prepare(String id, Motable emotable, Motable immotable);
-	void commit(String id, Motable p);
-	void rollback(String id, Motable p);
+    
+	boolean prepare(String name, Motable emotable, Motable immotable);
+	void commit(String name, Motable motable);
+	void rollback(String name, Motable motable);
 
 	String getInfo();
 }

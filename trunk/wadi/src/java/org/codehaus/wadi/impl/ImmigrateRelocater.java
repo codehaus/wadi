@@ -133,25 +133,25 @@ public class ImmigrateRelocater extends AbstractRelocater implements SessionRelo
 			_settingsInOut=settingsInOut;
 		}
 
-		public boolean prepare(String id, Motable emotable, Motable immotable) {
+		public boolean prepare(String name, Motable emotable, Motable immotable) {
 			return true;
 		}
 
-		public void commit(String id, Motable emotable) {
+		public void commit(String name, Motable emotable) {
 			emotable.destroy(); // remove copy in store
 
 			// TODO - move some of this to prepare()...
 			if (_log.isTraceEnabled()) _log.trace("sending immigration ack: "+_settingsInOut.correlationId);
-			ImmigrationAcknowledgement ack=new ImmigrationAcknowledgement(id, _config.getLocation());
+			ImmigrationAcknowledgement ack=new ImmigrationAcknowledgement(name, _config.getLocation());
 			try {
 				_config.getDispatcher().sendMessage(ack, _settingsInOut);
-				_config.getMap().remove(id);
+				_config.getMap().remove(name);
 			} catch (JMSException e) {
-				if (_log.isErrorEnabled()) _log.error("could not send immigration acknowledgement: "+id, e);
+				if (_log.isErrorEnabled()) _log.error("could not send immigration acknowledgement: "+name, e);
 			}
 		}
 
-		public void rollback(String id, Motable motable) {
+		public void rollback(String name, Motable motable) {
 		    throw new RuntimeException("NYI");
 		}
 
@@ -222,11 +222,11 @@ public class ImmigrateRelocater extends AbstractRelocater implements SessionRelo
 			return new SimpleMotable();
 		}
 
-		public boolean prepare(String id, Motable emotable, Motable immotable) {
+		public boolean prepare(String name, Motable emotable, Motable immotable) {
 			// send the message
 			if (_log.isTraceEnabled()) _log.trace("sending immigration response: "+_settingsInOut.correlationId);
 			ImmigrationResponse mr=new ImmigrationResponse();
-			mr.setId(id);
+			mr.setId(name);
 			try {
 			immotable.copy(emotable);
 			} catch (Exception e) {
@@ -234,7 +234,7 @@ public class ImmigrateRelocater extends AbstractRelocater implements SessionRelo
 			    return false;
 			}
 			mr.setMotable(immotable);
-			ImmigrationAcknowledgement ack=(ImmigrationAcknowledgement)_config.getDispatcher().exchangeMessages(id, _ackRvMap, mr, _settingsInOut, _ackTimeout);
+			ImmigrationAcknowledgement ack=(ImmigrationAcknowledgement)_config.getDispatcher().exchangeMessages(name, _ackRvMap, mr, _settingsInOut, _ackTimeout);
 			if (ack==null) {
 			  if (_log.isWarnEnabled()) _log.warn("no ack received for session immigration: "+_settingsInOut.correlationId); // TODO - increment a couter somewhere...
 				// TODO - who owns the session now - consider a syn link to old owner to negotiate this..
@@ -244,17 +244,17 @@ public class ImmigrateRelocater extends AbstractRelocater implements SessionRelo
 			// update location cache...
 			Location tmp=ack.getLocation();
 			synchronized (_config.getMap()) {
-				_config.getMap().put(id, tmp);
+				_config.getMap().put(name, tmp);
 			}
 
 			return true;
 		}
 
-		public void commit(String id, Motable immotable) {
+		public void commit(String name, Motable immotable) {
 			// do nothing
 			}
 
-		public void rollback(String id, Motable immotable) {
+		public void rollback(String name, Motable immotable) {
 			// this probably has to by NYI... - nasty...
 		}
 

@@ -28,15 +28,15 @@ import org.codehaus.wadi.Motable;
  */
 public abstract class AbstractChainedEmoter implements Emoter {
 
-	public boolean prepare(String id, Motable emotable, Motable immotable) {
+	public boolean prepare(String name, Motable emotable, Motable immotable) {
 		return true;
 	}
 
-	public void commit(String id, Motable emotable) {
+	public void commit(String name, Motable emotable) {
 		emotable.destroy(); // remove copy in store
 	}
 
-	public void rollback(String id, Motable emotable) {
+	public void rollback(String name, Motable emotable) {
 	    // This method is provided as a placeholder. Subclasses can call super.rollback().
 	    // If we want to add anything here later, we can.
 	    // It is NOT intended that this form some sort of default behaviour !

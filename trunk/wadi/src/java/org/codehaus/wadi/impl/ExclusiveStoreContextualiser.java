@@ -83,14 +83,14 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
             return _store.create(); // TODO - Pool, maybe as ThreadLocal
 		}
 
-		public boolean prepare(String id, Motable emotable, Motable immotable) {
+		public boolean prepare(String name, Motable emotable, Motable immotable) {
 			try {
                 ((StoreMotable)immotable).init(_store);
             } catch (Exception e) {
                 _log.error("problem storing ("+_store.getDescription()+")", e);
                 return false;
             }
-			return super.prepare(id, emotable, immotable);
+			return super.prepare(name, emotable, immotable);
 		}
 
 		public String getInfo() {
@@ -108,11 +108,11 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
 
 		public ExclusiveStoreEmoter(Map map) {super(map);}
 
-        public boolean prepare(String id, Motable emotable, Motable immotable) {
-            if (super.prepare(id, emotable, immotable)) {
+        public boolean prepare(String name, Motable emotable, Motable immotable) {
+            if (super.prepare(name, emotable, immotable)) {
                 try {
                     StoreMotable motable=(StoreMotable)emotable;
-                    motable.init(_store, id);
+                    motable.init(_store, name);
                 } catch (Exception e) {
                     _log.error("problem loading ("+_store.getDescription()+")", e);
                     return false;

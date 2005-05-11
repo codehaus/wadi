@@ -36,8 +36,8 @@ public abstract class AbstractMappedImmoter extends AbstractImmoter {
         _map=map;    
     }
     
-	public void commit(String id, Motable immotable) {
-		super.commit(id, immotable);
-		_map.put(id, immotable);
+	public void commit(String name, Motable immotable) {
+		super.commit(name, immotable);
+		_map.put(name, immotable);
 	}
 }

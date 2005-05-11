@@ -57,13 +57,13 @@ public class DummyContextualiser extends AbstractContextualiser {
 		public Motable nextMotable(String id, Motable emotable){return null;}
 		public String getInfo(){return "dummy";}
 
-		public boolean prepare(String id, Motable emotable, Motable immotable) {return true;}
+		public boolean prepare(String name, Motable emotable, Motable immotable) {return true;}
 		
-		public void commit(String id, Motable immotable) {
+		public void commit(String name, Motable immotable) {
 		    // throw away incoming state...
 		    }
 		
-		public void rollback(String id, Motable immotable) {
+		public void rollback(String name, Motable immotable) {
 		    // nothing to do...
 		    }
 		

@@ -276,35 +276,35 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	class EmigrationImmoter implements Immoter {
 		public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}
 
-		public boolean prepare(String id, Motable emotable, Motable immotable) {
+		public boolean prepare(String name, Motable emotable, Motable immotable) {
 		    MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
 		    settingsInOut.to=_emigrationQueue;
-		    settingsInOut.correlationId=id;
+		    settingsInOut.correlationId=name;
 		    settingsInOut.from=_cluster.getLocalNode().getDestination();
 		    try {
 		        immotable.copy(emotable);
 		        EmigrationRequest er=new EmigrationRequest(immotable);
-		        EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(id, _emigrationRvMap, er, settingsInOut, _ackTimeout);
+		        EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(name, _emigrationRvMap, er, settingsInOut, _ackTimeout);
 
 		        if (ea==null) {
-                    if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+_ackTimeout+" millis): "+id);
+                    if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+_ackTimeout+" millis): "+name);
 		            return false;
 		        } else {
-                    if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+_ackTimeout+" millis): "+id);
-		            _map.put(id, ea.getLocation()); // cache new Location of Session
+                    if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+_ackTimeout+" millis): "+name);
+		            _map.put(name, ea.getLocation()); // cache new Location of Session
 		            return true;
 		        }
 		    } catch (Exception e) {
-		        if (_log.isWarnEnabled()) _log.warn("problem sending emigration request: "+id, e);
+		        if (_log.isWarnEnabled()) _log.warn("problem sending emigration request: "+name, e);
 		        return false;
 		    }
 		}
 
-		public void commit(String id, Motable immotable) {
+		public void commit(String name, Motable immotable) {
 			// TODO - cache new location of emigrating session...
 			}
 
-		public void rollback(String id, Motable immotable) {
+		public void rollback(String name, Motable immotable) {
 			// TODO - errr... HOW ?
 			}
 
@@ -336,7 +336,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 			_settingsInOut=new MessageDispatcher.Settings();
 		}
 
-		public boolean prepare(String id, Motable emotable, Motable immotable) {
+		public boolean prepare(String name, Motable emotable, Motable immotable) {
 			try {
 				// reverse direction...
 				_settingsInOut.to=_om.getJMSReplyTo();
@@ -348,19 +348,19 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 			}
 		}
 
-		public void commit(String id, Motable emotable) {
+		public void commit(String name, Motable emotable) {
 			try {
 				EmigrationAcknowledgement ea=new EmigrationAcknowledgement();
-				ea.setId(id);
+				ea.setId(name);
 				ea.setLocation(_location);
 				_dispatcher.sendMessage(ea, _settingsInOut);
 			} catch (JMSException e) {
-				if (_log.isErrorEnabled()) _log.error("could not acknowledge safe receipt: "+id, e);
+				if (_log.isErrorEnabled()) _log.error("could not acknowledge safe receipt: "+name, e);
 			}
 
 		}
 
-		public void rollback(String id, Motable emotable) {
+		public void rollback(String name, Motable emotable) {
 			throw new RuntimeException("NYI");
 			// difficult !!!
 		}
