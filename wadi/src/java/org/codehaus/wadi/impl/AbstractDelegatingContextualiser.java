@@ -42,6 +42,6 @@ public abstract class AbstractDelegatingContextualiser extends AbstractChainedCo
 
     public void promoteToExclusive(Immoter immoter) {_next.promoteToExclusive(immoter);}
     
-    public int loadMotables(Emoter emoter, Immoter immoter) {return _next.loadMotables(emoter, immoter);}
+    public void load(Emoter emoter, Immoter immoter) {_next.load(emoter, immoter);}
     
 }

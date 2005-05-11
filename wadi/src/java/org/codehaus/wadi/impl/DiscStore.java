@@ -18,16 +18,15 @@ package org.codehaus.wadi.impl;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.ExclusiveDiscMotableConfig;
+import org.codehaus.wadi.DiscMotableConfig;
 import org.codehaus.wadi.Store;
 import org.codehaus.wadi.StoreMotable;
 import org.codehaus.wadi.Streamer;
 
-public class DiscStore implements Store, ExclusiveDiscMotableConfig {
+public class DiscStore implements Store, DiscMotableConfig {
 
     protected final Log _log=LogFactory.getLog(getClass());
     protected final Streamer _streamer;
@@ -43,6 +42,8 @@ public class DiscStore implements Store, ExclusiveDiscMotableConfig {
         assert dir.canWrite();
         _dir=dir;
         _useNIO=useNIO;
+        
+        // TODO - for use by a SharedStoreContextualiser we need to figure out concurrency issues...
     }
     
     public void clean() {
@@ -54,7 +55,7 @@ public class DiscStore implements Store, ExclusiveDiscMotableConfig {
         _log.info("removed (exclusive disc): "+l+" files");
     }
     
-    public void load(Map map, boolean accessOnLoad) {
+    public void load(Putter putter, boolean accessOnLoad) {
         // if our last incarnation suffered a catastrophic failure there may be some sessions
         // in our directory - FIXME - if replicating, we may not want to reload these...
         long time=System.currentTimeMillis();
@@ -64,7 +65,7 @@ public class DiscStore implements Store, ExclusiveDiscMotableConfig {
         for (int i=0; i<l; i++) {
             String name=list[i];
             String id=name.substring(0, name.length()-suffixLength);
-            ExclusiveDiscMotable motable=new ExclusiveDiscMotable();
+            DiscMotable motable=new DiscMotable();
             try {
                 motable.init(this, id);
                 if (accessOnLoad) {
@@ -75,7 +76,7 @@ public class DiscStore implements Store, ExclusiveDiscMotableConfig {
                         // TODO - something cleverer...
                     }
                 }
-                map.put(id, motable);
+                putter.put(id, motable);
             } catch (Exception e) {
                 if (_log.isErrorEnabled()) _log.error("failed to load: "+name);
             }
@@ -84,7 +85,7 @@ public class DiscStore implements Store, ExclusiveDiscMotableConfig {
     }
     
     public StoreMotable create() {
-        return new ExclusiveDiscMotable();
+        return new DiscMotable();
     }
     
     public String getStartInfo() {return _dir.toString();}

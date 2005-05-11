@@ -84,7 +84,7 @@ import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.ProxyRelocater;
 import org.codehaus.wadi.impl.SerialContextualiser;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
-import org.codehaus.wadi.impl.SharedJDBCContextualiser;
+import org.codehaus.wadi.impl.SharedStoreContextualiser;
 import org.codehaus.wadi.impl.SharedJDBCMotable;
 import org.codehaus.wadi.impl.SimpleContextualiserStack;
 import org.codehaus.wadi.impl.SimpleEvictable;
@@ -251,7 +251,7 @@ public class TestContextualiser extends TestCase {
     }
 
     public void testSharedPromotion() throws Exception {
-        SharedJDBCContextualiser db=new SharedJDBCContextualiser(_dummyContextualiser, _collapser, true, _ds, _table);
+        SharedStoreContextualiser db=new SharedStoreContextualiser(_dummyContextualiser, _collapser, true, _ds, _table);
         Map m=new HashMap();
         Contextualiser serial=new SerialContextualiser(db, _collapser, m);
         Contextualiser memory=new MemoryContextualiser(serial, _dummyEvicter, m, _streamer, _distributableContextPool, _requestPool);
@@ -318,7 +318,7 @@ public class TestContextualiser extends TestCase {
         public Immoter getSharedDemoter(){throw new UnsupportedOperationException();}
 
         public void promoteToExclusive(Immoter immoter){/* empty */}
-        public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
+        public void load(Emoter emoter, Immoter immoter) {/* empty */}
 
         public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){/* empty */}
         public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
@@ -360,7 +360,7 @@ public class TestContextualiser extends TestCase {
         public Immoter getSharedDemoter(){throw new UnsupportedOperationException();}
 
         public void promoteToExclusive(Immoter immoter){/* empty */}
-        public int loadMotables(Emoter emoter, Immoter immoter) {return 0;}
+        public void load(Emoter emoter, Immoter immoter) {/* empty */}
 
         public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){/* empty */}
         public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}

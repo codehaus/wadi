@@ -127,7 +127,12 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
 	}
 
     public void start() throws Exception {
-        _store.load(_map, _config.getAccessOnLoad());
+        Store.Putter putter=new Store.Putter() {
+            public void put(String name, Motable motable) {
+                _map.put(name, motable);
+            }
+        };
+        _store.load(putter, _config.getAccessOnLoad());
         super.start(); // continue down chain...
     }
 

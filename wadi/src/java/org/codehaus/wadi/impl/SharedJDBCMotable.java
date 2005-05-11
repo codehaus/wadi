@@ -62,56 +62,6 @@ public class SharedJDBCMotable extends AbstractMotable {
 		store(_connection, _table, this);
 	}
 
-    protected static int load(Connection connection, String table, Emoter emoter, Immoter immoter, boolean accessOnLoad) throws Exception {
-        long time=System.currentTimeMillis();
-        Statement s=null;
-        int count=0;
-        try {
-            s=connection.createStatement();
-            ResultSet rs=s.executeQuery("SELECT Id, CreationTime, LastAccessedTime, MaxInactiveInterval, Bytes FROM "+table);
-            while (rs.next()) {
-                int i=1;
-                Motable motable=new SharedJDBCMotable();
-                String id=(String)rs.getObject(i++);
-                long creationTime=rs.getLong(i++);
-                long lastAccessedTime=rs.getLong(i++);
-                lastAccessedTime=accessOnLoad?time:lastAccessedTime;
-                int maxInactiveInterval=rs.getInt(i++);
-                motable.init(creationTime, lastAccessedTime, maxInactiveInterval, id);
-                motable.setBodyAsByteArray((byte[])rs.getObject(i++));
-
-                if (motable.getTimedOut(time)) {
-                    if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getName());
-                    // we should expire it immediately, rather than promoting it...
-                    // perhaps we could be even cleverer ?
-                }
-
-                Utils.mote(emoter, immoter, motable, id);
-                count++;
-            }
-            _log.info("loaded sessions: "+count);
-        } catch (SQLException e) {
-            _log.warn("list (shared database) failed", e);
-            throw e;
-        } finally {
-            if (s!=null)
-                s.close();
-        }
-
-        try {
-            s=connection.createStatement();
-            s.executeUpdate("DELETE FROM "+table);
-        } catch (SQLException e) {
-            _log.warn("removal (shared database) failed", e);
-            throw e;
-        } finally {
-            if (s!=null)
-                s.close();
-        }
-        
-        return count;
-    }
-
     protected static Motable load(Connection connection, String table, Motable motable) throws Exception {
 		String id=motable.getName();
 		Statement s=null;

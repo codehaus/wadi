@@ -19,7 +19,7 @@ package org.codehaus.wadi;
 import java.io.File;
 import java.nio.ByteBuffer;
 
-public interface ExclusiveDiscMotableConfig extends StoreMotableConfig {
+public interface DiscMotableConfig extends StoreMotableConfig {
     
     File getDirectory();
     String getSuffix();

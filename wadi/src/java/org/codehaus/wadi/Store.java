@@ -16,14 +16,16 @@
  */
 package org.codehaus.wadi;
 
-import java.util.Map;
-
 public interface Store extends StoreMotableConfig {
+    
+    interface Putter {
+        void put(String name, Motable motable);
+    }
     
     void clean();
     String getStartInfo();
     String getDescription();
-    void load(Map map, boolean accessOnLoad);
+
     StoreMotable create();
-    
+    void load(Putter putter, boolean accessOnLoad);
 }

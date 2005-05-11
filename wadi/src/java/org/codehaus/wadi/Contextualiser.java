@@ -56,7 +56,7 @@ public interface Contextualiser extends Lifecycle {
 
     // perhaps these two could be collapsed...
     void promoteToExclusive(Immoter immoter); // TODO - 'orrible name...
-    int loadMotables(Emoter emoter, Immoter immoter);
+    void load(Emoter emoter, Immoter immoter);
     
     void init(ContextualiserConfig config);
     void destroy();

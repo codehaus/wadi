@@ -72,7 +72,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final DataSource _databaseDataSource;
     protected final String _databaseTable;
     protected Evicter _databaseEvicter;
-    protected final SharedJDBCContextualiser _database;
+    protected final SharedStoreContextualiser _database;
 
     protected final ConnectionFactory _connectionFactory;
     protected final CustomClusterFactory _clusterFactory;
@@ -114,7 +114,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _databaseDataSource=dataSource;
         _databaseTable="WADI";
         SharedJDBCMotable.init(_databaseDataSource, _databaseTable);
-        _database=new SharedJDBCContextualiser(_dummy, _collapser, true, _databaseDataSource, _databaseTable);
+        _database=new SharedStoreContextualiser(_dummy, _collapser, true, _databaseDataSource, _databaseTable);
         _connectionFactory=Utils.getConnectionFactory();
         _clusterFactory=new CustomClusterFactory(_connectionFactory);
         _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
@@ -200,7 +200,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     }
 
     public void promoteToExclusive(Immoter immoter){_memory.promoteToExclusive(immoter);}
-    public int loadMotables(Emoter emoter, Immoter immoter) {return _memory.loadMotables(emoter, immoter);}
+    public void load(Emoter emoter, Immoter immoter) {_memory.load(emoter, immoter);}
 
     public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){_memory.setLastAccessedTime(evictable, oldTime, newTime);}
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_memory.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
