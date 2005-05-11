@@ -52,29 +52,28 @@ public class ExclusiveDiscMotable extends AbstractMotable implements StoreMotabl
         assert(name.equals(_name));
     }
     
-    public byte[] getBytes() throws Exception {
-        boolean useNIO=_config.getUseNIO();
-        Object body=loadBody(useNIO);
-        if (useNIO)
-            return ((ByteBuffer)body).array();
-        else
-            return (byte[])body;
+    public byte[] getBodyAsByteArray() throws Exception {
+        ensureFile();
+        // we already know the body length...
+        return (byte[])loadBody(false);
     }
     
-    public void setBytes(byte[] bytes) throws Exception {
+    public void setBodyAsByteArray(byte[] body) throws Exception {
         ensureFile();
-        _bodyLength=bytes.length;
-        boolean useNIO=_config.getUseNIO();
-        Object body;
-        if (useNIO) {
-            ByteBuffer buffer=_config.take(_bodyLength);
-            buffer.put(bytes);
-            buffer.flip();
-            body=buffer;
-        } else {
-            body=bytes;
-        }
-        store(useNIO, body);
+        _bodyLength=body.length;
+        store(false, body);
+    }
+    
+    public ByteBuffer getBodyAsByteBuffer() throws Exception {
+        ensureFile();
+        // we already know the body length...
+        return (ByteBuffer)loadBody(true);
+    }
+    
+    public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {
+        ensureFile();
+        _bodyLength=body.capacity(); // FIXME - this will work until we start reusing different sized ByteBuffers
+        store(true, body);
     }
     
     public void destroy() {

@@ -18,6 +18,7 @@ package org.codehaus.wadi.impl;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Set;
@@ -64,11 +65,11 @@ public class StandardSession extends AbstractContext implements Session, Attribu
         // NYI - other fields...
     }
     
-    public byte[] getBytes() throws Exception {
+    public byte[] getBodyAsByteArray() throws Exception {
         throw new NotSerializableException();
     }
 
-    public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {
+    public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
         throw new NotSerializableException();
     }
     

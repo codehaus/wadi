@@ -56,7 +56,7 @@ public class TestMotables extends TestCase {
         byte[] bytes=new byte[]{'a','b','c','d','e','f'};
         
         sm0.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
-        sm0.setBytes(bytes);
+        sm0.setBodyAsByteArray(bytes);
         
         File file=new File(new File("/tmp"), name+".ser");
         file.delete();

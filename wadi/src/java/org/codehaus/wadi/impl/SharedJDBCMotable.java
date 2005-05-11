@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.impl;
 
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -40,8 +41,8 @@ public class SharedJDBCMotable extends AbstractMotable {
 	protected static final Log _log = LogFactory.getLog(SharedJDBCMotable.class);
 
 	protected byte[] _bytes;
-	public byte[] getBytes(){return _bytes;}
-	public void setBytes(byte[] bytes){_bytes=bytes;}
+	public byte[] getBodyAsByteArray(){return _bytes;}
+	public void setBodyAsByteArray(byte[] bytes){_bytes=bytes;}
 
 	protected String _table;
 	public String getTable() {return _table;}
@@ -77,7 +78,7 @@ public class SharedJDBCMotable extends AbstractMotable {
                 lastAccessedTime=accessOnLoad?time:lastAccessedTime;
                 int maxInactiveInterval=rs.getInt(i++);
                 motable.init(creationTime, lastAccessedTime, maxInactiveInterval, id);
-                motable.setBytes((byte[])rs.getObject(i++));
+                motable.setBodyAsByteArray((byte[])rs.getObject(i++));
 
                 if (motable.getTimedOut(time)) {
                     if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getName());
@@ -123,7 +124,7 @@ public class SharedJDBCMotable extends AbstractMotable {
 				long lastAccessedTime=rs.getLong(i++);
 				int maxInactiveInterval=rs.getInt(i++);
                 motable.init(creationTime, lastAccessedTime, maxInactiveInterval, id);
-				motable.setBytes((byte[])rs.getObject(i++));
+				motable.setBodyAsByteArray((byte[])rs.getObject(i++));
 
 				if (!motable.checkTimeframe(System.currentTimeMillis()))
 				    if (_log.isWarnEnabled()) _log.warn("loaded session from the future!: "+id);
@@ -152,7 +153,7 @@ public class SharedJDBCMotable extends AbstractMotable {
 			ps.setLong(i++, motable.getCreationTime());
 			ps.setLong(i++, motable.getLastAccessedTime());
 			ps.setInt(i++, motable.getMaxInactiveInterval());
-			ps.setObject(i++, motable.getBytes());
+			ps.setObject(i++, motable.getBodyAsByteArray());
 			ps.executeUpdate();
 			if (_log.isTraceEnabled()) _log.trace("stored (shared database): "+id);
 		} catch (SQLException e) {
@@ -207,4 +208,7 @@ public class SharedJDBCMotable extends AbstractMotable {
 		s.close();
 		c.close();
 	}
+    
+    public ByteBuffer getBodyAsByteBuffer() throws Exception {throw new UnsupportedOperationException();}
+    public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {throw new UnsupportedOperationException();}
 }

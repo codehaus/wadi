@@ -17,6 +17,7 @@
 package org.codehaus.wadi.impl;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,12 +41,15 @@ public abstract class AbstractContext extends AbstractMotable implements Context
 	public Sync getExclusiveLock(){return _lock.writeLock();}
 
 	// Motable
-	public byte[] getBytes() throws Exception {
+	public byte[] getBodyAsByteArray() throws Exception {
         return Utils.getContent(this, new SimpleStreamer());
 	}
 
-	public void setBytes(byte[] bytes) throws IOException, ClassNotFoundException {
+	public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
 		Utils.setContent(this, bytes, new SimpleStreamer());
 	}
-	
+    
+    public ByteBuffer getBodyAsByteBuffer() throws Exception {throw new UnsupportedOperationException();}
+    public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {throw new UnsupportedOperationException();}
+
 }
