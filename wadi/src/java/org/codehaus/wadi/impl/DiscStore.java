@@ -24,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ExclusiveDiscMotableConfig;
 import org.codehaus.wadi.Store;
 import org.codehaus.wadi.StoreMotable;
-import org.codehaus.wadi.StoreMotableConfig;
 import org.codehaus.wadi.Streamer;
 
 public class DiscStore implements Store, ExclusiveDiscMotableConfig {
@@ -81,7 +80,7 @@ public class DiscStore implements Store, ExclusiveDiscMotableConfig {
     }
     
     public StoreMotable create() {
-        return new ExclusiveDiscMotable();
+        return new NIODiscMotable();
     }
     
     public String getStartInfo() {return _dir.toString();}
