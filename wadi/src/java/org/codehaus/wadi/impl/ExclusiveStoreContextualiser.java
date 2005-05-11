@@ -44,9 +44,9 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
     protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public ExclusiveStoreContextualiser(Contextualiser next, Collapser collapser, boolean clean, Evicter evicter, Map map, Streamer streamer, File dir) {
+	public ExclusiveStoreContextualiser(Contextualiser next, Collapser collapser, boolean clean, Evicter evicter, Map map, Streamer streamer, File dir) throws Exception {
 	    super(next, new CollapsingLocker(collapser), clean, evicter, map);
-        _store=new DiscStore(streamer, dir);
+        _store=new DiscStore(streamer, dir, true);
 	    _immoter=new ExclusiveStoreImmoter(_map);
 	    _emoter=new ExclusiveStoreEmoter(_map);
 	}

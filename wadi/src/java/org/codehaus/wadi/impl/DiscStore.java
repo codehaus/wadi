@@ -17,6 +17,7 @@
 package org.codehaus.wadi.impl;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -31,14 +32,17 @@ public class DiscStore implements Store, ExclusiveDiscMotableConfig {
     protected final Log _log=LogFactory.getLog(getClass());
     protected final Streamer _streamer;
     protected final File _dir;
+    protected final boolean _useNIO;
+    protected final DirectByteBufferCache _cache=new DirectByteBufferCache();
 
-    public DiscStore(Streamer streamer, File dir) {
+    public DiscStore(Streamer streamer, File dir, boolean useNIO) throws Exception {
         _streamer=streamer;
         assert dir.exists();
         assert dir.isDirectory();
         assert dir.canRead();
         assert dir.canWrite();
         _dir=dir;
+        _useNIO=useNIO;
     }
     
     public void clean() {
@@ -46,8 +50,8 @@ public class DiscStore implements Store, ExclusiveDiscMotableConfig {
         int l=files.length;
         for (int i=0; i<l; i++) {
             files[i].delete();
-            _log.info("removed (exclusive disc): "+l);
         }
+        _log.info("removed (exclusive disc): "+l+" files");
     }
     
     public void load(Map map, boolean accessOnLoad) {
@@ -80,7 +84,7 @@ public class DiscStore implements Store, ExclusiveDiscMotableConfig {
     }
     
     public StoreMotable create() {
-        return new NIODiscMotable();
+        return new ExclusiveDiscMotable();
     }
     
     public String getStartInfo() {return _dir.toString();}
@@ -90,4 +94,8 @@ public class DiscStore implements Store, ExclusiveDiscMotableConfig {
     
     public File getDirectory() {return _dir;}
     public String getSuffix() {return _streamer.getSuffixWithDot();}
+    public boolean getUseNIO() {return _useNIO;}
+    public ByteBuffer take(int size) {return _cache.take(size);}
+    public void put(ByteBuffer buffer) {_cache.put(buffer);}
+    
 }

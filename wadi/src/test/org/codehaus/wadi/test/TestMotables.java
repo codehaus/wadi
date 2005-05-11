@@ -18,12 +18,9 @@ package org.codehaus.wadi.test;
 
 import java.io.File;
 
-import org.codehaus.wadi.ExclusiveDiscMotableConfig;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.StoreMotable;
 import org.codehaus.wadi.impl.DiscStore;
-import org.codehaus.wadi.impl.ExclusiveDiscMotable;
-import org.codehaus.wadi.impl.NIODiscMotable;
 import org.codehaus.wadi.impl.SimpleMotable;
 import org.codehaus.wadi.impl.SimpleStreamer;
 
@@ -44,7 +41,8 @@ public class TestMotables extends TestCase {
     }
     
     public void testDiscMotables() throws Exception {
-        testDiscMotables(new DiscStore(new SimpleStreamer(), new File("/tmp")));
+        testDiscMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), false));
+        testDiscMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), true));
     }
  
     public void testDiscMotables(DiscStore store) throws Exception {

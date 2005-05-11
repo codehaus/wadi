@@ -104,7 +104,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final Map _memoryMap;
     protected final MemoryContextualiser _memory;
 
-    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource, int port) throws SQLException, JMSException, ClusterException, UnknownHostException {
+    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource, int port) throws Exception {
         super();
         _streamer=new SimpleStreamer();
         //_collapser=new DebugCollapser();
@@ -127,7 +127,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterMap=new ConcurrentHashMap();
         _clusterEvicter=new DummyEvicter(); // TODO - consider Cluster eviction carefully...
         _clusterDispatcher=new MessageDispatcher(_clusterCluster);
-	long ackTimeout=250; // MUST be shorter than other nodes EmigrationReq.resTimeout, or they will timeout waiting for us...
+        long ackTimeout=250; // MUST be shorter than other nodes EmigrationReq.resTimeout, or they will timeout waiting for us...
         _clusterRelocater=new ImmigrateRelocater(2000, 1000);
 	//        _clusterRelocater=new ProxyRelocater(2000, 2000);
         String nodeId=System.getProperty("wadi.colour");
