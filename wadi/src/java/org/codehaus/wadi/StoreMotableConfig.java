@@ -16,11 +16,6 @@
  */
 package org.codehaus.wadi;
 
-import java.io.File;
-
-public interface ExclusiveDiscMotableConfig extends StoreMotableConfig {
-    
-    File getDirectory();
-    String getSuffix();
+public interface StoreMotableConfig {
 
 }

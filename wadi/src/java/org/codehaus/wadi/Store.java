@@ -16,11 +16,14 @@
  */
 package org.codehaus.wadi;
 
-import java.io.File;
+import java.util.Map;
 
-public interface ExclusiveDiscMotableConfig extends StoreMotableConfig {
+public interface Store extends StoreMotableConfig {
     
-    File getDirectory();
-    String getSuffix();
-
+    void clean();
+    String getStartInfo();
+    String getDescription();
+    void load(Map map, boolean accessOnLoad);
+    StoreMotable create();
+    
 }

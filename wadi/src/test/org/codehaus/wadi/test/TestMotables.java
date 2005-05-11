@@ -23,7 +23,6 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.impl.ExclusiveDiscMotable;
 import org.codehaus.wadi.impl.SimpleMotable;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
 public class TestMotables extends TestCase {

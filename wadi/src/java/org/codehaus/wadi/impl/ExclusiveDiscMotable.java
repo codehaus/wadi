@@ -26,6 +26,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ExclusiveDiscMotableConfig;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.StoreMotable;
+import org.codehaus.wadi.StoreMotableConfig;
 
 /**
  * A Motable that represents its Bytes field as a File in a directory to which its node has Exclusive access.
@@ -34,18 +36,18 @@ import org.codehaus.wadi.Motable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ExclusiveDiscMotable extends AbstractMotable {
+public class ExclusiveDiscMotable extends AbstractMotable implements StoreMotable {
 	protected static final Log _log = LogFactory.getLog(ExclusiveDiscMotable.class);
 
     protected ExclusiveDiscMotableConfig _config;
     protected File _file;
     
-    public void init(ExclusiveDiscMotableConfig config) { // used when we are going to store something...
-        _config=config;
+    public void init(StoreMotableConfig config) { // used when we are going to store something...
+        _config=(ExclusiveDiscMotableConfig)config;
     }
  
-    public void init(ExclusiveDiscMotableConfig config, String name) throws Exception { // used when we are going to load something...
-        _config=config;
+    public void init(StoreMotableConfig config, String name) throws Exception { // used when we are going to load something...
+        _config=(ExclusiveDiscMotableConfig)config;
         _file=new File(_config.getDirectory(), name+_config.getSuffix());
         load(_file, this);
         assert(name.equals(_name));
