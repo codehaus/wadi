@@ -94,7 +94,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final File _discDirectory;
     protected final Evicter _discEvicter;
     protected final Map _discMap;
-    protected final ExclusiveDiscContextualiser _disc;
+    protected final ExclusiveStoreContextualiser _disc;
 
     protected final SerialContextualiser _serial;
 
@@ -146,7 +146,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         // TODO - consider eviction on disc, indexing by ttl would be efficient enough...
         _discEvicter=new NeverEvicter(20, true); // sessions never pass below this point, unless the node is shutdown
         _discMap=new ConcurrentHashMap();
-        _disc=new ExclusiveDiscContextualiser(_stateless, _collapser, true, _discEvicter, _discMap, _streamer, _discDirectory);
+        _disc=new ExclusiveStoreContextualiser(_stateless, _collapser, true, _discEvicter, _discMap, _streamer, _discDirectory);
 
 
         _memoryPool=pool;

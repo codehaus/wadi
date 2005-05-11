@@ -45,7 +45,7 @@ import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
-import org.codehaus.wadi.impl.ExclusiveDiscContextualiser;
+import org.codehaus.wadi.impl.ExclusiveStoreContextualiser;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.NeverEvicter;
@@ -112,7 +112,7 @@ public class TestEvicters extends TestCase {
         // (Contextualiser next, Collapser collapser, Evicter evicter, Map map, StreamingStrategy streamer, File dir) {
         Collapser collapser=new HashingCollapser(100, 1000);
         File dir=new File("/tmp/wadi/"+System.getProperty("wadi.colour"));
-        Contextualiser disc=new ExclusiveDiscContextualiser(next, collapser, true, devicter, dmap, streamer, dir);
+        Contextualiser disc=new ExclusiveStoreContextualiser(next, collapser, true, devicter, dmap, streamer, dir);
         Map mmap=new HashMap();
         int inactivityInterval=1; // second
         Evicter mevicter=new AbsoluteEvicter(sweepInterval, strictOrdering, inactivityInterval);

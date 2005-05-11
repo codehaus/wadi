@@ -16,11 +16,10 @@
  */
 package org.codehaus.wadi;
 
-import java.io.File;
+public interface StoreMotable extends Motable {
 
-public interface ExclusiveDiscMotableConfig extends StoreMotableConfig {
-    
-    File getDirectory();
-    String getSuffix();
-
+    void init(StoreMotableConfig config); // used when we are going to store something...
+  
+    void init(StoreMotableConfig config, String name) throws Exception; // used when we are going to load something...
+ 
 }

@@ -24,9 +24,10 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
-import org.codehaus.wadi.ExclusiveDiscMotableConfig;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.Store;
+import org.codehaus.wadi.StoreMotable;
 import org.codehaus.wadi.Streamer;
 
 // TODO - a JDBC-based equivalent
@@ -37,41 +38,28 @@ import org.codehaus.wadi.Streamer;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser implements ExclusiveDiscMotableConfig {
+public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualiser {
 
-	protected final Streamer _streamer;
-	protected final File _dir;
+    protected final Store _store;
     protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public ExclusiveDiscContextualiser(Contextualiser next, Collapser collapser, boolean clean, Evicter evicter, Map map, Streamer streamer, File dir) {
+	public ExclusiveStoreContextualiser(Contextualiser next, Collapser collapser, boolean clean, Evicter evicter, Map map, Streamer streamer, File dir) {
 	    super(next, new CollapsingLocker(collapser), clean, evicter, map);
-	    _streamer=streamer;
-	    assert dir.exists();
-	    assert dir.isDirectory();
-	    assert dir.canRead();
-	    assert dir.canWrite();
-	    _dir=dir;
-
-	    _immoter=new ExclusiveDiscImmoter(_map);
-	    _emoter=new ExclusiveDiscEmoter(_map);
+        _store=new DiscStore(streamer, dir);
+	    _immoter=new ExclusiveStoreImmoter(_map);
+	    _emoter=new ExclusiveStoreEmoter(_map);
 	}
 
     public void init(ContextualiserConfig config) {
         super.init(config);
         // perhaps this should be done in start() ?
-        if (_clean) {
-            File[] files=_dir.listFiles();
-            int l=files.length;
-            for (int i=0; i<l; i++) {
-                files[i].delete();
-            }
-            _log.info("removed (exclusive disc): "+l);
-        }
+        if (_clean)
+            _store.clean();
     }
     
     public String getStartInfo() {
-        return "["+_dir+"]";
+        return "["+_store.getStartInfo()+"]";
     }
     
 	public boolean isExclusive(){return true;}
@@ -80,53 +68,53 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
 	public Emoter getEmoter(){return _emoter;}
 
 	/**
-	 * An Immoter that deals in terms of ExclusiveDiscMotables
+	 * An Immoter that deals in terms of StoreMotables
 	 *
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$
 	 */
-	public class ExclusiveDiscImmoter extends AbstractMappedImmoter {
+	public class ExclusiveStoreImmoter extends AbstractMappedImmoter {
 
-	    public ExclusiveDiscImmoter(Map map) {
+	    public ExclusiveStoreImmoter(Map map) {
 	        super(map);
 	    }
 
 		public Motable nextMotable(String id, Motable emotable) {
-            return new ExclusiveDiscMotable(); // TODO - Pool, maybe as ThreadLocal
+            return _store.create(); // TODO - Pool, maybe as ThreadLocal
 		}
 
 		public boolean prepare(String id, Motable emotable, Motable immotable) {
 			try {
-                ((ExclusiveDiscMotable)immotable).init(ExclusiveDiscContextualiser.this);
+                ((StoreMotable)immotable).init(_store);
             } catch (Exception e) {
-                _log.error("problem storing (exclusive disc)", e);
+                _log.error("problem storing ("+_store.getDescription()+")", e);
                 return false;
             }
 			return super.prepare(id, emotable, immotable);
 		}
 
 		public String getInfo() {
-			return "exclusive disc";
+			return _store.getDescription();
 		}
 	}
 
 	/**
-	 * An Emmoter that deals in terms of ExclusiveDiscMotables
+	 * An Emmoter that deals in terms of StoreMotables
 	 *
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$
 	 */
-	class ExclusiveDiscEmoter extends AbstractMappedEmoter {
+	class ExclusiveStoreEmoter extends AbstractMappedEmoter {
 
-		public ExclusiveDiscEmoter(Map map) {super(map);}
+		public ExclusiveStoreEmoter(Map map) {super(map);}
 
         public boolean prepare(String id, Motable emotable, Motable immotable) {
             if (super.prepare(id, emotable, immotable)) {
                 try {
-                    ExclusiveDiscMotable edm=(ExclusiveDiscMotable)emotable;
-                    edm.init(ExclusiveDiscContextualiser.this, id);
+                    StoreMotable edm=(StoreMotable)emotable;
+                    edm.init(_store, id);
                 } catch (Exception e) {
-                    _log.error("problem loading (exclusive disc)", e);
+                    _log.error("problem loading ("+_store.getDescription()+")", e);
                     return false;
                 }
             } else
@@ -135,41 +123,11 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
             return true;
         }
 
-		public String getInfo(){return "exclusive disc";}
+		public String getInfo(){return _store.getDescription();}
 	}
 
-    protected void load() {
-        // if our last incarnation suffered a catastrophic failure there may be some sessions
-        // in our directory - FIXME - if replicating, we may not want to reload these...
-        boolean accessOnLoad=_config.getAccessOnLoad();
-        long time=System.currentTimeMillis();
-        String[] list=_dir.list();
-        int l=list.length;
-        int suffixLength=".".length()+_streamer.getSuffix().length();
-        for (int i=0; i<l; i++) {
-            String name=list[i];
-            String id=name.substring(0, name.length()-suffixLength);
-            ExclusiveDiscMotable motable=new ExclusiveDiscMotable();
-            try {
-                motable.init(this, id);
-                if (accessOnLoad) {
-                    motable.setLastAccessedTime(time);
-                } else {
-                    if (motable.getTimedOut(time)) {
-                        if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getName());
-                        // TODO - something cleverer...
-                    }
-                }
-                _map.put(id, motable);
-            } catch (Exception e) {
-                if (_log.isErrorEnabled()) _log.error("failed to load: "+name);
-            }
-        }
-	if (_log.isInfoEnabled())_log.info("loaded sessions: "+list.length);
-    }
-
     public void start() throws Exception {
-        load();
+        _store.load(_map, _config.getAccessOnLoad());
         super.start(); // continue down chain...
     }
 
@@ -196,10 +154,5 @@ public class ExclusiveDiscContextualiser extends AbstractExclusiveContextualiser
             throw new UnsupportedOperationException(); // FIXME
         }
     }
-    
-    // ExclusiveDiscMotableConfig
-    
-    public File getDirectory() {return _dir;}
-    public String getSuffix() {return _streamer.getSuffixWithDot();}
 
 }
