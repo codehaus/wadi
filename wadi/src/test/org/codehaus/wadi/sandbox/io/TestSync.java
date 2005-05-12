@@ -1,5 +1,6 @@
 package org.codehaus.wadi.sandbox.io;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
@@ -7,9 +8,25 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
+import java.util.Collections;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Emoter;
+import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.Moter;
+import org.codehaus.wadi.impl.SimpleMotable;
+import org.codehaus.wadi.impl.Utils;
+
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 
 import junit.framework.TestCase;
@@ -83,7 +100,7 @@ public class TestSync extends TestCase {
         }
     }
     
-    protected final int _count=1000;
+    protected final int _count=1;
     
     public void testSerialRoundTrips() throws Exception {
         long start=System.currentTimeMillis();
@@ -150,6 +167,55 @@ public class TestSync extends TestCase {
 //        }
 //        long elapsed=System.currentTimeMillis()-start;
 //        _log.info("rate="+(_count*1000/elapsed)+" round-trips/second");
+//    }
+    
+//    public static class PeerMoter extends Peer implements Moter {
+//        
+//        public PeerMoter(Socket socket) throws IOException {
+//            super(socket);
+//        }
+//        
+//        public boolean prepare(String name, Motable emotable, Motable immotable) {
+//            // lock e
+//            return true;
+//        }
+//
+//        public void commit(String name, Motable motable) {
+//            
+//        }
+//        
+//        public void rollback(String name, Motable motable) {
+//            
+//        }
+//
+//        public String getInfo() {
+//            return "peer";
+//        }
+//
+//    }
+//    
+//    public static class PeerEmoter extends PeerMoter implements Emoter{
+//    }
+//    
+//    public static class PeerImmoter extends PeerMoter implements Immoter {
+//        
+//        Motable nextMotable(String id, Motable emotable);
+//
+//        boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) throws IOException, ServletException;
+//
+//    }
+    
+//    public void testMigration() throws Exception {
+//        
+//        Emoter emoter=null;
+//        Immoter immoter=null;
+//        
+//        Motable emotable=new SimpleMotable();
+//        String name="foo";
+//        long time=System.currentTimeMillis();
+//        emotable.init(time, time, 30*60, name);
+//        
+//        Utils.mote(emoter, immoter, emotable, name);
 //    }
 
 }
