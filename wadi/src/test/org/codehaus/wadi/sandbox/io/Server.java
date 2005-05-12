@@ -17,18 +17,15 @@
 package org.codehaus.wadi.sandbox.io;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
@@ -37,8 +34,16 @@ import org.apache.commons.logging.LogFactory;
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-public class Server implements Listener {
+interface Listener {void notify(Object token);}
 
+/**
+ * A Socket Server - you send it instances of Peer, which are then fed the Socket that they arrived on to consume...
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public class Server implements Listener {
+    
     protected Log _log=LogFactory.getLog(getClass());
     
     protected final PooledExecutor _executor;
@@ -80,7 +85,7 @@ public class Server implements Listener {
             _thread=null;
 
             while (_consumers.size()>0) {
-                _log.info("waiting for: "+_consumers);
+                _log.info("waiting for: "+_consumers.size()+" thread[s]");
                 Thread.sleep(1000);
             }
             _log.info("Consumer threads joined");
@@ -126,4 +131,43 @@ public class Server implements Listener {
         }
         
     }
+    
+    public static class Consumer implements Runnable {
+        
+        protected static final Log _log=LogFactory.getLog(Consumer.class);
+        
+        protected final Socket _socket;
+        protected final Listener _listener;
+        protected final Object _token;
+        
+        public Consumer(Socket socket, Listener listener, Object token) {
+            _socket=socket;
+            _listener=listener;
+            _token=token;
+        }
+        
+        public void run() {
+            //_log.info("Consumer started...: "+_socket);
+            ObjectInputStream  ois=null;
+            ObjectOutputStream oos=null;
+            try {
+                oos=new ObjectOutputStream(_socket.getOutputStream());
+                ois=new ObjectInputStream(_socket.getInputStream());
+                Peer peer=(Peer)ois.readObject();
+                peer.process(_socket, ois, oos);
+            } catch (IOException e) {
+                _log.warn("connection broken - aborting", e);
+            } catch (ClassNotFoundException e) {
+                _log.warn("unknown Peer type - version/security problem?", e);
+            } finally {
+                try{if (oos!=null) oos.flush();}catch(IOException e){_log.warn("problem flushing socket output",e);}
+                try{if (ois!=null) ois.close();}catch(IOException e){_log.warn("problem closing socket input",e);}
+                try{if (oos!=null) oos.close();}catch(IOException e){_log.warn("problem closing socket output",e);}
+                try{_socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
+                _listener.notify(_token);
+            }
+            //_log.info("...Consumer finished: "+Thread.currentThread());
+        }
+    }
+    
 }

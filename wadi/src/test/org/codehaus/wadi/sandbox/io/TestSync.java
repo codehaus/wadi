@@ -2,9 +2,11 @@ package org.codehaus.wadi.sandbox.io;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channel;
+import java.nio.channels.SocketChannel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,15 +38,14 @@ public class TestSync extends TestCase {
         super(name);
     }
     
+    protected InetSocketAddress _address;
     protected Server _server;
-    protected Socket _client;
     
     protected void setUp() throws Exception {
         super.setUp();
-        
-        _server=new Server(new InetSocketAddress(8888), 16, 1);
+        _address=new InetSocketAddress(8888);
+        _server=new Server(_address, 16, 1);
         _server.start();
-        
     }
     
     protected void tearDown() throws Exception {
@@ -52,41 +53,103 @@ public class TestSync extends TestCase {
         _server.stop();
     }
 
-    public static class MyExecutable implements Executable {
+    public static class RoundTripServerPeer extends Peer {
         
-        protected static final Log _log=LogFactory.getLog(Executable.class);
+        protected static final Log _log=LogFactory.getLog(RoundTripServerPeer.class);
         
         public void process(Socket socket, ObjectInputStream ois, ObjectOutputStream oos) {
             try {
                 oos.writeBoolean(true); // ack
-                oos.flush();
-                ois.close();
-                oos.close();
-                socket.close();
             } catch (IOException e) {
-                _log.warn(e);
+                _log.error(e);
             }
         }
-        
     }
     
-    public void testConnect() throws Exception {
-
-        long start=System.currentTimeMillis();
+    public static class RoundTripClientPeer extends Peer {
         
-        int count=10000;
-        InetAddress localhost=InetAddress.getLocalHost();
-        for (int i=0; i<count; i++) {
-            Socket socket=new Socket(localhost, 8888);
-            ObjectInputStream ois=new ObjectInputStream(socket.getInputStream());
-            ObjectOutputStream oos=new ObjectOutputStream(socket.getOutputStream());
-            oos.writeObject(new MyExecutable());
-            assertTrue(ois.readBoolean());
-            ois.close();
-            oos.close();
-            socket.close();
+        public RoundTripClientPeer(InetSocketAddress address) throws IOException {
+            super(address);
+        }
+        
+        public void process(Socket socket, ObjectInputStream ois, ObjectOutputStream oos) {
+            try {
+                oos.writeObject(new RoundTripServerPeer());
+                oos.flush();
+                assertTrue(ois.readBoolean());
+            } catch (IOException e) {
+                _log.error(e);
+            }
+        }
+    }
+    
+    protected final int _count=1000;
+    
+    public void testRoundTrips() throws Exception {
+        long start=System.currentTimeMillis();
+        for (int i=0; i<_count; i++) {
+            Peer peer=new RoundTripClientPeer(_address);
+            peer.run();
         }
         long elapsed=System.currentTimeMillis()-start;
-        _log.info("rate="+(count*1000/elapsed)+" reqs/second");
+        _log.info("rate="+(_count*1000/elapsed)+" round-trips/second");
     }
+    
+    public static class MixedContentServerPeer extends Peer {
+        
+        protected static final Log _log=LogFactory.getLog(MixedContentServerPeer.class);
+        
+        public void process(Socket socket, ObjectInputStream ois, ObjectOutputStream oos) {
+            try {
+                int capacity=ois.readInt();
+                ByteBuffer buffer=ByteBuffer.allocateDirect(capacity);
+                socket.getChannel().read(buffer);
+                oos.writeBoolean(true); // ack
+            } catch (IOException e) {
+                _log.error(e);
+            }
+        }
+    }
+    
+    public static class MixedContentClientPeer extends Peer {
+        
+        protected static final Log _log=LogFactory.getLog(MixedContentClientPeer.class);
+        protected final ByteBuffer _buffer;
+        
+        public MixedContentClientPeer(InetSocketAddress address, ByteBuffer buffer) throws IOException {
+            super(address);
+            _buffer=buffer;
+        }
+        
+        public void process(Socket socket, ObjectInputStream ois, ObjectOutputStream oos) {
+            try {
+                oos.writeObject(new MixedContentServerPeer());
+                oos.writeInt(_buffer.capacity());
+                oos.flush();
+                SocketChannel channel=socket.getChannel();
+                
+                // AHA ! - you can't get the Channel for a preexisting Socket :-(
+                // back to the drawing board...
+                
+                channel.write(_buffer);
+                oos.flush();
+                assertTrue(ois.readBoolean());
+            } catch (IOException e) {
+                _log.error(e);
+            }
+        }
+    }
+    
+//    public void testMixedContent() throws Exception {
+//        long start=System.currentTimeMillis();
+//        int capacity=4096;
+//        ByteBuffer buffer=ByteBuffer.allocateDirect(capacity);
+//        for (int i=0; i<1; i++) {
+//            Peer peer=new MixedContentClientPeer(_address, buffer);
+//            peer.run();
+//        }
+//        long elapsed=System.currentTimeMillis()-start;
+//        _log.info("rate="+(_count*1000/elapsed)+" round-trips/second");
+//    }
+
 }
