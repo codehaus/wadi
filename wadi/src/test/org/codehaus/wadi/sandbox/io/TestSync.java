@@ -85,7 +85,7 @@ public class TestSync extends TestCase {
     
     protected final int _count=1000;
     
-    public void testRoundTrips() throws Exception {
+    public void testSerialRoundTrips() throws Exception {
         long start=System.currentTimeMillis();
         for (int i=0; i<_count; i++) {
             Peer peer=new RoundTripClientPeer(_address);

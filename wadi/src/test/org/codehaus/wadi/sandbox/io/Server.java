@@ -24,9 +24,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-interface Listener {void notify(Object token);}
+interface Listener {void notifyCompleted();}
 
 /**
  * A Socket Server - you send it instances of Peer, which are then fed the Socket that they arrived on to consume...
@@ -49,7 +46,7 @@ public class Server implements Listener {
     protected final PooledExecutor _executor;
     protected final int _backlog; // 16?
     protected final int _timeout; // secs
-    protected final Collection _consumers=Collections.synchronizedSet(new TreeSet());
+    protected volatile int _consumers=0;
 
     public Server(InetSocketAddress address, int backlog, int timeout) {
         _executor=new PooledExecutor(new BoundedBuffer(10), 100); // parameterise
@@ -63,7 +60,6 @@ public class Server implements Listener {
     protected InetSocketAddress _address;
     protected Thread _thread;
     protected boolean _running;
-    protected int _token;
 
     public void start() throws IOException {
         int port=_address.getPort();
@@ -79,31 +75,39 @@ public class Server implements Listener {
     public void stop() {
         if (_log.isDebugEnabled()) _log.debug("stopping: "+_socket);
         _running=false;
-        try {
-            _thread.join();
-            _log.info("Producer thread joined");
-            _thread=null;
-
-            while (_consumers.size()>0) {
-                _log.info("waiting for: "+_consumers.size()+" thread[s]");
-                Thread.sleep(1000);
+        
+        do {
+            try {
+                _thread.join();
+            } catch (InterruptedException e) {
+                _log.trace("unexpected interruption - ignoring", e);
             }
-            _log.info("Consumer threads joined");
-
-            _socket.close();
-            _socket=null;
-
-            if (_log.isDebugEnabled()) _log.debug("stopped: "+_address);
-        } catch (InterruptedException e) {
-            _log.warn("unexpectedly interrupted whilst stopping");
-            // TODO - interrupted()?
-        } catch (IOException e) {
-            _log.warn("could not close server socket");
+        } while (Thread.interrupted());
+        _log.info("Producer thread joined");
+        _thread=null;
+        
+        while (_consumers>0) {
+            _log.info("waiting for: "+_consumers+" thread[s]");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                _log.trace("unexpected interruption - ignoring", e);
+            }
         }
+        _log.info("Consumer threads joined");
+        
+        try {
+            _socket.close();
+        } catch (IOException e) {
+            _log.warn("problem closing server socket", e);
+        }
+        _socket=null;
+        
+        if (_log.isDebugEnabled()) _log.debug("stopped: "+_address);
     }
     
-    public void notify(Object token) {
-        _consumers.remove(token);
+    public void notifyCompleted() {
+        _consumers--;
     }
     
     public class Producer implements Runnable {
@@ -115,9 +119,8 @@ public class Server implements Listener {
                         if (_timeout==0) Thread.yield();
                         Socket socket=_socket.accept();
                         socket.setSoTimeout(30*1000);
-                        Object token=new Integer(_token++);
-                        _consumers.add(token);
-                        Consumer consumer=new Consumer(socket, Server.this, token);
+                        _consumers++;
+                        Consumer consumer=new Consumer(socket, Server.this);
                         _executor.execute(consumer);
                     } catch (SocketTimeoutException ignore) {
                         // ignore...
@@ -138,12 +141,10 @@ public class Server implements Listener {
         
         protected final Socket _socket;
         protected final Listener _listener;
-        protected final Object _token;
         
-        public Consumer(Socket socket, Listener listener, Object token) {
+        public Consumer(Socket socket, Listener listener) {
             _socket=socket;
             _listener=listener;
-            _token=token;
         }
         
         public void run() {
@@ -164,7 +165,7 @@ public class Server implements Listener {
                 try{if (ois!=null) ois.close();}catch(IOException e){_log.warn("problem closing socket input",e);}
                 try{if (oos!=null) oos.close();}catch(IOException e){_log.warn("problem closing socket output",e);}
                 try{_socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
-                _listener.notify(_token);
+                _listener.notifyCompleted();
             }
             //_log.info("...Consumer finished: "+Thread.currentThread());
         }
