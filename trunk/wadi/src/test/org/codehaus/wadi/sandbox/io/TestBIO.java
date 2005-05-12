@@ -47,21 +47,21 @@ import junit.framework.TestCase;
  *  limitations under the License.
  */
 
-public class TestSync extends TestCase {
+public class TestBIO extends TestCase {
     
     protected Log _log = LogFactory.getLog(getClass());
     
-    public TestSync(String name) {
+    public TestBIO(String name) {
         super(name);
     }
     
     protected InetSocketAddress _address;
-    protected Server _server;
+    protected BIOServer _server;
     
     protected void setUp() throws Exception {
         super.setUp();
         _address=new InetSocketAddress(8888);
-        _server=new Server(_address, 16, 1);
+        _server=new BIOServer(_address, 16, 1);
         _server.start();
     }
     
