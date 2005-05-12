@@ -39,7 +39,7 @@ interface Listener {void notifyCompleted();}
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class Server implements Listener {
+public class BIOServer implements Listener {
     
     protected Log _log=LogFactory.getLog(getClass());
     
@@ -48,7 +48,7 @@ public class Server implements Listener {
     protected final int _timeout; // secs
     protected volatile int _consumers=0;
 
-    public Server(InetSocketAddress address, int backlog, int timeout) {
+    public BIOServer(InetSocketAddress address, int backlog, int timeout) {
         _executor=new PooledExecutor(new BoundedBuffer(10), 100); // parameterise
         _executor.setMinimumPoolSize(3);
         _address=address;
@@ -120,7 +120,7 @@ public class Server implements Listener {
                         Socket socket=_socket.accept();
                         socket.setSoTimeout(30*1000);
                         _consumers++;
-                        Consumer consumer=new Consumer(socket, Server.this);
+                        Consumer consumer=new Consumer(socket, BIOServer.this);
                         _executor.execute(consumer);
                     } catch (SocketTimeoutException ignore) {
                         // ignore...

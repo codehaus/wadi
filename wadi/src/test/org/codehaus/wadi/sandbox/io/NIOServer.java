@@ -14,21 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.sandbox.io;
 
-// This is largely copied from Jetty's SocketChannelListener - cheers Greg ! (Jetty is ASF2.0)
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.ClosedChannelException;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -40,17 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.mortbay.http.nio.ByteBufferInputStream;
 import org.mortbay.http.nio.SocketChannelOutputStream;
 
-import junit.framework.TestCase;
-
-public class TestNIO extends TestCase {
-
-    protected final Log _log=LogFactory.getLog(getClass());
-    
-    public TestNIO(String name) {
-        super(name);
-    }
-    
-    public static class Server implements Runnable {
+public class NIOServer implements Runnable {
         
         class Connection implements Runnable {
             
@@ -88,7 +69,7 @@ public class TestNIO extends TestCase {
         protected final Log _log=LogFactory.getLog(getClass());
         protected final int _bufferSize;
         
-        public Server(InetSocketAddress address, int bufferSize) {
+        public NIOServer(InetSocketAddress address, int bufferSize) {
             _address=address;
             _bufferSize=bufferSize;
         }
@@ -170,52 +151,3 @@ public class TestNIO extends TestCase {
             }
         }
     }
-
-    protected Server _server;
-    
-    protected void setUp() throws Exception {
-        super.setUp();
-        _server=new Server(new InetSocketAddress(InetAddress.getLocalHost(), 8080), 4096);
-        _server.start();
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        _server.stop();
-    }
-
-//    public void testWrite() throws Exception {
-//        assertTrue(true);
-//        
-//        int size=1024;
-//        byte[] bytes=new byte[size];
-//        for (int i=0; i<size; i++)
-//            bytes[i]=(byte)i;
-//        File file=File.createTempFile("wadi-", ".tst");
-//        FileOutputStream fos=new FileOutputStream(file);
-//        fos.write(bytes);
-//        fos.close();
-//
-//        _log.info("File: "+file);
-//        
-//        assertTrue(file.length()==size);
-//        FileInputStream fis= new FileInputStream(file);
-//        FileChannel fc=fis.getChannel();
-//        MappedByteBuffer mbb=fc.map(FileChannel.MapMode.READ_ONLY, 0, file.length());
-//    }
-    
-    public void testConnect() throws Exception {
-
-        long start=System.currentTimeMillis();
-        
-        
-        int count=500;
-        InetAddress localhost=InetAddress.getLocalHost();
-        for (int i=0; i<count; i++) {
-            new Socket(localhost, 8080);
-        }
-        long elapsed=System.currentTimeMillis()-start;
-        _log.info("elapsed: "+(count*1000/elapsed)+" sockets/second");
-        Thread.sleep(5000);
-    }
-}
