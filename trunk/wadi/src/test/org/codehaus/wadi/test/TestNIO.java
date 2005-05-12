@@ -16,12 +16,15 @@
  */
 package org.codehaus.wadi.test;
 
+// This is largely copied from Jetty's SocketChannelListener - cheers Greg ! (Jetty is ASF2.0)
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.ClosedChannelException;
@@ -34,49 +37,84 @@ import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mortbay.http.nio.ByteBufferInputStream;
+import org.mortbay.http.nio.SocketChannelOutputStream;
 
 import junit.framework.TestCase;
 
 public class TestNIO extends TestCase {
 
     protected final Log _log=LogFactory.getLog(getClass());
-
+    
     public TestNIO(String name) {
         super(name);
-    }
-
-    public static class Connection {
-        public Connection(SocketChannel channel, SelectionKey key, Server server) {
-        }
     }
     
     public static class Server implements Runnable {
         
+        class Connection implements Runnable {
+            
+            protected final SocketChannel _channel;
+            protected final SelectionKey _key;
+            protected final ByteBufferInputStream _in;
+            protected final SocketChannelOutputStream _out;
+
+            public Connection(SocketChannel channel, SelectionKey key) {
+                _channel=channel;
+                _key=key;
+                _in=new ByteBufferInputStream(_bufferSize);
+                _out=new SocketChannelOutputStream(channel, _bufferSize);
+                }
+            
+            public void run() {
+                //...
+            }
+
+            public synchronized void close()
+            throws IOException
+            {
+                _out.close();
+                _in.close();
+                if (!_channel.isOpen())
+                    return;
+                _key.cancel();
+                _channel.socket().shutdownOutput();
+                _channel.close();
+                _channel.socket().close();
+                _channel.close();
+            }
+        }
+        
         protected final Log _log=LogFactory.getLog(getClass());
-
-        protected final ServerSocketChannel _channel;
-        protected final Selector _selector;
-
+        protected final int _bufferSize;
+        
+        public Server(InetSocketAddress address, int bufferSize) {
+            _address=address;
+            _bufferSize=bufferSize;
+        }
+        
         protected InetSocketAddress _address;
+        protected ServerSocketChannel _channel;
+        protected Selector _selector;
+        protected SelectionKey _key;
         protected Thread _thread;
         protected boolean _running;
         
-        public Server(InetSocketAddress address) throws Exception {
-            _address=address;
+        public synchronized void start() throws Exception {
             _channel=ServerSocketChannel.open();
             _channel.configureBlocking(false);
             _channel.socket().bind(_address);
+            _log.info(_channel);
             _address=(InetSocketAddress)_channel.socket().getLocalSocketAddress(); // in case address was not fully specified
             _selector= Selector.open();
-        }
-        
-        public synchronized void start() throws Exception {
-           _running=true;
-           (_thread=new Thread(this)).start();
+            _key=_channel.register(_selector, SelectionKey.OP_ACCEPT);
+            _running=true;
+            (_thread=new Thread(this)).start();
         }
         
         public synchronized void stop() throws Exception {
             _running=false;
+            _selector.wakeup();
             _thread.join();
             _thread=null;
         }
@@ -84,9 +122,7 @@ public class TestNIO extends TestCase {
         public void run() {
             while (_running) {
                 try {
-                    _log.info("selecting...");
                     _selector.select();
-                    _log.info("...selected");
                     
                     for (Iterator i=_selector.selectedKeys().iterator(); i.hasNext(); ) {
                         SelectionKey key=(SelectionKey)i.next();
@@ -111,60 +147,75 @@ public class TestNIO extends TestCase {
             SocketChannel channel=server.accept();
             channel.configureBlocking(false);
             SelectionKey readKey=channel.register(_selector, SelectionKey.OP_READ);
- 
-            Connection connection=new Connection(channel,readKey, Server.this);
+            
+            Connection connection=new Connection(channel, readKey);
             readKey.attach(connection);
-            }
+        }
         
-        public void read(SelectionKey key) {
-            _log.info("key: "+key);
-            Connection connection = (Connection)key.attachment();
-//            if (connection._idle && isOutOfResources())
-//                // Don't handle idle connections if out of resources.
-//                return;
-//            ByteBuffer buf=connection._in.getBuffer();
-//            int count=((SocketChannel)key.channel()).read(buf);
-//            if (count<0) {
-//                connection.close();
-//            }
-//            else {
-//                buf.flip();
-//                connection.write(buf);
-//            }
+        public void read(SelectionKey key) throws IOException {
+            // _log.info("key: "+key);
+            Connection connection=(Connection)key.attachment();
+            
+//          if (connection._idle && isOutOfResources())
+//          // Don't handle idle connections if out of resources.
+//          return;
+            
+            ByteBuffer buffer=connection._in.getBuffer();
+            int count=((SocketChannel)key.channel()).read(buffer);
+            if (count<0) {
+                connection.close();
+            } else {
+                buffer.flip();
+                connection._in.write(buffer);
+            }
         }
     }
+
+    protected Server _server;
     
     protected void setUp() throws Exception {
         super.setUp();
+        _server=new Server(new InetSocketAddress(InetAddress.getLocalHost(), 8080), 4096);
+        _server.start();
     }
 
     protected void tearDown() throws Exception {
         super.tearDown();
+        _server.stop();
     }
 
-    public void testWrite() throws Exception {
-        assertTrue(true);
-        
-        int size=1024;
-        byte[] bytes=new byte[size];
-        for (int i=0; i<size; i++)
-            bytes[i]=(byte)i;
-        File file=File.createTempFile("wadi-", ".tst");
-        FileOutputStream fos=new FileOutputStream(file);
-        fos.write(bytes);
-        fos.close();
+//    public void testWrite() throws Exception {
+//        assertTrue(true);
+//        
+//        int size=1024;
+//        byte[] bytes=new byte[size];
+//        for (int i=0; i<size; i++)
+//            bytes[i]=(byte)i;
+//        File file=File.createTempFile("wadi-", ".tst");
+//        FileOutputStream fos=new FileOutputStream(file);
+//        fos.write(bytes);
+//        fos.close();
+//
+//        _log.info("File: "+file);
+//        
+//        assertTrue(file.length()==size);
+//        FileInputStream fis= new FileInputStream(file);
+//        FileChannel fc=fis.getChannel();
+//        MappedByteBuffer mbb=fc.map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+//    }
+    
+    public void testConnect() throws Exception {
 
-        _log.info("File: "+file);
+        long start=System.currentTimeMillis();
         
-        assertTrue(file.length()==size);
-        FileInputStream fis= new FileInputStream(file);
-        FileChannel fc=fis.getChannel();
-        MappedByteBuffer mbb=fc.map(FileChannel.MapMode.READ_ONLY, 0, file.length());
         
-//        Server server=new Server(new InetSocketAddress(InetAddress.getLocalHost(), 8080));
-//        server.start();
-//        Thread.sleep(10000);
-//        server.stop();
-//        _log.info("finished");
+        int count=500;
+        InetAddress localhost=InetAddress.getLocalHost();
+        for (int i=0; i<count; i++) {
+            new Socket(localhost, 8080);
+        }
+        long elapsed=System.currentTimeMillis()-start;
+        _log.info("elapsed: "+(count*1000/elapsed)+" sockets/second");
+        Thread.sleep(5000);
     }
 }
