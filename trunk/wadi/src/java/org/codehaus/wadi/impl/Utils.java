@@ -55,25 +55,25 @@ public class Utils {
 	 * @param emoter - delegate for the source Contextualiser
 	 * @param immoter - delegate for the target Contextualiser
 	 * @param emotable - data to be moved
-	 * @param id - the id of said data
+	 * @param name - the id of said data
 	 * @return - the resulting immotable - in other words - the data's new representation in the target Contextualiser
 	 */
-	public static Motable mote(Emoter emoter, Immoter immoter, Motable emotable, String id) {
+	public static Motable mote(Emoter emoter, Immoter immoter, Motable emotable, String name) {
 		long startTime=System.currentTimeMillis();
-		Motable immotable=immoter.nextMotable(id, emotable);
+		Motable immotable=immoter.nextMotable(name, emotable);
 		boolean i=false;
 		boolean e=false;
-		if (((e=emoter.prepare(id, emotable, immotable) && (e=true))) && (immoter.prepare(id, emotable, immotable) && (i=true))) {
-			immoter.commit(id, immotable);
-			emoter.commit(id, emotable);
+		if (((e=emoter.prepare(name, emotable, immotable) && (e=true))) && (immoter.prepare(name, emotable, immotable) && (i=true))) {
+			immoter.commit(name, immotable);
+			emoter.commit(name, emotable);
 			long elapsedTime=System.currentTimeMillis()-startTime;
-			if (_log.isDebugEnabled())_log.debug("motion: "+id+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
+			if (_log.isDebugEnabled())_log.debug("motion: "+name+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
 			return immotable;
 		} else {
-			if (e) emoter.rollback(id, emotable);
-			if (i) immoter.rollback(id, immotable);
+			if (e) emoter.rollback(name, emotable);
+			if (i) immoter.rollback(name, immotable);
 			long elapsedTime=System.currentTimeMillis()-startTime;
-			if (_log.isWarnEnabled()) _log.warn("motion failed: "+id+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
+			if (_log.isWarnEnabled()) _log.warn("motion failed: "+name+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
 			return null;
 		}
 	}
