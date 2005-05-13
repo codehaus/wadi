@@ -132,7 +132,7 @@ public class NIOServer implements Runnable {
             ByteBuffer buffer=ByteBuffer.allocateDirect(4096); // tmp solution...
             int count=((SocketChannel)key.channel()).read(buffer); // read off network into buffer
             if (count<0) {
-                connection.close();
+                connection.commit();
                 // what about tidying up associated objects - or does consumer thread do that ?
             } else {
                 buffer.flip();

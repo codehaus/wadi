@@ -17,12 +17,16 @@
 package org.codehaus.wadi.sandbox.io;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 
 public class NIOConnection implements Runnable, Puttable {
@@ -31,39 +35,51 @@ public class NIOConnection implements Runnable, Puttable {
     
     protected final SocketChannel _channel;
     protected final SelectionKey _key;
-    protected final ByteBufferInputStream _input;
-    //protected final SocketChannelOutputStream _out;
-
-    public NIOConnection(SocketChannel channel, SelectionKey key, EDU.oswego.cs.dl.util.concurrent.Channel inputQueue, Puttable outputQueue) {
+    protected final Channel _inputQueue;
+    protected final Puttable _outputQueue;
+ 
+    public NIOConnection(SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue) {
         _channel=channel;
         _key=key;
-        _input=new ByteBufferInputStream(inputQueue, outputQueue);
-        //_out=new SocketChannelOutputStream(channel, _bufferSize);
+        _inputQueue=inputQueue;
+        _outputQueue=outputQueue;
+
+        // ctor is called by Server thread - find some way to do these allocations on Consumer thread...
+        _inputStream=new ByteBufferInputStream(_inputQueue, _outputQueue);
+        //_outputStream=new SocketChannelOutputStream(channel, _bufferSize);
         }
+
+    protected ByteBufferInputStream _inputStream;
+    protected OutputStream _outputStream;
     
     public void run() {
         _log.info("running a Connection!");
-        int capacity=32;
+        int capacity=4096;
         byte[] bytesOut=new byte[capacity];
-        int bytesRead=0;
-        
+
+        int n=0;
         try {
-            while((bytesRead+=_input.read(bytesOut))<capacity) {
+            while((n=_inputStream.read(bytesOut))!=-1) {
+                _log.info(new String(bytesOut));
+            }
+            if (n==-1) { // last read
                 _log.info(new String(bytesOut));
             }
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        _log.info(new String(bytesOut));
         _log.info("finished!");
     }
 
-    public synchronized void close()
-    throws IOException
-    {
-        //_out.close();
-        _input.close();
+    public InputStream getInputStream() throws IOException {return _inputStream;}
+    public OutputStream getOutputStream() throws IOException {return _outputStream;}
+    public void close() {/* NYI */}
+    public Socket getSocket() {return null;};
+ 
+    public synchronized void commit() throws IOException {
+        //_out.commit();
+        _inputStream.commit();
         if (!_channel.isOpen())
             return;
         _key.cancel();
@@ -73,12 +89,13 @@ public class NIOConnection implements Runnable, Puttable {
         _channel.close();
     }
 
+    // Puttable - ByteBuffers only please :-)
+    
     public void put(Object item) throws InterruptedException {
-        _input.put(item);
-        
+        _inputStream.put(item);
     }
 
     public boolean offer(Object item, long msecs) throws InterruptedException {
-        return _input.offer(item, msecs);
+        return _inputStream.offer(item, msecs);
     }
 }

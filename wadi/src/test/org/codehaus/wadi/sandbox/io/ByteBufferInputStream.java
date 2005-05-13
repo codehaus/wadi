@@ -40,7 +40,7 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
     protected final Puttable _outputQueue; // and then placed onto here...
     
     protected ByteBuffer _buffer=null; // only ever read by consumer
-    protected volatile boolean _closed=false; // written by producer, read by consumer
+    protected volatile boolean _committed=false; // written by producer, read by consumer
     
     public ByteBufferInputStream(Channel inputQueue, Puttable outputQueue) {
         super();
@@ -53,7 +53,7 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
     protected boolean ensureBuffer() {
         if (_buffer==null) {
             // we need a fresh buffer...
-            if (!_closed) {
+            if (!_committed) {
                 _buffer=Utils.safeTake(_inputQueue);
                 return true; // there is further input
             } else {
@@ -98,8 +98,8 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
     // SOLUTION - interrupt it, when close is called, it checks closed flag and either aborts or goes round again - messy
     // but probably necessary...
     
-    public void close() {
-        _closed=true;
+    public void commit() {
+        _committed=true;
     }
 
     // ByteBufferInputStream

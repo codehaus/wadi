@@ -51,7 +51,7 @@ public class TestByteBufferStreams extends TestCase {
         LinkedQueue inputQueue=new LinkedQueue();
         LinkedQueue outputQueue=new LinkedQueue();
         // put the queues into the stream
-        InputStream is=new ByteBufferInputStream(inputQueue, outputQueue);
+        ByteBufferInputStream is=new ByteBufferInputStream(inputQueue, outputQueue);
 
         // try exhausting a single ByteBuffer
         
@@ -101,5 +101,30 @@ public class TestByteBufferStreams extends TestCase {
         assertTrue(outputQueue.take()!=null); // 1 buffer in output
         assertTrue(outputQueue.isEmpty());
         
+        // test closing a stream...
+
+        buffer=ByteBuffer.allocateDirect(rolloverCapacity);
+        buffer.put(bytesIn, 0, rolloverCapacity);
+        buffer.flip();
+        inputQueue.put(buffer);
+        is.commit();
+        
+        // read it all out and check it for validity
+        {
+            byte[] bytesOut=new byte[capacity];
+            int b=0;
+            int bytesRead=0;
+            while((b=is.read(bytesOut))!=-1)
+                bytesRead+=b;
+            assertTrue(bytesRead==rolloverCapacity);
+            for (int i=0; i<rolloverCapacity; i++)
+                assertTrue(bytesIn[i]==bytesOut[i]);
+        }        
+        
+        // check the state of the queues...
+        assertTrue(inputQueue.isEmpty()); // no input left
+        assertTrue(outputQueue.take()!=null); // 1 buffer in output
+        assertTrue(outputQueue.isEmpty());
+
     }
 }
