@@ -85,6 +85,7 @@ public class NIOServer implements Server {
             _log.info("waiting for connections");
             Thread.sleep(1000);
         }
+        _log.info("Connections all consumed");
         // stop all consumers...
         for (int i=0; i<_numConsumers; i++)
             _consumers[i].stop();
