@@ -35,6 +35,7 @@ import EDU.oswego.cs.dl.util.concurrent.Takable;
 public class ByteBufferInputStream extends InputStream implements Puttable {
     
     protected final static Log _log=LogFactory.getLog(ByteBufferInputStream.class);
+    protected static final ByteBuffer _endOfQueue=ByteBuffer.allocateDirect(0);
     
     protected final Channel _inputQueue; // ByteBuffers are pushed onto here by producer, taken off by the consumer
     protected final Puttable _outputQueue; // and then placed onto here...
@@ -54,8 +55,13 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
         if (_buffer==null) {
             // we need a fresh buffer...
             if (!_committed) {
-                _buffer=Utils.safeTake(_inputQueue);
-                return true; // there is further input
+                ByteBuffer buffer=Utils.safeTake(_inputQueue);
+                if (buffer==_endOfQueue)
+                    return false; // there is no further input - our producer has committed his end of the queue...
+                else {
+                    _buffer=buffer;
+                    return true; // there is further input
+                }
             } else {
                 // producer has closed his end, we will
                 // just use up our existing content...
@@ -88,6 +94,8 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
             Utils.safePut(buffer, _outputQueue);
         }
         
+        _log.info("reading: "+(char)b);
+
         return (int)b&0xFF; // convert byte to unsigned int - otherwise 255==-1 i.e. EOF etc..
     }
     
@@ -100,8 +108,9 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
     
     public void commit() {
         _committed=true;
+        Utils.safePut(_endOfQueue, _inputQueue);
     }
-
+    
     // ByteBufferInputStream
     
     public void read(ByteBuffer buffer, int from, int to) {
@@ -109,6 +118,7 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
     }
 
     public void put(Object item) throws InterruptedException {
+        _log.info("putting buffer on input queue: "+item);
         _inputQueue.put(item);        
     }
 

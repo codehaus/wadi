@@ -18,16 +18,44 @@ package org.codehaus.wadi.sandbox.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channel;
+import java.nio.channels.SocketChannel;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class ByteBufferOutputStream extends OutputStream {
 
-    public ByteBufferOutputStream() {
+    protected final static Log _log=LogFactory.getLog(ByteBufferOutputStream.class);
+    
+    protected final SocketChannel _channel;
+    protected final ByteBuffer _buffer;
+    
+    public ByteBufferOutputStream(SocketChannel channel) {
         super();
-        // TODO Auto-generated constructor stub
+        _channel=channel;
+        _buffer=ByteBuffer.allocateDirect(256);
     }
 
     public void write(int b) throws IOException {
-        // TODO Auto-generated method stub
+        _log.info("writing: "+(char)b);
+        _buffer.put((byte)b);
+        if (_buffer.position()==_buffer.limit()) {
+            flush();
+        }
+    }
+    
+    public void flush() throws IOException {
+        super.flush();
+        _buffer.flip();
+        _channel.write(_buffer);
+        _buffer.clear();
+    }
+    
+    public void close() throws IOException {
+        super.close();
+        flush();
     }
 
 }

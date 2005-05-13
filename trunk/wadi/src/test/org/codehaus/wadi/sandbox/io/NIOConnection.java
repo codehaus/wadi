@@ -46,7 +46,7 @@ public class NIOConnection implements Runnable, Puttable {
 
         // ctor is called by Server thread - find some way to do these allocations on Consumer thread...
         _inputStream=new ByteBufferInputStream(_inputQueue, _outputQueue);
-        _outputStream=new ByteBufferOutputStream();
+        _outputStream=new ByteBufferOutputStream(channel);
         }
 
     protected ByteBufferInputStream _inputStream;
