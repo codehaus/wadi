@@ -39,12 +39,13 @@ public class TestNIO extends TestCase {
     public TestNIO(String name) {
         super(name);
     }
-    
+
+    protected final int _port=8888;
     protected NIOServer _server;
     
     protected void setUp() throws Exception {
         super.setUp();
-        _server=new NIOServer(new InetSocketAddress(InetAddress.getLocalHost(), 8080), 4096);
+        _server=new NIOServer(new InetSocketAddress(InetAddress.getLocalHost(), _port), 4096, 4);
         _server.start();
     }
 
@@ -74,17 +75,16 @@ public class TestNIO extends TestCase {
 //    }
     
     public void testConnect() throws Exception {
-
-        long start=System.currentTimeMillis();
+//        long start=System.currentTimeMillis();
+//        int count=500;
+//        InetAddress localhost=InetAddress.getLocalHost();
+//        for (int i=0; i<count; i++) {
+//            new Socket(localhost, _port);
+//        }
+//        long elapsed=System.currentTimeMillis()-start;
+//        _log.info("elapsed: "+(count*1000/elapsed)+" sockets/second");
+//        Thread.sleep(5000);
         
-        
-        int count=500;
-        InetAddress localhost=InetAddress.getLocalHost();
-        for (int i=0; i<count; i++) {
-            new Socket(localhost, 8080);
-        }
-        long elapsed=System.currentTimeMillis()-start;
-        _log.info("elapsed: "+(count*1000/elapsed)+" sockets/second");
-        Thread.sleep(5000);
+        Thread.sleep(10*60*1000);
     }
 }

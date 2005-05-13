@@ -32,17 +32,17 @@ import EDU.oswego.cs.dl.util.concurrent.Takable;
 
 // two threads will be using this object - a producer (the server) and a consumer (the stream's reader).
 
-public class ByteBufferInputStream extends InputStream {
+public class ByteBufferInputStream extends InputStream implements Puttable {
     
     protected final static Log _log=LogFactory.getLog(ByteBufferInputStream.class);
     
-    protected final Takable _inputQueue; // ByteBuffers are pushed onto here by producer, taken off by the consumer
+    protected final Channel _inputQueue; // ByteBuffers are pushed onto here by producer, taken off by the consumer
     protected final Puttable _outputQueue; // and then placed onto here...
     
     protected ByteBuffer _buffer=null; // only ever read by consumer
     protected volatile boolean _closed=false; // written by producer, read by consumer
     
-    public ByteBufferInputStream(Takable inputQueue, Puttable outputQueue) {
+    public ByteBufferInputStream(Channel inputQueue, Puttable outputQueue) {
         super();
         _inputQueue=inputQueue;
         _outputQueue=outputQueue;
@@ -50,39 +50,17 @@ public class ByteBufferInputStream extends InputStream {
 
     // impl
     
-    protected void safePut(ByteBuffer buffer, Puttable puttable) {
-        do {
-            try {
-                puttable.put(buffer);
-            } catch (InterruptedException e) {
-                if (_log.isTraceEnabled()) _log.trace("unexpected interruption - ignoring", e);
-            }
-        } while (Thread.interrupted());
-    }
-    
-    protected ByteBuffer safeTake(Takable takable) {
-        do {
-            try {
-                return (ByteBuffer)takable.take();
-            } catch (InterruptedException e) {
-                if (_log.isTraceEnabled()) _log.trace("unexpected interruption - ignoring", e);
-            }
-        } while (Thread.interrupted());
-        
-        throw new IllegalStateException();
-    }
-    
     protected boolean ensureBuffer() {
         if (_buffer==null) {
             // we need a fresh buffer...
             if (!_closed) {
-                _buffer=safeTake(_inputQueue);
+                _buffer=Utils.safeTake(_inputQueue);
                 return true; // there is further input
             } else {
                 // producer has closed his end, we will
                 // just use up our existing content...
                 if (((Channel)_inputQueue).peek()!=null) { // why, oh why, do I have to cast to find out ?
-                    _buffer=safeTake(_inputQueue);
+                    _buffer=Utils.safeTake(_inputQueue);
                     return true; // there is further input
                 } else {
                     // no buffers left
@@ -107,7 +85,7 @@ public class ByteBufferInputStream extends InputStream {
             ByteBuffer buffer=_buffer;
             _buffer=null;
             buffer.clear();
-            safePut(buffer, _outputQueue);
+            Utils.safePut(buffer, _outputQueue);
         }
         
         return (int)b&0xFF; // convert byte to unsigned int - otherwise 255==-1 i.e. EOF etc..
@@ -128,6 +106,14 @@ public class ByteBufferInputStream extends InputStream {
     
     public void read(ByteBuffer buffer, int from, int to) {
         throw new UnsupportedOperationException(); // NYI
+    }
+
+    public void put(Object item) throws InterruptedException {
+        _inputQueue.put(item);        
+    }
+
+    public boolean offer(Object item, long msecs) throws InterruptedException {
+        return _inputQueue.offer(item, msecs);
     }
     
 }
