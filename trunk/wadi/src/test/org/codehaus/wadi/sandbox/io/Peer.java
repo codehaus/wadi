@@ -37,30 +37,14 @@ public abstract class Peer implements Runnable, Serializable {
     protected transient InputStream _is;
     protected transient OutputStream _os;
 
-    public Peer(InetSocketAddress address, boolean inputThenOutput) throws IOException {
-        this(new Socket(address.getAddress(), address.getPort()), inputThenOutput);
+    public Peer(InetSocketAddress address) throws IOException {
+        this(new Socket(address.getAddress(), address.getPort()));
     }
     
-    public Peer(Socket socket, boolean inputThenOutput) throws IOException {
+    public Peer(Socket socket) throws IOException {
         _socket=socket;
-        // get these before wrapping in Object Streams - if not, sometimes hang ? 
         _is=_socket.getInputStream();
         _os=_socket.getOutputStream();
-        
-        // wierd ! 
-        // with BIO, 
-        // if (inputThenOutput) I get about 1187 round trips a second
-        // else I get about 53 round trips a second
-        // with NIO
-        // if (inputThenOutput) I get a serverside output write (4 bytes) and nothing more... no buffer delivered
-        // else I get a serverside output write (4 bytes), and a BB delivered and read (4 bytes)
-//        if (inputThenOutput) {
-//            _ois=new ObjectInputStream(is);
-//            _oos=new ObjectOutputStream(os);
-//        } else {
-//            _oos=new ObjectOutputStream(os);
-//            _ois=new ObjectInputStream(is);
-//        }
     }
     
     Peer() {

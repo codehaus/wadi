@@ -77,6 +77,9 @@ public class NIOServer implements Server {
         _log.info("stopping: "+_channel);
         _running=false;
         _selector.wakeup();
+        _selector.close();
+        _channel.socket().close();
+        _channel.close();
         _thread.join();
         _thread=null;
         _log.info("Producer thread stopped");

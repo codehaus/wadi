@@ -1,36 +1,3 @@
-package org.codehaus.wadi.sandbox.io;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channel;
-import java.nio.channels.SocketChannel;
-import java.util.Arrays;
-import java.util.Collections;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Emoter;
-import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.Moter;
-import org.codehaus.wadi.impl.SimpleMotable;
-import org.codehaus.wadi.impl.Utils;
-
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
-
-import junit.framework.TestCase;
 /**
  *
  * Copyright 2003-2005 Core Developers Network Ltd.
@@ -48,6 +15,21 @@ import junit.framework.TestCase;
  *  limitations under the License.
  */
 
+package org.codehaus.wadi.sandbox.io;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.nio.channels.Channel;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import junit.framework.TestCase;
+
 public class TestServers extends TestCase {
     
     protected Log _log = LogFactory.getLog(getClass());
@@ -56,27 +38,32 @@ public class TestServers extends TestCase {
         super(name);
     }
     
-    protected InetSocketAddress _address;
-    protected Server _server;
+    protected InetSocketAddress _bioAddress;
+    protected Server _bioServer;
+    protected InetSocketAddress _nioAddress;
+    protected Server _nioServer;
 
-    protected final int _count=1000;
+    protected final int _count=10000;
     
     protected void setUp() throws Exception {
         super.setUp();
-        _address=new InetSocketAddress(8888);
-        //_server=new BIOServer(_address, 16, 1); // backlog, timeout
-        _server=new NIOServer(_address, 4096, 4); // bufferSize, numConsumers
-        _server.start();
+        _bioAddress=new InetSocketAddress(8888);
+        _bioServer=new BIOServer(_bioAddress, 16, 1); // backlog, timeout
+        _bioServer.start();
+        _nioAddress=new InetSocketAddress(8889);
+        _nioServer=new NIOServer(_nioAddress, 4096, 4); // bufferSize, numConsumers
+        _nioServer.start();
     }
     
     protected void tearDown() throws Exception {
         super.tearDown();
-        _server.stop();
+        _nioServer.stop();
+        _bioServer.stop();
     }
 
-    public static class RoundTripServerPeer extends Peer {
+    public static class SingleRoundTripServerPeer extends Peer {
         
-        protected static final Log _log=LogFactory.getLog(RoundTripServerPeer.class);
+        protected static final Log _log=LogFactory.getLog(SingleRoundTripServerPeer.class);
         
         public void process(Channel channel, InputStream is, OutputStream os) {
             try {
@@ -89,16 +76,16 @@ public class TestServers extends TestCase {
         }
     }
     
-    public static class RoundTripClientPeer extends Peer {
+    public static class SingleRoundTripClientPeer extends Peer {
         
-        public RoundTripClientPeer(InetSocketAddress address, boolean inputThenOutput) throws IOException {
-            super(address, inputThenOutput);
+        public SingleRoundTripClientPeer(InetSocketAddress address) throws IOException {
+            super(address);
         }
         
         public void process(Channel channel, InputStream is, OutputStream os) {
             try {
                 ObjectOutputStream oos=new ObjectOutputStream(os);
-                oos.writeObject(new RoundTripServerPeer());
+                oos.writeObject(new SingleRoundTripServerPeer());
                 oos.flush();
                 ObjectInputStream ois=new ObjectInputStream(is);
                 assertTrue(ois.readBoolean());
@@ -108,20 +95,77 @@ public class TestServers extends TestCase {
         }
     }
     
-//    public void testOpenSocket() throws Exception {
-//        _log.info("opening socket: "+_address);
-//        new Socket(_address.getAddress(), _address.getPort()).close();
-//        _log.info("closed socket: "+_address);
-//    }
+    public void testSingleRoundTrip() throws Exception {
+        testSingleRoundTrip("BIO", _bioAddress);
+        testSingleRoundTrip("NIO", _nioAddress);
+    }
     
-    public void testSerialRoundTrips() throws Exception {
+    public void testSingleRoundTrip(String info, InetSocketAddress address) throws Exception {
         long start=System.currentTimeMillis();
         for (int i=0; i<_count; i++) {
-            Peer peer=new RoundTripClientPeer(_address, false);
+            Peer peer=new SingleRoundTripClientPeer(address);
             peer.run();
         }
         long elapsed=System.currentTimeMillis()-start;
-        _log.info("rate="+(_count*1000/elapsed)+" round-trips/second");
+        _log.info(info+" rate="+(_count*1000/elapsed)+" round-trips/second");
+    }
+    
+    public static class MultipleRoundTripServerPeer extends Peer {
+        
+        protected static final Log _log=LogFactory.getLog(SingleRoundTripServerPeer.class);
+        
+        public void process(Channel channel, InputStream is, OutputStream os) {
+            try {
+                ObjectInputStream ois=new ObjectInputStream(is);
+                ObjectOutputStream oos=new ObjectOutputStream(os);
+                while (ois.readBoolean()) {
+                    oos.writeBoolean(true);
+                    oos.flush();
+                }
+            } catch (IOException e) {
+                _log.error(e);
+            }
+        }
+    }
+    
+    public static class MultipleRoundTripClientPeer extends Peer {
+        
+        protected final int _numTrips;
+        
+        public MultipleRoundTripClientPeer(InetSocketAddress address, int numTrips) throws IOException {
+            super(address);
+            _numTrips=numTrips;
+        }
+        
+        public void process(Channel channel, InputStream is, OutputStream os) {
+            try {
+                ObjectOutputStream oos=new ObjectOutputStream(os);
+                oos.writeObject(new MultipleRoundTripServerPeer());
+                ObjectInputStream ois=new ObjectInputStream(is);
+                for (int i=0; i<_numTrips; i++) {
+                    oos.writeBoolean(true);
+                    oos.flush();
+                    ois.readBoolean();
+                }
+                oos.writeBoolean(false);
+            } catch (IOException e) {
+                _log.error(e);
+            }
+        }
+    }
+
+    
+    public void testMultipleRoundTrip() throws Exception {
+        testMultipleRoundTrip("NIO", _nioAddress);
+        testMultipleRoundTrip("BIO", _bioAddress);
+    }
+    
+    public void testMultipleRoundTrip(String info, InetSocketAddress address) throws Exception {
+        long start=System.currentTimeMillis();
+        Peer peer=new SingleRoundTripClientPeer(address);
+        peer.run();
+        long elapsed=System.currentTimeMillis()-start;
+        _log.info(info+" rate="+(_count*1000/elapsed)+" round-trips/second");
     }
     
 //    public static class MixedContentServerPeer extends Peer {
