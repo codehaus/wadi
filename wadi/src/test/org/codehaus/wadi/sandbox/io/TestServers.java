@@ -47,11 +47,11 @@ import junit.framework.TestCase;
  *  limitations under the License.
  */
 
-public class TestServer extends TestCase {
+public class TestServers extends TestCase {
     
     protected Log _log = LogFactory.getLog(getClass());
     
-    public TestServer(String name) {
+    public TestServers(String name) {
         super(name);
     }
     
