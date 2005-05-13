@@ -31,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
-public class NIOServer {
+public class NIOServer implements Server {
     
     protected final Log _log=LogFactory.getLog(getClass());
     protected final int _bufferSize;

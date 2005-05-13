@@ -125,6 +125,27 @@ public class TestByteBufferStreams extends TestCase {
         assertTrue(inputQueue.isEmpty()); // no input left
         assertTrue(outputQueue.take()!=null); // 1 buffer in output
         assertTrue(outputQueue.isEmpty());
-
+        
     }
+    
+//  public void testWrite() throws Exception {
+//  assertTrue(true);
+//  
+//  int size=1024;
+//  byte[] bytes=new byte[size];
+//  for (int i=0; i<size; i++)
+//  bytes[i]=(byte)i;
+//  File file=File.createTempFile("wadi-", ".tst");
+//  FileOutputStream fos=new FileOutputStream(file);
+//  fos.write(bytes);
+//  fos.close();
+//  
+//  _log.info("File: "+file);
+//  
+//  assertTrue(file.length()==size);
+//  FileInputStream fis= new FileInputStream(file);
+//  FileChannel fc=fis.getChannel();
+//  MappedByteBuffer mbb=fc.map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+//  }
+    
 }
