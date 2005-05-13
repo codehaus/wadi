@@ -38,7 +38,7 @@ interface Listener {void notifyCompleted();}
  * @version $Revision$
  */
 
-public class BIOServer implements Listener {
+public class BIOServer implements Server, Listener {
     
     protected Log _log=LogFactory.getLog(getClass());
     

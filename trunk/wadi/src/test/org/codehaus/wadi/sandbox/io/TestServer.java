@@ -47,21 +47,24 @@ import junit.framework.TestCase;
  *  limitations under the License.
  */
 
-public class TestBIO extends TestCase {
+public class TestServer extends TestCase {
     
     protected Log _log = LogFactory.getLog(getClass());
     
-    public TestBIO(String name) {
+    public TestServer(String name) {
         super(name);
     }
     
     protected InetSocketAddress _address;
-    protected BIOServer _server;
+    protected Server _server;
+
+    protected final int _count=1000;
     
     protected void setUp() throws Exception {
         super.setUp();
         _address=new InetSocketAddress(8888);
-        _server=new BIOServer(_address, 16, 1);
+        //_server=new BIOServer(_address, 16, 1); // backlog, timeout
+        _server=new NIOServer(_address, 4096, 4); // bufferSize, numConsumers
         _server.start();
     }
     
@@ -99,8 +102,6 @@ public class TestBIO extends TestCase {
             }
         }
     }
-    
-    protected final int _count=1000;
     
     public void testSerialRoundTrips() throws Exception {
         long start=System.currentTimeMillis();
