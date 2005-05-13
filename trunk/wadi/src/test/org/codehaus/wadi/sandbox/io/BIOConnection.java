@@ -31,12 +31,12 @@ public class BIOConnection extends AbstractConnection {
     protected static final Log _log=LogFactory.getLog(BIOConnection.class);
     
     protected final Socket _socket;
-    protected final Listener _listener;
+    protected final Notifiable _notifiable;
     
-    public BIOConnection(Socket socket, Listener listener) {
+    public BIOConnection(Socket socket, Notifiable notifiable) {
         super();
         _socket=socket;
-        _listener=listener;
+        _notifiable=notifiable;
     }
     
     public InputStream getInputStream() throws IOException {return _socket.getInputStream();}
@@ -46,6 +46,6 @@ public class BIOConnection extends AbstractConnection {
 
     public void run() {
         super.run();
-        _listener.notifyCompleted();
+        _notifiable.notifyCompleted();
     }
 }
