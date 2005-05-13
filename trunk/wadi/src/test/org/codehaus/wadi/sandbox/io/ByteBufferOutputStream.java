@@ -39,7 +39,7 @@ public class ByteBufferOutputStream extends OutputStream {
     }
 
     public void write(int b) throws IOException {
-        _log.info("writing: "+(char)b);
+        //_log.info("writing: "+(char)b);
         _buffer.put((byte)b);
         if (_buffer.position()==_buffer.limit()) {
             flush();
@@ -49,8 +49,9 @@ public class ByteBufferOutputStream extends OutputStream {
     public void flush() throws IOException {
         super.flush();
         _buffer.flip();
-        _channel.write(_buffer);
-        _buffer.clear();
+        while (_buffer.hasRemaining())
+            _channel.write(_buffer);
+        _buffer.clear(); // or should we just flip() - TODO
     }
     
     public void close() throws IOException {

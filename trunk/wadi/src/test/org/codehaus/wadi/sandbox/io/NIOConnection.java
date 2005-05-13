@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 
-public class NIOConnection implements Runnable, Puttable {
+public class NIOConnection extends AbstractConnection implements Puttable {
     
     protected final static Log _log=LogFactory.getLog(NIOConnection.class);
     
@@ -46,36 +46,36 @@ public class NIOConnection implements Runnable, Puttable {
 
         // ctor is called by Server thread - find some way to do these allocations on Consumer thread...
         _inputStream=new ByteBufferInputStream(_inputQueue, _outputQueue);
-        _outputStream=new ByteBufferOutputStream(channel);
+        _outputStream=new ByteBufferOutputStream(_channel);
         }
 
     protected ByteBufferInputStream _inputStream;
     protected OutputStream _outputStream;
     
-    public void run() {
-        _log.info("running a Connection!");
-        int capacity=4096;
-        byte[] bytesOut=new byte[capacity];
-
-        int n=0;
-        try {
-            while((n=_inputStream.read(bytesOut))!=-1) {
-                _log.info(new String(bytesOut));
-            }
-            if (n==-1) { // last read
-                _log.info(new String(bytesOut));
-            }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        _log.info("finished!");
-    }
+//    public void run() {
+//        _log.info("running a Connection!");
+//        int capacity=4096;
+//        byte[] bytesOut=new byte[capacity];
+//
+//        int n=0;
+//        try {
+//            while((n=_inputStream.read(bytesOut))!=-1) {
+//                _log.info(new String(bytesOut));
+//            }
+//            if (n==-1) { // last read
+//                _log.info(new String(bytesOut));
+//            }
+//        } catch (IOException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//        _log.info("finished!");
+//    }
 
     public InputStream getInputStream() throws IOException {return _inputStream;}
     public OutputStream getOutputStream() throws IOException {return _outputStream;}
     public void close() {/* NYI */}
-    public Socket getSocket() {return null;};
+    public java.nio.channels.Channel getChannel() {return null;}
  
     public synchronized void commit() throws IOException {
         //_out.commit();

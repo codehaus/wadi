@@ -22,6 +22,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.channels.Channel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,25 +34,26 @@ public abstract class AbstractConnection implements Runnable {
     public abstract InputStream getInputStream() throws IOException;
     public abstract OutputStream getOutputStream() throws IOException;
     public abstract void close();
-    public abstract Socket getSocket();
+    public abstract Channel getChannel();
     
     public void run() {
         //_log.info("Connection started...: "+getSocket());
-        ObjectInputStream  ois=null;
-        ObjectOutputStream oos=null;
+        InputStream is=null;
+        OutputStream os=null;
         try {
-            oos=new ObjectOutputStream(getOutputStream());
-            ois=new ObjectInputStream(getInputStream());
+            is=getInputStream();
+            os=getOutputStream();
+            ObjectInputStream ois=new ObjectInputStream(is);
             Peer peer=(Peer)ois.readObject();
-            peer.process(getSocket(), ois, oos);
+            peer.process(getChannel(), is, os);
         } catch (IOException e) {
             _log.warn("connection broken - aborting", e);
         } catch (ClassNotFoundException e) {
             _log.warn("unknown Peer type - version/security problem?", e);
         } finally {
-            try{if (oos!=null) oos.flush();}catch(IOException e){_log.warn("problem flushing socket output",e);}
-            try{if (ois!=null) ois.close();}catch(IOException e){_log.warn("problem closing socket input",e);}
-            try{if (oos!=null) oos.close();}catch(IOException e){_log.warn("problem closing socket output",e);}
+            try{if (os!=null) os.flush();}catch(IOException e){_log.warn("problem flushing socket output",e);}
+            try{if (is!=null) is.close();}catch(IOException e){_log.warn("problem closing socket input",e);}
+            try{if (os!=null) os.close();}catch(IOException e){_log.warn("problem closing socket output",e);}
             close();
         }
         //_log.info("...Connection finished: "+Thread.currentThread());

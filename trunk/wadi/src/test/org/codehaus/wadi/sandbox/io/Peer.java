@@ -17,11 +17,14 @@
 package org.codehaus.wadi.sandbox.io;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.channels.Channel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,17 +34,33 @@ public abstract class Peer implements Runnable, Serializable {
     protected static final Log _log=LogFactory.getLog(Peer.class);
 
     protected transient Socket _socket;
-    protected transient ObjectInputStream _ois;
-    protected transient ObjectOutputStream _oos;
+    protected transient InputStream _is;
+    protected transient OutputStream _os;
 
-    public Peer(InetSocketAddress address) throws IOException {
-        this(new Socket(address.getAddress(), address.getPort()));
+    public Peer(InetSocketAddress address, boolean inputThenOutput) throws IOException {
+        this(new Socket(address.getAddress(), address.getPort()), inputThenOutput);
     }
     
-    public Peer(Socket socket) throws IOException {
+    public Peer(Socket socket, boolean inputThenOutput) throws IOException {
         _socket=socket;
-        _ois=new ObjectInputStream(_socket.getInputStream());
-        _oos=new ObjectOutputStream(_socket.getOutputStream());
+        // get these before wrapping in Object Streams - if not, sometimes hang ? 
+        _is=_socket.getInputStream();
+        _os=_socket.getOutputStream();
+        
+        // wierd ! 
+        // with BIO, 
+        // if (inputThenOutput) I get about 1187 round trips a second
+        // else I get about 53 round trips a second
+        // with NIO
+        // if (inputThenOutput) I get a serverside output write (4 bytes) and nothing more... no buffer delivered
+        // else I get a serverside output write (4 bytes), and a BB delivered and read (4 bytes)
+//        if (inputThenOutput) {
+//            _ois=new ObjectInputStream(is);
+//            _oos=new ObjectOutputStream(os);
+//        } else {
+//            _oos=new ObjectOutputStream(os);
+//            _ois=new ObjectInputStream(is);
+//        }
     }
     
     Peer() {
@@ -50,18 +69,18 @@ public abstract class Peer implements Runnable, Serializable {
     
     public void run() {
         try {
-            process(_socket, _ois, _oos);
+            process(_socket.getChannel(), _is, _os);
         } finally {
-            try{_ois.close();}catch(IOException e){_log.warn("problem closing socket input", e);}
-            _ois=null;
-            try{_oos.flush();}catch(IOException e){_log.warn("problem flushing socket output", e);}
-            try{_oos.close();}catch(IOException e){_log.warn("problem closing socket output", e);}
-            _oos=null;
+            try{_is.close();}catch(IOException e){_log.warn("problem closing socket input", e);}
+            _is=null;
+            try{_os.flush();}catch(IOException e){_log.warn("problem flushing socket output", e);}
+            try{_os.close();}catch(IOException e){_log.warn("problem closing socket output", e);}
+            _os=null;
             try{_socket.close();}catch(IOException e){_log.warn("problem closing socket", e);}     
             _socket=null;
         }
     }
     
-    public abstract void process(Socket socket, ObjectInputStream ois, ObjectOutputStream oos);
+    public abstract void process(Channel channel, InputStream ois, OutputStream oos);
     
 }

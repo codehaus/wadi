@@ -22,6 +22,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.channels.Channel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,7 +43,7 @@ public class BIOConnection extends AbstractConnection {
     public InputStream getInputStream() throws IOException {return _socket.getInputStream();}
     public OutputStream getOutputStream() throws IOException {return _socket.getOutputStream();}
     public void close() {try{_socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}}
-    public Socket getSocket(){return _socket;}
+    public Channel getChannel(){return _socket.getChannel();}
 
     public void run() {
         super.run();

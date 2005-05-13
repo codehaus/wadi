@@ -65,7 +65,7 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
             } else {
                 // producer has closed his end, we will
                 // just use up our existing content...
-                if (((Channel)_inputQueue).peek()!=null) { // why, oh why, do I have to cast to find out ?
+                if (_inputQueue.peek()!=null) {
                     _buffer=Utils.safeTake(_inputQueue);
                     return true; // there is further input
                 } else {
@@ -87,14 +87,14 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
         
         byte b=_buffer.get();
         
-        if (_buffer.position()==_buffer.limit()) {
+        if (!_buffer.hasRemaining()) {
             ByteBuffer buffer=_buffer;
             _buffer=null;
             buffer.clear();
             Utils.safePut(buffer, _outputQueue);
         }
         
-        _log.info("reading: "+(char)b);
+        //_log.info("reading: "+(char)b);
 
         return (int)b&0xFF; // convert byte to unsigned int - otherwise 255==-1 i.e. EOF etc..
     }

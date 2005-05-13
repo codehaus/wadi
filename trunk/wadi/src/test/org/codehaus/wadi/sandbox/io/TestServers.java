@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -63,8 +64,8 @@ public class TestServers extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         _address=new InetSocketAddress(8888);
-        //_server=new BIOServer(_address, 16, 1); // backlog, timeout
-        _server=new NIOServer(_address, 4096, 4); // bufferSize, numConsumers
+        _server=new BIOServer(_address, 16, 1); // backlog, timeout
+        //_server=new NIOServer(_address, 4096, 4); // bufferSize, numConsumers
         _server.start();
     }
     
@@ -77,9 +78,11 @@ public class TestServers extends TestCase {
         
         protected static final Log _log=LogFactory.getLog(RoundTripServerPeer.class);
         
-        public void process(Socket socket, ObjectInputStream ois, ObjectOutputStream oos) {
+        public void process(Channel channel, InputStream is, OutputStream os) {
             try {
+                ObjectOutputStream oos=new ObjectOutputStream(os);
                 oos.writeBoolean(true); // ack
+                oos.flush();
             } catch (IOException e) {
                 _log.error(e);
             }
@@ -88,14 +91,16 @@ public class TestServers extends TestCase {
     
     public static class RoundTripClientPeer extends Peer {
         
-        public RoundTripClientPeer(InetSocketAddress address) throws IOException {
-            super(address);
+        public RoundTripClientPeer(InetSocketAddress address, boolean inputThenOutput) throws IOException {
+            super(address, inputThenOutput);
         }
         
-        public void process(Socket socket, ObjectInputStream ois, ObjectOutputStream oos) {
+        public void process(Channel channel, InputStream is, OutputStream os) {
             try {
+                ObjectOutputStream oos=new ObjectOutputStream(os);
                 oos.writeObject(new RoundTripServerPeer());
                 oos.flush();
+                ObjectInputStream ois=new ObjectInputStream(is);
                 assertTrue(ois.readBoolean());
             } catch (IOException e) {
                 _log.error(e);
@@ -103,60 +108,66 @@ public class TestServers extends TestCase {
         }
     }
     
+//    public void testOpenSocket() throws Exception {
+//        _log.info("opening socket: "+_address);
+//        new Socket(_address.getAddress(), _address.getPort()).close();
+//        _log.info("closed socket: "+_address);
+//    }
+    
     public void testSerialRoundTrips() throws Exception {
         long start=System.currentTimeMillis();
         for (int i=0; i<_count; i++) {
-            Peer peer=new RoundTripClientPeer(_address);
+            Peer peer=new RoundTripClientPeer(_address, false);
             peer.run();
         }
         long elapsed=System.currentTimeMillis()-start;
         _log.info("rate="+(_count*1000/elapsed)+" round-trips/second");
     }
     
-    public static class MixedContentServerPeer extends Peer {
-        
-        protected static final Log _log=LogFactory.getLog(MixedContentServerPeer.class);
-        
-        public void process(Socket socket, ObjectInputStream ois, ObjectOutputStream oos) {
-            try {
-                int capacity=ois.readInt();
-                ByteBuffer buffer=ByteBuffer.allocateDirect(capacity);
-                socket.getChannel().read(buffer);
-                oos.writeBoolean(true); // ack
-            } catch (IOException e) {
-                _log.error(e);
-            }
-        }
-    }
+//    public static class MixedContentServerPeer extends Peer {
+//        
+//        protected static final Log _log=LogFactory.getLog(MixedContentServerPeer.class);
+//        
+//        public void process(Socket socket, ObjectInputStream ois, ObjectOutputStream oos) {
+//            try {
+//                int capacity=ois.readInt();
+//                ByteBuffer buffer=ByteBuffer.allocateDirect(capacity);
+//                socket.getChannel().read(buffer);
+//                oos.writeBoolean(true); // ack
+//            } catch (IOException e) {
+//                _log.error(e);
+//            }
+//        }
+//    }
     
-    public static class MixedContentClientPeer extends Peer {
-        
-        protected static final Log _log=LogFactory.getLog(MixedContentClientPeer.class);
-        protected final ByteBuffer _buffer;
-        
-        public MixedContentClientPeer(InetSocketAddress address, ByteBuffer buffer) throws IOException {
-            super(address);
-            _buffer=buffer;
-        }
-        
-        public void process(Socket socket, ObjectInputStream ois, ObjectOutputStream oos) {
-            try {
-                oos.writeObject(new MixedContentServerPeer());
-                oos.writeInt(_buffer.capacity());
-                oos.flush();
-                SocketChannel channel=socket.getChannel();
-                
-                // AHA ! - you can't get the Channel for a preexisting Socket :-(
-                // back to the drawing board...
-                
-                channel.write(_buffer);
-                oos.flush();
-                assertTrue(ois.readBoolean());
-            } catch (IOException e) {
-                _log.error(e);
-            }
-        }
-    }
+//    public static class MixedContentClientPeer extends Peer {
+//        
+//        protected static final Log _log=LogFactory.getLog(MixedContentClientPeer.class);
+//        protected final ByteBuffer _buffer;
+//        
+//        public MixedContentClientPeer(InetSocketAddress address, ByteBuffer buffer, boolean inputThenOutput) throws IOException {
+//            super(address, inputThenOutput);
+//            _buffer=buffer;
+//        }
+//        
+//        public void process(Socket socket, ObjectInputStream ois, ObjectOutputStream oos) {
+//            try {
+//                oos.writeObject(new MixedContentServerPeer());
+//                oos.writeInt(_buffer.capacity());
+//                oos.flush();
+//                SocketChannel channel=socket.getChannel();
+//                
+//                // AHA ! - you can't get the Channel for a preexisting Socket :-(
+//                // back to the drawing board...
+//                
+//                channel.write(_buffer);
+//                oos.flush();
+//                assertTrue(ois.readBoolean());
+//            } catch (IOException e) {
+//                _log.error(e);
+//            }
+//        }
+//    }
     
 //    public void testMixedContent() throws Exception {
 //        long start=System.currentTimeMillis();
