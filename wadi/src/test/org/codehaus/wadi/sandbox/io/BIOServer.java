@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-interface Listener {void notifyCompleted();}
+interface Notifiable {void notifyCompleted();}
 
 /**
  * A Socket Server - you send it instances of Peer, which are then fed the Socket that they arrived on to consume...
@@ -38,7 +38,7 @@ interface Listener {void notifyCompleted();}
  * @version $Revision$
  */
 
-public class BIOServer implements Server, Listener {
+public class BIOServer implements Server, Notifiable {
     
     protected Log _log=LogFactory.getLog(getClass());
     
@@ -106,10 +106,6 @@ public class BIOServer implements Server, Listener {
         if (_log.isDebugEnabled()) _log.debug("stopped: "+_address);
     }
     
-    public void notifyCompleted() {
-        _connections--;
-    }
-    
     public class Producer implements Runnable {
         
         public void run() {
@@ -138,5 +134,11 @@ public class BIOServer implements Server, Listener {
         }
         
     }
+
+    // Notifiable
     
+    public void notifyCompleted() {
+        _connections--;
+    }
+
 }
