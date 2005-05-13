@@ -64,8 +64,8 @@ public class TestServers extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         _address=new InetSocketAddress(8888);
-        _server=new BIOServer(_address, 16, 1); // backlog, timeout
-        //_server=new NIOServer(_address, 4096, 4); // bufferSize, numConsumers
+        //_server=new BIOServer(_address, 16, 1); // backlog, timeout
+        _server=new NIOServer(_address, 4096, 4); // bufferSize, numConsumers
         _server.start();
     }
     

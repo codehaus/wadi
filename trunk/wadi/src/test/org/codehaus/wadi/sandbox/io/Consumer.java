@@ -48,18 +48,18 @@ public class Consumer implements Runnable {
     
     public void run() {
         do {
-            _log.info("waiting for connection");
+            //_log.info("waiting for connection");
             try {
                 Runnable connection=(Runnable)_input.take();
-                _log.info("got a connection");
+                //_log.info("got a connection");
                 connection.run();
-                _log.info("processed connection");
+                //_log.info("processed connection");
             } catch (InterruptedException e) {
                 _log.warn(e);
             }
         } while (Thread.interrupted() || _running);
         
-        _log.info("leaving service");
+        //_log.info("leaving service");
     }
 
 }

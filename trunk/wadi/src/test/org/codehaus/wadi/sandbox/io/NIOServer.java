@@ -101,9 +101,9 @@ public class NIOServer implements Server {
         
         NIOConnection connection=new NIOConnection(channel, readKey, new LinkedQueue(), _queue); // reuse the queue
         readKey.attach(connection);
-        _log.info("putting connection into queue");
+        //_log.info("putting connection into queue");
         Utils.safePut(connection, _connections);
-        _log.info("connection in queue");
+        //_log.info("connection in queue");
     }
     
     public void read(SelectionKey key) throws IOException {

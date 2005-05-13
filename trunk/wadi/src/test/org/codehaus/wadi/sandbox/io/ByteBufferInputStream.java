@@ -118,7 +118,7 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
     }
 
     public void put(Object item) throws InterruptedException {
-        _log.info("putting buffer on input queue: "+item);
+        //_log.info("putting buffer on input queue: "+item);
         _inputQueue.put(item);        
     }
 
