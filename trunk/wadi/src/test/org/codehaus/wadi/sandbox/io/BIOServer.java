@@ -17,8 +17,6 @@
 package org.codehaus.wadi.sandbox.io;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -39,6 +37,7 @@ interface Listener {void notifyCompleted();}
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
+
 public class BIOServer implements Listener {
     
     protected Log _log=LogFactory.getLog(getClass());
@@ -120,7 +119,7 @@ public class BIOServer implements Listener {
                         Socket socket=_socket.accept();
                         socket.setSoTimeout(30*1000);
                         _consumers++;
-                        Consumer consumer=new Consumer(socket, BIOServer.this);
+                        BIOConnection consumer=new BIOConnection(socket, BIOServer.this);
                         _executor.execute(consumer);
                     } catch (SocketTimeoutException ignore) {
                         // ignore...
@@ -133,42 +132,6 @@ public class BIOServer implements Listener {
             }
         }
         
-    }
-    
-    public static class Consumer implements Runnable {
-        
-        protected static final Log _log=LogFactory.getLog(Consumer.class);
-        
-        protected final Socket _socket;
-        protected final Listener _listener;
-        
-        public Consumer(Socket socket, Listener listener) {
-            _socket=socket;
-            _listener=listener;
-        }
-        
-        public void run() {
-            //_log.info("Consumer started...: "+_socket);
-            ObjectInputStream  ois=null;
-            ObjectOutputStream oos=null;
-            try {
-                oos=new ObjectOutputStream(_socket.getOutputStream());
-                ois=new ObjectInputStream(_socket.getInputStream());
-                Peer peer=(Peer)ois.readObject();
-                peer.process(_socket, ois, oos);
-            } catch (IOException e) {
-                _log.warn("connection broken - aborting", e);
-            } catch (ClassNotFoundException e) {
-                _log.warn("unknown Peer type - version/security problem?", e);
-            } finally {
-                try{if (oos!=null) oos.flush();}catch(IOException e){_log.warn("problem flushing socket output",e);}
-                try{if (ois!=null) ois.close();}catch(IOException e){_log.warn("problem closing socket input",e);}
-                try{if (oos!=null) oos.close();}catch(IOException e){_log.warn("problem closing socket output",e);}
-                try{_socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
-                _listener.notifyCompleted();
-            }
-            //_log.info("...Consumer finished: "+Thread.currentThread());
-        }
     }
     
 }
