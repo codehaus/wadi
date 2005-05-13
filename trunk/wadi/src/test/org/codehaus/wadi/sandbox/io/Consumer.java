@@ -21,14 +21,14 @@ import org.apache.commons.logging.LogFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.Takable;
 
-public class NIOConsumer implements Runnable {
+public class Consumer implements Runnable {
 
-    protected final static Log _log=LogFactory.getLog(NIOConsumer.class);
+    protected final static Log _log=LogFactory.getLog(Consumer.class);
     
     protected final Takable _input;
     protected final Thread _thread;
     
-    public NIOConsumer(Takable input) {
+    public Consumer(Takable input) {
         super();
         _input=input;
         _thread=new Thread(this);
@@ -43,7 +43,7 @@ public class NIOConsumer implements Runnable {
     
     public void stop() {
         _running=false;
-        _thread.interrupt(); // or do we wait for the input to empty somehow - TODO ?
+        _thread.interrupt();
     }
     
     public void run() {
@@ -57,7 +57,8 @@ public class NIOConsumer implements Runnable {
             } catch (InterruptedException e) {
                 _log.warn(e);
             }
-        } while (Thread.interrupted() && _running);
+        } while (Thread.interrupted() || _running);
+        
         _log.info("leaving service");
     }
 

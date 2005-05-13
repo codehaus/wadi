@@ -100,7 +100,7 @@ public class TestBIO extends TestCase {
         }
     }
     
-    protected final int _count=1;
+    protected final int _count=1000;
     
     public void testSerialRoundTrips() throws Exception {
         long start=System.currentTimeMillis();

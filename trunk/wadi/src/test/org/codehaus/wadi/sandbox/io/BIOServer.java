@@ -45,7 +45,7 @@ public class BIOServer implements Listener {
     protected final PooledExecutor _executor;
     protected final int _backlog; // 16?
     protected final int _timeout; // secs
-    protected volatile int _consumers=0;
+    protected volatile int _connections=0;
 
     public BIOServer(InetSocketAddress address, int backlog, int timeout) {
         _executor=new PooledExecutor(new BoundedBuffer(10), 100); // parameterise
@@ -58,16 +58,17 @@ public class BIOServer implements Listener {
     protected ServerSocket _socket;
     protected InetSocketAddress _address;
     protected Thread _thread;
-    protected boolean _running;
+    protected volatile boolean _running;
 
     public void start() throws IOException {
+        _running=true;
         int port=_address.getPort();
         InetAddress host=_address.getAddress();
         _socket=new ServerSocket(port, _backlog, host);
         _socket.setSoTimeout(_timeout*1000);
         _address=new InetSocketAddress(host, _socket. getLocalPort());
         (_thread=new Thread(new Producer())).start();
-        _running=true;
+        _log.info("Producer thread started");
         if (_log.isDebugEnabled()) _log.debug("started: "+_socket);
     }
     
@@ -82,18 +83,18 @@ public class BIOServer implements Listener {
                 _log.trace("unexpected interruption - ignoring", e);
             }
         } while (Thread.interrupted());
-        _log.info("Producer thread joined");
+        _log.info("Producer thread stopped");
         _thread=null;
         
-        while (_consumers>0) {
-            _log.info("waiting for: "+_consumers+" thread[s]");
+        while (_connections>0) {
+            _log.info("waiting for: "+_connections+" thread[s]");
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 _log.trace("unexpected interruption - ignoring", e);
             }
         }
-        _log.info("Consumer threads joined");
+        _log.info("Consumer threads stopped");
         
         try {
             _socket.close();
@@ -106,7 +107,7 @@ public class BIOServer implements Listener {
     }
     
     public void notifyCompleted() {
-        _consumers--;
+        _connections--;
     }
     
     public class Producer implements Runnable {
@@ -118,9 +119,13 @@ public class BIOServer implements Listener {
                         if (_timeout==0) Thread.yield();
                         Socket socket=_socket.accept();
                         socket.setSoTimeout(30*1000);
-                        _consumers++;
-                        BIOConnection consumer=new BIOConnection(socket, BIOServer.this);
-                        _executor.execute(consumer);
+                        _connections++;
+                        BIOConnection connection=new BIOConnection(socket, BIOServer.this);
+                        
+                        // it would be easy to refactor this to work [optionally] in the same way
+                        // as the NIOServer - i.e. a Pool of Consumer threads working on a Queue of Connections...
+                        _executor.execute(connection);
+                        
                     } catch (SocketTimeoutException ignore) {
                         // ignore...
                     } catch (InterruptedException e) {

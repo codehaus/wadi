@@ -36,7 +36,7 @@ public abstract class AbstractConnection implements Runnable {
     public abstract Socket getSocket();
     
     public void run() {
-        //_log.info("Consumer started...: "+_socket);
+        //_log.info("Connection started...: "+getSocket());
         ObjectInputStream  ois=null;
         ObjectOutputStream oos=null;
         try {
@@ -54,6 +54,6 @@ public abstract class AbstractConnection implements Runnable {
             try{if (oos!=null) oos.close();}catch(IOException e){_log.warn("problem closing socket output",e);}
             close();
         }
-        //_log.info("...Consumer finished: "+Thread.currentThread());
+        //_log.info("...Connection finished: "+Thread.currentThread());
     }
 }
