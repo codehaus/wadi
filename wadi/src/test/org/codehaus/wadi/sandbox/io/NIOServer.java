@@ -31,6 +31,11 @@ import org.apache.commons.logging.LogFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
+// NOTES - reuse server BBS
+// Stream should implement bulk transfers
+
+// JMS Server should be implemented....
+
 public class NIOServer implements Server {
     
     protected final Log _log=LogFactory.getLog(getClass());
