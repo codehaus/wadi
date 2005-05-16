@@ -32,12 +32,9 @@ public class BIOConnection extends AbstractConnection {
     protected static final Log _log=LogFactory.getLog(BIOConnection.class);
     
     protected final Socket _socket;
-    protected final Notifiable _notifiable;
-    
-    public BIOConnection(Socket socket, Notifiable notifiable) {
-        super();
+    public BIOConnection(Notifiable notifiable, Socket socket) {
+        super(notifiable);
         _socket=socket;
-        _notifiable=notifiable;
     }
     
     public InputStream getInputStream() throws IOException {return _socket.getInputStream();}
@@ -45,8 +42,4 @@ public class BIOConnection extends AbstractConnection {
     public void close() {try{_socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}}
     public Channel getChannel(){return _socket.getChannel();}
 
-    public void run() {
-        super.run();
-        _notifiable.notifyCompleted();
-    }
 }

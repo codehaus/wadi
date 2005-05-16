@@ -26,40 +26,26 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
 // NOTES - reuse server BBS
 // Stream should implement bulk transfers
 
 // JMS Server should be implemented....
 
-public class NIOServer implements Server {
+public class NIOServer extends AbstractSocketServer {
     
-    protected final Log _log=LogFactory.getLog(getClass());
-    protected final int _bufferSize;
-    protected final int _numConsumers;
-    protected final Consumer[] _consumers; // consumers take them out and process them...
-    protected final EDU.oswego.cs.dl.util.concurrent.Channel _connections; // we put connection objects in here
     protected final EDU.oswego.cs.dl.util.concurrent.Channel _queue; // we get our ByteBuffers from here...
     
-    public NIOServer(InetSocketAddress address, int bufferSize, int numConsumers) {
-        _address=address;
-        _bufferSize=bufferSize;
-        _numConsumers=numConsumers;
-        _consumers=new Consumer[_numConsumers];
-        _connections=new LinkedQueue(); // first come first served - TODO
-        _queue=new LinkedQueue();
+    public NIOServer(PooledExecutor executor, InetSocketAddress address) {
+        super(executor, address);
+        _queue=new LinkedQueue(); // parameterise ?
     }
     
-    protected InetSocketAddress _address;
     protected ServerSocketChannel _channel;
     protected Selector _selector;
     protected SelectionKey _key;
-    protected Thread _thread;
-    protected boolean _running;
     
     public synchronized void start() throws Exception {
         _channel=ServerSocketChannel.open();
@@ -72,9 +58,6 @@ public class NIOServer implements Server {
         _running=true;
         (_thread=new Thread(new Producer())).start();
         _log.info("Producer thread started");
-        for (int i=0; i<_numConsumers; i++)
-            (_consumers[i]=new Consumer(_connections)).start();
-        
         _log.info("started: "+_channel);
     }
     
@@ -89,14 +72,10 @@ public class NIOServer implements Server {
         _thread=null;
         _log.info("Producer thread stopped");
         // wait for all connections to finish...
-        while (_connections.peek()!=null) {
-            _log.info("waiting for connections");
-            Thread.sleep(1000);
-        }
+        // how ?
         _log.info("Connections all consumed");
         // stop all consumers...
-        for (int i=0; i<_numConsumers; i++)
-            _consumers[i].stop();
+        // how - TODO
         _log.info("Consumer threads stopped");
         _log.info("stopped: "+_address);
     }
@@ -107,11 +86,9 @@ public class NIOServer implements Server {
         channel.configureBlocking(false);
         SelectionKey readKey=channel.register(_selector, SelectionKey.OP_READ);
         
-        NIOConnection connection=new NIOConnection(channel, readKey, new LinkedQueue(), _queue); // reuse the queue
+        NIOConnection connection=new NIOConnection(this, channel, readKey, new LinkedQueue(), _queue); // reuse the queue
         readKey.attach(connection);
-        //_log.info("putting connection into queue");
-        Utils.safePut(connection, _connections);
-        //_log.info("connection in queue");
+        doConnection(connection);
     }
     
     public void read(SelectionKey key) throws IOException {

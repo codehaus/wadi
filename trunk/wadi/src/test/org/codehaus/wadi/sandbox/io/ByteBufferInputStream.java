@@ -117,6 +117,8 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
         throw new UnsupportedOperationException(); // NYI
     }
 
+    // Puttable
+    
     public void put(Object item) throws InterruptedException {
         //_log.info("putting buffer on input queue: "+item);
         _inputQueue.put(item);        
