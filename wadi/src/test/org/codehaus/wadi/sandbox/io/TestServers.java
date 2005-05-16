@@ -28,6 +28,10 @@ import java.nio.channels.Channel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+
 import junit.framework.TestCase;
 
 public class TestServers extends TestCase {
@@ -47,11 +51,22 @@ public class TestServers extends TestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
+        // an unbounded queue, serviced by 5 threads
+        PooledExecutor pool;
+        pool=new PooledExecutor(new LinkedQueue());
+        pool.setKeepAliveTime(-1); // live forever
+        pool.createThreads(5);
+        
         _bioAddress=new InetSocketAddress(8888);
-        _bioServer=new BIOServer(_bioAddress, 16, 1); // backlog, timeout
+        PooledExecutor executor;
+        executor=new PooledExecutor(new BoundedBuffer(10), 100);
+        executor.setMinimumPoolSize(3);
+        _bioServer=new BIOServer(executor, _bioAddress, 16, 1); // backlog, timeout
         _bioServer.start();
         _nioAddress=new InetSocketAddress(8889);
-        _nioServer=new NIOServer(_nioAddress, 4096, 4); // bufferSize, numConsumers
+        executor=new PooledExecutor(new BoundedBuffer(10), 100);
+        executor.setMinimumPoolSize(3);
+        _nioServer=new NIOServer(executor, _nioAddress); // bufferSize, numConsumers
         _nioServer.start();
     }
     

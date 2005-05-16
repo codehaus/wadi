@@ -19,7 +19,6 @@ package org.codehaus.wadi.sandbox.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
@@ -38,7 +37,8 @@ public class NIOConnection extends AbstractConnection implements Puttable {
     protected final Channel _inputQueue;
     protected final Puttable _outputQueue;
  
-    public NIOConnection(SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue) {
+    public NIOConnection(Notifiable notifiable, SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue) {
+        super(notifiable);
         _channel=channel;
         _key=key;
         _inputQueue=inputQueue;

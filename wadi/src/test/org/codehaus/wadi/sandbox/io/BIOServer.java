@@ -23,13 +23,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-interface Notifiable {void notifyCompleted();}
 
 /**
  * A Socket Server - you send it instances of Peer, which are then fed the Socket that they arrived on to consume...
@@ -38,28 +33,19 @@ interface Notifiable {void notifyCompleted();}
  * @version $Revision$
  */
 
-public class BIOServer implements Server, Notifiable {
+public class BIOServer extends AbstractSocketServer {
     
-    protected Log _log=LogFactory.getLog(getClass());
-    
-    protected final PooledExecutor _executor;
     protected final int _backlog; // 16?
     protected final int _timeout; // secs
-    protected volatile int _connections=0;
-
-    public BIOServer(InetSocketAddress address, int backlog, int timeout) {
-        _executor=new PooledExecutor(new BoundedBuffer(10), 100); // parameterise
-        _executor.setMinimumPoolSize(3);
-        _address=address;
+    
+    public BIOServer(PooledExecutor executor, InetSocketAddress address, int backlog, int timeout) {
+        super(executor, address);
         _backlog=backlog;
         _timeout=timeout;
         }
     
     protected ServerSocket _socket;
-    protected InetSocketAddress _address;
-    protected Thread _thread;
-    protected volatile boolean _running;
-
+    
     public void start() throws IOException {
         _running=true;
         int port=_address.getPort();
@@ -86,15 +72,7 @@ public class BIOServer implements Server, Notifiable {
         _log.info("Producer thread stopped");
         _thread=null;
         
-        while (_connections>0) {
-            _log.info("waiting for: "+_connections+" thread[s]");
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                _log.trace("unexpected interruption - ignoring", e);
-            }
-        }
-        _log.info("Consumer threads stopped");
+        waitForConnections();
         
         try {
             _socket.close();
@@ -115,17 +93,11 @@ public class BIOServer implements Server, Notifiable {
                         if (_timeout==0) Thread.yield();
                         Socket socket=_socket.accept();
                         socket.setSoTimeout(30*1000);
-                        _connections++;
-                        BIOConnection connection=new BIOConnection(socket, BIOServer.this);
-                        
-                        // it would be easy to refactor this to work [optionally] in the same way
-                        // as the NIOServer - i.e. a Pool of Consumer threads working on a Queue of Connections...
-                        _executor.execute(connection);
+                        BIOConnection connection=new BIOConnection(BIOServer.this, socket);
+                        doConnection(connection);
                         
                     } catch (SocketTimeoutException ignore) {
                         // ignore...
-                    } catch (InterruptedException e) {
-                        _log.error(e);
                     }
                 }
             } catch (IOException e) {
@@ -133,12 +105,6 @@ public class BIOServer implements Server, Notifiable {
             }
         }
         
-    }
-
-    // Notifiable
-    
-    public void notifyCompleted() {
-        _connections--;
     }
 
 }

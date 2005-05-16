@@ -30,7 +30,12 @@ import org.apache.commons.logging.LogFactory;
 public abstract class AbstractConnection implements Runnable {
 
     protected static final Log _log=LogFactory.getLog(AbstractConnection.class);
+    protected final Notifiable _notifiable;
 
+    public AbstractConnection(Notifiable notifiable) {
+        _notifiable=notifiable;
+    }
+    
     public abstract InputStream getInputStream() throws IOException;
     public abstract OutputStream getOutputStream() throws IOException;
     public abstract void close();
@@ -55,6 +60,7 @@ public abstract class AbstractConnection implements Runnable {
             try{if (is!=null) is.close();}catch(IOException e){_log.warn("problem closing socket input",e);}
             try{if (os!=null) os.close();}catch(IOException e){_log.warn("problem closing socket output",e);}
             close();
+            _notifiable.notifyCompleted();
         }
         //_log.info("...Connection finished: "+Thread.currentThread());
     }
