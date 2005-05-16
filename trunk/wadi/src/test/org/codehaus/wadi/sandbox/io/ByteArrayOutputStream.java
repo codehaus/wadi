@@ -17,18 +17,42 @@
 package org.codehaus.wadi.sandbox.io;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
-public class ByteArrayOutputStream extends OutputStream {
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-    public ByteArrayOutputStream() {
+public class ByteArrayOutputStream extends java.io.ByteArrayOutputStream {
+
+    protected final static Log _log=LogFactory.getLog(ByteArrayOutputStream.class);
+
+    protected final ByteArrayOutputStreamConfig _config;
+    
+    public ByteArrayOutputStream(ByteArrayOutputStreamConfig config) {
         super();
-        // TODO Auto-generated constructor stub
+        _config=config;
     }
 
-    public void write(int b) throws IOException {
-        // TODO Auto-generated method stub
-
+    public void flush() throws IOException {
+        super.flush();
+        byte[] bytes=toByteArray();
+        send(bytes);
+        reset();
+    }
+    
+    public void close() throws IOException {
+        super.close();
+        byte[] bytes=toByteArray();
+        send(bytes);
+        reset();
+    }
+    
+    public void send(byte[] bytes) throws IOException {
+        try {
+            _config.send(bytes);
+        } catch (Exception e) {
+            _log.error(e);
+            throw new IOException("problem sending bytes");
+        }
     }
 
 }

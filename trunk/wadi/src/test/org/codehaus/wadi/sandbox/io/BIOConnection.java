@@ -39,7 +39,10 @@ public class BIOConnection extends AbstractConnection {
     
     public InputStream getInputStream() throws IOException {return _socket.getInputStream();}
     public OutputStream getOutputStream() throws IOException {return _socket.getOutputStream();}
-    public void close() {try{_socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}}
-    public Channel getChannel(){return _socket.getChannel();}
+
+    public void close() throws IOException {
+        super.close();
+        try{_socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
+        }
 
 }

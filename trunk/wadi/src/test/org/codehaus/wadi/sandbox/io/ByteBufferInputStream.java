@@ -55,7 +55,7 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
         if (_buffer==null) {
             // we need a fresh buffer...
             if (!_committed) {
-                ByteBuffer buffer=Utils.safeTake(_inputQueue);
+                ByteBuffer buffer=(ByteBuffer)Utils.safeTake(_inputQueue);
                 if (buffer==_endOfQueue)
                     return false; // there is no further input - our producer has committed his end of the queue...
                 else {
@@ -66,7 +66,7 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
                 // producer has closed his end, we will
                 // just use up our existing content...
                 if (_inputQueue.peek()!=null) {
-                    _buffer=Utils.safeTake(_inputQueue);
+                    _buffer=(ByteBuffer)Utils.safeTake(_inputQueue);
                     return true; // there is further input
                 } else {
                     // no buffers left

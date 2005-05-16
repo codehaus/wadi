@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.BytesMessage;
+import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -33,26 +34,40 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 public class ClusterServer extends AbstractServer implements MessageListener {
 
     protected final Cluster _cluster;
+    protected final boolean _excludeSelf;
     protected final Map _connections;
     
-    public ClusterServer(PooledExecutor executor, Cluster cluster) {
+    public ClusterServer(PooledExecutor executor, Cluster cluster, boolean excludeSelf) {
         super(executor);
         _cluster=cluster;
+        _excludeSelf=excludeSelf;
         _connections=new HashMap();
     }
     
     protected MessageConsumer _nodeConsumer;
+    protected MessageConsumer _clusterConsumer;
     
     public void start() throws JMSException {
-        boolean excludeSelf;
-//        excludeSelf=true;
-//        _clusterConsumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
-//        _clusterConsumer.setMessageListener(this);
-        excludeSelf=false;
-        _nodeConsumer=_cluster.createConsumer(_cluster.getLocalNode().getDestination(), null, excludeSelf);
+        _clusterConsumer=_cluster.createConsumer(_cluster.getDestination(), null, _excludeSelf);
+        _clusterConsumer.setMessageListener(this);
+        _nodeConsumer=_cluster.createConsumer(_cluster.getLocalNode().getDestination(), null, _excludeSelf);
         _nodeConsumer.setMessageListener(this);
     }
 
+    public void stop() {
+        stopAcceptingConnections();
+        waitForExistingConnections();
+    }
+    
+    public void stopAcceptingConnections() {
+        try {
+        _clusterConsumer.setMessageListener(null);
+        _nodeConsumer.setMessageListener(null);
+        } catch (JMSException e) {
+            _log.warn("could not remove Listeners", e);
+        }
+    }
+    
     public void onMessage(Message message) {
         try {
             if (message instanceof BytesMessage) {
@@ -60,13 +75,17 @@ public class ClusterServer extends AbstractServer implements MessageListener {
                 byte[] buffer=new byte[length];
                 ((BytesMessage)message).readBytes(buffer);
                 String correlationId=message.getJMSCorrelationID();
+                Destination replyTo=message.getJMSReplyTo();
                 synchronized (_connections) {
                     ClusterConnection connection=(ClusterConnection)_connections.get(correlationId);
                     if (connection==null) {
                         // initialising a new Connection...
-                        connection=new ClusterConnection(this, correlationId, new LinkedQueue());
+                        _log.info("creating Connection: '"+correlationId+"'");
+                        connection=new ClusterConnection(this, _cluster, _cluster.getLocalNode().getDestination(), replyTo, correlationId, new LinkedQueue());
+                        _connections.put(correlationId, connection);
                     }
                     // servicing existing connection...
+                    _log.info("servicing Connection: '"+correlationId+"' - "+buffer.length+" bytes");
                     Utils.safePut(buffer, connection);
                 }
             }
@@ -75,4 +94,9 @@ public class ClusterServer extends AbstractServer implements MessageListener {
         }
     }
     
+    public Connection makeClientConnection(String correlationId, Destination target) {
+        ClusterConnection connection=new ClusterConnection(this, _cluster, _cluster.getLocalNode().getDestination(), target, correlationId, new LinkedQueue());
+        _connections.put(correlationId, connection);
+        return connection;
+    }
 }

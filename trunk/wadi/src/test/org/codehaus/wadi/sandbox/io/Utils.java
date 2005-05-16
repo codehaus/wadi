@@ -38,10 +38,10 @@ public class Utils {
         } while (Thread.interrupted());
     }
 
-    public static ByteBuffer safeTake(Takable takable) {
+    public static Object safeTake(Takable takable) {
         do {
             try {
-                return (ByteBuffer)takable.take();
+                return (Object)takable.take();
             } catch (InterruptedException e) {
                 if (_log.isTraceEnabled()) _log.trace("unexpected interruption - ignoring", e);
             }

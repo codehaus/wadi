@@ -50,7 +50,7 @@ public abstract class AbstractServer implements Server, Notifiable {
         _numConnections--;
     }
 
-    public void waitForConnections() {
+    public void waitForExistingConnections() {
         while (_numConnections>0) {
             _log.info("waiting for: "+_numConnections+" Connection[s]");
             try {
@@ -59,10 +59,10 @@ public abstract class AbstractServer implements Server, Notifiable {
                 _log.trace("unexpected interruption - ignoring", e);
             }
         }
-        _log.info("Connection threads stopped");
+        _log.info("existing Connections have finished running");
     }
 
-    public void doConnection(AbstractConnection connection) {
+    public void doConnection(Connection connection) {
         try {
             _numConnections++;
             _executor.execute(connection);

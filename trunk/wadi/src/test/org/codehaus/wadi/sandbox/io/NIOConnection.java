@@ -74,7 +74,6 @@ public class NIOConnection extends AbstractConnection implements Puttable {
 
     public InputStream getInputStream() throws IOException {return _inputStream;}
     public OutputStream getOutputStream() throws IOException {return _outputStream;}
-    public void close() {/* NYI */}
     public java.nio.channels.Channel getChannel() {return null;}
  
     public synchronized void commit() throws IOException {

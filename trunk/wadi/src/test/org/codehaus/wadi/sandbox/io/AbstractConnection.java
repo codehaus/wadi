@@ -27,7 +27,7 @@ import java.nio.channels.Channel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public abstract class AbstractConnection implements Runnable {
+public abstract class AbstractConnection implements Connection  {
 
     protected static final Log _log=LogFactory.getLog(AbstractConnection.class);
     protected final Notifiable _notifiable;
@@ -38,8 +38,6 @@ public abstract class AbstractConnection implements Runnable {
     
     public abstract InputStream getInputStream() throws IOException;
     public abstract OutputStream getOutputStream() throws IOException;
-    public abstract void close();
-    public abstract Channel getChannel();
     
     public void run() {
         //_log.info("Connection started...: "+getSocket());
@@ -50,18 +48,39 @@ public abstract class AbstractConnection implements Runnable {
             os=getOutputStream();
             ObjectInputStream ois=new ObjectInputStream(is);
             Peer peer=(Peer)ois.readObject();
-            peer.process(getChannel(), is, os);
+            process(peer, is, os);
         } catch (IOException e) {
-            _log.warn("connection broken - aborting", e);
+            _log.warn("problem reading object off wire", e);
         } catch (ClassNotFoundException e) {
             _log.warn("unknown Peer type - version/security problem?", e);
         } finally {
-            try{if (os!=null) os.flush();}catch(IOException e){_log.warn("problem flushing socket output",e);}
-            try{if (is!=null) is.close();}catch(IOException e){_log.warn("problem closing socket input",e);}
-            try{if (os!=null) os.close();}catch(IOException e){_log.warn("problem closing socket output",e);}
-            close();
-            _notifiable.notifyCompleted();
+            try {
+                close();
+            } catch (IOException e) {
+                _log.warn("problem closing", e);
+            }
         }
+
         //_log.info("...Connection finished: "+Thread.currentThread());
     }
+    
+    public void process(Peer peer) throws IOException {
+        InputStream is=getInputStream();
+        OutputStream os=getOutputStream();
+        process(peer, is, os);
+    }
+    
+    protected void process(Peer peer, InputStream is, OutputStream os) throws IOException {
+        peer.process(is, os);
+    }
+    
+    public void close() throws IOException {
+        InputStream is=getInputStream();
+        OutputStream os=getOutputStream();
+        try{if (os!=null) os.flush();}catch(IOException e){_log.warn("problem flushing socket output",e);}
+        try{if (is!=null) is.close();}catch(IOException e){_log.warn("problem closing socket input",e);}
+        try{if (os!=null) os.close();}catch(IOException e){_log.warn("problem closing socket output",e);}
+        _notifiable.notifyCompleted();
+    }
+
 }

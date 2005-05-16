@@ -20,7 +20,7 @@ import java.net.InetSocketAddress;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-public class AbstractSocketServer extends AbstractServer {
+public abstract class AbstractSocketServer extends AbstractServer {
 
     protected InetSocketAddress _address;
 

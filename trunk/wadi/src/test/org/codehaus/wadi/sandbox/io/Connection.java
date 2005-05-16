@@ -16,21 +16,20 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+public interface Connection extends Runnable {
 
-public abstract class Peer implements Serializable {
-    
-    protected static final Log _log=LogFactory.getLog(Peer.class);
+    InputStream getInputStream() throws IOException;
 
-    public Peer() {
-        // used for deserialisation
-    }
+    OutputStream getOutputStream() throws IOException;
+
+    void close() throws IOException;
+
+    void run();
     
-    public abstract void process(InputStream ois, OutputStream oos);
-    
+    void process(Peer peer) throws IOException;
+
 }

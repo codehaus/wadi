@@ -28,14 +28,17 @@ import java.util.Iterator;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
 // NOTES - reuse server BBS
 // Stream should implement bulk transfers
 
-// JMS Server should be implemented....
+// Do not put Connections onto Queue until the have input
+// When a Connection's Peer finishes, it loses its Thread, but is not clos()-ed
 
 public class NIOServer extends AbstractSocketServer {
     
+    protected final SynchronizedBoolean _accepting=new SynchronizedBoolean(false);
     protected final EDU.oswego.cs.dl.util.concurrent.Channel _queue; // we get our ByteBuffers from here...
     
     public NIOServer(PooledExecutor executor, InetSocketAddress address) {
@@ -56,6 +59,7 @@ public class NIOServer extends AbstractSocketServer {
         _selector= Selector.open();
         _key=_channel.register(_selector, SelectionKey.OP_ACCEPT);
         _running=true;
+        _accepting.set(true);
         (_thread=new Thread(new Producer())).start();
         _log.info("Producer thread started");
         _log.info("started: "+_channel);
@@ -63,21 +67,23 @@ public class NIOServer extends AbstractSocketServer {
     
     public synchronized void stop() throws Exception {
         _log.info("stopping: "+_channel);
+        stopAcceptingConnections();
+        waitForExistingConnections();
+        // stop Producer loop
         _running=false;
-        _selector.wakeup();
+        _selector.wakeup(); // we should go round the
         _selector.close();
-        _channel.socket().close();
-        _channel.close();
         _thread.join();
         _thread=null;
         _log.info("Producer thread stopped");
-        // wait for all connections to finish...
-        // how ?
-        _log.info("Connections all consumed");
-        // stop all consumers...
-        // how - TODO
-        _log.info("Consumer threads stopped");
+        // tidy up
+        _channel.socket().close();
+        _channel.close();
         _log.info("stopped: "+_address);
+    }
+    
+    public void stopAcceptingConnections() {
+        _accepting.set(false);
     }
     
     public void accept(SelectionKey key) throws ClosedChannelException, IOException {
@@ -121,7 +127,7 @@ public class NIOServer extends AbstractSocketServer {
                     for (Iterator i=_selector.selectedKeys().iterator(); i.hasNext(); ) {
                         SelectionKey key=(SelectionKey)i.next();
                         
-                        if (key.isAcceptable())
+                        if (key.isAcceptable() && _accepting.get())
                             accept(key);
                         
                         if (key.isReadable())
@@ -136,4 +142,8 @@ public class NIOServer extends AbstractSocketServer {
             }
         }
     }        
+    
+    public Connection makeClientConnection() {
+        throw new UnsupportedOperationException(); // NYI
+    }
 }
