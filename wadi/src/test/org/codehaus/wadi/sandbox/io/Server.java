@@ -20,5 +20,7 @@ public interface Server {
 
     void start() throws Exception;
     void stop() throws Exception;
+    void stopAcceptingConnections();
+    void waitForExistingConnections();
     
 }

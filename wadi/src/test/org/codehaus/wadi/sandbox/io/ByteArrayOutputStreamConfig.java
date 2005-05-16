@@ -16,21 +16,12 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import javax.jms.Destination;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Cluster;
 
-public abstract class Peer implements Serializable {
-    
-    protected static final Log _log=LogFactory.getLog(Peer.class);
+public interface ByteArrayOutputStreamConfig {
 
-    public Peer() {
-        // used for deserialisation
-    }
-    
-    public abstract void process(InputStream ois, OutputStream oos);
-    
+    void send(byte[] bytes) throws Exception;
+
 }

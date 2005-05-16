@@ -60,19 +60,9 @@ public class BIOServer extends AbstractSocketServer {
     
     public void stop() {
         if (_log.isDebugEnabled()) _log.debug("stopping: "+_socket);
-        _running=false;
         
-        do {
-            try {
-                _thread.join();
-            } catch (InterruptedException e) {
-                _log.trace("unexpected interruption - ignoring", e);
-            }
-        } while (Thread.interrupted());
-        _log.info("Producer thread stopped");
-        _thread=null;
-        
-        waitForConnections();
+        stopAcceptingConnections();
+        waitForExistingConnections();
         
         try {
             _socket.close();
@@ -82,6 +72,19 @@ public class BIOServer extends AbstractSocketServer {
         _socket=null;
         
         if (_log.isDebugEnabled()) _log.debug("stopped: "+_address);
+    }
+    
+    public void stopAcceptingConnections() {
+        _running=false;
+        do {
+            try {
+                _thread.join();
+            } catch (InterruptedException e) {
+                _log.trace("unexpected interruption - ignoring", e);
+            }
+        } while (Thread.interrupted());
+        _log.info("Producer thread stopped");
+        _thread=null;
     }
     
     public class Producer implements Runnable {
@@ -107,4 +110,9 @@ public class BIOServer extends AbstractSocketServer {
         
     }
 
+    public Connection makeClientConnection(Socket socket) {
+        _numConnections++;
+        Connection connection=new BIOConnection(BIOServer.this, socket);
+        return connection;
+    }
 }
