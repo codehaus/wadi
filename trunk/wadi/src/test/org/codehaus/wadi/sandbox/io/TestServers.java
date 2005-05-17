@@ -69,7 +69,7 @@ public class TestServers extends TestCase {
     protected ConnectionFactory _clusterConnectionFactory;
     
 
-    protected final int _count=100;
+    protected final int _count=100000;
     
     
     protected void setUp() throws Exception {
@@ -100,13 +100,18 @@ public class TestServers extends TestCase {
         _clusterServer0=new ClusterServer(executor, _cluster0, true);
         _clusterServer0.start();
         _cluster0.start();
-
+        
         _clusterServer1=new ClusterServer(executor, _cluster1, true);
         _clusterServer1.start();
         _cluster1.start();
         
-        _clusterConnectionFactory=new ConnectionFactory(){ public Connection create() throws IOException {return _clusterServer1.makeClientConnection("foo", _cluster0.getLocalNode().getDestination());}};
-}
+        _clusterConnectionFactory=new ConnectionFactory()  {
+            protected int _count=0;
+            public Connection create() throws IOException {
+                return _clusterServer1.makeClientConnection("foo-"+(_count++), _cluster0.getLocalNode().getDestination());
+            }
+        };
+    }
     
     protected void tearDown() throws Exception {
         super.tearDown();
