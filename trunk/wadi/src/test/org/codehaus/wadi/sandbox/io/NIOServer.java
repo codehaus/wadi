@@ -19,8 +19,6 @@ package org.codehaus.wadi.sandbox.io;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousCloseException;
-import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -44,14 +42,16 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 public class NIOServer extends AbstractSocketServer {
     
     protected final SynchronizedBoolean _accepting=new SynchronizedBoolean(false);
-    protected final EDU.oswego.cs.dl.util.concurrent.Channel _queue; // we get our ByteBuffers from here...
     protected final ReadWriteLock _lock=new FIFOReadWriteLock();
+    protected final EDU.oswego.cs.dl.util.concurrent.Channel _queue; // we get our ByteBuffers from here...
+    protected final int _outputBufferSize;
     
-    public NIOServer(PooledExecutor executor, InetSocketAddress address, int numBuffers, int bufSize) {
+    public NIOServer(PooledExecutor executor, InetSocketAddress address, int numInputBuffers, int inputBufferSize, int outputBufferSize) {
         super(executor, address);
         _queue=new LinkedQueue(); // parameterise ?
-        for (int i=0; i<numBuffers; i++)
-            Utils.safePut(ByteBuffer.allocateDirect(bufSize), _queue);
+        _outputBufferSize=outputBufferSize;
+        for (int i=0; i<numInputBuffers; i++)
+            Utils.safePut(ByteBuffer.allocateDirect(inputBufferSize), _queue);
     }
     
     protected ServerSocketChannel _channel;
@@ -99,7 +99,7 @@ public class NIOServer extends AbstractSocketServer {
         SocketChannel channel=server.accept();
         channel.configureBlocking(false);
         SelectionKey readKey=channel.register(_selector, SelectionKey.OP_READ/*|SelectionKey.OP_WRITE*/);
-        NIOConnection connection=new NIOConnection(this, channel, readKey, new LinkedQueue(), _queue); // reuse the queue
+        NIOConnection connection=new NIOConnection(this, channel, readKey, new LinkedQueue(), _queue, _outputBufferSize); // reuse the queue
         readKey.attach(connection);
         doConnection(connection);
     }
@@ -191,7 +191,7 @@ public class NIOServer extends AbstractSocketServer {
     public Connection makeClientConnection(SocketChannel channel) throws IOException {
         channel.configureBlocking(false);
         SelectionKey key=channel.register(_selector, /*SelectionKey.OP_WRITE|*/SelectionKey.OP_READ);
-        NIOConnection connection=new NIOConnection(this, channel, key, new LinkedQueue(), _queue); // reuse the queue
+        NIOConnection connection=new NIOConnection(this, channel, key, new LinkedQueue(), _queue, _outputBufferSize); // reuse the queue
         key.attach(connection);
         return connection;
     }
