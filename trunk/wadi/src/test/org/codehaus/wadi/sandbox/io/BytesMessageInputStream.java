@@ -19,6 +19,7 @@ package org.codehaus.wadi.sandbox.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
@@ -86,10 +87,8 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
         int b=_buffer.readUnsignedByte();
         _remaining--;
         
-        if (_remaining<1) {
+        if (_remaining==0)
             _buffer=null;
-            _remaining=0;
-        }
         
         //_log.info("reading: "+(char)b);
 
@@ -100,9 +99,30 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
         }
     }
     
-//    public int read(byte b[], int off, int len) throws IOException {
-//        int toCopy=Math.min(len, _buffer.)
-//    }
+    public int read(byte b[], int off, int len) throws IOException {
+        try {
+            if (!ensureBuffer())
+                return -1;
+        
+            int toCopy=Math.min(len, (int)_remaining);
+            if (off==0)
+                _buffer.readBytes(b, toCopy);
+            else {
+                // inefficient - but we are not helped by JMS API...
+                for (int i=0; i<toCopy; i++)
+                    b[off++]=_buffer.readByte();
+            }
+            
+            _remaining-=toCopy;
+            if (_remaining==0)
+                _buffer=null;
+            
+            return toCopy;
+        } catch (JMSException e) {
+            _log.error(e);
+            throw new IOException();
+        }
+    }
     
     
     // ISSUE - if someone puts a BB on our input then calls close() to indicate that there is no more input coming
