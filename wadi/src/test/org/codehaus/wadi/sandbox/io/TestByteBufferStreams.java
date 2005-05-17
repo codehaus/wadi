@@ -105,7 +105,7 @@ public class TestByteBufferStreams extends TestCase {
         buffer=ByteBuffer.allocateDirect(rolloverCapacity);
         buffer.put(bytesIn, 0, rolloverCapacity);
         buffer.flip();
-        inputQueue.put(buffer);
+        is.put(buffer);
         is.commit();
         
         // read it all out and check it for validity
@@ -121,6 +121,8 @@ public class TestByteBufferStreams extends TestCase {
         }        
         
         // check the state of the queues...
+        assertTrue(!inputQueue.isEmpty()); // just end of queue marker left
+        assertTrue(inputQueue.take()!=null);
         assertTrue(inputQueue.isEmpty()); // no input left
         assertTrue(outputQueue.take()!=null); // 1 buffer in output
         assertTrue(outputQueue.isEmpty());

@@ -61,15 +61,17 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
             try {
                 tmp=_inputQueue.poll(_timeout); // we need a fresh buffer...
             } catch (TimeoutException e) {
-                _log.error(e);
+                _log.error("timed out", e);
                 throw new IOException();
             } catch (InterruptedException e) {
-                // ignore
+                _log.error("interrupted", e);
             }
         } while (Thread.interrupted());
         
-        if (tmp==_endOfQueue) // no more input - our producer has committed his end of the queue...
+        if (tmp==_endOfQueue) {// no more input - our producer has committed his end of the queue...
+            Utils.safePut(_endOfQueue, _inputQueue); // leave it there - clumsy
             return false; 
+        }
         
         _buffer=(ByteBuffer)tmp;
         return true;
@@ -109,7 +111,7 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
                 recycle();
         }
         //_log.info("read: "+red+" bytes");
-        return red;
+        return red==0?-1:red;
     }
     
     // ISSUE - if someone puts a BB on our input then calls close() to indicate that there is no more input coming
