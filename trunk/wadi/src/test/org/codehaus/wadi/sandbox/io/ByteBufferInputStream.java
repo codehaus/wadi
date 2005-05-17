@@ -114,13 +114,6 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
         return red==0?-1:red;
     }
     
-    // ISSUE - if someone puts a BB on our input then calls close() to indicate that there is no more input coming
-    // we find ourselves in a race. If the consumer thread wins, and tries to rollover to the next buffer before close()
-    // gets called, it will sleep on the inputQueue...
-    
-    // SOLUTION - interrupt it, when close is called, it checks closed flag and either aborts or goes round again - messy
-    // but probably necessary...
-    
     public void commit() {
         Utils.safePut(_endOfQueue, _inputQueue);
     }
