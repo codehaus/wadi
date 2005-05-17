@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
-import java.nio.ByteBuffer;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

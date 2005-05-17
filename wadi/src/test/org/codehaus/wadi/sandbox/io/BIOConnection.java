@@ -18,21 +18,18 @@ package org.codehaus.wadi.sandbox.io;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.nio.channels.Channel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class BIOConnection extends AbstractConnection {
+public class BIOConnection extends AbstractSocketConnection {
     
     protected static final Log _log=LogFactory.getLog(BIOConnection.class);
     
     protected final Socket _socket;
-    public BIOConnection(Notifiable notifiable, Socket socket) {
+    public BIOConnection(CountingNotifiable notifiable, Socket socket) {
         super(notifiable);
         _socket=socket;
     }

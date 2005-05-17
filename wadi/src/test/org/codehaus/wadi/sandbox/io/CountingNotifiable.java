@@ -16,8 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
-public interface ByteArrayOutputStreamConfig {
-
-    void send(byte[] bytes) throws Exception;
-
+public interface CountingNotifiable {
+    
+    void notifyCompleted();
+    
 }

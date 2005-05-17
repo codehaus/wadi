@@ -22,7 +22,7 @@ import org.apache.commons.logging.LogFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-public abstract class AbstractServer implements Server, Notifiable {
+public abstract class AbstractServer implements Server {
 
     protected final Log _log = LogFactory.getLog(getClass());
     protected final PooledExecutor _executor;
@@ -34,8 +34,6 @@ public abstract class AbstractServer implements Server, Notifiable {
 
     protected Thread _thread;
     protected volatile boolean _running;
-    protected volatile int _numConnections;
-
     public void start() throws Exception {
         // TODO Auto-generated method stub
     }
@@ -46,25 +44,8 @@ public abstract class AbstractServer implements Server, Notifiable {
 
     // Notifiable
     
-    public void notifyCompleted() {
-        _numConnections--;
-    }
-
-    public void waitForExistingConnections() {
-        while (_numConnections>0) {
-            _log.info("waiting for: "+_numConnections+" Connection[s]");
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                _log.trace("unexpected interruption - ignoring", e);
-            }
-        }
-        _log.info("existing Connections have finished running");
-    }
-
     public void doConnection(Connection connection) {
         try {
-            _numConnections++;
             _executor.execute(connection);
         } catch (InterruptedException e) {
             _log.error(e);

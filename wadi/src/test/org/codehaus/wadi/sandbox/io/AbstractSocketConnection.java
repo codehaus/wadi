@@ -16,8 +16,18 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
-public interface Notifiable {
-    
-    void notifyCompleted();
-    
+import java.io.IOException;
+
+public abstract class AbstractSocketConnection extends AbstractConnection {
+
+    protected final CountingNotifiable _notifiable;
+
+    public AbstractSocketConnection(CountingNotifiable notifiable) {
+        _notifiable=notifiable;
+    }
+
+    public void close() throws IOException {
+        super.close();
+        _notifiable.notifyCompleted();
+    }
 }

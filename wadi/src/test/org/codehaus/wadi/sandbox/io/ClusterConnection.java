@@ -22,7 +22,6 @@ import java.io.OutputStream;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
-import javax.jms.JMSException;
 
 import org.activecluster.Cluster;
 
@@ -31,6 +30,7 @@ import EDU.oswego.cs.dl.util.concurrent.Puttable;
 
 public class ClusterConnection extends AbstractConnection implements Puttable, ByteArrayOutputStreamConfig {
 
+    protected final EnumeratingNotifiable _notifiable;
     protected final Cluster _cluster;
     protected final Destination _us;
     protected final Destination _them;
@@ -39,8 +39,9 @@ public class ClusterConnection extends AbstractConnection implements Puttable, B
     protected final ByteArrayInputStream _inputStream;
     protected final ByteArrayOutputStream _outputStream;
     
-    public ClusterConnection(Notifiable notifiable, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue) {
-        super(notifiable);
+    public ClusterConnection(EnumeratingNotifiable notifiable, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue) {
+        super();
+        _notifiable=notifiable;
         _cluster=cluster;
         _us=us;
         _them=them;
@@ -64,6 +65,7 @@ public class ClusterConnection extends AbstractConnection implements Puttable, B
         // TODO Auto-generated method stub
         _inputStream.commit();
         super.close();
+        _notifiable.notifyCompleted(this);
     }
 
     public java.nio.channels.Channel getChannel() {

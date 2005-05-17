@@ -47,11 +47,13 @@ public class ByteArrayOutputStream extends java.io.ByteArrayOutputStream {
     }
     
     public void send(byte[] bytes) throws IOException {
-        try {
-            _config.send(bytes);
-        } catch (Exception e) {
-            _log.error(e);
-            throw new IOException("problem sending bytes");
+        if (bytes.length>0) {
+            try {
+                _config.send(bytes);
+            } catch (Exception e) {
+                _log.error(e);
+                throw new IOException("problem sending bytes");
+            }
         }
     }
 

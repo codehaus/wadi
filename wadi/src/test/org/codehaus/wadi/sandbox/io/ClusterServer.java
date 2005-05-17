@@ -31,7 +31,7 @@ import org.codehaus.wadi.Cluster;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-public class ClusterServer extends AbstractServer implements MessageListener {
+public class ClusterServer extends AbstractServer implements EnumeratingNotifiable, MessageListener {
 
     protected final Cluster _cluster;
     protected final boolean _excludeSelf;
@@ -80,12 +80,13 @@ public class ClusterServer extends AbstractServer implements MessageListener {
                     ClusterConnection connection=(ClusterConnection)_connections.get(correlationId);
                     if (connection==null) {
                         // initialising a new Connection...
-                        _log.info("creating Connection: '"+correlationId+"'");
+                        //_log.info("creating Connection: '"+correlationId+"'");
                         connection=new ClusterConnection(this, _cluster, _cluster.getLocalNode().getDestination(), replyTo, correlationId, new LinkedQueue());
                         _connections.put(correlationId, connection);
+                        doConnection(connection);
                     }
                     // servicing existing connection...
-                    _log.info("servicing Connection: '"+correlationId+"' - "+buffer.length+" bytes");
+                    //_log.info("servicing Connection: '"+correlationId+"' - "+buffer.length+" bytes");
                     Utils.safePut(buffer, connection);
                 }
             }
@@ -99,4 +100,24 @@ public class ClusterServer extends AbstractServer implements MessageListener {
         _connections.put(correlationId, connection);
         return connection;
     }
+    
+    public void waitForExistingConnections() {
+        int numConnections;
+        while ((numConnections=_connections.size())>0) {
+            _log.info("waiting for: "+numConnections+" Connection[s]");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                _log.trace("unexpected interruption - ignoring", e);
+            }
+        }
+        _log.info("existing Connections have finished running");
+    }
+    
+    // EnumeratingNotifiable
+    
+    public void notifyCompleted(Connection connection) {
+        _connections.remove(((ClusterConnection)connection)._correlationId);
+    }
+    
 }

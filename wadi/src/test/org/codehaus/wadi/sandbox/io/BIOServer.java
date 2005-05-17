@@ -53,7 +53,7 @@ public class BIOServer extends AbstractSocketServer {
         _socket=new ServerSocket(port, _backlog, host);
         _socket.setSoTimeout(_timeout*1000);
         _address=new InetSocketAddress(host, _socket. getLocalPort());
-        (_thread=new Thread(new Producer())).start();
+        (_thread=new Thread(new Producer(), "WADI BIO Server")).start();
         _log.info("Producer thread started");
         if (_log.isDebugEnabled()) _log.debug("started: "+_socket);
     }
@@ -95,6 +95,7 @@ public class BIOServer extends AbstractSocketServer {
                     try {
                         if (_timeout==0) Thread.yield();
                         Socket socket=_socket.accept();
+                        //_log.info("accepting connection");
                         socket.setSoTimeout(30*1000);
                         BIOConnection connection=new BIOConnection(BIOServer.this, socket);
                         doConnection(connection);

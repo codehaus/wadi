@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 

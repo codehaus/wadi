@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 
-public class NIOConnection extends AbstractConnection implements Puttable {
+public class NIOConnection extends AbstractSocketConnection implements Puttable {
     
     protected final static Log _log=LogFactory.getLog(NIOConnection.class);
     
@@ -37,7 +37,7 @@ public class NIOConnection extends AbstractConnection implements Puttable {
     protected final Channel _inputQueue;
     protected final Puttable _outputQueue;
  
-    public NIOConnection(Notifiable notifiable, SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue) {
+    public NIOConnection(CountingNotifiable notifiable, SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue) {
         super(notifiable);
         _channel=channel;
         _key=key;
@@ -52,40 +52,22 @@ public class NIOConnection extends AbstractConnection implements Puttable {
     protected ByteBufferInputStream _inputStream;
     protected OutputStream _outputStream;
     
-//    public void run() {
-//        _log.info("running a Connection!");
-//        int capacity=4096;
-//        byte[] bytesOut=new byte[capacity];
-//
-//        int n=0;
-//        try {
-//            while((n=_inputStream.read(bytesOut))!=-1) {
-//                _log.info(new String(bytesOut));
-//            }
-//            if (n==-1) { // last read
-//                _log.info(new String(bytesOut));
-//            }
-//        } catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
-//        _log.info("finished!");
-//    }
-
     public InputStream getInputStream() throws IOException {return _inputStream;}
     public OutputStream getOutputStream() throws IOException {return _outputStream;}
-    public java.nio.channels.Channel getChannel() {return null;}
- 
+    
+    public void close() throws IOException {
+        super.close();
+        //_log.info("cancelling: "+_key);
+        _key.cancel();
+        _channel.socket().shutdownOutput();
+        _channel.socket().close();
+        _channel.close();
+        }
+    
     public synchronized void commit() throws IOException {
         //_out.commit();
         _inputStream.commit();
-        if (!_channel.isOpen())
-            return;
-        _key.cancel();
-        _channel.socket().shutdownOutput();
-        _channel.close();
-        _channel.socket().close();
-        _channel.close();
+        _channel.socket().shutdownInput();
     }
 
     // Puttable - ByteBuffers only please :-)
