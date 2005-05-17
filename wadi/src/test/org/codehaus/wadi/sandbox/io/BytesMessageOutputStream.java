@@ -26,9 +26,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class BytesMessageOutputStream extends OutputStream {
-
+    
     protected final static Log _log=LogFactory.getLog(BytesMessageOutputStream.class);
-
+    
     protected final BytesMessageOutputStreamConfig _config;
     protected BytesMessage _buffer;
     
@@ -41,7 +41,7 @@ public class BytesMessageOutputStream extends OutputStream {
             _log.error(e); // should we let this go further ?
         }
     }
-
+    
     public void allocate() throws IOException {
         try {
             _buffer=_config.createBytesMessage();
@@ -72,14 +72,22 @@ public class BytesMessageOutputStream extends OutputStream {
             throw new IOException("problem sending bytes");
         }
     }
-
+    
     public void write(int b) throws IOException {
         try {
-        _buffer.writeByte((byte)b);
+            _buffer.writeByte((byte)b);
         } catch (JMSException e) {
             _log.error(e);
             throw new IOException();
         }
     }
     
+    public void write(byte b[], int off, int len) throws IOException {
+        try {
+            _buffer.writeBytes(b, off, len);// can the message run out of space ? - we might have to break it up... - TODO
+        } catch (JMSException e) {
+            _log.error(e);
+            throw new IOException();
+        }
+    }
 }
