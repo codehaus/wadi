@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
-public interface EnumeratingNotifiable {
+public interface ClusterConnectionConfig {
 
     void notifyCompleted(Connection connection);
 

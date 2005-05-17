@@ -28,8 +28,11 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
+import EDU.oswego.cs.dl.util.concurrent.FIFOReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
 // NOTES - reuse server BBS
@@ -42,6 +45,7 @@ public class NIOServer extends AbstractSocketServer {
     
     protected final SynchronizedBoolean _accepting=new SynchronizedBoolean(false);
     protected final EDU.oswego.cs.dl.util.concurrent.Channel _queue; // we get our ByteBuffers from here...
+    protected final ReadWriteLock _lock=new FIFOReadWriteLock();
     
     public NIOServer(PooledExecutor executor, InetSocketAddress address, int numBuffers, int bufSize) {
         super(executor, address);
@@ -126,7 +130,17 @@ public class NIOServer extends AbstractSocketServer {
         public void run() {
             SelectionKey key=null;
             
-            while (_running) {
+             while (_running) {
+                 
+                 Sync lock=_lock.writeLock();
+                 do {
+                     try {
+                         lock.acquire();
+                     } catch (InterruptedException e) {
+                         // ignore
+                     }
+                 } while (Thread.interrupted());
+            
                 try {
                     _selector.select();
                     
@@ -162,17 +176,13 @@ public class NIOServer extends AbstractSocketServer {
                             _log.warn("unused key: "+key);
                             
                         i.remove();
+                        
                     }
-                } catch (AsynchronousCloseException e) {
-                    //_log.warn("Async close Exception: "+key, e);
-                } catch (ClosedChannelException e) {
-                    //_log.warn("closed channel Exception: "+key, e);
-                } catch (CancelledKeyException e) {
-                    //_log.warn("cancelled key Exception: "+key, e);
-                } catch (Exception e) {
-                    _log.warn("unexpected problem", e);
                 } catch (Throwable t) {
-                    _log.error("completely unexpected problem", t);
+                    _log.error("unexpected problem", t);
+                } finally {
+                    lock.release();
+                    // now threads who want to close selectors, channels etc can run on a read lock...
                 }
             }
         }
@@ -184,5 +194,9 @@ public class NIOServer extends AbstractSocketServer {
         NIOConnection connection=new NIOConnection(this, channel, key, new LinkedQueue(), _queue); // reuse the queue
         key.attach(connection);
         return connection;
+    }
+    
+    public Sync getReadLock() {
+        return _lock.readLock();
     }
 }
