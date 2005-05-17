@@ -90,7 +90,7 @@ public class TestServers extends TestCase {
         _nioAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8889);
         executor=new PooledExecutor(new BoundedBuffer(10), 100);
         executor.setMinimumPoolSize(3);
-        _nioServer=new NIOServer(executor, _nioAddress, 1024, 256, 256); // bufSize should be 4096*2
+        _nioServer=new NIOServer(executor, _nioAddress, 1024, 256, 256, 30*1000); // bufSize should be 4096*2
         _nioServer.start();
         
         _cluster0=(Cluster)_clusterFactory.createCluster(_clusterName);

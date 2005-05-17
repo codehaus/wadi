@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
+import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 // N.B. It is unfortunate that EDU.oswego.cs.dl.util.concurrent.Channel and java.nio.channels.Channel are homonyms.
 // All mentions of Channel in this file refer to the EDU.oswego.cs.dl.util.concurrent variety.
@@ -34,50 +35,53 @@ import EDU.oswego.cs.dl.util.concurrent.Puttable;
 public class ByteBufferInputStream extends InputStream implements Puttable {
     
     protected final static Log _log=LogFactory.getLog(ByteBufferInputStream.class);
-    protected static final ByteBuffer _endOfQueue=ByteBuffer.allocateDirect(0);
+    protected static final Object _endOfQueue=new Object();
     
     protected final Channel _inputQueue; // ByteBuffers are pushed onto here by producer, taken off by the consumer
     protected final Puttable _outputQueue; // and then placed onto here...
+    protected final long _timeout;
     
     protected ByteBuffer _buffer=null; // only ever read by consumer
-    protected volatile boolean _committed=false; // written by producer, read by consumer
     
-    public ByteBufferInputStream(Channel inputQueue, Puttable outputQueue) {
+    public ByteBufferInputStream(Channel inputQueue, Puttable outputQueue, long timeout) {
         super();
         _inputQueue=inputQueue;
         _outputQueue=outputQueue;
+        _timeout=timeout;
     }
 
     // impl
     
-    protected boolean ensureBuffer() {
-        if (_buffer==null) {
-            // we need a fresh buffer...
-            if (!_committed) {
-                ByteBuffer buffer=(ByteBuffer)Utils.safeTake(_inputQueue);
-                if (buffer==_endOfQueue)
-                    return false; // there is no further input - our producer has committed his end of the queue...
-                else {
-                    _buffer=buffer;
-                    return true; // there is further input
-                }
-            } else {
-                // producer has closed his end, we will
-                // just use up our existing content...
-                if (_inputQueue.peek()!=null) {
-                    _buffer=(ByteBuffer)Utils.safeTake(_inputQueue);
-                    return true; // there is further input
-                } else {
-                    // no buffers left
-                    return false; // there is no further input...
-                }
+    protected boolean ensureBuffer() throws IOException {
+        if (_buffer!=null)
+            return true; // we still have input...
+        
+        Object tmp=null;
+        do {
+            try {
+                tmp=_inputQueue.poll(_timeout); // we need a fresh buffer...
+            } catch (TimeoutException e) {
+                _log.error(e);
+                throw new IOException();
+            } catch (InterruptedException e) {
+                // ignore
             }
-        } else {
-            // we don't need to rollover to the next buffer yet
-            return true; // there is further input
-        }
+        } while (Thread.interrupted());
+        
+        if (tmp==_endOfQueue) // no more input - our producer has committed his end of the queue...
+            return false; 
+        
+        _buffer=(ByteBuffer)tmp;
+        return true;
     }
 
+    public void recycle() {
+        ByteBuffer buffer=_buffer;
+        _buffer=null;
+        buffer.clear();
+        Utils.safePut(buffer, _outputQueue);  
+    }
+    
     // InputStream
     
     public int read() throws IOException {
@@ -86,16 +90,26 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
         
         byte b=_buffer.get();
         
-        if (!_buffer.hasRemaining()) {
-            ByteBuffer buffer=_buffer;
-            _buffer=null;
-            buffer.clear();
-            Utils.safePut(buffer, _outputQueue);
-        }
+        if (!_buffer.hasRemaining())
+            recycle();
         
         //_log.info("reading: "+(char)b);
-
+        
         return (int)b&0xFF; // convert byte to unsigned int - otherwise 255==-1 i.e. EOF etc..
+    }
+    
+    public int read(byte b[], int off, int len) throws IOException {
+        int red=0; // read (pres.) and read (perf.) are homographs...
+        while (red<len && ensureBuffer()) {
+            int tranche=Math.min(len, _buffer.remaining());
+            _buffer.get(b, off+red, tranche);
+            red+=tranche;
+            
+            if (!_buffer.hasRemaining())
+                recycle();
+        }
+        //_log.info("read: "+red+" bytes");
+        return red;
     }
     
     // ISSUE - if someone puts a BB on our input then calls close() to indicate that there is no more input coming
@@ -106,7 +120,6 @@ public class ByteBufferInputStream extends InputStream implements Puttable {
     // but probably necessary...
     
     public void commit() {
-        _committed=true;
         Utils.safePut(_endOfQueue, _inputQueue);
     }
     

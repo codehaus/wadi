@@ -77,5 +77,10 @@ public class ByteBufferOutputStream extends OutputStream {
         super.close();
         send();
     }
-
+    
+    // ByteBufferOutputStream
+    
+    public void write(ByteBuffer buffer, int offset, int length) throws IOException {
+        _channel.write(null, offset, length);
+    }
 }
