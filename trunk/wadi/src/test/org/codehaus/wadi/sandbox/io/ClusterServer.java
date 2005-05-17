@@ -79,7 +79,7 @@ public class ClusterServer extends AbstractServer implements EnumeratingNotifiab
                     if (connection==null) {
                         // initialising a new Connection...
                         //_log.info("creating Connection: '"+correlationId+"'");
-                        connection=new ClusterConnection(this, _cluster, _cluster.getLocalNode().getDestination(), replyTo, correlationId, new LinkedQueue());
+                        connection=new ClusterConnection(this, _cluster, _cluster.getLocalNode().getDestination(), replyTo, correlationId, new LinkedQueue(), 2000);
                         _connections.put(correlationId, connection);
                         doConnection(connection);
                     }
@@ -94,7 +94,7 @@ public class ClusterServer extends AbstractServer implements EnumeratingNotifiab
     }
     
     public Connection makeClientConnection(String correlationId, Destination target) {
-        ClusterConnection connection=new ClusterConnection(this, _cluster, _cluster.getLocalNode().getDestination(), target, correlationId, new LinkedQueue());
+        ClusterConnection connection=new ClusterConnection(this, _cluster, _cluster.getLocalNode().getDestination(), target, correlationId, new LinkedQueue(), 2000);
         _connections.put(correlationId, connection);
         return connection;
     }
