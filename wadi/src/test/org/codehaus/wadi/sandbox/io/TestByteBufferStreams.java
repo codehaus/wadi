@@ -50,7 +50,7 @@ public class TestByteBufferStreams extends TestCase {
         LinkedQueue inputQueue=new LinkedQueue();
         LinkedQueue outputQueue=new LinkedQueue();
         // put the queues into the stream
-        ByteBufferInputStream is=new ByteBufferInputStream(inputQueue, outputQueue);
+        ByteBufferInputStream is=new ByteBufferInputStream(inputQueue, outputQueue, 30*1000);
 
         // try exhausting a single ByteBuffer
         

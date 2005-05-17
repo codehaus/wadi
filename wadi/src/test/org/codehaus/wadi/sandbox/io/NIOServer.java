@@ -45,11 +45,13 @@ public class NIOServer extends AbstractSocketServer {
     protected final ReadWriteLock _lock=new FIFOReadWriteLock();
     protected final EDU.oswego.cs.dl.util.concurrent.Channel _queue; // we get our ByteBuffers from here...
     protected final int _outputBufferSize;
+    protected final int _inputTimeout;
     
-    public NIOServer(PooledExecutor executor, InetSocketAddress address, int numInputBuffers, int inputBufferSize, int outputBufferSize) {
+    public NIOServer(PooledExecutor executor, InetSocketAddress address, int numInputBuffers, int inputBufferSize, int outputBufferSize, int inputTimeout) {
         super(executor, address);
         _queue=new LinkedQueue(); // parameterise ?
         _outputBufferSize=outputBufferSize;
+        _inputTimeout=inputTimeout;
         for (int i=0; i<numInputBuffers; i++)
             Utils.safePut(ByteBuffer.allocateDirect(inputBufferSize), _queue);
     }
@@ -99,7 +101,7 @@ public class NIOServer extends AbstractSocketServer {
         SocketChannel channel=server.accept();
         channel.configureBlocking(false);
         SelectionKey readKey=channel.register(_selector, SelectionKey.OP_READ/*|SelectionKey.OP_WRITE*/);
-        NIOConnection connection=new NIOConnection(this, channel, readKey, new LinkedQueue(), _queue, _outputBufferSize); // reuse the queue
+        NIOConnection connection=new NIOConnection(this, channel, readKey, new LinkedQueue(), _queue, _outputBufferSize, _inputTimeout); // reuse the queue
         readKey.attach(connection);
         doConnection(connection);
     }
@@ -191,7 +193,7 @@ public class NIOServer extends AbstractSocketServer {
     public Connection makeClientConnection(SocketChannel channel) throws IOException {
         channel.configureBlocking(false);
         SelectionKey key=channel.register(_selector, /*SelectionKey.OP_WRITE|*/SelectionKey.OP_READ);
-        NIOConnection connection=new NIOConnection(this, channel, key, new LinkedQueue(), _queue, _outputBufferSize); // reuse the queue
+        NIOConnection connection=new NIOConnection(this, channel, key, new LinkedQueue(), _queue, _outputBufferSize, _inputTimeout); // reuse the queue
         key.attach(connection);
         return connection;
     }

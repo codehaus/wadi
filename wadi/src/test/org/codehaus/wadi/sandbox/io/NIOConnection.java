@@ -38,7 +38,7 @@ public class NIOConnection extends AbstractSocketConnection implements Puttable 
     protected final Channel _inputQueue;
     protected final Puttable _outputQueue;
  
-    public NIOConnection(SocketConnectionConfig config, SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue, int bufferSize) {
+    public NIOConnection(SocketConnectionConfig config, SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue, int bufferSize, long timeout) {
         super(config);
         _channel=channel;
         _key=key;
@@ -46,7 +46,7 @@ public class NIOConnection extends AbstractSocketConnection implements Puttable 
         _outputQueue=outputQueue;
 
         // ctor is called by Server thread - find some way to do these allocations on Consumer thread...
-        _inputStream=new ByteBufferInputStream(_inputQueue, _outputQueue);
+        _inputStream=new ByteBufferInputStream(_inputQueue, _outputQueue, timeout);
         _outputStream=new ByteBufferOutputStream(_channel, bufferSize);
         }
 
