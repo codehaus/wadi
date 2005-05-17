@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
+import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 public class BytesMessageInputStream extends InputStream implements Puttable {
 
@@ -36,45 +37,39 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
     protected static final Object _endOfQueue=new Object();
 
     protected final Channel _inputQueue;
+    protected final long _timeout;
     
-    public BytesMessageInputStream(Channel inputQueue) {
+    public BytesMessageInputStream(Channel inputQueue, long timeout) {
         _inputQueue=inputQueue;
+        _timeout=timeout;
     }
 
     protected BytesMessage _buffer;
     protected long _remaining;
-    protected boolean _committed;
     
     // impl
     
-    protected boolean ensureBuffer() throws JMSException {
-        if (_buffer==null) {
-            // we need a fresh buffer...
-            if (!_committed) {
-                Object tmp=Utils.safeTake(_inputQueue);
-                if (tmp==_endOfQueue)
-                    return false; // there is no further input - our producer has committed his end of the queue...
-                else {
-                    _buffer=(BytesMessage)tmp;
-                    _remaining=_buffer.getBodyLength();
-                    return true; // there is further input
-                }
-            } else {
-                // producer has closed his end, we will
-                // just use up our existing content...
-                if (_inputQueue.peek()!=null) {
-                    _buffer=(BytesMessage)Utils.safeTake(_inputQueue);
-                    _remaining=_buffer.getBodyLength();
-                    return true; // there is further input
-                } else {
-                    // no buffers left
-                    return false; // there is no further input...
-                }
+    protected boolean ensureBuffer() throws JMSException, TimeoutException {
+        if (_buffer!=null)
+            return true; // we still have input...
+        
+        Object tmp=null;
+        do {
+            try {
+                tmp=_inputQueue.poll(_timeout); // we need a fresh buffer...
+            } catch (TimeoutException e) {
+                throw e;
+            } catch (InterruptedException e) {
+                // ignore
             }
-        } else {
-            // we don't need to rollover to the next buffer yet
-            return true; // there is further input
-        }
+        } while (Thread.interrupted());
+
+        if (tmp==_endOfQueue) // no more input - our producer has committed his end of the queue...
+            return false; 
+        
+        _buffer=(BytesMessage)tmp;
+        _remaining=_buffer.getBodyLength();
+        return true; // there is further input
     }
 
     // InputStream
@@ -93,7 +88,7 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
         //_log.info("reading: "+(char)b);
 
         return b;
-        } catch (JMSException e) {
+        } catch (Exception e) {
             _log.warn(e);
             throw new IOException();
         }
@@ -118,7 +113,7 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
                 _buffer=null;
             
             return toCopy;
-        } catch (JMSException e) {
+        } catch (Exception e) {
             _log.error(e);
             throw new IOException();
         }
@@ -133,7 +128,6 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
     // but probably necessary...
     
     public void commit() {
-        _committed=true;
         Utils.safePut(_endOfQueue, _inputQueue);
     }
     

@@ -40,7 +40,7 @@ public class ClusterConnection extends AbstractConnection implements Puttable, B
     protected final BytesMessageInputStream _inputStream;
     protected final BytesMessageOutputStream _outputStream;
     
-    public ClusterConnection(EnumeratingNotifiable notifiable, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue) {
+    public ClusterConnection(EnumeratingNotifiable notifiable, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue, long timeout) {
         super();
         _notifiable=notifiable;
         _cluster=cluster;
@@ -48,7 +48,7 @@ public class ClusterConnection extends AbstractConnection implements Puttable, B
         _them=them;
         _correlationId=correlationId;
         _inputQueue=inputQueue;
-        _inputStream=new BytesMessageInputStream(inputQueue);
+        _inputStream=new BytesMessageInputStream(inputQueue, timeout);
         _outputStream=new BytesMessageOutputStream(this);
     }
 
