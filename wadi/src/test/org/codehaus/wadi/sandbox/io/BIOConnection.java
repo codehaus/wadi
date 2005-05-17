@@ -29,8 +29,8 @@ public class BIOConnection extends AbstractSocketConnection {
     protected static final Log _log=LogFactory.getLog(BIOConnection.class);
     
     protected final Socket _socket;
-    public BIOConnection(CountingNotifiable notifiable, Socket socket) {
-        super(notifiable);
+    public BIOConnection(SocketConnectionConfig config, Socket socket) {
+        super(config);
         _socket=socket;
     }
     

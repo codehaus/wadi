@@ -20,14 +20,14 @@ import java.io.IOException;
 
 public abstract class AbstractSocketConnection extends AbstractConnection {
 
-    protected final CountingNotifiable _notifiable;
+    protected final SocketConnectionConfig _config;
 
-    public AbstractSocketConnection(CountingNotifiable notifiable) {
-        _notifiable=notifiable;
+    public AbstractSocketConnection(SocketConnectionConfig config) {
+        _config=config;
     }
 
     public void close() throws IOException {
         super.close();
-        _notifiable.notifyCompleted();
+        _config.notifyCompleted();
     }
 }

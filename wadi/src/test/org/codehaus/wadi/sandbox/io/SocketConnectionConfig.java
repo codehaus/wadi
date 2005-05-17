@@ -16,8 +16,11 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
-public interface CountingNotifiable {
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
+public interface SocketConnectionConfig {
     
     void notifyCompleted();
+    Sync getReadLock();
     
 }

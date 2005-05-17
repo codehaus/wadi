@@ -23,7 +23,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
+import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 
 /**
@@ -37,6 +39,7 @@ public class BIOServer extends AbstractSocketServer {
     
     protected final int _backlog; // 16?
     protected final int _timeout; // secs
+    protected final Sync _dummy=new NullSync();
     
     public BIOServer(PooledExecutor executor, InetSocketAddress address, int backlog, int timeout) {
         super(executor, address);
@@ -115,5 +118,9 @@ public class BIOServer extends AbstractSocketServer {
         _numConnections++;
         Connection connection=new BIOConnection(BIOServer.this, socket);
         return connection;
+    }
+    
+    public Sync getReadLock() {
+        return _dummy;
     }
 }

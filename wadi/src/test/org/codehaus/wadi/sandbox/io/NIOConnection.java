@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class NIOConnection extends AbstractSocketConnection implements Puttable {
     
@@ -37,8 +38,8 @@ public class NIOConnection extends AbstractSocketConnection implements Puttable 
     protected final Channel _inputQueue;
     protected final Puttable _outputQueue;
  
-    public NIOConnection(CountingNotifiable notifiable, SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue) {
-        super(notifiable);
+    public NIOConnection(SocketConnectionConfig config, SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue) {
+        super(config);
         _channel=channel;
         _key=key;
         _inputQueue=inputQueue;
@@ -57,12 +58,25 @@ public class NIOConnection extends AbstractSocketConnection implements Puttable 
     
     public void close() throws IOException {
         super.close();
-        //_log.info("cancelling: "+_key);
-        _key.cancel();
-        _channel.socket().shutdownOutput();
-        _channel.socket().close();
-        _channel.close();
+        Sync lock=_config.getReadLock();
+        do {
+            try {
+                lock.acquire(); // sync following actions with Server loop...
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        } while (Thread.interrupted());
+        
+        try {
+            //_log.info("cancelling: "+_key);
+            _key.cancel();
+            _channel.socket().shutdownOutput();
+            _channel.socket().close();
+            _channel.close();
+        } finally {
+            lock.release();
         }
+    }
     
     public synchronized void commit() throws IOException {
         //_out.commit();

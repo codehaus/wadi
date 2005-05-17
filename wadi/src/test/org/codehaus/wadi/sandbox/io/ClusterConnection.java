@@ -31,7 +31,7 @@ import EDU.oswego.cs.dl.util.concurrent.Puttable;
 
 public class ClusterConnection extends AbstractConnection implements Puttable, BytesMessageOutputStreamConfig {
 
-    protected final EnumeratingNotifiable _notifiable;
+    protected final ClusterConnectionConfig _config;
     protected final Cluster _cluster;
     protected final Destination _us;
     protected final Destination _them;
@@ -40,9 +40,9 @@ public class ClusterConnection extends AbstractConnection implements Puttable, B
     protected final BytesMessageInputStream _inputStream;
     protected final BytesMessageOutputStream _outputStream;
     
-    public ClusterConnection(EnumeratingNotifiable notifiable, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue, long timeout) {
+    public ClusterConnection(ClusterConnectionConfig config, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue, long timeout) {
         super();
-        _notifiable=notifiable;
+        _config=config;
         _cluster=cluster;
         _us=us;
         _them=them;
@@ -53,24 +53,17 @@ public class ClusterConnection extends AbstractConnection implements Puttable, B
     }
 
     public InputStream getInputStream() throws IOException {
-        // TODO Auto-generated method stub
         return _inputStream;
     }
 
     public OutputStream getOutputStream() throws IOException {
-        // TODO Auto-generated method stub
         return _outputStream;
     }
 
     public void close() throws IOException {
-        // TODO Auto-generated method stub
         _inputStream.commit();
         super.close();
-        _notifiable.notifyCompleted(this);
-    }
-
-    public java.nio.channels.Channel getChannel() {
-        throw new UnsupportedOperationException(); // this API should just support r/w of ByteBuffer///
+        _config.notifyCompleted(this);
     }
 
     // Puttable - byte[] only please :-)

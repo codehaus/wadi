@@ -31,7 +31,7 @@ import org.codehaus.wadi.Cluster;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-public class ClusterServer extends AbstractServer implements EnumeratingNotifiable, MessageListener {
+public class ClusterServer extends AbstractServer implements ClusterConnectionConfig, MessageListener {
 
     protected final Cluster _cluster;
     protected final boolean _excludeSelf;

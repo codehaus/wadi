@@ -20,7 +20,7 @@ import java.net.InetSocketAddress;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-public abstract class AbstractSocketServer extends AbstractServer implements CountingNotifiable {
+public abstract class AbstractSocketServer extends AbstractServer implements SocketConnectionConfig {
 
     protected InetSocketAddress _address;
     protected volatile int _numConnections;

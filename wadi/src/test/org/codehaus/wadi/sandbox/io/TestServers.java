@@ -69,7 +69,7 @@ public class TestServers extends TestCase {
     protected ConnectionFactory _clusterConnectionFactory;
     
 
-    protected final int _count=1000;
+    protected final int _count=10000;
     
     
     protected void setUp() throws Exception {
