@@ -16,8 +16,12 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
+import javax.jms.BytesMessage;
+import javax.jms.JMSException;
+
 public interface BytesMessageOutputStreamConfig {
 
-    void send(byte[] bytes) throws Exception;
+    void send(BytesMessage message) throws JMSException;
+    BytesMessage createBytesMessage() throws JMSException;
 
 }

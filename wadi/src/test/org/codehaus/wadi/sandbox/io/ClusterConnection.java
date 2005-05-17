@@ -22,6 +22,7 @@ import java.io.OutputStream;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
+import javax.jms.JMSException;
 
 import org.activecluster.Cluster;
 
@@ -84,12 +85,14 @@ public class ClusterConnection extends AbstractConnection implements Puttable, B
     
     // ByteArrayOutputStreamConfig
     
-    public void send(byte[] bytes) throws Exception {
-        BytesMessage bytesMessage=_cluster.createBytesMessage();
+    public void send(BytesMessage bytesMessage) throws JMSException {
         bytesMessage.setJMSCorrelationID(_correlationId);
         bytesMessage.setJMSReplyTo(_us);
-        bytesMessage.setIntProperty("content-length", bytes.length);
-        bytesMessage.writeBytes(bytes);
+        //bytesMessage.setIntProperty("content-length", bytesMessage.getBodyLength());
         _cluster.send(_them, bytesMessage);
+    }
+    
+    public BytesMessage createBytesMessage() throws JMSException {
+        return _cluster.createBytesMessage();
     }
 }
