@@ -18,6 +18,7 @@ package org.codehaus.wadi.sandbox.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
@@ -42,23 +43,15 @@ public class BytesMessageOutputStream extends OutputStream {
         }
     }
     
-    public void allocate() throws IOException {
+    // impl
+    
+    protected void allocate() throws IOException {
         try {
             _buffer=_config.createBytesMessage();
         } catch (JMSException e) {
             _log.error(e);
             throw new IOException();
         }   
-    }
-    
-    public void flush() throws IOException {
-        send(_buffer);
-        allocate();
-    }
-    
-    public void close() throws IOException {
-        send(_buffer);
-        allocate();
     }
     
     public void send(BytesMessage message) throws IOException {
@@ -72,7 +65,19 @@ public class BytesMessageOutputStream extends OutputStream {
             throw new IOException("problem sending bytes");
         }
     }
+
+    // OutputStream
     
+    public void flush() throws IOException {
+        send(_buffer);
+        allocate();
+    }
+    
+    public void close() throws IOException {
+        send(_buffer);
+        allocate();
+    }
+
     public void write(int b) throws IOException {
         try {
             _buffer.writeByte((byte)b);
@@ -90,4 +95,12 @@ public class BytesMessageOutputStream extends OutputStream {
             throw new IOException();
         }
     }
+
+    // BytesMessageOutputStream
+    
+    
+    public void write(ByteBuffer buffer, int from, int to) {
+        throw new UnsupportedOperationException(); // cannot be done properly over ActiveMQ
+    }
+    
 }
