@@ -22,8 +22,10 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.channels.SocketChannel;
 
 import org.activecluster.ClusterFactory;
 import org.apache.commons.logging.Log;
@@ -47,14 +49,16 @@ public class TestServers extends TestCase {
         super(name);
     }
     
-    interface ConnectionFactory { Connection create() throws IOException; };
+    interface ConnectionFactory { Connection create() throws IOException; }
 
     protected InetSocketAddress _bioAddress;
     protected BIOServer _bioServer;
-    protected ConnectionFactory _bioConnectionFactory=new ConnectionFactory(){ public Connection create() throws IOException {return _bioServer.makeClientConnection(new Socket(_bioAddress.getAddress(), _bioAddress.getPort()));}};
+    protected ConnectionFactory _bio2BioConnectionFactory=new ConnectionFactory(){ public Connection create() throws IOException {return _bioServer.makeClientConnection(new Socket(_bioAddress.getAddress(), _bioAddress.getPort()));}};
+    protected ConnectionFactory _bio2NioConnectionFactory=new ConnectionFactory(){ public Connection create() throws IOException {return _bioServer.makeClientConnection(new Socket(_nioAddress.getAddress(), _nioAddress.getPort()));}};
     protected InetSocketAddress _nioAddress;
     protected NIOServer _nioServer;
-    protected ConnectionFactory _nioConnectionFactory=new ConnectionFactory(){ public Connection create() throws IOException {return _bioServer.makeClientConnection(new Socket(_nioAddress.getAddress(), _nioAddress.getPort()));}};
+    protected ConnectionFactory _nio2BioConnectionFactory=new ConnectionFactory() {public Connection create() throws IOException {return _nioServer.makeClientConnection(SocketChannel.open(_bioAddress));}};
+    protected ConnectionFactory _nio2NioConnectionFactory=new ConnectionFactory() {public Connection create() throws IOException {return _nioServer.makeClientConnection(SocketChannel.open(_nioAddress));}};
     protected javax.jms.ConnectionFactory _connectionFactory=Utils.getConnectionFactory();
     protected ClusterFactory _clusterFactory=new RestartableClusterFactory(new CustomClusterFactory(_connectionFactory));
     protected String _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
@@ -65,7 +69,7 @@ public class TestServers extends TestCase {
     protected ConnectionFactory _clusterConnectionFactory;
     
 
-    protected final int _count=1000;
+    protected final int _count=100;
     
     
     protected void setUp() throws Exception {
@@ -76,17 +80,17 @@ public class TestServers extends TestCase {
         pool.setKeepAliveTime(-1); // live forever
         pool.createThreads(5);
         
-        _bioAddress=new InetSocketAddress(8888);
+        _bioAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8888);
         PooledExecutor executor;
         executor=new PooledExecutor(new BoundedBuffer(10), 100);
         executor.setMinimumPoolSize(3);
         _bioServer=new BIOServer(executor, _bioAddress, 16, 1); // backlog, timeout
         _bioServer.start();
         
-        _nioAddress=new InetSocketAddress(8889);
+        _nioAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8889);
         executor=new PooledExecutor(new BoundedBuffer(10), 100);
         executor.setMinimumPoolSize(3);
-        _nioServer=new NIOServer(executor, _nioAddress); // bufferSize, numConsumers
+        _nioServer=new NIOServer(executor, _nioAddress, 1024, 256); // bufSize should be 4096*2
         _nioServer.start();
         
         _cluster0=(Cluster)_clusterFactory.createCluster(_clusterName);
@@ -120,9 +124,14 @@ public class TestServers extends TestCase {
         
         public void process(InputStream is, OutputStream os) {
             try {
+                //_log.info("server - starting");
+                //_log.info("server - creating output stream");
                 ObjectOutputStream oos=new ObjectOutputStream(os);
+                //_log.info("server - writing response");
                 oos.writeBoolean(true); // ack
+                //_log.info("server - flushing response");
                 oos.flush();
+                //_log.info("server - finished");
             } catch (IOException e) {
                 _log.error(e);
             }
@@ -133,11 +142,18 @@ public class TestServers extends TestCase {
         
         public void process(InputStream is, OutputStream os) {
             try {
+                //_log.info("client - starting");
+                //_log.info("client - creating output stream");
                 ObjectOutputStream oos=new ObjectOutputStream(os);
+                //_log.info("client - writing object");
                 oos.writeObject(new SingleRoundTripServerPeer());
+                //_log.info("client - flushing object");
                 oos.flush();
+                //_log.info("client - creating input stream");
                 ObjectInputStream ois=new ObjectInputStream(is);
+                //_log.info("client - reading response");
                 boolean result=ois.readBoolean();
+                //_log.info("client - finished: "+result);
                 assertTrue(result);
             } catch (IOException e) {
                 _log.error(e);
@@ -146,9 +162,11 @@ public class TestServers extends TestCase {
     }
     
     public void testSingleRoundTrip() throws Exception {
-        testSingleRoundTrip("BIO", _bioConnectionFactory);
-        testSingleRoundTrip("NIO", _nioConnectionFactory);
-        //testSingleRoundTrip("Cluster", _clusterConnectionFactory);
+        testSingleRoundTrip("BIO2BIO", _bio2BioConnectionFactory);
+        testSingleRoundTrip("BIO2NIO", _bio2NioConnectionFactory);
+        //testSingleRoundTrip("NIO2BIO", _nio2BioConnectionFactory);
+        //testSingleRoundTrip("NIO2NIO", _nio2NioConnectionFactory);
+        testSingleRoundTrip("Cluster", _clusterConnectionFactory);
     }
     
     public void testSingleRoundTrip(String info, ConnectionFactory factory) throws Exception {
@@ -158,6 +176,7 @@ public class TestServers extends TestCase {
             Peer peer=new SingleRoundTripClientPeer();
             connection.process(peer);
             connection.close();
+            //_log.info("count: "+i);
         }
         long elapsed=System.currentTimeMillis()-start;
         _log.info(info+" rate="+(_count*1000/elapsed)+" round-trips/second");
@@ -208,9 +227,10 @@ public class TestServers extends TestCase {
     }
 
     public void testMultipleRoundTrip() throws Exception {
-        testMultipleRoundTrip("BIO", _bioConnectionFactory);
-        testMultipleRoundTrip("NIO", _nioConnectionFactory);
-        //testMultipleRoundTrip("Cluster", _clusterConnectionFactory);
+        testMultipleRoundTrip("BIO2BIO", _bio2BioConnectionFactory);
+        testMultipleRoundTrip("BIO2NIO", _bio2NioConnectionFactory);
+        //testMultipleRoundTrip("NIO", _nioConnectionFactory);
+        testMultipleRoundTrip("Cluster", _clusterConnectionFactory);
     }
     
     public void testMultipleRoundTrip(String info, ConnectionFactory factory) throws Exception {

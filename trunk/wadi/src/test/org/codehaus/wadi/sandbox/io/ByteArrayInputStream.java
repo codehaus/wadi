@@ -19,14 +19,11 @@ package org.codehaus.wadi.sandbox.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 
 public class ByteArrayInputStream extends InputStream implements Puttable {
@@ -82,9 +79,10 @@ public class ByteArrayInputStream extends InputStream implements Puttable {
         
         byte b=_buffer[_position++];
         
-        if (!(_buffer.length-_position>0)) {
+        if (_position>=_buffer.length) {
             byte[] buffer=_buffer;
             _buffer=null;
+            _position=0;
             // could reuse buffer here... - TODO
         }
         

@@ -19,7 +19,6 @@ package org.codehaus.wadi.sandbox.io;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channel;
 import java.nio.channels.SocketChannel;
 
 import org.apache.commons.logging.Log;

@@ -20,13 +20,39 @@ import java.net.InetSocketAddress;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-public abstract class AbstractSocketServer extends AbstractServer {
+public abstract class AbstractSocketServer extends AbstractServer implements CountingNotifiable {
 
     protected InetSocketAddress _address;
+    protected volatile int _numConnections;
 
     public AbstractSocketServer(PooledExecutor executor, InetSocketAddress address) {
         super(executor);
         _address=address;
     }
 
+    public void doConnection(Connection connection) {
+        _numConnections++;
+        super.doConnection(connection);
+    }
+
+    // Notifiable
+    
+    public void notifyCompleted() {
+        _numConnections--;
+    }
+
+    // Notifiable
+    
+    public void waitForExistingConnections() {
+        while (_numConnections>0) {
+            _log.info("waiting for: "+_numConnections+" Connection[s]");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                _log.trace("unexpected interruption - ignoring", e);
+            }
+        }
+        _log.info("existing Connections have finished running");
+    }
+    
 }

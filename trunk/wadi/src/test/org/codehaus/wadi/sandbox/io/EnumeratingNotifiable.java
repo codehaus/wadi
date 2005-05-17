@@ -16,8 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
-public interface ByteArrayOutputStreamConfig {
+public interface EnumeratingNotifiable {
 
-    void send(byte[] bytes) throws Exception;
+    void notifyCompleted(Connection connection);
 
 }

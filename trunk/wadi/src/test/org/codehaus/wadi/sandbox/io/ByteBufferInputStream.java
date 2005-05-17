@@ -25,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
-import EDU.oswego.cs.dl.util.concurrent.Takable;
 
 // N.B. It is unfortunate that EDU.oswego.cs.dl.util.concurrent.Channel and java.nio.channels.Channel are homonyms.
 // All mentions of Channel in this file refer to the EDU.oswego.cs.dl.util.concurrent variety.

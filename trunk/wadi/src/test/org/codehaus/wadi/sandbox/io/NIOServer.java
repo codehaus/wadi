@@ -19,6 +19,8 @@ package org.codehaus.wadi.sandbox.io;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousCloseException;
+import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -41,9 +43,11 @@ public class NIOServer extends AbstractSocketServer {
     protected final SynchronizedBoolean _accepting=new SynchronizedBoolean(false);
     protected final EDU.oswego.cs.dl.util.concurrent.Channel _queue; // we get our ByteBuffers from here...
     
-    public NIOServer(PooledExecutor executor, InetSocketAddress address) {
+    public NIOServer(PooledExecutor executor, InetSocketAddress address, int numBuffers, int bufSize) {
         super(executor, address);
         _queue=new LinkedQueue(); // parameterise ?
+        for (int i=0; i<numBuffers; i++)
+            Utils.safePut(ByteBuffer.allocateDirect(bufSize), _queue);
     }
     
     protected ServerSocketChannel _channel;
@@ -60,7 +64,7 @@ public class NIOServer extends AbstractSocketServer {
         _key=_channel.register(_selector, SelectionKey.OP_ACCEPT);
         _running=true;
         _accepting.set(true);
-        (_thread=new Thread(new Producer())).start();
+        (_thread=new Thread(new Producer(), "WADI NIO Server")).start();
         _log.info("Producer thread started");
         _log.info("started: "+_channel);
     }
@@ -72,8 +76,8 @@ public class NIOServer extends AbstractSocketServer {
         // stop Producer loop
         _running=false;
         _selector.wakeup(); // we should go round the
-        _selector.close();
         _thread.join();
+        _selector.close();
         _thread=null;
         _log.info("Producer thread stopped");
         // tidy up
@@ -90,8 +94,7 @@ public class NIOServer extends AbstractSocketServer {
         ServerSocketChannel server=(ServerSocketChannel)key.channel();
         SocketChannel channel=server.accept();
         channel.configureBlocking(false);
-        SelectionKey readKey=channel.register(_selector, SelectionKey.OP_READ);
-        
+        SelectionKey readKey=channel.register(_selector, SelectionKey.OP_READ/*|SelectionKey.OP_WRITE*/);
         NIOConnection connection=new NIOConnection(this, channel, readKey, new LinkedQueue(), _queue); // reuse the queue
         readKey.attach(connection);
         doConnection(connection);
@@ -104,11 +107,12 @@ public class NIOServer extends AbstractSocketServer {
 //      if (connection._idle && isOutOfResources())
 //      // Don't handle idle connections if out of resources.
 //      return;
-        
-        ByteBuffer buffer=ByteBuffer.allocateDirect(4096); // tmp solution...
+        ByteBuffer buffer=(ByteBuffer)Utils.safeTake(_queue);
         int count=((SocketChannel)key.channel()).read(buffer); // read off network into buffer
         if (count<0) {
             connection.commit();
+            buffer.clear();
+            Utils.safePut(buffer, _queue); // could be cleverer
             // what about tidying up associated objects - or does consumer thread do that ?
         } else {
             buffer.flip();
@@ -120,30 +124,65 @@ public class NIOServer extends AbstractSocketServer {
     public class Producer implements Runnable {
         
         public void run() {
+            SelectionKey key=null;
+            
             while (_running) {
                 try {
                     _selector.select();
                     
                     for (Iterator i=_selector.selectedKeys().iterator(); i.hasNext(); ) {
-                        SelectionKey key=(SelectionKey)i.next();
+                        key=(SelectionKey)i.next();
                         
-                        if (key.isAcceptable() && _accepting.get())
+                        boolean used=false;
+                        //_log.info("picked up key: "+key);
+                        
+                        if (key.isAcceptable() && _accepting.get()) {
                             accept(key);
+                            used=true;
+                            //_log.info("accepted key: "+key);
+                        }
                         
-                        if (key.isReadable())
+                        if (key.isReadable()) {
                             read(key);
+                            used=true;
+                            //_log.info("read key: "+key);
+                        }
                         
+//                        if (key.isWritable()) {
+//                            used=true;
+//                           // _log.info("wrote key: "+key);
+//                        }
+//                        if (key.isConnectable()) {
+//                            used=true;
+//                            //_log.info("connected key: "+key);
+//                        }
+                        
+                        
+                        if (!used)
+                            _log.warn("unused key: "+key);
+                            
                         i.remove();
                     }
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                } catch (AsynchronousCloseException e) {
+                    //_log.warn("Async close Exception: "+key, e);
+                } catch (ClosedChannelException e) {
+                    //_log.warn("closed channel Exception: "+key, e);
+                } catch (CancelledKeyException e) {
+                    //_log.warn("cancelled key Exception: "+key, e);
+                } catch (Exception e) {
+                    _log.warn("unexpected problem", e);
+                } catch (Throwable t) {
+                    _log.error("completely unexpected problem", t);
                 }
             }
         }
     }        
     
-    public Connection makeClientConnection() {
-        throw new UnsupportedOperationException(); // NYI
+    public Connection makeClientConnection(SocketChannel channel) throws IOException {
+        channel.configureBlocking(false);
+        SelectionKey key=channel.register(_selector, /*SelectionKey.OP_WRITE|*/SelectionKey.OP_READ);
+        NIOConnection connection=new NIOConnection(this, channel, key, new LinkedQueue(), _queue); // reuse the queue
+        key.attach(connection);
+        return connection;
     }
 }
