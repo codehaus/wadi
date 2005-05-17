@@ -32,7 +32,7 @@ import EDU.oswego.cs.dl.util.concurrent.Puttable;
 public class BytesMessageInputStream extends InputStream implements Puttable {
 
     protected static final Log _log=LogFactory.getLog(BytesMessageInputStream.class);
-    protected static final byte[] _endOfQueue=new byte[0];
+    protected static final Object _endOfQueue=new Object();
 
     protected final Channel _inputQueue;
     
@@ -41,12 +41,12 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
     }
 
     protected BytesMessage _buffer;
-    protected int _position;
+    protected long _remaining;
     protected boolean _committed;
     
     // impl
     
-    protected boolean ensureBuffer() {
+    protected boolean ensureBuffer() throws JMSException {
         if (_buffer==null) {
             // we need a fresh buffer...
             if (!_committed) {
@@ -55,6 +55,7 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
                     return false; // there is no further input - our producer has committed his end of the queue...
                 else {
                     _buffer=(BytesMessage)tmp;
+                    _remaining=_buffer.getBodyLength();
                     return true; // there is further input
                 }
             } else {
@@ -62,6 +63,7 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
                 // just use up our existing content...
                 if (_inputQueue.peek()!=null) {
                     _buffer=(BytesMessage)Utils.safeTake(_inputQueue);
+                    _remaining=_buffer.getBodyLength();
                     return true; // there is further input
                 } else {
                     // no buffers left
@@ -82,11 +84,11 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
             return -1;
         
         int b=_buffer.readUnsignedByte();
-        _position++;
+        _remaining--;
         
-        if (_position>=_buffer.getBodyLength()) {
+        if (_remaining<1) {
             _buffer=null;
-            _position=0;
+            _remaining=0;
         }
         
         //_log.info("reading: "+(char)b);
@@ -97,6 +99,11 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
             throw new IOException();
         }
     }
+    
+//    public int read(byte b[], int off, int len) throws IOException {
+//        int toCopy=Math.min(len, _buffer.)
+//    }
+    
     
     // ISSUE - if someone puts a BB on our input then calls close() to indicate that there is no more input coming
     // we find ourselves in a race. If the consumer thread wins, and tries to rollover to the next buffer before close()
