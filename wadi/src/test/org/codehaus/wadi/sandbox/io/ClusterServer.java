@@ -71,11 +71,9 @@ public class ClusterServer extends AbstractServer implements EnumeratingNotifiab
     public void onMessage(Message message) {
         try {
             if (message instanceof BytesMessage) {
-                int length=message.getIntProperty("content-length");
-                byte[] buffer=new byte[length];
-                ((BytesMessage)message).readBytes(buffer);
-                String correlationId=message.getJMSCorrelationID();
-                Destination replyTo=message.getJMSReplyTo();
+                BytesMessage bm=(BytesMessage)message;
+                String correlationId=bm.getJMSCorrelationID();
+                Destination replyTo=bm.getJMSReplyTo();
                 synchronized (_connections) {
                     ClusterConnection connection=(ClusterConnection)_connections.get(correlationId);
                     if (connection==null) {
@@ -87,7 +85,7 @@ public class ClusterServer extends AbstractServer implements EnumeratingNotifiab
                     }
                     // servicing existing connection...
                     //_log.info("servicing Connection: '"+correlationId+"' - "+buffer.length+" bytes");
-                    Utils.safePut(buffer, connection);
+                    Utils.safePut(bm, connection);
                 }
             }
         } catch (JMSException e) {

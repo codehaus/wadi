@@ -28,7 +28,7 @@ import org.activecluster.Cluster;
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 
-public class ClusterConnection extends AbstractConnection implements Puttable, ByteArrayOutputStreamConfig {
+public class ClusterConnection extends AbstractConnection implements Puttable, BytesMessageOutputStreamConfig {
 
     protected final EnumeratingNotifiable _notifiable;
     protected final Cluster _cluster;
@@ -36,8 +36,8 @@ public class ClusterConnection extends AbstractConnection implements Puttable, B
     protected final Destination _them;
     protected final String _correlationId;
     protected final Channel _inputQueue;
-    protected final ByteArrayInputStream _inputStream;
-    protected final ByteArrayOutputStream _outputStream;
+    protected final BytesMessageInputStream _inputStream;
+    protected final BytesMessageOutputStream _outputStream;
     
     public ClusterConnection(EnumeratingNotifiable notifiable, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue) {
         super();
@@ -47,8 +47,8 @@ public class ClusterConnection extends AbstractConnection implements Puttable, B
         _them=them;
         _correlationId=correlationId;
         _inputQueue=inputQueue;
-        _inputStream=new ByteArrayInputStream(inputQueue);
-        _outputStream=new ByteArrayOutputStream(this);
+        _inputStream=new BytesMessageInputStream(inputQueue);
+        _outputStream=new BytesMessageOutputStream(this);
     }
 
     public InputStream getInputStream() throws IOException {

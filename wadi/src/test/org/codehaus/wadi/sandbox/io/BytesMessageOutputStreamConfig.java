@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
-public interface ByteArrayOutputStreamConfig {
+public interface BytesMessageOutputStreamConfig {
 
     void send(byte[] bytes) throws Exception;
 

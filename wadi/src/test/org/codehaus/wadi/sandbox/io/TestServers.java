@@ -240,7 +240,7 @@ public class TestServers extends TestCase {
         connection.process(peer);
         connection.close();
         long elapsed=System.currentTimeMillis()-start;
-        _log.info(info+" rate="+(_count*1000/elapsed)+" round-trips/second");
+        _log.info(info+" rate="+(_count*1000/(elapsed+1))+" round-trips/second");
     }
     
 //    public static class MixedContentServerPeer extends Peer {

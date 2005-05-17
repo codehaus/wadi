@@ -20,24 +20,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import javax.jms.BytesMessage;
+import javax.jms.JMSException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 
-public class ByteArrayInputStream extends InputStream implements Puttable {
+public class BytesMessageInputStream extends InputStream implements Puttable {
 
-    protected static final Log _log=LogFactory.getLog(ByteArrayInputStream.class);
+    protected static final Log _log=LogFactory.getLog(BytesMessageInputStream.class);
     protected static final byte[] _endOfQueue=new byte[0];
 
     protected final Channel _inputQueue;
     
-    public ByteArrayInputStream(Channel inputQueue) {
+    public BytesMessageInputStream(Channel inputQueue) {
         _inputQueue=inputQueue;
     }
 
-    protected byte[] _buffer;
+    protected BytesMessage _buffer;
     protected int _position;
     protected boolean _committed;
     
@@ -47,18 +50,18 @@ public class ByteArrayInputStream extends InputStream implements Puttable {
         if (_buffer==null) {
             // we need a fresh buffer...
             if (!_committed) {
-                byte[] buffer=(byte[])Utils.safeTake(_inputQueue);
-                if (buffer==_endOfQueue)
+                Object tmp=Utils.safeTake(_inputQueue);
+                if (tmp==_endOfQueue)
                     return false; // there is no further input - our producer has committed his end of the queue...
                 else {
-                    _buffer=buffer;
+                    _buffer=(BytesMessage)tmp;
                     return true; // there is further input
                 }
             } else {
                 // producer has closed his end, we will
                 // just use up our existing content...
                 if (_inputQueue.peek()!=null) {
-                    _buffer=(byte[])Utils.safeTake(_inputQueue);
+                    _buffer=(BytesMessage)Utils.safeTake(_inputQueue);
                     return true; // there is further input
                 } else {
                     // no buffers left
@@ -74,21 +77,25 @@ public class ByteArrayInputStream extends InputStream implements Puttable {
     // InputStream
     
     public int read() throws IOException {
+        try {
         if (!ensureBuffer())
             return -1;
         
-        byte b=_buffer[_position++];
+        int b=_buffer.readUnsignedByte();
+        _position++;
         
-        if (_position>=_buffer.length) {
-            byte[] buffer=_buffer;
+        if (_position>=_buffer.getBodyLength()) {
             _buffer=null;
             _position=0;
-            // could reuse buffer here... - TODO
         }
         
         //_log.info("reading: "+(char)b);
 
-        return (int)b&0xFF; // convert byte to unsigned int - otherwise 255==-1 i.e. EOF etc..
+        return b;
+        } catch (JMSException e) {
+            _log.warn(e);
+            throw new IOException();
+        }
     }
     
     // ISSUE - if someone puts a BB on our input then calls close() to indicate that there is no more input coming
