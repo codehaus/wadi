@@ -19,7 +19,6 @@ package org.codehaus.wadi.sandbox.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
@@ -76,18 +75,18 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
     
     public int read() throws IOException {
         try {
-        if (!ensureBuffer())
-            return -1;
-        
-        int b=_buffer.readUnsignedByte();
-        _remaining--;
-        
-        if (_remaining==0)
-            _buffer=null;
-        
-        //_log.info("reading: "+(char)b);
-
-        return b;
+            if (!ensureBuffer())
+                return -1;
+            
+            int b=_buffer.readUnsignedByte();
+            _remaining--;
+            
+            if (_remaining==0)
+                _buffer=null;
+            
+            //_log.info("reading: "+(char)b);
+            
+            return b;
         } catch (Exception e) {
             _log.warn(e);
             throw new IOException();
@@ -98,7 +97,7 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
         try {
             if (!ensureBuffer())
                 return -1;
-        
+            
             int toCopy=Math.min(len, (int)_remaining);
             if (off==0)
                 _buffer.readBytes(b, toCopy);
@@ -107,8 +106,8 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
                 for (int i=0; i<toCopy; i++)
                     b[off++]=_buffer.readByte();
             }
-            
             _remaining-=toCopy;
+            
             if (_remaining==0)
                 _buffer=null;
             
@@ -119,23 +118,7 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
         }
     }
     
-    
-    // ISSUE - if someone puts a BB on our input then calls close() to indicate that there is no more input coming
-    // we find ourselves in a race. If the consumer thread wins, and tries to rollover to the next buffer before close()
-    // gets called, it will sleep on the inputQueue...
-    
-    // SOLUTION - interrupt it, when close is called, it checks closed flag and either aborts or goes round again - messy
-    // but probably necessary...
-    
-    public void commit() {
-        Utils.safePut(_endOfQueue, _inputQueue);
-    }
-    
-    // ByteBufferInputStream
-    
-    public void read(ByteBuffer buffer, int from, int to) {
-        throw new UnsupportedOperationException(); // NYI
-    }
+    // Puttable
     
     public synchronized void put(Object item) throws InterruptedException {
         _inputQueue.put(item);
@@ -143,6 +126,16 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
 
     public synchronized boolean offer(Object item, long msecs) throws InterruptedException {
         return _inputQueue.offer(item, msecs);
+    }
+
+    // BytesMessageInputStream
+    
+    public void commit() {
+        Utils.safePut(_endOfQueue, _inputQueue);
+    }
+    
+    public void read(ByteBuffer buffer, int from, int to) {
+        throw new UnsupportedOperationException();  // cannot be done properly over ActiveMQ
     }
 
 }
