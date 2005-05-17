@@ -21,13 +21,13 @@ import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class ByteArrayOutputStream extends java.io.ByteArrayOutputStream {
+public class BytesMessageOutputStream extends java.io.ByteArrayOutputStream {
 
-    protected final static Log _log=LogFactory.getLog(ByteArrayOutputStream.class);
+    protected final static Log _log=LogFactory.getLog(BytesMessageOutputStream.class);
 
-    protected final ByteArrayOutputStreamConfig _config;
+    protected final BytesMessageOutputStreamConfig _config;
     
-    public ByteArrayOutputStream(ByteArrayOutputStreamConfig config) {
+    public BytesMessageOutputStream(BytesMessageOutputStreamConfig config) {
         super();
         _config=config;
     }
