@@ -29,16 +29,16 @@ import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public class NIOConnection extends AbstractSocketConnection implements Puttable {
+public class NIOServerConnection extends AbstractServerConnection implements Puttable {
     
-    protected final static Log _log=LogFactory.getLog(NIOConnection.class);
+    protected final static Log _log=LogFactory.getLog(NIOServerConnection.class);
     
     protected final SocketChannel _channel;
     protected final SelectionKey _key;
     protected final Channel _inputQueue;
     protected final Puttable _outputQueue;
  
-    public NIOConnection(SocketConnectionConfig config, SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue, int bufferSize, long timeout) {
+    public NIOServerConnection(NIOConnectionConfig config, SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue, int bufferSize, long timeout) {
         super(config);
         _channel=channel;
         _key=key;
@@ -58,7 +58,7 @@ public class NIOConnection extends AbstractSocketConnection implements Puttable 
     
     public void close() throws IOException {
         super.close();
-        Sync lock=_config.getReadLock();
+        Sync lock=((NIOConnectionConfig)_config).getLock();
         do {
             try {
                 lock.acquire(); // sync following actions with Server loop...

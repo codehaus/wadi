@@ -18,9 +18,8 @@ package org.codehaus.wadi.sandbox.io;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public interface SocketConnectionConfig {
-    
-    void notifyCompleted();
-    Sync getReadLock();
+public interface NIOConnectionConfig extends ConnectionConfig {
+
+    Sync getLock();
     
 }

@@ -23,9 +23,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 
 /**
@@ -39,7 +37,6 @@ public class BIOServer extends AbstractSocketServer {
     
     protected final int _backlog; // 16?
     protected final int _timeout; // secs
-    protected final Sync _dummy=new NullSync();
     
     public BIOServer(PooledExecutor executor, InetSocketAddress address, int backlog, int timeout) {
         super(executor, address);
@@ -55,6 +52,7 @@ public class BIOServer extends AbstractSocketServer {
         InetAddress host=_address.getAddress();
         _socket=new ServerSocket(port, _backlog, host);
         _socket.setSoTimeout(_timeout*1000);
+        _socket.setReuseAddress(true);
         _address=new InetSocketAddress(host, _socket. getLocalPort());
         (_thread=new Thread(new Producer(), "WADI BIO Server")).start();
         _log.info("Producer thread started");
@@ -100,7 +98,7 @@ public class BIOServer extends AbstractSocketServer {
                         Socket socket=_socket.accept();
                         //_log.info("accepting connection");
                         socket.setSoTimeout(30*1000);
-                        BIOConnection connection=new BIOConnection(BIOServer.this, socket);
+                        BIOServerConnection connection=new BIOServerConnection(BIOServer.this, socket);
                         doConnection(connection);
                         
                     } catch (SocketTimeoutException ignore) {
@@ -113,14 +111,10 @@ public class BIOServer extends AbstractSocketServer {
         }
         
     }
-
-    public Connection makeClientConnection(Socket socket) {
-        _numConnections++;
-        Connection connection=new BIOConnection(BIOServer.this, socket);
-        return connection;
-    }
     
-    public Sync getReadLock() {
-        return _dummy;
+    // ConnectionConfig
+
+    public void notifyIdle(Connection connection) {
+        // BIOServer does not support idling Connections :-(        
     }
 }

@@ -22,7 +22,7 @@ import org.apache.commons.logging.LogFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-public abstract class AbstractServer implements Server {
+public abstract class AbstractServer implements Server, ConnectionConfig {
 
     protected final Log _log = LogFactory.getLog(getClass());
     protected final PooledExecutor _executor;

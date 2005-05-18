@@ -31,7 +31,7 @@ import org.codehaus.wadi.Cluster;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-public class ClusterServer extends AbstractServer implements ClusterConnectionConfig, MessageListener {
+public class ClusterServer extends AbstractServer implements ConnectionConfig, MessageListener {
 
     protected final Cluster _cluster;
     protected final boolean _excludeSelf;
@@ -93,6 +93,8 @@ public class ClusterServer extends AbstractServer implements ClusterConnectionCo
         }
     }
     
+    // needs more thought...
+    
     public Connection makeClientConnection(String correlationId, Destination target) {
         ClusterConnection connection=new ClusterConnection(this, _cluster, _cluster.getLocalNode().getDestination(), target, correlationId, new LinkedQueue(), 2000);
         _connections.put(correlationId, connection);
@@ -112,10 +114,14 @@ public class ClusterServer extends AbstractServer implements ClusterConnectionCo
         _log.info("existing Connections have finished running");
     }
     
-    // EnumeratingNotifiable
+    // ConnectionConfig
     
-    public void notifyCompleted(Connection connection) {
+    public void notifyClosed(Connection connection) {
         _connections.remove(((ClusterConnection)connection)._correlationId);
     }
-    
+
+    public void notifyIdle(Connection connection) {
+        // TODO - should we don anything here - ClusterConnections are automatically idle ?
+    }
+
 }

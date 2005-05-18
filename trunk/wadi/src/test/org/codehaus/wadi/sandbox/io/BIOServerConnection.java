@@ -24,22 +24,27 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class BIOConnection extends AbstractSocketConnection {
+public class BIOServerConnection extends AbstractServerConnection {
     
-    protected static final Log _log=LogFactory.getLog(BIOConnection.class);
+    protected static final Log _log=LogFactory.getLog(BIOServerConnection.class);
     
     protected final Socket _socket;
-    public BIOConnection(SocketConnectionConfig config, Socket socket) {
+    
+    public BIOServerConnection(ConnectionConfig config, Socket socket) {
         super(config);
         _socket=socket;
     }
     
-    public InputStream getInputStream() throws IOException {return _socket.getInputStream();}
-    public OutputStream getOutputStream() throws IOException {return _socket.getOutputStream();}
-
+    // Connection
+    
     public void close() throws IOException {
         super.close();
         try{_socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
         }
+
+    // StreamConnection
+
+    public InputStream getInputStream() throws IOException {return _socket.getInputStream();}
+    public OutputStream getOutputStream() throws IOException {return _socket.getOutputStream();}
 
 }
