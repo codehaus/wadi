@@ -16,19 +16,13 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+public interface StreamConnection {
 
-public abstract class Peer implements Serializable {
-    
-    protected static final Log _log=LogFactory.getLog(Peer.class);
-
-    public Peer() {
-        // used for deserialisation
-    }
-    
-    public abstract void run(PeerConfig config);
+    InputStream getInputStream() throws IOException;
+    OutputStream getOutputStream() throws IOException;
     
 }

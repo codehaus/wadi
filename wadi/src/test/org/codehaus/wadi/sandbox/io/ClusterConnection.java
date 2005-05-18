@@ -29,9 +29,8 @@ import org.activecluster.Cluster;
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 
-public class ClusterConnection extends AbstractConnection implements Puttable, BytesMessageOutputStreamConfig {
+public class ClusterConnection extends AbstractServerConnection implements Puttable, BytesMessageOutputStreamConfig {
 
-    protected final ClusterConnectionConfig _config;
     protected final Cluster _cluster;
     protected final Destination _us;
     protected final Destination _them;
@@ -40,9 +39,8 @@ public class ClusterConnection extends AbstractConnection implements Puttable, B
     protected final BytesMessageInputStream _inputStream;
     protected final BytesMessageOutputStream _outputStream;
     
-    public ClusterConnection(ClusterConnectionConfig config, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue, long timeout) {
-        super();
-        _config=config;
+    public ClusterConnection(ConnectionConfig config, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue, long timeout) {
+        super(config);
         _cluster=cluster;
         _us=us;
         _them=them;
@@ -52,18 +50,21 @@ public class ClusterConnection extends AbstractConnection implements Puttable, B
         _outputStream=new BytesMessageOutputStream(this);
     }
 
+    // Connection
+    
+    public void close() throws IOException {
+        _inputStream.commit();
+        super.close();
+    }
+
+    // StreamConnection
+    
     public InputStream getInputStream() throws IOException {
         return _inputStream;
     }
 
     public OutputStream getOutputStream() throws IOException {
         return _outputStream;
-    }
-
-    public void close() throws IOException {
-        _inputStream.commit();
-        super.close();
-        _config.notifyCompleted(this);
     }
 
     // Puttable - byte[] only please :-)

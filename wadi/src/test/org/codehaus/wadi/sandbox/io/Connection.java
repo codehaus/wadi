@@ -17,19 +17,11 @@
 package org.codehaus.wadi.sandbox.io;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 public interface Connection extends Runnable {
 
-    InputStream getInputStream() throws IOException;
-
-    OutputStream getOutputStream() throws IOException;
-
-    void close() throws IOException;
-
-    void run();
-    
-    void process(Peer peer) throws IOException;
+    void run(); // reads peer from input, and runs it...
+    void run(Peer peer) throws IOException; // run a Peer ...
+    void close() throws IOException; // tidy up
 
 }

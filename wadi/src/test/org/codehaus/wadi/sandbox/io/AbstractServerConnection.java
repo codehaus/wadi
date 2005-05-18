@@ -20,60 +20,64 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public abstract class AbstractConnection implements Connection  {
+public abstract class AbstractServerConnection implements Connection, PeerConfig  {
 
-    protected static final Log _log=LogFactory.getLog(AbstractConnection.class);
+    protected static final Log _log=LogFactory.getLog(AbstractServerConnection.class);
+
+    protected final ConnectionConfig _config;
     
-    public abstract InputStream getInputStream() throws IOException;
-    public abstract OutputStream getOutputStream() throws IOException;
+    public AbstractServerConnection(ConnectionConfig config) {
+        _config=config;
+    }
     
     public void run() {
-        //_log.info("Connection started...");
+        //_log.info("running...");
         InputStream is=null;
-        OutputStream os=null;
         try {
             is=getInputStream();
-            os=getOutputStream();
             //_log.info("starting read...");
             ObjectInputStream ois=new ObjectInputStream(is);
             //_log.info("stream created...");
             Peer peer=(Peer)ois.readObject();
             //_log.info("object read...");
-            process(peer, is, os);
+            run(peer);
         } catch (IOException e) {
             _log.warn("problem reading object off wire", e);
         } catch (ClassNotFoundException e) {
             _log.warn("unknown Peer type - version/security problem?", e);
         } finally {
-            try {
-                close();
-            } catch (IOException e) {
-                _log.warn("problem closing", e);
-            }
+            _config.notifyIdle(this); // after running, we declare ourselves 'idle' to our Server...
         }
-        //_log.info("...Connection finished");
+        //_log.info("...idle");
     }
     
-    public void process(Peer peer) throws IOException {
-        InputStream is=getInputStream();
-        OutputStream os=getOutputStream();
-        process(peer, is, os);
-    }
-    
-    protected void process(Peer peer, InputStream is, OutputStream os) throws IOException {
-        peer.process(is, os);
+    public void run(Peer peer) throws IOException {
+        peer.run(this);
     }
     
     public void close() throws IOException {
+        //_log.info("closing...");
         InputStream is=getInputStream();
         OutputStream os=getOutputStream();
         try{if (os!=null) os.flush();}catch(IOException e){_log.warn("problem flushing socket output",e);}
         try{if (is!=null) is.close();}catch(IOException e){_log.warn("problem closing socket input",e);}
         try{if (os!=null) os.close();}catch(IOException e){_log.warn("problem closing socket output",e);}
+        _config.notifyClosed(this);
+        //_log.info("...closed");
     }
 
+    // WritableByteChannel - default behaviour is not to support this...
+
+    public int write(ByteBuffer src) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean isOpen() {
+        throw new UnsupportedOperationException();
+    }
 }

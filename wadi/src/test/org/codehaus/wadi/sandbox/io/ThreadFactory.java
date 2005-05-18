@@ -16,8 +16,12 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
-public interface ClusterConnectionConfig {
+public class ThreadFactory implements EDU.oswego.cs.dl.util.concurrent.ThreadFactory {
 
-    void notifyCompleted(Connection connection);
+    protected int _count;
+
+    public Thread newThread(Runnable runnable) {
+        return new Thread(runnable, "WADI Pool ("+(_count++)+")");
+    }
 
 }

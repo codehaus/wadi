@@ -39,7 +39,7 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 // Do not put Connections onto Queue until the have input
 // When a Connection's Peer finishes, it loses its Thread, but is not clos()-ed
 
-public class NIOServer extends AbstractSocketServer {
+public class NIOServer extends AbstractSocketServer implements NIOConnectionConfig {
     
     protected final SynchronizedBoolean _accepting=new SynchronizedBoolean(false);
     protected final ReadWriteLock _lock=new FIFOReadWriteLock();
@@ -64,6 +64,7 @@ public class NIOServer extends AbstractSocketServer {
         _channel=ServerSocketChannel.open();
         _channel.configureBlocking(false);
         _channel.socket().bind(_address);
+        _channel.socket().setReuseAddress(true);
         _log.info(_channel);
         _address=(InetSocketAddress)_channel.socket().getLocalSocketAddress(); // in case address was not fully specified
         _selector= Selector.open();
@@ -100,15 +101,16 @@ public class NIOServer extends AbstractSocketServer {
         ServerSocketChannel server=(ServerSocketChannel)key.channel();
         SocketChannel channel=server.accept();
         channel.configureBlocking(false);
+        //_log.info("starting server connection");
         SelectionKey readKey=channel.register(_selector, SelectionKey.OP_READ/*|SelectionKey.OP_WRITE*/);
-        NIOConnection connection=new NIOConnection(this, channel, readKey, new LinkedQueue(), _queue, _outputBufferSize, _inputTimeout); // reuse the queue
+        NIOServerConnection connection=new NIOServerConnection(this, channel, readKey, new LinkedQueue(), _queue, _outputBufferSize, _inputTimeout); // reuse the queue
         readKey.attach(connection);
         doConnection(connection);
     }
     
     public void read(SelectionKey key) throws IOException {
         // _log.info("key: "+key);
-        NIOConnection connection=(NIOConnection)key.attachment();
+        NIOServerConnection connection=(NIOServerConnection)key.attachment();
         
 //      if (connection._idle && isOutOfResources())
 //      // Don't handle idle connections if out of resources.
@@ -149,18 +151,18 @@ public class NIOServer extends AbstractSocketServer {
                     for (Iterator i=_selector.selectedKeys().iterator(); i.hasNext(); ) {
                         key=(SelectionKey)i.next();
                         
-                        boolean used=false;
+                        //boolean used=false;
                         //_log.info("picked up key: "+key);
                         
                         if (key.isAcceptable() && _accepting.get()) {
                             accept(key);
-                            used=true;
+                            //used=true;
                             //_log.info("accepted key: "+key);
                         }
                         
                         if (key.isReadable()) {
                             read(key);
-                            used=true;
+                            //used=true;
                             //_log.info("read key: "+key);
                         }
                         
@@ -173,9 +175,8 @@ public class NIOServer extends AbstractSocketServer {
 //                            //_log.info("connected key: "+key);
 //                        }
                         
-                        
-                        if (!used)
-                            _log.warn("unused key: "+key);
+//                        if (!used)
+//                            _log.warn("unused key: "+key);
                             
                         i.remove();
                         
@@ -190,15 +191,16 @@ public class NIOServer extends AbstractSocketServer {
         }
     }        
     
-    public Connection makeClientConnection(SocketChannel channel) throws IOException {
-        channel.configureBlocking(false);
-        SelectionKey key=channel.register(_selector, /*SelectionKey.OP_WRITE|*/SelectionKey.OP_READ);
-        NIOConnection connection=new NIOConnection(this, channel, key, new LinkedQueue(), _queue, _outputBufferSize, _inputTimeout); // reuse the queue
-        key.attach(connection);
-        return connection;
+    // ConnectionConfig
+
+    public void notifyIdle(Connection connection) {
+        // BIOServer does not support idling Connections :-(        
     }
     
-    public Sync getReadLock() {
+    // NIOConnectionConfig
+    
+    public Sync getLock() {
         return _lock.readLock();
     }
+
 }

@@ -16,19 +16,11 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.nio.channels.WritableByteChannel;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+public interface PeerConfig extends StreamConnection, WritableByteChannel {
 
-public abstract class Peer implements Serializable {
-    
-    protected static final Log _log=LogFactory.getLog(Peer.class);
-
-    public Peer() {
-        // used for deserialisation
-    }
-    
-    public abstract void run(PeerConfig config);
+    public void close() throws IOException; // inherited from WriteableByteChannel - but overloaded to mean close whole Connection...
     
 }

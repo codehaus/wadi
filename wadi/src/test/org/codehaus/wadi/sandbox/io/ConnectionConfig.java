@@ -16,18 +16,9 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
-import java.io.IOException;
+public interface ConnectionConfig {
 
-public abstract class AbstractSocketConnection extends AbstractConnection {
+    void notifyIdle(Connection connection); // called by Connection on becoming idle...
+    void notifyClosed(Connection connection); // called by Connection on being closed...
 
-    protected final SocketConnectionConfig _config;
-
-    public AbstractSocketConnection(SocketConnectionConfig config) {
-        _config=config;
-    }
-
-    public void close() throws IOException {
-        super.close();
-        _config.notifyCompleted();
-    }
 }

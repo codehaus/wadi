@@ -20,10 +20,10 @@ import java.net.InetSocketAddress;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-public abstract class AbstractSocketServer extends AbstractServer implements SocketConnectionConfig {
+public abstract class AbstractSocketServer extends AbstractServer {
 
     protected InetSocketAddress _address;
-    protected volatile int _numConnections;
+    protected volatile int _numConnections; // TODO - should be synched...
 
     public AbstractSocketServer(PooledExecutor executor, InetSocketAddress address) {
         super(executor);
@@ -35,14 +35,7 @@ public abstract class AbstractSocketServer extends AbstractServer implements Soc
         super.doConnection(connection);
     }
 
-    // Notifiable
-    
-    public void notifyCompleted() {
-        _numConnections--;
-    }
 
-    // Notifiable
-    
     public void waitForExistingConnections() {
         while (_numConnections>0) {
             _log.info("waiting for: "+_numConnections+" Connection[s]");
@@ -55,4 +48,9 @@ public abstract class AbstractSocketServer extends AbstractServer implements Soc
         _log.info("existing Connections have finished running");
     }
     
+    // ConnectionConfig
+    
+    public void notifyClosed(Connection connection) {
+        _numConnections--;
+    }
 }
