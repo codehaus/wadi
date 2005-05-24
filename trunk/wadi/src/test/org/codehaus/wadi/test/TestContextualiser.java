@@ -72,6 +72,7 @@ import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyCluster;
 import org.codehaus.wadi.impl.DummyContextualiser;
+import org.codehaus.wadi.impl.DummyDistributableContextualiserConfig;
 import org.codehaus.wadi.impl.DummyEvicter;
 import org.codehaus.wadi.impl.DummyHttpServletRequest;
 import org.codehaus.wadi.impl.DummyRouter;
@@ -566,12 +567,11 @@ public class TestContextualiser extends TestCase {
         Relocater relocater0=new ProxyRelocater(2000, 3000);
         Collapser collapser0=new HashingCollapser(10, 2000);
         ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, new SwitchableEvicter(30000, true), c0, dispatcher0, relocater0, location0, "node0");
-        // TODO - may need init()-alising
         Map m0=new HashMap();
         m0.put("foo", new MyContext("foo", "1"));
         Contextualiser memory0=new MemoryContextualiser(clstr0, new NeverEvicter(30000, true), m0, new GZIPStreamer(), new MyContextPool(), _requestPool);
         clstr0.setTop(memory0);
-        memory0.init(null);
+        memory0.init(new DummyDistributableContextualiserConfig(cluster0));
         
         Location location1=new MyLocation();
         Map c1=new HashMap();
@@ -582,9 +582,8 @@ public class TestContextualiser extends TestCase {
         Map m1=new HashMap();
         m1.put("bar", new MyContext("bar", "2"));
         Contextualiser memory1=new MemoryContextualiser(clstr1, new NeverEvicter(30000, true), m1, new GZIPStreamer(), new MyContextPool(), _requestPool);
-        // TODO - may need init()-alising
         clstr1.setTop(memory1);
-        memory1.init(null);
+        memory1.init(new DummyDistributableContextualiserConfig(cluster1));
         
         Thread.sleep(2000); // activecluster needs a little time to sort itself out...
         _log.info("STARTING NOW!");
@@ -617,7 +616,7 @@ public class TestContextualiser extends TestCase {
         Map map=new ConcurrentHashMap();
         CustomCluster cluster=(CustomCluster)new CustomClusterFactory(Utils.getConnectionFactory()).createCluster("ORG.CODEHAUS.WADI.CLUSTER");
         SimpleContextualiserStack stack=new SimpleContextualiserStack(map, _standardContextPool, _ds, 8080, cluster);
-        StandardManager manager=new StandardManager(_standardSessionPool, _standardAttributesFactory, _standardValuePool, _sessionWrapperFactory, _sessionIdFactory, stack, map, _router, _accessOnLoad);
+        StandardManager manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, stack, map, _router, _streamer, _accessOnLoad, new DummyCluster(), new DummyServer());
         manager.init();
         manager.start();
         Thread.sleep(2000);

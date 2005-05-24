@@ -17,6 +17,8 @@
 package org.codehaus.wadi.impl;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import javax.jms.BytesMessage;
@@ -52,8 +54,7 @@ public class DummyCluster implements ExtendedCluster {
     }
 
     public Map getNodes() {
-        // TODO Auto-generated method stub
-        return null;
+        return Collections.EMPTY_MAP;
     }
 
     public void addClusterListener(ClusterListener listener) {
@@ -66,9 +67,10 @@ public class DummyCluster implements ExtendedCluster {
 
     }
 
+    protected final LocalNode _localNode=new DummyLocalNode();
+    
     public LocalNode getLocalNode() {
-        // TODO Auto-generated method stub
-        return null;
+        return _localNode;
     }
 
     public void send(Destination destination, Message message)

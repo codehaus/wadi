@@ -39,7 +39,7 @@ public class Utils {
     public static Object safeTake(Takable takable) {
         do {
             try {
-                return (Object)takable.take();
+                return takable.take();
             } catch (InterruptedException e) {
                 if (_log.isTraceEnabled()) _log.trace("unexpected interruption - ignoring", e);
             }

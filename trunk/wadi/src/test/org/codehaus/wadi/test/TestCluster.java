@@ -105,7 +105,7 @@ public class TestCluster extends TestCase {
 
     class MyNode {
     
-        protected final CustomCluster _cluster;
+        protected final ExtendedCluster _cluster;
         protected final MessageDispatcher _dispatcher;
         protected final Location _location;
         protected final Relocater _relocater;
@@ -123,7 +123,7 @@ public class TestCluster extends TestCase {
         
         public MyNode(String nodeId, ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
             _bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, ds, table);
-            _cluster=(CustomCluster)factory.createCluster(clusterName);
+            _cluster=(ExtendedCluster)factory.createCluster(clusterName);
             _cluster.addClusterListener(new MyClusterListener());
             _dispatcher=new MessageDispatcher(_cluster);
             InetSocketAddress isa=new InetSocketAddress("localhost", 8080);
@@ -144,9 +144,6 @@ public class TestCluster extends TestCase {
         
         public synchronized void start() throws Exception {
             if (!_running) {
-                _log.info("starting cluster...");
-                _cluster.start();
-                _log.info("cluster started");
                 _manager.init();
                 _manager.start();
                 _running=true;
@@ -157,10 +154,7 @@ public class TestCluster extends TestCase {
             if (_running) {
                 _manager.stop();
                 _manager.destroy();
-                _log.info("stopping cluster...");
-                _cluster.stop();
                 Thread.sleep(6000);
-                _log.info("cluster stopped");
                 _running=false;
             }
         }

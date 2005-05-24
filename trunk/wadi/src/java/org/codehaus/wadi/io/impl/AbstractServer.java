@@ -25,7 +25,6 @@ import org.codehaus.wadi.io.Server;
 import org.codehaus.wadi.io.ServerConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 public abstract class AbstractServer implements Server, ConnectionConfig {
 

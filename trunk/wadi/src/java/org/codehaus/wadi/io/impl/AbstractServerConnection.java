@@ -79,7 +79,7 @@ public abstract class AbstractServerConnection implements Connection, PeerConfig
         //_log.info("...idle");
     }
     
-    public void run(Peer peer) throws IOException {
+    public void run(Peer peer) {
         peer.run(this);
     }
     

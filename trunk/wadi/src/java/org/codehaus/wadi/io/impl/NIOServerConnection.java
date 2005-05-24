@@ -57,10 +57,10 @@ public class NIOServerConnection extends AbstractServerConnection implements Put
     public void setRunning(boolean running) {_running.set(running);}
     
     protected ByteBufferInputStream _inputStream;
-    public InputStream getInputStream() throws IOException {return _inputStream;}
+    public InputStream getInputStream() {return _inputStream;}
 
     protected OutputStream _outputStream;
-    public OutputStream getOutputStream() throws IOException {return _outputStream;}
+    public OutputStream getOutputStream() {return _outputStream;}
     
     public void close() throws IOException {
         super.close();

@@ -79,11 +79,11 @@ public class ClusterConnection extends AbstractServerConnection implements Putta
     
     // StreamConnection
     
-    public InputStream getInputStream() throws IOException {
+    public InputStream getInputStream() {
         return _inputStream;
     }
 
-    public OutputStream getOutputStream() throws IOException {
+    public OutputStream getOutputStream() {
         return _outputStream;
     }
 
