@@ -30,8 +30,8 @@ import org.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.old.cluster.NChooseKTopologyStrategy;
-import org.codehaus.wadi.old.cluster.TopologyStrategy;
+import org.codehaus.wadi.sandbox.cluster.NChooseKTopologyStrategy;
+import org.codehaus.wadi.sandbox.cluster.TopologyStrategy;
 
 // originally based on James' ClusterDemo from activecluster...
 

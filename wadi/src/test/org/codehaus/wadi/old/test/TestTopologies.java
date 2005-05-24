@@ -25,10 +25,10 @@ import java.util.TreeSet;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.old.cluster.Abstract2TopologyStrategy;
-import org.codehaus.wadi.old.cluster.Cell;
-import org.codehaus.wadi.old.cluster.Peer;
-import org.codehaus.wadi.old.cluster.RingTopologyStrategy;
+import org.codehaus.wadi.sandbox.cluster.Abstract2TopologyStrategy;
+import org.codehaus.wadi.sandbox.cluster.Cell;
+import org.codehaus.wadi.sandbox.cluster.Peer;
+import org.codehaus.wadi.sandbox.cluster.RingTopologyStrategy;
 
 public class
   TestTopologies

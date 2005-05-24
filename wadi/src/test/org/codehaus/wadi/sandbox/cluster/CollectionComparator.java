@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.old.cluster;
+package org.codehaus.wadi.sandbox.cluster;
 
 import java.util.Collection;
 import java.util.Iterator;
