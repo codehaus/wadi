@@ -48,7 +48,10 @@ public class TestMotion extends TestCase {
             _executor=new PooledExecutor(new BoundedBuffer(10), 100);
             _executor.setThreadFactory(factory);
             _executor.setMinimumPoolSize(3);
-            _server=new NIOServer(_executor, localAddress, 256, 4096, 4096, 30*1000);
+            _server=new NIOServer(_executor, 5*1000, localAddress, 1*1000, 256, 4096, 4096);
+            //_server=new BIOServer(_executor, localAddress, 32, 1*1000);
+            // Cluster cluster=Utils.getConnectionFactory().createConnection();
+            //_server=new ClusterServer(_executor, cluster,true;);
             _clients=new HashMap();
         }
         
@@ -58,15 +61,15 @@ public class TestMotion extends TestCase {
         }
         
         public void stop() throws Exception {
-            synchronized (_clients) {
-                for (Iterator i=_clients.entrySet().iterator(); i.hasNext(); ) {
-                    Map.Entry e=(Map.Entry)i.next();
-                    //InetSocketAddress key=(InetSocketAddress)e.getKey();
-                    SocketClientConnection val=(SocketClientConnection)e.getValue();
-                    val.close();
-                    i.remove();
-                }
-            }
+//            synchronized (_clients) {
+//                for (Iterator i=_clients.entrySet().iterator(); i.hasNext(); ) {
+//                    Map.Entry e=(Map.Entry)i.next();
+//                    //InetSocketAddress key=(InetSocketAddress)e.getKey();
+//                    SocketClientConnection val=(SocketClientConnection)e.getValue();
+//                    val.close();
+//                    i.remove();
+//                }
+//            }
             _server.stop();
         }
         
@@ -74,7 +77,7 @@ public class TestMotion extends TestCase {
             synchronized (_clients) {
                 SocketClientConnection client=(SocketClientConnection)_clients.get(address);
                 if (client==null) {
-                    client=new SocketClientConnection(address);
+                    client=new SocketClientConnection(address, 5*1000);
                     _clients.put(address, client);
                 }
                 return client;
@@ -107,21 +110,6 @@ public class TestMotion extends TestCase {
         _us.stop();
     }
 
-    public static class ClosePeer extends Peer {
-        
-        protected static final Log _log=LogFactory.getLog(ClosePeer.class);
-        
-        public void run(PeerConfig config) {
-            try {
-                _log.info("server - starting");
-                config.close();
-                _log.info("server - finished");
-            } catch (IOException e) {
-                _log.error(e);
-            }
-        }
-    }
-    
     public static class SingleRoundTripServerPeer extends Peer {
         
         protected static final Log _log=LogFactory.getLog(SingleRoundTripServerPeer.class);
@@ -172,15 +160,17 @@ public class TestMotion extends TestCase {
     
     public void testMotion() throws Exception {
         SocketClientConnection us2them=_us.getClient(_remote);
-        SocketClientConnection them2us=_them.getClient(_local);
+        _log.info("us -> them (1st trip)");
+        us2them.run(new SingleRoundTripClientPeer());
+        _log.info("us -> them (2nd trip)");
+        us2them.run(new SingleRoundTripClientPeer());
+        us2them.close();
         
-        _log.info("us -> them");
-        us2them.run(new SingleRoundTripClientPeer());
-        us2them.run(new SingleRoundTripClientPeer());
-        us2them.run(new ClosePeer());
-        _log.info("them -> us");
+        SocketClientConnection them2us=_them.getClient(_local);
+        _log.info("them -> us (1st trip)");
         them2us.run(new SingleRoundTripClientPeer());
+        _log.info("them -> us (2nd trip)");
         them2us.run(new SingleRoundTripClientPeer());
-        them2us.run(new ClosePeer());
+        them2us.close();
     }
 }

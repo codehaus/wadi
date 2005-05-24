@@ -19,25 +19,35 @@ package org.codehaus.wadi.sandbox.io;
 import java.net.InetSocketAddress;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 public abstract class AbstractSocketServer extends AbstractServer {
 
-    protected InetSocketAddress _address;
-    protected volatile int _numConnections; // TODO - should be synched...
+    protected final SynchronizedInt _numConnections=new SynchronizedInt(0);
 
-    public AbstractSocketServer(PooledExecutor executor, InetSocketAddress address) {
-        super(executor);
+    protected InetSocketAddress _address;
+
+    public AbstractSocketServer(PooledExecutor executor, long connectionTimeout, InetSocketAddress address) {
+        super(executor, connectionTimeout);
         _address=address;
     }
 
-    public void doConnection(Connection connection) {
-        _numConnections++;
-        super.doConnection(connection);
+    public void add(Connection connection) {
+        _numConnections.increment();
+        if (_log.isTraceEnabled()) _log.trace("adding server Connection: "+connection);
     }
 
+    public void remove(Connection connection) {
+        _numConnections.decrement();
+        if (_log.isTraceEnabled()) _log.trace("removing server Connection: "+connection);
+    }
+
+    public void notifyClosed(Connection connection) {
+        remove(connection);
+    }
 
     public void waitForExistingConnections() {
-        while (_numConnections>0) {
+        while (_numConnections.get()>0) {
             _log.info("waiting for: "+_numConnections+" Connection[s]");
             try {
                 Thread.sleep(1000);
@@ -47,10 +57,5 @@ public abstract class AbstractSocketServer extends AbstractServer {
         }
         _log.info("existing Connections have finished running");
     }
-    
-    // ConnectionConfig
-    
-    public void notifyClosed(Connection connection) {
-        _numConnections--;
-    }
+
 }

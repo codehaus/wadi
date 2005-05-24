@@ -36,9 +36,9 @@ public class ClusterServer extends AbstractServer implements ConnectionConfig, M
     protected final Cluster _cluster;
     protected final boolean _excludeSelf;
     protected final Map _connections;
-    
-    public ClusterServer(PooledExecutor executor, Cluster cluster, boolean excludeSelf) {
-        super(executor);
+        
+    public ClusterServer(PooledExecutor executor, long connectionTimeout, Cluster cluster, boolean excludeSelf) {
+        super(executor, connectionTimeout);
         _cluster=cluster;
         _excludeSelf=excludeSelf;
         _connections=new HashMap();
@@ -74,18 +74,27 @@ public class ClusterServer extends AbstractServer implements ConnectionConfig, M
                 BytesMessage bm=(BytesMessage)message;
                 String correlationId=bm.getJMSCorrelationID();
                 Destination replyTo=bm.getJMSReplyTo();
+                _log.info("receiving message");
                 synchronized (_connections) {
                     ClusterConnection connection=(ClusterConnection)_connections.get(correlationId);
                     if (connection==null) {
                         // initialising a new Connection...
-                        //_log.info("creating Connection: '"+correlationId+"'");
-                        connection=new ClusterConnection(this, _cluster, _cluster.getLocalNode().getDestination(), replyTo, correlationId, new LinkedQueue(), 2000);
-                        _connections.put(correlationId, connection);
-                        doConnection(connection);
+                        String name=correlationId.substring(0, correlationId.length()-7);
+                        Destination us=_cluster.getLocalNode().getDestination();
+                        connection=new ClusterConnection(this, _connectionTimeout, _cluster, us, replyTo, name, new LinkedQueue(), true);
+                        _log.info("created Connection: '"+connection.getCorrelationId()+"'");
+                        _connections.put(connection.getCorrelationId(), connection);
+                        run(connection);
                     }
                     // servicing existing connection...
-                    //_log.info("servicing Connection: '"+correlationId+"' - "+buffer.length+" bytes");
-                    Utils.safePut(bm, connection);
+                    if (bm.getBodyLength()>0) {
+                        _log.info("servicing Connection: '"+correlationId+"' - "+bm.getBodyLength()+" bytes");
+                        Utils.safePut(bm, connection);
+                    }
+                    if (bm.getBooleanProperty("closing-stream")) {
+                        _log.info("SERVER CLOSING STREAM: "+connection);
+                        connection.commit();
+                    }
                 }
             }
         } catch (JMSException e) {
@@ -96,8 +105,10 @@ public class ClusterServer extends AbstractServer implements ConnectionConfig, M
     // needs more thought...
     
     public Connection makeClientConnection(String correlationId, Destination target) {
-        ClusterConnection connection=new ClusterConnection(this, _cluster, _cluster.getLocalNode().getDestination(), target, correlationId, new LinkedQueue(), 2000);
-        _connections.put(correlationId, connection);
+        Destination source=_cluster.getLocalNode().getDestination();
+        LinkedQueue queue=new LinkedQueue();
+        ClusterConnection connection=new ClusterConnection(this, _connectionTimeout, _cluster, source, target, correlationId, queue, false);
+        _connections.put(connection.getCorrelationId(), connection);
         return connection;
     }
     
@@ -121,7 +132,8 @@ public class ClusterServer extends AbstractServer implements ConnectionConfig, M
     }
 
     public void notifyIdle(Connection connection) {
-        // TODO - should we don anything here - ClusterConnections are automatically idle ?
+        if (((ClusterConnection)connection).getCommitted())
+            _connections.remove(((ClusterConnection)connection)._correlationId);
     }
 
 }

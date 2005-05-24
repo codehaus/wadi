@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
 public class NIOServerConnection extends AbstractServerConnection implements Puttable {
     
@@ -38,22 +39,26 @@ public class NIOServerConnection extends AbstractServerConnection implements Put
     protected final Channel _inputQueue;
     protected final Puttable _outputQueue;
  
-    public NIOServerConnection(NIOConnectionConfig config, SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue, int bufferSize, long timeout) {
-        super(config);
+    public NIOServerConnection(NIOConnectionConfig config, long timeout, SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue, int bufferSize) {
+        super(config, timeout);
         _channel=channel;
         _key=key;
         _inputQueue=inputQueue;
         _outputQueue=outputQueue;
 
         // ctor is called by Server thread - find some way to do these allocations on Consumer thread...
-        _inputStream=new ByteBufferInputStream(_inputQueue, _outputQueue, timeout);
+        _inputStream=new ByteBufferInputStream(_inputQueue, _outputQueue, _timeout);
         _outputStream=new ByteBufferOutputStream(_channel, bufferSize);
         }
 
-    protected ByteBufferInputStream _inputStream;
-    protected OutputStream _outputStream;
+    protected final SynchronizedBoolean _running=new SynchronizedBoolean(false); 
+    public boolean getRunning() {return _running.get();}
+    public void setRunning(boolean running) {_running.set(running);}
     
+    protected ByteBufferInputStream _inputStream;
     public InputStream getInputStream() throws IOException {return _inputStream;}
+
+    protected OutputStream _outputStream;
     public OutputStream getOutputStream() throws IOException {return _outputStream;}
     
     public void close() throws IOException {
@@ -69,7 +74,6 @@ public class NIOServerConnection extends AbstractServerConnection implements Put
         
         try {
             //_log.info("cancelling: "+_key);
-            _key.cancel();
             _channel.socket().shutdownOutput();
             _channel.socket().close();
             _channel.close();
@@ -77,11 +81,12 @@ public class NIOServerConnection extends AbstractServerConnection implements Put
             lock.release();
         }
     }
-    
+
+    // called by server...
     public synchronized void commit() throws IOException {
-        //_out.commit();
         _inputStream.commit();
         _channel.socket().shutdownInput();
+        _key.cancel();
     }
 
     // Puttable - ByteBuffers only please :-)

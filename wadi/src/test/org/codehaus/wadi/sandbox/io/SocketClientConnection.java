@@ -34,21 +34,21 @@ public class SocketClientConnection extends AbstractServerConnection { // should
     
     protected final SocketChannel _channel;
     protected final Socket _socket;
-    protected final int _inputTimeout=30*1000;
     
-    public SocketClientConnection(InetSocketAddress address) throws IOException {
-        super(new DummyConnectionConfig());
+    public SocketClientConnection(InetSocketAddress address, long timeout) throws IOException {
+        super(new DummyConnectionConfig(), timeout);
         _channel=SocketChannel.open(address);
         _channel.configureBlocking(true);
         _socket=_channel.socket();
         _socket.setKeepAlive(true);
-        _socket.setSoTimeout(_inputTimeout);
+        _socket.setSoTimeout((int)_timeout);
     }
+   
     
     // Connection
     
     public void close() throws IOException {
-        super.close();
+        super.close(); // deals with streams...
         try{_socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
         try{_channel.close();}catch(Exception e){_log.warn("problem closing socket",e);}
         }

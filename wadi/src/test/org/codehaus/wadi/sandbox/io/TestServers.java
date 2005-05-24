@@ -23,6 +23,8 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
+import javax.jms.Destination;
+
 import org.activecluster.ClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,21 +51,19 @@ public class TestServers extends TestCase {
 
     protected InetSocketAddress _bioAddress;
     protected BIOServer _bioServer;
-    protected ConnectionFactory _bioConnectionFactory=new ConnectionFactory(){ public Connection create() throws IOException {return new SocketClientConnection(_bioAddress);}};
+    protected ConnectionFactory _bioConnectionFactory=new ConnectionFactory(){ public Connection create() throws IOException {return new SocketClientConnection(_bioAddress, 5*1000);}};
     protected InetSocketAddress _nioAddress;
     protected NIOServer _nioServer;
-    protected ConnectionFactory _nioConnectionFactory=new ConnectionFactory() {public Connection create() throws IOException {return new SocketClientConnection(_nioAddress);}};
+    protected ConnectionFactory _nioConnectionFactory=new ConnectionFactory() {public Connection create() throws IOException {return new SocketClientConnection(_nioAddress, 5*1000);}};
     protected javax.jms.ConnectionFactory _connectionFactory=Utils.getConnectionFactory();
     protected ClusterFactory _clusterFactory=new RestartableClusterFactory(new CustomClusterFactory(_connectionFactory));
     protected String _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
-    protected Cluster _cluster0;
-    protected ClusterServer _clusterServer0;
-    protected Cluster _cluster1;
-    protected ClusterServer _clusterServer1;
+    protected Cluster _cluster;
+    protected ClusterServer _clusterServer;
     protected ConnectionFactory _clusterConnectionFactory;
     
 
-    protected final int _count=10000;
+    protected final int _count=100;
     
     
     protected void setUp() throws Exception {
@@ -81,33 +81,30 @@ public class TestServers extends TestCase {
         executor=new PooledExecutor(new BoundedBuffer(10), 100);
         executor.setThreadFactory(threadFactory);
         executor.setMinimumPoolSize(3);
-        _bioServer=new BIOServer(executor, _bioAddress, 16, 1); // backlog, timeout
+        _bioServer=new BIOServer(executor, 5*1000, _bioAddress, 1*1000, 16);
         _bioServer.start();
         
         _nioAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8889);
         executor=new PooledExecutor(new BoundedBuffer(10), 100);
         executor.setThreadFactory(threadFactory);
         executor.setMinimumPoolSize(3);
-        _nioServer=new NIOServer(executor, _nioAddress, 1024, 256, 256, 30*1000); // bufSize should be 4096*2
+        _nioServer=new NIOServer(executor, 5*1000, _nioAddress, 1*1000, 1024, 256, 256);
         _nioServer.start();
         
-        _cluster0=(Cluster)_clusterFactory.createCluster(_clusterName);
-        _cluster1=(Cluster)_clusterFactory.createCluster(_clusterName);
+        _cluster=(Cluster)_clusterFactory.createCluster(_clusterName);
         executor=new PooledExecutor(new BoundedBuffer(10), 100);
         executor.setThreadFactory(threadFactory);
         executor.setMinimumPoolSize(3);
-        _clusterServer0=new ClusterServer(executor, _cluster0, true);
-        _clusterServer0.start();
-        _cluster0.start();
-        
-        _clusterServer1=new ClusterServer(executor, _cluster1, true);
-        _clusterServer1.start();
-        _cluster1.start();
+        _clusterServer=new ClusterServer(executor, 5*1000, _cluster, false);
+        _clusterServer.start();
+        _cluster.start();
         
         _clusterConnectionFactory=new ConnectionFactory()  {
             protected int _count=0;
             public Connection create() throws IOException {
-                return _clusterServer1.makeClientConnection("foo-"+(_count++), _cluster0.getLocalNode().getDestination());
+                String name="foo-"+(_count++);
+                Destination target=_cluster.getLocalNode().getDestination();
+                return _clusterServer.makeClientConnection(name, target);
             }
         };
     }
@@ -116,29 +113,24 @@ public class TestServers extends TestCase {
         super.tearDown();
         _nioServer.stop();
         _bioServer.stop();
-        _clusterServer0.stop();
-        _cluster0.stop();
-        _clusterServer1.stop();
-        _cluster1.stop();
+        _clusterServer.stop();
+        _cluster.stop();
     }
 
     public static class SingleRoundTripServerPeer extends Peer {
         
-        protected static final Log _log=LogFactory.getLog(SingleRoundTripServerPeer.class);
-        
         public void run(PeerConfig config) {
             try {
-                //_log.info("server - starting");
-                //_log.info("server - creating output stream");
+                _log.info("server - starting");
+                _log.info("server - creating output stream");
                 ObjectOutputStream oos=new ObjectOutputStream(config.getOutputStream());
-                //_log.info("server - writing response");
+                _log.info("server - writing response");
                 oos.writeBoolean(true); // ack
-                //_log.info("server - flushing response");
+                _log.info("server - flushing response");
                 oos.flush();
-                //_log.info("server - finished");
-                config.close();
+                _log.info("server - finished");
             } catch (IOException e) {
-                _log.error(e);
+                _log.error("problem", e);
             }
         }
     }
@@ -147,21 +139,21 @@ public class TestServers extends TestCase {
         
         public void run(PeerConfig config) {
             try {
-                //_log.info("client - starting");
-                //_log.info("client - creating output stream");
+                _log.info("client - starting");
+                _log.info("client - creating output stream");
                 ObjectOutputStream oos=new ObjectOutputStream(config.getOutputStream());
-                //_log.info("client - writing object");
+                _log.info("client - writing object");
                 oos.writeObject(new SingleRoundTripServerPeer());
-                //_log.info("client - flushing object");
+                _log.info("client - flushing object");
                 oos.flush();
-                //_log.info("client - creating input stream");
+                _log.info("client - creating input stream");
                 ObjectInputStream ois=new ObjectInputStream(config.getInputStream());
-                //_log.info("client - reading response");
+                _log.info("client - reading response");
                 boolean result=ois.readBoolean();
-                //_log.info("client - finished: "+result);
+                _log.info("client - finished: "+result);
                 assertTrue(result);
             } catch (IOException e) {
-                _log.error(e);
+                _log.error("problem", e);
             }
         }
     }
@@ -169,8 +161,8 @@ public class TestServers extends TestCase {
     // NEED CONCURRENT TEST
     
     public void testSingleRoundTrip() throws Exception {
-        testSingleRoundTrip("BIO", _bioConnectionFactory);
-        testSingleRoundTrip("NIO", _nioConnectionFactory);
+        //testSingleRoundTrip("BIO", _bioConnectionFactory);
+        //testSingleRoundTrip("NIO", _nioConnectionFactory);
         testSingleRoundTrip("Cluster", _clusterConnectionFactory);
     }
     
@@ -186,63 +178,21 @@ public class TestServers extends TestCase {
         long elapsed=System.currentTimeMillis()-start;
         _log.info(info+" rate="+(_count*1000/elapsed)+" round-trips/second");
     }
-    
-    public static class MultipleRoundTripServerPeer extends Peer {
-        
-        protected static final Log _log=LogFactory.getLog(SingleRoundTripServerPeer.class);
-        
-        public void run(PeerConfig config) {
-            try {
-                ObjectInputStream ois=new ObjectInputStream(config.getInputStream());
-                ObjectOutputStream oos=new ObjectOutputStream(config.getOutputStream());
-                while (ois.readBoolean()) {
-                    oos.writeBoolean(true);
-                    oos.flush();
-                }
-                config.close();
-            } catch (IOException e) {
-                _log.error(e);
-            }
-        }
-    }
-    
-    public static class MultipleRoundTripClientPeer extends Peer {
-        
-        protected final int _numTrips;
-        
-        public MultipleRoundTripClientPeer(int numTrips) throws IOException {
-            super();
-            _numTrips=numTrips;
-        }
-        
-        public void run(PeerConfig config) {
-            try {
-                ObjectOutputStream oos=new ObjectOutputStream(config.getOutputStream());
-                oos.writeObject(new MultipleRoundTripServerPeer());
-                ObjectInputStream ois=new ObjectInputStream(config.getInputStream());
-                for (int i=0; i<_numTrips; i++) {
-                    oos.writeBoolean(true);
-                    oos.flush();
-                    ois.readBoolean();
-                }
-                oos.writeBoolean(false);
-            } catch (IOException e) {
-                _log.error(e);
-            }
-        }
-    }
 
     public void testMultipleRoundTrip() throws Exception {
-        testMultipleRoundTrip("BIO", _bioConnectionFactory);
-        testMultipleRoundTrip("NIO", _nioConnectionFactory);
-        testMultipleRoundTrip("Cluster", _clusterConnectionFactory);
+        //testMultipleRoundTrip("BIO", _bioConnectionFactory);
+        //testMultipleRoundTrip("NIO", _nioConnectionFactory);
+        //testMultipleRoundTrip("Cluster", _clusterConnectionFactory);
     }
     
     public void testMultipleRoundTrip(String info, ConnectionFactory factory) throws Exception {
         long start=System.currentTimeMillis();
-        Peer peer=new SingleRoundTripClientPeer();
         Connection connection=factory.create();
-        connection.run(peer);
+        Peer peer=new SingleRoundTripClientPeer();
+        for (int i=0; i<_count; i++) {
+            connection.run(peer);
+            _log.info("count: "+i);
+        }
         connection.close();
         long elapsed=System.currentTimeMillis()-start;
         _log.info(info+" rate="+(_count*1000/(elapsed+1))+" round-trips/second");

@@ -57,7 +57,7 @@ public class BytesMessageOutputStream extends OutputStream {
     public void send(BytesMessage message) throws IOException {
         try {
             message.reset(); // switch to read-only mode
-            if (message.getBodyLength()>0) {
+            if (message.getBodyLength()>0 || message.propertyExists("closing-stream")) {
                 _config.send(message);
             }
         } catch (Exception e) {
@@ -74,8 +74,15 @@ public class BytesMessageOutputStream extends OutputStream {
     }
     
     public void close() throws IOException {
+        try {
+            _buffer.setBooleanProperty("closing-stream", true);
+            _log.info("CLIENT CLOSING STREAM: "+_buffer);
+        } catch (JMSException e) {
+            _log.warn("problem writing message meta-data", e);
+            throw new IOException();
+        }
         send(_buffer);
-        allocate();
+        _buffer=null;
     }
 
     public void write(int b) throws IOException {

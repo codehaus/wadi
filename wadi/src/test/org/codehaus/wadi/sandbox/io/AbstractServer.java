@@ -21,19 +21,23 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 public abstract class AbstractServer implements Server, ConnectionConfig {
 
-    protected final Log _log = LogFactory.getLog(getClass());
+    protected final Log _log=LogFactory.getLog(getClass());
     protected final PooledExecutor _executor;
+    protected final long _connectionTimeout;
 
-    public AbstractServer(PooledExecutor executor) {
+    public AbstractServer(PooledExecutor executor, long connectionTimeout) {
         super();
         _executor=executor;
+        _connectionTimeout=connectionTimeout;
     }
 
     protected Thread _thread;
     protected volatile boolean _running;
+    
     public void start() throws Exception {
         // TODO Auto-generated method stub
     }
@@ -42,12 +46,10 @@ public abstract class AbstractServer implements Server, ConnectionConfig {
         // TODO Auto-generated method stub
     }
 
-    // Notifiable
-    
-    public void doConnection(Connection connection) {
+    public void run(Connection connection) {
         try {
             _executor.execute(connection);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException e) { // TODO - do this safely...
             _log.error(e);
         }
     }

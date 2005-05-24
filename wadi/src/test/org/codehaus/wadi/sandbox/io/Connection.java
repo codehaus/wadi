@@ -22,6 +22,7 @@ public interface Connection extends Runnable {
 
     void run(); // reads peer from input, and runs it...
     void run(Peer peer) throws IOException; // run a Peer ...
-    void close() throws IOException; // tidy up
+    //void commit() throws IOException; // producer has finished
+    void close() throws IOException; // consumer has finished
 
 }
