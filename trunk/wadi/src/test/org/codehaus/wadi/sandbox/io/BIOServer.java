@@ -36,12 +36,12 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 public class BIOServer extends AbstractSocketServer {
     
     protected final int _backlog; // 16?
-    protected final int _timeout; // secs
+    protected final long _serverTimeout; // secs
     
-    public BIOServer(PooledExecutor executor, InetSocketAddress address, int backlog, int timeout) {
-        super(executor, address);
+    public BIOServer(PooledExecutor executor, long connectionTimeout, InetSocketAddress address, long serverTimeout, int backlog) {
+        super(executor, connectionTimeout, address);
         _backlog=backlog;
-        _timeout=timeout;
+        _serverTimeout=serverTimeout;
         }
     
     protected ServerSocket _socket;
@@ -51,8 +51,8 @@ public class BIOServer extends AbstractSocketServer {
         int port=_address.getPort();
         InetAddress host=_address.getAddress();
         _socket=new ServerSocket(port, _backlog, host);
-        _socket.setSoTimeout(_timeout*1000);
-        _socket.setReuseAddress(true);
+        _socket.setSoTimeout((int)_serverTimeout);
+        //_socket.setReuseAddress(true);
         _address=new InetSocketAddress(host, _socket. getLocalPort());
         (_thread=new Thread(new Producer(), "WADI BIO Server")).start();
         _log.info("Producer thread started");
@@ -94,12 +94,11 @@ public class BIOServer extends AbstractSocketServer {
             try {
                 while (_running) {
                     try {
-                        if (_timeout==0) Thread.yield();
+                        if (_serverTimeout==0) Thread.yield();
                         Socket socket=_socket.accept();
-                        //_log.info("accepting connection");
-                        socket.setSoTimeout(30*1000);
-                        BIOServerConnection connection=new BIOServerConnection(BIOServer.this, socket);
-                        doConnection(connection);
+                        BIOServerConnection connection=new BIOServerConnection(BIOServer.this, _connectionTimeout, socket);
+                        add(connection);
+                        BIOServer.this.run(connection);
                         
                     } catch (SocketTimeoutException ignore) {
                         // ignore...

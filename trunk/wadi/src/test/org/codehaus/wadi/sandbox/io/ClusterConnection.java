@@ -35,21 +35,31 @@ public class ClusterConnection extends AbstractServerConnection implements Putta
     protected final Destination _us;
     protected final Destination _them;
     protected final String _correlationId;
+    protected final boolean _isServer;
     protected final Channel _inputQueue;
     protected final BytesMessageInputStream _inputStream;
     protected final BytesMessageOutputStream _outputStream;
+    protected final String _ourCorrelationId;
+    protected final String _theirCorrelationId;
     
-    public ClusterConnection(ConnectionConfig config, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue, long timeout) {
-        super(config);
+    public ClusterConnection(ConnectionConfig config, long timeout, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue, boolean isServer) {
+        super(config, timeout);
         _cluster=cluster;
         _us=us;
         _them=them;
         _correlationId=correlationId;
         _inputQueue=inputQueue;
-        _inputStream=new BytesMessageInputStream(inputQueue, timeout);
+        _inputStream=new BytesMessageInputStream(inputQueue, _timeout);
         _outputStream=new BytesMessageOutputStream(this);
+        _isServer=isServer;
+        _ourCorrelationId=correlationId+(isServer?".server":".client");
+        _theirCorrelationId=correlationId+(isServer?".client":".server");
     }
 
+    String getCorrelationId() {
+        return _ourCorrelationId;
+    }
+    
     // Connection
     
     public void close() throws IOException {
@@ -57,6 +67,11 @@ public class ClusterConnection extends AbstractServerConnection implements Putta
         super.close();
     }
 
+    public void run() {
+        //_running=false;
+        super.run();
+    }
+    
     // StreamConnection
     
     public InputStream getInputStream() throws IOException {
@@ -80,13 +95,23 @@ public class ClusterConnection extends AbstractServerConnection implements Putta
     // ByteArrayOutputStreamConfig
     
     public void send(BytesMessage bytesMessage) throws JMSException {
-        bytesMessage.setJMSCorrelationID(_correlationId);
+        bytesMessage.setJMSCorrelationID(_theirCorrelationId);
         bytesMessage.setJMSReplyTo(_us);
-        //bytesMessage.setIntProperty("content-length", bytesMessage.getBodyLength());
+        _log.info("sending message: "+(_isServer?"[server->client]":"[client->server]"));
         _cluster.send(_them, bytesMessage);
     }
     
     public BytesMessage createBytesMessage() throws JMSException {
         return _cluster.createBytesMessage();
     }
+
+    protected boolean _committed;
+    public boolean getCommitted() {return _committed;}
+    
+    // called by server...
+    public void commit() {
+        _inputStream.commit();
+        _committed=true;
+    }
+
 }

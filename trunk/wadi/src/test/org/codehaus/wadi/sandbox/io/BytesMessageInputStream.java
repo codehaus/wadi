@@ -56,8 +56,6 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
         do {
             try {
                 tmp=_inputQueue.poll(_timeout); // we need a fresh buffer...
-            } catch (TimeoutException e) {
-                throw e;
             } catch (InterruptedException e) {
                 // ignore
             }
@@ -65,6 +63,9 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
 
         if (tmp==_endOfQueue) // no more input - our producer has committed his end of the queue...
             return false; 
+        
+        if (tmp==null)
+            throw new TimeoutException(_timeout, "timed out waiting for input");
         
         _buffer=(BytesMessage)tmp;
         _remaining=_buffer.getBodyLength();
@@ -111,9 +112,11 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
             if (_remaining==0)
                 _buffer=null;
             
+            _log.info(" returning bytes: "+toCopy);
+            
             return toCopy;
         } catch (Exception e) {
-            _log.error(e);
+            _log.error("unexpected problem", e);
             throw new IOException();
         }
     }
@@ -121,6 +124,7 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
     // Puttable
     
     public synchronized void put(Object item) throws InterruptedException {
+        _log.info("receiving: "+item);
         _inputQueue.put(item);
     }
 

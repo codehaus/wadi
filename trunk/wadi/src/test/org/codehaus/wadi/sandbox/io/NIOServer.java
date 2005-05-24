@@ -28,6 +28,7 @@ import java.util.Iterator;
 
 import EDU.oswego.cs.dl.util.concurrent.FIFOReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -43,15 +44,15 @@ public class NIOServer extends AbstractSocketServer implements NIOConnectionConf
     
     protected final SynchronizedBoolean _accepting=new SynchronizedBoolean(false);
     protected final ReadWriteLock _lock=new FIFOReadWriteLock();
-    protected final EDU.oswego.cs.dl.util.concurrent.Channel _queue; // we get our ByteBuffers from here...
+    protected final EDU.oswego.cs.dl.util.concurrent.Channel _queue=new LinkedQueue(); // parameterise ?; // we get our ByteBuffers from here...
+    protected final long _serverTimeout;
     protected final int _outputBufferSize;
-    protected final int _inputTimeout;
     
-    public NIOServer(PooledExecutor executor, InetSocketAddress address, int numInputBuffers, int inputBufferSize, int outputBufferSize, int inputTimeout) {
-        super(executor, address);
-        _queue=new LinkedQueue(); // parameterise ?
+    public NIOServer(PooledExecutor executor, long connectionTimeout, InetSocketAddress address, long serverTimeout, int numInputBuffers, int inputBufferSize, int outputBufferSize) {
+        super(executor, connectionTimeout, address);
+        _serverTimeout=serverTimeout;
         _outputBufferSize=outputBufferSize;
-        _inputTimeout=inputTimeout;
+
         for (int i=0; i<numInputBuffers; i++)
             Utils.safePut(ByteBuffer.allocateDirect(inputBufferSize), _queue);
     }
@@ -64,7 +65,8 @@ public class NIOServer extends AbstractSocketServer implements NIOConnectionConf
         _channel=ServerSocketChannel.open();
         _channel.configureBlocking(false);
         _channel.socket().bind(_address);
-        _channel.socket().setReuseAddress(true);
+        _channel.socket().setSoTimeout((int)_serverTimeout);
+        //_channel.socket().setReuseAddress(true);
         _log.info(_channel);
         _address=(InetSocketAddress)_channel.socket().getLocalSocketAddress(); // in case address was not fully specified
         _selector= Selector.open();
@@ -82,7 +84,7 @@ public class NIOServer extends AbstractSocketServer implements NIOConnectionConf
         waitForExistingConnections();
         // stop Producer loop
         _running=false;
-        _selector.wakeup(); // we should go round the
+        _selector.wakeup();
         _thread.join();
         _selector.close();
         _thread=null;
@@ -101,30 +103,36 @@ public class NIOServer extends AbstractSocketServer implements NIOConnectionConf
         ServerSocketChannel server=(ServerSocketChannel)key.channel();
         SocketChannel channel=server.accept();
         channel.configureBlocking(false);
-        //_log.info("starting server connection");
         SelectionKey readKey=channel.register(_selector, SelectionKey.OP_READ/*|SelectionKey.OP_WRITE*/);
-        NIOServerConnection connection=new NIOServerConnection(this, channel, readKey, new LinkedQueue(), _queue, _outputBufferSize, _inputTimeout); // reuse the queue
+        NIOServerConnection connection=new NIOServerConnection(this, _connectionTimeout, channel, readKey, new LinkedQueue(), _queue, _outputBufferSize); // reuse the queue
         readKey.attach(connection);
-        doConnection(connection);
+        add(connection);
     }
     
     public void read(SelectionKey key) throws IOException {
-        // _log.info("key: "+key);
         NIOServerConnection connection=(NIOServerConnection)key.attachment();
-        
-//      if (connection._idle && isOutOfResources())
-//      // Don't handle idle connections if out of resources.
-//      return;
         ByteBuffer buffer=(ByteBuffer)Utils.safeTake(_queue);
+
         int count=((SocketChannel)key.channel()).read(buffer); // read off network into buffer
         if (count<0) {
+            if (_log.isTraceEnabled()) _log.trace("committing server Connection: "+connection);
             connection.commit();
             buffer.clear();
             Utils.safePut(buffer, _queue); // could be cleverer
-            // what about tidying up associated objects - or does consumer thread do that ?
         } else {
+            if (_log.isTraceEnabled()) _log.trace("servicing server Connection: "+connection+" ("+count+" bytes)");
             buffer.flip();
             Utils.safePut(buffer, connection);
+        }
+        
+        if (!connection.getRunning()) {
+            connection.setRunning(true);
+            try {
+                if (_log.isTraceEnabled()) _log.trace("running server Connection: "+connection);
+                _executor.execute(connection);
+            } catch (InterruptedException e) { // TODO - do this safely...
+                _log.error("problem running connection", e);
+            }
         }
     }
     
@@ -194,12 +202,15 @@ public class NIOServer extends AbstractSocketServer implements NIOConnectionConf
     // ConnectionConfig
 
     public void notifyIdle(Connection connection) {
-        // BIOServer does not support idling Connections :-(        
+        if (_log.isTraceEnabled()) _log.trace("idling server Connection: "+connection);
+        ((NIOServerConnection)connection).setRunning(false);
     }
     
     // NIOConnectionConfig
     
+    protected final Sync _dummy=new NullSync();
     public Sync getLock() {
+        //return _dummy;
         return _lock.readLock();
     }
 

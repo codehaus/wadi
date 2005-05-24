@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -30,15 +31,20 @@ public abstract class AbstractServerConnection implements Connection, PeerConfig
     protected static final Log _log=LogFactory.getLog(AbstractServerConnection.class);
 
     protected final ConnectionConfig _config;
+    protected final long _timeout;
     
-    public AbstractServerConnection(ConnectionConfig config) {
+    protected boolean _running;
+    
+    public AbstractServerConnection(ConnectionConfig config, long timeout) {
         _config=config;
+        _timeout=timeout;
+        _running=true;
     }
     
     public void run() {
-        //_log.info("running...");
         InputStream is=null;
         try {
+            //_log.info("running...");
             is=getInputStream();
             //_log.info("starting read...");
             ObjectInputStream ois=new ObjectInputStream(is);
@@ -46,12 +52,26 @@ public abstract class AbstractServerConnection implements Connection, PeerConfig
             Peer peer=(Peer)ois.readObject();
             //_log.info("object read...");
             run(peer);
+            //_log.info("...ran");
+        } catch (EOFException e) {
+            // end of the line - fall through...
+            if (_log.isTraceEnabled()) _log.trace("Connection reached end of input - quitting...: "+this);
+            _running=false;
         } catch (IOException e) {
             _log.warn("problem reading object off wire", e);
+            _running=false; // this socket is trashed...
         } catch (ClassNotFoundException e) {
             _log.warn("unknown Peer type - version/security problem?", e);
+            _running=false; // this stream is unfixable ?
         } finally {
-            _config.notifyIdle(this); // after running, we declare ourselves 'idle' to our Server...
+            if (_running)
+                _config.notifyIdle(this); // after running, we declare ourselves 'idle' to our Server...
+            else
+                try {
+                    close();
+                } catch (IOException e) {
+                    _log.error("problem closing server Connection", e);
+                }
         }
         //_log.info("...idle");
     }
@@ -64,9 +84,9 @@ public abstract class AbstractServerConnection implements Connection, PeerConfig
         //_log.info("closing...");
         InputStream is=getInputStream();
         OutputStream os=getOutputStream();
-        try{if (os!=null) os.flush();}catch(IOException e){_log.warn("problem flushing socket output",e);}
-        try{if (is!=null) is.close();}catch(IOException e){_log.warn("problem closing socket input",e);}
-        try{if (os!=null) os.close();}catch(IOException e){_log.warn("problem closing socket output",e);}
+        try{os.flush();}catch(IOException e){_log.warn("problem flushing socket output",e);}
+        try{is.close();}catch(IOException e){_log.warn("problem closing socket input",e);}
+        try{os.close();}catch(IOException e){_log.warn("problem closing socket output",e);}
         _config.notifyClosed(this);
         //_log.info("...closed");
     }

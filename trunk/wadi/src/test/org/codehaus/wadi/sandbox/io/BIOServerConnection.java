@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,15 +31,25 @@ public class BIOServerConnection extends AbstractServerConnection {
     
     protected final Socket _socket;
     
-    public BIOServerConnection(ConnectionConfig config, Socket socket) {
-        super(config);
+    public BIOServerConnection(ConnectionConfig config, long timeout, Socket socket) {
+        super(config, timeout);
         _socket=socket;
+        try {
+            _socket.setSoTimeout((int)_timeout); // TODO - parameterise
+        } catch (SocketException e) {
+            _log.warn("could not set socket timeout", e);
+        }
     }
     
     // Connection
     
+    public void run() {
+        while (_running)
+            super.run(); // impossible to idle - loop until EOF...
+    }
+    
     public void close() throws IOException {
-        super.close();
+        super.close(); // deals with streams...
         try{_socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
         }
 
