@@ -22,7 +22,7 @@ import java.io.InputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.impl.Manager;
+import org.codehaus.wadi.impl.StandardManager;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
@@ -40,11 +40,11 @@ public class SpringManagerFactory {
         _bean=bean;
     }
 
-    public Manager create() throws FileNotFoundException {
+    public StandardManager create() throws FileNotFoundException {
         return create(_descriptor, _bean);
     }
 
-    public static Manager create(String descriptor, String bean) throws FileNotFoundException {
+    public static StandardManager create(String descriptor, String bean) throws FileNotFoundException {
         //ClassLoader cl=SpringManagerFactory.class.getClassLoader();
         ClassLoader cl=Thread.currentThread().getContextClassLoader();
         if (_log.isTraceEnabled()) _log.trace("Manager ClassLoader: "+cl);
@@ -58,7 +58,7 @@ public class SpringManagerFactory {
             cfg.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
             cfg.postProcessBeanFactory(dlbf);
 
-            Manager manager=(Manager)dlbf.getBean(bean);
+            StandardManager manager=(StandardManager)dlbf.getBean(bean);
 
             if (manager==null)
                 if (_log.isErrorEnabled()) _log.error("could not find WADI Manager bean: "+bean);

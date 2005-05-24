@@ -53,7 +53,7 @@ import org.codehaus.wadi.ValuePool;
  * @version $Revision$
  */
 
-public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig, RouterConfig {
+public class StandardManager implements Lifecycle, SessionConfig, ContextualiserConfig, RouterConfig {
 
     protected final Log _log = LogFactory.getLog(getClass());
 
@@ -68,7 +68,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig, 
     protected final Router _router;
     protected final boolean _accessOnLoad; // TODO - should only be available on DistributableManager
 
-    public Manager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean accessOnLoad) {
+    public StandardManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean accessOnLoad) {
         _sessionPool=sessionPool;
         _attributesFactory=attributesFactory;
         _valuePool=valuePool;
@@ -199,7 +199,7 @@ public class Manager implements Lifecycle, SessionConfig, ContextualiserConfig, 
     public AttributesFactory getAttributesFactory() {return _attributesFactory;}
     public ValuePool getValuePool() {return _valuePool;}
 
-    public Manager getManager(){return this;}
+    public StandardManager getManager(){return this;}
 
     // this should really be abstract, but is useful for testing - TODO
 

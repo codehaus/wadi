@@ -21,15 +21,15 @@ import java.util.List;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
-import org.codehaus.wadi.impl.Manager;
+import org.codehaus.wadi.impl.StandardManager;
 
 // TODO - do we really want to use aspects for all notifications ?
 
 public aspect SessionLifecycleNotifier {
     
-    pointcut create(Manager manager) : execution(Session Manager+.create()) && target(manager);
+    pointcut create(StandardManager manager) : execution(Session StandardManager+.create()) && target(manager);
     
-    Session around(Manager manager) : create(manager) {
+    Session around(StandardManager manager) : create(manager) {
         Session session=(Session)proceed(manager);
         List l=manager.getSessionListeners();
         int s=l.size();
@@ -41,9 +41,9 @@ public aspect SessionLifecycleNotifier {
         return session;
     }
     
-    pointcut destroy(Manager manager, Session session) : execution(void Manager+.destroy(Session)) && args(session) && target(manager);
+    pointcut destroy(StandardManager manager, Session session) : execution(void StandardManager+.destroy(Session)) && args(session) && target(manager);
     
-    void around(Manager manager, Session session) : destroy(manager, session) {
+    void around(StandardManager manager, Session session) : destroy(manager, session) {
         proceed(manager, session);
         List l=manager.getSessionListeners();
         int s=l.size();

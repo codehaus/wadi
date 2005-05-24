@@ -64,7 +64,7 @@ import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.HttpProxyLocation;
-import org.codehaus.wadi.impl.Manager;
+import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.MessageDispatcher;
 import org.codehaus.wadi.impl.RestartableClusterFactory;
@@ -114,7 +114,7 @@ public class TestCluster extends TestCase {
         protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool); 
         protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
         protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
-        protected final Manager _manager;
+        protected final StandardManager _manager;
         
         public MyNode(String nodeId, ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
             _bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, ds, table);

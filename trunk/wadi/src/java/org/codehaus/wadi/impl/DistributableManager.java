@@ -34,7 +34,7 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 
-public class DistributableManager extends Manager implements DistributableSessionConfig {
+public class DistributableManager extends StandardManager implements DistributableSessionConfig {
 
     protected final Streamer _streamer;
 

@@ -49,7 +49,7 @@ import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.HashingCollapser;
-import org.codehaus.wadi.impl.Manager;
+import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.MessageDispatcher;
 import org.codehaus.wadi.impl.NeverEvicter;
@@ -86,7 +86,7 @@ public class MyServlet implements Servlet {
     protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool); 
     protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
     protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
-    protected final Manager _manager;
+    protected final StandardManager _manager;
 
 
 	public MyServlet(String name, CustomCluster cluster, ContextPool contextPool, MessageDispatcher dispatcher, Relocater relocater, Location location) throws Exception {
