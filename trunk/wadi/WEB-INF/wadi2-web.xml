@@ -145,7 +145,6 @@
     >
     <constructor-arg><ref bean="Executor"/></constructor-arg>
     <constructor-arg type="long"><value>5000</value></constructor-arg><!-- timeout -->
-    <constructor-arg><ref bean="Cluster"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg><!-- excludeSelf -->
   </bean>
 

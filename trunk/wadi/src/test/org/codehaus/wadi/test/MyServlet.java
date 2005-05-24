@@ -101,7 +101,7 @@ public class MyServlet implements Servlet {
 		_dispatcher=dispatcher;
 		_relocater=relocater;
 		_location=location;
-		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, new SwitchableEvicter(30000, true), _clusterMap, _cluster, _dispatcher, _relocater, _location, name);
+		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, new SwitchableEvicter(30000, true), _clusterMap, _dispatcher, _relocater, _location, name);
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
 		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);
@@ -113,7 +113,7 @@ public class MyServlet implements Servlet {
         PooledExecutor executor=new PooledExecutor(new BoundedBuffer(10), 100);
         long connectionTimeout=5000;
         boolean excludeSelf=false;
-        _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad, _cluster, new ClusterServer(executor, connectionTimeout, _cluster, excludeSelf));
+        _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad, _cluster, new ClusterServer(executor, connectionTimeout, excludeSelf));
     }
     
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}

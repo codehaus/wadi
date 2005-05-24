@@ -34,6 +34,7 @@ import org.codehaus.wadi.impl.RestartableClusterFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.io.Connection;
 import org.codehaus.wadi.io.PeerConfig;
+import org.codehaus.wadi.io.ServerConfig;
 import org.codehaus.wadi.io.impl.BIOServer;
 import org.codehaus.wadi.io.impl.ClusterServer;
 import org.codehaus.wadi.io.impl.NIOServer;
@@ -103,7 +104,8 @@ public class TestServers extends TestCase {
         executor=new PooledExecutor(new BoundedBuffer(10), 100);
         executor.setThreadFactory(threadFactory);
         executor.setMinimumPoolSize(3);
-        _clusterServer=new ClusterServer(executor, 5*1000, _cluster, false);
+        _clusterServer=new ClusterServer(executor, 5*1000, false);
+        _clusterServer.init(new ServerConfig() { public ExtendedCluster getCluster() {return _cluster;}});
         _clusterServer.start();
         _cluster.start();
         

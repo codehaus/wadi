@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.DistributableSessionConfig;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.Router;
@@ -37,7 +38,7 @@ import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.io.Server;
 import org.codehaus.wadi.io.ServerConfig;
 
-public class DistributableManager extends StandardManager implements DistributableSessionConfig, ServerConfig {
+public class DistributableManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, ServerConfig {
 
     protected final Streamer _streamer;
     protected final ExtendedCluster _cluster;
@@ -139,5 +140,9 @@ public class DistributableManager extends StandardManager implements Distributab
     public boolean getHttpSessionAttributeListenersRegistered(){return _attributeListeners.size()>0;}
 
     public boolean getDistributable(){return true;}
+    
+    // ServerConfig
+    
+    public ExtendedCluster getCluster() {return _cluster;}
 
 }

@@ -14,12 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.io;
+package org.codehaus.wadi;
 
-import org.codehaus.wadi.ExtendedCluster;
+public interface DistributableContextualiserConfig extends ContextualiserConfig {
 
-public interface ServerConfig {
+    ExtendedCluster getCluster();
 
-        ExtendedCluster getCluster();
-    
 }
