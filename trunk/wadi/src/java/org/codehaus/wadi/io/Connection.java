@@ -14,13 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.io;
 
 import java.io.IOException;
-import java.nio.channels.WritableByteChannel;
 
-public interface PeerConfig extends StreamConnection, WritableByteChannel {
+import org.codehaus.wadi.io.impl.Peer;
 
-    public void close() throws IOException; // inherited from WriteableByteChannel - but overloaded to mean close whole Connection...
-    
+public interface Connection extends Runnable {
+
+    void run(); // reads peer from input, and runs it...
+    void run(Peer peer) throws IOException; // run a Peer ...
+    //void commit() throws IOException; // producer has finished
+    void close() throws IOException; // consumer has finished
+
 }

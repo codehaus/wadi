@@ -14,14 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.io;
 
-public class ThreadFactory implements EDU.oswego.cs.dl.util.concurrent.ThreadFactory {
+import java.io.IOException;
+import java.nio.channels.WritableByteChannel;
 
-    protected int _count;
+public interface PeerConfig extends StreamConnection, WritableByteChannel {
 
-    public Thread newThread(Runnable runnable) {
-        return new Thread(runnable, "WADI Pool ("+(_count++)+")");
-    }
-
+    public void close() throws IOException; // inherited from WriteableByteChannel - but overloaded to mean close whole Connection...
+    
 }

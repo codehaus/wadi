@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.io.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +24,7 @@ import java.net.SocketException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.io.ConnectionConfig;
 
 public class BIOServerConnection extends AbstractServerConnection {
     
@@ -44,7 +45,7 @@ public class BIOServerConnection extends AbstractServerConnection {
     // Connection
     
     public void run() {
-        while (_running)
+        while (_valid)
             super.run(); // impossible to idle - loop until EOF...
     }
     

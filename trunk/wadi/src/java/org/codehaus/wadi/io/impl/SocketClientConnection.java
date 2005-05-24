@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.io.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +23,9 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+
+import org.codehaus.wadi.io.Connection;
+import org.codehaus.wadi.io.ConnectionConfig;
 
 public class SocketClientConnection extends AbstractServerConnection { // shouldn't really subclass a ServerConnection...
 

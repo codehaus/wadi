@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.io.impl;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -25,6 +25,9 @@ import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.io.Connection;
+import org.codehaus.wadi.io.ConnectionConfig;
+import org.codehaus.wadi.io.PeerConfig;
 
 public abstract class AbstractServerConnection implements Connection, PeerConfig  {
 
@@ -33,12 +36,12 @@ public abstract class AbstractServerConnection implements Connection, PeerConfig
     protected final ConnectionConfig _config;
     protected final long _timeout;
     
-    protected boolean _running;
+    protected boolean _valid;
     
     public AbstractServerConnection(ConnectionConfig config, long timeout) {
         _config=config;
         _timeout=timeout;
-        _running=true;
+        _valid=true;
     }
     
     public void run() {
@@ -56,15 +59,15 @@ public abstract class AbstractServerConnection implements Connection, PeerConfig
         } catch (EOFException e) {
             // end of the line - fall through...
             if (_log.isTraceEnabled()) _log.trace("Connection reached end of input - quitting...: "+this);
-            _running=false;
+            _valid=false;
         } catch (IOException e) {
             _log.warn("problem reading object off wire", e);
-            _running=false; // this socket is trashed...
+            _valid=false; // this socket is trashed...
         } catch (ClassNotFoundException e) {
             _log.warn("unknown Peer type - version/security problem?", e);
-            _running=false; // this stream is unfixable ?
+            _valid=false; // this stream is unfixable ?
         } finally {
-            if (_running)
+            if (_valid)
                 _config.notifyIdle(this); // after running, we declare ourselves 'idle' to our Server...
             else
                 try {

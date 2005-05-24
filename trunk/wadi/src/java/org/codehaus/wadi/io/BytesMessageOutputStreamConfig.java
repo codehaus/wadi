@@ -14,12 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.io;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
+import javax.jms.BytesMessage;
+import javax.jms.JMSException;
 
-public interface NIOConnectionConfig extends ConnectionConfig {
+public interface BytesMessageOutputStreamConfig {
 
-    Sync getLock();
-    
+    void send(BytesMessage message) throws JMSException;
+    BytesMessage createBytesMessage() throws JMSException;
+
 }

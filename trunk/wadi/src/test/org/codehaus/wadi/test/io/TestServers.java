@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.test.io;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -32,6 +32,14 @@ import org.codehaus.wadi.Cluster;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.RestartableClusterFactory;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.io.Connection;
+import org.codehaus.wadi.io.PeerConfig;
+import org.codehaus.wadi.io.impl.BIOServer;
+import org.codehaus.wadi.io.impl.ClusterServer;
+import org.codehaus.wadi.io.impl.NIOServer;
+import org.codehaus.wadi.io.impl.Peer;
+import org.codehaus.wadi.io.impl.SocketClientConnection;
+import org.codehaus.wadi.io.impl.ThreadFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
@@ -63,7 +71,7 @@ public class TestServers extends TestCase {
     protected ConnectionFactory _clusterConnectionFactory;
     
 
-    protected final int _count=100;
+    protected final int _count=10000;
     
     
     protected void setUp() throws Exception {
@@ -121,16 +129,16 @@ public class TestServers extends TestCase {
         
         public void run(PeerConfig config) {
             try {
-                _log.info("server - starting");
-                _log.info("server - creating output stream");
+                //_log.info("server - starting");
+                //_log.info("server - creating output stream");
                 ObjectOutputStream oos=new ObjectOutputStream(config.getOutputStream());
-                _log.info("server - writing response");
+                //_log.info("server - writing response");
                 oos.writeBoolean(true); // ack
-                _log.info("server - flushing response");
+                //_log.info("server - flushing response");
                 oos.flush();
-                _log.info("server - finished");
+                //_log.info("server - finished");
             } catch (IOException e) {
-                _log.error("problem", e);
+                //_log.error("problem", e);
             }
         }
     }
@@ -139,21 +147,21 @@ public class TestServers extends TestCase {
         
         public void run(PeerConfig config) {
             try {
-                _log.info("client - starting");
-                _log.info("client - creating output stream");
+                //_log.info("client - starting");
+                //_log.info("client - creating output stream");
                 ObjectOutputStream oos=new ObjectOutputStream(config.getOutputStream());
-                _log.info("client - writing object");
+                //_log.info("client - writing object");
                 oos.writeObject(new SingleRoundTripServerPeer());
-                _log.info("client - flushing object");
+                //_log.info("client - flushing object");
                 oos.flush();
-                _log.info("client - creating input stream");
+                //_log.info("client - creating input stream");
                 ObjectInputStream ois=new ObjectInputStream(config.getInputStream());
-                _log.info("client - reading response");
+                //_log.info("client - reading response");
                 boolean result=ois.readBoolean();
-                _log.info("client - finished: "+result);
+                //_log.info("client - finished: "+result);
                 assertTrue(result);
             } catch (IOException e) {
-                _log.error("problem", e);
+                //_log.error("problem", e);
             }
         }
     }
