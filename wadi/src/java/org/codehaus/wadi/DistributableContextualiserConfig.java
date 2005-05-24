@@ -16,8 +16,12 @@
  */
 package org.codehaus.wadi;
 
+import org.codehaus.wadi.io.Server;
+
 public interface DistributableContextualiserConfig extends ContextualiserConfig {
 
     ExtendedCluster getCluster();
-
+    Server getServer();
+    String getNodeId();
+    
 }

@@ -16,9 +16,7 @@
  */
 package org.codehaus.wadi.test;
 
-import java.io.File;
 import java.net.InetSocketAddress;
-import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,7 +50,6 @@ import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.ClusterContextualiser;
-import org.codehaus.wadi.impl.CustomCluster;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableManager;
