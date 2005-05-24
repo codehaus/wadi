@@ -28,7 +28,7 @@ import javax.jms.Destination;
 import org.activecluster.ClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Cluster;
+import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.RestartableClusterFactory;
 import org.codehaus.wadi.impl.Utils;
@@ -66,7 +66,7 @@ public class TestServers extends TestCase {
     protected javax.jms.ConnectionFactory _connectionFactory=Utils.getConnectionFactory();
     protected ClusterFactory _clusterFactory=new RestartableClusterFactory(new CustomClusterFactory(_connectionFactory));
     protected String _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
-    protected Cluster _cluster;
+    protected ExtendedCluster _cluster;
     protected ClusterServer _clusterServer;
     protected ConnectionFactory _clusterConnectionFactory;
     
@@ -99,7 +99,7 @@ public class TestServers extends TestCase {
         _nioServer=new NIOServer(executor, 5*1000, _nioAddress, 1*1000, 1024, 256, 256);
         _nioServer.start();
         
-        _cluster=(Cluster)_clusterFactory.createCluster(_clusterName);
+        _cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName);
         executor=new PooledExecutor(new BoundedBuffer(10), 100);
         executor.setThreadFactory(threadFactory);
         executor.setMinimumPoolSize(3);

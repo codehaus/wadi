@@ -26,7 +26,7 @@ public interface RelocaterConfig {
     MessageDispatcher getDispatcher();
     Location getLocation();
     Map getMap();
-    Cluster getCluster();
+    ExtendedCluster getCluster();
     Contextualiser getContextualiser();
     
 }

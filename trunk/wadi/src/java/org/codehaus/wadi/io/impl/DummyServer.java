@@ -16,51 +16,44 @@
  */
 package org.codehaus.wadi.io.impl;
 
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.io.Connection;
-import org.codehaus.wadi.io.ConnectionConfig;
 import org.codehaus.wadi.io.Server;
 import org.codehaus.wadi.io.ServerConfig;
 
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
+public class DummyServer implements Server {
 
-public abstract class AbstractServer implements Server, ConnectionConfig {
-
-    protected final Log _log=LogFactory.getLog(getClass());
-    protected final PooledExecutor _executor;
-    protected final long _connectionTimeout;
-
-    public AbstractServer(PooledExecutor executor, long connectionTimeout) {
+    public DummyServer() {
         super();
-        _executor=executor;
-        _connectionTimeout=connectionTimeout;
+        // TODO Auto-generated constructor stub
     }
 
-    protected ServerConfig _config;
-    protected Thread _thread;
-    protected volatile boolean _running;
-    
     public void init(ServerConfig config) {
-        _config=config;
+        // do nothing
     }
     
     public void start() throws Exception {
-        _log.info("starting");
+        // TODO Auto-generated method stub
+
     }
 
     public void stop() throws Exception {
-        _log.info("stopped");
+        // TODO Auto-generated method stub
+
+    }
+
+    public void waitForExistingConnections() {
+        // TODO Auto-generated method stub
+
+    }
+
+    public void stopAcceptingConnections() {
+        // TODO Auto-generated method stub
+
     }
 
     public void run(Connection connection) {
-        try {
-            _executor.execute(connection);
-        } catch (InterruptedException e) { // TODO - do this safely...
-            _log.error(e);
-        }
-    }
-}
+        // TODO Auto-generated method stub
 
+    }
+
+}

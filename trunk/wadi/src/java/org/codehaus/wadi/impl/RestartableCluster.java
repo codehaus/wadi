@@ -35,7 +35,7 @@ import org.activecluster.ClusterListener;
 import org.activecluster.LocalNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Cluster;
+import org.codehaus.wadi.ExtendedCluster;
 
 /**
  * An ActiveCluster Cluster that can be re-start()-ed after a stop().
@@ -43,7 +43,7 @@ import org.codehaus.wadi.Cluster;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class RestartableCluster implements Cluster {
+public class RestartableCluster implements ExtendedCluster {
 
     protected static final Log _log=LogFactory.getLog(RestartableCluster.class);
 
@@ -51,7 +51,7 @@ public class RestartableCluster implements Cluster {
     protected final Topic _groupDestination;
     protected final String _topic;
 
-    protected Cluster _cluster;
+    protected ExtendedCluster _cluster;
 
     public RestartableCluster(ClusterFactory factory, Topic groupDestination) {
         super();
@@ -149,9 +149,9 @@ public class RestartableCluster implements Cluster {
     protected void createCluster() {
         try {
             if (_groupDestination!=null)
-                _cluster=(Cluster)_factory.createCluster(_groupDestination);
+                _cluster=(ExtendedCluster)_factory.createCluster(_groupDestination);
             else
-                _cluster=(Cluster)_factory.createCluster(_topic);
+                _cluster=(ExtendedCluster)_factory.createCluster(_topic);
         } catch (Exception e) {
             _log.error("could not start Cluster", e);
         }

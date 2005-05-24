@@ -14,18 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.io;
+package org.codehaus.wadi;
 
-public interface Server {
+import javax.jms.Destination;
+import javax.jms.JMSException;
 
-    void init(ServerConfig config);
-    void start() throws Exception;
-    void stop() throws Exception;
-    void waitForExistingConnections();
-    void stopAcceptingConnections();
-    
-    // Connection container...
-    
-    void run(Connection connection);
+/**
+ * An ActiveCluster Cluster that exposes an API for the dynamic creation of Queues.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public interface ExtendedCluster extends org.activecluster.Cluster /*, Lifecycle */ {
+
+    Destination createQueue(String name) throws JMSException;
     
 }

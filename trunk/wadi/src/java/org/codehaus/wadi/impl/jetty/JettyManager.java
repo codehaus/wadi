@@ -25,12 +25,15 @@ import javax.servlet.http.HttpSession;
 
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.impl.CustomCluster;
 import org.codehaus.wadi.impl.StandardManager;
+import org.codehaus.wadi.io.Server;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mortbay.jetty.servlet.ServletHandler;
@@ -40,8 +43,8 @@ public class JettyManager extends org.codehaus.wadi.impl.DistributableManager im
 
     protected final Log _log = LogFactory.getLog(getClass());
 
-    public JettyManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, JettySessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Streamer streamer, boolean accessOnLoad, Router router) {
-        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad);
+    public JettyManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, JettySessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Streamer streamer, boolean accessOnLoad, ExtendedCluster cluster, Server server, Router router) {
+        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad, cluster, server);
     }
 
     // DistributableManager - WADI

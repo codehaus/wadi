@@ -61,6 +61,10 @@ import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StatelessContextualiser;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory;
+import org.codehaus.wadi.io.impl.ClusterServer;
+
+import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
+import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
 public class MyServlet implements Servlet {
 	protected ServletConfig _config;
@@ -106,9 +110,12 @@ public class MyServlet implements Servlet {
         _serialContextualiser=new SerialContextualiser(_statelessContextualiser, _collapser, _memoryMap);
 		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamer(), contextPool, new MyDummyHttpServletRequestWrapperPool());
         _clusterContextualiser.setTop(_memoryContextualiser);
-        _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad);
-	}
-
+        PooledExecutor executor=new PooledExecutor(new BoundedBuffer(10), 100);
+        long connectionTimeout=5000;
+        boolean excludeSelf=false;
+        _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad, _cluster, new ClusterServer(executor, connectionTimeout, _cluster, excludeSelf));
+    }
+    
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}
 
 	public void init(ServletConfig config) {

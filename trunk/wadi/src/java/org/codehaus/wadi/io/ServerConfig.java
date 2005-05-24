@@ -14,19 +14,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.io;
 
-import javax.jms.Destination;
-import javax.jms.JMSException;
-
-/**
- * An ActuveCluster Cluster that exposes an API for the dynamic creation of Queues.
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
-public interface Cluster extends org.activecluster.Cluster /*, Lifecycle */ {
-
-    Destination createQueue(String name) throws JMSException;
-    
+public interface ServerConfig {
+ // NYI
 }
