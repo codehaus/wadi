@@ -18,6 +18,7 @@ package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.ExtendedCluster;
+import org.codehaus.wadi.io.Server;
 
 public class DummyDistributableContextualiserConfig extends DummyContextualiserConfig implements DistributableContextualiserConfig {
 
@@ -32,4 +33,11 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
         return _cluster;
     }
 
+    public Server getServer() {
+        return null;
+    }
+    
+    public String getNodeId() {
+        return "dummy";
+    }
 }

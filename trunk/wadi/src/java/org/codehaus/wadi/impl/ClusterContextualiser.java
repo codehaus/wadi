@@ -113,7 +113,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	    _location=location;
         _map=map;
         _evicter=evicter;
-        _nodeId=nodeId;
+        _nodeId=nodeId; // TODO - move to DistributableManager...
 
 	    _immoter=new EmigrationImmoter();
 	    _emoter=null; // TODO - I think this should be something like the ImmigrationEmoter

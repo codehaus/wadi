@@ -144,5 +144,10 @@ public class DistributableManager extends StandardManager implements Distributab
     // ServerConfig
     
     public ExtendedCluster getCluster() {return _cluster;}
-
+    
+    // DistributableContextualiserConfig
+    
+    public Server getServer() {return _server;}
+    public String getNodeId() {throw new UnsupportedOperationException();} // NYI
+    
 }

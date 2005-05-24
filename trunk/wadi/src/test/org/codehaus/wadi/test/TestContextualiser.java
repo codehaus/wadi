@@ -99,13 +99,10 @@ import org.codehaus.wadi.impl.StandardValueFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory;
-import org.codehaus.wadi.io.impl.ClusterServer;
 import org.codehaus.wadi.io.impl.DummyServer;
 
-import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
