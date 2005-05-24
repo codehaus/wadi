@@ -15,11 +15,11 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.old.jetty.jmx;
+package org.codehaus.wadi.sandbox.jetty;
 
 import javax.management.MBeanException;
 
-import org.codehaus.wadi.old.jetty.Manager;
+import org.codehaus.wadi.impl.jetty.JettyManager;
 import org.mortbay.util.jmx.LifeCycleMBean;
 
 /**
@@ -33,7 +33,7 @@ public class
   extends LifeCycleMBean
 {
   public ManagerMBean() throws MBeanException {}
-  public ManagerMBean(Manager object) throws MBeanException {super(object);}
+  public ManagerMBean(JettyManager object) throws MBeanException {super(object);}
 
   protected void
     defineManagedResource()
