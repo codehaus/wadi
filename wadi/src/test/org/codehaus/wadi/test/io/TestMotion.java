@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.test.io;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -22,11 +22,16 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.io.PeerConfig;
+import org.codehaus.wadi.io.Server;
+import org.codehaus.wadi.io.impl.NIOServer;
+import org.codehaus.wadi.io.impl.Peer;
+import org.codehaus.wadi.io.impl.SocketClientConnection;
+import org.codehaus.wadi.io.impl.ThreadFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;

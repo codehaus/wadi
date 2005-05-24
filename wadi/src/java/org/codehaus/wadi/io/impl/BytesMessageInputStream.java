@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.io.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -89,7 +89,7 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
             
             return b;
         } catch (Exception e) {
-            _log.warn(e);
+            _log.warn("unexpected problem", e);
             throw new IOException();
         }
     }
@@ -112,7 +112,7 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
             if (_remaining==0)
                 _buffer=null;
             
-            _log.info(" returning bytes: "+toCopy);
+            //_log.info(" returning bytes: "+toCopy);
             
             return toCopy;
         } catch (Exception e) {
@@ -124,7 +124,7 @@ public class BytesMessageInputStream extends InputStream implements Puttable {
     // Puttable
     
     public synchronized void put(Object item) throws InterruptedException {
-        _log.info("receiving: "+item);
+        //_log.info("receiving: "+item);
         _inputQueue.put(item);
     }
 

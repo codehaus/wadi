@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.io.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +27,8 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 
 import org.codehaus.wadi.Cluster;
+import org.codehaus.wadi.io.Connection;
+import org.codehaus.wadi.io.ConnectionConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
@@ -74,7 +76,7 @@ public class ClusterServer extends AbstractServer implements ConnectionConfig, M
                 BytesMessage bm=(BytesMessage)message;
                 String correlationId=bm.getJMSCorrelationID();
                 Destination replyTo=bm.getJMSReplyTo();
-                _log.info("receiving message");
+                //_log.info("receiving message");
                 synchronized (_connections) {
                     ClusterConnection connection=(ClusterConnection)_connections.get(correlationId);
                     if (connection==null) {
@@ -82,23 +84,23 @@ public class ClusterServer extends AbstractServer implements ConnectionConfig, M
                         String name=correlationId.substring(0, correlationId.length()-7);
                         Destination us=_cluster.getLocalNode().getDestination();
                         connection=new ClusterConnection(this, _connectionTimeout, _cluster, us, replyTo, name, new LinkedQueue(), true);
-                        _log.info("created Connection: '"+connection.getCorrelationId()+"'");
+                        //_log.info("created Connection: '"+connection.getCorrelationId()+"'");
                         _connections.put(connection.getCorrelationId(), connection);
                         run(connection);
                     }
                     // servicing existing connection...
                     if (bm.getBodyLength()>0) {
-                        _log.info("servicing Connection: '"+correlationId+"' - "+bm.getBodyLength()+" bytes");
+                        //_log.info("servicing Connection: '"+correlationId+"' - "+bm.getBodyLength()+" bytes");
                         Utils.safePut(bm, connection);
                     }
                     if (bm.getBooleanProperty("closing-stream")) {
-                        _log.info("SERVER CLOSING STREAM: "+connection);
+                        //_log.info("SERVER CLOSING STREAM: "+connection);
                         connection.commit();
                     }
                 }
             }
         } catch (JMSException e) {
-            _log.error(e);
+            _log.error("unexpected problem", e);
         }
     }
     
@@ -128,12 +130,11 @@ public class ClusterServer extends AbstractServer implements ConnectionConfig, M
     // ConnectionConfig
     
     public void notifyClosed(Connection connection) {
-        _connections.remove(((ClusterConnection)connection)._correlationId);
+        _connections.remove(((ClusterConnection)connection)._ourCorrelationId); // TODO - encapsulate properly
     }
 
     public void notifyIdle(Connection connection) {
-        if (((ClusterConnection)connection).getCommitted())
-            _connections.remove(((ClusterConnection)connection)._correlationId);
+        // Cluster Connections idle automatically after running...
     }
 
 }

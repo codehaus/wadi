@@ -14,12 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.io.impl;
 
 import java.io.Serializable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.io.PeerConfig;
 
 public abstract class Peer implements Serializable {
     

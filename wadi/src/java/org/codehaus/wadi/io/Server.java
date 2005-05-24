@@ -14,14 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.io;
 
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
+public interface Server {
 
-public interface BytesMessageOutputStreamConfig {
-
-    void send(BytesMessage message) throws JMSException;
-    BytesMessage createBytesMessage() throws JMSException;
-
+    void start() throws Exception;
+    void stop() throws Exception;
+    void waitForExistingConnections();
+    void stopAcceptingConnections();
+    
+    // Connection container...
+    
+    void run(Connection connection);
+    
 }

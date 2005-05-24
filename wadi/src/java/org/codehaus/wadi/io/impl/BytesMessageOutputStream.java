@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.io.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -25,6 +25,7 @@ import javax.jms.JMSException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.io.BytesMessageOutputStreamConfig;
 
 public class BytesMessageOutputStream extends OutputStream {
     
@@ -76,7 +77,7 @@ public class BytesMessageOutputStream extends OutputStream {
     public void close() throws IOException {
         try {
             _buffer.setBooleanProperty("closing-stream", true);
-            _log.info("CLIENT CLOSING STREAM: "+_buffer);
+            //_log.info("CLIENT CLOSING STREAM: "+_buffer);
         } catch (JMSException e) {
             _log.warn("problem writing message meta-data", e);
             throw new IOException();

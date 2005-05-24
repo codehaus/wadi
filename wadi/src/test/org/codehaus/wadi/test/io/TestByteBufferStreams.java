@@ -14,10 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.test.io;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+
+import org.codehaus.wadi.io.impl.ByteBufferInputStream;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import junit.framework.TestCase;

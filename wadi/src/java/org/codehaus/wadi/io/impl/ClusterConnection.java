@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.io.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +25,8 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 
 import org.activecluster.Cluster;
+import org.codehaus.wadi.io.BytesMessageOutputStreamConfig;
+import org.codehaus.wadi.io.ConnectionConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
@@ -67,9 +69,12 @@ public class ClusterConnection extends AbstractServerConnection implements Putta
         super.close();
     }
 
-    public void run() {
-        //_running=false;
+    protected boolean _running=false;
+    
+    public synchronized void run() {
+        _running=true;
         super.run();
+        _running=false;
     }
     
     // StreamConnection
@@ -97,7 +102,7 @@ public class ClusterConnection extends AbstractServerConnection implements Putta
     public void send(BytesMessage bytesMessage) throws JMSException {
         bytesMessage.setJMSCorrelationID(_theirCorrelationId);
         bytesMessage.setJMSReplyTo(_us);
-        _log.info("sending message: "+(_isServer?"[server->client]":"[client->server]"));
+        //_log.info("sending message: "+(_isServer?"[server->client]":"[client->server]"));
         _cluster.send(_them, bytesMessage);
     }
     
@@ -105,13 +110,13 @@ public class ClusterConnection extends AbstractServerConnection implements Putta
         return _cluster.createBytesMessage();
     }
 
-    protected boolean _committed;
-    public boolean getCommitted() {return _committed;}
-    
     // called by server...
-    public void commit() {
+    public synchronized void commit() {
         _inputStream.commit();
-        _committed=true;
+        _valid=false;
+        
+        if (!_running)
+            _config.notifyClosed(this);
     }
 
 }

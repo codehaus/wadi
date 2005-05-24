@@ -14,11 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.io;
 
-public interface ConnectionConfig {
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-    void notifyIdle(Connection connection); // called by Connection on becoming idle...
-    void notifyClosed(Connection connection); // called by Connection on being closed...
+public interface NIOConnectionConfig extends ConnectionConfig {
 
+    Sync getLock();
+    
 }

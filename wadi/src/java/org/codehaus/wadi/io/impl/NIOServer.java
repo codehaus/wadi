@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.io;
+package org.codehaus.wadi.io.impl;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -25,6 +25,9 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+
+import org.codehaus.wadi.io.Connection;
+import org.codehaus.wadi.io.NIOConnectionConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.FIFOReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
