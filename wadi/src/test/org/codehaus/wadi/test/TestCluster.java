@@ -131,13 +131,13 @@ public class TestCluster extends TestCase {
             _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), isa, proxy);
             //_relocater=new SwitchableRelocationStrategy();
             _relocater=new DummyRelocater();
-            _middle=new ClusterContextualiser(_bottom, _collapser, new DummyEvicter(), _cmap, _cluster, _dispatcher, _relocater, _location, nodeId);
+            _middle=new ClusterContextualiser(_bottom, _collapser, new DummyEvicter(), _cmap, _dispatcher, _relocater, _location, nodeId);
             _top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
             _middle.setTop(_top);
             PooledExecutor executor=new PooledExecutor(new BoundedBuffer(10), 100);
             long connectionTimeout=5000;
             boolean excludeSelf=false;
-            _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, _streamer, _accessOnLoad, _cluster, new ClusterServer(executor, connectionTimeout, _cluster, excludeSelf));
+            _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, _streamer, _accessOnLoad, _cluster, new ClusterServer(executor, connectionTimeout, excludeSelf));
         }
         
         protected boolean _running;

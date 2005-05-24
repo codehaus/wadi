@@ -18,7 +18,6 @@ package org.codehaus.wadi.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.activecluster.ClusterEvent;
 import org.activecluster.ClusterListener;
+import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
@@ -89,7 +89,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     protected final Collapser _collapser;
 	protected final HashMap _emigrationRvMap=new HashMap();
-	protected final ExtendedCluster _cluster;
 	protected final MessageDispatcher _dispatcher;
 	protected final Relocater _relocater;
 	protected final Location _location;
@@ -106,10 +105,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	 * @param map
 	 * @param location TODO
 	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, ExtendedCluster cluster, MessageDispatcher dispatcher, Relocater relocater, Location location, String nodeId) {
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, MessageDispatcher dispatcher, Relocater relocater, Location location, String nodeId) {
 		super(next, new CollapsingLocker(collapser), false);
         _collapser=collapser;
-		_cluster=cluster;
 		_dispatcher=dispatcher;
 	    _relocater=relocater;
 	    _location=location;
@@ -123,12 +121,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	    // this makes it awkward to split session and request relocation into different strategies,
 	    // so session relocation should be the basic strategy, with request relocation as a pluggable
 	    // optimisation...
-
-	    if (_log.isTraceEnabled()) _log.trace("Destination is: "+_cluster.getLocalNode().getDestination());
 		}
+
+    protected ExtendedCluster _cluster;
 
     public void init(ContextualiserConfig config) {
         super.init(config);
+        _cluster=((DistributableContextualiserConfig)_config).getCluster();
         Map state=new HashMap();
         state.put("id", _nodeId); // TODO - parameterise
         try {

@@ -76,7 +76,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected Evicter _databaseEvicter;
     protected final SharedStoreContextualiser _database;
 
-    protected final ExtendedCluster _clusterCluster;
+    protected final ExtendedCluster _clusterCluster; // this should not be here... - TODO
     protected final Evicter _clusterEvicter;
     protected final Map _clusterMap;
     protected final MessageDispatcher _clusterDispatcher;
@@ -103,7 +103,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final Map _memoryMap;
     protected final MemoryContextualiser _memory;
 
-    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource, int port, CustomCluster cluster) throws Exception {
+    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource, int port, ExtendedCluster cluster) throws Exception {
         super();
         _streamer=new SimpleStreamer();
         //_collapser=new DebugCollapser();
@@ -127,7 +127,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterRelocater=new ImmigrateRelocater(2000, 1000);
 	//        _clusterRelocater=new ProxyRelocater(2000, 2000);
         String nodeId=System.getProperty("wadi.colour");
-        _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterCluster, _clusterDispatcher, _clusterRelocater, _clusterLocation, nodeId);
+        _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterDispatcher, _clusterRelocater, _clusterLocation, nodeId);
 
         _statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
         _statelessMethodFlag=true;
