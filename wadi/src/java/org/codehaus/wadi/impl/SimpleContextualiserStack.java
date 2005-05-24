@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
+import org.activecluster.Cluster;
 import org.activecluster.ClusterException;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
@@ -51,6 +52,7 @@ import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Evicter;
+import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.Immoter;
@@ -74,10 +76,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected Evicter _databaseEvicter;
     protected final SharedStoreContextualiser _database;
 
-    protected final ConnectionFactory _connectionFactory;
-    protected final CustomClusterFactory _clusterFactory;
-    protected final String _clusterName;
-    protected final CustomCluster _clusterCluster;
+    protected final ExtendedCluster _clusterCluster;
     protected final Evicter _clusterEvicter;
     protected final Map _clusterMap;
     protected final MessageDispatcher _clusterDispatcher;
@@ -104,7 +103,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final Map _memoryMap;
     protected final MemoryContextualiser _memory;
 
-    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource, int port) throws Exception {
+    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource, int port, CustomCluster cluster) throws Exception {
         super();
         _streamer=new SimpleStreamer();
         //_collapser=new DebugCollapser();
@@ -115,10 +114,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _databaseTable="WADI";
         DatabaseMotable.init(_databaseDataSource, _databaseTable);
         _database=new SharedStoreContextualiser(_dummy, _collapser, true, _databaseDataSource, _databaseTable);
-        _connectionFactory=Utils.getConnectionFactory();
-        _clusterFactory=new CustomClusterFactory(_connectionFactory);
-        _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
-        _clusterCluster=(CustomCluster)_clusterFactory.createCluster(_clusterName);
+        _clusterCluster=cluster;
         InetAddress localhost=InetAddress.getLocalHost();
         System.out.println("LOCALHOST: "+localhost);
         InetSocketAddress isa=new InetSocketAddress(localhost, port);

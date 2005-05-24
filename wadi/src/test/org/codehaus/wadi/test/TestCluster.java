@@ -34,7 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.AttributesFactory;
-import org.codehaus.wadi.Cluster;
+import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
@@ -52,6 +52,7 @@ import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.ClusterContextualiser;
+import org.codehaus.wadi.impl.CustomCluster;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableManager;
@@ -78,6 +79,10 @@ import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory;
+import org.codehaus.wadi.io.impl.ClusterServer;
+
+import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
+import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
 /**
  * Test the shutdown of a Contextualiser stack as live sessions are distributed to other nodes in the cluster
@@ -100,7 +105,7 @@ public class TestCluster extends TestCase {
 
     class MyNode {
     
-        protected final Cluster _cluster;
+        protected final CustomCluster _cluster;
         protected final MessageDispatcher _dispatcher;
         protected final Location _location;
         protected final Relocater _relocater;
@@ -118,7 +123,7 @@ public class TestCluster extends TestCase {
         
         public MyNode(String nodeId, ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
             _bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, ds, table);
-            _cluster=(Cluster)factory.createCluster(clusterName);
+            _cluster=(CustomCluster)factory.createCluster(clusterName);
             _cluster.addClusterListener(new MyClusterListener());
             _dispatcher=new MessageDispatcher(_cluster);
             InetSocketAddress isa=new InetSocketAddress("localhost", 8080);
@@ -129,7 +134,10 @@ public class TestCluster extends TestCase {
             _middle=new ClusterContextualiser(_bottom, _collapser, new DummyEvicter(), _cmap, _cluster, _dispatcher, _relocater, _location, nodeId);
             _top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
             _middle.setTop(_top);
-            _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, _streamer, _accessOnLoad);
+            PooledExecutor executor=new PooledExecutor(new BoundedBuffer(10), 100);
+            long connectionTimeout=5000;
+            boolean excludeSelf=false;
+            _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, _streamer, _accessOnLoad, _cluster, new ClusterServer(executor, connectionTimeout, _cluster, excludeSelf));
         }
         
         protected boolean _running;
@@ -158,7 +166,7 @@ public class TestCluster extends TestCase {
         }
         
         public Map getClusterContextualiserMap() {return _cmap;}
-        public Cluster getCluster(){return _cluster;}
+        public ExtendedCluster getCluster(){return _cluster;}
         public ClusterContextualiser getClusterContextualiser() {return _middle;}
         
         public Map getMemoryContextualiserMap() {return _mmap;}

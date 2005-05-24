@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.activecluster.ClusterEvent;
 import org.activecluster.ClusterListener;
-import org.codehaus.wadi.Cluster;
+import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
@@ -89,7 +89,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     protected final Collapser _collapser;
 	protected final HashMap _emigrationRvMap=new HashMap();
-	protected final Cluster _cluster;
+	protected final ExtendedCluster _cluster;
 	protected final MessageDispatcher _dispatcher;
 	protected final Relocater _relocater;
 	protected final Location _location;
@@ -106,7 +106,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	 * @param map
 	 * @param location TODO
 	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, Cluster cluster, MessageDispatcher dispatcher, Relocater relocater, Location location, String nodeId) {
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, ExtendedCluster cluster, MessageDispatcher dispatcher, Relocater relocater, Location location, String nodeId) {
 		super(next, new CollapsingLocker(collapser), false);
         _collapser=collapser;
 		_cluster=cluster;
@@ -439,7 +439,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     public Collapser getCollapser() {return _collapser;}
     public MessageDispatcher getDispatcher() {return _dispatcher;}
     public Location getLocation() {return _location;}
-    public Cluster getCluster() {return _cluster;}
+    public ExtendedCluster getCluster() {return _cluster;}
     public Contextualiser getContextualiser() {return _top;}
 
 }

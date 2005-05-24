@@ -25,6 +25,7 @@ import java.util.Map;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableSessionConfig;
+import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionIdFactory;
@@ -33,14 +34,37 @@ import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.io.Server;
+import org.codehaus.wadi.io.ServerConfig;
 
-public class DistributableManager extends StandardManager implements DistributableSessionConfig {
+public class DistributableManager extends StandardManager implements DistributableSessionConfig, ServerConfig {
 
     protected final Streamer _streamer;
+    protected final ExtendedCluster _cluster;
+    protected final Server _server; // p2p Server
 
-    public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad) {
+    public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, ExtendedCluster cluster, Server server) {
         super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, accessOnLoad);
         _streamer=streamer;
+        _cluster=cluster;
+        _server=server;
+    }
+    
+    public void init() {
+        super.init();
+        _server.init(this);
+    }
+    
+    public void start() throws Exception {
+        super.start();
+        _cluster.start();
+        _server.start();
+    }
+    
+    public void stop() throws Exception {
+        _server.stop(); // TODO - when should we shut down server ?
+        _server.stop();
+        _cluster.stop();
     }
 
     // Distributable

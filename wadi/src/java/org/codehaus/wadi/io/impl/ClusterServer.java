@@ -26,7 +26,7 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 
-import org.codehaus.wadi.Cluster;
+import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.io.Connection;
 import org.codehaus.wadi.io.ConnectionConfig;
 
@@ -35,11 +35,11 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
 public class ClusterServer extends AbstractServer implements ConnectionConfig, MessageListener {
 
-    protected final Cluster _cluster;
+    protected final ExtendedCluster _cluster;
     protected final boolean _excludeSelf;
     protected final Map _connections;
         
-    public ClusterServer(PooledExecutor executor, long connectionTimeout, Cluster cluster, boolean excludeSelf) {
+    public ClusterServer(PooledExecutor executor, long connectionTimeout, ExtendedCluster cluster, boolean excludeSelf) {
         super(executor, connectionTimeout);
         _cluster=cluster;
         _excludeSelf=excludeSelf;
@@ -49,16 +49,18 @@ public class ClusterServer extends AbstractServer implements ConnectionConfig, M
     protected MessageConsumer _nodeConsumer;
     protected MessageConsumer _clusterConsumer;
     
-    public void start() throws JMSException {
+    public void start() throws Exception {
+        super.start();
         _clusterConsumer=_cluster.createConsumer(_cluster.getDestination(), null, _excludeSelf);
         _clusterConsumer.setMessageListener(this);
         _nodeConsumer=_cluster.createConsumer(_cluster.getLocalNode().getDestination(), null, _excludeSelf);
         _nodeConsumer.setMessageListener(this);
     }
 
-    public void stop() {
+    public void stop() throws Exception {
         stopAcceptingConnections();
         waitForExistingConnections();
+        super.stop();
     }
     
     public void stopAcceptingConnections() {

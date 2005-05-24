@@ -56,6 +56,7 @@ import org.codehaus.wadi.impl.DistributableManager;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
+import org.codehaus.wadi.impl.DummyCluster;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.DummySessionWrapperFactory;
@@ -69,6 +70,7 @@ import org.codehaus.wadi.impl.StandardAttributesFactory;
 import org.codehaus.wadi.impl.StandardSessionFactory;
 import org.codehaus.wadi.impl.StandardValueFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
+import org.codehaus.wadi.io.impl.DummyServer;
 
 /**
  * Test WADI's HttpSession implementation
@@ -105,19 +107,19 @@ extends TestCase
     protected SessionPool             _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _distributableValueFactory=new DistributableValueFactory();
     protected ValuePool               _distributableValuePool=new SimpleValuePool(_distributableValueFactory);
-    protected StandardManager                 _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesFactory, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
+    protected StandardManager         _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesFactory, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, new DummyCluster(), new DummyServer());
     // LazyValue
     protected SessionPool             _lazyValueSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _lazyValueFactory=new LazyValueFactory();
     protected ValuePool               _lazyValuePool=new SimpleValuePool(_lazyValueFactory);
-    protected StandardManager                 _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesFactory, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
+    protected StandardManager         _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesFactory, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, new DummyCluster(), new DummyServer());
     // LazyAttributes
     protected SessionPool             _lazyAttributesSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected AttributesFactory       _lazyAttributesFactory=new LazyAttributesFactory();
-    protected StandardManager                 _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesFactory,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
+    protected StandardManager         _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesFactory,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, new DummyCluster(), new DummyServer());
     // LazyBoth
     protected SessionPool             _lazyBothSessionPool=new SimpleSessionPool(_distributableSessionFactory);
-    protected StandardManager                 _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesFactory,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
+    protected StandardManager         _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesFactory,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, new DummyCluster(), new DummyServer());
 
 
     public TestHttpSession(String name)

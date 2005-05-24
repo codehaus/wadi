@@ -54,7 +54,31 @@
     >
   </bean>
 
-	<!-- the Contextualiser stack...(shorthand for now) -->
+  <!-- the Cluster Connection -->
+
+  <bean
+    id="ConnectionFactory"
+    class="org.codehaus.wadi.impl.Utils"
+    factory-method="getConnectionFactory"
+    >
+  </bean>
+
+  <bean
+    id="ClusterFactory"
+    class="org.codehaus.wadi.impl.CustomClusterFactory"
+    >
+    <constructor-arg><ref bean="ConnectionFactory"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="Cluster"
+    factory-bean="ClusterFactory"
+    factory-method="createCluster"
+    >
+    <constructor-arg><value>ORG.CODEHAUS.WADI.TEST.CLUSTER</value></constructor-arg>
+  </bean>
+
+  <!-- the Contextualiser stack...(shorthand for now) -->
 
   <bean
     id="SessionMap"
@@ -66,37 +90,66 @@
     id="DataSource"
     class="org.axiondb.jdbc.AxionDataSource"
     >
-     <constructor-arg><value>jdbc:axiondb:testdb</value></constructor-arg>
+    <constructor-arg><value>jdbc:axiondb:testdb</value></constructor-arg>
   </bean>
 
   <bean
     id="ContextPool"
     class="org.codehaus.wadi.impl.SessionToContextPoolAdapter"
     >
-     <constructor-arg><ref bean="SessionPool"/></constructor-arg>
+    <constructor-arg><ref bean="SessionPool"/></constructor-arg>
   </bean>
 
   <bean
     id="Contextualiser"
     class="org.codehaus.wadi.impl.SimpleContextualiserStack"
     >
-       <constructor-arg><ref bean="SessionMap"/></constructor-arg>
-       <constructor-arg><ref bean="ContextPool"/></constructor-arg> <!-- enclosed SessionPool will be init()-ed by Manager -->
-       <constructor-arg><ref bean="DataSource"/></constructor-arg>
-       <constructor-arg type="int"><value>${http.port}</value></constructor-arg>
+    <constructor-arg><ref bean="SessionMap"/></constructor-arg>
+    <constructor-arg><ref bean="ContextPool"/></constructor-arg> <!-- enclosed SessionPool will be init()-ed by Manager -->
+    <constructor-arg><ref bean="DataSource"/></constructor-arg>
+    <constructor-arg type="int"><value>${http.port}</value></constructor-arg>
+    <constructor-arg><ref bean="Cluster"/></constructor-arg>
   </bean>
 
-	<!-- the Router (load-balancer integration) -->
+  <!-- the Router (load-balancer integration) -->
 
   <bean
     id="Router"
     class="org.codehaus.wadi.impl.JkRouter"
     >
-       <constructor-arg><value>${wadi.colour}</value></constructor-arg>
+    <constructor-arg><value>${wadi.colour}</value></constructor-arg>
   </bean>
 
 
-	<!-- and finally - the SessionManager itself -->
+  <!-- the P2P Server -->
+  <!-- TODO: some decent comments -->
+
+  <bean
+    id="Buffer"
+    class="EDU.oswego.cs.dl.util.concurrent.BoundedBuffer"
+    >
+    <constructor-arg type="int"><value>10</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="Executor"
+    class="EDU.oswego.cs.dl.util.concurrent.PooledExecutor"
+    >
+    <constructor-arg><ref bean="Buffer"/></constructor-arg>
+    <constructor-arg type="int"><value>100</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="Server"
+    class="org.codehaus.wadi.io.impl.ClusterServer"
+    >
+    <constructor-arg><ref bean="Executor"/></constructor-arg>
+    <constructor-arg type="long"><value>5000</value></constructor-arg><!-- timeout -->
+    <constructor-arg><ref bean="Cluster"/></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg><!-- excludeSelf -->
+  </bean>
+
+  <!-- and finally - the SessionManager itself -->
 
   <bean
     id="SessionManager"
@@ -111,6 +164,8 @@
     <constructor-arg><ref bean="SessionMap"/></constructor-arg>
     <constructor-arg><ref bean="Streamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg><ref bean="Cluster"/></constructor-arg>
+    <constructor-arg><ref bean="Server"/></constructor-arg>
     <constructor-arg><ref bean="Router"/></constructor-arg>
   </bean>
 
