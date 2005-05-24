@@ -17,7 +17,7 @@
 package org.codehaus.wadi;
 
 import org.codehaus.wadi.Session;
-import org.codehaus.wadi.impl.Manager;
+import org.codehaus.wadi.impl.StandardManager;
 
 public aspect SessionEvicterNotifier {
     
@@ -37,17 +37,17 @@ public aspect SessionEvicterNotifier {
         session.getConfig().setMaxInactiveInterval(session, oldInterval, newInterval);
     }
     
-    pointcut createSession(Manager manager) : execution(Session Manager+.createSession()) && target(manager);
+    pointcut createSession(StandardManager manager) : execution(Session StandardManager+.createSession()) && target(manager);
     
-    Session around(Manager manager) : createSession(manager) {
+    Session around(StandardManager manager) : createSession(manager) {
         Session session=(Session)proceed(manager);
         // notify Evicter of insertion
         return session;
     }
     
-    pointcut destroySession(Manager manager, Session session) : execution(void Manager+.destroySession(Session)) && args(session) && target(manager);
+    pointcut destroySession(StandardManager manager, Session session) : execution(void StandardManager+.destroySession(Session)) && args(session) && target(manager);
     
-    before(Manager manager, Session session) : destroySession(manager, session) {
+    before(StandardManager manager, Session session) : destroySession(manager, session) {
         // notify Evicter of removal
     }
 }

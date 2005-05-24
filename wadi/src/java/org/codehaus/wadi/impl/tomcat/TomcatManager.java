@@ -176,7 +176,7 @@ public class TomcatManager extends DistributableManager implements Manager, Life
     public void setContainer(Container container) {
         _container=container;
         _servletContext=((Context)_container).getServletContext();
-        _servletContext.setAttribute(org.codehaus.wadi.impl.Manager.class.getName(), this); // TODO - perhaps init() ?
+        _servletContext.setAttribute(org.codehaus.wadi.impl.StandardManager.class.getName(), this); // TODO - perhaps init() ?
     }
 
     protected DefaultContext _defaultContext;

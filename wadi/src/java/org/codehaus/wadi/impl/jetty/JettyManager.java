@@ -30,7 +30,7 @@ import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.impl.Manager;
+import org.codehaus.wadi.impl.StandardManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mortbay.jetty.servlet.ServletHandler;
@@ -51,7 +51,7 @@ public class JettyManager extends org.codehaus.wadi.impl.DistributableManager im
     // Lifecyle - Jetty & WADI
     
     public void start() throws Exception {
-        getServletContext().setAttribute(Manager.class.getName(), this); // TODO - is putting ourselves in an attribute a security risk ?
+        getServletContext().setAttribute(StandardManager.class.getName(), this); // TODO - is putting ourselves in an attribute a security risk ?
         super.start();
     }
 

@@ -61,7 +61,7 @@ import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.DummySessionWrapperFactory;
 import org.codehaus.wadi.impl.LazyAttributesFactory;
 import org.codehaus.wadi.impl.LazyValueFactory;
-import org.codehaus.wadi.impl.Manager;
+import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
@@ -96,7 +96,7 @@ extends TestCase
     protected SessionPool             _standardSessionPool=new SimpleSessionPool(_standardSessionFactory);
     protected ValueFactory            _standardValueFactory=new StandardValueFactory();
     protected ValuePool               _standardValuePool=new SimpleValuePool(_standardValueFactory);
-    protected Manager                 _standardManager=new Manager(_standardSessionPool, _standardAttributesFactory, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser, _sessionMap, _router, _accessOnLoad);
+    protected StandardManager                 _standardManager=new StandardManager(_standardSessionPool, _standardAttributesFactory, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser, _sessionMap, _router, _accessOnLoad);
     // Distributable
     protected Contextualiser          _distributableContextualiser=new DummyContextualiser();
     protected Streamer                _streamer=new SimpleStreamer();
@@ -105,19 +105,19 @@ extends TestCase
     protected SessionPool             _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _distributableValueFactory=new DistributableValueFactory();
     protected ValuePool               _distributableValuePool=new SimpleValuePool(_distributableValueFactory);
-    protected Manager                 _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesFactory, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
+    protected StandardManager                 _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesFactory, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
     // LazyValue
     protected SessionPool             _lazyValueSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _lazyValueFactory=new LazyValueFactory();
     protected ValuePool               _lazyValuePool=new SimpleValuePool(_lazyValueFactory);
-    protected Manager                 _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesFactory, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
+    protected StandardManager                 _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesFactory, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
     // LazyAttributes
     protected SessionPool             _lazyAttributesSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected AttributesFactory       _lazyAttributesFactory=new LazyAttributesFactory();
-    protected Manager                 _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesFactory,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
+    protected StandardManager                 _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesFactory,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
     // LazyBoth
     protected SessionPool             _lazyBothSessionPool=new SimpleSessionPool(_distributableSessionFactory);
-    protected Manager                 _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesFactory,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
+    protected StandardManager                 _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesFactory,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad);
 
 
     public TestHttpSession(String name)
@@ -247,7 +247,7 @@ extends TestCase
     }
 
     public void
-    testCreateHttpSession(Manager manager)
+    testCreateHttpSession(StandardManager manager)
     {
         _events.clear();
 
@@ -272,7 +272,7 @@ extends TestCase
     }
 
     public void
-    testDestroyHttpSessionWithListener(Manager manager)
+    testDestroyHttpSessionWithListener(StandardManager manager)
     throws Exception
     {
         // create session
@@ -341,7 +341,7 @@ extends TestCase
     }
 
     public void
-    testDestroyHttpSessionWithoutListener(Manager manager)
+    testDestroyHttpSessionWithoutListener(StandardManager manager)
     throws Exception
     {
         // remove Listener
@@ -392,7 +392,7 @@ extends TestCase
     }
 
     public void
-    testInvalidate(Manager manager)
+    testInvalidate(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         session.invalidate();
@@ -410,7 +410,7 @@ extends TestCase
     }
 
     public void
-    testSetAttribute(Manager manager)
+    testSetAttribute(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
@@ -455,7 +455,7 @@ extends TestCase
     }
 
     public void
-    testPutValue(Manager manager)
+    testPutValue(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
@@ -500,7 +500,7 @@ extends TestCase
     }
 
     public void
-    testGetAttribute(Manager manager)
+    testGetAttribute(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         String key="foo";
@@ -522,7 +522,7 @@ extends TestCase
     }
 
     public void
-    testGetValue(Manager manager)
+    testGetValue(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         String key="foo";
@@ -544,7 +544,7 @@ extends TestCase
     }
 
     public void
-    testRemoveAttribute(Manager manager)
+    testRemoveAttribute(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
@@ -597,7 +597,7 @@ extends TestCase
     }
 
     public void
-    testRemoveValue(Manager manager)
+    testRemoveValue(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
@@ -646,7 +646,7 @@ extends TestCase
     }
 
     public void
-    testSetAttributeNull(Manager manager)
+    testSetAttributeNull(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
@@ -695,7 +695,7 @@ extends TestCase
     }
 
     public void
-    testPutValueNull(Manager manager)
+    testPutValueNull(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
@@ -744,7 +744,7 @@ extends TestCase
     }
 
     public void
-    testReplaceAttribute(Manager manager)
+    testReplaceAttribute(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
@@ -804,7 +804,7 @@ extends TestCase
     }
 
     public void
-    testReplaceValue(Manager manager)
+    testReplaceValue(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         String key="foo";
@@ -871,7 +871,7 @@ extends TestCase
     }
 
     public void
-    testGetAttributeNames(Manager manager)
+    testGetAttributeNames(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         assertTrue(enumerationLength(session.getAttributeNames())==0);
@@ -900,7 +900,7 @@ extends TestCase
     }
 
     public void
-    testGetValueNames(Manager manager)
+    testGetValueNames(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         assertTrue(session.getValueNames().length==0);
@@ -929,7 +929,7 @@ extends TestCase
     }
 
     public void
-    testMaxInactiveInterval(Manager manager)
+    testMaxInactiveInterval(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         {
@@ -955,7 +955,7 @@ extends TestCase
     }
 
     public void
-    testIsNew(Manager manager, SessionPool sessionPool)
+    testIsNew(StandardManager manager, SessionPool sessionPool)
     {
         Session s=sessionPool.take();
         HttpSession session=s.getWrapper();
@@ -975,7 +975,7 @@ extends TestCase
     }
 
     public void
-    testNullName(Manager manager)
+    testNullName(StandardManager manager)
     {
         HttpSession session=manager.create().getWrapper();
         try{session.setAttribute(null,"a");assertTrue(false);}catch(IllegalArgumentException e){}
@@ -1020,7 +1020,7 @@ extends TestCase
     }
 
     public void
-    testActivation(Manager manager, SessionPool pool) // Distributable only
+    testActivation(StandardManager manager, SessionPool pool) // Distributable only
     throws Exception
     {
         DistributableSession s0=(DistributableSession)pool.take();
@@ -1058,7 +1058,7 @@ extends TestCase
     }
 
     public void
-    testMigration(Manager manager, SessionPool pool) // Distributable only
+    testMigration(StandardManager manager, SessionPool pool) // Distributable only
     throws Exception
     {
         // test that a 'copy' (the basis of all motion/migration) completely copies
@@ -1164,7 +1164,7 @@ extends TestCase
     }
 
     public void
-    testStandardValidation(Manager manager) // Distributable only
+    testStandardValidation(StandardManager manager) // Distributable only
     throws Exception
     {
         HttpSession session=manager.create().getWrapper();
@@ -1179,7 +1179,7 @@ extends TestCase
     }
 
     public void
-    testDistributableValidation(Manager manager) // Distributable only
+    testDistributableValidation(StandardManager manager) // Distributable only
     throws Exception
     {
         HttpSession session=manager.create().getWrapper();
@@ -1451,7 +1451,7 @@ extends TestCase
         testAtomicAttributes(_lazyAttributesManager);
     }
 
-    public void testAtomicAttributes(Manager manager) throws Exception {
+    public void testAtomicAttributes(StandardManager manager) throws Exception {
         Session sess0=manager.create();
         Object val=new String("value");
         String key0="foo";
@@ -1474,7 +1474,7 @@ extends TestCase
         testSeparateAttributes(_lazyBothManager);
     }
 
-    public void testSeparateAttributes(Manager manager) throws Exception {
+    public void testSeparateAttributes(StandardManager manager) throws Exception {
         Session sess0=manager.create();
         Object val=new String("value");
         String key0="foo";
@@ -1494,7 +1494,7 @@ extends TestCase
 
         // (1) add an activation and a serialisation listener, migrate, get one, both should be called
         {
-            Manager manager=_lazyAttributesManager;
+            StandardManager manager=_lazyAttributesManager;
             manager.removeEventListener(_listener);
             Session s0=manager.create();
             s0.setAttribute("activation-listener", new ActivationListener());
@@ -1515,7 +1515,7 @@ extends TestCase
 
         // (2) add an activation, a binding and a serialisation listener, migrate, invalidate - all should be called
         {
-            Manager manager=_lazyAttributesManager;
+            StandardManager manager=_lazyAttributesManager;
             manager.removeEventListener(_listener);
             Session s0=manager.create();
             s0.setAttribute("activation-listener", new ActivationListener());
@@ -1543,7 +1543,7 @@ extends TestCase
         // LazyValue
         // (1) add an activation and a serialisation listener, migrate, get one, only that one should be called
         {
-            Manager manager=_lazyValueManager;
+            StandardManager manager=_lazyValueManager;
             manager.removeEventListener(_listener);
             Session s0=manager.create();
             s0.setAttribute("activation-listener", new ActivationListener());
@@ -1570,7 +1570,7 @@ extends TestCase
         // (2) add an activation, a binding and a serialisation listener, migrate, invalidate - serialisation should not be called
         // LATER - none should be called, until they are dereffed from the event itself...
         {
-            Manager manager=_lazyValueManager;
+            StandardManager manager=_lazyValueManager;
             manager.removeEventListener(_listener);
 
             Session s0=manager.create();
@@ -1609,7 +1609,7 @@ extends TestCase
     }
 
     public void
-    testRest(Manager manager)
+    testRest(StandardManager manager)
     {
         long start=System.currentTimeMillis();
         HttpSession session=manager.create().getWrapper();
