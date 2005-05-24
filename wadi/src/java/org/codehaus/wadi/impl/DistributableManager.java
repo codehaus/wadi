@@ -47,7 +47,7 @@ public class DistributableManager extends StandardManager implements Distributab
     public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, ExtendedCluster cluster, Server server) {
         super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, accessOnLoad);
         _streamer=streamer;
-        _cluster=cluster;
+        _cluster=cluster; // we should be responsible for creation/destruction of this component...
         _server=server;
     }
     

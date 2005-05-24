@@ -31,7 +31,6 @@ import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.impl.CustomCluster;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.io.Server;
 import org.apache.commons.logging.Log;
