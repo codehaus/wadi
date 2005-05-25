@@ -66,14 +66,6 @@ public abstract class AbstractClusterPipe extends AbstractPipe implements Puttab
         super.close();
     }
 
-    protected boolean _running=false;
-    
-    public synchronized void run() {
-        _running=true;
-        super.run();
-        _running=false;
-    }
-    
     // StreamConnection
     
     public InputStream getInputStream() {
@@ -111,9 +103,6 @@ public abstract class AbstractClusterPipe extends AbstractPipe implements Puttab
     public synchronized void commit() {
         _inputStream.commit();
         _valid=false;
-        
-        if (!_running)
-            _config.notifyClosed(this);
     }
 
 }
