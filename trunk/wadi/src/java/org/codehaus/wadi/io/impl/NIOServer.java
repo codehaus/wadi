@@ -26,6 +26,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
+import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.io.Pipe;
 import org.codehaus.wadi.io.NIOPipeConfig;
@@ -208,6 +209,10 @@ public class NIOServer extends AbstractSocketServer implements NIOPipeConfig {
     public void notifyIdle(Pipe pipe) {
         if (_log.isTraceEnabled()) _log.trace("idling server Pipe: "+pipe);
         ((NIOPipe)pipe).setRunning(false);
+    }
+    
+    public Contextualiser getContextualiser() {
+        return _config.getContextualiser();
     }
     
     // NIOPipeConfig

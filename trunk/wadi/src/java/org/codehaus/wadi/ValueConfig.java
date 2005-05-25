@@ -23,6 +23,6 @@ package org.codehaus.wadi;
  * @version $Revision$
  */
 
-public interface ValueConfig {
+public interface ValueConfig extends Config {
     // empty
 }

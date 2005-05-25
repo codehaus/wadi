@@ -21,7 +21,7 @@ import java.util.List;
 import javax.servlet.ServletContext;
 
 
-public interface SessionConfig {
+public interface SessionConfig extends Config {
     
     ValuePool getValuePool();
     AttributesFactory getAttributesFactory();

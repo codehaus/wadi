@@ -151,7 +151,7 @@ public class MyServlet implements Servlet {
             _manager.destroy();
             _cluster.stop();
 		} catch (Exception e) {
-			_log.warn(e);
+			_log.warn("unexpected problem", e);
 		}
 	}
 

@@ -24,6 +24,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.io.Pipe;
 import org.codehaus.wadi.io.PipeConfig;
 
@@ -32,6 +33,7 @@ public class SocketClientPipe extends AbstractPipe {
     public static class DummyPipeConfig implements PipeConfig {
         public void notifyIdle(Pipe pipe) {/* do nothing */}
         public void notifyClosed(Pipe pipe) {/* do nothing */}
+        public Contextualiser getContextualiser() {return null;}        
     }
     
     

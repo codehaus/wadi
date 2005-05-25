@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi;
 
-public interface AttributesConfig {
+public interface AttributesConfig extends Config {
     
     ValuePool getValuePool();
     

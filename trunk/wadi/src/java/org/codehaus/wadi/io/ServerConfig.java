@@ -16,10 +16,13 @@
  */
 package org.codehaus.wadi.io;
 
+import org.codehaus.wadi.Config;
+import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ExtendedCluster;
 
-public interface ServerConfig {
+public interface ServerConfig extends Config {
 
         ExtendedCluster getCluster();
+        Contextualiser getContextualiser();
     
 }

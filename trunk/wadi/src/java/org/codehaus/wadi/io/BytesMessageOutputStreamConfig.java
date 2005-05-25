@@ -19,7 +19,9 @@ package org.codehaus.wadi.io;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 
-public interface BytesMessageOutputStreamConfig {
+import org.codehaus.wadi.Config;
+
+public interface BytesMessageOutputStreamConfig extends Config {
 
     void send(BytesMessage message) throws JMSException;
     BytesMessage createBytesMessage() throws JMSException;

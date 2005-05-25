@@ -16,16 +16,6 @@
  */
 package org.codehaus.wadi;
 
-import javax.servlet.http.HttpServletRequest;
-
-public interface RouterConfig extends Config {
-
-    String getSessionCookieName();
-
-    String getSessionCookiePath(HttpServletRequest req);
-
-    String getSessionCookieDomain();
-
-    String getSessionUrlParamName();
+public interface Config {
 
 }
