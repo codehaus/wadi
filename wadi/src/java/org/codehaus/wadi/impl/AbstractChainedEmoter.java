@@ -28,7 +28,7 @@ import org.codehaus.wadi.Motable;
  */
 public abstract class AbstractChainedEmoter implements Emoter {
 
-	public boolean prepare(String name, Motable emotable, Motable immotable) {
+	public boolean prepare(String name, Motable emotable) {
 		return true;
 	}
 

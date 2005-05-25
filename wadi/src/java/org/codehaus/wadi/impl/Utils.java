@@ -65,7 +65,7 @@ public class Utils {
 		Motable immotable=immoter.nextMotable(name, emotable);
 		boolean i=false;
 		boolean e=false;
-		if (((e=emoter.prepare(name, emotable, immotable) && (e=true))) && (immoter.prepare(name, emotable, immotable) && (i=true))) {
+		if (((e=emoter.prepare(name, emotable) && (e=true))) && (immoter.prepare(name, emotable, immotable) && (i=true))) {
 			immoter.commit(name, immotable);
 			emoter.commit(name, emotable);
 			long elapsedTime=System.currentTimeMillis()-startTime;

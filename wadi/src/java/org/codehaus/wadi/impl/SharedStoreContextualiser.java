@@ -84,8 +84,8 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 	 */
 	public class SharedJDBCEmoter extends AbstractChainedEmoter {
 
-        public boolean prepare(String name, Motable emotable, Motable immotable) {
-            if (super.prepare(name, emotable, immotable)) {
+        public boolean prepare(String name, Motable emotable) {
+            if (super.prepare(name, emotable)) {
                 try {
                     DatabaseMotable motable=(DatabaseMotable)emotable;
                     motable.setConnection(_store.getConnection());

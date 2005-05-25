@@ -133,7 +133,7 @@ public class ImmigrateRelocater extends AbstractRelocater implements SessionRelo
 			_settingsInOut=settingsInOut;
 		}
 
-		public boolean prepare(String name, Motable emotable, Motable immotable) {
+		public boolean prepare(String name, Motable emotable) {
 			return true;
 		}
 

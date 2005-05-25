@@ -55,7 +55,9 @@ import junit.framework.TestCase;
 
 public class TestMotion extends TestCase {
 
-    protected final Log _log=LogFactory.getLog(getClass());
+//    protected final Log _log=LogFactory.getLog(getClass());
+    protected static final Log _log=LogFactory.getLog(TestMotion.class);
+    
     protected final ThreadFactory _threadFactory=new ThreadFactory();
     
     interface Location {/* empty */}
@@ -256,25 +258,25 @@ public class TestMotion extends TestCase {
         _log.info("FINISH");
     }
     
-//    public static Motable mote(Emoter emoter, Immoter immoter, Motable emotable, String name) {
-//        long startTime=System.currentTimeMillis();
-//        Motable immotable=immoter.nextMotable(name, emotable);
-//        boolean i=false;
-//        boolean e=false;
-//        if (((e=emoter.prepare(name, emotable, immotable) && (e=true))) && (immoter.prepare(name, emotable, immotable) && (i=true))) {
-//            immoter.commit(name, immotable);
-//            emoter.commit(name, emotable);
-//            long elapsedTime=System.currentTimeMillis()-startTime;
-//            if (_log.isDebugEnabled())_log.debug("motion: "+name+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
-//            return immotable;
-//        } else {
-//            if (e) emoter.rollback(name, emotable);
-//            if (i) immoter.rollback(name, immotable);
-//            long elapsedTime=System.currentTimeMillis()-startTime;
-//            if (_log.isWarnEnabled()) _log.warn("motion failed: "+name+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
-//            return null;
-//        }
-//    }
+    public static Motable mote(Emoter emoter, Immoter immoter, Motable emotable, String name) {
+        long startTime=System.currentTimeMillis();
+        Motable immotable=immoter.nextMotable(name, emotable);
+        boolean i=false;
+        boolean e=false;
+        if (((e=emoter.prepare(name, emotable) && (e=true))) && (immoter.prepare(name, emotable, immotable) && (i=true))) {
+            immoter.commit(name, immotable);
+            emoter.commit(name, emotable);
+            long elapsedTime=System.currentTimeMillis()-startTime;
+            if (_log.isDebugEnabled())_log.debug("motion: "+name+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
+            return immotable;
+        } else {
+            if (e) emoter.rollback(name, emotable);
+            if (i) immoter.rollback(name, immotable);
+            long elapsedTime=System.currentTimeMillis()-startTime;
+            if (_log.isWarnEnabled()) _log.warn("motion failed: "+name+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
+            return null;
+        }
+    }
     
     
     public static class EmotionServerPeer extends Peer {

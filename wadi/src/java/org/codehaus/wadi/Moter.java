@@ -24,7 +24,6 @@ package org.codehaus.wadi;
  */
 public interface Moter {
     
-	boolean prepare(String name, Motable emotable, Motable immotable);
 	void commit(String name, Motable motable);
 	void rollback(String name, Motable motable);
 
