@@ -24,5 +24,7 @@ package org.codehaus.wadi;
  */
 
 public interface Emoter extends Moter {
-    // no more methods, just a logical type
+
+    boolean prepare(String name, Motable emotable);
+    
 }

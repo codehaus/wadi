@@ -108,8 +108,8 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
 
 		public ExclusiveStoreEmoter(Map map) {super(map);}
 
-        public boolean prepare(String name, Motable emotable, Motable immotable) {
-            if (super.prepare(name, emotable, immotable)) {
+        public boolean prepare(String name, Motable emotable) {
+            if (super.prepare(name, emotable)) {
                 try {
                     StoreMotable motable=(StoreMotable)emotable;
                     motable.init(_store, name);

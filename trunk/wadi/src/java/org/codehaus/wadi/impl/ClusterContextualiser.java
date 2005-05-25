@@ -335,7 +335,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 			_settingsInOut=new MessageDispatcher.Settings();
 		}
 
-		public boolean prepare(String name, Motable emotable, Motable immotable) {
+		public boolean prepare(String name, Motable emotable) {
 			try {
 				// reverse direction...
 				_settingsInOut.to=_om.getJMSReplyTo();

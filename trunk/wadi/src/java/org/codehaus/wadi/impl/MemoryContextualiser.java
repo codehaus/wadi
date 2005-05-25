@@ -125,7 +125,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
             super(map);
         }
 
-        public boolean prepare(String name, Motable emotable, Motable immotable) {
+        public boolean prepare(String name, Motable emotable) {
             Sync lock=((Context)emotable).getExclusiveLock();
             try {
                 Utils.acquireUninterrupted(lock);
@@ -137,7 +137,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
             if (emotable.getName()==null)
                 return false; // we lost race to motable and it has gone...
 
-            return super.prepare(name, emotable, immotable);
+            return super.prepare(name, emotable);
         }
 
         public void commit(String name, Motable emotable) {
