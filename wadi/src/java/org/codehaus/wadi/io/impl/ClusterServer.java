@@ -102,7 +102,7 @@ public class ClusterServer extends AbstractServer implements ConnectionConfig, M
                     }
                     if (bm.getBooleanProperty("closing-stream")) {
                         //_log.info("SERVER CLOSING STREAM: "+connection);
-                        connection.commit();
+//                        connection.commit();
                     }
                 }
             }
@@ -142,6 +142,7 @@ public class ClusterServer extends AbstractServer implements ConnectionConfig, M
 
     public void notifyIdle(Connection connection) {
         // Cluster Connections idle automatically after running...
+        _connections.remove(((ClusterConnection)connection)._ourCorrelationId); // TODO - encapsulate properly
     }
 
 }
