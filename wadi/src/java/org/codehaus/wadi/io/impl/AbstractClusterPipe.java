@@ -30,34 +30,31 @@ import org.codehaus.wadi.io.PipeConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
-public class ClusterPipe extends AbstractPipe implements Puttable, BytesMessageOutputStreamConfig {
+public abstract class AbstractClusterPipe extends AbstractPipe implements Puttable, BytesMessageOutputStreamConfig {
 
     protected final Cluster _cluster;
     protected final Destination _us;
     protected final Destination _them;
-    protected final String _correlationId;
-    protected final boolean _isServer;
     protected final Channel _inputQueue;
     protected final BytesMessageInputStream _inputStream;
     protected final BytesMessageOutputStream _outputStream;
     protected final String _ourCorrelationId;
-    protected final String _theirCorrelationId;
     
-    public ClusterPipe(PipeConfig config, long timeout, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue, boolean isServer) {
+    public AbstractClusterPipe(PipeConfig config, long timeout, Cluster cluster, Destination us, String ourId, Destination them, Channel inputQueue) {
         super(config, timeout);
         _cluster=cluster;
         _us=us;
         _them=them;
-        _correlationId=correlationId;
         _inputQueue=inputQueue;
         _inputStream=new BytesMessageInputStream(inputQueue, _timeout);
         _outputStream=new BytesMessageOutputStream(this);
-        _isServer=isServer;
-        _ourCorrelationId=correlationId+(isServer?".server":".client");
-        _theirCorrelationId=correlationId+(isServer?".client":".server");
+        _ourCorrelationId=ourId;
     }
 
+    public abstract String getTheirCorrelationId();
+    
     String getCorrelationId() {
         return _ourCorrelationId;
     }
@@ -100,7 +97,7 @@ public class ClusterPipe extends AbstractPipe implements Puttable, BytesMessageO
     // ByteArrayOutputStreamConfig
     
     public void send(BytesMessage bytesMessage) throws JMSException {
-        bytesMessage.setJMSCorrelationID(_theirCorrelationId);
+        bytesMessage.setJMSCorrelationID(getTheirCorrelationId());
         bytesMessage.setJMSReplyTo(_us);
         //_log.info("sending message: "+(_isServer?"[server->client]":"[client->server]"));
         _cluster.send(_them, bytesMessage);

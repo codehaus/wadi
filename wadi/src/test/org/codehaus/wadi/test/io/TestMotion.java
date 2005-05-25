@@ -52,7 +52,7 @@ public class TestMotion extends TestCase {
     protected final Log _log=LogFactory.getLog(getClass());
     protected final ThreadFactory _threadFactory=new ThreadFactory();
     
-    interface Location {/* empty */};
+    interface Location {/* empty */}
     
     public static class InetSocketAddressLocation implements Location {
         
@@ -134,16 +134,16 @@ public class TestMotion extends TestCase {
         }
         
         public Pipe getClient(Location location) throws IOException {
-            synchronized (_clients) {
-                Pipe client=(Pipe)_clients.get(location);
-                if (client==null) {
-                    client=((ClusterServer)_server).makeClientPipe("foo-"+_counter++, ((DestinationLocation)location).getDestination());
-                    //client=new SocketClientConnection(((InetSocketAddressLocation)location).getAddress(), 5*1000);
-                    _clients.put(location, client);
-                }
-                return client;
-            }
-            
+//            synchronized (_clients) {
+//                Pipe client=(Pipe)_clients.get(location);
+//                if (client==null) {
+//                    client=((ClusterServer)_server).makeClientPipe("foo-"+_counter++, ((DestinationLocation)location).getDestination());
+//                    //client=new SocketClientConnection(((InetSocketAddressLocation)location).getAddress(), 5*1000);
+//                    //_clients.put(location, client); // don't cache clients..
+//                }
+//                return client;
+//            }
+            return ((ClusterServer)_server).makeClientPipe("foo-"+_counter++, ((DestinationLocation)location).getDestination());
         }
     }
 
@@ -228,18 +228,23 @@ public class TestMotion extends TestCase {
     
     
     public void testMotion() throws Exception {
+        
+        _log.info("START");
         Pipe us2them=_us.getClient(_remote);
         _log.info("us -> them (1st trip)");
         us2them.run(new SingleRoundTripClientPeer());
         _log.info("us -> them (2nd trip)");
         us2them.run(new SingleRoundTripClientPeer());
         us2them.close();
+        _log.info("FINISH");
         
+        _log.info("START");
         Pipe them2us=_them.getClient(_local);
         _log.info("them -> us (1st trip)");
         them2us.run(new SingleRoundTripClientPeer());
         _log.info("them -> us (2nd trip)");
         them2us.run(new SingleRoundTripClientPeer());
         them2us.close();
+        _log.info("FINISH");
     }
 }
