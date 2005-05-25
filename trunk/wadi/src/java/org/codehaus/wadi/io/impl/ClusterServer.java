@@ -85,7 +85,7 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
                 Destination replyTo=bm.getJMSReplyTo();
                 //_log.info("receiving message");
                 synchronized (_pipes) {
-                    _log.info("looking up Pipe: "+ourId);
+                    //_log.info("looking up Pipe: "+ourId);
                     AbstractClusterPipe pipe=(AbstractClusterPipe)_pipes.get(ourId);
                     if (pipe==null) {
                         // initialising a new Pipe...
@@ -93,11 +93,13 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
                         Destination us=_cluster.getLocalNode().getDestination();
                         pipe=new ServerClusterPipe(this, _pipeTimeout, _cluster, us, ourId, replyTo, theirId, new LinkedQueue());
                         ourId=pipe.getCorrelationId();
-                        _log.info("adding Pipe: '"+ourId+"'");
-                        _pipes.put(ourId, pipe);
+                        //_log.info("adding Pipe: '"+ourId+"'");
+                        synchronized (_pipes) {
+                            _pipes.put(ourId, pipe);
+                        }
                         run(pipe);
                     } else {
-                        _log.info("found Pipe: '"+ourId+"'");
+                        //_log.info("found Pipe: '"+ourId+"'");
                     }
                     // servicing existing pipe...
                     if (bm.getBodyLength()>0) {
@@ -122,7 +124,7 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
         LinkedQueue queue=new LinkedQueue();
         AbstractClusterPipe pipe=new ClientClusterPipe(this, _pipeTimeout, _cluster, source, target, correlationId, queue);
         String id=pipe.getCorrelationId();
-        _log.info("adding Pipe: "+id);
+        //_log.info("adding Pipe: "+id);
         synchronized (_pipes) {
             _pipes.put(id, pipe);
         }
@@ -152,7 +154,7 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
     
     public void notifyClosed(Pipe pipe) {
         String correlationId=((AbstractClusterPipe)pipe)._ourCorrelationId;
-        _log.info("removing Pipe: "+correlationId);
+        //_log.info("removing Pipe: "+correlationId);
         synchronized (_pipes) {
             _pipes.remove(correlationId); // TODO - encapsulate properly
         }
