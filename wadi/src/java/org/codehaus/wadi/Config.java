@@ -18,4 +18,6 @@ package org.codehaus.wadi;
 
 public interface Config {
 
+    // empty
+    
 }
