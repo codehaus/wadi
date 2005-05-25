@@ -80,7 +80,18 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
     }
     
     public void run(Peer peer) {
-        peer.run(this);
+//       try {
+            peer.run(this);
+//        } finally {
+//            if (_valid)
+//                _config.notifyIdle(this); // after running, we declare ourselves 'idle' to our Server...
+//            else
+//                try {
+//                    close();
+//                } catch (IOException e) {
+//                    _log.error("problem closing server Connection", e);
+//                }     
+//        }
     }
     
     public void close() throws IOException {

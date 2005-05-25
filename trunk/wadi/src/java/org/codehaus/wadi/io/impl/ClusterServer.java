@@ -81,19 +81,23 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
         try {
             if (message instanceof BytesMessage) {
                 BytesMessage bm=(BytesMessage)message;
-                String correlationId=bm.getJMSCorrelationID();
+                String ourId=bm.getJMSCorrelationID();
                 Destination replyTo=bm.getJMSReplyTo();
                 //_log.info("receiving message");
                 synchronized (_pipes) {
-                    ClusterPipe pipe=(ClusterPipe)_pipes.get(correlationId);
+                    _log.info("looking up Pipe: "+ourId);
+                    AbstractClusterPipe pipe=(AbstractClusterPipe)_pipes.get(ourId);
                     if (pipe==null) {
                         // initialising a new Pipe...
-                        String name=correlationId.substring(0, correlationId.length()-7);
+                        String theirId=ourId.substring(0, ourId.indexOf("-server"))+"-client";
                         Destination us=_cluster.getLocalNode().getDestination();
-                        pipe=new ClusterPipe(this, _pipeTimeout, _cluster, us, replyTo, name, new LinkedQueue(), true);
-                        //_log.info("created Pipe: '"+pipe.getCorrelationId()+"'");
-                        _pipes.put(pipe.getCorrelationId(), pipe);
+                        pipe=new ServerClusterPipe(this, _pipeTimeout, _cluster, us, ourId, replyTo, theirId, new LinkedQueue());
+                        ourId=pipe.getCorrelationId();
+                        _log.info("adding Pipe: '"+ourId+"'");
+                        _pipes.put(ourId, pipe);
                         run(pipe);
+                    } else {
+                        _log.info("found Pipe: '"+ourId+"'");
                     }
                     // servicing existing pipe...
                     if (bm.getBodyLength()>0) {
@@ -116,14 +120,24 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
     public Pipe makeClientPipe(String correlationId, Destination target) {
         Destination source=_cluster.getLocalNode().getDestination();
         LinkedQueue queue=new LinkedQueue();
-        ClusterPipe pipe=new ClusterPipe(this, _pipeTimeout, _cluster, source, target, correlationId, queue, false);
-        _pipes.put(pipe.getCorrelationId(), pipe);
+        AbstractClusterPipe pipe=new ClientClusterPipe(this, _pipeTimeout, _cluster, source, target, correlationId, queue);
+        String id=pipe.getCorrelationId();
+        _log.info("adding Pipe: "+id);
+        synchronized (_pipes) {
+            _pipes.put(id, pipe);
+        }
         return pipe;
+    }
+    
+    protected int getNumPipes() {
+        synchronized (_pipes) {
+            return _pipes.size();
+        }
     }
     
     public void waitForExistingPipes() {
         int numPipes;
-        while ((numPipes=_pipes.size())>0) {
+        while ((numPipes=getNumPipes())>0) {
             _log.info("waiting for: "+numPipes+" Pipe[s]");
             try {
                 Thread.sleep(1000);
@@ -137,12 +151,17 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
     // PipeConfig
     
     public void notifyClosed(Pipe pipe) {
-        _pipes.remove(((ClusterPipe)pipe)._ourCorrelationId); // TODO - encapsulate properly
+        String correlationId=((AbstractClusterPipe)pipe)._ourCorrelationId;
+        _log.info("removing Pipe: "+correlationId);
+        synchronized (_pipes) {
+            _pipes.remove(correlationId); // TODO - encapsulate properly
+        }
     }
 
     public void notifyIdle(Pipe pipe) {
         // Cluster Connections idle automatically after running...
-        _pipes.remove(((ClusterPipe)pipe)._ourCorrelationId); // TODO - encapsulate properly
+        //super.notifyIdle(pipe);
+        notifyClosed(pipe);
     }
 
 }
