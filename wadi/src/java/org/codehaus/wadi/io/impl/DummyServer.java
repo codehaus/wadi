@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.io.impl;
 
-import org.codehaus.wadi.io.Connection;
+import org.codehaus.wadi.io.Pipe;
 import org.codehaus.wadi.io.Server;
 import org.codehaus.wadi.io.ServerConfig;
 
@@ -41,17 +41,17 @@ public class DummyServer implements Server {
 
     }
 
-    public void waitForExistingConnections() {
+    public void waitForExistingPipes() {
         // TODO Auto-generated method stub
 
     }
 
-    public void stopAcceptingConnections() {
+    public void stopAcceptingPipes() {
         // TODO Auto-generated method stub
 
     }
 
-    public void run(Connection connection) {
+    public void run(Pipe pipe) {
         // TODO Auto-generated method stub
 
     }

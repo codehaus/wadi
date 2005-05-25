@@ -32,14 +32,14 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.io.Connection;
+import org.codehaus.wadi.io.Pipe;
 import org.codehaus.wadi.io.PeerConfig;
 import org.codehaus.wadi.io.Server;
 import org.codehaus.wadi.io.ServerConfig;
 import org.codehaus.wadi.io.impl.ClusterServer;
 import org.codehaus.wadi.io.impl.NIOServer;
 import org.codehaus.wadi.io.impl.Peer;
-import org.codehaus.wadi.io.impl.SocketClientConnection;
+import org.codehaus.wadi.io.impl.SocketClientPipe;
 import org.codehaus.wadi.io.impl.ThreadFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
@@ -133,11 +133,11 @@ public class TestMotion extends TestCase {
             _server.stop();
         }
         
-        public Connection getClient(Location location) throws IOException {
+        public Pipe getClient(Location location) throws IOException {
             synchronized (_clients) {
-                Connection client=(Connection)_clients.get(location);
+                Pipe client=(Pipe)_clients.get(location);
                 if (client==null) {
-                    client=((ClusterServer)_server).makeClientConnection("foo-"+_counter++, ((DestinationLocation)location).getDestination());
+                    client=((ClusterServer)_server).makeClientPipe("foo-"+_counter++, ((DestinationLocation)location).getDestination());
                     //client=new SocketClientConnection(((InetSocketAddressLocation)location).getAddress(), 5*1000);
                     _clients.put(location, client);
                 }
@@ -228,14 +228,14 @@ public class TestMotion extends TestCase {
     
     
     public void testMotion() throws Exception {
-        Connection us2them=_us.getClient(_remote);
+        Pipe us2them=_us.getClient(_remote);
         _log.info("us -> them (1st trip)");
         us2them.run(new SingleRoundTripClientPeer());
         _log.info("us -> them (2nd trip)");
         us2them.run(new SingleRoundTripClientPeer());
         us2them.close();
         
-        Connection them2us=_them.getClient(_local);
+        Pipe them2us=_them.getClient(_local);
         _log.info("them -> us (1st trip)");
         them2us.run(new SingleRoundTripClientPeer());
         _log.info("them -> us (2nd trip)");

@@ -24,23 +24,23 @@ import java.nio.channels.SocketChannel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.io.NIOConnectionConfig;
+import org.codehaus.wadi.io.NIOPipeConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
-public class NIOServerConnection extends AbstractServerConnection implements Puttable {
+public class NIOPipe extends AbstractPipe implements Puttable {
     
-    protected final static Log _log=LogFactory.getLog(NIOServerConnection.class);
+    protected final static Log _log=LogFactory.getLog(NIOPipe.class);
     
     protected final SocketChannel _channel;
     protected final SelectionKey _key;
     protected final Channel _inputQueue;
     protected final Puttable _outputQueue;
  
-    public NIOServerConnection(NIOConnectionConfig config, long timeout, SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue, int bufferSize) {
+    public NIOPipe(NIOPipeConfig config, long timeout, SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue, int bufferSize) {
         super(config, timeout);
         _channel=channel;
         _key=key;
@@ -64,7 +64,7 @@ public class NIOServerConnection extends AbstractServerConnection implements Put
     
     public void close() throws IOException {
         super.close();
-        Sync lock=((NIOConnectionConfig)_config).getLock();
+        Sync lock=((NIOPipeConfig)_config).getLock();
         do {
             try {
                 lock.acquire(); // sync following actions with Server loop...

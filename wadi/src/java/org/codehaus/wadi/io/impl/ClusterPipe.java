@@ -26,12 +26,12 @@ import javax.jms.JMSException;
 
 import org.activecluster.Cluster;
 import org.codehaus.wadi.io.BytesMessageOutputStreamConfig;
-import org.codehaus.wadi.io.ConnectionConfig;
+import org.codehaus.wadi.io.PipeConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 
-public class ClusterConnection extends AbstractServerConnection implements Puttable, BytesMessageOutputStreamConfig {
+public class ClusterPipe extends AbstractPipe implements Puttable, BytesMessageOutputStreamConfig {
 
     protected final Cluster _cluster;
     protected final Destination _us;
@@ -44,7 +44,7 @@ public class ClusterConnection extends AbstractServerConnection implements Putta
     protected final String _ourCorrelationId;
     protected final String _theirCorrelationId;
     
-    public ClusterConnection(ConnectionConfig config, long timeout, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue, boolean isServer) {
+    public ClusterPipe(PipeConfig config, long timeout, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue, boolean isServer) {
         super(config, timeout);
         _cluster=cluster;
         _us=us;

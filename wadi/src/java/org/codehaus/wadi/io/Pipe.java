@@ -16,10 +16,15 @@
  */
 package org.codehaus.wadi.io;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
+import java.io.IOException;
 
-public interface NIOConnectionConfig extends ConnectionConfig {
+import org.codehaus.wadi.io.impl.Peer;
 
-    Sync getLock();
-    
+public interface Pipe extends Runnable {
+
+    void run(); // reads peer from input, and runs it...
+    void run(Peer peer) throws IOException; // run a Peer ...
+    //void commit() throws IOException; // producer has finished
+    void close() throws IOException; // consumer has finished
+
 }

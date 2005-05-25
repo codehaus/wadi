@@ -32,14 +32,14 @@ import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.RestartableClusterFactory;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.io.Connection;
+import org.codehaus.wadi.io.Pipe;
 import org.codehaus.wadi.io.PeerConfig;
 import org.codehaus.wadi.io.ServerConfig;
 import org.codehaus.wadi.io.impl.BIOServer;
 import org.codehaus.wadi.io.impl.ClusterServer;
 import org.codehaus.wadi.io.impl.NIOServer;
 import org.codehaus.wadi.io.impl.Peer;
-import org.codehaus.wadi.io.impl.SocketClientConnection;
+import org.codehaus.wadi.io.impl.SocketClientPipe;
 import org.codehaus.wadi.io.impl.ThreadFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
@@ -56,20 +56,20 @@ public class TestServers extends TestCase {
         super(name);
     }
     
-    interface ConnectionFactory { Connection create() throws IOException; }
+    interface PipeFactory { Pipe create() throws IOException; }
 
     protected InetSocketAddress _bioAddress;
     protected BIOServer _bioServer;
-    protected ConnectionFactory _bioConnectionFactory=new ConnectionFactory(){ public Connection create() throws IOException {return new SocketClientConnection(_bioAddress, 5*1000);}};
+    protected PipeFactory _bioPipeFactory=new PipeFactory(){ public Pipe create() throws IOException {return new SocketClientPipe(_bioAddress, 5*1000);}};
     protected InetSocketAddress _nioAddress;
     protected NIOServer _nioServer;
-    protected ConnectionFactory _nioConnectionFactory=new ConnectionFactory() {public Connection create() throws IOException {return new SocketClientConnection(_nioAddress, 5*1000);}};
+    protected PipeFactory _nioPipeFactory=new PipeFactory() {public Pipe create() throws IOException {return new SocketClientPipe(_nioAddress, 5*1000);}};
     protected javax.jms.ConnectionFactory _connectionFactory=Utils.getConnectionFactory();
     protected ClusterFactory _clusterFactory=new RestartableClusterFactory(new CustomClusterFactory(_connectionFactory));
     protected String _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
     protected ExtendedCluster _cluster;
     protected ClusterServer _clusterServer;
-    protected ConnectionFactory _clusterConnectionFactory;
+    protected PipeFactory _clusterPipeFactory;
     
 
     protected final int _count=10000;
@@ -109,12 +109,12 @@ public class TestServers extends TestCase {
         _clusterServer.start();
         _cluster.start();
         
-        _clusterConnectionFactory=new ConnectionFactory()  {
+        _clusterPipeFactory=new PipeFactory()  {
             protected int _count=0;
-            public Connection create() throws IOException {
+            public Pipe create() throws IOException {
                 String name="foo-"+(_count++);
                 Destination target=_cluster.getLocalNode().getDestination();
-                return _clusterServer.makeClientConnection(name, target);
+                return _clusterServer.makeClientPipe(name, target);
             }
         };
     }
@@ -171,18 +171,18 @@ public class TestServers extends TestCase {
     // NEED CONCURRENT TEST
     
     public void testSingleRoundTrip() throws Exception {
-        //testSingleRoundTrip("BIO", _bioConnectionFactory);
-        //testSingleRoundTrip("NIO", _nioConnectionFactory);
-        testSingleRoundTrip("Cluster", _clusterConnectionFactory);
+        //testSingleRoundTrip("BIO", _bioPipeFactory);
+        //testSingleRoundTrip("NIO", _nioPipeFactory);
+        testSingleRoundTrip("Cluster", _clusterPipeFactory);
     }
     
-    public void testSingleRoundTrip(String info, ConnectionFactory factory) throws Exception {
+    public void testSingleRoundTrip(String info, PipeFactory factory) throws Exception {
         long start=System.currentTimeMillis();
         for (int i=0; i<_count; i++) {
-            Connection connection=factory.create();
+            Pipe pipe=factory.create();
             Peer peer=new SingleRoundTripClientPeer();
-            connection.run(peer);
-            connection.close();
+            pipe.run(peer);
+            pipe.close();
             //_log.info("count: "+i);
         }
         long elapsed=System.currentTimeMillis()-start;
@@ -190,20 +190,20 @@ public class TestServers extends TestCase {
     }
 
     public void testMultipleRoundTrip() throws Exception {
-        //testMultipleRoundTrip("BIO", _bioConnectionFactory);
-        //testMultipleRoundTrip("NIO", _nioConnectionFactory);
-        testMultipleRoundTrip("Cluster", _clusterConnectionFactory);
+        //testMultipleRoundTrip("BIO", _bioPipeFactory);
+        //testMultipleRoundTrip("NIO", _nioPipeFactory);
+        testMultipleRoundTrip("Cluster", _clusterPipeFactory);
     }
     
-    public void testMultipleRoundTrip(String info, ConnectionFactory factory) throws Exception {
+    public void testMultipleRoundTrip(String info, PipeFactory factory) throws Exception {
         long start=System.currentTimeMillis();
-        Connection connection=factory.create();
+        Pipe pipe=factory.create();
         Peer peer=new SingleRoundTripClientPeer();
         for (int i=0; i<_count; i++) {
-            connection.run(peer);
+            pipe.run(peer);
             //_log.info("count: "+i);
         }
-        connection.close();
+        pipe.close();
         long elapsed=System.currentTimeMillis()-start;
         _log.info(info+" rate="+(_count*1000/(elapsed+1))+" round-trips/second");
     }

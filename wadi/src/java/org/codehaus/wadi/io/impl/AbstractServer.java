@@ -19,23 +19,23 @@ package org.codehaus.wadi.io.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.io.Connection;
-import org.codehaus.wadi.io.ConnectionConfig;
+import org.codehaus.wadi.io.Pipe;
+import org.codehaus.wadi.io.PipeConfig;
 import org.codehaus.wadi.io.Server;
 import org.codehaus.wadi.io.ServerConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-public abstract class AbstractServer implements Server, ConnectionConfig {
+public abstract class AbstractServer implements Server, PipeConfig {
 
     protected final Log _log=LogFactory.getLog(getClass());
     protected final PooledExecutor _executor;
-    protected final long _connectionTimeout;
+    protected final long _pipeTimeout;
 
-    public AbstractServer(PooledExecutor executor, long connectionTimeout) {
+    public AbstractServer(PooledExecutor executor, long pipeTimeout) {
         super();
         _executor=executor;
-        _connectionTimeout=connectionTimeout;
+        _pipeTimeout=pipeTimeout;
     }
 
     protected ServerConfig _config;
@@ -54,9 +54,9 @@ public abstract class AbstractServer implements Server, ConnectionConfig {
         _log.info("stopped");
     }
 
-    public void run(Connection connection) {
+    public void run(Pipe pipe) {
         try {
-            _executor.execute(connection);
+            _executor.execute(pipe);
         } catch (InterruptedException e) { // TODO - do this safely...
             _log.error(e);
         }

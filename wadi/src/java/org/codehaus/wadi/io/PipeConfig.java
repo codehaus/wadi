@@ -16,15 +16,9 @@
  */
 package org.codehaus.wadi.io;
 
-import java.io.IOException;
+public interface PipeConfig {
 
-import org.codehaus.wadi.io.impl.Peer;
-
-public interface Connection extends Runnable {
-
-    void run(); // reads peer from input, and runs it...
-    void run(Peer peer) throws IOException; // run a Peer ...
-    //void commit() throws IOException; // producer has finished
-    void close() throws IOException; // consumer has finished
+    void notifyIdle(Pipe pipe); // called by Connection on becoming idle...
+    void notifyClosed(Pipe pipe); // called by Connection on being closed...
 
 }
