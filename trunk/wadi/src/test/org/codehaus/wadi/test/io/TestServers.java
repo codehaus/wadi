@@ -192,7 +192,7 @@ public class TestServers extends TestCase {
     public void testMultipleRoundTrip() throws Exception {
         //testMultipleRoundTrip("BIO", _bioConnectionFactory);
         //testMultipleRoundTrip("NIO", _nioConnectionFactory);
-        //testMultipleRoundTrip("Cluster", _clusterConnectionFactory);
+        testMultipleRoundTrip("Cluster", _clusterConnectionFactory);
     }
     
     public void testMultipleRoundTrip(String info, ConnectionFactory factory) throws Exception {
@@ -201,7 +201,7 @@ public class TestServers extends TestCase {
         Peer peer=new SingleRoundTripClientPeer();
         for (int i=0; i<_count; i++) {
             connection.run(peer);
-            _log.info("count: "+i);
+            //_log.info("count: "+i);
         }
         connection.close();
         long elapsed=System.currentTimeMillis()-start;

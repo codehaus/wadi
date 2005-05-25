@@ -75,13 +75,13 @@ public class BytesMessageOutputStream extends OutputStream {
     }
     
     public void close() throws IOException {
-        try {
-            _buffer.setBooleanProperty("closing-stream", true);
-            //_log.info("CLIENT CLOSING STREAM: "+_buffer);
-        } catch (JMSException e) {
-            _log.warn("problem writing message meta-data", e);
-            throw new IOException();
-        }
+//        try {
+//            _buffer.setBooleanProperty("closing-stream", true);
+//            //_log.info("CLIENT CLOSING STREAM: "+_buffer);
+//        } catch (JMSException e) {
+//            _log.warn("problem writing message meta-data", e);
+//            throw new IOException();
+//        }
         send(_buffer);
         _buffer=null;
     }
