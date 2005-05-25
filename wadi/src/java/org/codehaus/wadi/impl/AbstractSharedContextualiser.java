@@ -27,7 +27,7 @@ public abstract class AbstractSharedContextualiser extends AbstractMotingContext
         super(next, locker, clean);
     }
 
-    public Immoter getDemoter(String id, Motable motable) {
+    public Immoter getDemoter(String name, Motable motable) {
         return getImmoter();
     }
 

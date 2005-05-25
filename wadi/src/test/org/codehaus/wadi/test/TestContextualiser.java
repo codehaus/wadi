@@ -314,7 +314,7 @@ public class TestContextualiser extends TestCase {
 
         public boolean isExclusive(){return false;}
 
-        public Immoter getDemoter(String id, Motable motable) {
+        public Immoter getDemoter(String name, Motable motable) {
             return null;
         }
 
@@ -356,7 +356,7 @@ public class TestContextualiser extends TestCase {
 
         public boolean isExclusive(){return false;}
 
-        public Immoter getDemoter(String id, Motable motable) {
+        public Immoter getDemoter(String name, Motable motable) {
             return null;
         }
 

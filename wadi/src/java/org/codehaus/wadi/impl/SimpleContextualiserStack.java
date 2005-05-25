@@ -168,8 +168,8 @@ public class SimpleContextualiserStack implements Contextualiser {
         return _memory.isExclusive();
     }
 
-    public Immoter getDemoter(String id, Motable motable) {
-        return _memory.getDemoter(id, motable);
+    public Immoter getDemoter(String name, Motable motable) {
+        return _memory.getDemoter(name, motable);
     }
 
     public Immoter getSharedDemoter() {

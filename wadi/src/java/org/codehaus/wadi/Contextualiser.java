@@ -47,11 +47,11 @@ public interface Contextualiser extends Lifecycle {
 
 	/**
 	 * Return a Demoter to the first Contextualiser which would be happy to accept this Motable - in other words - would not evict() it.
-	 * @param id - uid of the Motable
+	 * @param name - uid of the Motable
 	 * @param motable - the Motable in question
 	 * @return - a Demoter - a delegate capable of arranging immotion into the correct Contextualiser
 	 */
-	Immoter getDemoter(String id, Motable motable);
+	Immoter getDemoter(String name, Motable motable);
     Immoter getSharedDemoter();
 
     // perhaps these two could be collapsed...

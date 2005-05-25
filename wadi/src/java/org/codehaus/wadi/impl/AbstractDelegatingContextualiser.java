@@ -36,7 +36,7 @@ public abstract class AbstractDelegatingContextualiser extends AbstractChainedCo
     
     public boolean isExclusive() {return _next.isExclusive();}
 
-    public Immoter getDemoter(String id, Motable motable) {return _next.getDemoter(id, motable);}
+    public Immoter getDemoter(String name, Motable motable) {return _next.getDemoter(name, motable);}
     
     public Immoter getSharedDemoter() {return _next.getSharedDemoter();}
 

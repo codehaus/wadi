@@ -73,7 +73,7 @@ public class DummyContextualiser extends AbstractContextualiser {
 	}
 	
 	protected final Immoter _immoter=new DummyImmoter();
-	public Immoter getDemoter(String id, Motable motable) {return _immoter;}
+	public Immoter getDemoter(String name, Motable motable) {return _immoter;}
     public Immoter getSharedDemoter(){return _immoter;}
     
     public void promoteToExclusive(Immoter immoter){/* empty */}
