@@ -16,9 +16,14 @@
  */
 package org.codehaus.wadi.io;
 
-public interface PipeConfig {
+import org.codehaus.wadi.Config;
+import org.codehaus.wadi.Contextualiser;
+
+public interface PipeConfig extends Config {
 
     void notifyIdle(Pipe pipe); // called by Connection on becoming idle...
     void notifyClosed(Pipe pipe); // called by Connection on being closed...
+    
+    Contextualiser getContextualiser();
 
 }

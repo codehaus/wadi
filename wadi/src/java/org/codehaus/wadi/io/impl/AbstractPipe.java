@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.io.Pipe;
 import org.codehaus.wadi.io.PipeConfig;
 import org.codehaus.wadi.io.PeerConfig;
@@ -114,4 +115,11 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
     public boolean isOpen() {
         throw new UnsupportedOperationException();
     }
+    
+    // PeerConfig
+    
+    public Contextualiser getContextualiser() {
+        return _config.getContextualiser();
+    }
+
 }

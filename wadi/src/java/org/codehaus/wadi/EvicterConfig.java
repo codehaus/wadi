@@ -21,7 +21,7 @@ import java.util.Timer;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public interface EvicterConfig {
+public interface EvicterConfig extends Config {
 
     Timer getTimer();
     

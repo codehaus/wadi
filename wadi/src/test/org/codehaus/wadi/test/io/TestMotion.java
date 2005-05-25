@@ -29,6 +29,7 @@ import javax.jms.Destination;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.Utils;
@@ -95,6 +96,8 @@ public class TestMotion extends TestCase {
         public ExtendedCluster getCluster() {
             return _cluster;
         }
+        
+        public Contextualiser getContextualiser() {return null;}
         
     }
     

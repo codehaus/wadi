@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.codehaus.wadi.impl.MessageDispatcher;
 
-public interface RelocaterConfig {
+public interface RelocaterConfig extends Config {
 
     Collapser getCollapser();
     MessageDispatcher getDispatcher();

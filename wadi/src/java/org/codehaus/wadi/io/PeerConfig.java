@@ -19,8 +19,12 @@ package org.codehaus.wadi.io;
 import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 
-public interface PeerConfig extends StreamConnection, WritableByteChannel {
+import org.codehaus.wadi.Config;
+import org.codehaus.wadi.Contextualiser;
+
+public interface PeerConfig extends Config, StreamConnection, WritableByteChannel {
 
     public void close() throws IOException; // inherited from WriteableByteChannel - but overloaded to mean close whole Connection...
+    Contextualiser getContextualiser();
     
 }

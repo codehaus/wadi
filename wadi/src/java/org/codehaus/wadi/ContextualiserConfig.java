@@ -18,7 +18,7 @@ package org.codehaus.wadi;
 
 import java.util.Timer;
 
-public interface ContextualiserConfig {
+public interface ContextualiserConfig extends Config {
 
     int getMaxInactiveInterval();
     void expire(Motable motable);

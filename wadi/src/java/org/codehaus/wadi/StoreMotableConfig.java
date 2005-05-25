@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi;
 
-public interface StoreMotableConfig {
+public interface StoreMotableConfig extends Config {
 
     boolean getUseNIO();
 

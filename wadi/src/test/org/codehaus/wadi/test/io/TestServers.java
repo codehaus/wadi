@@ -28,6 +28,7 @@ import javax.jms.Destination;
 import org.activecluster.ClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.RestartableClusterFactory;
@@ -105,7 +106,10 @@ public class TestServers extends TestCase {
         executor.setThreadFactory(threadFactory);
         executor.setMinimumPoolSize(3);
         _clusterServer=new ClusterServer(executor, 5*1000, false);
-        _clusterServer.init(new ServerConfig() { public ExtendedCluster getCluster() {return _cluster;}});
+        _clusterServer.init(new ServerConfig() {
+            public ExtendedCluster getCluster() {return _cluster;}
+            public Contextualiser getContextualiser() {return null;}
+        });
         _clusterServer.start();
         _cluster.start();
         
