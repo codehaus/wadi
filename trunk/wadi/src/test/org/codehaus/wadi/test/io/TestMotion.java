@@ -166,7 +166,6 @@ public class TestMotion extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         (_us=new Node(_local, _threadFactory, _localConfig)).start();
-        (_them=new Node(_local, _threadFactory, _localConfig)).start();
         (_them=new Node(_remote, _threadFactory, _remoteConfig)).start();
         _localConfig.getCluster().start();
         _remoteConfig.getCluster().start();
