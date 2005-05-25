@@ -67,7 +67,7 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
 
-	public Immoter getDemoter(String id, Motable motable) {
+	public Immoter getDemoter(String name, Motable motable) {
 		// TODO - should check _next... - just remove when we have an evicter sorted
 		return new SharedJDBCImmoter();
 	}

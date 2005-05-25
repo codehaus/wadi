@@ -17,6 +17,7 @@
 package org.codehaus.wadi.test.io;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
@@ -30,7 +31,11 @@ import javax.jms.Destination;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.ExtendedCluster;
+import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.impl.AbstractChainedEmoter;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.io.Pipe;
@@ -230,7 +235,7 @@ public class TestMotion extends TestCase {
     }
     
     
-    public void testMotion() throws Exception {
+    public void testRoundTripping() throws Exception {
         
         _log.info("START");
         Pipe us2them=_us.getClient(_remote);
@@ -250,4 +255,117 @@ public class TestMotion extends TestCase {
         them2us.close();
         _log.info("FINISH");
     }
+    
+//    public static Motable mote(Emoter emoter, Immoter immoter, Motable emotable, String name) {
+//        long startTime=System.currentTimeMillis();
+//        Motable immotable=immoter.nextMotable(name, emotable);
+//        boolean i=false;
+//        boolean e=false;
+//        if (((e=emoter.prepare(name, emotable, immotable) && (e=true))) && (immoter.prepare(name, emotable, immotable) && (i=true))) {
+//            immoter.commit(name, immotable);
+//            emoter.commit(name, emotable);
+//            long elapsedTime=System.currentTimeMillis()-startTime;
+//            if (_log.isDebugEnabled())_log.debug("motion: "+name+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
+//            return immotable;
+//        } else {
+//            if (e) emoter.rollback(name, emotable);
+//            if (i) immoter.rollback(name, immotable);
+//            long elapsedTime=System.currentTimeMillis()-startTime;
+//            if (_log.isWarnEnabled()) _log.warn("motion failed: "+name+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
+//            return null;
+//        }
+//    }
+    
+    
+    public static class EmotionServerPeer extends Peer {
+        
+        protected static final Log _log=LogFactory.getLog(SingleRoundTripServerPeer.class);
+        
+        // this could give the node-id of the Motable's source...
+        protected final Emoter _emoter=new AbstractChainedEmoter() {public String getInfo(){return "cluster";}};
+        
+        public void run(PeerConfig config) {
+            try {
+                _log.info("server - starting");
+                _log.info("server - creating input stream");
+                InputStream is=config.getInputStream();
+                ObjectInputStream ois=new ObjectInputStream(is);
+                _log.info("server - reading emotable");
+                Motable emotable=(Motable)ois.readObject();
+                String name=emotable.getName();
+                _log.info("server - fetching Immoter");
+                Contextualiser contextualiser=config.getContextualiser();
+                Immoter immoter=contextualiser.getDemoter(name, emotable);
+                _log.info("server - Immoting");
+                Motable immotable=Utils.mote(_emoter, immoter, emotable, name);
+                _log.info("server - creating output stream");
+                ObjectOutputStream oos=new ObjectOutputStream(config.getOutputStream());
+                _log.info("server - writing response");
+                oos.writeBoolean(immotable!=null); // ack
+                _log.info("server - flushing response");
+                oos.flush();
+                _log.info("server - finished");
+                //config.close();
+            } catch (IOException e) {
+                _log.error("unexpected problem", e);
+            } catch (ClassNotFoundException e) {
+                _log.error("unexpected problem", e);
+            }   
+        }
+    }
+    
+    public static class EmotionClientPeer extends Peer {
+        
+        protected static final Log _log=LogFactory.getLog(SingleRoundTripClientPeer.class);
+        
+        protected final Motable _emotable;
+        
+        public EmotionClientPeer(Motable emotable) {
+            _emotable=emotable;
+        }
+        
+        public void run(PeerConfig config) {
+            try {
+                _log.info("client - starting");
+                _log.info("client - creating output stream");
+                ObjectOutputStream oos=new ObjectOutputStream(config.getOutputStream());
+                _log.info("client - writing server");
+                oos.writeObject(new EmotionServerPeer());
+                _log.info("client - writing emotable");
+                oos.writeObject(_emotable);
+                _log.info("client - flushing server");
+                oos.flush();
+                _log.info("client - creating input stream");
+                ObjectInputStream ois=new ObjectInputStream(config.getInputStream());
+                _log.info("client - reading response");
+                boolean result=ois.readBoolean();
+                _log.info("client - finished: "+result);
+                assertTrue(result);
+                //config.close();
+            } catch (IOException e) {
+                _log.error("unexpected problem", e);
+            }
+        }
+    }
+    
+//    public void testEmotion() throws Exception {
+//        
+//        _log.info("START");
+//        Pipe us2them=_us.getClient(_remote);
+//        _log.info("us -> them (1st trip)");
+//        us2them.run(new EmotionClientPeer());
+//        _log.info("us -> them (2nd trip)");
+//        us2them.run(new EmotionClientPeer());
+//        us2them.close();
+//        _log.info("FINISH");
+//        
+//        _log.info("START");
+//        Pipe them2us=_them.getClient(_local);
+//        _log.info("them -> us (1st trip)");
+//        them2us.run(new EmotionClientPeer());
+//        _log.info("them -> us (2nd trip)");
+//        them2us.run(new EmotionClientPeer());
+//        them2us.close();
+//        _log.info("FINISH");
+//    }
 }

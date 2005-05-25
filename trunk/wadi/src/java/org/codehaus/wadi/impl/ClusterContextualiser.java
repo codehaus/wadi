@@ -159,12 +159,12 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     public Immoter getImmoter(){return _immoter;}
     public Emoter getEmoter(){return _emoter;}
 
-    public Immoter getDemoter(String id, Motable motable) {
+    public Immoter getDemoter(String name, Motable motable) {
         if (_cluster.getNodes().size()>=1) {
             ensureEmigrationQueue();
             return getImmoter();
         } else {
-            return _next.getDemoter(id, motable);
+            return _next.getDemoter(name, motable);
         }
     }
 
