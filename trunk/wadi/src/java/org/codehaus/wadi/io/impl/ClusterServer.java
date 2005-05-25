@@ -27,22 +27,22 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 
 import org.codehaus.wadi.ExtendedCluster;
-import org.codehaus.wadi.io.Connection;
-import org.codehaus.wadi.io.ConnectionConfig;
+import org.codehaus.wadi.io.Pipe;
+import org.codehaus.wadi.io.PipeConfig;
 import org.codehaus.wadi.io.ServerConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-public class ClusterServer extends AbstractServer implements ConnectionConfig, MessageListener {
+public class ClusterServer extends AbstractServer implements PipeConfig, MessageListener {
 
     protected final boolean _excludeSelf;
-    protected final Map _connections;
+    protected final Map _pipes;
         
-    public ClusterServer(PooledExecutor executor, long connectionTimeout, boolean excludeSelf) {
-        super(executor, connectionTimeout);
+    public ClusterServer(PooledExecutor executor, long pipeTimeout, boolean excludeSelf) {
+        super(executor, pipeTimeout);
         _excludeSelf=excludeSelf;
-        _connections=new HashMap();
+        _pipes=new HashMap();
     }
     
     protected ExtendedCluster _cluster;
@@ -63,12 +63,12 @@ public class ClusterServer extends AbstractServer implements ConnectionConfig, M
     }
 
     public void stop() throws Exception {
-        stopAcceptingConnections();
-        waitForExistingConnections();
+        stopAcceptingPipes();
+        waitForExistingPipes();
         super.stop();
     }
     
-    public void stopAcceptingConnections() {
+    public void stopAcceptingPipes() {
         try {
         _clusterConsumer.setMessageListener(null);
         _nodeConsumer.setMessageListener(null);
@@ -84,25 +84,25 @@ public class ClusterServer extends AbstractServer implements ConnectionConfig, M
                 String correlationId=bm.getJMSCorrelationID();
                 Destination replyTo=bm.getJMSReplyTo();
                 //_log.info("receiving message");
-                synchronized (_connections) {
-                    ClusterConnection connection=(ClusterConnection)_connections.get(correlationId);
-                    if (connection==null) {
-                        // initialising a new Connection...
+                synchronized (_pipes) {
+                    ClusterPipe pipe=(ClusterPipe)_pipes.get(correlationId);
+                    if (pipe==null) {
+                        // initialising a new Pipe...
                         String name=correlationId.substring(0, correlationId.length()-7);
                         Destination us=_cluster.getLocalNode().getDestination();
-                        connection=new ClusterConnection(this, _connectionTimeout, _cluster, us, replyTo, name, new LinkedQueue(), true);
-                        //_log.info("created Connection: '"+connection.getCorrelationId()+"'");
-                        _connections.put(connection.getCorrelationId(), connection);
-                        run(connection);
+                        pipe=new ClusterPipe(this, _pipeTimeout, _cluster, us, replyTo, name, new LinkedQueue(), true);
+                        //_log.info("created Pipe: '"+pipe.getCorrelationId()+"'");
+                        _pipes.put(pipe.getCorrelationId(), pipe);
+                        run(pipe);
                     }
-                    // servicing existing connection...
+                    // servicing existing pipe...
                     if (bm.getBodyLength()>0) {
-                        //_log.info("servicing Connection: '"+correlationId+"' - "+bm.getBodyLength()+" bytes");
-                        Utils.safePut(bm, connection);
+                        //_log.info("servicing Pipe: '"+correlationId+"' - "+bm.getBodyLength()+" bytes");
+                        Utils.safePut(bm, pipe);
                     }
                     if (bm.getBooleanProperty("closing-stream")) {
-                        //_log.info("SERVER CLOSING STREAM: "+connection);
-//                        connection.commit();
+                        //_log.info("SERVER CLOSING STREAM: "+pipe);
+//                        pipe.commit();
                     }
                 }
             }
@@ -113,36 +113,36 @@ public class ClusterServer extends AbstractServer implements ConnectionConfig, M
     
     // needs more thought...
     
-    public Connection makeClientConnection(String correlationId, Destination target) {
+    public Pipe makeClientPipe(String correlationId, Destination target) {
         Destination source=_cluster.getLocalNode().getDestination();
         LinkedQueue queue=new LinkedQueue();
-        ClusterConnection connection=new ClusterConnection(this, _connectionTimeout, _cluster, source, target, correlationId, queue, false);
-        _connections.put(connection.getCorrelationId(), connection);
-        return connection;
+        ClusterPipe pipe=new ClusterPipe(this, _pipeTimeout, _cluster, source, target, correlationId, queue, false);
+        _pipes.put(pipe.getCorrelationId(), pipe);
+        return pipe;
     }
     
-    public void waitForExistingConnections() {
-        int numConnections;
-        while ((numConnections=_connections.size())>0) {
-            _log.info("waiting for: "+numConnections+" Connection[s]");
+    public void waitForExistingPipes() {
+        int numPipes;
+        while ((numPipes=_pipes.size())>0) {
+            _log.info("waiting for: "+numPipes+" Pipe[s]");
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 _log.trace("unexpected interruption - ignoring", e);
             }
         }
-        _log.info("existing Connections have finished running");
+        _log.info("existing Pipes have finished running");
     }
     
-    // ConnectionConfig
+    // PipeConfig
     
-    public void notifyClosed(Connection connection) {
-        _connections.remove(((ClusterConnection)connection)._ourCorrelationId); // TODO - encapsulate properly
+    public void notifyClosed(Pipe pipe) {
+        _pipes.remove(((ClusterPipe)pipe)._ourCorrelationId); // TODO - encapsulate properly
     }
 
-    public void notifyIdle(Connection connection) {
+    public void notifyIdle(Pipe pipe) {
         // Cluster Connections idle automatically after running...
-        _connections.remove(((ClusterConnection)connection)._ourCorrelationId); // TODO - encapsulate properly
+        _pipes.remove(((ClusterPipe)pipe)._ourCorrelationId); // TODO - encapsulate properly
     }
 
 }

@@ -18,46 +18,46 @@ package org.codehaus.wadi.io.impl;
 
 import java.net.InetSocketAddress;
 
-import org.codehaus.wadi.io.Connection;
+import org.codehaus.wadi.io.Pipe;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 public abstract class AbstractSocketServer extends AbstractServer {
 
-    protected final SynchronizedInt _numConnections=new SynchronizedInt(0);
+    protected final SynchronizedInt _numPipes=new SynchronizedInt(0);
 
     protected InetSocketAddress _address;
 
-    public AbstractSocketServer(PooledExecutor executor, long connectionTimeout, InetSocketAddress address) {
-        super(executor, connectionTimeout);
+    public AbstractSocketServer(PooledExecutor executor, long pipeTimeout, InetSocketAddress address) {
+        super(executor, pipeTimeout);
         _address=address;
     }
 
-    public void add(Connection connection) {
-        _numConnections.increment();
-        if (_log.isTraceEnabled()) _log.trace("adding server Connection: "+connection);
+    public void add(Pipe pipe) {
+        _numPipes.increment();
+        if (_log.isTraceEnabled()) _log.trace("adding server Pipe: "+pipe);
     }
 
-    public void remove(Connection connection) {
-        _numConnections.decrement();
-        if (_log.isTraceEnabled()) _log.trace("removing server Connection: "+connection);
+    public void remove(Pipe pipe) {
+        _numPipes.decrement();
+        if (_log.isTraceEnabled()) _log.trace("removing server Pipe: "+pipe);
     }
 
-    public void notifyClosed(Connection connection) {
-        remove(connection);
+    public void notifyClosed(Pipe pipe) {
+        remove(pipe);
     }
 
-    public void waitForExistingConnections() {
-        while (_numConnections.get()>0) {
-            _log.info("waiting for: "+_numConnections+" Connection[s]");
+    public void waitForExistingPipes() {
+        while (_numPipes.get()>0) {
+            _log.info("waiting for: "+_numPipes+" Pipe[s]");
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 _log.trace("unexpected interruption - ignoring", e);
             }
         }
-        _log.info("existing Connections have finished running");
+        _log.info("existing Pipes have finished running");
     }
 
 }

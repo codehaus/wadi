@@ -25,20 +25,20 @@ import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.io.Connection;
-import org.codehaus.wadi.io.ConnectionConfig;
+import org.codehaus.wadi.io.Pipe;
+import org.codehaus.wadi.io.PipeConfig;
 import org.codehaus.wadi.io.PeerConfig;
 
-public abstract class AbstractServerConnection implements Connection, PeerConfig  {
+public abstract class AbstractPipe implements Pipe, PeerConfig  {
 
-    protected static final Log _log=LogFactory.getLog(AbstractServerConnection.class);
+    protected static final Log _log=LogFactory.getLog(AbstractPipe.class);
 
-    protected final ConnectionConfig _config;
+    protected final PipeConfig _config;
     protected final long _timeout;
     
     protected boolean _valid;
     
-    public AbstractServerConnection(ConnectionConfig config, long timeout) {
+    public AbstractPipe(PipeConfig config, long timeout) {
         _config=config;
         _timeout=timeout;
         _valid=true;

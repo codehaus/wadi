@@ -24,22 +24,22 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import org.codehaus.wadi.io.Connection;
-import org.codehaus.wadi.io.ConnectionConfig;
+import org.codehaus.wadi.io.Pipe;
+import org.codehaus.wadi.io.PipeConfig;
 
-public class SocketClientConnection extends AbstractServerConnection { // shouldn't really subclass a ServerConnection...
+public class SocketClientPipe extends AbstractPipe {
 
-    public static class DummyConnectionConfig implements ConnectionConfig {
-        public void notifyIdle(Connection connection) {/* do nothing */}
-        public void notifyClosed(Connection connection) {/* do nothing */}
+    public static class DummyPipeConfig implements PipeConfig {
+        public void notifyIdle(Pipe pipe) {/* do nothing */}
+        public void notifyClosed(Pipe pipe) {/* do nothing */}
     }
     
     
     protected final SocketChannel _channel;
     protected final Socket _socket;
     
-    public SocketClientConnection(InetSocketAddress address, long timeout) throws IOException {
-        super(new DummyConnectionConfig(), timeout);
+    public SocketClientPipe(InetSocketAddress address, long timeout) throws IOException {
+        super(new DummyPipeConfig(), timeout);
         _channel=SocketChannel.open(address);
         _channel.configureBlocking(true);
         _socket=_channel.socket();
@@ -48,7 +48,7 @@ public class SocketClientConnection extends AbstractServerConnection { // should
     }
    
     
-    // Connection
+    // Pipe
     
     public void close() throws IOException {
         super.close(); // deals with streams...
@@ -56,7 +56,7 @@ public class SocketClientConnection extends AbstractServerConnection { // should
         try{_channel.close();}catch(Exception e){_log.warn("problem closing socket",e);}
         }
 
-    // StreamConnection
+    // StreamPipe
 
     public InputStream getInputStream() throws IOException {return _socket.getInputStream();}
     public OutputStream getOutputStream() throws IOException {return _socket.getOutputStream();}

@@ -23,7 +23,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-import org.codehaus.wadi.io.Connection;
+import org.codehaus.wadi.io.Pipe;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
@@ -40,8 +40,8 @@ public class BIOServer extends AbstractSocketServer {
     protected final int _backlog; // 16?
     protected final long _serverTimeout; // secs
     
-    public BIOServer(PooledExecutor executor, long connectionTimeout, InetSocketAddress address, long serverTimeout, int backlog) {
-        super(executor, connectionTimeout, address);
+    public BIOServer(PooledExecutor executor, long pipeTimeout, InetSocketAddress address, long serverTimeout, int backlog) {
+        super(executor, pipeTimeout, address);
         _backlog=backlog;
         _serverTimeout=serverTimeout;
         }
@@ -64,8 +64,8 @@ public class BIOServer extends AbstractSocketServer {
     public void stop() {
         if (_log.isDebugEnabled()) _log.debug("stopping: "+_socket);
         
-        stopAcceptingConnections();
-        waitForExistingConnections();
+        stopAcceptingPipes();
+        waitForExistingPipes();
         
         try {
             _socket.close();
@@ -77,7 +77,7 @@ public class BIOServer extends AbstractSocketServer {
         if (_log.isDebugEnabled()) _log.debug("stopped: "+_address);
     }
     
-    public void stopAcceptingConnections() {
+    public void stopAcceptingPipes() {
         _running=false;
         do {
             try {
@@ -98,9 +98,9 @@ public class BIOServer extends AbstractSocketServer {
                     try {
                         if (_serverTimeout==0) Thread.yield();
                         Socket socket=_socket.accept();
-                        BIOServerConnection connection=new BIOServerConnection(BIOServer.this, _connectionTimeout, socket);
-                        add(connection);
-                        BIOServer.this.run(connection);
+                        BIOPipe pipe=new BIOPipe(BIOServer.this, _pipeTimeout, socket);
+                        add(pipe);
+                        BIOServer.this.run(pipe);
                         
                     } catch (SocketTimeoutException ignore) {
                         // ignore...
@@ -113,9 +113,9 @@ public class BIOServer extends AbstractSocketServer {
         
     }
     
-    // ConnectionConfig
+    // PipeConfig
 
-    public void notifyIdle(Connection connection) {
-        // BIOServer does not support idling Connections :-(        
+    public void notifyIdle(Pipe pipe) {
+        // BIOServer does not support idling Pipes :-(        
     }
 }

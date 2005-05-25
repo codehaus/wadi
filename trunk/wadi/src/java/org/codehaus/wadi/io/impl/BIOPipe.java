@@ -24,15 +24,15 @@ import java.net.SocketException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.io.ConnectionConfig;
+import org.codehaus.wadi.io.PipeConfig;
 
-public class BIOServerConnection extends AbstractServerConnection {
+public class BIOPipe extends AbstractPipe {
     
-    protected static final Log _log=LogFactory.getLog(BIOServerConnection.class);
+    protected static final Log _log=LogFactory.getLog(BIOPipe.class);
     
     protected final Socket _socket;
     
-    public BIOServerConnection(ConnectionConfig config, long timeout, Socket socket) {
+    public BIOPipe(PipeConfig config, long timeout, Socket socket) {
         super(config, timeout);
         _socket=socket;
         try {

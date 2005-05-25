@@ -26,8 +26,8 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-import org.codehaus.wadi.io.Connection;
-import org.codehaus.wadi.io.NIOConnectionConfig;
+import org.codehaus.wadi.io.Pipe;
+import org.codehaus.wadi.io.NIOPipeConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.FIFOReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
@@ -43,7 +43,7 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 // Do not put Connections onto Queue until the have input
 // When a Connection's Peer finishes, it loses its Thread, but is not clos()-ed
 
-public class NIOServer extends AbstractSocketServer implements NIOConnectionConfig {
+public class NIOServer extends AbstractSocketServer implements NIOPipeConfig {
     
     protected final SynchronizedBoolean _accepting=new SynchronizedBoolean(false);
     protected final ReadWriteLock _lock=new FIFOReadWriteLock();
@@ -51,8 +51,8 @@ public class NIOServer extends AbstractSocketServer implements NIOConnectionConf
     protected final long _serverTimeout;
     protected final int _outputBufferSize;
     
-    public NIOServer(PooledExecutor executor, long connectionTimeout, InetSocketAddress address, long serverTimeout, int numInputBuffers, int inputBufferSize, int outputBufferSize) {
-        super(executor, connectionTimeout, address);
+    public NIOServer(PooledExecutor executor, long pipeTimeout, InetSocketAddress address, long serverTimeout, int numInputBuffers, int inputBufferSize, int outputBufferSize) {
+        super(executor, pipeTimeout, address);
         _serverTimeout=serverTimeout;
         _outputBufferSize=outputBufferSize;
 
@@ -83,8 +83,8 @@ public class NIOServer extends AbstractSocketServer implements NIOConnectionConf
     
     public synchronized void stop() throws Exception {
         _log.info("stopping: "+_channel);
-        stopAcceptingConnections();
-        waitForExistingConnections();
+        stopAcceptingPipes();
+        waitForExistingPipes();
         // stop Producer loop
         _running=false;
         _selector.wakeup();
@@ -98,7 +98,7 @@ public class NIOServer extends AbstractSocketServer implements NIOConnectionConf
         _log.info("stopped: "+_address);
     }
     
-    public void stopAcceptingConnections() {
+    public void stopAcceptingPipes() {
         _accepting.set(false);
     }
     
@@ -107,34 +107,34 @@ public class NIOServer extends AbstractSocketServer implements NIOConnectionConf
         SocketChannel channel=server.accept();
         channel.configureBlocking(false);
         SelectionKey readKey=channel.register(_selector, SelectionKey.OP_READ/*|SelectionKey.OP_WRITE*/);
-        NIOServerConnection connection=new NIOServerConnection(this, _connectionTimeout, channel, readKey, new LinkedQueue(), _queue, _outputBufferSize); // reuse the queue
-        readKey.attach(connection);
-        add(connection);
+        NIOPipe pipe=new NIOPipe(this, _pipeTimeout, channel, readKey, new LinkedQueue(), _queue, _outputBufferSize); // reuse the queue
+        readKey.attach(pipe);
+        add(pipe);
     }
     
     public void read(SelectionKey key) throws IOException {
-        NIOServerConnection connection=(NIOServerConnection)key.attachment();
+        NIOPipe pipe=(NIOPipe)key.attachment();
         ByteBuffer buffer=(ByteBuffer)Utils.safeTake(_queue);
 
         int count=((SocketChannel)key.channel()).read(buffer); // read off network into buffer
         if (count<0) {
-            if (_log.isTraceEnabled()) _log.trace("committing server Connection: "+connection);
-            connection.commit();
+            if (_log.isTraceEnabled()) _log.trace("committing server Pipe: "+pipe);
+            pipe.commit();
             buffer.clear();
             Utils.safePut(buffer, _queue); // could be cleverer
         } else {
-            if (_log.isTraceEnabled()) _log.trace("servicing server Connection: "+connection+" ("+count+" bytes)");
+            if (_log.isTraceEnabled()) _log.trace("servicing server Pipe: "+pipe+" ("+count+" bytes)");
             buffer.flip();
-            Utils.safePut(buffer, connection);
+            Utils.safePut(buffer, pipe);
         }
         
-        if (!connection.getRunning()) {
-            connection.setRunning(true);
+        if (!pipe.getRunning()) {
+            pipe.setRunning(true);
             try {
-                if (_log.isTraceEnabled()) _log.trace("running server Connection: "+connection);
-                _executor.execute(connection);
+                if (_log.isTraceEnabled()) _log.trace("running server Pipe: "+pipe);
+                _executor.execute(pipe);
             } catch (InterruptedException e) { // TODO - do this safely...
-                _log.error("problem running connection", e);
+                _log.error("problem running Pipe", e);
             }
         }
     }
@@ -202,14 +202,14 @@ public class NIOServer extends AbstractSocketServer implements NIOConnectionConf
         }
     }        
     
-    // ConnectionConfig
+    // PipeConfig
 
-    public void notifyIdle(Connection connection) {
-        if (_log.isTraceEnabled()) _log.trace("idling server Connection: "+connection);
-        ((NIOServerConnection)connection).setRunning(false);
+    public void notifyIdle(Pipe pipe) {
+        if (_log.isTraceEnabled()) _log.trace("idling server Pipe: "+pipe);
+        ((NIOPipe)pipe).setRunning(false);
     }
     
-    // NIOConnectionConfig
+    // NIOPipeConfig
     
     protected final Sync _dummy=new NullSync();
     public Sync getLock() {

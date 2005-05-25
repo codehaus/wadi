@@ -21,11 +21,11 @@ public interface Server {
     void init(ServerConfig config);
     void start() throws Exception;
     void stop() throws Exception;
-    void waitForExistingConnections();
-    void stopAcceptingConnections();
+    void waitForExistingPipes();
+    void stopAcceptingPipes();
     
     // Connection container...
     
-    void run(Connection connection);
+    void run(Pipe pipe);
     
 }
