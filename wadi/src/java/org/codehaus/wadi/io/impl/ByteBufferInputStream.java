@@ -18,6 +18,8 @@ package org.codehaus.wadi.io.impl;
 
 import java.nio.ByteBuffer;
 
+import org.codehaus.wadi.impl.Utils;
+
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 

@@ -34,7 +34,9 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.Streamer;
 
+import EDU.oswego.cs.dl.util.concurrent.Puttable;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.Takable;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 /**
@@ -193,4 +195,25 @@ public class Utils {
         return cf;
     }
 
+    public static void safePut(Object item, Puttable puttable) {
+        do {
+            try {
+                puttable.put(item);
+            } catch (InterruptedException e) {
+                if (_log.isTraceEnabled()) _log.trace("unexpected interruption - ignoring", e);
+            }
+        } while (Thread.interrupted());
+    }
+
+    public static Object safeTake(Takable takable) {
+        do {
+            try {
+                return takable.take();
+            } catch (InterruptedException e) {
+                if (_log.isTraceEnabled()) _log.trace("unexpected interruption - ignoring", e);
+            }
+        } while (Thread.interrupted());
+        
+        throw new IllegalStateException();
+    }
 }
