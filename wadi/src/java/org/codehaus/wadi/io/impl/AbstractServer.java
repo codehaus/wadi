@@ -19,6 +19,7 @@ package org.codehaus.wadi.io.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.io.Pipe;
 import org.codehaus.wadi.io.PipeConfig;
 import org.codehaus.wadi.io.Server;
@@ -60,6 +61,16 @@ public abstract class AbstractServer implements Server, PipeConfig {
         } catch (InterruptedException e) { // TODO - do this safely...
             _log.error(e);
         }
+    }
+
+    // PipeConfig
+    
+    public Contextualiser getContextualiser() {
+        return _config.getContextualiser();
+    }
+    
+    public String getNodeId() {
+        return _config.getNodeId();
     }
 }
 

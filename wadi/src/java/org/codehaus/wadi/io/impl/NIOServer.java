@@ -211,10 +211,6 @@ public class NIOServer extends AbstractSocketServer implements NIOPipeConfig {
         ((NIOPipe)pipe).setRunning(false);
     }
     
-    public Contextualiser getContextualiser() {
-        return _config.getContextualiser();
-    }
-    
     // NIOPipeConfig
     
     protected final Sync _dummy=new NullSync();

@@ -168,8 +168,4 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
         notifyClosed(pipe);
     }
     
-    public Contextualiser getContextualiser() {
-        return _config.getContextualiser();
-    }
-    
 }

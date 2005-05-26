@@ -17,14 +17,23 @@
 package org.codehaus.wadi.io;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.nio.channels.WritableByteChannel;
 
 import org.codehaus.wadi.Config;
 import org.codehaus.wadi.Contextualiser;
 
-public interface PeerConfig extends Config, StreamConnection, WritableByteChannel {
+public interface PeerConfig extends Config/*, StreamConnection*/, WritableByteChannel {
 
     public void close() throws IOException; // inherited from WriteableByteChannel - but overloaded to mean close whole Connection...
     Contextualiser getContextualiser();
+    String getNodeId();
+    //InputStream getInputStream() throws IOException;
+    //OutputStream getOutputStream() throws IOException;
+    ObjectInputStream getObjectInputStream() throws IOException;
+    ObjectOutputStream getObjectOutputStream() throws IOException;
     
 }

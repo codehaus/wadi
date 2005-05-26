@@ -120,7 +120,4 @@ public class BIOServer extends AbstractSocketServer {
         // BIOServer does not support idling Pipes :-(        
     }
     
-    public Contextualiser getContextualiser() {
-        return _config.getContextualiser();
-    }
 }
