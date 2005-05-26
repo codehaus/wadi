@@ -232,20 +232,17 @@ public class TestMotion extends TestCase {
         
         protected static final Log _log=LogFactory.getLog(SingleRoundTripServerPeer.class);
         
-        public void run(PeerConfig config) {
-            try {
-                _log.info("server - starting");
-                _log.info("server - creating output stream");
-                ObjectOutputStream oos=config.getObjectOutputStream();
-                _log.info("server - writing response");
-                oos.writeBoolean(true); // ack
-                _log.info("server - flushing response");
-                oos.flush();
-                _log.info("server - finished");
-                //config.close();
-            } catch (IOException e) {
-                _log.error(e);
-            }
+        public boolean run(PeerConfig config) throws IOException {
+            _log.info("server - starting");
+            _log.info("server - creating output stream");
+            ObjectOutputStream oos=config.getObjectOutputStream();
+            _log.info("server - writing response");
+            oos.writeBoolean(true); // ack
+            _log.info("server - flushing response");
+            oos.flush();
+            _log.info("server - finished");
+            //config.close();
+            return true;
         }
     }
     
@@ -253,28 +250,24 @@ public class TestMotion extends TestCase {
         
         protected static final Log _log=LogFactory.getLog(SingleRoundTripClientPeer.class);
         
-        public void run(PeerConfig config) {
-            try {
-                _log.info("client - starting");
-                _log.info("client - creating output stream");
-                ObjectOutputStream oos=config.getObjectOutputStream();
-                _log.info("client - writing server");
-                oos.writeObject(new SingleRoundTripServerPeer());
-                _log.info("client - flushing server");
-                oos.flush();
-                _log.info("client - creating input stream");
-                ObjectInputStream ois=config.getObjectInputStream();
-                _log.info("client - reading response");
-                boolean result=ois.readBoolean();
-                _log.info("client - finished: "+result);
-                assertTrue(result);
-                //config.close();
-            } catch (IOException e) {
-                _log.error("unexpected problem", e);
-            }
+        public boolean run(PeerConfig config) throws IOException {
+            _log.info("client - starting");
+            _log.info("client - creating output stream");
+            ObjectOutputStream oos=config.getObjectOutputStream();
+            _log.info("client - writing server");
+            oos.writeObject(new SingleRoundTripServerPeer());
+            _log.info("client - flushing server");
+            oos.flush();
+            _log.info("client - creating input stream");
+            ObjectInputStream ois=config.getObjectInputStream();
+            _log.info("client - reading response");
+            boolean result=ois.readBoolean();
+            _log.info("client - finished: "+result);
+            assertTrue(result);
+            //config.close();
+            return result;
         }
     }
-    
     
     public void testRoundTripping() throws Exception {
         
@@ -307,30 +300,25 @@ public class TestMotion extends TestCase {
         
         protected static final Log _log=LogFactory.getLog(EmotionServerPeer.class);
         
-        public void run(PeerConfig config) {
-            try {
-                long startTime=System.currentTimeMillis();
-                ObjectInputStream ois=config.getObjectInputStream();
-                String nodeId=(String)ois.readObject();
-                String name=(String)ois.readObject();
-                Motable emotable=(Motable)ois.readObject();
-                Contextualiser contextualiser=config.getContextualiser();
-                Immoter immoter=contextualiser.getDemoter(name, emotable);
-                Motable immotable=immoter.nextMotable(name, emotable);
-                boolean ok=immoter.prepare(name, emotable, immotable);
-                if (ok) immoter.commit(name, immotable);
-                ObjectOutputStream oos=config.getObjectOutputStream();
-                oos.writeObject(config.getNodeId());
-                oos.writeBoolean(ok);
-                oos.flush();
-                long elapsedTime=System.currentTimeMillis()-startTime;
-                if (_log.isDebugEnabled())_log.debug("motion"+(ok?"":" failed")+": "+name+" : cluster ["+nodeId+"] -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
-            } catch (IOException e) {
-                _log.error("unexpected problem", e);
-            } catch (ClassNotFoundException e) {
-                _log.error("unexpected problem", e);
-            }   
-        }
+        public boolean run(PeerConfig config) throws IOException, ClassNotFoundException {
+            long startTime=System.currentTimeMillis();
+            ObjectInputStream ois=config.getObjectInputStream();
+            String nodeId=(String)ois.readObject();
+            String name=(String)ois.readObject();
+            Motable emotable=(Motable)ois.readObject();
+            Contextualiser contextualiser=config.getContextualiser();
+            Immoter immoter=contextualiser.getDemoter(name, emotable);
+            Motable immotable=immoter.nextMotable(name, emotable);
+            boolean ok=immoter.prepare(name, emotable, immotable);
+            if (ok) immoter.commit(name, immotable);
+            ObjectOutputStream oos=config.getObjectOutputStream();
+            oos.writeObject(config.getNodeId());
+            oos.writeBoolean(ok);
+            oos.flush();
+            long elapsedTime=System.currentTimeMillis()-startTime;
+            if (_log.isDebugEnabled())_log.debug("motion"+(ok?"":" failed")+": "+name+" : cluster ["+nodeId+"] -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
+            return true;
+        }   
     }
     
     public static class EmotionClientPeer extends Peer {
@@ -347,14 +335,18 @@ public class TestMotion extends TestCase {
             _emotable=emotable;
         }
         
-        public void run(PeerConfig config) {
+        public boolean run(PeerConfig config) throws Exception {
+            long startTime=System.currentTimeMillis();
+            Motable motable=new SimpleMotable();
+            motable.copy(_emotable); // how can we avoid this copy...? write straight onto the stream...
+            boolean ok=_emoter.prepare(_name, _emotable);
+            if (!ok) return ok;
+            ok=false;
+            ObjectOutputStream oos=null;
+            ObjectInputStream ois=null;
+            String nodeId="<unknown>";
             try {
-                long startTime=System.currentTimeMillis();
-                Motable motable=new SimpleMotable();
-                motable.copy(_emotable); // how can we avoid this copy...? write straight onto the stream...
-                boolean ok=_emoter.prepare(_name, _emotable);
-                if (!ok) return;
-                ObjectOutputStream oos=config.getObjectOutputStream();
+                oos=config.getObjectOutputStream();
                 oos.writeObject(new EmotionServerPeer()); // could be cached...
                 oos.writeObject(config.getNodeId());
                 oos.writeObject(_name);
@@ -362,23 +354,21 @@ public class TestMotion extends TestCase {
                 oos.flush();
                 // server tries to prepare and commit...
                 // returns success or failure
-                ObjectInputStream ois=config.getObjectInputStream();
-                String nodeId=(String)ois.readObject();
+                ois=config.getObjectInputStream();
+                nodeId=(String)ois.readObject();
                 ok=ois.readBoolean();
+            } catch (Exception e) {
+                _log.error("unexpected problem", e);
+            } finally {
                 if (ok) {
                     _emoter.commit(_name, _emotable);
                 } else {
                     _emoter.rollback(_name, _emotable);
                 }
-                long elapsedTime=System.currentTimeMillis()-startTime;
-                if (_log.isDebugEnabled())_log.debug("motion"+(ok?"":" failed")+": "+_name+" : "+_emoter.getInfo()+" -> cluster ["+nodeId+"] ("+elapsedTime+" millis)");
-            } catch (IOException e) {
-                _log.error("unexpected problem", e);
-            } catch (ClassNotFoundException e) {
-                _log.error("unexpected problem", e);
-            } catch (Exception e) {
-                _log.error("unexpected problem", e);
             }
+            long elapsedTime=System.currentTimeMillis()-startTime;
+            if (_log.isDebugEnabled())_log.debug("motion"+(ok?"":" failed")+": "+_name+" : "+_emoter.getInfo()+" -> cluster ["+nodeId+"] ("+elapsedTime+" millis)");
+            return ok;
         }
     }
     

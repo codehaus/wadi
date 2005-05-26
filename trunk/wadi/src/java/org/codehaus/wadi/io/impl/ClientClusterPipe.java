@@ -36,10 +36,10 @@ public class ClientClusterPipe extends AbstractClusterPipe {
     
     protected String _theirCorrelationIdWithSuffix;
     
-    public synchronized void run(Peer peer) {
+    public synchronized boolean run(Peer peer) throws Exception {
         int i=_count.increment();
         _theirCorrelationIdWithSuffix=_theirCorrelationId+"-"+i;
-        super.run(peer);
+        return super.run(peer);
     }
     
     public String getTheirCorrelationId() {

@@ -132,42 +132,36 @@ public class TestServers extends TestCase {
 
     public static class SingleRoundTripServerPeer extends Peer {
         
-        public void run(PeerConfig config) {
-            try {
-                //_log.info("server - starting");
-                //_log.info("server - creating output stream");
-                ObjectOutputStream oos=config.getObjectOutputStream();
-                //_log.info("server - writing response");
-                oos.writeBoolean(true); // ack
-                //_log.info("server - flushing response");
-                oos.flush();
-                //_log.info("server - finished");
-            } catch (IOException e) {
-                //_log.error("problem", e);
-            }
+        public boolean run(PeerConfig config) throws IOException {
+            //_log.info("server - starting");
+            //_log.info("server - creating output stream");
+            ObjectOutputStream oos=config.getObjectOutputStream();
+            //_log.info("server - writing response");
+            oos.writeBoolean(true); // ack
+            //_log.info("server - flushing response");
+            oos.flush();
+            //_log.info("server - finished");
+            return true;
         }
     }
     
     public static class SingleRoundTripClientPeer extends Peer {
         
-        public void run(PeerConfig config) {
-            try {
-                //_log.info("client - starting");
-                //_log.info("client - creating output stream");
-                ObjectOutputStream oos=config.getObjectOutputStream();
-                //_log.info("client - writing object");
-                oos.writeObject(new SingleRoundTripServerPeer());
-                //_log.info("client - flushing object");
-                oos.flush();
-                //_log.info("client - creating input stream");
-                ObjectInputStream ois=config.getObjectInputStream();
-                //_log.info("client - reading response");
-                boolean result=ois.readBoolean();
-                //_log.info("client - finished: "+result);
-                assertTrue(result);
-            } catch (IOException e) {
-                //_log.error("problem", e);
-            }
+        public boolean run(PeerConfig config) throws IOException {
+            //_log.info("client - starting");
+            //_log.info("client - creating output stream");
+            ObjectOutputStream oos=config.getObjectOutputStream();
+            //_log.info("client - writing object");
+            oos.writeObject(new SingleRoundTripServerPeer());
+            //_log.info("client - flushing object");
+            oos.flush();
+            //_log.info("client - creating input stream");
+            ObjectInputStream ois=config.getObjectInputStream();
+            //_log.info("client - reading response");
+            boolean result=ois.readBoolean();
+            //_log.info("client - finished: "+result);
+            assertTrue(result);
+            return result;
         }
     }
     

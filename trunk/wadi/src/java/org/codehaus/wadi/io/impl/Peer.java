@@ -30,6 +30,6 @@ public abstract class Peer implements Serializable {
         // used for deserialisation
     }
     
-    public abstract void run(PeerConfig config);
+    public abstract boolean run(PeerConfig config) throws Exception;
     
 }
