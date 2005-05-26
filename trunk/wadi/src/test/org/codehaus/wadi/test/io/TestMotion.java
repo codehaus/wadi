@@ -30,17 +30,27 @@ import javax.jms.Destination;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableSessionConfig;
 import org.codehaus.wadi.Emoter;
+import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.ExtendedCluster;
+import org.codehaus.wadi.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.SessionPool;
+import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
+import org.codehaus.wadi.impl.MemoryContextualiser;
+import org.codehaus.wadi.impl.NeverEvicter;
+import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SimpleMotable;
+import org.codehaus.wadi.impl.SimpleSessionPool;
+import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.io.Pipe;
 import org.codehaus.wadi.io.PeerConfig;
@@ -51,6 +61,7 @@ import org.codehaus.wadi.io.impl.Peer;
 import org.codehaus.wadi.io.impl.ThreadFactory;
 import org.codehaus.wadi.test.DummyDistributableSessionConfig;
 import org.codehaus.wadi.test.EtherEmoter;
+import org.codehaus.wadi.test.MyDummyHttpServletRequestWrapperPool;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
@@ -172,15 +183,23 @@ public class TestMotion extends TestCase {
         }
     }
 
+    protected final DistributableSessionFactory _distributableSessionFactory=new DistributableSessionFactory();
+    protected final SessionPool _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
+    protected final HttpServletRequestWrapperPool _requestPool=new MyDummyHttpServletRequestWrapperPool();
+    protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
+    
     protected final Location _localLocation;
-    protected final Contextualiser _localContextualiser=new DummyContextualiser();
+    protected final Map _localMap=new HashMap();
+    protected final Contextualiser _localContextualiser=new MemoryContextualiser(new DummyContextualiser(), new NeverEvicter(60, true), _localMap, new SimpleStreamer(), _distributableContextPool, _requestPool);
     protected final ServerConfig _localConfig=new MyServerConfig("local", _localContextualiser);
     protected final Location _remoteLocation;
-    protected final Contextualiser _remoteContextualiser=new DummyContextualiser();
+    protected final Map _remoteMap=new HashMap();
+    protected final Contextualiser _remoteContextualiser=new MemoryContextualiser(new DummyContextualiser(), new NeverEvicter(60, true), _remoteMap, new SimpleStreamer(), _distributableContextPool, _requestPool);
     protected final ServerConfig _remoteConfig=new MyServerConfig("remote", _remoteContextualiser);
     
     public TestMotion(String name) throws Exception {
         super(name);
+        _distributableSessionPool.init(new DummyDistributableSessionConfig());
         _localLocation=new DestinationLocation(_localConfig.getCluster().getLocalNode().getDestination());
         _remoteLocation=new DestinationLocation(_remoteConfig.getCluster().getLocalNode().getDestination());
         //_local=new InetSocketAddressLocation(new InetSocketAddress(InetAddress.getLocalHost(), 8888));
@@ -204,6 +223,8 @@ public class TestMotion extends TestCase {
         _us.stop();
         _remoteConfig.getCluster().stop();
         _localConfig.getCluster().stop();
+        _localMap.clear();
+        _remoteMap.clear();
     }
 
     public static class SingleRoundTripServerPeer extends Peer {
@@ -371,8 +392,14 @@ public class TestMotion extends TestCase {
         Pipe us2them=_us.getClient(_remoteLocation);
         _log.info("us -> them (1st trip)");
         us2them.run(new EmotionClientPeer(s0.getName(), emoter, s0));
+        assertTrue(_localMap.size()==0);
+        assertTrue(_remoteMap.size()==1);
+        assertTrue(_remoteMap.containsKey(s0.getName()));
         _log.info("us -> them (2nd trip)");
         us2them.run(new EmotionClientPeer(s1.getName(), emoter, s1));
+        assertTrue(_localMap.size()==0);
+        assertTrue(_remoteMap.size()==2);
+        assertTrue(_remoteMap.containsKey(s1.getName()));
         us2them.close();
         _log.info("FINISH");
         
