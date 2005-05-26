@@ -309,9 +309,9 @@ public class TestMotion extends TestCase {
             Contextualiser contextualiser=config.getContextualiser();
             Immoter immoter=contextualiser.getDemoter(name, emotable);
             Motable immotable=immoter.nextMotable(name, emotable);
+            ObjectOutputStream oos=config.getObjectOutputStream();
             boolean ok=immoter.prepare(name, emotable, immotable);
             if (ok) immoter.commit(name, immotable);
-            ObjectOutputStream oos=config.getObjectOutputStream();
             oos.writeObject(config.getNodeId());
             oos.writeBoolean(ok);
             oos.flush();
