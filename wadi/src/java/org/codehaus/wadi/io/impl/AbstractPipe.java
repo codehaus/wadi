@@ -68,7 +68,11 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
             //_log.info("stream created...");
             Peer peer=(Peer)ois.readObject();
             //_log.info("object read...");
+            try {
             run(peer);
+            } catch (Exception e) {
+                _log.error("problem running Peer", e);
+            }
             //_log.info("...ran");
         } catch (EOFException e) {
             // end of the line - fall through...
@@ -95,9 +99,9 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
         //_log.info("...idle");
     }
     
-    public void run(Peer peer) {
+    public boolean run(Peer peer) throws Exception {
         try {
-            peer.run(this);
+            return peer.run(this);
         } finally {
             _ois=null;
             _oos=null;
