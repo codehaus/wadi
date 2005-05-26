@@ -109,6 +109,7 @@ public class TestServers extends TestCase {
         _clusterServer.init(new ServerConfig() {
             public ExtendedCluster getCluster() {return _cluster;}
             public Contextualiser getContextualiser() {return null;}
+            public String getNodeId() {return null;}
         });
         _clusterServer.start();
         _cluster.start();
@@ -161,7 +162,7 @@ public class TestServers extends TestCase {
                 //_log.info("client - flushing object");
                 oos.flush();
                 //_log.info("client - creating input stream");
-                ObjectInputStream ois=new ObjectInputStream(config.getInputStream());
+                ObjectInputStream ois=config.getObjectInputStream();
                 //_log.info("client - reading response");
                 boolean result=ois.readBoolean();
                 //_log.info("client - finished: "+result);

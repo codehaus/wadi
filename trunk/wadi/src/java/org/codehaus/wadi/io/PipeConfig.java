@@ -25,5 +25,6 @@ public interface PipeConfig extends Config {
     void notifyClosed(Pipe pipe); // called by Connection on being closed...
     
     Contextualiser getContextualiser();
+    String getNodeId();
 
 }

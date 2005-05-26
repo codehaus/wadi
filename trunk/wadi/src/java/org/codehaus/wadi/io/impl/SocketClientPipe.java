@@ -34,6 +34,7 @@ public class SocketClientPipe extends AbstractPipe {
         public void notifyIdle(Pipe pipe) {/* do nothing */}
         public void notifyClosed(Pipe pipe) {/* do nothing */}
         public Contextualiser getContextualiser() {return null;}        
+        public String getNodeId() {return null;}
     }
     
     

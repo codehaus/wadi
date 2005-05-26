@@ -20,6 +20,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
@@ -45,13 +46,25 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
         _valid=true;
     }
     
+    protected ObjectInputStream _ois;
+    public ObjectInputStream getObjectInputStream() throws IOException {
+        if (_ois==null)
+            _ois=new ObjectInputStream(getInputStream());
+        return _ois;
+    }
+    
+    protected ObjectOutputStream _oos;
+    public ObjectOutputStream getObjectOutputStream() throws IOException {
+        if (_oos==null)
+            _oos=new ObjectOutputStream(getOutputStream());
+        return _oos;
+    }
+    
     public void run() {
-        InputStream is=null;
         try {
             //_log.info("running...");
-            is=getInputStream();
             //_log.info("starting read...");
-            ObjectInputStream ois=new ObjectInputStream(is);
+            ObjectInputStream ois=getObjectInputStream();
             //_log.info("stream created...");
             Peer peer=(Peer)ois.readObject();
             //_log.info("object read...");
@@ -68,6 +81,8 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
             _log.warn("unknown Peer type - version/security problem?", e);
             _valid=false; // this stream is unfixable ?
         } finally {
+            _ois=null;
+            _oos=null;
             if (_valid)
                 _config.notifyIdle(this); // after running, we declare ourselves 'idle' to our Server...
             else
@@ -81,18 +96,20 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
     }
     
     public void run(Peer peer) {
-//       try {
+        try {
             peer.run(this);
-//        } finally {
-//            if (_valid)
-//                _config.notifyIdle(this); // after running, we declare ourselves 'idle' to our Server...
-//            else
-//                try {
-//                    close();
-//                } catch (IOException e) {
-//                    _log.error("problem closing server Connection", e);
-//                }     
-//        }
+        } finally {
+            _ois=null;
+            _oos=null;
+//          if (_valid)
+//          _config.notifyIdle(this); // after running, we declare ourselves 'idle' to our Server...
+//          else
+//          try {
+//          close();
+//          } catch (IOException e) {
+//          _log.error("problem closing server Connection", e);
+//          }     
+        }
     }
     
     public void close() throws IOException {
@@ -122,4 +139,7 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
         return _config.getContextualiser();
     }
 
+    public String getNodeId() {
+        return _config.getNodeId();
+    }
 }

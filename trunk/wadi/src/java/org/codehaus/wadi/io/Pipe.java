@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import org.codehaus.wadi.io.impl.Peer;
 
-public interface Pipe extends Runnable {
+public interface Pipe extends Runnable, StreamConnection {
 
     void run(); // reads peer from input, and runs it...
     void run(Peer peer) throws IOException; // run a Peer ...
