@@ -276,26 +276,32 @@ public class TestMotion extends TestCase {
     }
     
     
-//    public void testRoundTripping() throws Exception {
-//        
-//        _log.info("START");
-//        Pipe us2them=_us.getClient(_remoteLocation);
-//        _log.info("us -> them (1st trip)");
-//        us2them.run(new SingleRoundTripClientPeer());
-//        _log.info("us -> them (2nd trip)");
-//        us2them.run(new SingleRoundTripClientPeer());
-//        us2them.close();
-//        _log.info("FINISH");
-//        
-//        _log.info("START");
-//        Pipe them2us=_them.getClient(_localLocation);
-//        _log.info("them -> us (1st trip)");
-//        them2us.run(new SingleRoundTripClientPeer());
-//        _log.info("them -> us (2nd trip)");
-//        them2us.run(new SingleRoundTripClientPeer());
-//        them2us.close();
-//        _log.info("FINISH");
-//    }
+    public void testRoundTripping() throws Exception {
+        
+        _log.info("START");
+        Pipe us2them=_us.getClient(_remoteLocation);
+        try {
+            _log.info("us -> them (1st trip)");
+            us2them.run(new SingleRoundTripClientPeer());
+            _log.info("us -> them (2nd trip)");
+            us2them.run(new SingleRoundTripClientPeer());
+        } finally {
+            us2them.close();
+        }
+        _log.info("FINISH");
+        
+        _log.info("START");
+        Pipe them2us=_them.getClient(_localLocation);
+        try {
+            _log.info("them -> us (1st trip)");
+            them2us.run(new SingleRoundTripClientPeer());
+            _log.info("them -> us (2nd trip)");
+            them2us.run(new SingleRoundTripClientPeer());
+        } finally {
+            them2us.close();
+        }
+        _log.info("FINISH");
+    }
 
     public static class EmotionServerPeer extends Peer implements Serializable {
         
