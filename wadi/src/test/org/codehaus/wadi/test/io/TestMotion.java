@@ -66,6 +66,7 @@ import org.codehaus.wadi.test.MyDummyHttpServletRequestWrapperPool;
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
+import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 public class TestMotion extends TestCase {
@@ -387,20 +388,23 @@ public class TestMotion extends TestCase {
         DistributableSession s1=(DistributableSession)factory.create(config);
         String name1="bar";
         s1.init(time, time, 30*60, name1);
-        
+
         _log.info("START");
         Pipe us2them=_us.getClient(_remoteLocation);
-        _log.info("us -> them (1st trip)");
-        us2them.run(new EmotionClientPeer(s0.getName(), emoter, s0));
-        assertTrue(_localMap.size()==0);
-        assertTrue(_remoteMap.size()==1);
-        assertTrue(_remoteMap.containsKey(name0));
-        _log.info("us -> them (2nd trip)");
-        us2them.run(new EmotionClientPeer(s1.getName(), emoter, s1));
-        assertTrue(_localMap.size()==0);
-        assertTrue(_remoteMap.size()==2);
-        assertTrue(_remoteMap.containsKey(name1));
-        us2them.close();
+        try {
+            _log.info("us -> them (1st trip)");
+            us2them.run(new EmotionClientPeer(s0.getName(), emoter, s0));
+            assertTrue(_localMap.size()==0);
+            assertTrue(_remoteMap.size()==1);
+            assertTrue(_remoteMap.containsKey(name0));
+            _log.info("us -> them (2nd trip)");
+            us2them.run(new EmotionClientPeer(s1.getName(), emoter, s1));
+            assertTrue(_localMap.size()==0);
+            assertTrue(_remoteMap.size()==2);
+            assertTrue(_remoteMap.containsKey(name1));
+        } finally {
+            us2them.close();
+        }
         _log.info("FINISH");
         
 //        _log.info("START");
