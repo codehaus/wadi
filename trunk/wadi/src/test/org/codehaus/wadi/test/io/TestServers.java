@@ -71,10 +71,8 @@ public class TestServers extends TestCase {
     protected ExtendedCluster _cluster;
     protected ClusterServer _clusterServer;
     protected PipeFactory _clusterPipeFactory;
-    
 
     protected final int _count=10000;
-    
     
     protected void setUp() throws Exception {
         super.setUp();
@@ -138,7 +136,7 @@ public class TestServers extends TestCase {
             try {
                 //_log.info("server - starting");
                 //_log.info("server - creating output stream");
-                ObjectOutputStream oos=new ObjectOutputStream(config.getOutputStream());
+                ObjectOutputStream oos=config.getObjectOutputStream();
                 //_log.info("server - writing response");
                 oos.writeBoolean(true); // ack
                 //_log.info("server - flushing response");
@@ -156,7 +154,7 @@ public class TestServers extends TestCase {
             try {
                 //_log.info("client - starting");
                 //_log.info("client - creating output stream");
-                ObjectOutputStream oos=new ObjectOutputStream(config.getOutputStream());
+                ObjectOutputStream oos=config.getObjectOutputStream();
                 //_log.info("client - writing object");
                 oos.writeObject(new SingleRoundTripServerPeer());
                 //_log.info("client - flushing object");
