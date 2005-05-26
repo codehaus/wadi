@@ -275,29 +275,27 @@ public class TestMotion extends TestCase {
     }
     
     
-    public void testRoundTripping() throws Exception {
-        
-        _log.info("START");
-        Pipe us2them=_us.getClient(_remoteLocation);
-        _log.info("us -> them (1st trip)");
-        us2them.run(new SingleRoundTripClientPeer());
-        _log.info("us -> them (2nd trip)");
-        us2them.run(new SingleRoundTripClientPeer());
-        us2them.close();
-        _log.info("FINISH");
-        
-        _log.info("START");
-        Pipe them2us=_them.getClient(_localLocation);
-        _log.info("them -> us (1st trip)");
-        them2us.run(new SingleRoundTripClientPeer());
-        _log.info("them -> us (2nd trip)");
-        them2us.run(new SingleRoundTripClientPeer());
-        them2us.close();
-        _log.info("FINISH");
-    }
+//    public void testRoundTripping() throws Exception {
+//        
+//        _log.info("START");
+//        Pipe us2them=_us.getClient(_remoteLocation);
+//        _log.info("us -> them (1st trip)");
+//        us2them.run(new SingleRoundTripClientPeer());
+//        _log.info("us -> them (2nd trip)");
+//        us2them.run(new SingleRoundTripClientPeer());
+//        us2them.close();
+//        _log.info("FINISH");
+//        
+//        _log.info("START");
+//        Pipe them2us=_them.getClient(_localLocation);
+//        _log.info("them -> us (1st trip)");
+//        them2us.run(new SingleRoundTripClientPeer());
+//        _log.info("them -> us (2nd trip)");
+//        them2us.run(new SingleRoundTripClientPeer());
+//        them2us.close();
+//        _log.info("FINISH");
+//    }
 
-    
-    
     public static class EmotionServerPeer extends Peer implements Serializable {
         
         protected static final Log _log=LogFactory.getLog(EmotionServerPeer.class);
@@ -384,9 +382,11 @@ public class TestMotion extends TestCase {
         DistributableSessionFactory factory=new DistributableSessionFactory();
         DistributableSession s0=(DistributableSession)factory.create(config);
         long time=System.currentTimeMillis();
-        s0.init(time, time, 30*60, "foo");
+        String name0="foo";
+        s0.init(time, time, 30*60, name0);
         DistributableSession s1=(DistributableSession)factory.create(config);
-        s1.init(time, time, 30*60, "bar");
+        String name1="bar";
+        s1.init(time, time, 30*60, name1);
         
         _log.info("START");
         Pipe us2them=_us.getClient(_remoteLocation);
@@ -394,12 +394,12 @@ public class TestMotion extends TestCase {
         us2them.run(new EmotionClientPeer(s0.getName(), emoter, s0));
         assertTrue(_localMap.size()==0);
         assertTrue(_remoteMap.size()==1);
-        assertTrue(_remoteMap.containsKey(s0.getName()));
+        assertTrue(_remoteMap.containsKey(name0));
         _log.info("us -> them (2nd trip)");
         us2them.run(new EmotionClientPeer(s1.getName(), emoter, s1));
         assertTrue(_localMap.size()==0);
         assertTrue(_remoteMap.size()==2);
-        assertTrue(_remoteMap.containsKey(s1.getName()));
+        assertTrue(_remoteMap.containsKey(name1));
         us2them.close();
         _log.info("FINISH");
         
