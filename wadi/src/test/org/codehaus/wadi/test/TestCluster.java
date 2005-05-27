@@ -226,23 +226,22 @@ public class TestCluster extends TestCase {
 	}
 
 	public void testEvacuation() throws Exception {
-		Contextualiser c0=_node0.getMemoryContextualiser();
-
 		Map m0=_node0.getMemoryContextualiserMap();
 		Map m1=_node1.getMemoryContextualiserMap();
 		Map m2=_node2.getMemoryContextualiserMap();
         
-
         // populate node0
+        Contextualiser c0=_node0.getMemoryContextualiser();
+
 		int numContexts=3;
 		for (int i=0; i<numContexts; i++) {
-			String id="session-"+i;
+			String name="session-"+i;
 			Motable emotable=_node0._distributableSessionPool.take();
             long time=System.currentTimeMillis();
-            emotable.init(time, time, 30*60, id);
-			Immoter immoter=c0.getDemoter(id, emotable);
+            emotable.init(time, time, 30*60, name);
+			Immoter immoter=c0.getDemoter(name, emotable);
 			Emoter emoter=new EtherEmoter();
-			Utils.mote(emoter, immoter, emotable, id);
+			Utils.mote(emoter, immoter, emotable, name);
 		}
 		assertTrue(m0.size()==numContexts); // all sessions are on node0
 

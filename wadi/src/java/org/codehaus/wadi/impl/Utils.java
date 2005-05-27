@@ -185,11 +185,12 @@ public class Utils {
         }
     }
 
+    // this should really be passed in the top somewhere - but the tests need access too...
     public static ActiveMQConnectionFactory getConnectionFactory() {
-        // _connectionFactory=new ActiveMQConnectionFactory("peer://WADI-TEST");
+        ActiveMQConnectionFactory cf=new ActiveMQConnectionFactory("peer://WADI-TEST");
+        // ActiveMQConnectionFactory cf=new ActiveMQConnectionFactory("tcp://localhost:61616");
         // _connectionFactory=new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");
         // _connectionFactory=new ActiveMQConnectionFactory("jgroups:default");
-        ActiveMQConnectionFactory cf=new ActiveMQConnectionFactory("tcp://localhost:61616");
         cf.setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter())); // peer protocol seems to ignore this...
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
         return cf;

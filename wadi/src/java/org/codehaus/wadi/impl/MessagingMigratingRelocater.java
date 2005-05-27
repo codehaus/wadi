@@ -58,7 +58,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ImmigrateRelocater extends AbstractRelocater implements SessionRelocater {
+public class MessagingMigratingRelocater extends AbstractRelocater implements SessionRelocater {
 
     protected final Log _log=LogFactory.getLog(getClass());
 	protected final long _resTimeout;
@@ -66,7 +66,7 @@ public class ImmigrateRelocater extends AbstractRelocater implements SessionRelo
 	protected final Map _resRvMap=new HashMap();
 	protected final Map _ackRvMap=new HashMap();
 
-	public ImmigrateRelocater(long resTimeout, long ackTimeout) {
+	public MessagingMigratingRelocater(long resTimeout, long ackTimeout) {
 		_resTimeout=resTimeout;
 		_ackTimeout=ackTimeout;
 	}
@@ -80,27 +80,27 @@ public class ImmigrateRelocater extends AbstractRelocater implements SessionRelo
     }
 
     protected int _counter;
-    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
+    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
 
-        Location location=(Location)locationMap.get(id);
+        Location location=(Location)locationMap.get(name);
         location=null;
         Destination destination;
 
         if (location==null) {
-            if (_log.isTraceEnabled()) _log.trace("immigration: no cached location - 1->n : "+id);
+            if (_log.isTraceEnabled()) _log.trace("immigration: no cached location - 1->n : "+name);
             destination=_config.getDispatcher().getCluster().getDestination();
         } else {
-            if (_log.isTraceEnabled()) _log.trace("immigration: cached location - 1->1 : "+id);
+            if (_log.isTraceEnabled()) _log.trace("immigration: cached location - 1->1 : "+name);
             destination=location.getDestination();
         }
 
         MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
         settingsInOut.from=_config.getLocation().getDestination();
         settingsInOut.to=destination;
-        settingsInOut.correlationId=id+"-"+(_counter++)+"-"+_config.getCluster().getLocalNode().getDestination().toString(); // TODO - better correlationId
+        settingsInOut.correlationId=name+"-"+(_counter++)+"-"+_config.getCluster().getLocalNode().getDestination().toString(); // TODO - better correlationId
         if (_log.isTraceEnabled()) _log.trace("sending immigration request: "+settingsInOut.correlationId);
-        ImmigrationRequest request=new ImmigrationRequest(id, _resTimeout);
-        ImmigrationResponse response=(ImmigrationResponse)_config.getDispatcher().exchangeMessages(id, _resRvMap, request, settingsInOut, _resTimeout);
+        ImmigrationRequest request=new ImmigrationRequest(name, _resTimeout);
+        ImmigrationResponse response=(ImmigrationResponse)_config.getDispatcher().exchangeMessages(name, _resRvMap, request, settingsInOut, _resTimeout);
         if (_log.isTraceEnabled()) _log.trace("received immigration response: "+settingsInOut.correlationId);
         // take out session, prepare to promote it...
 
@@ -113,11 +113,11 @@ public class ImmigrateRelocater extends AbstractRelocater implements SessionRelo
             if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
 
         Emoter emoter=new ImmigrationEmoter(_config.getMap(), settingsInOut);
-        Motable immotable=Utils.mote(emoter, immoter, emotable, id);
+        Motable immotable=Utils.mote(emoter, immoter, emotable, name);
         if (null==immotable)
             return false;
         else {
-            boolean answer=immoter.contextualise(hreq, hres, chain, id, immotable, motionLock);
+            boolean answer=immoter.contextualise(hreq, hres, chain, name, immotable, motionLock);
             return answer;
         }
     }
