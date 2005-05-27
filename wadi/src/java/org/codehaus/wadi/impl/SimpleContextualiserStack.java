@@ -181,14 +181,11 @@ public class SimpleContextualiserStack implements Contextualiser {
     }
 
     public void start() throws Exception {
-        _clusterCluster.start();
-	// TODO - dispatcher probably needs a Lifecycle too... (and a thread pool)
         _memory.start();
     }
 
     public void stop() throws Exception {
         _memory.stop();
-        _clusterCluster.stop();
     }
 
     public void destroy() {
