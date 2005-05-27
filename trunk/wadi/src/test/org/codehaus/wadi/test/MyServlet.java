@@ -96,7 +96,6 @@ public class MyServlet implements Servlet {
 	public MyServlet(String name, CustomCluster cluster, ContextPool contextPool, MessageDispatcher dispatcher, Relocater relocater, Location location) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 		_cluster=cluster;
-		_cluster.start();
 		_clusterMap=new HashMap();
 		_dispatcher=dispatcher;
 		_relocater=relocater;
@@ -149,7 +148,6 @@ public class MyServlet implements Servlet {
 		try {
             _manager.stop();
             _manager.destroy();
-            _cluster.stop();
 		} catch (Exception e) {
 			_log.warn("unexpected problem", e);
 		}

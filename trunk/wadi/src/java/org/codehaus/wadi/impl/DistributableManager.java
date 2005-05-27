@@ -58,17 +58,17 @@ public class DistributableManager extends StandardManager implements Distributab
             _log.error("problem starting Cluster", e);
         }
         super.init();
-        _server.init(this);
+        //_server.init(this);
     }
     
     public void start() throws Exception {
-        _server.start();
+        //_server.start();
         super.start();
     }
     
     public void stop() throws Exception {
         super.stop();
-        _server.stop();
+        //_server.stop();
         _cluster.stop();
     }
 
