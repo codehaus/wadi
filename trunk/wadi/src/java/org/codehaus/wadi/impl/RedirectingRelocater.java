@@ -39,9 +39,9 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class RedirectRelocater extends AbstractRelocater implements RequestRelocater {
+public class RedirectingRelocater extends AbstractRelocater implements RequestRelocater {
 
-	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
+	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
 		// TODO Auto-generated method stub
 		return false;
 	}

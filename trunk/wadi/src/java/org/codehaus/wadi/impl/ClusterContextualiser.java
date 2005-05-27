@@ -46,6 +46,7 @@ import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
+import org.codehaus.wadi.io.Server;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
@@ -440,5 +441,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     public Location getLocation() {return _location;}
     public ExtendedCluster getCluster() {return _cluster;}
     public Contextualiser getContextualiser() {return _top;}
+    public Server getServer() {return ((DistributableContextualiserConfig)_config).getServer();}
 
 }

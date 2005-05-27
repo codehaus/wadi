@@ -19,6 +19,7 @@ package org.codehaus.wadi;
 import java.util.Map;
 
 import org.codehaus.wadi.impl.MessageDispatcher;
+import org.codehaus.wadi.io.Server;
 
 public interface RelocaterConfig extends Config {
 
@@ -28,5 +29,6 @@ public interface RelocaterConfig extends Config {
     Map getMap();
     ExtendedCluster getCluster();
     Contextualiser getContextualiser();
+    Server getServer();
     
 }

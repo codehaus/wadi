@@ -40,7 +40,7 @@ public class DummyRelocater implements Relocater {
         // empty
     }
 
-    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
+    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
         return true;
     }
 

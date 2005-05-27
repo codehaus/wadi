@@ -51,13 +51,13 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ProxyRelocater extends AbstractRelocater implements RequestRelocater {
+public class ProxyingRelocater extends AbstractRelocater implements RequestRelocater {
 	protected final Log _log = LogFactory.getLog(getClass());
     protected final long _timeout;
 	protected final long _proxyHandOverPeriod;
     protected final Map _rvMap=new HashMap();
 
-	public ProxyRelocater(long timeout, long proxyHandOverPeriod) {
+	public ProxyingRelocater(long timeout, long proxyHandOverPeriod) {
         _timeout=timeout;
 		_proxyHandOverPeriod=proxyHandOverPeriod;
 	}
@@ -69,14 +69,14 @@ public class ProxyRelocater extends AbstractRelocater implements RequestRelocate
         dispatcher.register(LocationResponse.class, _rvMap, _timeout); // dispatch LocationResponse classes via synchronous rendez-vous
     }
 
-	protected Location locate(String id, Map locationMap) {
-		if (_log.isTraceEnabled()) _log.trace("sending location request: "+id);
+	protected Location locate(String name, Map locationMap) {
+		if (_log.isTraceEnabled()) _log.trace("sending location request: "+name);
 		MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
 		settingsInOut.from=_config.getLocation().getDestination();
 		settingsInOut.to=_config.getDispatcher().getCluster().getDestination();
-		settingsInOut.correlationId=id; // TODO - better correlation id
-		LocationRequest request=new LocationRequest(id, _proxyHandOverPeriod);
-		LocationResponse response=(LocationResponse)_config.getDispatcher().exchangeMessages(id, _rvMap, request, settingsInOut, _timeout);
+		settingsInOut.correlationId=name; // TODO - better correlation id
+		LocationRequest request=new LocationRequest(name, _proxyHandOverPeriod);
+		LocationResponse response=(LocationResponse)_config.getDispatcher().exchangeMessages(name, _rvMap, request, settingsInOut, _timeout);
 
 		if (response==null)
 			return null;
@@ -98,12 +98,12 @@ public class ProxyRelocater extends AbstractRelocater implements RequestRelocate
 		return location;
 	}
 
-	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
+	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
 		Location location;
 		boolean refreshed=false;
 
-		if (null==(location=(Location)locationMap.get(id))) {
-			location=locate(id, locationMap);
+		if (null==(location=(Location)locationMap.get(name))) {
+			location=locate(name, locationMap);
 			refreshed=true;
 		}
 
@@ -117,7 +117,7 @@ public class ProxyRelocater extends AbstractRelocater implements RequestRelocate
 			return true;
 		} catch (RecoverableException e1) {
 			if (!refreshed) {
-				if (null==(location=locate(id, locationMap)))
+				if (null==(location=locate(name, locationMap)))
 					return false;
 				try {
 					location.proxy(hreq, hres);
@@ -126,7 +126,7 @@ public class ProxyRelocater extends AbstractRelocater implements RequestRelocate
 				} catch (RecoverableException e2) {
 					recoverable=true;
 				} catch (ProxyingException e2) {
-					if (_log.isErrorEnabled()) _log.error("irrecoverable proxying problem: "+id, e2);
+					if (_log.isErrorEnabled()) _log.error("irrecoverable proxying problem: "+name, e2);
 					recoverable=false;
 				}
 			} else {
@@ -134,14 +134,14 @@ public class ProxyRelocater extends AbstractRelocater implements RequestRelocate
 			}
 
 		} catch (ProxyingException e) {
-			if (_log.isErrorEnabled()) _log.error("irrecoverable proxying problem: "+id, e);
+			if (_log.isErrorEnabled()) _log.error("irrecoverable proxying problem: "+name, e);
 			recoverable=false;
 		}
 
 		if (recoverable) {
 			// we did find the session's location, but all attempts to proxy to it failed,,,
 			motionLock.release();
-			if (_log.isErrorEnabled()) _log.error("all attempts at proxying to session location failed - processing request without session: "+id+ " - "+location);
+			if (_log.isErrorEnabled()) _log.error("all attempts at proxying to session location failed - processing request without session: "+name+ " - "+location);
 			// we'll have to contextualise hreq here - stateless context ? TODO
 			chain.doFilter(hreq, hres);
 			return true; // looks wrong - but actually indicates that req should proceed no further down stack...
@@ -179,21 +179,21 @@ public class ProxyRelocater extends AbstractRelocater implements RequestRelocate
 		protected final Destination _replyTo;
 		protected final String _correlationId;
 		protected final Location _location;
-		protected final String _id;
+		protected final String _name;
 		protected final long _handOverPeriod;
 
-		LocationResponseFilterChain(Destination replyTo, String correlationId, Location location, String id, long handOverPeriod) {
+		LocationResponseFilterChain(Destination replyTo, String correlationId, Location location, String name, long handOverPeriod) {
 			_replyTo=replyTo;
 			_correlationId=correlationId;
 			_location=location;
-			_id=id;
+			_name=name;
 			_handOverPeriod=handOverPeriod;
 		}
 
 		public void
 		doFilter(ServletRequest request, ServletResponse response) {
-			if (_log.isTraceEnabled()) _log.trace("sending location response: "+_id);
-			LocationResponse lr=new LocationResponse(_config.getLocation(), Collections.singleton(_id));
+			if (_log.isTraceEnabled()) _log.trace("sending location response: "+_name);
+			LocationResponse lr=new LocationResponse(_config.getLocation(), Collections.singleton(_name));
 			try {
 				ObjectMessage m=_config.getDispatcher().getCluster().createObjectMessage();
 				m.setJMSReplyTo(_replyTo);
@@ -204,16 +204,16 @@ public class ProxyRelocater extends AbstractRelocater implements RequestRelocate
 				// Now wait for a while so that the session is locked into this container, giving the other node a chance to proxy to this location and still find it here...
 				// instead of just waiting a set period, we could use a Rendezvous object with a timeout - more complexity - consider...
 				try {
-					if (_log.isTraceEnabled()) _log.trace("waiting for proxy ("+_handOverPeriod+" millis)...: "+_id);
+					if (_log.isTraceEnabled()) _log.trace("waiting for proxy ("+_handOverPeriod+" millis)...: "+_name);
 					Thread.sleep(_handOverPeriod);
-					if (_log.isTraceEnabled()) _log.trace("...waiting over: "+_id);
+					if (_log.isTraceEnabled()) _log.trace("...waiting over: "+_name);
 				} catch (InterruptedException ignore) {
 					// ignore
 					// TODO - should we loop here until timeout is up ?
 				}
 
 			} catch (JMSException e) {
-				if (_log.isErrorEnabled()) _log.error("problem sending location response: "+_id, e);
+				if (_log.isErrorEnabled()) _log.error("problem sending location response: "+_name, e);
 			}
 		}
 	}

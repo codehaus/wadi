@@ -27,9 +27,15 @@ import java.util.Map;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Collapser;
+import org.codehaus.wadi.Config;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableSessionConfig;
@@ -38,19 +44,25 @@ import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.SessionPool;
+import org.codehaus.wadi.SessionRelocater;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
+import org.codehaus.wadi.impl.DummyHttpServletRequest;
 import org.codehaus.wadi.impl.MemoryContextualiser;
+import org.codehaus.wadi.impl.MessageDispatcher;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SimpleMotable;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
+import org.codehaus.wadi.impl.StreamingMigratingRelocater;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.io.Pipe;
 import org.codehaus.wadi.io.PeerConfig;
@@ -64,7 +76,9 @@ import org.codehaus.wadi.test.EtherEmoter;
 import org.codehaus.wadi.test.MyDummyHttpServletRequestWrapperPool;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
+import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
@@ -75,9 +89,9 @@ public class TestMotion extends TestCase {
     
     protected final ThreadFactory _threadFactory=new ThreadFactory();
     
-    interface Location {/* empty */}
+    interface Location2 {/* empty */}
     
-    public static class InetSocketAddressLocation implements Location {
+    public static class InetSocketAddressLocation implements Location2 {
         
         protected final InetSocketAddress _address;
         
@@ -88,7 +102,7 @@ public class TestMotion extends TestCase {
         public InetSocketAddress getAddress() {return _address;}
     }
     
-    public static class DestinationLocation implements Location {
+    public static class DestinationLocation implements Location2 {
         
         protected final Destination _destination;
         
@@ -143,7 +157,7 @@ public class TestMotion extends TestCase {
         
         protected int _counter=0;
         
-        public Node(Location location, ThreadFactory factory, ServerConfig config) {
+        public Node(Location2 location, ThreadFactory factory, ServerConfig config) {
             _executor=new PooledExecutor(new BoundedBuffer(10), 100);
             _executor.setThreadFactory(factory);
             _executor.setMinimumPoolSize(3);
@@ -170,7 +184,7 @@ public class TestMotion extends TestCase {
             _server.stop();
         }
         
-        public Pipe getClient(Location location) throws IOException {
+        public Pipe getClient(Location2 location) throws IOException {
 //            synchronized (_clients) {
 //                Pipe client=(Pipe)_clients.get(location);
 //                if (client==null) {
@@ -189,13 +203,13 @@ public class TestMotion extends TestCase {
     protected final HttpServletRequestWrapperPool _requestPool=new MyDummyHttpServletRequestWrapperPool();
     protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
     
-    protected final Location _localLocation;
+    protected final Location2 _localLocation;
     protected final Map _localMap=new HashMap();
-    protected final Contextualiser _localContextualiser=new MemoryContextualiser(new DummyContextualiser(), new NeverEvicter(60, true), _localMap, new SimpleStreamer(), _distributableContextPool, _requestPool);
+    protected final MemoryContextualiser _localContextualiser=new MemoryContextualiser(new DummyContextualiser(), new NeverEvicter(60, true), _localMap, new SimpleStreamer(), _distributableContextPool, _requestPool);
     protected final ServerConfig _localConfig=new MyServerConfig("local", _localContextualiser);
-    protected final Location _remoteLocation;
+    protected final Location2 _remoteLocation;
     protected final Map _remoteMap=new HashMap();
-    protected final Contextualiser _remoteContextualiser=new MemoryContextualiser(new DummyContextualiser(), new NeverEvicter(60, true), _remoteMap, new SimpleStreamer(), _distributableContextPool, _requestPool);
+    protected final MemoryContextualiser _remoteContextualiser=new MemoryContextualiser(new DummyContextualiser(), new NeverEvicter(60, true), _remoteMap, new SimpleStreamer(), _distributableContextPool, _requestPool);
     protected final ServerConfig _remoteConfig=new MyServerConfig("remote", _remoteContextualiser);
     
     public TestMotion(String name) throws Exception {
@@ -372,6 +386,18 @@ public class TestMotion extends TestCase {
         }
     }
     
+    public static class DummyRelocaterConfig implements RelocaterConfig {
+
+        public Collapser getCollapser() {return null;}
+        public MessageDispatcher getDispatcher() {return null;}
+        public Location getLocation() {return null;}
+        public Map getMap() {return null;}
+        public ExtendedCluster getCluster() {return null;}
+        public Contextualiser getContextualiser() {return null;}
+        public Server getServer() {return null;}
+        
+    }
+    
     public void testEmotion() throws Exception {
         
         Emoter emoter=new EtherEmoter();
@@ -403,14 +429,30 @@ public class TestMotion extends TestCase {
         }
         _log.info("FINISH");
         
-//        _log.info("START");
-//        Pipe them2us=_them.getClient(_local);
-//        _log.info("them -> us (1st trip)");
-//        them2us.run(new EmotionClientPeer());
-//        _log.info("them -> us (2nd trip)");
-//        them2us.run(new EmotionClientPeer());
-//        them2us.close();
-//        _log.info("FINISH");
+        SessionRelocater relocater=new StreamingMigratingRelocater();
+        relocater.init(new DummyRelocaterConfig());
+        Sync motionLock=new NullSync();
+        Map locationMap=new HashMap();
+        HttpServletRequest req=null;
+        HttpServletResponse res=null;
+        FilterChain chain=null;
+        Immoter immoter=_localContextualiser.getImmoter();
+
+        boolean ok=false;
+        assertTrue(_localMap.size()==0);
+        assertTrue(_remoteMap.size()==2);
+        ok=relocater.relocate(req, res, chain, name0, immoter, motionLock, locationMap);
+        assertTrue(ok);
+        assertTrue(_localMap.size()==1);
+        assertTrue(_remoteMap.size()==1);
+        assertTrue(_localMap.containsKey(name0));
+        assertTrue(!_remoteMap.containsKey(name0));
+        ok=relocater.relocate(req, res, chain, name1, immoter, motionLock, locationMap);
+        assertTrue(ok);
+        assertTrue(_localMap.size()==2);
+        assertTrue(_remoteMap.size()==0);
+        assertTrue(_localMap.containsKey(name1));
+        assertTrue(!_remoteMap.containsKey(name1));
     }
     
 }

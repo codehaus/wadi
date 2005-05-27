@@ -83,7 +83,7 @@ import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.MessageDispatcher;
 import org.codehaus.wadi.impl.NeverEvicter;
-import org.codehaus.wadi.impl.ProxyRelocater;
+import org.codehaus.wadi.impl.ProxyingRelocater;
 import org.codehaus.wadi.impl.SerialContextualiser;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SharedStoreContextualiser;
@@ -545,7 +545,6 @@ public class TestContextualiser extends TestCase {
     }
 
     public void testCluster() throws Exception {
-//      ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("peer://WADI-TEST");
         ConnectionFactory connectionFactory = Utils.getConnectionFactory();
         ((ActiveMQConnectionFactory)connectionFactory).setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter()));
         ClusterFactory clusterFactory       = new CustomClusterFactory(connectionFactory);
@@ -561,7 +560,7 @@ public class TestContextualiser extends TestCase {
         Location location0=new MyLocation();
         Map c0=new HashMap();
         MessageDispatcher dispatcher0=new MessageDispatcher(cluster0);
-        Relocater relocater0=new ProxyRelocater(2000, 3000);
+        Relocater relocater0=new ProxyingRelocater(2000, 3000);
         Collapser collapser0=new HashingCollapser(10, 2000);
         ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, new SwitchableEvicter(30000, true), c0, dispatcher0, relocater0, location0, "node0");
         Map m0=new HashMap();
@@ -573,7 +572,7 @@ public class TestContextualiser extends TestCase {
         Location location1=new MyLocation();
         Map c1=new HashMap();
         MessageDispatcher dispatcher1=new MessageDispatcher(cluster1);
-        Relocater relocater1=new ProxyRelocater(2000, 3000);
+        Relocater relocater1=new ProxyingRelocater(2000, 3000);
         Collapser collapser1=new HashingCollapser(10, 2000);
         ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, new SwitchableEvicter(30000, true), c1, dispatcher1, relocater1, location1, "node1");
         Map m1=new HashMap();

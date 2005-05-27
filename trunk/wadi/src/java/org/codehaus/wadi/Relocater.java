@@ -43,11 +43,11 @@ public interface Relocater {
 	 * @param hreq
 	 * @param hres
 	 * @param chain
-	 * @param id
+	 * @param name
 	 * @param immoter
 	 * @param motionLock
 	 * @param locationMap
 	 * @return - whether, or not, the request was contextualised
 	 */
-	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException;
+	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException;
 }
