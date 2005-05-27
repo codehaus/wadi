@@ -22,6 +22,7 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -69,6 +70,17 @@ public class CustomClusterFactory extends DefaultClusterFactory {
     ReplicatedLocalNode localNode = new ReplicatedLocalNode(localInbox, serviceStub);
     Timer timer = new Timer();
     DefaultCluster answer = new CustomCluster(localNode, dataTopic, groupDestination, connection, session, producer, timer, getInactiveTime());
+    
+    connection.setExceptionListener(new ExceptionListener() {
+
+        // could we check the exception's cause and step up the level if it is
+        // not harmless ?... - TODO
+        public void onException(JMSException e) {
+            log.trace("JMS Exception:", e);
+        }
+        
+    });
+    
     return answer;
   }
 }
