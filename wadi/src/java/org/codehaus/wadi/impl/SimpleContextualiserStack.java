@@ -76,12 +76,10 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected Evicter _databaseEvicter;
     protected final SharedStoreContextualiser _database;
 
-    protected final ExtendedCluster _clusterCluster; // this should not be here... - TODO
     protected final Evicter _clusterEvicter;
     protected final Map _clusterMap;
     protected final MessageDispatcher _clusterDispatcher;
     protected final Relocater _clusterRelocater;
-    protected final Location _clusterLocation;
     protected final ClusterContextualiser _cluster;
 
     protected final Pattern _statelessMethods;
@@ -103,7 +101,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final Map _memoryMap;
     protected final MemoryContextualiser _memory;
 
-    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource, int port, ExtendedCluster cluster) throws Exception {
+    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource) throws Exception {
         super();
         _streamer=new SimpleStreamer();
         //_collapser=new DebugCollapser();
@@ -114,20 +112,14 @@ public class SimpleContextualiserStack implements Contextualiser {
         _databaseTable="WADI";
         DatabaseMotable.init(_databaseDataSource, _databaseTable);
         _database=new SharedStoreContextualiser(_dummy, _collapser, true, _databaseDataSource, _databaseTable);
-        _clusterCluster=cluster;
         InetAddress localhost=InetAddress.getLocalHost();
         System.out.println("LOCALHOST: "+localhost);
-        InetSocketAddress isa=new InetSocketAddress(localhost, port);
-        HttpProxy proxy=new StandardHttpProxy("jsessionid");
-        _clusterLocation=new HttpProxyLocation(_clusterCluster.getLocalNode().getDestination(), isa, proxy);
         _clusterMap=new ConcurrentHashMap();
         _clusterEvicter=new DummyEvicter(); // TODO - consider Cluster eviction carefully...
-        _clusterDispatcher=new MessageDispatcher(_clusterCluster);
-        long ackTimeout=250; // MUST be shorter than other nodes EmigrationReq.resTimeout, or they will timeout waiting for us...
+        _clusterDispatcher=new MessageDispatcher();
         _clusterRelocater=new MessagingMigratingRelocater(2000, 1000);
 	//        _clusterRelocater=new ProxyRelocater(2000, 2000);
-        String nodeId=System.getProperty("wadi.colour");
-        _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterDispatcher, _clusterRelocater, _clusterLocation, nodeId);
+        _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterDispatcher, _clusterRelocater);
 
         _statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
         _statelessMethodFlag=true;

@@ -38,8 +38,6 @@ import org.codehaus.wadi.Locker;
 import org.codehaus.wadi.Motable;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
-import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
-
 
 /**
  * Basic implementation for Contextualisers which maintain a local Map of references

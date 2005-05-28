@@ -102,9 +102,9 @@ public class TestCluster extends TestCase {
 
     class MyNode {
     
-        protected final ExtendedCluster _cluster;
+        protected final String _clusterName;
+        protected final String _nodeName;
         protected final MessageDispatcher _dispatcher;
-        protected final Location _location;
         protected final Relocater _relocater;
         protected final Map _cmap=new HashMap();
         protected final Map _mmap=new HashMap();
@@ -116,25 +116,21 @@ public class TestCluster extends TestCase {
         protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool); 
         protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
         protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
-        protected final StandardManager _manager;
+        protected final DistributableManager _manager;
         
         public MyNode(String nodeId, ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
             _bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, ds, table);
-            _cluster=(ExtendedCluster)factory.createCluster(clusterName);
-            _cluster.addClusterListener(new MyClusterListener());
-            _dispatcher=new MessageDispatcher(_cluster);
+            _clusterName=clusterName;
+            _nodeName=nodeId;
+            _dispatcher=new MessageDispatcher();
             InetSocketAddress isa=new InetSocketAddress("localhost", 8080);
             HttpProxy proxy=new StandardHttpProxy("jsessionid");
-            _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), isa, proxy);
             //_relocater=new SwitchableRelocationStrategy();
             _relocater=new DummyRelocater();
-            _middle=new ClusterContextualiser(_bottom, _collapser, new DummyEvicter(), _cmap, _dispatcher, _relocater, _location, nodeId);
+            _middle=new ClusterContextualiser(_bottom, _collapser, new DummyEvicter(), _cmap, _dispatcher, _relocater);
             _top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
             _middle.setTop(_top);
-            PooledExecutor executor=new PooledExecutor(new BoundedBuffer(10), 100);
-            long connectionTimeout=5000;
-            boolean excludeSelf=false;
-            _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, _streamer, _accessOnLoad, _cluster, new ClusterServer(executor, connectionTimeout, excludeSelf));
+            _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, _streamer, _accessOnLoad, _clusterName, _nodeName, proxy, isa);
         }
         
         protected boolean _running;
@@ -157,7 +153,7 @@ public class TestCluster extends TestCase {
         }
         
         public Map getClusterContextualiserMap() {return _cmap;}
-        public ExtendedCluster getCluster(){return _cluster;}
+        public ExtendedCluster getCluster(){return _manager.getCluster();}
         public ClusterContextualiser getClusterContextualiser() {return _middle;}
         
         public Map getMemoryContextualiserMap() {return _mmap;}

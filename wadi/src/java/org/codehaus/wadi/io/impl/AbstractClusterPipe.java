@@ -30,7 +30,6 @@ import org.codehaus.wadi.io.PipeConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 public abstract class AbstractClusterPipe extends AbstractPipe implements Puttable, BytesMessageOutputStreamConfig {
 

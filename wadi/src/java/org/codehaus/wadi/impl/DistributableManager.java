@@ -16,17 +16,22 @@
  */
 package org.codehaus.wadi.impl;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.activecluster.ClusterFactory;
+import org.activemq.ActiveMQConnectionFactory;
+import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.DistributableSessionConfig;
 import org.codehaus.wadi.ExtendedCluster;
+import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionIdFactory;
@@ -41,35 +46,50 @@ import org.codehaus.wadi.io.ServerConfig;
 public class DistributableManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, ServerConfig {
 
     protected final Streamer _streamer;
-    protected final ExtendedCluster _cluster;
-    protected final Server _server; // p2p Server
+    protected final String _clusterName;
+    protected final String _nodeId;
+    protected final HttpProxy _httpProxy;
+    protected final InetSocketAddress _httpAddress;
 
-    public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, ExtendedCluster cluster, Server server) {
+    public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterName, String nodeId, HttpProxy httpProxy, InetSocketAddress httpAddress) {
         super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, accessOnLoad);
         _streamer=streamer;
-        _cluster=cluster; // we should be responsible for creation/destruction of this component...
-        _server=server;
+        _clusterName=clusterName;
+        _nodeId=nodeId;
+        _httpProxy=httpProxy;
+        _httpAddress=httpAddress;
     }
     
+    public String getContextPath() { // TODO - integrate with Jetty/Tomcat
+        return "/";
+    }
+    
+    protected ActiveMQConnectionFactory _connectionFactory;
+    protected ClusterFactory _clusterFactory;
+    protected ExtendedCluster _cluster;
+
     public void init() {
         try {
-        _cluster.start();
+            _connectionFactory=new ActiveMQConnectionFactory("peer://org.codehaus.wadi");
+            System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
+            _clusterFactory=new CustomClusterFactory(_connectionFactory);
+            _cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
+            _cluster.start();
         } catch (Exception e) {
             _log.error("problem starting Cluster", e);
         }
         super.init();
-        //_server.init(this);
     }
     
     public void start() throws Exception {
-        //_server.start();
         super.start();
     }
     
     public void stop() throws Exception {
         super.stop();
-        //_server.stop();
         _cluster.stop();
+        // shut down activemq cleanly - what happens if we are running more than one distributable webapp ?
+        _connectionFactory.getBrokerContainer().stop();
     }
 
     // Distributable
@@ -151,7 +171,15 @@ public class DistributableManager extends StandardManager implements Distributab
     
     // DistributableContextualiserConfig
     
-    public Server getServer() {return _server;}
-    public String getNodeId() {throw new UnsupportedOperationException();} // NYI
+    public Server getServer() {throw new UnsupportedOperationException();}
+    public String getNodeId() {return _nodeId;} // NYI
+
+    public HttpProxy getHttpProxy() {
+        return _httpProxy;
+    }
+
+    public InetSocketAddress getHttpAddress() {
+        return _httpAddress;
+    }
     
 }

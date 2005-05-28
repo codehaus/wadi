@@ -23,7 +23,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.io.Pipe;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
