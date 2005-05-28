@@ -43,6 +43,7 @@ import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Location;
+import org.codehaus.wadi.MessageDispatcherConfig;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
@@ -86,19 +87,17 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, ClusterListener {
+public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, MessageDispatcherConfig, ClusterListener {
 
     protected final Collapser _collapser;
 	protected final HashMap _emigrationRvMap=new HashMap();
 	protected final MessageDispatcher _dispatcher;
 	protected final Relocater _relocater;
-	protected final Location _location;
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
     protected final int _ackTimeout=500; // TODO - parameterise
     protected final Map _map;
     protected final Evicter _evicter;
-    protected final String _nodeId;
 
 	/**
 	 * @param next
@@ -106,15 +105,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	 * @param map
 	 * @param location TODO
 	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, MessageDispatcher dispatcher, Relocater relocater, Location location, String nodeId) {
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, MessageDispatcher dispatcher, Relocater relocater) {
 		super(next, new CollapsingLocker(collapser), false);
         _collapser=collapser;
 		_dispatcher=dispatcher;
 	    _relocater=relocater;
-	    _location=location;
         _map=map;
         _evicter=evicter;
-        _nodeId=nodeId; // TODO - move to DistributableManager...
 
 	    _immoter=new EmigrationImmoter();
 	    _emoter=null; // TODO - I think this should be something like the ImmigrationEmoter
@@ -125,13 +122,19 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		}
 
     protected ExtendedCluster _cluster;
+    protected Location _location;
+    protected String _nodeId;
 
     public void init(ContextualiserConfig config) {
         super.init(config);
-        _cluster=((DistributableContextualiserConfig)_config).getCluster();
+        DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)config;
+        _cluster=dcc.getCluster();
+        _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), dcc.getHttpAddress(), dcc.getHttpProxy());
+        _nodeId=dcc.getNodeId();
         Map state=new HashMap();
         state.put("id", _nodeId); // TODO - parameterise
         try {
+            _dispatcher.init(this);
             _cluster.getLocalNode().setState(state);
         } catch (JMSException e){
             _log.error("could not initialise node state", e);

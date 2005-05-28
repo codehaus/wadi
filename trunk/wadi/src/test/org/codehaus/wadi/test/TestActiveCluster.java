@@ -16,6 +16,9 @@
  */
 package org.codehaus.wadi.test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -26,7 +29,9 @@ import javax.jms.MessageListener;
 import junit.framework.TestCase;
 
 import org.activecluster.Cluster;
+import org.activecluster.ClusterEvent;
 import org.activecluster.ClusterFactory;
+import org.activecluster.ClusterListener;
 import org.activecluster.impl.ActiveMQClusterFactory;
 import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.broker.impl.BrokerContainerFactoryImpl;
@@ -36,6 +41,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.RestartableClusterFactory;
+import org.codehaus.wadi.impl.Utils;
 
 
 public class TestActiveCluster extends TestCase {
@@ -64,74 +70,118 @@ public class TestActiveCluster extends TestCase {
 //        cluster.stop();
 //    }
     
-    protected int _numMessages=0;
-    
-    public class MyMessageListener implements MessageListener {
-        
-        public void onMessage(Message message) {
-            try {
-                if (message instanceof BytesMessage) {
-                    BytesMessage bm=(BytesMessage)message;
-                    _log.info("got the message: "+bm);
-                    assertTrue(bm.getBooleanProperty("foo"));
-                    _numMessages++;
-                }
-            } catch (JMSException e) {
-                _log.error("something went wrong", e);
-            }
-        }
-        
-    }
-    
-    public void testProperties() throws Exception {
-        ActiveMQConnectionFactory connectionFactory=new ActiveMQConnectionFactory("tcp://localhost:61616");
-        ActiveMQClusterFactory clusterFactory=new ActiveMQClusterFactory(connectionFactory);
-        String clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
-        Cluster cluster0=clusterFactory.createCluster(clusterName);
-        Cluster cluster1=clusterFactory.createCluster(clusterName);
-        
-        Destination destination1=cluster1.getDestination();
-        MessageConsumer consumer1=cluster1.createConsumer(destination1, null, false);
-        MessageListener listener1=new MyMessageListener();
-        consumer1.setMessageListener(listener1);
-        
-        cluster0.start();
-        cluster1.start();
-        
-        BytesMessage message=cluster0.createBytesMessage();
-        message.writeObject("hello");
-        message.setBooleanProperty("foo", true);
-        cluster0.send(cluster0.getDestination(), message);
-        
-        Thread.sleep(1000);
-        assertTrue(_numMessages==1);
-    }
-    
-//    public void testClusterCompletion() throws Exception {
-//        testClusterCompletion("peer://WADI-TEST");
-//        testClusterCompletion("multicast://224.1.2.3:5123");
-//        testClusterCompletion("tcp://localhost:61616");
-////      testClusterCompletion("jgroups:default");
+//    protected int _numMessages=0;
+//    
+//    public class MyMessageListener implements MessageListener {
+//        
+//        public void onMessage(Message message) {
+//            try {
+//                if (message instanceof BytesMessage) {
+//                    BytesMessage bm=(BytesMessage)message;
+//                    _log.info("got the message: "+bm);
+//                    assertTrue(bm.getBooleanProperty("foo"));
+//                    _numMessages++;
+//                }
+//            } catch (JMSException e) {
+//                _log.error("something went wrong", e);
+//            }
 //        }
-//     
-//    public void testClusterCompletion(String protocol) throws Exception {
-//
-//        ActiveMQConnectionFactory connectionFactory=new ActiveMQConnectionFactory(protocol);
+//        
+//    }
+//    
+//    public void testProperties() throws Exception {
+//        ActiveMQConnectionFactory connectionFactory=new ActiveMQConnectionFactory("tcp://localhost:61616");
 //        ActiveMQClusterFactory clusterFactory=new ActiveMQClusterFactory(connectionFactory);
 //        String clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
 //        Cluster cluster0=clusterFactory.createCluster(clusterName);
 //        Cluster cluster1=clusterFactory.createCluster(clusterName);
-//
+//        
+//        Destination destination1=cluster1.getDestination();
+//        MessageConsumer consumer1=cluster1.createConsumer(destination1, null, false);
+//        MessageListener listener1=new MyMessageListener();
+//        consumer1.setMessageListener(listener1);
+//        
 //        cluster0.start();
 //        cluster1.start();
 //        
-//        cluster1.waitForClusterToComplete(1, 6000);
-//
-//        Thread.sleep(6000);
+//        BytesMessage message=cluster0.createBytesMessage();
+//        message.writeObject("hello");
+//        message.setBooleanProperty("foo", true);
+//        cluster0.send(cluster0.getDestination(), message);
 //        
-//        _log.info("stopping");
-//        cluster1.stop();
-//        cluster0.stop();
+//        Thread.sleep(1000);
+//        assertTrue(_numMessages==1);
 //    }
+    
+    public void testClusterCompletion() throws Exception {
+        testClusterCompletion("peer://WADI-TEST");
+//        testClusterCompletion("multicast://224.1.2.3:5123");
+//        testClusterCompletion("tcp://localhost:61616");
+//      testClusterCompletion("jgroups:default");
+        }
+     
+    protected void configureCluster(Cluster cluster, String nodeId) {
+        Map state=new HashMap();
+        state.put("id", nodeId);
+        try {
+            cluster.getLocalNode().setState(state);
+        } catch (JMSException e){
+            _log.error("could not initialise node state", e);
+        }
+        
+        cluster.addClusterListener(new ClusterListener() {
+
+            public void onNodeAdd(ClusterEvent event) {
+                // TODO Auto-generated method stub
+                
+            }
+
+            public void onNodeUpdate(ClusterEvent event) {
+                // TODO Auto-generated method stub
+                
+            }
+
+            public void onNodeRemoved(ClusterEvent event) {
+                // TODO Auto-generated method stub
+                
+            }
+
+            public void onNodeFailed(ClusterEvent event) {
+                // TODO Auto-generated method stub
+                
+            }
+
+            public void onCoordinatorChanged(ClusterEvent event) {
+                // TODO Auto-generated method stub
+                
+            }
+            
+        });
+    }
+    
+    public void testClusterCompletion(String protocol) throws Exception {
+
+        ActiveMQConnectionFactory connectionFactory=Utils.getConnectionFactory();
+        CustomClusterFactory clusterFactory=new CustomClusterFactory(connectionFactory);
+        String clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
+        Cluster cluster0=clusterFactory.createCluster(clusterName);
+        configureCluster(cluster0, "cluster0");
+        Cluster cluster1=clusterFactory.createCluster(clusterName);
+        configureCluster(cluster0, "cluster1");
+
+        cluster0.start();
+        cluster1.start();
+        
+        cluster1.waitForClusterToComplete(1, 6000);
+
+        Thread.sleep(20*1000);
+        
+        _log.info("stopping");
+        cluster1.stop();
+        Thread.sleep(20*1000);
+        cluster0.stop();
+        Thread.sleep(20*1000);
+        _log.info("stopped");
+    }
 
 }

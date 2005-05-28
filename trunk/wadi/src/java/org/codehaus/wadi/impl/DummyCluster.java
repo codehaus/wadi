@@ -17,13 +17,11 @@
 package org.codehaus.wadi.impl;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
-import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -43,7 +41,7 @@ public class DummyCluster implements ExtendedCluster {
         // TODO Auto-generated constructor stub
     }
 
-    public Destination createQueue(String name) throws JMSException {
+    public Destination createQueue(String name) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -73,83 +71,76 @@ public class DummyCluster implements ExtendedCluster {
         return _localNode;
     }
 
-    public void send(Destination destination, Message message)
-            throws JMSException {
+    public void send(Destination destination, Message message) {
         // TODO Auto-generated method stub
-
     }
 
-    public MessageConsumer createConsumer(Destination destination)
-            throws JMSException {
+    public MessageConsumer createConsumer(Destination destination) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public MessageConsumer createConsumer(Destination destination,
-            String selector) throws JMSException {
+    public MessageConsumer createConsumer(Destination destination, String selector) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public MessageConsumer createConsumer(Destination destination,
-            String selector, boolean noLocal) throws JMSException {
+    public MessageConsumer createConsumer(Destination destination, String selector, boolean noLocal) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public Message createMessage() throws JMSException {
+    public Message createMessage() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public BytesMessage createBytesMessage() throws JMSException {
+    public BytesMessage createBytesMessage() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public MapMessage createMapMessage() throws JMSException {
+    public MapMessage createMapMessage() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public ObjectMessage createObjectMessage() throws JMSException {
+    public ObjectMessage createObjectMessage() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public ObjectMessage createObjectMessage(Serializable object)
-            throws JMSException {
+    public ObjectMessage createObjectMessage(Serializable object) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public StreamMessage createStreamMessage() throws JMSException {
+    public StreamMessage createStreamMessage() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public TextMessage createTextMessage() throws JMSException {
+    public TextMessage createTextMessage() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public TextMessage createTextMessage(String text) throws JMSException {
+    public TextMessage createTextMessage(String text) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public boolean waitForClusterToComplete(int expectedCount, long timeout)
-            throws InterruptedException {
+    public boolean waitForClusterToComplete(int expectedCount, long timeout) {
         // TODO Auto-generated method stub
         return false;
     }
 
-    public void start() throws JMSException {
+    public void start() {
         // TODO Auto-generated method stub
 
     }
 
-    public void stop() throws JMSException {
+    public void stop() {
         // TODO Auto-generated method stub
 
     }

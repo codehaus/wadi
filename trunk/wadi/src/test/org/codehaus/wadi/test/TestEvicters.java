@@ -17,6 +17,8 @@
 package org.codehaus.wadi.test;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -29,6 +31,7 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.EvicterConfig;
+import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.SessionIdFactory;
@@ -54,6 +57,7 @@ import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
+import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory;
 import org.codehaus.wadi.io.impl.DummyServer;
@@ -65,6 +69,8 @@ import junit.framework.TestCase;
 
 public class TestEvicters extends TestCase {
 
+    protected final String _clusterName="WADI.TEST";
+    
     public TestEvicters(String name) {
         super(name);
     }
@@ -127,7 +133,10 @@ public class TestEvicters extends TestCase {
         ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
         SessionWrapperFactory wrapperFactory=new JettySessionWrapperFactory();
         SessionIdFactory idFactory=new TomcatSessionIdFactory();
-        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, new DummyCluster(), new DummyServer());
+        HttpProxy httpProxy=new StandardHttpProxy("jsessionid");
+        InetSocketAddress httpAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8888);
+        String nodeName="node0";
+        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, _clusterName, nodeName, httpProxy, httpAddress);
         manager.setMaxInactiveInterval(2);
         manager.init();
         //manager.start();

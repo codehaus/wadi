@@ -50,19 +50,19 @@ public class StreamingMigratingRelocater implements SessionRelocater {
 
     public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
         // check cache
-        Server server=_config.getServer();
+        //Server server=_config.getServer();
 
         // repeat ...
         
-        boolean sessionMoves=true;
+        //boolean sessionMoves=true;
         
-        Location location;
-        if (!sessionMoves && (location=(Location)locationMap.get(name))!=null) {
+        //Location location;
+        //if (!sessionMoves && (location=(Location)locationMap.get(name))!=null) {
             // if cache is fresh (i.e. holds a location) && lock required is 'R'
             //   p2p to known location with last known timestamp stating 'R' lock needed
             //   response is one of - don't know, newer location, lock-acquired
             //   if still no success fall through to else...
-        }
+        //}
         
         // else - (cache is stale or 'W' lock required) 
         //   p2n to whole cluster with last known timestamp stating r or w lock needed

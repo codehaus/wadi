@@ -19,6 +19,8 @@ package org.codehaus.wadi.test;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
@@ -41,6 +43,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionFactory;
@@ -62,6 +65,7 @@ import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.DummySessionWrapperFactory;
 import org.codehaus.wadi.impl.LazyAttributesFactory;
 import org.codehaus.wadi.impl.LazyValueFactory;
+import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
@@ -84,6 +88,7 @@ TestHttpSession
 extends TestCase
 {
     protected Log                     _log=LogFactory.getLog(TestHttpSession.class);
+    protected final String _clusterName="WADI.TEST";
     protected Listener                _listener;
     protected List                    _events=new ArrayList();
     protected Map                     _sessionMap=new HashMap();
@@ -98,8 +103,10 @@ extends TestCase
     protected SessionPool             _standardSessionPool=new SimpleSessionPool(_standardSessionFactory);
     protected ValueFactory            _standardValueFactory=new StandardValueFactory();
     protected ValuePool               _standardValuePool=new SimpleValuePool(_standardValueFactory);
-    protected StandardManager                 _standardManager=new StandardManager(_standardSessionPool, _standardAttributesFactory, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser, _sessionMap, _router, _accessOnLoad);
+    protected StandardManager         _standardManager=new StandardManager(_standardSessionPool, _standardAttributesFactory, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser, _sessionMap, _router, _accessOnLoad);
     // Distributable
+    protected HttpProxy               _httpProxy=new StandardHttpProxy("jsessionid");
+    protected InetSocketAddress       _httpAddress; // see setUp();
     protected Contextualiser          _distributableContextualiser=new DummyContextualiser();
     protected Streamer                _streamer=new SimpleStreamer();
     protected AttributesFactory       _distributedAttributesFactory=new DistributableAttributesFactory();
@@ -107,19 +114,19 @@ extends TestCase
     protected SessionPool             _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _distributableValueFactory=new DistributableValueFactory();
     protected ValuePool               _distributableValuePool=new SimpleValuePool(_distributableValueFactory);
-    protected StandardManager         _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesFactory, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, new DummyCluster(), new DummyServer());
+    protected StandardManager         _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesFactory, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterName, "node0", _httpProxy, _httpAddress);
     // LazyValue
     protected SessionPool             _lazyValueSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _lazyValueFactory=new LazyValueFactory();
     protected ValuePool               _lazyValuePool=new SimpleValuePool(_lazyValueFactory);
-    protected StandardManager         _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesFactory, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, new DummyCluster(), new DummyServer());
+    protected StandardManager         _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesFactory, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterName, "node1", _httpProxy, _httpAddress);
     // LazyAttributes
     protected SessionPool             _lazyAttributesSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected AttributesFactory       _lazyAttributesFactory=new LazyAttributesFactory();
-    protected StandardManager         _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesFactory,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, new DummyCluster(), new DummyServer());
+    protected StandardManager         _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesFactory,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterName, "node2", _httpProxy, _httpAddress);
     // LazyBoth
     protected SessionPool             _lazyBothSessionPool=new SimpleSessionPool(_distributableSessionFactory);
-    protected StandardManager         _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesFactory,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, new DummyCluster(), new DummyServer());
+    protected StandardManager         _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesFactory,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterName, "node3", _httpProxy, _httpAddress);
 
 
     public TestHttpSession(String name)
@@ -211,6 +218,7 @@ extends TestCase
     }
 
     protected void setUp() throws Exception {
+        _httpAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8888);
         _listener=new Listener();
         _standardManager.addEventListener(_listener);
         _standardManager.init();

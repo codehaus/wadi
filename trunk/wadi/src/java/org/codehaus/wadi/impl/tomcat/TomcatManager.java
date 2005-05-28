@@ -19,12 +19,12 @@ package org.codehaus.wadi.impl.tomcat;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionContext; // deprecated
 import javax.servlet.http.HttpSessionListener;
@@ -43,21 +43,20 @@ import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.util.LifecycleSupport;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.impl.CustomCluster;
 import org.codehaus.wadi.impl.DistributableManager;
 import org.codehaus.wadi.impl.Filter;
-import org.codehaus.wadi.io.Server;
 
 public class TomcatManager extends DistributableManager implements Manager, Lifecycle {
 
-    public TomcatManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, CustomCluster cluster, Server server) {
-        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad, cluster, server);
+    public TomcatManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterName, String nodeName, HttpProxy httpProxy, InetSocketAddress httpAddress) {
+        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad, clusterName, nodeName, httpProxy, httpAddress);
     }
 
     // org.apache.catalina.Lifecycle

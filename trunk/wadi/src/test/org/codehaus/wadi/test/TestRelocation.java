@@ -72,14 +72,13 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public class TestRelocation extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
 
+    protected final String _clusterName="WADI.TEST";
 	protected Node _node0;
 	protected Node _node1;
 	protected MyFilter _filter0;
 	protected MyFilter _filter1;
 	protected MyServlet _servlet0;
 	protected MyServlet _servlet1;
-	protected CustomCluster _cluster0;
-	protected CustomCluster _cluster1;
 	protected Location _location0;
 	protected Location _location1;
 	protected MessageDispatcher _dispatcher0;
@@ -119,26 +118,20 @@ public class TestRelocation extends TestCase {
 		ClusterFactory clusterFactory       = new CustomClusterFactory(connectionFactory);
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
 
-		InetSocketAddress isa0=new InetSocketAddress("localhost", 8080);
-		_cluster0=(CustomCluster)clusterFactory.createCluster(clusterName);
-		_cluster0.addClusterListener(new MyClusterListener());
-		HttpProxy proxy0=new StandardHttpProxy("jsessionid");
-		_dispatcher0=new MessageDispatcher(_cluster0);
-		_location0=new HttpProxyLocation(_cluster0.getLocalNode().getDestination(), isa0, proxy0);
+		InetSocketAddress httpAddress0=new InetSocketAddress("localhost", 8080);
+		HttpProxy httpProxy0=new StandardHttpProxy("jsessionid");
+		_dispatcher0=new MessageDispatcher();
 		_relocater0=new SwitchableRelocater();
-		_servlet0=new MyServlet("0", _cluster0, new MyContextPool(), _dispatcher0, _relocater0, _location0);
+		_servlet0=new MyServlet("0", _clusterName, new MyContextPool(), _dispatcher0, _relocater0, httpProxy0, httpAddress0);
 		_filter0=new MyFilter("0", _servlet0);
 		// TODO - I'd like to use a TomcatNode - but using 5.0.18 it fails TestRelocation - investigate...
 		(_node0=new JettyNode("0", "localhost", 8080, "/test", "/home/jules/workspace/wadi/webapps/test", _filter0, _servlet0)).start();
 
-		InetSocketAddress isa1=new InetSocketAddress("localhost", 8081);
-		_cluster1=(CustomCluster)clusterFactory.createCluster(clusterName);
-		_cluster1.addClusterListener(new MyClusterListener());
-		HttpProxy proxy1=new CommonsHttpProxy("jsessionid");
-		_dispatcher1=new MessageDispatcher(_cluster1);
-		_location1=new HttpProxyLocation(_cluster1.getLocalNode().getDestination(), isa1, proxy1);
+		InetSocketAddress httpAddress1=new InetSocketAddress("localhost", 8081);
+		HttpProxy httpProxy1=new CommonsHttpProxy("jsessionid");
+		_dispatcher1=new MessageDispatcher();
 		_relocater1=new SwitchableRelocater();
-		_servlet1=new MyServlet("1", _cluster1, new MyContextPool(), _dispatcher1, _relocater1, _location1);
+		_servlet1=new MyServlet("1", _clusterName, new MyContextPool(), _dispatcher1, _relocater1, httpProxy1, httpAddress1);
 		_filter1=new MyFilter("1", _servlet1);
 		(_node1=new JettyNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...

@@ -32,6 +32,7 @@ import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ExtendedCluster;
+import org.codehaus.wadi.MessageDispatcherConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
@@ -53,23 +54,30 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 public class MessageDispatcher implements MessageListener {
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final Map _map=new HashMap();
-	protected final ExtendedCluster _cluster;
-	protected final MessageConsumer _clusterConsumer;
-	protected final MessageConsumer _nodeConsumer;
     protected final PooledExecutor _executor;
 
-	public MessageDispatcher(ExtendedCluster cluster) throws JMSException {
-		_cluster=cluster;
-		boolean excludeSelf;
-		excludeSelf=true;
-	    _clusterConsumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
-	    _clusterConsumer.setMessageListener(this);
-	    excludeSelf=false;
-	    _nodeConsumer=_cluster.createConsumer(_cluster.getLocalNode().getDestination(), null, excludeSelf);
-	    _nodeConsumer.setMessageListener(this);
+	public MessageDispatcher() {
         _executor=new PooledExecutor(new BoundedBuffer(10), 100); // parameterise
         _executor.setMinimumPoolSize(4);
 	    }
+    
+    protected MessageDispatcherConfig _config;
+    
+    protected ExtendedCluster _cluster;
+    protected MessageConsumer _clusterConsumer;
+    protected MessageConsumer _nodeConsumer;
+
+    public void init(MessageDispatcherConfig config) throws JMSException {
+        _config=config;
+        _cluster=_config.getCluster();
+        boolean excludeSelf;
+        excludeSelf=true;
+        _clusterConsumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
+        _clusterConsumer.setMessageListener(this);
+        excludeSelf=false;
+        _nodeConsumer=_cluster.createConsumer(_cluster.getLocalNode().getDestination(), null, excludeSelf);
+        _nodeConsumer.setMessageListener(this);
+    }
 
     interface Dispatcher {
         void dispatch(ObjectMessage om, Serializable obj) throws Exception;

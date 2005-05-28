@@ -16,8 +16,11 @@
  */
 package org.codehaus.wadi.impl;
 
+import java.net.InetSocketAddress;
+
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.ExtendedCluster;
+import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.io.Server;
 
 public class DummyDistributableContextualiserConfig extends DummyContextualiserConfig implements DistributableContextualiserConfig {
@@ -39,5 +42,13 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
     
     public String getNodeId() {
         return "dummy";
+    }
+    
+    public HttpProxy getHttpProxy() {
+        return null;
+    }
+
+    public InetSocketAddress getHttpAddress() {
+        return null;
     }
 }

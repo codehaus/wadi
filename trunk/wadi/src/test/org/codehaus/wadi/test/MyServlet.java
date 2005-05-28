@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.test;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -32,6 +33,7 @@ import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.Router;
@@ -41,7 +43,6 @@ import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.ClusterContextualiser;
-import org.codehaus.wadi.impl.CustomCluster;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableManager;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
@@ -61,15 +62,12 @@ import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StatelessContextualiser;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory;
-import org.codehaus.wadi.io.impl.ClusterServer;
-
-import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
 public class MyServlet implements Servlet {
 	protected ServletConfig _config;
 	protected final Log _log;
-	protected final CustomCluster _cluster;
+	protected final String _clusterName;
+    protected final String _nodeName;
 	protected final Map _clusterMap;
 	protected final Map _memoryMap;
 	protected final MessageDispatcher _dispatcher;
@@ -78,7 +76,6 @@ public class MyServlet implements Servlet {
 	protected final StatelessContextualiser _statelessContextualiser;
 	protected final SerialContextualiser _serialContextualiser;
 	protected final MemoryContextualiser _memoryContextualiser;
-	protected final Location _location;
     protected final Streamer _streamer=new SimpleStreamer();
     protected final Contextualiser _dummyContextualiser=new DummyContextualiser();
     protected final Collapser _collapser=new HashingCollapser(10, 2000);
@@ -90,17 +87,19 @@ public class MyServlet implements Servlet {
     protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool); 
     protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
     protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
+    protected final HttpProxy _httpProxy;
+    protected final InetSocketAddress _httpAddress;
     protected final StandardManager _manager;
 
 
-	public MyServlet(String name, CustomCluster cluster, ContextPool contextPool, MessageDispatcher dispatcher, Relocater relocater, Location location) throws Exception {
-		_log=LogFactory.getLog(getClass().getName()+"#"+name);
-		_cluster=cluster;
+	public MyServlet(String nodeName, String clusterName, ContextPool contextPool, MessageDispatcher dispatcher, Relocater relocater, HttpProxy httpProxy, InetSocketAddress httpAddress) throws Exception {
+		_log=LogFactory.getLog(getClass().getName()+"#"+nodeName);
+		_clusterName=clusterName;
+        _nodeName=nodeName;
 		_clusterMap=new HashMap();
 		_dispatcher=dispatcher;
 		_relocater=relocater;
-		_location=location;
-		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, new SwitchableEvicter(30000, true), _clusterMap, _dispatcher, _relocater, _location, name);
+		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, new SwitchableEvicter(30000, true), _clusterMap, _dispatcher, _relocater);
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
 		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);
@@ -109,10 +108,9 @@ public class MyServlet implements Servlet {
         _serialContextualiser=new SerialContextualiser(_statelessContextualiser, _collapser, _memoryMap);
 		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamer(), contextPool, new MyDummyHttpServletRequestWrapperPool());
         _clusterContextualiser.setTop(_memoryContextualiser);
-        PooledExecutor executor=new PooledExecutor(new BoundedBuffer(10), 100);
-        long connectionTimeout=5000;
-        boolean excludeSelf=false;
-        _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad, _cluster, new ClusterServer(executor, connectionTimeout, excludeSelf));
+        _httpProxy=httpProxy;
+        _httpAddress=httpAddress;
+        _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad, _clusterName, _nodeName, _httpProxy, _httpAddress);
     }
     
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}

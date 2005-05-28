@@ -16,16 +16,8 @@
  */
 package org.codehaus.wadi;
 
-import java.net.InetSocketAddress;
-
-import org.codehaus.wadi.io.Server;
-
-public interface DistributableContextualiserConfig extends ContextualiserConfig {
+public interface MessageDispatcherConfig {
 
     ExtendedCluster getCluster();
-    Server getServer();
-    String getNodeId();
-    HttpProxy getHttpProxy();
-    InetSocketAddress getHttpAddress();
     
 }
