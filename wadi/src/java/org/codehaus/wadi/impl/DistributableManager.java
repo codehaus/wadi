@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.activecluster.ClusterFactory;
+import org.activemq.ActiveMQConnection;
 import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.codehaus.wadi.AttributesFactory;
@@ -71,6 +72,7 @@ public class DistributableManager extends StandardManager implements Distributab
     public void init() {
         try {
             _connectionFactory=new ActiveMQConnectionFactory("peer://org.codehaus.wadi");
+            _connectionFactory.start();
             System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
             _clusterFactory=new CustomClusterFactory(_connectionFactory);
             _cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
@@ -89,7 +91,9 @@ public class DistributableManager extends StandardManager implements Distributab
         super.stop();
         _cluster.stop();
         // shut down activemq cleanly - what happens if we are running more than one distributable webapp ?
-        _connectionFactory.getBrokerContainer().stop();
+        // there must be an easier way - :-(
+        ((ActiveMQConnection)_cluster.getConnection()).getTransportChannel().getEmbeddedBrokerConnector().getBrokerContainer().stop();
+        _connectionFactory.stop();
     }
 
     // Distributable
