@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi;
 
+import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 
@@ -28,5 +29,6 @@ import javax.jms.JMSException;
 public interface ExtendedCluster extends org.activecluster.Cluster /*, Lifecycle */ {
 
     Destination createQueue(String name) throws JMSException;
+    Connection getConnection();
     
 }

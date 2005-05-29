@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import javax.jms.BytesMessage;
+import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.MapMessage;
 import javax.jms.Message;
@@ -145,4 +146,5 @@ public class DummyCluster implements ExtendedCluster {
 
     }
 
+    public Connection getConnection() { return null; }
 }
