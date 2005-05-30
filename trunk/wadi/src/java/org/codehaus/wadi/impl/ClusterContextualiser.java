@@ -130,6 +130,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     public void init(ContextualiserConfig config) {
         super.init(config);
         DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)config;
+        _nodeName=dcc.getNodeName();
         _cluster=dcc.getCluster();
         _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), dcc.getHttpAddress(), dcc.getHttpProxy());
         try {
@@ -200,7 +201,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     protected void createEvacuationQueue() throws JMSException {
         _log.trace("creating evacuation queue");
-        _evacuationQueue=_cluster.createQueue("org.codehaus.wadi."+_nodeName+"."+"EMIGRATION");
+        _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
         
         ((DistributableContextualiserConfig)_config).putDistributedState(_evacuationQueueKey, _evacuationQueue);
         
