@@ -89,8 +89,10 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  */
 public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, MessageDispatcherConfig, ClusterListener {
 
+    protected final static String _evacuationQueueKey="evacuationQueue";
+    
     protected final Collapser _collapser;
-	protected final HashMap _emigrationRvMap=new HashMap();
+	protected final HashMap _evacuationRvMap=new HashMap();
 	protected final MessageDispatcher _dispatcher;
 	protected final Relocater _relocater;
 	protected final Immoter _immoter;
@@ -139,7 +141,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         _dispatcher.register(this, "onMessage", EmigrationEndedNotification.class);
         _dispatcher.register(this, "onMessage", EmigrationRequest.class);
         _dispatcher.register(this, "onMessage", EmigrationStartedNotification.class);
-        _dispatcher.register(EmigrationAcknowledgement.class, _emigrationRvMap, _ackTimeout);
+        _dispatcher.register(EmigrationAcknowledgement.class, _evacuationRvMap, _ackTimeout);
 
         // _evicter ?
         _relocater.init(this);
@@ -161,7 +163,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     public Immoter getDemoter(String name, Motable motable) {
         if (_cluster.getNodes().size()>=1) {
-            ensureEmigrationQueue();
+            ensureEvacuationQueue();
             return getImmoter();
         } else {
             return _next.getDemoter(name, motable);
@@ -170,7 +172,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     public Immoter getSharedDemoter() {
         if (_cluster.getNodes().size()>=1) {
-            ensureEmigrationQueue();
+            ensureEvacuationQueue();
             return getImmoter();
         } else {
             return _next.getSharedDemoter();
@@ -194,14 +196,17 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		// or implement Chained instead of Mapped Contextualiser - consider....
 	}
 
-	protected Destination _emigrationQueue;
+	protected Destination _evacuationQueue;
 
-    protected void createEmigrationQueue() throws JMSException {
-        _log.trace("creating emigration queue");
-        _emigrationQueue=_cluster.createQueue("org.codehaus.wadi."+_nodeName+"."+"EMIGRATION");
+    protected void createEvacuationQueue() throws JMSException {
+        _log.trace("creating evacuation queue");
+        _evacuationQueue=_cluster.createQueue("org.codehaus.wadi."+_nodeName+"."+"EMIGRATION");
+        
+        ((DistributableContextualiserConfig)_config).putDistributedState(_evacuationQueueKey, _evacuationQueue);
+        
         MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
         settings.to=_dispatcher.getCluster().getDestination();
-        _dispatcher.sendMessage(new EmigrationStartedNotification(_emigrationQueue), settings);
+        _dispatcher.sendMessage(new EmigrationStartedNotification(_evacuationQueue), settings);
 
         // whilst we are evacuating...
         // 1) do not form any further asylum agreements...
@@ -224,28 +229,29 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	}
     }
 
-    protected void destroyEmigrationQueue() throws JMSException {
+    protected void destroyEvacuationQueue() throws JMSException {
         MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
         settings.to=_dispatcher.getCluster().getDestination();
-        _dispatcher.sendMessage(new EmigrationEndedNotification(_emigrationQueue), settings);
+        _dispatcher.sendMessage(new EmigrationEndedNotification(_evacuationQueue), settings);
+        ((DistributableContextualiserConfig)_config).removeDistributedState(_evacuationQueueKey);
         // FIXME - can we destroy the queue ?
         _log.trace("emigration queue destroyed");
     }
 
-	protected synchronized void ensureEmigrationQueue() {
+	protected synchronized void ensureEvacuationQueue() {
 	    try {
-	        if (_emigrationQueue==null) {
-                createEmigrationQueue();
+	        if (_evacuationQueue==null) {
+                createEvacuationQueue();
 	        }
 	    } catch (JMSException e) {
 	        _log.error("emmigration queue initialisation failed", e);
-	        _emigrationQueue=null;
+	        _evacuationQueue=null;
 	    }
 	}
 
     public void stop() throws Exception {
-        if (_emigrationQueue!=null) { // evacuation is synchronous, so we will not get to here until all sessions are gone...
-            destroyEmigrationQueue();
+        if (_evacuationQueue!=null) { // evacuation is synchronous, so we will not get to here until all sessions are gone...
+            destroyEvacuationQueue();
         }
         super.stop();
     }
@@ -277,13 +283,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 		public boolean prepare(String name, Motable emotable, Motable immotable) {
 		    MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-		    settingsInOut.to=_emigrationQueue;
+		    settingsInOut.to=_evacuationQueue;
 		    settingsInOut.correlationId=name;
 		    settingsInOut.from=_cluster.getLocalNode().getDestination();
 		    try {
 		        immotable.copy(emotable);
 		        EmigrationRequest er=new EmigrationRequest(immotable);
-		        EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(name, _emigrationRvMap, er, settingsInOut, _ackTimeout);
+		        EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(name, _evacuationRvMap, er, settingsInOut, _ackTimeout);
 
 		        if (ea==null) {
                     if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+_ackTimeout+" millis): "+name);
@@ -416,7 +422,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     }
 
     public void onNodeUpdate(ClusterEvent event) {
-        _log.info("node updated: "+event.getNode().getState().get("name"));
+        _log.info("node updated: "+event.getNode().getState().get("name")+" : "+event.getNode().getState());
     }
 
     public void onNodeRemoved(ClusterEvent event) {
