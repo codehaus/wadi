@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.jms.JMSException;
+
 import org.activecluster.ClusterFactory;
 import org.activemq.ActiveMQConnection;
 import org.activemq.ActiveMQConnectionFactory;
@@ -192,4 +194,19 @@ public class DistributableManager extends StandardManager implements Distributab
         return _httpAddress;
     }
     
+    public Object getDistributedState(Object key) {
+        return _distributedState.get(key);
+    }
+    
+    public Object putDistributedState(Object key, Object newValue) throws JMSException {
+        Object oldValue=_distributedState.put(key, newValue);
+        _cluster.getLocalNode().setState(_distributedState);
+        return oldValue;
+    }
+    
+    public Object removeDistributedState(Object key) throws JMSException {
+        Object value=_distributedState.remove(key);
+        _cluster.getLocalNode().setState(_distributedState);
+        return value;
+    }
 }

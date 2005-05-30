@@ -17,6 +17,9 @@
 package org.codehaus.wadi;
 
 import java.net.InetSocketAddress;
+import java.util.Map;
+
+import javax.jms.JMSException;
 
 import org.codehaus.wadi.io.Server;
 
@@ -27,5 +30,9 @@ public interface DistributableContextualiserConfig extends ContextualiserConfig 
     String getNodeName();
     HttpProxy getHttpProxy();
     InetSocketAddress getHttpAddress();
+    
+    Object getDistributedState(Object key);
+    Object putDistributedState(Object key, Object value) throws JMSException;
+    Object removeDistributedState(Object key) throws JMSException;
     
 }
