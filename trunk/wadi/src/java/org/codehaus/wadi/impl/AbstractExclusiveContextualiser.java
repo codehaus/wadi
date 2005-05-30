@@ -80,8 +80,6 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 	public Emoter getEvictionEmoter(){return getEmoter();}
 
     protected void unload() {
-        // get an immoter from the first shared Contextualiser
-        Immoter immoter=_next.getSharedDemoter();
         Emoter emoter=getEmoter();
         
         // emote all our Motables using it
@@ -103,8 +101,11 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
             try {
                 //Utils.acquireUninterrupted(lock);
                 //acquired=true;
-                if (emotable.getName()!=null) // it may have disappeared whlist we were waiting for lock
+                if (emotable.getName()!=null) {// it may have disappeared whlist we were waiting for lock
+                    // get an immoter from the first shared Contextualiser - we get a fresh one because circumstances may have changed...
+                    Immoter immoter=_next.getSharedDemoter();
                     Utils.mote(emoter, immoter, emotable, id);
+                }
             } /*catch (TimeoutException e) {
                 // come back to this one later ?
                 _log.warn("could not acquire lock within timeframe");
@@ -113,7 +114,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
             }
         }
         RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
-        if (_log.isInfoEnabled()) _log.info("evacuated sessions to "+immoter.getInfo()+": "+s);
+        if (_log.isInfoEnabled()) _log.info("evacuated sessions: "+s);
         int size=_map.size();
         if (size>0)
             _log.error("sessions did not find asylum: "+size);
