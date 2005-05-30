@@ -70,7 +70,7 @@ public abstract class AbstractServer implements Server, PipeConfig {
     }
     
     public String getNodeId() {
-        return _config.getNodeId();
+        return _config.getNodeName();
     }
 }
 

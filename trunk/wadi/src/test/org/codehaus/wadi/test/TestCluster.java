@@ -118,10 +118,10 @@ public class TestCluster extends TestCase {
         protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
         protected final DistributableManager _manager;
         
-        public MyNode(String nodeId, ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
+        public MyNode(String nodeName, ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
             _bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, ds, table);
             _clusterName=clusterName;
-            _nodeName=nodeId;
+            _nodeName=nodeName;
             _dispatcher=new MessageDispatcher();
             InetSocketAddress isa=new InetSocketAddress("localhost", 8080);
             HttpProxy proxy=new StandardHttpProxy("jsessionid");

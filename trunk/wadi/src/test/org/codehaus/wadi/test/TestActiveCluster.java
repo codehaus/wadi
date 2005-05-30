@@ -120,9 +120,9 @@ public class TestActiveCluster extends TestCase {
 //      testClusterCompletion("jgroups:default");
         }
      
-    protected void configureCluster(Cluster cluster, String nodeId) {
+    protected void configureCluster(Cluster cluster, String nodeName) {
         Map state=new HashMap();
-        state.put("id", nodeId);
+        state.put("id", nodeName);
         try {
             cluster.getLocalNode().setState(state);
         } catch (JMSException e){

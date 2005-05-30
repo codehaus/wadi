@@ -24,7 +24,7 @@ public interface DistributableContextualiserConfig extends ContextualiserConfig 
 
     ExtendedCluster getCluster();
     Server getServer();
-    String getNodeId();
+    String getNodeName();
     HttpProxy getHttpProxy();
     InetSocketAddress getHttpAddress();
     
