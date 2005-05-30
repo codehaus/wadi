@@ -126,7 +126,7 @@ public class TestContextualiser extends TestCase {
 
     protected final HttpProxy _httpProxy=new StandardHttpProxy("jsessionid");
     protected InetSocketAddress _httpAddress;
-    
+
     /*
      * @see TestCase#setUp()
      */
@@ -449,7 +449,7 @@ public class TestContextualiser extends TestCase {
     // shared
     protected final Streamer _streamer=new SimpleStreamer();
     protected final Contextualiser _dummyContextualiser=new DummyContextualiser();
-    protected final File _dir=new File("/tmp/wadi/"+System.getProperty("wadi.colour"));
+    protected final File _dir=new File("/tmp/wadi/"+System.getProperty("node.name"));
     protected final Collapser _collapser=new HashingCollapser(1, 2000);
     protected final SessionWrapperFactory _sessionWrapperFactory=new JettySessionWrapperFactory();
     protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
@@ -578,7 +578,7 @@ public class TestContextualiser extends TestCase {
         Contextualiser memory0=new MemoryContextualiser(clstr0, new NeverEvicter(30000, true), m0, new GZIPStreamer(), new MyContextPool(), _requestPool);
         clstr0.setTop(memory0);
         memory0.init(new DummyDistributableContextualiserConfig(cluster0));
-        
+
         Location location1=new MyLocation();
         Map c1=new HashMap();
         MessageDispatcher dispatcher1=new MessageDispatcher();
@@ -590,7 +590,7 @@ public class TestContextualiser extends TestCase {
         Contextualiser memory1=new MemoryContextualiser(clstr1, new NeverEvicter(30000, true), m1, new GZIPStreamer(), new MyContextPool(), _requestPool);
         clstr1.setTop(memory1);
         memory1.init(new DummyDistributableContextualiserConfig(cluster1));
-        
+
         Thread.sleep(2000); // activecluster needs a little time to sort itself out...
         _log.info("STARTING NOW!");
         FilterChain fc=new MyFilterChain();

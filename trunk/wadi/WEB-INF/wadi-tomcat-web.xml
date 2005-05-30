@@ -92,7 +92,7 @@
     id="Router"
     class="org.codehaus.wadi.impl.JkRouter"
     >
-       <constructor-arg><value>${wadi.colour}</value></constructor-arg>
+       <constructor-arg><value>${node.name}</value></constructor-arg>
   </bean>
 
 

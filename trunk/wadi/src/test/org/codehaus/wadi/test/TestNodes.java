@@ -53,16 +53,16 @@ public class TestNodes extends TestCase {
         System.setProperty("http.port", "8080");
         System.setProperty("ajp.port", "8009");
         System.setProperty("STOP.PORT", "8040");
-        System.setProperty("wadi.colour", "red");
+        System.setProperty("node.name", "red");
         Server red=new Server("/home/jules/workspace/wadi/conf/jetty-wadi2.xml");
         red.start();
         Thread.sleep(2000);
         System.out.println("");
-        
+
 //        System.setProperty("http.port", "8081");
 //        System.setProperty("ajp.port", "8010");
 //        System.setProperty("STOP.PORT", "8041");
-//        System.setProperty("wadi.colour", "green");
+//        System.setProperty("node.name", "green");
 //        Server green=new Server("/home/jules/workspace/wadi/conf/jetty-wadi2.xml");
 //        green.start();
 //        Thread.sleep(2000);
@@ -73,7 +73,7 @@ public class TestNodes extends TestCase {
         assertTrue(state.getCookies().length==0);
         GetMethod get=new GetMethod("/wadi/jsp/create.jsp");
         get.execute(state, connection);
-        
+
         // how do the cookies look ?
         Cookie[] cookies=state.getCookies();
         assertTrue(cookies.length==1);
@@ -85,7 +85,7 @@ public class TestNodes extends TestCase {
         session.setValue(newValue);
         Thread.sleep(2000);
         System.out.println("");
-        
+
         get=new GetMethod("/wadi/jsp/create.jsp");
         get.execute(state, new HttpConnection("localhost", 8080));
         // how do the cookies look ?
@@ -94,7 +94,7 @@ public class TestNodes extends TestCase {
         assertTrue(cookies[0].getValue().endsWith(".red"));
         Thread.sleep(2000);
         System.out.println("");
-        
+
         red.stop();
         Thread.sleep(2000);
         System.out.println("");

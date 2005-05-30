@@ -70,17 +70,17 @@ public class CustomClusterFactory extends DefaultClusterFactory {
     ReplicatedLocalNode localNode = new ReplicatedLocalNode(localInbox, serviceStub);
     Timer timer = new Timer();
     DefaultCluster answer = new CustomCluster(localNode, dataTopic, groupDestination, connection, session, producer, timer, getInactiveTime());
-    
-    connection.setExceptionListener(new ExceptionListener() {
 
-        // could we check the exception's cause and step up the level if it is
-        // not harmless ?... - TODO
-        public void onException(JMSException e) {
-            log.trace("JMS Exception:", e);
-        }
-        
-    });
-    
+//     connection.setExceptionListener(new ExceptionListener() {
+
+//         // could we check the exception's cause and step up the level if it is
+//         // not harmless ?... - TODO
+//         public void onException(JMSException e) {
+//             log.trace("JMS Exception:", e);
+//         }
+
+//     });
+
     return answer;
   }
 }

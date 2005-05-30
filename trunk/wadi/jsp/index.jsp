@@ -6,7 +6,7 @@
       <%@ page import="java.util.Iterator" %>
       <%@ page import="java.net.URL" %>
       <%
-      String colour=System.getProperty("wadi.colour");
+      String colour=System.getProperty("node.name");
 
       String url=request.getRequestURL().toString();
 
