@@ -402,6 +402,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     public void onNodeUpdate(ClusterEvent event) {
         Map state=event.getNode().getState();
         String nodeName=(String)state.get(_nodeNameKey);
+        
+        if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
+        
         _log.info("node updated: "+nodeName+" : "+state);
         
         // we will only accept sessions from others if we are not evacuating ourself...
