@@ -195,18 +195,24 @@ public class DistributableManager extends StandardManager implements Distributab
     }
     
     public Object getDistributedState(Object key) {
-        return _distributedState.get(key);
+        synchronized (_distributedState) {
+            return _distributedState.get(key);
+        }
     }
     
     public Object putDistributedState(Object key, Object newValue) throws JMSException {
-        Object oldValue=_distributedState.put(key, newValue);
-        _cluster.getLocalNode().setState(_distributedState);
-        return oldValue;
+        synchronized (_distributedState) {
+            Object oldValue=_distributedState.put(key, newValue);
+            _cluster.getLocalNode().setState(_distributedState);
+            return oldValue;
+        }
     }
     
     public Object removeDistributedState(Object key) throws JMSException {
-        Object value=_distributedState.remove(key);
-        _cluster.getLocalNode().setState(_distributedState);
-        return value;
+        synchronized (_distributedState) {
+            Object value=_distributedState.remove(key);
+            _cluster.getLocalNode().setState(_distributedState);
+            return value;
+        }
     }
 }
