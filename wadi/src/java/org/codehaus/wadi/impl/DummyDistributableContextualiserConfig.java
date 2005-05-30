@@ -17,6 +17,10 @@
 package org.codehaus.wadi.impl;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.jms.JMSException;
 
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.ExtendedCluster;
@@ -50,5 +54,19 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
 
     public InetSocketAddress getHttpAddress() {
         return null;
+    }
+    
+    protected Map _state=new HashMap();
+    
+    public Object getDistributedState(Object key) {
+        return _state.get(key);
+    }
+    
+    public Object putDistributedState(Object key, Object newValue) {
+        return _state.put(key, newValue);
+    }
+    
+    public Object removeDistributedState(Object key) {
+        return _state.remove(key);
     }
 }
