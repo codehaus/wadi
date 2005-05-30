@@ -226,6 +226,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     protected void destroyEvacuationQueue() throws JMSException {
         ((DistributableContextualiserConfig)_config).removeDistributedState(_evacuationQueueKey);
+        Utils.safeSleep(5*1000); // TODO - should be hearbeat period...
         // FIXME - can we destroy the queue ?
         _log.trace("emigration queue destroyed");
     }
@@ -434,14 +435,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         } catch (JMSException e) {
             _log.warn("unexpected problem", e);
         }
-
     }
     
     protected void leaveEvacuation(String nodeName, Destination evacuationQueue) {
         _evacuations.remove(evacuationQueue);
         _dispatcher.removeDestination(evacuationQueue);
         if (_log.isTraceEnabled()) _log.trace("leaving evacuation: "+nodeName);
-    }
+   }
     
     public void onNodeRemoved(ClusterEvent event) {
         _log.info("node left: "+event.getNode().getState().get(_nodeNameKey));

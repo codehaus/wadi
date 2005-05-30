@@ -217,4 +217,16 @@ public class Utils {
         
         throw new IllegalStateException();
     }
+    
+    public static void safeSleep(long period) {
+        long end=System.currentTimeMillis()+(period);
+        do {
+            try {
+                Thread.sleep(end-System.currentTimeMillis());
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        } while (Thread.interrupted());
+     }
+    
 }
