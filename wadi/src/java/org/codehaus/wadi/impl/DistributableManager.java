@@ -19,6 +19,7 @@ package org.codehaus.wadi.impl;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -46,17 +47,18 @@ import org.codehaus.wadi.io.ServerConfig;
 
 public class DistributableManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, ServerConfig {
 
+    protected final Map _distributedState=new HashMap();
     protected final Streamer _streamer;
     protected final String _clusterName;
-    protected final String _nodeId;
+    protected final String _nodeName;
     protected final HttpProxy _httpProxy;
     protected final InetSocketAddress _httpAddress;
 
-    public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterName, String nodeId, HttpProxy httpProxy, InetSocketAddress httpAddress) {
+    public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterName, String nodeName, HttpProxy httpProxy, InetSocketAddress httpAddress) {
         super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, accessOnLoad);
         _streamer=streamer;
         _clusterName=clusterName;
-        _nodeId=nodeId;
+        _nodeName=nodeName;
         _httpProxy=httpProxy;
         _httpAddress=httpAddress;
     }
@@ -70,13 +72,15 @@ public class DistributableManager extends StandardManager implements Distributab
     protected ExtendedCluster _cluster;
 
     public void init() {
+        // must be done before super.init() so that ContextualiserConfig contains a Cluster
         try {
             _connectionFactory=new ActiveMQConnectionFactory("peer://org.codehaus.wadi");
             _connectionFactory.start();
             System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
             _clusterFactory=new CustomClusterFactory(_connectionFactory);
             _cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
-            _cluster.start();
+            _distributedState.put("name", _nodeName);
+            _cluster.getLocalNode().setState(_distributedState);
         } catch (Exception e) {
             _log.error("problem starting Cluster", e);
         }
@@ -85,6 +89,7 @@ public class DistributableManager extends StandardManager implements Distributab
     
     public void start() throws Exception {
         super.start();
+        _cluster.start();
     }
     
     public void stop() throws Exception {
@@ -177,7 +182,7 @@ public class DistributableManager extends StandardManager implements Distributab
     // DistributableContextualiserConfig
     
     public Server getServer() {throw new UnsupportedOperationException();}
-    public String getNodeId() {return _nodeId;} // NYI
+    public String getNodeName() {return _nodeName;} // NYI
 
     public HttpProxy getHttpProxy() {
         return _httpProxy;

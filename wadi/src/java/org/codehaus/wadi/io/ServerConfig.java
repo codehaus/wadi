@@ -24,6 +24,6 @@ public interface ServerConfig extends Config {
 
         ExtendedCluster getCluster();
         Contextualiser getContextualiser();
-        String getNodeId();
+        String getNodeName();
     
 }

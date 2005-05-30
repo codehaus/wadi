@@ -120,13 +120,13 @@ public class TestMotion extends TestCase {
         protected static CustomClusterFactory _factory=new CustomClusterFactory(_cfactory);
 
         protected final Log _log=LogFactory.getLog(getClass());
-        protected final String _nodeId;
+        protected final String _nodeName;
         protected final Contextualiser _contextualiser;
         
         protected ExtendedCluster _cluster=null;
         
-        public MyServerConfig(String nodeId, Contextualiser contextualiser) {
-            _nodeId=nodeId;
+        public MyServerConfig(String nodeName, Contextualiser contextualiser) {
+            _nodeName=nodeName;
             _contextualiser=contextualiser;
             try {
                 _cluster=(ExtendedCluster)_factory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
@@ -143,8 +143,8 @@ public class TestMotion extends TestCase {
             return _contextualiser;
         }
         
-        public String getNodeId() {
-            return _nodeId;
+        public String getNodeName() {
+            return _nodeName;
         }
         
     }
@@ -317,7 +317,7 @@ public class TestMotion extends TestCase {
         public boolean run(PeerConfig config) throws IOException, ClassNotFoundException {
             long startTime=System.currentTimeMillis();
             ObjectInputStream ois=config.getObjectInputStream();
-            String nodeId=(String)ois.readObject();
+            String nodeName=(String)ois.readObject();
             String name=(String)ois.readObject();
             Motable emotable=(Motable)ois.readObject();
             Contextualiser contextualiser=config.getContextualiser();
@@ -330,7 +330,7 @@ public class TestMotion extends TestCase {
             oos.writeBoolean(ok);
             oos.flush();
             long elapsedTime=System.currentTimeMillis()-startTime;
-            if (_log.isDebugEnabled())_log.debug("motion"+(ok?"":" failed")+": "+name+" : cluster ["+nodeId+"] -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
+            if (_log.isDebugEnabled())_log.debug("motion"+(ok?"":" failed")+": "+name+" : cluster ["+nodeName+"] -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
             return true;
         }   
     }
@@ -358,7 +358,7 @@ public class TestMotion extends TestCase {
             ok=false;
             ObjectOutputStream oos=null;
             ObjectInputStream ois=null;
-            String nodeId="<unknown>";
+            String nodeName="<unknown>";
             try {
                 oos=config.getObjectOutputStream();
                 oos.writeObject(new EmotionServerPeer()); // could be cached...
@@ -369,7 +369,7 @@ public class TestMotion extends TestCase {
                 // server tries to prepare and commit...
                 // returns success or failure
                 ois=config.getObjectInputStream();
-                nodeId=(String)ois.readObject();
+                nodeName=(String)ois.readObject();
                 ok=ois.readBoolean();
             } catch (Exception e) {
                 _log.error("unexpected problem", e);
@@ -381,7 +381,7 @@ public class TestMotion extends TestCase {
                 }
             }
             long elapsedTime=System.currentTimeMillis()-startTime;
-            if (_log.isDebugEnabled())_log.debug("motion"+(ok?"":" failed")+": "+_name+" : "+_emoter.getInfo()+" -> cluster ["+nodeId+"] ("+elapsedTime+" millis)");
+            if (_log.isDebugEnabled())_log.debug("motion"+(ok?"":" failed")+": "+_name+" : "+_emoter.getInfo()+" -> cluster ["+nodeName+"] ("+elapsedTime+" millis)");
             return ok;
         }
     }

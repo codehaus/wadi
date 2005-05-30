@@ -40,7 +40,7 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
         return null;
     }
     
-    public String getNodeId() {
+    public String getNodeName() {
         return "dummy";
     }
     

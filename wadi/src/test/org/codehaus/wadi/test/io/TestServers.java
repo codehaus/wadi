@@ -107,7 +107,7 @@ public class TestServers extends TestCase {
         _clusterServer.init(new ServerConfig() {
             public ExtendedCluster getCluster() {return _cluster;}
             public Contextualiser getContextualiser() {return null;}
-            public String getNodeId() {return null;}
+            public String getNodeName() {return null;}
         });
         _clusterServer.start();
         _cluster.start();

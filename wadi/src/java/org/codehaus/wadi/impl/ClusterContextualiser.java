@@ -123,19 +123,15 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     protected ExtendedCluster _cluster;
     protected Location _location;
-    protected String _nodeId;
+    protected String _nodeName;
 
     public void init(ContextualiserConfig config) {
         super.init(config);
         DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)config;
         _cluster=dcc.getCluster();
         _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), dcc.getHttpAddress(), dcc.getHttpProxy());
-        _nodeId=dcc.getNodeId();
-        Map state=new HashMap();
-        state.put("id", _nodeId); // TODO - parameterise
         try {
             _dispatcher.init(this);
-            _cluster.getLocalNode().setState(state);
         } catch (JMSException e){
             _log.error("could not initialise node state", e);
         }
@@ -150,7 +146,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     }
 
     public String getStartInfo() {
-        return "["+_nodeId+"]";
+        return "["+_nodeName+"]";
     }
 
     public void destroy() {
@@ -202,7 +198,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     protected void createEmigrationQueue() throws JMSException {
         _log.trace("creating emigration queue");
-        _emigrationQueue=_cluster.createQueue("org.codehaus.wadi."+_nodeId+"."+"EMIGRATION");
+        _emigrationQueue=_cluster.createQueue("org.codehaus.wadi."+_nodeName+"."+"EMIGRATION");
         MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
         settings.to=_dispatcher.getCluster().getDestination();
         _dispatcher.sendMessage(new EmigrationStartedNotification(_emigrationQueue), settings);
@@ -416,25 +412,25 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     // ClusterListener
 
     public void onNodeAdd(ClusterEvent event) {
-        _log.info("node joined: "+event.getNode().getState().get("id"));
+        _log.info("node joined: "+event.getNode().getState().get("name"));
     }
 
     public void onNodeUpdate(ClusterEvent event) {
-        _log.info("node updated: "+event.getNode().getState().get("id"));
+        _log.info("node updated: "+event.getNode().getState().get("name"));
     }
 
     public void onNodeRemoved(ClusterEvent event) {
-        _log.info("node left: "+event.getNode().getState().get("id"));
+        _log.info("node left: "+event.getNode().getState().get("name"));
 	// TODO - remove existing asylum agreements
     }
 
     public void onNodeFailed(ClusterEvent event)  {
-        _log.info("node failed: "+event.getNode().getState().get("id"));
+        _log.info("node failed: "+event.getNode().getState().get("name"));
 	// TODO - remove existing asylum agreements
     }
 
     public void onCoordinatorChanged(ClusterEvent event) {
-        _log.trace("coordinator changed: "+event.getNode().getState().get("id")); // we don't use this...
+        _log.trace("coordinator changed: "+event.getNode().getState().get("name")); // we don't use this...
     }
 
     // RelocaterConfig
