@@ -89,6 +89,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  */
 public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, MessageDispatcherConfig, ClusterListener {
 
+    protected final static String _nodeNameKey="name";
     protected final static String _evacuationQueueKey="evacuationQueue";
     
     protected final Collapser _collapser;
@@ -139,9 +140,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
             _log.error("could not initialise node state", e);
         }
         _cluster.addClusterListener(this);
-        _dispatcher.register(this, "onMessage", EmigrationEndedNotification.class);
         _dispatcher.register(this, "onMessage", EmigrationRequest.class);
-        _dispatcher.register(this, "onMessage", EmigrationStartedNotification.class);
         _dispatcher.register(EmigrationAcknowledgement.class, _evacuationRvMap, _ackTimeout);
 
         // _evicter ?
@@ -205,22 +204,17 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         
         ((DistributableContextualiserConfig)_config).putDistributedState(_evacuationQueueKey, _evacuationQueue);
         
-        MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
-        settings.to=_dispatcher.getCluster().getDestination();
-        _dispatcher.sendMessage(new EmigrationStartedNotification(_evacuationQueue), settings);
-
         // whilst we are evacuating...
         // 1) do not form any further asylum agreements...
-        _dispatcher.deregister("onMessage", EmigrationEndedNotification.class, 30);
-        _dispatcher.deregister("onMessage", EmigrationStartedNotification.class, 30);
         _log.info("ignoring further asylum agreement negotiotiations");
         // 2) rescind existing agreements existing agreements...
-        _log.info("pulling out of existing asylum agreements: "+_asylumAgreements.size());
-        for (Iterator i=_asylumAgreements.iterator(); i.hasNext(); ) {
+        _log.info("pulling out of existing asylum agreements: "+_evacuations.size());
+        for (Iterator i=_evacuations.iterator(); i.hasNext(); ) {
             Destination queue=(Destination)i.next();
             _dispatcher.removeDestination(queue);
+            // TODO - call leaveEvacuation for each one...
         }
-        _asylumAgreements.clear();
+        _evacuations.clear();
 	try {
 	  // give everyone a chance to open up on our emigration queue... - TODO - parameterise
 	  // give time for threads that are already processing asylum applications to finish - can we join them ? - TODO - use shutdownAfterProcessingCurrentlyQueuedTasks() and a separate ThreadPool...
@@ -231,9 +225,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     }
 
     protected void destroyEvacuationQueue() throws JMSException {
-        MessageDispatcher.Settings settings=new MessageDispatcher.Settings();
-        settings.to=_dispatcher.getCluster().getDestination();
-        _dispatcher.sendMessage(new EmigrationEndedNotification(_evacuationQueue), settings);
         ((DistributableContextualiserConfig)_config).removeDistributedState(_evacuationQueueKey);
         // FIXME - can we destroy the queue ?
         _log.trace("emigration queue destroyed");
@@ -257,21 +248,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         super.stop();
     }
 
-    protected List _asylumAgreements=Collections.synchronizedList(new ArrayList());
-
-	public void onMessage(ObjectMessage om, EmigrationStartedNotification sdsn) throws JMSException {
-		Destination emigrationQueue=sdsn.getDestination();
-		if (_log.isTraceEnabled()) _log.trace("received EmigrationStartedNotification: "+emigrationQueue);
-        _asylumAgreements.add(emigrationQueue);
-		_dispatcher.addDestination(emigrationQueue);
-	}
-
-	public void onMessage(ObjectMessage om, EmigrationEndedNotification sden) {
-		Destination emigrationQueue=sden.getDestination();
-		if (_log.isTraceEnabled()) _log.trace("received EmigrationEndedNotification: "+emigrationQueue);
-		_dispatcher.removeDestination(emigrationQueue);
-        _asylumAgreements.remove(emigrationQueue);
-	}
+    protected List _evacuations=Collections.synchronizedList(new ArrayList());
 
 	/**
 	 * Manage the immotion of a session into the cluster tier from another and its emigration thence to another node.
@@ -419,25 +396,62 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     // ClusterListener
 
     public void onNodeAdd(ClusterEvent event) {
-        _log.info("node joined: "+event.getNode().getState().get("name"));
+        _log.info("node joined: "+event.getNode().getState().get(_nodeNameKey));
     }
 
     public void onNodeUpdate(ClusterEvent event) {
-        _log.info("node updated: "+event.getNode().getState().get("name")+" : "+event.getNode().getState());
+        Map state=event.getNode().getState();
+        String nodeName=(String)state.get(_nodeNameKey);
+        _log.info("node updated: "+nodeName+" : "+state);
+        
+        // we will only accept sessions from others if we are not evacuating ourself...
+        if (_evacuationQueue==null) {
+            Destination evacuationQueue=(Destination)state.get(_evacuationQueueKey);
+            if (evacuationQueue!=null) { 
+                synchronized (_evacuations) {
+                    if (!_evacuations.contains(evacuationQueue)) {
+                        joinEvacuation(nodeName, evacuationQueue);
+                    }
+                }
+            } else {
+                synchronized (_evacuations) {
+                    if (_evacuations.contains(evacuationQueue)) {
+                        leaveEvacuation(nodeName, evacuationQueue);
+                    }
+                }
+            }
+        }
     }
+    
+    protected void joinEvacuation(String nodeName, Destination evacuationQueue) {
+        _evacuations.add(evacuationQueue);
+        try {
+            _dispatcher.addDestination(evacuationQueue);
+            if (_log.isTraceEnabled()) _log.trace("joining evacuation: "+nodeName);
+        } catch (JMSException e) {
+            _log.warn("unexpected problem", e);
+        }
 
+    }
+    
+    protected void leaveEvacuation(String nodeName, Destination evacuationQueue) {
+        _evacuations.remove(evacuationQueue);
+        _dispatcher.removeDestination(evacuationQueue);
+        if (_log.isTraceEnabled()) _log.trace("leaving evacuation: "+nodeName);
+    }
+    
     public void onNodeRemoved(ClusterEvent event) {
-        _log.info("node left: "+event.getNode().getState().get("name"));
+        _log.info("node left: "+event.getNode().getState().get(_nodeNameKey));
 	// TODO - remove existing asylum agreements
     }
 
     public void onNodeFailed(ClusterEvent event)  {
-        _log.info("node failed: "+event.getNode().getState().get("name"));
+        _log.info("node failed: "+event.getNode().getState().get(_nodeNameKey));
 	// TODO - remove existing asylum agreements
     }
 
     public void onCoordinatorChanged(ClusterEvent event) {
-        _log.trace("coordinator changed: "+event.getNode().getState().get("name")); // we don't use this...
+        _log.trace("coordinator changed: "+event.getNode().getState().get(_nodeNameKey)); // we don't use this...
     }
 
     // RelocaterConfig
