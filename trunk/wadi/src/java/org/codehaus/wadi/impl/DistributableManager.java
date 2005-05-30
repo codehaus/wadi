@@ -94,6 +94,7 @@ public class DistributableManager extends StandardManager implements Distributab
         // there must be an easier way - :-(
         ((ActiveMQConnection)_cluster.getConnection()).getTransportChannel().getEmbeddedBrokerConnector().getBrokerContainer().stop();
         _connectionFactory.stop();
+        Thread.sleep(5*1000);
     }
 
     // Distributable
