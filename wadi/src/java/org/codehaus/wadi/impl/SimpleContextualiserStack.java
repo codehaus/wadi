@@ -127,7 +127,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _statelessURIFlag=false;
         _stateless=new StatelessContextualiser(_cluster, _statelessMethods, _statelessMethodFlag, _statelessURIs, _statelessURIFlag);
 
-        File dir=new File("/tmp/wadi/"+System.getProperty("wadi.colour"));
+        File dir=new File("/tmp/wadi/"+System.getProperty("node.name"));
         dir.delete();
         dir.mkdir();
         _discDirectory=dir;

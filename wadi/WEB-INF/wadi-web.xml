@@ -85,7 +85,7 @@
       <!-- if you are using Apache/mod_jk uncomment this for affinity -->
       <!--
       <bean class="org.codehaus.wadi.impl.JkRoutingStrategy">
-      <constructor-arg><value>${wadi.colour}</value></constructor-arg>
+      <constructor-arg><value>${node.name}</value></constructor-arg>
       </bean>
       -->
       <!-- else use this... -->

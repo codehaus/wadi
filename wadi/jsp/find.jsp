@@ -6,7 +6,7 @@
       <%
       Log log=LogFactory.getLog(getClass());
       log.trace("FIND: "+session.getId());
-      String colour=System.getProperty("wadi.colour");
+      String colour=System.getProperty("node.name");
       %>
       <HTML>
 	<BODY BGCOLOR="<%= colour %>">

@@ -70,7 +70,7 @@ import junit.framework.TestCase;
 public class TestEvicters extends TestCase {
 
     protected final String _clusterName="WADI.TEST";
-    
+
     public TestEvicters(String name) {
         super(name);
     }
@@ -119,7 +119,7 @@ public class TestEvicters extends TestCase {
         Streamer streamer=new SimpleStreamer();
         // (Contextualiser next, Collapser collapser, Evicter evicter, Map map, StreamingStrategy streamer, File dir) {
         Collapser collapser=new HashingCollapser(100, 1000);
-        File dir=new File("/tmp/wadi/"+System.getProperty("wadi.colour"));
+        File dir=new File("/tmp/wadi/"+System.getProperty("node.name"));
         Contextualiser disc=new ExclusiveStoreContextualiser(next, collapser, true, devicter, dmap, streamer, dir);
         Map mmap=new HashMap();
         int inactivityInterval=1; // second

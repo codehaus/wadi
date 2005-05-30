@@ -1308,7 +1308,7 @@ extends TestCase
 //  ActivationListener l=new ActivationListener();
 //  impl1.setAttribute(key, l, false);
 //
-//  FilePassivationStrategy fmp=new FilePassivationStrategy(new File("/tmp/wadi/"+System.getProperty("wadi.colour")));
+//  FilePassivationStrategy fmp=new FilePassivationStrategy(new File("/tmp/wadi/"+System.getProperty("node.name")));
 //  fmp.setStreamingStrategy(new GZIPStreamingStrategy());
 //  assertTrue(fmp.passivate(impl1));
 //
