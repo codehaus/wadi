@@ -185,9 +185,13 @@ public class Utils {
         }
     }
 
+    public static String getClusterUri() {
+        return "peer://org.codehaus.wadi";
+    }
+    
     // this should really be passed in the top somewhere - but the tests need access too...
     public static ActiveMQConnectionFactory getConnectionFactory() {
-        ActiveMQConnectionFactory cf=new ActiveMQConnectionFactory("peer://WADI-TEST");
+        ActiveMQConnectionFactory cf=new ActiveMQConnectionFactory(getClusterUri());
         // ActiveMQConnectionFactory cf=new ActiveMQConnectionFactory("tcp://localhost:61616");
         // _connectionFactory=new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");
         // _connectionFactory=new ActiveMQConnectionFactory("jgroups:default");
