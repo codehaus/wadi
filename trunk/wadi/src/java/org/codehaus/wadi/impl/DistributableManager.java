@@ -51,14 +51,16 @@ public class DistributableManager extends StandardManager implements Distributab
 
     protected final Map _distributedState=new HashMap();
     protected final Streamer _streamer;
+    protected final String _clusterUri;
     protected final String _clusterName;
     protected final String _nodeName;
     protected final HttpProxy _httpProxy;
     protected final InetSocketAddress _httpAddress;
 
-    public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterName, String nodeName, HttpProxy httpProxy, InetSocketAddress httpAddress) {
+    public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterUri, String clusterName, String nodeName, HttpProxy httpProxy, InetSocketAddress httpAddress) {
         super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, accessOnLoad);
         _streamer=streamer;
+        _clusterUri=clusterUri;
         _clusterName=clusterName;
         _nodeName=nodeName;
         _httpProxy=httpProxy;
@@ -76,7 +78,7 @@ public class DistributableManager extends StandardManager implements Distributab
     public void init() {
         // must be done before super.init() so that ContextualiserConfig contains a Cluster
         try {
-            _connectionFactory=new ActiveMQConnectionFactory("peer://org.codehaus.wadi");
+            _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
             _connectionFactory.start();
             System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
             _clusterFactory=new CustomClusterFactory(_connectionFactory);

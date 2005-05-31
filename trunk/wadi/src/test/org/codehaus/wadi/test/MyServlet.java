@@ -61,12 +61,14 @@ import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StatelessContextualiser;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
+import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory;
 
 public class MyServlet implements Servlet {
 	protected ServletConfig _config;
 	protected final Log _log;
-	protected final String _clusterName;
+    protected final String _clusterUri=Utils.getClusterUri();
+    protected final String _clusterName;
     protected final String _nodeName;
 	protected final Map _clusterMap;
 	protected final Map _memoryMap;
@@ -94,7 +96,7 @@ public class MyServlet implements Servlet {
 
 	public MyServlet(String nodeName, String clusterName, ContextPool contextPool, MessageDispatcher dispatcher, Relocater relocater, HttpProxy httpProxy, InetSocketAddress httpAddress) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+nodeName);
-		_clusterName=clusterName;
+        _clusterName=clusterName;
         _nodeName=nodeName;
 		_clusterMap=new HashMap();
 		_dispatcher=dispatcher;
@@ -110,7 +112,7 @@ public class MyServlet implements Servlet {
         _clusterContextualiser.setTop(_memoryContextualiser);
         _httpProxy=httpProxy;
         _httpAddress=httpAddress;
-        _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad, _clusterName, _nodeName, _httpProxy, _httpAddress);
+        _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, _nodeName, _httpProxy, _httpAddress);
     }
     
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}

@@ -59,6 +59,7 @@ import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
+import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory;
 import org.codehaus.wadi.io.impl.DummyServer;
 
@@ -69,6 +70,7 @@ import junit.framework.TestCase;
 
 public class TestEvicters extends TestCase {
 
+    protected final String _clusterUri=Utils.getClusterUri();
     protected final String _clusterName="WADI.TEST";
 
     public TestEvicters(String name) {
@@ -136,7 +138,7 @@ public class TestEvicters extends TestCase {
         HttpProxy httpProxy=new StandardHttpProxy("jsessionid");
         InetSocketAddress httpAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8888);
         String nodeName="node0";
-        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, _clusterName, nodeName, httpProxy, httpAddress);
+        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, _clusterUri, _clusterName, nodeName, httpProxy, httpAddress);
         manager.setMaxInactiveInterval(2);
         manager.init();
         //manager.start();
