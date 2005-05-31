@@ -412,15 +412,21 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
   public void onNodeAdd(ClusterEvent event) {
     _log.info("node joined: "+event.getNode().getState().get(_nodeNameKey));
+    onNodeStateChange(event);
   }
 
   public void onNodeUpdate(ClusterEvent event) {
+    _log.info("node updated: "+event.getNode().getState().get(_nodeNameKey));
+    onNodeStateChange(event);
+  }
+
+  public void onNodeStateChange(ClusterEvent event) {
     Map state=event.getNode().getState();
     String nodeName=(String)state.get(_nodeNameKey);
 
     if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
 
-    _log.info("node updated: "+nodeName+" : "+state);
+    _log.info("node state changed: "+nodeName+" : "+state);
 
     Destination evacuationQueue=(Destination)state.get(_evacuationQueueKey);
     if (evacuationQueue==null) {
@@ -430,6 +436,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	  synchronized (_evacuationQueueLock) {
 	    if (_evacuationQueue==null) {
 	      if (_log.isTraceEnabled()) _log.trace("leaving evacuation: "+nodeName);
+	      _log.info("leaving evacuation: "+nodeName);
 	      try {
 	      _dispatcher.removeDestination(consumer);
 	      } catch (JMSException e) {
@@ -447,6 +454,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	    synchronized (_evacuationQueueLock) {
 	      if (_evacuationQueue==null) {
 		if (_log.isTraceEnabled()) _log.trace("joining evacuation: "+nodeName);
+		_log.info("joining evacuation: "+nodeName);
 		_evacuations.put(nodeName, _dispatcher.addDestination(evacuationQueue));
 	      }
 	    }
