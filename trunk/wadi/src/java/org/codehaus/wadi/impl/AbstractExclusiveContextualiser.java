@@ -81,43 +81,31 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 
     protected void unload() {
         Emoter emoter=getEmoter();
-        
+
         // emote all our Motables using it
         RankedRWLock.setPriority(RankedRWLock.EVICTION_PRIORITY);
-        Collection copy=null;
-        synchronized (_map) {copy=new ArrayList(_map.entrySet());}
-        int s=copy.size();
-        
-        for (Iterator i=copy.iterator(); i.hasNext(); ) {
-            Map.Entry entry=(Map.Entry)i.next();
-            String id=(String)entry.getKey();
-            Motable emotable=(Motable)entry.getValue();
-            
-            Sync lock=_locker.getLock(id, emotable);
-            boolean acquired=false;
-            
-            // HERE !
-            
-            try {
-                //Utils.acquireUninterrupted(lock);
-                //acquired=true;
-                if (emotable.getName()!=null) {// it may have disappeared whlist we were waiting for lock
-                    // get an immoter from the first shared Contextualiser - we get a fresh one because circumstances may have changed...
-                    Immoter immoter=_next.getSharedDemoter();
-                    Utils.mote(emoter, immoter, emotable, id);
-                }
-            } /*catch (TimeoutException e) {
-                // come back to this one later ?
-                _log.warn("could not acquire lock within timeframe");
-            } */ finally {
-                if (acquired) lock.release();
-            }
-        }
+
+	int i=0;
+	while (_map.size()>0) {
+	  try {
+	    Motable emotable=(Motable)_map.values().iterator().next();
+
+	    if (emotable!=null) {
+	      String name=emotable.getName();
+	      if (name!=null) {
+		Immoter immoter=_next.getSharedDemoter();
+		Utils.mote(emoter, immoter, emotable, name);
+		i++;
+	      }
+	    }
+	  } catch (Exception e) {
+	    _log.warn("unexpected problem", e);
+	  }
+	}
+
         RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
-        if (_log.isInfoEnabled()) _log.info("evacuated sessions: "+s);
-        int size=_map.size();
-        if (size>0)
-            _log.error("sessions did not find asylum: "+size);
+        if (_log.isInfoEnabled()) _log.info("evacuated sessions: "+i);
+	assert(_map.size()==0);
     }
 
     public void init(ContextualiserConfig config) {
