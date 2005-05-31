@@ -60,9 +60,9 @@ public class MessageDispatcher implements MessageListener {
         _executor=new PooledExecutor(new BoundedBuffer(10), 100); // parameterise
         _executor.setMinimumPoolSize(4);
 	    }
-    
+
     protected MessageDispatcherConfig _config;
-    
+
     protected ExtendedCluster _cluster;
     protected MessageConsumer _clusterConsumer;
     protected MessageConsumer _nodeConsumer;
@@ -85,28 +85,28 @@ public class MessageDispatcher implements MessageListener {
         void decCount();
         int getCount();
     }
-    
+
     class TargetDispatcher implements Dispatcher {
         protected final Object _target;
         protected final Method _method;
         protected final ThreadLocal _pair=new ThreadLocal(){protected Object initialValue() {return new Object[2];}};
-        
+
         public TargetDispatcher(Object target, Method method) {
             _target=target;
             _method=method;
         }
-        
+
         public void dispatch(ObjectMessage om, Serializable obj) throws InvocationTargetException, IllegalAccessException {
             Object[] pair=(Object[])_pair.get();
             pair[0]=om;
             pair[1]=obj;
             _method.invoke(_target, pair);
         }
-        
+
         public String toString() {
             return "<TargetDispatcher: "+_method+" dispatched on: "+_target+">";
         }
-        
+
         protected int _count;
         public void incCount() {_count++;}
         public void decCount() {_count--;}
@@ -120,13 +120,13 @@ public class MessageDispatcher implements MessageListener {
             int n=0;
             Method method=target.getClass().getMethod(methodName, new Class[] {ObjectMessage.class, type});
             if (method==null) return null;
-            
+
             Dispatcher nuw=new TargetDispatcher(target, method);
-            
+
             Dispatcher old=(Dispatcher)_map.put(type, nuw);
-            if (old!=null) 
+            if (old!=null)
                 if (_log.isWarnEnabled()) _log.warn("later registration replaces earlier - multiple dispatch NYI: "+old+" -> "+nuw);
-            
+
             if (_log.isTraceEnabled()) _log.trace("registering: "+type.getName()+"."+methodName+"()");
             return nuw;
         } catch (NoSuchMethodException e) {
@@ -187,7 +187,7 @@ public class MessageDispatcher implements MessageListener {
 	  public String toString() {
 	    return "<RendezVousDispatcher>";
 	  }
-      
+
       protected int _count;
       public void incCount() {_count++;}
       public void decCount() {_count--;}
@@ -322,13 +322,14 @@ public class MessageDispatcher implements MessageListener {
 
 	public ExtendedCluster getCluster(){return _cluster;}
 
-	public void addDestination(Destination destination) throws JMSException {
+	public MessageConsumer addDestination(Destination destination) throws JMSException {
 	    boolean excludeSelf=true;
-	    MessageConsumer mc=_cluster.createConsumer(destination, null, excludeSelf);
-	    mc.setMessageListener(this);
+	    MessageConsumer consumer=_cluster.createConsumer(destination, null, excludeSelf);
+	    consumer.setMessageListener(this);
+	    return consumer;
 	}
 
-	public void removeDestination(Destination destination) {
-		// NYI - TODO
+	public void removeDestination(MessageConsumer consumer) throws JMSException {
+	  consumer.close();
 	}
 }

@@ -26,6 +26,7 @@ import java.util.Map;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
 import javax.jms.ObjectMessage;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -89,381 +90,395 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  */
 public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, MessageDispatcherConfig, ClusterListener {
 
-    protected final static String _nodeNameKey="name";
-    protected final static String _evacuationQueueKey="evacuationQueue";
+  protected final static String _nodeNameKey="name";
+  protected final static String _evacuationQueueKey="evacuationQueue";
 
-    protected final Collapser _collapser;
-	protected final HashMap _evacuationRvMap=new HashMap();
-	protected final MessageDispatcher _dispatcher;
-	protected final Relocater _relocater;
-	protected final Immoter _immoter;
-	protected final Emoter _emoter;
-    protected final int _ackTimeout=500; // TODO - parameterise
-    protected final Map _map;
-    protected final Evicter _evicter;
+  protected final Map _evacuations=Collections.synchronizedMap(new HashMap());
+  protected final Map _evacuationRvMap=new HashMap();
+  protected final Object _evacuationQueueLock=new Object();
+  protected final Collapser _collapser;
+  protected final MessageDispatcher _dispatcher;
+  protected final Relocater _relocater;
+  protected final Immoter _immoter;
+  protected final Emoter _emoter;
+  protected final int _ackTimeout=500; // TODO - parameterise
+  protected final Map _map;
+  protected final Evicter _evicter;
 
-	/**
-	 * @param next
-	 * @param evicter
-	 * @param map
-	 * @param location TODO
-	 */
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, MessageDispatcher dispatcher, Relocater relocater) {
-		super(next, new CollapsingLocker(collapser), false);
-        _collapser=collapser;
-		_dispatcher=dispatcher;
-	    _relocater=relocater;
-        _map=map;
-        _evicter=evicter;
+  /**
+   * @param next
+   * @param evicter
+   * @param map
+   * @param location TODO
+   */
+  public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, MessageDispatcher dispatcher, Relocater relocater) {
+    super(next, new CollapsingLocker(collapser), false);
+    _collapser=collapser;
+    _dispatcher=dispatcher;
+    _relocater=relocater;
+    _map=map;
+    _evicter=evicter;
 
-	    _immoter=new EmigrationImmoter();
-	    _emoter=null; // TODO - I think this should be something like the ImmigrationEmoter
-	    // it pulls a named Session out of the cluster and emotes it from this Contextualiser...
-	    // this makes it awkward to split session and request relocation into different strategies,
-	    // so session relocation should be the basic strategy, with request relocation as a pluggable
-	    // optimisation...
-		}
+    _immoter=new EmigrationImmoter();
+    _emoter=null; // TODO - I think this should be something like the ImmigrationEmoter
+    // it pulls a named Session out of the cluster and emotes it from this Contextualiser...
+    // this makes it awkward to split session and request relocation into different strategies,
+    // so session relocation should be the basic strategy, with request relocation as a pluggable
+    // optimisation...
+  }
 
-    protected ExtendedCluster _cluster;
-    protected Location _location;
-    protected String _nodeName;
+  protected ExtendedCluster _cluster;
+  protected Location _location;
+  protected String _nodeName;
+  protected Destination _evacuationQueue;
 
-    public void init(ContextualiserConfig config) {
-        super.init(config);
-        DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)config;
-        _nodeName=dcc.getNodeName();
-        _cluster=dcc.getCluster();
-        _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), dcc.getHttpAddress(), dcc.getHttpProxy());
-        try {
-            _dispatcher.init(this);
-        } catch (JMSException e){
-            _log.error("could not initialise node state", e);
-        }
-        _cluster.addClusterListener(this);
-        _dispatcher.register(this, "onMessage", EmigrationRequest.class);
-        _dispatcher.register(EmigrationAcknowledgement.class, _evacuationRvMap, _ackTimeout);
+  public void init(ContextualiserConfig config) {
+    super.init(config);
+    DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)config;
+    _nodeName=dcc.getNodeName();
+    _cluster=dcc.getCluster();
+    _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), dcc.getHttpAddress(), dcc.getHttpProxy());
+    try {
+      _dispatcher.init(this);
+    } catch (JMSException e){
+      _log.error("could not initialise node state", e);
+    }
+    _cluster.addClusterListener(this);
+    _dispatcher.register(this, "onMessage", EmigrationRequest.class);
+    _dispatcher.register(EmigrationAcknowledgement.class, _evacuationRvMap, _ackTimeout);
 
-        // _evicter ?
-        _relocater.init(this);
+    // _evicter ?
+    _relocater.init(this);
+  }
+
+  public String getStartInfo() {
+    return "["+_nodeName+"]";
+  }
+
+  public void destroy() {
+    _relocater.destroy();
+    // TODO - what else ?
+    // _evicter ?
+    super.destroy();
+  }
+
+  public Immoter getImmoter(){return _immoter;}
+  public Emoter getEmoter(){return _emoter;}
+
+  public Immoter getDemoter(String name, Motable motable) {
+    if (_cluster.getNodes().size()>=1) {
+      ensureEvacuationQueue();
+      return getImmoter();
+    } else {
+      return _next.getDemoter(name, motable);
+    }
+  }
+
+  public Immoter getSharedDemoter() {
+    if (_cluster.getNodes().size()>=1) {
+      ensureEvacuationQueue();
+      return getImmoter();
+    } else {
+      return _next.getSharedDemoter();
+    }
+  }
+
+  // this field forms part of a circular dependency - so we need a setter rather than ctor param
+  protected Contextualiser _top;
+  public Contextualiser getTop() {return _top;}
+  public void setTop(Contextualiser top) {_top=top;}
+
+  public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock) throws IOException, ServletException {
+    return _relocater.relocate(hreq, hres, chain, id, immoter, motionLock, _map);
+  }
+
+  // be careful here - there are two things going on, a map of cached locations, which needs management
+  // and incoming sessions which must be routed either out to cluster, or down to e.g. DB...
+  public void evict() {
+    // how long do we wish to maintain cached Locations ?
+    // TODO - get timestamps working on Locations - write a hybrid Evicter ?
+    // or implement Chained instead of Mapped Contextualiser - consider....
+  }
+
+  protected void createEvacuationQueue() throws JMSException {
+    _log.trace("creating evacuation queue");
+    synchronized (_evacuationQueueLock) {
+      _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
+      ((DistributableContextualiserConfig)_config).putDistributedState(_evacuationQueueKey, _evacuationQueue);
     }
 
-    public String getStartInfo() {
-        return "["+_nodeName+"]";
+    // whilst we are evacuating...
+    // 1) do not get involved in any other evacuations.
+    _log.info("ignoring further evacuation appeals");
+    // 2) withdraw from any other evacuation in which we may be involved
+    _log.info("withdrawing from ongoing evacuations: "+_evacuations.size());
+    for (Iterator i=_evacuations.entrySet().iterator(); i.hasNext(); ) {
+      Map.Entry entry=(Map.Entry)i.next();
+      String nodeName=(String)entry.getKey();
+      MessageConsumer consumer=(MessageConsumer)entry.getValue();
+      if (_log.isTraceEnabled()) _log.trace("leaving evacuation: "+nodeName);
+      _log.info("leaving evacuation: "+nodeName);
+      try {
+	_dispatcher.removeDestination(consumer);
+      } catch (JMSException e) {
+	_log.warn("could not withdraw from evacuation", e);
+      }
     }
-
-    public void destroy() {
-        _relocater.destroy();
-        // TODO - what else ?
-        // _evicter ?
-        super.destroy();
+    try {
+      // give everyone a chance to open up on our emigration queue... - TODO - parameterise
+      // give time for threads that are already processing asylum applications to finish - can we join them ? - TODO - use shutdownAfterProcessingCurrentlyQueuedTasks() and a separate ThreadPool...
+      Thread.sleep(2000);
+    } catch (InterruptedException e) {
+      _log.info("AAAAARCH!"); // FIXME
     }
+  }
 
-    public Immoter getImmoter(){return _immoter;}
-    public Emoter getEmoter(){return _emoter;}
-
-    public Immoter getDemoter(String name, Motable motable) {
-        if (_cluster.getNodes().size()>=1) {
-            ensureEvacuationQueue();
-            return getImmoter();
-        } else {
-            return _next.getDemoter(name, motable);
-        }
+  protected void destroyEvacuationQueue() throws JMSException {
+    synchronized (_evacuationQueueLock) {
+      ((DistributableContextualiserConfig)_config).removeDistributedState(_evacuationQueueKey);
+      _evacuationQueue=null;
     }
+    Utils.safeSleep(5*1000*2); // TODO - should be hearbeat period...
+    // FIXME - can we destroy the queue ?
+    _log.trace("emigration queue destroyed");
+  }
 
-    public Immoter getSharedDemoter() {
-        if (_cluster.getNodes().size()>=1) {
-            ensureEvacuationQueue();
-            return getImmoter();
-        } else {
-            return _next.getSharedDemoter();
-        }
-    }
-
-	// this field forms part of a circular dependency - so we need a setter rather than ctor param
-	protected Contextualiser _top;
-	public Contextualiser getTop() {return _top;}
-	public void setTop(Contextualiser top) {_top=top;}
-
-	public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock) throws IOException, ServletException {
-		return _relocater.relocate(hreq, hres, chain, id, immoter, motionLock, _map);
+  protected synchronized void ensureEvacuationQueue() {
+    try {
+      synchronized (_evacuationQueueLock) {
+	if (_evacuationQueue==null) {
+	  createEvacuationQueue();
 	}
+      }
+    } catch (JMSException e) {
+      _log.error("emmigration queue initialisation failed", e);
+      _evacuationQueue=null;
+    }
+  }
 
-	// be careful here - there are two things going on, a map of cached locations, which needs management
-	// and incoming sessions which must be routed either out to cluster, or down to e.g. DB...
-	public void evict() {
-		// how long do we wish to maintain cached Locations ?
-		// TODO - get timestamps working on Locations - write a hybrid Evicter ?
-		// or implement Chained instead of Mapped Contextualiser - consider....
+  public void stop() throws Exception {
+    synchronized (_evacuationQueueLock) {
+      if (_evacuationQueue!=null) { // evacuation is synchronous, so we will not get to here until all sessions are gone...
+	destroyEvacuationQueue();
+      }
+    }
+    super.stop();
+  }
+
+  /**
+   * Manage the immotion of a session into the cluster tier from another and its emigration thence to another node.
+   *
+   * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+   * @version $Revision$
+   */
+  class EmigrationImmoter implements Immoter {
+    public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}
+
+    public boolean prepare(String name, Motable emotable, Motable immotable) {
+      MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+      settingsInOut.to=_evacuationQueue;
+      settingsInOut.correlationId=name;
+      settingsInOut.from=_cluster.getLocalNode().getDestination();
+      try {
+	immotable.copy(emotable);
+	EmigrationRequest er=new EmigrationRequest(immotable);
+	EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(name, _evacuationRvMap, er, settingsInOut, _ackTimeout);
+
+	if (ea==null) {
+	  if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+_ackTimeout+" millis): "+name);
+	  return false;
+	} else {
+	  if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+_ackTimeout+" millis): "+name);
+	  _map.put(name, ea.getLocation()); // cache new Location of Session
+	  return true;
 	}
-
-	protected Destination _evacuationQueue;
-
-    protected void createEvacuationQueue() throws JMSException {
-        _log.trace("creating evacuation queue");
-        _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
-
-        ((DistributableContextualiserConfig)_config).putDistributedState(_evacuationQueueKey, _evacuationQueue);
-
-        // whilst we are evacuating...
-        // 1) do not form any further asylum agreements...
-        _log.info("ignoring further asylum agreement negotiotiations");
-        // 2) rescind existing agreements existing agreements...
-        _log.info("pulling out of existing asylum agreements: "+_evacuations.size());
-        for (Iterator i=_evacuations.iterator(); i.hasNext(); ) {
-            Destination queue=(Destination)i.next();
-            _dispatcher.removeDestination(queue);
-            // TODO - call leaveEvacuation for each one...
-        }
-        _evacuations.clear();
-	try {
-	  // give everyone a chance to open up on our emigration queue... - TODO - parameterise
-	  // give time for threads that are already processing asylum applications to finish - can we join them ? - TODO - use shutdownAfterProcessingCurrentlyQueuedTasks() and a separate ThreadPool...
-	  Thread.sleep(2000);
-	} catch (InterruptedException e) {
-	  _log.info("AAAAARCH!"); // FIXME
-	}
+      } catch (Exception e) {
+	if (_log.isWarnEnabled()) _log.warn("problem sending emigration request: "+name, e);
+	return false;
+      }
     }
 
-    protected void destroyEvacuationQueue() throws JMSException {
-        ((DistributableContextualiserConfig)_config).removeDistributedState(_evacuationQueueKey);
-        Utils.safeSleep(5*1000*2); // TODO - should be hearbeat period...
-        // FIXME - can we destroy the queue ?
-        _log.trace("emigration queue destroyed");
+    public void commit(String name, Motable immotable) {
+      // TODO - cache new location of emigrating session...
     }
 
-	protected synchronized void ensureEvacuationQueue() {
-	    try {
-	        if (_evacuationQueue==null) {
-                createEvacuationQueue();
-	        }
-	    } catch (JMSException e) {
-	        _log.error("emmigration queue initialisation failed", e);
-	        _evacuationQueue=null;
+    public void rollback(String name, Motable immotable) {
+      // TODO - errr... HOW ?
+    }
+
+    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) {
+      return false;
+      // TODO - perhaps this is how a proxied contextualisation should occur ?
+    }
+
+    public String getInfo() {
+      return "cluster";
+    }
+  }
+
+  /**
+   * Manage the immigration of a session from another node and and thence its emotion from the cluster layer into another.
+   *
+   * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+   * @version $Revision$
+   */
+  class ImmigrationEmoter implements Emoter {
+
+    protected final ObjectMessage _om;
+    protected final EmigrationRequest _er;
+    protected final MessageDispatcher.Settings _settingsInOut;
+
+    public ImmigrationEmoter(ObjectMessage om, EmigrationRequest er) {
+      _om=om;
+      _er=er;
+      _settingsInOut=new MessageDispatcher.Settings();
+    }
+
+    public boolean prepare(String name, Motable emotable) {
+      try {
+	// reverse direction...
+	_settingsInOut.to=_om.getJMSReplyTo();
+	_settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
+	_settingsInOut.correlationId=_om.getJMSCorrelationID();
+	return true;
+      } catch (JMSException e) {
+	return false;
+      }
+    }
+
+    public void commit(String name, Motable emotable) {
+      try {
+	EmigrationAcknowledgement ea=new EmigrationAcknowledgement();
+	ea.setId(name);
+	ea.setLocation(_location);
+	_dispatcher.sendMessage(ea, _settingsInOut);
+      } catch (JMSException e) {
+	if (_log.isErrorEnabled()) _log.error("could not acknowledge safe receipt: "+name, e);
+      }
+
+    }
+
+    public void rollback(String name, Motable emotable) {
+      throw new RuntimeException("NYI");
+      // difficult !!!
+    }
+
+    public String getInfo() {
+      return "cluster";
+    }
+  }
+
+  public void onMessage(ObjectMessage om, EmigrationRequest er) {
+    Motable emotable=er.getMotable();
+    String id=emotable.getName();
+    if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+id);
+    Sync lock=_locker.getLock(id, emotable);
+    boolean acquired=false;
+    try {
+      Utils.acquireUninterrupted(lock);
+      acquired=true;
+
+      Emoter emoter=new ImmigrationEmoter(om, er);
+
+      if (!emotable.checkTimeframe(System.currentTimeMillis()))
+	if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
+
+      Immoter immoter=_top.getDemoter(id, emotable);
+      Utils.mote(emoter, immoter, emotable, id);
+    } catch (TimeoutException e) {
+      if (_log.isWarnEnabled()) _log.warn("could not acquire promotion lock for incoming session: "+id);
+    } finally {
+      if (acquired)
+	lock.release();
+    }
+  }
+
+  public void load(Emoter emoter, Immoter immoter) {
+    // currently - we don't load anything from the Cluster - we could do state-balancing here
+    // i.e. on startup, take ownership of a number of active sessions - affinity implications etc...
+  }
+
+  // AbstractMotingContextualiser
+  public Motable get(String id) {return (Motable)_map.get(id);}
+
+  // EvicterConfig
+  // BestEffortEvicters
+  public Map getMap() {return _map;}
+
+  public Emoter getEvictionEmoter() {throw new UnsupportedOperationException();} // FIXME
+  public void expire(Motable motable) {throw new UnsupportedOperationException();} // FIXME
+
+  // ClusterListener
+
+  public void onNodeAdd(ClusterEvent event) {
+    _log.info("node joined: "+event.getNode().getState().get(_nodeNameKey));
+  }
+
+  public void onNodeUpdate(ClusterEvent event) {
+    Map state=event.getNode().getState();
+    String nodeName=(String)state.get(_nodeNameKey);
+
+    if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
+
+    _log.info("node updated: "+nodeName+" : "+state);
+
+    Destination evacuationQueue=(Destination)state.get(_evacuationQueueKey);
+    if (evacuationQueue==null) {
+      synchronized (_evacuations) {
+	MessageConsumer consumer=(MessageConsumer)_evacuations.get(nodeName);
+	if (consumer!=null) {
+	  synchronized (_evacuationQueueLock) {
+	    if (_evacuationQueue==null) {
+	      if (_log.isTraceEnabled()) _log.trace("leaving evacuation: "+nodeName);
+	      try {
+	      _dispatcher.removeDestination(consumer);
+	      } catch (JMSException e) {
+		_log.warn("could not withdraw from evacuation", e);
+	      }
 	    }
+	  }
+	  _evacuations.remove(nodeName);
 	}
-
-    public void stop() throws Exception {
-        if (_evacuationQueue!=null) { // evacuation is synchronous, so we will not get to here until all sessions are gone...
-            destroyEvacuationQueue();
-        }
-        super.stop();
-    }
-
-    protected List _evacuations=Collections.synchronizedList(new ArrayList());
-
-	/**
-	 * Manage the immotion of a session into the cluster tier from another and its emigration thence to another node.
-	 *
-	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
-	 * @version $Revision$
-	 */
-	class EmigrationImmoter implements Immoter {
-		public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}
-
-		public boolean prepare(String name, Motable emotable, Motable immotable) {
-		    MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-		    settingsInOut.to=_evacuationQueue;
-		    settingsInOut.correlationId=name;
-		    settingsInOut.from=_cluster.getLocalNode().getDestination();
-		    try {
-		        immotable.copy(emotable);
-		        EmigrationRequest er=new EmigrationRequest(immotable);
-		        EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(name, _evacuationRvMap, er, settingsInOut, _ackTimeout);
-
-		        if (ea==null) {
-                    if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+_ackTimeout+" millis): "+name);
-		            return false;
-		        } else {
-                    if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+_ackTimeout+" millis): "+name);
-		            _map.put(name, ea.getLocation()); // cache new Location of Session
-		            return true;
-		        }
-		    } catch (Exception e) {
-		        if (_log.isWarnEnabled()) _log.warn("problem sending emigration request: "+name, e);
-		        return false;
-		    }
-		}
-
-		public void commit(String name, Motable immotable) {
-			// TODO - cache new location of emigrating session...
-			}
-
-		public void rollback(String name, Motable immotable) {
-			// TODO - errr... HOW ?
-			}
-
-		public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) {
-            return false;
-            // TODO - perhaps this is how a proxied contextualisation should occur ?
-		}
-
-		public String getInfo() {
-			return "cluster";
-		}
-	}
-
-	/**
-	 * Manage the immigration of a session from another node and and thence its emotion from the cluster layer into another.
-	 *
-	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
-	 * @version $Revision$
-	 */
-	class ImmigrationEmoter implements Emoter {
-
-		protected final ObjectMessage _om;
-		protected final EmigrationRequest _er;
-		protected final MessageDispatcher.Settings _settingsInOut;
-
-		public ImmigrationEmoter(ObjectMessage om, EmigrationRequest er) {
-			_om=om;
-			_er=er;
-			_settingsInOut=new MessageDispatcher.Settings();
-		}
-
-		public boolean prepare(String name, Motable emotable) {
-			try {
-				// reverse direction...
-				_settingsInOut.to=_om.getJMSReplyTo();
-				_settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
-				_settingsInOut.correlationId=_om.getJMSCorrelationID();
-				return true;
-			} catch (JMSException e) {
-				return false;
-			}
-		}
-
-		public void commit(String name, Motable emotable) {
-			try {
-				EmigrationAcknowledgement ea=new EmigrationAcknowledgement();
-				ea.setId(name);
-				ea.setLocation(_location);
-				_dispatcher.sendMessage(ea, _settingsInOut);
-			} catch (JMSException e) {
-				if (_log.isErrorEnabled()) _log.error("could not acknowledge safe receipt: "+name, e);
-			}
-
-		}
-
-		public void rollback(String name, Motable emotable) {
-			throw new RuntimeException("NYI");
-			// difficult !!!
-		}
-
-		public String getInfo() {
-			return "cluster";
-		}
-	}
-
-	public void onMessage(ObjectMessage om, EmigrationRequest er) {
-	  Motable emotable=er.getMotable();
-	  String id=emotable.getName();
-	  if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+id);
-	  Sync lock=_locker.getLock(id, emotable);
-	  boolean acquired=false;
+      }
+    } else {
+      synchronized (_evacuations) {
+	if (!_evacuations.containsKey(nodeName)) {
 	  try {
-            Utils.acquireUninterrupted(lock);
-            acquired=true;
-
-            Emoter emoter=new ImmigrationEmoter(om, er);
-
-            if (!emotable.checkTimeframe(System.currentTimeMillis()))
-	      if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
-
-            Immoter immoter=_top.getDemoter(id, emotable);
-            Utils.mote(emoter, immoter, emotable, id);
-	  } catch (TimeoutException e) {
-            if (_log.isWarnEnabled()) _log.warn("could not acquire promotion lock for incoming session: "+id);
-	  } finally {
-            if (acquired)
-	      lock.release();
+	    synchronized (_evacuationQueueLock) {
+	      if (_evacuationQueue==null) {
+		if (_log.isTraceEnabled()) _log.trace("joining evacuation: "+nodeName);
+		_evacuations.put(nodeName, _dispatcher.addDestination(evacuationQueue));
+	      }
+	    }
+	  } catch (JMSException e) {
+	    _log.warn("unexpected problem", e);
 	  }
 	}
-
-    public void load(Emoter emoter, Immoter immoter) {
-        // currently - we don't load anything from the Cluster - we could do state-balancing here
-        // i.e. on startup, take ownership of a number of active sessions - affinity implications etc...
+      }
     }
+  }
 
-    // AbstractMotingContextualiser
-    public Motable get(String id) {return (Motable)_map.get(id);}
+  public void onNodeRemoved(ClusterEvent event) {
+    _log.info("node left: "+event.getNode().getState().get(_nodeNameKey));
+    // TODO - remove existing asylum agreements
+  }
 
-    // EvicterConfig
-    // BestEffortEvicters
-    public Map getMap() {return _map;}
+  public void onNodeFailed(ClusterEvent event)  {
+    _log.info("node failed: "+event.getNode().getState().get(_nodeNameKey));
+    // TODO - remove existing asylum agreements
+  }
 
-    public Emoter getEvictionEmoter() {throw new UnsupportedOperationException();} // FIXME
-    public void expire(Motable motable) {throw new UnsupportedOperationException();} // FIXME
+  public void onCoordinatorChanged(ClusterEvent event) {
+    _log.trace("coordinator changed: "+event.getNode().getState().get(_nodeNameKey)); // we don't use this...
+  }
 
-    // ClusterListener
+  // RelocaterConfig
 
-    public void onNodeAdd(ClusterEvent event) {
-        _log.info("node joined: "+event.getNode().getState().get(_nodeNameKey));
-    }
-
-    public void onNodeUpdate(ClusterEvent event) {
-        Map state=event.getNode().getState();
-        String nodeName=(String)state.get(_nodeNameKey);
-
-        if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
-
-        _log.info("node updated: "+nodeName+" : "+state);
-
-        // we will only accept sessions from others if we are not evacuating ourself...
-        if (_evacuationQueue==null) {
-            Destination evacuationQueue=(Destination)state.get(_evacuationQueueKey);
-            if (evacuationQueue!=null) {
-                synchronized (_evacuations) {
-                    if (!_evacuations.contains(evacuationQueue)) {
-                        joinEvacuation(nodeName, evacuationQueue);
-                    }
-                }
-            } else {
-                synchronized (_evacuations) {
-                    if (_evacuations.contains(evacuationQueue)) {
-                        leaveEvacuation(nodeName, evacuationQueue);
-                    }
-                }
-            }
-        }
-    }
-
-    protected void joinEvacuation(String nodeName, Destination evacuationQueue) {
-        _evacuations.add(evacuationQueue);
-        try {
-            _dispatcher.addDestination(evacuationQueue);
-            if (_log.isTraceEnabled()) _log.trace("joining evacuation: "+nodeName);
-        } catch (JMSException e) {
-            _log.warn("unexpected problem", e);
-        }
-    }
-
-    protected void leaveEvacuation(String nodeName, Destination evacuationQueue) {
-        _evacuations.remove(evacuationQueue);
-        _dispatcher.removeDestination(evacuationQueue);
-        if (_log.isTraceEnabled()) _log.trace("leaving evacuation: "+nodeName);
-   }
-
-    public void onNodeRemoved(ClusterEvent event) {
-        _log.info("node left: "+event.getNode().getState().get(_nodeNameKey));
-	// TODO - remove existing asylum agreements
-    }
-
-    public void onNodeFailed(ClusterEvent event)  {
-        _log.info("node failed: "+event.getNode().getState().get(_nodeNameKey));
-	// TODO - remove existing asylum agreements
-    }
-
-    public void onCoordinatorChanged(ClusterEvent event) {
-        _log.trace("coordinator changed: "+event.getNode().getState().get(_nodeNameKey)); // we don't use this...
-    }
-
-    // RelocaterConfig
-
-    public Collapser getCollapser() {return _collapser;}
-    public MessageDispatcher getDispatcher() {return _dispatcher;}
-    public Location getLocation() {return _location;}
-    public ExtendedCluster getCluster() {return _cluster;}
-    public Contextualiser getContextualiser() {return _top;}
-    public Server getServer() {return ((DistributableContextualiserConfig)_config).getServer();}
+  public Collapser getCollapser() {return _collapser;}
+  public MessageDispatcher getDispatcher() {return _dispatcher;}
+  public Location getLocation() {return _location;}
+  public ExtendedCluster getCluster() {return _cluster;}
+  public Contextualiser getContextualiser() {return _top;}
+  public Server getServer() {return ((DistributableContextualiserConfig)_config).getServer();}
 
 }
