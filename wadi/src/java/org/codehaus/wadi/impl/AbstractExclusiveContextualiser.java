@@ -161,6 +161,8 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 
     public void demote(Motable emotable) {
         String id=emotable.getName();
+	if (id==null)
+	  return; // we lost a race...
         Immoter immoter=_next.getDemoter(id, emotable);
         Emoter emoter=getEvictionEmoter();
         Utils.mote(emoter, immoter, emotable, id);
