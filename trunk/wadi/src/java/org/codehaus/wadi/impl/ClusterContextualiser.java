@@ -91,7 +91,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     protected final static String _nodeNameKey="name";
     protected final static String _evacuationQueueKey="evacuationQueue";
-    
+
     protected final Collapser _collapser;
 	protected final HashMap _evacuationRvMap=new HashMap();
 	protected final MessageDispatcher _dispatcher;
@@ -201,9 +201,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     protected void createEvacuationQueue() throws JMSException {
         _log.trace("creating evacuation queue");
         _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
-        
+
         ((DistributableContextualiserConfig)_config).putDistributedState(_evacuationQueueKey, _evacuationQueue);
-        
+
         // whilst we are evacuating...
         // 1) do not form any further asylum agreements...
         _log.info("ignoring further asylum agreement negotiotiations");
@@ -226,7 +226,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     protected void destroyEvacuationQueue() throws JMSException {
         ((DistributableContextualiserConfig)_config).removeDistributedState(_evacuationQueueKey);
-        Utils.safeSleep(5*1000); // TODO - should be hearbeat period...
+        Utils.safeSleep(5*1000*2); // TODO - should be hearbeat period...
         // FIXME - can we destroy the queue ?
         _log.trace("emigration queue destroyed");
     }
@@ -403,15 +403,15 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     public void onNodeUpdate(ClusterEvent event) {
         Map state=event.getNode().getState();
         String nodeName=(String)state.get(_nodeNameKey);
-        
+
         if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
-        
+
         _log.info("node updated: "+nodeName+" : "+state);
-        
+
         // we will only accept sessions from others if we are not evacuating ourself...
         if (_evacuationQueue==null) {
             Destination evacuationQueue=(Destination)state.get(_evacuationQueueKey);
-            if (evacuationQueue!=null) { 
+            if (evacuationQueue!=null) {
                 synchronized (_evacuations) {
                     if (!_evacuations.contains(evacuationQueue)) {
                         joinEvacuation(nodeName, evacuationQueue);
@@ -426,7 +426,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
             }
         }
     }
-    
+
     protected void joinEvacuation(String nodeName, Destination evacuationQueue) {
         _evacuations.add(evacuationQueue);
         try {
@@ -436,13 +436,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
             _log.warn("unexpected problem", e);
         }
     }
-    
+
     protected void leaveEvacuation(String nodeName, Destination evacuationQueue) {
         _evacuations.remove(evacuationQueue);
         _dispatcher.removeDestination(evacuationQueue);
         if (_log.isTraceEnabled()) _log.trace("leaving evacuation: "+nodeName);
    }
-    
+
     public void onNodeRemoved(ClusterEvent event) {
         _log.info("node left: "+event.getNode().getState().get(_nodeNameKey));
 	// TODO - remove existing asylum agreements
