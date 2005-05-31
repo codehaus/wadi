@@ -29,7 +29,10 @@ import javax.jms.JMSException;
 import org.activecluster.ClusterFactory;
 import org.activemq.ActiveMQConnection;
 import org.activemq.ActiveMQConnectionFactory;
+import org.activemq.broker.BrokerConnector;
+import org.activemq.broker.BrokerContainer;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
+import org.activemq.transport.TransportChannel;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
@@ -66,11 +69,11 @@ public class DistributableManager extends StandardManager implements Distributab
         _httpProxy=httpProxy;
         _httpAddress=httpAddress;
     }
-    
+
     public String getContextPath() { // TODO - integrate with Jetty/Tomcat
         return "/";
     }
-    
+
     protected ActiveMQConnectionFactory _connectionFactory;
     protected ClusterFactory _clusterFactory;
     protected ExtendedCluster _cluster;
@@ -90,19 +93,26 @@ public class DistributableManager extends StandardManager implements Distributab
         }
         super.init();
     }
-    
+
     public void start() throws Exception {
         super.start();
         _cluster.start();
     }
-    
+
     public void stop() throws Exception {
         super.stop();
         _cluster.stop();
+        _connectionFactory.stop();
+
         // shut down activemq cleanly - what happens if we are running more than one distributable webapp ?
         // there must be an easier way - :-(
-        ((ActiveMQConnection)_cluster.getConnection()).getTransportChannel().getEmbeddedBrokerConnector().getBrokerContainer().stop();
-        _connectionFactory.stop();
+	ActiveMQConnection connection=(ActiveMQConnection)_cluster.getConnection();
+	TransportChannel channel=(connection==null?null:connection.getTransportChannel());
+	BrokerConnector connector=(channel==null?null:channel.getEmbeddedBrokerConnector());
+	BrokerContainer container=(connector==null?null:connector.getBrokerContainer());
+	if (container!=null)
+	  container.stop(); // for peer://
+
         Thread.sleep(5*1000);
     }
 
@@ -178,13 +188,13 @@ public class DistributableManager extends StandardManager implements Distributab
     public boolean getHttpSessionAttributeListenersRegistered(){return _attributeListeners.size()>0;}
 
     public boolean getDistributable(){return true;}
-    
+
     // ServerConfig
-    
+
     public ExtendedCluster getCluster() {return _cluster;}
-    
+
     // DistributableContextualiserConfig
-    
+
     public Server getServer() {throw new UnsupportedOperationException();}
     public String getNodeName() {return _nodeName;} // NYI
 
@@ -195,13 +205,13 @@ public class DistributableManager extends StandardManager implements Distributab
     public InetSocketAddress getHttpAddress() {
         return _httpAddress;
     }
-    
+
     public Object getDistributedState(Object key) {
         synchronized (_distributedState) {
             return _distributedState.get(key);
         }
     }
-    
+
     public Object putDistributedState(Object key, Object newValue) throws JMSException {
         synchronized (_distributedState) {
             Object oldValue=_distributedState.put(key, newValue);
@@ -209,7 +219,7 @@ public class DistributableManager extends StandardManager implements Distributab
             return oldValue;
         }
     }
-    
+
     public Object removeDistributedState(Object key) throws JMSException {
         synchronized (_distributedState) {
             Object value=_distributedState.remove(key);
