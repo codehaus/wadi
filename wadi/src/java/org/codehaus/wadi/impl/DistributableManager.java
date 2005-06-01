@@ -52,7 +52,7 @@ import org.codehaus.wadi.io.ServerConfig;
 
 public class DistributableManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, ServerConfig {
 
-    protected final Map _distributedState=new HashMap();
+  protected final Map _distributedState=new HashMap(); // TODO - make this a SynchronisedMap
     protected final Streamer _streamer;
     protected final String _clusterUri;
     protected final String _clusterName;
@@ -207,30 +207,30 @@ public class DistributableManager extends StandardManager implements Distributab
         return _httpAddress;
     }
 
-    public Object getDistributedState(Object key) {
-        synchronized (_distributedState) {
+  public Object getDistributedState(Object key) {
+    synchronized (_distributedState) {
             return _distributedState.get(key);
         }
     }
 
-    public Object putDistributedState(Object key, Object newValue) throws JMSException {
+    public Object putDistributedState(Object key, Object newValue) {
         synchronized (_distributedState) {
-            Object oldValue=_distributedState.put(key, newValue);
-            _cluster.getLocalNode().setState(_distributedState);
-            return oldValue;
+	  return _distributedState.put(key, newValue);
         }
     }
 
-    public Object removeDistributedState(Object key) throws JMSException {
+    public Object removeDistributedState(Object key) {
         synchronized (_distributedState) {
-            Object value=_distributedState.remove(key);
-            _cluster.getLocalNode().setState(_distributedState);
-            return value;
+	  return _distributedState.remove(key);
         }
     }
+
+  public void distributeState() throws JMSException {
+    _cluster.getLocalNode().setState(_distributedState);
+  }
 
     public boolean getAccessOnLoad() {
     	return _accessOnLoad;
     }
-    
+
 }

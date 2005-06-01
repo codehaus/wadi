@@ -94,6 +94,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
   protected final static String _nodeNameKey="name";
   protected final static String _evacuationQueueKey="evacuationQueue";
+  protected final static String _shuttingDownKey="shuttingDown";
 
   protected final Map _evacuations=Collections.synchronizedMap(new HashMap());
   protected final SynchronizedInt _evacuationPartnerCount=new SynchronizedInt(0);
@@ -171,7 +172,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   protected int getEvacuationPartnersCount() {
       return _evacuationPartnerCount.get();
   }
-  
+
   protected void refreshEvacuationPartnersCount() {
       LocalNode localNode=_cluster.getLocalNode();
       Map nodes=_cluster.getNodes();
@@ -179,14 +180,14 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
       synchronized (nodes) { // does James modify this Map or replace it ?
           for (Iterator i=nodes.values().iterator(); i.hasNext();) {
               Node node=(Node)i.next();
-              if (node!=localNode && !node.getState().containsKey(_evacuationQueueKey))
+              if (node!=localNode && !node.getState().containsKey(_shuttingDownKey))
                   count++;
           }
       }
-      
+
       _evacuationPartnerCount.set(count);
   }
-  
+
   public Immoter getDemoter(String name, Motable motable) {
     if (getEvacuationPartnersCount()>0) {
       ensureEvacuationQueue();
@@ -226,9 +227,12 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
       _log.trace("creating evacuation queue");
       synchronized (_evacuationQueueLock) {
           _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
-          ((DistributableContextualiserConfig)_config).putDistributedState(_evacuationQueueKey, _evacuationQueue);
+	  DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)_config;
+          dcc.putDistributedState(_evacuationQueueKey, _evacuationQueue);
+          dcc.putDistributedState(_shuttingDownKey, Boolean.TRUE);
+          dcc.distributeState();
       }
-      
+
       // whilst we are evacuating...
       // 1) do not get involved in any other evacuations.
       _log.info("ignoring further evacuation appeals");
@@ -240,14 +244,17 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
               ensureEvacuationLeft(nodeName);
           }
       }
-      // give time for threads that are already processing asylum applications to finish - can we join them ? - 
+      // give time for threads that are already processing asylum applications to finish - can we join them ? -
       // TODO - use shutdownAfterProcessingCurrentlyQueuedTasks() and a separate ThreadPool...
       Utils.safeSleep(2000);
   }
 
   protected void destroyEvacuationQueue() throws JMSException {
     synchronized (_evacuationQueueLock) {
-      ((DistributableContextualiserConfig)_config).removeDistributedState(_evacuationQueueKey);
+      DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)_config;
+      dcc.removeDistributedState(_evacuationQueueKey);
+      // leave shuttingDown=true
+      dcc.distributeState();
       _evacuationQueue=null;
     }
     Utils.safeSleep(5*1000*2); // TODO - should be hearbeat period...
@@ -424,11 +431,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
   public void onNodeAdd(ClusterEvent event) {
     _log.info("node joined: "+event.getNode().getState().get(_nodeNameKey));
+    refreshEvacuationPartnersCount();
     onNodeStateChange(event);
   }
 
   public void onNodeUpdate(ClusterEvent event) {
     _log.info("node updated: "+event.getNode().getState().get(_nodeNameKey));
+    refreshEvacuationPartnersCount();
     onNodeStateChange(event);
   }
 
@@ -439,9 +448,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
 
     _log.info("node state changed: "+nodeName+" : "+state);
-    
-    refreshEvacuationPartnersCount();
-
     Destination evacuationQueue=(Destination)state.get(_evacuationQueueKey);
     if (evacuationQueue==null) {
         ensureEvacuationLeft(nodeName);
@@ -454,7 +460,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         }
     }
   }
-  
+
   protected void ensureEvacuationJoined(String nodeName, Destination evacuationQueue) {
       synchronized (_evacuations) {
           if (!_evacuations.containsKey(nodeName)) {
@@ -466,9 +472,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
                   _log.warn("unexpected problem", e);
               }
           }
-      }      
+      }
   }
-  
+
   protected void ensureEvacuationLeft(String nodeName) {
       synchronized (_evacuations) {
           MessageConsumer consumer=(MessageConsumer)_evacuations.get(nodeName);
@@ -488,13 +494,15 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
       Map state=event.getNode().getState();
       String nodeName=(String)state.get(_nodeNameKey);
       _log.info("node left: "+nodeName);
+      refreshEvacuationPartnersCount();
       ensureEvacuationLeft(nodeName);
   }
-  
+
   public void onNodeFailed(ClusterEvent event)  {
       Map state=event.getNode().getState();
       String nodeName=(String)state.get(_nodeNameKey);
       _log.info("node failed: "+nodeName);
+      refreshEvacuationPartnersCount();
       ensureEvacuationLeft(nodeName);
   }
 
