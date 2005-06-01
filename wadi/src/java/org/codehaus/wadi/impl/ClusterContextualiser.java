@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -201,36 +200,26 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   }
 
   protected void createEvacuationQueue() throws JMSException {
-    _log.trace("creating evacuation queue");
-    synchronized (_evacuationQueueLock) {
-      _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
-      ((DistributableContextualiserConfig)_config).putDistributedState(_evacuationQueueKey, _evacuationQueue);
-    }
-
-    // whilst we are evacuating...
-    // 1) do not get involved in any other evacuations.
-    _log.info("ignoring further evacuation appeals");
-    // 2) withdraw from any other evacuation in which we may be involved
-    _log.info("withdrawing from ongoing evacuations: "+_evacuations.size());
-    for (Iterator i=_evacuations.entrySet().iterator(); i.hasNext(); ) {
-      Map.Entry entry=(Map.Entry)i.next();
-      String nodeName=(String)entry.getKey();
-      MessageConsumer consumer=(MessageConsumer)entry.getValue();
-      if (_log.isTraceEnabled()) _log.trace("leaving evacuation: "+nodeName);
-      _log.info("leaving evacuation: "+nodeName);
-      try {
-	_dispatcher.removeDestination(consumer);
-      } catch (JMSException e) {
-	_log.warn("could not withdraw from evacuation", e);
+      _log.trace("creating evacuation queue");
+      synchronized (_evacuationQueueLock) {
+          _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
+          ((DistributableContextualiserConfig)_config).putDistributedState(_evacuationQueueKey, _evacuationQueue);
       }
-    }
-    try {
-      // give everyone a chance to open up on our emigration queue... - TODO - parameterise
-      // give time for threads that are already processing asylum applications to finish - can we join them ? - TODO - use shutdownAfterProcessingCurrentlyQueuedTasks() and a separate ThreadPool...
-      Thread.sleep(2000);
-    } catch (InterruptedException e) {
-      _log.info("AAAAARCH!"); // FIXME
-    }
+      
+      // whilst we are evacuating...
+      // 1) do not get involved in any other evacuations.
+      _log.info("ignoring further evacuation appeals");
+      // 2) withdraw from any other evacuation in which we may be involved
+      _log.info("withdrawing from ongoing evacuations: "+_evacuations.size());
+      synchronized (_evacuations) {
+          for (Iterator i=new ArrayList(_evacuations.keySet()).iterator(); i.hasNext(); ) {
+              String nodeName=(String)i.next();
+              ensureEvacuationLeft(nodeName);
+          }
+      }
+      // give time for threads that are already processing asylum applications to finish - can we join them ? - 
+      // TODO - use shutdownAfterProcessingCurrentlyQueuedTasks() and a separate ThreadPool...
+      Utils.safeSleep(2000);
   }
 
   protected void destroyEvacuationQueue() throws JMSException {
@@ -430,50 +419,58 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     Destination evacuationQueue=(Destination)state.get(_evacuationQueueKey);
     if (evacuationQueue==null) {
-      synchronized (_evacuations) {
-	MessageConsumer consumer=(MessageConsumer)_evacuations.get(nodeName);
-	if (consumer!=null) {
-	  synchronized (_evacuationQueueLock) {
-	    if (_evacuationQueue==null) {
-	      if (_log.isTraceEnabled()) _log.trace("leaving evacuation: "+nodeName);
-	      _log.info("leaving evacuation: "+nodeName);
-	      try {
-	      _dispatcher.removeDestination(consumer);
-	      } catch (JMSException e) {
-		_log.warn("could not withdraw from evacuation", e);
-	      }
-	    }
-	  }
-	  _evacuations.remove(nodeName);
-	}
-      }
+        ensureEvacuationLeft(nodeName);
     } else {
-      synchronized (_evacuations) {
-	if (!_evacuations.containsKey(nodeName)) {
-	  try {
-	    synchronized (_evacuationQueueLock) {
-	      if (_evacuationQueue==null) {
-		if (_log.isTraceEnabled()) _log.trace("joining evacuation: "+nodeName);
-		_log.info("joining evacuation: "+nodeName);
-		_evacuations.put(nodeName, _dispatcher.addDestination(evacuationQueue));
-	      }
-	    }
-	  } catch (JMSException e) {
-	    _log.warn("unexpected problem", e);
-	  }
-	}
-      }
+        // we must not ourselves be evacuating...
+        synchronized (_evacuationQueueLock) {
+            if (_evacuationQueue==null) {
+                ensureEvacuationJoined(nodeName, evacuationQueue);
+            }
+        }
     }
+  }
+  
+  protected void ensureEvacuationJoined(String nodeName, Destination evacuationQueue) {
+      synchronized (_evacuations) {
+          if (!_evacuations.containsKey(nodeName)) {
+              try {
+                  if (_log.isTraceEnabled()) _log.trace("joining evacuation: "+nodeName);
+                  MessageConsumer consumer=_dispatcher.addDestination(evacuationQueue);
+                  _evacuations.put(nodeName, consumer);
+              } catch (JMSException e) {
+                  _log.warn("unexpected problem", e);
+              }
+          }
+      }      
+  }
+  
+  protected void ensureEvacuationLeft(String nodeName) {
+      synchronized (_evacuations) {
+          MessageConsumer consumer=(MessageConsumer)_evacuations.get(nodeName);
+          if (consumer!=null) {
+              if (_log.isTraceEnabled()) _log.trace("leaving evacuation: "+nodeName);
+              try {
+                  _dispatcher.removeDestination(consumer);
+              } catch (JMSException e) {
+                  _log.warn("could not leave evacuation", e);
+              }
+              _evacuations.remove(nodeName);
+          }
+      }
   }
 
   public void onNodeRemoved(ClusterEvent event) {
-    _log.info("node left: "+event.getNode().getState().get(_nodeNameKey));
-    // TODO - remove existing asylum agreements
+      Map state=event.getNode().getState();
+      String nodeName=(String)state.get(_nodeNameKey);
+      _log.info("node left: "+nodeName);
+      ensureEvacuationLeft(nodeName);
   }
-
+  
   public void onNodeFailed(ClusterEvent event)  {
-    _log.info("node failed: "+event.getNode().getState().get(_nodeNameKey));
-    // TODO - remove existing asylum agreements
+      Map state=event.getNode().getState();
+      String nodeName=(String)state.get(_nodeNameKey);
+      _log.info("node failed: "+nodeName);
+      ensureEvacuationLeft(nodeName);
   }
 
   public void onCoordinatorChanged(ClusterEvent event) {
