@@ -134,7 +134,7 @@
     <constructor-arg><ref bean="Router"/></constructor-arg>
     <constructor-arg><ref bean="Streamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
-    <constructor-arg index="10"><value>peer://org.codehaus.wadi</value></constructor-arg>
+    <constructor-arg index="10"><value>tcp://localhost:61616</value></constructor-arg>
     <constructor-arg index="11"><value>CLUSTER0</value></constructor-arg>
     <constructor-arg index="12"><value>${node.name}</value></constructor-arg>
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
