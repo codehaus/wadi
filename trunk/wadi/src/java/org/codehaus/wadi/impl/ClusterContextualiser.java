@@ -34,6 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.activecluster.ClusterEvent;
 import org.activecluster.ClusterListener;
+import org.activecluster.LocalNode;
+import org.activecluster.Node;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.Collapser;
@@ -164,8 +166,22 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   public Immoter getImmoter(){return _immoter;}
   public Emoter getEmoter(){return _emoter;}
 
+  protected int getEvacuationPartnersCount() { // do this proactively - TODO
+      LocalNode localNode=_cluster.getLocalNode();
+      Map nodes=_cluster.getNodes();
+      int count=0;
+      synchronized (nodes) { // does James modify this Map or replace it ?
+          for (Iterator i=nodes.values().iterator(); i.hasNext();) {
+              Node node=(Node)i.next();
+              if (node!=localNode && !node.getState().containsKey(_evacuationQueueKey))
+                  count++;
+          }
+      }
+      return count;
+  }
+  
   public Immoter getDemoter(String name, Motable motable) {
-    if (_cluster.getNodes().size()>=1) {
+    if (getEvacuationPartnersCount()>0) {
       ensureEvacuationQueue();
       return getImmoter();
     } else {
@@ -174,7 +190,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   }
 
   public Immoter getSharedDemoter() {
-    if (_cluster.getNodes().size()>=1) {
+    if (getEvacuationPartnersCount()>0) {
       ensureEvacuationQueue();
       return getImmoter();
     } else {
