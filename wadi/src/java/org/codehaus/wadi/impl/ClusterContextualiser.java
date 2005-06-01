@@ -52,6 +52,7 @@ import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.io.Server;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 // this needs to be split into several parts...
@@ -95,6 +96,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   protected final static String _evacuationQueueKey="evacuationQueue";
 
   protected final Map _evacuations=Collections.synchronizedMap(new HashMap());
+  protected final SynchronizedInt _evacuationPartnerCount=new SynchronizedInt(0);
   protected final Map _evacuationRvMap=new HashMap();
   protected final Object _evacuationQueueLock=new Object();
   protected final Collapser _collapser;
@@ -166,7 +168,11 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   public Immoter getImmoter(){return _immoter;}
   public Emoter getEmoter(){return _emoter;}
 
-  protected int getEvacuationPartnersCount() { // do this proactively - TODO
+  protected int getEvacuationPartnersCount() {
+      return _evacuationPartnerCount.get();
+  }
+  
+  protected void refreshEvacuationPartnersCount() {
       LocalNode localNode=_cluster.getLocalNode();
       Map nodes=_cluster.getNodes();
       int count=0;
@@ -177,7 +183,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
                   count++;
           }
       }
-      return count;
+      
+      _evacuationPartnerCount.set(count);
   }
   
   public Immoter getDemoter(String name, Motable motable) {
@@ -432,6 +439,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
 
     _log.info("node state changed: "+nodeName+" : "+state);
+    
+    refreshEvacuationPartnersCount();
 
     Destination evacuationQueue=(Destination)state.get(_evacuationQueueKey);
     if (evacuationQueue==null) {
