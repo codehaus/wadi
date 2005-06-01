@@ -37,6 +37,7 @@ import org.activecluster.ClusterListener;
 import org.activecluster.LocalNode;
 import org.activecluster.Node;
 import org.codehaus.wadi.DistributableContextualiserConfig;
+import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
@@ -51,6 +52,7 @@ import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.io.Server;
 
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
@@ -97,6 +99,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   protected final static String _shuttingDownKey="shuttingDown";
 
   protected final Map _evacuations=Collections.synchronizedMap(new HashMap());
+  protected final Map _locations=new ConcurrentHashMap();
   protected final SynchronizedInt _evacuationPartnerCount=new SynchronizedInt(0);
   protected final Map _evacuationRvMap=new HashMap();
   protected final Object _evacuationQueueLock=new Object();
@@ -149,6 +152,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     }
     _cluster.addClusterListener(this);
     _dispatcher.register(this, "onMessage", EmigrationRequest.class);
+    _dispatcher.register(this, "onMessage", LocationUpdate.class);
     _dispatcher.register(EmigrationAcknowledgement.class, _evacuationRvMap, _ackTimeout);
 
     // _evicter ?
@@ -508,6 +512,46 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
   public void onCoordinatorChanged(ClusterEvent event) {
     _log.trace("coordinator changed: "+event.getNode().getState().get(_nodeNameKey)); // we don't use this...
+  }
+
+  protected int _locationMaxInactiveInterval=30;
+      
+  class MyLocation implements Evictable {
+      
+      protected long _lastAccessedTime;
+      protected String _nodeName;
+      
+      public MyLocation(long timestamp, String nodeName) {
+          _lastAccessedTime=timestamp;
+          _nodeName=nodeName;
+      }
+      
+      public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval) {
+          // ignore creationTime;
+          _lastAccessedTime=lastAccessedTime;
+          // ignore maxInactiveInterval
+      }
+      
+      public void destroy()  {throw new UnsupportedOperationException();}
+      
+      public void copy(Evictable evictable) {throw new UnsupportedOperationException();}
+      
+      public long getCreationTime() {return _lastAccessedTime;}
+      public long getLastAccessedTime() {return _lastAccessedTime;}
+      public void setLastAccessedTime(long lastAccessedTime) {throw new UnsupportedOperationException();}
+      public int  getMaxInactiveInterval() {return _locationMaxInactiveInterval;}
+      public void setMaxInactiveInterval(int maxInactiveInterval) {throw new UnsupportedOperationException();}
+      
+      public boolean isNew() {throw new UnsupportedOperationException();}
+      
+      public long getTimeToLive(long time) {return _lastAccessedTime+(_locationMaxInactiveInterval*1000)-time;}
+      public boolean getTimedOut(long time) {return getTimeToLive(time)<=0;}
+      public boolean checkTimeframe(long time) {throw new UnsupportedOperationException();}
+      
+  }
+  
+  public void onMessage(ObjectMessage om, LocationUpdate update) {
+      _locations.put(update.getSessionName(), new MyLocation(update.getTimeStamp(), update.getNodeName()));
   }
 
   // RelocaterConfig
