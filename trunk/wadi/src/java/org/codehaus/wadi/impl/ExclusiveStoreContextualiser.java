@@ -22,6 +22,7 @@ import java.util.Map;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
+import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
@@ -132,7 +133,7 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
                 _map.put(name, motable);
             }
         };
-        _store.load(putter, _config.getAccessOnLoad());
+        _store.load(putter, ((DistributableContextualiserConfig)_config).getAccessOnLoad());
         super.start(); // continue down chain...
     }
 

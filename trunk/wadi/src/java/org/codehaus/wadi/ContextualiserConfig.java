@@ -24,7 +24,6 @@ public interface ContextualiserConfig extends Config {
     void expire(Motable motable);
     Immoter getEvictionImmoter();
     Timer getTimer();
-    boolean getAccessOnLoad();
     SessionPool getSessionPool();
     Router getRouter();
     

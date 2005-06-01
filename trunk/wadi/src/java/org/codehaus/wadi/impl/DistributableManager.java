@@ -59,9 +59,10 @@ public class DistributableManager extends StandardManager implements Distributab
     protected final String _nodeName;
     protected final HttpProxy _httpProxy;
     protected final InetSocketAddress _httpAddress;
+    protected final boolean _accessOnLoad=true; // TODO - parameterise...
 
     public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterUri, String clusterName, String nodeName, HttpProxy httpProxy, InetSocketAddress httpAddress) {
-        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, accessOnLoad);
+        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router);
         _streamer=streamer;
         _clusterUri=clusterUri;
         _clusterName=clusterName;
@@ -227,4 +228,9 @@ public class DistributableManager extends StandardManager implements Distributab
             return value;
         }
     }
+
+    public boolean getAccessOnLoad() {
+    	return _accessOnLoad;
+    }
+    
 }

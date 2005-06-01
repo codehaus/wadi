@@ -473,7 +473,7 @@ public class TestContextualiser extends TestCase {
         Map m=new HashMap();
         Evicter memoryEvicter=new NeverEvicter(30, true);
         MemoryContextualiser memory=new MemoryContextualiser(_dummyContextualiser, memoryEvicter, m, _streamer, _standardContextPool, _requestPool);
-        StandardManager manager=new StandardManager(_standardSessionPool, _standardAttributesFactory, _standardValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, _accessOnLoad);
+        StandardManager manager=new StandardManager(_standardSessionPool, _standardAttributesFactory, _standardValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router);
         manager.init();
         Session session=manager.create();
         session.setMaxInactiveInterval(1);

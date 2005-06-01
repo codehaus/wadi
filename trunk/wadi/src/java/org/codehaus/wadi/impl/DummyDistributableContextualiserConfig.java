@@ -69,4 +69,10 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
     public Object removeDistributedState(Object key) {
         return _state.remove(key);
     }
+    
+    public boolean getAccessOnLoad() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
 }

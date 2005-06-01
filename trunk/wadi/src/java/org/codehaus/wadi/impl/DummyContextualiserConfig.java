@@ -51,11 +51,6 @@ public class DummyContextualiserConfig implements ContextualiserConfig {
         return null;
     }
 
-    public boolean getAccessOnLoad() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
     public SessionPool getSessionPool() {
         // TODO Auto-generated method stub
         return null;
