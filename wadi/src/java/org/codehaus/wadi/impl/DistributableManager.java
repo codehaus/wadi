@@ -88,6 +88,7 @@ public class DistributableManager extends StandardManager implements Distributab
             _clusterFactory=new CustomClusterFactory(_connectionFactory);
             _cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
             _distributedState.put("name", _nodeName);
+            _distributedState.put("http", _httpAddress);
             _cluster.getLocalNode().setState(_distributedState);
         } catch (Exception e) {
             _log.error("problem starting Cluster", e);

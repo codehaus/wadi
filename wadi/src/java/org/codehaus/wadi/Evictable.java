@@ -28,19 +28,19 @@ public interface Evictable {
     
     void init(long creationTime, long lastAccessedTime, int maxInactiveInterval);
     void destroy();
-    public void copy(Evictable evictable) throws Exception;
+    void copy(Evictable evictable) throws Exception;
     
-	public long getCreationTime();
-	//public void setCreationTime(long creationTime);
-	public long getLastAccessedTime();
-	public void setLastAccessedTime(long lastAccessedTime);
-	public int  getMaxInactiveInterval();
-	public void setMaxInactiveInterval(int maxInactiveInterval);
+	long getCreationTime();
+	//void setCreationTime(long creationTime);
+	long getLastAccessedTime();
+	void setLastAccessedTime(long lastAccessedTime);
+	int  getMaxInactiveInterval();
+	void setMaxInactiveInterval(int maxInactiveInterval);
 	
-    public boolean isNew();
+    boolean isNew();
 
-    public long getTimeToLive(long time);
-	public boolean getTimedOut(long time);
-    public boolean checkTimeframe(long time);
+    long getTimeToLive(long time);
+	boolean getTimedOut(long time);
+    boolean checkTimeframe(long time);
 
 }
