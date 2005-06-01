@@ -46,6 +46,8 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.ValuePool;
 
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
+
 /**
  * TODO - JavaDoc this type
  *
@@ -66,9 +68,10 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
     protected final Map _map;
     protected final Timer _timer;
     protected final Router _router;
-    protected final boolean _accessOnLoad; // TODO - should only be available on DistributableManager
+    protected final boolean _errorIfSessionNotAcquired=true; // TODO - parameterise
+    protected final SynchronizedBoolean _acceptingSessions=new SynchronizedBoolean(true);
 
-    public StandardManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean accessOnLoad) {
+    public StandardManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router) {
         _sessionPool=sessionPool;
         _attributesFactory=attributesFactory;
         _valuePool=valuePool;
@@ -78,7 +81,6 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         _map=map; // TODO - can we get this from Contextualiser
         _timer=new Timer();
         _router=router;
-        _accessOnLoad=accessOnLoad;
     }
 
     protected boolean _started;
@@ -100,6 +102,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 
     public void stop() throws Exception {
         _started=false;
+        _acceptingSessions.set(false);
         _contextualiser.stop();
         _log.info("stopped"); // although this sometimes does not appear, it IS called...
     }
@@ -233,8 +236,6 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 
     public Timer getTimer() {return _timer;}
 
-    public boolean getAccessOnLoad() {return _accessOnLoad;}
-
     public SessionPool getSessionPool() {return _sessionPool;}
     
     public Router getRouter() {return _router;}
@@ -251,4 +252,8 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 
     public String getSessionUrlParamName(){return "jsessionid";}
 
+    public boolean getErrorIfSessionNotAcquired() {return _errorIfSessionNotAcquired;}
+    
+    public SynchronizedBoolean getAcceptingSessions() {return _acceptingSessions;}
+    
 }

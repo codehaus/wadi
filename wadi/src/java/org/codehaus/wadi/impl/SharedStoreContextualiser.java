@@ -29,6 +29,7 @@ import javax.sql.DataSource;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
+import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
@@ -210,7 +211,7 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
     
     public void load(Emoter emoter, Immoter immoter) {
         // this should only happen when we are the first node in the cluster...
-        _store.load(new SharedPutter(emoter, immoter), _config.getAccessOnLoad());
+        _store.load(new SharedPutter(emoter, immoter), ((DistributableContextualiserConfig)_config).getAccessOnLoad());
     }
 
     public Emoter getEvictionEmoter() {throw new UnsupportedOperationException();} // FIXME

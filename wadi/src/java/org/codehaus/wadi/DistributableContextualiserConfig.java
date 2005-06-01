@@ -35,4 +35,6 @@ public interface DistributableContextualiserConfig extends ContextualiserConfig 
     Object putDistributedState(Object key, Object value) throws JMSException;
     Object removeDistributedState(Object key) throws JMSException;
     
+    boolean getAccessOnLoad();
+    
 }

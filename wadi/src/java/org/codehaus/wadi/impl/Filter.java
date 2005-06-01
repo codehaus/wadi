@@ -34,6 +34,8 @@ import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.impl.StandardManager;
 
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
+
 public class Filter implements javax.servlet.Filter {
 
     protected final Log _log = LogFactory.getLog(getClass());
@@ -43,6 +45,8 @@ public class Filter implements javax.servlet.Filter {
     protected Contextualiser _contextualiser;
     protected Router _router;
     protected HttpServletRequestWrapperPool _pool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - init from _manager
+    protected boolean _errorIfSessionNotAcquired;
+    protected SynchronizedBoolean _acceptingSessions;
 
     // Filter Lifecycle
 
@@ -59,6 +63,8 @@ public class Filter implements javax.servlet.Filter {
       _distributable=_manager.getDistributable();
       _contextualiser=_manager.getContextualiser();
       _router=_manager.getRouter();
+      _errorIfSessionNotAcquired=_manager.getErrorIfSessionNotAcquired();
+      _acceptingSessions=_manager.getAcceptingSessions();
     }
 
     public void
@@ -82,17 +88,34 @@ public class Filter implements javax.servlet.Filter {
         if (_log.isTraceEnabled()) _log.trace("potentially stateful request: "+sessionId);
 
         if (sessionId==null) {
-            // no session yet - but may initiate one...
-            PoolableHttpServletRequestWrapper wrapper=_pool.take();
-            wrapper.init(request, null);
-            chain.doFilter(wrapper, response);
-            wrapper.destroy();
-            _pool.put(wrapper);
+            processSessionlessRequest(request, response, chain);
         } else {
             // already associated with a session...
-            sessionId=_router.strip(sessionId); // strip off any routing info...
-            // _router.rerouteCookie(request, response, null, sessionId); // TODO - do we 'restick' client ?
-            _contextualiser.contextualise(request, response, chain, sessionId, null, null, false);
+            String name=_router.strip(sessionId); // strip off any routing info...
+            if (!_contextualiser.contextualise(request, response, chain, name, null, null, false)) {
+                _log.error("could not acquire session: "+name);
+                if (_errorIfSessionNotAcquired) // send the client a 503...
+                    response.sendError(503, "session "+name+"cannot be acquired at this time"); // TODO - should we allow custom error page ?
+                else // process request without session - it may create a new one...
+                    processSessionlessRequest(request, response, chain);   
+            }
         }
+    }
+    
+    public void processSessionlessRequest(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+        // are we accepting sessions ? - otherwise proxy to another node...
+        // sync point - expensive, but will only hit sessionless requests...
+        if (!_acceptingSessions.get()) {
+            // think about what to do here... proxy or error page ?
+            _log.warn("sessionless request has arived during shutdown - permitting");
+            // TODO
+        }
+        
+        // no session yet - but may initiate one...
+        PoolableHttpServletRequestWrapper wrapper=_pool.take();
+        wrapper.init(request, null);
+        chain.doFilter(wrapper, response);
+        wrapper.destroy();
+        _pool.put(wrapper);
     }
 }
