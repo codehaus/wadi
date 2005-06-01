@@ -30,7 +30,7 @@ import org.codehaus.wadi.io.Server;
 public class DummyDistributableContextualiserConfig extends DummyContextualiserConfig implements DistributableContextualiserConfig {
 
     protected final ExtendedCluster _cluster;
-    
+
     public DummyDistributableContextualiserConfig(ExtendedCluster cluster) {
         super();
         _cluster=cluster;
@@ -43,11 +43,11 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
     public Server getServer() {
         return null;
     }
-    
+
     public String getNodeName() {
         return "dummy";
     }
-    
+
     public HttpProxy getHttpProxy() {
         return null;
     }
@@ -55,21 +55,24 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
     public InetSocketAddress getHttpAddress() {
         return null;
     }
-    
+
     protected Map _state=new HashMap();
-    
+
     public Object getDistributedState(Object key) {
         return _state.get(key);
     }
-    
+
     public Object putDistributedState(Object key, Object newValue) {
         return _state.put(key, newValue);
     }
-    
+
     public Object removeDistributedState(Object key) {
         return _state.remove(key);
     }
-    
+
+  public void distributeState() {
+  }
+
     public boolean getAccessOnLoad() {
         // TODO Auto-generated method stub
         return false;
