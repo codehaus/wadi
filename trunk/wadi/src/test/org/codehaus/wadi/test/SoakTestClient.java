@@ -33,20 +33,25 @@ public class SoakTestClient implements Runnable {
     class Request implements Runnable {
         
         protected final GetMethod _request=new GetMethod();
+        protected final boolean _cleanUp;
         
         public Request(String path) {
             _request.setPath(path);
+            _cleanUp=false;
         }
         
         public void run() {
             try {
                 _client.executeMethod(_hostConfiguration, _request, _state);
+                _request.releaseConnection();
             } catch (Exception e) {
                 _log.error("problem executing http request", e);
                 _errors.increment();
             } finally {
                 int c=_completer.increment();
-                _log.info(""+c+" = "+_state.getCookies()[0].getValue()+" : "+_request.getPath());
+                //_log.info(""+c+" = "+_state.getCookies()[0].getValue()+" : "+_request.getPath());
+                if (_cleanUp) {
+                }
             }
         }
         
