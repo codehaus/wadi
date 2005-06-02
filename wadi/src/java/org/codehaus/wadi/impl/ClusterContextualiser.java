@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.jms.Destination;
+import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.ObjectMessage;
@@ -54,6 +55,7 @@ import org.codehaus.wadi.io.Server;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
@@ -98,11 +100,11 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   protected final static String _evacuationQueueKey="evacuationQueue";
   protected final static String _shuttingDownKey="shuttingDown";
 
+  protected final SynchronizedBoolean _shuttingDown=new SynchronizedBoolean(false);
   protected final Map _evacuations=Collections.synchronizedMap(new HashMap());
   protected final Map _locations=new ConcurrentHashMap();
   protected final SynchronizedInt _evacuationPartnerCount=new SynchronizedInt(0);
   protected final Map _evacuationRvMap=new HashMap();
-  protected final Object _evacuationQueueLock=new Object();
   protected final Collapser _collapser;
   protected final MessageDispatcher _dispatcher;
   protected final Relocater _relocater;
@@ -228,59 +230,56 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   }
 
   protected void createEvacuationQueue() throws JMSException {
-      _log.trace("creating evacuation queue");
-      synchronized (_evacuationQueueLock) {
-          _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
-	  DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)_config;
-          dcc.putDistributedState(_evacuationQueueKey, _evacuationQueue);
-          dcc.putDistributedState(_shuttingDownKey, Boolean.TRUE);
-          dcc.distributeState();
-      }
+    _log.trace("creating evacuation queue");
+    DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)_config;
+    _shuttingDown.set(true);
+    dcc.putDistributedState(_shuttingDownKey, Boolean.TRUE);
+    _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
+    dcc.putDistributedState(_evacuationQueueKey, _evacuationQueue);
+    dcc.distributeState();
 
-      // whilst we are evacuating...
-      // 1) do not get involved in any other evacuations.
-      _log.info("ignoring further evacuation appeals");
-      // 2) withdraw from any other evacuation in which we may be involved
-      _log.info("withdrawing from ongoing evacuations: "+_evacuations.size());
-      synchronized (_evacuations) {
-          for (Iterator i=new ArrayList(_evacuations.keySet()).iterator(); i.hasNext(); ) {
-              String nodeName=(String)i.next();
-              ensureEvacuationLeft(nodeName);
-          }
+    // whilst we are evacuating...
+    // 1) do not get involved in any other evacuations.
+    _log.info("ignoring further evacuation appeals");
+    // 2) withdraw from any other evacuation in which we may be involved
+    _log.info("withdrawing from ongoing evacuations: "+_evacuations.size());
+    synchronized (_evacuations) {
+      for (Iterator i=new ArrayList(_evacuations.keySet()).iterator(); i.hasNext(); ) {
+	String nodeName=(String)i.next();
+	ensureEvacuationLeft(nodeName);
       }
-      // give time for threads that are already processing asylum applications to finish - can we join them ? -
-      // TODO - use shutdownAfterProcessingCurrentlyQueuedTasks() and a separate ThreadPool...
-      Utils.safeSleep(2000);
+    }
+    // give time for threads that are already processing asylum applications to finish - can we join them ? -
+    // TODO - use shutdownAfterProcessingCurrentlyQueuedTasks() and a separate ThreadPool...
+    Utils.safeSleep(2000);
   }
 
   protected void destroyEvacuationQueue() throws JMSException {
-    synchronized (_evacuationQueueLock) {
-      DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)_config;
-      dcc.removeDistributedState(_evacuationQueueKey);
-      // leave shuttingDown=true
-      dcc.distributeState();
-      _evacuationQueue=null;
-    }
+    DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)_config;
+    // leave shuttingDown=true
+    _evacuationQueue=null;
+    dcc.removeDistributedState(_evacuationQueueKey);
+    dcc.distributeState();
     Utils.safeSleep(5*1000*2); // TODO - should be hearbeat period...
     // FIXME - can we destroy the queue ?
     _log.trace("emigration queue destroyed");
   }
 
   protected synchronized void ensureEvacuationQueue() {
-    try {
-      synchronized (_evacuationQueueLock) {
-	if (_evacuationQueue==null) {
-	  createEvacuationQueue();
+    synchronized (_shuttingDown) {
+      try {
+	if (!_shuttingDown.get()) {
+	  createEvacuationQueue(); // sets _shuttingDown=true
 	}
+      } catch (JMSException e) {
+	_log.error("emmigration queue initialisation failed", e);
+	_evacuationQueue=null;
       }
-    } catch (JMSException e) {
-      _log.error("emmigration queue initialisation failed", e);
-      _evacuationQueue=null;
     }
   }
 
   public void stop() throws Exception {
-    synchronized (_evacuationQueueLock) {
+    synchronized (_shuttingDown) {
       if (_evacuationQueue!=null) { // evacuation is synchronous, so we will not get to here until all sessions are gone...
 	destroyEvacuationQueue();
       }
@@ -449,19 +448,24 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     Map state=event.getNode().getState();
     String nodeName=(String)state.get(_nodeNameKey);
 
+    if (nodeName==null) {
+      _log.error("null nodeName - should never happen");
+      return;
+    }
+
     if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
 
     _log.info("node state changed: "+nodeName+" : "+state);
     Destination evacuationQueue=(Destination)state.get(_evacuationQueueKey);
     if (evacuationQueue==null) {
-        ensureEvacuationLeft(nodeName);
+      ensureEvacuationLeft(nodeName);
     } else {
-        // we must not ourselves be evacuating...
-        synchronized (_evacuationQueueLock) {
-            if (_evacuationQueue==null) {
-                ensureEvacuationJoined(nodeName, evacuationQueue);
-            }
-        }
+      // we must not ourselves be evacuating...
+      synchronized (_shuttingDown) {
+	if (!_shuttingDown.get()) {
+	  ensureEvacuationJoined(nodeName, evacuationQueue);
+	}
+      }
     }
   }
 
@@ -472,6 +476,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
                   if (_log.isTraceEnabled()) _log.trace("joining evacuation: "+nodeName);
                   MessageConsumer consumer=_dispatcher.addDestination(evacuationQueue);
                   _evacuations.put(nodeName, consumer);
+//               } catch (IllegalStateException e) {
+//                   _log.debug("evacuation finished before we could join: "+nodeName);
               } catch (JMSException e) {
                   _log.warn("unexpected problem", e);
               }
@@ -515,41 +521,41 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   }
 
   protected int _locationMaxInactiveInterval=30;
-      
+
   class MyLocation implements Evictable {
-      
+
       protected long _lastAccessedTime;
       protected String _nodeName;
-      
+
       public MyLocation(long timestamp, String nodeName) {
           _lastAccessedTime=timestamp;
           _nodeName=nodeName;
       }
-      
+
       public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval) {
           // ignore creationTime;
           _lastAccessedTime=lastAccessedTime;
           // ignore maxInactiveInterval
       }
-      
+
       public void destroy()  {throw new UnsupportedOperationException();}
-      
+
       public void copy(Evictable evictable) {throw new UnsupportedOperationException();}
-      
+
       public long getCreationTime() {return _lastAccessedTime;}
       public long getLastAccessedTime() {return _lastAccessedTime;}
       public void setLastAccessedTime(long lastAccessedTime) {throw new UnsupportedOperationException();}
       public int  getMaxInactiveInterval() {return _locationMaxInactiveInterval;}
       public void setMaxInactiveInterval(int maxInactiveInterval) {throw new UnsupportedOperationException();}
-      
+
       public boolean isNew() {throw new UnsupportedOperationException();}
-      
+
       public long getTimeToLive(long time) {return _lastAccessedTime+(_locationMaxInactiveInterval*1000)-time;}
       public boolean getTimedOut(long time) {return getTimeToLive(time)<=0;}
       public boolean checkTimeframe(long time) {throw new UnsupportedOperationException();}
-      
+
   }
-  
+
   public void onMessage(ObjectMessage om, LocationUpdate update) {
       _locations.put(update.getSessionName(), new MyLocation(update.getTimeStamp(), update.getNodeName()));
   }
