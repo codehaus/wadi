@@ -16,6 +16,10 @@
  */
 package org.codehaus.wadi.test;
 
+import org.apache.commons.httpclient.HostConfiguration;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpState;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -28,10 +32,22 @@ public class SoakTestClient implements Runnable {
 
     class Request implements Runnable {
         
+        protected final GetMethod _request=new GetMethod();
+        
+        public Request(String path) {
+            _request.setPath(path);
+        }
+        
         public void run() {
-            _log.info("running request... ");
-            _completer.increment();
-            _log.info("...request finished: "+_completer.get());
+            try {
+                _client.executeMethod(_hostConfiguration, _request, _state);
+            } catch (Exception e) {
+                _log.error("problem executing http request", e);
+                _errors.increment();
+            } finally {
+                int c=_completer.increment();
+                _log.info(""+c+" = "+_state.getCookies()[0].getValue()+" : "+_request.getPath());
+            }
         }
         
     }
@@ -40,19 +56,32 @@ public class SoakTestClient implements Runnable {
     
     protected final PooledExecutor _executor;
     protected final int _numConcurrentRequests;
-    protected final Request[] _requests;
+    protected final Request _createRequest;
+    protected final Request _destroyRequest;
+    protected final Request[] _renderRequests;
     protected final SynchronizedInt _completer;
+    protected final String _host="localhost";
+    protected final int _port=80;
+    protected final HttpClient _client=new HttpClient();
+    protected final HostConfiguration _hostConfiguration;
+    protected final HttpState _state=new HttpState();
+    protected final SynchronizedInt _errors;
     
     protected int _remaining;
     
-    public SoakTestClient(PooledExecutor executor, int numConcurrentRequests, int numIterations, SynchronizedInt completer) {
+    public SoakTestClient(PooledExecutor executor, int numConcurrentRequests, int numIterations, SynchronizedInt completer, SynchronizedInt errors) {
         _executor=executor;
         _numConcurrentRequests=numConcurrentRequests;
-        _requests=new Request[_numConcurrentRequests];
+        _createRequest=new Request("/wadi/jsp/create.jsp");
+        _destroyRequest=new Request("/wadi/jsp/destroy.jsp");
+        _renderRequests=new Request[_numConcurrentRequests];
         for (int i=0; i<_numConcurrentRequests; i++)
-            _requests[i]=new Request();
+            _renderRequests[i]=new Request("/wadi/jsp/render.jsp");
         _remaining=numIterations;
         _completer=completer;
+        _hostConfiguration=new HostConfiguration();
+        _hostConfiguration.setHost(_host, _port);
+        _errors=errors;
     }
     
     public void start() throws InterruptedException {
@@ -60,16 +89,18 @@ public class SoakTestClient implements Runnable {
     }
     
     public void run() {
-        _log.info("running client");
+        _createRequest.run();
+        
         try {
             // put our requests on the execution queue...
             for (int i=0; i<_numConcurrentRequests; i++)
-                _executor.execute(_requests[i]);
+                _executor.execute(_renderRequests[i]);
             // put ourself back on the execution queue...
             if (--_remaining>0)
                 _executor.execute(this);
-            else
-                _log.info("...client finished");
+            else {
+                _executor.execute(_destroyRequest);
+            }
         } catch (InterruptedException e) {
             _log.warn("interruption detected - aborting...");
         }
@@ -91,16 +122,17 @@ public class SoakTestClient implements Runnable {
         
         PooledExecutor executor=new PooledExecutor(new LinkedQueue(), numThreads);
         WaitableInt completer=new WaitableInt(0);
+        SynchronizedInt errors=new SynchronizedInt(0);
         SoakTestClient[] clients=new SoakTestClient[numClients];
         try {
             for (int i=0; i<numClients; i++)
-                (clients[i]=new SoakTestClient(executor, requestsPerClient, numIterations, completer)).start();
+                (clients[i]=new SoakTestClient(executor, requestsPerClient, numIterations, completer, errors)).start();
         } catch (InterruptedException e) {
             _log.warn("interrupted - aborting...");
         }
         
         // wait for work to be done....
-        int totalNumRequests=numClients*requestsPerClient;
+        int totalNumRequests=numClients*(requestsPerClient+2); // create, render*n, destroy
         try {
             completer.whenEqual(totalNumRequests, null);
         } catch (InterruptedException e) {
@@ -108,7 +140,11 @@ public class SoakTestClient implements Runnable {
         }
         executor.shutdownNow();
         
-        _log.info("finished ");
+        int e=errors.get();
+        if (e>0)
+            _log.error("finished: ERRORS DETECTED: "+e);
+        else
+            _log.info("finished: no errors");
     }
 
 }
