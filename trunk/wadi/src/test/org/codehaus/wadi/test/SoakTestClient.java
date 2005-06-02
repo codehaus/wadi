@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.test;
 
+import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpState;
@@ -45,7 +46,13 @@ public class SoakTestClient implements Runnable {
             HttpClient httpClient=null;
             try {
                 httpClient=(HttpClient)_httpClients.take();
+		String before="";
+		Cookie[] cookies=_state.getCookies();
+		if (cookies!=null && cookies.length>0)
+		  before=cookies[0].getValue();
                 httpClient.executeMethod(_hostConfiguration, _request, _state);
+		String after=_state.getCookies()[0].getValue();
+		checkSession(before, after);
                 _request.releaseConnection();
                 _httpClients.put(httpClient); // don't put it back if anything goes wrong...
             } catch (Exception e) {
@@ -53,13 +60,35 @@ public class SoakTestClient implements Runnable {
                 _errors.increment();
             } finally {
                 int c=_completer.increment();
-                _log.info(""+c+" = "+_state.getCookies()[0].getValue()+" : "+_request.getPath());
+                //_log.info(""+c+" = "+_state.getCookies()[0].getValue()+" : "+_request.getPath());
                 if (_cleanUp) {
                 }
             }
         }
 
     }
+
+  protected void checkSession(String before, String after) {
+    if (before.length()==0) {
+      // session created...
+      return;
+    }
+
+    if (before.equals(after)) {
+      // no change
+      return;
+    }
+
+    int i=before.lastIndexOf(".");
+    if (before.regionMatches(0, after, 0, i)) {
+      // session relocated
+      _log.info("session cookie association: "+before+" --> "+after);
+      return;
+    }
+
+    _log.error("session changed:  "+before+" --> "+after);
+    _errors.increment();
+  }
 
     protected final static Log _log = LogFactory.getLog(SoakTestClient.class);
     protected final static String _host="smilodon";
@@ -150,9 +179,9 @@ public class SoakTestClient implements Runnable {
 
             int e=errors.get();
             if (e>0)
-                _log.error("finished: ERRORS DETECTED: "+e);
+                _log.error("finished: "+totalNumRequests+" requests and "+e+" ERRORS");
             else
-                _log.info("finished: no errors");
+                _log.info("finished: "+totalNumRequests+" requests and no errors");
 
         } catch (InterruptedException e) {
             _log.warn("interrupted - aborting...");
