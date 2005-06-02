@@ -95,13 +95,13 @@ public class Filter implements javax.servlet.Filter {
             if (!_contextualiser.contextualise(request, response, chain, name, null, null, false)) {
                 _log.error("could not acquire session: "+name);
                 if (_errorIfSessionNotAcquired) // send the client a 503...
-                    response.sendError(503, "session "+name+"cannot be acquired at this time"); // TODO - should we allow custom error page ?
+                    response.sendError(503, "session "+name+" cannot be acquired at this time"); // TODO - should we allow custom error page ?
                 else // process request without session - it may create a new one...
-                    processSessionlessRequest(request, response, chain);   
+                    processSessionlessRequest(request, response, chain);
             }
         }
     }
-    
+
     public void processSessionlessRequest(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         // are we accepting sessions ? - otherwise proxy to another node...
         // sync point - expensive, but will only hit sessionless requests...
@@ -110,7 +110,7 @@ public class Filter implements javax.servlet.Filter {
             _log.warn("sessionless request has arived during shutdown - permitting");
             // TODO
         }
-        
+
         // no session yet - but may initiate one...
         PoolableHttpServletRequestWrapper wrapper=_pool.take();
         wrapper.init(request, null);
