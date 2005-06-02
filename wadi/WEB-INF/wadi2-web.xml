@@ -76,6 +76,24 @@
     <constructor-arg><ref bean="SessionPool"/></constructor-arg>
   </bean>
 
+<!--
+  <bean
+    id="Relocater"
+    class="org.codehaus.wadi.impl.MessagingMigratingRelocater"
+    >
+    <constructor-arg type="long" index="0"><value>2000</value></constructor-arg>
+    <constructor-arg type="long" index="1"><value>1000</value></constructor-arg>
+  </bean>
+-->
+
+  <bean
+    id="Relocater"
+    class="org.codehaus.wadi.impl.ProxyingRelocater"
+    >
+    <constructor-arg type="long" index="0"><value>2000</value></constructor-arg>
+    <constructor-arg type="long" index="1"><value>2000</value></constructor-arg>
+  </bean>
+
   <bean
     id="Contextualiser"
     class="org.codehaus.wadi.impl.SimpleContextualiserStack"
@@ -83,16 +101,25 @@
     <constructor-arg><ref bean="SessionMap"/></constructor-arg>
     <constructor-arg><ref bean="ContextPool"/></constructor-arg> <!-- enclosed SessionPool will be init()-ed by Manager -->
     <constructor-arg><ref bean="DataSource"/></constructor-arg>
+    <constructor-arg><ref bean="Relocater"/></constructor-arg>
   </bean>
 
   <!-- the Router (load-balancer integration) -->
 
   <bean
     id="Router"
+    class="org.codehaus.wadi.impl.JkRouter"
+    >
+    <constructor-arg><value>${node.name}</value></constructor-arg>
+  </bean>
+
+<!--
+  <bean
+    id="Router"
     class="org.codehaus.wadi.impl.DummyRouter"
     >
-<!--    <constructor-arg><value>${node.name}</value></constructor-arg> -->
   </bean>
+-->
 
   <!-- other stuff... -->
 
@@ -135,6 +162,9 @@
     <constructor-arg><ref bean="Streamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
     <constructor-arg index="10"><value>tcp://localhost:61616</value></constructor-arg>
+<!--
+    <constructor-arg index="10"><value>peer://org.codehaus.wadi</value></constructor-arg>
+ -->
     <constructor-arg index="11"><value>CLUSTER0</value></constructor-arg>
     <constructor-arg index="12"><value>${node.name}</value></constructor-arg>
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>

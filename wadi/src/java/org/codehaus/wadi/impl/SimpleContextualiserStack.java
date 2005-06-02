@@ -101,7 +101,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected final Map _memoryMap;
     protected final MemoryContextualiser _memory;
 
-    public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource) throws Exception {
+  public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource, Relocater relocater) throws Exception {
         super();
         _streamer=new SimpleStreamer();
         //_collapser=new DebugCollapser();
@@ -117,8 +117,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _clusterMap=new ConcurrentHashMap();
         _clusterEvicter=new DummyEvicter(); // TODO - consider Cluster eviction carefully...
         _clusterDispatcher=new MessageDispatcher();
-        _clusterRelocater=new MessagingMigratingRelocater(2000, 1000);
-	//        _clusterRelocater=new ProxyRelocater(2000, 2000);
+        _clusterRelocater=relocater;
         _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterDispatcher, _clusterRelocater);
 
         _statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
