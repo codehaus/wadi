@@ -32,15 +32,15 @@ import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
 public class SoakTestClient implements Runnable {
 
     class Request implements Runnable {
-        
+
         protected final GetMethod _request=new GetMethod();
         protected final boolean _cleanUp;
-        
+
         public Request(String path) {
             _request.setPath(path);
             _cleanUp=false;
         }
-        
+
         public void run() {
             HttpClient httpClient=null;
             try {
@@ -58,14 +58,14 @@ public class SoakTestClient implements Runnable {
                 }
             }
         }
-        
+
     }
-    
+
     protected final static Log _log = LogFactory.getLog(SoakTestClient.class);
-    protected final static String _host="localhost";
+    protected final static String _host="smilodon";
     protected final static int _port=80;
     protected final static HostConfiguration _hostConfiguration=new HostConfiguration();
-    
+
     protected final PooledExecutor _executor;
     protected final int _numConcurrentRequests;
     protected final Request _createRequest;
@@ -75,9 +75,9 @@ public class SoakTestClient implements Runnable {
     protected final HttpState _state=new HttpState();
     protected final SynchronizedInt _errors;
     protected final Channel _httpClients;
-    
+
     protected int _remaining;
-    
+
     public SoakTestClient(PooledExecutor executor, int numConcurrentRequests, int numIterations, SynchronizedInt completer, SynchronizedInt errors, Channel httpClients) {
         _executor=executor;
         _numConcurrentRequests=numConcurrentRequests;
@@ -91,14 +91,14 @@ public class SoakTestClient implements Runnable {
         _errors=errors;
         _httpClients=httpClients;
     }
-    
+
     public void start() throws InterruptedException {
         _executor.execute(this);
     }
-    
+
     public void run() {
         _createRequest.run();
-        
+
         try {
             // put our requests on the execution queue...
             for (int i=0; i<_numConcurrentRequests; i++)
@@ -113,16 +113,16 @@ public class SoakTestClient implements Runnable {
             _log.warn("interruption detected - aborting...");
         }
     }
-    
+
     /**
      * @param args
      */
     public static void main(String[] args) {
-        
+
         _hostConfiguration.setHost(_host, _port);
 
         try {
-            
+
             int numClients=Integer.parseInt(args[0]);
             _log.info("number of clients: "+numClients);
             int requestsPerClient=Integer.parseInt(args[1]);
@@ -131,33 +131,33 @@ public class SoakTestClient implements Runnable {
             _log.info("number of concurrent threads: "+numThreads);
             int numIterations=Integer.parseInt(args[3]);
             _log.info("number of iterations to perform: "+numIterations);
-            
+
             Channel httpClients=new LinkedQueue(); // a Pool of HttpClients - otherwise we run out of fds...
             for (int i=0; i<numThreads; i++)
                 httpClients.put(new HttpClient());
-            
+
             PooledExecutor executor=new PooledExecutor(new LinkedQueue(), numThreads);
             WaitableInt completer=new WaitableInt(0);
             SynchronizedInt errors=new SynchronizedInt(0);
             SoakTestClient[] clients=new SoakTestClient[numClients];
-            
+
             for (int i=0; i<numClients; i++)
                 (clients[i]=new SoakTestClient(executor, requestsPerClient, numIterations, completer, errors, httpClients)).start();
             // wait for work to be done....
             int totalNumRequests=numClients*(requestsPerClient+2); // create, render*n, destroy
             completer.whenEqual(totalNumRequests, null);
             executor.shutdownNow();
-            
+
             int e=errors.get();
             if (e>0)
                 _log.error("finished: ERRORS DETECTED: "+e);
             else
                 _log.info("finished: no errors");
-            
+
         } catch (InterruptedException e) {
             _log.warn("interrupted - aborting...");
         }
-        
+
     }
 
 }
