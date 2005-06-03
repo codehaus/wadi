@@ -79,6 +79,7 @@ import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
@@ -395,6 +396,8 @@ public class TestMotion extends TestCase {
         public ExtendedCluster getCluster() {return null;}
         public Contextualiser getContextualiser() {return null;}
         public Server getServer() {return null;}
+        public String getNodeName() {return null;}
+        public SynchronizedBoolean getShuttingDown() {return null;}
         
     }
     

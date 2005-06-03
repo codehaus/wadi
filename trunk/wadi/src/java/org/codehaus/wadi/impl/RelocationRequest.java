@@ -23,16 +23,16 @@ public class RelocationRequest implements Serializable {
     protected static final boolean _RELOCATE_SESSION_PREFERRED=true;
     protected static final boolean _RELOCATE_REQUEST_PREFERRED=false;
     
-    protected final long _timeSent=System.currentTimeMillis();
+    protected long _timeSent=System.currentTimeMillis();
 
-    private final String _sessionName;
-    private final String _nodeName;
-    private final boolean _sessionOrRequestPreferred; // t=session, f=request
-    private final boolean _shuttingDown;
-    //protected final boolean _acceptingSessions;
-    private final long _lastKnownTime;
-    private final String _lastKnownPlace;
-    private final long _requestHandOverTimeout;
+    private String _sessionName;
+    private String _nodeName;
+    private boolean _sessionOrRequestPreferred; // t=session, f=request
+    private boolean _shuttingDown;
+    //protected boolean _acceptingSessions;
+    private long _lastKnownTime;
+    private String _lastKnownPlace;
+    private long _requestHandOverTimeout;
     
     public RelocationRequest(String sessionName, String nodeName, boolean sessionOrRequestPreferred, boolean shuttingDown, long lastKnownTime, String lastKnownPlace, long requestHandOverTimeout) {
         _sessionName=sessionName;
@@ -42,6 +42,10 @@ public class RelocationRequest implements Serializable {
         _lastKnownTime=lastKnownTime;
         _lastKnownPlace=lastKnownPlace;
         _requestHandOverTimeout=requestHandOverTimeout;
+    }
+    
+    protected RelocationRequest() {
+        // used when deserialising
     }
 
     public String getSessionName() {

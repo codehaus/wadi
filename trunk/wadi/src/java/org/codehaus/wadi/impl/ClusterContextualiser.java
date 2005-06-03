@@ -24,11 +24,9 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.jms.Destination;
-import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.ObjectMessage;
-import javax.naming.OperationNotSupportedException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -38,6 +36,8 @@ import org.activecluster.ClusterEvent;
 import org.activecluster.ClusterListener;
 import org.activecluster.LocalNode;
 import org.activecluster.Node;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.ExtendedCluster;
@@ -157,7 +157,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     _cluster.addClusterListener(this);
     _dispatcher.register(this, "onMessage", EmigrationRequest.class);
     _dispatcher.register(this, "onMessage", LocationUpdate.class);
-    _dispatcher.register(this, "onMessage", RelocationRequest.class);
     _dispatcher.register(EmigrationAcknowledgement.class, _evacuationRvMap, _ackTimeout);
 
     // _evicter ?
@@ -233,27 +232,27 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   }
 
   protected void createEvacuationQueue() throws JMSException {
-    _log.trace("creating evacuation queue");
-    DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)_config;
-    dcc.putDistributedState(_shuttingDownKey, Boolean.TRUE);
-    _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
-    dcc.putDistributedState(_evacuationQueueKey, _evacuationQueue);
-    dcc.distributeState();
-
-    // whilst we are evacuating...
-    // 1) do not get involved in any other evacuations.
-    _log.info("ignoring further evacuation appeals");
-    // 2) withdraw from any other evacuation in which we may be involved
-    _log.info("withdrawing from ongoing evacuations: "+_evacuations.size());
-    synchronized (_evacuations) {
-      for (Iterator i=new ArrayList(_evacuations.keySet()).iterator(); i.hasNext(); ) {
-	String nodeName=(String)i.next();
-	ensureEvacuationLeft(nodeName);
+      _log.trace("creating evacuation queue");
+      DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)_config;
+      dcc.putDistributedState(_shuttingDownKey, Boolean.TRUE);
+      _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
+      dcc.putDistributedState(_evacuationQueueKey, _evacuationQueue);
+      dcc.distributeState();
+      
+      // whilst we are evacuating...
+      // 1) do not get involved in any other evacuations.
+      _log.info("ignoring further evacuation appeals");
+      // 2) withdraw from any other evacuation in which we may be involved
+      _log.info("withdrawing from ongoing evacuations: "+_evacuations.size());
+      synchronized (_evacuations) {
+          for (Iterator i=new ArrayList(_evacuations.keySet()).iterator(); i.hasNext(); ) {
+              String nodeName=(String)i.next();
+              ensureEvacuationLeft(nodeName);
+          }
       }
-    }
-    // give time for threads that are already processing asylum applications to finish - can we join them ? -
-    // TODO - use shutdownAfterProcessingCurrentlyQueuedTasks() and a separate ThreadPool...
-    Utils.safeSleep(2000);
+      // give time for threads that are already processing asylum applications to finish - can we join them ? -
+      // TODO - use shutdownAfterProcessingCurrentlyQueuedTasks() and a separate ThreadPool...
+      Utils.safeSleep(2000);
   }
 
   protected void destroyEvacuationQueue() throws JMSException {
@@ -268,16 +267,16 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   }
 
   protected synchronized void ensureEvacuationQueue() {
-    synchronized (_shuttingDown) {
-      try {
-	if (!_shuttingDown.get()) {
-	  createEvacuationQueue(); // sets _shuttingDown=true
-	}
-      } catch (JMSException e) {
-	_log.error("emmigration queue initialisation failed", e);
-	_evacuationQueue=null;
+      synchronized (_shuttingDown) {
+          try {
+              if (_shuttingDown.get()) {
+                  createEvacuationQueue();
+              }
+          } catch (JMSException e) {
+              _log.error("emmigration queue initialisation failed", e);
+              _evacuationQueue=null;
+          }
       }
-    }
   }
 
   public void stop() throws Exception {
@@ -290,54 +289,54 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   }
 
   /**
-   * Manage the immotion of a session into the cluster tier from another and its emigration thence to another node.
+   * Manage the immotion of a session into the cluster tier from another and its emigration thence to another node via the EvacuationQueue.
    *
    * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
    * @version $Revision$
    */
   class EmigrationImmoter implements Immoter {
-    public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}
-
-    public boolean prepare(String name, Motable emotable, Motable immotable) {
-      MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-      settingsInOut.to=_evacuationQueue;
-      settingsInOut.correlationId=name;
-      settingsInOut.from=_cluster.getLocalNode().getDestination();
-      try {
-	immotable.copy(emotable);
-	EmigrationRequest er=new EmigrationRequest(immotable);
-	EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(name, _evacuationRvMap, er, settingsInOut, _ackTimeout);
-
-	if (ea==null) {
-	  if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+_ackTimeout+" millis): "+name);
-	  return false;
-	} else {
-	  if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+_ackTimeout+" millis): "+name);
-	  _map.put(name, ea.getLocation()); // cache new Location of Session
-	  return true;
-	}
-      } catch (Exception e) {
-	if (_log.isWarnEnabled()) _log.warn("problem sending emigration request: "+name, e);
-	return false;
+      public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}
+      
+      public boolean prepare(String name, Motable emotable, Motable immotable) {
+          MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+          settingsInOut.to=_evacuationQueue;
+          settingsInOut.correlationId=name;
+          settingsInOut.from=_cluster.getLocalNode().getDestination();
+          try {
+              immotable.copy(emotable);
+              EmigrationRequest er=new EmigrationRequest(immotable);
+              EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(name, _evacuationRvMap, er, settingsInOut, _ackTimeout);
+              
+              if (ea==null) {
+                  if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+_ackTimeout+" millis): "+name);
+                  return false;
+              } else {
+                  if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+_ackTimeout+" millis): "+name);
+                  _map.put(name, ea.getLocation()); // cache new Location of Session
+                  return true;
+              }
+          } catch (Exception e) {
+              if (_log.isWarnEnabled()) _log.warn("problem sending emigration request: "+name, e);
+              return false;
+          }
       }
-    }
-
-    public void commit(String name, Motable immotable) {
-      // TODO - cache new location of emigrating session...
-    }
-
-    public void rollback(String name, Motable immotable) {
-      // TODO - errr... HOW ?
-    }
-
-    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) {
-      return false;
-      // TODO - perhaps this is how a proxied contextualisation should occur ?
-    }
-
-    public String getInfo() {
-      return "cluster";
-    }
+      
+      public void commit(String name, Motable immotable) {
+          // TODO - cache new location of emigrating session...
+      }
+      
+      public void rollback(String name, Motable immotable) {
+          // TODO - errr... HOW ?
+      }
+      
+      public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) {
+          return false;
+          // TODO - perhaps this is how a proxied contextualisation should occur ?
+      }
+      
+      public String getInfo() {
+          return "cluster";
+      }
   }
 
   /**
@@ -573,44 +572,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   public String getNodeName() {return _nodeName;}
   public SynchronizedBoolean getShuttingDown() {return _shuttingDown;}
 
-  // Relocation support
-  
-  public void onMessage(ObjectMessage om, RelocationRequest request) {
-      _log.trace("RelocationRequest received from "+request.getNodeName()+" for: "+request.getSessionName());
-      // both of these may be out of date immediately... :-(
-      boolean theyAreShuttingDown=request.getShuttingDown();
-      boolean weAreShuttingDown=_shuttingDown.get();
-      boolean sessionOrRequestPreferred=request.getSessionOrRequestPreferred();
-      
-      if ((weAreShuttingDown && !theyAreShuttingDown) ||
-          (!weAreShuttingDown && !theyAreShuttingDown && sessionOrRequestPreferred==RelocationRequest._RELOCATE_SESSION_PREFERRED)) {
-          // we have to relocate the session to them...
-          return;
-      }
-      
-      if ((!weAreShuttingDown && theyAreShuttingDown) ||
-          (!weAreShuttingDown && !theyAreShuttingDown && sessionOrRequestPreferred==RelocationRequest._RELOCATE_REQUEST_PREFERRED)) {
-          // they have to relocate the request to us...
-          return;
-      }
-      
-      if (!weAreShuttingDown && !theyAreShuttingDown) {
-          // the normal case... - take their preferred action...
-          if (request.getSessionOrRequestPreferred()) {
-              // relocate session to them
-          } else {
-              // relocate request to us
-          }
-          
-          return;
-      }
-      
-      if (weAreShuttingDown && theyAreShuttingDown) {
-          // yikes !
-          // we need to relocate both session and request to a third, safe node
-          // think about it....
-          throw new UnsupportedOperationException("both source and target node are shutting down");
-      }
-  }
 
+  
 }
