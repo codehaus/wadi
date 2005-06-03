@@ -21,39 +21,39 @@ import java.io.Serializable;
 import org.codehaus.wadi.Motable;
 
 public class RelocationResponse implements Serializable {
-    
+
     protected String _sessionName;
     protected String _nodeName;
     protected Motable _motable;
-    
+
     // use when relocating session....
     public RelocationResponse(String sessionName, String nodeName, Motable motable) {
         _sessionName=sessionName;
         _nodeName=nodeName;
         _motable=motable;
     }
-    
+
     // use when relocating request....
     public RelocationResponse(String sessionName, String nodeName) {
         _sessionName=sessionName;
         _nodeName=nodeName;
         _motable=null;
     }
-    
+
     protected RelocationResponse() {
         // for deserialising
     }
-    
+
     public String getSessionName() {
         return _sessionName;
     }
-    
-    public String getNodeNamme() {
+
+    public String getNodeName() {
         return _nodeName;
     }
-    
+
     public Motable getMotable() {
         return _motable;
     }
-    
+
 }

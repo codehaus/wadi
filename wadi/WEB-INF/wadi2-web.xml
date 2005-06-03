@@ -84,11 +84,19 @@
     <constructor-arg type="long" index="0"><value>2000</value></constructor-arg>
     <constructor-arg type="long" index="1"><value>1000</value></constructor-arg>
   </bean>
--->
 
   <bean
     id="Relocater"
     class="org.codehaus.wadi.impl.ProxyingRelocater"
+    >
+    <constructor-arg type="long" index="0"><value>2000</value></constructor-arg>
+    <constructor-arg type="long" index="1"><value>2000</value></constructor-arg>
+  </bean>
+-->
+
+  <bean
+    id="Relocater"
+    class="org.codehaus.wadi.impl.HybridRelocater"
     >
     <constructor-arg type="long" index="0"><value>2000</value></constructor-arg>
     <constructor-arg type="long" index="1"><value>2000</value></constructor-arg>
@@ -106,20 +114,20 @@
 
   <!-- the Router (load-balancer integration) -->
 
+<!--
   <bean
     id="Router"
     class="org.codehaus.wadi.impl.JkRouter"
     >
     <constructor-arg><value>${node.name}</value></constructor-arg>
   </bean>
+-->
 
-<!--
   <bean
     id="Router"
     class="org.codehaus.wadi.impl.DummyRouter"
     >
   </bean>
--->
 
   <!-- other stuff... -->
 
