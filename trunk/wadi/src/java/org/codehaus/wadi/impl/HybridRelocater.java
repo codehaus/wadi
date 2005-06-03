@@ -38,6 +38,7 @@ import org.codehaus.wadi.RelocaterConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
+import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 /**
  * Combine various RelocationStrategies to produce a cleverer one
@@ -192,23 +193,37 @@ public class HybridRelocater extends AbstractRelocater {
     // response is to relocate session back to sender...
 
     protected void relocateSessionToThem(ObjectMessage om, String sessionName, String nodeName) {
-        if (_log.isTraceEnabled()) _log.trace("relocating "+sessionName+" from "+_nodeName+" to "+nodeName);
-        try {
-            MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-            // reverse direction...
-            settingsInOut.to=om.getJMSReplyTo();
-            settingsInOut.from=_config.getLocation().getDestination();
-            settingsInOut.correlationId=om.getJMSCorrelationID();
-            Immoter promoter=new RelocationResponseImmoter(_nodeName, settingsInOut);
-            RankedRWLock.setPriority(RankedRWLock.EMIGRATION_PRIORITY);
-            _contextualiser.contextualise(null,null,null,sessionName, promoter, null, true); // if we own session, this will send the correct response...
-        } catch (Exception e) {
-            if (_log.isWarnEnabled()) _log.warn("problem handling relocation request: "+sessionName, e);
-        } finally {
-            RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
-        }
-        // N.B. - I don't think it is necessary to acquire the motionLock - consider...
-        // TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
+      if (_log.isTraceEnabled()) _log.trace("relocating "+sessionName+" from "+_nodeName+" to "+nodeName);
+
+      Sync motionLock=_config.getCollapser().getLock(sessionName);
+      boolean acquired=false;
+      try {
+	Utils.acquireUninterrupted(motionLock);
+	acquired=true;
+      } catch (TimeoutException e) {
+	if (_log.isErrorEnabled()) _log.error("exclusive access could not be guaranteed within timeframe: "+sessionName, e);
+	return;
+      }
+
+      try {
+	MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+	// reverse direction...
+	settingsInOut.to=om.getJMSReplyTo();
+	settingsInOut.from=_config.getLocation().getDestination();
+	settingsInOut.correlationId=om.getJMSCorrelationID();
+	Immoter promoter=new RelocationResponseImmoter(nodeName, settingsInOut);
+	RankedRWLock.setPriority(RankedRWLock.EMIGRATION_PRIORITY);
+	boolean found=_contextualiser.contextualise(null,null,null,sessionName, promoter, motionLock, true); // if we own session, this will send the correct response...
+	if (found)
+	  acquired=false; // someone else has released the promotion lock...
+      } catch (Exception e) {
+	if (_log.isWarnEnabled()) _log.warn("problem handling relocation request: "+sessionName, e);
+      } finally {
+	RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
+	if (acquired) motionLock.release();
+      }
+      // N.B. - I don't think it is necessary to acquire the motionLock - consider...
+      // TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
     }
 
     /**
@@ -221,11 +236,11 @@ public class HybridRelocater extends AbstractRelocater {
     class RelocationResponseImmoter implements Immoter {
         protected final Log _log=LogFactory.getLog(getClass());
 
-        protected final String _nodeName;
+        protected final String _tgtNodeName;
         protected final MessageDispatcher.Settings _settingsInOut;
 
         public RelocationResponseImmoter(String nodeName, MessageDispatcher.Settings settingsInOut) {
-            _nodeName=nodeName;
+            _tgtNodeName=nodeName;
             _settingsInOut=settingsInOut;
         }
 
@@ -273,7 +288,7 @@ public class HybridRelocater extends AbstractRelocater {
         }
 
         public String getInfo() {
-            return "emigration:"+_nodeName;
+            return "emigration:"+_tgtNodeName;
         }
     }
 

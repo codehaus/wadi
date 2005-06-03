@@ -46,7 +46,7 @@ public class SoakTestClient implements Runnable {
     }
 
     protected final byte[] _buffer=new byte[1024];
-    
+
     public void run() {
       HttpClient httpClient=null;
       try {
@@ -58,7 +58,7 @@ public class SoakTestClient implements Runnable {
 	_request.setPath(_path);
 	int status=httpClient.executeMethod(_hostConfiguration, _request, _state);
     InputStream is=_request.getResponseBodyAsStream();
-    //while (is.read(_buffer)>0); // read complete body of response and chuck...
+    while (is.read(_buffer)>0); // read complete body of response and chuck...
     if (status!=200) {
         _log.error("bad status: "+status+" : "+_request.getStatusText());
         _errors.increment();
