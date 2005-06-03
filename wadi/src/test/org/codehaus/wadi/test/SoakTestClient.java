@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.test;
 
+import java.io.InputStream;
+
 import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
@@ -43,6 +45,8 @@ public class SoakTestClient implements Runnable {
       _cleanUp=false;
     }
 
+    protected final byte[] _buffer=new byte[1024];
+    
     public void run() {
       HttpClient httpClient=null;
       try {
@@ -52,7 +56,13 @@ public class SoakTestClient implements Runnable {
 	if (cookies!=null && cookies.length>0)
 	  before=cookies[0].getValue();
 	_request.setPath(_path);
-	httpClient.executeMethod(_hostConfiguration, _request, _state);
+	int status=httpClient.executeMethod(_hostConfiguration, _request, _state);
+    InputStream is=_request.getResponseBodyAsStream();
+    //while (is.read(_buffer)>0); // read complete body of response and chuck...
+    if (status!=200) {
+        _log.error("bad status: "+status+" : "+_request.getStatusText());
+        _errors.increment();
+    }
 	String after=_state.getCookies()[0].getValue();
 	checkSession(before, after);
 	_request.releaseConnection();
