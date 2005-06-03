@@ -44,14 +44,11 @@ import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Relocater;
-import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.impl.AbstractRelocater;
 import org.codehaus.wadi.impl.CommonsHttpProxy;
-import org.codehaus.wadi.impl.CustomCluster;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.HashingCollapser;
-import org.codehaus.wadi.impl.HttpProxyLocation;
-import org.codehaus.wadi.impl.MigratingRelocater;
+import org.codehaus.wadi.impl.HybridRelocater;
 import org.codehaus.wadi.impl.MessageDispatcher;
 import org.codehaus.wadi.impl.ProxyingRelocater;
 import org.codehaus.wadi.impl.StandardHttpProxy;
@@ -174,8 +171,8 @@ public class TestRelocation extends TestCase {
 
 	public void testMigrateInsecureRelocation() throws Exception {
         Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new MigratingRelocater(2000, 500));
-		_relocater1.setRelocationStrategy(new MigratingRelocater(2000, 500));
+		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 500));
+		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 500));
 		testInsecureRelocation(true);
 		}
 
@@ -313,8 +310,8 @@ public class TestRelocation extends TestCase {
 
 	public void testMigrateSecureRelocation() throws Exception {
         Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new MigratingRelocater(2000, 500));
-		_relocater1.setRelocationStrategy(new MigratingRelocater(2000, 500));
+		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 500));
+		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 500));
 		testSecureRelocation(true);
 		}
 
@@ -399,8 +396,8 @@ public class TestRelocation extends TestCase {
 
 	public void testMigrateStatelessContextualiser() throws Exception {
         Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new MigratingRelocater(2000, 500));
-		_relocater1.setRelocationStrategy(new MigratingRelocater(2000, 500));
+		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 500));
+		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 500));
 		testStatelessContextualiser(true);
 		}
 
