@@ -50,9 +50,13 @@ import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.io.Server;
 import org.codehaus.wadi.io.ServerConfig;
 
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
+
 public class DistributableManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, ServerConfig {
 
-  protected final Map _distributedState=new HashMap(); // TODO - make this a SynchronisedMap
+    protected final Map _distributedState=new HashMap(); // TODO - make this a SynchronisedMap
+    protected final SynchronizedBoolean _shuttingDown=new SynchronizedBoolean(false);
+    
     protected final Streamer _streamer;
     protected final String _clusterUri;
     protected final String _clusterName;
@@ -102,6 +106,7 @@ public class DistributableManager extends StandardManager implements Distributab
     }
 
     public void stop() throws Exception {
+        _shuttingDown.set(true);
         super.stop();
         _cluster.stop();
         _connectionFactory.stop();
@@ -176,7 +181,7 @@ public class DistributableManager extends StandardManager implements Distributab
         Collection names=new ArrayList((_attributeListeners.size()>0)?(Collection)session.getAttributeNameSet():((DistributableSession)session).getListenerNames());
         for (Iterator i=names.iterator(); i.hasNext();) // ALLOC ?
             session.removeAttribute((String)i.next());
-
+        
         // TODO - remove from Contextualiser....at end of initial request ? Think more about this
         String id=session.getName();
         _map.remove(id);
@@ -184,54 +189,57 @@ public class DistributableManager extends StandardManager implements Distributab
         _sessionPool.put(session);
         if (_log.isDebugEnabled()) _log.debug("destroyed: "+id);
     }
-
+    
     // Lazy
-
+    
     public boolean getHttpSessionAttributeListenersRegistered(){return _attributeListeners.size()>0;}
-
+    
     public boolean getDistributable(){return true;}
-
+    
     // ServerConfig
-
+    
     public ExtendedCluster getCluster() {return _cluster;}
-
+    
     // DistributableContextualiserConfig
-
+    
     public Server getServer() {throw new UnsupportedOperationException();}
     public String getNodeName() {return _nodeName;} // NYI
-
+    
     public HttpProxy getHttpProxy() {
         return _httpProxy;
     }
-
+    
     public InetSocketAddress getHttpAddress() {
         return _httpAddress;
     }
-
-  public Object getDistributedState(Object key) {
-    synchronized (_distributedState) {
+    
+    public Object getDistributedState(Object key) {
+        synchronized (_distributedState) {
             return _distributedState.get(key);
         }
     }
-
+    
     public Object putDistributedState(Object key, Object newValue) {
         synchronized (_distributedState) {
-	  return _distributedState.put(key, newValue);
+            return _distributedState.put(key, newValue);
         }
     }
-
+    
     public Object removeDistributedState(Object key) {
         synchronized (_distributedState) {
-	  return _distributedState.remove(key);
+            return _distributedState.remove(key);
         }
     }
-
-  public void distributeState() throws JMSException {
-    _cluster.getLocalNode().setState(_distributedState);
-  }
-
-    public boolean getAccessOnLoad() {
-    	return _accessOnLoad;
+    
+    public void distributeState() throws JMSException {
+        _cluster.getLocalNode().setState(_distributedState);
     }
-
+    
+    public boolean getAccessOnLoad() {
+        return _accessOnLoad;
+    }
+    
+    public SynchronizedBoolean getShuttingDown() {
+        return _shuttingDown;
+    }
 }

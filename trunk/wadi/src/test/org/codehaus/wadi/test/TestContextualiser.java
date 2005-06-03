@@ -86,7 +86,7 @@ import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.MessageDispatcher;
-import org.codehaus.wadi.impl.MessagingMigratingRelocater;
+import org.codehaus.wadi.impl.MigratingRelocater;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.ProxyingRelocater;
 import org.codehaus.wadi.impl.SerialContextualiser;
@@ -623,7 +623,7 @@ public class TestContextualiser extends TestCase {
         _log.info("putting complete stack together...");
         Map map=new ConcurrentHashMap();
         CustomCluster cluster=(CustomCluster)new CustomClusterFactory(Utils.getConnectionFactory()).createCluster("ORG.CODEHAUS.WADI.CLUSTER");
-        SimpleContextualiserStack stack=new SimpleContextualiserStack(map, _standardContextPool, _ds, new MessagingMigratingRelocater(2000, 1000));
+        SimpleContextualiserStack stack=new SimpleContextualiserStack(map, _standardContextPool, _ds, new MigratingRelocater(2000, 1000));
         StandardManager manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, stack, map, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, _nodeName, _httpProxy, _httpAddress);
         manager.init();
         manager.start();

@@ -21,6 +21,8 @@ import java.util.Map;
 import org.codehaus.wadi.impl.MessageDispatcher;
 import org.codehaus.wadi.io.Server;
 
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
+
 public interface RelocaterConfig extends Config {
 
     Collapser getCollapser();
@@ -30,5 +32,7 @@ public interface RelocaterConfig extends Config {
     ExtendedCluster getCluster();
     Contextualiser getContextualiser();
     Server getServer();
+    String getNodeName();
+    SynchronizedBoolean getShuttingDown();
     
 }

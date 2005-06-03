@@ -23,6 +23,8 @@ import javax.jms.JMSException;
 
 import org.codehaus.wadi.io.Server;
 
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
+
 public interface DistributableContextualiserConfig extends ContextualiserConfig {
 
     ExtendedCluster getCluster();
@@ -37,5 +39,7 @@ public interface DistributableContextualiserConfig extends ContextualiserConfig 
     void distributeState() throws JMSException;
 
     boolean getAccessOnLoad();
+    
+    SynchronizedBoolean getShuttingDown();
 
 }
