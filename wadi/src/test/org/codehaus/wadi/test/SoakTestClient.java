@@ -35,10 +35,11 @@ public class SoakTestClient implements Runnable {
     class Request implements Runnable {
 
         protected final GetMethod _request=new GetMethod();
+        protected final String _path;
         protected final boolean _cleanUp;
 
         public Request(String path) {
-            _request.setPath(path);
+            _path=path;
             _cleanUp=false;
         }
 
@@ -46,15 +47,18 @@ public class SoakTestClient implements Runnable {
             HttpClient httpClient=null;
             try {
                 httpClient=(HttpClient)_httpClients.take();
-		String before="";
-		Cookie[] cookies=_state.getCookies();
-		if (cookies!=null && cookies.length>0)
-		  before=cookies[0].getValue();
+                String before="";
+                Cookie[] cookies=_state.getCookies();
+                if (cookies!=null && cookies.length>0)
+                    before=cookies[0].getValue();
+                _request.setPath(_path);
                 httpClient.executeMethod(_hostConfiguration, _request, _state);
-		String after=_state.getCookies()[0].getValue();
-		checkSession(before, after);
+                String after=_state.getCookies()[0].getValue();
+                checkSession(before, after);
                 _request.releaseConnection();
+                Thread.interrupted(); // looks like something in commons-httpclient leaves this flag set - the Channel barfs if so...
                 _httpClients.put(httpClient); // don't put it back if anything goes wrong...
+                _request.recycle();
             } catch (Exception e) {
                 _log.error("problem executing http request", e);
                 _errors.increment();
@@ -65,7 +69,6 @@ public class SoakTestClient implements Runnable {
                 }
             }
         }
-
     }
 
   protected void checkSession(String before, String after) {
