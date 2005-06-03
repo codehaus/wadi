@@ -69,13 +69,13 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
             }
 
             try {
-                // whilst we were waiting for the motionLock, the session in question may have been promoted into memory.
+                // whilst we were waiting for the motionLock, the session in question may have been moved back into memory somehow.
                 // before we proceed, confirm that this has not happened.
                 Context context=(Context)_map.get(id);
                 boolean found;
                 if (null!=context) {
                     // oops - it HAS happened...
-                    if (_log.isWarnEnabled()) _log.warn("session was promoted whilst we were waiting: "+id); // TODO - downgrade..
+                    if (_log.isWarnEnabled()) _log.warn("session has reappeared in memory whilst we were waiting to immote it...: "+id); // TODO - downgrade..
                     // overlap two locking systems until we have secured the session in memory, then run the request
                     // and release the lock.
                     // TODO - we really need to take a read lock before we release the motionLock...
