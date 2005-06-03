@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -30,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RelocaterConfig;
@@ -48,7 +50,7 @@ public class HybridRelocater extends AbstractRelocater {
     protected final Log _log=LogFactory.getLog(getClass());
     protected final Map _ackRvMap=Collections.synchronizedMap(new HashMap());
     protected final Map _resRvMap=Collections.synchronizedMap(new HashMap());
-    protected final long _requestHandOverTimeout=2000;// TODO - parameterise 
+    protected final long _requestHandOverTimeout=2000;// TODO - parameterise
     protected final long _resTimeout;
     protected final long _ackTimeout;
 
@@ -56,7 +58,7 @@ public class HybridRelocater extends AbstractRelocater {
         _resTimeout=resTimeout;
         _ackTimeout=ackTimeout;
     }
-    
+
     protected SynchronizedBoolean _shuttingDown;
     protected MessageDispatcher _dispatcher;
     protected String _nodeName;
@@ -72,7 +74,7 @@ public class HybridRelocater extends AbstractRelocater {
         _dispatcher.register(RelocationResponse.class, _resRvMap, _resTimeout);
         _dispatcher.register(RelocationAcknowledgement.class, _ackRvMap, _ackTimeout);
     }
-    
+
     public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
         if (_log.isTraceEnabled()) _log.trace("sending RelocationRequest from "+_nodeName+" for "+name);
         String sessionName=name;
@@ -87,46 +89,98 @@ public class HybridRelocater extends AbstractRelocater {
         settingsInOut.correlationId=nodeName+"-"+sessionName+"-"+System.currentTimeMillis();
         RelocationRequest request=new RelocationRequest(sessionName, nodeName, sessionOrRequestPreferred, shuttingDown, lastKnownTime, lastKnownPlace, _requestHandOverTimeout);
         RelocationResponse response=(RelocationResponse)_config.getDispatcher().exchangeMessages(name, _resRvMap, request, settingsInOut, _resTimeout);
-	    
+
         if (response==null)
             return false;
-        
-        Motable motable=response.getMotable();
-        if (motable==null) {
+
+        Motable emotable=response.getMotable();
+        if (emotable==null) {
             // relocate request...
         } else {
-            // relocate session...
+	  // relocate session...
+
+	  if (!emotable.checkTimeframe(System.currentTimeMillis()))
+            if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
+
+	  Emoter emoter=new RelocationAcknowledgementEmoter(response.getNodeName(), _config.getMap(), settingsInOut);
+	  Motable immotable=Utils.mote(emoter, immoter, emotable, name);
+	  if (null==immotable)
+            return false;
+	  else {
+            boolean answer=immoter.contextualise(hreq, hres, chain, name, immotable, motionLock);
+            return answer;
+	  }
         }
 
         return true;
+	}
+
+	class RelocationAcknowledgementEmoter extends AbstractChainedEmoter {
+	  protected final Log _log=LogFactory.getLog(getClass());
+
+	  protected final String _nodeName;
+	  protected final Map _map;
+	  protected MessageDispatcher.Settings _settingsInOut;
+
+	  public RelocationAcknowledgementEmoter(String nodeName, Map map, MessageDispatcher.Settings settingsInOut) {
+	    _nodeName=nodeName;
+	    _map=map;
+	    _settingsInOut=settingsInOut;
+	  }
+
+	  public boolean prepare(String name, Motable emotable) {
+	    return true;
+	  }
+
+	  public void commit(String name, Motable emotable) {
+	    emotable.destroy(); // remove copy in store
+
+	    // TODO - move some of this to prepare()...
+	    if (_log.isTraceEnabled()) _log.trace("sending RelocationAcknowledgement: "+_settingsInOut.correlationId);
+	    RelocationAcknowledgement ack=new RelocationAcknowledgement();//(name, _config.getLocation());
+	    try {
+	      _config.getDispatcher().sendMessage(ack, _settingsInOut);
+	      _config.getMap().remove(name);
+	    } catch (JMSException e) {
+	      if (_log.isErrorEnabled()) _log.error("could not send RelocationAcknowledgement: "+name, e);
+	    }
+	  }
+
+	  public void rollback(String name, Motable motable) {
+	    throw new RuntimeException("NYI");
+	  }
+
+	  public String getInfo() {
+	    return "immigration:"+_nodeName;
+	  }
 	}
 
     boolean getSessionOrRequestPreferred() {
         return RelocationRequest._RELOCATE_SESSION_PREFERRED;
         // check out LB's capabilities during init()....
     }
-    
+
     // the request arrives ...
-    
+
     public void onMessage(ObjectMessage om, RelocationRequest request) {
         _log.trace("RelocationRequest received from "+request.getNodeName()+" for "+request.getSessionName()+" on "+_nodeName);
         // both of these may be out of date immediately... :-(
         boolean theyAreShuttingDown=request.getShuttingDown();
         boolean weAreShuttingDown=_shuttingDown.get();
         boolean sessionOrRequestPreferred=request.getSessionOrRequestPreferred();
-        
+
         if (!theyAreShuttingDown &&
             (weAreShuttingDown || sessionOrRequestPreferred==RelocationRequest._RELOCATE_SESSION_PREFERRED)) {
             relocateSessionToThem(om, request.getSessionName(), request.getNodeName());
             return;
         }
-        
+
         if (!weAreShuttingDown &&
             (theyAreShuttingDown || sessionOrRequestPreferred==RelocationRequest._RELOCATE_REQUEST_PREFERRED)) {
             relocateRequestToUs();
             return;
         }
-        
+
         if (weAreShuttingDown && theyAreShuttingDown) {
             // yikes !
             // we need to relocate both session and request to a third, safe node
@@ -136,7 +190,7 @@ public class HybridRelocater extends AbstractRelocater {
     }
 
     // response is to relocate session back to sender...
-    
+
     protected void relocateSessionToThem(ObjectMessage om, String sessionName, String nodeName) {
         if (_log.isTraceEnabled()) _log.trace("relocating "+sessionName+" from "+_nodeName+" to "+nodeName);
         try {
@@ -156,7 +210,7 @@ public class HybridRelocater extends AbstractRelocater {
         // N.B. - I don't think it is necessary to acquire the motionLock - consider...
         // TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
     }
-    
+
     /**
      * Manage the immotion of a session into the Cluster tier and thence its Emigration
      * (in response to an RelocationRequest) thence to another node.
@@ -166,19 +220,19 @@ public class HybridRelocater extends AbstractRelocater {
      */
     class RelocationResponseImmoter implements Immoter {
         protected final Log _log=LogFactory.getLog(getClass());
-        
+
         protected final String _nodeName;
         protected final MessageDispatcher.Settings _settingsInOut;
-        
+
         public RelocationResponseImmoter(String nodeName, MessageDispatcher.Settings settingsInOut) {
             _nodeName=nodeName;
             _settingsInOut=settingsInOut;
         }
-        
+
         public Motable nextMotable(String name, Motable emotable) {
             return new SimpleMotable();
         }
-        
+
         public boolean prepare(String name, Motable emotable, Motable immotable) {
             // send the message
             if (_log.isTraceEnabled()) _log.trace("sending RelocationResponse: "+_settingsInOut.correlationId);
@@ -191,7 +245,7 @@ public class HybridRelocater extends AbstractRelocater {
             RelocationResponse response=new RelocationResponse(name, _nodeName, immotable);
             RelocationAcknowledgement ack=(RelocationAcknowledgement)_dispatcher.exchangeMessages(name, _ackRvMap, response, _settingsInOut, _ackTimeout);
             if (ack==null) {
-                if (_log.isWarnEnabled()) _log.warn("no ack received for session relocation resonse: "+_settingsInOut.correlationId); // TODO - increment a counter somewhere...
+                if (_log.isWarnEnabled()) _log.warn("no ack received for session RelocationResponse: "+_settingsInOut.correlationId); // TODO - increment a counter somewhere...
                 // TODO - who owns the session now - consider a syn link to old owner to negotiate this..
                 return false;
             }
@@ -202,29 +256,29 @@ public class HybridRelocater extends AbstractRelocater {
 //            synchronized (_config.getMap()) {
 //                _config.getMap().put(name, tmp);
 //            }
-            
+
             return true;
         }
-        
+
         public void commit(String name, Motable immotable) {
             // do nothing
         }
-        
+
         public void rollback(String name, Motable immotable) {
             // this probably has to by NYI... - nasty...
         }
-        
+
         public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) {
             return false;
         }
-        
+
         public String getInfo() {
             return "emigration:"+_nodeName;
         }
     }
-    
+
     // response is to relocate http request from sender to us...
-    
+
     protected void relocateRequestToUs() {
         throw new UnsupportedOperationException();
     }
