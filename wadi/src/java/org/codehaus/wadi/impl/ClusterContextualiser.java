@@ -28,6 +28,7 @@ import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.ObjectMessage;
+import javax.naming.OperationNotSupportedException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -100,7 +101,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   protected final static String _evacuationQueueKey="evacuationQueue";
   protected final static String _shuttingDownKey="shuttingDown";
 
-  protected final SynchronizedBoolean _shuttingDown=new SynchronizedBoolean(false);
   protected final Map _evacuations=Collections.synchronizedMap(new HashMap());
   protected final Map _locations=new ConcurrentHashMap();
   protected final SynchronizedInt _evacuationPartnerCount=new SynchronizedInt(0);
@@ -136,14 +136,16 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     // optimisation...
   }
 
+  protected SynchronizedBoolean _shuttingDown;
+  protected String _nodeName;
   protected ExtendedCluster _cluster;
   protected Location _location;
-  protected String _nodeName;
   protected Destination _evacuationQueue;
 
   public void init(ContextualiserConfig config) {
     super.init(config);
     DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)config;
+    _shuttingDown=dcc.getShuttingDown();
     _nodeName=dcc.getNodeName();
     _cluster=dcc.getCluster();
     _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), dcc.getHttpAddress(), dcc.getHttpProxy());
@@ -155,6 +157,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     _cluster.addClusterListener(this);
     _dispatcher.register(this, "onMessage", EmigrationRequest.class);
     _dispatcher.register(this, "onMessage", LocationUpdate.class);
+    _dispatcher.register(this, "onMessage", RelocationRequest.class);
     _dispatcher.register(EmigrationAcknowledgement.class, _evacuationRvMap, _ackTimeout);
 
     // _evicter ?
@@ -232,7 +235,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   protected void createEvacuationQueue() throws JMSException {
     _log.trace("creating evacuation queue");
     DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)_config;
-    _shuttingDown.set(true);
     dcc.putDistributedState(_shuttingDownKey, Boolean.TRUE);
     _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
     dcc.putDistributedState(_evacuationQueueKey, _evacuationQueue);
@@ -568,5 +570,47 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   public ExtendedCluster getCluster() {return _cluster;}
   public Contextualiser getContextualiser() {return _top;}
   public Server getServer() {return ((DistributableContextualiserConfig)_config).getServer();}
+  public String getNodeName() {return _nodeName;}
+  public SynchronizedBoolean getShuttingDown() {return _shuttingDown;}
+
+  // Relocation support
+  
+  public void onMessage(ObjectMessage om, RelocationRequest request) {
+      _log.trace("RelocationRequest received from "+request.getNodeName()+" for: "+request.getSessionName());
+      // both of these may be out of date immediately... :-(
+      boolean theyAreShuttingDown=request.getShuttingDown();
+      boolean weAreShuttingDown=_shuttingDown.get();
+      boolean sessionOrRequestPreferred=request.getSessionOrRequestPreferred();
+      
+      if ((weAreShuttingDown && !theyAreShuttingDown) ||
+          (!weAreShuttingDown && !theyAreShuttingDown && sessionOrRequestPreferred==RelocationRequest._RELOCATE_SESSION_PREFERRED)) {
+          // we have to relocate the session to them...
+          return;
+      }
+      
+      if ((!weAreShuttingDown && theyAreShuttingDown) ||
+          (!weAreShuttingDown && !theyAreShuttingDown && sessionOrRequestPreferred==RelocationRequest._RELOCATE_REQUEST_PREFERRED)) {
+          // they have to relocate the request to us...
+          return;
+      }
+      
+      if (!weAreShuttingDown && !theyAreShuttingDown) {
+          // the normal case... - take their preferred action...
+          if (request.getSessionOrRequestPreferred()) {
+              // relocate session to them
+          } else {
+              // relocate request to us
+          }
+          
+          return;
+      }
+      
+      if (weAreShuttingDown && theyAreShuttingDown) {
+          // yikes !
+          // we need to relocate both session and request to a third, safe node
+          // think about it....
+          throw new UnsupportedOperationException("both source and target node are shutting down");
+      }
+  }
 
 }

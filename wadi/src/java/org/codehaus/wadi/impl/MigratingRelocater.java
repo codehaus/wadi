@@ -58,7 +58,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class MessagingMigratingRelocater extends AbstractRelocater implements SessionRelocater {
+public class MigratingRelocater extends AbstractRelocater implements SessionRelocater {
 
     protected final Log _log=LogFactory.getLog(getClass());
 	protected final long _resTimeout;
@@ -66,7 +66,7 @@ public class MessagingMigratingRelocater extends AbstractRelocater implements Se
 	protected final Map _resRvMap=new HashMap();
 	protected final Map _ackRvMap=new HashMap();
 
-	public MessagingMigratingRelocater(long resTimeout, long ackTimeout) {
+	public MigratingRelocater(long resTimeout, long ackTimeout) {
 		_resTimeout=resTimeout;
 		_ackTimeout=ackTimeout;
 	}

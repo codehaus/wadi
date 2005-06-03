@@ -51,7 +51,7 @@ import org.codehaus.wadi.impl.CustomCluster;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.HttpProxyLocation;
-import org.codehaus.wadi.impl.MessagingMigratingRelocater;
+import org.codehaus.wadi.impl.MigratingRelocater;
 import org.codehaus.wadi.impl.MessageDispatcher;
 import org.codehaus.wadi.impl.ProxyingRelocater;
 import org.codehaus.wadi.impl.StandardHttpProxy;
@@ -174,8 +174,8 @@ public class TestRelocation extends TestCase {
 
 	public void testMigrateInsecureRelocation() throws Exception {
         Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new MessagingMigratingRelocater(2000, 500));
-		_relocater1.setRelocationStrategy(new MessagingMigratingRelocater(2000, 500));
+		_relocater0.setRelocationStrategy(new MigratingRelocater(2000, 500));
+		_relocater1.setRelocationStrategy(new MigratingRelocater(2000, 500));
 		testInsecureRelocation(true);
 		}
 
@@ -313,8 +313,8 @@ public class TestRelocation extends TestCase {
 
 	public void testMigrateSecureRelocation() throws Exception {
         Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new MessagingMigratingRelocater(2000, 500));
-		_relocater1.setRelocationStrategy(new MessagingMigratingRelocater(2000, 500));
+		_relocater0.setRelocationStrategy(new MigratingRelocater(2000, 500));
+		_relocater1.setRelocationStrategy(new MigratingRelocater(2000, 500));
 		testSecureRelocation(true);
 		}
 
@@ -399,8 +399,8 @@ public class TestRelocation extends TestCase {
 
 	public void testMigrateStatelessContextualiser() throws Exception {
         Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new MessagingMigratingRelocater(2000, 500));
-		_relocater1.setRelocationStrategy(new MessagingMigratingRelocater(2000, 500));
+		_relocater0.setRelocationStrategy(new MigratingRelocater(2000, 500));
+		_relocater1.setRelocationStrategy(new MigratingRelocater(2000, 500));
 		testStatelessContextualiser(true);
 		}
 

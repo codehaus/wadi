@@ -27,6 +27,8 @@ import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.io.Server;
 
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
+
 public class DummyDistributableContextualiserConfig extends DummyContextualiserConfig implements DistributableContextualiserConfig {
 
     protected final ExtendedCluster _cluster;
@@ -76,6 +78,11 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
     public boolean getAccessOnLoad() {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    public SynchronizedBoolean getShuttingDown() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
