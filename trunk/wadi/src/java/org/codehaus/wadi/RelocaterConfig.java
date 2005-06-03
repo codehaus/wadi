@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 
 import org.codehaus.wadi.impl.MessageDispatcher;
@@ -34,5 +35,7 @@ public interface RelocaterConfig extends Config {
     Server getServer();
     String getNodeName();
     SynchronizedBoolean getShuttingDown();
+    HttpProxy getHttpProxy();
+    InetSocketAddress getHttpAddress();
     
 }

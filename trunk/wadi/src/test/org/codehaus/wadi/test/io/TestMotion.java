@@ -42,6 +42,7 @@ import org.codehaus.wadi.DistributableSessionConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.ExtendedCluster;
+import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Location;
@@ -398,6 +399,8 @@ public class TestMotion extends TestCase {
         public Server getServer() {return null;}
         public String getNodeName() {return null;}
         public SynchronizedBoolean getShuttingDown() {return null;}
+        public HttpProxy getHttpProxy() {return null;}
+        public InetSocketAddress getHttpAddress() {return null;}
         
     }
     

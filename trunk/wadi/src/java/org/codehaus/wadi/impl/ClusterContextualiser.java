@@ -17,6 +17,7 @@
 package org.codehaus.wadi.impl;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,6 +47,7 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
+import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.MessageDispatcherConfig;
@@ -571,6 +573,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   public Server getServer() {return ((DistributableContextualiserConfig)_config).getServer();}
   public String getNodeName() {return _nodeName;}
   public SynchronizedBoolean getShuttingDown() {return _shuttingDown;}
+  public HttpProxy getHttpProxy() {return ((DistributableContextualiserConfig)_config).getHttpProxy();}
+  public InetSocketAddress getHttpAddress() {return ((DistributableContextualiserConfig)_config).getHttpAddress();}
 
 
   

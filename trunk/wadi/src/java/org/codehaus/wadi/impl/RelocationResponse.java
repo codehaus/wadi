@@ -17,6 +17,7 @@
 package org.codehaus.wadi.impl;
 
 import java.io.Serializable;
+import java.net.InetSocketAddress;
 
 import org.codehaus.wadi.Motable;
 
@@ -25,19 +26,22 @@ public class RelocationResponse implements Serializable {
     protected String _sessionName;
     protected String _nodeName;
     protected Motable _motable;
+    protected InetSocketAddress _address;
 
     // use when relocating session....
     public RelocationResponse(String sessionName, String nodeName, Motable motable) {
         _sessionName=sessionName;
         _nodeName=nodeName;
         _motable=motable;
+        _address=null;
     }
 
     // use when relocating request....
-    public RelocationResponse(String sessionName, String nodeName) {
+    public RelocationResponse(String sessionName, String nodeName, InetSocketAddress address) {
         _sessionName=sessionName;
         _nodeName=nodeName;
         _motable=null;
+        _address=address;
     }
 
     protected RelocationResponse() {
@@ -54,6 +58,10 @@ public class RelocationResponse implements Serializable {
 
     public Motable getMotable() {
         return _motable;
+    }
+    
+    public InetSocketAddress getAddress() {
+        return _address;
     }
 
 }

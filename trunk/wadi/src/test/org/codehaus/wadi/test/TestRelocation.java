@@ -171,8 +171,8 @@ public class TestRelocation extends TestCase {
 
 	public void testMigrateInsecureRelocation() throws Exception {
         Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 500));
-		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 500));
+		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 500, true));
+		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 500, true));
 		testInsecureRelocation(true);
 		}
 
@@ -310,8 +310,8 @@ public class TestRelocation extends TestCase {
 
 	public void testMigrateSecureRelocation() throws Exception {
         Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 500));
-		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 500));
+		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 500, true));
+		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 500, true));
 		testSecureRelocation(true);
 		}
 
@@ -396,8 +396,8 @@ public class TestRelocation extends TestCase {
 
 	public void testMigrateStatelessContextualiser() throws Exception {
         Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 500));
-		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 500));
+		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 500, true));
+		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 500, true));
 		testStatelessContextualiser(true);
 		}
 
