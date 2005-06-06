@@ -103,6 +103,9 @@ public class HybridRelocater extends AbstractRelocater {
         if (emotable==null) {
             // relocate request...
             try {
+                
+                //FIXME - API should not be in terms of HttpProxy but in terms of RequestRelocater...
+                
                 _httpProxy.proxy(response.getAddress(), hreq, hres);
                 return true;
             } catch (Exception e) {
