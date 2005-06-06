@@ -158,7 +158,9 @@ public class TestDIndex extends TestCase {
         }
         
         public boolean isCoordinator() {
-            return _cluster.getLocalNode().isCoordinator();
+            synchronized (_coordinatorLock) {
+                return _cluster.getLocalNode()==_coordinator;
+            }
         }
         
         public Node getCoordinator() {
