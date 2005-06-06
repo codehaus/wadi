@@ -55,9 +55,11 @@ public class TestDIndex extends TestCase {
         //protected final String _clusterUri="peer://org.codehaus.wadi";
         protected final String _clusterUri="tcp://localhost:61616";
         protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
-        protected final ClusterFactory _clusterFactory=new DefaultClusterFactory(_connectionFactory);
+        protected final DefaultClusterFactory _clusterFactory=new DefaultClusterFactory(_connectionFactory);
         protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
         protected final Map _distributedState=new ConcurrentHashMap();
+        protected final Object _coordinatorSync=new Object();
+        protected final Object _coordinatorLock=new Object();
 
         protected final String _nodeName;
         protected final Log _log;
@@ -78,10 +80,17 @@ public class TestDIndex extends TestCase {
             _distributedState.put(_nodeNameKey, _nodeName);
             //_distributedState.put("http", _httpAddress);
             _cluster.getLocalNode().setState(_distributedState);
-            _coordinator=_cluster.getLocalNode();
-            _log.info("assuming Coordinatorship until I hear otherwise");
             _cluster.start();
             _log.info("...started");
+            
+            synchronized (_coordinatorSync) {
+                _coordinatorSync.wait(_clusterFactory.getInactiveTime());
+            }
+            
+            synchronized (_coordinatorLock) {
+                if (_coordinator==null)
+                    onCoordinatorChanged(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.ELECTED_COORDINATOR));
+            }
         }
         
         public void stop() throws Exception {
@@ -118,23 +127,44 @@ public class TestDIndex extends TestCase {
         }
 
         public void onCoordinatorChanged(ClusterEvent event) {
-            _log.info("onCoordinatorChanged: "+getNodeName(event.getNode()));
-            Node newCoordinator=event.getNode();
-            if (newCoordinator!=_coordinator) {
-                if (_coordinator==_cluster.getLocalNode())
-                    _log.info("resigning coordinatorship"); // never happens - coordinatorship is for life..
-                _coordinator=newCoordinator;
-                if (_coordinator==_cluster.getLocalNode())
-                    _log.info("accepting coordinatorship");
+            synchronized (_coordinatorLock) {
+                _log.info("onCoordinatorChanged: "+getNodeName(event.getNode()));
+                Node newCoordinator=event.getNode();
+                if (newCoordinator!=_coordinator) {
+                    if (_coordinator==_cluster.getLocalNode())
+                        onDismissal(event);
+                    _coordinator=newCoordinator;
+                    if (_coordinator==_cluster.getLocalNode())
+                        onElection(event);
+                }
+                synchronized (_coordinatorSync) {
+                    _coordinatorSync.notifyAll();
+                }
             }
         }
         
+        // MyNode
+        
+        public void onElection(ClusterEvent event) {
+            _log.info("accepting coordinatorship");
+        }
+
+        public void onDismissal(ClusterEvent event) {
+            _log.info("resigning coordinatorship"); // never happens - coordinatorship is for life..
+        }
+
         public static String getNodeName(Node node) {
             return (String)node.getState().get(_nodeNameKey);
         }
         
         public boolean isCoordinator() {
             return _cluster.getLocalNode().isCoordinator();
+        }
+        
+        public Node getCoordinator() {
+            synchronized (_coordinatorLock) {
+                return _coordinator;
+            }
         }
     }
     
@@ -148,8 +178,6 @@ public class TestDIndex extends TestCase {
         _log.info("0 nodes running");
         red.start();
         red.getCluster().waitForClusterToComplete(1, 6000);
-        if (red.isCoordinator())
-            _log.info("red is Coordinator");
         _log.info("1 node running");
         green.start();
         red.getCluster().waitForClusterToComplete(2, 6000);
