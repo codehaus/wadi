@@ -17,7 +17,6 @@
 package org.codehaus.wadi.sandbox.dindex;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +80,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             _cluster.addClusterListener(this);
             _distributedState.put(_nodeNameKey, _nodeName);
             _distributedState.put(_birthTimeKey, new Long(System.currentTimeMillis()));
-            _distributedState.put(_indexPartitionsKey, new Object[0]);
+            //_distributedState.put(_indexPartitionsKey, new Object[0]);
             _distributedState.put(_numIndexPartitionsKey, new Integer(0));
 
             
@@ -180,7 +179,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                     _key2IndexPartition.put(key, indexPartition);
                 }
                 Object[] keys=_key2IndexPartition.keySet().toArray();
-                _distributedState.put(_indexPartitionsKey, keys);
+                //_distributedState.put(_indexPartitionsKey, keys);
                 _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
 //                try {
 //                    _cluster.getLocalNode().setState(_distributedState);
@@ -253,8 +252,9 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                         Plan plan;
                         synchronized (_planSync) {plan=_plan;}
                         
-                        Object[] keys=(Object[])_distributedState.get(_indexPartitionsKey);
-                        int offset=keys.length-plan._minIndexPartitionsPerNode;
+                        //Object[] keys=(Object[])_distributedState.get(_indexPartitionsKey);
+                        int numKeys=((Integer)_distributedState.get(_numIndexPartitionsKey)).intValue();
+                        int offset=numKeys-plan._minIndexPartitionsPerNode;
                         
                         if (offset>0)
                             giveIndexPartitions(offset, plan._node);
@@ -299,7 +299,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                         _key2IndexPartition.remove(((IndexPartition)acquired.get(i)).getKey());
                     _log.info("old partitions removed");
                     Object[] keys=_key2IndexPartition.keySet().toArray();
-                    _distributedState.put(_indexPartitionsKey, keys);
+                    //_distributedState.put(_indexPartitionsKey, keys);
                     _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
                     _log.info("local state updated");
                     _cluster.getLocalNode().setState(_distributedState);
@@ -338,7 +338,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                 try {
                     // notify rest of Cluster of change of partition ownership...
                     Object[] keys=_key2IndexPartition.keySet().toArray();
-                    _distributedState.put(_indexPartitionsKey, keys);
+                    //_distributedState.put(_indexPartitionsKey, keys);
                     _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
                     _cluster.getLocalNode().setState(_distributedState);
                 } catch (JMSException e) {
@@ -352,5 +352,27 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             } else {
                 // chuck them... - TODO
             }
+        }
+
+        protected static Object _exitSync=new Object();
+        
+        public static void main(String[] args) throws Exception {
+            String nodeName=args[0];
+            int numIndexPartitions=Integer.parseInt(args[1]);
+            
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() {
+                    synchronized (_exitSync) {
+                        _exitSync.notifyAll();
+                    }
+                }
+            });
+            
+            DIndexNode node=new DIndexNode(nodeName, numIndexPartitions);
+            node.start();
+            synchronized (_exitSync) {
+                _exitSync.wait();
+            }
+            node.stop();            
         }
 }
