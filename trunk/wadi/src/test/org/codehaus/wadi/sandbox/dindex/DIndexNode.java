@@ -16,7 +16,12 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+
+import javax.jms.JMSException;
+import javax.jms.ObjectMessage;
 
 import org.activecluster.Cluster;
 import org.activecluster.ClusterEvent;
@@ -26,8 +31,10 @@ import org.activecluster.impl.DefaultClusterFactory;
 import org.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class DIndexNode implements ClusterListener {
         
@@ -66,6 +73,7 @@ public class DIndexNode implements ClusterListener {
             _cluster.addClusterListener(this);
             _distributedState.put(_nodeNameKey, _nodeName);
             _distributedState.put(_birthTimeKey, new Long(System.currentTimeMillis()));
+            _distributedState.put(_indexPartitionsKey, new Object[0]);
             _cluster.getLocalNode().setState(_distributedState);
             _cluster.start();
             _log.info("...started");
@@ -104,18 +112,21 @@ public class DIndexNode implements ClusterListener {
 
         public void onNodeAdd(ClusterEvent event) {
             _log.info("onNodeAdd: "+getNodeName(event.getNode()));
+            refreshNumIndexPartitionsPerNode(); // - coordinator only ?
             if (isCoordinator())
-                onRedistributeIndexPartitions(event);
+                redistributeIndexPartitionsToNode(event.getNode());
         }
 
         public void onNodeRemoved(ClusterEvent event) {  // NYI by layer below us...
             _log.info("onNodeRemoved: "+getNodeName(event.getNode()));
+            refreshNumIndexPartitionsPerNode();
             if (isCoordinator())
                 onRedistributeIndexPartitions(event);
         }
 
         public void onNodeFailed(ClusterEvent event) {
             _log.info("onNodeFailed: "+getNodeName(event.getNode()));
+            refreshNumIndexPartitionsPerNode();
             if (isCoordinator())
                 onRedistributeIndexPartitions(event);
         }
@@ -146,7 +157,7 @@ public class DIndexNode implements ClusterListener {
                 _log.info("allocating "+_numIndexPartitions+" index partitions");
                 for (int i=0; i<_numIndexPartitions; i++) {
                     Integer key=new Integer(i);
-                    Map indexPartition=new ConcurrentHashMap();
+                    IndexPartition indexPartition=new IndexPartition(key);
                     _key2IndexPartition.put(key, indexPartition);
                 }
                 _distributedState.put(_indexPartitionsKey, _key2IndexPartition.keySet().toArray());
@@ -166,11 +177,58 @@ public class DIndexNode implements ClusterListener {
 
 
         public void onRedistributeIndexPartitions(ClusterEvent event) {
-            _log.info("redistributing Index Partitions");
-            int indexPartitionsPerNode=_numIndexPartitions/(_cluster.getNodes().size()+1);
-            int remainder=_numIndexPartitions%indexPartitionsPerNode;
-            _log.info("each Node should carry "+indexPartitionsPerNode+(remainder>0?("-"+(indexPartitionsPerNode+1)):"")+" index partitions");
-            // go through Nodes, looking at their state and [re]assigning Partitions to them...
+            _log.info("redistributing Index Partitions - NYI");
+       }
+
+        public void redistributeIndexPartitionsToNode(Node node) {
+            _log.info("sharing Index Partitions with new Node: "+getNodeName(node));
+            // LocalNode first...
+            {
+                int excess=_key2IndexPartition.size()-_numIndexPartitionsPerNode;
+                // lock this many index partitions
+                if (excess>0) {
+                    _log.info("localNode should give: "+excess);
+                    Map acquired=new HashMap();
+                    for (Iterator i=_key2IndexPartition.entrySet().iterator(); acquired.size()<excess && i.hasNext();) {
+                        Map.Entry entry=(Map.Entry)i.next();
+                        Integer key=(Integer)entry.getKey();
+                        IndexPartition val=(IndexPartition)entry.getValue();
+                        Sync sync=val.getExclusiveLock();
+                        Utils.safeAcquire(sync);
+                        acquired.put(key, val);                        
+                    }
+                    // send them in IndexPartitionsTransferRequest to recipient Node
+                    IndexPartitionsTransferRequest request=new IndexPartitionsTransferRequest(acquired.values().toArray());
+                    try {
+                        _cluster.send(node.getDestination(), _cluster.createObjectMessage(request));
+                    } catch (JMSException e) {
+                        _log.error("problem sending IndexPartitions to joining Node", e);
+                    }
+                    // either - wait to see change reflected in state
+                    // or wait for an acknowledgement
+                    // latter is better, but means that we will have to hold internal model of Nodes state between updates...
+                }
+            }
+            // then remote Nodes...
+            Map remoteNodes=_cluster.getNodes();
+            for (Iterator i=remoteNodes.values().iterator(); i.hasNext(); ) {
+                Node val=(Node)i.next();
+                // should we keep an internal model, or just use their distributed state ?
+                // just use di to start with...
+                int excess=((Object[])val.getState().get(_indexPartitionsKey)).length-_numIndexPartitionsPerNode;
+                if (excess>0) {
+                    _log.info(getNodeName(val)+" can give: "+excess);
+                }
+            }
+        }
+
+        protected int _numIndexPartitionsPerNode;
+        protected int _numIndexPartitionsRemainder;
+        
+        public void refreshNumIndexPartitionsPerNode() {
+            _numIndexPartitionsPerNode=_numIndexPartitions/(_cluster.getNodes().size()+1);
+            _numIndexPartitionsRemainder=_numIndexPartitions%_numIndexPartitionsPerNode;
+            _log.info("each Node should carry "+_numIndexPartitionsPerNode+(_numIndexPartitionsRemainder>0?("-"+(_numIndexPartitionsPerNode+1)):"")+" index partitions");
         }
         
         public static String getNodeName(Node node) {
