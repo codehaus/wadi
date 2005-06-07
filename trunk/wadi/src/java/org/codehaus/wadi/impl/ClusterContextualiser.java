@@ -373,15 +373,14 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     }
 
     public void commit(String name, Motable emotable) {
-      try {
-	EmigrationAcknowledgement ea=new EmigrationAcknowledgement();
-	ea.setId(name);
-	ea.setLocation(_location);
-	_dispatcher.sendMessage(ea, _settingsInOut);
-      } catch (JMSException e) {
-	if (_log.isErrorEnabled()) _log.error("could not acknowledge safe receipt: "+name, e);
-      }
-
+        try {
+            EmigrationAcknowledgement ea=new EmigrationAcknowledgement();
+            ea.setId(name);
+            ea.setLocation(_location);
+            _dispatcher.sendMessage(ea, _settingsInOut);
+        } catch (JMSException e) {
+            if (_log.isErrorEnabled()) _log.error("could not acknowledge safe receipt: "+name, e);
+        }
     }
 
     public void rollback(String name, Motable emotable) {

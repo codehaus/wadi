@@ -16,13 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
 
 import org.activecluster.Cluster;
 import org.activecluster.ClusterEvent;
@@ -36,7 +30,6 @@ import org.codehaus.wadi.MessageDispatcherConfig;
 import org.codehaus.wadi.impl.MessageDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         
@@ -61,8 +54,6 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         protected final String _nodeName;
         protected final Log _log;
         protected final int _numIndexPartitions;
-        protected volatile boolean _running;
-        protected Thread _planThread;
         
         public DIndexNode(String nodeName, int numIndexPartitions) {
             _nodeName=nodeName;
@@ -88,9 +79,6 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             _dispatcher.register(this, "onIndexPartitionsTransferRequest", IndexPartitionsTransferRequest.class);
             _dispatcher.register(IndexPartitionsTransferResponse.class, _indexPartitionTransferRvMap, 5000);
             
-            _running=true;
-            (_planThread=new Thread(new PlanExecutor())).start();
-
             _cluster.getLocalNode().setState(_distributedState);
             _cluster.start();
             _log.info("...started");
@@ -109,9 +97,6 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         
         public void stop() throws Exception {
             _log.info("stopping...");
-            _running=false;
-            synchronized (_planSync) {_planSync.notifyAll();} // wake PlanExecutor
-            _planThread.join();
             _cluster.stop();
             _connectionFactory.stop();
             _log.info("...stopped");
@@ -131,22 +116,48 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             _log.info("onNodeUpdate: "+getNodeName(event.getNode())+": "+event.getNode().getState());
         }
 
+        protected final Object _planLock=new Object();
+        
         public void onNodeAdd(ClusterEvent event) {
-            Node node=event.getNode();
-            _log.info("onNodeAdd: "+getNodeName(node));
-            layout(node);
+            if (_cluster.getLocalNode()==_coordinator) {
+                synchronized (_planLock) {
+                    Node tgt=event.getNode();
+                    _log.info("onNodeAdd: "+getNodeName(tgt));
+                    // make and execute plan....
+                    // snapshot Cluster state - may be unecessary - TODO
+                    Map tmp=_cluster.getNodes();
+                    int n=tmp.size();
+                    int numNodes=n+1;
+                    int partitionsPerNode=_numIndexPartitions/numNodes;
+                    int remainder=_numIndexPartitions%numNodes;
+                    Node[] nodes=(Node[])tmp.values().toArray(new Node[n]);
+                    for (int i=0; i<n; i++) {
+                        Node node=nodes[i];
+                        Node src=(node==tgt)?_cluster.getLocalNode():node;
+                        share(numNodes, i, src, tgt, partitionsPerNode, remainder);
+                    }
+                    
+                }
+            }
         }
 
+        protected void share(int numNodes, int index, Node src, Node tgt, int partitionsPerNode, int remainder) {
+            int keeps=partitionsPerNode+((index<remainder)?1:0);
+            _log.info("sharing: ["+index+"/"+numNodes+"] - "+getNodeName(src)+" keeps: "+keeps);
+        }
+        
         public void onNodeRemoved(ClusterEvent event) {  // NYI by layer below us...
-            Node node=event.getNode();
-            _log.info("onNodeRemoved: "+getNodeName(node));
-            layout(node);
+            synchronized (_planLock) {
+                Node node=event.getNode();
+                _log.info("onNodeRemoved: "+getNodeName(node));
+            }
         }
-
+        
         public void onNodeFailed(ClusterEvent event) {
-            Node node=event.getNode();
-            _log.info("onNodeFailed: "+getNodeName(node));
-            layout(node);
+            synchronized (_planLock) {
+                Node node=event.getNode();
+                _log.info("onNodeFailed: "+getNodeName(node));
+            }
         }
 
         public void onCoordinatorChanged(ClusterEvent event) {
@@ -194,32 +205,6 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         }
 
         
-        public class Plan {
-            
-            public Node _node;
-            public int _minIndexPartitionsPerNode;
-            public int _numIndexPartitionsRemainder;
-            public int _maxIndexPartitionsPerNode;
-        }
-
-        protected Object _planSync=new Object();
-        protected Plan _plan;
-        
-        protected void layout(Node node) {
-            Plan plan=new Plan();
-            plan._node=node;
-            int numNodes=_cluster.getNodes().size(); // excludes self
-            plan._minIndexPartitionsPerNode=_numIndexPartitions/(numNodes+1);
-            plan._numIndexPartitionsRemainder=_numIndexPartitions%plan._minIndexPartitionsPerNode;
-            plan._maxIndexPartitionsPerNode=plan._numIndexPartitionsRemainder>0?(plan._minIndexPartitionsPerNode+1):plan._minIndexPartitionsPerNode;
-            _log.info("MIN:"+plan._minIndexPartitionsPerNode+", MAX:"+plan._maxIndexPartitionsPerNode);
-            synchronized (_planSync) {
-                _plan=plan;
-                _planSync.notifyAll(); // we have a new plan
-            }
-            
-        }
-        
         public static String getNodeName(Node node) {
             return (String)node.getState().get(_nodeNameKey);
         }
@@ -236,126 +221,6 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             }
         }
         
-        public class PlanExecutor implements Runnable {
-            
-            public void run() {
-                try {
-                    while (_running) {
-                        _log.info("plan - sleeping");
-                        try {
-                            synchronized (_planSync) {_planSync.wait();} // wait for a new plan...
-                        } catch (InterruptedException e) {
-                            _log.info("woken by interruption", e);
-                            Thread.interrupted();
-                        }
-                        _log.info("plan - waking");
-                        _log.info("plan started");
-                        Plan plan;
-                        synchronized (_planSync) {plan=_plan;}
-                        
-                        //Object[] keys=(Object[])_distributedState.get(_indexPartitionsKey);
-                        int numKeys=((Integer)_distributedState.get(_numIndexPartitionsKey)).intValue();
-                        int offset=numKeys-plan._minIndexPartitionsPerNode;
-                        
-                        if (offset>0)
-                            giveIndexPartitions(offset, plan._node);
-                        if (offset<0)
-                            _log.info("hoping to receive "+(-offset)+" IndexPartitions from Cluster");
-                        if (offset==0)
-                            _log.info("empty plan");
-                        
-                        _log.info("plan completed");
-                        
-                        // keep running plan 'til failure or completion... - TODO
-                    }
-                } catch (InterruptedException e) {
-                    _log.info("interrupted - quitting");
-                    Thread.interrupted();
-                }
-            }
-        }
-        
-        public boolean giveIndexPartitions(int numIndexPartitions, Node recipient) throws InterruptedException {
-            _log.info("giving "+numIndexPartitions+" IndexPartitions to "+getNodeName(recipient));
-            List acquired=new ArrayList(numIndexPartitions);
-            try {
-                for (Iterator i=_key2IndexPartition.values().iterator(); acquired.size()<numIndexPartitions && i.hasNext(); ) {
-                    IndexPartition partition=(IndexPartition)i.next();
-                    Sync lock=partition.getExclusiveLock();
-                    long timeout=500; // how should we work this out ?
-                    if (lock.attempt(timeout))
-                        acquired.add(partition);
-                }
-                _log.info("sending "+acquired.size()+" IndexPartions to "+getNodeName(recipient));
-                String correlationId=""+System.currentTimeMillis();
-                MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-                settingsInOut.from=_cluster.getLocalNode().getDestination();
-                settingsInOut.to=recipient.getDestination();
-                settingsInOut.correlationId=correlationId;
-                IndexPartition[] partitions=(IndexPartition[])acquired.toArray(new IndexPartition[acquired.size()]);
-                IndexPartitionsTransferRequest request=new IndexPartitionsTransferRequest(partitions);
-                IndexPartitionsTransferResponse response=(IndexPartitionsTransferResponse)_dispatcher.exchangeMessages(request, _indexPartitionTransferRvMap, settingsInOut, 5000); // TODO FIXME
-                if (response.getSuccess()) {
-                    _log.info("transfer successful");
-                    for (int i=0; i<acquired.size(); i++)
-                        _key2IndexPartition.remove(((IndexPartition)acquired.get(i)).getKey());
-                    _log.info("old partitions removed");
-                    Object[] keys=_key2IndexPartition.keySet().toArray();
-                    //_distributedState.put(_indexPartitionsKey, keys);
-                    _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
-                    _log.info("local state updated");
-                    _cluster.getLocalNode().setState(_distributedState);
-                    _log.info("distributed state updated");
-                } else {
-                    _log.warn("transfer unsuccessful");
-                }
-            } catch (Throwable t) {
-                _log.warn("unexpected problem", t);
-            } finally {
-                for (int i=0; i<acquired.size(); i++)
-                    ((IndexPartition)acquired.get(i)).getExclusiveLock().release();
-                _log.info("locks released");
-            }
-            
-            return true;
-        }
-
-        
-        public void onIndexPartitionsTransferRequest(ObjectMessage om, IndexPartitionsTransferRequest request) {
-            IndexPartition[] indexPartitions=request.getIndexPartitions();
-            _log.info("received "+indexPartitions.length);
-            boolean success=false;
-            // read incoming data into our own local model
-            for (int i=0; i<indexPartitions.length; i++) {
-                IndexPartition partition=indexPartitions[i];
-                // we should lock these until acked - then unlock them - TODO...
-                _key2IndexPartition.put(partition.getKey(), partition);
-            }
-            success=true;
-            boolean acked=false;
-            // acknowledge safe receipt to donor
-            try {
-                _dispatcher.replyToMessage(om, new IndexPartitionsTransferResponse(success));
-                acked=true;
-                try {
-                    // notify rest of Cluster of change of partition ownership...
-                    Object[] keys=_key2IndexPartition.keySet().toArray();
-                    //_distributedState.put(_indexPartitionsKey, keys);
-                    _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
-                    _cluster.getLocalNode().setState(_distributedState);
-                } catch (JMSException e) {
-                    _log.error("could not update distributed state", e);
-                }
-            } catch (JMSException e) {
-                _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died", e);
-            }
-            if (acked) {
-                // unlock Partitions here... - TODO
-            } else {
-                // chuck them... - TODO
-            }
-        }
-
         protected static Object _exitSync=new Object();
         
         public static void main(String[] args) throws Exception {

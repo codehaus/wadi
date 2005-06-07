@@ -309,13 +309,14 @@ public class HybridRelocater extends AbstractRelocater {
     
     protected void relocateRequestToUs(ObjectMessage om, String sessionName) {
         try {
-            MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+            //MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
             // reverse direction...
-            settingsInOut.to=om.getJMSReplyTo();
-            settingsInOut.from=_config.getLocation().getDestination();
-            settingsInOut.correlationId=om.getJMSCorrelationID();
+//            settingsInOut.to=om.getJMSReplyTo();
+//            settingsInOut.from=_config.getLocation().getDestination();
+//            settingsInOut.correlationId=om.getJMSCorrelationID();
             RelocationResponse response=new RelocationResponse(sessionName, _nodeName, _config.getHttpAddress());
-            _config.getDispatcher().sendMessage(response, settingsInOut);
+//            _config.getDispatcher().sendMessage(response, settingsInOut);
+            _config.getDispatcher().replyToMessage(om, response);
 //            _config.getMap().remove(name);
         } catch (JMSException e) {
             if (_log.isErrorEnabled()) _log.error("could not send RelocationResponse: "+sessionName, e);
