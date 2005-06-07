@@ -208,7 +208,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         protected void layout(Node node) {
             Plan plan=new Plan();
             plan._node=node;
-            plan._minIndexPartitionsPerNode=_numIndexPartitions/(_cluster.getNodes().size()+1);
+            int numNodes=_cluster.getNodes().size(); // excludes self
+            plan._minIndexPartitionsPerNode=_numIndexPartitions/(numNodes+1);
             plan._numIndexPartitionsRemainder=_numIndexPartitions%plan._minIndexPartitionsPerNode;
             plan._maxIndexPartitionsPerNode=plan._numIndexPartitionsRemainder>0?(plan._minIndexPartitionsPerNode+1):plan._minIndexPartitionsPerNode;
             _log.info("MIN:"+plan._minIndexPartitionsPerNode+", MAX:"+plan._maxIndexPartitionsPerNode);
@@ -291,7 +292,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                 settingsInOut.from=_cluster.getLocalNode().getDestination();
                 settingsInOut.to=recipient.getDestination();
                 settingsInOut.correlationId=correlationId;
-                IndexPartitionsTransferRequest request=new IndexPartitionsTransferRequest((IndexPartition[])acquired.toArray(new IndexPartition[acquired.size()]));
+                IndexPartition[] partitions=(IndexPartition[])acquired.toArray(new IndexPartition[acquired.size()]);
+                IndexPartitionsTransferRequest request=new IndexPartitionsTransferRequest(partitions);
                 IndexPartitionsTransferResponse response=(IndexPartitionsTransferResponse)_dispatcher.exchangeMessages(request, _indexPartitionTransferRvMap, settingsInOut, 5000); // TODO FIXME
                 if (response.getSuccess()) {
                     _log.info("transfer successful");
