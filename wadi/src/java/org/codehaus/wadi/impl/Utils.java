@@ -232,5 +232,15 @@ public class Utils {
             }
         } while (Thread.interrupted());
      }
+
+    public static void safeAcquire(Sync sync) {
+        do {
+            try {
+                sync.acquire();
+            } catch (InterruptedException e) {
+                if (_log.isTraceEnabled()) _log.trace("unexpected interruption - ignoring", e);
+            }
+        } while (Thread.interrupted());
+    }  
     
 }
