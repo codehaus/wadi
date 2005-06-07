@@ -32,6 +32,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.activecluster.Cluster;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Collapser;
@@ -394,7 +395,7 @@ public class TestMotion extends TestCase {
         public MessageDispatcher getDispatcher() {return null;}
         public Location getLocation() {return null;}
         public Map getMap() {return null;}
-        public ExtendedCluster getCluster() {return null;}
+        public Cluster getCluster() {return null;}
         public Contextualiser getContextualiser() {return null;}
         public Server getServer() {return null;}
         public String getNodeName() {return null;}

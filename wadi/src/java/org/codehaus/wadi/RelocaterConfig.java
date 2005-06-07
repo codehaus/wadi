@@ -19,6 +19,7 @@ package org.codehaus.wadi;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
+import org.activecluster.Cluster;
 import org.codehaus.wadi.impl.MessageDispatcher;
 import org.codehaus.wadi.io.Server;
 
@@ -30,7 +31,7 @@ public interface RelocaterConfig extends Config {
     MessageDispatcher getDispatcher();
     Location getLocation();
     Map getMap();
-    ExtendedCluster getCluster();
+    Cluster getCluster();
     Contextualiser getContextualiser();
     Server getServer();
     String getNodeName();

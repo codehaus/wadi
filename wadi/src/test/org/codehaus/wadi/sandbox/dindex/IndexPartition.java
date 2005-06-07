@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -29,32 +30,33 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 public class IndexPartition implements Serializable {
     
-    protected transient final ReadWriteLock _lock;
+    protected transient ReadWriteLock _lock;
     
+    protected final long _creationTime=System.currentTimeMillis();
+
     protected Integer _key;
     protected Map _map=new ConcurrentHashMap(); // cannot be final as will be Serialised...
     protected boolean _local; // should own write lock before altering this...
     
     public IndexPartition(Integer key) {
-        this();
+        //this();
+        _lock=new WriterPreferenceReadWriteLock();
         _key=key;
     }
     
     protected IndexPartition() {
         // for deserialisation
         _lock=new WriterPreferenceReadWriteLock();
+        System.err.println("DESERIALISING..."+_lock);
     }
-    
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        _lock=new WriterPreferenceReadWriteLock();
+    }
+
     public Sync getExclusiveLock() {
-        boolean acquired=false;
-        try {
-            Utils.safeAcquire(_lock.readLock());
-            acquired=true;
-            return _lock.writeLock();
-        } finally {
-            if (acquired)
-                _lock.readLock().release();
-        }
+        return _lock.writeLock();
     }
     
     public boolean getLocal() {
@@ -110,4 +112,13 @@ public class IndexPartition implements Serializable {
         }
     }
     
+    // call this with Exclusive lock held...
+    public Map get() {
+        return _map;
+    }
+    
+    
+    public Integer getKey() {
+        return _key;
+    }
 }

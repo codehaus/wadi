@@ -33,6 +33,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.activecluster.Cluster;
 import org.activecluster.ClusterEvent;
 import org.activecluster.ClusterListener;
 import org.activecluster.LocalNode;
@@ -307,7 +308,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
           try {
               immotable.copy(emotable);
               EmigrationRequest er=new EmigrationRequest(immotable);
-              EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(name, _evacuationRvMap, er, settingsInOut, _ackTimeout);
+              EmigrationAcknowledgement ea=(EmigrationAcknowledgement)_dispatcher.exchangeMessages(er, _evacuationRvMap, settingsInOut, _ackTimeout);
               
               if (ea==null) {
                   if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+_ackTimeout+" millis): "+name);
@@ -568,7 +569,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   public Collapser getCollapser() {return _collapser;}
   public MessageDispatcher getDispatcher() {return _dispatcher;}
   public Location getLocation() {return _location;}
-  public ExtendedCluster getCluster() {return _cluster;}
+  public Cluster getCluster() {return _cluster;}
   public Contextualiser getContextualiser() {return _top;}
   public Server getServer() {return ((DistributableContextualiserConfig)_config).getServer();}
   public String getNodeName() {return _nodeName;}
