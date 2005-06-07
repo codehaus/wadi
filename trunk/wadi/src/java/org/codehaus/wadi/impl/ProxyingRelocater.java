@@ -76,7 +76,7 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
 		settingsInOut.to=_config.getDispatcher().getCluster().getDestination();
 		settingsInOut.correlationId=name; // TODO - better correlation id
 		LocationRequest request=new LocationRequest(name, _proxyHandOverPeriod);
-		LocationResponse response=(LocationResponse)_config.getDispatcher().exchangeMessages(name, _rvMap, request, settingsInOut, _timeout);
+		LocationResponse response=(LocationResponse)_config.getDispatcher().exchangeMessages(request, _rvMap, settingsInOut, _timeout);
 
 		if (response==null)
 			return null;

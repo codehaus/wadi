@@ -18,20 +18,20 @@ package org.codehaus.wadi.sandbox.dindex;
 
 import java.io.Serializable;
 
-public class IndexPartitionsTransferRequest implements Serializable {
+public class IndexPartitionsTransferResponse implements Serializable {
 
-    protected IndexPartition[] _indexPartitions;
+    protected boolean _success;
     
-    public IndexPartitionsTransferRequest(IndexPartition[] indexPartitions) {
-        _indexPartitions=indexPartitions;
+    public IndexPartitionsTransferResponse(boolean success) {
+        _success=success;
     }
     
-    protected IndexPartitionsTransferRequest() {
-        // for deserialisation
+    protected IndexPartitionsTransferResponse() {
+        // used during deserialisation...
     }
     
-    public IndexPartition[] getIndexPartitions() {
-        return _indexPartitions;
+    public boolean getSuccess() {
+        return _success;
     }
-
+    
 }

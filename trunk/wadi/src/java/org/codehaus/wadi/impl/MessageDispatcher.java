@@ -29,9 +29,9 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
+import org.activecluster.Cluster;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.MessageDispatcherConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
@@ -63,7 +63,7 @@ public class MessageDispatcher implements MessageListener {
 
     protected MessageDispatcherConfig _config;
 
-    protected ExtendedCluster _cluster;
+    protected Cluster _cluster;
     protected MessageConsumer _clusterConsumer;
     protected MessageConsumer _nodeConsumer;
 
@@ -267,18 +267,27 @@ public class MessageDispatcher implements MessageListener {
 		}
 	}
 
-	public void sendMessage(Serializable s, Settings settingsIn) throws JMSException {
-		// construct and send message...
-		ObjectMessage message=_cluster.createObjectMessage();
-		message.setJMSReplyTo(settingsIn.from);
-		message.setJMSCorrelationID(settingsIn.correlationId);
-		message.setObject(s);
-		_cluster.send(settingsIn.to, message);
-	}
+    public void sendMessage(Serializable s, Settings settingsIn) throws JMSException {
+        // construct and send message...
+        ObjectMessage message=_cluster.createObjectMessage();
+        message.setJMSReplyTo(settingsIn.from);
+        message.setJMSCorrelationID(settingsIn.correlationId);
+        message.setObject(s);
+        _cluster.send(settingsIn.to, message);
+    }
+    
+    public void replyToMessage(ObjectMessage request, Serializable response) throws JMSException {
+        // construct and send message...
+        ObjectMessage message=_cluster.createObjectMessage();
+        message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+        message.setJMSCorrelationID(request.getJMSCorrelationID());
+        message.setObject(response);
+        _cluster.send(request.getJMSReplyTo(), message);
+    }
 
 	// send a message and then wait a given amount of time for the first response - return it...
 	// for use with RendezVousDispatcher... - need to register type beforehand...
-	public Serializable exchangeMessages(String id, Map rvMap, Serializable request, Settings settingsInOut, long timeout) {
+	public Serializable exchangeMessages(Serializable request, Map rvMap, Settings settingsInOut, long timeout) {
 		Rendezvous rv=new Rendezvous(2); // TODO - can these be reused ?
 
 		// set up a rendez-vous...
@@ -301,15 +310,15 @@ public class MessageDispatcher implements MessageListener {
 					settingsInOut.from=_cluster.getLocalNode().getDestination();
 					assert settingsInOut.correlationId.equals(om.getJMSCorrelationID());
 					long elapsedTime=System.currentTimeMillis()-startTime;
-					if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis): "+id); // session does not exist
+					if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis)"); // session does not exist
 				} catch (TimeoutException toe) {
-					if (_log.isWarnEnabled()) _log.warn("no response to request within timeout ("+timeout+" millis): "+id); // session does not exist
+					if (_log.isWarnEnabled()) _log.warn("no response to request within timeout ("+timeout+" millis)"); // session does not exist
 				} catch (InterruptedException ignore) {
-					if (_log.isWarnEnabled()) _log.warn("waiting for response - interruption ignored: "+id);
+					if (_log.isWarnEnabled()) _log.warn("waiting for response - interruption ignored");
 				}
 			} while (Thread.interrupted());
 		} catch (JMSException e) {
-			if (_log.isWarnEnabled()) _log.warn("problem sending request message: "+id, e);
+			if (_log.isWarnEnabled()) _log.warn("problem sending request message", e);
 		} finally {
 			// tidy up rendez-vous
 			synchronized (rvMap) {
@@ -320,7 +329,7 @@ public class MessageDispatcher implements MessageListener {
 		return response;
 	}
 
-	public ExtendedCluster getCluster(){return _cluster;}
+	public Cluster getCluster(){return _cluster;}
 
 	public MessageConsumer addDestination(Destination destination) throws JMSException {
 	    boolean excludeSelf=true;

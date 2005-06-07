@@ -94,7 +94,7 @@ public class HybridRelocater extends AbstractRelocater {
         settingsInOut.to=_config.getDispatcher().getCluster().getDestination();
         settingsInOut.correlationId=nodeName+"-"+sessionName+"-"+System.currentTimeMillis();
         RelocationRequest request=new RelocationRequest(sessionName, nodeName, sessionOrRequestPreferred, shuttingDown, lastKnownTime, lastKnownPlace, _requestHandOverTimeout);
-        RelocationResponse response=(RelocationResponse)_config.getDispatcher().exchangeMessages(name, _resRvMap, request, settingsInOut, _resTimeout);
+        RelocationResponse response=(RelocationResponse)_config.getDispatcher().exchangeMessages(request, _resRvMap, settingsInOut, _resTimeout);
         
         if (response==null)
             return false;
@@ -271,7 +271,7 @@ public class HybridRelocater extends AbstractRelocater {
                 return false;
             }
             RelocationResponse response=new RelocationResponse(name, _nodeName, immotable);
-            RelocationAcknowledgement ack=(RelocationAcknowledgement)_dispatcher.exchangeMessages(name, _ackRvMap, response, _settingsInOut, _ackTimeout);
+            RelocationAcknowledgement ack=(RelocationAcknowledgement)_dispatcher.exchangeMessages(response, _ackRvMap, _settingsInOut, _ackTimeout);
             if (ack==null) {
                 if (_log.isWarnEnabled()) _log.warn("no ack received for session RelocationResponse: "+_settingsInOut.correlationId); // TODO - increment a counter somewhere...
                 // TODO - who owns the session now - consider a syn link to old owner to negotiate this..

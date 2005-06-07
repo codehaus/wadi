@@ -100,7 +100,7 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
         settingsInOut.correlationId=name+"-"+(_counter++)+"-"+_config.getCluster().getLocalNode().getDestination().toString(); // TODO - better correlationId
         if (_log.isTraceEnabled()) _log.trace("sending immigration request: "+settingsInOut.correlationId);
         ImmigrationRequest request=new ImmigrationRequest(name, _resTimeout);
-        ImmigrationResponse response=(ImmigrationResponse)_config.getDispatcher().exchangeMessages(name, _resRvMap, request, settingsInOut, _resTimeout);
+        ImmigrationResponse response=(ImmigrationResponse)_config.getDispatcher().exchangeMessages(request, _resRvMap, settingsInOut, _resTimeout);
         if (_log.isTraceEnabled()) _log.trace("received immigration response: "+settingsInOut.correlationId);
         // take out session, prepare to promote it...
 
@@ -234,7 +234,7 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
 			    return false;
 			}
 			mr.setMotable(immotable);
-			ImmigrationAcknowledgement ack=(ImmigrationAcknowledgement)_config.getDispatcher().exchangeMessages(name, _ackRvMap, mr, _settingsInOut, _ackTimeout);
+			ImmigrationAcknowledgement ack=(ImmigrationAcknowledgement)_config.getDispatcher().exchangeMessages(mr, _ackRvMap, _settingsInOut, _ackTimeout);
 			if (ack==null) {
 			  if (_log.isWarnEnabled()) _log.warn("no ack received for session immigration: "+_settingsInOut.correlationId); // TODO - increment a couter somewhere...
 				// TODO - who owns the session now - consider a syn link to old owner to negotiate this..
