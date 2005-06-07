@@ -257,21 +257,21 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                 // we should lock these until acked - then unlock them - TODO...
                 _key2IndexPartition.put(partition.getKey(), partition);
             }
-            success=true;
+//            success=true;
 //            boolean acked=false;
 //            // acknowledge safe receipt to donor
 //            try {
 //                _dispatcher.replyToMessage(om, new IndexPartitionsTransferResponse(success));
 //                acked=true;
-//                try {
-//                    // notify rest of Cluster of change of partition ownership...
-//                    Object[] keys=_key2IndexPartition.keySet().toArray();
-//                    //_distributedState.put(_indexPartitionsKey, keys);
-//                    _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
-//                    _cluster.getLocalNode().setState(_distributedState);
-//                } catch (JMSException e) {
-//                    _log.error("could not update distributed state", e);
-//                }
+                try {
+                    // notify rest of Cluster of change of partition ownership...
+                    Object[] keys=_key2IndexPartition.keySet().toArray();
+                    //_distributedState.put(_indexPartitionsKey, keys);
+                    _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
+                    _cluster.getLocalNode().setState(_distributedState);
+                } catch (JMSException e) {
+                    _log.error("could not update distributed state", e);
+                }
 //            } catch (JMSException e) {
 //                _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died", e);
 //            }
