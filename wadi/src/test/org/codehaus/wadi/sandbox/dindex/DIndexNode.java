@@ -16,7 +16,13 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+
+import javax.jms.JMSException;
+import javax.jms.ObjectMessage;
 
 import org.activecluster.Cluster;
 import org.activecluster.ClusterEvent;
@@ -30,6 +36,7 @@ import org.codehaus.wadi.MessageDispatcherConfig;
 import org.codehaus.wadi.impl.MessageDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         
@@ -76,6 +83,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
 
             
             _dispatcher.init(this);
+            _dispatcher.register(this, "onIndexPartitionsTransferCommand", IndexPartitionsTransferCommand.class);
             _dispatcher.register(this, "onIndexPartitionsTransferRequest", IndexPartitionsTransferRequest.class);
             _dispatcher.register(IndexPartitionsTransferResponse.class, _indexPartitionTransferRvMap, 5000);
             
@@ -131,19 +139,31 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                     int partitionsPerNode=_numIndexPartitions/numNodes;
                     int remainder=_numIndexPartitions%numNodes;
                     Node[] nodes=(Node[])tmp.values().toArray(new Node[n]);
+                    String correlationId=_nodeName+"-NodeAdd-"+System.currentTimeMillis();
                     for (int i=0; i<n; i++) {
                         Node node=nodes[i];
                         Node src=(node==tgt)?_cluster.getLocalNode():node;
-                        share(numNodes, i, src, tgt, partitionsPerNode, remainder);
+                        share(numNodes, i, src, tgt, partitionsPerNode, remainder, correlationId);
                     }
                     
                 }
             }
         }
 
-        protected void share(int numNodes, int index, Node src, Node tgt, int partitionsPerNode, int remainder) {
-            int keeps=partitionsPerNode+((index<remainder)?1:0);
-            _log.info("sharing: ["+index+"/"+numNodes+"] - "+getNodeName(src)+" keeps: "+keeps);
+        protected void share(int numNodes, int index, Node src, Node tgt, int partitionsPerNode, int remainder, String correlationId) {
+            int keep=partitionsPerNode+((index<remainder)?1:0);
+            _log.info("sharing: ["+index+"/"+numNodes+"] - "+getNodeName(src)+" keeps: "+keep);
+            IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand(keep);
+            try {
+                ObjectMessage om=_cluster.createObjectMessage();
+                om.setJMSReplyTo(tgt.getDestination());
+                om.setJMSDestination(src.getDestination());
+                om.setJMSCorrelationID(correlationId);
+                om.setObject(command);
+                _cluster.send(src.getDestination(), om);
+            } catch (JMSException e) {
+                _log.error("problem sending share command", e);
+            }
         }
         
         public void onNodeRemoved(ClusterEvent event) {  // NYI by layer below us...
@@ -175,6 +195,91 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                     _coordinatorSync.notifyAll();
                 }
             }
+        }
+        
+        protected Object _transferLock=new Object();
+        
+        public void onIndexPartitionsTransferCommand(ObjectMessage om, IndexPartitionsTransferCommand command ) {
+            int keep=command.getKeep();
+            int rest=(_key2IndexPartition.size()-keep);
+            _log.info("keep "+keep+" and transfer rest: "+rest);
+            synchronized (_transferLock) {
+                List acquired=new ArrayList(rest);
+                try {
+                    // lock partitions
+                    for (Iterator i=_key2IndexPartition.values().iterator(); acquired.size()<rest && i.hasNext(); ) {
+                        IndexPartition partition=(IndexPartition)i.next();
+                        Sync lock=partition.getExclusiveLock();
+                        long timeout=500; // how should we work this out ? - TODO
+                        if (lock.attempt(timeout))
+                            acquired.add(partition);
+                    }
+                    // stick into request
+                    // send
+                    
+                    _log.info("transferring "+acquired.size()+" IndexPartions");
+                    IndexPartition[] partitions=(IndexPartition[])acquired.toArray(new IndexPartition[acquired.size()]);
+                    IndexPartitionsTransferRequest request=new IndexPartitionsTransferRequest(partitions);
+                    _dispatcher.replyToMessage(om, request);
+                    
+                    boolean success=true;
+                    if (success) {
+                        _log.info("transfer successful");
+                        for (int i=0; i<acquired.size(); i++)
+                            _key2IndexPartition.remove(((IndexPartition)acquired.get(i)).getKey());
+                        _log.info("old partitions removed");
+                        Object[] keys=_key2IndexPartition.keySet().toArray();
+                        //_distributedState.put(_indexPartitionsKey, keys);
+                        _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
+                        _log.info("local state updated");
+                        _cluster.getLocalNode().setState(_distributedState);
+                        _log.info("distributed state updated");
+                    } else {
+                        _log.warn("transfer unsuccessful");
+                    }
+                } catch (Throwable t) {
+                    _log.warn("unexpected problem", t);
+                } finally {
+                    for (int i=0; i<acquired.size(); i++)
+                        ((IndexPartition)acquired.get(i)).getExclusiveLock().release();
+                    _log.info("locks released");
+                }
+            }
+        }
+
+        public void onIndexPartitionsTransferRequest(ObjectMessage om, IndexPartitionsTransferRequest request) {
+            IndexPartition[] indexPartitions=request.getIndexPartitions();
+            _log.info("received "+indexPartitions.length);
+            boolean success=false;
+            // read incoming data into our own local model
+            for (int i=0; i<indexPartitions.length; i++) {
+                IndexPartition partition=indexPartitions[i];
+                // we should lock these until acked - then unlock them - TODO...
+                _key2IndexPartition.put(partition.getKey(), partition);
+            }
+            success=true;
+//            boolean acked=false;
+//            // acknowledge safe receipt to donor
+//            try {
+//                _dispatcher.replyToMessage(om, new IndexPartitionsTransferResponse(success));
+//                acked=true;
+//                try {
+//                    // notify rest of Cluster of change of partition ownership...
+//                    Object[] keys=_key2IndexPartition.keySet().toArray();
+//                    //_distributedState.put(_indexPartitionsKey, keys);
+//                    _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
+//                    _cluster.getLocalNode().setState(_distributedState);
+//                } catch (JMSException e) {
+//                    _log.error("could not update distributed state", e);
+//                }
+//            } catch (JMSException e) {
+//                _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died", e);
+//            }
+//            if (acked) {
+//                // unlock Partitions here... - TODO
+//            } else {
+//                // chuck them... - TODO
+//            }
         }
         
         // MyNode
