@@ -138,7 +138,6 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
 
         public void onNodeAdd(ClusterEvent event) {
             if (_cluster.getLocalNode()==_coordinator) {
-                balance();
                 synchronized (_planLock) {
                     Node tgt=event.getNode();
                     _log.info("onNodeAdd: "+getNodeName(tgt));
@@ -146,18 +145,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                     // snapshot Cluster state - may be unecessary - TODO
                     Map tmp=_cluster.getNodes();
                     int n=tmp.size();
-                    int numNodes=n+1;
-                    int partitionsPerNode=_numIndexPartitions/numNodes;
-                    int remainder=_numIndexPartitions%numNodes;
                     Node[] nodes=(Node[])tmp.values().toArray(new Node[n]);
-                    String correlationId=_nodeName+"-NodeAdd-"+System.currentTimeMillis();
-                    //Rendezvous rv=new Rendezvous(n+1);
-                    //_indexPartitionTransferCommandAcknowledgementRvMap.put(correlationId, rv);
-                    for (int i=0; i<n; i++) {
-                        Node node=nodes[i];
-                        Node src=(node==tgt)?_cluster.getLocalNode():node;
-                        share(numNodes, i, src, tgt, partitionsPerNode, remainder, correlationId);
-                    }
+                    new Balancer(_numIndexPartitions, nodes).run(); // should be run on another thread...
 
 //                  boolean success=false;
 //                  try {
@@ -186,10 +175,10 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             }
         }
 
-        protected void share(int numNodes, int index, Node src, Node tgt, int partitionsPerNode, int remainder, String correlationId) {
-            int keep=partitionsPerNode+((index<remainder)?1:0);
-            _log.info("sharing: ["+index+"/"+numNodes+"] - "+getNodeName(src)+" keeps: "+keep);
-            IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand(keep, tgt.getDestination());
+        
+        protected void transfer(Node src, Node tgt, int amount, String correlationId) {
+            _log.info("commanding "+getNodeName(src)+" to give "+amount+" to "+getNodeName(tgt));
+            IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand(amount, tgt.getDestination());
             try {
                 ObjectMessage om=_cluster.createObjectMessage();
                 om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
@@ -200,6 +189,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             } catch (JMSException e) {
                 _log.error("problem sending share command", e);
             }
+            
         }
 
         public static class LessThanComparator implements Comparator {
@@ -299,19 +289,17 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                 while(i.hasNext()) i.next(); // walk to end of list - why can't we start with iterator there ?
                 while(remainingBuckets>0 && i.hasPrevious()) {
                     Pair p=(Pair)i.previous();
-                    if (p._deviation<=remainingBuckets) {
-                        remainingBuckets-=p._deviation;
+                    remainingBuckets--;
+                    if ((--p._deviation)==0)
                         i.remove();
-                    } else {
-                        p._deviation-=remainingBuckets;
-                        remainingBuckets=0;
-                    }
                 }
                 assert remainingBuckets==0;
                 
                 // now direct each producer to transfer its excess buckets to a corresponding consumer....
                 Iterator p=producers.iterator();
                 Iterator c=consumers.iterator();
+
+                String correlationId=_nodeName+"-transfer-"+System.currentTimeMillis();
 
                 Pair consumer=null;
                 while (p.hasNext()) {
@@ -320,12 +308,12 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                         if (consumer==null)
                             consumer=c.hasNext()?(Pair)c.next():null;
                         if (producer._deviation>=consumer._deviation) {
-                            _log.info(getNodeName(producer._node)+" should give "+consumer._deviation+" to "+getNodeName(consumer._node));
+                            transfer(producer._node, consumer._node, consumer._deviation, correlationId);
                             producer._deviation-=consumer._deviation;
                             consumer._deviation=0;
                             consumer=null;
                         } else {
-                            _log.info(getNodeName(producer._node)+" should give "+producer._deviation+" to "+getNodeName(consumer._node));
+                            transfer(producer._node, consumer._node, producer._deviation, correlationId);
                             consumer._deviation-=producer._deviation;
                             producer._deviation=0;
                         }
@@ -337,7 +325,6 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         }
 
         public void balance() {
-            new Balancer(_numIndexPartitions, (Node[])_cluster.getNodes().values().toArray(new Node[_cluster.getNodes().size()])).run();
         }
         
         public void onNodeRemoved(ClusterEvent event) {  // NYI by layer below us...
@@ -379,16 +366,15 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         // send them ina request, waiting for response
         // send an acknowledgement to Coordinator who sent original command
         public void onIndexPartitionsTransferCommand(ObjectMessage om, IndexPartitionsTransferCommand command) {
-            int keep=command.getKeep();
-            int rest=(_key2IndexPartition.size()-keep);
+            int amount=command.getAmount();
             boolean success=false;
-            _log.info("keep "+keep+" and transfer rest: "+rest);
+            _log.info("transfer : "+amount);
             synchronized (_transferLock) {
-                List acquired=new ArrayList(rest);
-                _log.info("trying to lock "+rest+" IndexPartions");
+                List acquired=new ArrayList(amount);
+                _log.info("trying to lock "+amount+" IndexPartions");
                 try {
                     // lock partitions
-                    for (Iterator i=_key2IndexPartition.values().iterator(); acquired.size()<rest && i.hasNext(); ) {
+                    for (Iterator i=_key2IndexPartition.values().iterator(); acquired.size()<amount && i.hasNext(); ) {
                         IndexPartition partition=(IndexPartition)i.next();
                         Sync lock=partition.getExclusiveLock();
                         long timeout=500; // how should we work this out ? - TODO
