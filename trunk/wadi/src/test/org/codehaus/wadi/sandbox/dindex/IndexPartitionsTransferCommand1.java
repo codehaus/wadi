@@ -20,22 +20,23 @@ import java.io.Serializable;
 
 import javax.jms.Destination;
 
-public class IndexPartitionsTransferCommand implements Serializable {
 
-    protected int _amount;
+public class IndexPartitionsTransferCommand1 implements Serializable {
+
+    protected int _keep;
     protected Destination _target;
     
-    public IndexPartitionsTransferCommand(int amount, Destination target) {
-        _amount=amount;
+    public IndexPartitionsTransferCommand1(int keep, Destination target) {
+        _keep=keep;
         _target=target;
     }
     
-    protected IndexPartitionsTransferCommand() {
+    protected IndexPartitionsTransferCommand1() {
         // for deserialisation...
     }
     
-    public int getAmount() {
-        return _amount;
+    public int getKeep() {
+        return _keep;
     }
     
     public Destination getTarget() {

@@ -85,7 +85,7 @@ public class DIndexNode2  implements ClusterListener, MessageDispatcherConfig {
 
 
         _dispatcher.init(this);
-        _dispatcher.register(this, "onIndexPartitionsTransferCommand", IndexPartitionsTransferCommand.class);
+        _dispatcher.register(this, "onIndexPartitionsTransferCommand", IndexPartitionsTransferCommand1.class);
         _dispatcher.register(this, "onIndexPartitionsTransferRequest", IndexPartitionsTransferRequest.class);
         _dispatcher.register(IndexPartitionsTransferResponse.class, _indexPartitionTransferRequestResponseRvMap, 5000);
         //_dispatcher.register(IndexPartitionsTransferAcknowledgement.class, _indexPartitionTransferCommandAcknowledgementRvMap, 5000);
@@ -181,7 +181,7 @@ public class DIndexNode2  implements ClusterListener, MessageDispatcherConfig {
     protected void share(int numNodes, int index, Node src, Node tgt, int partitionsPerNode, int remainder, String correlationId) {
         int keep=partitionsPerNode+((index<remainder)?1:0);
         _log.info("sharing: ["+index+"/"+numNodes+"] - "+getNodeName(src)+" keeps: "+keep);
-        IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand(keep, tgt.getDestination());
+        IndexPartitionsTransferCommand1 command=new IndexPartitionsTransferCommand1(keep, tgt.getDestination());
         try {
             ObjectMessage om=_cluster.createObjectMessage();
             om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
@@ -230,7 +230,7 @@ public class DIndexNode2  implements ClusterListener, MessageDispatcherConfig {
     // receive a command to transfer IndexPartitions to another node
     // send them ina request, waiting for response
     // send an acknowledgement to Coordinator who sent original command
-    public void onIndexPartitionsTransferCommand(ObjectMessage om, IndexPartitionsTransferCommand command) {
+    public void onIndexPartitionsTransferCommand(ObjectMessage om, IndexPartitionsTransferCommand1 command) {
         int keep=command.getKeep();
         int rest=(_key2IndexPartition.size()-keep);
         boolean success=false;
