@@ -32,19 +32,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class Balancer implements Runnable {
-    
+
     protected final Log _log=LogFactory.getLog(getClass());
-    
+
     protected final Cluster _cluster;
     protected final int _numBuckets;
     protected final Node[] _nodes;
-    
+
     public Balancer(Cluster cluster, int numBuckets, Node[] nodes) {
         _cluster=cluster;
         _numBuckets=numBuckets;
         _nodes=nodes;
     }
-    
+
     protected void decide(Node node, int numBuckets, int numBucketsPerNode, Collection producers, Collection consumers) {
         int deviation=numBuckets-numBucketsPerNode;
         if (deviation>0) {
@@ -56,12 +56,12 @@ public class Balancer implements Runnable {
             return;
         }
     }
-    
+
     public void run() {
         // sort Nodes into ordered sets of producers and consumers...
         List producers=new ArrayList(); // have more than they need
         List consumers=new ArrayList(); // have less than they need
-        
+
         int numRemoteNodes=_nodes.length;
         int numNodes=numRemoteNodes+1;
         int numBucketsPerNode=_numBuckets/numNodes;
@@ -77,29 +77,28 @@ public class Balancer implements Runnable {
         // sort lists...
         Collections.sort(producers, new PairGreaterThanComparator());
         Collections.sort(consumers, new PairLessThanComparator());
-        
+
         // account for uneven division of buckets...
         int remainingBuckets=_numBuckets%numNodes;
         ListIterator i=producers.listIterator();
-        while(i.hasNext()) i.next(); // walk to end of list - why can't we start with iterator there ?
-        while(remainingBuckets>0 && i.hasPrevious()) {
-            Pair p=(Pair)i.previous();
+        while(remainingBuckets>0 && i.hasNext()) {
+            Pair p=(Pair)i.next();
             remainingBuckets--;
             if ((--p._deviation)==0)
                 i.remove();
         }
         assert remainingBuckets==0;
-        
+
         // above is good for addNode
         // when a node leaves cleanly, we need to run this the other way around
         // so that the remainder is added to the smallest consumers, rather than taken from the largest producers...
-        
+
         // now direct each producer to transfer its excess buckets to a corresponding consumer....
         Iterator p=producers.iterator();
         Iterator c=consumers.iterator();
-        
+
         String correlationId=_cluster.getLocalNode().getName()+"-transfer-"+System.currentTimeMillis();
-        
+
         Pair consumer=null;
         while (p.hasNext()) {
             Pair producer=(Pair)p.next();
@@ -116,10 +115,10 @@ public class Balancer implements Runnable {
                         consumer._deviation-=producer._deviation;
                         producer._deviation=0;
                     }
-            }                    
+            }
         }
     }
-    
+
     protected void transfer(Node src, Node tgt, int amount, String correlationId) {
         _log.info("commanding "+DIndexNode.getNodeName(src)+" to give "+amount+" to "+DIndexNode.getNodeName(tgt));
         IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand(amount, tgt.getDestination());
@@ -134,5 +133,5 @@ public class Balancer implements Runnable {
             _log.error("problem sending share command", e);
         }
     }
-    
+
 }
