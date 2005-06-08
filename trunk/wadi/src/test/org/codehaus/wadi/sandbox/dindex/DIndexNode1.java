@@ -38,7 +38,7 @@ import org.codehaus.wadi.impl.MessageDispatcher;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public class OldDIndexNode implements ClusterListener, MessageDispatcherConfig {
+public class DIndexNode1 implements ClusterListener, MessageDispatcherConfig {
     
     protected final static String _nodeNameKey="nodeName";
     protected final static String _indexPartitionsKey="indexPartitions";
@@ -64,7 +64,7 @@ public class OldDIndexNode implements ClusterListener, MessageDispatcherConfig {
     protected volatile boolean _running;
     protected Thread _planThread;
     
-    public OldDIndexNode(String nodeName, int numIndexPartitions) {
+    public DIndexNode1(String nodeName, int numIndexPartitions) {
         _nodeName=nodeName;
         _log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
         _numIndexPartitions=numIndexPartitions;

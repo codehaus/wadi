@@ -17,9 +17,15 @@
 package org.codehaus.wadi.sandbox.dindex;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
@@ -132,6 +138,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
 
         public void onNodeAdd(ClusterEvent event) {
             if (_cluster.getLocalNode()==_coordinator) {
+                balance();
                 synchronized (_planLock) {
                     Node tgt=event.getNode();
                     _log.info("onNodeAdd: "+getNodeName(tgt));
@@ -195,7 +202,146 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             }
         }
 
+        public static class LessThanComparator implements Comparator {
+
+            public int compare(Object o1, Object o2) {
+                Pair p1=(Pair)o1;
+                Pair p2=(Pair)o2;
+                int tmp=p1._deviation-p2._deviation;
+                if (tmp!=0)
+                    return tmp;
+                else
+                    return p1._node.getName().compareTo(p2._node.getName());
+            }
+            
+            public boolean equals(Object obj) {
+                return obj==this || obj.getClass()==getClass();
+            }
+
+        }
+        
+        public static class GreaterThanComparator implements Comparator {
+
+            public int compare(Object o2, Object o1) {
+                Pair p1=(Pair)o1;
+                Pair p2=(Pair)o2;
+                int tmp=p1._deviation-p2._deviation;
+                if (tmp!=0)
+                    return tmp;
+                else
+                    return p1._node.getName().compareTo(p2._node.getName());
+            }
+            
+            public boolean equals(Object obj) {
+                return obj==this || obj.getClass()==getClass();
+            }
+
+        }
+        
+        public static class Pair {
+            
+            public Node _node;
+            public int _deviation;
+            
+            public Pair(Node node, int deviation) {
+                _node=node;
+                _deviation=deviation;
+            }
+            
+        }
+        
+        public class Balancer implements Runnable {
+            
+            protected int _numBuckets;
+            protected Node[] _nodes;
+            
+            public Balancer(int numBuckets, Node[] nodes) {
+                _numBuckets=numBuckets;
+                _nodes=nodes;
+            }
+            
+            protected void decide(Node node, int numBuckets, int numBucketsPerNode, Collection producers, Collection consumers) {
+                int deviation=numBuckets-numBucketsPerNode;
+                if (deviation>0) {
+                    producers.add(new Pair(node, deviation));
+                    return;
+                }
+                if (deviation<0) {
+                    consumers.add(new Pair(node, -deviation));
+                    return;
+                }
+            }
+            
+            public void run() {
+                // sort Nodes into ordered sets of producers and consumers...
+                List producers=new ArrayList(); // have more than they need
+                List consumers=new ArrayList(); // have less than they need
+                
+                int numRemoteNodes=_nodes.length;
+                int numNodes=numRemoteNodes+1;
+                int numBucketsPerNode=_numBuckets/numNodes;
+                // local node...
+                Node localNode=_cluster.getLocalNode();
+                decide(localNode, getNumIndexPartitions(localNode), numBucketsPerNode, producers, consumers);
+                // remote nodes...
+                for (int i=0; i<numRemoteNodes; i++) {
+                    Node node=_nodes[i];
+                    int numBuckets=getNumIndexPartitions(node);
+                    decide(node, numBuckets, numBucketsPerNode, producers, consumers);
+                }
+                // sort lists...
+                Collections.sort(producers, new GreaterThanComparator());
+                Collections.sort(consumers, new LessThanComparator());
+                
+                // account for uneven division of buckets...
+                int remainingBuckets=_numBuckets%numNodes;
+                ListIterator i=producers.listIterator();
+                while(i.hasNext()) i.next(); // walk to end of list - why can't we start with iterator there ?
+                while(remainingBuckets>0 && i.hasPrevious()) {
+                    Pair p=(Pair)i.previous();
+                    if (p._deviation<=remainingBuckets) {
+                        remainingBuckets-=p._deviation;
+                        i.remove();
+                    } else {
+                        p._deviation-=remainingBuckets;
+                        remainingBuckets=0;
+                    }
+                }
+                assert remainingBuckets==0;
+                
+                // now direct each producer to transfer its excess buckets to a corresponding consumer....
+                Iterator p=producers.iterator();
+                Iterator c=consumers.iterator();
+
+                Pair consumer=null;
+                while (p.hasNext()) {
+                    Pair producer=(Pair)p.next();
+                    while (producer._deviation>0) {
+                        if (consumer==null)
+                            consumer=c.hasNext()?(Pair)c.next():null;
+                        if (producer._deviation>=consumer._deviation) {
+                            _log.info(getNodeName(producer._node)+" should give "+consumer._deviation+" to "+getNodeName(consumer._node));
+                            producer._deviation-=consumer._deviation;
+                            consumer._deviation=0;
+                            consumer=null;
+                        } else {
+                            _log.info(getNodeName(producer._node)+" should give "+producer._deviation+" to "+getNodeName(consumer._node));
+                            consumer._deviation-=producer._deviation;
+                            producer._deviation=0;
+                        }
+                    }                    
+                }
+                
+                // now what !!!!
+            }
+        }
+
+        public void balance() {
+            new Balancer(_numIndexPartitions, (Node[])_cluster.getNodes().values().toArray(new Node[_cluster.getNodes().size()])).run();
+        }
+        
         public void onNodeRemoved(ClusterEvent event) {  // NYI by layer below us...
+            balance();
             synchronized (_planLock) {
                 Node node=event.getNode();
                 _log.info("onNodeRemoved: "+getNodeName(node));
@@ -203,6 +349,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         }
 
         public void onNodeFailed(ClusterEvent event) {
+            balance();
             synchronized (_planLock) {
                 Node node=event.getNode();
                 _log.info("onNodeFailed: "+getNodeName(node));
