@@ -22,7 +22,7 @@ import org.activecluster.Cluster;
 import org.activecluster.Node;
 import org.activecluster.election.ElectionStrategy;
 
-public class OldestElectionStrategy implements ElectionStrategy {
+public class SeniorityElectionStrategy implements ElectionStrategy {
     
     public Node doElection(Cluster cluster) {
         Node oldest=cluster.getLocalNode();

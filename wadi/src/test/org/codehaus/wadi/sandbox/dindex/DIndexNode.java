@@ -77,7 +77,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             _log.info("starting...");
             _connectionFactory.start();
             _cluster=_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
-	    _cluster.setElectionStrategy(new OldestElectionStrategy());
+	    _cluster.setElectionStrategy(new SeniorityElectionStrategy());
             _cluster.addClusterListener(this);
             _distributedState.put(_nodeNameKey, _nodeName);
             _distributedState.put(_birthTimeKey, new Long(System.currentTimeMillis()));
