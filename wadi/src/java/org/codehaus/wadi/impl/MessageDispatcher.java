@@ -329,6 +329,46 @@ public class MessageDispatcher implements MessageListener {
 		return response;
 	}
 
+	public ObjectMessage exchange(ObjectMessage request, Map rvMap, long timeout) {
+	    ObjectMessage response=null;
+	    String correlationId=null;
+	    try {
+	        correlationId=request.getJMSCorrelationID();
+	        
+	        // set up a rendez-vous...
+	        Rendezvous rv=new Rendezvous(2);
+	        synchronized (rvMap) {
+	            rvMap.put(request.getJMSCorrelationID(), rv);
+	        }
+	        
+            // send the request
+	        _cluster.send(request.getJMSDestination(), request);
+            
+            // rendez-vous with response/timeout...
+	        do {
+	            try {
+	                long startTime=System.currentTimeMillis();
+	                response=(ObjectMessage)rv.attemptRendezvous(null, timeout);
+	                long elapsedTime=System.currentTimeMillis()-startTime;
+	                if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis)"); // session does not exist
+	            } catch (TimeoutException e) {
+	                if (_log.isWarnEnabled()) _log.warn("no response to request within timeout ("+timeout+" millis)"); // session does not exist
+	            } catch (InterruptedException e) {
+	                if (_log.isWarnEnabled()) _log.warn("waiting for response - interruption ignored");
+	            }
+	        } while (Thread.interrupted());
+	    } catch (JMSException e) {
+	        if (_log.isWarnEnabled()) _log.warn("problem sending request message", e);
+	    } finally {
+	        // tidy up rendez-vous
+            if (correlationId!=null)
+                synchronized (rvMap) {
+                    rvMap.remove(correlationId);
+                }
+	    }
+	    return response;
+	}
+
 	public Cluster getCluster(){return _cluster;}
 
 	public MessageConsumer addDestination(Destination destination) throws JMSException {
