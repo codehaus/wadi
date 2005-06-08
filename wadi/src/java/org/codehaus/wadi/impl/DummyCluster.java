@@ -33,6 +33,7 @@ import javax.jms.Topic;
 
 import org.activecluster.ClusterListener;
 import org.activecluster.LocalNode;
+import org.activecluster.election.ElectionStrategy;
 import org.codehaus.wadi.ExtendedCluster;
 
 public class DummyCluster implements ExtendedCluster {
@@ -67,7 +68,7 @@ public class DummyCluster implements ExtendedCluster {
     }
 
     protected final LocalNode _localNode=new DummyLocalNode();
-    
+
     public LocalNode getLocalNode() {
         return _localNode;
     }
@@ -147,4 +148,6 @@ public class DummyCluster implements ExtendedCluster {
     }
 
     public Connection getConnection() { return null; }
+
+    public void setElectionStrategy(ElectionStrategy strategy) {}
 }
