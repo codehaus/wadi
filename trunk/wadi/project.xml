@@ -400,7 +400,10 @@
     <dependency>
       <groupId>activemq</groupId>
       <artifactId>activemq</artifactId>
+<!--
       <version>3.1-M1</version>
+-->
+      <version>3.1-SNAPSHOT</version>
       <url>http://activemq.codehaus.org</url>
       <javadoc>http://activemq.codehaus.org/maven/apidocs</javadoc>
       <type>jar</type>

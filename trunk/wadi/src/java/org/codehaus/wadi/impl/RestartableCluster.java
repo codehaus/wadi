@@ -34,6 +34,7 @@ import javax.jms.Topic;
 import org.activecluster.ClusterFactory;
 import org.activecluster.ClusterListener;
 import org.activecluster.LocalNode;
+import org.activecluster.election.ElectionStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ExtendedCluster;
@@ -178,8 +179,13 @@ public class RestartableCluster implements ExtendedCluster {
     public Destination createQueue(String name) throws JMSException {
         return _cluster.createQueue(name);
     }
-    
+
     public Connection getConnection() {
         return _cluster.getConnection();
     }
+
+    public void setElectionStrategy(ElectionStrategy strategy) {
+       _cluster.setElectionStrategy(strategy);
+    }
+
 }
