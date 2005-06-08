@@ -36,6 +36,7 @@ import org.codehaus.wadi.MessageDispatcherConfig;
 import org.codehaus.wadi.impl.MessageDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
@@ -55,7 +56,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         protected final Object _coordinatorLock=new Object();
         protected final Map _key2IndexPartitionNode=new ConcurrentHashMap(); // contains full set of keys
         protected final Map _key2IndexPartition=new ConcurrentHashMap(); // contains subset of keys
-        protected final Map _indexPartitionTransferRvMap=new ConcurrentHashMap();
+        protected final Map _indexPartitionTransferRequestResponseRvMap=new ConcurrentHashMap();
+        protected final Map _indexPartitionTransferCommandAcknowledgementRvMap=new ConcurrentHashMap();
         protected final MessageDispatcher _dispatcher=new MessageDispatcher();
 
         protected final String _nodeName;
@@ -85,7 +87,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             _dispatcher.init(this);
             _dispatcher.register(this, "onIndexPartitionsTransferCommand", IndexPartitionsTransferCommand.class);
             _dispatcher.register(this, "onIndexPartitionsTransferRequest", IndexPartitionsTransferRequest.class);
-            _dispatcher.register(IndexPartitionsTransferResponse.class, _indexPartitionTransferRvMap, 5000);
+            _dispatcher.register(IndexPartitionsTransferResponse.class, _indexPartitionTransferRequestResponseRvMap, 5000);
+            //_dispatcher.register(IndexPartitionsTransferAcknowledgement.class, _indexPartitionTransferCommandAcknowledgementRvMap, 5000);
             
             _cluster.getLocalNode().setState(_distributedState);
             _cluster.start();
@@ -140,12 +143,37 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                     int remainder=_numIndexPartitions%numNodes;
                     Node[] nodes=(Node[])tmp.values().toArray(new Node[n]);
                     String correlationId=_nodeName+"-NodeAdd-"+System.currentTimeMillis();
+                    //Rendezvous rv=new Rendezvous(n+1);
+                    //_indexPartitionTransferCommandAcknowledgementRvMap.put(correlationId, rv);
                     for (int i=0; i<n; i++) {
                         Node node=nodes[i];
                         Node src=(node==tgt)?_cluster.getLocalNode():node;
                         share(numNodes, i, src, tgt, partitionsPerNode, remainder, correlationId);
                     }
                     
+//                  boolean success=false;
+//                  try {
+//                  rv.attemptRendezvous(null, 10000L);
+//                  success=true;
+//                  } catch (InterruptedException e) {
+//                  _log.warn("unexpected interruption", e);
+//                  } finally {
+//                  _indexPartitionTransferCommandAcknowledgementRvMap.remove(correlationId);
+//                  // somehow check all returned success..
+//                  }
+//                  
+//                  if (success) {
+//                  _log.info("all transfers successfully undertaken");
+//                  } else {
+//                  _log.warn("some trasfers may have failed");
+//                  }
+                    
+                    // debug
+                    _log.info(getNodeName(_cluster.getLocalNode())+" : "+getNumIndexPartitions(_cluster.getLocalNode()));
+                    for (int i=0; i<n; i++) {
+                        Node node=nodes[i];
+                        _log.info(getNodeName(node)+" : "+getNumIndexPartitions(node));
+                    }
                 }
             }
         }
@@ -153,10 +181,10 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         protected void share(int numNodes, int index, Node src, Node tgt, int partitionsPerNode, int remainder, String correlationId) {
             int keep=partitionsPerNode+((index<remainder)?1:0);
             _log.info("sharing: ["+index+"/"+numNodes+"] - "+getNodeName(src)+" keeps: "+keep);
-            IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand(keep);
+            IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand(keep, tgt.getDestination());
             try {
                 ObjectMessage om=_cluster.createObjectMessage();
-                om.setJMSReplyTo(tgt.getDestination());
+                om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
                 om.setJMSDestination(src.getDestination());
                 om.setJMSCorrelationID(correlationId);
                 om.setObject(command);
@@ -199,12 +227,17 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         
         protected Object _transferLock=new Object();
         
-        public void onIndexPartitionsTransferCommand(ObjectMessage om, IndexPartitionsTransferCommand command ) {
+        // receive a command to transfer IndexPartitions to another node
+        // send them ina request, waiting for response
+        // send an acknowledgement to Coordinator who sent original command
+        public void onIndexPartitionsTransferCommand(ObjectMessage om, IndexPartitionsTransferCommand command) {
             int keep=command.getKeep();
             int rest=(_key2IndexPartition.size()-keep);
+            boolean success=false;
             _log.info("keep "+keep+" and transfer rest: "+rest);
             synchronized (_transferLock) {
                 List acquired=new ArrayList(rest);
+                _log.info("trying to lock "+rest+" IndexPartions");
                 try {
                     // lock partitions
                     for (Iterator i=_key2IndexPartition.values().iterator(); acquired.size()<rest && i.hasNext(); ) {
@@ -214,16 +247,20 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                         if (lock.attempt(timeout))
                             acquired.add(partition);
                     }
-                    // stick into request
-                    // send
                     
+                    // build request...
                     _log.info("transferring "+acquired.size()+" IndexPartions");
+                    ObjectMessage om2=_cluster.createObjectMessage();
+                    om2.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+                    om2.setJMSDestination(command.getTarget());
+                    om2.setJMSCorrelationID(om.getJMSCorrelationID());
                     IndexPartition[] partitions=(IndexPartition[])acquired.toArray(new IndexPartition[acquired.size()]);
                     IndexPartitionsTransferRequest request=new IndexPartitionsTransferRequest(partitions);
-                    _dispatcher.replyToMessage(om, request);
-                    
-                    boolean success=true;
-                    if (success) {
+                    om2.setObject(request);
+                    // send it...
+                    ObjectMessage om3=_dispatcher.exchange(om2, _indexPartitionTransferRequestResponseRvMap, 5000); // TODO - parameterise timeout
+                    // process response...
+                    if (om3!=null && (success=((IndexPartitionsTransferResponse)om3.getObject()).getSuccess())) {
                         _log.info("transfer successful");
                         for (int i=0; i<acquired.size(); i++)
                             _key2IndexPartition.remove(((IndexPartition)acquired.get(i)).getKey());
@@ -234,6 +271,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                         _log.info("local state updated");
                         _cluster.getLocalNode().setState(_distributedState);
                         _log.info("distributed state updated");
+                        _log.warn("transfer successful");
                     } else {
                         _log.warn("transfer unsuccessful");
                     }
@@ -243,6 +281,11 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                     for (int i=0; i<acquired.size(); i++)
                         ((IndexPartition)acquired.get(i)).getExclusiveLock().release();
                     _log.info("locks released");
+                    try {
+                        _dispatcher.replyToMessage(om, new IndexPartitionsTransferAcknowledgement(success));
+                    } catch (JMSException e) {
+                        _log.warn("could not acknowledge safe transfer to Coordinator", e);
+                    }
                 }
             }
         }
@@ -257,29 +300,30 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                 // we should lock these until acked - then unlock them - TODO...
                 _key2IndexPartition.put(partition.getKey(), partition);
             }
-//            success=true;
-//            boolean acked=false;
-//            // acknowledge safe receipt to donor
-//            try {
-//                _dispatcher.replyToMessage(om, new IndexPartitionsTransferResponse(success));
-//                acked=true;
-                try {
-                    // notify rest of Cluster of change of partition ownership...
-                    Object[] keys=_key2IndexPartition.keySet().toArray();
-                    //_distributedState.put(_indexPartitionsKey, keys);
-                    _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
-                    _cluster.getLocalNode().setState(_distributedState);
-                } catch (JMSException e) {
-                    _log.error("could not update distributed state", e);
-                }
-//            } catch (JMSException e) {
-//                _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died", e);
-//            }
-//            if (acked) {
-//                // unlock Partitions here... - TODO
-//            } else {
-//                // chuck them... - TODO
-//            }
+            success=true;
+            boolean acked=false;
+            // acknowledge safe receipt to donor
+            try {
+                _dispatcher.replyToMessage(om, new IndexPartitionsTransferResponse(success));
+                acked=true;
+                
+            } catch (JMSException e) {
+                _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died", e);
+            }
+            try {
+                // notify rest of Cluster of change of partition ownership...
+                Object[] keys=_key2IndexPartition.keySet().toArray();
+                //_distributedState.put(_indexPartitionsKey, keys);
+                _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
+                _cluster.getLocalNode().setState(_distributedState);
+            } catch (JMSException e) {
+                _log.error("could not update distributed state", e);
+            }
+            if (acked) {
+                // unlock Partitions here... - TODO
+            } else {
+                // chuck them... - TODO
+            }
         }
         
         // MyNode
@@ -313,7 +357,11 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         public static String getNodeName(Node node) {
             return (String)node.getState().get(_nodeNameKey);
         }
-        
+
+        public static int getNumIndexPartitions(Node node) {
+            return ((Integer)node.getState().get(_numIndexPartitionsKey)).intValue();
+        }
+
         public boolean isCoordinator() {
             synchronized (_coordinatorLock) {
                 return _cluster.getLocalNode()==_coordinator;

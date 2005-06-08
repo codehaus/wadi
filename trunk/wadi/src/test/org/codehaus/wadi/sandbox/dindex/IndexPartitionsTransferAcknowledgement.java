@@ -18,28 +18,20 @@ package org.codehaus.wadi.sandbox.dindex;
 
 import java.io.Serializable;
 
-import javax.jms.Destination;
+public class IndexPartitionsTransferAcknowledgement implements Serializable {
 
-
-public class IndexPartitionsTransferCommand implements Serializable {
-
-    protected int _keep;
-    protected Destination _target;
+    protected boolean _success;
     
-    public IndexPartitionsTransferCommand(int keep, Destination target) {
-        _keep=keep;
-        _target=target;
+    public IndexPartitionsTransferAcknowledgement(boolean success) {
+        _success=success;
     }
     
-    protected IndexPartitionsTransferCommand() {
-        // for deserialisation...
+    protected IndexPartitionsTransferAcknowledgement() {
+        // used during deserialisation...
     }
     
-    public int getKeep() {
-        return _keep;
+    public boolean getSuccess() {
+        return _success;
     }
     
-    public Destination getTarget() {
-        return _target;
-    }
 }
