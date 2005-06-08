@@ -271,7 +271,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                         _log.info("local state updated");
                         _cluster.getLocalNode().setState(_distributedState);
                         _log.info("distributed state updated");
-                        _log.warn("transfer successful");
+                        _log.info("transfer successful");
                     } else {
                         _log.warn("transfer unsuccessful");
                     }
