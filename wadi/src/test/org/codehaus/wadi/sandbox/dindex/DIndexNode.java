@@ -30,6 +30,7 @@ import org.activecluster.ClusterListener;
 import org.activecluster.Node;
 import org.activecluster.impl.DefaultClusterFactory;
 import org.activemq.ActiveMQConnectionFactory;
+import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.MessageDispatcherConfig;
@@ -40,13 +41,13 @@ import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
-    
+
     protected final static String _nodeNameKey="nodeName";
     protected final static String _indexPartitionsKey="indexPartitions";
     protected final static String _numIndexPartitionsKey="numIndexPartitions";
     protected final static String _birthTimeKey="birthTime";
-    
-    //protected final String _clusterUri="peer://org.codehaus.wadi";
+
+  //protected final String _clusterUri="peer://org.codehaus.wadi";
     protected final String _clusterUri="tcp://localhost:61616";
     protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
     protected final DefaultClusterFactory _clusterFactory=new DefaultClusterFactory(_connectionFactory);
@@ -59,20 +60,21 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
     protected final Map _indexPartitionTransferRequestResponseRvMap=new ConcurrentHashMap();
     protected final Map _indexPartitionTransferCommandAcknowledgementRvMap=new ConcurrentHashMap();
     protected final MessageDispatcher _dispatcher=new MessageDispatcher();
-    
+
     protected final String _nodeName;
     protected final Log _log;
     protected final int _numIndexPartitions;
-    
+
     public DIndexNode(String nodeName, int numIndexPartitions) {
         _nodeName=nodeName;
         _log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
         _numIndexPartitions=numIndexPartitions;
+        System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
     }
-    
+
     protected Cluster _cluster;
     protected Node _coordinator;
-    
+
     public void start() throws Exception {
         _log.info("starting...");
         _connectionFactory.start();
@@ -83,53 +85,53 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         _distributedState.put(_birthTimeKey, new Long(System.currentTimeMillis()));
         //_distributedState.put(_indexPartitionsKey, new Object[0]);
         _distributedState.put(_numIndexPartitionsKey, new Integer(0));
-        
-        
+
+
         _dispatcher.init(this);
         _dispatcher.register(this, "onIndexPartitionsTransferCommand", IndexPartitionsTransferCommand.class);
         _dispatcher.register(this, "onIndexPartitionsTransferRequest", IndexPartitionsTransferRequest.class);
         _dispatcher.register(IndexPartitionsTransferResponse.class, _indexPartitionTransferRequestResponseRvMap, 5000);
         //_dispatcher.register(IndexPartitionsTransferAcknowledgement.class, _indexPartitionTransferCommandAcknowledgementRvMap, 5000);
-        
+
         _cluster.getLocalNode().setState(_distributedState);
         _cluster.start();
         _log.info("...started");
-        
+
         synchronized (_coordinatorSync) {
             _coordinatorSync.wait(_clusterFactory.getInactiveTime());
         }
-        
+
         synchronized (_coordinatorLock) {
             // if no-one else is going to be coordinator - then it must be us !
             if (_coordinator==null)
                 onCoordinatorChanged(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.ELECTED_COORDINATOR));
         }
-        
+
     }
-    
+
     public void stop() throws Exception {
         _log.info("stopping...");
         _cluster.stop();
         _connectionFactory.stop();
         _log.info("...stopped");
     }
-    
+
     protected String getContextPath() {
         return "/";
     }
-    
+
     public Cluster getCluster() {
         return _cluster;
     }
-    
+
     // ClusterListener
-    
+
     public void onNodeUpdate(ClusterEvent event) {
         _log.info("onNodeUpdate: "+getNodeName(event.getNode())+": "+event.getNode().getState());
     }
-    
+
     protected final Object _planLock=new Object();
-    
+
     public void onNodeAdd(ClusterEvent event) {
         if (_cluster.getLocalNode()==_coordinator) {
             synchronized (_planLock) {
@@ -141,7 +143,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                 int n=tmp.size();
                 Node[] nodes=(Node[])tmp.values().toArray(new Node[n]);
                 new Balancer(_cluster, _numIndexPartitions, nodes).run(); // should be run on another thread...
-                
+
 //              boolean success=false;
 //              try {
 //              rv.attemptRendezvous(null, 10000L);
@@ -152,13 +154,13 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
 //              _indexPartitionTransferCommandAcknowledgementRvMap.remove(correlationId);
 //              // somehow check all returned success..
 //              }
-//              
+//
 //              if (success) {
 //              _log.info("all transfers successfully undertaken");
 //              } else {
 //              _log.warn("some trasfers may have failed");
 //              }
-                
+
                 // debug
                 _log.info(getNodeName(_cluster.getLocalNode())+" : "+getNumIndexPartitions(_cluster.getLocalNode()));
                 for (int i=0; i<n; i++) {
@@ -168,7 +170,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             }
         }
     }
-    
+
     public void onNodeRemoved(ClusterEvent event) {  // NYI by layer below us...
         synchronized (_planLock) {
             Node node=event.getNode();
@@ -176,14 +178,14 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             // leaving node was responsible for rebalancing its state around cluster - or maybe it should ask coordinator to do it for it.
         }
     }
-    
+
     public void onNodeFailed(ClusterEvent event) {
         synchronized (_planLock) {
             Node node=event.getNode();
             _log.info("onNodeFailed: "+getNodeName(node));
         }
     }
-    
+
     public void onCoordinatorChanged(ClusterEvent event) {
         synchronized (_coordinatorLock) {
             _log.info("onCoordinatorChanged: "+getNodeName(event.getNode()));
@@ -200,9 +202,9 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             }
         }
     }
-    
+
     protected Object _transferLock=new Object();
-    
+
     // receive a command to transfer IndexPartitions to another node
     // send them ina request, waiting for response
     // send an acknowledgement to Coordinator who sent original command
@@ -222,7 +224,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                     if (lock.attempt(timeout))
                         acquired.add(partition);
                 }
-                
+
                 // build request...
                 _log.info("transferring "+acquired.size()+" IndexPartions");
                 ObjectMessage om2=_cluster.createObjectMessage();
@@ -264,7 +266,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             }
         }
     }
-    
+
     public void onIndexPartitionsTransferRequest(ObjectMessage om, IndexPartitionsTransferRequest request) {
         IndexPartition[] indexPartitions=request.getIndexPartitions();
         _log.info("received "+indexPartitions.length);
@@ -281,7 +283,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         try {
             _dispatcher.replyToMessage(om, new IndexPartitionsTransferResponse(success));
             acked=true;
-            
+
         } catch (JMSException e) {
             _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died", e);
         }
@@ -300,9 +302,9 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             // chuck them... - TODO
         }
     }
-    
+
     // MyNode
-    
+
     public void onElection(ClusterEvent event) {
         _log.info("accepting coordinatorship");
         if (_cluster.getNodes().size()==0) {
@@ -323,50 +325,56 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
 //          }
         }
     }
-    
+
     public void onDismissal(ClusterEvent event) {
         _log.info("resigning coordinatorship"); // never happens - coordinatorship is for life..
     }
-    
-    
+
+
     public static String getNodeName(Node node) {
         return (String)node.getState().get(_nodeNameKey);
     }
-    
+
     public static int getNumIndexPartitions(Node node) {
         return ((Integer)node.getState().get(_numIndexPartitionsKey)).intValue();
     }
-    
+
     public boolean isCoordinator() {
         synchronized (_coordinatorLock) {
             return _cluster.getLocalNode()==_coordinator;
         }
     }
-    
+
     public Node getCoordinator() {
         synchronized (_coordinatorLock) {
             return _coordinator;
         }
     }
-    
+
     protected static Object _exitSync=new Object();
-    
+
     public static void main(String[] args) throws Exception {
         String nodeName=args[0];
         int numIndexPartitions=Integer.parseInt(args[1]);
-        
+
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 synchronized (_exitSync) {
+		  System.err.println("SHUTDOWN");
                     _exitSync.notifyAll();
                 }
             }
         });
-        
+
         DIndexNode node=new DIndexNode(nodeName, numIndexPartitions);
         node.start();
         synchronized (_exitSync) {
-            _exitSync.wait();
+	  do {
+	    try {
+	      _exitSync.wait();
+	    } catch (InterruptedException ignore) {
+	    }
+	  } while (Thread.interrupted());
         }
         node.stop();
     }
