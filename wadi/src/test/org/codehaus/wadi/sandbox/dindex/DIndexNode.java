@@ -17,9 +17,11 @@
 package org.codehaus.wadi.sandbox.dindex;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
@@ -111,11 +113,49 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
 
     public void stop() throws Exception {
         _log.info("stopping...");
+        evacuate();        
         _cluster.stop();
         _connectionFactory.stop();
         _log.info("...stopped");
     }
 
+    protected void evacuate() {
+        Collection nodes=_cluster.getNodes().values();
+        int numNodes=nodes.size();
+        int numLocalIndexPartitions=_key2IndexPartition.size();
+        int numIndexPartitionsPerNode=_numIndexPartitions/numNodes;
+        int numRemainingIndexPartitions=_numIndexPartitions%numNodes;
+        Node localNode=_cluster.getLocalNode();
+        String correlationId=localNode.getName()+"-leaving-"+System.currentTimeMillis();
+        int c=0;
+        for (Iterator i=nodes.iterator(); i.hasNext(); c++) {
+            Node remoteNode=(Node)i.next();
+            int toTransfer=numIndexPartitionsPerNode-getNumIndexPartitions(remoteNode);
+            if (numRemainingIndexPartitions>0) {
+                numRemainingIndexPartitions--;
+                toTransfer++;
+            }
+            transfer(localNode, remoteNode, toTransfer, correlationId); // very expensive way of achieving this...
+        }
+        
+    }
+    
+    // copied from Balancer - TODO - refactor
+    protected void transfer(Node src, Node tgt, int amount, String correlationId) {
+        _log.info("commanding "+DIndexNode.getNodeName(src)+" to give "+amount+" to "+DIndexNode.getNodeName(tgt));
+        IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand(amount, tgt.getDestination());
+        try {
+            ObjectMessage om=_cluster.createObjectMessage();
+            om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+            om.setJMSDestination(src.getDestination());
+            om.setJMSCorrelationID(correlationId);
+            om.setObject(command);
+            _cluster.send(src.getDestination(), om);
+        } catch (JMSException e) {
+            _log.error("problem sending share command", e);
+        }
+    }
+    
     protected String getContextPath() {
         return "/";
     }
