@@ -16,22 +16,10 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import java.io.Serializable;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public class IndexPartitionsTransferRequest implements Serializable {
+public interface Excludable {
 
-    protected Object[] _objects;
+    public Sync getExclusiveLock();
     
-    public IndexPartitionsTransferRequest(Object[] objects) {
-        _objects=objects;
-    }
-    
-    protected IndexPartitionsTransferRequest() {
-        // for deserialisation
-    }
-    
-    public Object[] getObjects() {
-        return _objects;
-    }
-
 }

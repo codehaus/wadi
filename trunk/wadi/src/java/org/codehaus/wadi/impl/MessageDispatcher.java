@@ -381,4 +381,10 @@ public class MessageDispatcher implements MessageListener {
 	public void removeDestination(MessageConsumer consumer) throws JMSException {
 	  consumer.close();
 	}
+    
+    // TODO - rather than owning this, we should be given a pointer to it at init()
+    // time, and this accessor should be removed...
+    public PooledExecutor getExecutor() {
+        return _executor;
+    }
 }
