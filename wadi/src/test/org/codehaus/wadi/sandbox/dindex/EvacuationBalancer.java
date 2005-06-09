@@ -18,43 +18,49 @@ package org.codehaus.wadi.sandbox.dindex;
 
 import java.util.List;
 
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
-
 import org.activecluster.Cluster;
 import org.activecluster.Node;
 
 public class EvacuationBalancer extends AbstractBalancer {
 
-    public EvacuationBalancer(Cluster cluster, Node[] nodes, int numBuckets) {
-        super(cluster, nodes, numBuckets);
-    }
+    protected final Node _leaver;
+    protected int _numNodes;
+    protected int _numItemsPerNode;
+    protected int _numRemainingItems;
+    
+    public EvacuationBalancer(Cluster cluster, Node leaver, Node[] nodes, int numBuckets, BalancerConfig config) {
+        super(config);
+        _leaver=leaver;
+        }
 
     public void plan(Plan plan) {
         List producers=plan._producers; // have more than they need
         List consumers=plan._consumers; // have less than they need
         
+        _numNodes=_remoteNodes.length;
+        _numItemsPerNode=_numItems/_numNodes;
+        _numRemainingItems=_numItems%_numNodes;
+
         // who is giving items ? - just us...
-        Node localNode=_cluster.getLocalNode();
-        producers.add(new Pair(localNode, DIndexNode.getNumIndexPartitions(localNode)));
+        producers.add(new Pair(_leaver, DIndexNode.getNumIndexPartitions(_leaver)));
         
         // who is receiving items ? - everyone else
-        int numRemoteNodes=_nodes.length;
-        int numItemsPerNode=_numItems/numRemoteNodes;
-        int numRemainingItems=_numItems%numRemoteNodes;
-        
-        for (int i=0; i<numRemoteNodes; i++) {
-            Node remoteNode=_nodes[i];
-            int deviation=numItemsPerNode-DIndexNode.getNumIndexPartitions(remoteNode); // abstract - TODO
-            if (numRemainingItems>0) {
-                numRemainingItems--;
-                deviation++;
-            }
-            consumers.add(new Pair(remoteNode, deviation));
+        add(_cluster.getLocalNode(), consumers);
+        for (int i=0; i<_numNodes; i++) {
+            Node remoteNode=_remoteNodes[i];
+            add(remoteNode, consumers);
         }
      }
     
-    protected void transfer(Node src, Node tgt, int amount, String correlationId) {
-        _log.info(DIndexNode.getNodeName(src)+" evacuating "+amount+" items to "+DIndexNode.getNodeName(tgt));
+    protected void add(Node node, List consumers) {
+        if (node==_leaver)
+            return; // ignore
+        
+        int deviation=_numItemsPerNode-DIndexNode.getNumIndexPartitions(node); // abstract - TODO
+        if (_numRemainingItems>0) {
+            _numRemainingItems--;
+            deviation++;
+        }
+        consumers.add(new Pair(node, deviation));
     }
 }

@@ -1,0 +1,50 @@
+/**
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package org.codehaus.wadi.sandbox.dindex;
+
+import java.util.Collection;
+
+import org.activecluster.Cluster;
+import org.activecluster.Node;
+
+public abstract class AbstractBalancerConfig implements BalancerConfig {
+
+    protected final Cluster _cluster;
+    protected final int _numItems;
+    
+    public AbstractBalancerConfig(Cluster cluster, int numItems) {
+        _cluster=cluster;
+        _numItems=numItems;
+    }
+    
+    public Node[] getRemoteNodes() {
+        Collection nodes=_cluster.getNodes().values();
+        return (Node[])nodes.toArray(new Node[nodes.size()]);
+    }
+    
+    public Node getLocalNode() {
+        return _cluster.getLocalNode();
+    }
+    
+    public Cluster getCluster() {
+        return _cluster;
+    }
+    
+    public int getNumItems() {
+        return _numItems;
+    }
+}
