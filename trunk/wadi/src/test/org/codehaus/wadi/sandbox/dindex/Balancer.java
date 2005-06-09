@@ -21,13 +21,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
+import javax.jms.JMSException;
+import javax.jms.ObjectMessage;
+
 import org.activecluster.Cluster;
 import org.activecluster.Node;
 
 public class Balancer extends AbstractBalancer {
 
-    public Balancer(Cluster cluster, Node[] nodes, int numBuckets) {
-        super(cluster, nodes, numBuckets);
+    public Balancer(Cluster cluster, Node[] nodes, int numBuckets, BalancerConfig config) {
+        super(config);
     }
 
     public void plan(Plan plan) {
@@ -35,7 +38,7 @@ public class Balancer extends AbstractBalancer {
         List producers=plan._producers; // have more than they need
         List consumers=plan._consumers; // have less than they need
         
-        int numRemoteNodes=_nodes.length;
+        int numRemoteNodes=_remoteNodes.length;
         int numNodes=numRemoteNodes+1;
         int numBucketsPerNode=_numItems/numNodes;
         // local node...
@@ -43,7 +46,7 @@ public class Balancer extends AbstractBalancer {
         decide(localNode, DIndexNode.getNumIndexPartitions(localNode), numBucketsPerNode, producers, consumers);
         // remote nodes...
         for (int i=0; i<numRemoteNodes; i++) {
-            Node node=_nodes[i];
+            Node node=_remoteNodes[i];
             int numBuckets=DIndexNode.getNumIndexPartitions(node);
             decide(node, numBuckets, numBucketsPerNode, producers, consumers);
         }
@@ -78,5 +81,6 @@ public class Balancer extends AbstractBalancer {
             return;
         }
     }
+
 
 }

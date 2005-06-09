@@ -41,10 +41,14 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.MessageDispatcherConfig;
 import org.codehaus.wadi.impl.MessageDispatcher;
 
+import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
+import EDU.oswego.cs.dl.util.concurrent.WaitableBoolean;
 
 public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
 
@@ -80,6 +84,9 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
 
     protected Cluster _cluster;
     protected Node _coordinator;
+    
+    protected WaitableBoolean _needsBalancing=new WaitableBoolean(false);
+    protected Channel _leavers=new LinkedQueue();
 
     public void start() throws Exception {
         _log.info("starting...");
@@ -114,11 +121,52 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         }
 
     }
+    
+    class EvacuationConfig extends AbstractBalancerConfig {
+
+        public EvacuationConfig(Cluster cluster) {
+            super(cluster, _numIndexPartitions);
+        }
+        
+        public boolean balance(Node src, Node tgt, int amount, String correlationId) {
+            _log.info(DIndexNode.getNodeName(src)+" evacuating "+amount+" items to "+DIndexNode.getNodeName(tgt));
+            return true;
+        }
+
+    }
+    
+    class NormalBalancer extends AbstractBalancerConfig {
+        
+        public NormalBalancer(Cluster cluster) {
+            super(cluster, _numIndexPartitions);
+        }
+        
+        public boolean balance(Node src, Node tgt, int amount, String correlationId) {
+            /*if (src==_cluster.getLocalNode()) {
+                // do something clever...
+            } else*/ {
+                _log.info("commanding "+DIndexNode.getNodeName(src)+" to give "+amount+" to "+DIndexNode.getNodeName(tgt));
+                IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand(amount, tgt.getDestination());
+                try {
+                    ObjectMessage om=_cluster.createObjectMessage();
+                    om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+                    om.setJMSDestination(src.getDestination());
+                    om.setJMSCorrelationID(correlationId);
+                    om.setObject(command);
+                    _cluster.send(src.getDestination(), om);
+                } catch (JMSException e) {
+                    _log.error("problem sending share command", e);
+                }
+            }
+            return true;
+        }
+        
+    }
 
     public void stop() throws Exception {
         _log.info("stopping...");
         Collection nodes=_cluster.getNodes().values();
-        new EvacuationBalancer(_cluster, (Node[])nodes.toArray(new Node[nodes.size()]), _numIndexPartitions).run();
+        new EvacuationBalancer(_cluster, _cluster.getLocalNode(), (Node[])nodes.toArray(new Node[nodes.size()]), _numIndexPartitions, new EvacuationConfig(_cluster)).run();
         Thread.sleep(10000); // temporary - FIXME        
         _cluster.stop();
         _connectionFactory.stop();
@@ -230,7 +278,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                 Map tmp=_cluster.getNodes();
                 int n=tmp.size();
                 Node[] nodes=(Node[])tmp.values().toArray(new Node[n]);
-                new Balancer(_cluster, nodes, _numIndexPartitions).run(); // should be run on another thread...
+                new Balancer(_cluster, nodes, _numIndexPartitions, new NormalBalancer(_cluster)).run(); // should be run on another thread...
 
 //              boolean success=false;
 //              try {
@@ -499,4 +547,5 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         }
         node.stop();
     }
+
 }
