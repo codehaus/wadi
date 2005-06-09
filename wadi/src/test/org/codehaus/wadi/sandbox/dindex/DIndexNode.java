@@ -16,8 +16,11 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +44,7 @@ import org.codehaus.wadi.impl.MessageDispatcher;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
 
@@ -93,7 +97,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         _dispatcher.register(this, "onIndexPartitionsTransferCommand", IndexPartitionsTransferCommand.class);
         _dispatcher.register(this, "onIndexPartitionsTransferRequest", IndexPartitionsTransferRequest.class);
         _dispatcher.register(IndexPartitionsTransferResponse.class, _indexPartitionTransferRequestResponseRvMap, 5000);
-        //_dispatcher.register(IndexPartitionsTransferAcknowledgement.class, _indexPartitionTransferCommandAcknowledgementRvMap, 5000);
+        _dispatcher.register(IndexPartitionsTransferAcknowledgement.class, _indexPartitionTransferCommandAcknowledgementRvMap, 5000);
 
         _cluster.getLocalNode().setState(_distributedState);
         _cluster.start();
@@ -113,48 +117,92 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
 
     public void stop() throws Exception {
         _log.info("stopping...");
-        evacuate();        
+        Collection nodes=_cluster.getNodes().values();
+        new EvacuationBalancer(_cluster, (Node[])nodes.toArray(new Node[nodes.size()]), _numIndexPartitions).run();
+        Thread.sleep(10000); // temporary - FIXME        
         _cluster.stop();
         _connectionFactory.stop();
         _log.info("...stopped");
     }
-
-    protected void evacuate() {
-        Collection nodes=_cluster.getNodes().values();
-        int numNodes=nodes.size();
-        int numLocalIndexPartitions=_key2IndexPartition.size();
-        int numIndexPartitionsPerNode=_numIndexPartitions/numNodes;
-        int numRemainingIndexPartitions=_numIndexPartitions%numNodes;
-        Node localNode=_cluster.getLocalNode();
-        String correlationId=localNode.getName()+"-leaving-"+System.currentTimeMillis();
-        int c=0;
-        for (Iterator i=nodes.iterator(); i.hasNext(); c++) {
-            Node remoteNode=(Node)i.next();
-            int toTransfer=numIndexPartitionsPerNode-getNumIndexPartitions(remoteNode);
-            if (numRemainingIndexPartitions>0) {
-                numRemainingIndexPartitions--;
-                toTransfer++;
-            }
-            transfer(localNode, remoteNode, toTransfer, correlationId); // very expensive way of achieving this...
-        }
-        
-    }
     
-    // copied from Balancer - TODO - refactor
-    protected void transfer(Node src, Node tgt, int amount, String correlationId) {
-        _log.info("commanding "+DIndexNode.getNodeName(src)+" to give "+amount+" to "+DIndexNode.getNodeName(tgt));
-        IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand(amount, tgt.getDestination());
-        try {
-            ObjectMessage om=_cluster.createObjectMessage();
-            om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-            om.setJMSDestination(src.getDestination());
-            om.setJMSCorrelationID(correlationId);
-            om.setObject(command);
-            _cluster.send(src.getDestination(), om);
-        } catch (JMSException e) {
-            _log.error("problem sending share command", e);
-        }
-    }
+//    protected Object[] subArray(Object[] input, int offset, int length) {
+//        Object[] output=new Object[length];
+//        Arrays.fill(output, offset, offset+length, input);
+//        return output;
+//    }
+//    
+//    protected void evacuate() {
+//        Collection nodes=_cluster.getNodes().values();
+//        int numNodes=nodes.size();
+//        int numLocalIndexPartitions=_key2IndexPartition.size();
+//        int numIndexPartitionsPerNode=_numIndexPartitions/numNodes;
+//        int numRemainingIndexPartitions=_numIndexPartitions%numNodes;
+//        Node localNode=_cluster.getLocalNode();
+//        String correlationId=localNode.getName()+"-leaving-"+System.currentTimeMillis();
+//        Rendezvous rv=new Rendezvous(numNodes+1);
+//        _indexPartitionTransferCommandAcknowledgementRvMap.put(correlationId, rv);
+//        int offset=0;
+//        int c=0;
+//        for (Iterator i=nodes.iterator(); i.hasNext(); c++) {
+//            Node remoteNode=(Node)i.next();
+//            int toTransfer=numIndexPartitionsPerNode-getNumIndexPartitions(remoteNode);
+//            if (numRemainingIndexPartitions>0) {
+//                numRemainingIndexPartitions--;
+//                toTransfer++;
+//            }
+//            
+//            // lock partitions... in serial - could be parallel...
+//            Object[] candidates=subArray(_key2IndexPartition.values().toArray(), offset, toTransfer);
+//            offset+=toTransfer;
+//            Object[] acquired=null;
+////            try {
+////                acquired=attempt(candidates, candidates.length, 30*1000); // TODO - parameterise
+////                
+////                // wait for all to finish before proceeding
+////                // allocate an rv the right size, pass it to everyone and then wait on it.
+////                // when you wake upt, make sure evacuation was successful - i.e. have we any indeces left...
+////                // if so, run again, etc until empty - wuit...
+////                transfer(localNode, remoteNode, toTransfer, correlationId); // very expensive way of achieving this...
+////
+////            } finally {
+////                release(acquired);
+////            }
+//        }
+//        
+//        boolean success=false;
+//        try {
+//            rv.attemptRendezvous(null, 10000L);
+//            success=true;
+//        } catch (InterruptedException e) {
+//            _log.warn("unexpected interruption", e);
+//        } finally {
+//            _indexPartitionTransferCommandAcknowledgementRvMap.remove(correlationId);
+//            // somehow check all returned success..
+//        }
+//        
+//        if (success) {
+//            _log.info("all transfers successfully undertaken");
+//        } else {
+//            _log.warn("some trasfers may have failed");
+//        }
+//        
+//    }
+//    
+//    // copied from Balancer - TODO - refactor
+//    protected void transfer(Node src, Node tgt, int amount, String correlationId) {
+//        _log.info("commanding "+DIndexNode.getNodeName(src)+" to give "+amount+" to "+DIndexNode.getNodeName(tgt));
+//        IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand(amount, tgt.getDestination());
+//        try {
+//            ObjectMessage om=_cluster.createObjectMessage();
+//            om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+//            om.setJMSDestination(src.getDestination());
+//            om.setJMSCorrelationID(correlationId);
+//            om.setObject(command);
+//            _cluster.send(src.getDestination(), om);
+//        } catch (JMSException e) {
+//            _log.error("problem sending share command", e);
+//        }
+//    }
     
     protected String getContextPath() {
         return "/";
@@ -182,7 +230,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
                 Map tmp=_cluster.getNodes();
                 int n=tmp.size();
                 Node[] nodes=(Node[])tmp.values().toArray(new Node[n]);
-                new Balancer(_cluster, _numIndexPartitions, nodes).run(); // should be run on another thread...
+                new Balancer(_cluster, nodes, _numIndexPartitions).run(); // should be run on another thread...
 
 //              boolean success=false;
 //              try {
@@ -242,9 +290,48 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             }
         }
     }
+    
+    /**
+     * @param items - Excludables on some of which we need an exclusive lock
+     * @param numItems - The number of Excludables upon which to acquire locks
+     * @param timeout - the total amount of time available to acquire them
+     * @return - The Excludables on which locks have been acquired
+     * @throws TimeoutException - if we could not acquire the required number of locks
+     */
+    protected Object[] attempt(Object[] items, int numItems, long timeout) throws TimeoutException {
+        boolean copy=false;
+        Object[] acquired=items;
+        if (items.length!=numItems) {
+            copy=true;
+            acquired=new Object[numItems];
+        }
+        
+        // do not bother actually locking at the moment - FIXME
+        if (copy) {
+            for (int i=0; i<numItems; i++)
+                acquired[i]=items[i];
+        }
+        
+//        Sync lock=partition.getExclusiveLock();
+//        long timeout=500; // how should we work this out ? - TODO
+//        if (lock.attempt(timeout))
+//            acquired.add(partition);
+        // use finally clause to unlock if fail to acquire...
+        
+        return acquired;
+    }
 
+    /**
+     * @param items - release the exclusive lock on all items in this array
+     */
+    protected void release(Object[] items) {
+        // do not bother with locking at the moment - FIXME
+        //((IndexPartition)acquired.get(i)).getExclusiveLock().release();
+    }
+    
     protected Object _transferLock=new Object();
 
+    
     // receive a command to transfer IndexPartitions to another node
     // send them ina request, waiting for response
     // send an acknowledgement to Coordinator who sent original command
@@ -253,34 +340,29 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
         boolean success=false;
         _log.info("transfer : "+amount);
         synchronized (_transferLock) {
-            List acquired=new ArrayList(amount);
             _log.info("trying to lock "+amount+" IndexPartions");
+            long heartbeat=5000; // TODO - consider
+            Object[] candidates=_key2IndexPartition.values().toArray();
+            Object[] acquired=null;
             try {
                 // lock partitions
-                for (Iterator i=_key2IndexPartition.values().iterator(); acquired.size()<amount && i.hasNext(); ) {
-                    IndexPartition partition=(IndexPartition)i.next();
-                    Sync lock=partition.getExclusiveLock();
-                    long timeout=500; // how should we work this out ? - TODO
-                    if (lock.attempt(timeout))
-                        acquired.add(partition);
-                }
+                acquired=attempt(candidates, amount, heartbeat);
 
                 // build request...
-                _log.info("transferring "+acquired.size()+" IndexPartions");
+                _log.info("transferring "+acquired.length+" IndexPartions");
                 ObjectMessage om2=_cluster.createObjectMessage();
                 om2.setJMSReplyTo(_cluster.getLocalNode().getDestination());
                 om2.setJMSDestination(command.getTarget());
                 om2.setJMSCorrelationID(om.getJMSCorrelationID());
-                IndexPartition[] partitions=(IndexPartition[])acquired.toArray(new IndexPartition[acquired.size()]);
-                IndexPartitionsTransferRequest request=new IndexPartitionsTransferRequest(partitions);
+                IndexPartitionsTransferRequest request=new IndexPartitionsTransferRequest(acquired);
                 om2.setObject(request);
                 // send it...
                 ObjectMessage om3=_dispatcher.exchange(om2, _indexPartitionTransferRequestResponseRvMap, 5000); // TODO - parameterise timeout
                 // process response...
                 if (om3!=null && (success=((IndexPartitionsTransferResponse)om3.getObject()).getSuccess())) {
                     _log.info("transfer successful");
-                    for (int i=0; i<acquired.size(); i++)
-                        _key2IndexPartition.remove(((IndexPartition)acquired.get(i)).getKey());
+                    for (int i=0; i<acquired.length; i++)
+                        _key2IndexPartition.remove(((IndexPartition)acquired[i]).getKey());
                     _log.info("old partitions removed");
                     Object[] keys=_key2IndexPartition.keySet().toArray();
                     //_distributedState.put(_indexPartitionsKey, keys);
@@ -295,8 +377,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
             } catch (Throwable t) {
                 _log.warn("unexpected problem", t);
             } finally {
-                for (int i=0; i<acquired.size(); i++)
-                    ((IndexPartition)acquired.get(i)).getExclusiveLock().release();
+                release(acquired);
                 _log.info("locks released");
                 try {
                     _dispatcher.replyToMessage(om, new IndexPartitionsTransferAcknowledgement(success));
@@ -308,12 +389,12 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig {
     }
 
     public void onIndexPartitionsTransferRequest(ObjectMessage om, IndexPartitionsTransferRequest request) {
-        IndexPartition[] indexPartitions=request.getIndexPartitions();
-        _log.info("received "+indexPartitions.length);
+        Object[] objects=request.getObjects();
+        _log.info("received "+objects.length+" partitions from ?");
         boolean success=false;
         // read incoming data into our own local model
-        for (int i=0; i<indexPartitions.length; i++) {
-            IndexPartition partition=indexPartitions[i];
+        for (int i=0; i<objects.length; i++) {
+            IndexPartition partition=(IndexPartition)objects[i];
             // we should lock these until acked - then unlock them - TODO...
             _key2IndexPartition.put(partition.getKey(), partition);
         }

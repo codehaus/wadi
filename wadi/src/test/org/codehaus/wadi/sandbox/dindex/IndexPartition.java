@@ -28,7 +28,7 @@ import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
-public class IndexPartition implements Serializable {
+public class IndexPartition implements Excludable, Serializable {
     
     protected transient ReadWriteLock _lock;
     
