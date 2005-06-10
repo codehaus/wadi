@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.dindex;
+package org.codehaus.wadi.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
