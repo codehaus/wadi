@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
+import java.util.Map;
+
 import org.activecluster.Cluster;
 import org.activecluster.Node;
 
@@ -26,5 +28,7 @@ interface CoordinatorConfig {
     Node getLocalNode();
     Node[] getRemoteNodes();
     Cluster getCluster();
+    
+    Map getRendezVousMap();
     
 }

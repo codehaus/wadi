@@ -18,6 +18,7 @@ package org.codehaus.wadi.sandbox.dindex;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
@@ -27,6 +28,9 @@ import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
+import EDU.oswego.cs.dl.util.concurrent.Slot;
+import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 import EDU.oswego.cs.dl.util.concurrent.WaitableBoolean;
 
 //it's important that the Plan is constructed from snapshotted resources (i.e. the ground doesn't
@@ -37,7 +41,7 @@ public class Coordinator implements Runnable {
     
     protected final Log _log=LogFactory.getLog(getClass());
     
-    protected final WaitableBoolean _needsBalancing=new WaitableBoolean(false);
+    protected final Slot _flag=new Slot();
     protected final Accumulator _leavers=new Accumulator();
     
     protected final CoordinatorConfig _config;
@@ -52,14 +56,12 @@ public class Coordinator implements Runnable {
         _numItems=_config.getNumItems();
     }
     
-    protected volatile boolean _running;
     protected Thread _thread;
     protected Node[] _remoteNodes;
     
     
     public synchronized void start() throws Exception {
         _log.info("starting...");
-        _running=true;
         _thread=new Thread(this, "WADI Coordinator");
         _thread.start();        
         _log.info("...started");
@@ -68,52 +70,80 @@ public class Coordinator implements Runnable {
     public synchronized void stop() throws Exception {
         // somehow wake up thread
         _log.info("stopping...");
-        _running=false;
+        _flag.put(Boolean.FALSE);
         _thread.join();
         _thread=null;
         _log.info("...stopped");
     }
     
     public synchronized void queueRebalancing() {
-        _needsBalancing.set(true);
+        try {
+            _flag.offer(Boolean.TRUE, 0);
+        } catch (InterruptedException e) {
+            _log.warn("unexpected interruption");
+        }
     }
     
     public synchronized void queueLeaving(Node node) {
         _leavers.put(node);
-        _needsBalancing.set(true);   
+        queueRebalancing();
     }
     
     public void run() {
-        while (_running) {
-            try {
-                _needsBalancing.whenTrue(new Runnable() {public void run(){rebalanceClusterState();}}); // ALLOC
-            } catch (InterruptedException e) {
-                Thread.interrupted();
-                _log.info("interrupted"); // hmmm.... - TODO
+        try {
+            while (_flag.take()==Boolean.TRUE) {
+                rebalanceClusterState();
             }
+        } catch (InterruptedException e) {
+            Thread.interrupted();
+            _log.info("interrupted"); // hmmm.... - TODO
         }
     }
     
+    // should loop until it gets a successful outcome - emptying _flag each time...
     public void rebalanceClusterState() {
-        boolean needsBalancing=_needsBalancing.set(false);
+        Collection excludedNodes=_leavers.take();
+        int numRendezvousers=0;
+        String correlationId;
         
-        if (needsBalancing) {
-            Collection excludedNodes=_leavers.take();
-            
-            Plan plan=null;
-            if (excludedNodes.size()>0) {
-                // a node wants to leave - evacuate it
-                Node leaver=(Node)excludedNodes.iterator().next(); // FIXME - should be leavers...
-                plan=new EvacuationPlan(leaver, _localNode, _remoteNodes, _numItems);
-            } else {
-                // standard rebalance...
-                _remoteNodes=_config.getRemoteNodes(); // snapshot this at last possible moment...
-                plan=new RebalancingPlan(_localNode, _remoteNodes, _numItems);
-            }
-            execute(plan);
-            printNodes(_localNode, _remoteNodes);
-            
+        Plan plan=null;
+        if (excludedNodes.size()>0) {
+            // a node wants to leave - evacuate it
+            Node leaver=(Node)excludedNodes.iterator().next(); // FIXME - should be leavers...
+            plan=new EvacuationPlan(leaver, _localNode, _remoteNodes, _numItems);
+            numRendezvousers=_remoteNodes.length+1; // TODO - I think
+            correlationId=_localNode.getName()+"-rebalance-"+System.currentTimeMillis();
+        } else {
+            // standard rebalance...
+            _remoteNodes=_config.getRemoteNodes(); // snapshot this at last possible moment...
+            plan=new RebalancingPlan(_localNode, _remoteNodes, _numItems);
+            numRendezvousers=_remoteNodes.length+1;
+            correlationId=_localNode.getName()+"-leaving-"+System.currentTimeMillis();
         }
+        
+        Map rvMap=_config.getRendezVousMap();
+        Rendezvous rv=new Rendezvous(numRendezvousers);
+        rvMap.put(correlationId, rv);
+        
+        execute(plan, correlationId);
+        
+        boolean success=false;
+        try {
+            rv.attemptRendezvous(null, 5000); // unify with cluster heartbeat or parameterise - TODO
+            _log.info("RENDEZVOUS SUCCESSFUL");
+            success=true;
+        } catch (TimeoutException e) {
+            _log.warn("timed out waiting for response", e);
+        } catch (InterruptedException e) {
+            _log.warn("unexpected interruption", e);
+        } finally {
+            rvMap.remove(correlationId);
+            // somehow check all returned success..
+        }
+        
+        // TODO - loop
+        printNodes(_localNode, _remoteNodes);
+        
     }
     
     protected void printNodes(Node localNode, Node[] remoteNodes) {
@@ -126,11 +156,9 @@ public class Coordinator implements Runnable {
         }
     }
     
-    protected void execute(Plan plan) {
+    protected void execute(Plan plan, String correlationId) {
         Iterator p=plan.getProducers().iterator();
         Iterator c=plan.getConsumers().iterator();
-        
-        String correlationId=_localNode.getName()+"-transfer-"+System.currentTimeMillis();
         
         Pair consumer=null;
         while (p.hasNext()) {

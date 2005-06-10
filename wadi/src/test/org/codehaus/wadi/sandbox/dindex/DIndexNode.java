@@ -509,4 +509,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         return (Node[])remoteNodes.toArray(new Node[remoteNodes.size()]);
     }
     
+    public Map getRendezVousMap() {
+        return _indexPartitionTransferCommandAcknowledgementRvMap;
+    }
+    
 }
