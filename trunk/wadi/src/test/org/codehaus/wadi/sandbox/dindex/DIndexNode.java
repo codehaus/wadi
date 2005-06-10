@@ -39,12 +39,12 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 public class DIndexNode implements ClusterListener, MessageDispatcherConfig, CoordinatorConfig {
-    
+
     protected final static String _nodeNameKey="nodeName";
     protected final static String _indexPartitionsKey="indexPartitions";
     protected final static String _numIndexPartitionsKey="numIndexPartitions";
     protected final static String _birthTimeKey="birthTime";
-    
+
     //protected final String _clusterUri="peer://org.codehaus.wadi";
     protected final String _clusterUri="tcp://localhost:61616";
     protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
@@ -61,18 +61,18 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
     protected final String _nodeName;
     protected final Log _log;
     protected final int _numIndexPartitions;
-    
+
     public DIndexNode(String nodeName, int numIndexPartitions) {
         _nodeName=nodeName;
         _log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
         _numIndexPartitions=numIndexPartitions;
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
     }
-    
+
     protected Cluster _cluster;
     protected Node _coordinatorNode;
     protected Coordinator _coordinator;
-    
+
     public void start() throws Exception {
         _log.info("starting...");
         _connectionFactory.start();
@@ -83,31 +83,31 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         _distributedState.put(_birthTimeKey, new Long(System.currentTimeMillis()));
         //_distributedState.put(_indexPartitionsKey, new Object[0]);
         _distributedState.put(_numIndexPartitionsKey, new Integer(0));
-        
-        
+
+
         _dispatcher.init(this);
         _dispatcher.register(this, "onIndexPartitionsTransferCommand", IndexPartitionsTransferCommand.class);
         _dispatcher.register(this, "onIndexPartitionsTransferRequest", IndexPartitionsTransferRequest.class);
         _dispatcher.register(this, "onEvacuationRequest", EvacuationRequest.class);
         _dispatcher.register(IndexPartitionsTransferResponse.class, _indexPartitionTransferRequestResponseRvMap, 5000);
         _dispatcher.register(IndexPartitionsTransferAcknowledgement.class, _indexPartitionTransferCommandAcknowledgementRvMap, 5000);
-        
+
         _cluster.getLocalNode().setState(_distributedState);
         _cluster.start();
         _log.info("...started");
-        
+
         synchronized (_coordinatorSync) {
             _coordinatorSync.wait(_clusterFactory.getInactiveTime());
         }
-        
+
         synchronized (_coordinatorLock) {
             // if no-one else is going to be coordinator - then it must be us !
             if (_coordinatorNode==null)
                 onCoordinatorChanged(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.ELECTED_COORDINATOR));
         }
-        
+
     }
-    
+
     public void stop() throws Exception {
         _log.info("stopping...");
 
@@ -118,15 +118,15 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             //om.setJMSCorrelationID(correlationId);
             om.setObject(new EvacuationRequest());
             _cluster.send(_coordinatorNode.getDestination(), om);
-            
-            Thread.sleep(5000);   
+
+            Thread.sleep(5000);
         } catch (JMSException e) {
             _log.warn("problem sending evacuation request");
         }  catch (InterruptedException e) {
             _log.info("interrupted");
             Thread.interrupted();
         }
-        
+
         if (_coordinator!=null) {
             _coordinator.stop();
             _coordinator=null;
@@ -135,13 +135,13 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         _connectionFactory.stop();
         _log.info("...stopped");
     }
-    
+
 //  protected Object[] subArray(Object[] input, int offset, int length) {
 //  Object[] output=new Object[length];
 //  Arrays.fill(output, offset, offset+length, input);
 //  return output;
 //  }
-//  
+//
 //  protected void evacuate() {
 //  Collection nodes=_cluster.getNodes().values();
 //  int numNodes=nodes.size();
@@ -161,7 +161,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 //  numRemainingIndexPartitions--;
 //  toTransfer++;
 //  }
-//  
+//
 //  // lock partitions... in serial - could be parallel...
 //  Object[] candidates=subArray(_key2IndexPartition.values().toArray(), offset, toTransfer);
 //  offset+=toTransfer;
@@ -179,7 +179,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 ////release(acquired);
 ////}
 //  }
-//  
+//
 //  boolean success=false;
 //  try {
 //  rv.attemptRendezvous(null, 10000L);
@@ -190,15 +190,15 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 //  _indexPartitionTransferCommandAcknowledgementRvMap.remove(correlationId);
 //  // somehow check all returned success..
 //  }
-//  
+//
 //  if (success) {
 //  _log.info("all transfers successfully undertaken");
 //  } else {
 //  _log.warn("some trasfers may have failed");
 //  }
-//  
+//
 //  }
-//  
+//
 //  // copied from Balancer - TODO - refactor
 //  protected void transfer(Node src, Node tgt, int amount, String correlationId) {
 //  _log.info("commanding "+DIndexNode.getNodeName(src)+" to give "+amount+" to "+DIndexNode.getNodeName(tgt));
@@ -214,30 +214,30 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 //  _log.error("problem sending share command", e);
 //  }
 //  }
-    
+
     protected String getContextPath() {
         return "/";
     }
-    
+
     public Cluster getCluster() {
         return _cluster;
     }
-    
+
     // ClusterListener
-    
+
     public void onNodeUpdate(ClusterEvent event) {
         _log.info("onNodeUpdate: "+getNodeName(event.getNode())+": "+event.getNode().getState());
     }
-    
+
     protected final Object _planLock=new Object();
-    
+
     public void onNodeAdd(ClusterEvent event) {
         if (_cluster.getLocalNode()==_coordinatorNode) {
             synchronized (_planLock) {
                 Node tgt=event.getNode();
                 _log.info("onNodeAdd: "+getNodeName(tgt));
                 _coordinator.queueRebalancing();
-                
+
 //              boolean success=false;
 //              try {
 //              rv.attemptRendezvous(null, 10000L);
@@ -248,7 +248,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 //              _indexPartitionTransferCommandAcknowledgementRvMap.remove(correlationId);
 //              // somehow check all returned success..
 //              }
-//              
+//
 //              if (success) {
 //              _log.info("all transfers successfully undertaken");
 //              } else {
@@ -257,7 +257,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             }
         }
     }
-    
+
     public void onNodeRemoved(ClusterEvent event) {  // NYI by layer below us...
         synchronized (_planLock) {
             Node node=event.getNode();
@@ -267,7 +267,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
                 _coordinator.queueRebalancing();
         }
     }
-    
+
     public void onNodeFailed(ClusterEvent event) {
         synchronized (_planLock) {
             Node node=event.getNode();
@@ -276,7 +276,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
                 _coordinator.queueRebalancing();
         }
     }
-    
+
     public void onCoordinatorChanged(ClusterEvent event) {
         synchronized (_coordinatorLock) {
             _log.info("onCoordinatorChanged: "+getNodeName(event.getNode()));
@@ -293,7 +293,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             }
         }
     }
-    
+
     /**
      * @param items - Excludables on some of which we need an exclusive lock
      * @param numItems - The number of Excludables upon which to acquire locks
@@ -308,22 +308,22 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             copy=true;
             acquired=new Object[numItems];
         }
-        
+
         // do not bother actually locking at the moment - FIXME
         if (copy) {
             for (int i=0; i<numItems; i++)
                 acquired[i]=items[i];
         }
-        
+
 //      Sync lock=partition.getExclusiveLock();
 //      long timeout=500; // how should we work this out ? - TODO
 //      if (lock.attempt(timeout))
 //      acquired.add(partition);
         // use finally clause to unlock if fail to acquire...
-        
+
         return acquired;
     }
-    
+
     /**
      * @param items - release the exclusive lock on all items in this array
      */
@@ -331,10 +331,10 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         // do not bother with locking at the moment - FIXME
         //((IndexPartition)acquired.get(i)).getExclusiveLock().release();
     }
-    
+
     protected Object _transferLock=new Object();
-    
-    
+
+
     // receive a command to transfer IndexPartitions to another node
     // send them ina request, waiting for response
     // send an acknowledgement to Coordinator who sent original command
@@ -350,7 +350,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             try {
                 // lock partitions
                 acquired=attempt(candidates, amount, heartbeat);
-                
+
                 // build request...
                 _log.info("transferring "+acquired.length+" IndexPartions");
                 ObjectMessage om2=_cluster.createObjectMessage();
@@ -390,7 +390,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             }
         }
     }
-    
+
     protected Node getSrcNode(ObjectMessage om) {
         try {
              return (Node)_cluster.getNodes().get(om.getJMSReplyTo());
@@ -399,7 +399,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             return null;
         }
     }
-    
+
     public void onIndexPartitionsTransferRequest(ObjectMessage om, IndexPartitionsTransferRequest request) {
         Object[] objects=request.getObjects();
         _log.info("received "+objects.length+" partitions from "+getNodeName(getSrcNode(om)));
@@ -416,7 +416,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         try {
             _dispatcher.replyToMessage(om, new IndexPartitionsTransferResponse(success));
             acked=true;
-            
+
         } catch (JMSException e) {
             _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died", e);
         }
@@ -435,9 +435,9 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             // chuck them... - TODO
         }
     }
-    
+
     // MyNode
-    
+
     public void onElection(ClusterEvent event) {
         _log.info("accepting coordinatorship");
         if (_cluster.getNodes().size()==0) {
@@ -463,7 +463,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             _log.error("problem starting Balancer");
         }
     }
-    
+
     public void onDismissal(ClusterEvent event) {
         _log.info("resigning coordinatorship"); // never happens - coordinatorship is for life..
         try {
@@ -473,34 +473,34 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             _log.error("problem starting Balancer");
         }
     }
-    
-    
+
+
     public static String getNodeName(Node node) {
-        return (String)node.getState().get(_nodeNameKey);
+      return node==null?"<unknown>":(String)node.getState().get(_nodeNameKey);
     }
-    
+
     public static int getNumIndexPartitions(Node node) {
         return ((Integer)node.getState().get(_numIndexPartitionsKey)).intValue();
     }
-    
+
     public boolean isCoordinator() {
         synchronized (_coordinatorLock) {
             return _cluster.getLocalNode()==_coordinatorNode;
         }
     }
-    
+
     public Node getCoordinator() {
         synchronized (_coordinatorLock) {
             return _coordinatorNode;
         }
     }
-    
+
     protected static Object _exitSync=new Object();
-    
+
     public static void main(String[] args) throws Exception {
         String nodeName=args[0];
         int numIndexPartitions=Integer.parseInt(args[1]);
-        
+
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 synchronized (_exitSync) {
@@ -509,7 +509,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
                 }
             }
         });
-        
+
         DIndexNode node=new DIndexNode(nodeName, numIndexPartitions);
         node.start();
         synchronized (_exitSync) {
@@ -522,24 +522,24 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         }
         node.stop();
     }
-    
+
     public int getNumItems() {
         return _numIndexPartitions;
     }
-    
+
     public Node getLocalNode() {
         return _cluster.getLocalNode();
     }
-    
+
     public Node[] getRemoteNodes() {
         Collection remoteNodes=_cluster.getNodes().values();
         return (Node[])remoteNodes.toArray(new Node[remoteNodes.size()]);
     }
-    
+
     public Map getRendezVousMap() {
         return _indexPartitionTransferCommandAcknowledgementRvMap;
     }
- 
+
     public void onEvacuationRequest(ObjectMessage om, EvacuationRequest request) {
         _log.info("evacuation request");
         assert _coordinator!=null;
