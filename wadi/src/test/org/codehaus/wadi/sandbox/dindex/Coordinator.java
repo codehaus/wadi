@@ -36,39 +36,39 @@ import EDU.oswego.cs.dl.util.concurrent.WaitableBoolean;
 import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
 
 //it's important that the Plan is constructed from snapshotted resources (i.e. the ground doesn't
-//shift under its feet), and that it is made and executed as quickly as possible - as a node could 
+//shift under its feet), and that it is made and executed as quickly as possible - as a node could
 //leave the Cluster in the meantime...
 
 public class Coordinator implements Runnable {
-    
+
     protected final Log _log=LogFactory.getLog(getClass());
-    
+
     protected final Slot _flag=new Slot();
     protected final Accumulator _leavers=new Accumulator();
-    
+
     protected final CoordinatorConfig _config;
     protected final Cluster _cluster;
     protected final Node _localNode;
     protected final int _numItems;
-    
+
     public Coordinator(CoordinatorConfig config) {
         _config=config;
         _cluster=_config.getCluster();
         _localNode=_cluster.getLocalNode();
         _numItems=_config.getNumItems();
     }
-    
+
     protected Thread _thread;
     protected Node[] _remoteNodes;
-    
-    
+
+
     public synchronized void start() throws Exception {
         _log.info("starting...");
         _thread=new Thread(this, "WADI Coordinator");
-        _thread.start();        
+        _thread.start();
         _log.info("...started");
     }
-    
+
     public synchronized void stop() throws Exception {
         // somehow wake up thread
         _log.info("stopping...");
@@ -77,7 +77,7 @@ public class Coordinator implements Runnable {
         _thread=null;
         _log.info("...stopped");
     }
-    
+
     public synchronized void queueRebalancing() {
         _log.info("queueing rebalancing...");
         try {
@@ -87,12 +87,12 @@ public class Coordinator implements Runnable {
         }
         _log.info("...rebalancing queued");
     }
-    
+
     public synchronized void queueLeaving(Node node) {
         _leavers.put(node);
         queueRebalancing();
     }
-    
+
     public void run() {
         try {
             while (_flag.take()==Boolean.TRUE) {
@@ -103,13 +103,13 @@ public class Coordinator implements Runnable {
             _log.info("interrupted"); // hmmm.... - TODO
         }
     }
-    
+
     // should loop until it gets a successful outcome - emptying _flag each time...
     public void rebalanceClusterState() {
         Collection excludedNodes=_leavers.take();
         int numParticipants=0;
         String correlationId;
-        
+
         Plan plan=null;
         if (excludedNodes.size()>0) {
             // a node wants to leave - evacuate it
@@ -124,14 +124,14 @@ public class Coordinator implements Runnable {
             numParticipants=_remoteNodes.length+1;
             correlationId=_localNode.getName()+"-leaving-"+System.currentTimeMillis();
         }
-        
+
         Map rvMap=_config.getRendezVousMap();
         TimeoutableInt rv=new TimeoutableInt(numParticipants-1);
         _log.info("SETTING UP RV FOR "+numParticipants+" PARTICIPANTS");
         rvMap.put(correlationId, rv);
-        
+
         execute(plan, correlationId);
-        
+
         boolean success=false;
         try {
             rv.whenEqual(0, 5000); // unify with cluster heartbeat or parameterise - TODO
@@ -146,26 +146,26 @@ public class Coordinator implements Runnable {
             rvMap.remove(correlationId);
             // somehow check all returned success..
         }
-        
+
         // TODO - loop
         printNodes(_localNode, _remoteNodes);
-        
+
     }
-    
+
     protected void printNodes(Node localNode, Node[] remoteNodes) {
         _log.info(DIndexNode.getNodeName(localNode)+" : "+DIndexNode.getNumIndexPartitions(localNode));
-        
+
         int n=remoteNodes.length;
         for (int i=0; i<n; i++) {
             Node remoteNode=remoteNodes[i];
-            _log.info(DIndexNode.getNodeName(remoteNode)+" : "+DIndexNode.getNumIndexPartitions(remoteNode));
+            _log.info(DIndexNode.getNodeName(remoteNode)+" : "+DIndexNode.getNumIndexPartitions(remoteNode)+" - "+remoteNode);
         }
     }
-    
+
     protected void execute(Plan plan, String correlationId) {
         Iterator p=plan.getProducers().iterator();
         Iterator c=plan.getConsumers().iterator();
-        
+
         Pair consumer=null;
         while (p.hasNext()) {
             Pair producer=(Pair)p.next();
@@ -185,7 +185,7 @@ public class Coordinator implements Runnable {
             }
         }
     }
-    
+
     public boolean balance(Node src, Node tgt, int amount, String correlationId) {
         /*if (src==_cluster.getLocalNode()) {
          // do something clever...
@@ -205,5 +205,5 @@ public class Coordinator implements Runnable {
           }
           return true;
     }
-    
+
 }
