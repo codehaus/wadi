@@ -16,15 +16,20 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import org.activecluster.Cluster;
-import org.activecluster.Node;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-interface BalancerConfig {
+public class Plan {
     
-    int getNumItems();
+    protected final List _producers=new ArrayList();
+    protected final List _consumers=new ArrayList();
     
-    Node getLocalNode();
-    Node[] getRemoteNodes();
-    Cluster getCluster();
+    public Collection getProducers() {
+        return _producers;
+    }
     
+    public Collection getConsumers() {
+        return _consumers;
+    }
 }

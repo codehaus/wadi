@@ -16,35 +16,25 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
-import org.activecluster.Cluster;
-import org.activecluster.Node;
+public class Accumulator {
+    
+    protected Collection _content=new ArrayList();
+    
+    public synchronized void put(Object object) {
+        _content.add(object);
+    }
 
-public abstract class AbstractBalancerConfig implements BalancerConfig {
+    public synchronized void putAll(Collection collection) {
+        _content.addAll(collection);
+    }
 
-    protected final Cluster _cluster;
-    protected final int _numItems;
-    
-    public AbstractBalancerConfig(Cluster cluster, int numItems) {
-        _cluster=cluster;
-        _numItems=numItems;
+    public synchronized Collection take() {
+        Collection oldContent=_content;
+        _content=new ArrayList();
+        return oldContent;
     }
-    
-    public Node[] getRemoteNodes() {
-        Collection nodes=_cluster.getNodes().values();
-        return (Node[])nodes.toArray(new Node[nodes.size()]);
-    }
-    
-    public Node getLocalNode() {
-        return _cluster.getLocalNode();
-    }
-    
-    public Cluster getCluster() {
-        return _cluster;
-    }
-    
-    public int getNumItems() {
-        return _numItems;
-    }
+
 }
