@@ -110,6 +110,7 @@ public class Coordinator implements Runnable {
         int numParticipants=0;
         String correlationId;
 
+        _remoteNodes=_config.getRemoteNodes(); // snapshot this at last possible moment...
         Plan plan=null;
         if (excludedNodes.size()>0) {
             // a node wants to leave - evacuate it
@@ -119,7 +120,6 @@ public class Coordinator implements Runnable {
             correlationId=_localNode.getName()+"-rebalance-"+System.currentTimeMillis();
         } else {
             // standard rebalance...
-            _remoteNodes=_config.getRemoteNodes(); // snapshot this at last possible moment...
             plan=new RebalancingPlan(_localNode, _remoteNodes, _numItems);
             numParticipants=_remoteNodes.length+1;
             correlationId=_localNode.getName()+"-leaving-"+System.currentTimeMillis();
@@ -148,7 +148,7 @@ public class Coordinator implements Runnable {
         }
 
         // TODO - loop
-        printNodes(_localNode, _remoteNodes);
+        printNodes(_localNode, _cluster.getNodes());
 
     }
 
@@ -158,6 +158,16 @@ public class Coordinator implements Runnable {
         int n=remoteNodes.length;
         for (int i=0; i<n; i++) {
             Node remoteNode=remoteNodes[i];
+            _log.info(DIndexNode.getNodeName(remoteNode)+" : "+DIndexNode.getNumIndexPartitions(remoteNode)+" - "+remoteNode);
+        }
+    }
+
+    protected void printNodes(Node localNode, Map nodes) {
+        _log.info(DIndexNode.getNodeName(localNode)+" : "+DIndexNode.getNumIndexPartitions(localNode));
+
+        Collection c=nodes.values();
+        for (Iterator i=c.iterator(); i.hasNext(); ) {
+            Node remoteNode=(Node)i.next();
             _log.info(DIndexNode.getNodeName(remoteNode)+" : "+DIndexNode.getNumIndexPartitions(remoteNode)+" - "+remoteNode);
         }
     }
