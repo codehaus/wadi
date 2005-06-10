@@ -19,7 +19,7 @@ package org.codehaus.wadi.sandbox.dindex;
 import org.activecluster.Cluster;
 import org.activecluster.Node;
 
-interface BalancerConfig {
+interface CoordinatorConfig {
     
     int getNumItems();
     

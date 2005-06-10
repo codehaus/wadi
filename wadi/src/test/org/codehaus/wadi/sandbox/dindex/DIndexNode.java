@@ -37,7 +37,7 @@ import org.codehaus.wadi.impl.MessageDispatcher;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
-public class DIndexNode implements ClusterListener, MessageDispatcherConfig, BalancerConfig {
+public class DIndexNode implements ClusterListener, MessageDispatcherConfig, CoordinatorConfig {
     
     protected final static String _nodeNameKey="nodeName";
     protected final static String _indexPartitionsKey="indexPartitions";
@@ -69,8 +69,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Bal
     }
     
     protected Cluster _cluster;
-    protected Node _coordinator;
-    protected Balancer _balancer;
+    protected Node _coordinatorNode;
+    protected Coordinator _coordinator;
     
     public void start() throws Exception {
         _log.info("starting...");
@@ -100,7 +100,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Bal
         
         synchronized (_coordinatorLock) {
             // if no-one else is going to be coordinator - then it must be us !
-            if (_coordinator==null)
+            if (_coordinatorNode==null)
                 onCoordinatorChanged(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.ELECTED_COORDINATOR));
         }
         
@@ -109,8 +109,10 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Bal
     public void stop() throws Exception {
         _log.info("stopping...");
         // TODO - ask Coordinator to evacuate us...
-        if (_balancer!=null)
-            _balancer.stop();
+        if (_coordinator!=null) {
+            _coordinator.stop();
+            _coordinator=null;
+        }
         _cluster.stop();
         _connectionFactory.stop();
         _log.info("...stopped");
@@ -212,11 +214,11 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Bal
     protected final Object _planLock=new Object();
     
     public void onNodeAdd(ClusterEvent event) {
-        if (_cluster.getLocalNode()==_coordinator) {
+        if (_cluster.getLocalNode()==_coordinatorNode) {
             synchronized (_planLock) {
                 Node tgt=event.getNode();
                 _log.info("onNodeAdd: "+getNodeName(tgt));
-                _balancer.queueRebalancing();
+                _coordinator.queueRebalancing();
                 
 //              boolean success=false;
 //              try {
@@ -243,8 +245,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Bal
             Node node=event.getNode();
             _log.info("onNodeRemoved: "+getNodeName(node));
             // leaving node was responsible for rebalancing its state around cluster - or maybe it should ask coordinator to do it for it.
-            if (_coordinator==getLocalNode())
-                _balancer.queueRebalancing();
+            if (_coordinatorNode==getLocalNode())
+                _coordinator.queueRebalancing();
         }
     }
     
@@ -252,8 +254,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Bal
         synchronized (_planLock) {
             Node node=event.getNode();
             _log.info("onNodeFailed: "+getNodeName(node));
-            if (_coordinator==getLocalNode())
-                _balancer.queueRebalancing();
+            if (_coordinatorNode==getLocalNode())
+                _coordinator.queueRebalancing();
         }
     }
     
@@ -261,11 +263,11 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Bal
         synchronized (_coordinatorLock) {
             _log.info("onCoordinatorChanged: "+getNodeName(event.getNode()));
             Node newCoordinator=event.getNode();
-            if (newCoordinator!=_coordinator) {
-                if (_coordinator==_cluster.getLocalNode())
+            if (newCoordinator!=_coordinatorNode) {
+                if (_coordinatorNode==_cluster.getLocalNode())
                     onDismissal(event);
-                _coordinator=newCoordinator;
-                if (_coordinator==_cluster.getLocalNode())
+                _coordinatorNode=newCoordinator;
+                if (_coordinatorNode==_cluster.getLocalNode())
                     onElection(event);
             }
             synchronized (_coordinatorSync) {
@@ -429,7 +431,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Bal
 //          }
         }
         try {
-            (_balancer=new Balancer(this)).start();
+            (_coordinator=new Coordinator(this)).start();
         } catch (Exception e) {
             _log.error("problem starting Balancer");
         }
@@ -438,8 +440,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Bal
     public void onDismissal(ClusterEvent event) {
         _log.info("resigning coordinatorship"); // never happens - coordinatorship is for life..
         try {
-            _balancer.stop();
-            _balancer=null;
+            _coordinator.stop();
+            _coordinator=null;
         } catch (Exception e) {
             _log.error("problem starting Balancer");
         }
@@ -456,13 +458,13 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Bal
     
     public boolean isCoordinator() {
         synchronized (_coordinatorLock) {
-            return _cluster.getLocalNode()==_coordinator;
+            return _cluster.getLocalNode()==_coordinatorNode;
         }
     }
     
     public Node getCoordinator() {
         synchronized (_coordinatorLock) {
-            return _coordinator;
+            return _coordinatorNode;
         }
     }
     
