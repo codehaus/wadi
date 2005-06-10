@@ -32,6 +32,7 @@ import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.Slot;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 import EDU.oswego.cs.dl.util.concurrent.WaitableBoolean;
+import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
 
 //it's important that the Plan is constructed from snapshotted resources (i.e. the ground doesn't
 //shift under its feet), and that it is made and executed as quickly as possible - as a node could 
@@ -77,11 +78,13 @@ public class Coordinator implements Runnable {
     }
     
     public synchronized void queueRebalancing() {
+        _log.info("queueing rebalancing...");
         try {
             _flag.offer(Boolean.TRUE, 0);
         } catch (InterruptedException e) {
             _log.warn("unexpected interruption");
         }
+        _log.info("...rebalancing queued");
     }
     
     public synchronized void queueLeaving(Node node) {
@@ -103,7 +106,7 @@ public class Coordinator implements Runnable {
     // should loop until it gets a successful outcome - emptying _flag each time...
     public void rebalanceClusterState() {
         Collection excludedNodes=_leavers.take();
-        int numRendezvousers=0;
+        int numParticipants=0;
         String correlationId;
         
         Plan plan=null;
@@ -111,26 +114,28 @@ public class Coordinator implements Runnable {
             // a node wants to leave - evacuate it
             Node leaver=(Node)excludedNodes.iterator().next(); // FIXME - should be leavers...
             plan=new EvacuationPlan(leaver, _localNode, _remoteNodes, _numItems);
-            numRendezvousers=_remoteNodes.length+1; // TODO - I think
+            numParticipants=_remoteNodes.length+1; // TODO - I think
             correlationId=_localNode.getName()+"-rebalance-"+System.currentTimeMillis();
         } else {
             // standard rebalance...
             _remoteNodes=_config.getRemoteNodes(); // snapshot this at last possible moment...
             plan=new RebalancingPlan(_localNode, _remoteNodes, _numItems);
-            numRendezvousers=_remoteNodes.length+1;
+            numParticipants=_remoteNodes.length+1;
             correlationId=_localNode.getName()+"-leaving-"+System.currentTimeMillis();
         }
         
         Map rvMap=_config.getRendezVousMap();
-        Rendezvous rv=new Rendezvous(numRendezvousers);
+        TimeoutableInt rv=new TimeoutableInt(numParticipants-1);
+        _log.info("SETTING UP RV FOR "+numParticipants+" PARTICIPANTS");
         rvMap.put(correlationId, rv);
         
         execute(plan, correlationId);
         
         boolean success=false;
         try {
-            rv.attemptRendezvous(null, 5000); // unify with cluster heartbeat or parameterise - TODO
+            rv.whenEqual(0, 5000); // unify with cluster heartbeat or parameterise - TODO
             _log.info("RENDEZVOUS SUCCESSFUL");
+            Collection results=rv.getResults();
             success=true;
         } catch (TimeoutException e) {
             _log.warn("timed out waiting for response", e);

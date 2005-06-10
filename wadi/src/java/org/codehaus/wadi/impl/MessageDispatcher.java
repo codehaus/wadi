@@ -33,11 +33,13 @@ import org.activecluster.Cluster;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.MessageDispatcherConfig;
+import org.codehaus.wadi.sandbox.dindex.TimeoutableInt;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
+import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
 
 // TODO - we need a ThreadPool here - to stop a glut of incoming messages from overwhelming a node.
 
@@ -164,24 +166,16 @@ public class MessageDispatcher implements MessageListener {
 	  }
 
 	  public void dispatch(ObjectMessage om, Serializable obj) throws JMSException {
-	    // rendez-vous with waiting thread...
-	    String correlationId=om.getJMSCorrelationID();
-	    synchronized (_rvMap) {
-	      Rendezvous rv=(Rendezvous)_rvMap.get(correlationId);
-	      if (rv==null) {
-		if (_log.isWarnEnabled()) _log.warn("rendez-vous missed - no-one waiting: "+correlationId);
-	      } else {
-		do { // should we move this pattern into Utils ?
-		  try {
-		    rv.attemptRendezvous(om, _timeout);
-		  } catch (TimeoutException toe) {
-		    if (_log.isWarnEnabled()) _log.warn("rendez-vous timed out: "+correlationId, toe);
-		  } catch (InterruptedException ignore) {
-		    if (_log.isTraceEnabled()) _log.trace("rendez-vous interruption ignored: "+correlationId);
-		  }
-		} while (Thread.interrupted()); // TODO - should really subtract from timeout each time...
+	      // rendez-vous with waiting thread...
+	      String correlationId=om.getJMSCorrelationID();
+	      synchronized (_rvMap) {
+	          TimeoutableInt rv=(TimeoutableInt)_rvMap.get(correlationId);
+	          if (rv==null) {
+	              if (_log.isWarnEnabled()) _log.warn("rendez-vous missed - no-one waiting: "+correlationId);
+	          } else {
+	              rv.putResult(om);
+	          }
 	      }
-	    }
 	  }
 
 	  public String toString() {
@@ -288,7 +282,7 @@ public class MessageDispatcher implements MessageListener {
 	// send a message and then wait a given amount of time for the first response - return it...
 	// for use with RendezVousDispatcher... - need to register type beforehand...
 	public Serializable exchangeMessages(Serializable request, Map rvMap, Settings settingsInOut, long timeout) {
-		Rendezvous rv=new Rendezvous(2); // TODO - can these be reused ?
+		TimeoutableInt rv=new TimeoutableInt(1); // TODO - can these be reused ?
 
 		// set up a rendez-vous...
 		synchronized (rvMap) {
@@ -303,7 +297,8 @@ public class MessageDispatcher implements MessageListener {
 			do {
 				try {
 					long startTime=System.currentTimeMillis();
-					om=(ObjectMessage)rv.attemptRendezvous(null, timeout);
+                    rv.whenEqual(0, timeout);
+                    om=(ObjectMessage)rv.getResults().toArray()[0]; // Aargh!
 					response=om.getObject();
 					settingsInOut.to=om.getJMSReplyTo();
 					// om.getJMSDestination() might be the whole cluster, not just this node... - TODO
@@ -336,7 +331,7 @@ public class MessageDispatcher implements MessageListener {
 	        correlationId=request.getJMSCorrelationID();
 	        
 	        // set up a rendez-vous...
-	        Rendezvous rv=new Rendezvous(2);
+	        TimeoutableInt rv=new TimeoutableInt(1);
 	        synchronized (rvMap) {
 	            rvMap.put(request.getJMSCorrelationID(), rv);
 	        }
@@ -348,7 +343,8 @@ public class MessageDispatcher implements MessageListener {
 	        do {
 	            try {
 	                long startTime=System.currentTimeMillis();
-	                response=(ObjectMessage)rv.attemptRendezvous(null, timeout);
+                    rv.whenEqual(0, timeout);
+	                response=(ObjectMessage)rv.getResults().toArray()[0]; // TODO - Aargh!
 	                long elapsedTime=System.currentTimeMillis()-startTime;
 	                if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis)"); // session does not exist
 	            } catch (TimeoutException e) {
