@@ -17,70 +17,155 @@
 package org.codehaus.wadi.sandbox.dindex;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.Iterator;
 
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.activecluster.Cluster;
 import org.activecluster.Node;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-public class Balancer extends AbstractBalancer {
+import EDU.oswego.cs.dl.util.concurrent.WaitableBoolean;
 
-    public Balancer(Cluster cluster, Node[] nodes, int numBuckets, BalancerConfig config) {
-        super(config);
+//it's important that the Plan is constructed from snapshotted resources (i.e. the ground doesn't
+//shift under its feet), and that it is made and executed as quickly as possible - as a node could 
+//leave the Cluster in the meantime...
+
+public class Balancer implements Runnable {
+    
+    protected final Log _log=LogFactory.getLog(getClass());
+    
+    protected final WaitableBoolean _needsBalancing=new WaitableBoolean(false);
+    protected final Accumulator _leavers=new Accumulator();
+    
+    protected final BalancerConfig _config;
+    protected final Cluster _cluster;
+    protected final Node _localNode;
+    protected final int _numItems;
+    
+    public Balancer(BalancerConfig config) {
+        _config=config;
+        _cluster=_config.getCluster();
+        _localNode=_cluster.getLocalNode();
+        _numItems=_config.getNumItems();
     }
-
-    public void plan(Plan plan) {
-        // sort Nodes into ordered sets of producers and consumers...
-        List producers=plan._producers; // have more than they need
-        List consumers=plan._consumers; // have less than they need
-        
-        int numRemoteNodes=_remoteNodes.length;
-        int numNodes=numRemoteNodes+1;
-        int numBucketsPerNode=_numItems/numNodes;
-        // local node...
-        Node localNode=_cluster.getLocalNode();
-        decide(localNode, DIndexNode.getNumIndexPartitions(localNode), numBucketsPerNode, producers, consumers);
-        // remote nodes...
-        for (int i=0; i<numRemoteNodes; i++) {
-            Node node=_remoteNodes[i];
-            int numBuckets=DIndexNode.getNumIndexPartitions(node);
-            decide(node, numBuckets, numBucketsPerNode, producers, consumers);
-        }
-        // sort lists...
-        Collections.sort(producers, new PairGreaterThanComparator());
-        Collections.sort(consumers, new PairLessThanComparator());
-        
-        // account for uneven division of buckets...
-        int remainingBuckets=_numItems%numNodes;
-        ListIterator i=producers.listIterator();
-        while(remainingBuckets>0 && i.hasNext()) {
-            Pair p=(Pair)i.next();
-            remainingBuckets--;
-            if ((--p._deviation)==0)
-                i.remove();
-        }
-        assert remainingBuckets==0;
-        
-        // above is good for addNode
-        // when a node leaves cleanly, we need to run this the other way around
-        // so that the remainder is added to the smallest consumers, rather than taken from the largest producers...
+    
+    protected volatile boolean _running;
+    protected Thread _thread;
+    protected Node[] _remoteNodes;
+    
+    
+    public synchronized void start() throws Exception {
+        _running=true;
+        _thread=new Thread(this, "WADI State Balancer");
+        _thread.start();        
     }
-
-    protected void decide(Node node, int numBuckets, int numBucketsPerNode, Collection producers, Collection consumers) {
-        int deviation=numBuckets-numBucketsPerNode;
-        if (deviation>0) {
-            producers.add(new Pair(node, deviation));
-            return;
-        }
-        if (deviation<0) {
-            consumers.add(new Pair(node, -deviation));
-            return;
+    
+    public synchronized void stop() throws Exception {
+        // somehow wake up thread
+        _running=false;
+        _thread.join();
+        _thread=null;
+    }
+    
+    public synchronized void queueRebalancing() {
+        _needsBalancing.set(true);
+    }
+    
+    public synchronized void queueLeaving(Node node) {
+        _leavers.put(node);
+        _needsBalancing.set(true);   
+    }
+    
+    public void run() {
+        while (_running) {
+            try {
+                _needsBalancing.whenTrue(new Runnable() {public void run(){rebalanceClusterState();}}); // ALLOC
+            } catch (InterruptedException e) {
+                Thread.interrupted();
+                _log.info("interrupted"); // hmmm.... - TODO
+            }
         }
     }
-
-
+    
+    public void rebalanceClusterState() {
+        boolean needsBalancing=_needsBalancing.set(false);
+        
+        if (needsBalancing) {
+            Collection excludedNodes=_leavers.take();
+            
+            Plan plan=null;
+            if (excludedNodes.size()>0) {
+                // a node wants to leave - evacuate it
+                Node leaver=(Node)excludedNodes.iterator().next(); // FIXME - should be leavers...
+                plan=new EvacuationPlan(leaver, _localNode, _remoteNodes, _numItems);
+            } else {
+                // standard rebalance...
+                _remoteNodes=_config.getRemoteNodes(); // snapshot this at last possible moment...
+                plan=new RebalancingPlan(_localNode, _remoteNodes, _numItems);
+            }
+            execute(plan);
+            printNodes(_localNode, _remoteNodes);
+            
+        }
+    }
+    
+    protected void printNodes(Node localNode, Node[] remoteNodes) {
+        _log.info(DIndexNode.getNodeName(localNode)+" : "+DIndexNode.getNumIndexPartitions(localNode));
+        
+        int n=remoteNodes.length;
+        for (int i=0; i<n; i++) {
+            Node remoteNode=remoteNodes[i];
+            _log.info(DIndexNode.getNodeName(remoteNode)+" : "+DIndexNode.getNumIndexPartitions(remoteNode));
+        }
+    }
+    
+    protected void execute(Plan plan) {
+        Iterator p=plan.getProducers().iterator();
+        Iterator c=plan.getConsumers().iterator();
+        
+        String correlationId=_localNode.getName()+"-transfer-"+System.currentTimeMillis();
+        
+        Pair consumer=null;
+        while (p.hasNext()) {
+            Pair producer=(Pair)p.next();
+            while (producer._deviation>0) {
+                if (consumer==null)
+                    consumer=c.hasNext()?(Pair)c.next():null;
+                    if (producer._deviation>=consumer._deviation) {
+                        balance(producer._node, consumer._node, consumer._deviation, correlationId);
+                        producer._deviation-=consumer._deviation;
+                        consumer._deviation=0;
+                        consumer=null;
+                    } else {
+                        balance(producer._node, consumer._node, producer._deviation, correlationId);
+                        consumer._deviation-=producer._deviation;
+                        producer._deviation=0;
+                    }
+            }
+        }
+    }
+    
+    public boolean balance(Node src, Node tgt, int amount, String correlationId) {
+        /*if (src==_cluster.getLocalNode()) {
+         // do something clever...
+          } else*/ {
+              _log.info("commanding "+DIndexNode.getNodeName(src)+" to give "+amount+" to "+DIndexNode.getNodeName(tgt));
+              IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand(amount, tgt.getDestination());
+              try {
+                  ObjectMessage om=_cluster.createObjectMessage();
+                  om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+                  om.setJMSDestination(src.getDestination());
+                  om.setJMSCorrelationID(correlationId);
+                  om.setObject(command);
+                  _cluster.send(src.getDestination(), om);
+              } catch (JMSException e) {
+                  _log.error("problem sending share command", e);
+              }
+          }
+          return true;
+    }
+    
 }
