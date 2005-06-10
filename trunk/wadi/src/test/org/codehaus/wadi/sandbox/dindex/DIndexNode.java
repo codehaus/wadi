@@ -19,6 +19,7 @@ package org.codehaus.wadi.sandbox.dindex;
 import java.util.Collection;
 import java.util.Map;
 
+import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
@@ -87,6 +88,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         _dispatcher.init(this);
         _dispatcher.register(this, "onIndexPartitionsTransferCommand", IndexPartitionsTransferCommand.class);
         _dispatcher.register(this, "onIndexPartitionsTransferRequest", IndexPartitionsTransferRequest.class);
+        _dispatcher.register(this, "onEvacuationRequest", EvacuationRequest.class);
         _dispatcher.register(IndexPartitionsTransferResponse.class, _indexPartitionTransferRequestResponseRvMap, 5000);
         _dispatcher.register(IndexPartitionsTransferAcknowledgement.class, _indexPartitionTransferCommandAcknowledgementRvMap, 5000);
         
@@ -108,7 +110,23 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
     
     public void stop() throws Exception {
         _log.info("stopping...");
-        // TODO - ask Coordinator to evacuate us...
+
+        try {
+            ObjectMessage om=_cluster.createObjectMessage();
+            om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+            om.setJMSDestination(_coordinatorNode.getDestination());
+            //om.setJMSCorrelationID(correlationId);
+            om.setObject(new EvacuationRequest());
+            _cluster.send(_coordinatorNode.getDestination(), om);
+            
+            Thread.sleep(5000);   
+        } catch (JMSException e) {
+            _log.warn("problem sending evacuation request");
+        }  catch (InterruptedException e) {
+            _log.info("interrupted");
+            Thread.interrupted();
+        }
+        
         if (_coordinator!=null) {
             _coordinator.stop();
             _coordinator=null;
@@ -373,9 +391,18 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         }
     }
     
+    protected Node getSrcNode(ObjectMessage om) {
+        try {
+             return (Node)_cluster.getNodes().get(om.getJMSReplyTo());
+        } catch (JMSException e) {
+            _log.warn("could not read src node from message", e);
+            return null;
+        }
+    }
+    
     public void onIndexPartitionsTransferRequest(ObjectMessage om, IndexPartitionsTransferRequest request) {
         Object[] objects=request.getObjects();
-        _log.info("received "+objects.length+" partitions from ?");
+        _log.info("received "+objects.length+" partitions from "+getNodeName(getSrcNode(om)));
         boolean success=false;
         // read incoming data into our own local model
         for (int i=0; i<objects.length; i++) {
@@ -512,5 +539,11 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
     public Map getRendezVousMap() {
         return _indexPartitionTransferCommandAcknowledgementRvMap;
     }
-    
+ 
+    public void onEvacuationRequest(ObjectMessage om, EvacuationRequest request) {
+        _log.info("evacuation request");
+        assert _coordinator!=null;
+        Node leaver=getSrcNode(om);
+        _coordinator.queueLeaving(leaver);
+    }
 }
