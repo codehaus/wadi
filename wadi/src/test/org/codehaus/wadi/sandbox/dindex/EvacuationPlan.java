@@ -23,13 +23,15 @@ import org.activecluster.Node;
 public class EvacuationPlan extends Plan {
 
     public EvacuationPlan(Node leaver, Node localNode, Node[] remoteNodes, int numItems) {
+	System.out.println("LEAVER: "+DIndexNode.getNodeName(leaver)+" - "+leaver);
+
         int numNodes=remoteNodes.length;
         int numItemsPerNode=numItems/numNodes;
         int numRemainingItems=numItems%numNodes;
 
         // who is giving items ? - just us...
         _producers.add(new Pair(leaver, DIndexNode.getNumIndexPartitions(leaver)));
-        
+
         // who is receiving items ? - everyone else
         add(leaver, numItemsPerNode, numRemainingItems, localNode);
         for (int i=0; i<numNodes; i++) {
@@ -37,16 +39,19 @@ public class EvacuationPlan extends Plan {
             add(leaver, numItemsPerNode, numRemainingItems, remoteNode);
         }
      }
-    
+
     protected void add(Node leaver, int numItemsPerNode, int numRemainingItems, Node node) {
-        if (node==leaver)
+      if (DIndexNode.getNodeName(node).equals(DIndexNode.getNodeName(leaver))) // TODO - do better
             return; // ignore
-        
+
         int deviation=numItemsPerNode-DIndexNode.getNumIndexPartitions(node); // abstract - TODO
         if (numRemainingItems>0) {
             numRemainingItems--;
             deviation++;
         }
+
+	System.out.println("ADDING NODE AS CONSUMER: "+DIndexNode.getNodeName(node)+" - "+node);
+
         _consumers.add(new Pair(node, deviation));
     }
 }
