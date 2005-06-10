@@ -226,8 +226,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
     // ClusterListener
 
     public void onNodeUpdate(ClusterEvent event) {
-      Node node=event.getNode();
-        _log.info("onNodeUpdate: "+getNodeName(node)+": "+node.getState()+" - "+node);
+        _log.info("onNodeUpdate: "+getNodeName(event.getNode())+": "+event.getNode().getState());
     }
 
     protected final Object _planLock=new Object();
@@ -411,15 +410,6 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             // we should lock these until acked - then unlock them - TODO...
             _key2IndexPartition.put(partition.getKey(), partition);
         }
-        try {
-            // notify rest of Cluster of change of partition ownership...
-            Object[] keys=_key2IndexPartition.keySet().toArray();
-            //_distributedState.put(_indexPartitionsKey, keys);
-            _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
-            _cluster.getLocalNode().setState(_distributedState);
-        } catch (JMSException e) {
-            _log.error("could not update distributed state", e);
-        }
         success=true;
         boolean acked=false;
         // acknowledge safe receipt to donor
@@ -429,6 +419,15 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 
         } catch (JMSException e) {
             _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died", e);
+        }
+        try {
+            // notify rest of Cluster of change of partition ownership...
+            Object[] keys=_key2IndexPartition.keySet().toArray();
+            //_distributedState.put(_indexPartitionsKey, keys);
+            _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
+            _cluster.getLocalNode().setState(_distributedState);
+        } catch (JMSException e) {
+            _log.error("could not update distributed state", e);
         }
         if (acked) {
             // unlock Partitions here... - TODO
