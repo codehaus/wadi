@@ -33,19 +33,19 @@ import EDU.oswego.cs.dl.util.concurrent.WaitableBoolean;
 //shift under its feet), and that it is made and executed as quickly as possible - as a node could 
 //leave the Cluster in the meantime...
 
-public class Balancer implements Runnable {
+public class Coordinator implements Runnable {
     
     protected final Log _log=LogFactory.getLog(getClass());
     
     protected final WaitableBoolean _needsBalancing=new WaitableBoolean(false);
     protected final Accumulator _leavers=new Accumulator();
     
-    protected final BalancerConfig _config;
+    protected final CoordinatorConfig _config;
     protected final Cluster _cluster;
     protected final Node _localNode;
     protected final int _numItems;
     
-    public Balancer(BalancerConfig config) {
+    public Coordinator(CoordinatorConfig config) {
         _config=config;
         _cluster=_config.getCluster();
         _localNode=_cluster.getLocalNode();
@@ -58,16 +58,20 @@ public class Balancer implements Runnable {
     
     
     public synchronized void start() throws Exception {
+        _log.info("starting...");
         _running=true;
-        _thread=new Thread(this, "WADI State Balancer");
+        _thread=new Thread(this, "WADI Coordinator");
         _thread.start();        
+        _log.info("...started");
     }
     
     public synchronized void stop() throws Exception {
         // somehow wake up thread
+        _log.info("stopping...");
         _running=false;
         _thread.join();
         _thread=null;
+        _log.info("...stopped");
     }
     
     public synchronized void queueRebalancing() {
