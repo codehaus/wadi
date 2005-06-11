@@ -111,6 +111,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
     public void stop() throws Exception {
         _log.info("stopping...");
 
+	Thread.interrupted();
+
         try {
             ObjectMessage om=_cluster.createObjectMessage();
             om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
@@ -119,10 +121,10 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             om.setObject(new EvacuationRequest());
             _cluster.send(_coordinatorNode.getDestination(), om);
 
-            Thread.sleep(5000);
+            Thread.sleep(5000); // TODO - need to wait for sync response
         } catch (JMSException e) {
             _log.warn("problem sending evacuation request");
-        }  catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             _log.info("interrupted");
             Thread.interrupted();
         }
@@ -272,8 +274,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         synchronized (_planLock) {
             Node node=event.getNode();
             _log.info("onNodeFailed: "+getNodeName(node));
-            if (_coordinatorNode==getLocalNode())
-                _coordinator.queueRebalancing();
+	    //            if (_coordinatorNode==getLocalNode())
+	    //	      _coordinator.queueRebalancing();
         }
     }
 
@@ -412,14 +414,6 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         }
         success=true;
         boolean acked=false;
-        // acknowledge safe receipt to donor
-        try {
-            _dispatcher.replyToMessage(om, new IndexPartitionsTransferResponse(success));
-            acked=true;
-
-        } catch (JMSException e) {
-            _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died", e);
-        }
         try {
             // notify rest of Cluster of change of partition ownership...
             Object[] keys=_key2IndexPartition.keySet().toArray();
@@ -428,6 +422,14 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             _cluster.getLocalNode().setState(_distributedState);
         } catch (JMSException e) {
             _log.error("could not update distributed state", e);
+        }
+        // acknowledge safe receipt to donor
+        try {
+            _dispatcher.replyToMessage(om, new IndexPartitionsTransferResponse(success));
+            acked=true;
+
+        } catch (JMSException e) {
+            _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died", e);
         }
         if (acked) {
             // unlock Partitions here... - TODO
@@ -503,24 +505,25 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
-                synchronized (_exitSync) {
-                    System.err.println("SHUTDOWN");
-                    _exitSync.notifyAll();
-                }
+	      System.err.println("SHUTDOWN");
+	      synchronized (_exitSync) {_exitSync.notifyAll();}
+	      try {
+	      synchronized (_exitSync) {_exitSync.wait();}
+	      } catch (InterruptedException e) {
+		// ignore
+	      }
             }
         });
 
         DIndexNode node=new DIndexNode(nodeName, numIndexPartitions);
         node.start();
-        synchronized (_exitSync) {
-            do {
-                try {
-                    _exitSync.wait();
-                } catch (InterruptedException ignore) {
-                }
-            } while (Thread.interrupted());
-        }
+
+        synchronized (_exitSync) {_exitSync.wait();}
+
         node.stop();
+
+        synchronized (_exitSync) {_exitSync.notifyAll();}
+
     }
 
     public int getNumItems() {
