@@ -18,6 +18,9 @@ package org.codehaus.wadi.sandbox.dindex;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.impl.TimeoutableInt;
+
+import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
 
 import junit.framework.TestCase;
 

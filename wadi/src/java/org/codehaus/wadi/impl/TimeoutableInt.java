@@ -35,8 +35,9 @@ public class TimeoutableInt extends WaitableInt {
     }
 
     public void whenEqual(int c, long timeout) throws InterruptedException {
+        long end=System.currentTimeMillis()+timeout;
         synchronized(lock_) {
-          while (!(value_ == c)) lock_.wait(timeout);
+          while (!(value_ == c) && System.currentTimeMillis()<end) lock_.wait(timeout);
         }
       }
     
