@@ -116,7 +116,7 @@ public class Coordinator implements Runnable {
             // a node wants to leave - evacuate it
             Node leaver=(Node)excludedNodes.iterator().next(); // FIXME - should be leavers...
             plan=new EvacuationPlan(leaver, _localNode, _remoteNodes, _numItems);
-            numParticipants=_remoteNodes.length; // TODO - I think
+            numParticipants=_remoteNodes.length+1; // TODO - I think
             correlationId=_localNode.getName()+"-rebalance-"+System.currentTimeMillis();
         } else {
             // standard rebalance...
@@ -134,6 +134,7 @@ public class Coordinator implements Runnable {
 
         boolean success=false;
         try {
+            _log.info("WAITING ON RENDEZVOUS");
             rv.whenEqual(0, 5000); // unify with cluster heartbeat or parameterise - TODO
             _log.info("RENDEZVOUS SUCCESSFUL");
             Collection results=rv.getResults();
