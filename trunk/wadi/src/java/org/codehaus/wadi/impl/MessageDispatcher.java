@@ -168,7 +168,7 @@ public class MessageDispatcher implements MessageListener {
 	      // rendez-vous with waiting thread...
 	      String correlationId=om.getJMSCorrelationID();
 	      synchronized (_rvMap) {
-	          TimeoutableInt rv=(TimeoutableInt)_rvMap.get(correlationId);
+	          Quipu rv=(Quipu)_rvMap.get(correlationId);
 	          if (rv==null) {
 	              if (_log.isWarnEnabled()) _log.warn("rendez-vous missed - no-one waiting: "+correlationId);
 	          } else {
@@ -281,7 +281,7 @@ public class MessageDispatcher implements MessageListener {
 	// send a message and then wait a given amount of time for the first response - return it...
 	// for use with RendezVousDispatcher... - need to register type beforehand...
 	public Serializable exchangeMessages(Serializable request, Map rvMap, Settings settingsInOut, long timeout) {
-		TimeoutableInt rv=new TimeoutableInt(1); // TODO - can these be reused ?
+		Quipu rv=new Quipu(1); // TODO - can these be reused ?
 
 		// set up a rendez-vous...
 		synchronized (rvMap) {
@@ -296,7 +296,7 @@ public class MessageDispatcher implements MessageListener {
 			do {
 				try {
 					long startTime=System.currentTimeMillis();
-                    rv.whenEqual(0, timeout);
+                    rv.waitFor(timeout);
                     om=(ObjectMessage)rv.getResults().toArray()[0]; // Aargh!
 					response=om.getObject();
 					settingsInOut.to=om.getJMSReplyTo();
@@ -330,7 +330,7 @@ public class MessageDispatcher implements MessageListener {
 	        correlationId=request.getJMSCorrelationID();
 	        
 	        // set up a rendez-vous...
-	        TimeoutableInt rv=new TimeoutableInt(1);
+	        Quipu rv=new Quipu(1);
 	        synchronized (rvMap) {
 	            rvMap.put(request.getJMSCorrelationID(), rv);
 	        }
@@ -342,7 +342,7 @@ public class MessageDispatcher implements MessageListener {
 	        do {
 	            try {
 	                long startTime=System.currentTimeMillis();
-                    rv.whenEqual(0, timeout);
+                    rv.waitFor(timeout);
 	                response=(ObjectMessage)rv.getResults().toArray()[0]; // TODO - Aargh!
 	                long elapsedTime=System.currentTimeMillis()-startTime;
 	                if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis)"); // session does not exist

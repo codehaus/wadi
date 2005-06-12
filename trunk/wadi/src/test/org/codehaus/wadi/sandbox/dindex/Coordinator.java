@@ -27,7 +27,7 @@ import org.activecluster.Cluster;
 import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.impl.TimeoutableInt;
+import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.Slot;
@@ -126,7 +126,7 @@ public class Coordinator implements Runnable {
         }
 
         Map rvMap=_config.getRendezVousMap();
-        TimeoutableInt rv=new TimeoutableInt(numParticipants-1);
+        Quipu rv=new Quipu(numParticipants-1);
         _log.info("SETTING UP RV FOR "+numParticipants+" PARTICIPANTS");
         rvMap.put(correlationId, rv);
 
@@ -135,7 +135,7 @@ public class Coordinator implements Runnable {
         boolean success=false;
         try {
             _log.info("WAITING ON RENDEZVOUS");
-            rv.whenEqual(0, 5000); // unify with cluster heartbeat or parameterise - TODO
+            rv.waitFor(5000); // unify with cluster heartbeat or parameterise - TODO
             _log.info("RENDEZVOUS SUCCESSFUL");
             Collection results=rv.getResults();
             success=true;
