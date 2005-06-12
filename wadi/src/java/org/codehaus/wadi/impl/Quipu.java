@@ -22,22 +22,25 @@ import java.util.Collections;
 
 import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
 
-public class TimeoutableInt extends WaitableInt {
+/**
+ * You have a flock of n Llamas, you [un]tie a knot in your Quipu as each one leaves/enters your pen.
+ * When all are in/out, you are free to continue. If the Llamas take too long, you can leave anyway !
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public class Quipu extends WaitableInt {
 
-    public TimeoutableInt(int initialValue) {
-        super(initialValue);
+    public Quipu(int numLlammas) {
+        super(numLlammas);
         // TODO Auto-generated constructor stub
     }
 
-    public TimeoutableInt(int initialValue, Object lock) {
-        super(initialValue, lock);
-        // TODO Auto-generated constructor stub
-    }
-
-    public void whenEqual(int c, long timeout) throws InterruptedException {
+    public void waitFor(long timeout) throws InterruptedException {
         long end=System.currentTimeMillis()+timeout;
+        long now=0;
         synchronized(lock_) {
-          while (!(value_ == c) && System.currentTimeMillis()<end) lock_.wait(timeout);
+          while (!(value_==0) && (now=System.currentTimeMillis())<end) lock_.wait(end-now);
         }
       }
     
