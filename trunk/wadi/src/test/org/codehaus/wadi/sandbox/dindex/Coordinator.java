@@ -146,6 +146,23 @@ public class Coordinator implements Runnable {
         } finally {
             rvMap.remove(correlationId);
             // somehow check all returned success..
+            
+            // send EvacuationResponses to each leaving node...
+            for (Iterator i=excludedNodes.iterator(); i.hasNext(); ) {
+                Node node=(Node)i.next();
+                _log.info("acknowledging evacuation of"+DIndexNode.getNodeName(node));
+                EvacuationResponse response=new EvacuationResponse();
+                try {
+                    ObjectMessage om=_cluster.createObjectMessage();
+                    om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+                    om.setJMSDestination(node.getDestination());
+                    om.setJMSCorrelationID(node.getName());
+                    om.setObject(response);
+                    _cluster.send(node.getDestination(), om);
+                } catch (JMSException e) {
+                    _log.error("problem sending EvacuationResponse", e);
+                }
+            }
         }
 
         // TODO - loop
