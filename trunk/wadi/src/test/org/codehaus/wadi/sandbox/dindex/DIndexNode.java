@@ -46,7 +46,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
     protected final static String _birthTimeKey="birthTime";
 
     protected final long _heartbeat=5000; // unify with cluster heartbeat...
-    
+
     //protected final String _clusterUri="peer://org.codehaus.wadi";
     protected final String _clusterUri="tcp://localhost:61616";
     protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
@@ -92,6 +92,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         _dispatcher.register(this, "onIndexPartitionsTransferCommand", IndexPartitionsTransferCommand.class);
         _dispatcher.register(this, "onIndexPartitionsTransferRequest", IndexPartitionsTransferRequest.class);
         _dispatcher.register(this, "onEvacuationRequest", EvacuationRequest.class);
+        _dispatcher.register(EvacuationResponse.class, _evacuationRvMap, _heartbeat);
         _dispatcher.register(IndexPartitionsTransferResponse.class, _indexPartitionTransferRequestResponseRvMap, 5000);
         _dispatcher.register(IndexPartitionsTransferAcknowledgement.class, _indexPartitionTransferCommandAcknowledgementRvMap, 5000);
 
@@ -357,7 +358,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
                 ObjectMessage om2=_cluster.createObjectMessage();
                 om2.setJMSReplyTo(_cluster.getLocalNode().getDestination());
                 om2.setJMSDestination(command.getTarget());
-                om2.setJMSCorrelationID(om.getJMSCorrelationID());
+                om2.setJMSCorrelationID(om.getJMSCorrelationID()+"-"+command.getTarget());
                 IndexPartitionsTransferRequest request=new IndexPartitionsTransferRequest(acquired);
                 om2.setObject(request);
                 // send it...
