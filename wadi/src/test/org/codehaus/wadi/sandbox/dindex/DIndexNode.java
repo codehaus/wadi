@@ -45,6 +45,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
     protected final static String _numIndexPartitionsKey="numIndexPartitions";
     protected final static String _birthTimeKey="birthTime";
 
+    protected final long _heartbeat=5000; // unify with cluster heartbeat...
+    
     //protected final String _clusterUri="peer://org.codehaus.wadi";
     protected final String _clusterUri="tcp://localhost:61616";
     protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
@@ -57,6 +59,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
     protected final Map _key2IndexPartition=new ConcurrentHashMap(); // contains subset of keys
     protected final Map _indexPartitionTransferRequestResponseRvMap=new ConcurrentHashMap();
     protected final Map _indexPartitionTransferCommandAcknowledgementRvMap=new ConcurrentHashMap();
+    protected final Map _evacuationRvMap=new ConcurrentHashMap();
     protected final MessageDispatcher _dispatcher=new MessageDispatcher();
     protected final String _nodeName;
     protected final Log _log;
@@ -119,14 +122,9 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             om.setJMSDestination(_coordinatorNode.getDestination());
             //om.setJMSCorrelationID(correlationId);
             om.setObject(new EvacuationRequest());
-            _cluster.send(_coordinatorNode.getDestination(), om);
-
-            Thread.sleep(5000); // TODO - need to wait for sync response
+            _dispatcher.exchange(om, _evacuationRvMap, _heartbeat);
         } catch (JMSException e) {
             _log.warn("problem sending evacuation request");
-        } catch (InterruptedException e) {
-            _log.info("interrupted");
-            Thread.interrupted();
         }
 
         if (_coordinator!=null) {
