@@ -36,12 +36,13 @@ public class Quipu extends WaitableInt {
         // TODO Auto-generated constructor stub
     }
 
-    public void waitFor(long timeout) throws InterruptedException {
+    public boolean waitFor(long timeout) throws InterruptedException {
         long end=System.currentTimeMillis()+timeout;
         long now=0;
         synchronized(lock_) {
           while (!(value_==0) && (now=System.currentTimeMillis())<end) lock_.wait(end-now);
         }
+        return value_==0;
       }
     
     // TODO - consider synchronisation...

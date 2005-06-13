@@ -342,8 +342,10 @@ public class MessageDispatcher implements MessageListener {
 	        do {
 	            try {
 	                long startTime=System.currentTimeMillis();
-                    rv.waitFor(timeout);
-	                response=(ObjectMessage)rv.getResults().toArray()[0]; // TODO - Aargh!
+                    if (rv.waitFor(timeout))
+                        response=(ObjectMessage)rv.getResults().toArray()[0]; // TODO - Aargh!
+                    else
+                        response=null;
 	                long elapsedTime=System.currentTimeMillis()-startTime;
 	                if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis)"); // session does not exist
 	            } catch (TimeoutException e) {
