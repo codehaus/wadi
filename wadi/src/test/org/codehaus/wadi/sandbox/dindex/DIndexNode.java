@@ -116,9 +116,9 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 
     public void stop() throws Exception {
         _log.info("stopping...");
-        
+
         Thread.interrupted();
-        
+
         if (_coordinatorNode==_cluster.getLocalNode()) {
             _log.info("final Node exiting Cluster");
         } else {
@@ -134,7 +134,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
                 _log.warn("problem sending evacuation request");
             }
         }
-        
+
         if (_coordinator!=null) {
             _coordinator.stop();
             _coordinator=null;
@@ -551,14 +551,15 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
     }
 
     public void onEvacuationRequest(ObjectMessage om, EvacuationRequest request) {
-        _log.info("evacuation request");
-        _leavers.add(getSrcNode(om));
+      Node from=getSrcNode(om);
+      _log.info("evacuation request from "+getNodeName(from));
+        _leavers.add(from);
         if (_coordinator!=null)
             _coordinator.queueRebalancing();
     }
-    
+
     protected final Collection _leavers=Collections.synchronizedCollection(new ArrayList());
-    
+
     public Collection getLeavers() {
         return _leavers;
     }
