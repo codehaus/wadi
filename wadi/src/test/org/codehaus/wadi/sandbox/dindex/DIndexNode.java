@@ -114,21 +114,25 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 
     public void stop() throws Exception {
         _log.info("stopping...");
-
-	Thread.interrupted();
-
-        try {
-            Node localNode=_cluster.getLocalNode();
-            ObjectMessage om=_cluster.createObjectMessage();
-            om.setJMSReplyTo(localNode.getDestination());
-            om.setJMSDestination(_coordinatorNode.getDestination());
-            om.setJMSCorrelationID(localNode.getName());
-            om.setObject(new EvacuationRequest());
-            _dispatcher.exchange(om, _evacuationRvMap, _heartbeat);
-        } catch (JMSException e) {
-            _log.warn("problem sending evacuation request");
+        
+        Thread.interrupted();
+        
+        if (_coordinatorNode==_cluster.getLocalNode()) {
+            _log.info("final Node exiting Cluster");
+        } else {
+            try {
+                Node localNode=_cluster.getLocalNode();
+                ObjectMessage om=_cluster.createObjectMessage();
+                om.setJMSReplyTo(localNode.getDestination());
+                om.setJMSDestination(_coordinatorNode.getDestination());
+                om.setJMSCorrelationID(localNode.getName());
+                om.setObject(new EvacuationRequest());
+                _dispatcher.exchange(om, _evacuationRvMap, _heartbeat);
+            } catch (JMSException e) {
+                _log.warn("problem sending evacuation request");
+            }
         }
-
+        
         if (_coordinator!=null) {
             _coordinator.stop();
             _coordinator=null;
