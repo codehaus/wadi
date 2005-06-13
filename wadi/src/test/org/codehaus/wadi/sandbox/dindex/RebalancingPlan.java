@@ -18,15 +18,31 @@ package org.codehaus.wadi.sandbox.dindex;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.ListIterator;
 
 import org.activecluster.Node;
 
 public class RebalancingPlan extends Plan {
+    
+    protected boolean contains(Node[] nodes, Node node) {
+        for (int i=0; i<nodes.length; i++) {
+            if (nodes[i].getDestination().equals(node.getDestination()))
+                System.out.println("MATCH!");
+                return true;
+        }
+        return false;
+    }
 
-    public RebalancingPlan(Node localNode, Node[] remoteNodes, int numItems) {
-        int numRemoteNodes=remoteNodes.length;
+    protected int exclude(Node[] remoteNodes, Node[] leavers) {
+        int count=0;
+        for (int i=0; i<remoteNodes.length; i++)
+            if (contains(leavers, remoteNodes[i]))
+                count++;
+        return count;
+    }
+    
+    public RebalancingPlan(Node localNode, Node[] remoteNodes, Node[] leavers, int numItems) {
+        int numRemoteNodes=remoteNodes.length-exclude(remoteNodes, leavers);
         int numNodes=numRemoteNodes+1;
         int numBucketsPerNode=numItems/numNodes;
         // local node...
@@ -35,7 +51,12 @@ public class RebalancingPlan extends Plan {
         for (int i=0; i<numRemoteNodes; i++) {
             Node node=remoteNodes[i];
             int numBuckets=DIndexNode.getNumIndexPartitions(node);
-            decide(node, numBuckets, numBucketsPerNode, _producers, _consumers);
+            System.out.println(DIndexNode.getNodeName(node)+" has "+numBuckets);
+            if (!contains(leavers, node))
+                decide(node, numBuckets, numBucketsPerNode, _producers, _consumers);
+            else
+                if (numBuckets>0)
+                    _producers.add(new Pair(node, numBuckets));
         }
         // sort lists...
         Collections.sort(_producers, new PairGreaterThanComparator());

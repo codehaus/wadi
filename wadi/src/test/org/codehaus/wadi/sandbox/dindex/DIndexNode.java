@@ -16,7 +16,9 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -124,7 +126,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
                 Node localNode=_cluster.getLocalNode();
                 ObjectMessage om=_cluster.createObjectMessage();
                 om.setJMSReplyTo(localNode.getDestination());
-                om.setJMSDestination(_coordinatorNode.getDestination());
+                om.setJMSDestination(_cluster.getDestination()); // whole cluster needs to know who is leaving - in case Coordinator fails
                 om.setJMSCorrelationID(localNode.getName());
                 om.setObject(new EvacuationRequest());
                 _dispatcher.exchange(om, _evacuationRvMap, _heartbeat);
@@ -278,6 +280,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         synchronized (_planLock) {
             Node node=event.getNode();
             _log.info("onNodeFailed: "+getNodeName(node));
+            _leavers.remove(node);
 	    //            if (_coordinatorNode==getLocalNode())
 	    //	      _coordinator.queueRebalancing();
         }
@@ -549,8 +552,14 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 
     public void onEvacuationRequest(ObjectMessage om, EvacuationRequest request) {
         _log.info("evacuation request");
-        assert _coordinator!=null;
-        Node leaver=getSrcNode(om);
-        _coordinator.queueLeaving(leaver);
+        _leavers.add(getSrcNode(om));
+        if (_coordinator!=null)
+            _coordinator.queueRebalancing();
+    }
+    
+    protected final Collection _leavers=Collections.synchronizedCollection(new ArrayList());
+    
+    public Collection getLeavers() {
+        return _leavers;
     }
 }
