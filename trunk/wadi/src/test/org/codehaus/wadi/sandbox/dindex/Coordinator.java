@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -44,12 +45,12 @@ public class Coordinator implements Runnable {
     protected final Log _log=LogFactory.getLog(getClass());
 
     protected final Slot _flag=new Slot();
-    protected final Accumulator _leavers=new Accumulator();
 
     protected final CoordinatorConfig _config;
     protected final Cluster _cluster;
     protected final Node _localNode;
     protected final int _numItems;
+    protected final long _heartbeat=5000L; // TODO - unify with _cluster...
 
     public Coordinator(CoordinatorConfig config) {
         _config=config;
@@ -88,11 +89,6 @@ public class Coordinator implements Runnable {
         _log.info("...rebalancing queued");
     }
 
-    public synchronized void queueLeaving(Node node) {
-        _leavers.put(node);
-        queueRebalancing();
-    }
-
     public void run() {
         try {
             while (_flag.take()==Boolean.TRUE) {
@@ -103,27 +99,46 @@ public class Coordinator implements Runnable {
             _log.info("interrupted"); // hmmm.... - TODO
         }
     }
+    
+    // cut-n-pasted from Rebalancer
+    protected boolean contains(Node[] nodes, Node node) {
+        for (int i=0; i<nodes.length; i++) {
+            if (nodes[i].getDestination().equals(node.getDestination()))
+                System.out.println("MATCH!");
+                return true;
+        }
+        return false;
+    }
 
     // should loop until it gets a successful outcome - emptying _flag each time...
     public void rebalanceClusterState() {
-        Collection excludedNodes=_leavers.take();
+        //Collection excludedNodes=new ArrayList(_config.getLeavers()); // snapshot
+        
+        // snapshot leavers...
+        Collection tmp=_config.getLeavers();
+        Node [] leavers;
+        synchronized (tmp) {
+            leavers=(Node[])tmp.toArray(new Node[tmp.size()]);
+        }
+        
         int numParticipants=0;
         String correlationId;
 
         _remoteNodes=_config.getRemoteNodes(); // snapshot this at last possible moment...
         Plan plan=null;
-        if (excludedNodes.size()>0) {
-            // a node wants to leave - evacuate it
-            Node leaver=(Node)excludedNodes.iterator().next(); // FIXME - should be leavers...
-            plan=new EvacuationPlan(leaver, _localNode, _remoteNodes, _numItems);
-            numParticipants=_remoteNodes.length+1; // TODO - I think
-            correlationId=_localNode.getName()+"-rebalance-"+System.currentTimeMillis();
-        } else {
+//        if (excludedNodes.size()>0) {
+//            // a node wants to leave - evacuate it
+//            Node leaver=(Node)excludedNodes.iterator().next(); // FIXME - should be leavers...
+//            plan=new EvacuationPlan(leaver, _localNode, _remoteNodes, _numItems);
+//            numParticipants=_remoteNodes.length+1; // TODO - I think
+//            correlationId=_localNode.getName()+"-rebalance-"+System.currentTimeMillis();
+//        } else
+//        {
             // standard rebalance...
-            plan=new RebalancingPlan(_localNode, _remoteNodes, _numItems);
+            plan=new RebalancingPlan(_localNode, _remoteNodes, leavers, _numItems);
             numParticipants=_remoteNodes.length+1;
             correlationId=_localNode.getName()+"-leaving-"+System.currentTimeMillis();
-        }
+//        }
 
         Map rvMap=_config.getRendezVousMap();
         Quipu rv=new Quipu(numParticipants-1);
@@ -147,25 +162,30 @@ public class Coordinator implements Runnable {
             rvMap.remove(correlationId);
             // somehow check all returned success..
 
-            // send EvacuationResponses to each leaving node...
-            for (Iterator i=excludedNodes.iterator(); i.hasNext(); ) {
-                Node node=(Node)i.next();
-                _log.info("acknowledging evacuation of "+DIndexNode.getNodeName(node));
-                EvacuationResponse response=new EvacuationResponse();
-                try {
-                    ObjectMessage om=_cluster.createObjectMessage();
-                    om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-                    om.setJMSDestination(node.getDestination());
-                    om.setJMSCorrelationID(node.getName());
-                    om.setObject(response);
-                    _cluster.send(node.getDestination(), om);
-                } catch (JMSException e) {
-                    _log.error("problem sending EvacuationResponse", e);
+            // send EvacuationResponses to each leaving node... - hmmm....
+            for (int i=0; i<_remoteNodes.length; i++) {
+                Node node=_remoteNodes[i];
+                if (contains(leavers, node)) {
+                    _log.info("acknowledging evacuation of "+DIndexNode.getNodeName(node));
+                    EvacuationResponse response=new EvacuationResponse();
+                    try {
+                        ObjectMessage om=_cluster.createObjectMessage();
+                        om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+                        om.setJMSDestination(node.getDestination());
+                        om.setJMSCorrelationID(node.getName());
+                        om.setObject(response);
+                        _cluster.send(node.getDestination(), om);
+                    } catch (JMSException e) {
+                        _log.error("problem sending EvacuationResponse", e);
+                    }
                 }
             }
         }
 
-        // TODO - loop
+        // EvacuationRequest places a node on excludedNodes...
+        // nodeFailed removes it....
+        // not just on Coordinator...
+        
         printNodes(_localNode, _cluster.getNodes());
 
     }
@@ -200,6 +220,8 @@ public class Coordinator implements Runnable {
             while (producer._deviation>0) {
                 if (consumer==null)
                     consumer=c.hasNext()?(Pair)c.next():null;
+                    _log.info(""+(producer==null?-1:producer._deviation));
+                    _log.info(""+(consumer==null?-1:consumer._deviation));
                     if (producer._deviation>=consumer._deviation) {
                         balance(producer._node, consumer._node, consumer._deviation, correlationId);
                         producer._deviation-=consumer._deviation;

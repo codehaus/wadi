@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.activecluster.Cluster;
@@ -30,5 +31,7 @@ interface CoordinatorConfig {
     Cluster getCluster();
     
     Map getRendezVousMap();
+    
+    Collection getLeavers();
     
 }
