@@ -117,10 +117,11 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 	Thread.interrupted();
 
         try {
+            Node localNode=_cluster.getLocalNode();
             ObjectMessage om=_cluster.createObjectMessage();
-            om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+            om.setJMSReplyTo(localNode.getDestination());
             om.setJMSDestination(_coordinatorNode.getDestination());
-            //om.setJMSCorrelationID(correlationId);
+            om.setJMSCorrelationID(localNode.getName());
             om.setObject(new EvacuationRequest());
             _dispatcher.exchange(om, _evacuationRvMap, _heartbeat);
         } catch (JMSException e) {
