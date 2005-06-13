@@ -146,11 +146,11 @@ public class Coordinator implements Runnable {
         } finally {
             rvMap.remove(correlationId);
             // somehow check all returned success..
-            
+
             // send EvacuationResponses to each leaving node...
             for (Iterator i=excludedNodes.iterator(); i.hasNext(); ) {
                 Node node=(Node)i.next();
-                _log.info("acknowledging evacuation of"+DIndexNode.getNodeName(node));
+                _log.info("acknowledging evacuation of "+DIndexNode.getNodeName(node));
                 EvacuationResponse response=new EvacuationResponse();
                 try {
                     ObjectMessage om=_cluster.createObjectMessage();
