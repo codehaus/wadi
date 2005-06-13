@@ -99,7 +99,7 @@ public class Coordinator implements Runnable {
             _log.info("interrupted"); // hmmm.... - TODO
         }
     }
-    
+
     // cut-n-pasted from Rebalancer
     protected boolean contains(Node[] nodes, Node node) {
         for (int i=0; i<nodes.length; i++) {
@@ -113,14 +113,14 @@ public class Coordinator implements Runnable {
     // should loop until it gets a successful outcome - emptying _flag each time...
     public void rebalanceClusterState() {
         //Collection excludedNodes=new ArrayList(_config.getLeavers()); // snapshot
-        
+
         // snapshot leavers...
         Collection tmp=_config.getLeavers();
         Node [] leavers;
         synchronized (tmp) {
             leavers=(Node[])tmp.toArray(new Node[tmp.size()]);
         }
-        
+
         int numParticipants=0;
         String correlationId;
 
@@ -136,7 +136,7 @@ public class Coordinator implements Runnable {
 //        {
             // standard rebalance...
             plan=new RebalancingPlan(_localNode, _remoteNodes, leavers, _numItems);
-            numParticipants=_remoteNodes.length+1;
+            numParticipants=_remoteNodes.length+1; // - FIXME NOW - deduct leavers..
             correlationId=_localNode.getName()+"-leaving-"+System.currentTimeMillis();
 //        }
 
@@ -150,10 +150,13 @@ public class Coordinator implements Runnable {
         boolean success=false;
         try {
             _log.info("WAITING ON RENDEZVOUS");
-            rv.waitFor(5000); // unify with cluster heartbeat or parameterise - TODO
-            _log.info("RENDEZVOUS SUCCESSFUL");
-            Collection results=rv.getResults();
-            success=true;
+            if (rv.waitFor(5000)) { // unify with cluster heartbeat or parameterise - TODO
+	      _log.info("RENDEZVOUS SUCCESSFUL");
+	      Collection results=rv.getResults();
+	      success=true;
+	    } else {
+	      _log.info("RENDEZVOUS FAILED");
+	    }
         } catch (TimeoutException e) {
             _log.warn("timed out waiting for response", e);
         } catch (InterruptedException e) {
@@ -163,9 +166,9 @@ public class Coordinator implements Runnable {
             // somehow check all returned success..
 
             // send EvacuationResponses to each leaving node... - hmmm....
-            for (int i=0; i<_remoteNodes.length; i++) {
-                Node node=_remoteNodes[i];
-                if (contains(leavers, node)) {
+            for (int i=0; i<leavers.length; i++) {
+                Node node=leavers[i];
+                if (contains(_remoteNodes, node)) {
                     _log.info("acknowledging evacuation of "+DIndexNode.getNodeName(node));
                     EvacuationResponse response=new EvacuationResponse();
                     try {
@@ -185,7 +188,7 @@ public class Coordinator implements Runnable {
         // EvacuationRequest places a node on excludedNodes...
         // nodeFailed removes it....
         // not just on Coordinator...
-        
+
         printNodes(_localNode, _cluster.getNodes());
 
     }
