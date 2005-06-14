@@ -129,7 +129,7 @@ public class Coordinator implements Runnable {
         String correlationId=_localNode.getName()+"-balancing-"+System.currentTimeMillis();
         Plan plan=new RebalancingPlan(living, leaving, _numItems);
 
-        printNodes(_localNode, _cluster.getNodes());
+        printNodes(living, leaving);
 
         Map rvMap=_config.getRendezVousMap();
         Quipu rv=new Quipu(0);
@@ -175,8 +175,7 @@ public class Coordinator implements Runnable {
                 }
             }
         }
-
-        printNodes(_localNode, _cluster.getNodes());
+        printNodes(living, leaving);
 
     }
 
@@ -189,6 +188,23 @@ public class Coordinator implements Runnable {
         for (int i=0; i<n; i++) {
             Node remoteNode=remoteNodes[i];
 	    amount=DIndexNode.getNumIndexPartitions(remoteNode);
+            _log.info(DIndexNode.getNodeName(remoteNode)+" : "+amount);
+	    total+=amount;
+        }
+	_log.info("total : "+total);
+    }
+
+  protected void printNodes(Node[] living, Node[] leaving) {
+	int total=0;
+        for (int i=0; i<living.length; i++) {
+            Node remoteNode=living[i];
+	     int amount=DIndexNode.getNumIndexPartitions(remoteNode);
+            _log.info(DIndexNode.getNodeName(remoteNode)+" : "+amount);
+	    total+=amount;
+        }
+        for (int i=0; i<leaving.length; i++) {
+            Node remoteNode=leaving[i];
+	     int amount=DIndexNode.getNumIndexPartitions(remoteNode);
             _log.info(DIndexNode.getNodeName(remoteNode)+" : "+amount);
 	    total+=amount;
         }
