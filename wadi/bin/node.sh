@@ -30,7 +30,9 @@ properties=`sed -e '/#.*/d' -e 's/${wadi.home}/$WADI_HOME/g' -e 's/\(.*\)/-D\1/g
 properties=`eval "echo $properties"`
 
 
-properties="$properties \
+properties="\
+-Dcycle.me=true \
+$properties \
 -Dwadi.home=$WADI_HOME \
 -Dactivemq.persistenceAdapter=org.codehaus.activemq.store.vm.VMPersistenceAdapter \
 -Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog \

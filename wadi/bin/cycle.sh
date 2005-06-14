@@ -11,7 +11,7 @@ randomth() { n=`expr $RANDOM \% $# + 1`; eval echo \$"$n"; }
 interval=$1
 while true
 do
-    nodes=`/bin/ps -C java -o pid,command | /bin/grep http.port | sed -e 's/ *\([0-9]*\) .*/\1/g'`
+    nodes=`/bin/ps -C java -o pid,command | /bin/grep cycle.me | sed -e 's/ *\([0-9]*\) .*/\1/g'`
     node=`randomth $nodes`
     kill -2 $node
     sleep $interval

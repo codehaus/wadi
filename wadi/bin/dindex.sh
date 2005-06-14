@@ -5,6 +5,7 @@ cd ..
 exec time java\
  \
 -Xmx64m \
+-Dcycle.me=true \
 -Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog \
 -Dorg.apache.commons.logging.LogFactory=org.apache.commons.logging.impl.LogFactoryImpl \
 -Dorg.apache.commons.logging.simplelog.log.org=info \
