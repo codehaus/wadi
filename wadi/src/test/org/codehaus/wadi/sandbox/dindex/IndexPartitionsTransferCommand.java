@@ -18,27 +18,20 @@ package org.codehaus.wadi.sandbox.dindex;
 
 import java.io.Serializable;
 
-import javax.jms.Destination;
-
 public class IndexPartitionsTransferCommand implements Serializable {
 
-    protected int _amount;
-    protected Destination _target;
+    protected Transfer[] _transfers;
     
-    public IndexPartitionsTransferCommand(int amount, Destination target) {
-        _amount=amount;
-        _target=target;
+    public IndexPartitionsTransferCommand(Transfer[] transfers) {
+        _transfers=transfers;
     }
     
     protected IndexPartitionsTransferCommand() {
         // for deserialisation...
     }
     
-    public int getAmount() {
-        return _amount;
+    public Transfer[] getTransfers() {
+        return _transfers;
     }
     
-    public Destination getTarget() {
-        return _target;
-    }
 }

@@ -341,17 +341,17 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         //((IndexPartition)acquired.get(i)).getExclusiveLock().release();
     }
 
-    protected Object _transferLock=new Object();
-
-
     // receive a command to transfer IndexPartitions to another node
     // send them ina request, waiting for response
     // send an acknowledgement to Coordinator who sent original command
     public void onIndexPartitionsTransferCommand(ObjectMessage om, IndexPartitionsTransferCommand command) {
-        int amount=command.getAmount();
-        boolean success=false;
-        _log.info("transfer : "+amount);
-        synchronized (_transferLock) {
+        Transfer[] transfers=command.getTransfers();
+        for (int i=0; i<transfers.length; i++) {
+            Transfer transfer=transfers[i];
+            int amount=transfer.getAmount();
+            Destination destination=transfer.getDestination();
+            boolean success=false;
+            _log.info("transfer : "+amount);
             _log.info("trying to lock "+amount+" IndexPartions");
             long heartbeat=5000; // TODO - consider
             Object[] candidates=_key2IndexPartition.values().toArray();
@@ -359,13 +359,13 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             try {
                 // lock partitions
                 acquired=attempt(candidates, amount, heartbeat);
-
+                
                 // build request...
                 _log.info("transferring "+acquired.length+" IndexPartions");
                 ObjectMessage om2=_cluster.createObjectMessage();
                 om2.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-                om2.setJMSDestination(command.getTarget());
-                om2.setJMSCorrelationID(om.getJMSCorrelationID()+"-"+command.getTarget());
+                om2.setJMSDestination(destination);
+                om2.setJMSCorrelationID(om.getJMSCorrelationID()+"-"+destination);
                 IndexPartitionsTransferRequest request=new IndexPartitionsTransferRequest(acquired);
                 om2.setObject(request);
                 // send it...
@@ -373,15 +373,9 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
                 // process response...
                 if (om3!=null && (success=((IndexPartitionsTransferResponse)om3.getObject()).getSuccess())) {
                     _log.info("transfer successful");
-                    for (int i=0; i<acquired.length; i++)
-                        _key2IndexPartition.remove(((IndexPartition)acquired[i]).getKey());
+                    for (int j=0; j<acquired.length; j++)
+                        _key2IndexPartition.remove(((IndexPartition)acquired[j]).getKey());
                     _log.info("old partitions removed");
-                    Object[] keys=_key2IndexPartition.keySet().toArray();
-                    //_distributedState.put(_indexPartitionsKey, keys);
-                    _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
-                    _log.info("local state updated");
-                    _cluster.getLocalNode().setState(_distributedState);
-                    _log.info("distributed state updated");
                     _log.info("transfer successful");
                 } else {
                     _log.warn("transfer unsuccessful");
@@ -391,12 +385,18 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             } finally {
                 release(acquired);
                 _log.info("locks released");
-                try {
-                    _dispatcher.replyToMessage(om, new IndexPartitionsTransferAcknowledgement(success));
-                } catch (JMSException e) {
-                    _log.warn("could not acknowledge safe transfer to Coordinator", e);
-                }
             }
+        }
+        try {
+            Object[] keys=_key2IndexPartition.keySet().toArray();
+            //_distributedState.put(_indexPartitionsKey, keys);
+            _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
+            _log.info("local state updated");
+            _cluster.getLocalNode().setState(_distributedState);
+            _log.info("distributed state updated");
+            _dispatcher.replyToMessage(om, new IndexPartitionsTransferAcknowledgement(true)); // what if failure - TODO
+        } catch (JMSException e) {
+            _log.warn("could not acknowledge safe transfer to Coordinator", e);
         }
     }
 

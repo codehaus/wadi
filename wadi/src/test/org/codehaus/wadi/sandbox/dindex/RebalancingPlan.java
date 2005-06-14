@@ -32,7 +32,7 @@ public class RebalancingPlan extends Plan {
             int numBuckets=DIndexNode.getNumIndexPartitions(node);
             System.out.println("leaving: "+DIndexNode.getNodeName(node)+" has "+numBuckets);
             if (numBuckets>0)
-                _producers.add(new Pair(node, numBuckets));
+                _producers.add(new Pair(node, numBuckets, true));
         }
 
         for (int i=0; i<living.length; i++) {
@@ -49,25 +49,33 @@ public class RebalancingPlan extends Plan {
         
         // account for uneven division of buckets...
         int remainingBuckets=numItems%living.length;
-        ListIterator i=_producers.listIterator();
-        while(remainingBuckets>0 && i.hasNext()) {
+        
+        for (ListIterator i=_producers.listIterator(); remainingBuckets>0 && i.hasNext(); ) {
             Pair p=(Pair)i.next();
-            remainingBuckets--;
-            if ((--p._deviation)==0)
-                i.remove();
+            if (!p._leaving) {
+                remainingBuckets--;
+                if ((--p._deviation)==0)
+                    i.remove();
+            }
         }
 
+        for (ListIterator i=_consumers.listIterator(); remainingBuckets>0 && i.hasNext(); ) {
+            Pair p=(Pair)i.next();
+            remainingBuckets--;
+            ++p._deviation;
+        }
+        
         assert remainingBuckets==0;
     }
 
     protected void decide(Node node, int numBuckets, int numBucketsPerNode, Collection producers, Collection consumers) {
         int deviation=numBuckets-numBucketsPerNode;
         if (deviation>0) {
-            producers.add(new Pair(node, deviation));
+            producers.add(new Pair(node, deviation, false));
             return;
         }
         if (deviation<0) {
-            consumers.add(new Pair(node, -deviation));
+            consumers.add(new Pair(node, -deviation, false));
             return;
         }
     }

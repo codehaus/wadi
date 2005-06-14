@@ -202,51 +202,43 @@ public class Coordinator implements Runnable {
         quipu.increment(); // add a safety margin of '1', so if we are caught up by acks, waiting thread does not finish
         Iterator p=plan.getProducers().iterator();
         Iterator c=plan.getConsumers().iterator();
-
+        
         int n=0;
         Pair consumer=null;
         while (p.hasNext()) {
             Pair producer=(Pair)p.next();
+            Collection transfers=new ArrayList();
             while (producer._deviation>0) {
                 if (consumer==null)
                     consumer=c.hasNext()?(Pair)c.next():null;
-                    _log.info(""+(producer==null?-1:producer._deviation));
-                    _log.info(""+(consumer==null?-1:consumer._deviation));
+                    _log.info(DIndexNode.getNodeName(producer._node)+" has: "+(producer==null?-1:producer._deviation));
+                    _log.info(DIndexNode.getNodeName(consumer._node)+" wants: "+(consumer==null?-1:consumer._deviation));
                     if (producer._deviation>=consumer._deviation) {
-                        quipu.increment();
-                        balance(producer._node, consumer._node, consumer._deviation, correlationId);
+                        transfers.add(new Transfer(consumer._node.getDestination(), consumer._deviation));
                         producer._deviation-=consumer._deviation;
                         consumer._deviation=0;
                         consumer=null;
                     } else {
-                        quipu.increment();
-                        balance(producer._node, consumer._node, producer._deviation, correlationId);
+                        transfers.add(new Transfer(consumer._node.getDestination(), producer._deviation));
                         consumer._deviation-=producer._deviation;
                         producer._deviation=0;
                     }
             }
+            
+            IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand((Transfer[])transfers.toArray(new Transfer[transfers.size()]));
+            quipu.increment();
+            try {
+                ObjectMessage om=_cluster.createObjectMessage();
+                om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+                om.setJMSDestination(producer._node.getDestination());
+                om.setJMSCorrelationID(correlationId);
+                om.setObject(command);
+                _cluster.send(producer._node.getDestination(), om);
+            } catch (JMSException e) {
+                _log.error("problem sending transfer command", e);
+            }
         }
         quipu.decrement(); // remove safety margin
-    }
-
-    public boolean balance(Node src, Node tgt, int amount, String correlationId) {
-        /*if (src==_cluster.getLocalNode()) {
-         // do something clever...
-          } else*/ {
-              _log.info("commanding "+DIndexNode.getNodeName(src)+" to give "+amount+" to "+DIndexNode.getNodeName(tgt));
-              IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand(amount, tgt.getDestination());
-              try {
-                  ObjectMessage om=_cluster.createObjectMessage();
-                  om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-                  om.setJMSDestination(src.getDestination());
-                  om.setJMSCorrelationID(correlationId);
-                  om.setObject(command);
-                  _cluster.send(src.getDestination(), om);
-              } catch (JMSException e) {
-                  _log.error("problem sending share command", e);
-              }
-          }
-          return true;
     }
 
 }
