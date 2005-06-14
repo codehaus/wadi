@@ -106,36 +106,39 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 
         synchronized (_coordinatorSync) {
             _coordinatorSync.wait(_clusterFactory.getInactiveTime());
+	    _log.info("waking...");
         }
 
         synchronized (_coordinatorLock) {
             // If our wait timed out, then we must be the coordinator
             // behave accordingly...
             if (_coordinatorNode==null) {
+	      _log.info("we are first");
                 initCluster();
                 onCoordinatorChanged(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.ELECTED_COORDINATOR));
-            }
+		_coordinator.queueRebalancing();
+            } else {
+	      _log.info("we are not first");
+	    }
         }
     }
-    
+
     public void initCluster() {
-        if (_cluster.getNodes().size()==0) {
-            // initialise Index Partitions
-            _log.info("allocating "+_numIndexPartitions+" index partitions");
-            for (int i=0; i<_numIndexPartitions; i++) {
-                Integer key=new Integer(i);
-                IndexPartition indexPartition=new IndexPartition(key);
-                _key2IndexPartition.put(key, indexPartition);
-            }
-            Object[] keys=_key2IndexPartition.keySet().toArray();
-            //_distributedState.put(_indexPartitionsKey, keys);
-            _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
-            try {
-                _cluster.getLocalNode().setState(_distributedState);
-            } catch (JMSException e) {
-                _log.error("could not update distributed state");
-            }
-        }
+      // initialise Index Partitions
+      _log.info("allocating "+_numIndexPartitions+" index partitions");
+      for (int i=0; i<_numIndexPartitions; i++) {
+	Integer key=new Integer(i);
+	IndexPartition indexPartition=new IndexPartition(key);
+	_key2IndexPartition.put(key, indexPartition);
+      }
+      Object[] keys=_key2IndexPartition.keySet().toArray();
+      //_distributedState.put(_indexPartitionsKey, keys);
+      _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
+      try {
+	_cluster.getLocalNode().setState(_distributedState);
+      } catch (JMSException e) {
+	_log.error("could not update distributed state");
+      }
     }
 
     public void stop() throws Exception {
@@ -189,14 +192,14 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             _coordinator.queueRebalancing();
         }
     }
-    
+
     public void onNodeRemoved(ClusterEvent event) {
         Node node=event.getNode();
         _log.info("onNodeRemoved: "+getNodeName(node));
         // NYI
         throw new UnsupportedOperationException();
     }
-    
+
     public void onNodeFailed(ClusterEvent event) {
         Node node=event.getNode();
         _log.info("onNodeFailed: "+getNodeName(node));
@@ -220,7 +223,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
                 if (_coordinatorNode==_cluster.getLocalNode())
                     onElection(event);
             }
-            
+
             // if start() is still waiting on this sync, wake it up and make it
             // realise that this node is NOT the coordinator.
             synchronized (_coordinatorSync) {
