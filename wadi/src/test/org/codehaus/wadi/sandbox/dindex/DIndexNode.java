@@ -99,7 +99,9 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         _dispatcher.register(IndexPartitionsTransferAcknowledgement.class, _indexPartitionTransferCommandAcknowledgementRvMap, 5000);
 
         _cluster.getLocalNode().setState(_distributedState);
+        _log.info("starting Cluster...");
         _cluster.start();
+        _log.info("...Cluster started");
         _log.info("...started");
 
         synchronized (_coordinatorSync) {
@@ -107,11 +109,33 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         }
 
         synchronized (_coordinatorLock) {
-            // if no-one else is going to be coordinator - then it must be us !
-            if (_coordinatorNode==null)
+            // If our wait timed out, then we must be the coordinator
+            // behave accordingly...
+            if (_coordinatorNode==null) {
+                initCluster();
                 onCoordinatorChanged(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.ELECTED_COORDINATOR));
+            }
         }
-
+    }
+    
+    public void initCluster() {
+        if (_cluster.getNodes().size()==0) {
+            // initialise Index Partitions
+            _log.info("allocating "+_numIndexPartitions+" index partitions");
+            for (int i=0; i<_numIndexPartitions; i++) {
+                Integer key=new Integer(i);
+                IndexPartition indexPartition=new IndexPartition(key);
+                _key2IndexPartition.put(key, indexPartition);
+            }
+            Object[] keys=_key2IndexPartition.keySet().toArray();
+            //_distributedState.put(_indexPartitionsKey, keys);
+            _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
+            try {
+                _cluster.getLocalNode().setState(_distributedState);
+            } catch (JMSException e) {
+                _log.error("could not update distributed state");
+            }
+        }
     }
 
     public void stop() throws Exception {
@@ -158,53 +182,30 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         _log.info("onNodeUpdate: "+getNodeName(event.getNode())+": "+event.getNode().getState());
     }
 
-    protected final Object _planLock=new Object();
-
     public void onNodeAdd(ClusterEvent event) {
         if (_cluster.getLocalNode()==_coordinatorNode) {
-            synchronized (_planLock) {
-                Node tgt=event.getNode();
-                _log.info("onNodeAdd: "+getNodeName(tgt));
-                _coordinator.queueRebalancing();
-
-//              boolean success=false;
-//              try {
-//              rv.attemptRendezvous(null, 10000L);
-//              success=true;
-//              } catch (InterruptedException e) {
-//              _log.warn("unexpected interruption", e);
-//              } finally {
-//              _indexPartitionTransferCommandAcknowledgementRvMap.remove(correlationId);
-//              // somehow check all returned success..
-//              }
-//
-//              if (success) {
-//              _log.info("all transfers successfully undertaken");
-//              } else {
-//              _log.warn("some trasfers may have failed");
-//              }
-            }
+            Node tgt=event.getNode();
+            _log.info("onNodeAdd: "+getNodeName(tgt));
+            _coordinator.queueRebalancing();
         }
     }
-
-    public void onNodeRemoved(ClusterEvent event) {  // NYI by layer below us...
-        synchronized (_planLock) {
-            Node node=event.getNode();
-            _log.info("onNodeRemoved: "+getNodeName(node));
-            // leaving node was responsible for rebalancing its state around cluster - or maybe it should ask coordinator to do it for it.
-            if (_coordinatorNode==getLocalNode())
-                _coordinator.queueRebalancing();
-        }
+    
+    public void onNodeRemoved(ClusterEvent event) {
+        Node node=event.getNode();
+        _log.info("onNodeRemoved: "+getNodeName(node));
+        // NYI
+        throw new UnsupportedOperationException();
     }
-
+    
     public void onNodeFailed(ClusterEvent event) {
-        synchronized (_planLock) {
-            Node node=event.getNode();
-            _log.info("onNodeFailed: "+getNodeName(node));
-            _leavers.remove(node);
+        Node node=event.getNode();
+        _log.info("onNodeFailed: "+getNodeName(node));
+        if (_leavers.remove(node)) {
+            // we have already been explicitly informed of this nodes wish to leave...
             _left.remove(node);
-	    //            if (_coordinatorNode==getLocalNode())
-	    //	      _coordinator.queueRebalancing();
+        } else {
+            // we have to assume that this was a catastrophic failure...
+            _log.error("catastrophic failure - NYI : "+getNodeName(node));
         }
     }
 
@@ -219,6 +220,9 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
                 if (_coordinatorNode==_cluster.getLocalNode())
                     onElection(event);
             }
+            
+            // if start() is still waiting on this sync, wake it up and make it
+            // realise that this node is NOT the coordinator.
             synchronized (_coordinatorSync) {
                 _coordinatorSync.notifyAll();
             }
@@ -366,27 +370,10 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 
     public void onElection(ClusterEvent event) {
         _log.info("accepting coordinatorship");
-        if (_cluster.getNodes().size()==0) {
-            // initialise Index Partitions
-            _log.info("allocating "+_numIndexPartitions+" index partitions");
-            for (int i=0; i<_numIndexPartitions; i++) {
-                Integer key=new Integer(i);
-                IndexPartition indexPartition=new IndexPartition(key);
-                _key2IndexPartition.put(key, indexPartition);
-            }
-            Object[] keys=_key2IndexPartition.keySet().toArray();
-            //_distributedState.put(_indexPartitionsKey, keys);
-            _distributedState.put(_numIndexPartitionsKey, new Integer(keys.length));
-//          try {
-//          _cluster.getLocalNode().setState(_distributedState);
-//          } catch (JMSException e) {
-//          _log.error("could not update distributed state");
-//          }
-        }
         try {
             (_coordinator=new Coordinator(this)).start();
         } catch (Exception e) {
-            _log.error("problem starting Balancer");
+            _log.error("problem starting Coordinator");
         }
     }
 
