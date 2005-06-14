@@ -108,11 +108,11 @@ public class Coordinator implements Runnable {
         Collection livingNodes=nodeMap.values();
         synchronized (livingNodes) {livingNodes=new ArrayList(livingNodes);} // snapshot
         livingNodes.add(_cluster.getLocalNode());
-        
- 
+
+
         Collection l=_config.getLeavers();
         synchronized (l) {l=new ArrayList(l);} // snapshot
-        
+
         Collection leavingNodes=new ArrayList();
         for (Iterator i=l.iterator(); i.hasNext(); ) {
             Node node=(Node)i.next();
@@ -122,12 +122,14 @@ public class Coordinator implements Runnable {
                 livingNodes.remove(leaver);
             }
         }
-        
+
         Node [] living=(Node[])livingNodes.toArray(new Node[livingNodes.size()]);
         Node [] leaving=(Node[])leavingNodes.toArray(new Node[leavingNodes.size()]);
 
         String correlationId=_localNode.getName()+"-balancing-"+System.currentTimeMillis();
         Plan plan=new RebalancingPlan(living, leaving, _numItems);
+
+        printNodes(_localNode, _cluster.getNodes());
 
         Map rvMap=_config.getRendezVousMap();
         Quipu rv=new Quipu(0);
@@ -151,7 +153,7 @@ public class Coordinator implements Runnable {
         } finally {
             rvMap.remove(correlationId);
             // somehow check all returned success..
-            
+
             // send EvacuationResponses to each leaving node... - hmmm....
             for (int i=0; i<leaving.length; i++) {
                 Node node=leaving[i];
@@ -170,39 +172,45 @@ public class Coordinator implements Runnable {
             }
         }
 
-        // EvacuationRequest places a node on excludedNodes...
-        // nodeFailed removes it....
-        // not just on Coordinator...
-
         printNodes(_localNode, _cluster.getNodes());
 
     }
 
     protected void printNodes(Node localNode, Node[] remoteNodes) {
-        _log.info(DIndexNode.getNodeName(localNode)+" : "+DIndexNode.getNumIndexPartitions(localNode));
-
+	int total=0;
+	int amount=DIndexNode.getNumIndexPartitions(localNode);
+        _log.info(DIndexNode.getNodeName(localNode)+" : "+amount);
+	total+=amount;
         int n=remoteNodes.length;
         for (int i=0; i<n; i++) {
             Node remoteNode=remoteNodes[i];
-            _log.info(DIndexNode.getNodeName(remoteNode)+" : "+DIndexNode.getNumIndexPartitions(remoteNode)+" - "+remoteNode);
+	    amount=DIndexNode.getNumIndexPartitions(remoteNode);
+            _log.info(DIndexNode.getNodeName(remoteNode)+" : "+amount);
+	    total+=amount;
         }
+	_log.info("total : "+total);
     }
 
     protected void printNodes(Node localNode, Map nodes) {
-        _log.info(DIndexNode.getNodeName(localNode)+" : "+DIndexNode.getNumIndexPartitions(localNode));
-
+	int total=0;
+	int amount=DIndexNode.getNumIndexPartitions(localNode);
+        _log.info(DIndexNode.getNodeName(localNode)+" : "+amount);
+	total+=amount;
         Collection c=nodes.values();
         for (Iterator i=c.iterator(); i.hasNext(); ) {
             Node remoteNode=(Node)i.next();
-            _log.info(DIndexNode.getNodeName(remoteNode)+" : "+DIndexNode.getNumIndexPartitions(remoteNode)+" - "+remoteNode);
+	     amount=DIndexNode.getNumIndexPartitions(remoteNode);
+            _log.info(DIndexNode.getNodeName(remoteNode)+" : "+amount);
+	    total+=amount;
         }
+	_log.info("total : "+total);
     }
 
     protected void execute(Plan plan, String correlationId, Quipu quipu) {
         quipu.increment(); // add a safety margin of '1', so if we are caught up by acks, waiting thread does not finish
         Iterator p=plan.getProducers().iterator();
         Iterator c=plan.getConsumers().iterator();
-        
+
         int n=0;
         Pair consumer=null;
         while (p.hasNext()) {
@@ -211,8 +219,6 @@ public class Coordinator implements Runnable {
             while (producer._deviation>0) {
                 if (consumer==null)
                     consumer=c.hasNext()?(Pair)c.next():null;
-                    _log.info(DIndexNode.getNodeName(producer._node)+" has: "+(producer==null?-1:producer._deviation));
-                    _log.info(DIndexNode.getNodeName(consumer._node)+" wants: "+(consumer==null?-1:consumer._deviation));
                     if (producer._deviation>=consumer._deviation) {
                         transfers.add(new Transfer(consumer._node.getDestination(), consumer._deviation));
                         producer._deviation-=consumer._deviation;
@@ -224,7 +230,7 @@ public class Coordinator implements Runnable {
                         producer._deviation=0;
                     }
             }
-            
+
             IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand((Transfer[])transfers.toArray(new Transfer[transfers.size()]));
             quipu.increment();
             try {

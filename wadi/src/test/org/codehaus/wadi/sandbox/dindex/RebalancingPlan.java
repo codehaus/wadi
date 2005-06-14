@@ -23,14 +23,13 @@ import java.util.ListIterator;
 import org.activecluster.Node;
 
 public class RebalancingPlan extends Plan {
-    
+
     public RebalancingPlan(Node[] living, Node[] leaving, int numItems) {
         int numBucketsPerNode=numItems/living.length;
 
         for (int i=0; i<leaving.length; i++) {
             Node node=leaving[i];
             int numBuckets=DIndexNode.getNumIndexPartitions(node);
-            System.out.println("leaving: "+DIndexNode.getNodeName(node)+" has "+numBuckets);
             if (numBuckets>0)
                 _producers.add(new Pair(node, numBuckets, true));
         }
@@ -38,18 +37,17 @@ public class RebalancingPlan extends Plan {
         for (int i=0; i<living.length; i++) {
             Node node=living[i];
             int numBuckets=DIndexNode.getNumIndexPartitions(node);
-            System.out.println("living : "+DIndexNode.getNodeName(node)+" has "+numBuckets);
             decide(node, numBuckets, numBucketsPerNode, _producers, _consumers);
         }
-        
-        
+
+
         // sort lists...
         Collections.sort(_producers, new PairGreaterThanComparator());
         Collections.sort(_consumers, new PairLessThanComparator());
-        
+
         // account for uneven division of buckets...
         int remainingBuckets=numItems%living.length;
-        
+
         for (ListIterator i=_producers.listIterator(); remainingBuckets>0 && i.hasNext(); ) {
             Pair p=(Pair)i.next();
             if (!p._leaving) {
@@ -64,7 +62,7 @@ public class RebalancingPlan extends Plan {
             remainingBuckets--;
             ++p._deviation;
         }
-        
+
         assert remainingBuckets==0;
     }
 
