@@ -351,17 +351,15 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             int amount=transfer.getAmount();
             Destination destination=transfer.getDestination();
             boolean success=false;
-            _log.info("transfer : "+amount);
-            _log.info("trying to lock "+amount+" IndexPartions");
             long heartbeat=5000; // TODO - consider
             Object[] candidates=_key2IndexPartition.values().toArray();
             Object[] acquired=null;
             try {
                 // lock partitions
                 acquired=attempt(candidates, amount, heartbeat);
-                
+
                 // build request...
-                _log.info("transferring "+acquired.length+" IndexPartions");
+                _log.info("transferring "+acquired.length+" to "+getNodeName((Node)_cluster.getNodes().get(destination)));
                 ObjectMessage om2=_cluster.createObjectMessage();
                 om2.setJMSReplyTo(_cluster.getLocalNode().getDestination());
                 om2.setJMSDestination(destination);
@@ -372,11 +370,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
                 ObjectMessage om3=_dispatcher.exchange(om2, _indexPartitionTransferRequestResponseRvMap, heartbeat);
                 // process response...
                 if (om3!=null && (success=((IndexPartitionsTransferResponse)om3.getObject()).getSuccess())) {
-                    _log.info("transfer successful");
                     for (int j=0; j<acquired.length; j++)
                         _key2IndexPartition.remove(((IndexPartition)acquired[j]).getKey());
-                    _log.info("old partitions removed");
-                    _log.info("transfer successful");
                 } else {
                     _log.warn("transfer unsuccessful");
                 }
@@ -384,7 +379,6 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
                 _log.warn("unexpected problem", t);
             } finally {
                 release(acquired);
-                _log.info("locks released");
             }
         }
         try {
