@@ -369,7 +369,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
                 IndexPartitionsTransferRequest request=new IndexPartitionsTransferRequest(acquired);
                 om2.setObject(request);
                 // send it...
-                ObjectMessage om3=_dispatcher.exchange(om2, _indexPartitionTransferRequestResponseRvMap, 5000); // TODO - parameterise timeout
+                ObjectMessage om3=_dispatcher.exchange(om2, _indexPartitionTransferRequestResponseRvMap, heartbeat);
                 // process response...
                 if (om3!=null && (success=((IndexPartitionsTransferResponse)om3.getObject()).getSuccess())) {
                     _log.info("transfer successful");
@@ -433,6 +433,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         // acknowledge safe receipt to donor
         try {
             _dispatcher.replyToMessage(om, new IndexPartitionsTransferResponse(success));
+            _log.info("sent TransferResponse");
             acked=true;
 
         } catch (JMSException e) {
@@ -541,9 +542,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         return _cluster.getLocalNode();
     }
 
-    public Node[] getRemoteNodes() {
-        Collection remoteNodes=_cluster.getNodes().values();
-        return (Node[])remoteNodes.toArray(new Node[remoteNodes.size()]);
+    public Collection getRemoteNodes() {
+        return _cluster.getNodes().values();
     }
 
     public Map getRendezVousMap() {

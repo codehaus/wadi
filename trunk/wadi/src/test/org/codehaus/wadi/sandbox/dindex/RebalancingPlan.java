@@ -24,46 +24,31 @@ import org.activecluster.Node;
 
 public class RebalancingPlan extends Plan {
     
-    protected boolean contains(Node[] nodes, Node node) {
-        for (int i=0; i<nodes.length; i++) {
-            if (nodes[i].getDestination().equals(node.getDestination()))
-                System.out.println("MATCH!");
-                return true;
-        }
-        return false;
-    }
+    public RebalancingPlan(Node[] living, Node[] leaving, int numItems) {
+        int numBucketsPerNode=numItems/living.length;
 
-    protected int exclude(Node[] remoteNodes, Node[] leavers) {
-        int count=0;
-        for (int i=0; i<remoteNodes.length; i++)
-            if (contains(leavers, remoteNodes[i]))
-                count++;
-        return count;
-    }
-    
-    public RebalancingPlan(Node localNode, Node[] remoteNodes, Node[] leavers, int numItems) {
-        int numRemoteNodes=remoteNodes.length-exclude(remoteNodes, leavers);
-        int numNodes=numRemoteNodes+1;
-        int numBucketsPerNode=numItems/numNodes;
-        // local node...
-        decide(localNode, DIndexNode.getNumIndexPartitions(localNode), numBucketsPerNode, _producers, _consumers);
-        // remote nodes...
-        for (int i=0; i<numRemoteNodes; i++) {
-            Node node=remoteNodes[i];
+        for (int i=0; i<leaving.length; i++) {
+            Node node=leaving[i];
             int numBuckets=DIndexNode.getNumIndexPartitions(node);
-            System.out.println(DIndexNode.getNodeName(node)+" has "+numBuckets);
-            if (!contains(leavers, node))
-                decide(node, numBuckets, numBucketsPerNode, _producers, _consumers);
-            else
-                if (numBuckets>0)
-                    _producers.add(new Pair(node, numBuckets));
+            System.out.println("leaving: "+DIndexNode.getNodeName(node)+" has "+numBuckets);
+            if (numBuckets>0)
+                _producers.add(new Pair(node, numBuckets));
         }
+
+        for (int i=0; i<living.length; i++) {
+            Node node=living[i];
+            int numBuckets=DIndexNode.getNumIndexPartitions(node);
+            System.out.println("living : "+DIndexNode.getNodeName(node)+" has "+numBuckets);
+            decide(node, numBuckets, numBucketsPerNode, _producers, _consumers);
+        }
+        
+        
         // sort lists...
         Collections.sort(_producers, new PairGreaterThanComparator());
         Collections.sort(_consumers, new PairLessThanComparator());
         
         // account for uneven division of buckets...
-        int remainingBuckets=numItems%numNodes;
+        int remainingBuckets=numItems%living.length;
         ListIterator i=_producers.listIterator();
         while(remainingBuckets>0 && i.hasNext()) {
             Pair p=(Pair)i.next();
@@ -71,11 +56,8 @@ public class RebalancingPlan extends Plan {
             if ((--p._deviation)==0)
                 i.remove();
         }
+
         assert remainingBuckets==0;
-        
-        // above is good for addNode
-        // when a node leaves cleanly, we need to run this the other way around
-        // so that the remainder is added to the smallest consumers, rather than taken from the largest producers...
     }
 
     protected void decide(Node node, int numBuckets, int numBucketsPerNode, Collection producers, Collection consumers) {
