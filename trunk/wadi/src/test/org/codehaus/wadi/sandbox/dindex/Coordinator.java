@@ -155,19 +155,23 @@ public class Coordinator implements Runnable {
             // somehow check all returned success..
 
             // send EvacuationResponses to each leaving node... - hmmm....
+            Collection left=_config.getLeft();
             for (int i=0; i<leaving.length; i++) {
                 Node node=leaving[i];
-                _log.info("acknowledging evacuation of "+DIndexNode.getNodeName(node));
-                EvacuationResponse response=new EvacuationResponse();
-                try {
-                    ObjectMessage om=_cluster.createObjectMessage();
-                    om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-                    om.setJMSDestination(node.getDestination());
-                    om.setJMSCorrelationID(node.getName());
-                    om.setObject(response);
-                    _cluster.send(node.getDestination(), om);
-                } catch (JMSException e) {
-                    _log.error("problem sending EvacuationResponse to "+DIndexNode.getNodeName(node), e);
+                if (!left.contains(node.getDestination())) {
+                    _log.info("acknowledging evacuation of "+DIndexNode.getNodeName(node));
+                    EvacuationResponse response=new EvacuationResponse();
+                    try {
+                        ObjectMessage om=_cluster.createObjectMessage();
+                        om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+                        om.setJMSDestination(node.getDestination());
+                        om.setJMSCorrelationID(node.getName());
+                        om.setObject(response);
+                        _cluster.send(node.getDestination(), om);
+                    } catch (JMSException e) {
+                        _log.error("problem sending EvacuationResponse to "+DIndexNode.getNodeName(node), e);
+                    }
+                    left.add(node.getDestination());
                 }
             }
         }

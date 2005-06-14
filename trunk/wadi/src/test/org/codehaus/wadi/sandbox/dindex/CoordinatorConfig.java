@@ -33,5 +33,6 @@ interface CoordinatorConfig {
     Map getRendezVousMap();
     
     Collection getLeavers();
+    Collection getLeft();
     
 }
