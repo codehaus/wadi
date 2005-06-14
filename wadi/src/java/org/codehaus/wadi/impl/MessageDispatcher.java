@@ -304,9 +304,9 @@ public class MessageDispatcher implements MessageListener {
 					settingsInOut.from=_cluster.getLocalNode().getDestination();
 					assert settingsInOut.correlationId.equals(om.getJMSCorrelationID());
 					long elapsedTime=System.currentTimeMillis()-startTime;
-					if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis)"); // session does not exist
+					if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis) '"+settingsInOut.correlationId+"'"); // session does not exist
 				} catch (TimeoutException toe) {
-					if (_log.isWarnEnabled()) _log.warn("no response to request within timeout ("+timeout+" millis)"); // session does not exist
+					if (_log.isWarnEnabled()) _log.warn("no response to request within timeout ("+timeout+" millis) '"+settingsInOut.correlationId+"'"); // session does not exist
 				} catch (InterruptedException ignore) {
 					if (_log.isWarnEnabled()) _log.warn("waiting for response - interruption ignored");
 				}
@@ -345,10 +345,10 @@ public class MessageDispatcher implements MessageListener {
                     if (rv.waitFor(timeout)) {
                         response=(ObjectMessage)rv.getResults().toArray()[0]; // TODO - Aargh!
                         long elapsedTime=System.currentTimeMillis()-startTime;
-                        if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis)"); // session does not exist
+                        if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis) '"+correlationId+"'"); // session does not exist
                     } else {
                         response=null;
-                        if (_log.isWarnEnabled()) _log.warn("unsuccessful message exchange within timeframe ("+timeout+" millis)");
+                        if (_log.isWarnEnabled()) _log.warn("unsuccessful message exchange within timeframe ("+timeout+" millis) '"+correlationId+"'");
                     }
 	            } catch (TimeoutException e) {
 	                if (_log.isWarnEnabled()) _log.warn("no response to request within timeout ("+timeout+" millis)"); // session does not exist

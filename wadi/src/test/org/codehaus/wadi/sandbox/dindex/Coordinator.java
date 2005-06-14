@@ -100,63 +100,50 @@ public class Coordinator implements Runnable {
         }
     }
 
-    // cut-n-pasted from Rebalancer
-    protected boolean contains(Node[] nodes, Node node) {
-        for (int i=0; i<nodes.length; i++) {
-            if (nodes[i].getDestination().equals(node.getDestination()))
-                System.out.println("MATCH!");
-                return true;
-        }
-        return false;
-    }
-
     // should loop until it gets a successful outcome - emptying _flag each time...
     public void rebalanceClusterState() {
-        //Collection excludedNodes=new ArrayList(_config.getLeavers()); // snapshot
 
-        // snapshot leavers...
-        Collection tmp=_config.getLeavers();
-        Node [] leavers;
-        synchronized (tmp) {
-            leavers=(Node[])tmp.toArray(new Node[tmp.size()]);
+        Map nodeMap=_cluster.getNodes();
+
+        Collection livingNodes=nodeMap.values();
+        synchronized (livingNodes) {livingNodes=new ArrayList(livingNodes);} // snapshot
+        livingNodes.add(_cluster.getLocalNode());
+        
+ 
+        Collection l=_config.getLeavers();
+        synchronized (l) {l=new ArrayList(l);} // snapshot
+        
+        Collection leavingNodes=new ArrayList();
+        for (Iterator i=l.iterator(); i.hasNext(); ) {
+            Node node=(Node)i.next();
+            Node leaver=(Node)nodeMap.get(node.getDestination()); // convert into same instance as liveNodes
+            if (leaver!=null) {
+                leavingNodes.add(leaver);
+                livingNodes.remove(leaver);
+            }
         }
+        
+        Node [] living=(Node[])livingNodes.toArray(new Node[livingNodes.size()]);
+        Node [] leaving=(Node[])leavingNodes.toArray(new Node[leavingNodes.size()]);
 
-        int numParticipants=0;
-        String correlationId;
-
-        _remoteNodes=_config.getRemoteNodes(); // snapshot this at last possible moment...
-        Plan plan=null;
-//        if (excludedNodes.size()>0) {
-//            // a node wants to leave - evacuate it
-//            Node leaver=(Node)excludedNodes.iterator().next(); // FIXME - should be leavers...
-//            plan=new EvacuationPlan(leaver, _localNode, _remoteNodes, _numItems);
-//            numParticipants=_remoteNodes.length+1; // TODO - I think
-//            correlationId=_localNode.getName()+"-rebalance-"+System.currentTimeMillis();
-//        } else
-//        {
-            // standard rebalance...
-            plan=new RebalancingPlan(_localNode, _remoteNodes, leavers, _numItems);
-            numParticipants=_remoteNodes.length+1; // - FIXME NOW - deduct leavers..
-            correlationId=_localNode.getName()+"-leaving-"+System.currentTimeMillis();
-//        }
+        String correlationId=_localNode.getName()+"-balancing-"+System.currentTimeMillis();
+        Plan plan=new RebalancingPlan(living, leaving, _numItems);
 
         Map rvMap=_config.getRendezVousMap();
-        Quipu rv=new Quipu(numParticipants-1);
-        _log.info("SETTING UP RV FOR "+numParticipants+" PARTICIPANTS");
+        Quipu rv=new Quipu(0);
         rvMap.put(correlationId, rv);
-
-        execute(plan, correlationId);
+        execute(plan, correlationId, rv); // quipu will be incremented as participants are invited
 
         boolean success=false;
         try {
             _log.info("WAITING ON RENDEZVOUS");
-            if (rv.waitFor(5000)) { // unify with cluster heartbeat or parameterise - TODO
-	      _log.info("RENDEZVOUS SUCCESSFUL");
-	      Collection results=rv.getResults();
-	      success=true;
-	    } else {
-	      _log.info("RENDEZVOUS FAILED");
-	    }
+            if (rv.waitFor(_heartbeat)) {
+                _log.info("RENDEZVOUS SUCCESSFUL");
+                Collection results=rv.getResults();
+                success=true;
+            } else {
+                _log.info("RENDEZVOUS FAILED");
+            }
         } catch (TimeoutException e) {
             _log.warn("timed out waiting for response", e);
         } catch (InterruptedException e) {
@@ -164,23 +151,21 @@ public class Coordinator implements Runnable {
         } finally {
             rvMap.remove(correlationId);
             // somehow check all returned success..
-
+            
             // send EvacuationResponses to each leaving node... - hmmm....
-            for (int i=0; i<leavers.length; i++) {
-                Node node=leavers[i];
-                if (contains(_remoteNodes, node)) {
-                    _log.info("acknowledging evacuation of "+DIndexNode.getNodeName(node));
-                    EvacuationResponse response=new EvacuationResponse();
-                    try {
-                        ObjectMessage om=_cluster.createObjectMessage();
-                        om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-                        om.setJMSDestination(node.getDestination());
-                        om.setJMSCorrelationID(node.getName());
-                        om.setObject(response);
-                        _cluster.send(node.getDestination(), om);
-                    } catch (JMSException e) {
-                        _log.error("problem sending EvacuationResponse", e);
-                    }
+            for (int i=0; i<leaving.length; i++) {
+                Node node=leaving[i];
+                _log.info("acknowledging evacuation of "+DIndexNode.getNodeName(node));
+                EvacuationResponse response=new EvacuationResponse();
+                try {
+                    ObjectMessage om=_cluster.createObjectMessage();
+                    om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+                    om.setJMSDestination(node.getDestination());
+                    om.setJMSCorrelationID(node.getName());
+                    om.setObject(response);
+                    _cluster.send(node.getDestination(), om);
+                } catch (JMSException e) {
+                    _log.error("problem sending EvacuationResponse to "+DIndexNode.getNodeName(node), e);
                 }
             }
         }
@@ -213,10 +198,12 @@ public class Coordinator implements Runnable {
         }
     }
 
-    protected void execute(Plan plan, String correlationId) {
+    protected void execute(Plan plan, String correlationId, Quipu quipu) {
+        quipu.increment(); // add a safety margin of '1', so if we are caught up by acks, waiting thread does not finish
         Iterator p=plan.getProducers().iterator();
         Iterator c=plan.getConsumers().iterator();
 
+        int n=0;
         Pair consumer=null;
         while (p.hasNext()) {
             Pair producer=(Pair)p.next();
@@ -226,17 +213,20 @@ public class Coordinator implements Runnable {
                     _log.info(""+(producer==null?-1:producer._deviation));
                     _log.info(""+(consumer==null?-1:consumer._deviation));
                     if (producer._deviation>=consumer._deviation) {
+                        quipu.increment();
                         balance(producer._node, consumer._node, consumer._deviation, correlationId);
                         producer._deviation-=consumer._deviation;
                         consumer._deviation=0;
                         consumer=null;
                     } else {
+                        quipu.increment();
                         balance(producer._node, consumer._node, producer._deviation, correlationId);
                         consumer._deviation-=producer._deviation;
                         producer._deviation=0;
                     }
             }
         }
+        quipu.decrement(); // remove safety margin
     }
 
     public boolean balance(Node src, Node tgt, int amount, String correlationId) {

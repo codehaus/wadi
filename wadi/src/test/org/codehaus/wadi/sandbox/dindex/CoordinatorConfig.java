@@ -27,7 +27,7 @@ interface CoordinatorConfig {
     int getNumItems();
     
     Node getLocalNode();
-    Node[] getRemoteNodes();
+    Collection getRemoteNodes();
     Cluster getCluster();
     
     Map getRendezVousMap();
