@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
@@ -115,8 +116,8 @@ public class Coordinator implements Runnable {
 
         Collection leavingNodes=new ArrayList();
         for (Iterator i=l.iterator(); i.hasNext(); ) {
-            Node node=(Node)i.next();
-            Node leaver=(Node)nodeMap.get(node.getDestination()); // convert into same instance as liveNodes
+            Destination d=(Destination)i.next();
+            Node leaver=(Node)nodeMap.get(d);
             if (leaver!=null) {
                 leavingNodes.add(leaver);
                 livingNodes.remove(leaver);

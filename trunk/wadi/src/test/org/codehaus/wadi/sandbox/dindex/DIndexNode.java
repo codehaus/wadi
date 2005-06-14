@@ -203,7 +203,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
     public void onNodeFailed(ClusterEvent event) {
         Node node=event.getNode();
         _log.info("onNodeFailed: "+getNodeName(node));
-        if (_leavers.remove(node)) {
+        if (_leavers.remove(node.getDestination())) {
             // we have already been explicitly informed of this nodes wish to leave...
             _left.remove(node);
         } else {
@@ -459,7 +459,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
     public void onEvacuationRequest(ObjectMessage om, EvacuationRequest request) {
       Node from=getSrcNode(om);
       _log.info("evacuation request from "+getNodeName(from));
-        _leavers.add(from);
+      _leavers.add(from.getDestination());
         if (_coordinator!=null)
             _coordinator.queueRebalancing();
     }
