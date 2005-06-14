@@ -144,85 +144,6 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         _log.info("...stopped");
     }
 
-//  protected Object[] subArray(Object[] input, int offset, int length) {
-//  Object[] output=new Object[length];
-//  Arrays.fill(output, offset, offset+length, input);
-//  return output;
-//  }
-//
-//  protected void evacuate() {
-//  Collection nodes=_cluster.getNodes().values();
-//  int numNodes=nodes.size();
-//  int numLocalIndexPartitions=_key2IndexPartition.size();
-//  int numIndexPartitionsPerNode=_numIndexPartitions/numNodes;
-//  int numRemainingIndexPartitions=_numIndexPartitions%numNodes;
-//  Node localNode=_cluster.getLocalNode();
-//  String correlationId=localNode.getName()+"-leaving-"+System.currentTimeMillis();
-//  Rendezvous rv=new Rendezvous(numNodes+1);
-//  _indexPartitionTransferCommandAcknowledgementRvMap.put(correlationId, rv);
-//  int offset=0;
-//  int c=0;
-//  for (Iterator i=nodes.iterator(); i.hasNext(); c++) {
-//  Node remoteNode=(Node)i.next();
-//  int toTransfer=numIndexPartitionsPerNode-getNumIndexPartitions(remoteNode);
-//  if (numRemainingIndexPartitions>0) {
-//  numRemainingIndexPartitions--;
-//  toTransfer++;
-//  }
-//
-//  // lock partitions... in serial - could be parallel...
-//  Object[] candidates=subArray(_key2IndexPartition.values().toArray(), offset, toTransfer);
-//  offset+=toTransfer;
-//  Object[] acquired=null;
-////try {
-////acquired=attempt(candidates, candidates.length, 30*1000); // TODO - parameterise
-////
-////// wait for all to finish before proceeding
-////// allocate an rv the right size, pass it to everyone and then wait on it.
-////// when you wake upt, make sure evacuation was successful - i.e. have we any indeces left...
-////// if so, run again, etc until empty - wuit...
-////transfer(localNode, remoteNode, toTransfer, correlationId); // very expensive way of achieving this...
-////
-////} finally {
-////release(acquired);
-////}
-//  }
-//
-//  boolean success=false;
-//  try {
-//  rv.attemptRendezvous(null, 10000L);
-//  success=true;
-//  } catch (InterruptedException e) {
-//  _log.warn("unexpected interruption", e);
-//  } finally {
-//  _indexPartitionTransferCommandAcknowledgementRvMap.remove(correlationId);
-//  // somehow check all returned success..
-//  }
-//
-//  if (success) {
-//  _log.info("all transfers successfully undertaken");
-//  } else {
-//  _log.warn("some trasfers may have failed");
-//  }
-//
-//  }
-//
-//  // copied from Balancer - TODO - refactor
-//  protected void transfer(Node src, Node tgt, int amount, String correlationId) {
-//  _log.info("commanding "+DIndexNode.getNodeName(src)+" to give "+amount+" to "+DIndexNode.getNodeName(tgt));
-//  IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand(amount, tgt.getDestination());
-//  try {
-//  ObjectMessage om=_cluster.createObjectMessage();
-//  om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-//  om.setJMSDestination(src.getDestination());
-//  om.setJMSCorrelationID(correlationId);
-//  om.setObject(command);
-//  _cluster.send(src.getDestination(), om);
-//  } catch (JMSException e) {
-//  _log.error("problem sending share command", e);
-//  }
-//  }
-
     protected String getContextPath() {
         return "/";
     }
@@ -281,6 +202,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             Node node=event.getNode();
             _log.info("onNodeFailed: "+getNodeName(node));
             _leavers.remove(node);
+            _left.remove(node);
 	    //            if (_coordinatorNode==getLocalNode())
 	    //	      _coordinator.queueRebalancing();
         }
@@ -553,8 +475,13 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
     }
 
     protected final Collection _leavers=Collections.synchronizedCollection(new ArrayList());
+    protected final Collection _left=Collections.synchronizedCollection(new ArrayList());
 
     public Collection getLeavers() {
         return _leavers;
+    }
+
+    public Collection getLeft() {
+        return _left;
     }
 }
