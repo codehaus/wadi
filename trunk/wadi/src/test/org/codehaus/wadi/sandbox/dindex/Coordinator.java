@@ -101,8 +101,9 @@ public class Coordinator implements Runnable {
         }
     }
 
-    // should loop until it gets a successful outcome - emptying _flag each time...
     public void rebalanceClusterState() {
+      int failures=0;
+      try {
 
         Map nodeMap=_cluster.getNodes();
 
@@ -116,12 +117,12 @@ public class Coordinator implements Runnable {
 
         Collection leavingNodes=new ArrayList();
         for (Iterator i=l.iterator(); i.hasNext(); ) {
-            Destination d=(Destination)i.next();
-            Node leaver=(Node)nodeMap.get(d);
-            if (leaver!=null) {
-                leavingNodes.add(leaver);
-                livingNodes.remove(leaver);
-            }
+	  Destination d=(Destination)i.next();
+	  Node leaver=(Node)nodeMap.get(d);
+	  if (leaver!=null) {
+	    leavingNodes.add(leaver);
+	    livingNodes.remove(leaver);
+	  }
         }
 
         Node [] living=(Node[])livingNodes.toArray(new Node[livingNodes.size()]);
@@ -137,47 +138,55 @@ public class Coordinator implements Runnable {
         rvMap.put(correlationId, rv);
         execute(plan, correlationId, rv); // quipu will be incremented as participants are invited
 
-        boolean success=false;
         try {
-            _log.info("WAITING ON RENDEZVOUS");
-            if (rv.waitFor(_heartbeat)) {
-                _log.info("RENDEZVOUS SUCCESSFUL");
-                Collection results=rv.getResults();
-                success=true;
-            } else {
-                _log.info("RENDEZVOUS FAILED");
-            }
+	  _log.info("WAITING ON RENDEZVOUS");
+	  if (rv.waitFor(_heartbeat)) {
+	    _log.info("RENDEZVOUS SUCCESSFUL");
+	    Collection results=rv.getResults();
+	  } else {
+	    _log.info("RENDEZVOUS FAILED");
+	    failures++;
+	  }
         } catch (TimeoutException e) {
-            _log.warn("timed out waiting for response", e);
+	  _log.warn("timed out waiting for response", e);
+	  failures++;
         } catch (InterruptedException e) {
-            _log.warn("unexpected interruption", e);
+	  _log.warn("unexpected interruption", e);
+	  failures++;
         } finally {
-            rvMap.remove(correlationId);
-            // somehow check all returned success..
+	  rvMap.remove(correlationId);
+	  // somehow check all returned success.. - TODO
 
-            // send EvacuationResponses to each leaving node... - hmmm....
-            Collection left=_config.getLeft();
-            for (int i=0; i<leaving.length; i++) {
-                Node node=leaving[i];
-                if (!left.contains(node.getDestination())) {
-                    _log.info("acknowledging evacuation of "+DIndexNode.getNodeName(node));
-                    EvacuationResponse response=new EvacuationResponse();
-                    try {
-                        ObjectMessage om=_cluster.createObjectMessage();
-                        om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-                        om.setJMSDestination(node.getDestination());
-                        om.setJMSCorrelationID(node.getName());
-                        om.setObject(response);
-                        _cluster.send(node.getDestination(), om);
-                    } catch (JMSException e) {
-                        _log.error("problem sending EvacuationResponse to "+DIndexNode.getNodeName(node), e);
-                    }
-                    left.add(node.getDestination());
-                }
-            }
+	  // send EvacuationResponses to each leaving node... - hmmm....
+	  Collection left=_config.getLeft();
+	  for (int i=0; i<leaving.length; i++) {
+	    Node node=leaving[i];
+	    if (!left.contains(node.getDestination())) {
+	      _log.info("acknowledging evacuation of "+DIndexNode.getNodeName(node));
+	      EvacuationResponse response=new EvacuationResponse();
+	      try {
+		ObjectMessage om=_cluster.createObjectMessage();
+		om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+		om.setJMSDestination(node.getDestination());
+		om.setJMSCorrelationID(node.getName());
+		om.setObject(response);
+		_cluster.send(node.getDestination(), om);
+	      } catch (JMSException e) {
+		_log.error("problem sending EvacuationResponse to "+DIndexNode.getNodeName(node), e);
+		failures++;
+	      }
+	      left.add(node.getDestination());
+	    }
+	  }
         }
         printNodes(living, leaving);
+      } catch (Throwable t) {
+	_log.warn("problem rebalancing indeces", t);
+	failures++;
+      }
 
+      if (failures>0)
+	queueRebalancing();
     }
 
     protected void printNodes(Node localNode, Node[] remoteNodes) {
@@ -196,21 +205,26 @@ public class Coordinator implements Runnable {
     }
 
   protected void printNodes(Node[] living, Node[] leaving) {
-	int total=0;
-        for (int i=0; i<living.length; i++) {
-            Node remoteNode=living[i];
-	     int amount=DIndexNode.getNumIndexPartitions(remoteNode);
-            _log.info(DIndexNode.getNodeName(remoteNode)+" : "+amount);
-	    total+=amount;
-        }
-        for (int i=0; i<leaving.length; i++) {
-            Node remoteNode=leaving[i];
-	     int amount=DIndexNode.getNumIndexPartitions(remoteNode);
-            _log.info(DIndexNode.getNodeName(remoteNode)+" : "+amount);
-	    total+=amount;
-        }
-	_log.info("total : "+total);
+    int total=0;
+    for (int i=0; i<living.length; i++)
+      total+=printNode(living[i]);
+    for (int i=0; i<leaving.length; i++)
+      total+=printNode(leaving[i]);
+    _log.info("total : "+total);
+  }
+
+  protected int printNode(Node node) {
+    if (node!=_cluster.getLocalNode())
+      node=(Node)_cluster.getNodes().get(node.getDestination());
+    if (node==null) {
+      _log.info(DIndexNode.getNodeName(node)+" : <unknown>");
+      return 0;
+    } else {
+      int amount=DIndexNode.getNumIndexPartitions(node);
+      _log.info(DIndexNode.getNodeName(node)+" : "+amount);
+      return amount;
     }
+  }
 
     protected void printNodes(Node localNode, Map nodes) {
 	int total=0;

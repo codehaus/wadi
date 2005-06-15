@@ -38,6 +38,7 @@ import org.codehaus.wadi.MessageDispatcherConfig;
 import org.codehaus.wadi.impl.MessageDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 public class DIndexNode implements ClusterListener, MessageDispatcherConfig, CoordinatorConfig {
@@ -57,7 +58,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
     protected final Map _distributedState=new ConcurrentHashMap();
     protected final Object _coordinatorSync=new Object();
     protected final Object _coordinatorLock=new Object();
-    protected final Map _key2IndexPartitionNode=new ConcurrentHashMap(); // contains full set of keys
+    protected final Map _key2IndexPartitionNode=new ConcurrentReaderHashMap(); // contains full set of keys
     protected final Map _key2IndexPartition=new ConcurrentHashMap(); // contains subset of keys
     protected final Map _indexPartitionTransferRequestResponseRvMap=new ConcurrentHashMap();
     protected final Map _indexPartitionTransferCommandAcknowledgementRvMap=new ConcurrentHashMap();
@@ -208,7 +209,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             _left.remove(node);
         } else {
             // we have to assume that this was a catastrophic failure...
-            _log.error("catastrophic failure - NYI : "+getNodeName(node));
+            _log.error("CATASTROPHIC FAILURE - NYI : "+getNodeName(node));
         }
     }
 
