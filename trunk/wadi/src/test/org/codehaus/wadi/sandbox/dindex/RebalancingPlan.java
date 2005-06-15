@@ -21,32 +21,37 @@ import java.util.Collections;
 import java.util.ListIterator;
 
 import org.activecluster.Node;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class RebalancingPlan extends Plan {
-
-    public RebalancingPlan(Node[] living, Node[] leaving, int numItems) {
-        int numBucketsPerNode=numItems/living.length;
+    
+    protected final Log _log=LogFactory.getLog(getClass());
+    
+    public RebalancingPlan(Node[] living, Node[] leaving, int totalNumBuckets) {
+        int numBucketsPerNode=totalNumBuckets/living.length;
 
         for (int i=0; i<leaving.length; i++) {
             Node node=leaving[i];
-            int numBuckets=DIndexNode.getNumIndexPartitions(node);
+            int numBuckets=DIndexNode.getBucketKeys(node).size();
+//            _log.info("LEAVING: "+numBuckets);
             if (numBuckets>0)
                 _producers.add(new Pair(node, numBuckets, true));
         }
 
         for (int i=0; i<living.length; i++) {
             Node node=living[i];
-            int numBuckets=DIndexNode.getNumIndexPartitions(node);
+            int numBuckets=DIndexNode.getBucketKeys(node).size();
+//            _log.info("LIVING: "+numBuckets);
             decide(node, numBuckets, numBucketsPerNode, _producers, _consumers);
         }
-
 
         // sort lists...
         Collections.sort(_producers, new PairGreaterThanComparator());
         Collections.sort(_consumers, new PairLessThanComparator());
 
         // account for uneven division of buckets...
-        int remainingBuckets=numItems%living.length;
+        int remainingBuckets=totalNumBuckets%living.length;
 
         for (ListIterator i=_producers.listIterator(); remainingBuckets>0 && i.hasNext(); ) {
             Pair p=(Pair)i.next();
@@ -68,6 +73,7 @@ public class RebalancingPlan extends Plan {
 
     protected void decide(Node node, int numBuckets, int numBucketsPerNode, Collection producers, Collection consumers) {
         int deviation=numBuckets-numBucketsPerNode;
+//        _log.info("DEVIATION: "+deviation);
         if (deviation>0) {
             producers.add(new Pair(node, deviation, false));
             return;
