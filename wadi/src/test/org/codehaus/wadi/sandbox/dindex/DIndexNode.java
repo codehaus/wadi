@@ -44,8 +44,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 public class DIndexNode implements ClusterListener, MessageDispatcherConfig, CoordinatorConfig {
 
     protected final static String _nodeNameKey="nodeName";
-    protected final static String _indexPartitionsKey="indexPartitions";
-    protected final static String _numIndexPartitionsKey="numIndexPartitions";
+    protected final static String _bucketKeysKey="bucketKeys";
     protected final static String _birthTimeKey="birthTime";
 
     protected final long _heartbeat=5000; // unify with cluster heartbeat...
@@ -74,7 +73,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         _numBuckets=numBuckets;
         _buckets=new BucketFacade[_numBuckets];
         for (int i=0; i<_numBuckets; i++)
-            _buckets[i]=new BucketFacade(i);
+            _buckets[i]=new BucketFacade(i, new RemoteBucket(i, null));
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
     }
 
@@ -90,10 +89,9 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         _cluster.addClusterListener(this);
         _distributedState.put(_nodeNameKey, _nodeName);
         _distributedState.put(_birthTimeKey, new Long(System.currentTimeMillis()));
-        //_distributedState.put(_indexPartitionsKey, new Object[0]);
-        _distributedState.put(_numIndexPartitionsKey, new Integer(0));
-
-
+        BucketKeys keys=new BucketKeys(_buckets);
+        _distributedState.put(_bucketKeysKey, keys);
+        _log.info("local state: "+keys);
         _dispatcher.init(this);
         _dispatcher.register(this, "onIndexPartitionsTransferCommand", IndexPartitionsTransferCommand.class);
         _dispatcher.register(this, "onIndexPartitionsTransferRequest", IndexPartitionsTransferRequest.class);
@@ -117,30 +115,25 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             // If our wait timed out, then we must be the coordinator
             // behave accordingly...
             if (_coordinatorNode==null) {
-	      _log.info("we are first");
-                initCluster();
+                _log.info("we are first");
+                _log.info("allocating "+_numBuckets+" buckets");
+                synchronized (_buckets) {
+                    for (int i=0; i<_numBuckets; i++)
+                        _buckets[i]=new BucketFacade(i, new LocalBucket(i));
+                }
+                BucketKeys k=new BucketKeys(_buckets);
+                _distributedState.put(_bucketKeysKey, k);
+                _log.info("local state: "+k);
                 onCoordinatorChanged(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.ELECTED_COORDINATOR));
-		_coordinator.queueRebalancing();
+                _coordinator.queueRebalancing();
             } else {
-	      _log.info("we are not first");
-	    }
-        }
-    }
-
-    public void initCluster() {
-        // initialise Index Partitions
-        _log.info("allocating "+_numBuckets+" buckets");
-//        int[] keys=new int[_numBuckets];
-        for (int i=0; i<_numBuckets; i++) {
-            _buckets[i].setContent(new LocalBucket(i));
-//            keys[i]=i;
-        }
-        //_distributedState.put(_indexPartitionsKey, keys);
-        _distributedState.put(_numIndexPartitionsKey, new Integer(_numBuckets));
-        try {
-            _cluster.getLocalNode().setState(_distributedState);
-        } catch (JMSException e) {
-            _log.error("could not update distributed state");
+                _log.info("we are not first");
+            }
+//            try {
+//                _cluster.getLocalNode().setState(_distributedState);
+//            } catch (JMSException e) {
+//                _log.error("could not update distributed state");
+//            }
         }
     }
 
@@ -246,10 +239,12 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         // do not bother actually locking at the moment - FIXME
         
         Collection c=new ArrayList();
-        for (int i=0; i<numBuckets && c.size()<numBuckets; i++) {
-            Bucket bucket=buckets[i].getContent();
-            if (bucket.isLocal()) // TODO - AND we acquire the lock
-                c.add(bucket);
+        synchronized (_buckets) {
+            for (int i=0; i<buckets.length && c.size()<numBuckets; i++) {
+                Bucket bucket=buckets[i].getContent();
+                if (bucket.isLocal()) // TODO - AND we acquire the lock
+                    c.add(bucket);
+            }
         }
         return (LocalBucket[])c.toArray(new LocalBucket[c.size()]);
         
@@ -285,6 +280,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
                 // lock partitions
                 acquired=attempt(_buckets, amount, heartbeat);
 
+                assert amount==acquired.length;
+                
                 // build request...
                 _log.info("transferring "+acquired.length+" buckets to "+getNodeName((Node)_cluster.getNodes().get(destination)));
                 ObjectMessage om2=_cluster.createObjectMessage();
@@ -297,8 +294,11 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
                 ObjectMessage om3=_dispatcher.exchange(om2, _indexPartitionTransferRequestResponseRvMap, heartbeat);
                 // process response...
                 if (om3!=null && (success=((IndexPartitionsTransferResponse)om3.getObject()).getSuccess())) {
-                    for (int j=0; j<acquired.length; j++)
-                        _buckets[acquired[j].getKey()].setContent(new RemoteBucket(j, destination));
+                    _log.info("local state (before): "+new BucketKeys(_buckets));
+                    synchronized (_buckets) {
+                        for (int j=0; j<acquired.length; j++)
+                            _buckets[acquired[j].getKey()].setContent(new RemoteBucket(j, destination));
+                    }
                 } else {
                     _log.warn("transfer unsuccessful");
                 }
@@ -309,15 +309,9 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             }
         }
         try {
-            // synchronisation ? - TODO
-            Collection c=new ArrayList();
-            for (int j=0; j<_numBuckets; j++) {
-                Bucket bucket=_buckets[j];
-                if (bucket.isLocal())
-                    c.add(bucket);
-            }
-            //_distributedState.put(_indexPartitionsKey, keys);
-            _distributedState.put(_numIndexPartitionsKey, new Integer(c.size()));
+            BucketKeys keys=new BucketKeys(_buckets);
+            _distributedState.put(_bucketKeysKey, keys);
+            _log.info("local state (after): "+keys);
             _log.info("local state updated");
             _cluster.getLocalNode().setState(_distributedState);
             _log.info("distributed state updated");
@@ -341,23 +335,20 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
         _log.info("received "+buckets.length+" buckets from "+getNodeName(getSrcNode(om)));
         boolean success=false;
         // read incoming data into our own local model
-        for (int i=0; i<buckets.length; i++) {
-            Bucket bucket=buckets[i];
-            // we should lock these until acked - then unlock them - TODO...
-            _buckets[bucket.getKey()].setContent(bucket);
+        _log.info("local state (before): "+new BucketKeys(_buckets));
+        synchronized (_buckets) {
+            for (int i=0; i<buckets.length; i++) {
+                Bucket bucket=buckets[i];
+                // we should lock these until acked - then unlock them - TODO...
+                _buckets[bucket.getKey()].setContent(bucket);
+            }
         }
         success=true;
         boolean acked=false;
         try {
-            // notify rest of Cluster of change of partition ownership...
-            Collection c=new ArrayList();
-            for (int i=0; i<_numBuckets; i++) {
-                Bucket bucket=_buckets[i];
-                if (bucket.isLocal())
-                    c.add(bucket);
-            }
-            //_distributedState.put(_indexPartitionsKey, keys);
-            _distributedState.put(_numIndexPartitionsKey, new Integer(c.size()));
+            BucketKeys keys=new BucketKeys(_buckets);
+            _distributedState.put(_bucketKeysKey, keys);
+            _log.info("local state (after): "+keys);
             _cluster.getLocalNode().setState(_distributedState);
         } catch (JMSException e) {
             _log.error("could not update distributed state", e);
@@ -404,8 +395,8 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
       return node==null?"<unknown>":(String)node.getState().get(_nodeNameKey);
     }
 
-    public static int getNumIndexPartitions(Node node) {
-        return ((Integer)node.getState().get(_numIndexPartitionsKey)).intValue();
+    public static BucketKeys getBucketKeys(Node node) {
+        return ((BucketKeys)node.getState().get(_bucketKeysKey));
     }
 
     public boolean isCoordinator() {
@@ -482,5 +473,19 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 
     public Collection getLeft() {
         return _left;
+    }
+
+    protected int printNode(Node node) {
+        if (node!=_cluster.getLocalNode())
+            node=(Node)_cluster.getNodes().get(node.getDestination());
+        if (node==null) {
+            _log.info(DIndexNode.getNodeName(node)+" : <unknown> - {?...}");
+            return 0;
+        } else {
+            BucketKeys keys=DIndexNode.getBucketKeys(node);
+            int amount=keys.size();
+            _log.info(DIndexNode.getNodeName(node)+" : "+amount+" - "+keys);
+            return amount;
+        }
     }
 }

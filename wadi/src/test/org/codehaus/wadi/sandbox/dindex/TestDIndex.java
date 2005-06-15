@@ -33,7 +33,7 @@ public class TestDIndex extends TestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        _numIndexPartitions=1024;
+        _numIndexPartitions=24;
     }
 
     protected void tearDown() throws Exception {

@@ -31,46 +31,43 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.Quipu;
 
-import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.Slot;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
-import EDU.oswego.cs.dl.util.concurrent.WaitableBoolean;
-import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
 
 //it's important that the Plan is constructed from snapshotted resources (i.e. the ground doesn't
 //shift under its feet), and that it is made and executed as quickly as possible - as a node could
 //leave the Cluster in the meantime...
 
 public class Coordinator implements Runnable {
-
+    
     protected final Log _log=LogFactory.getLog(getClass());
-
+    
     protected final Slot _flag=new Slot();
-
+    
     protected final CoordinatorConfig _config;
     protected final Cluster _cluster;
     protected final Node _localNode;
     protected final int _numItems;
     protected final long _heartbeat=5000L; // TODO - unify with _cluster...
-
+    
     public Coordinator(CoordinatorConfig config) {
         _config=config;
         _cluster=_config.getCluster();
         _localNode=_cluster.getLocalNode();
         _numItems=_config.getNumItems();
     }
-
+    
     protected Thread _thread;
     protected Node[] _remoteNodes;
-
-
+    
+    
     public synchronized void start() throws Exception {
         _log.info("starting...");
         _thread=new Thread(this, "WADI Coordinator");
         _thread.start();
         _log.info("...started");
     }
-
+    
     public synchronized void stop() throws Exception {
         // somehow wake up thread
         _log.info("stopping...");
@@ -79,7 +76,7 @@ public class Coordinator implements Runnable {
         _thread=null;
         _log.info("...stopped");
     }
-
+    
     public synchronized void queueRebalancing() {
         _log.info("queueing rebalancing...");
         try {
@@ -89,7 +86,7 @@ public class Coordinator implements Runnable {
         }
         _log.info("...rebalancing queued");
     }
-
+    
     public void run() {
         try {
             while (_flag.take()==Boolean.TRUE) {
@@ -100,152 +97,123 @@ public class Coordinator implements Runnable {
             _log.info("interrupted"); // hmmm.... - TODO
         }
     }
-
+    
     public void rebalanceClusterState() {
-      int failures=0;
-      try {
-
-        Map nodeMap=_cluster.getNodes();
-
-        Collection livingNodes=nodeMap.values();
-        synchronized (livingNodes) {livingNodes=new ArrayList(livingNodes);} // snapshot
-        livingNodes.add(_cluster.getLocalNode());
-
-
-        Collection l=_config.getLeavers();
-        synchronized (l) {l=new ArrayList(l);} // snapshot
-
-        Collection leavingNodes=new ArrayList();
-        for (Iterator i=l.iterator(); i.hasNext(); ) {
-	  Destination d=(Destination)i.next();
-	  Node leaver=(Node)nodeMap.get(d);
-	  if (leaver!=null) {
-	    leavingNodes.add(leaver);
-	    livingNodes.remove(leaver);
-	  }
-        }
-
-        Node [] living=(Node[])livingNodes.toArray(new Node[livingNodes.size()]);
-        Node [] leaving=(Node[])leavingNodes.toArray(new Node[leavingNodes.size()]);
-
-        String correlationId=_localNode.getName()+"-balancing-"+System.currentTimeMillis();
-        Plan plan=new RebalancingPlan(living, leaving, _numItems);
-
-        printNodes(living, leaving);
-
-        Map rvMap=_config.getRendezVousMap();
-        Quipu rv=new Quipu(0);
-        rvMap.put(correlationId, rv);
-        execute(plan, correlationId, rv); // quipu will be incremented as participants are invited
-
+        int failures=0;
         try {
-	  _log.info("WAITING ON RENDEZVOUS");
-	  if (rv.waitFor(_heartbeat)) {
-	    _log.info("RENDEZVOUS SUCCESSFUL");
-	    Collection results=rv.getResults();
-	  } else {
-	    _log.info("RENDEZVOUS FAILED");
-	    failures++;
-	  }
-        } catch (TimeoutException e) {
-	  _log.warn("timed out waiting for response", e);
-	  failures++;
-        } catch (InterruptedException e) {
-	  _log.warn("unexpected interruption", e);
-	  failures++;
-        } finally {
-	  rvMap.remove(correlationId);
-	  // somehow check all returned success.. - TODO
-
-	  // send EvacuationResponses to each leaving node... - hmmm....
-	  Collection left=_config.getLeft();
-	  for (int i=0; i<leaving.length; i++) {
-	    Node node=leaving[i];
-	    if (!left.contains(node.getDestination())) {
-	      _log.info("acknowledging evacuation of "+DIndexNode.getNodeName(node));
-	      EvacuationResponse response=new EvacuationResponse();
-	      try {
-		ObjectMessage om=_cluster.createObjectMessage();
-		om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-		om.setJMSDestination(node.getDestination());
-		om.setJMSCorrelationID(node.getName());
-		om.setObject(response);
-		_cluster.send(node.getDestination(), om);
-	      } catch (JMSException e) {
-		_log.error("problem sending EvacuationResponse to "+DIndexNode.getNodeName(node), e);
-		failures++;
-	      }
-	      left.add(node.getDestination());
-	    }
-	  }
+            
+            Map nodeMap=_cluster.getNodes();
+            
+            Collection livingNodes=nodeMap.values();
+            synchronized (livingNodes) {livingNodes=new ArrayList(livingNodes);} // snapshot
+            livingNodes.add(_cluster.getLocalNode());
+            
+            
+            Collection l=_config.getLeavers();
+            synchronized (l) {l=new ArrayList(l);} // snapshot
+            
+            Collection leavingNodes=new ArrayList();
+            for (Iterator i=l.iterator(); i.hasNext(); ) {
+                Destination d=(Destination)i.next();
+                Node leaver=(Node)nodeMap.get(d);
+                if (leaver!=null) {
+                    leavingNodes.add(leaver);
+                    livingNodes.remove(leaver);
+                }
+            }
+            
+            Node [] living=(Node[])livingNodes.toArray(new Node[livingNodes.size()]);
+            Node [] leaving=(Node[])leavingNodes.toArray(new Node[leavingNodes.size()]);
+            
+            String correlationId=_localNode.getName()+"-balancing-"+System.currentTimeMillis();
+            Plan plan=new RebalancingPlan(living, leaving, _numItems);
+            
+            printNodes(living, leaving);
+            
+            Map rvMap=_config.getRendezVousMap();
+            Quipu rv=new Quipu(0);
+            rvMap.put(correlationId, rv);
+            execute(plan, correlationId, rv); // quipu will be incremented as participants are invited
+            
+            try {
+                _log.info("WAITING ON RENDEZVOUS");
+                if (rv.waitFor(_heartbeat)) {
+                    _log.info("RENDEZVOUS SUCCESSFUL");
+                    Collection results=rv.getResults();
+                } else {
+                    _log.info("RENDEZVOUS FAILED");
+                    failures++;
+                }
+            } catch (TimeoutException e) {
+                _log.warn("timed out waiting for response", e);
+                failures++;
+            } catch (InterruptedException e) {
+                _log.warn("unexpected interruption", e);
+                failures++;
+            } finally {
+                rvMap.remove(correlationId);
+                // somehow check all returned success.. - TODO
+                
+                // send EvacuationResponses to each leaving node... - hmmm....
+                Collection left=_config.getLeft();
+                for (int i=0; i<leaving.length; i++) {
+                    Node node=leaving[i];
+                    if (!left.contains(node.getDestination())) {
+                        _log.info("acknowledging evacuation of "+DIndexNode.getNodeName(node));
+                        EvacuationResponse response=new EvacuationResponse();
+                        try {
+                            ObjectMessage om=_cluster.createObjectMessage();
+                            om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+                            om.setJMSDestination(node.getDestination());
+                            om.setJMSCorrelationID(node.getName());
+                            om.setObject(response);
+                            _cluster.send(node.getDestination(), om);
+                        } catch (JMSException e) {
+                            _log.error("problem sending EvacuationResponse to "+DIndexNode.getNodeName(node), e);
+                            failures++;
+                        }
+                        left.add(node.getDestination());
+                    }
+                }
+            }
+            printNodes(living, leaving);
+        } catch (Throwable t) {
+            _log.warn("problem rebalancing indeces", t);
+            failures++;
         }
-        printNodes(living, leaving);
-      } catch (Throwable t) {
-	_log.warn("problem rebalancing indeces", t);
-	failures++;
-      }
-
-      if (failures>0)
-	queueRebalancing();
+        
+        if (failures>0)
+            queueRebalancing();
     }
-
-    protected void printNodes(Node localNode, Node[] remoteNodes) {
-	int total=0;
-	int amount=DIndexNode.getNumIndexPartitions(localNode);
-        _log.info(DIndexNode.getNodeName(localNode)+" : "+amount);
-	total+=amount;
-        int n=remoteNodes.length;
-        for (int i=0; i<n; i++) {
-            Node remoteNode=remoteNodes[i];
-	    amount=DIndexNode.getNumIndexPartitions(remoteNode);
-            _log.info(DIndexNode.getNodeName(remoteNode)+" : "+amount);
-	    total+=amount;
+    
+    protected void printNodes(Node[] living, Node[] leaving) {
+        int total=0;
+        for (int i=0; i<living.length; i++)
+            total+=printNode(living[i]);
+        for (int i=0; i<leaving.length; i++)
+            total+=printNode(leaving[i]);
+        _log.info("total : "+total);
+    }
+    
+    protected int printNode(Node node) {
+        if (node!=_cluster.getLocalNode())
+            node=(Node)_cluster.getNodes().get(node.getDestination());
+        if (node==null) {
+            _log.info(DIndexNode.getNodeName(node)+" : <unknown>");
+            return 0;
+        } else {
+            BucketKeys keys=DIndexNode.getBucketKeys(node);
+            int amount=keys.size();
+            _log.info(DIndexNode.getNodeName(node)+" : "+amount+" - "+keys);
+            return amount;
         }
-	_log.info("total : "+total);
     }
-
-  protected void printNodes(Node[] living, Node[] leaving) {
-    int total=0;
-    for (int i=0; i<living.length; i++)
-      total+=printNode(living[i]);
-    for (int i=0; i<leaving.length; i++)
-      total+=printNode(leaving[i]);
-    _log.info("total : "+total);
-  }
-
-  protected int printNode(Node node) {
-    if (node!=_cluster.getLocalNode())
-      node=(Node)_cluster.getNodes().get(node.getDestination());
-    if (node==null) {
-      _log.info(DIndexNode.getNodeName(node)+" : <unknown>");
-      return 0;
-    } else {
-      int amount=DIndexNode.getNumIndexPartitions(node);
-      _log.info(DIndexNode.getNodeName(node)+" : "+amount);
-      return amount;
-    }
-  }
-
-    protected void printNodes(Node localNode, Map nodes) {
-	int total=0;
-	int amount=DIndexNode.getNumIndexPartitions(localNode);
-        _log.info(DIndexNode.getNodeName(localNode)+" : "+amount);
-	total+=amount;
-        Collection c=nodes.values();
-        for (Iterator i=c.iterator(); i.hasNext(); ) {
-            Node remoteNode=(Node)i.next();
-	     amount=DIndexNode.getNumIndexPartitions(remoteNode);
-            _log.info(DIndexNode.getNodeName(remoteNode)+" : "+amount);
-	    total+=amount;
-        }
-	_log.info("total : "+total);
-    }
-
+    
     protected void execute(Plan plan, String correlationId, Quipu quipu) {
         quipu.increment(); // add a safety margin of '1', so if we are caught up by acks, waiting thread does not finish
         Iterator p=plan.getProducers().iterator();
         Iterator c=plan.getConsumers().iterator();
-
+        
         int n=0;
         Pair consumer=null;
         while (p.hasNext()) {
@@ -265,7 +233,7 @@ public class Coordinator implements Runnable {
                         producer._deviation=0;
                     }
             }
-
+            
             IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand((Transfer[])transfers.toArray(new Transfer[transfers.size()]));
             quipu.increment();
             try {
@@ -281,5 +249,5 @@ public class Coordinator implements Runnable {
         }
         quipu.decrement(); // remove safety margin
     }
-
+    
 }

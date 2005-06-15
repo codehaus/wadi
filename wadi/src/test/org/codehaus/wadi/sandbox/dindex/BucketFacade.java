@@ -120,9 +120,9 @@ public class BucketFacade extends AbstractBucket /* implements Excludable,*/ {
     
     protected Bucket _content;
     
-    public BucketFacade(int key) {
+    public BucketFacade(int key, Bucket content) {
         super(key);
-        _content=new DummyBucket(_key);
+        _content=content;
     }
     
     public boolean isLocal() {
