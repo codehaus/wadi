@@ -17,21 +17,25 @@
 package org.codehaus.wadi.sandbox.dindex;
 
 import java.io.Serializable;
+import java.util.Map;
 
-public class IndexPartitionsTransferRequest implements Serializable {
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
-    protected LocalBucket[] _buckets;
+public class LocalBucket extends AbstractBucket implements Serializable {
+
+    protected Map _map=new ConcurrentHashMap();
     
-    public IndexPartitionsTransferRequest(LocalBucket[] buckets) {
-        _buckets=buckets;
+    public LocalBucket(int key) {
+        super(key);
     }
     
-    protected IndexPartitionsTransferRequest() {
-        // for deserialisation
-    }
-    
-    public LocalBucket[] getBuckets() {
-        return _buckets;
+    protected LocalBucket() {
+        super();
+        // for deserialisation...
     }
 
+    public boolean isLocal() {
+        return true;
+    }
+    
 }

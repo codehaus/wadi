@@ -16,22 +16,9 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import java.io.Serializable;
+public interface Bucket {
 
-public class IndexPartitionsTransferRequest implements Serializable {
-
-    protected LocalBucket[] _buckets;
+    boolean isLocal();
+    int getKey();
     
-    public IndexPartitionsTransferRequest(LocalBucket[] buckets) {
-        _buckets=buckets;
-    }
-    
-    protected IndexPartitionsTransferRequest() {
-        // for deserialisation
-    }
-    
-    public LocalBucket[] getBuckets() {
-        return _buckets;
-    }
-
 }

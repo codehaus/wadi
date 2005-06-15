@@ -16,22 +16,19 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import java.io.Serializable;
+import javax.jms.Destination;
 
-public class IndexPartitionsTransferRequest implements Serializable {
+public class RemoteBucket extends AbstractBucket {
 
-    protected LocalBucket[] _buckets;
+    protected final Destination _location;
     
-    public IndexPartitionsTransferRequest(LocalBucket[] buckets) {
-        _buckets=buckets;
+    public RemoteBucket(int key, Destination location) {
+        super(key);
+        _location=location;
     }
-    
-    protected IndexPartitionsTransferRequest() {
-        // for deserialisation
-    }
-    
-    public LocalBucket[] getBuckets() {
-        return _buckets;
+
+    public boolean isLocal() {
+        return false;
     }
 
 }
