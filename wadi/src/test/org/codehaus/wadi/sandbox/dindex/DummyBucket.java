@@ -16,22 +16,14 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import java.io.Serializable;
+public class DummyBucket extends AbstractBucket {
 
-public class IndexPartitionsTransferRequest implements Serializable {
-
-    protected LocalBucket[] _buckets;
-    
-    public IndexPartitionsTransferRequest(LocalBucket[] buckets) {
-        _buckets=buckets;
+    public DummyBucket(int key) {
+        super(key);
     }
     
-    protected IndexPartitionsTransferRequest() {
-        // for deserialisation
-    }
-    
-    public LocalBucket[] getBuckets() {
-        return _buckets;
+    public boolean isLocal() {
+        return false;
     }
 
 }

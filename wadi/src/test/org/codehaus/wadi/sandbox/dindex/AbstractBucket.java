@@ -18,20 +18,20 @@ package org.codehaus.wadi.sandbox.dindex;
 
 import java.io.Serializable;
 
-public class IndexPartitionsTransferRequest implements Serializable {
+public abstract class AbstractBucket implements Bucket, Serializable {
 
-    protected LocalBucket[] _buckets;
+    protected int _key;
     
-    public IndexPartitionsTransferRequest(LocalBucket[] buckets) {
-        _buckets=buckets;
+    public AbstractBucket(int key) {
+        _key=key;
     }
     
-    protected IndexPartitionsTransferRequest() {
-        // for deserialisation
+    protected AbstractBucket() {
+        // for deserialisation...
     }
     
-    public LocalBucket[] getBuckets() {
-        return _buckets;
+    public int getKey() {
+        return _key;
     }
 
 }
