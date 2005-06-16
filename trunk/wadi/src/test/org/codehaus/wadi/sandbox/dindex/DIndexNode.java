@@ -26,11 +26,17 @@ public class DIndexNode {
     //protected final String _clusterUri="peer://org.codehaus.wadi";
     //protected final String _clusterUri="tcp://localhost:61616";
     protected final String _clusterUri="tcp://smilodon:61616";
+    protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
     protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
     protected final DefaultClusterFactory _clusterFactory=new DefaultClusterFactory(_connectionFactory);;
 
     protected final DIndex _dindex;
-    
+    protected Cluster _cluster;
+
+    protected String getContextPath() {
+        return "/";
+    }
+
     public DIndexNode(String nodeName, int numBuckets) {
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
         _dindex=new DIndex(nodeName, numBuckets, _clusterFactory, _clusterFactory.getInactiveTime());
