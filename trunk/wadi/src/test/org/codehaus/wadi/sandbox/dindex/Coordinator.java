@@ -159,7 +159,7 @@ public class Coordinator implements Runnable {
                 for (int i=0; i<leaving.length; i++) {
                     Node node=leaving[i];
                     if (!left.contains(node.getDestination())) {
-                        _log.info("acknowledging evacuation of "+DIndexNode.getNodeName(node));
+                        _log.info("acknowledging evacuation of "+DIndex.getNodeName(node));
                         BucketEvacuationResponse response=new BucketEvacuationResponse();
                         try {
                             ObjectMessage om=_cluster.createObjectMessage();
@@ -169,7 +169,7 @@ public class Coordinator implements Runnable {
                             om.setObject(response);
                             _cluster.send(node.getDestination(), om);
                         } catch (JMSException e) {
-                            _log.error("problem sending EvacuationResponse to "+DIndexNode.getNodeName(node), e);
+                            _log.error("problem sending EvacuationResponse to "+DIndex.getNodeName(node), e);
                             failures++;
                         }
                         left.add(node.getDestination());
@@ -199,12 +199,12 @@ public class Coordinator implements Runnable {
         if (node!=_cluster.getLocalNode())
             node=(Node)_cluster.getNodes().get(node.getDestination());
         if (node==null) {
-            _log.info(DIndexNode.getNodeName(node)+" : <unknown>");
+            _log.info(DIndex.getNodeName(node)+" : <unknown>");
             return 0;
         } else {
-            BucketKeys keys=DIndexNode.getBucketKeys(node);
+            BucketKeys keys=DIndex.getBucketKeys(node);
             int amount=keys.size();
-            _log.info(DIndexNode.getNodeName(node)+" : "+amount+" - "+keys);
+            _log.info(DIndex.getNodeName(node)+" : "+amount+" - "+keys);
             return amount;
         }
     }
