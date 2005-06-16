@@ -22,8 +22,10 @@ import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.MessageDispatcherConfig;
+import org.codehaus.wadi.impl.MessageDispatcher;
 
-public class DIndexNode {
+public class DIndexNode implements MessageDispatcherConfig {
 
     protected final Log _log=LogFactory.getLog(getClass());
     
@@ -33,6 +35,7 @@ public class DIndexNode {
     protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
     protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
     protected final DefaultClusterFactory _clusterFactory=new DefaultClusterFactory(_connectionFactory);;
+    protected final MessageDispatcher _dispatcher=new MessageDispatcher();
 
     protected final String _nodeName;
     protected final int _numBuckets;
@@ -53,7 +56,8 @@ public class DIndexNode {
     public void start() throws Exception {
         _connectionFactory.start();
         _cluster=_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
-        _dindex=new DIndex(_nodeName, _numBuckets, _clusterFactory, _clusterFactory.getInactiveTime(), _cluster);
+        _dispatcher.init(this);
+        _dindex=new DIndex(_nodeName, _numBuckets, _clusterFactory, _clusterFactory.getInactiveTime(), _cluster, _dispatcher);
         _dindex.start();
         _log.info("starting Cluster...");
         _cluster.start(); // N.B. must be done AFTER starting DIndex
@@ -67,7 +71,7 @@ public class DIndexNode {
     }
     
     public Cluster getCluster() {
-        return _dindex.getCluster();
+        return _cluster;
     }
     
     //-----------------------------------------------------------
