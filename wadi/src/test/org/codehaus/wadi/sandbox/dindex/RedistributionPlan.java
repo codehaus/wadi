@@ -37,7 +37,7 @@ public class RedistributionPlan {
 
         for (int i=0; i<leaving.length; i++) {
             Node node=leaving[i];
-            int numBuckets=DIndexNode.getBucketKeys(node).size();
+            int numBuckets=DIndex.getBucketKeys(node).size();
 //            _log.info("LEAVING: "+numBuckets);
             if (numBuckets>0)
                 _producers.add(new BucketOwner(node, numBuckets, true));
@@ -45,7 +45,7 @@ public class RedistributionPlan {
 
         for (int i=0; i<living.length; i++) {
             Node node=living[i];
-            int numBuckets=DIndexNode.getBucketKeys(node).size();
+            int numBuckets=DIndex.getBucketKeys(node).size();
 //            _log.info("LIVING: "+numBuckets);
             decide(node, numBuckets, numBucketsPerNode, _producers, _consumers);
         }
