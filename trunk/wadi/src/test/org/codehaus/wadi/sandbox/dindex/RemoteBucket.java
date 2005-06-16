@@ -22,11 +22,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class RemoteBucket extends AbstractBucket {
-    
+
     protected static final Log _log = LogFactory.getLog(RemoteBucket.class);
 
     protected Destination _location;
-    
+
     public RemoteBucket(int key, Destination location) {
         super(key);
         _location=location;
@@ -37,12 +37,24 @@ public class RemoteBucket extends AbstractBucket {
     }
 
     public void setLocation(Destination location) {
-        if (_location!=location) {
-            _log.info("updating location from: "+_location+" to: "+location);
-            _location=location;
-        }
+      if (_location==null) {
+	if (location==null) {
+	  // _location is already null
+	} else {
+	  // they cannot be equal - update
+	  _log.info("["+_key+"] updating location from: "+_location+" to: "+location);
+	  _location=location;
+	}
+      } else {
+	if (_location.equals(location)) {
+	  // no need to update
+	} else {
+	  _log.info("["+_key+"] updating location from: "+_location+" to: "+location);
+	  _location=location;
+	}
+      }
     }
-    
+
     public String toString() {
         return _location==null?null:_location.toString();
     }

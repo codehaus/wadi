@@ -37,19 +37,19 @@ public class BucketFacade extends AbstractBucket /* implements Excludable,*/ {
     protected static final Log _log = LogFactory.getLog(BucketFacade.class);
 
 //    protected transient ReadWriteLock _lock;
-//    
+//
 //    protected final long _creationTime=System.currentTimeMillis();
 //
 //    protected int _key;
 //    protected Map _map=new ConcurrentHashMap(); // cannot be final as will be Serialised...
 //    protected boolean _local; // should own write lock before altering this...
-//    
+//
 //    public BucketFacade(int key) {
 //        //this();
 //        _lock=new WriterPreferenceReadWriteLock();
 //        _key=key;
 //    }
-//    
+//
 //    protected BucketFacade() {
 //        // for deserialisation
 //        _lock=new WriterPreferenceReadWriteLock();
@@ -64,17 +64,17 @@ public class BucketFacade extends AbstractBucket /* implements Excludable,*/ {
 //    public Sync getExclusiveLock() {
 //        return _lock.writeLock();
 //    }
-//    
+//
 //    public boolean getLocal() {
 //        return _local;
 //    }
-//    
+//
 //    // MUST own exclusive lock before calling this...
 //    public void setLocal(boolean local) {
 //        if (!(_local=local))
 //            _map.clear();
 //    }
-//    
+//
 //    public Node get(String sessionName) {
 //        if (_local) {
 //            boolean acquired=false;
@@ -91,7 +91,7 @@ public class BucketFacade extends AbstractBucket /* implements Excludable,*/ {
 //            throw new UnsupportedOperationException();
 //        }
 //    }
-//    
+//
 //    public void put(String sessionName, Node node) {
 //        assert _local;
 //        boolean acquired=false;
@@ -104,7 +104,7 @@ public class BucketFacade extends AbstractBucket /* implements Excludable,*/ {
 //                _lock.readLock().release();
 //        }
 //    }
-//    
+//
 //    public void put(Map map) {
 //        assert _local;
 //        boolean acquired=false;
@@ -117,40 +117,56 @@ public class BucketFacade extends AbstractBucket /* implements Excludable,*/ {
 //                _lock.readLock().release();
 //        }
 //    }
-//    
+//
 //    // call this with Exclusive lock held...
 //    public Map get() {
 //        return _map;
 //    }
-    
-    
+
+  protected long _timeStamp;
     protected Bucket _content;
-    
-    public BucketFacade(int key, Bucket content) {
+
+  public BucketFacade(int key, long timeStamp, Bucket content) {
         super(key);
+	_timeStamp=timeStamp;
         _content=content;
+        _log.info("["+_key+"] initialising location to: "+_content);
     }
-    
+
     public boolean isLocal() {
         return _content.isLocal();
     }
 
     // TODO - locking...
-    public void setContent(Bucket content) {
-        _log.info("changing location from: "+_content+" to: "+content);
-        _content=content;
+  public void setContent(long timeStamp, Bucket content) {
+    if (timeStamp>_timeStamp) {
+      _log.info("["+_key+"] changing location from: "+_content+" to: "+content);
+      _timeStamp=timeStamp;
+      _content=content;
     }
-    
+  }
+
     public Bucket getContent() {
         return _content;
     }
-    
-    public void setContent(Destination location) {
-        if (_content instanceof RemoteBucket) {
-            _log.info("changing location from: local to: "+location);
-            ((RemoteBucket)_content).setLocation(location);
-        } else {
-            _content=new RemoteBucket(_key, location);
-        }
+
+  public void setContentRemote(long timeStamp, Destination location) {
+    if (timeStamp>_timeStamp) {
+      _timeStamp=timeStamp;
+      if (_content instanceof RemoteBucket) {
+	((RemoteBucket)_content).setLocation(location);
+      } else {
+	_log.info("["+_key+"] changing location from: local to: "+location);
+	_content=new RemoteBucket(_key, location);
+      }
     }
+  }
+
+//     public void setContentLocal() {
+//       if (!(_content instanceof LocalBucket)) {
+// 	_log.info("["+_key+"] changing location from: "+_content+" to: local");
+//             _content=new LocalBucket(_key);
+//         }
+//     }
+
 }
