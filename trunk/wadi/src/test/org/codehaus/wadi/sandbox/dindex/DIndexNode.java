@@ -17,6 +17,7 @@
 package org.codehaus.wadi.sandbox.dindex;
 
 import org.activecluster.Cluster;
+import org.activecluster.impl.DefaultClusterFactory;
 import org.activemq.ActiveMQConnectionFactory;
 
 public class DIndexNode {
@@ -25,11 +26,12 @@ public class DIndexNode {
     //protected final String _clusterUri="tcp://localhost:61616";
     protected final String _clusterUri="tcp://smilodon:61616";
     protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
+    protected final DefaultClusterFactory _clusterFactory=new DefaultClusterFactory(_connectionFactory);;
 
     protected final DIndex _dindex;
     
     public DIndexNode(String nodeName, int numBuckets) {
-        _dindex=new DIndex(nodeName, numBuckets, _connectionFactory);
+        _dindex=new DIndex(nodeName, numBuckets, _clusterFactory);
     }
 
     public void start() throws Exception {

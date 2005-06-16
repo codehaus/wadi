@@ -47,7 +47,6 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
     protected final static String _timeStampKey="timeStamp";
     protected final static String _birthTimeKey="birthTime";
     
-    protected final DefaultClusterFactory _clusterFactory;
     protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
     protected final Map _distributedState=new ConcurrentHashMap();
     protected final Object _coordinatorSync=new Object();
@@ -60,12 +59,13 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
     protected final Log _log;
     protected final int _numBuckets;
     protected final BucketFacade[] _buckets;
+    protected final DefaultClusterFactory _clusterFactory;
 
-    public DIndex(String nodeName, int numBuckets, ActiveMQConnectionFactory connectionFactory) {
-        _clusterFactory=new DefaultClusterFactory(connectionFactory);
+    public DIndex(String nodeName, int numBuckets, DefaultClusterFactory clusterFactory) {
         _nodeName=nodeName;
         _log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
         _numBuckets=numBuckets;
+        _clusterFactory=clusterFactory;
         _buckets=new BucketFacade[_numBuckets];
         long timeStamp=System.currentTimeMillis();
         for (int i=0; i<_numBuckets; i++)
