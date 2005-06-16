@@ -16,23 +16,13 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import java.util.Comparator;
+import java.io.Serializable;
 
+public class BucketEvacuationResponse implements Serializable {
 
-public class PairLessThanComparator implements Comparator {
-
-    public int compare(Object o1, Object o2) {
-        Pair p1=(Pair)o1;
-        Pair p2=(Pair)o2;
-        int tmp=p1._deviation-p2._deviation;
-        if (tmp!=0)
-            return tmp;
-        else
-            return p1._node.getName().compareTo(p2._node.getName());
-    }
-    
-    public boolean equals(Object obj) {
-        return obj==this || obj.getClass()==getClass();
+    public BucketEvacuationResponse() {
+        super();
+        // TODO Auto-generated constructor stub
     }
 
 }

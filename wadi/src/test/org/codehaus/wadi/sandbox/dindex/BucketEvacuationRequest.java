@@ -18,28 +18,10 @@ package org.codehaus.wadi.sandbox.dindex;
 
 import java.io.Serializable;
 
-import javax.jms.Destination;
+public class BucketEvacuationRequest implements Serializable {
 
+    public BucketEvacuationRequest() {
+        super();
+    }
 
-public class IndexPartitionsTransferCommand1 implements Serializable {
-
-    protected int _keep;
-    protected Destination _target;
-    
-    public IndexPartitionsTransferCommand1(int keep, Destination target) {
-        _keep=keep;
-        _target=target;
-    }
-    
-    protected IndexPartitionsTransferCommand1() {
-        // for deserialisation...
-    }
-    
-    public int getKeep() {
-        return _keep;
-    }
-    
-    public Destination getTarget() {
-        return _target;
-    }
 }

@@ -16,10 +16,23 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
+import java.util.Comparator;
 
-public interface Excludable {
 
-    public Sync getExclusiveLock();
+public class BucketOwnerGreaterThanComparator implements Comparator {
+
+    public int compare(Object o2, Object o1) {
+        BucketOwner p1=(BucketOwner)o1;
+        BucketOwner p2=(BucketOwner)o2;
+        int tmp=p1._deviation-p2._deviation;
+        if (tmp!=0)
+            return tmp;
+        else
+            return p1._node.getName().compareTo(p2._node.getName());
+    }
     
+    public boolean equals(Object obj) {
+        return obj==this || obj.getClass()==getClass();
+    }
+
 }

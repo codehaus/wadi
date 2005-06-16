@@ -18,11 +18,28 @@ package org.codehaus.wadi.sandbox.dindex;
 
 import java.io.Serializable;
 
-public class EvacuationResponse implements Serializable {
+import javax.jms.Destination;
 
-    public EvacuationResponse() {
-        super();
-        // TODO Auto-generated constructor stub
+public class BucketTransfer implements Serializable {
+
+    public Destination _destination;
+    public int _amount;
+    
+    public BucketTransfer(Destination destination, int amount) {
+        _destination=destination;
+        _amount=amount;
+    }
+    
+    protected BucketTransfer() {
+        // for deserialisation...
     }
 
+    public Destination getDestination() {
+        return _destination;
+    }
+    
+    public int getAmount() {
+        return _amount;
+    }
+    
 }
