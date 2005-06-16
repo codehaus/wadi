@@ -60,28 +60,27 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
     protected final int _numBuckets;
     protected final BucketFacade[] _buckets;
     protected final DefaultClusterFactory _clusterFactory;
+    protected final long _inactiveTime;
 
-    public DIndex(String nodeName, int numBuckets, DefaultClusterFactory clusterFactory) {
+    public DIndex(String nodeName, int numBuckets, DefaultClusterFactory clusterFactory, long inactiveTime) {
         _nodeName=nodeName;
         _log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
         _numBuckets=numBuckets;
         _clusterFactory=clusterFactory;
+        _inactiveTime=inactiveTime;
         _buckets=new BucketFacade[_numBuckets];
         long timeStamp=System.currentTimeMillis();
         for (int i=0; i<_numBuckets; i++)
             _buckets[i]=new BucketFacade(i, timeStamp, new RemoteBucket(i, null)); // need to be somehow locked and released as soon as we know location...
-        System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
     }
     
     protected Cluster _cluster;
-    protected long _heartbeat;
     protected Node _coordinatorNode;
     protected Coordinator _coordinator;
     
     public void start() throws Exception {
         _log.info("starting...");
         _cluster=_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
-        _heartbeat=_clusterFactory.getInactiveTime();
         _cluster.setElectionStrategy(new SeniorityElectionStrategy());
         _cluster.addClusterListener(this);
         _distributedState.put(_nodeNameKey, _nodeName);
@@ -94,9 +93,9 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
         _dispatcher.register(this, "onBucketTransferCommand", BucketTransferCommand.class);
         _dispatcher.register(this, "onBucketTransferRequest", BucketTransferRequest.class);
         _dispatcher.register(this, "onBucketEvacuationRequest", BucketEvacuationRequest.class);
-        _dispatcher.register(BucketEvacuationResponse.class, _bucketEvacuationRequestResponseRvMap, _heartbeat);
-        _dispatcher.register(BucketTransferResponse.class, _bucketTransferRequestResponseRvMap, _heartbeat);
-        _dispatcher.register(BucketTransferAcknowledgement.class, _bucketTransferCommandAcknowledgementRvMap, _heartbeat);
+        _dispatcher.register(BucketEvacuationResponse.class, _bucketEvacuationRequestResponseRvMap, _inactiveTime);
+        _dispatcher.register(BucketTransferResponse.class, _bucketTransferRequestResponseRvMap, _inactiveTime);
+        _dispatcher.register(BucketTransferAcknowledgement.class, _bucketTransferCommandAcknowledgementRvMap, _inactiveTime);
         
         _cluster.getLocalNode().setState(_distributedState);
         _log.info("distributed state updated: "+_distributedState.get(_bucketKeysKey));
@@ -106,7 +105,7 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
         _log.info("...started");
         
         synchronized (_coordinatorSync) {
-            _coordinatorSync.wait(_clusterFactory.getInactiveTime());
+            _coordinatorSync.wait(_inactiveTime);
             _log.info("waking...");
         }
         
@@ -153,7 +152,7 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
                 om.setJMSDestination(_cluster.getDestination()); // whole cluster needs to know who is leaving - in case Coordinator fails
                 om.setJMSCorrelationID(localNode.getName());
                 om.setObject(new BucketEvacuationRequest());
-                _dispatcher.exchange(om, _bucketEvacuationRequestResponseRvMap, _heartbeat);
+                _dispatcher.exchange(om, _bucketEvacuationRequestResponseRvMap, _inactiveTime);
             } catch (JMSException e) {
                 _log.warn("problem sending evacuation request");
             }
@@ -301,7 +300,7 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
             LocalBucket[] acquired=null;
             try {
                 // lock partitions
-                acquired=attempt(_buckets, amount, _heartbeat);
+                acquired=attempt(_buckets, amount, _inactiveTime);
                 assert amount==acquired.length;
                 long timeStamp=System.currentTimeMillis();
                 
@@ -315,7 +314,7 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
                 BucketTransferRequest request=new BucketTransferRequest(timeStamp, acquired);
                 om2.setObject(request);
                 // send it...
-                ObjectMessage om3=_dispatcher.exchange(om2, _bucketTransferRequestResponseRvMap, _heartbeat);
+                ObjectMessage om3=_dispatcher.exchange(om2, _bucketTransferRequestResponseRvMap, _inactiveTime);
                 // process response...
                 if (om3!=null && (success=((BucketTransferResponse)om3.getObject()).getSuccess())) {
                     synchronized (_buckets) {
