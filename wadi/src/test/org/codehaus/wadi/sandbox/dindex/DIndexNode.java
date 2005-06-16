@@ -19,6 +19,7 @@ package org.codehaus.wadi.sandbox.dindex;
 import org.activecluster.Cluster;
 import org.activecluster.impl.DefaultClusterFactory;
 import org.activemq.ActiveMQConnectionFactory;
+import org.activemq.store.vm.VMPersistenceAdapterFactory;
 
 public class DIndexNode {
 
@@ -31,7 +32,8 @@ public class DIndexNode {
     protected final DIndex _dindex;
     
     public DIndexNode(String nodeName, int numBuckets) {
-        _dindex=new DIndex(nodeName, numBuckets, _clusterFactory);
+        System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
+        _dindex=new DIndex(nodeName, numBuckets, _clusterFactory, _clusterFactory.getInactiveTime());
     }
 
     public void start() throws Exception {
