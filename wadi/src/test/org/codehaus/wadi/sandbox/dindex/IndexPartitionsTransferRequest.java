@@ -20,16 +20,22 @@ import java.io.Serializable;
 
 public class IndexPartitionsTransferRequest implements Serializable {
 
+  protected long _timeStamp;
     protected LocalBucket[] _buckets;
-    
-    public IndexPartitionsTransferRequest(LocalBucket[] buckets) {
-        _buckets=buckets;
-    }
-    
+
+  public IndexPartitionsTransferRequest(long timeStamp, LocalBucket[] buckets) {
+    _timeStamp=timeStamp;
+    _buckets=buckets;
+  }
+
     protected IndexPartitionsTransferRequest() {
         // for deserialisation
     }
-    
+
+  public long getTimeStamp() {
+    return _timeStamp;
+  }
+
     public LocalBucket[] getBuckets() {
         return _buckets;
     }
