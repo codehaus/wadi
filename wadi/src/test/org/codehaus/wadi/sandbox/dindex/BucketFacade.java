@@ -20,7 +20,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
+import javax.jms.Destination;
+
 import org.activecluster.Node;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
@@ -29,7 +33,9 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 public class BucketFacade extends AbstractBucket /* implements Excludable,*/ {
-    
+
+    protected static final Log _log = LogFactory.getLog(BucketFacade.class);
+
 //    protected transient ReadWriteLock _lock;
 //    
 //    protected final long _creationTime=System.currentTimeMillis();
@@ -131,10 +137,20 @@ public class BucketFacade extends AbstractBucket /* implements Excludable,*/ {
 
     // TODO - locking...
     public void setContent(Bucket content) {
+        _log.info("changing location from: "+_content+" to: "+content);
         _content=content;
     }
     
     public Bucket getContent() {
         return _content;
+    }
+    
+    public void setContent(Destination location) {
+        if (_content instanceof RemoteBucket) {
+            _log.info("changing location from: local to: "+location);
+            ((RemoteBucket)_content).setLocation(location);
+        } else {
+            _content=new RemoteBucket(_key, location);
+        }
     }
 }

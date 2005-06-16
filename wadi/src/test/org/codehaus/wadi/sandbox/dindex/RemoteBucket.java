@@ -18,9 +18,14 @@ package org.codehaus.wadi.sandbox.dindex;
 
 import javax.jms.Destination;
 
-public class RemoteBucket extends AbstractBucket {
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-    protected final Destination _location;
+public class RemoteBucket extends AbstractBucket {
+    
+    protected static final Log _log = LogFactory.getLog(RemoteBucket.class);
+
+    protected Destination _location;
     
     public RemoteBucket(int key, Destination location) {
         super(key);
@@ -31,4 +36,14 @@ public class RemoteBucket extends AbstractBucket {
         return false;
     }
 
+    public void setLocation(Destination location) {
+        if (_location!=location) {
+            _log.info("updating location from: "+_location+" to: "+location);
+            _location=location;
+        }
+    }
+    
+    public String toString() {
+        return _location==null?null:_location.toString();
+    }
 }

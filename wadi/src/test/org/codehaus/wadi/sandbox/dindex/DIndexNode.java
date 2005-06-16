@@ -178,7 +178,20 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
     // ClusterListener
 
     public void onNodeUpdate(ClusterEvent event) {
-        _log.info("onNodeUpdate: "+getNodeName(event.getNode())+": "+event.getNode().getState());
+        Node node=event.getNode();
+        _log.info("onNodeUpdate: "+getNodeName(node)+": "+node.getState());
+        BucketKeys keys=(BucketKeys)node.getState().get(_bucketKeysKey);
+        _log.info("keys: "+keys+" - location: "+getNodeName(node));
+        
+        Destination location=node.getDestination();
+        int[] k=keys._keys;
+        synchronized (_buckets) {
+            for (int i=0; i<k.length; i++) {
+                int key=k[i];
+                BucketFacade facade=_buckets[key];
+                facade.setContent(location);
+            }
+        }
     }
 
     public void onNodeAdd(ClusterEvent event) {
