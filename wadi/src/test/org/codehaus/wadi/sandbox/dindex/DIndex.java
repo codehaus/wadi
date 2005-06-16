@@ -97,9 +97,6 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
         
         _cluster.getLocalNode().setState(_distributedState);
         _log.info("distributed state updated: "+_distributedState.get(_bucketKeysKey));
-        _log.info("starting Cluster...");
-        _cluster.start();
-        _log.info("...Cluster started");
         _log.info("...started");
         
         synchronized (_coordinatorSync) {
@@ -160,7 +157,6 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
             _coordinator.stop();
             _coordinator=null;
         }
-        _cluster.stop();
         _log.info("...stopped");
     }
     

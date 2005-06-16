@@ -20,9 +20,13 @@ import org.activecluster.Cluster;
 import org.activecluster.impl.DefaultClusterFactory;
 import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class DIndexNode {
 
+    protected final Log _log=LogFactory.getLog(getClass());
+    
     //protected final String _clusterUri="peer://org.codehaus.wadi";
     //protected final String _clusterUri="tcp://localhost:61616";
     protected final String _clusterUri="tcp://smilodon:61616";
@@ -51,10 +55,14 @@ public class DIndexNode {
         _cluster=_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
         _dindex=new DIndex(_nodeName, _numBuckets, _clusterFactory, _clusterFactory.getInactiveTime(), _cluster);
         _dindex.start();
+        _log.info("starting Cluster...");
+        _cluster.start(); // N.B. must be done AFTER starting DIndex
+        _log.info("...Cluster started");
     }
     
     public void stop() throws Exception {
         _dindex.stop();
+        _cluster.stop(); // N.B. must be done AFTER stopping DIndex
         _connectionFactory.stop();
     }
     
