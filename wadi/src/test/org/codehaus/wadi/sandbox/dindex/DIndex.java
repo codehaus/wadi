@@ -47,7 +47,6 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
     protected final static String _timeStampKey="timeStamp";
     protected final static String _birthTimeKey="birthTime";
     
-    protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
     protected final Map _distributedState=new ConcurrentHashMap();
     protected final Object _coordinatorSync=new Object();
     protected final Object _coordinatorLock=new Object();
@@ -74,7 +73,12 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
             _buckets[i]=new BucketFacade(i, timeStamp, new RemoteBucket(i, null)); // need to be somehow locked and released as soon as we know location...
     }
     
+    protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
     protected Cluster _cluster;
+    protected String getContextPath() {
+        return "/";
+    }
+    
     protected Node _coordinatorNode;
     protected Coordinator _coordinator;
     
@@ -164,10 +168,6 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
         }
         _cluster.stop();
         _log.info("...stopped");
-    }
-    
-    protected String getContextPath() {
-        return "/";
     }
     
     public Cluster getCluster() {
