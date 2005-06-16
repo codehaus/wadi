@@ -18,15 +18,15 @@ package org.codehaus.wadi.sandbox.dindex;
 
 import java.io.Serializable;
 
-public class IndexPartitionsTransferResponse implements Serializable {
+public class BucketTransferResponse implements Serializable {
 
     protected boolean _success;
     
-    public IndexPartitionsTransferResponse(boolean success) {
+    public BucketTransferResponse(boolean success) {
         _success=success;
     }
     
-    protected IndexPartitionsTransferResponse() {
+    protected BucketTransferResponse() {
         // used during deserialisation...
     }
     

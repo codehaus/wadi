@@ -126,7 +126,7 @@ public class Coordinator implements Runnable {
             Node [] leaving=(Node[])leavingNodes.toArray(new Node[leavingNodes.size()]);
             
             String correlationId=_localNode.getName()+"-balancing-"+System.currentTimeMillis();
-            Plan plan=new RebalancingPlan(living, leaving, _numItems);
+            RedistributionPlan plan=new RedistributionPlan(living, leaving, _numItems);
             
             printNodes(living, leaving);
             
@@ -160,7 +160,7 @@ public class Coordinator implements Runnable {
                     Node node=leaving[i];
                     if (!left.contains(node.getDestination())) {
                         _log.info("acknowledging evacuation of "+DIndexNode.getNodeName(node));
-                        EvacuationResponse response=new EvacuationResponse();
+                        BucketEvacuationResponse response=new BucketEvacuationResponse();
                         try {
                             ObjectMessage om=_cluster.createObjectMessage();
                             om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
@@ -209,32 +209,32 @@ public class Coordinator implements Runnable {
         }
     }
     
-    protected void execute(Plan plan, String correlationId, Quipu quipu) {
+    protected void execute(RedistributionPlan plan, String correlationId, Quipu quipu) {
         quipu.increment(); // add a safety margin of '1', so if we are caught up by acks, waiting thread does not finish
         Iterator p=plan.getProducers().iterator();
         Iterator c=plan.getConsumers().iterator();
         
         int n=0;
-        Pair consumer=null;
+        BucketOwner consumer=null;
         while (p.hasNext()) {
-            Pair producer=(Pair)p.next();
+            BucketOwner producer=(BucketOwner)p.next();
             Collection transfers=new ArrayList();
             while (producer._deviation>0) {
                 if (consumer==null)
-                    consumer=c.hasNext()?(Pair)c.next():null;
+                    consumer=c.hasNext()?(BucketOwner)c.next():null;
                     if (producer._deviation>=consumer._deviation) {
-                        transfers.add(new Transfer(consumer._node.getDestination(), consumer._deviation));
+                        transfers.add(new BucketTransfer(consumer._node.getDestination(), consumer._deviation));
                         producer._deviation-=consumer._deviation;
                         consumer._deviation=0;
                         consumer=null;
                     } else {
-                        transfers.add(new Transfer(consumer._node.getDestination(), producer._deviation));
+                        transfers.add(new BucketTransfer(consumer._node.getDestination(), producer._deviation));
                         consumer._deviation-=producer._deviation;
                         producer._deviation=0;
                     }
             }
             
-            IndexPartitionsTransferCommand command=new IndexPartitionsTransferCommand((Transfer[])transfers.toArray(new Transfer[transfers.size()]));
+            BucketTransferCommand command=new BucketTransferCommand((BucketTransfer[])transfers.toArray(new BucketTransfer[transfers.size()]));
             quipu.increment();
             try {
                 ObjectMessage om=_cluster.createObjectMessage();

@@ -18,20 +18,26 @@ package org.codehaus.wadi.sandbox.dindex;
 
 import java.io.Serializable;
 
-public class IndexPartitionsTransferCommand implements Serializable {
+public class BucketTransferRequest implements Serializable {
 
-    protected Transfer[] _transfers;
-    
-    public IndexPartitionsTransferCommand(Transfer[] transfers) {
-        _transfers=transfers;
+  protected long _timeStamp;
+    protected LocalBucket[] _buckets;
+
+  public BucketTransferRequest(long timeStamp, LocalBucket[] buckets) {
+    _timeStamp=timeStamp;
+    _buckets=buckets;
+  }
+
+    protected BucketTransferRequest() {
+        // for deserialisation
     }
-    
-    protected IndexPartitionsTransferCommand() {
-        // for deserialisation...
+
+  public long getTimeStamp() {
+    return _timeStamp;
+  }
+
+    public LocalBucket[] getBuckets() {
+        return _buckets;
     }
-    
-    public Transfer[] getTransfers() {
-        return _transfers;
-    }
-    
+
 }

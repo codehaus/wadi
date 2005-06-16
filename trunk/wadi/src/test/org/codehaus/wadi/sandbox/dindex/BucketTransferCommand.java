@@ -16,23 +16,22 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import java.util.Comparator;
+import java.io.Serializable;
 
+public class BucketTransferCommand implements Serializable {
 
-public class PairGreaterThanComparator implements Comparator {
-
-    public int compare(Object o2, Object o1) {
-        Pair p1=(Pair)o1;
-        Pair p2=(Pair)o2;
-        int tmp=p1._deviation-p2._deviation;
-        if (tmp!=0)
-            return tmp;
-        else
-            return p1._node.getName().compareTo(p2._node.getName());
+    protected BucketTransfer[] _transfers;
+    
+    public BucketTransferCommand(BucketTransfer[] transfers) {
+        _transfers=transfers;
     }
     
-    public boolean equals(Object obj) {
-        return obj==this || obj.getClass()==getClass();
+    protected BucketTransferCommand() {
+        // for deserialisation...
     }
-
+    
+    public BucketTransfer[] getTransfers() {
+        return _transfers;
+    }
+    
 }

@@ -16,19 +16,23 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.ListIterator;
 
 import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class RebalancingPlan extends Plan {
+public class RedistributionPlan {
     
     protected final Log _log=LogFactory.getLog(getClass());
+    protected final List _producers = new ArrayList();
+    protected final List _consumers = new ArrayList();
     
-    public RebalancingPlan(Node[] living, Node[] leaving, int totalNumBuckets) {
+    public RedistributionPlan(Node[] living, Node[] leaving, int totalNumBuckets) {
         int numBucketsPerNode=totalNumBuckets/living.length;
 
         for (int i=0; i<leaving.length; i++) {
@@ -36,7 +40,7 @@ public class RebalancingPlan extends Plan {
             int numBuckets=DIndexNode.getBucketKeys(node).size();
 //            _log.info("LEAVING: "+numBuckets);
             if (numBuckets>0)
-                _producers.add(new Pair(node, numBuckets, true));
+                _producers.add(new BucketOwner(node, numBuckets, true));
         }
 
         for (int i=0; i<living.length; i++) {
@@ -47,14 +51,14 @@ public class RebalancingPlan extends Plan {
         }
 
         // sort lists...
-        Collections.sort(_producers, new PairGreaterThanComparator());
-        Collections.sort(_consumers, new PairLessThanComparator());
+        Collections.sort(_producers, new BucketOwnerGreaterThanComparator());
+        Collections.sort(_consumers, new BucketOwnerLessThanComparator());
 
         // account for uneven division of buckets...
         int remainingBuckets=totalNumBuckets%living.length;
 
         for (ListIterator i=_producers.listIterator(); remainingBuckets>0 && i.hasNext(); ) {
-            Pair p=(Pair)i.next();
+            BucketOwner p=(BucketOwner)i.next();
             if (!p._leaving) {
                 remainingBuckets--;
                 if ((--p._deviation)==0)
@@ -63,7 +67,7 @@ public class RebalancingPlan extends Plan {
         }
 
         for (ListIterator i=_consumers.listIterator(); remainingBuckets>0 && i.hasNext(); ) {
-            Pair p=(Pair)i.next();
+            BucketOwner p=(BucketOwner)i.next();
             remainingBuckets--;
             ++p._deviation;
         }
@@ -75,13 +79,21 @@ public class RebalancingPlan extends Plan {
         int deviation=numBuckets-numBucketsPerNode;
 //        _log.info("DEVIATION: "+deviation);
         if (deviation>0) {
-            producers.add(new Pair(node, deviation, false));
+            producers.add(new BucketOwner(node, deviation, false));
             return;
         }
         if (deviation<0) {
-            consumers.add(new Pair(node, -deviation, false));
+            consumers.add(new BucketOwner(node, -deviation, false));
             return;
         }
+    }
+
+    public Collection getProducers() {
+        return _producers;
+    }
+
+    public Collection getConsumers() {
+        return _consumers;
     }
 
 

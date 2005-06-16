@@ -16,30 +16,18 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import java.io.Serializable;
+import org.activecluster.Node;
 
-import javax.jms.Destination;
-
-public class Transfer implements Serializable {
-
-    public Destination _destination;
-    public int _amount;
+public class BucketOwner {
     
-    public Transfer(Destination destination, int amount) {
-        _destination=destination;
-        _amount=amount;
-    }
+    protected Node _node;
+    protected int _deviation;
+    protected boolean _leaving;
     
-    protected Transfer() {
-        // for deserialisation...
+    public BucketOwner(Node node, int deviation, boolean leaving) {
+        _node=node;
+        _deviation=deviation;
+        _leaving=leaving;
     }
 
-    public Destination getDestination() {
-        return _destination;
-    }
-    
-    public int getAmount() {
-        return _amount;
-    }
-    
 }

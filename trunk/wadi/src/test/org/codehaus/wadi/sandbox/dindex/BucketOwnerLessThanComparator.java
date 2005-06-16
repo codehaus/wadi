@@ -16,18 +16,23 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import org.activecluster.Node;
+import java.util.Comparator;
 
-public class Pair {
-    
-    public Node _node;
-    public int _deviation;
-    public boolean _leaving;
-    
-    public Pair(Node node, int deviation, boolean leaving) {
-        _node=node;
-        _deviation=deviation;
-        _leaving=leaving;
+
+public class BucketOwnerLessThanComparator implements Comparator {
+
+    public int compare(Object o1, Object o2) {
+        BucketOwner p1=(BucketOwner)o1;
+        BucketOwner p2=(BucketOwner)o2;
+        int tmp=p1._deviation-p2._deviation;
+        if (tmp!=0)
+            return tmp;
+        else
+            return p1._node.getName().compareTo(p2._node.getName());
     }
     
+    public boolean equals(Object obj) {
+        return obj==this || obj.getClass()==getClass();
+    }
+
 }
