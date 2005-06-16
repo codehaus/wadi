@@ -17,28 +17,39 @@
 package org.codehaus.wadi.sandbox.dindex;
 
 import org.activecluster.Cluster;
+import org.activemq.ActiveMQConnectionFactory;
 
 public class DIndexNode {
 
-    protected static Object _exitSync = new Object();
+    //protected final String _clusterUri="peer://org.codehaus.wadi";
+    //protected final String _clusterUri="tcp://localhost:61616";
+    protected final String _clusterUri="tcp://smilodon:61616";
+    protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
+
     protected final DIndex _dindex;
     
     public DIndexNode(String nodeName, int numBuckets) {
-        _dindex=new DIndex(nodeName, numBuckets);
+        _dindex=new DIndex(nodeName, numBuckets, _connectionFactory);
     }
 
     public void start() throws Exception {
+        _connectionFactory.start();
         _dindex.start();
     }
     
     public void stop() throws Exception {
         _dindex.stop();
+        _connectionFactory.stop();
     }
     
     public Cluster getCluster() {
         return _dindex.getCluster();
     }
     
+    //-----------------------------------------------------------
+    
+    protected static Object _exitSync = new Object();
+
     public static void main(String[] args) throws Exception {
         String nodeName=args[0];
         int numIndexPartitions=Integer.parseInt(args[1]);
