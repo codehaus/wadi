@@ -55,7 +55,7 @@ public class DIndexNode {
             }
         });
         
-        DIndex node=new DIndex(nodeName, numIndexPartitions);
+        DIndexNode node=new DIndexNode(nodeName, numIndexPartitions);
         node.start();
         
         synchronized (_exitSync) {_exitSync.wait();}
