@@ -237,7 +237,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
      */
     protected LocalBucket[] attempt(BucketFacade[] buckets, int numBuckets, long timeout) throws TimeoutException {
         // do not bother actually locking at the moment - FIXME
-        
+
         Collection c=new ArrayList();
         synchronized (_buckets) {
             for (int i=0; i<buckets.length && c.size()<numBuckets; i++) {
@@ -247,7 +247,7 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             }
         }
         return (LocalBucket[])c.toArray(new LocalBucket[c.size()]);
-        
+
 //      Sync lock=partition.getExclusiveLock();
 //      long timeout=500; // how should we work this out ? - TODO
 //      if (lock.attempt(timeout))
@@ -274,14 +274,14 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
             Destination destination=transfer.getDestination();
             boolean success=false;
             long heartbeat=5000; // TODO - consider
-            
+
             LocalBucket[] acquired=null;
             try {
                 // lock partitions
                 acquired=attempt(_buckets, amount, heartbeat);
 
                 assert amount==acquired.length;
-                
+
                 // build request...
                 _log.info("transferring "+acquired.length+" buckets to "+getNodeName((Node)_cluster.getNodes().get(destination)));
                 ObjectMessage om2=_cluster.createObjectMessage();
@@ -458,10 +458,16 @@ public class DIndexNode implements ClusterListener, MessageDispatcherConfig, Coo
 
     public void onEvacuationRequest(ObjectMessage om, EvacuationRequest request) {
       Node from=getSrcNode(om);
+      if (from==null) {
+	// very occasionally this comes through as a null - why ?
+	_log.error("empty evacuation request");
+	return;
+      }
+
       _log.info("evacuation request from "+getNodeName(from));
       _leavers.add(from.getDestination());
-        if (_coordinator!=null)
-            _coordinator.queueRebalancing();
+      if (_coordinator!=null)
+	_coordinator.queueRebalancing();
     }
 
     protected final Collection _leavers=Collections.synchronizedCollection(new ArrayList());
