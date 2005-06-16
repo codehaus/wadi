@@ -38,4 +38,8 @@ public class LocalBucket extends AbstractBucket implements Serializable {
         return true;
     }
     
+    public String toString() {
+        return "local";
+    }
+    
 }
