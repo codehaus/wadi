@@ -47,11 +47,7 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
     protected final static String _timeStampKey="timeStamp";
     protected final static String _birthTimeKey="birthTime";
     
-    //protected final String _clusterUri="peer://org.codehaus.wadi";
-    //protected final String _clusterUri="tcp://localhost:61616";
-    protected final String _clusterUri="tcp://smilodon:61616";
-    protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
-    protected final DefaultClusterFactory _clusterFactory=new DefaultClusterFactory(_connectionFactory);
+    protected final DefaultClusterFactory _clusterFactory;
     protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
     protected final Map _distributedState=new ConcurrentHashMap();
     protected final Object _coordinatorSync=new Object();
@@ -65,7 +61,8 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
     protected final int _numBuckets;
     protected final BucketFacade[] _buckets;
 
-    public DIndex(String nodeName, int numBuckets) {
+    public DIndex(String nodeName, int numBuckets, ActiveMQConnectionFactory connectionFactory) {
+        _clusterFactory=new DefaultClusterFactory(connectionFactory);
         _nodeName=nodeName;
         _log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
         _numBuckets=numBuckets;
@@ -83,7 +80,6 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
     
     public void start() throws Exception {
         _log.info("starting...");
-        _connectionFactory.start();
         _cluster=_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
         _heartbeat=_clusterFactory.getInactiveTime();
         _cluster.setElectionStrategy(new SeniorityElectionStrategy());
@@ -168,7 +164,6 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
             _coordinator=null;
         }
         _cluster.stop();
-        _connectionFactory.stop();
         _log.info("...stopped");
     }
     
