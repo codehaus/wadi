@@ -30,20 +30,26 @@ public class DIndexNode {
     protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
     protected final DefaultClusterFactory _clusterFactory=new DefaultClusterFactory(_connectionFactory);;
 
-    protected final DIndex _dindex;
-    protected Cluster _cluster;
-
+    protected final String _nodeName;
+    protected final int _numBuckets;
+    
     protected String getContextPath() {
         return "/";
     }
 
     public DIndexNode(String nodeName, int numBuckets) {
+        _nodeName=nodeName;
+        _numBuckets=numBuckets;
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
-        _dindex=new DIndex(nodeName, numBuckets, _clusterFactory, _clusterFactory.getInactiveTime());
     }
+
+    protected DIndex _dindex;
+    protected Cluster _cluster;
 
     public void start() throws Exception {
         _connectionFactory.start();
+        _cluster=_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
+        _dindex=new DIndex(_nodeName, _numBuckets, _clusterFactory, _clusterFactory.getInactiveTime(), _cluster);
         _dindex.start();
     }
     

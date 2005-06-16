@@ -58,14 +58,14 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
     protected final Log _log;
     protected final int _numBuckets;
     protected final BucketFacade[] _buckets;
-    protected final DefaultClusterFactory _clusterFactory;
     protected final long _inactiveTime;
+    protected final Cluster _cluster;
 
-    public DIndex(String nodeName, int numBuckets, DefaultClusterFactory clusterFactory, long inactiveTime) {
+    public DIndex(String nodeName, int numBuckets, DefaultClusterFactory clusterFactory, long inactiveTime, Cluster cluster) {
         _nodeName=nodeName;
         _log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
         _numBuckets=numBuckets;
-        _clusterFactory=clusterFactory;
+        _cluster=cluster;
         _inactiveTime=inactiveTime;
         _buckets=new BucketFacade[_numBuckets];
         long timeStamp=System.currentTimeMillis();
@@ -73,18 +73,12 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
             _buckets[i]=new BucketFacade(i, timeStamp, new RemoteBucket(i, null)); // need to be somehow locked and released as soon as we know location...
     }
     
-    protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
-    protected Cluster _cluster;
-    protected String getContextPath() {
-        return "/";
-    }
     
     protected Node _coordinatorNode;
     protected Coordinator _coordinator;
     
     public void start() throws Exception {
         _log.info("starting...");
-        _cluster=_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
         _cluster.setElectionStrategy(new SeniorityElectionStrategy());
         _cluster.addClusterListener(this);
         _distributedState.put(_nodeNameKey, _nodeName);
