@@ -25,12 +25,10 @@ public class BucketKeys implements Serializable {
     
     public BucketKeys(BucketFacade[] buckets) {
         ArrayList list=new ArrayList(buckets.length);
-        synchronized (buckets) {
-            for (int i=0; i<buckets.length; i++) {
-                Bucket bucket=buckets[i];
-                if (bucket.isLocal())
-                    list.add(new Integer(bucket.getKey()));
-            }
+        for (int i=0; i<buckets.length; i++) {
+            Bucket bucket=buckets[i];
+            if (bucket.isLocal())
+                list.add(new Integer(bucket.getKey()));
         }
         _keys=new int[list.size()];
         for (int i=0; i<_keys.length; i++)

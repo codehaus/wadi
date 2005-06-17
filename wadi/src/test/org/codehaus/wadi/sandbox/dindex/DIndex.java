@@ -110,12 +110,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         if (!isNotCoordinator) {
             _log.info("allocating "+_numBuckets+" buckets");
             long timeStamp=System.currentTimeMillis();
-            synchronized (_buckets) {
-                for (int i=0; i<_numBuckets; i++) {
-                    BucketFacade facade=_buckets[i];
-                    facade.setContent(timeStamp, new LocalBucket(i));
-                    facade.dequeue();
-                }
+            for (int i=0; i<_numBuckets; i++) {
+                BucketFacade facade=_buckets[i];
+                facade.setContent(timeStamp, new LocalBucket(i));
+                facade.dequeue();
             }
             BucketKeys k=new BucketKeys(_buckets);
             _distributedState.put(_bucketKeysKey, k);
@@ -167,13 +165,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
     protected void updateBuckets(Node node, long timeStamp, BucketKeys keys) {
         Destination location=node.getDestination();
         int[] k=keys._keys;
-        synchronized (_buckets) {
-            for (int i=0; i<k.length; i++) {
-                int key=k[i];
-                BucketFacade facade=_buckets[key];
-                facade.setContentRemote(timeStamp, location);
-                facade.dequeue();
-            }
+        for (int i=0; i<k.length; i++) {
+            int key=k[i];
+            BucketFacade facade=_buckets[key];
+            facade.setContentRemote(timeStamp, location);
+            facade.dequeue();
         }
     }
     
@@ -247,12 +243,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         // do not bother actually locking at the moment - FIXME
         
         Collection c=new ArrayList();
-        synchronized (_buckets) {
-            for (int i=0; i<buckets.length && c.size()<numBuckets; i++) {
-                Bucket bucket=buckets[i].getContent();
-                if (bucket.isLocal()) // TODO - AND we acquire the lock
-                    c.add(bucket);
-            }
+        for (int i=0; i<buckets.length && c.size()<numBuckets; i++) {
+            Bucket bucket=buckets[i].getContent();
+            if (bucket.isLocal()) // TODO - AND we acquire the lock
+                c.add(bucket);
         }
         return (LocalBucket[])c.toArray(new LocalBucket[c.size()]);
         
@@ -302,12 +296,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
                 ObjectMessage om3=_dispatcher.exchange(om2, _bucketTransferRequestResponseRvMap, _inactiveTime);
                 // process response...
                 if (om3!=null && (success=((BucketTransferResponse)om3.getObject()).getSuccess())) {
-                    synchronized (_buckets) {
-                        for (int j=0; j<acquired.length; j++) {
-                            BucketFacade facade=_buckets[acquired[j].getKey()];
-                            facade.setContentRemote(timeStamp, destination); // TODO - should we use a more recent ts ?
-                            facade.dequeue();
-                        }
+                    for (int j=0; j<acquired.length; j++) {
+                        BucketFacade facade=_buckets[acquired[j].getKey()];
+                        facade.setContentRemote(timeStamp, destination); // TODO - should we use a more recent ts ?
+                        facade.dequeue();
                     }
                 } else {
                     _log.warn("transfer unsuccessful");
@@ -348,13 +340,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         boolean success=false;
         // read incoming data into our own local model
         _log.info("local state (before receiving): "+new BucketKeys(_buckets));
-        synchronized (_buckets) {
-            for (int i=0; i<buckets.length; i++) {
-                Bucket bucket=buckets[i];
-                BucketFacade facade=_buckets[bucket.getKey()];
-                facade.setContent(timeStamp, bucket);
-                facade.dequeue();
-            }
+        for (int i=0; i<buckets.length; i++) {
+            Bucket bucket=buckets[i];
+            BucketFacade facade=_buckets[bucket.getKey()];
+            facade.setContent(timeStamp, bucket);
+            facade.dequeue();
         }
         success=true;
         boolean acked=false;
