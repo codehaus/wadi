@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
+import java.util.Map;
+
 import org.activecluster.Cluster;
 import org.activecluster.impl.DefaultClusterFactory;
 import org.activemq.ActiveMQConnectionFactory;
@@ -24,6 +26,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.MessageDispatcherConfig;
 import org.codehaus.wadi.impl.MessageDispatcher;
+
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 public class DIndexNode implements MessageDispatcherConfig {
 
@@ -36,6 +40,7 @@ public class DIndexNode implements MessageDispatcherConfig {
     protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
     protected final DefaultClusterFactory _clusterFactory=new DefaultClusterFactory(_connectionFactory);
     protected final MessageDispatcher _dispatcher=new MessageDispatcher();
+    protected final Map _distributedState=new ConcurrentHashMap();
     protected final String _nodeName;
     protected final int _numBuckets;
     
@@ -56,7 +61,7 @@ public class DIndexNode implements MessageDispatcherConfig {
         _connectionFactory.start();
         _cluster=_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
         _dispatcher.init(this);
-        _dindex=new DIndex(_nodeName, _numBuckets, _clusterFactory.getInactiveTime(), _cluster, _dispatcher);
+        _dindex=new DIndex(_nodeName, _numBuckets, _clusterFactory.getInactiveTime(), _cluster, _dispatcher, _distributedState);
         _dindex.init();
         _log.info("starting Cluster...");
         _cluster.start();

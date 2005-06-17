@@ -44,7 +44,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
     protected final static String _timeStampKey="timeStamp";
     protected final static String _birthTimeKey="birthTime";
     
-    protected final Map _distributedState=new ConcurrentHashMap();
+    protected final Map _distributedState;
     protected final Latch _coordinatorLatch=new Latch();
     protected final Object _coordinatorLock=new Object();
     protected final Map _bucketTransferRequestResponseRvMap=new ConcurrentHashMap();
@@ -58,17 +58,18 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
     protected final long _inactiveTime;
     protected final Cluster _cluster;
 
-    public DIndex(String nodeName, int numBuckets, long inactiveTime, Cluster cluster, MessageDispatcher dispatcher) {
+    public DIndex(String nodeName, int numBuckets, long inactiveTime, Cluster cluster, MessageDispatcher dispatcher, Map distributedState) {
         _nodeName=nodeName;
         _log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
         _numBuckets=numBuckets;
         _cluster=cluster;
         _inactiveTime=inactiveTime;
         _dispatcher=dispatcher;
+        _distributedState=distributedState;
         _buckets=new BucketFacade[_numBuckets];
         long timeStamp=System.currentTimeMillis();
         for (int i=0; i<_numBuckets; i++)
-            _buckets[i]=new BucketFacade(i, timeStamp, new RemoteBucket(i, null)); // need to be somehow locked and released as soon as we know location...
+            _buckets[i]=new BucketFacade(i, timeStamp, new DummyBucket(i)); // need to be somehow locked and released as soon as we know location...
     }
     
     
@@ -92,7 +93,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         _dispatcher.register(BucketTransferResponse.class, _bucketTransferRequestResponseRvMap, _inactiveTime);
         _dispatcher.register(BucketTransferAcknowledgement.class, _bucketTransferCommandAcknowledgementRvMap, _inactiveTime);
         
-        _cluster.getLocalNode().setState(_distributedState);
+        _cluster.getLocalNode().setState(_distributedState); // this needs to be done before _cluster.start()
         _log.info("distributed state updated: "+_distributedState.get(_bucketKeysKey));
         _log.info("...init-ed");
     }
@@ -101,35 +102,27 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         _log.info("starting...");
         
         _log.info("sleeping...");
-        boolean isNotCoordinator=_coordinatorLatch.attempt(_inactiveTime); // wiat to find out if we are the Coordinator
+        boolean isNotCoordinator=_coordinatorLatch.attempt(_inactiveTime); // wait to find out if we are the Coordinator
         _log.info("...waking");
         
-        synchronized (_coordinatorLock) {
-            // If our wait timed out, then we must be the coordinator
-            // behave accordingly...
-            if (_coordinatorNode==null) {
-                _log.info("we are first");
-                _log.info("allocating "+_numBuckets+" buckets");
-                long timeStamp=System.currentTimeMillis();
-                synchronized (_buckets) {
-                    for (int i=0; i<_numBuckets; i++)
-                        _buckets[i].setContent(timeStamp, new LocalBucket(i));
-                }
-                BucketKeys k=new BucketKeys(_buckets);
-                _distributedState.put(_bucketKeysKey, k);
-                _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
-                _log.info("local state: "+k);
-                onCoordinatorChanged(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.ELECTED_COORDINATOR));
-                _coordinator.queueRebalancing();
-            } else {
-                _log.info("we are not first");
+        // If our wait timed out, then we must be the coordinator...
+        if (!isNotCoordinator) {
+            _log.info("allocating "+_numBuckets+" buckets");
+            long timeStamp=System.currentTimeMillis();
+            synchronized (_buckets) {
+                for (int i=0; i<_numBuckets; i++)
+                    _buckets[i].setContent(timeStamp, new LocalBucket(i));
             }
-//          try {
-//          _cluster.getLocalNode().setState(_distributedState);
-//          } catch (JMSException e) {
-//          _log.error("could not update distributed state");
-//          }
+            BucketKeys k=new BucketKeys(_buckets);
+            _distributedState.put(_bucketKeysKey, k);
+            _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
+            _log.info("local state: "+k);
+            _cluster.getLocalNode().setState(_distributedState);
+            _log.info("distributed state updated: "+_distributedState.get(_bucketKeysKey));
+            onCoordinatorChanged(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.ELECTED_COORDINATOR));
+            _coordinator.queueRebalancing();
         }
+
         _log.info("...started");
     }
     
@@ -213,7 +206,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         Node node=event.getNode();
         _log.info("onNodeFailed: "+getNodeName(node));
         if (_leavers.remove(node.getDestination())) {
-            // we have already been explicitly informed of this nodes wish to leave...
+            // we have already been explicitly informed of this node's wish to leave...
             _left.remove(node);
         } else {
             // we have to assume that this was a catastrophic failure...
