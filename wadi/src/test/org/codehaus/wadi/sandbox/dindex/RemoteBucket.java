@@ -17,6 +17,7 @@
 package org.codehaus.wadi.sandbox.dindex;
 
 import javax.jms.Destination;
+import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,5 +58,14 @@ public class RemoteBucket extends AbstractBucket {
 
     public String toString() {
         return _location==null?null:_location.toString();
+    }
+    
+    // should deal with SessionMessages
+    // what about IndexMessages (creation/destruction/migration of Sessions) ?
+    public void dispatch(ObjectMessage om) {
+        // get session name from message...
+        // look up location
+        // if present, forward message
+        // if not, reply directly
     }
 }

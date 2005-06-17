@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
+import javax.jms.ObjectMessage;
+
 public class DummyBucket extends AbstractBucket {
 
     public DummyBucket(int key) {
@@ -30,6 +32,10 @@ public class DummyBucket extends AbstractBucket {
 
     public boolean isLocal() {
         return false;
+    }
+    
+    public void dispatch(ObjectMessage om) {
+        throw new UnsupportedOperationException();
     }
 
 }
