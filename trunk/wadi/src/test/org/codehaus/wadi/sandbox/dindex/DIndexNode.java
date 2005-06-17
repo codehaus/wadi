@@ -20,11 +20,15 @@ import org.activecluster.Cluster;
 import org.activecluster.impl.DefaultClusterFactory;
 import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.MessageDispatcherConfig;
 import org.codehaus.wadi.impl.MessageDispatcher;
 
 public class DIndexNode implements MessageDispatcherConfig {
 
+    protected final Log _log=LogFactory.getLog(getClass());
+    
     //protected final String _clusterUri="peer://org.codehaus.wadi";
     //protected final String _clusterUri="tcp://localhost:61616";
     protected final String _clusterUri="tcp://smilodon:61616";
@@ -53,16 +57,21 @@ public class DIndexNode implements MessageDispatcherConfig {
         _cluster=_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
         _dispatcher.init(this);
         _dindex=new DIndex(_nodeName, _numBuckets, _clusterFactory.getInactiveTime(), _cluster, _dispatcher);
+        _dindex.init();
+        _log.info("starting Cluster...");
+        _cluster.start();
+        _log.info("...Cluster started");
         _dindex.start();
     }
     
     public void stop() throws Exception {
         _dindex.stop();
+        _cluster.stop();
         _connectionFactory.stop();
     }
     
     public Cluster getCluster() {
-        return _dindex.getCluster();
+        return _cluster;
     }
     
     //-----------------------------------------------------------
