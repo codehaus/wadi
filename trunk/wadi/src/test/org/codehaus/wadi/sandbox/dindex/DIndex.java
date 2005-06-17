@@ -34,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.MessageDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 public class DIndex implements ClusterListener, CoordinatorConfig {
@@ -44,7 +45,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
     protected final static String _birthTimeKey="birthTime";
     
     protected final Map _distributedState=new ConcurrentHashMap();
-    protected final Object _coordinatorSync=new Object();
+    protected final Latch _coordinatorLatch=new Latch();
     protected final Object _coordinatorLock=new Object();
     protected final Map _bucketTransferRequestResponseRvMap=new ConcurrentHashMap();
     protected final Map _bucketTransferCommandAcknowledgementRvMap=new ConcurrentHashMap();
@@ -99,10 +100,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
     public void start() throws Exception {
         _log.info("starting...");
         
-        synchronized (_coordinatorSync) {
-            _coordinatorSync.wait(_inactiveTime);
-            _log.info("waking...");
-        }
+        _log.info("sleeping...");
+        boolean isNotCoordinator=_coordinatorLatch.attempt(_inactiveTime); // wiat to find out if we are the Coordinator
+        _log.info("...waking");
         
         synchronized (_coordinatorLock) {
             // If our wait timed out, then we must be the coordinator
@@ -234,11 +234,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
                     onElection(event);
             }
             
-            // if start() is still waiting on this sync, wake it up and make it
-            // realise that this node is NOT the coordinator.
-            synchronized (_coordinatorSync) {
-                _coordinatorSync.notifyAll();
-            }
+            _coordinatorLatch.release(); // we are still waiting in start() to find out if we are the Coordinator...
         }
     }
     
