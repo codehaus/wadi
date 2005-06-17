@@ -29,18 +29,14 @@ import org.activecluster.Cluster;
 import org.activecluster.ClusterEvent;
 import org.activecluster.ClusterListener;
 import org.activecluster.Node;
-import org.activecluster.impl.DefaultClusterFactory;
-import org.activemq.ActiveMQConnectionFactory;
-import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.MessageDispatcherConfig;
 import org.codehaus.wadi.impl.MessageDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
-public class DIndex implements ClusterListener, MessageDispatcherConfig, CoordinatorConfig {
+public class DIndex implements ClusterListener, CoordinatorConfig {
     
     protected final static String _nodeNameKey="nodeName";
     protected final static String _bucketKeysKey="bucketKeys";
@@ -53,7 +49,7 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
     protected final Map _bucketTransferRequestResponseRvMap=new ConcurrentHashMap();
     protected final Map _bucketTransferCommandAcknowledgementRvMap=new ConcurrentHashMap();
     protected final Map _bucketEvacuationRequestResponseRvMap=new ConcurrentHashMap();
-    protected final MessageDispatcher _dispatcher=new MessageDispatcher();
+    protected final MessageDispatcher _dispatcher;
     protected final String _nodeName;
     protected final Log _log;
     protected final int _numBuckets;
@@ -61,12 +57,13 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
     protected final long _inactiveTime;
     protected final Cluster _cluster;
 
-    public DIndex(String nodeName, int numBuckets, DefaultClusterFactory clusterFactory, long inactiveTime, Cluster cluster) {
+    public DIndex(String nodeName, int numBuckets, long inactiveTime, Cluster cluster, MessageDispatcher dispatcher) {
         _nodeName=nodeName;
         _log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
         _numBuckets=numBuckets;
         _cluster=cluster;
         _inactiveTime=inactiveTime;
+        _dispatcher=dispatcher;
         _buckets=new BucketFacade[_numBuckets];
         long timeStamp=System.currentTimeMillis();
         for (int i=0; i<_numBuckets; i++)
@@ -87,7 +84,6 @@ public class DIndex implements ClusterListener, MessageDispatcherConfig, Coordin
         _distributedState.put(_bucketKeysKey, keys);
         _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
         _log.info("local state: "+keys);
-        _dispatcher.init(this);
         _dispatcher.register(this, "onBucketTransferCommand", BucketTransferCommand.class);
         _dispatcher.register(this, "onBucketTransferRequest", BucketTransferRequest.class);
         _dispatcher.register(this, "onBucketEvacuationRequest", BucketEvacuationRequest.class);
