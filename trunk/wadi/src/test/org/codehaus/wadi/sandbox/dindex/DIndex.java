@@ -68,8 +68,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         _distributedState=distributedState;
         _buckets=new BucketFacade[_numBuckets];
         long timeStamp=System.currentTimeMillis();
+        boolean queueing=true;
         for (int i=0; i<_numBuckets; i++)
-            _buckets[i]=new BucketFacade(i, timeStamp, new DummyBucket(i)); // need to be somehow locked and released as soon as we know location...
+            _buckets[i]=new BucketFacade(i, timeStamp, new DummyBucket(i), queueing);
     }
     
     
@@ -110,8 +111,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
             _log.info("allocating "+_numBuckets+" buckets");
             long timeStamp=System.currentTimeMillis();
             synchronized (_buckets) {
-                for (int i=0; i<_numBuckets; i++)
-                    _buckets[i].setContent(timeStamp, new LocalBucket(i));
+                for (int i=0; i<_numBuckets; i++) {
+                    BucketFacade facade=_buckets[i];
+                    facade.setContent(timeStamp, new LocalBucket(i));
+                    facade.dequeue();
+                }
             }
             BucketKeys k=new BucketKeys(_buckets);
             _distributedState.put(_bucketKeysKey, k);
@@ -168,6 +172,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
                 int key=k[i];
                 BucketFacade facade=_buckets[key];
                 facade.setContentRemote(timeStamp, location);
+                facade.dequeue();
             }
         }
     }
@@ -298,8 +303,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
                 // process response...
                 if (om3!=null && (success=((BucketTransferResponse)om3.getObject()).getSuccess())) {
                     synchronized (_buckets) {
-                        for (int j=0; j<acquired.length; j++)
-                            _buckets[acquired[j].getKey()].setContentRemote(timeStamp, destination); // TODO - should we use a more recent ts ?
+                        for (int j=0; j<acquired.length; j++) {
+                            BucketFacade facade=_buckets[acquired[j].getKey()];
+                            facade.setContentRemote(timeStamp, destination); // TODO - should we use a more recent ts ?
+                            facade.dequeue();
+                        }
                     }
                 } else {
                     _log.warn("transfer unsuccessful");
@@ -343,8 +351,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         synchronized (_buckets) {
             for (int i=0; i<buckets.length; i++) {
                 Bucket bucket=buckets[i];
-                // we should lock these until acked - then unlock them - TODO...
-                _buckets[bucket.getKey()].setContent(timeStamp, bucket);
+                BucketFacade facade=_buckets[bucket.getKey()];
+                facade.setContent(timeStamp, bucket);
+                facade.dequeue();
             }
         }
         success=true;

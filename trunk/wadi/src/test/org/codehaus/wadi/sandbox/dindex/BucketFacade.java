@@ -17,51 +17,183 @@
 package org.codehaus.wadi.sandbox.dindex;
 
 import javax.jms.Destination;
+import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class BucketFacade extends AbstractBucket /* implements Excludable,*/ {
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
+
+public class BucketFacade extends AbstractBucket {
     
     protected static final Log _log = LogFactory.getLog(BucketFacade.class);
     
+    protected final ReadWriteLock _lock=new WriterPreferenceReadWriteLock();
+    protected final LinkedQueue _queue=new LinkedQueue();
+
+    protected boolean _queueing;
     protected long _timeStamp;
     protected Bucket _content;
     
-    public BucketFacade(int key, long timeStamp, Bucket content) {
+    public BucketFacade(int key, long timeStamp, Bucket content, boolean queueing) {
         super(key);
         _timeStamp=timeStamp;
         _content=content;
+        _queueing=queueing;
         _log.info("["+_key+"] initialising location to: "+_content);
     }
     
-    public boolean isLocal() {
-        return _content.isLocal();
-    }
-    
-    // TODO - locking...
-    public void setContent(long timeStamp, Bucket content) {
-        if (timeStamp>_timeStamp) {
-            _log.info("["+_key+"] changing location from: "+_content+" to: "+content);
-            _timeStamp=timeStamp;
-            _content=content;
+    public boolean isLocal() { // locking ?
+        Sync sync=_lock.writeLock();
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            
+            return _content.isLocal();
+            
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
         }
+        
+        throw new UnsupportedOperationException();
     }
     
     public Bucket getContent() {
-        return _content;
+        Sync sync=_lock.writeLock();
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            
+            return _content;
+            
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
+        }
+        
+        throw new UnsupportedOperationException();
     }
     
-    public void setContentRemote(long timeStamp, Destination location) {
-        if (timeStamp>_timeStamp) {
-            _timeStamp=timeStamp;
-            if (_content instanceof RemoteBucket) {
-                ((RemoteBucket)_content).setLocation(location);
-            } else {
-                _log.info("["+_key+"] changing location from: local to: "+location);
-                _content=new RemoteBucket(_key, location);
+    public void setContent(long timeStamp, Bucket content) {
+        Sync sync=_lock.writeLock();
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            
+            if (timeStamp>_timeStamp) {
+                _log.info("["+_key+"] changing location from: "+_content+" to: "+content);
+                _timeStamp=timeStamp;
+                _content=content;
             }
+            
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
         }
+    }
+
+    public void setContentRemote(long timeStamp, Destination location) {
+        Sync sync=_lock.writeLock();
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            
+            if (timeStamp>_timeStamp) {
+                _timeStamp=timeStamp;
+                if (_content instanceof RemoteBucket) {
+                    ((RemoteBucket)_content).setLocation(location);
+                } else {
+                    _log.info("["+_key+"] changing location from: local to: "+location);
+                    _content=new RemoteBucket(_key, location);
+                }
+            }
+            
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
+        }
+    }
+    
+    public void dispatch(ObjectMessage om) {
+        // two modes:
+        // direct dispatch
+        // queued dispatch
+        Sync sync=_lock.readLock();
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            if (!_queueing)
+                _content.dispatch(om);
+            else
+                _queue.put(om);
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
+        }
+    }
+    
+    public boolean enqueue() {
+        // decouple dispatch on content with a queue
+        // all further input will be queued
+        Sync sync=_lock.writeLock();
+        boolean acquired=false;
+        boolean success=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            if (!_queueing) {
+                _queueing=true;
+                success=true;
+            }
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
+        }
+        return success;
+    }
+    
+    public boolean dequeue() {
+        // empty queue content into _content and recouple input directly...
+        Sync sync=_lock.writeLock();
+        boolean acquired=false;
+        boolean success=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            if (_queueing) {
+                _queueing=false;
+                while(!_queue.isEmpty())
+                    _content.dispatch((ObjectMessage)_queue.take()); // perhaps this should be done on another thread ? - TODO
+                success=true;
+            }
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
+        }
+        return success;
     }
     
 }

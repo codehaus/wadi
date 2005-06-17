@@ -19,6 +19,8 @@ package org.codehaus.wadi.sandbox.dindex;
 import java.io.Serializable;
 import java.util.Map;
 
+import javax.jms.ObjectMessage;
+
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 public class LocalBucket extends AbstractBucket implements Serializable {
@@ -42,4 +44,7 @@ public class LocalBucket extends AbstractBucket implements Serializable {
         return "local";
     }
     
+    public void dispatch(ObjectMessage om) {
+        throw new UnsupportedOperationException(); // NYI
+    }
 }
