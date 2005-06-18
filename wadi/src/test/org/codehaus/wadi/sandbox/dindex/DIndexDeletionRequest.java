@@ -16,12 +16,12 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import javax.jms.ObjectMessage;
+import java.io.Serializable;
 
-public interface Bucket {
+public class DIndexDeletionRequest extends AbstractDIndexRequest implements Serializable {
 
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
-    
+    public DIndexDeletionRequest(String name) {
+        super(name);
+    }
+
 }

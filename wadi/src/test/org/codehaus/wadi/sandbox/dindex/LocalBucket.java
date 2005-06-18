@@ -21,9 +21,14 @@ import java.util.Map;
 
 import javax.jms.ObjectMessage;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 public class LocalBucket extends AbstractBucket implements Serializable {
+
+    protected static final Log _log = LogFactory.getLog(LocalBucket.class);
 
     protected Map _map=new ConcurrentHashMap();
 
@@ -43,8 +48,9 @@ public class LocalBucket extends AbstractBucket implements Serializable {
     public String toString() {
         return "<local>";
     }
-
-    public void dispatch(ObjectMessage om) {
-        throw new UnsupportedOperationException(); // NYI
+    
+    public void dispatch(ObjectMessage om, DIndexRequest request) {
+        _log.info("LocalBucketDispatcher - NYI");
+        //throw new UnsupportedOperationException(); // NYI
     }
 }

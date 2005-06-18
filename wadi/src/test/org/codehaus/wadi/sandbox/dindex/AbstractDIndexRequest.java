@@ -16,12 +16,23 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import javax.jms.ObjectMessage;
+import java.io.Serializable;
 
-public interface Bucket {
+public abstract class AbstractDIndexRequest implements DIndexRequest, Serializable {
 
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
+    protected String _name;
     
+    public AbstractDIndexRequest(String name) {
+        super();
+        _name=name;
+    }
+    
+    protected AbstractDIndexRequest() {
+        // for deserialisation...
+    }
+
+    public int getBucketKey(int numBuckets) {
+        return _name.hashCode()%numBuckets;
+    }
+
 }

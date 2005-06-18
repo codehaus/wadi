@@ -16,12 +16,12 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import javax.jms.ObjectMessage;
+import java.io.Serializable;
 
-public interface Bucket {
+public class DIndexRelocationRequest extends AbstractDIndexRequest implements Serializable {
 
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
-    
+    public DIndexRelocationRequest(String name) {
+        super(name);
+    }
+
 }

@@ -16,12 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.dindex;
 
-import javax.jms.ObjectMessage;
-
-public interface Bucket {
-
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
+public interface DIndexResponse extends DIndexMessage {
+    
+    // just a marker i/f - at the moment
     
 }
