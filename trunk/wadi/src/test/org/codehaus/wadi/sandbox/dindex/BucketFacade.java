@@ -28,16 +28,16 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 public class BucketFacade extends AbstractBucket {
-    
+
     protected static final Log _log = LogFactory.getLog(BucketFacade.class);
-    
+
     protected final ReadWriteLock _lock=new WriterPreferenceReadWriteLock();
     protected final LinkedQueue _queue=new LinkedQueue();
 
     protected boolean _queueing;
     protected long _timeStamp;
     protected Bucket _content;
-    
+
     public BucketFacade(int key, long timeStamp, Bucket content, boolean queueing) {
         super(key);
         _timeStamp=timeStamp;
@@ -45,58 +45,58 @@ public class BucketFacade extends AbstractBucket {
         _queueing=queueing;
         _log.info("["+_key+"] initialising location to: "+_content);
     }
-    
+
     public boolean isLocal() { // locking ?
         Sync sync=_lock.writeLock();
         boolean acquired=false;
         try {
             sync.acquire();
             acquired=true;
-            
+
             return _content.isLocal();
-            
+
         } catch (InterruptedException e) {
             _log.warn("unexpected problem", e);
         } finally {
             if (acquired)
                 sync.release();
         }
-        
+
         throw new UnsupportedOperationException();
     }
-    
+
     public Bucket getContent() {
         Sync sync=_lock.writeLock();
         boolean acquired=false;
         try {
             sync.acquire();
             acquired=true;
-            
+
             return _content;
-            
+
         } catch (InterruptedException e) {
             _log.warn("unexpected problem", e);
         } finally {
             if (acquired)
                 sync.release();
         }
-        
+
         throw new UnsupportedOperationException();
     }
-    
+
     public void setContent(long timeStamp, Bucket content) {
         Sync sync=_lock.writeLock();
         boolean acquired=false;
         try {
             sync.acquire();
             acquired=true;
-            
+
             if (timeStamp>_timeStamp) {
                 _log.info("["+_key+"] changing location from: "+_content+" to: "+content);
                 _timeStamp=timeStamp;
                 _content=content;
             }
-            
+
         } catch (InterruptedException e) {
             _log.warn("unexpected problem", e);
         } finally {
@@ -111,17 +111,17 @@ public class BucketFacade extends AbstractBucket {
         try {
             sync.acquire();
             acquired=true;
-            
+
             if (timeStamp>_timeStamp) {
                 _timeStamp=timeStamp;
                 if (_content instanceof RemoteBucket) {
                     ((RemoteBucket)_content).setLocation(location);
                 } else {
-                    _log.info("["+_key+"] changing location from: local to: "+location);
+                    _log.info("["+_key+"] changing location from: "+_content+" to: "+location);
                     _content=new RemoteBucket(_key, location);
                 }
             }
-            
+
         } catch (InterruptedException e) {
             _log.warn("unexpected problem", e);
         } finally {
@@ -129,7 +129,7 @@ public class BucketFacade extends AbstractBucket {
                 sync.release();
         }
     }
-    
+
     public void dispatch(ObjectMessage om) {
         // two modes:
         // direct dispatch
@@ -150,7 +150,7 @@ public class BucketFacade extends AbstractBucket {
                 sync.release();
         }
     }
-    
+
     public boolean enqueue() {
         // decouple dispatch on content with a queue
         // all further input will be queued
@@ -172,7 +172,7 @@ public class BucketFacade extends AbstractBucket {
         }
         return success;
     }
-    
+
     public boolean dequeue() {
         // empty queue content into _content and recouple input directly...
         Sync sync=_lock.writeLock();
@@ -195,5 +195,5 @@ public class BucketFacade extends AbstractBucket {
         }
         return success;
     }
-    
+
 }

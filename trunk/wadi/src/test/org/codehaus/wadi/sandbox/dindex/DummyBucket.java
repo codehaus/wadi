@@ -33,7 +33,11 @@ public class DummyBucket extends AbstractBucket {
     public boolean isLocal() {
         return false;
     }
-    
+
+    public String toString() {
+        return "<unknown>";
+    }
+
     public void dispatch(ObjectMessage om) {
         throw new UnsupportedOperationException();
     }
