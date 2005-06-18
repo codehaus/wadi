@@ -17,6 +17,7 @@
 package org.codehaus.wadi.sandbox.dindex;
 
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
@@ -129,8 +130,8 @@ public class BucketFacade extends AbstractBucket {
                 sync.release();
         }
     }
-
-    public void dispatch(ObjectMessage om) {
+    
+    public void dispatch(ObjectMessage om, DIndexRequest request) {
         // two modes:
         // direct dispatch
         // queued dispatch
@@ -139,8 +140,9 @@ public class BucketFacade extends AbstractBucket {
         try {
             sync.acquire();
             acquired=true;
-            if (!_queueing)
-                _content.dispatch(om);
+            if (!_queueing) {
+                _content.dispatch(om, request);
+            }
             else
                 _queue.put(om);
         } catch (InterruptedException e) {
@@ -183,8 +185,15 @@ public class BucketFacade extends AbstractBucket {
             acquired=true;
             if (_queueing) {
                 _queueing=false;
-                while(!_queue.isEmpty())
-                    _content.dispatch((ObjectMessage)_queue.take()); // perhaps this should be done on another thread ? - TODO
+                while(!_queue.isEmpty()) {
+                    try {
+                        ObjectMessage message=(ObjectMessage)_queue.take();
+                        DIndexRequest request=(DIndexRequest)message.getObject();
+                        _content.dispatch(message, request); // perhaps this should be done on another thread ? - TODO
+                    } catch (JMSException e) {
+                        _log.warn("unexpected problem dispatching message");
+                    }
+                }
                 success=true;
             }
         } catch (InterruptedException e) {

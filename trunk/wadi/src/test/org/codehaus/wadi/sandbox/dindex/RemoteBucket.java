@@ -62,10 +62,11 @@ public class RemoteBucket extends AbstractBucket {
 
     // should deal with SessionMessages
     // what about IndexMessages (creation/destruction/migration of Sessions) ?
-    public void dispatch(ObjectMessage om) {
+    public void dispatch(ObjectMessage om, DIndexRequest request) {
         // get session name from message...
         // look up location
         // if present, forward message
         // if not, reply directly
+        _log.info("RemoteBucketDispatcher - NYI");
     }
 }

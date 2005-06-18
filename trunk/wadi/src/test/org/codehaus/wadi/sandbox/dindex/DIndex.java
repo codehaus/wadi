@@ -35,7 +35,6 @@ import org.codehaus.wadi.impl.MessageDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
-import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 public class DIndex implements ClusterListener, CoordinatorConfig {
     
@@ -88,11 +87,14 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
         _log.info("local state: "+keys);
         _dispatcher.register(this, "onBucketTransferCommand", BucketTransferCommand.class);
+        _dispatcher.register(BucketTransferAcknowledgement.class, _bucketTransferCommandAcknowledgementRvMap, _inactiveTime);
         _dispatcher.register(this, "onBucketTransferRequest", BucketTransferRequest.class);
+        _dispatcher.register(BucketTransferResponse.class, _bucketTransferRequestResponseRvMap, _inactiveTime);
         _dispatcher.register(this, "onBucketEvacuationRequest", BucketEvacuationRequest.class);
         _dispatcher.register(BucketEvacuationResponse.class, _bucketEvacuationRequestResponseRvMap, _inactiveTime);
-        _dispatcher.register(BucketTransferResponse.class, _bucketTransferRequestResponseRvMap, _inactiveTime);
-        _dispatcher.register(BucketTransferAcknowledgement.class, _bucketTransferCommandAcknowledgementRvMap, _inactiveTime);
+        _dispatcher.register(this, "onDIndexInsertionRequest", DIndexInsertionRequest.class);
+        _dispatcher.register(this, "onDIndexDeletionRequest", DIndexDeletionRequest.class);
+        _dispatcher.register(this, "onDIndexRelocationRequest", DIndexRelocationRequest.class);
         
         _cluster.getLocalNode().setState(_distributedState); // this needs to be done before _cluster.start()
         _log.info("distributed state updated: "+_distributedState.get(_bucketKeysKey));
@@ -450,5 +452,22 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
             _log.info(DIndex.getNodeName(node)+" : "+amount+" - "+keys);
             return amount;
         }
+    }
+    
+    public void onDIndexInsertionRequest(ObjectMessage om, DIndexInsertionRequest request) {
+        onDIndexRequest(om, request);
+    }
+
+    public void onDIndexDeletionRequest(ObjectMessage om, DIndexDeletionRequest request) {
+        onDIndexRequest(om, request);
+    }
+
+    public void onDIndexRelocationRequest(ObjectMessage om, DIndexRelocationRequest request) {
+        onDIndexRequest(om, request);
+    }
+    
+    protected void onDIndexRequest(ObjectMessage om, DIndexRequest request) {
+        int bucketKey=request.getBucketKey(_numBuckets);
+        _buckets[bucketKey].dispatch(om, request);
     }
 }

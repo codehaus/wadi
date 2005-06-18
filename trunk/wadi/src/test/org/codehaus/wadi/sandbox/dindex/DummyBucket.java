@@ -34,11 +34,11 @@ public class DummyBucket extends AbstractBucket {
         return false;
     }
 
-    public String toString() {
+	public String toString() {
         return "<unknown>";
     }
 
-    public void dispatch(ObjectMessage om) {
+    public void dispatch(ObjectMessage om, DIndexRequest request) {
         throw new UnsupportedOperationException();
     }
 
