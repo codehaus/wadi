@@ -113,8 +113,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
             for (int i=0; i<_numBuckets; i++) {
                 BucketFacade facade=_buckets[i];
                 facade.setContent(timeStamp, new LocalBucket(i));
-                facade.dequeue();
             }
+            
             BucketKeys k=new BucketKeys(_buckets);
             _distributedState.put(_bucketKeysKey, k);
             _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
@@ -124,7 +124,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
             onCoordinatorChanged(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.ELECTED_COORDINATOR));
             _coordinator.queueRebalancing();
         }
-
+        
+        // whether we are the coordinator or not...
+        for (int i=0; i<_numBuckets; i++)
+            _buckets[i].dequeue();
+        
         _log.info("...started");
     }
     
@@ -169,7 +173,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
             int key=k[i];
             BucketFacade facade=_buckets[key];
             facade.setContentRemote(timeStamp, location);
-            facade.dequeue();
         }
     }
     
@@ -232,39 +235,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         }
     }
     
-    /**
-     * @param items - Excludables on some of which we need an exclusive lock
-     * @param numItems - The number of Excludables upon which to acquire locks
-     * @param timeout - the total amount of time available to acquire them
-     * @return - The Excludables on which locks have been acquired
-     * @throws TimeoutException - if we could not acquire the required number of locks
-     */
-    protected LocalBucket[] attempt(BucketFacade[] buckets, int numBuckets, long timeout) throws TimeoutException {
-        // do not bother actually locking at the moment - FIXME
-        
-        Collection c=new ArrayList();
-        for (int i=0; i<buckets.length && c.size()<numBuckets; i++) {
-            Bucket bucket=buckets[i].getContent();
-            if (bucket.isLocal()) // TODO - AND we acquire the lock
-                c.add(bucket);
-        }
-        return (LocalBucket[])c.toArray(new LocalBucket[c.size()]);
-        
-//      Sync lock=partition.getExclusiveLock();
-//      long timeout=500; // how should we work this out ? - TODO
-//      if (lock.attempt(timeout))
-//      acquired.add(partition);
-        // use finally clause to unlock if fail to acquire...
-    }
-    
-    /**
-     * @param items - release the exclusive lock on all items in this array
-     */
-    protected void release(Object[] items) {
-        // do not bother with locking at the moment - FIXME
-        //((IndexPartition)acquired.get(i)).getExclusiveLock().release();
-    }
-    
     // receive a command to transfer IndexPartitions to another node
     // send them in a request, waiting for response
     // send an acknowledgement to Coordinator who sent original command
@@ -274,13 +244,22 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
             BucketTransfer transfer=transfers[i];
             int amount=transfer.getAmount();
             Destination destination=transfer.getDestination();
-            boolean success=false;
             
+            // acquire buckets for transfer...
             LocalBucket[] acquired=null;
             try {
-                // lock partitions
-                acquired=attempt(_buckets, amount, _inactiveTime);
+                Collection c=new ArrayList();
+                for (int j=0; j<_buckets.length && c.size()<amount; j++) {
+                    BucketFacade facade=_buckets[j];
+                    if (facade.isLocal()) {
+                        facade.enqueue();
+                        Bucket bucket=facade.getContent();
+                        c.add(bucket);
+                    }
+                }
+                acquired=(LocalBucket[])c.toArray(new LocalBucket[c.size()]);
                 assert amount==acquired.length;
+                
                 long timeStamp=System.currentTimeMillis();
                 
                 // build request...
@@ -295,19 +274,22 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
                 // send it...
                 ObjectMessage om3=_dispatcher.exchange(om2, _bucketTransferRequestResponseRvMap, _inactiveTime);
                 // process response...
-                if (om3!=null && (success=((BucketTransferResponse)om3.getObject()).getSuccess())) {
+                if (om3!=null && ((BucketTransferResponse)om3.getObject()).getSuccess()) {
                     for (int j=0; j<acquired.length; j++) {
-                        BucketFacade facade=_buckets[acquired[j].getKey()];
-                        facade.setContentRemote(timeStamp, destination); // TODO - should we use a more recent ts ?
-                        facade.dequeue();
+                        BucketFacade facade=null;
+                        try {
+                            facade=_buckets[acquired[j].getKey()];
+                            facade.setContentRemote(timeStamp, destination); // TODO - should we use a more recent ts ?
+                        } finally {
+                            if (facade!=null)
+                                facade.dequeue();
+                        }
                     }
                 } else {
                     _log.warn("transfer unsuccessful");
                 }
             } catch (Throwable t) {
                 _log.warn("unexpected problem", t);
-            } finally {
-                release(acquired);
             }
         }
         try {
@@ -344,7 +326,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
             Bucket bucket=buckets[i];
             BucketFacade facade=_buckets[bucket.getKey()];
             facade.setContent(timeStamp, bucket);
-            facade.dequeue();
         }
         success=true;
         boolean acked=false;
