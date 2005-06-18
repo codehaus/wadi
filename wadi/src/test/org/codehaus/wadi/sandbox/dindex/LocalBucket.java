@@ -26,11 +26,11 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 public class LocalBucket extends AbstractBucket implements Serializable {
 
     protected Map _map=new ConcurrentHashMap();
-    
+
     public LocalBucket(int key) {
         super(key);
     }
-    
+
     protected LocalBucket() {
         super();
         // for deserialisation...
@@ -39,11 +39,11 @@ public class LocalBucket extends AbstractBucket implements Serializable {
     public boolean isLocal() {
         return true;
     }
-    
+
     public String toString() {
-        return "local";
+        return "<local>";
     }
-    
+
     public void dispatch(ObjectMessage om) {
         throw new UnsupportedOperationException(); // NYI
     }
