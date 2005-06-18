@@ -57,9 +57,9 @@ public class RemoteBucket extends AbstractBucket {
     }
 
     public String toString() {
-        return _location==null?null:_location.toString();
+      return "<remote:"+(_location==null?null:_location.toString())+">";
     }
-    
+
     // should deal with SessionMessages
     // what about IndexMessages (creation/destruction/migration of Sessions) ?
     public void dispatch(ObjectMessage om) {
