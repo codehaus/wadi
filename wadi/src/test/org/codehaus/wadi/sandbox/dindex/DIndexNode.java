@@ -28,11 +28,12 @@ import org.codehaus.wadi.MessageDispatcherConfig;
 import org.codehaus.wadi.impl.MessageDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 public class DIndexNode implements MessageDispatcherConfig {
 
     protected final Log _log=LogFactory.getLog(getClass());
-    
+
     //protected final String _clusterUri="peer://org.codehaus.wadi";
     //protected final String _clusterUri="tcp://localhost:61616";
     protected final String _clusterUri="tcp://smilodon:61616";
@@ -43,7 +44,7 @@ public class DIndexNode implements MessageDispatcherConfig {
     protected final Map _distributedState=new ConcurrentHashMap();
     protected final String _nodeName;
     protected final int _numBuckets;
-    
+
     protected String getContextPath() {
         return "/";
     }
@@ -68,45 +69,49 @@ public class DIndexNode implements MessageDispatcherConfig {
         _log.info("...Cluster started");
         _dindex.start();
     }
-    
+
     public void stop() throws Exception {
         _dindex.stop();
         _cluster.stop();
         _connectionFactory.stop();
     }
-    
+
     public Cluster getCluster() {
         return _cluster;
     }
-    
+
     //-----------------------------------------------------------
-    
+
+  protected static Latch _latch0=new Latch();
+  protected static Latch _latch1=new Latch();
+
     protected static Object _exitSync = new Object();
 
     public static void main(String[] args) throws Exception {
-        String nodeName=args[0];
-        int numIndexPartitions=Integer.parseInt(args[1]);
-        
+      String nodeName=args[0];
+      int numIndexPartitions=Integer.parseInt(args[1]);
+
+      try {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
-                System.err.println("SHUTDOWN");
-                synchronized (_exitSync) {_exitSync.notifyAll();}
-                try {
-                    synchronized (_exitSync) {_exitSync.wait();}
-                } catch (InterruptedException e) {
-                    // ignore
-                }
+	      System.err.println("SHUTDOWN");
+	      _latch0.release();
+	      try {
+		_latch1.acquire();
+	      } catch (InterruptedException e) {
+		Thread.interrupted();
+	      }
             }
-        });
-        
+	  });
+
         DIndexNode node=new DIndexNode(nodeName, numIndexPartitions);
         node.start();
-        
-        synchronized (_exitSync) {_exitSync.wait();}
-        
+
+        _latch0.acquire();
+
         node.stop();
-        
-        synchronized (_exitSync) {_exitSync.notifyAll();}
-        
+      } finally {
+	_latch1.release();
+      }
     }
 }
