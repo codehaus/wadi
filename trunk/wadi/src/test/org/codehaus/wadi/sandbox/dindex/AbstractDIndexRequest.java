@@ -31,8 +31,12 @@ public abstract class AbstractDIndexRequest implements DIndexRequest, Serializab
         // for deserialisation...
     }
 
+    public String getName() {
+        return _name;
+    }
+
     public int getBucketKey(int numBuckets) {
-        return _name.hashCode()%numBuckets;
+        return Math.abs(_name.hashCode()%numBuckets);
     }
 
 }

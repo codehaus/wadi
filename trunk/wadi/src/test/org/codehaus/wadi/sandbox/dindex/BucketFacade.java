@@ -22,6 +22,7 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.impl.MessageDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
@@ -106,7 +107,7 @@ public class BucketFacade extends AbstractBucket {
         }
     }
 
-    public void setContentRemote(long timeStamp, Destination location) {
+    public void setContentRemote(long timeStamp, MessageDispatcher dispatcher, Destination location) {
         Sync sync=_lock.writeLock();
         boolean acquired=false;
         try {
@@ -119,7 +120,7 @@ public class BucketFacade extends AbstractBucket {
                     ((RemoteBucket)_content).setLocation(location);
                 } else {
                     _log.info("["+_key+"] changing location from: "+_content+" to: "+location);
-                    _content=new RemoteBucket(_key, location);
+                    _content=new RemoteBucket(_key, dispatcher, location);
                 }
             }
 
