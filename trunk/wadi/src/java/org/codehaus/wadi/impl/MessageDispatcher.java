@@ -158,21 +158,21 @@ public class MessageDispatcher implements MessageListener {
   }
 
 	class RendezVousDispatcher implements Dispatcher {
-	  protected final Map _rvMap;
+	  protected final Map _rvMap2;
 	  protected final long _timeout;
 
 	  public RendezVousDispatcher(Map rvMap, long timeout) {
-	    _rvMap=rvMap;
+	    _rvMap2=rvMap;
 	    _timeout=timeout;
 	  }
 
 	  public void dispatch(ObjectMessage om, Serializable obj) throws JMSException {
 	      // rendez-vous with waiting thread...
 	      String correlationId=om.getJMSCorrelationID();
-	      synchronized (_rvMap) {
-	          Quipu rv=(Quipu)_rvMap.get(correlationId);
+	      synchronized (_rvMap2) {
+	          Quipu rv=(Quipu)_rvMap2.get(correlationId);
 	          if (rv==null) {
-	              if (_log.isWarnEnabled()) _log.warn("rendez-vous missed - no-one waiting: "+correlationId);
+	              if (_log.isWarnEnabled()) _log.warn("rendez-vous missed - no-one waiting: "+correlationId+" - "+obj);
 	          } else {
 	              rv.putResult(om);
 	          }
