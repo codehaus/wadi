@@ -46,11 +46,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
     protected final Map _distributedState;
     protected final Latch _coordinatorLatch=new Latch();
     protected final Object _coordinatorLock=new Object();
-    protected final Map _bucketTransferRequestResponseRvMap=new ConcurrentHashMap();
-    protected final Map _bucketTransferCommandAcknowledgementRvMap=new ConcurrentHashMap();
-    protected final Map _bucketEvacuationRequestResponseRvMap=new ConcurrentHashMap();
-    protected final Map _dindexInsertionRequestResponseRvMap=new ConcurrentHashMap();
-    protected final Map _dindexDeletionRequestResponseRvMap=new ConcurrentHashMap();
     protected final MessageDispatcher _dispatcher;
     protected final String _nodeName;
     protected final Log _log;
@@ -89,15 +84,15 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
         _log.info("local state: "+keys);
         _dispatcher.register(this, "onBucketTransferCommand", BucketTransferCommand.class);
-        _dispatcher.register(BucketTransferAcknowledgement.class, _bucketTransferCommandAcknowledgementRvMap, _inactiveTime);
+        _dispatcher.register(BucketTransferAcknowledgement.class, _inactiveTime);
         _dispatcher.register(this, "onBucketTransferRequest", BucketTransferRequest.class);
-        _dispatcher.register(BucketTransferResponse.class, _bucketTransferRequestResponseRvMap, _inactiveTime);
+        _dispatcher.register(BucketTransferResponse.class, _inactiveTime);
         _dispatcher.register(this, "onBucketEvacuationRequest", BucketEvacuationRequest.class);
-        _dispatcher.register(BucketEvacuationResponse.class, _bucketEvacuationRequestResponseRvMap, _inactiveTime);
+        _dispatcher.register(BucketEvacuationResponse.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexInsertionRequest", DIndexInsertionRequest.class);
-        _dispatcher.register(DIndexInsertionResponse.class, _dindexInsertionRequestResponseRvMap, _inactiveTime);
+        _dispatcher.register(DIndexInsertionResponse.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexDeletionRequest", DIndexDeletionRequest.class);
-        _dispatcher.register(DIndexDeletionResponse.class, _dindexDeletionRequestResponseRvMap, _inactiveTime);
+        _dispatcher.register(DIndexDeletionResponse.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexRelocationRequest", DIndexRelocationRequest.class);
         
         _cluster.getLocalNode().setState(_distributedState); // this needs to be done before _cluster.start()
@@ -153,9 +148,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
                 ObjectMessage om=_cluster.createObjectMessage();
                 om.setJMSReplyTo(localNode.getDestination());
                 om.setJMSDestination(_cluster.getDestination()); // whole cluster needs to know who is leaving - in case Coordinator fails
-                om.setJMSCorrelationID(localNode.getName());
                 om.setObject(new BucketEvacuationRequest());
-                _dispatcher.exchange(om, _bucketEvacuationRequestResponseRvMap, _inactiveTime);
+                _dispatcher.exchange(om, _inactiveTime);
             } catch (JMSException e) {
                 _log.warn("problem sending evacuation request");
             }
@@ -276,11 +270,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
                 ObjectMessage om2=_cluster.createObjectMessage();
                 om2.setJMSReplyTo(_cluster.getLocalNode().getDestination());
                 om2.setJMSDestination(destination);
-                om2.setJMSCorrelationID(om.getJMSCorrelationID()+"-"+destination);
                 BucketTransferRequest request=new BucketTransferRequest(timeStamp, acquired);
                 om2.setObject(request);
                 // send it...
-                ObjectMessage om3=_dispatcher.exchange(om2, _bucketTransferRequestResponseRvMap, _inactiveTime);
+                ObjectMessage om3=_dispatcher.exchange(om2, _inactiveTime);
                 // process response...
                 if (om3!=null && ((BucketTransferResponse)om3.getObject()).getSuccess()) {
                     for (int j=0; j<acquired.length; j++) {
@@ -419,7 +412,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
     }
     
     public Map getRendezVousMap() {
-        return _bucketTransferCommandAcknowledgementRvMap;
+        return _dispatcher.getRendezVousMap();
     }
     
     public void onBucketEvacuationRequest(ObjectMessage om, BucketEvacuationRequest request) {
@@ -484,11 +477,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         try {
             ObjectMessage message=_cluster.createObjectMessage();
             message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-            message.setJMSCorrelationID(name);
             message.setJMSDestination(destination);
             DIndexInsertionRequest request=new DIndexInsertionRequest(name);
             message.setObject(request);
-            _dispatcher.exchange(message, _dindexInsertionRequestResponseRvMap, 5000);
+            _dispatcher.exchange(message, 5000);
         } catch (JMSException e) {
             _log.info("oops...", e);
         }
@@ -503,11 +495,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         try {
             ObjectMessage message=_cluster.createObjectMessage();
             message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-            message.setJMSCorrelationID(name);
             message.setJMSDestination(destination);
             DIndexDeletionRequest request=new DIndexDeletionRequest(name);
             message.setObject(request);
-            _dispatcher.exchange(message, _dindexDeletionRequestResponseRvMap, 5000);
+            _dispatcher.exchange(message, 5000);
         } catch (JMSException e) {
             _log.info("oops...", e);
         }

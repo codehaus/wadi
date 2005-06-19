@@ -35,8 +35,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.MessageDispatcherConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
 
@@ -192,10 +194,15 @@ public class MessageDispatcher implements MessageListener {
 	 * @param rvMap - the Map to be used for thread rendez-vous
 	 * @param timeout - the rendez-vous timeout on the dispatcher-side
 	 */
-	public void register(Class type, Map rvMap, long timeout) {
-		_map.put(type, new RendezVousDispatcher(rvMap, timeout));
-		if (_log.isTraceEnabled()) _log.trace("registering class: "+type.getName());
-	}
+    public void register(Class type, Map rvMap, long timeout) {
+        _map.put(type, new RendezVousDispatcher(rvMap, timeout));
+        if (_log.isTraceEnabled()) _log.trace("registering class: "+type.getName());
+    }
+    
+    public void register(Class type, long timeout) {
+        _map.put(type, new RendezVousDispatcher(_rvMap, timeout));
+        if (_log.isTraceEnabled()) _log.trace("registering class: "+type.getName());
+    }
 
     public void onMessage(Message message) {
         try {
@@ -332,17 +339,34 @@ public class MessageDispatcher implements MessageListener {
 		return response;
 	}
 
-	public ObjectMessage exchange(ObjectMessage request, Map rvMap, long timeout) {
+    class SimpleCorrelationIDFactory {
+        
+        protected final SynchronizedInt _count=new SynchronizedInt(0);
+        
+        public String create() {
+            return Integer.toString(_count.increment());
+        }
+        
+    }
+    
+    protected final SimpleCorrelationIDFactory _factory=new SimpleCorrelationIDFactory();
+    protected final Map _rvMap=new ConcurrentHashMap();
+    
+    public Map getRendezVousMap() {
+        return _rvMap;
+    }
+    
+	public ObjectMessage exchange(ObjectMessage request, long timeout) {
 	    ObjectMessage response=null;
 	    String correlationId=null;
 	    try {
-	        correlationId=request.getJMSCorrelationID();
+            correlationId=request.getJMSCorrelationID();
+            if (correlationId==null)
+                request.setJMSCorrelationID(correlationId=_factory.create());
 	        
 	        // set up a rendez-vous...
 	        Quipu rv=new Quipu(1);
-	        synchronized (rvMap) {
-	            rvMap.put(request.getJMSCorrelationID(), rv);
-	        }
+	        _rvMap.put(correlationId, rv);
 	        
             // send the request
 	        _cluster.send(request.getJMSDestination(), request);
@@ -370,9 +394,7 @@ public class MessageDispatcher implements MessageListener {
 	    } finally {
 	        // tidy up rendez-vous
             if (correlationId!=null)
-                synchronized (rvMap) {
-                    rvMap.remove(correlationId);
-                }
+                _rvMap.remove(correlationId);
 	    }
 	    return response;
 	}
