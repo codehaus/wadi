@@ -85,4 +85,19 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
         return null;
     }
 
+    public Map getDistributedState() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public long getInactiveTime() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    public int getNumBuckets() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
 }

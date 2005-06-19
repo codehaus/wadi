@@ -55,6 +55,7 @@ import org.codehaus.wadi.MessageDispatcherConfig;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
+import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.io.Server;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
@@ -144,6 +145,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   protected ExtendedCluster _cluster;
   protected Location _location;
   protected Destination _evacuationQueue;
+  protected DIndex _dindex;
 
   public void init(ContextualiserConfig config) {
     super.init(config);
@@ -153,10 +155,15 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     _cluster=dcc.getCluster();
     _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), dcc.getHttpAddress(), dcc.getHttpProxy());
     try {
-      _dispatcher.init(this);
+        _dispatcher.init(this);
     } catch (JMSException e){
-      _log.error("could not initialise node state", e);
+        _log.error("could not initialise node state", e);
     }
+    int numBuckets=dcc.getNumBuckets();
+    long inactiveTime=dcc.getInactiveTime();
+    Map distributedState=dcc.getDistributedState();
+    _dindex=new DIndex(dcc.getNodeName(), numBuckets, inactiveTime, _cluster, _dispatcher, distributedState);
+    _dindex.init();
     _cluster.addClusterListener(this);
     _dispatcher.register(this, "onMessage", EmigrationRequest.class);
     _dispatcher.register(this, "onMessage", LocationUpdate.class);
@@ -164,6 +171,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     // _evicter ?
     _relocater.init(this);
+  }
+  
+  public void start() throws JMSException, InterruptedException {
+      _dindex.start();
   }
 
   public String getStartInfo() {
@@ -283,12 +294,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   }
 
   public void stop() throws Exception {
-    synchronized (_shuttingDown) {
-      if (_evacuationQueue!=null) { // evacuation is synchronous, so we will not get to here until all sessions are gone...
-	destroyEvacuationQueue();
+      synchronized (_shuttingDown) {
+          if (_evacuationQueue!=null) { // evacuation is synchronous, so we will not get to here until all sessions are gone...
+              destroyEvacuationQueue();
+          }
       }
-    }
-    super.stop();
+      _dindex.stop();
+      super.stop();
   }
 
   /**

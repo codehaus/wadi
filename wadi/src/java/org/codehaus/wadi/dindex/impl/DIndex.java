@@ -76,7 +76,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
     protected Node _coordinatorNode;
     protected Coordinator _coordinator;
     
-    public void init() throws Exception {
+    public void init() {
         _log.info("init-ing...");
         _cluster.setElectionStrategy(new SeniorityElectionStrategy());
         _cluster.addClusterListener(this);
@@ -98,12 +98,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         _dispatcher.register(DIndexDeletionResponse.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexRelocationRequest", DIndexRelocationRequest.class);
         
-        _cluster.getLocalNode().setState(_distributedState); // this needs to be done before _cluster.start()
-        _log.info("distributed state updated: "+_distributedState.get(_bucketKeysKey));
+        //_cluster.getLocalNode().setState(_distributedState); // this needs to be done before _cluster.start()
+        //_log.info("distributed state updated: "+_distributedState.get(_bucketKeysKey));
         _log.info("...init-ed");
     }
 
-    public void start() throws Exception {
+    public void start() throws InterruptedException, JMSException {
         _log.info("starting...");
         
         _log.info("sleeping...");

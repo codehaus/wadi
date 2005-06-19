@@ -42,4 +42,8 @@ public interface DistributableContextualiserConfig extends ContextualiserConfig 
     
     SynchronizedBoolean getShuttingDown();
 
+    Map getDistributedState();
+    long getInactiveTime();
+    int getNumBuckets();
+
 }
