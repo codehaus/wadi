@@ -44,14 +44,51 @@ public class TestDIndex extends TestCase {
         super.tearDown();
     }
     
+    class Foo implements Runnable {
+        
+        protected final BucketFacade _facade;
+        
+        public Foo(BucketFacade facade) {
+            _facade=facade;
+        }
+        
+        public void run() {
+            
+        }
+        
+    }
+    
+    public void testQueueing() {
+        
+        boolean isQueueing=true;
+        long timeStamp=System.currentTimeMillis();
+        BucketFacade facade=new BucketFacade(0, timeStamp, new DummyBucket(0), isQueueing);
+        
+        int numThreads=10;
+        Thread thread[]=new Thread[numThreads];
+        for (int i=0; i<numThreads; i++) {
+            (thread[i]=new Thread(new Foo(facade))).start();
+        }
+        
+        // do stuff with BucketFacade
+        
+        try {
+            for (int i=0; i<numThreads; i++) {
+                thread[i].join();
+            } 
+        } catch (InterruptedException e) {
+            _log.warn("interrupted", e);
+        }
+    }
+    
     public void testDindex() throws Exception {
         assertTrue(true);
         
         DIndexNode red=new DIndexNode("red", _numIndexPartitions);
         DIndexNode green=new DIndexNode("green", _numIndexPartitions);
-//        DIndexNode blue=new DIndexNode("blue", _numIndexPartitions);
-//        DIndexNode yellow=new DIndexNode("yellow", _numIndexPartitions);
-//        DIndexNode pink=new DIndexNode("pink", _numIndexPartitions);
+        DIndexNode blue=new DIndexNode("blue", _numIndexPartitions);
+        DIndexNode yellow=new DIndexNode("yellow", _numIndexPartitions);
+        DIndexNode pink=new DIndexNode("pink", _numIndexPartitions);
         
         _log.info("0 nodes running");
         red.start();
@@ -61,24 +98,24 @@ public class TestDIndex extends TestCase {
         red.getCluster().waitForClusterToComplete(2, 6000);
         green.getCluster().waitForClusterToComplete(2, 6000);
         _log.info("2 nodes running");
-//        blue.start();
-//        red.getCluster().waitForClusterToComplete(3, 6000);
-//        green.getCluster().waitForClusterToComplete(3, 6000);
-//        blue.getCluster().waitForClusterToComplete(3, 6000);
-//        _log.info("3 nodes running");
-//        yellow.start();
-//        red.getCluster().waitForClusterToComplete(4, 6000);
-//        green.getCluster().waitForClusterToComplete(4, 6000);
-//        blue.getCluster().waitForClusterToComplete(4, 6000);
-//        yellow.getCluster().waitForClusterToComplete(4, 6000);
-//        _log.info("4 nodes running");
-//        pink.start();
-//        red.getCluster().waitForClusterToComplete(5, 6000);
-//        green.getCluster().waitForClusterToComplete(5, 6000);
-//        blue.getCluster().waitForClusterToComplete(5, 6000);
-//        yellow.getCluster().waitForClusterToComplete(5, 6000);
-//        pink.getCluster().waitForClusterToComplete(5, 6000);
-//        _log.info("5 nodes running");
+        blue.start();
+        red.getCluster().waitForClusterToComplete(3, 6000);
+        green.getCluster().waitForClusterToComplete(3, 6000);
+        blue.getCluster().waitForClusterToComplete(3, 6000);
+        _log.info("3 nodes running");
+        yellow.start();
+        red.getCluster().waitForClusterToComplete(4, 6000);
+        green.getCluster().waitForClusterToComplete(4, 6000);
+        blue.getCluster().waitForClusterToComplete(4, 6000);
+        yellow.getCluster().waitForClusterToComplete(4, 6000);
+        _log.info("4 nodes running");
+        pink.start();
+        red.getCluster().waitForClusterToComplete(5, 6000);
+        green.getCluster().waitForClusterToComplete(5, 6000);
+        blue.getCluster().waitForClusterToComplete(5, 6000);
+        yellow.getCluster().waitForClusterToComplete(5, 6000);
+        pink.getCluster().waitForClusterToComplete(5, 6000);
+        _log.info("5 nodes running");
         
 //        SessionIdFactory factory=new TomcatSessionIdFactory();
 //        
@@ -90,21 +127,21 @@ public class TestDIndex extends TestCase {
 //            //yellow.getDIndex().remove(name);
 //        }
         
-//        _log.info("5 nodes running");
-//        pink.stop();
-//        yellow.getCluster().waitForClusterToComplete(4, 6000);
-//        blue.getCluster().waitForClusterToComplete(4, 6000);
-//        green.getCluster().waitForClusterToComplete(4, 6000);
-//        red.getCluster().waitForClusterToComplete(4, 6000);
-//        _log.info("4 nodes running");
-//        yellow.stop();
-//        blue.getCluster().waitForClusterToComplete(3, 6000);
-//        green.getCluster().waitForClusterToComplete(3, 6000);
-//        red.getCluster().waitForClusterToComplete(3, 6000);
-//        _log.info("3 nodes running");
-//        blue.stop();
-//        green.getCluster().waitForClusterToComplete(2, 6000);
-//        red.getCluster().waitForClusterToComplete(2, 6000);
+        _log.info("5 nodes running");
+        pink.stop();
+        yellow.getCluster().waitForClusterToComplete(4, 6000);
+        blue.getCluster().waitForClusterToComplete(4, 6000);
+        green.getCluster().waitForClusterToComplete(4, 6000);
+        red.getCluster().waitForClusterToComplete(4, 6000);
+        _log.info("4 nodes running");
+        yellow.stop();
+        blue.getCluster().waitForClusterToComplete(3, 6000);
+        green.getCluster().waitForClusterToComplete(3, 6000);
+        red.getCluster().waitForClusterToComplete(3, 6000);
+        _log.info("3 nodes running");
+        blue.stop();
+        green.getCluster().waitForClusterToComplete(2, 6000);
+        red.getCluster().waitForClusterToComplete(2, 6000);
         _log.info("2 nodes running");
         green.stop();
         red.getCluster().waitForClusterToComplete(1, 6000);
