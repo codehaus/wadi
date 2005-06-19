@@ -67,6 +67,8 @@ public class LocalBucket extends AbstractBucket implements Serializable {
             } else if (request instanceof DIndexDeletionRequest) {
                 Object oldValue=_map.remove(request.getName());
                 _log.info("remove: "+request.getName());
+                if (oldValue==null)
+                    throw new IllegalStateException();
                 response=new DIndexDeletionResponse();
             } else {
                 throw new UnsupportedOperationException(); // no such request - yet...
