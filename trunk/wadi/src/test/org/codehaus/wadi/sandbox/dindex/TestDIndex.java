@@ -80,15 +80,15 @@ public class TestDIndex extends TestCase {
 //        pink.getCluster().waitForClusterToComplete(5, 6000);
 //        _log.info("5 nodes running");
         
-        SessionIdFactory factory=new TomcatSessionIdFactory();
-        
-        for (int i=0; i<10; i++) {
-            String name=factory.create();
-            red.getDIndex().put(name, name, green.getDestination());
-            green.getDIndex().remove(name, red.getDestination());
-            //blue.getDIndex().put(name, name);
-            //yellow.getDIndex().remove(name);
-        }
+//        SessionIdFactory factory=new TomcatSessionIdFactory();
+//        
+//        for (int i=0; i<10; i++) {
+//            String name=factory.create();
+//            red.getDIndex().put(name, name, green.getDestination());
+//            green.getDIndex().remove(name, red.getDestination());
+//            //blue.getDIndex().put(name, name);
+//            //yellow.getDIndex().remove(name);
+//        }
         
 //        _log.info("5 nodes running");
 //        pink.stop();
