@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.impl;
+package org.codehaus.wadi.test;
 
 import java.util.Map;
 
@@ -27,6 +27,7 @@ import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.MessageDispatcherConfig;
+import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.impl.MessageDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
