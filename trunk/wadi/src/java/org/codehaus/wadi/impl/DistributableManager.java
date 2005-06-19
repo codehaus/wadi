@@ -27,6 +27,7 @@ import java.util.Map;
 import javax.jms.JMSException;
 
 import org.activecluster.ClusterFactory;
+import org.activecluster.impl.DefaultClusterFactory;
 import org.activemq.ActiveMQConnection;
 import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.broker.BrokerConnector;
@@ -93,7 +94,6 @@ public class DistributableManager extends StandardManager implements Distributab
             _cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
             _distributedState.put("name", _nodeName);
             _distributedState.put("http", _httpAddress);
-            _cluster.getLocalNode().setState(_distributedState);
         } catch (Exception e) {
             _log.error("problem starting Cluster", e);
         }
@@ -101,8 +101,9 @@ public class DistributableManager extends StandardManager implements Distributab
     }
 
     public void start() throws Exception {
-        super.start();
+        _cluster.getLocalNode().setState(_distributedState);
         _cluster.start();
+        super.start();
     }
 
     public void stop() throws Exception {
@@ -241,5 +242,17 @@ public class DistributableManager extends StandardManager implements Distributab
     
     public SynchronizedBoolean getShuttingDown() {
         return _shuttingDown;
+    }
+
+    public Map getDistributedState() {
+        return _distributedState;
+    }
+
+    public long getInactiveTime() {
+        return ((DefaultClusterFactory)_clusterFactory).getInactiveTime();
+    }
+
+    public int getNumBuckets() {
+        return 72; // TODO - parameterise...
     }
 }
