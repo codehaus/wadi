@@ -148,6 +148,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
                 ObjectMessage om=_cluster.createObjectMessage();
                 om.setJMSReplyTo(localNode.getDestination());
                 om.setJMSDestination(_cluster.getDestination()); // whole cluster needs to know who is leaving - in case Coordinator fails
+                om.setJMSCorrelationID(_cluster.getLocalNode().getName()); // custom correlationId...
                 om.setObject(new BucketEvacuationRequest());
                 _dispatcher.exchange(om, _inactiveTime);
             } catch (JMSException e) {
