@@ -19,5 +19,6 @@ package org.codehaus.wadi.sandbox.dindex;
 public interface DIndexRequest extends DIndexMessage {
 
     int getBucketKey(int numBuckets);
+    String getName();
     
 }

@@ -17,19 +17,24 @@
 package org.codehaus.wadi.sandbox.dindex;
 
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.impl.MessageDispatcher;
 
 public class RemoteBucket extends AbstractBucket {
 
     protected static final Log _log = LogFactory.getLog(RemoteBucket.class);
 
+    protected final MessageDispatcher _dispatcher;
+
     protected Destination _location;
 
-    public RemoteBucket(int key, Destination location) {
+    public RemoteBucket(int key, MessageDispatcher dispatcher, Destination location) {
         super(key);
+        _dispatcher=dispatcher;
         _location=location;
     }
 
@@ -60,13 +65,12 @@ public class RemoteBucket extends AbstractBucket {
       return "<remote:"+(_location==null?null:_location.toString())+">";
     }
 
-    // should deal with SessionMessages
-    // what about IndexMessages (creation/destruction/migration of Sessions) ?
     public void dispatch(ObjectMessage om, DIndexRequest request) {
-        // get session name from message...
-        // look up location
-        // if present, forward message
-        // if not, reply directly
-        _log.info("RemoteBucketDispatcher - NYI");
+        _log.info("RemoteBucketDispatcher - forwarding: "+request.getName());
+        try {
+            _dispatcher.forward(om, _location);
+        } catch (JMSException e) {
+            _log.warn("ohoh!", e);
+        }
     }
 }

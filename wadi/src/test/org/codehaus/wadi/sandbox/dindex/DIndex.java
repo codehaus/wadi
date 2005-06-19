@@ -49,6 +49,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
     protected final Map _bucketTransferRequestResponseRvMap=new ConcurrentHashMap();
     protected final Map _bucketTransferCommandAcknowledgementRvMap=new ConcurrentHashMap();
     protected final Map _bucketEvacuationRequestResponseRvMap=new ConcurrentHashMap();
+    protected final Map _dindexInsertionRequestResponseRvMap=new ConcurrentHashMap();
+    protected final Map _dindexDeletionRequestResponseRvMap=new ConcurrentHashMap();
     protected final MessageDispatcher _dispatcher;
     protected final String _nodeName;
     protected final Log _log;
@@ -93,7 +95,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         _dispatcher.register(this, "onBucketEvacuationRequest", BucketEvacuationRequest.class);
         _dispatcher.register(BucketEvacuationResponse.class, _bucketEvacuationRequestResponseRvMap, _inactiveTime);
         _dispatcher.register(this, "onDIndexInsertionRequest", DIndexInsertionRequest.class);
+        _dispatcher.register(DIndexInsertionResponse.class, _dindexInsertionRequestResponseRvMap, _inactiveTime);
         _dispatcher.register(this, "onDIndexDeletionRequest", DIndexDeletionRequest.class);
+        _dispatcher.register(DIndexDeletionResponse.class, _dindexDeletionRequestResponseRvMap, _inactiveTime);
         _dispatcher.register(this, "onDIndexRelocationRequest", DIndexRelocationRequest.class);
         
         _cluster.getLocalNode().setState(_distributedState); // this needs to be done before _cluster.start()
@@ -114,7 +118,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
             long timeStamp=System.currentTimeMillis();
             for (int i=0; i<_numBuckets; i++) {
                 BucketFacade facade=_buckets[i];
-                facade.setContent(timeStamp, new LocalBucket(i));
+                LocalBucket bucket=new LocalBucket(i);
+                bucket.init(_dispatcher);
+                facade.setContent(timeStamp, bucket);
             }
             
             BucketKeys k=new BucketKeys(_buckets);
@@ -174,7 +180,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         for (int i=0; i<k.length; i++) {
             int key=k[i];
             BucketFacade facade=_buckets[key];
-            facade.setContentRemote(timeStamp, location);
+            facade.setContentRemote(timeStamp, _dispatcher, location);
         }
     }
     
@@ -281,7 +287,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
                         BucketFacade facade=null;
                         try {
                             facade=_buckets[acquired[j].getKey()];
-                            facade.setContentRemote(timeStamp, destination); // TODO - should we use a more recent ts ?
+                            facade.setContentRemote(timeStamp, _dispatcher, destination); // TODO - should we use a more recent ts ?
                         } finally {
                             if (facade!=null)
                                 facade.dequeue();
@@ -302,7 +308,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
             _log.info("local state updated");
             _cluster.getLocalNode().setState(_distributedState);
             _log.info("distributed state updated: "+_distributedState.get(_bucketKeysKey));
-            _dispatcher.replyToMessage(om, new BucketTransferAcknowledgement(true)); // what if failure - TODO
+            _dispatcher.reply(om, new BucketTransferAcknowledgement(true)); // what if failure - TODO
         } catch (JMSException e) {
             _log.warn("could not acknowledge safe transfer to Coordinator", e);
         }
@@ -319,13 +325,14 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
     
     public void onBucketTransferRequest(ObjectMessage om, BucketTransferRequest request) {
         long timeStamp=request.getTimeStamp();
-        Bucket[] buckets=request.getBuckets();
+        LocalBucket[] buckets=request.getBuckets();
         _log.info(""+timeStamp+" received "+buckets.length+" buckets from "+getNodeName(getSrcNode(om)));
         boolean success=false;
         // read incoming data into our own local model
         _log.info("local state (before receiving): "+new BucketKeys(_buckets));
         for (int i=0; i<buckets.length; i++) {
-            Bucket bucket=buckets[i];
+            LocalBucket bucket=buckets[i];
+            bucket.init(_dispatcher);
             BucketFacade facade=_buckets[bucket.getKey()];
             facade.setContent(timeStamp, bucket);
         }
@@ -343,7 +350,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         }
         // acknowledge safe receipt to donor
         try {
-            _dispatcher.replyToMessage(om, new BucketTransferResponse(success));
+            _dispatcher.reply(om, new BucketTransferResponse(success));
             _log.info("sent TransferResponse");
             acked=true;
             
@@ -470,4 +477,42 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         int bucketKey=request.getBucketKey(_numBuckets);
         _buckets[bucketKey].dispatch(om, request);
     }
+    
+    // temporary test methods...
+    
+    public Object put(String name, Object value, Destination destination) {
+        try {
+            ObjectMessage message=_cluster.createObjectMessage();
+            message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+            message.setJMSCorrelationID(name);
+            message.setJMSDestination(destination);
+            DIndexInsertionRequest request=new DIndexInsertionRequest(name);
+            message.setObject(request);
+            _dispatcher.exchange(message, _dindexInsertionRequestResponseRvMap, 5000);
+        } catch (JMSException e) {
+            _log.info("oops...", e);
+        }
+        return null;    
+    }
+    
+    public Object get(String name) {
+        throw new UnsupportedOperationException();
+    }
+    
+    public Object remove(String name, Destination destination) {
+        try {
+            ObjectMessage message=_cluster.createObjectMessage();
+            message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+            message.setJMSCorrelationID(name);
+            message.setJMSDestination(destination);
+            DIndexDeletionRequest request=new DIndexDeletionRequest(name);
+            message.setObject(request);
+            _dispatcher.exchange(message, _dindexDeletionRequestResponseRvMap, 5000);
+        } catch (JMSException e) {
+            _log.info("oops...", e);
+        }
+        return null;    
+    }
+    
 }
+

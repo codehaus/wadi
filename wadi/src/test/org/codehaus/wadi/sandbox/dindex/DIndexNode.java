@@ -18,6 +18,8 @@ package org.codehaus.wadi.sandbox.dindex;
 
 import java.util.Map;
 
+import javax.jms.Destination;
+
 import org.activecluster.Cluster;
 import org.activecluster.impl.DefaultClusterFactory;
 import org.activemq.ActiveMQConnectionFactory;
@@ -80,6 +82,14 @@ public class DIndexNode implements MessageDispatcherConfig {
         return _cluster;
     }
 
+    public DIndex getDIndex() {
+        return _dindex;
+    }
+    
+    public Destination getDestination() {
+        return _cluster.getLocalNode().getDestination();
+    }
+    
     //-----------------------------------------------------------
 
   protected static Latch _latch0=new Latch();

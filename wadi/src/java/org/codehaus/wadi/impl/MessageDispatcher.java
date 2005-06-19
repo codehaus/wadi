@@ -269,13 +269,22 @@ public class MessageDispatcher implements MessageListener {
         _cluster.send(settingsIn.to, message);
     }
     
-    public void replyToMessage(ObjectMessage request, Serializable response) throws JMSException {
+    public void reply(ObjectMessage request, Serializable response) throws JMSException {
         // construct and send message...
         ObjectMessage message=_cluster.createObjectMessage();
         message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
         message.setJMSCorrelationID(request.getJMSCorrelationID());
         message.setObject(response);
         _cluster.send(request.getJMSReplyTo(), message);
+    }
+
+    public void forward(ObjectMessage request, Destination destination) throws JMSException {
+        // construct and send message...
+        ObjectMessage message=_cluster.createObjectMessage();
+        message.setJMSReplyTo(request.getJMSReplyTo());
+        message.setJMSCorrelationID(request.getJMSCorrelationID());
+        message.setObject(request.getObject());
+        _cluster.send(destination, message);
     }
 
 	// send a message and then wait a given amount of time for the first response - return it...

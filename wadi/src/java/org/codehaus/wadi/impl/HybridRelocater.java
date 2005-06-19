@@ -316,7 +316,7 @@ public class HybridRelocater extends AbstractRelocater {
 //            settingsInOut.correlationId=om.getJMSCorrelationID();
             RelocationResponse response=new RelocationResponse(sessionName, _nodeName, _config.getHttpAddress());
 //            _config.getDispatcher().sendMessage(response, settingsInOut);
-            _config.getDispatcher().replyToMessage(om, response);
+            _config.getDispatcher().reply(om, response);
 //            _config.getMap().remove(name);
         } catch (JMSException e) {
             if (_log.isErrorEnabled()) _log.error("could not send RelocationResponse: "+sessionName, e);

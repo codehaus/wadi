@@ -19,10 +19,12 @@ package org.codehaus.wadi.sandbox.dindex;
 import java.io.Serializable;
 import java.util.Map;
 
+import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.impl.MessageDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
@@ -31,6 +33,7 @@ public class LocalBucket extends AbstractBucket implements Serializable {
     protected static final Log _log = LogFactory.getLog(LocalBucket.class);
 
     protected Map _map=new ConcurrentHashMap();
+    protected transient MessageDispatcher _dispatcher;
 
     public LocalBucket(int key) {
         super(key);
@@ -39,6 +42,10 @@ public class LocalBucket extends AbstractBucket implements Serializable {
     protected LocalBucket() {
         super();
         // for deserialisation...
+    }
+    
+    public void init(MessageDispatcher dispatcher) {
+        _dispatcher=dispatcher;
     }
 
     public boolean isLocal() {
@@ -50,7 +57,25 @@ public class LocalBucket extends AbstractBucket implements Serializable {
     }
     
     public void dispatch(ObjectMessage om, DIndexRequest request) {
-        _log.info("LocalBucketDispatcher - NYI");
-        //throw new UnsupportedOperationException(); // NYI
+        _log.info("LocalBucketDispatcher - NYI: "+request.getName());
+        try {
+            DIndexResponse response=null;
+            if (request instanceof DIndexInsertionRequest) {
+                Object oldValue=_map.put(request.getName(), om.getJMSReplyTo()); // remember location of actual session...
+                _log.info("put: "+request.getName());
+                response=new DIndexInsertionResponse();
+            } else if (request instanceof DIndexDeletionRequest) {
+                Object oldValue=_map.remove(request.getName());
+                _log.info("remove: "+request.getName());
+                response=new DIndexDeletionResponse();
+            } else {
+                throw new UnsupportedOperationException(); // no such request - yet...
+            }
+            
+            _dispatcher.reply(om, response);
+            
+        } catch (JMSException e) {
+            _log.info("gor blimey!", e);
+        }
     }
 }
