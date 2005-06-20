@@ -65,28 +65,35 @@ public class LocalBucket extends AbstractBucket implements Serializable {
             DIndexResponse response=null;
             if (request instanceof DIndexInsertionRequest) {
                 Destination location=om.getJMSReplyTo();
-                Object oldValue=_map.put(request.getName(), location); // remember location of actual session...
-                _log.info("put "+request.getName()+" : "+_config.getNodeName(location));
+                _map.put(request.getName(), location); // remember location of actual session...
+                _log.info("insert "+request.getName()+" : "+_config.getNodeName(location));
                 response=new DIndexInsertionResponse();
                 // we can optimise local-local send here - TODO
                 _config.getMessageDispatcher().reply(om, response);
             } else if (request instanceof DIndexDeletionRequest) {
                 Object oldValue=_map.remove(request.getName());
-                _log.info("remove "+request.getName()+" : "+_config.getNodeName((Destination)oldValue));
+                _log.info("delete "+request.getName()+" : "+_config.getNodeName((Destination)oldValue));
                 if (oldValue==null)
                     throw new IllegalStateException();
                 response=new DIndexDeletionResponse();
                 // we can optimise local-local send here - TODO
                 _config.getMessageDispatcher().reply(om, response);
-            } else {
+            } else if (request instanceof DIndexForwardRequest) {
                 String name=request.getName();
                 Destination location=(Destination)_map.get(name);
-                _log.info("forwarding: "+request.getName()+" to: "+_config.getNodeName(location));
+                if (location==null) {
+                    _log.info("NO SUCH SESSION: "+name);
+                    return;
+                }
+                    
+                _log.info("forward "+request.getClass().getName()+" - "+request.getName()+" : "+_config.getNodeName(location));
                 try {
-                    _config.getMessageDispatcher().forward(om, location);
+                    _config.getMessageDispatcher().forward(om, location, ((DIndexForwardRequest)request).getRequest());
                 } catch (JMSException e) {
                     _log.warn("could not forward message", e);
                 }
+            } else {
+                _log.info("What should I do with this ?: "+request);
             }
         } catch (JMSException e) {
             _log.info("gor blimey!", e);
