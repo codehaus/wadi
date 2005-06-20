@@ -21,6 +21,7 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
+import org.codehaus.wadi.impl.MessageDispatcher;
 import org.codehaus.wadi.io.Server;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
@@ -46,4 +47,5 @@ public interface DistributableContextualiserConfig extends ContextualiserConfig 
     long getInactiveTime();
     int getNumBuckets();
 
+    MessageDispatcher getMessageDispatcher();
 }

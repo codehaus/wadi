@@ -26,8 +26,10 @@ import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.MessageDispatcherConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
+import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.MessageDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
@@ -42,7 +44,7 @@ public class DIndexNode implements MessageDispatcherConfig {
     protected final String _clusterUri="tcp://smilodon:61616";
     protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
     protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
-    protected final DefaultClusterFactory _clusterFactory=new DefaultClusterFactory(_connectionFactory);
+    protected final CustomClusterFactory _clusterFactory=new CustomClusterFactory(_connectionFactory);
     protected final MessageDispatcher _dispatcher=new MessageDispatcher();
     protected final Map _distributedState=new ConcurrentHashMap();
     protected final String _nodeName;
@@ -59,11 +61,11 @@ public class DIndexNode implements MessageDispatcherConfig {
     }
 
     protected DIndex _dindex;
-    protected Cluster _cluster;
+    protected ExtendedCluster _cluster;
 
     public void start() throws Exception {
         _connectionFactory.start();
-        _cluster=_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
+        _cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
         _dispatcher.init(this);
         _dindex=new DIndex(_nodeName, _numBuckets, _clusterFactory.getInactiveTime(), _cluster, _dispatcher, _distributedState);
         _dindex.init();
@@ -80,7 +82,7 @@ public class DIndexNode implements MessageDispatcherConfig {
         _connectionFactory.stop();
     }
 
-    public Cluster getCluster() {
+    public ExtendedCluster getCluster() {
         return _cluster;
     }
 

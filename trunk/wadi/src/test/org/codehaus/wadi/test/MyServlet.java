@@ -72,7 +72,6 @@ public class MyServlet implements Servlet {
     protected final String _nodeName;
 	protected final Map _clusterMap;
 	protected final Map _memoryMap;
-	protected final MessageDispatcher _dispatcher;
 	protected final Relocater _relocater;
 	protected final ClusterContextualiser _clusterContextualiser;
 	protected final StatelessContextualiser _statelessContextualiser;
@@ -94,14 +93,13 @@ public class MyServlet implements Servlet {
     protected final StandardManager _manager;
 
 
-	public MyServlet(String nodeName, String clusterName, ContextPool contextPool, MessageDispatcher dispatcher, Relocater relocater, HttpProxy httpProxy, InetSocketAddress httpAddress) throws Exception {
+	public MyServlet(String nodeName, String clusterName, ContextPool contextPool, Relocater relocater, HttpProxy httpProxy, InetSocketAddress httpAddress) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+nodeName);
         _clusterName=clusterName;
         _nodeName=nodeName;
 		_clusterMap=new HashMap();
-		_dispatcher=dispatcher;
 		_relocater=relocater;
-		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, new SwitchableEvicter(30000, true), _clusterMap, _dispatcher, _relocater);
+		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, new SwitchableEvicter(30000, true), _clusterMap, _relocater);
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
 		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);

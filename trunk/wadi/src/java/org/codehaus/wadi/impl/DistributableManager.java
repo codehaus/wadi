@@ -40,6 +40,7 @@ import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.DistributableSessionConfig;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpProxy;
+import org.codehaus.wadi.MessageDispatcherConfig;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionIdFactory;
@@ -53,10 +54,12 @@ import org.codehaus.wadi.io.ServerConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
-public class DistributableManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, ServerConfig {
+public class DistributableManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, ServerConfig, MessageDispatcherConfig {
 
     protected final Map _distributedState=new HashMap(); // TODO - make this a SynchronisedMap
     protected final SynchronizedBoolean _shuttingDown=new SynchronizedBoolean(false);
+    
+    protected final MessageDispatcher _dispatcher=new MessageDispatcher();
     
     protected final Streamer _streamer;
     protected final String _clusterUri;
@@ -92,6 +95,7 @@ public class DistributableManager extends StandardManager implements Distributab
             System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
             _clusterFactory=new CustomClusterFactory(_connectionFactory);
             _cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
+            _dispatcher.init(this);
             _distributedState.put("name", _nodeName);
             _distributedState.put("http", _httpAddress);
         } catch (Exception e) {
@@ -255,4 +259,9 @@ public class DistributableManager extends StandardManager implements Distributab
     public int getNumBuckets() {
         return 72; // TODO - parameterise...
     }
+    
+    public MessageDispatcher getMessageDispatcher() {
+        return _dispatcher;
+    }
+    
 }

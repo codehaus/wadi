@@ -99,7 +99,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, MessageDispatcherConfig, ClusterListener {
+public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, ClusterListener {
 
   protected final static String _nodeNameKey="name";
   protected final static String _evacuationQueueKey="evacuationQueue";
@@ -110,7 +110,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   protected final SynchronizedInt _evacuationPartnerCount=new SynchronizedInt(0);
   protected final Map _evacuationRvMap=new HashMap();
   protected final Collapser _collapser;
-  protected final MessageDispatcher _dispatcher;
   protected final Relocater _relocater;
   protected final Immoter _immoter;
   protected final Emoter _emoter;
@@ -124,10 +123,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
    * @param map
    * @param location TODO
    */
-  public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, MessageDispatcher dispatcher, Relocater relocater) {
+  public ClusterContextualiser(Contextualiser next, Collapser collapser, Evicter evicter, Map map, Relocater relocater) {
     super(next, new CollapsingLocker(collapser), false);
     _collapser=collapser;
-    _dispatcher=dispatcher;
     _relocater=relocater;
     _map=map;
     _evicter=evicter;
@@ -145,6 +143,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   protected ExtendedCluster _cluster;
   protected Location _location;
   protected Destination _evacuationQueue;
+  protected MessageDispatcher _dispatcher;
   protected DIndex _dindex;
 
   public void init(ContextualiserConfig config) {
@@ -154,11 +153,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     _nodeName=dcc.getNodeName();
     _cluster=dcc.getCluster();
     _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), dcc.getHttpAddress(), dcc.getHttpProxy());
-    try {
-        _dispatcher.init(this);
-    } catch (JMSException e){
-        _log.error("could not initialise node state", e);
-    }
+    _dispatcher=dcc.getMessageDispatcher();
     int numBuckets=dcc.getNumBuckets();
     long inactiveTime=dcc.getInactiveTime();
     Map distributedState=dcc.getDistributedState();
@@ -580,7 +575,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   public Collapser getCollapser() {return _collapser;}
   public MessageDispatcher getDispatcher() {return _dispatcher;}
   public Location getLocation() {return _location;}
-  public Cluster getCluster() {return _cluster;}
   public Contextualiser getContextualiser() {return _top;}
   public Server getServer() {return ((DistributableContextualiserConfig)_config).getServer();}
   public String getNodeName() {return _nodeName;}
@@ -588,6 +582,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   public HttpProxy getHttpProxy() {return ((DistributableContextualiserConfig)_config).getHttpProxy();}
   public InetSocketAddress getHttpAddress() {return ((DistributableContextualiserConfig)_config).getHttpAddress();}
 
-
+  public Cluster getCluster() {return _cluster;}
   
 }

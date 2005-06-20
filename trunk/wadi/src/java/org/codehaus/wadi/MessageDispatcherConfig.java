@@ -20,6 +20,6 @@ import org.activecluster.Cluster;
 
 public interface MessageDispatcherConfig {
 
-    Cluster getCluster();
+    ExtendedCluster getCluster();
     
 }

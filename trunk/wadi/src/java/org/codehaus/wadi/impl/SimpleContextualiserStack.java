@@ -78,7 +78,6 @@ public class SimpleContextualiserStack implements Contextualiser {
 
     protected final Evicter _clusterEvicter;
     protected final Map _clusterMap;
-    protected final MessageDispatcher _clusterDispatcher;
     protected final Relocater _clusterRelocater;
     protected final ClusterContextualiser _cluster;
 
@@ -116,9 +115,8 @@ public class SimpleContextualiserStack implements Contextualiser {
         System.out.println("LOCALHOST: "+localhost);
         _clusterMap=new ConcurrentHashMap();
         _clusterEvicter=new DummyEvicter(); // TODO - consider Cluster eviction carefully...
-        _clusterDispatcher=new MessageDispatcher();
         _clusterRelocater=relocater;
-        _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterDispatcher, _clusterRelocater);
+        _cluster=new ClusterContextualiser(_database, _collapser, _clusterEvicter, _clusterMap, _clusterRelocater);
 
         _statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
         _statelessMethodFlag=true;
