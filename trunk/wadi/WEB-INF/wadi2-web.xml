@@ -178,6 +178,7 @@
     <constructor-arg index="12"><value>${node.name}</value></constructor-arg>
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
     <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
+    <constructor-arg index="15"><value>72</value></constructor-arg>
   </bean>
 
 </beans>

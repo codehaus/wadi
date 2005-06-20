@@ -116,19 +116,19 @@ extends TestCase
     protected SessionPool             _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _distributableValueFactory=new DistributableValueFactory();
     protected ValuePool               _distributableValuePool=new SimpleValuePool(_distributableValueFactory);
-    protected StandardManager         _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesFactory, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node0", _httpProxy, _httpAddress);
+    protected StandardManager         _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesFactory, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node0", _httpProxy, _httpAddress, 24);
     // LazyValue
     protected SessionPool             _lazyValueSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _lazyValueFactory=new LazyValueFactory();
     protected ValuePool               _lazyValuePool=new SimpleValuePool(_lazyValueFactory);
-    protected StandardManager         _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesFactory, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node1", _httpProxy, _httpAddress);
+    protected StandardManager         _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesFactory, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node1", _httpProxy, _httpAddress, 24);
     // LazyAttributes
     protected SessionPool             _lazyAttributesSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected AttributesFactory       _lazyAttributesFactory=new LazyAttributesFactory();
-    protected StandardManager         _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesFactory,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node2", _httpProxy, _httpAddress);
+    protected StandardManager         _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesFactory,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node2", _httpProxy, _httpAddress, 24);
     // LazyBoth
     protected SessionPool             _lazyBothSessionPool=new SimpleSessionPool(_distributableSessionFactory);
-    protected StandardManager         _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesFactory,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node3", _httpProxy, _httpAddress);
+    protected StandardManager         _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesFactory,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node3", _httpProxy, _httpAddress, 24);
 
 
     public TestHttpSession(String name)

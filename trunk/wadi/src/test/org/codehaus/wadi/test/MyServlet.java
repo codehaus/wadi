@@ -110,7 +110,7 @@ public class MyServlet implements Servlet {
         _clusterContextualiser.setTop(_memoryContextualiser);
         _httpProxy=httpProxy;
         _httpAddress=httpAddress;
-        _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, _nodeName, _httpProxy, _httpAddress);
+        _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, _nodeName, _httpProxy, _httpAddress, 24);
     }
     
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}
