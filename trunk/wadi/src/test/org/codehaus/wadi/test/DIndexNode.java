@@ -68,6 +68,7 @@ public class DIndexNode implements MessageDispatcherConfig {
         _dindex=new DIndex(_nodeName, _numBuckets, _clusterFactory.getInactiveTime(), _cluster, _dispatcher, _distributedState);
         _dindex.init();
         _log.info("starting Cluster...");
+        _cluster.getLocalNode().setState(_distributedState);
         _cluster.start();
         _log.info("...Cluster started");
         _dindex.start();
@@ -99,30 +100,30 @@ public class DIndexNode implements MessageDispatcherConfig {
     protected static Object _exitSync = new Object();
 
     public static void main(String[] args) throws Exception {
-      String nodeName=args[0];
-      int numIndexPartitions=Integer.parseInt(args[1]);
-
-      try {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-	      System.err.println("SHUTDOWN");
-	      _latch0.release();
-	      try {
-		_latch1.acquire();
-	      } catch (InterruptedException e) {
-		Thread.interrupted();
-	      }
-            }
-	  });
-
-        DIndexNode node=new DIndexNode(nodeName, numIndexPartitions);
-        node.start();
-
-        _latch0.acquire();
-
-        node.stop();
-      } finally {
-	_latch1.release();
-      }
+        String nodeName=args[0];
+        int numIndexPartitions=Integer.parseInt(args[1]);
+        
+        try {
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() {
+                    System.err.println("SHUTDOWN");
+                    _latch0.release();
+                    try {
+                        _latch1.acquire();
+                    } catch (InterruptedException e) {
+                        Thread.interrupted();
+                    }
+                }
+            });
+            
+            DIndexNode node=new DIndexNode(nodeName, numIndexPartitions);
+            node.start();
+            
+            _latch0.acquire();
+            
+            node.stop();
+        } finally {
+            _latch1.release();
+        }
     }
 }
