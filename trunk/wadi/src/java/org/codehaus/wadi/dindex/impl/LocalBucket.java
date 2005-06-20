@@ -68,12 +68,16 @@ public class LocalBucket extends AbstractBucket implements Serializable {
                 Object oldValue=_map.put(request.getName(), location); // remember location of actual session...
                 _log.info("put "+request.getName()+" : "+_config.getNodeName(location));
                 response=new DIndexInsertionResponse();
+                // we can optimise local-local send here - TODO
+                _config.getMessageDispatcher().reply(om, response);
             } else if (request instanceof DIndexDeletionRequest) {
                 Object oldValue=_map.remove(request.getName());
                 _log.info("remove "+request.getName()+" : "+_config.getNodeName((Destination)oldValue));
                 if (oldValue==null)
                     throw new IllegalStateException();
                 response=new DIndexDeletionResponse();
+                // we can optimise local-local send here - TODO
+                _config.getMessageDispatcher().reply(om, response);
             } else {
                 String name=request.getName();
                 Destination location=(Destination)_map.get(name);
@@ -83,11 +87,7 @@ public class LocalBucket extends AbstractBucket implements Serializable {
                 } catch (JMSException e) {
                     _log.warn("could not forward message", e);
                 }
-                //throw new UnsupportedOperationException(); // no such request - yet...
             }
-            // we can optimise local-local send here - TODO
-            _config.getMessageDispatcher().reply(om, response);
-            
         } catch (JMSException e) {
             _log.info("gor blimey!", e);
         }
