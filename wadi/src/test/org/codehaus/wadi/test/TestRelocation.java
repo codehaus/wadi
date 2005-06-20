@@ -117,18 +117,16 @@ public class TestRelocation extends TestCase {
 
 		InetSocketAddress httpAddress0=new InetSocketAddress("localhost", 8080);
 		HttpProxy httpProxy0=new StandardHttpProxy("jsessionid");
-		_dispatcher0=new MessageDispatcher();
 		_relocater0=new SwitchableRelocater();
-		_servlet0=new MyServlet("0", _clusterName, new MyContextPool(), _dispatcher0, _relocater0, httpProxy0, httpAddress0);
+		_servlet0=new MyServlet("0", _clusterName, new MyContextPool(), _relocater0, httpProxy0, httpAddress0);
 		_filter0=new MyFilter("0", _servlet0);
 		// TODO - I'd like to use a TomcatNode - but using 5.0.18 it fails TestRelocation - investigate...
 		(_node0=new JettyNode("0", "localhost", 8080, "/test", "/home/jules/workspace/wadi/webapps/test", _filter0, _servlet0)).start();
 
 		InetSocketAddress httpAddress1=new InetSocketAddress("localhost", 8081);
 		HttpProxy httpProxy1=new CommonsHttpProxy("jsessionid");
-		_dispatcher1=new MessageDispatcher();
 		_relocater1=new SwitchableRelocater();
-		_servlet1=new MyServlet("1", _clusterName, new MyContextPool(), _dispatcher1, _relocater1, httpProxy1, httpAddress1);
+		_servlet1=new MyServlet("1", _clusterName, new MyContextPool(), _relocater1, httpProxy1, httpAddress1);
 		_filter1=new MyFilter("1", _servlet1);
 		(_node1=new JettyNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
