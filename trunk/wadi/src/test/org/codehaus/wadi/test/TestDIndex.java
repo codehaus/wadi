@@ -60,28 +60,28 @@ public class TestDIndex extends TestCase {
         
     }
     
-    public void testQueueing() {
-        
-        boolean isQueueing=true;
-        long timeStamp=System.currentTimeMillis();
-        BucketFacade facade=new BucketFacade(0, timeStamp, new DummyBucket(0), isQueueing);
-        
-        int numThreads=10;
-        Thread thread[]=new Thread[numThreads];
-        for (int i=0; i<numThreads; i++) {
-            (thread[i]=new Thread(new Foo(facade))).start();
-        }
-        
-        // do stuff with BucketFacade
-        
-        try {
-            for (int i=0; i<numThreads; i++) {
-                thread[i].join();
-            } 
-        } catch (InterruptedException e) {
-            _log.warn("interrupted", e);
-        }
-    }
+//    public void testQueueing() {
+//        
+//        boolean isQueueing=true;
+//        long timeStamp=System.currentTimeMillis();
+//        BucketFacade facade=new BucketFacade(0, timeStamp, new DummyBucket(0), isQueueing);
+//        
+//        int numThreads=10;
+//        Thread thread[]=new Thread[numThreads];
+//        for (int i=0; i<numThreads; i++) {
+//            (thread[i]=new Thread(new Foo(facade))).start();
+//        }
+//        
+//        // do stuff with BucketFacade
+//        
+//        try {
+//            for (int i=0; i<numThreads; i++) {
+//                thread[i].join();
+//            } 
+//        } catch (InterruptedException e) {
+//            _log.warn("interrupted", e);
+//        }
+//    }
     
     public void testDindex() throws Exception {
         assertTrue(true);
