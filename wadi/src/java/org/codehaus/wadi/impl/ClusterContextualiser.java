@@ -154,11 +154,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     _cluster=dcc.getCluster();
     _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), dcc.getHttpAddress(), dcc.getHttpProxy());
     _dispatcher=dcc.getMessageDispatcher();
-    int numBuckets=dcc.getNumBuckets();
-    long inactiveTime=dcc.getInactiveTime();
-    Map distributedState=dcc.getDistributedState();
-    _dindex=new DIndex(dcc.getNodeName(), numBuckets, inactiveTime, _cluster, _dispatcher, distributedState);
-    _dindex.init();
+    _dindex=dcc.getDIndex();
     _cluster.addClusterListener(this);
     _dispatcher.register(this, "onMessage", EmigrationRequest.class);
     _dispatcher.register(this, "onMessage", LocationUpdate.class);
@@ -168,10 +164,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     _relocater.init(this);
   }
   
-  public void start() throws JMSException, InterruptedException {
-      _dindex.start();
-  }
-
   public String getStartInfo() {
     return "["+_nodeName+"]";
   }
@@ -294,7 +286,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
               destroyEvacuationQueue();
           }
       }
-      _dindex.stop();
       super.stop();
   }
 

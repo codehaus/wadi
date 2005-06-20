@@ -49,6 +49,7 @@ import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.io.Server;
 import org.codehaus.wadi.io.ServerConfig;
 
@@ -84,9 +85,10 @@ public class DistributableManager extends StandardManager implements Distributab
     }
 
     protected ActiveMQConnectionFactory _connectionFactory;
-    protected ClusterFactory _clusterFactory;
+    protected CustomClusterFactory _clusterFactory;
     protected ExtendedCluster _cluster;
-
+    protected DIndex _dindex;
+    
     public void init() {
         // must be done before super.init() so that ContextualiserConfig contains a Cluster
         try {
@@ -98,6 +100,9 @@ public class DistributableManager extends StandardManager implements Distributab
             _dispatcher.init(this);
             _distributedState.put("name", _nodeName);
             _distributedState.put("http", _httpAddress);
+            int numBuckets=72; // TODO - parameterise...
+            _dindex=new DIndex(_nodeName, numBuckets, _clusterFactory.getInactiveTime(), _cluster, _dispatcher, _distributedState);
+            _dindex.init();
         } catch (Exception e) {
             _log.error("problem starting Cluster", e);
         }
@@ -107,24 +112,26 @@ public class DistributableManager extends StandardManager implements Distributab
     public void start() throws Exception {
         _cluster.getLocalNode().setState(_distributedState);
         _cluster.start();
+        _dindex.start();
         super.start();
     }
 
     public void stop() throws Exception {
         _shuttingDown.set(true);
         super.stop();
+        _dindex.stop();
         _cluster.stop();
         _connectionFactory.stop();
-
+        
         // shut down activemq cleanly - what happens if we are running more than one distributable webapp ?
         // there must be an easier way - :-(
-	ActiveMQConnection connection=(ActiveMQConnection)_cluster.getConnection();
-	TransportChannel channel=(connection==null?null:connection.getTransportChannel());
-	BrokerConnector connector=(channel==null?null:channel.getEmbeddedBrokerConnector());
-	BrokerContainer container=(connector==null?null:connector.getBrokerContainer());
-	if (container!=null)
-	  container.stop(); // for peer://
-
+        ActiveMQConnection connection=(ActiveMQConnection)_cluster.getConnection();
+        TransportChannel channel=(connection==null?null:connection.getTransportChannel());
+        BrokerConnector connector=(channel==null?null:channel.getEmbeddedBrokerConnector());
+        BrokerContainer container=(connector==null?null:connector.getBrokerContainer());
+        if (container!=null)
+            container.stop(); // for peer://
+        
         Thread.sleep(5*1000);
     }
 
@@ -264,4 +271,7 @@ public class DistributableManager extends StandardManager implements Distributab
         return _dispatcher;
     }
     
+    public DIndex getDIndex() {
+        return _dindex;
+    }
 }
