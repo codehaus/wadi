@@ -129,6 +129,8 @@ public class HybridRelocater extends AbstractRelocater {
                 return false;
             else {
                 boolean answer=immoter.contextualise(hreq, hres, chain, name, immotable, motionLock);
+                if (answer)
+                    motionLock.release();
                 return answer;
             }
         }
