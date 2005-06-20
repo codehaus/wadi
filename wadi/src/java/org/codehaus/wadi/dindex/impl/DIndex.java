@@ -32,6 +32,7 @@ import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.Bucket;
+import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.impl.MessageDispatcher;
@@ -39,7 +40,7 @@ import org.codehaus.wadi.impl.MessageDispatcher;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
-public class DIndex implements ClusterListener, CoordinatorConfig {
+public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig {
     
     protected final static String _nodeNameKey="nodeName";
     protected final static String _bucketKeysKey="bucketKeys";
@@ -69,9 +70,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         long timeStamp=System.currentTimeMillis();
         boolean queueing=true;
         for (int i=0; i<_numBuckets; i++)
-            _buckets[i]=new BucketFacade(i, timeStamp, new DummyBucket(i), queueing);
+            _buckets[i]=new BucketFacade(i, timeStamp, new DummyBucket(i), queueing, this);
     }
-    
     
     protected Node _coordinatorNode;
     protected Coordinator _coordinator;
@@ -117,7 +117,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
             for (int i=0; i<_numBuckets; i++) {
                 BucketFacade facade=_buckets[i];
                 LocalBucket bucket=new LocalBucket(i);
-                bucket.init(_dispatcher);
+                bucket.init(this);
                 facade.setContent(timeStamp, bucket);
             }
             
@@ -329,7 +329,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
         _log.info("local state (before receiving): "+new BucketKeys(_buckets));
         for (int i=0; i<buckets.length; i++) {
             LocalBucket bucket=buckets[i];
-            bucket.init(_dispatcher);
+            bucket.init(this);
             BucketFacade facade=_buckets[bucket.getKey()];
             facade.setContent(timeStamp, bucket);
         }
@@ -512,6 +512,18 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
     
     protected int getKey(String name) {
         return Math.abs(name.hashCode()%_numBuckets);
+    }
+
+    // BucketConfig
+    
+    public MessageDispatcher getMessageDispatcher() {
+        return _dispatcher;
+    }
+
+    public String getNodeName(Destination destination) {
+        Node local=_cluster.getLocalNode();
+        Node node=destination.equals(local.getDestination())?local:(Node)_cluster.getNodes().get(destination);
+        return getNodeName(node);
     }
     
 //    public void insert(String name) {

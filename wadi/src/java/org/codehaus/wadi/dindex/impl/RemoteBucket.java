@@ -22,6 +22,7 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.impl.MessageDispatcher;
 
@@ -29,13 +30,13 @@ public class RemoteBucket extends AbstractBucket {
 
     protected static final Log _log = LogFactory.getLog(RemoteBucket.class);
 
-    protected final MessageDispatcher _dispatcher;
-
+    protected final BucketConfig _config;
+    
     protected Destination _location;
 
-    public RemoteBucket(int key, MessageDispatcher dispatcher, Destination location) {
+    public RemoteBucket(int key, BucketConfig config, Destination location) {
         super(key);
-        _dispatcher=dispatcher;
+        _config=config;
         _location=location;
     }
 
@@ -49,27 +50,27 @@ public class RemoteBucket extends AbstractBucket {
 	  // _location is already null
 	} else {
 	  // they cannot be equal - update
-	  _log.info("["+_key+"] updating location from: "+_location+" to: "+location);
+	  _log.info("["+_key+"] updating location from: "+_config.getNodeName(_location)+" to: "+_config.getNodeName(location));
 	  _location=location;
 	}
       } else {
 	if (_location.equals(location)) {
 	  // no need to update
 	} else {
-	  _log.info("["+_key+"] updating location from: "+_location+" to: "+location);
+	  _log.info("["+_key+"] updating location from: "+_config.getNodeName(_location)+" to: "+_config.getNodeName(location));
 	  _location=location;
 	}
       }
     }
 
     public String toString() {
-      return "<remote:"+(_location==null?null:_location.toString())+">";
+      return "<remote:"+(_location==null?null:_config.getNodeName(_location))+">";
     }
 
     public void dispatch(ObjectMessage om, DIndexRequest request) {
-        _log.info("RemoteBucketDispatcher - forwarding: "+request.getName());
+        _log.info("RemoteBucketDispatcher - forwarding: "+request.getName()+" to: "+_config.getNodeName(_location));
         try {
-            _dispatcher.forward(om, _location);
+            _config.getMessageDispatcher().forward(om, _location);
         } catch (JMSException e) {
             _log.warn("ohoh!", e);
         }

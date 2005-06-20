@@ -23,6 +23,7 @@ import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.Bucket;
+import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.impl.MessageDispatcher;
 
@@ -37,13 +38,15 @@ public class BucketFacade extends AbstractBucket {
 
     protected final ReadWriteLock _lock=new WriterPreferenceReadWriteLock();
     protected final LinkedQueue _queue=new LinkedQueue();
-
+    protected final BucketConfig _config;
+    
     protected boolean _queueing;
     protected long _timeStamp;
     protected Bucket _content;
 
-    public BucketFacade(int key, long timeStamp, Bucket content, boolean queueing) {
+    public BucketFacade(int key, long timeStamp, Bucket content, boolean queueing, BucketConfig config) {
         super(key);
+        _config=config;
         _timeStamp=timeStamp;
         _content=content;
         _queueing=queueing;
@@ -122,7 +125,7 @@ public class BucketFacade extends AbstractBucket {
                     ((RemoteBucket)_content).setLocation(location);
                 } else {
                     _log.info("["+_key+"] changing location from: "+_content+" to: "+location);
-                    _content=new RemoteBucket(_key, dispatcher, location);
+                    _content=new RemoteBucket(_key, _config, location);
                 }
             }
 
