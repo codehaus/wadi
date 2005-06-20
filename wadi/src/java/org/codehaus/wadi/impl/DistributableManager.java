@@ -69,8 +69,9 @@ public class DistributableManager extends StandardManager implements Distributab
     protected final HttpProxy _httpProxy;
     protected final InetSocketAddress _httpAddress;
     protected final boolean _accessOnLoad=true; // TODO - parameterise...
+    protected final int _numBuckets;
 
-    public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterUri, String clusterName, String nodeName, HttpProxy httpProxy, InetSocketAddress httpAddress) {
+    public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterUri, String clusterName, String nodeName, HttpProxy httpProxy, InetSocketAddress httpAddress, int numBuckets) {
         super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router);
         _streamer=streamer;
         _clusterUri=clusterUri;
@@ -78,6 +79,7 @@ public class DistributableManager extends StandardManager implements Distributab
         _nodeName=nodeName;
         _httpProxy=httpProxy;
         _httpAddress=httpAddress;
+        _numBuckets=numBuckets;
     }
 
     public String getContextPath() { // TODO - integrate with Jetty/Tomcat
@@ -100,8 +102,7 @@ public class DistributableManager extends StandardManager implements Distributab
             _dispatcher.init(this);
             _distributedState.put("name", _nodeName);
             _distributedState.put("http", _httpAddress);
-            int numBuckets=72; // TODO - parameterise...
-            _dindex=new DIndex(_nodeName, numBuckets, _clusterFactory.getInactiveTime(), _cluster, _dispatcher, _distributedState);
+            _dindex=new DIndex(_nodeName, _numBuckets, _clusterFactory.getInactiveTime(), _cluster, _dispatcher, _distributedState);
             _dindex.init();
         } catch (Exception e) {
             _log.error("problem starting Cluster", e);

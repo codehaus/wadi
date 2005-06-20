@@ -42,8 +42,8 @@ public class JettyManager extends org.codehaus.wadi.impl.DistributableManager im
 
     protected final Log _log = LogFactory.getLog(getClass());
 
-    public JettyManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, JettySessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterUri, String clusterName, String nodeName, HttpProxy httpProxy, InetSocketAddress httpAddress) {
-        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad, clusterUri, clusterName, nodeName, httpProxy, httpAddress);
+    public JettyManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, JettySessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterUri, String clusterName, String nodeName, HttpProxy httpProxy, InetSocketAddress httpAddress, int numBuckets) {
+        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad, clusterUri, clusterName, nodeName, httpProxy, httpAddress, numBuckets);
     }
 
     // DistributableManager - WADI

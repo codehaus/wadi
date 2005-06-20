@@ -138,7 +138,7 @@ public class TestEvicters extends TestCase {
         HttpProxy httpProxy=new StandardHttpProxy("jsessionid");
         InetSocketAddress httpAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8888);
         String nodeName="node0";
-        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, _clusterUri, _clusterName, nodeName, httpProxy, httpAddress);
+        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, _clusterUri, _clusterName, nodeName, httpProxy, httpAddress, 24);
         manager.setMaxInactiveInterval(2);
         manager.init();
         //manager.start();
