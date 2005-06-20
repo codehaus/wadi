@@ -33,6 +33,7 @@ import org.activecluster.Cluster;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.MessageDispatcherConfig;
+import org.codehaus.wadi.dindex.DIndexRequest;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
@@ -288,6 +289,15 @@ public class MessageDispatcher implements MessageListener {
         message.setJMSReplyTo(request.getJMSReplyTo());
         message.setJMSCorrelationID(request.getJMSCorrelationID());
         message.setObject(request.getObject());
+        _cluster.send(destination, message);
+    }
+
+    public void forward(ObjectMessage request, Destination destination, DIndexRequest dir) throws JMSException {
+        // construct and send message...
+        ObjectMessage message=_cluster.createObjectMessage();
+        message.setJMSReplyTo(request.getJMSReplyTo());
+        message.setJMSCorrelationID(request.getJMSCorrelationID());
+        message.setObject(dir);
         _cluster.send(destination, message);
     }
 

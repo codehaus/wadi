@@ -96,6 +96,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         _dispatcher.register(this, "onDIndexDeletionRequest", DIndexDeletionRequest.class);
         _dispatcher.register(DIndexDeletionResponse.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexRelocationRequest", DIndexRelocationRequest.class);
+        _dispatcher.register(this, "onDIndexForwardRequest", DIndexForwardRequest.class);
         
         //_cluster.getLocalNode().setState(_distributedState); // this needs to be done before _cluster.start()
         //_log.info("distributed state updated: "+_distributedState.get(_bucketKeysKey));
@@ -465,6 +466,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         onDIndexRequest(om, request);
     }
 
+    public void onDIndexForwardRequest(ObjectMessage om, DIndexForwardRequest request) {
+        onDIndexRequest(om, request);
+    }
+
     public void onDIndexRelocationRequest(ObjectMessage om, DIndexRelocationRequest request) {
         onDIndexRequest(om, request);
     }
@@ -482,16 +487,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
             DIndexInsertionRequest request=new DIndexInsertionRequest(name);
             message.setObject(request);
-            exchange(name, message, request, _inactiveTime);
+            return _buckets[getKey(name)].exchange(message, request, _inactiveTime);
         } catch (JMSException e) {
             _log.info("oops...", e);
         }
         return null;    
-    }
-    
-    public ObjectMessage exchange(String name, ObjectMessage message, DIndexRequest request, long timeout) {
-        int key=getKey(name);
-        return _buckets[key].exchange(message, request, timeout);
     }
     
     public void remove(String name) {
@@ -500,12 +500,25 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
             DIndexDeletionRequest request=new DIndexDeletionRequest(name);
             message.setObject(request);
-            exchange(name, message, request, _inactiveTime);
+            _buckets[getKey(name)].exchange(message, request, _inactiveTime);
         } catch (JMSException e) {
             _log.info("oops...", e);
         }
     }
     
+    
+    public ObjectMessage forwardAndExchange(String name, ObjectMessage message, DIndexRequest request, long timeout) {
+        int key=getKey(name);
+        try {
+            _log.info("wrapping request");
+            request=new DIndexForwardRequest(request);
+            message.setObject(request);
+            return _buckets[key].exchange(message, request, timeout);
+        } catch (JMSException e) {
+            _log.info("oops...", e);
+            return null;
+        }
+    }
     
     protected int getKey(String name) {
         return Math.abs(name.hashCode()%_numBuckets);
@@ -527,19 +540,5 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         return _inactiveTime;
     }
     
-//    public void insert(String name) {
-//        int key=getKey(name);
-//        _buckets[key].insert(name, _cluster.getLocalNode());
-//    }
-//    
-//    public void remove(String name) {
-//        int key=getKey(name);
-//        _buckets[key].remove(name);
-//    }
-    
-//    public void send(String name, ObjectMessage message) throws JMSException {
-//        int key=getKey(name);
-//        _buckets[key].exchange
-//    }
 }
 

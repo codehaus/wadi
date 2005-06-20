@@ -81,7 +81,7 @@ public class HybridRelocater extends AbstractRelocater {
     }
     
     public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
-        if (_log.isTraceEnabled()) _log.trace("sending RelocationRequest from "+_nodeName+" for "+name);
+        if (_log.isTraceEnabled()) _log.trace("indirecting RelocationRequest from "+_nodeName+" for "+name);
         String sessionName=name;
         String nodeName=_config.getNodeName();
         boolean sessionOrRequestPreferred=getSessionOrRequestPreferred();
@@ -95,7 +95,7 @@ public class HybridRelocater extends AbstractRelocater {
             message.setJMSReplyTo(_config.getCluster().getLocalNode().getDestination());
             RelocationRequest request=new RelocationRequest(sessionName, nodeName, sessionOrRequestPreferred, shuttingDown, lastKnownTime, lastKnownPlace, _requestHandOverTimeout);
             message.setObject(request);
-            message2=_config.getDIndex().exchange(sessionName, message, request, _resTimeout);
+            message2=_config.getDIndex().forwardAndExchange(sessionName, message, request, _resTimeout);
 
             if (message2==null || (response=(RelocationResponse)message2.getObject())==null)
                 return false;
@@ -123,14 +123,12 @@ public class HybridRelocater extends AbstractRelocater {
             if (!emotable.checkTimeframe(System.currentTimeMillis()))
                 if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
             
-            Emoter emoter=new RelocationAcknowledgementEmoter(response.getNodeName(), _config.getMap(), null);
+            Emoter emoter=new RelocationAcknowledgementEmoter(response.getNodeName(), message2);
             Motable immotable=Utils.mote(emoter, immoter, emotable, name);
             if (null==immotable)
                 return false;
             else {
                 boolean answer=immoter.contextualise(hreq, hres, chain, name, immotable, motionLock);
-                if (answer)
-                    motionLock.release();
                 return answer;
             }
         }
@@ -141,12 +139,10 @@ public class HybridRelocater extends AbstractRelocater {
         protected final Log _log=LogFactory.getLog(getClass());
         
         protected final String _nodeName;
-        protected final Map _map;
         protected final ObjectMessage _message;
         
-        public RelocationAcknowledgementEmoter(String nodeName, Map map, ObjectMessage message) {
+        public RelocationAcknowledgementEmoter(String nodeName, ObjectMessage message) {
             _nodeName=nodeName;
-            _map=map;
             _message=message;
         }
         

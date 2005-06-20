@@ -161,10 +161,13 @@ public class BucketFacade extends AbstractBucket {
             sync.acquire();
             acquired=true;
             if (!_queueing) {
+                _log.info("exec-ing message");
                 _content.dispatch(om, request);
             }
-            else
+            else {
+                _log.info("queueing message");
                 _queue.put(om);
+            }
         } catch (InterruptedException e) {
             _log.warn("unexpected problem", e);
         } finally {
