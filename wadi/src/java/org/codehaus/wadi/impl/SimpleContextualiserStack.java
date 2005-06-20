@@ -103,8 +103,8 @@ public class SimpleContextualiserStack implements Contextualiser {
   public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource, Relocater relocater) throws Exception {
         super();
         _streamer=new SimpleStreamer();
-        //_collapser=new DebugCollapser();
-        _collapser=new HashingCollapser(1000, 6000);
+        _collapser=new DebugCollapser();
+        //_collapser=new HashingCollapser(1000, 6000);
 
         _dummy=new DummyContextualiser();
         _databaseDataSource=dataSource;

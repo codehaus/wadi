@@ -68,11 +68,11 @@ public class RemoteBucket extends AbstractBucket {
     }
 
     public void dispatch(ObjectMessage om, DIndexRequest request) {
-        _log.info("RemoteBucketDispatcher - forwarding: "+request.getName()+" to: "+_config.getNodeName(_location));
         try {
+            _log.info("forwarding: "+request.getName()+" - "+_config.getNodeName(om.getJMSReplyTo())+" -> "+_config.getNodeName(_location));
             _config.getMessageDispatcher().forward(om, _location);
         } catch (JMSException e) {
-            _log.warn("ohoh!", e);
+            _log.warn("could not forward message", e);
         }
     }
 }

@@ -26,6 +26,7 @@ import org.codehaus.wadi.dindex.Bucket;
 import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.impl.MessageDispatcher;
+import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
@@ -135,6 +136,19 @@ public class BucketFacade extends AbstractBucket {
             if (acquired)
                 sync.release();
         }
+    }
+    
+    public ObjectMessage exchange(ObjectMessage message, DIndexRequest request, long timeout) {
+        MessageDispatcher dispatcher=_config.getMessageDispatcher();
+        String correlationId=dispatcher.nextCorrelationId();
+        Quipu rv=dispatcher.setRendezVous(correlationId);
+        try {
+            message.setJMSCorrelationID(correlationId);
+            dispatch(message, request);
+        } catch (JMSException e) {
+            _log.error("could not dispatch message", e);
+        }
+        return dispatcher.attemptRendezVous(correlationId, rv, timeout);
     }
     
     public void dispatch(ObjectMessage om, DIndexRequest request) {

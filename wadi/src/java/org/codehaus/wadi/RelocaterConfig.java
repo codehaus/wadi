@@ -19,7 +19,10 @@ package org.codehaus.wadi;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
+import javax.jms.Destination;
+
 import org.activecluster.Cluster;
+import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.impl.MessageDispatcher;
 import org.codehaus.wadi.io.Server;
 
@@ -38,5 +41,7 @@ public interface RelocaterConfig extends Config {
     SynchronizedBoolean getShuttingDown();
     HttpProxy getHttpProxy();
     InetSocketAddress getHttpAddress();
+    
+    DIndex getDIndex();
     
 }
