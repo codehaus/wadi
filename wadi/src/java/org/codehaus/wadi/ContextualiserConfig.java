@@ -27,4 +27,7 @@ public interface ContextualiserConfig extends Config {
     SessionPool getSessionPool();
     Router getRouter();
     
+    void notifySessionInsertion(Session session);
+    void notifySessionDeletion(Session session);
+    
 }

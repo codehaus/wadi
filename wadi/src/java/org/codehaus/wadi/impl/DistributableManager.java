@@ -197,6 +197,7 @@ public class DistributableManager extends StandardManager implements Distributab
         
         // TODO - remove from Contextualiser....at end of initial request ? Think more about this
         String id=session.getName();
+        notifySessionDeletion(session);
         _map.remove(id);
         session.destroy();
         _sessionPool.put(session);
@@ -274,5 +275,15 @@ public class DistributableManager extends StandardManager implements Distributab
     
     public DIndex getDIndex() {
         return _dindex;
+    }
+    
+    public void notifySessionInsertion(Session session) {
+        super.notifySessionInsertion(session);
+        _dindex.insert(session.getName());
+    }
+    
+    public void notifySessionDeletion(Session session) {
+        super.notifySessionDeletion(session);
+        _dindex.remove(session.getName());
     }
 }

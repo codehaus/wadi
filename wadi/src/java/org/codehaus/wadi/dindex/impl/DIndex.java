@@ -477,37 +477,56 @@ public class DIndex implements ClusterListener, CoordinatorConfig {
     
     // temporary test methods...
     
-    public Object put(String name, Object value, Destination destination) {
+    public Object insert(String name) {
         try {
             ObjectMessage message=_cluster.createObjectMessage();
             message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-            message.setJMSDestination(destination);
+            message.setJMSDestination(_cluster.getLocalNode().getDestination());
             DIndexInsertionRequest request=new DIndexInsertionRequest(name);
             message.setObject(request);
-            _dispatcher.exchange(message, 5000);
+            _dispatcher.exchange(message, _inactiveTime);
         } catch (JMSException e) {
             _log.info("oops...", e);
         }
         return null;    
     }
     
-    public Object get(String name) {
-        throw new UnsupportedOperationException();
-    }
+//    public Object get(String name) {
+//        throw new UnsupportedOperationException();
+//    }
     
-    public Object remove(String name, Destination destination) {
+    public Object remove(String name) {
         try {
             ObjectMessage message=_cluster.createObjectMessage();
             message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-            message.setJMSDestination(destination);
+            message.setJMSDestination(_cluster.getLocalNode().getDestination());
             DIndexDeletionRequest request=new DIndexDeletionRequest(name);
             message.setObject(request);
-            _dispatcher.exchange(message, 5000);
+            _dispatcher.exchange(message, _inactiveTime);
         } catch (JMSException e) {
             _log.info("oops...", e);
         }
         return null;    
     }
     
+    
+    protected int getKey(String name) {
+        return Math.abs(name.hashCode()%_numBuckets);
+    }
+    
+//    public void insert(String name) {
+//        int key=getKey(name);
+//        _buckets[key].insert(name, _cluster.getLocalNode());
+//    }
+//    
+//    public void remove(String name) {
+//        int key=getKey(name);
+//        _buckets[key].remove(name);
+//    }
+    
+//    public void send(String name, ObjectMessage message) throws JMSException {
+//        int key=getKey(name);
+//        _buckets[key].exchange
+//    }
 }
 

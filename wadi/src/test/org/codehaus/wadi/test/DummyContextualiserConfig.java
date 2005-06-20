@@ -24,6 +24,7 @@ import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Router;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionConfig;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.impl.AbstractMotingContextualiser;
@@ -55,5 +56,11 @@ class DummyContextualiserConfig implements ContextualiserConfig {
     
     protected final Router _router=new DummyRouter();
     public Router getRouter() {return _router;}
+    
+    public void notifySessionInsertion(Session session) {
+    }
+    
+    public void notifySessionDeletion(Session session) {
+    }
 
 }

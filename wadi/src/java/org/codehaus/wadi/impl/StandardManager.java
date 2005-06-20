@@ -119,6 +119,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         String name=_sessionIdFactory.create(); // TODO - API on this class is wrong...
         session.init(time, time, _maxInactiveInterval, name);
         _map.put(name, session);
+        notifySessionInsertion(session);
         // _contextualiser.getEvicter().insert(session);
         if (_log.isDebugEnabled()) _log.debug("creation: "+name);
         return session;
@@ -129,6 +130,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
             session.removeAttribute((String)i.next()); // TODO - very inefficient
         // _contextualiser.getEvicter().remove(session);
         String name=session.getName();
+        notifySessionDeletion(session);
         _map.remove(name);
         session.destroy();
         _sessionPool.put(session);
@@ -256,4 +258,9 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
     
     public SynchronizedBoolean getAcceptingSessions() {return _acceptingSessions;}
     
+    public void notifySessionInsertion(Session session) {
+    }
+    
+    public void notifySessionDeletion(Session session) {
+    }
 }
