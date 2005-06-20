@@ -12,6 +12,7 @@ exec time java\
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
 -classpath \
 WEB-INF/classes:\
+WEB-INF-classes:\
 WEB-INF/classes.test:\
 WEB-INF/lib/concurrent-1.3.4.jar:\
 WEB-INF/lib/activecluster-1.1-SNAPSHOT.jar:\
