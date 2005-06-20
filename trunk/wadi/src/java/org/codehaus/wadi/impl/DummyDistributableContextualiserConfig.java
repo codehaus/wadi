@@ -25,6 +25,7 @@ import javax.jms.JMSException;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpProxy;
+import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.io.Server;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
@@ -101,6 +102,10 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
     }
 
     public MessageDispatcher getMessageDispatcher() {
+        return null;
+    }
+    
+    public DIndex getDIndex() {
         return null;
     }
 

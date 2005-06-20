@@ -21,6 +21,7 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
+import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.impl.MessageDispatcher;
 import org.codehaus.wadi.io.Server;
 
@@ -48,4 +49,6 @@ public interface DistributableContextualiserConfig extends ContextualiserConfig 
     int getNumBuckets();
 
     MessageDispatcher getMessageDispatcher();
+    DIndex getDIndex();
+    
 }
