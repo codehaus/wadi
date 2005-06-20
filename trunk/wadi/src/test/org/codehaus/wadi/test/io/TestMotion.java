@@ -52,6 +52,7 @@ import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionRelocater;
 import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
@@ -402,6 +403,7 @@ public class TestMotion extends TestCase {
         public SynchronizedBoolean getShuttingDown() {return null;}
         public HttpProxy getHttpProxy() {return null;}
         public InetSocketAddress getHttpAddress() {return null;}
+        public DIndex getDIndex() {return null;}
         
     }
     

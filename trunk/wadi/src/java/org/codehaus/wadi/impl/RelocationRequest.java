@@ -18,7 +18,10 @@ package org.codehaus.wadi.impl;
 
 import java.io.Serializable;
 
-public class RelocationRequest implements Serializable {
+import org.codehaus.wadi.dindex.DIndexRequest;
+import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
+
+public class RelocationRequest extends AbstractDIndexRequest implements Serializable {
 
     protected static final boolean _RELOCATE_SESSION_PREFERRED=true;
     protected static final boolean _RELOCATE_REQUEST_PREFERRED=false;
@@ -35,6 +38,7 @@ public class RelocationRequest implements Serializable {
     private long _requestHandOverTimeout;
     
     public RelocationRequest(String sessionName, String nodeName, boolean sessionOrRequestPreferred, boolean shuttingDown, long lastKnownTime, String lastKnownPlace, long requestHandOverTimeout) {
+        super(sessionName);
         _sessionName=sessionName;
         _nodeName=nodeName;
         _sessionOrRequestPreferred=sessionOrRequestPreferred;
@@ -51,7 +55,7 @@ public class RelocationRequest implements Serializable {
     public String getSessionName() {
         return _sessionName;
     }
-
+    
     public String getNodeName() {
         return _nodeName;
     }

@@ -37,10 +37,8 @@ import org.codehaus.wadi.MessageDispatcherConfig;
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
-import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
-import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
 
 // TODO - we need a ThreadPool here - to stop a glut of incoming messages from overwhelming a node.
 
@@ -120,7 +118,6 @@ public class MessageDispatcher implements MessageListener {
 
     public Dispatcher register(Object target, String methodName, Class type) {
         try {
-            int n=0;
             Method method=target.getClass().getMethod(methodName, new Class[] {ObjectMessage.class, type});
             if (method==null) return null;
 
@@ -355,26 +352,28 @@ public class MessageDispatcher implements MessageListener {
     public Map getRendezVousMap() {
         return _rvMap;
     }
+
+    public String nextCorrelationId() {
+        return _factory.create();
+    }
     
-	public ObjectMessage exchange(ObjectMessage request, long timeout) {
-	    ObjectMessage response=null;
-	    String correlationId=null;
-	    try {
-            correlationId=request.getJMSCorrelationID();
-            if (correlationId==null)
-                request.setJMSCorrelationID(correlationId=_factory.create());
-	        
-	        // set up a rendez-vous...
-	        Quipu rv=new Quipu(1);
-	        _rvMap.put(correlationId, rv);
-	        
-            // send the request
-	        _cluster.send(request.getJMSDestination(), request);
-            
-            // rendez-vous with response/timeout...
-	        do {
-	            try {
-	                long startTime=System.currentTimeMillis();
+    public ObjectMessage exchange(ObjectMessage request, long timeout) {
+        return exchange(request, nextCorrelationId(), timeout);
+    }
+    
+    public Quipu setRendezVous(String correlationId) {
+        Quipu rv=new Quipu(1);
+        _rvMap.put(correlationId, rv);
+        return rv;
+    }
+    
+    public ObjectMessage attemptRendezVous(String correlationId, Quipu rv, long timeout) {
+        // rendez-vous with response/timeout...
+        ObjectMessage response=null;
+        try {
+            do {
+                try {
+                    long startTime=System.currentTimeMillis();
                     if (rv.waitFor(timeout)) {
                         response=(ObjectMessage)rv.getResults().toArray()[0]; // TODO - Aargh!
                         long elapsedTime=System.currentTimeMillis()-startTime;
@@ -383,21 +382,34 @@ public class MessageDispatcher implements MessageListener {
                         response=null;
                         if (_log.isWarnEnabled()) _log.warn("unsuccessful message exchange within timeframe ("+timeout+" millis) '"+correlationId+"'");
                     }
-	            } catch (TimeoutException e) {
-	                if (_log.isWarnEnabled()) _log.warn("no response to request within timeout ("+timeout+" millis)"); // session does not exist
-	            } catch (InterruptedException e) {
-	                if (_log.isWarnEnabled()) _log.warn("waiting for response - interruption ignored");
-	            }
-	        } while (Thread.interrupted());
-	    } catch (JMSException e) {
-	        if (_log.isWarnEnabled()) _log.warn("problem sending request message", e);
-	    } finally {
-	        // tidy up rendez-vous
+                } catch (TimeoutException e) {
+                    if (_log.isWarnEnabled()) _log.warn("no response to request within timeout ("+timeout+" millis)"); // session does not exist
+                } catch (InterruptedException e) {
+                    if (_log.isWarnEnabled()) _log.warn("waiting for response - interruption ignored");
+                }
+            } while (Thread.interrupted());
+        } finally {
+            // tidy up rendez-vous
             if (correlationId!=null)
                 _rvMap.remove(correlationId);
-	    }
-	    return response;
-	}
+        }
+        return response;
+    }
+    
+    public ObjectMessage exchange(ObjectMessage request, String correlationId, long timeout) {
+        Quipu rv=null;
+        try {
+            request.setJMSCorrelationID(correlationId);
+            // set up a rendez-vous...
+            rv=setRendezVous(correlationId);
+            // send the request
+            _cluster.send(request.getJMSDestination(), request);
+        } catch (JMSException e) {
+            if (_log.isWarnEnabled()) _log.warn("problem sending request message", e);
+        } 
+        
+        return attemptRendezVous(correlationId, rv, timeout);
+    }
 
 	public Cluster getCluster(){return _cluster;}
 

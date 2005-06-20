@@ -75,9 +75,17 @@ public class LocalBucket extends AbstractBucket implements Serializable {
                     throw new IllegalStateException();
                 response=new DIndexDeletionResponse();
             } else {
-                throw new UnsupportedOperationException(); // no such request - yet...
+                String name=request.getName();
+                Destination location=(Destination)_map.get(name);
+                _log.info("forwarding: "+request.getName()+" to: "+_config.getNodeName(location));
+                try {
+                    _config.getMessageDispatcher().forward(om, location);
+                } catch (JMSException e) {
+                    _log.warn("could not forward message", e);
+                }
+                //throw new UnsupportedOperationException(); // no such request - yet...
             }
-            
+            // we can optimise local-local send here - TODO
             _config.getMessageDispatcher().reply(om, response);
             
         } catch (JMSException e) {

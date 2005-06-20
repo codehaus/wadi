@@ -574,5 +574,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   public InetSocketAddress getHttpAddress() {return ((DistributableContextualiserConfig)_config).getHttpAddress();}
 
   public Cluster getCluster() {return _cluster;}
+
+  public DIndex getDIndex() {
+      return _dindex;
+  }
   
 }

@@ -51,7 +51,6 @@ public class HybridRelocater extends AbstractRelocater {
     
     protected final Log _log=LogFactory.getLog(getClass());
     protected final Map _ackRvMap=Collections.synchronizedMap(new HashMap());
-    protected final Map _resRvMap=Collections.synchronizedMap(new HashMap());
     protected final long _requestHandOverTimeout=2000;// TODO - parameterise
     protected final long _resTimeout;
     protected final long _ackTimeout;
@@ -77,7 +76,7 @@ public class HybridRelocater extends AbstractRelocater {
         _contextualiser=_config.getContextualiser();
         _httpProxy=_config.getHttpProxy();
         _dispatcher.register(this, "onMessage", RelocationRequest.class);
-        _dispatcher.register(RelocationResponse.class, _resRvMap, _resTimeout);
+        _dispatcher.register(RelocationResponse.class, _resTimeout);
         _dispatcher.register(RelocationAcknowledgement.class, _ackRvMap, _ackTimeout);
     }
     
@@ -89,16 +88,21 @@ public class HybridRelocater extends AbstractRelocater {
         boolean shuttingDown=_shuttingDown.get();
         long lastKnownTime=0L;
         String lastKnownPlace=null;
-        MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-        settingsInOut.from=_config.getLocation().getDestination();
-        settingsInOut.to=_config.getDispatcher().getCluster().getDestination();
-        settingsInOut.correlationId=nodeName+"-"+sessionName+"-"+System.currentTimeMillis();
-        RelocationRequest request=new RelocationRequest(sessionName, nodeName, sessionOrRequestPreferred, shuttingDown, lastKnownTime, lastKnownPlace, _requestHandOverTimeout);
-        RelocationResponse response=(RelocationResponse)_config.getDispatcher().exchangeMessages(request, _resRvMap, settingsInOut, _resTimeout);
-        
-        if (response==null)
-            return false;
-        
+        ObjectMessage message2=null;
+        RelocationResponse response=null;
+        try {
+            ObjectMessage message=_config.getCluster().createObjectMessage();
+            message.setJMSReplyTo(_config.getCluster().getLocalNode().getDestination());
+            RelocationRequest request=new RelocationRequest(sessionName, nodeName, sessionOrRequestPreferred, shuttingDown, lastKnownTime, lastKnownPlace, _requestHandOverTimeout);
+            message.setObject(request);
+            message2=_config.getDIndex().exchange(sessionName, message, request, _resTimeout);
+
+            if (message2==null || (response=(RelocationResponse)message2.getObject())==null)
+                return false;
+        } catch (JMSException e) {
+            _log.warn("problem arranging relocation", e);
+        }
+
         Motable emotable=response.getMotable();
         if (emotable==null) {
             // relocate request...
@@ -107,6 +111,8 @@ public class HybridRelocater extends AbstractRelocater {
                 //FIXME - API should not be in terms of HttpProxy but in terms of RequestRelocater...
                 
                 _httpProxy.proxy(response.getAddress(), hreq, hres);
+                _log.info("PROXY WAS SUCCESSFUL");
+                motionLock.release();
                 return true;
             } catch (Exception e) {
                 _log.error("problem proxying request", e);
@@ -117,7 +123,7 @@ public class HybridRelocater extends AbstractRelocater {
             if (!emotable.checkTimeframe(System.currentTimeMillis()))
                 if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
             
-            Emoter emoter=new RelocationAcknowledgementEmoter(response.getNodeName(), _config.getMap(), settingsInOut);
+            Emoter emoter=new RelocationAcknowledgementEmoter(response.getNodeName(), _config.getMap(), null);
             Motable immotable=Utils.mote(emoter, immoter, emotable, name);
             if (null==immotable)
                 return false;
@@ -134,12 +140,12 @@ public class HybridRelocater extends AbstractRelocater {
         
         protected final String _nodeName;
         protected final Map _map;
-        protected MessageDispatcher.Settings _settingsInOut;
+        protected final ObjectMessage _message;
         
-        public RelocationAcknowledgementEmoter(String nodeName, Map map, MessageDispatcher.Settings settingsInOut) {
+        public RelocationAcknowledgementEmoter(String nodeName, Map map, ObjectMessage message) {
             _nodeName=nodeName;
             _map=map;
-            _settingsInOut=settingsInOut;
+            _message=message;
         }
         
         public boolean prepare(String name, Motable emotable) {
@@ -150,10 +156,10 @@ public class HybridRelocater extends AbstractRelocater {
             emotable.destroy(); // remove copy in store
             
             // TODO - move some of this to prepare()...
-            if (_log.isTraceEnabled()) _log.trace("sending RelocationAcknowledgement: "+_settingsInOut.correlationId);
+            if (_log.isTraceEnabled()) _log.trace("sending RelocationAcknowledgement");
             RelocationAcknowledgement ack=new RelocationAcknowledgement();//(name, _config.getLocation());
             try {
-                _config.getDispatcher().sendMessage(ack, _settingsInOut);
+                _config.getDispatcher().reply(_message, ack);
                 _config.getMap().remove(name);
             } catch (JMSException e) {
                 if (_log.isErrorEnabled()) _log.error("could not send RelocationAcknowledgement: "+name, e);
@@ -309,18 +315,13 @@ public class HybridRelocater extends AbstractRelocater {
     
     protected void relocateRequestToUs(ObjectMessage om, String sessionName) {
         try {
-            //MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
-            // reverse direction...
-//            settingsInOut.to=om.getJMSReplyTo();
-//            settingsInOut.from=_config.getLocation().getDestination();
-//            settingsInOut.correlationId=om.getJMSCorrelationID();
+            String src=_config.getDIndex().getNodeName(om.getJMSReplyTo());
+            _log.trace("arranging for request to be relocated - sending response to: "+src);
             RelocationResponse response=new RelocationResponse(sessionName, _nodeName, _config.getHttpAddress());
-//            _config.getDispatcher().sendMessage(response, settingsInOut);
             _config.getDispatcher().reply(om, response);
-//            _config.getMap().remove(name);
         } catch (JMSException e) {
             if (_log.isErrorEnabled()) _log.error("could not send RelocationResponse: "+sessionName, e);
         }
-
     }
+    
 }

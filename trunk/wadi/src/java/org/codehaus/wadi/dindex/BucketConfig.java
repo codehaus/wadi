@@ -18,11 +18,14 @@ package org.codehaus.wadi.dindex;
 
 import javax.jms.Destination;
 
+import org.activecluster.Cluster;
 import org.codehaus.wadi.impl.MessageDispatcher;
 
 public interface BucketConfig {
 
     MessageDispatcher getMessageDispatcher();
+    Cluster getCluster();
     String getNodeName(Destination destination);
+    long getInactiveTime();
     
 }
