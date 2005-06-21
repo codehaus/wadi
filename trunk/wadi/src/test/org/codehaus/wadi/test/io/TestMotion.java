@@ -404,6 +404,7 @@ public class TestMotion extends TestCase {
         public HttpProxy getHttpProxy() {return null;}
         public InetSocketAddress getHttpAddress() {return null;}
         public DIndex getDIndex() {return null;}
+        public void notifySessionRelocation(String name) {};
         
     }
     

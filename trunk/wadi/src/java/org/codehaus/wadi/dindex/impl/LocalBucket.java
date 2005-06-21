@@ -28,7 +28,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.DIndexResponse;
-import org.codehaus.wadi.impl.MessageDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
@@ -78,7 +77,16 @@ public class LocalBucket extends AbstractBucket implements Serializable {
                 response=new DIndexDeletionResponse();
                 // we can optimise local-local send here - TODO
                 _config.getMessageDispatcher().reply(om, response);
+            } else if (request instanceof DIndexRelocationRequest) {
+                Destination location=om.getJMSReplyTo();
+                Destination oldLocation=(Destination)_map.put(request.getName(), location); // remember new location of actual session...
+                _log.info("relocate "+request.getName()+" : "+_config.getNodeName(oldLocation)+" -> "+_config.getNodeName(location));
+                response=new DIndexRelocationResponse();
+                // we can optimise local-local send here - TODO
+                _config.getMessageDispatcher().reply(om, response);
             } else if (request instanceof DIndexForwardRequest) {
+                // we have got to someone who actually knows where we want to go.
+                // strip off wrapper and deliver actual request to its final destination...
                 String name=request.getName();
                 Destination location=(Destination)_map.get(name);
                 if (location==null) {

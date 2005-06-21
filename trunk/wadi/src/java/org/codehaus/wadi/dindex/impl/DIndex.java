@@ -96,6 +96,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         _dispatcher.register(this, "onDIndexDeletionRequest", DIndexDeletionRequest.class);
         _dispatcher.register(DIndexDeletionResponse.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexRelocationRequest", DIndexRelocationRequest.class);
+        _dispatcher.register(DIndexRelocationResponse.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexForwardRequest", DIndexForwardRequest.class);
         
         //_cluster.getLocalNode().setState(_distributedState); // this needs to be done before _cluster.start()
@@ -506,7 +507,18 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         }
     }
     
-    
+    public void relocate(String name) {
+        try {
+            ObjectMessage message=_cluster.createObjectMessage();
+            message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+            DIndexRelocationRequest request=new DIndexRelocationRequest(name);
+            message.setObject(request);
+            _buckets[getKey(name)].exchange(message, request, _inactiveTime);
+        } catch (JMSException e) {
+            _log.info("oops...", e);
+        }
+    }    
+
     public ObjectMessage forwardAndExchange(String name, ObjectMessage message, DIndexRequest request, long timeout) {
         int key=getKey(name);
         try {

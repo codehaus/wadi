@@ -57,10 +57,13 @@ class DummyContextualiserConfig implements ContextualiserConfig {
     protected final Router _router=new DummyRouter();
     public Router getRouter() {return _router;}
     
-    public void notifySessionInsertion(Session session) {
+    public void notifySessionInsertion(String name) {
     }
     
-    public void notifySessionDeletion(Session session) {
+    public void notifySessionDeletion(String name) {
+    }
+
+    public void notifySessionRelocation(String name) {
     }
 
 }

@@ -36,6 +36,7 @@ import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RelocaterConfig;
+import org.codehaus.wadi.Session;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
@@ -153,6 +154,8 @@ public class HybridRelocater extends AbstractRelocater {
         public void commit(String name, Motable emotable) {
             emotable.destroy(); // remove copy in store
             
+            _config.notifySessionRelocation(name);
+
             // TODO - move some of this to prepare()...
             if (_log.isTraceEnabled()) _log.trace("sending RelocationAcknowledgement");
             RelocationAcknowledgement ack=new RelocationAcknowledgement();//(name, _config.getLocation());
@@ -266,14 +269,14 @@ public class HybridRelocater extends AbstractRelocater {
         }
         
         public boolean prepare(String name, Motable emotable, Motable immotable) {
-            // send the message
-            if (_log.isTraceEnabled()) _log.trace("sending RelocationResponse: "+_settingsInOut.correlationId);
             try {
                 immotable.copy(emotable);
             } catch (Exception e) {
                 _log.warn("unexpected problem", e);
                 return false;
             }
+            // send the message
+            if (_log.isTraceEnabled()) _log.trace("sending RelocationResponse: "+_settingsInOut.correlationId);
             RelocationResponse response=new RelocationResponse(name, _nodeName, immotable);
             RelocationAcknowledgement ack=(RelocationAcknowledgement)_dispatcher.exchangeMessages(response, _ackRvMap, _settingsInOut, _ackTimeout);
             if (ack==null) {

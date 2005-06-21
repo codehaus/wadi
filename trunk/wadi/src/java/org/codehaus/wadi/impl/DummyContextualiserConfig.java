@@ -62,10 +62,13 @@ public class DummyContextualiserConfig implements ContextualiserConfig {
         return null;
     }
     
-    public void notifySessionInsertion(Session session) {
+    public void notifySessionInsertion(String name) {
     }
     
-    public void notifySessionDeletion(Session session) {
+    public void notifySessionDeletion(String name) {
+    }
+
+    public void notifySessionRelocation(String name) {
     }
 
 }
