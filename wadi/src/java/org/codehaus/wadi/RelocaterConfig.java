@@ -43,5 +43,6 @@ public interface RelocaterConfig extends Config {
     InetSocketAddress getHttpAddress();
     
     DIndex getDIndex();
+    void notifySessionRelocation(String name);
     
 }

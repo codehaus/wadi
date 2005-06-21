@@ -37,6 +37,7 @@ import org.codehaus.wadi.dindex.DIndexRequest;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
@@ -59,7 +60,7 @@ public class MessageDispatcher implements MessageListener {
     protected final PooledExecutor _executor;
 
 	public MessageDispatcher() {
-        _executor=new PooledExecutor(new BoundedBuffer(10), 100); // parameterise
+        _executor=new PooledExecutor(new LinkedQueue(), 100); // parameterise
         _executor.setMinimumPoolSize(4);
 	    }
 

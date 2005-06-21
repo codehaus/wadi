@@ -196,12 +196,12 @@ public class DistributableManager extends StandardManager implements Distributab
             session.removeAttribute((String)i.next());
         
         // TODO - remove from Contextualiser....at end of initial request ? Think more about this
-        String id=session.getName();
-        notifySessionDeletion(session);
-        _map.remove(id);
+        String name=session.getName();
+        notifySessionDeletion(name);
+        _map.remove(name);
         session.destroy();
         _sessionPool.put(session);
-        if (_log.isDebugEnabled()) _log.debug("destroyed: "+id);
+        if (_log.isDebugEnabled()) _log.debug("destroyed: "+name);
     }
     
     // Lazy
@@ -277,13 +277,20 @@ public class DistributableManager extends StandardManager implements Distributab
         return _dindex;
     }
     
-    public void notifySessionInsertion(Session session) {
-        super.notifySessionInsertion(session);
-        _dindex.insert(session.getName());
+    public void notifySessionInsertion(String name) {
+        super.notifySessionInsertion(name);
+        _dindex.insert(name);
     }
     
-    public void notifySessionDeletion(Session session) {
-        super.notifySessionDeletion(session);
-        _dindex.remove(session.getName());
+    public void notifySessionDeletion(String name) {
+        super.notifySessionDeletion(name);
+        _dindex.remove(name);
     }
+
+    public void notifySessionRelocation(String  name) {
+        super.notifySessionRelocation(name);
+        _dindex.relocate(name);
+    }
+
 }
+

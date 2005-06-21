@@ -579,4 +579,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
       return _dindex;
   }
   
+  public void notifySessionRelocation(String name) {
+      _config.notifySessionRelocation(name);
+  }
+  
 }
