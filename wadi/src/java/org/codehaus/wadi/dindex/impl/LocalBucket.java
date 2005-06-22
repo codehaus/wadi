@@ -28,6 +28,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.DIndexResponse;
+import org.codehaus.wadi.impl.RelocationRequest;
+import org.codehaus.wadi.impl.RelocationResponse;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
@@ -90,15 +92,19 @@ public class LocalBucket extends AbstractBucket implements Serializable {
                 String name=request.getName();
                 Destination location=(Destination)_map.get(name);
                 if (location==null) {
-                    _log.info("NO SUCH SESSION: "+name);
-                    return;
-                }
-                    
-                _log.info("forward "+request.getClass().getName()+" - "+request.getName()+" : "+_config.getNodeName(location));
-                try {
-                    _config.getMessageDispatcher().forward(om, location, ((DIndexForwardRequest)request).getRequest());
-                } catch (JMSException e) {
-                    _log.warn("could not forward message", e);
+                    request=((DIndexForwardRequest)request).getRequest();
+                    if (request instanceof RelocationRequest) {
+                        _config.getMessageDispatcher().reply(om, new RelocationResponse(name));
+                    } else {
+                        _log.warn("unexpected nested request structure - ignoring: "+request);
+                    }
+                } else {
+                    _log.info("forward "+request.getClass().getName()+" - "+request.getName()+" : "+_config.getNodeName(location));
+                    try {
+                        _config.getMessageDispatcher().forward(om, location, ((DIndexForwardRequest)request).getRequest());
+                    } catch (JMSException e) {
+                        _log.warn("could not forward message", e);
+                    }
                 }
             } else {
                 _log.info("What should I do with this ?: "+request);

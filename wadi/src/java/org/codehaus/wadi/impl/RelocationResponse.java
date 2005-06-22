@@ -28,7 +28,7 @@ public class RelocationResponse implements Serializable {
     protected Motable _motable;
     protected InetSocketAddress _address;
 
-    // use when relocating session....
+    // use when relocating session...
     public RelocationResponse(String sessionName, String nodeName, Motable motable) {
         _sessionName=sessionName;
         _nodeName=nodeName;
@@ -36,12 +36,20 @@ public class RelocationResponse implements Serializable {
         _address=null;
     }
 
-    // use when relocating request....
+    // use when relocating request...
     public RelocationResponse(String sessionName, String nodeName, InetSocketAddress address) {
         _sessionName=sessionName;
         _nodeName=nodeName;
         _motable=null;
         _address=address;
+    }
+
+    // use when session was not found...
+    public RelocationResponse(String sessionName) {
+        _sessionName=sessionName;
+        _nodeName=null;
+        _motable=null;
+        _address=null;
     }
 
     protected RelocationResponse() {

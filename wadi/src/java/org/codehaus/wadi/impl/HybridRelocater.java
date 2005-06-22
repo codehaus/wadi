@@ -17,6 +17,7 @@
 package org.codehaus.wadi.impl;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -105,21 +106,7 @@ public class HybridRelocater extends AbstractRelocater {
         }
 
         Motable emotable=response.getMotable();
-        if (emotable==null) {
-            // relocate request...
-            try {
-                
-                //FIXME - API should not be in terms of HttpProxy but in terms of RequestRelocater...
-                
-                _httpProxy.proxy(response.getAddress(), hreq, hres);
-                _log.info("PROXY WAS SUCCESSFUL");
-                motionLock.release();
-                return true;
-            } catch (Exception e) {
-                _log.error("problem proxying request", e);
-                return false;
-            }
-        } else {
+        if (emotable!=null) {
             // relocate session...
             if (!emotable.checkTimeframe(System.currentTimeMillis()))
                 if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
@@ -132,8 +119,29 @@ public class HybridRelocater extends AbstractRelocater {
                 boolean answer=immoter.contextualise(hreq, hres, chain, name, immotable, motionLock);
                 return answer;
             }
+            
         }
 
+        InetSocketAddress address=response.getAddress();
+        if (address!=null) {
+            // relocate request...
+            try {
+                
+                //FIXME - API should not be in terms of HttpProxy but in terms of RequestRelocater...
+                
+                _httpProxy.proxy(address, hreq, hres);
+                _log.info("PROXY WAS SUCCESSFUL");
+                motionLock.release();
+                return true;
+            } catch (Exception e) {
+                _log.error("problem proxying request", e);
+                return false;
+            }
+        }
+
+        // if we are still here - session could not be found
+        _log.warn("session not found: "+sessionName);
+        return false;
     }
     
     class RelocationAcknowledgementEmoter extends AbstractChainedEmoter {
