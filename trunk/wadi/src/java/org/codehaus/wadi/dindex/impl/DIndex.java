@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
+import java.awt.geom.CubicCurve2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -209,20 +210,45 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     public void onNodeRemoved(ClusterEvent event) {
         Node node=event.getNode();
         _log.info("onNodeRemoved: "+getNodeName(node));
-        // NYI
-        throw new UnsupportedOperationException();
+        _leavers.add(node.getDestination());
+        if (_coordinator!=null)
+            _coordinator.queueRebalancing();
     }
     
     public void onNodeFailed(ClusterEvent event) {
         Node node=event.getNode();
-        _log.info("onNodeFailed: "+getNodeName(node));
         if (_leavers.remove(node.getDestination())) {
             // we have already been explicitly informed of this node's wish to leave...
             _left.remove(node);
         } else {
-            // we have to assume that this was a catastrophic failure...
-            _log.error("CATASTROPHIC FAILURE - NYI : "+getNodeName(node));
-            // consider locking all corresponding buckets until we know what to do with them...
+            _log.error("onNodeFailed: "+getNodeName(node));
+            if (_coordinatorNode.getDestination().equals(_cluster.getLocalNode().getDestination())) {
+                Map lostState=node.getState();
+                _log.error("CATASTROPHIC FAILURE on: "+getNodeName(node));
+                BucketKeys keys=(BucketKeys)lostState.get(_bucketKeysKey);
+                _log.error("lost buckets: "+keys);
+                long time=System.currentTimeMillis();
+                int[] tmp=keys._keys;
+                for (int i=0; i<tmp.length; i++) {
+                    int k=tmp[i];
+                    BucketFacade facade=_buckets[k];
+                    // should we queue incoming messages whilst we do this ?
+                    facade.setContent(time, new LocalBucket(k));
+                }
+                // repopulate lost buckets somehow... somehow...
+                BucketKeys newKeys=new BucketKeys(_buckets);
+                _log.info("new Keys: "+newKeys);
+                _distributedState.put(_bucketKeysKey, newKeys);
+                try {
+                    _cluster.getLocalNode().setState(_distributedState);
+                } catch (JMSException e) {
+                    _log.error("could not update distributed state", e);
+                }
+                // rebalance indeces...
+                if (_coordinator!=null)
+                    _coordinator.queueRebalancing();
+                
+            }
         }
     }
     
@@ -427,11 +453,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             _log.error("empty evacuation request");
             return;
         }
-        
         _log.info("evacuation request from "+getNodeName(from));
-        _leavers.add(from.getDestination());
-        if (_coordinator!=null)
-            _coordinator.queueRebalancing();
+        onNodeRemoved(new ClusterEvent(_cluster, from, ClusterEvent.REMOVE_NODE));
     }
     
     protected final Collection _leavers=Collections.synchronizedCollection(new ArrayList());
