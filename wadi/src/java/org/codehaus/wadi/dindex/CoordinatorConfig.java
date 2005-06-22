@@ -35,4 +35,6 @@ public interface CoordinatorConfig {
     Collection getLeavers();
     Collection getLeft();
     
+    long getInactiveTime();
+    
 }
