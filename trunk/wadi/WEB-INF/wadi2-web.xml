@@ -100,7 +100,10 @@
     >
     <constructor-arg type="long" index="0"><value>2000</value></constructor-arg>
     <constructor-arg type="long" index="1"><value>2000</value></constructor-arg>
+<!--
     <constructor-arg type="boolean"><value>false</value></constructor-arg>
+-->
+    <constructor-arg type="boolean"><value>true</value></constructor-arg>
   </bean>
 
   <bean
