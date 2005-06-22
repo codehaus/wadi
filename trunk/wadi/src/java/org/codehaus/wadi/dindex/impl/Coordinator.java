@@ -49,13 +49,14 @@ public class Coordinator implements Runnable {
     protected final Cluster _cluster;
     protected final Node _localNode;
     protected final int _numItems;
-    protected final long _heartbeat=5000L; // TODO - unify with _cluster...
+    protected final long _inactiveTime;
     
     public Coordinator(CoordinatorConfig config) {
         _config=config;
         _cluster=_config.getCluster();
         _localNode=_cluster.getLocalNode();
         _numItems=_config.getNumItems();
+        _inactiveTime=_config.getInactiveTime();
     }
     
     protected Thread _thread;
@@ -138,7 +139,7 @@ public class Coordinator implements Runnable {
             
             try {
                 _log.info("WAITING ON RENDEZVOUS");
-                if (rv.waitFor(_heartbeat)) {
+                if (rv.waitFor(_inactiveTime)) {
                     _log.info("RENDEZVOUS SUCCESSFUL");
                     Collection results=rv.getResults();
                 } else {
