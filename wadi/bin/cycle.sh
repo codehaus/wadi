@@ -13,6 +13,7 @@ while true
 do
     nodes=`/bin/ps -C java -o pid,command | /bin/grep cycle.me | sed -e 's/ *\([0-9]*\) .*/\1/g'`
     node=`randomth $nodes`
+    echo "killing node now"
     kill -2 $node
     sleep $interval
 done
