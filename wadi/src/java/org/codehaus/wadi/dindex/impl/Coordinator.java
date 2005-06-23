@@ -101,7 +101,6 @@ public class Coordinator implements Runnable {
         }
     }
 
-     
     public void rebalanceClusterState() {
         int failures=0;
         try {
@@ -112,19 +111,28 @@ public class Coordinator implements Runnable {
             synchronized (livingNodes) {livingNodes=new ArrayList(livingNodes);} // snapshot
             livingNodes.add(_cluster.getLocalNode());
             
-            
             Collection l=_config.getLeavers();
             synchronized (l) {l=new ArrayList(l);} // snapshot
             
             Collection leavingNodes=new ArrayList();
             for (Iterator i=l.iterator(); i.hasNext(); ) {
                 Destination d=(Destination)i.next();
-                Node leaver=(Node)nodeMap.get(d);
+                Node leaver=getNode(d);
                 if (leaver!=null) {
                     leavingNodes.add(leaver);
                     livingNodes.remove(leaver);
                 }
             }
+            
+            if (livingNodes.size()==0) {
+                _log.warn("we are the last node - no need to rebalance cluster");
+                return;
+            }
+            
+            _log.info("LIVING:");
+            printNodes(livingNodes);
+            _log.info("LEAVING:");
+            printNodes(leavingNodes);
             
             Node [] living=(Node[])livingNodes.toArray(new Node[livingNodes.size()]);
             Node [] leaving=(Node[])leavingNodes.toArray(new Node[leavingNodes.size()]);
@@ -192,29 +200,6 @@ public class Coordinator implements Runnable {
             queueRebalancing();
     }
     
-    protected void printNodes(Node[] living, Node[] leaving) {
-        int total=0;
-        for (int i=0; i<living.length; i++)
-            total+=printNode(living[i]);
-        for (int i=0; i<leaving.length; i++)
-            total+=printNode(leaving[i]);
-        _log.info("total : "+total);
-    }
-    
-    protected int printNode(Node node) {
-        if (node!=_cluster.getLocalNode())
-            node=(Node)_cluster.getNodes().get(node.getDestination());
-        if (node==null) {
-            _log.info(DIndex.getNodeName(node)+" : <unknown>");
-            return 0;
-        } else {
-            BucketKeys keys=DIndex.getBucketKeys(node);
-            int amount=keys.size();
-            _log.info(DIndex.getNodeName(node)+" : "+amount+" - "+keys);
-            return amount;
-        }
-    }
-    
     protected void execute(RedistributionPlan plan, String correlationId, Quipu quipu) {
         quipu.increment(); // add a safety margin of '1', so if we are caught up by acks, waiting thread does not finish
         Iterator p=plan.getProducers().iterator();
@@ -254,6 +239,45 @@ public class Coordinator implements Runnable {
             }
         }
         quipu.decrement(); // remove safety margin
+    }
+
+    protected int printNodes(Collection nodes) {
+        int total=0;
+        for (Iterator i=nodes.iterator(); i.hasNext(); )
+            total+=printNode((Node)i.next());
+        return total;
+    }
+
+    protected void printNodes(Node[] living, Node[] leaving) {
+        int total=0;
+        for (int i=0; i<living.length; i++)
+            total+=printNode(living[i]);
+        for (int i=0; i<leaving.length; i++)
+            total+=printNode(leaving[i]);
+        _log.info("total : "+total);
+    }
+    
+    protected int printNode(Node node) {
+        if (node!=_cluster.getLocalNode())
+            node=(Node)_cluster.getNodes().get(node.getDestination());
+        if (node==null) {
+            _log.info(DIndex.getNodeName(node)+" : <unknown>");
+            return 0;
+        } else {
+            BucketKeys keys=DIndex.getBucketKeys(node);
+            int amount=keys.size();
+            _log.info(DIndex.getNodeName(node)+" : "+amount+" - "+keys);
+            return amount;
+        }
+    }
+    
+    protected Node getNode(Destination destination) {
+        Node localNode=_cluster.getLocalNode();
+        Destination localDestination=localNode.getDestination();
+        if (destination.equals(localDestination))
+            return localNode;
+        else
+            return (Node)_cluster.getNodes().get(destination);
     }
     
 }
