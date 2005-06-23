@@ -52,9 +52,9 @@ $properties \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.AbsoluteEvicter=info \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.NeverEvicter=info \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.dindex=debug \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.HybridRelocater=trace \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.ClusterContextualiser=trace \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.Dispatcher=trace \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.HybridRelocater=info
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.ClusterContextualiser=info
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.Dispatcher=info
 -Dorg.apache.commons.logging.simplelog.showShortLogname=true \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
 -Djava.io.tmpdir=$INSTANCE/temp\
