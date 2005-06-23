@@ -371,9 +371,9 @@ public class MessageDispatcher implements MessageListener {
     public ObjectMessage exchange(ObjectMessage request, long timeout) {
         return exchange(request, nextCorrelationId(), timeout);
     }
-    
-    public Quipu setRendezVous(String correlationId) {
-        Quipu rv=new Quipu(1);
+
+    public Quipu setRendezVous(String correlationId, int numLlamas) {
+        Quipu rv=new Quipu(numLlamas);
         _rvMap.put(correlationId, rv);
         return rv;
     }
@@ -412,7 +412,7 @@ public class MessageDispatcher implements MessageListener {
         try {
             request.setJMSCorrelationID(correlationId);
             // set up a rendez-vous...
-            rv=setRendezVous(correlationId);
+            rv=setRendezVous(correlationId, 1);
             // send the request
             _cluster.send(request.getJMSDestination(), request);
         } catch (JMSException e) {

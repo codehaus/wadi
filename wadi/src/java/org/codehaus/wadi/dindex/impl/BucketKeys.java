@@ -76,4 +76,8 @@ public class BucketKeys implements Serializable {
         return _keys.length;
     }
     
+    public int[] getKeys() {
+        return _keys;
+    }
+    
 }

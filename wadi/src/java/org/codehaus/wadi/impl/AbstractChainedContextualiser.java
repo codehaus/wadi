@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.impl;
 
+import java.util.Collection;
+
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Evictable;
@@ -50,4 +52,12 @@ public abstract class AbstractChainedContextualiser extends AbstractContextualis
 
   public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {/* do nothing */}
   public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newTime) {/* do nothing */}
+  
+  public void findRelevantSessionNames(int numBuckets, Collection[] resultSet) {
+      super.findRelevantSessionNames(numBuckets, resultSet);
+      if (_next.isExclusive())
+          _next.findRelevantSessionNames(numBuckets, resultSet);
+  }
+  
+
 }

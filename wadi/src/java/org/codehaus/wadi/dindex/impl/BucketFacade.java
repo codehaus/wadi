@@ -141,7 +141,7 @@ public class BucketFacade extends AbstractBucket {
     public ObjectMessage exchange(ObjectMessage message, DIndexRequest request, long timeout) {
         MessageDispatcher dispatcher=_config.getMessageDispatcher();
         String correlationId=dispatcher.nextCorrelationId();
-        Quipu rv=dispatcher.setRendezVous(correlationId);
+        Quipu rv=dispatcher.setRendezVous(correlationId, 1);
         try {
             message.setJMSCorrelationID(correlationId);
             dispatch(message, request);

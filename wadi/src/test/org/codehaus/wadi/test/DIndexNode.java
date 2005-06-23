@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.test;
 
+import java.util.Collection;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -28,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.MessageDispatcherConfig;
+import org.codehaus.wadi.dindex.DIndexConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.MessageDispatcher;
@@ -35,7 +37,7 @@ import org.codehaus.wadi.impl.MessageDispatcher;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
-public class DIndexNode implements MessageDispatcherConfig {
+public class DIndexNode implements MessageDispatcherConfig, DIndexConfig {
 
     protected final Log _log=LogFactory.getLog(getClass());
 
@@ -68,7 +70,7 @@ public class DIndexNode implements MessageDispatcherConfig {
         _cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
         _dispatcher.init(this);
         _dindex=new DIndex(_nodeName, _numBuckets, _clusterFactory.getInactiveTime(), _cluster, _dispatcher, _distributedState);
-        _dindex.init();
+        _dindex.init(this);
         _log.info("starting Cluster...");
         _cluster.getLocalNode().setState(_distributedState);
         _cluster.start();
@@ -92,6 +94,12 @@ public class DIndexNode implements MessageDispatcherConfig {
     
     public Destination getDestination() {
         return _cluster.getLocalNode().getDestination();
+    }
+    
+    // DIndexConfig
+    
+    public void findRelevantSessionNames(int numBuckets, Collection[] resultSet) {
+        _log.warn("findRelevantSessionNames() - NYI");
     }
     
     //-----------------------------------------------------------

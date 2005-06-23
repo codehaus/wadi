@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.impl;
 
+import java.util.Collection;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
@@ -46,6 +48,10 @@ public abstract class AbstractContextualiser implements Contextualiser {
 
   public void destroy() {
     _log.info("destroyed");
+  }
+  
+  public void findRelevantSessionNames(int numBuckets, Collection[] resultSet) {
+      _log.info("finding relevant session names");
   }
 
 }

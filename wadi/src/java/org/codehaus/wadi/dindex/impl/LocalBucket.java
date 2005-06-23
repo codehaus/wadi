@@ -61,12 +61,16 @@ public class LocalBucket extends AbstractBucket implements Serializable {
         return "<local>";
     }
     
+    public Destination put(String name, Destination location) {
+        return (Destination)_map.put(name, location);
+    }
+    
     public void dispatch(ObjectMessage om, DIndexRequest request) {
         try {
             DIndexResponse response=null;
             if (request instanceof DIndexInsertionRequest) {
                 Destination location=om.getJMSReplyTo();
-                _map.put(request.getName(), location); // remember location of actual session...
+                put(request.getName(), location); // remember location of actual session...
                 _log.info("insert "+request.getName()+" : "+_config.getNodeName(location));
                 response=new DIndexInsertionResponse();
                 // we can optimise local-local send here - TODO
@@ -81,7 +85,7 @@ public class LocalBucket extends AbstractBucket implements Serializable {
                 _config.getMessageDispatcher().reply(om, response);
             } else if (request instanceof DIndexRelocationRequest) {
                 Destination location=om.getJMSReplyTo();
-                Destination oldLocation=(Destination)_map.put(request.getName(), location); // remember new location of actual session...
+                Destination oldLocation=put(request.getName(), location); // remember new location of actual session...
                 _log.info("relocate "+request.getName()+" : "+_config.getNodeName(oldLocation)+" -> "+_config.getNodeName(location));
                 response=new DIndexRelocationResponse();
                 // we can optimise local-local send here - TODO

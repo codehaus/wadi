@@ -14,28 +14,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex;
+package org.codehaus.wadi.dindex.impl;
 
-import java.util.Collection;
-import java.util.Map;
+import java.io.Serializable;
 
-import org.activecluster.Cluster;
-import org.activecluster.Node;
+public class BucketRepopulateRequest implements Serializable {
 
-public interface CoordinatorConfig {
+    protected int[] _keys;
     
-    int getNumItems();
+    public BucketRepopulateRequest(int[] keys) {
+        super();
+        _keys=keys;
+    }
     
-    Node getLocalNode();
-    Collection getRemoteNodes();
-    Cluster getCluster();
-    
-    Map getRendezVousMap();
-    
-    Collection getLeavers();
-    Collection getLeft();
-    
-    long getInactiveTime();
-    void regenerateMissingBuckets(Node[] living, Node[] leaving);
-    
+    protected BucketRepopulateRequest() {
+        // for deserialisation...
+    }
+
+    int[] getKeys() {
+        return _keys;
+    }
 }

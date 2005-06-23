@@ -17,25 +17,9 @@
 package org.codehaus.wadi.dindex;
 
 import java.util.Collection;
-import java.util.Map;
 
-import org.activecluster.Cluster;
-import org.activecluster.Node;
+public interface DIndexConfig {
 
-public interface CoordinatorConfig {
-    
-    int getNumItems();
-    
-    Node getLocalNode();
-    Collection getRemoteNodes();
-    Cluster getCluster();
-    
-    Map getRendezVousMap();
-    
-    Collection getLeavers();
-    Collection getLeft();
-    
-    long getInactiveTime();
-    void regenerateMissingBuckets(Node[] living, Node[] leaving);
+    void findRelevantSessionNames(int numBuckets, Collection[] resultSet);
     
 }

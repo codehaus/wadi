@@ -24,27 +24,21 @@ package org.codehaus.wadi.impl;
 
 // can we even store an invalidated session without breaking listener model - consider...
 
-
-
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
-import org.activecluster.Cluster;
-import org.activecluster.ClusterException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
@@ -52,11 +46,8 @@ import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Evicter;
-import org.codehaus.wadi.ExtendedCluster;
-import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.Streamer;
@@ -65,6 +56,8 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class SimpleContextualiserStack implements Contextualiser {
+
+    protected final Log _log = LogFactory.getLog(getClass());
 
     protected final Streamer _streamer;
     protected final Collapser _collapser;
@@ -189,4 +182,9 @@ public class SimpleContextualiserStack implements Contextualiser {
 
     public Contextualiser getTop() {return _memory;}
 
+    public void findRelevantSessionNames(int numBuckets, Collection[] resultSet) {
+        _log.info("findRelevantSessionNames");
+        _memory.findRelevantSessionNames(numBuckets, resultSet);
+    }
+    
 }
