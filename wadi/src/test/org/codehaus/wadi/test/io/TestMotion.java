@@ -451,13 +451,13 @@ public class TestMotion extends TestCase {
         boolean ok=false;
         assertTrue(_localMap.size()==0);
         assertTrue(_remoteMap.size()==2);
-        ok=relocater.relocate(req, res, chain, name0, immoter, motionLock, locationMap);
+        ok=relocater.relocate(req, res, chain, name0, immoter, motionLock);
         assertTrue(ok);
         assertTrue(_localMap.size()==1);
         assertTrue(_remoteMap.size()==1);
         assertTrue(_localMap.containsKey(name0));
         assertTrue(!_remoteMap.containsKey(name0));
-        ok=relocater.relocate(req, res, chain, name1, immoter, motionLock, locationMap);
+        ok=relocater.relocate(req, res, chain, name1, immoter, motionLock);
         assertTrue(ok);
         assertTrue(_localMap.size()==2);
         assertTrue(_remoteMap.size()==0);

@@ -48,7 +48,7 @@ public class StreamingMigratingRelocater implements SessionRelocater {
         _config=null;
     }
 
-    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
+    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException {
         // check cache
         //Server server=_config.getServer();
 

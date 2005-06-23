@@ -80,19 +80,10 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
     }
 
     protected int _counter;
-    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
+    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException {
 
-        Location location=(Location)locationMap.get(name);
-        location=null;
-        Destination destination;
-
-        if (location==null) {
-            if (_log.isTraceEnabled()) _log.trace("immigration: no cached location - 1->n : "+name);
-            destination=_config.getDispatcher().getCluster().getDestination();
-        } else {
-            if (_log.isTraceEnabled()) _log.trace("immigration: cached location - 1->1 : "+name);
-            destination=location.getDestination();
-        }
+        Location location=null;
+        Destination destination=_config.getDispatcher().getCluster().getDestination();
 
         Dispatcher.Settings settingsInOut=new Dispatcher.Settings();
         settingsInOut.from=_config.getLocation().getDestination();
@@ -112,7 +103,7 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
         if (!emotable.checkTimeframe(System.currentTimeMillis()))
             if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
 
-        Emoter emoter=new ImmigrationEmoter(_config.getMap(), settingsInOut);
+        Emoter emoter=new ImmigrationEmoter(settingsInOut);
         Motable immotable=Utils.mote(emoter, immoter, emotable, name);
         if (null==immotable)
             return false;
@@ -125,12 +116,14 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
 	class ImmigrationEmoter extends AbstractChainedEmoter {
 		protected final Log _log=LogFactory.getLog(getClass());
 
-		protected final Map _map;
-		protected Dispatcher.Settings _settingsInOut;
-
-		public ImmigrationEmoter(Map map, Dispatcher.Settings settingsInOut) {
-			_map=map;
-			_settingsInOut=settingsInOut;
+		protected Destination _from;
+        protected Destination _to;
+        protected String _correlationId;
+        
+		public ImmigrationEmoter(Dispatcher.Settings settingsInOut) {
+            _from=settingsInOut.from;
+            _to=settingsInOut.to;
+            _correlationId=settingsInOut.correlationId;
 		}
 
 		public boolean prepare(String name, Motable emotable) {
@@ -141,13 +134,12 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
 			emotable.destroy(); // remove copy in store
 
 			// TODO - move some of this to prepare()...
-			if (_log.isTraceEnabled()) _log.trace("sending immigration ack: "+_settingsInOut.correlationId);
+			if (_log.isTraceEnabled()) _log.trace("sending immigration ack: "+_correlationId);
 			ImmigrationAcknowledgement ack=new ImmigrationAcknowledgement(name, _config.getLocation());
-			try {
-				_config.getDispatcher().sendMessage(ack, _settingsInOut);
-				_config.getMap().remove(name);
-			} catch (JMSException e) {
-				if (_log.isErrorEnabled()) _log.error("could not send immigration acknowledgement: "+name, e);
+			if (_config.getDispatcher().send(_from, _to, _correlationId, ack)) {
+                // needs refactoring...
+			} else {
+			    if (_log.isErrorEnabled()) _log.error("could not send immigration acknowledgement: "+name);
 			}
 		}
 
@@ -241,12 +233,6 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
 				return false;
 			}
 			if (_log.isTraceEnabled()) _log.trace("received immigration ack: "+_settingsInOut.correlationId);
-			// update location cache...
-			Location tmp=ack.getLocation();
-			synchronized (_config.getMap()) {
-				_config.getMap().put(name, tmp);
-			}
-
 			return true;
 		}
 

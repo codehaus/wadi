@@ -178,15 +178,8 @@ public class Coordinator implements Runnable {
                     if (!left.contains(node.getDestination())) {
                         _log.info("acknowledging evacuation of "+DIndex.getNodeName(node));
                         BucketEvacuationResponse response=new BucketEvacuationResponse();
-                        try {
-                            ObjectMessage om=_cluster.createObjectMessage();
-                            om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-                            om.setJMSDestination(node.getDestination());
-                            om.setJMSCorrelationID(node.getName());
-                            om.setObject(response);
-                            _dispatcher.send(node.getDestination(), om);
-                        } catch (JMSException e) {
-                            _log.error("problem sending EvacuationResponse to "+DIndex.getNodeName(node), e);
+                        if (!_dispatcher.send(_cluster.getLocalNode().getDestination(), node.getDestination(), node.getName(), response)) {
+                            _log.error("problem sending EvacuationResponse to "+DIndex.getNodeName(node));
                             failures++;
                         }
                         left.add(node.getDestination());
@@ -230,17 +223,10 @@ public class Coordinator implements Runnable {
             
             BucketTransferCommand command=new BucketTransferCommand((BucketTransfer[])transfers.toArray(new BucketTransfer[transfers.size()]));
             quipu.increment();
-            try {
-                ObjectMessage om=_cluster.createObjectMessage();
-                om.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-                om.setJMSDestination(producer._node.getDestination());
-                om.setJMSCorrelationID(correlationId);
-                om.setObject(command);
-                _dispatcher.send(producer._node.getDestination(), om);
-            } catch (JMSException e) {
-                _log.error("problem sending transfer command", e);
-            }
-        }
+            if (!_dispatcher.send(_cluster.getLocalNode().getDestination(), producer._node.getDestination(), correlationId, command)) {
+                _log.error("problem sending transfer command");
+            }   
+        }   
         quipu.decrement(); // remove safety margin
     }
 

@@ -114,9 +114,12 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   protected final Immoter _immoter;
   protected final Emoter _emoter;
   protected final int _ackTimeout=500; // TODO - parameterise
-  protected final Map _map;
   protected final Evicter _evicter;
 
+  public Motable get(String name) {
+      throw new UnsupportedOperationException();
+  }
+  
   /**
    * @param next
    * @param evicter
@@ -127,7 +130,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     super(next, new CollapsingLocker(collapser), false);
     _collapser=collapser;
     _relocater=relocater;
-    _map=map;
     _evicter=evicter;
 
     _immoter=new EmigrationImmoter();
@@ -221,7 +223,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   public void setTop(Contextualiser top) {_top=top;}
 
   public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock) throws IOException, ServletException {
-    return _relocater.relocate(hreq, hres, chain, id, immoter, motionLock, _map);
+    return _relocater.relocate(hreq, hres, chain, id, immoter, motionLock);
   }
 
   // be careful here - there are two things going on, a map of cached locations, which needs management
@@ -313,7 +315,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
                   return false;
               } else {
                   if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+_ackTimeout+" millis): "+name);
-                  _map.put(name, ea.getLocation()); // cache new Location of Session
                   return true;
               }
           } catch (Exception e) {
@@ -348,36 +349,33 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
    */
   class ImmigrationEmoter implements Emoter {
 
-    protected final ObjectMessage _om;
-    protected final EmigrationRequest _er;
-    protected final Dispatcher.Settings _settingsInOut;
+    protected final ObjectMessage _message;
+    protected final EmigrationRequest _request;
 
-    public ImmigrationEmoter(ObjectMessage om, EmigrationRequest er) {
-      _om=om;
-      _er=er;
-      _settingsInOut=new Dispatcher.Settings();
+    public ImmigrationEmoter(ObjectMessage message, EmigrationRequest er) {
+      _message=message;
+      _request=er;
     }
 
+    protected Destination _to;
+    protected Destination _from;
+    protected String _correlationId;
+    
     public boolean prepare(String name, Motable emotable) {
-      try {
-	// reverse direction...
-	_settingsInOut.to=_om.getJMSReplyTo();
-	_settingsInOut.from=_dispatcher.getCluster().getLocalNode().getDestination();
-	_settingsInOut.correlationId=_om.getJMSCorrelationID();
-	return true;
-      } catch (JMSException e) {
-	return false;
-      }
+        try {
+            // reverse direction...
+            _to=_message.getJMSReplyTo();
+            _from=_dispatcher.getCluster().getLocalNode().getDestination();
+            _correlationId=_message.getJMSCorrelationID();
+            return true;
+        } catch (JMSException e) {
+            return false;
+        }
     }
 
     public void commit(String name, Motable emotable) {
-        try {
-            EmigrationAcknowledgement ea=new EmigrationAcknowledgement();
-            ea.setId(name);
-            ea.setLocation(_location);
-            _dispatcher.sendMessage(ea, _settingsInOut);
-        } catch (JMSException e) {
-            if (_log.isErrorEnabled()) _log.error("could not acknowledge safe receipt: "+name, e);
+        if (!_dispatcher.send(_from, _to, _correlationId, new EmigrationAcknowledgement(name, _location))) { 
+            if (_log.isErrorEnabled()) _log.error("could not acknowledge safe receipt: "+name);
         }
     }
 
@@ -391,29 +389,30 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     }
   }
 
-  public void onMessage(ObjectMessage om, EmigrationRequest er) {
-    Motable emotable=er.getMotable();
-    String id=emotable.getName();
-    if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+id);
-    Sync lock=_locker.getLock(id, emotable);
-    boolean acquired=false;
-    try {
-      Utils.acquireUninterrupted(lock);
-      acquired=true;
-
-      Emoter emoter=new ImmigrationEmoter(om, er);
-
-      if (!emotable.checkTimeframe(System.currentTimeMillis()))
-	if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
-
-      Immoter immoter=_top.getDemoter(id, emotable);
-      Utils.mote(emoter, immoter, emotable, id);
-    } catch (TimeoutException e) {
-      if (_log.isWarnEnabled()) _log.warn("could not acquire promotion lock for incoming session: "+id);
-    } finally {
-      if (acquired)
-	lock.release();
-    }
+  public void onMessage(ObjectMessage message, EmigrationRequest request) {
+      Motable emotable=request.getMotable();
+      String name=emotable.getName();
+      if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+name);
+      Sync lock=_locker.getLock(name, emotable);
+      boolean acquired=false;
+      try {
+          Utils.acquireUninterrupted(lock);
+          acquired=true;
+          
+          Emoter emoter=new ImmigrationEmoter(message, request);
+          
+          if (!emotable.checkTimeframe(System.currentTimeMillis()))
+              if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
+          
+          Immoter immoter=_top.getDemoter(name, emotable);
+          Utils.mote(emoter, immoter, emotable, name);
+          notifySessionRelocation(name);
+      } catch (TimeoutException e) {
+          if (_log.isWarnEnabled()) _log.warn("could not acquire promotion lock for incoming session: "+name);
+      } finally {
+          if (acquired)
+              lock.release();
+      }
   }
 
   public void load(Emoter emoter, Immoter immoter) {
@@ -422,11 +421,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   }
 
   // AbstractMotingContextualiser
-  public Motable get(String id) {return (Motable)_map.get(id);}
-
+  
   // EvicterConfig
   // BestEffortEvicters
-  public Map getMap() {return _map;}
 
   public Emoter getEvictionEmoter() {throw new UnsupportedOperationException();} // FIXME
   public void expire(Motable motable) {throw new UnsupportedOperationException();} // FIXME

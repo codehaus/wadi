@@ -33,7 +33,6 @@ public interface RelocaterConfig extends Config {
     Collapser getCollapser();
     Dispatcher getDispatcher();
     Location getLocation();
-    Map getMap();
     Cluster getCluster();
     Contextualiser getContextualiser();
     Server getServer();

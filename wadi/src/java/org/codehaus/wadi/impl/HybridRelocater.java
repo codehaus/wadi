@@ -82,7 +82,7 @@ public class HybridRelocater extends AbstractRelocater {
         _dispatcher.register(RelocationAcknowledgement.class, _ackRvMap, _ackTimeout);
     }
     
-    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
+    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException {
         if (_log.isTraceEnabled()) _log.trace("indirecting RelocationRequest from "+_nodeName+" for "+name);
         String sessionName=name;
         String nodeName=_config.getNodeName();
@@ -169,7 +169,6 @@ public class HybridRelocater extends AbstractRelocater {
             RelocationAcknowledgement ack=new RelocationAcknowledgement();//(name, _config.getLocation());
             try {
                 _config.getDispatcher().reply(_message, ack);
-                _config.getMap().remove(name);
             } catch (JMSException e) {
                 if (_log.isErrorEnabled()) _log.error("could not send RelocationAcknowledgement: "+name, e);
             }
