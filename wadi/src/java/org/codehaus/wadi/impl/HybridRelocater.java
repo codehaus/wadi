@@ -130,7 +130,7 @@ public class HybridRelocater extends AbstractRelocater {
                 //FIXME - API should not be in terms of HttpProxy but in terms of RequestRelocater...
                 
                 _httpProxy.proxy(address, hreq, hres);
-                _log.info("PROXY WAS SUCCESSFUL");
+                _log.trace("PROXY WAS SUCCESSFUL");
                 motionLock.release();
                 return true;
             } catch (Exception e) {

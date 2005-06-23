@@ -282,7 +282,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                 int k=missingKeys[i];
                 BucketFacade facade=_buckets[k];
                 facade.enqueue();
-                facade.setContent(time, new LocalBucket(k));
+                LocalBucket local=new LocalBucket(k);
+                local.init(this);
+                facade.setContent(time, local);
             }
             BucketKeys newKeys=new BucketKeys(_buckets);
             _log.info("new Keys: "+newKeys);
@@ -298,6 +300,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             } catch (JMSException e) {
                 _log.error("unexpected problem repopulating lost index", e);
             }
+            
+            // whilst we are waiting for the other nodes to get back to us, figure out which relevant sessions
+            // we are carrying ourselves...
+            Collection[] c=createResultSet(_numBuckets, missingKeys);
+            _config.findRelevantSessionNames(_numBuckets, c);
+            repopulate(_cluster.getLocalNode().getDestination(), c);
             
             boolean success=false;
             try {
@@ -503,12 +511,17 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         }
     }
     
+    public Collection[] createResultSet(int numBuckets, int[] keys) {
+        Collection[] c=new Collection[numBuckets];
+        for (int i=0; i<keys.length; i++)
+            c[keys[i]]=new ArrayList();
+        return c;
+    }
+    
     public void onBucketRepopulateRequest(ObjectMessage om, BucketRepopulateRequest request) {
         int keys[]=request.getKeys();
         _log.trace("BucketRepopulateRequest ARRIVED: "+keys);
-        Collection[] c=new Collection[_numBuckets];
-        for (int i=0; i<keys.length; i++)
-            c[keys[i]]=new ArrayList();
+        Collection[] c=createResultSet(_numBuckets, keys);
         try {
         _log.info("findRelevantSessionNames - starting");
         _log.info(_config.getClass().getName());

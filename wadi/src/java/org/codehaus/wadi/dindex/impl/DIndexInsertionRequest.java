@@ -24,4 +24,7 @@ public class DIndexInsertionRequest extends AbstractDIndexRequest implements Ser
         super(name);
     }
 
+    public String toString() {
+        return "<insert "+_name+">";
+    }
 }
