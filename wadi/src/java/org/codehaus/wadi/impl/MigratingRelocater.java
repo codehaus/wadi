@@ -17,8 +17,6 @@
 package org.codehaus.wadi.impl;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -33,7 +31,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.SessionRelocater;
@@ -80,7 +77,6 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
     protected int _counter;
     public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException {
         
-        Location location=null;
         Destination destination=_config.getDispatcher().getCluster().getDestination();
         
         Destination from=_config.getLocation().getDestination();

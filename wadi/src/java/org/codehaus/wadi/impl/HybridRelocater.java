@@ -19,7 +19,6 @@ package org.codehaus.wadi.impl;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import javax.servlet.FilterChain;

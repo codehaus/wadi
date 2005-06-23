@@ -17,7 +17,6 @@
 
 package org.codehaus.wadi.old.test;
 
-import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import junit.framework.TestCase;

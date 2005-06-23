@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionContext; // deprecated
 import javax.servlet.http.HttpSessionListener;
 
 import org.apache.catalina.Container;

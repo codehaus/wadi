@@ -18,7 +18,6 @@ package org.codehaus.wadi.impl;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
-import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Set;

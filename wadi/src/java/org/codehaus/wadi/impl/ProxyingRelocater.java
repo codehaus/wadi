@@ -18,9 +18,6 @@ package org.codehaus.wadi.impl;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import javax.jms.Destination;
@@ -91,7 +88,6 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
 		// TODO - do we need to considering NOT putting any location that is the same ours into the map
 		// otherwise we may end up in a tight loop proxying to ourself... - could this happen ?
 
-		Iterator i=ids.iterator();
 		if (_log.isTraceEnabled()) _log.trace("updated cache for: "+ids);
 
 		return location;

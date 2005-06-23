@@ -17,14 +17,12 @@
 package org.codehaus.wadi.dindex.impl;
 
 import javax.jms.Destination;
-import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
-import org.codehaus.wadi.impl.Dispatcher;
 
 public class RemoteBucket extends AbstractBucket {
 

@@ -33,13 +33,23 @@ import org.codehaus.wadi.Streamer;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class
-  SimpleStreamer
-  implements Streamer
-{
-  public ObjectInput getInputStream(InputStream is) throws IOException {return new ObjectInputStream(is);}
-  public ObjectOutput getOutputStream(OutputStream os) throws IOException {return new ObjectOutputStream(os);}
-  public String getSuffix(){return "ser";}
-  public String getSuffixWithDot(){return ".ser";}
+public class SimpleStreamer implements Streamer {
+    
+    public ObjectInput getInputStream(InputStream is) throws IOException {
+        return new ObjectInputStream(is);
+    }
+    
+    public ObjectOutput getOutputStream(OutputStream os) throws IOException {
+        return new ObjectOutputStream(os);
+    }
+    
+    public String getSuffix() {
+        return "ser";
+    }
+    
+    public String getSuffixWithDot() {
+        return ".ser";
+    }
+    
 }
 
