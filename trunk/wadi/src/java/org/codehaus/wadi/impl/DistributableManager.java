@@ -49,13 +49,14 @@ import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.dindex.DIndexConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.io.Server;
 import org.codehaus.wadi.io.ServerConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
-public class DistributableManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, ServerConfig, MessageDispatcherConfig {
+public class DistributableManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, ServerConfig, MessageDispatcherConfig, DIndexConfig {
 
     protected final Map _distributedState=new HashMap(); // TODO - make this a SynchronisedMap
     protected final SynchronizedBoolean _shuttingDown=new SynchronizedBoolean(false);
@@ -103,7 +104,7 @@ public class DistributableManager extends StandardManager implements Distributab
             _distributedState.put("name", _nodeName);
             _distributedState.put("http", _httpAddress);
             _dindex=new DIndex(_nodeName, _numBuckets, _clusterFactory.getInactiveTime(), _cluster, _dispatcher, _distributedState);
-            _dindex.init();
+            _dindex.init(this);
         } catch (Exception e) {
             _log.error("problem starting Cluster", e);
         }
@@ -292,5 +293,12 @@ public class DistributableManager extends StandardManager implements Distributab
         _dindex.relocate(name);
     }
 
+    // DIndexConfig
+    
+    public void findRelevantSessionNames(int numBuckets, Collection[] resultSet) {
+        _log.info("findRelevantSessionNames");
+        _contextualiser.findRelevantSessionNames(numBuckets, resultSet);
+    }
+    
 }
 

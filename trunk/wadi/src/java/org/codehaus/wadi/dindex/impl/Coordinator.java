@@ -26,6 +26,7 @@ import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.activecluster.Cluster;
+import org.activecluster.ClusterEvent;
 import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -99,7 +100,8 @@ public class Coordinator implements Runnable {
             _log.info("interrupted"); // hmmm.... - TODO
         }
     }
-    
+
+     
     public void rebalanceClusterState() {
         int failures=0;
         try {
@@ -126,6 +128,8 @@ public class Coordinator implements Runnable {
             
             Node [] living=(Node[])livingNodes.toArray(new Node[livingNodes.size()]);
             Node [] leaving=(Node[])leavingNodes.toArray(new Node[leavingNodes.size()]);
+            
+            _config.regenerateMissingBuckets(living, leaving);
             
             String correlationId=_localNode.getName()+"-balancing-"+System.currentTimeMillis();
             RedistributionPlan plan=new RedistributionPlan(living, leaving, _numItems);

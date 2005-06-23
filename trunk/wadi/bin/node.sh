@@ -48,7 +48,7 @@ $properties \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.activecluster=warn \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.activemq=warn \
 -Dorg.apache.commons.logging.simplelog.log.org.springframework=warn \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=warn \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=info \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.dindex=trace \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.HybridRelocater=trace \
 -Dorg.apache.commons.logging.simplelog.showShortLogname=true \

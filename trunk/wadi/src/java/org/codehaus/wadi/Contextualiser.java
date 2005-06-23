@@ -17,6 +17,7 @@
 package org.codehaus.wadi;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -61,4 +62,6 @@ public interface Contextualiser extends Lifecycle {
     void init(ContextualiserConfig config);
     void destroy();
 
+    void findRelevantSessionNames(int numBuckets, Collection[] resultSet);
+    
 }

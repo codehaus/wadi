@@ -171,5 +171,21 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
     // StrictEvicters
     public int getMaxInactiveInterval() {return _config.getMaxInactiveInterval();}
 
-
+    // enumerate the keys of all exclusively owned sessions in our stack...
+    public void findRelevantSessionNames(int numBuckets, Collection[] resultSet) {
+        super.findRelevantSessionNames(numBuckets, resultSet);
+        int matches=0;
+        for (Iterator i=_map.keySet().iterator(); i.hasNext(); ) {
+            String name=(String)i.next();
+            int key=Math.abs(name.hashCode()%numBuckets);
+            Collection c=resultSet[key];
+            if (c!=null) {
+                c.add(name);
+                matches++;
+            }
+        }
+        if (matches>0)
+            _log.info("matches found: "+matches);
+    }
+    
 }

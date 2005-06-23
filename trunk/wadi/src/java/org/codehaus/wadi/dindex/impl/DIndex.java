@@ -16,10 +16,10 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
-import java.awt.geom.CubicCurve2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -35,8 +35,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.Bucket;
 import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
+import org.codehaus.wadi.dindex.DIndexConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.impl.MessageDispatcher;
+import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -75,9 +77,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     
     protected Node _coordinatorNode;
     protected Coordinator _coordinator;
+    protected DIndexConfig _config;
     
-    public void init() {
+    public void init(DIndexConfig config) {
         _log.info("init-ing...");
+        _config=config;
         _cluster.setElectionStrategy(new SeniorityElectionStrategy());
         _cluster.addClusterListener(this);
         _distributedState.put(_nodeNameKey, _nodeName);
@@ -99,6 +103,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         _dispatcher.register(this, "onDIndexRelocationRequest", DIndexRelocationRequest.class);
         _dispatcher.register(DIndexRelocationResponse.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexForwardRequest", DIndexForwardRequest.class);
+        _dispatcher.register(this, "onBucketRepopulateRequest", BucketRepopulateRequest.class);
+        _dispatcher.register(BucketRepopulateResponse.class, _inactiveTime);
         
         //_cluster.getLocalNode().setState(_distributedState); // this needs to be done before _cluster.start()
         //_log.info("distributed state updated: "+_distributedState.get(_bucketKeysKey));
@@ -215,6 +221,124 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             _coordinator.queueRebalancing();
     }
     
+    
+    public void markExistingBuckets(Node[] nodes, boolean[] bucketIsPresent) {
+        for (int i=0; i<nodes.length; i++) {
+            Node node=nodes[i];
+            if (node!=null) {
+                BucketKeys keys=DIndex.getBucketKeys(node);
+                if (keys!=null) {
+                    int[] k=keys.getKeys();
+                    for (int j=0; j<k.length; j++) {
+                        int index=k[j];
+                        if (bucketIsPresent[index]) {
+                            _log.error("bucket "+index+" found on more than one node");
+                        } else {
+                            bucketIsPresent[index]=true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    public void repopulate(Destination location, Collection[] keys) {
+        assert location!=null;
+        for (int i=0; i<_numBuckets; i++) {
+            Collection c=keys[i];
+            if (c!=null) {
+                BucketFacade facade=_buckets[i];
+                LocalBucket local=(LocalBucket)facade.getContent();
+                for (Iterator j=c.iterator(); j.hasNext(); ) {
+                    String name=(String)j.next();
+                    local.put(name, location);
+                }
+            }
+        }
+    }
+    
+    public void regenerateMissingBuckets(Node[] living, Node[] leaving) {
+        boolean[] bucketIsPresent=new boolean[_numBuckets];
+        markExistingBuckets(living, bucketIsPresent);
+        markExistingBuckets(leaving, bucketIsPresent);
+        Collection missingBuckets=new ArrayList();
+        for (int i=0; i<bucketIsPresent.length; i++) {
+            if (!bucketIsPresent[i])
+                missingBuckets.add(new Integer(i));
+        }
+        
+        int numKeys=missingBuckets.size();
+        if (numKeys>0) {
+            _log.warn("missing buckets- regenerating: "+missingBuckets);
+            // convert to int[]
+            int[] missingKeys=new int[numKeys];
+            int key=0;
+            for (Iterator i=missingBuckets.iterator(); i.hasNext(); )
+                missingKeys[key++]=((Integer)i.next()).intValue();
+
+            _log.info("RECREATING BUCKETS...: "+missingBuckets);
+            long time=System.currentTimeMillis();
+            for (int i=0; i<missingKeys.length; i++) {
+                int k=missingKeys[i];
+                BucketFacade facade=_buckets[k];
+                facade.enqueue();
+                facade.setContent(time, new LocalBucket(k));
+            }
+            BucketKeys newKeys=new BucketKeys(_buckets);
+            _log.info("new Keys: "+newKeys);
+            _log.info("REPOPULATING BUCKETS...: "+missingBuckets);
+            String correlationId=_dispatcher.nextCorrelationId();
+            Quipu rv=_dispatcher.setRendezVous(correlationId, _cluster.getNodes().size());
+            try {
+                ObjectMessage message=_cluster.createObjectMessage();
+                message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
+                message.setJMSCorrelationID(correlationId);
+                message.setObject(new BucketRepopulateRequest(missingKeys));
+                _cluster.send(_cluster.getDestination(), message);
+            } catch (JMSException e) {
+                _log.error("unexpected problem repopulating lost index", e);
+            }
+            
+            boolean success=false;
+            try {
+                success=rv.waitFor(_inactiveTime);
+            } catch (InterruptedException e) {
+                _log.warn("unexpected interruption", e);
+            }
+            Collection results=rv.getResults();
+            _log.info("RESULTS: "+results.size());
+            
+            for (Iterator i=results.iterator(); i.hasNext(); ) {
+                ObjectMessage message=(ObjectMessage)i.next();
+                try {
+                    Destination from=message.getJMSReplyTo();
+                    BucketRepopulateResponse response=(BucketRepopulateResponse)message.getObject();
+                    Collection[] relevantKeys=response.getKeys();
+                    
+                    repopulate(from, relevantKeys);
+                    
+                } catch (JMSException e) {
+                    _log.warn("unexpected problem interrogating response", e);
+                }
+            }
+            
+            _log.info("...BUCKETS REPOPULATED: "+missingBuckets);
+            for (int i=0; i<missingKeys.length; i++) {
+                int k=missingKeys[i];
+                BucketFacade facade=_buckets[k];
+                facade.dequeue();
+            }
+            // relayout dindex
+            _distributedState.put(_bucketKeysKey, newKeys);
+            try {
+                _cluster.getLocalNode().setState(_distributedState);
+            } catch (JMSException e) {
+                _log.error("could not update distributed state", e);
+            }
+        }
+    }
+    
+    
     public void onNodeFailed(ClusterEvent event) {
         Node node=event.getNode();
         if (_leavers.remove(node.getDestination())) {
@@ -223,31 +347,22 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         } else {
             _log.error("onNodeFailed: "+getNodeName(node));
             if (_coordinatorNode.getDestination().equals(_cluster.getLocalNode().getDestination())) {
-                Map lostState=node.getState();
                 _log.error("CATASTROPHIC FAILURE on: "+getNodeName(node));
-                BucketKeys keys=(BucketKeys)lostState.get(_bucketKeysKey);
-                _log.error("lost buckets: "+keys);
-                long time=System.currentTimeMillis();
-                int[] tmp=keys._keys;
-                for (int i=0; i<tmp.length; i++) {
-                    int k=tmp[i];
-                    BucketFacade facade=_buckets[k];
-                    // should we queue incoming messages whilst we do this ?
-                    facade.setContent(time, new LocalBucket(k));
-                }
-                // repopulate lost buckets somehow... somehow...
-                BucketKeys newKeys=new BucketKeys(_buckets);
-                _log.info("new Keys: "+newKeys);
-                _distributedState.put(_bucketKeysKey, newKeys);
-                try {
-                    _cluster.getLocalNode().setState(_distributedState);
-                } catch (JMSException e) {
-                    _log.error("could not update distributed state", e);
-                }
-                // rebalance indeces...
                 if (_coordinator!=null)
                     _coordinator.queueRebalancing();
-                
+            }
+        }
+    }
+    
+    public void repopulateBuckets(Destination location, Collection[] keys) {
+        for (int i=0; i<keys.length; i++) {
+            Collection c=keys[i];
+            if (c!=null) {
+                for (Iterator j=c.iterator(); j.hasNext(); ) {
+                    String key=(String)j.next();
+                    LocalBucket bucket=(LocalBucket)_buckets[i].getContent();
+                    bucket._map.put(key, location);
+                }
             }
         }
     }
@@ -385,6 +500,27 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             // unlock Partitions here... - TODO
         } else {
             // chuck them... - TODO
+        }
+    }
+    
+    public void onBucketRepopulateRequest(ObjectMessage om, BucketRepopulateRequest request) {
+        int keys[]=request.getKeys();
+        _log.info("BucketRepopulateRequest ARRIVED: "+keys);
+        Collection[] c=new Collection[_numBuckets];
+        for (int i=0; i<keys.length; i++)
+            c[keys[i]]=new ArrayList();
+        try {
+        _log.info("findRelevantSessionNames - starting");
+        _log.info(_config.getClass().getName());
+        _config.findRelevantSessionNames(_numBuckets, c);
+        _log.info("findRelevantSessionNames - finished");
+        } catch (Throwable t) {
+            _log.warn("ERROR", t);
+        }
+        try {
+            _dispatcher.reply(om, new BucketRepopulateResponse(c));
+        } catch (JMSException e) {
+            _log.warn("unexpected problem responding to bucket repopulation request", e);
         }
     }
     
