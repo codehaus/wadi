@@ -15,7 +15,7 @@ shift
 
 XTERM=`eval "echo $XTERM"`
 
-JAVA_OPTS="-Xmx512m -enablesystemassertions $JAVA_OPTS"
+JAVA_OPTS="-Xmx512m -ea $JAVA_OPTS"
 
 WADI_HOME=`pwd`/..
 JAVA=$JAVA_HOME/bin/java

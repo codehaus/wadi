@@ -80,4 +80,8 @@ public class RelocationRequest extends AbstractDIndexRequest implements Serializ
         return _requestHandOverTimeout;
     }
     
+    public String toString() {
+        return "<relocate: "+_sessionName+" -> "+_nodeName+">";
+    }
+    
 }

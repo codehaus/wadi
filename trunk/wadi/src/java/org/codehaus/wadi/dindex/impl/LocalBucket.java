@@ -98,12 +98,19 @@ public class LocalBucket extends AbstractBucket implements Serializable {
                 if (location==null) {
                     request=((DIndexForwardRequest)request).getRequest();
                     if (request instanceof RelocationRequest) {
+                        assert om!=null;
+                        assert name!=null;
+                        assert _config!=null;
                         _config.getMessageDispatcher().reply(om, new RelocationResponse(name));
                     } else {
                         _log.warn("unexpected nested request structure - ignoring: "+request);
                     }
                 } else {
-                    _log.info("forward "+request.getClass().getName()+" - "+request.getName()+" : "+_config.getNodeName(location));
+                    assert location!=null;
+                    assert request!=null;
+                    assert location!=null;
+                    assert _config!=null;
+                    _log.info("directing: " +request+" -> "+_config.getNodeName(location));
                     try {
                         _config.getMessageDispatcher().forward(om, location, ((DIndexForwardRequest)request).getRequest());
                     } catch (JMSException e) {

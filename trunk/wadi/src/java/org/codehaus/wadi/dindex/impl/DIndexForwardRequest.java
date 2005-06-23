@@ -44,4 +44,7 @@ public class DIndexForwardRequest implements DIndexRequest, Serializable {
         return _request.getName();
     }
     
+    public String toString() {
+        return "["+_request.toString()+"]";
+    }
 }
