@@ -490,7 +490,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         // acknowledge safe receipt to donor
         try {
             _dispatcher.reply(om, new BucketTransferResponse(success));
-            _log.info("sent TransferResponse");
+            _log.trace("sent TransferResponse");
             acked=true;
             
         } catch (JMSException e) {
@@ -505,7 +505,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     
     public void onBucketRepopulateRequest(ObjectMessage om, BucketRepopulateRequest request) {
         int keys[]=request.getKeys();
-        _log.info("BucketRepopulateRequest ARRIVED: "+keys);
+        _log.trace("BucketRepopulateRequest ARRIVED: "+keys);
         Collection[] c=new Collection[_numBuckets];
         for (int i=0; i<keys.length; i++)
             c[keys[i]]=new ArrayList();
@@ -681,7 +681,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     public ObjectMessage forwardAndExchange(String name, ObjectMessage message, DIndexRequest request, long timeout) {
         int key=getKey(name);
         try {
-            _log.info("wrapping request");
+            _log.trace("wrapping request");
             request=new DIndexForwardRequest(request);
             message.setObject(request);
             return _buckets[key].exchange(message, request, timeout);

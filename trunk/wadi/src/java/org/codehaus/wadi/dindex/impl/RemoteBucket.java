@@ -50,14 +50,14 @@ public class RemoteBucket extends AbstractBucket {
 	  // _location is already null
 	} else {
 	  // they cannot be equal - update
-	  _log.info("["+_key+"] updating location from: "+_config.getNodeName(_location)+" to: "+_config.getNodeName(location));
+	  _log.trace("["+_key+"] updating location from: "+_config.getNodeName(_location)+" to: "+_config.getNodeName(location));
 	  _location=location;
 	}
       } else {
 	if (_location.equals(location)) {
 	  // no need to update
 	} else {
-	  _log.info("["+_key+"] updating location from: "+_config.getNodeName(_location)+" to: "+_config.getNodeName(location));
+	  _log.trace("["+_key+"] updating location from: "+_config.getNodeName(_location)+" to: "+_config.getNodeName(location));
 	  _location=location;
 	}
       }
@@ -69,11 +69,7 @@ public class RemoteBucket extends AbstractBucket {
 
     public void dispatch(ObjectMessage om, DIndexRequest request) {
         try {
-            _log.info("dispatch: "+request.getClass().getName()+" - "+request.getName()+" - "+_config.getNodeName(om.getJMSReplyTo())+" -> "+_config.getNodeName(_location));
-//            if (request instanceof DIndexForwardRequest) {
-//                _log.info("unwrap forwarded request: ");
-//                om.setObject(((DIndexForwardRequest)request).getRequest());
-//            }
+            _log.info("forwarding: {"+request.getName()+" : "+_config.getNodeName(om.getJMSReplyTo())+"} -> "+_config.getNodeName(_location));
             _config.getMessageDispatcher().forward(om, _location);
         } catch (JMSException e) {
             _log.warn("could not forward message", e);

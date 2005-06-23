@@ -71,7 +71,7 @@ public class LocalBucket extends AbstractBucket implements Serializable {
             if (request instanceof DIndexInsertionRequest) {
                 Destination location=om.getJMSReplyTo();
                 put(request.getName(), location); // remember location of actual session...
-                _log.info("insert "+request.getName()+" : "+_config.getNodeName(location));
+                _log.info("insertion {"+request.getName()+" : "+_config.getNodeName(location)+"}");
                 response=new DIndexInsertionResponse();
                 // we can optimise local-local send here - TODO
                 _config.getMessageDispatcher().reply(om, response);

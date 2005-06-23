@@ -51,7 +51,7 @@ public class BucketFacade extends AbstractBucket {
         _timeStamp=timeStamp;
         _content=content;
         _queueing=queueing;
-        _log.info("["+_key+"] initialising location to: "+_content);
+        _log.trace("["+_key+"] initialising location to: "+_content);
     }
 
     public boolean isLocal() { // locking ?
@@ -100,7 +100,7 @@ public class BucketFacade extends AbstractBucket {
             acquired=true;
 
             if (timeStamp>_timeStamp) {
-                _log.info("["+_key+"] changing location from: "+_content+" to: "+content);
+                _log.trace("["+_key+"] changing location from: "+_content+" to: "+content);
                 _timeStamp=timeStamp;
                 _content=content;
             }
@@ -125,7 +125,7 @@ public class BucketFacade extends AbstractBucket {
                 if (_content instanceof RemoteBucket) {
                     ((RemoteBucket)_content).setLocation(location);
                 } else {
-                    _log.info("["+_key+"] changing location from: "+_content+" to: "+location);
+                    _log.trace("["+_key+"] changing location from: "+_content+" to: "+location);
                     _content=new RemoteBucket(_key, _config, location);
                 }
             }
@@ -161,7 +161,7 @@ public class BucketFacade extends AbstractBucket {
             sync.acquire();
             acquired=true;
             if (!_queueing) {
-                _log.info("exec-ing message");
+                _log.trace("exec-ing message");
                 _content.dispatch(om, request);
             }
             else {
