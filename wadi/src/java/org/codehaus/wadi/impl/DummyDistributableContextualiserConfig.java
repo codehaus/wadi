@@ -101,7 +101,7 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
         return 0;
     }
 
-    public MessageDispatcher getMessageDispatcher() {
+    public Dispatcher getDispatcher() {
         return null;
     }
     

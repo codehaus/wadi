@@ -65,7 +65,7 @@ public class HybridRelocater extends AbstractRelocater {
     }
     
     protected SynchronizedBoolean _shuttingDown;
-    protected MessageDispatcher _dispatcher;
+    protected Dispatcher _dispatcher;
     protected String _nodeName;
     protected Contextualiser _contextualiser;
     protected HttpProxy _httpProxy;
@@ -234,7 +234,7 @@ public class HybridRelocater extends AbstractRelocater {
         }
         
         try {
-            MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+            Dispatcher.Settings settingsInOut=new Dispatcher.Settings();
             // reverse direction...
             settingsInOut.to=om.getJMSReplyTo();
             settingsInOut.from=_config.getLocation().getDestination();
@@ -265,9 +265,9 @@ public class HybridRelocater extends AbstractRelocater {
         protected final Log _log=LogFactory.getLog(getClass());
         
         protected final String _tgtNodeName;
-        protected final MessageDispatcher.Settings _settingsInOut;
+        protected final Dispatcher.Settings _settingsInOut;
         
-        public RelocationResponseImmoter(String nodeName, MessageDispatcher.Settings settingsInOut) {
+        public RelocationResponseImmoter(String nodeName, Dispatcher.Settings settingsInOut) {
             _tgtNodeName=nodeName;
             _settingsInOut=settingsInOut;
         }

@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.activecluster.Cluster;
 import org.activecluster.Node;
+import org.codehaus.wadi.impl.Dispatcher;
 
 public interface CoordinatorConfig {
     
@@ -29,6 +30,7 @@ public interface CoordinatorConfig {
     Node getLocalNode();
     Collection getRemoteNodes();
     Cluster getCluster();
+    Dispatcher getDispatcher();
     
     Map getRendezVousMap();
     

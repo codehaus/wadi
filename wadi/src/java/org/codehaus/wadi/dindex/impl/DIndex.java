@@ -37,7 +37,7 @@ import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
 import org.codehaus.wadi.dindex.DIndexConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
-import org.codehaus.wadi.impl.MessageDispatcher;
+import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
@@ -52,7 +52,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     protected final Map _distributedState;
     protected final Latch _coordinatorLatch=new Latch();
     protected final Object _coordinatorLock=new Object();
-    protected final MessageDispatcher _dispatcher;
+    protected final Dispatcher _dispatcher;
     protected final String _nodeName;
     protected final Log _log;
     protected final int _numBuckets;
@@ -60,7 +60,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     protected final long _inactiveTime;
     protected final Cluster _cluster;
 
-    public DIndex(String nodeName, int numBuckets, long inactiveTime, Cluster cluster, MessageDispatcher dispatcher, Map distributedState) {
+    public DIndex(String nodeName, int numBuckets, long inactiveTime, Cluster cluster, Dispatcher dispatcher, Map distributedState) {
         _nodeName=nodeName;
         _log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
         _numBuckets=numBuckets;
@@ -177,6 +177,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     
     public Cluster getCluster() {
         return _cluster;
+    }
+    
+    public Dispatcher getDispatcher() {
+        return _dispatcher;
     }
     
     // ClusterListener
@@ -297,7 +301,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                 message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
                 message.setJMSCorrelationID(correlationId);
                 message.setObject(new BucketRepopulateRequest(missingKeys));
-                _cluster.send(_cluster.getDestination(), message);
+                _dispatcher.send(_cluster.getDestination(), message);
             } catch (JMSException e) {
                 _log.error("unexpected problem repopulating lost index", e);
             }
@@ -713,10 +717,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
 
     // BucketConfig
     
-    public MessageDispatcher getMessageDispatcher() {
-        return _dispatcher;
-    }
-
     public String getNodeName(Destination destination) {
         Node local=_cluster.getLocalNode();
         Node node=destination.equals(local.getDestination())?local:(Node)_cluster.getNodes().get(destination);

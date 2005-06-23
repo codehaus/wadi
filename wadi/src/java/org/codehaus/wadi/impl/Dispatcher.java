@@ -32,7 +32,7 @@ import javax.jms.ObjectMessage;
 import org.activecluster.Cluster;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.MessageDispatcherConfig;
+import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
@@ -54,23 +54,23 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class MessageDispatcher implements MessageListener {
+public class Dispatcher implements MessageListener {
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final Map _map=new HashMap();
     protected final PooledExecutor _executor;
 
-	public MessageDispatcher() {
+	public Dispatcher() {
         _executor=new PooledExecutor(new LinkedQueue(), 100); // parameterise
         _executor.setMinimumPoolSize(4);
 	    }
 
-    protected MessageDispatcherConfig _config;
+    protected DispatcherConfig _config;
 
     protected Cluster _cluster;
     protected MessageConsumer _clusterConsumer;
     protected MessageConsumer _nodeConsumer;
 
-    public void init(MessageDispatcherConfig config) throws JMSException {
+    public void init(DispatcherConfig config) throws JMSException {
         _config=config;
         _cluster=_config.getCluster();
         boolean excludeSelf;
@@ -82,14 +82,14 @@ public class MessageDispatcher implements MessageListener {
         _nodeConsumer.setMessageListener(this);
     }
 
-    interface Dispatcher {
+    interface InternalDispatcher {
         void dispatch(ObjectMessage om, Serializable obj) throws Exception;
         void incCount();
         void decCount();
         int getCount();
     }
 
-    class TargetDispatcher implements Dispatcher {
+    class TargetDispatcher implements InternalDispatcher {
         protected final Object _target;
         protected final Method _method;
         protected final ThreadLocal _pair=new ThreadLocal(){protected Object initialValue() {return new Object[2];}};
@@ -118,14 +118,14 @@ public class MessageDispatcher implements MessageListener {
 
 
 
-    public Dispatcher register(Object target, String methodName, Class type) {
+    public InternalDispatcher register(Object target, String methodName, Class type) {
         try {
             Method method=target.getClass().getMethod(methodName, new Class[] {ObjectMessage.class, type});
             if (method==null) return null;
 
-            Dispatcher nuw=new TargetDispatcher(target, method);
+            InternalDispatcher nuw=new TargetDispatcher(target, method);
 
-            Dispatcher old=(Dispatcher)_map.put(type, nuw);
+            InternalDispatcher old=(InternalDispatcher)_map.put(type, nuw);
             if (old!=null)
                 if (_log.isWarnEnabled()) _log.warn("later registration replaces earlier - multiple dispatch NYI: "+old+" -> "+nuw);
 
@@ -156,7 +156,7 @@ public class MessageDispatcher implements MessageListener {
     return td._count<=0;
   }
 
-	class RendezVousDispatcher implements Dispatcher {
+	class RendezVousDispatcher implements InternalDispatcher {
 	  protected final Map _rvMap2;
 	  protected final long _timeout;
 
@@ -207,12 +207,12 @@ public class MessageDispatcher implements MessageListener {
         try {
             ObjectMessage objectMessage=null;
             Serializable serializable=null;
-            Dispatcher dispatcher;
+            InternalDispatcher dispatcher;
             if (
                     message instanceof ObjectMessage &&
                     (objectMessage=(ObjectMessage)message)!=null &&
                     (serializable=objectMessage.getObject())!=null &&
-                    (dispatcher=(Dispatcher)_map.get(serializable.getClass()))!=null
+                    (dispatcher=(InternalDispatcher)_map.get(serializable.getClass()))!=null
             ) {
                 do {
                     try {
@@ -233,11 +233,11 @@ public class MessageDispatcher implements MessageListener {
     }
 
 	class DispatchRunner implements Runnable {
-        protected final Dispatcher _dispatcher;
+        protected final InternalDispatcher _dispatcher;
         protected final ObjectMessage _objectMessage;
         protected final Serializable _serializable;
 
-		public DispatchRunner(Dispatcher dispatcher, ObjectMessage objectMessage, Serializable serializable) {
+		public DispatchRunner(InternalDispatcher dispatcher, ObjectMessage objectMessage, Serializable serializable) {
             _dispatcher=dispatcher;
             _objectMessage=objectMessage;
             _serializable=serializable;
@@ -273,6 +273,10 @@ public class MessageDispatcher implements MessageListener {
         message.setJMSCorrelationID(settingsIn.correlationId);
         message.setObject(s);
         _cluster.send(settingsIn.to, message);
+    }
+    
+    public void send(Destination destination, ObjectMessage message) throws JMSException {
+        _cluster.send(destination, message);
     }
     
     public void reply(ObjectMessage request, Serializable response) throws JMSException {

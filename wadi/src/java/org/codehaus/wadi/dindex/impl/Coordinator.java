@@ -31,6 +31,7 @@ import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
+import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.Slot;
@@ -48,6 +49,7 @@ public class Coordinator implements Runnable {
     
     protected final CoordinatorConfig _config;
     protected final Cluster _cluster;
+    protected final Dispatcher _dispatcher;
     protected final Node _localNode;
     protected final int _numItems;
     protected final long _inactiveTime;
@@ -55,6 +57,7 @@ public class Coordinator implements Runnable {
     public Coordinator(CoordinatorConfig config) {
         _config=config;
         _cluster=_config.getCluster();
+        _dispatcher=_config.getDispatcher();
         _localNode=_cluster.getLocalNode();
         _numItems=_config.getNumItems();
         _inactiveTime=_config.getInactiveTime();
@@ -181,7 +184,7 @@ public class Coordinator implements Runnable {
                             om.setJMSDestination(node.getDestination());
                             om.setJMSCorrelationID(node.getName());
                             om.setObject(response);
-                            _cluster.send(node.getDestination(), om);
+                            _dispatcher.send(node.getDestination(), om);
                         } catch (JMSException e) {
                             _log.error("problem sending EvacuationResponse to "+DIndex.getNodeName(node), e);
                             failures++;
@@ -233,7 +236,7 @@ public class Coordinator implements Runnable {
                 om.setJMSDestination(producer._node.getDestination());
                 om.setJMSCorrelationID(correlationId);
                 om.setObject(command);
-                _cluster.send(producer._node.getDestination(), om);
+                _dispatcher.send(producer._node.getDestination(), om);
             } catch (JMSException e) {
                 _log.error("problem sending transfer command", e);
             }

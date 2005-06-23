@@ -40,7 +40,7 @@ import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.DistributableSessionConfig;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpProxy;
-import org.codehaus.wadi.MessageDispatcherConfig;
+import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionIdFactory;
@@ -56,12 +56,12 @@ import org.codehaus.wadi.io.ServerConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
-public class DistributableManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, ServerConfig, MessageDispatcherConfig, DIndexConfig {
+public class DistributableManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, ServerConfig, DispatcherConfig, DIndexConfig {
 
     protected final Map _distributedState=new HashMap(); // TODO - make this a SynchronisedMap
     protected final SynchronizedBoolean _shuttingDown=new SynchronizedBoolean(false);
     
-    protected final MessageDispatcher _dispatcher=new MessageDispatcher();
+    protected final Dispatcher _dispatcher=new Dispatcher();
     
     protected final Streamer _streamer;
     protected final String _clusterUri;
@@ -270,7 +270,7 @@ public class DistributableManager extends StandardManager implements Distributab
         return 72; // TODO - parameterise...
     }
     
-    public MessageDispatcher getMessageDispatcher() {
+    public Dispatcher getDispatcher() {
         return _dispatcher;
     }
     

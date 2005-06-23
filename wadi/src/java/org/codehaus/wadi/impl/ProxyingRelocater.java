@@ -64,14 +64,14 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
 
     public void init(RelocaterConfig config) {
         super.init(config);
-        MessageDispatcher dispatcher=_config.getDispatcher();
+        Dispatcher dispatcher=_config.getDispatcher();
         dispatcher.register(this, "onMessage", LocationRequest.class); // dispatch LocationRequest messages onto our onMessage() method
         dispatcher.register(LocationResponse.class, _rvMap, _timeout); // dispatch LocationResponse classes via synchronous rendez-vous
     }
 
 	protected Location locate(String name, Map locationMap) {
 		if (_log.isTraceEnabled()) _log.trace("sending location request: "+name);
-		MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+		Dispatcher.Settings settingsInOut=new Dispatcher.Settings();
 		settingsInOut.from=_config.getLocation().getDestination();
 		settingsInOut.to=_config.getDispatcher().getCluster().getDestination();
 		settingsInOut.correlationId=name; // TODO - better correlation id
