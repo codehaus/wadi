@@ -238,7 +238,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         _evacuationQueue=null;
         dcc.removeDistributedState(_evacuationQueueKey);
         dcc.distributeState();
-        Utils.safeSleep(5*1000*2); // TODO - should be hearbeat period...
+        //Utils.safeSleep(5*1000*2); // TODO - should be hearbeat period...
         // FIXME - can we destroy the queue ?
         _log.trace("emigration queue destroyed");
     }

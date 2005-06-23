@@ -277,7 +277,7 @@ public class HybridRelocater extends AbstractRelocater {
             ObjectMessage message=_dispatcher.exchangeReply(_message, response, _ackTimeout);
             RelocationAcknowledgement ack=null;
             try {
-                ack=(RelocationAcknowledgement)message.getObject();
+                ack=message==null?null:(RelocationAcknowledgement)message.getObject();
             } catch (JMSException e) {
                 _log.error("could not unpack response", e);
             }
