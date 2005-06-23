@@ -185,7 +185,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
             }
         }
         if (matches>0)
-            _log.info("matches found: "+matches);
+            _log.debug("matches found: "+matches);
     }
     
 }

@@ -48,9 +48,11 @@ $properties \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.activecluster=warn \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.activemq=warn \
 -Dorg.apache.commons.logging.simplelog.log.org.springframework=warn \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=info \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.dindex=trace \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.HybridRelocater=trace \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=debug \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.AbsoluteEvicter=info \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.NeverEvicter=info \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.dindex=debug \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.HybridRelocater=debug \
 -Dorg.apache.commons.logging.simplelog.showShortLogname=true \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
 -Djava.io.tmpdir=$INSTANCE/temp\
