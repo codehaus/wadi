@@ -29,12 +29,19 @@ import org.codehaus.wadi.Location;
  */
 public class EmigrationAcknowledgement implements Serializable {
 
-	protected String _id;
-	public String getId(){return _id;}
-	public void setId(String id){_id=id;}
+    protected String _name;
+    protected Location _location;
 
-	protected Location _location;
+    public EmigrationAcknowledgement(String name, Location location) {
+        _name=name;
+        _location=location;
+    }
+
+    protected EmigrationAcknowledgement() {
+        // for deserialisation ...
+    }
+    
+	public String getId(){return _name;}
 	public Location getLocation() {return _location;}
-	public void setLocation(Location location) {_location=location;}
 
 }

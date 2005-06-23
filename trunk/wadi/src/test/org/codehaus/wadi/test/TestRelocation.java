@@ -93,14 +93,14 @@ public class TestRelocation extends TestCase {
 
 	  	// Relocater
 
-        public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
-			return _delegate.relocate(hreq, hres, chain, name, immoter, motionLock, locationMap);
+        public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException {
+			return _delegate.relocate(hreq, hres, chain, name, immoter, motionLock);
 		}
 
 	}
 
       class DummyRelocater extends AbstractRelocater {
-          public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock, Map locationMap) {return false;}
+          public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) {return false;}
           protected Contextualiser _top;
           public void setTop(Contextualiser top) {_top=top;}
           public Contextualiser getTop(){return _top;}

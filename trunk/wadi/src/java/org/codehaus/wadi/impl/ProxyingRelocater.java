@@ -69,7 +69,7 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
         dispatcher.register(LocationResponse.class, _rvMap, _timeout); // dispatch LocationResponse classes via synchronous rendez-vous
     }
 
-	protected Location locate(String name, Map locationMap) {
+	protected Location locate(String name) {
 		if (_log.isTraceEnabled()) _log.trace("sending location request: "+name);
 		Dispatcher.Settings settingsInOut=new Dispatcher.Settings();
 		settingsInOut.from=_config.getLocation().getDestination();
@@ -88,25 +88,14 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
 		// otherwise we may end up in a tight loop proxying to ourself... - could this happen ?
 
 		Iterator i=ids.iterator();
-		synchronized (locationMap) {
-			while (i.hasNext()) {
-				locationMap.put(i.next(), location);
-			}
-		}
 		if (_log.isTraceEnabled()) _log.trace("updated cache for: "+ids);
 
 		return location;
 	}
 
-	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock, Map locationMap) throws IOException, ServletException {
-		Location location;
-		boolean refreshed=false;
-
-		if (null==(location=(Location)locationMap.get(name))) {
-			location=locate(name, locationMap);
-			refreshed=true;
-		}
-
+	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException {
+		Location location=locate(name);
+		
 		if (location==null)
 			return false;
 
@@ -116,22 +105,7 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
 			motionLock.release();
 			return true;
 		} catch (RecoverableException e1) {
-			if (!refreshed) {
-				if (null==(location=locate(name, locationMap)))
-					return false;
-				try {
-					location.proxy(hreq, hres);
-					motionLock.release();
-					return true;
-				} catch (RecoverableException e2) {
-					recoverable=true;
-				} catch (ProxyingException e2) {
-					if (_log.isErrorEnabled()) _log.error("irrecoverable proxying problem: "+name, e2);
-					recoverable=false;
-				}
-			} else {
-				recoverable=true;
-			}
+		    recoverable=true;
 
 		} catch (ProxyingException e) {
 			if (_log.isErrorEnabled()) _log.error("irrecoverable proxying problem: "+name, e);

@@ -152,17 +152,17 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         Thread.interrupted();
         
         try {
-            Node localNode=_cluster.getLocalNode();
-            ObjectMessage om=_cluster.createObjectMessage();
-            om.setJMSReplyTo(localNode.getDestination());
-            om.setJMSDestination(_cluster.getDestination()); // whole cluster needs to know who is leaving - in case Coordinator fails
             BucketEvacuationRequest request=new BucketEvacuationRequest();
-            om.setObject(request);
+            Node localNode=_cluster.getLocalNode();
             if (localNode.getDestination().equals(_coordinatorNode.getDestination())) {
-                onBucketEvacuationRequest(om, request);
+                ObjectMessage message=_cluster.createObjectMessage();
+                message.setJMSReplyTo(localNode.getDestination());
+                message.setJMSDestination(_cluster.getDestination()); // whole cluster needs to know who is leaving - in case Coordinator fails
+                message.setObject(request);
+                onBucketEvacuationRequest(message, request);
             } else {
                 String correlationId=_cluster.getLocalNode().getName();
-                _dispatcher.exchange(om, correlationId, _inactiveTime);
+                _dispatcher.exchange(localNode.getDestination(), _cluster.getDestination(), correlationId, request, _inactiveTime);
             }
         } catch (JMSException e) {
             _log.warn("problem sending evacuation request");
@@ -296,14 +296,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             _log.info("REPOPULATING BUCKETS...: "+missingBuckets);
             String correlationId=_dispatcher.nextCorrelationId();
             Quipu rv=_dispatcher.setRendezVous(correlationId, _cluster.getNodes().size());
-            try {
-                ObjectMessage message=_cluster.createObjectMessage();
-                message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-                message.setJMSCorrelationID(correlationId);
-                message.setObject(new BucketRepopulateRequest(missingKeys));
-                _dispatcher.send(_cluster.getDestination(), message);
-            } catch (JMSException e) {
-                _log.error("unexpected problem repopulating lost index", e);
+            if (!_dispatcher.send(_cluster.getLocalNode().getDestination(), _cluster.getDestination(), correlationId, new BucketRepopulateRequest(missingKeys))) {
+                _log.error("unexpected problem repopulating lost index");
             }
             
             // whilst we are waiting for the other nodes to get back to us, figure out which relevant sessions
@@ -426,13 +420,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                 // build request...
                 _log.info("local state (before giving): "+new BucketKeys(_buckets));
                 _log.info("transferring "+acquired.length+" buckets to "+getNodeName((Node)_cluster.getNodes().get(destination)));
-                ObjectMessage om2=_cluster.createObjectMessage();
-                om2.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-                om2.setJMSDestination(destination);
                 BucketTransferRequest request=new BucketTransferRequest(timeStamp, acquired);
-                om2.setObject(request);
                 // send it...
-                ObjectMessage om3=_dispatcher.exchange(om2, _inactiveTime);
+                ObjectMessage om3=_dispatcher.exchange(_cluster.getLocalNode().getDestination(), destination, request, _inactiveTime);
                 // process response...
                 if (om3!=null && ((BucketTransferResponse)om3.getObject()).getSuccess()) {
                     for (int j=0; j<acquired.length; j++) {

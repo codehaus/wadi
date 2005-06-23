@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
+import org.codehaus.wadi.dindex.impl.DIndex;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
@@ -266,17 +267,19 @@ public class Dispatcher implements MessageListener {
 		}
 	}
 
-    public void sendMessage(Serializable s, Settings settingsIn) throws JMSException {
-        // construct and send message...
-        ObjectMessage message=_cluster.createObjectMessage();
-        message.setJMSReplyTo(settingsIn.from);
-        message.setJMSCorrelationID(settingsIn.correlationId);
-        message.setObject(s);
-        _cluster.send(settingsIn.to, message);
-    }
-    
-    public void send(Destination destination, ObjectMessage message) throws JMSException {
-        _cluster.send(destination, message);
+    public boolean send(Destination from, Destination to, String correlationId, Serializable object) {
+        try {
+            ObjectMessage om=_cluster.createObjectMessage();
+            om.setJMSReplyTo(from);
+            om.setJMSDestination(to);
+            om.setJMSCorrelationID(correlationId);
+            om.setObject(object);
+            _cluster.send(to, om);
+            return true;
+        } catch (JMSException e) {
+            _log.error("problem sending "+object, e);
+            return false;
+        }
     }
     
     public void reply(ObjectMessage request, Serializable response) throws JMSException {
@@ -306,52 +309,7 @@ public class Dispatcher implements MessageListener {
         _cluster.send(destination, message);
     }
 
-	// send a message and then wait a given amount of time for the first response - return it...
-	// for use with RendezVousDispatcher... - need to register type beforehand...
-	public Serializable exchangeMessages(Serializable request, Map rvMap, Settings settingsInOut, long timeout) {
-		Quipu rv=new Quipu(1); // TODO - can these be reused ?
-
-		// set up a rendez-vous...
-		synchronized (rvMap) {
-			rvMap.put(settingsInOut.correlationId, rv);
-		}
-
-		ObjectMessage om=null;
-		Serializable response=null;
-		try {
-			sendMessage(request, settingsInOut);
-			// rendez-vous with response/timeout...
-			do {
-				try {
-					long startTime=System.currentTimeMillis();
-                    rv.waitFor(timeout);
-                    om=(ObjectMessage)rv.getResults().toArray()[0]; // Aargh!
-					response=om.getObject();
-					settingsInOut.to=om.getJMSReplyTo();
-					// om.getJMSDestination() might be the whole cluster, not just this node... - TODO
-					settingsInOut.from=_cluster.getLocalNode().getDestination();
-					assert settingsInOut.correlationId.equals(om.getJMSCorrelationID());
-					long elapsedTime=System.currentTimeMillis()-startTime;
-					if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis) '"+settingsInOut.correlationId+"'"); // session does not exist
-				} catch (TimeoutException toe) {
-					if (_log.isWarnEnabled()) _log.warn("no response to request within timeout ("+timeout+" millis) '"+settingsInOut.correlationId+"'"); // session does not exist
-				} catch (InterruptedException ignore) {
-					if (_log.isWarnEnabled()) _log.warn("waiting for response - interruption ignored");
-				}
-			} while (Thread.interrupted());
-		} catch (JMSException e) {
-			if (_log.isWarnEnabled()) _log.warn("problem sending request message", e);
-		} finally {
-			// tidy up rendez-vous
-			synchronized (rvMap) {
-				rvMap.remove(settingsInOut.correlationId);
-			}
-		}
-
-		return response;
-	}
-
-    class SimpleCorrelationIDFactory {
+	class SimpleCorrelationIDFactory {
         
         protected final SynchronizedInt _count=new SynchronizedInt(0);
         
@@ -372,8 +330,20 @@ public class Dispatcher implements MessageListener {
         return _factory.create();
     }
     
-    public ObjectMessage exchange(ObjectMessage request, long timeout) {
-        return exchange(request, nextCorrelationId(), timeout);
+    public ObjectMessage exchange(Destination from, Destination to, String correlationId, Serializable request, long timeout) {
+        Quipu rv=null;
+            // set up a rendez-vous...
+            rv=setRendezVous(correlationId, 1);
+            // send the message...
+            if (send(from, to, correlationId, request)) {
+                return attemptRendezVous(correlationId, rv, timeout);
+            } else {
+                return null;
+            }
+    }
+
+    public ObjectMessage exchange(Destination from, Destination to, Serializable request, long timeout) {
+        return exchange(from, to, nextCorrelationId(), request, timeout);
     }
 
     public Quipu setRendezVous(String correlationId, int numLlamas) {
@@ -411,22 +381,52 @@ public class Dispatcher implements MessageListener {
         return response;
     }
     
-    public ObjectMessage exchange(ObjectMessage request, String correlationId, long timeout) {
-        Quipu rv=null;
-        try {
-            request.setJMSCorrelationID(correlationId);
-            // set up a rendez-vous...
-            rv=setRendezVous(correlationId, 1);
-            // send the request
-            _cluster.send(request.getJMSDestination(), request);
-        } catch (JMSException e) {
-            if (_log.isWarnEnabled()) _log.warn("problem sending request message", e);
-        } 
-        
-        return attemptRendezVous(correlationId, rv, timeout);
+    // send a message and then wait a given amount of time for the first response - return it...
+    // for use with RendezVousDispatcher... - need to register type beforehand...
+    public Serializable exchangeMessages(Serializable request, Map rvMap, Settings settingsInOut, long timeout) {
+    	Quipu rv=new Quipu(1); // TODO - can these be reused ?
+    
+    	// set up a rendez-vous...
+    	synchronized (rvMap) {
+    		rvMap.put(settingsInOut.correlationId, rv);
+    	}
+    
+    	ObjectMessage om=null;
+    	Serializable response=null;
+    	try {
+            send(settingsInOut.from, settingsInOut.to, settingsInOut.correlationId, request);
+    		// rendez-vous with response/timeout...
+    		do {
+    			try {
+    				long startTime=System.currentTimeMillis();
+                    rv.waitFor(timeout);
+                    om=(ObjectMessage)rv.getResults().toArray()[0]; // Aargh!
+    				response=om.getObject();
+    				settingsInOut.to=om.getJMSReplyTo();
+    				// om.getJMSDestination() might be the whole cluster, not just this node... - TODO
+    				settingsInOut.from=_cluster.getLocalNode().getDestination();
+    				assert settingsInOut.correlationId.equals(om.getJMSCorrelationID());
+    				long elapsedTime=System.currentTimeMillis()-startTime;
+    				if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis) '"+settingsInOut.correlationId+"'"); // session does not exist
+    			} catch (TimeoutException toe) {
+    				if (_log.isWarnEnabled()) _log.warn("no response to request within timeout ("+timeout+" millis) '"+settingsInOut.correlationId+"'"); // session does not exist
+    			} catch (InterruptedException ignore) {
+    				if (_log.isWarnEnabled()) _log.warn("waiting for response - interruption ignored");
+    			}
+    		} while (Thread.interrupted());
+    	} catch (JMSException e) {
+    		if (_log.isWarnEnabled()) _log.warn("problem sending request message", e);
+    	} finally {
+    		// tidy up rendez-vous
+    		synchronized (rvMap) {
+    			rvMap.remove(settingsInOut.correlationId);
+    		}
+    	}
+    
+    	return response;
     }
 
-	public Cluster getCluster(){return _cluster;}
+    public Cluster getCluster(){return _cluster;}
 
 	public MessageConsumer addDestination(Destination destination) throws JMSException {
 	    boolean excludeSelf=true;
