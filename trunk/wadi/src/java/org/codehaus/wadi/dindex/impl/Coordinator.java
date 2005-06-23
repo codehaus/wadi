@@ -142,13 +142,13 @@ public class Coordinator implements Runnable {
             
             _config.regenerateMissingBuckets(living, leaving);
             
-            String correlationId=_localNode.getName()+"-balancing-"+System.currentTimeMillis();
             RedistributionPlan plan=new RedistributionPlan(living, leaving, _numItems);
             
             printNodes(living, leaving);
             
             Map rvMap=_config.getRendezVousMap();
             Quipu rv=new Quipu(0);
+            String correlationId=_dispatcher.nextCorrelationId();
             rvMap.put(correlationId, rv);
             execute(plan, correlationId, rv); // quipu will be incremented as participants are invited
             

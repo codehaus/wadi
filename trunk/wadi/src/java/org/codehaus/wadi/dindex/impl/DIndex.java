@@ -161,6 +161,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                 message.setObject(request);
                 onBucketEvacuationRequest(message, request);
             } else {
+                // we use a custom correlationId, because the response is sent from somewhere,
+                // which currently does not have access to the src message... This way, it knows
+                // what it should use to respond with - hacky...
                 String correlationId=_cluster.getLocalNode().getName();
                 _dispatcher.exchangeSend(localNode.getDestination(), _cluster.getDestination(), correlationId, request, _inactiveTime);
             }
