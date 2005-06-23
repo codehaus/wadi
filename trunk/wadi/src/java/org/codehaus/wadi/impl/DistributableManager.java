@@ -26,7 +26,6 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
-import org.activecluster.ClusterFactory;
 import org.activecluster.impl.DefaultClusterFactory;
 import org.activemq.ActiveMQConnection;
 import org.activemq.ActiveMQConnectionFactory;

@@ -17,9 +17,6 @@
 package org.codehaus.wadi;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
-
-import javax.jms.Destination;
 
 import org.activecluster.Cluster;
 import org.codehaus.wadi.dindex.impl.DIndex;

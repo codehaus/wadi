@@ -487,7 +487,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             facade.setContent(timeStamp, bucket);
         }
         success=true;
-        boolean acked=false;
         try {
             BucketKeys keys=new BucketKeys(_buckets);
             _distributedState.put(_bucketKeysKey, keys);

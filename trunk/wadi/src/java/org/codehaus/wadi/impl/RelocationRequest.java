@@ -18,7 +18,6 @@ package org.codehaus.wadi.impl;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
 
 public class RelocationRequest extends AbstractDIndexRequest implements Serializable {

@@ -22,7 +22,6 @@ import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Router;
-import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionPool;
 
 public class DummyContextualiserConfig implements ContextualiserConfig {

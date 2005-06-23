@@ -22,11 +22,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
 
 import org.activecluster.Cluster;
-import org.activecluster.ClusterEvent;
 import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -201,7 +198,6 @@ public class Coordinator implements Runnable {
         Iterator p=plan.getProducers().iterator();
         Iterator c=plan.getConsumers().iterator();
         
-        int n=0;
         BucketOwner consumer=null;
         while (p.hasNext()) {
             BucketOwner producer=(BucketOwner)p.next();

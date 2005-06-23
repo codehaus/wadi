@@ -26,7 +26,6 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 
-import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.io.Pipe;

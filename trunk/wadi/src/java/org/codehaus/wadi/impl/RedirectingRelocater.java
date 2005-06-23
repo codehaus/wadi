@@ -17,7 +17,6 @@
 package org.codehaus.wadi.impl;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;

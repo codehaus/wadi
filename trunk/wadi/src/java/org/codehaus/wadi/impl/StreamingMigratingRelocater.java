@@ -17,7 +17,6 @@
 package org.codehaus.wadi.impl;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -25,10 +24,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.Location;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.SessionRelocater;
-import org.codehaus.wadi.io.Server;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
