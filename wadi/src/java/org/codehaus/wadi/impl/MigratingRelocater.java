@@ -63,8 +63,6 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
     protected final Log _log=LogFactory.getLog(getClass());
 	protected final long _resTimeout;
 	protected final long _ackTimeout;
-	protected final Map _resRvMap=new HashMap();
-	protected final Map _ackRvMap=new HashMap();
 
 	public MigratingRelocater(long resTimeout, long ackTimeout) {
 		_resTimeout=resTimeout;
@@ -75,26 +73,30 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
         super.init(config);
         Dispatcher dispatcher=_config.getDispatcher();
         dispatcher.register(this, "onMessage", ImmigrationRequest.class);
-        dispatcher.register(ImmigrationResponse.class, _resRvMap, _resTimeout);
-        dispatcher.register(ImmigrationAcknowledgement.class, _ackRvMap, _ackTimeout);
+        dispatcher.register(ImmigrationResponse.class, _resTimeout);
+        dispatcher.register(ImmigrationAcknowledgement.class, _ackTimeout);
     }
 
     protected int _counter;
     public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException {
-
+        
         Location location=null;
         Destination destination=_config.getDispatcher().getCluster().getDestination();
-
-        Dispatcher.Settings settingsInOut=new Dispatcher.Settings();
-        settingsInOut.from=_config.getLocation().getDestination();
-        settingsInOut.to=destination;
-        settingsInOut.correlationId=name+"-"+(_counter++)+"-"+_config.getCluster().getLocalNode().getDestination().toString(); // TODO - better correlationId
-        if (_log.isTraceEnabled()) _log.trace("sending immigration request: "+settingsInOut.correlationId);
+        
+        Destination from=_config.getLocation().getDestination();
+        Destination to=destination;
+        if (_log.isTraceEnabled()) _log.trace("sending immigration request");
         ImmigrationRequest request=new ImmigrationRequest(name, _resTimeout);
-        ImmigrationResponse response=(ImmigrationResponse)_config.getDispatcher().exchangeMessages(request, _resRvMap, settingsInOut, _resTimeout);
-        if (_log.isTraceEnabled()) _log.trace("received immigration response: "+settingsInOut.correlationId);
+        ObjectMessage message=_config.getDispatcher().exchangeSend(from, to, request, _resTimeout);
+        ImmigrationResponse response=null;
+        try {
+            response=(ImmigrationResponse)message.getObject();
+        } catch (JMSException e) {
+            _log.error("problem reading response", e);
+        }
+        if (_log.isTraceEnabled()) _log.trace("received immigration response");
         // take out session, prepare to promote it...
-
+        
         if (response==null)
             return false;
 
@@ -103,7 +105,7 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
         if (!emotable.checkTimeframe(System.currentTimeMillis()))
             if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
 
-        Emoter emoter=new ImmigrationEmoter(settingsInOut);
+        Emoter emoter=new ImmigrationEmoter(message);
         Motable immotable=Utils.mote(emoter, immoter, emotable, name);
         if (null==immotable)
             return false;
@@ -116,14 +118,10 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
 	class ImmigrationEmoter extends AbstractChainedEmoter {
 		protected final Log _log=LogFactory.getLog(getClass());
 
-		protected Destination _from;
-        protected Destination _to;
-        protected String _correlationId;
+		protected ObjectMessage _message;
         
-		public ImmigrationEmoter(Dispatcher.Settings settingsInOut) {
-            _from=settingsInOut.from;
-            _to=settingsInOut.to;
-            _correlationId=settingsInOut.correlationId;
+		public ImmigrationEmoter(ObjectMessage message) {
+		    _message=message;
 		}
 
 		public boolean prepare(String name, Motable emotable) {
@@ -134,11 +132,9 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
 			emotable.destroy(); // remove copy in store
 
 			// TODO - move some of this to prepare()...
-			if (_log.isTraceEnabled()) _log.trace("sending immigration ack: "+_correlationId);
+			if (_log.isTraceEnabled()) _log.trace("sending immigration ack");
 			ImmigrationAcknowledgement ack=new ImmigrationAcknowledgement(name, _config.getLocation());
-			if (_config.getDispatcher().send(_from, _to, _correlationId, ack)) {
-                // needs refactoring...
-			} else {
+			if (!_config.getDispatcher().reply(_message, ack)) {
 			    if (_log.isErrorEnabled()) _log.error("could not send immigration acknowledgement: "+name);
 			}
 		}
@@ -170,15 +166,13 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
                     return;
                 }
 
-                Dispatcher.Settings settingsInOut=new Dispatcher.Settings();
                 // reverse direction...
-                settingsInOut.to=om.getJMSReplyTo();
-                settingsInOut.from=_config.getLocation().getDestination();
-                settingsInOut.correlationId=om.getJMSCorrelationID();
-                if (_log.isTraceEnabled()) _log.trace("receiving immigration request: "+settingsInOut.correlationId);
+                Destination to=om.getJMSReplyTo();
+                Destination from=_config.getLocation().getDestination();
+                if (_log.isTraceEnabled()) _log.trace("receiving immigration request");
                 //				long handShakePeriod=request.getHandOverPeriod();
                 // TODO - the peekTimeout should be specified by the remote node...
-                Immoter promoter=new ImmigrationImmoter(settingsInOut);
+                Immoter promoter=new ImmigrationImmoter(from, to);
 
                 RankedRWLock.setPriority(RankedRWLock.EMIGRATION_PRIORITY);
 		boolean found=top.contextualise(null,null,null,id, promoter, motionLock, true);
@@ -204,10 +198,12 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
 	class ImmigrationImmoter implements Immoter {
 		protected final Log _log=LogFactory.getLog(getClass());
 
-		protected final Dispatcher.Settings _settingsInOut;
+        protected final Destination _from;
+        protected final Destination _to;
 
-		public ImmigrationImmoter(Dispatcher.Settings settingsInOut) {
-			_settingsInOut=settingsInOut;
+		public ImmigrationImmoter(Destination from, Destination to) {
+            _from=from;
+            _to=to;
 		}
 
 		public Motable nextMotable(String id, Motable emotable) {
@@ -215,25 +211,31 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
 		}
 
 		public boolean prepare(String name, Motable emotable, Motable immotable) {
-			// send the message
-			if (_log.isTraceEnabled()) _log.trace("sending immigration response: "+_settingsInOut.correlationId);
-			ImmigrationResponse mr=new ImmigrationResponse();
-			mr.setId(name);
-			try {
-			immotable.copy(emotable);
-			} catch (Exception e) {
-			    _log.warn("unexpected problem", e);
-			    return false;
-			}
-			mr.setMotable(immotable);
-			ImmigrationAcknowledgement ack=(ImmigrationAcknowledgement)_config.getDispatcher().exchangeMessages(mr, _ackRvMap, _settingsInOut, _ackTimeout);
-			if (ack==null) {
-			  if (_log.isWarnEnabled()) _log.warn("no ack received for session immigration: "+_settingsInOut.correlationId); // TODO - increment a couter somewhere...
-				// TODO - who owns the session now - consider a syn link to old owner to negotiate this..
-				return false;
-			}
-			if (_log.isTraceEnabled()) _log.trace("received immigration ack: "+_settingsInOut.correlationId);
-			return true;
+		    // send the message
+		    if (_log.isTraceEnabled()) _log.trace("sending immigration response");
+		    try {
+		        immotable.copy(emotable);
+		    } catch (Exception e) {
+		        _log.warn("unexpected problem", e);
+		        return false;
+		    }
+            ImmigrationResponse response=new ImmigrationResponse(name, immotable);
+            ObjectMessage message=_config.getDispatcher().exchangeSend(_from, _to, response, _ackTimeout);
+
+            ImmigrationAcknowledgement ack=null;
+            try {
+                ack=(ImmigrationAcknowledgement)message.getObject();
+            } catch (JMSException e) {
+                _log.error("could not unpack response", e);
+            }
+            
+		    if (ack==null) {
+		        if (_log.isWarnEnabled()) _log.warn("no ack received for session immigration"); // TODO - increment a couter somewhere...
+		        // TODO - who owns the session now - consider a syn link to old owner to negotiate this..
+		        return false;
+		    }
+		    if (_log.isTraceEnabled()) _log.trace("received immigration ack");
+		    return true;
 		}
 
 		public void commit(String name, Motable immotable) {

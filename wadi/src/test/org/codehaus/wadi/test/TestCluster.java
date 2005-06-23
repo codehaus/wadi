@@ -128,7 +128,7 @@ public class TestCluster extends TestCase {
             HttpProxy proxy=new StandardHttpProxy("jsessionid");
             //_relocater=new SwitchableRelocationStrategy();
             _relocater=new DummyRelocater();
-            _middle=new ClusterContextualiser(_bottom, _collapser, new DummyEvicter(), _cmap, _relocater);
+            _middle=new ClusterContextualiser(_bottom, _collapser, _cmap, _relocater);
             _top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
             _middle.setTop(_top);
             _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, _nodeName, proxy, isa, 24);

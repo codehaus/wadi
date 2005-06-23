@@ -111,11 +111,8 @@ public class LocalBucket extends AbstractBucket implements Serializable {
                     assert location!=null;
                     assert _config!=null;
                     _log.info("directing: " +request+" -> "+_config.getNodeName(location));
-                    try {
-                        _config.getDispatcher().forward(om, location, ((DIndexForwardRequest)request).getRequest());
-                    } catch (JMSException e) {
-                        _log.warn("could not forward message", e);
-                    }
+                    if (!_config.getDispatcher().forward(om, location, ((DIndexForwardRequest)request).getRequest()))
+                        _log.warn("could not forward message");
                 }
             } else {
                 _log.info("What should I do with this ?: "+request);

@@ -18,20 +18,30 @@ package org.codehaus.wadi.impl;
 
 import java.io.Serializable;
 
-public class LocationUpdate implements Serializable {
+import org.codehaus.wadi.Location;
 
-    protected String _sessionName;
-    protected String _nodeName;
-    protected long _timeStamp;
-    
-    public LocationUpdate(String sessionName, String nodeName, long timeStamp) {
-        super();
-        _sessionName=sessionName;
-        _nodeName=nodeName;
-        _timeStamp=timeStamp;
+/**
+ * A query for the location of the session with the enclosed ID - The response
+ * should be a LocationResponse object sent whence this request arrived.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public class EmigrationResponse implements Serializable {
+
+    protected String _name;
+    protected Location _location;
+
+    public EmigrationResponse(String name, Location location) {
+        _name=name;
+        _location=location;
     }
 
-    public String getSessionName() {return _sessionName;}
-    public String getNodeName() {return _nodeName;}
-    public long getTimeStamp() {return _timeStamp;}
+    protected EmigrationResponse() {
+        // for deserialisation ...
+    }
+    
+	public String getId(){return _name;}
+	public Location getLocation() {return _location;}
+
 }

@@ -162,7 +162,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                 onBucketEvacuationRequest(message, request);
             } else {
                 String correlationId=_cluster.getLocalNode().getName();
-                _dispatcher.exchange(localNode.getDestination(), _cluster.getDestination(), correlationId, request, _inactiveTime);
+                _dispatcher.exchangeSend(localNode.getDestination(), _cluster.getDestination(), correlationId, request, _inactiveTime);
             }
         } catch (JMSException e) {
             _log.warn("problem sending evacuation request");
@@ -422,7 +422,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                 _log.info("transferring "+acquired.length+" buckets to "+getNodeName((Node)_cluster.getNodes().get(destination)));
                 BucketTransferRequest request=new BucketTransferRequest(timeStamp, acquired);
                 // send it...
-                ObjectMessage om3=_dispatcher.exchange(_cluster.getLocalNode().getDestination(), destination, request, _inactiveTime);
+                ObjectMessage om3=_dispatcher.exchangeSend(_cluster.getLocalNode().getDestination(), destination, request, _inactiveTime);
                 // process response...
                 if (om3!=null && ((BucketTransferResponse)om3.getObject()).getSuccess()) {
                     for (int j=0; j<acquired.length; j++) {
@@ -496,17 +496,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             _log.error("could not update distributed state", e);
         }
         // acknowledge safe receipt to donor
-        try {
-            _dispatcher.reply(om, new BucketTransferResponse(success));
-            _log.trace("sent TransferResponse");
-            acked=true;
-            
-        } catch (JMSException e) {
-            _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died", e);
-        }
-        if (acked) {
+        if (_dispatcher.reply(om, new BucketTransferResponse(success))) {
             // unlock Partitions here... - TODO
         } else {
+            _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died");
             // chuck them... - TODO
         }
     }
@@ -523,18 +516,15 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         _log.trace("BucketRepopulateRequest ARRIVED: "+keys);
         Collection[] c=createResultSet(_numBuckets, keys);
         try {
-        _log.info("findRelevantSessionNames - starting");
-        _log.info(_config.getClass().getName());
-        _config.findRelevantSessionNames(_numBuckets, c);
-        _log.info("findRelevantSessionNames - finished");
+            _log.info("findRelevantSessionNames - starting");
+            _log.info(_config.getClass().getName());
+            _config.findRelevantSessionNames(_numBuckets, c);
+            _log.info("findRelevantSessionNames - finished");
         } catch (Throwable t) {
             _log.warn("ERROR", t);
         }
-        try {
-            _dispatcher.reply(om, new BucketRepopulateResponse(c));
-        } catch (JMSException e) {
-            _log.warn("unexpected problem responding to bucket repopulation request", e);
-        }
+        if (!_dispatcher.reply(om, new BucketRepopulateResponse(c)))
+            _log.warn("unexpected problem responding to bucket repopulation request");
     }
     
     // MyNode
