@@ -74,7 +74,7 @@ public class LocalBucket extends AbstractBucket implements Serializable {
                 _log.info("insertion {"+request.getName()+" : "+_config.getNodeName(location)+"}");
                 response=new DIndexInsertionResponse();
                 // we can optimise local-local send here - TODO
-                _config.getMessageDispatcher().reply(om, response);
+                _config.getDispatcher().reply(om, response);
             } else if (request instanceof DIndexDeletionRequest) {
                 Object oldValue=_map.remove(request.getName());
                 _log.info("delete "+request.getName()+" : "+_config.getNodeName((Destination)oldValue));
@@ -82,14 +82,14 @@ public class LocalBucket extends AbstractBucket implements Serializable {
                     throw new IllegalStateException();
                 response=new DIndexDeletionResponse();
                 // we can optimise local-local send here - TODO
-                _config.getMessageDispatcher().reply(om, response);
+                _config.getDispatcher().reply(om, response);
             } else if (request instanceof DIndexRelocationRequest) {
                 Destination location=om.getJMSReplyTo();
                 Destination oldLocation=put(request.getName(), location); // remember new location of actual session...
                 _log.info("relocate "+request.getName()+" : "+_config.getNodeName(oldLocation)+" -> "+_config.getNodeName(location));
                 response=new DIndexRelocationResponse();
                 // we can optimise local-local send here - TODO
-                _config.getMessageDispatcher().reply(om, response);
+                _config.getDispatcher().reply(om, response);
             } else if (request instanceof DIndexForwardRequest) {
                 // we have got to someone who actually knows where we want to go.
                 // strip off wrapper and deliver actual request to its final destination...
@@ -101,7 +101,7 @@ public class LocalBucket extends AbstractBucket implements Serializable {
                         assert om!=null;
                         assert name!=null;
                         assert _config!=null;
-                        _config.getMessageDispatcher().reply(om, new RelocationResponse(name));
+                        _config.getDispatcher().reply(om, new RelocationResponse(name));
                     } else {
                         _log.warn("unexpected nested request structure - ignoring: "+request);
                     }
@@ -112,7 +112,7 @@ public class LocalBucket extends AbstractBucket implements Serializable {
                     assert _config!=null;
                     _log.info("directing: " +request+" -> "+_config.getNodeName(location));
                     try {
-                        _config.getMessageDispatcher().forward(om, location, ((DIndexForwardRequest)request).getRequest());
+                        _config.getDispatcher().forward(om, location, ((DIndexForwardRequest)request).getRequest());
                     } catch (JMSException e) {
                         _log.warn("could not forward message", e);
                     }

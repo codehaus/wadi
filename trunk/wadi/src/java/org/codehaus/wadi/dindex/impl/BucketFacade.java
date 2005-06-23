@@ -25,7 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.Bucket;
 import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
-import org.codehaus.wadi.impl.MessageDispatcher;
+import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
@@ -113,7 +113,7 @@ public class BucketFacade extends AbstractBucket {
         }
     }
 
-    public void setContentRemote(long timeStamp, MessageDispatcher dispatcher, Destination location) {
+    public void setContentRemote(long timeStamp, Dispatcher dispatcher, Destination location) {
         Sync sync=_lock.writeLock();
         boolean acquired=false;
         try {
@@ -139,7 +139,7 @@ public class BucketFacade extends AbstractBucket {
     }
     
     public ObjectMessage exchange(ObjectMessage message, DIndexRequest request, long timeout) {
-        MessageDispatcher dispatcher=_config.getMessageDispatcher();
+        Dispatcher dispatcher=_config.getDispatcher();
         String correlationId=dispatcher.nextCorrelationId();
         Quipu rv=dispatcher.setRendezVous(correlationId, 1);
         try {

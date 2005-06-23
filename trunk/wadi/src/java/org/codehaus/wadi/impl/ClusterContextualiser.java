@@ -51,7 +51,7 @@ import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Location;
-import org.codehaus.wadi.MessageDispatcherConfig;
+import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
@@ -143,7 +143,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   protected ExtendedCluster _cluster;
   protected Location _location;
   protected Destination _evacuationQueue;
-  protected MessageDispatcher _dispatcher;
+  protected Dispatcher _dispatcher;
   protected DIndex _dindex;
 
   public void init(ContextualiserConfig config) {
@@ -153,7 +153,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     _nodeName=dcc.getNodeName();
     _cluster=dcc.getCluster();
     _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), dcc.getHttpAddress(), dcc.getHttpProxy());
-    _dispatcher=dcc.getMessageDispatcher();
+    _dispatcher=dcc.getDispatcher();
     _dindex=dcc.getDIndex();
     _cluster.addClusterListener(this);
     _dispatcher.register(this, "onMessage", EmigrationRequest.class);
@@ -299,7 +299,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
       public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}
       
       public boolean prepare(String name, Motable emotable, Motable immotable) {
-          MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+          Dispatcher.Settings settingsInOut=new Dispatcher.Settings();
           settingsInOut.to=_evacuationQueue;
           settingsInOut.correlationId=name;
           settingsInOut.from=_cluster.getLocalNode().getDestination();
@@ -350,12 +350,12 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
     protected final ObjectMessage _om;
     protected final EmigrationRequest _er;
-    protected final MessageDispatcher.Settings _settingsInOut;
+    protected final Dispatcher.Settings _settingsInOut;
 
     public ImmigrationEmoter(ObjectMessage om, EmigrationRequest er) {
       _om=om;
       _er=er;
-      _settingsInOut=new MessageDispatcher.Settings();
+      _settingsInOut=new Dispatcher.Settings();
     }
 
     public boolean prepare(String name, Motable emotable) {
@@ -564,7 +564,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
   // RelocaterConfig
 
   public Collapser getCollapser() {return _collapser;}
-  public MessageDispatcher getDispatcher() {return _dispatcher;}
+  public Dispatcher getDispatcher() {return _dispatcher;}
   public Location getLocation() {return _location;}
   public Contextualiser getContextualiser() {return _top;}
   public Server getServer() {return ((DistributableContextualiserConfig)_config).getServer();}

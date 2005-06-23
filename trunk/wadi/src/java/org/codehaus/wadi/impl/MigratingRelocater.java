@@ -73,7 +73,7 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
 
     public void init(RelocaterConfig config) {
         super.init(config);
-        MessageDispatcher dispatcher=_config.getDispatcher();
+        Dispatcher dispatcher=_config.getDispatcher();
         dispatcher.register(this, "onMessage", ImmigrationRequest.class);
         dispatcher.register(ImmigrationResponse.class, _resRvMap, _resTimeout);
         dispatcher.register(ImmigrationAcknowledgement.class, _ackRvMap, _ackTimeout);
@@ -94,7 +94,7 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
             destination=location.getDestination();
         }
 
-        MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+        Dispatcher.Settings settingsInOut=new Dispatcher.Settings();
         settingsInOut.from=_config.getLocation().getDestination();
         settingsInOut.to=destination;
         settingsInOut.correlationId=name+"-"+(_counter++)+"-"+_config.getCluster().getLocalNode().getDestination().toString(); // TODO - better correlationId
@@ -126,9 +126,9 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
 		protected final Log _log=LogFactory.getLog(getClass());
 
 		protected final Map _map;
-		protected MessageDispatcher.Settings _settingsInOut;
+		protected Dispatcher.Settings _settingsInOut;
 
-		public ImmigrationEmoter(Map map, MessageDispatcher.Settings settingsInOut) {
+		public ImmigrationEmoter(Map map, Dispatcher.Settings settingsInOut) {
 			_map=map;
 			_settingsInOut=settingsInOut;
 		}
@@ -178,7 +178,7 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
                     return;
                 }
 
-                MessageDispatcher.Settings settingsInOut=new MessageDispatcher.Settings();
+                Dispatcher.Settings settingsInOut=new Dispatcher.Settings();
                 // reverse direction...
                 settingsInOut.to=om.getJMSReplyTo();
                 settingsInOut.from=_config.getLocation().getDestination();
@@ -212,9 +212,9 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
 	class ImmigrationImmoter implements Immoter {
 		protected final Log _log=LogFactory.getLog(getClass());
 
-		protected final MessageDispatcher.Settings _settingsInOut;
+		protected final Dispatcher.Settings _settingsInOut;
 
-		public ImmigrationImmoter(MessageDispatcher.Settings settingsInOut) {
+		public ImmigrationImmoter(Dispatcher.Settings settingsInOut) {
 			_settingsInOut=settingsInOut;
 		}
 

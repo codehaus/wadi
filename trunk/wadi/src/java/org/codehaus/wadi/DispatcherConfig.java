@@ -18,7 +18,7 @@ package org.codehaus.wadi;
 
 import org.activecluster.Cluster;
 
-public interface MessageDispatcherConfig {
+public interface DispatcherConfig {
 
     ExtendedCluster getCluster();
     

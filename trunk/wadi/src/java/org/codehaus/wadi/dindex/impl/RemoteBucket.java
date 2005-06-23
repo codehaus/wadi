@@ -24,7 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
-import org.codehaus.wadi.impl.MessageDispatcher;
+import org.codehaus.wadi.impl.Dispatcher;
 
 public class RemoteBucket extends AbstractBucket {
 
@@ -70,7 +70,7 @@ public class RemoteBucket extends AbstractBucket {
     public void dispatch(ObjectMessage om, DIndexRequest request) {
         try {
             _log.info("indirecting: "+request+" via "+_config.getNodeName(_location));
-            _config.getMessageDispatcher().forward(om, _location);
+            _config.getDispatcher().forward(om, _location);
         } catch (JMSException e) {
             _log.warn("could not forward message", e);
         }

@@ -64,7 +64,7 @@ import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.HttpProxyLocation;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.MemoryContextualiser;
-import org.codehaus.wadi.impl.MessageDispatcher;
+import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.RestartableClusterFactory;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SharedStoreContextualiser;
@@ -105,7 +105,7 @@ public class TestCluster extends TestCase {
         protected final String _clusterUri=Utils.getClusterUri();
         protected final String _clusterName;
         protected final String _nodeName;
-        protected final MessageDispatcher _dispatcher;
+        protected final Dispatcher _dispatcher;
         protected final Relocater _relocater;
         protected final Map _cmap=new HashMap();
         protected final Map _mmap=new HashMap();
@@ -123,7 +123,7 @@ public class TestCluster extends TestCase {
             _bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, ds, table);
             _clusterName=clusterName;
             _nodeName=nodeName;
-            _dispatcher=new MessageDispatcher();
+            _dispatcher=new Dispatcher();
             InetSocketAddress isa=new InetSocketAddress("localhost", 8080);
             HttpProxy proxy=new StandardHttpProxy("jsessionid");
             //_relocater=new SwitchableRelocationStrategy();

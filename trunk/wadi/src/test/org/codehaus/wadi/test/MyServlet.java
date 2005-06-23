@@ -52,7 +52,7 @@ import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.MemoryContextualiser;
-import org.codehaus.wadi.impl.MessageDispatcher;
+import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SerialContextualiser;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;

@@ -49,7 +49,7 @@ import org.codehaus.wadi.impl.CommonsHttpProxy;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.HybridRelocater;
-import org.codehaus.wadi.impl.MessageDispatcher;
+import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.ProxyingRelocater;
 import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.Utils;
@@ -78,8 +78,8 @@ public class TestRelocation extends TestCase {
 	protected MyServlet _servlet1;
 	protected Location _location0;
 	protected Location _location1;
-	protected MessageDispatcher _dispatcher0;
-	protected MessageDispatcher _dispatcher1;
+	protected Dispatcher _dispatcher0;
+	protected Dispatcher _dispatcher1;
 	protected SwitchableRelocater _relocater0;
 	protected SwitchableRelocater _relocater1;
 

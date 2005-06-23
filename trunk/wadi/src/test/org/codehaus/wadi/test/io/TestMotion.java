@@ -59,7 +59,7 @@ import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyHttpServletRequest;
 import org.codehaus.wadi.impl.MemoryContextualiser;
-import org.codehaus.wadi.impl.MessageDispatcher;
+import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SimpleMotable;
@@ -393,7 +393,7 @@ public class TestMotion extends TestCase {
     public static class DummyRelocaterConfig implements RelocaterConfig {
 
         public Collapser getCollapser() {return null;}
-        public MessageDispatcher getDispatcher() {return null;}
+        public Dispatcher getDispatcher() {return null;}
         public Location getLocation() {return null;}
         public Map getMap() {return null;}
         public Cluster getCluster() {return null;}
