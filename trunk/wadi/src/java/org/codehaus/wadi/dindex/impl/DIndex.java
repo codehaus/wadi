@@ -151,20 +151,21 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         
         Thread.interrupted();
         
-        if (_coordinatorNode==_cluster.getLocalNode()) {
-            _log.info("final Node exiting Cluster");
-        } else {
-            try {
-                Node localNode=_cluster.getLocalNode();
-                ObjectMessage om=_cluster.createObjectMessage();
-                om.setJMSReplyTo(localNode.getDestination());
-                om.setJMSDestination(_cluster.getDestination()); // whole cluster needs to know who is leaving - in case Coordinator fails
-                om.setObject(new BucketEvacuationRequest());
+        try {
+            Node localNode=_cluster.getLocalNode();
+            ObjectMessage om=_cluster.createObjectMessage();
+            om.setJMSReplyTo(localNode.getDestination());
+            om.setJMSDestination(_cluster.getDestination()); // whole cluster needs to know who is leaving - in case Coordinator fails
+            BucketEvacuationRequest request=new BucketEvacuationRequest();
+            om.setObject(request);
+            if (localNode.getDestination().equals(_coordinatorNode.getDestination())) {
+                onBucketEvacuationRequest(om, request);
+            } else {
                 String correlationId=_cluster.getLocalNode().getName();
                 _dispatcher.exchange(om, correlationId, _inactiveTime);
-            } catch (JMSException e) {
-                _log.warn("problem sending evacuation request");
             }
+        } catch (JMSException e) {
+            _log.warn("problem sending evacuation request");
         }
         
         if (_coordinator!=null) {
@@ -463,7 +464,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     
     protected Node getSrcNode(ObjectMessage om) {
         try {
-            return (Node)_cluster.getNodes().get(om.getJMSReplyTo());
+            Destination destination=om.getJMSReplyTo();
+            Node local=_cluster.getLocalNode();
+            if (destination.equals(local.getDestination()))
+                return local;
+            else
+                return (Node)_cluster.getNodes().get(destination);
         } catch (JMSException e) {
             _log.warn("could not read src node from message", e);
             return null;
@@ -543,6 +549,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         _log.info("accepting coordinatorship");
         try {
             (_coordinator=new Coordinator(this)).start();
+            _coordinator.queueRebalancing();
         } catch (Exception e) {
             _log.error("problem starting Coordinator");
         }
@@ -597,11 +604,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     
     public void onBucketEvacuationRequest(ObjectMessage om, BucketEvacuationRequest request) {
         Node from=getSrcNode(om);
-        if (from==null) {
-            // very occasionally this comes through as a null - why ?
-            _log.error("empty evacuation request");
-            return;
-        }
+        assert from!=null;
         _log.info("evacuation request from "+getNodeName(from));
         onNodeRemoved(new ClusterEvent(_cluster, from, ClusterEvent.REMOVE_NODE));
     }
