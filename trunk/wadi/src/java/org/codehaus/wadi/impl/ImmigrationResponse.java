@@ -27,12 +27,20 @@ import org.codehaus.wadi.Motable;
  * @version $Revision$
  */
 public class ImmigrationResponse implements Serializable {
-	protected String _id;
+    
+	protected String _name;
 	protected Motable _motable;
 
-	public String getId(){return _id;}
-	public void setId(String id){_id=id;}
-
+    public ImmigrationResponse(String name, Motable motable) {
+        _name=name;
+        _motable=motable;
+    }
+    
+    protected ImmigrationResponse() {
+        // for deserialisation...
+    }
+    
+	public String getName(){return _name;}
 	public Motable getMotable(){return _motable;}
-	public void setMotable(Motable motable){_motable=motable;}
+
 }

@@ -18,10 +18,8 @@ package org.codehaus.wadi.impl;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
+import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import javax.servlet.FilterChain;
@@ -37,7 +35,6 @@ import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RelocaterConfig;
-import org.codehaus.wadi.Session;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
@@ -52,7 +49,6 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 public class HybridRelocater extends AbstractRelocater {
     
     protected final Log _log=LogFactory.getLog(getClass());
-    protected final Map _ackRvMap=Collections.synchronizedMap(new HashMap());
     protected final long _requestHandOverTimeout=2000;// TODO - parameterise
     protected final long _resTimeout;
     protected final long _ackTimeout;
@@ -79,7 +75,7 @@ public class HybridRelocater extends AbstractRelocater {
         _httpProxy=_config.getHttpProxy();
         _dispatcher.register(this, "onMessage", RelocationRequest.class);
         _dispatcher.register(RelocationResponse.class, _resTimeout);
-        _dispatcher.register(RelocationAcknowledgement.class, _ackRvMap, _ackTimeout);
+        _dispatcher.register(RelocationAcknowledgement.class, _ackTimeout);
     }
     
     public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException {
@@ -98,13 +94,13 @@ public class HybridRelocater extends AbstractRelocater {
             RelocationRequest request=new RelocationRequest(sessionName, nodeName, sessionOrRequestPreferred, shuttingDown, lastKnownTime, lastKnownPlace, _requestHandOverTimeout);
             message.setObject(request);
             message2=_config.getDIndex().forwardAndExchange(sessionName, message, request, _resTimeout);
-
+            
             if (message2==null || (response=(RelocationResponse)message2.getObject())==null)
                 return false;
         } catch (JMSException e) {
             _log.warn("problem arranging relocation", e);
         }
-
+        
         Motable emotable=response.getMotable();
         if (emotable!=null) {
             // relocate session...
@@ -121,7 +117,7 @@ public class HybridRelocater extends AbstractRelocater {
             }
             
         }
-
+        
         InetSocketAddress address=response.getAddress();
         if (address!=null) {
             // relocate request...
@@ -138,7 +134,7 @@ public class HybridRelocater extends AbstractRelocater {
                 return false;
             }
         }
-
+        
         // if we are still here - session could not be found
         _log.warn("session not found: "+sessionName);
         return false;
@@ -163,15 +159,12 @@ public class HybridRelocater extends AbstractRelocater {
             emotable.destroy(); // remove copy in store
             
             _config.notifySessionRelocation(name);
-
+            
             // TODO - move some of this to prepare()...
             if (_log.isTraceEnabled()) _log.trace("sending RelocationAcknowledgement");
             RelocationAcknowledgement ack=new RelocationAcknowledgement();//(name, _config.getLocation());
-            try {
-                _config.getDispatcher().reply(_message, ack);
-            } catch (JMSException e) {
-                if (_log.isErrorEnabled()) _log.error("could not send RelocationAcknowledgement: "+name, e);
-            }
+            if (!_config.getDispatcher().reply(_message, ack))
+                if (_log.isErrorEnabled()) _log.error("could not send RelocationAcknowledgement: "+name);
         }
         
         public void rollback(String name, Motable motable) {
@@ -233,12 +226,8 @@ public class HybridRelocater extends AbstractRelocater {
         }
         
         try {
-            Dispatcher.Settings settingsInOut=new Dispatcher.Settings();
             // reverse direction...
-            settingsInOut.to=om.getJMSReplyTo();
-            settingsInOut.from=_config.getLocation().getDestination();
-            settingsInOut.correlationId=om.getJMSCorrelationID();
-            Immoter promoter=new RelocationResponseImmoter(nodeName, settingsInOut);
+            Immoter promoter=new RelocationResponseImmoter(nodeName, om);
             RankedRWLock.setPriority(RankedRWLock.EMIGRATION_PRIORITY);
             boolean found=_contextualiser.contextualise(null,null,null,sessionName, promoter, motionLock, true); // if we own session, this will send the correct response...
             if (found)
@@ -264,11 +253,11 @@ public class HybridRelocater extends AbstractRelocater {
         protected final Log _log=LogFactory.getLog(getClass());
         
         protected final String _tgtNodeName;
-        protected final Dispatcher.Settings _settingsInOut;
+        protected ObjectMessage _message;
         
-        public RelocationResponseImmoter(String nodeName, Dispatcher.Settings settingsInOut) {
+        public RelocationResponseImmoter(String nodeName, ObjectMessage message) {
             _tgtNodeName=nodeName;
-            _settingsInOut=settingsInOut;
+            _message=message;
         }
         
         public Motable nextMotable(String name, Motable emotable) {
@@ -283,21 +272,21 @@ public class HybridRelocater extends AbstractRelocater {
                 return false;
             }
             // send the message
-            if (_log.isTraceEnabled()) _log.trace("sending RelocationResponse: "+_settingsInOut.correlationId);
+            if (_log.isTraceEnabled()) _log.trace("sending RelocationResponse");
             RelocationResponse response=new RelocationResponse(name, _nodeName, immotable);
-            RelocationAcknowledgement ack=(RelocationAcknowledgement)_dispatcher.exchangeMessages(response, _ackRvMap, _settingsInOut, _ackTimeout);
+            ObjectMessage message=_dispatcher.exchangeReply(_message, response, _ackTimeout);
+            RelocationAcknowledgement ack=null;
+            try {
+                ack=(RelocationAcknowledgement)message.getObject();
+            } catch (JMSException e) {
+                _log.error("could not unpack response", e);
+            }
             if (ack==null) {
-                if (_log.isWarnEnabled()) _log.warn("no ack received for session RelocationResponse: "+_settingsInOut.correlationId); // TODO - increment a counter somewhere...
+                if (_log.isWarnEnabled()) _log.warn("no ack received for session RelocationResponse"); // TODO - increment a counter somewhere...
                 // TODO - who owns the session now - consider a syn link to old owner to negotiate this..
                 return false;
             }
-            if (_log.isTraceEnabled()) _log.trace("received relocation ack: "+_settingsInOut.correlationId);
-            
-            // update location cache...
-//          Location tmp=ack.getLocation();
-//          synchronized (_config.getMap()) {
-//          _config.getMap().put(name, tmp);
-//          }
+            if (_log.isTraceEnabled()) _log.trace("received relocation ack");
             
             return true;
         }

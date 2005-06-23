@@ -55,7 +55,6 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
 	protected final Log _log = LogFactory.getLog(getClass());
     protected final long _timeout;
 	protected final long _proxyHandOverPeriod;
-    protected final Map _rvMap=new HashMap();
 
 	public ProxyingRelocater(long timeout, long proxyHandOverPeriod) {
         _timeout=timeout;
@@ -66,17 +65,22 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
         super.init(config);
         Dispatcher dispatcher=_config.getDispatcher();
         dispatcher.register(this, "onMessage", LocationRequest.class); // dispatch LocationRequest messages onto our onMessage() method
-        dispatcher.register(LocationResponse.class, _rvMap, _timeout); // dispatch LocationResponse classes via synchronous rendez-vous
+        dispatcher.register(LocationResponse.class, _timeout); // dispatch LocationResponse classes via synchronous rendez-vous
     }
 
 	protected Location locate(String name) {
 		if (_log.isTraceEnabled()) _log.trace("sending location request: "+name);
-		Dispatcher.Settings settingsInOut=new Dispatcher.Settings();
-		settingsInOut.from=_config.getLocation().getDestination();
-		settingsInOut.to=_config.getDispatcher().getCluster().getDestination();
-		settingsInOut.correlationId=name; // TODO - better correlation id
+		Destination from=_config.getLocation().getDestination();
+		Destination to=_config.getDispatcher().getCluster().getDestination();
 		LocationRequest request=new LocationRequest(name, _proxyHandOverPeriod);
-		LocationResponse response=(LocationResponse)_config.getDispatcher().exchangeMessages(request, _rvMap, settingsInOut, _timeout);
+        ObjectMessage message=_config.getDispatcher().exchangeSend(from, to, request, _timeout);
+        
+        LocationResponse response=null;
+        try {
+            response=(LocationResponse)message.getObject();
+        } catch (JMSException e) {
+            _log.error("could not unpack response", e);
+        }
 
 		if (response==null)
 			return null;

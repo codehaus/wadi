@@ -99,7 +99,7 @@ public class MyServlet implements Servlet {
         _nodeName=nodeName;
 		_clusterMap=new HashMap();
 		_relocater=relocater;
-		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, new SwitchableEvicter(30000, true), _clusterMap, _relocater);
+		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, _relocater);
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
 		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);

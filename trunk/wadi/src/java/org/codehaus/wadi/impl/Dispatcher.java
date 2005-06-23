@@ -30,6 +30,7 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
 import org.activecluster.Cluster;
+import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.DispatcherConfig;
@@ -189,16 +190,6 @@ public class Dispatcher implements MessageListener {
       public synchronized int getCount() {return _count;}
 	}
 
-	/**
-	 * @param type - the message content type to match this dispatcher
-	 * @param rvMap - the Map to be used for thread rendez-vous
-	 * @param timeout - the rendez-vous timeout on the dispatcher-side
-	 */
-    public void register(Class type, Map rvMap, long timeout) {
-        _map.put(type, new RendezVousDispatcher(rvMap, timeout));
-        if (_log.isTraceEnabled()) _log.trace("registering class: "+type.getName());
-    }
-    
     public void register(Class type, long timeout) {
         _map.put(type, new RendezVousDispatcher(_rvMap, timeout));
         if (_log.isTraceEnabled()) _log.trace("registering class: "+type.getName());
@@ -256,60 +247,106 @@ public class Dispatcher implements MessageListener {
 		}
 	}
 
-	// Pass this around to avoid the risk of exception everytime we access an ObjectMessage
-	public static class Settings {
-		public Destination from;
-		public Destination to;
-		public String correlationId;
-
-		public String toString() {
-			return "<Settings: to:"+to+" from:"+from+" corrId:"+correlationId+" >";
-		}
-	}
-
-    public boolean send(Destination from, Destination to, String correlationId, Serializable object) {
+    //-----------------------------------------------------------------------------------------------
+    
+    protected String getNodeName(Destination destination) {
+        Node localNode=_cluster.getLocalNode();
+        Destination localDestination=localNode.getDestination();
+       
+        if (destination.equals(localDestination))
+            return DIndex.getNodeName(localNode);
+        
+        Destination clusterDestination=_cluster.getDestination();
+        if (destination.equals(clusterDestination))
+            return "cluster";
+        
+        Node node=null;
+        if ((node=(Node)_cluster.getNodes().get(destination))!=null)
+            return DIndex.getNodeName(node);
+        
+        return "<unknown>";
+    }
+    
+    public boolean send(Destination from, Destination to, String correlationId, Serializable body) {
         try {
             ObjectMessage om=_cluster.createObjectMessage();
             om.setJMSReplyTo(from);
             om.setJMSDestination(to);
             om.setJMSCorrelationID(correlationId);
-            om.setObject(object);
+            om.setObject(body);
+            _log.trace("sending message ("+body+") from "+getNodeName(from)+" -> "+getNodeName(to)+" with correlation: "+correlationId);
             _cluster.send(to, om);
             return true;
         } catch (JMSException e) {
-            _log.error("problem sending "+object, e);
+            _log.error("problem sending "+body, e);
             return false;
         }
     }
     
-    public void reply(ObjectMessage request, Serializable response) throws JMSException {
-        // construct and send message...
-        ObjectMessage message=_cluster.createObjectMessage();
-        message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
-        message.setJMSCorrelationID(request.getJMSCorrelationID());
-        message.setObject(response);
-        _cluster.send(request.getJMSReplyTo(), message);
+    public ObjectMessage exchangeSend(Destination from, Destination to, Serializable body, long timeout) {
+        return exchangeSend(from, to, nextCorrelationId(), body, timeout);
+    }
+    
+    public ObjectMessage exchangeSend(Destination from, Destination to, String correlationId, Serializable body, long timeout) {
+        Quipu rv=null;
+        // set up a rendez-vous...
+        rv=setRendezVous(correlationId, 1);
+        // send the message...
+        if (send(from, to, correlationId, body)) {
+            return attemptRendezVous(correlationId, rv, timeout);
+        } else {
+            return null;
+        }
+    }
+    
+    public boolean reply(ObjectMessage message, Serializable body) {
+        try {
+            return send(_cluster.getLocalNode().getDestination(), message.getJMSReplyTo(), message.getJMSCorrelationID(), body);
+        } catch (JMSException e) {
+            _log.error("problem replying to message", e);
+            return false;
+        }
     }
 
-    public void forward(ObjectMessage request, Destination destination) throws JMSException {
-        // construct and send message...
-        ObjectMessage message=_cluster.createObjectMessage();
-        message.setJMSReplyTo(request.getJMSReplyTo());
-        message.setJMSCorrelationID(request.getJMSCorrelationID());
-        message.setObject(request.getObject());
-        _cluster.send(destination, message);
+    public ObjectMessage exchangeReply(ObjectMessage message, Serializable body, long timeout) {
+        return exchangeReply(message, nextCorrelationId(), body, timeout);
+    }
+    
+    public ObjectMessage exchangeReply(ObjectMessage message, String correlationId, Serializable body, long timeout) {
+        Quipu rv=null;
+        // set up a rendez-vous...
+        rv=setRendezVous(correlationId, 1);
+        // send the message...
+        if (reply(message, body)) {
+            return attemptRendezVous(correlationId, rv, timeout);
+        } else {
+            return null;
+        }
+    }
+    
+    public boolean forward(ObjectMessage message, Destination destination) {
+        try {
+            return forward(message, destination, message.getObject());
+        } catch (JMSException e) {
+            _log.error("problem forwarding message with new body", e);
+            return false;
+        }
     }
 
-    public void forward(ObjectMessage request, Destination destination, DIndexRequest dir) throws JMSException {
-        // construct and send message...
-        ObjectMessage message=_cluster.createObjectMessage();
-        message.setJMSReplyTo(request.getJMSReplyTo());
-        message.setJMSCorrelationID(request.getJMSCorrelationID());
-        message.setObject(dir);
-        _cluster.send(destination, message);
+    public boolean forward(ObjectMessage message, Destination destination, Serializable body) {
+        try {
+            return send(message.getJMSReplyTo(), destination, message.getJMSCorrelationID(), body);
+        } catch (JMSException e) {
+            _log.error("problem forwarding message", e);
+            return false;
+        }
     }
 
-	class SimpleCorrelationIDFactory {
+
+
+    //-----------------------------------------------------------------------------------------------
+
+    class SimpleCorrelationIDFactory {
         
         protected final SynchronizedInt _count=new SynchronizedInt(0);
         
@@ -330,22 +367,6 @@ public class Dispatcher implements MessageListener {
         return _factory.create();
     }
     
-    public ObjectMessage exchange(Destination from, Destination to, String correlationId, Serializable request, long timeout) {
-        Quipu rv=null;
-            // set up a rendez-vous...
-            rv=setRendezVous(correlationId, 1);
-            // send the message...
-            if (send(from, to, correlationId, request)) {
-                return attemptRendezVous(correlationId, rv, timeout);
-            } else {
-                return null;
-            }
-    }
-
-    public ObjectMessage exchange(Destination from, Destination to, Serializable request, long timeout) {
-        return exchange(from, to, nextCorrelationId(), request, timeout);
-    }
-
     public Quipu setRendezVous(String correlationId, int numLlamas) {
         Quipu rv=new Quipu(numLlamas);
         _rvMap.put(correlationId, rv);
@@ -381,51 +402,6 @@ public class Dispatcher implements MessageListener {
         return response;
     }
     
-    // send a message and then wait a given amount of time for the first response - return it...
-    // for use with RendezVousDispatcher... - need to register type beforehand...
-    public Serializable exchangeMessages(Serializable request, Map rvMap, Settings settingsInOut, long timeout) {
-    	Quipu rv=new Quipu(1); // TODO - can these be reused ?
-    
-    	// set up a rendez-vous...
-    	synchronized (rvMap) {
-    		rvMap.put(settingsInOut.correlationId, rv);
-    	}
-    
-    	ObjectMessage om=null;
-    	Serializable response=null;
-    	try {
-            send(settingsInOut.from, settingsInOut.to, settingsInOut.correlationId, request);
-    		// rendez-vous with response/timeout...
-    		do {
-    			try {
-    				long startTime=System.currentTimeMillis();
-                    rv.waitFor(timeout);
-                    om=(ObjectMessage)rv.getResults().toArray()[0]; // Aargh!
-    				response=om.getObject();
-    				settingsInOut.to=om.getJMSReplyTo();
-    				// om.getJMSDestination() might be the whole cluster, not just this node... - TODO
-    				settingsInOut.from=_cluster.getLocalNode().getDestination();
-    				assert settingsInOut.correlationId.equals(om.getJMSCorrelationID());
-    				long elapsedTime=System.currentTimeMillis()-startTime;
-    				if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis) '"+settingsInOut.correlationId+"'"); // session does not exist
-    			} catch (TimeoutException toe) {
-    				if (_log.isWarnEnabled()) _log.warn("no response to request within timeout ("+timeout+" millis) '"+settingsInOut.correlationId+"'"); // session does not exist
-    			} catch (InterruptedException ignore) {
-    				if (_log.isWarnEnabled()) _log.warn("waiting for response - interruption ignored");
-    			}
-    		} while (Thread.interrupted());
-    	} catch (JMSException e) {
-    		if (_log.isWarnEnabled()) _log.warn("problem sending request message", e);
-    	} finally {
-    		// tidy up rendez-vous
-    		synchronized (rvMap) {
-    			rvMap.remove(settingsInOut.correlationId);
-    		}
-    	}
-    
-    	return response;
-    }
-
     public Cluster getCluster(){return _cluster;}
 
 	public MessageConsumer addDestination(Destination destination) throws JMSException {
