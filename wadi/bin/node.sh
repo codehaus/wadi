@@ -35,7 +35,7 @@ properties=`eval "echo $properties"`
 INSTANCE=$WADI_HOME/tmp/$instance
 rm -fr $INSTANCE
 mkdir -p $INSTANCE/logs
-mkdir -p $INSTANCE/temp
+mkdir -p $INSTANCE/sessions
 
 properties="\
 -Dcycle.me=true \
@@ -57,7 +57,7 @@ $properties \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.Dispatcher=trace \
 -Dorg.apache.commons.logging.simplelog.showShortLogname=true \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
--Djava.io.tmpdir=$INSTANCE/temp\
+-Djava.io.tmpdir=$INSTANCE \
 "
 
 if [ jetty = "$container" ]

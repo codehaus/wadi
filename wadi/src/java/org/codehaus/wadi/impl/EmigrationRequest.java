@@ -43,4 +43,9 @@ public class EmigrationRequest implements Serializable {
 	}
 
 	public Motable getMotable(){return _motable;}
+
+  public String toString() {
+    return "<EmigrationRequest: "+_motable.getName()+">";
+  }
+
 }
