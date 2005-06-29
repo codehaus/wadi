@@ -105,9 +105,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         _dispatcher.register(this, "onDIndexForwardRequest", DIndexForwardRequest.class);
         _dispatcher.register(this, "onBucketRepopulateRequest", BucketRepopulateRequest.class);
         _dispatcher.register(BucketRepopulateResponse.class, _inactiveTime);
-        
-        //_cluster.getLocalNode().setState(_distributedState); // this needs to be done before _cluster.start()
-        //_log.info("distributed state updated: "+_distributedState.get(_bucketKeysKey));
         _log.info("...init-ed");
     }
 
@@ -210,7 +207,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     
     public void onNodeAdd(ClusterEvent event) {
         Node node=event.getNode();
-        _log.info("onNodeAdd: "+getNodeName(node));
+        _log.info("onNodeAdd: "+getNodeName(node)+": "+node.getState());
         if (_cluster.getLocalNode()==_coordinatorNode) {
             _coordinator.queueRebalancing();
         }
