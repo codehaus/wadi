@@ -10,11 +10,12 @@ Implemented:
 - Pluggable [de]serialisation strategies for non-Serializable Session Attributes
 - Lazy Session Attribute deserialisation and activation notification
 - Switchable Session serialisation strategies (Whole-Session, Per-Attribute)
-- Transparent peer-to-peers session redistribution upon node shutdown
+- Transparent peer-to-peer session redistribution upon node shutdown
 - Transparent on-demand session migration between nodes
 - Migration of passivated session on node A to node B, without deserialisation ocurring on node A
 - Transparent on-demand request proxying[/redirection] between nodes
 - Pluggable session/request relocation strategies (migrate, proxy (HttpUrlConnection/Commons-HttpClient)[, redirect])
+- auto-partitioning/healing clustering substrate
 - Fully IOC
 - Spring-wired
 - Technologies: Java-1.4, AspectJ-1.2, ActiveCluster/MQ, and more ...
@@ -27,7 +28,6 @@ NYI :
 - integration of various lbs
 - replication
 - pluggable replication policies - immediate, request-group, timeout
-- pluggable auto-partitioning/healing strategies
 - [strict LRU eviction...]
 
 - OpenEJB

@@ -59,9 +59,9 @@ public class DistributableManager extends StandardManager implements Distributab
 
     protected final Map _distributedState=new HashMap(); // TODO - make this a SynchronisedMap
     protected final SynchronizedBoolean _shuttingDown=new SynchronizedBoolean(false);
-    
+
     protected final Dispatcher _dispatcher=new Dispatcher();
-    
+
     protected final Streamer _streamer;
     protected final String _clusterUri;
     protected final String _clusterName;
@@ -90,7 +90,7 @@ public class DistributableManager extends StandardManager implements Distributab
     protected CustomClusterFactory _clusterFactory;
     protected ExtendedCluster _cluster;
     protected DIndex _dindex;
-    
+
     public void init() {
         // must be done before super.init() so that ContextualiserConfig contains a Cluster
         try {
@@ -112,6 +112,7 @@ public class DistributableManager extends StandardManager implements Distributab
 
     public void start() throws Exception {
         _cluster.getLocalNode().setState(_distributedState);
+	_log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
         _cluster.start();
         _dindex.start();
         super.start();
@@ -123,7 +124,7 @@ public class DistributableManager extends StandardManager implements Distributab
         _dindex.stop();
         _cluster.stop();
         _connectionFactory.stop();
-        
+
         // shut down activemq cleanly - what happens if we are running more than one distributable webapp ?
         // there must be an easier way - :-(
         ActiveMQConnection connection=(ActiveMQConnection)_cluster.getConnection();
@@ -132,7 +133,7 @@ public class DistributableManager extends StandardManager implements Distributab
         BrokerContainer container=(connector==null?null:connector.getBrokerContainer());
         if (container!=null)
             container.stop(); // for peer://
-        
+
         Thread.sleep(5*1000);
     }
 
@@ -194,7 +195,7 @@ public class DistributableManager extends StandardManager implements Distributab
         Collection names=new ArrayList((_attributeListeners.size()>0)?(Collection)session.getAttributeNameSet():((DistributableSession)session).getListenerNames());
         for (Iterator i=names.iterator(); i.hasNext();) // ALLOC ?
             session.removeAttribute((String)i.next());
-        
+
         // TODO - remove from Contextualiser....at end of initial request ? Think more about this
         String name=session.getName();
         notifySessionDeletion(name);
@@ -203,56 +204,57 @@ public class DistributableManager extends StandardManager implements Distributab
         _sessionPool.put(session);
         if (_log.isDebugEnabled()) _log.debug("destroyed: "+name);
     }
-    
+
     // Lazy
-    
+
     public boolean getHttpSessionAttributeListenersRegistered(){return _attributeListeners.size()>0;}
-    
+
     public boolean getDistributable(){return true;}
-    
+
     // ServerConfig
-    
+
     public ExtendedCluster getCluster() {return _cluster;}
-    
+
     // DistributableContextualiserConfig
-    
+
     public Server getServer() {throw new UnsupportedOperationException();}
     public String getNodeName() {return _nodeName;} // NYI
-    
+
     public HttpProxy getHttpProxy() {
         return _httpProxy;
     }
-    
+
     public InetSocketAddress getHttpAddress() {
         return _httpAddress;
     }
-    
+
     public Object getDistributedState(Object key) {
         synchronized (_distributedState) {
             return _distributedState.get(key);
         }
     }
-    
+
     public Object putDistributedState(Object key, Object newValue) {
         synchronized (_distributedState) {
             return _distributedState.put(key, newValue);
         }
     }
-    
+
     public Object removeDistributedState(Object key) {
         synchronized (_distributedState) {
             return _distributedState.remove(key);
         }
     }
-    
+
     public void distributeState() throws JMSException {
         _cluster.getLocalNode().setState(_distributedState);
+	_log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
     }
-    
+
     public boolean getAccessOnLoad() {
         return _accessOnLoad;
     }
-    
+
     public SynchronizedBoolean getShuttingDown() {
         return _shuttingDown;
     }
@@ -268,20 +270,20 @@ public class DistributableManager extends StandardManager implements Distributab
     public int getNumBuckets() {
         return 72; // TODO - parameterise...
     }
-    
+
     public Dispatcher getDispatcher() {
         return _dispatcher;
     }
-    
+
     public DIndex getDIndex() {
         return _dindex;
     }
-    
+
     public void notifySessionInsertion(String name) {
         super.notifySessionInsertion(name);
         _dindex.insert(name);
     }
-    
+
     public void notifySessionDeletion(String name) {
         super.notifySessionDeletion(name);
         _dindex.remove(name);
@@ -293,11 +295,11 @@ public class DistributableManager extends StandardManager implements Distributab
     }
 
     // DIndexConfig
-    
+
     public void findRelevantSessionNames(int numBuckets, Collection[] resultSet) {
         _log.info("findRelevantSessionNames");
         _contextualiser.findRelevantSessionNames(numBuckets, resultSet);
     }
-    
+
 }
 
