@@ -14,7 +14,11 @@
 	<classpathentry kind="lib" path="WEB-INF/lib/aspectjrt-1.2.1.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/aspectj1.2.1/lib/aspectjtools.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/aspectj1.2.1/lib/aspectjweaver.jar"/>
-	<classpathentry kind="lib" path="WEB-INF/lib/jcache-1.0-dev-2.jar"/>
+	<classpathentry sourcepath="/usr/local/java/jcache/ri/src" kind="lib" path="WEB-INF/lib/jcache-1.0-dev-2.jar">
+		<attributes>
+			<attribute value="file:/usr/local/java/jcache/www/javadoc" name="javadoc_location"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/axion-1.0-M3-dev.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.0.4.jar"/>

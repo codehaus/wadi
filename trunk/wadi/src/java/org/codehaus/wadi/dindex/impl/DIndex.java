@@ -43,12 +43,13 @@ import org.codehaus.wadi.impl.Quipu;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig {
-    
+
     protected final static String _nodeNameKey="nodeName";
     protected final static String _bucketKeysKey="bucketKeys";
     protected final static String _timeStampKey="timeStamp";
     protected final static String _birthTimeKey="birthTime";
-    
+
+    protected final boolean _allowRegenerationOfMissingBuckets=true;
     protected final Map _distributedState;
     protected final Latch _coordinatorLatch=new Latch();
     protected final Object _coordinatorLock=new Object();
@@ -74,11 +75,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         for (int i=0; i<_numBuckets; i++)
             _buckets[i]=new BucketFacade(i, timeStamp, new DummyBucket(i), queueing, this);
     }
-    
+
     protected Node _coordinatorNode;
     protected Coordinator _coordinator;
     protected DIndexConfig _config;
-    
+
     public void init(DIndexConfig config) {
         _log.info("init-ing...");
         _config=config;
@@ -110,11 +111,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
 
     public void start() throws InterruptedException, JMSException {
         _log.info("starting...");
-        
+
         _log.info("sleeping...");
         boolean isNotCoordinator=_coordinatorLatch.attempt(_inactiveTime); // wait to find out if we are the Coordinator
         _log.info("...waking");
-        
+
         // If our wait timed out, then we must be the coordinator...
         if (!isNotCoordinator) {
             _log.info("allocating "+_numBuckets+" buckets");
@@ -125,66 +126,63 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                 bucket.init(this);
                 facade.setContent(timeStamp, bucket);
             }
-            
+
             BucketKeys k=new BucketKeys(_buckets);
             _distributedState.put(_bucketKeysKey, k);
             _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
             _log.info("local state: "+k);
             _cluster.getLocalNode().setState(_distributedState);
-            _log.info("distributed state updated: "+_distributedState.get(_bucketKeysKey));
+            _log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
             onCoordinatorChanged(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.ELECTED_COORDINATOR));
             _coordinator.queueRebalancing();
         }
-        
+
         // whether we are the coordinator or not...
         for (int i=0; i<_numBuckets; i++)
             _buckets[i].dequeue();
-        
+
         _log.info("...started");
     }
-    
+
     public void stop() throws Exception {
         _log.info("stopping...");
-        
+
         Thread.interrupted();
-        
-        try {
-            BucketEvacuationRequest request=new BucketEvacuationRequest();
-            Node localNode=_cluster.getLocalNode();
-            if (localNode.getDestination().equals(_coordinatorNode.getDestination())) {
-                ObjectMessage message=_cluster.createObjectMessage();
-                message.setJMSReplyTo(localNode.getDestination());
-                message.setJMSDestination(_cluster.getDestination()); // whole cluster needs to know who is leaving - in case Coordinator fails
-                message.setObject(request);
-                onBucketEvacuationRequest(message, request);
-            } else {
-                // we use a custom correlationId, because the response is sent from somewhere,
-                // which currently does not have access to the src message... This way, it knows
-                // what it should use to respond with - hacky...
-                String correlationId=_cluster.getLocalNode().getName();
-                _dispatcher.exchangeSend(localNode.getDestination(), _cluster.getDestination(), correlationId, request, _inactiveTime);
-            }
-        } catch (JMSException e) {
-            _log.warn("problem sending evacuation request");
-        }
-        
+
+	BucketEvacuationRequest request=new BucketEvacuationRequest();
+	Node localNode=_cluster.getLocalNode();
+	String correlationId=_cluster.getLocalNode().getName();
+	while (_dispatcher.exchangeSend(localNode.getDestination(), _coordinatorNode.getDestination(), correlationId, request, _inactiveTime)==null) {
+	  _log.warn("could not contact Coordinator - backing off for "+_inactiveTime+" millis...");
+	  Thread.sleep(_inactiveTime);
+	}
+
+        _dispatcher.deregister("onBucketTransferCommand", BucketTransferCommand.class, 5000);
+        _dispatcher.deregister("onBucketTransferRequest", BucketTransferRequest.class, 5000);
+        _dispatcher.deregister("onBucketEvacuationRequest", BucketEvacuationRequest.class, 5000);
+        _dispatcher.deregister("onDIndexInsertionRequest", DIndexInsertionRequest.class, 5000);
+        _dispatcher.deregister("onDIndexDeletionRequest", DIndexDeletionRequest.class, 5000);
+        _dispatcher.deregister("onDIndexRelocationRequest", DIndexRelocationRequest.class, 5000);
+        _dispatcher.deregister("onDIndexForwardRequest", DIndexForwardRequest.class, 5000);
+        _dispatcher.deregister("onBucketRepopulateRequest", BucketRepopulateRequest.class, 5000);
+
         if (_coordinator!=null) {
             _coordinator.stop();
             _coordinator=null;
         }
         _log.info("...stopped");
     }
-    
+
     public Cluster getCluster() {
         return _cluster;
     }
-    
+
     public Dispatcher getDispatcher() {
         return _dispatcher;
     }
-    
+
     // ClusterListener
-    
+
     protected void updateBuckets(Node node, long timeStamp, BucketKeys keys) {
         Destination location=node.getDestination();
         int[] k=keys._keys;
@@ -194,30 +192,30 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             facade.setContentRemote(timeStamp, _dispatcher, location);
         }
     }
-    
+
     public void onNodeUpdate(ClusterEvent event) {
         Node node=event.getNode();
         _log.info("onNodeUpdate: "+getNodeName(node)+": "+node.getState());
-        
+
         long timeStamp=((Long)node.getState().get(_timeStampKey)).longValue();
         BucketKeys keys=(BucketKeys)node.getState().get(_bucketKeysKey);
         _log.info("keys: "+keys+" - location: "+getNodeName(node));
         updateBuckets(node, timeStamp, keys);
     }
-    
+
     public void onNodeAdd(ClusterEvent event) {
         Node node=event.getNode();
         _log.info("onNodeAdd: "+getNodeName(node)+": "+node.getState());
         if (_cluster.getLocalNode()==_coordinatorNode) {
             _coordinator.queueRebalancing();
         }
-        
+
         long timeStamp=((Long)node.getState().get(_timeStampKey)).longValue();
         BucketKeys keys=(BucketKeys)node.getState().get(_bucketKeysKey);
         _log.info("keys: "+keys+" - location: "+getNodeName(node));
         updateBuckets(node, timeStamp, keys);
     }
-    
+
     public void onNodeRemoved(ClusterEvent event) {
         Node node=event.getNode();
         _log.info("onNodeRemoved: "+getNodeName(node));
@@ -225,8 +223,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         if (_coordinator!=null)
             _coordinator.queueRebalancing();
     }
-    
-    
+
+
     public void markExistingBuckets(Node[] nodes, boolean[] bucketIsPresent) {
         for (int i=0; i<nodes.length; i++) {
             Node node=nodes[i];
@@ -246,7 +244,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             }
         }
     }
-    
+
     public void repopulate(Destination location, Collection[] keys) {
         assert location!=null;
         for (int i=0; i<_numBuckets; i++) {
@@ -261,7 +259,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             }
         }
     }
-    
+
     public void regenerateMissingBuckets(Node[] living, Node[] leaving) {
         boolean[] bucketIsPresent=new boolean[_numBuckets];
         markExistingBuckets(living, bucketIsPresent);
@@ -271,9 +269,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             if (!bucketIsPresent[i])
                 missingBuckets.add(new Integer(i));
         }
-        
+
         int numKeys=missingBuckets.size();
         if (numKeys>0) {
+        	assert _allowRegenerationOfMissingBuckets;
             _log.warn("missing buckets- regenerating: "+missingBuckets);
             // convert to int[]
             int[] missingKeys=new int[numKeys];
@@ -281,7 +280,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             for (Iterator i=missingBuckets.iterator(); i.hasNext(); )
                 missingKeys[key++]=((Integer)i.next()).intValue();
 
-            _log.info("RECREATING BUCKETS...: "+missingBuckets);
+            _log.warn("RECREATING BUCKETS...: "+missingBuckets);
             long time=System.currentTimeMillis();
             for (int i=0; i<missingKeys.length; i++) {
                 int k=missingKeys[i];
@@ -292,20 +291,20 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                 facade.setContent(time, local);
             }
             BucketKeys newKeys=new BucketKeys(_buckets);
-            _log.info("new Keys: "+newKeys);
-            _log.info("REPOPULATING BUCKETS...: "+missingBuckets);
+            _log.warn("new Keys: "+newKeys);
+            _log.warn("REPOPULATING BUCKETS...: "+missingBuckets);
             String correlationId=_dispatcher.nextCorrelationId();
             Quipu rv=_dispatcher.setRendezVous(correlationId, _cluster.getNodes().size());
             if (!_dispatcher.send(_cluster.getLocalNode().getDestination(), _cluster.getDestination(), correlationId, new BucketRepopulateRequest(missingKeys))) {
                 _log.error("unexpected problem repopulating lost index");
             }
-            
+
             // whilst we are waiting for the other nodes to get back to us, figure out which relevant sessions
             // we are carrying ourselves...
             Collection[] c=createResultSet(_numBuckets, missingKeys);
             _config.findRelevantSessionNames(_numBuckets, c);
             repopulate(_cluster.getLocalNode().getDestination(), c);
-            
+
             boolean success=false;
             try {
                 success=rv.waitFor(_inactiveTime);
@@ -313,23 +312,23 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                 _log.warn("unexpected interruption", e);
             }
             Collection results=rv.getResults();
-            _log.info("RESULTS: "+results.size());
-            
+            _log.warn("RESULTS: "+results.size());
+
             for (Iterator i=results.iterator(); i.hasNext(); ) {
                 ObjectMessage message=(ObjectMessage)i.next();
                 try {
                     Destination from=message.getJMSReplyTo();
                     BucketRepopulateResponse response=(BucketRepopulateResponse)message.getObject();
                     Collection[] relevantKeys=response.getKeys();
-                    
+
                     repopulate(from, relevantKeys);
-                    
+
                 } catch (JMSException e) {
                     _log.warn("unexpected problem interrogating response", e);
                 }
             }
-            
-            _log.info("...BUCKETS REPOPULATED: "+missingBuckets);
+
+            _log.warn("...BUCKETS REPOPULATED: "+missingBuckets);
             for (int i=0; i<missingKeys.length; i++) {
                 int k=missingKeys[i];
                 BucketFacade facade=_buckets[k];
@@ -339,13 +338,14 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             _distributedState.put(_bucketKeysKey, newKeys);
             try {
                 _cluster.getLocalNode().setState(_distributedState);
+		_log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
             } catch (JMSException e) {
                 _log.error("could not update distributed state", e);
             }
         }
     }
-    
-    
+
+
     public void onNodeFailed(ClusterEvent event) {
         Node node=event.getNode();
         if (_leavers.remove(node.getDestination())) {
@@ -360,7 +360,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             }
         }
     }
-    
+
     public void repopulateBuckets(Destination location, Collection[] keys) {
         for (int i=0; i<keys.length; i++) {
             Collection c=keys[i];
@@ -373,7 +373,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             }
         }
     }
-    
+
     public void onCoordinatorChanged(ClusterEvent event) {
         synchronized (_coordinatorLock) {
             _log.info("onCoordinatorChanged: "+getNodeName(event.getNode()));
@@ -385,11 +385,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                 if (_coordinatorNode==_cluster.getLocalNode())
                     onElection(event);
             }
-            
+
             _coordinatorLatch.release(); // we are still waiting in start() to find out if we are the Coordinator...
         }
     }
-    
+
     // receive a command to transfer IndexPartitions to another node
     // send them in a request, waiting for response
     // send an acknowledgement to Coordinator who sent original command
@@ -399,7 +399,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             BucketTransfer transfer=transfers[i];
             int amount=transfer.getAmount();
             Destination destination=transfer.getDestination();
-            
+
             // acquire buckets for transfer...
             LocalBucket[] acquired=null;
             try {
@@ -414,9 +414,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                 }
                 acquired=(LocalBucket[])c.toArray(new LocalBucket[c.size()]);
                 assert amount==acquired.length;
-                
+
                 long timeStamp=System.currentTimeMillis();
-                
+
                 // build request...
                 _log.info("local state (before giving): "+new BucketKeys(_buckets));
                 _log.info("transferring "+acquired.length+" buckets to "+getNodeName((Node)_cluster.getNodes().get(destination)));
@@ -449,13 +449,13 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             _log.info("local state (after giving): "+keys);
             _log.info("local state updated");
             _cluster.getLocalNode().setState(_distributedState);
-            _log.info("distributed state updated: "+_distributedState.get(_bucketKeysKey));
+	    _log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
             _dispatcher.reply(om, new BucketTransferAcknowledgement(true)); // what if failure - TODO
         } catch (JMSException e) {
             _log.warn("could not acknowledge safe transfer to Coordinator", e);
         }
     }
-    
+
     protected Node getSrcNode(ObjectMessage om) {
         try {
             Destination destination=om.getJMSReplyTo();
@@ -469,8 +469,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             return null;
         }
     }
-    
-    public void onBucketTransferRequest(ObjectMessage om, BucketTransferRequest request) {
+
+    public synchronized void onBucketTransferRequest(ObjectMessage om, BucketTransferRequest request) {
         long timeStamp=request.getTimeStamp();
         LocalBucket[] buckets=request.getBuckets();
         _log.info(""+timeStamp+" received "+buckets.length+" buckets from "+getNodeName(getSrcNode(om)));
@@ -490,7 +490,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
             _log.info("local state (after receiving): "+keys);
             _cluster.getLocalNode().setState(_distributedState);
-            _log.info("distributed state updated: "+_distributedState.get(_bucketKeysKey));
+	    _log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
         } catch (JMSException e) {
             _log.error("could not update distributed state", e);
         }
@@ -502,14 +502,14 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             // chuck them... - TODO
         }
     }
-    
+
     public Collection[] createResultSet(int numBuckets, int[] keys) {
         Collection[] c=new Collection[numBuckets];
         for (int i=0; i<keys.length; i++)
             c[keys[i]]=new ArrayList();
         return c;
     }
-    
+
     public void onBucketRepopulateRequest(ObjectMessage om, BucketRepopulateRequest request) {
         int keys[]=request.getKeys();
         _log.trace("BucketRepopulateRequest ARRIVED: "+keys);
@@ -525,9 +525,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         if (!_dispatcher.reply(om, new BucketRepopulateResponse(c)))
             _log.warn("unexpected problem responding to bucket repopulation request");
     }
-    
+
     // MyNode
-    
+
     public void onElection(ClusterEvent event) {
         _log.info("accepting coordinatorship");
         try {
@@ -537,7 +537,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             _log.error("problem starting Coordinator");
         }
     }
-    
+
     public void onDismissal(ClusterEvent event) {
         _log.info("resigning coordinatorship"); // never happens - coordinatorship is for life..
         try {
@@ -547,62 +547,62 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             _log.error("problem starting Balancer");
         }
     }
-    
-    
+
+
     public static String getNodeName(Node node) {
         return node==null?"<unknown>":(String)node.getState().get(_nodeNameKey);
     }
-    
+
     public static BucketKeys getBucketKeys(Node node) {
         return ((BucketKeys)node.getState().get(_bucketKeysKey));
     }
-    
+
     public boolean isCoordinator() {
         synchronized (_coordinatorLock) {
             return _cluster.getLocalNode()==_coordinatorNode;
         }
     }
-    
+
     public Node getCoordinator() {
         synchronized (_coordinatorLock) {
             return _coordinatorNode;
         }
     }
-    
+
     public int getNumItems() {
         return _numBuckets;
     }
-    
+
     public Node getLocalNode() {
         return _cluster.getLocalNode();
     }
-    
+
     public Collection getRemoteNodes() {
         return _cluster.getNodes().values();
     }
-    
+
     public Map getRendezVousMap() {
         return _dispatcher.getRendezVousMap();
     }
-    
+
     public void onBucketEvacuationRequest(ObjectMessage om, BucketEvacuationRequest request) {
         Node from=getSrcNode(om);
         assert from!=null;
         _log.info("evacuation request from "+getNodeName(from));
         onNodeRemoved(new ClusterEvent(_cluster, from, ClusterEvent.REMOVE_NODE));
     }
-    
+
     protected final Collection _leavers=Collections.synchronizedCollection(new ArrayList());
     protected final Collection _left=Collections.synchronizedCollection(new ArrayList());
-    
+
     public Collection getLeavers() {
         return _leavers;
     }
-    
+
     public Collection getLeft() {
         return _left;
     }
-    
+
     protected int printNode(Node node) {
         if (node!=_cluster.getLocalNode())
             node=(Node)_cluster.getNodes().get(node.getDestination());
@@ -616,7 +616,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             return amount;
         }
     }
-    
+
     public void onDIndexInsertionRequest(ObjectMessage om, DIndexInsertionRequest request) {
         onDIndexRequest(om, request);
     }
@@ -632,14 +632,14 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     public void onDIndexRelocationRequest(ObjectMessage om, DIndexRelocationRequest request) {
         onDIndexRequest(om, request);
     }
-    
+
     protected void onDIndexRequest(ObjectMessage om, DIndexRequest request) {
         int bucketKey=request.getBucketKey(_numBuckets);
         _buckets[bucketKey].dispatch(om, request);
     }
-    
+
     // temporary test methods...
-    
+
     public Object insert(String name) {
         try {
             ObjectMessage message=_cluster.createObjectMessage();
@@ -650,9 +650,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         } catch (JMSException e) {
             _log.info("oops...", e);
         }
-        return null;    
+        return null;
     }
-    
+
     public void remove(String name) {
         try {
             ObjectMessage message=_cluster.createObjectMessage();
@@ -664,7 +664,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             _log.info("oops...", e);
         }
     }
-    
+
     public void relocate(String name) {
         try {
             ObjectMessage message=_cluster.createObjectMessage();
@@ -675,7 +675,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         } catch (JMSException e) {
             _log.info("oops...", e);
         }
-    }    
+    }
 
     public ObjectMessage forwardAndExchange(String name, ObjectMessage message, DIndexRequest request, long timeout) {
         int key=getKey(name);
@@ -689,13 +689,13 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             return null;
         }
     }
-    
+
     protected int getKey(String name) {
         return Math.abs(name.hashCode()%_numBuckets);
     }
 
     // BucketConfig
-    
+
     public String getNodeName(Destination destination) {
         Node local=_cluster.getLocalNode();
         Node node=destination.equals(local.getDestination())?local:(Node)_cluster.getNodes().get(destination);
@@ -705,6 +705,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     public long getInactiveTime() {
         return _inactiveTime;
     }
-    
+
 }
 

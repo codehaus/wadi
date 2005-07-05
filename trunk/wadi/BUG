@@ -1,0 +1,4 @@
+DefaultCluster creates StateServiceImpl in its ctor
+StateServiceImpl sets up Timer in its ctor
+
+if DefaultCluster.start is not called in time, Timer will go off before start() is called and distribute Nodes distributed State...

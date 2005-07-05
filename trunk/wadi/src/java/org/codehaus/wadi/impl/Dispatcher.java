@@ -246,25 +246,25 @@ public class Dispatcher implements MessageListener {
 	}
 
     //-----------------------------------------------------------------------------------------------
-    
+
     protected String getNodeName(Destination destination) {
         Node localNode=_cluster.getLocalNode();
         Destination localDestination=localNode.getDestination();
-       
+
         if (destination.equals(localDestination))
             return DIndex.getNodeName(localNode);
-        
+
         Destination clusterDestination=_cluster.getDestination();
         if (destination.equals(clusterDestination))
             return "cluster";
-        
+
         Node node=null;
         if ((node=(Node)_cluster.getNodes().get(destination))!=null)
             return DIndex.getNodeName(node);
-        
+
         return "<unknown>";
     }
-    
+
     public boolean send(Destination from, Destination to, String correlationId, Serializable body) {
         try {
             ObjectMessage om=_cluster.createObjectMessage();
@@ -280,11 +280,11 @@ public class Dispatcher implements MessageListener {
             return false;
         }
     }
-    
+
     public ObjectMessage exchangeSend(Destination from, Destination to, Serializable body, long timeout) {
         return exchangeSend(from, to, nextCorrelationId(), body, timeout);
     }
-    
+
     public ObjectMessage exchangeSend(Destination from, Destination to, String correlationId, Serializable body, long timeout) {
         Quipu rv=null;
         // set up a rendez-vous...
@@ -296,7 +296,7 @@ public class Dispatcher implements MessageListener {
             return null;
         }
     }
-    
+
     public boolean reply(ObjectMessage message, Serializable body) {
         try {
             return send(_cluster.getLocalNode().getDestination(), message.getJMSReplyTo(), message.getJMSCorrelationID(), body);
@@ -309,7 +309,7 @@ public class Dispatcher implements MessageListener {
     public ObjectMessage exchangeReply(ObjectMessage message, Serializable body, long timeout) {
         return exchangeReply(message, nextCorrelationId(), body, timeout);
     }
-    
+
     public ObjectMessage exchangeReply(ObjectMessage message, String correlationId, Serializable body, long timeout) {
         Quipu rv=null;
         // set up a rendez-vous...
@@ -321,7 +321,7 @@ public class Dispatcher implements MessageListener {
             return null;
         }
     }
-    
+
     public boolean forward(ObjectMessage message, Destination destination) {
         try {
             return forward(message, destination, message.getObject());
@@ -345,18 +345,18 @@ public class Dispatcher implements MessageListener {
     //-----------------------------------------------------------------------------------------------
 
     class SimpleCorrelationIDFactory {
-        
+
         protected final SynchronizedInt _count=new SynchronizedInt(0);
-        
+
         public String create() {
             return Integer.toString(_count.increment());
         }
-        
+
     }
-    
+
     protected final SimpleCorrelationIDFactory _factory=new SimpleCorrelationIDFactory();
     protected final Map _rvMap=new ConcurrentHashMap();
-    
+
     public Map getRendezVousMap() {
         return _rvMap;
     }
@@ -364,13 +364,13 @@ public class Dispatcher implements MessageListener {
     public String nextCorrelationId() {
         return _factory.create();
     }
-    
+
     public Quipu setRendezVous(String correlationId, int numLlamas) {
         Quipu rv=new Quipu(numLlamas);
         _rvMap.put(correlationId, rv);
         return rv;
     }
-    
+
     public ObjectMessage attemptRendezVous(String correlationId, Quipu rv, long timeout) {
         // rendez-vous with response/timeout...
         ObjectMessage response=null;
@@ -399,7 +399,7 @@ public class Dispatcher implements MessageListener {
         }
         return response;
     }
-    
+
     public Cluster getCluster(){return _cluster;}
 
 	public MessageConsumer addDestination(Destination destination) throws JMSException {
@@ -412,7 +412,7 @@ public class Dispatcher implements MessageListener {
 	public void removeDestination(MessageConsumer consumer) throws JMSException {
 	  consumer.close();
 	}
-    
+
     // TODO - rather than owning this, we should be given a pointer to it at init()
     // time, and this accessor should be removed...
     public PooledExecutor getExecutor() {

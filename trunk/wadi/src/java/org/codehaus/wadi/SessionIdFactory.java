@@ -29,6 +29,9 @@ public interface SessionIdFactory {
     String create();
     
     int getSessionIdLength();
+    
+    // I don't want this here - I favour ctor IOC 
+    // - but TC's Manager i/f makes it awkward not to have it...
     void setSessionIdLength(int l);    
     
 }

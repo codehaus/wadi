@@ -39,18 +39,18 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 //leave the Cluster in the meantime...
 
 public class Coordinator implements Runnable {
-    
+
     protected final Log _log=LogFactory.getLog(getClass());
-    
+
     protected final Slot _flag=new Slot();
-    
+
     protected final CoordinatorConfig _config;
     protected final Cluster _cluster;
     protected final Dispatcher _dispatcher;
     protected final Node _localNode;
     protected final int _numItems;
     protected final long _inactiveTime;
-    
+
     public Coordinator(CoordinatorConfig config) {
         _config=config;
         _cluster=_config.getCluster();
@@ -59,18 +59,18 @@ public class Coordinator implements Runnable {
         _numItems=_config.getNumItems();
         _inactiveTime=_config.getInactiveTime();
     }
-    
+
     protected Thread _thread;
     protected Node[] _remoteNodes;
-    
-    
+
+
     public synchronized void start() throws Exception {
         _log.info("starting...");
         _thread=new Thread(this, "WADI Coordinator");
         _thread.start();
         _log.info("...started");
     }
-    
+
     public synchronized void stop() throws Exception {
         // somehow wake up thread
         _log.info("stopping...");
@@ -79,7 +79,7 @@ public class Coordinator implements Runnable {
         _thread=null;
         _log.info("...stopped");
     }
-    
+
     public synchronized void queueRebalancing() {
         _log.info("queueing rebalancing...");
         try {
@@ -89,7 +89,7 @@ public class Coordinator implements Runnable {
         }
         _log.info("...rebalancing queued");
     }
-    
+
     public void run() {
         try {
             while (_flag.take()==Boolean.TRUE) {
@@ -104,16 +104,16 @@ public class Coordinator implements Runnable {
     public void rebalanceClusterState() {
         int failures=0;
         try {
-            
+
             Map nodeMap=_cluster.getNodes();
-            
+
             Collection livingNodes=nodeMap.values();
             synchronized (livingNodes) {livingNodes=new ArrayList(livingNodes);} // snapshot
             livingNodes.add(_cluster.getLocalNode());
-            
+
             Collection l=_config.getLeavers();
             synchronized (l) {l=new ArrayList(l);} // snapshot
-            
+
             Collection leavingNodes=new ArrayList();
             for (Iterator i=l.iterator(); i.hasNext(); ) {
                 Destination d=(Destination)i.next();
@@ -123,32 +123,32 @@ public class Coordinator implements Runnable {
                     livingNodes.remove(leaver);
                 }
             }
-            
+
             if (livingNodes.size()==0) {
                 _log.warn("we are the last node - no need to rebalance cluster");
                 return;
             }
-            
+
             _log.info("LIVING:");
             printNodes(livingNodes);
             _log.info("LEAVING:");
             printNodes(leavingNodes);
-            
+
             Node [] living=(Node[])livingNodes.toArray(new Node[livingNodes.size()]);
             Node [] leaving=(Node[])leavingNodes.toArray(new Node[leavingNodes.size()]);
-            
+
             _config.regenerateMissingBuckets(living, leaving);
-            
+
             RedistributionPlan plan=new RedistributionPlan(living, leaving, _numItems);
-            
+
             printNodes(living, leaving);
-            
+
             Map rvMap=_config.getRendezVousMap();
             Quipu rv=new Quipu(0);
             String correlationId=_dispatcher.nextCorrelationId();
             rvMap.put(correlationId, rv);
             execute(plan, correlationId, rv); // quipu will be incremented as participants are invited
-            
+
             try {
                 _log.info("WAITING ON RENDEZVOUS");
                 if (rv.waitFor(_inactiveTime)) {
@@ -167,7 +167,7 @@ public class Coordinator implements Runnable {
             } finally {
                 rvMap.remove(correlationId);
                 // somehow check all returned success.. - TODO
-                
+
                 // send EvacuationResponses to each leaving node... - hmmm....
                 Collection left=_config.getLeft();
                 for (int i=0; i<leaving.length; i++) {
@@ -188,16 +188,18 @@ public class Coordinator implements Runnable {
             _log.warn("problem rebalancing indeces", t);
             failures++;
         }
-        
-        if (failures>0)
-            queueRebalancing();
+
+        if (failures>0) {
+	  _log.warn("rebalance failed - backing off for "+_inactiveTime+" millis...");
+	  queueRebalancing();
+	}
     }
-    
+
     protected void execute(RedistributionPlan plan, String correlationId, Quipu quipu) {
         quipu.increment(); // add a safety margin of '1', so if we are caught up by acks, waiting thread does not finish
         Iterator p=plan.getProducers().iterator();
         Iterator c=plan.getConsumers().iterator();
-        
+
         BucketOwner consumer=null;
         while (p.hasNext()) {
             BucketOwner producer=(BucketOwner)p.next();
@@ -216,13 +218,13 @@ public class Coordinator implements Runnable {
                         producer._deviation=0;
                     }
             }
-            
+
             BucketTransferCommand command=new BucketTransferCommand((BucketTransfer[])transfers.toArray(new BucketTransfer[transfers.size()]));
             quipu.increment();
             if (!_dispatcher.send(_cluster.getLocalNode().getDestination(), producer._node.getDestination(), correlationId, command)) {
                 _log.error("problem sending transfer command");
-            }   
-        }   
+            }
+        }
         quipu.decrement(); // remove safety margin
     }
 
@@ -241,7 +243,7 @@ public class Coordinator implements Runnable {
             total+=printNode(leaving[i]);
         _log.info("total : "+total);
     }
-    
+
     protected int printNode(Node node) {
         if (node!=_cluster.getLocalNode())
             node=(Node)_cluster.getNodes().get(node.getDestination());
@@ -255,7 +257,7 @@ public class Coordinator implements Runnable {
             return amount;
         }
     }
-    
+
     protected Node getNode(Destination destination) {
         Node localNode=_cluster.getLocalNode();
         Destination localDestination=localNode.getDestination();
@@ -264,5 +266,5 @@ public class Coordinator implements Runnable {
         else
             return (Node)_cluster.getNodes().get(destination);
     }
-    
+
 }
