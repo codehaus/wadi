@@ -38,6 +38,13 @@ public class BucketRepopulateResponse implements Serializable {
     
 	
     public String toString() {
-        return "<BucketRepopulateResponse"+_keys+">";
+    	StringBuffer buffer=new StringBuffer("<BucketRepopulateResponse: ");
+    	for (int i=0; i<_keys.length; i++) {
+    		Collection c=_keys[i];
+    		if (c!=null)
+    			buffer.append(""+i+":"+c.toString()+", ");
+    	}
+    	buffer.append(">");
+    	return buffer.toString();
     }
 }
