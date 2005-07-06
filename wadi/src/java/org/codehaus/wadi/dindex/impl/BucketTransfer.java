@@ -23,10 +23,12 @@ import javax.jms.Destination;
 public class BucketTransfer implements Serializable {
 
     public Destination _destination;
+    public String _name; // TODO - only here for debugging...
     public int _amount;
     
-    public BucketTransfer(Destination destination, int amount) {
+    public BucketTransfer(Destination destination, String name, int amount) {
         _destination=destination;
+        _name=name;
         _amount=amount;
     }
     
@@ -40,6 +42,10 @@ public class BucketTransfer implements Serializable {
     
     public int getAmount() {
         return _amount;
+    }
+    
+    public String toString() {
+        return "<transfer: "+_amount+"->"+_name+">";
     }
     
 }

@@ -34,4 +34,13 @@ public class BucketTransferCommand implements Serializable {
         return _transfers;
     }
     
+	
+    public String toString() {
+    	StringBuffer buffer=new StringBuffer("<BucketTransferCommand: ");
+    	for (int i=0; i<_transfers.length; i++)
+    		buffer.append((i==0?"":",")+_transfers[i]);
+    	buffer.append(">");
+        return buffer.toString();
+    }
+    
 }
