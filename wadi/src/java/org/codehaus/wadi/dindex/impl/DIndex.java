@@ -19,6 +19,7 @@ package org.codehaus.wadi.dindex.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -48,6 +49,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     protected final static String _bucketKeysKey="bucketKeys";
     protected final static String _timeStampKey="timeStamp";
     protected final static String _birthTimeKey="birthTime";
+    protected final static String _correlationIDMapKey="correlationIDMap";
 
     protected final boolean _allowRegenerationOfMissingBuckets=true;
     protected final Map _distributedState;
@@ -86,6 +88,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         _cluster.setElectionStrategy(new SeniorityElectionStrategy());
         _cluster.addClusterListener(this);
         _distributedState.put(_nodeNameKey, _nodeName);
+        _distributedState.put(_correlationIDMapKey, new HashMap());
         _distributedState.put(_birthTimeKey, new Long(System.currentTimeMillis()));
         BucketKeys keys=new BucketKeys(_buckets);
         _distributedState.put(_bucketKeysKey, keys);
@@ -197,9 +200,21 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         Node node=event.getNode();
         _log.info("onNodeUpdate: "+getNodeName(node)+": "+node.getState());
 
-        long timeStamp=((Long)node.getState().get(_timeStampKey)).longValue();
-        BucketKeys keys=(BucketKeys)node.getState().get(_bucketKeysKey);
+        Map state=node.getState();
+        long timeStamp=((Long)state.get(_timeStampKey)).longValue();
+        BucketKeys keys=(BucketKeys)state.get(_bucketKeysKey);
         updateBuckets(node, timeStamp, keys);
+        
+        Map correlationIDMap=(Map)state.get(_correlationIDMapKey);
+        Destination local=_cluster.getLocalNode().getDestination();
+        String correlationID=(String)correlationIDMap.get(local);
+        _log.info("CID: "+correlationID);
+        if (correlationID!=null) {
+        	Quipu rv=(Quipu)_dispatcher.getRendezVousMap().get(correlationID);
+        	_log.info("QUIPU IS: "+rv);
+          	//rv.putResult(state);
+        }
+        	
     }
 
     public void onNodeAdd(ClusterEvent event) {
@@ -441,8 +456,14 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         	_distributedState.put(_bucketKeysKey, keys);
         	_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
         	_log.info("local state (after giving): "+keys);
+        	String correlationID=om.getJMSCorrelationID();
+        	_log.info("CORRELATIONID: "+correlationID);
+        	Map correlationIDMap=(Map)_distributedState.get(_correlationIDMapKey);
+        	Destination from=om.getJMSReplyTo();
+        	correlationIDMap.put(from, correlationID);
         	_cluster.getLocalNode().setState(_distributedState);
         	_log.info("distributed state updated: "+_cluster.getLocalNode().getState());
+        	correlationIDMap.remove(from);
         	// FIXME - RACE - between update of distributed state and ack - they should be one and the same thing...
         	_dispatcher.reply(om, new BucketTransferAcknowledgement(true)); // what if failure - TODO
         } catch (JMSException e) {
