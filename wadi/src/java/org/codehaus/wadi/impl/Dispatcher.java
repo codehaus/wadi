@@ -204,7 +204,7 @@ public class Dispatcher implements MessageListener {
     				(body=objectMessage.getObject())!=null &&
     				(dispatcher=(InternalDispatcher)_map.get(body.getClass()))!=null
     		) {
-                _log.trace("receive: "+body+" from "+getNodeName(message.getJMSReplyTo()));
+                _log.trace("receive: "+body+" from "+getNodeName(message.getJMSReplyTo())+" -> "+getNodeName(message.getJMSDestination()));
     			do {
     				try {
     					synchronized (dispatcher) {

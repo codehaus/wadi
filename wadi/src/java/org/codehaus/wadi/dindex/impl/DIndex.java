@@ -149,14 +149,14 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
 
         Thread.interrupted();
 
-	BucketEvacuationRequest request=new BucketEvacuationRequest();
-	Node localNode=_cluster.getLocalNode();
-	String correlationId=_cluster.getLocalNode().getName();
-	while (_dispatcher.exchangeSend(localNode.getDestination(), _coordinatorNode.getDestination(), correlationId, request, _inactiveTime)==null) {
-	  _log.warn("could not contact Coordinator - backing off for "+_inactiveTime+" millis...");
-	  Thread.sleep(_inactiveTime);
-	}
-
+        BucketEvacuationRequest request=new BucketEvacuationRequest();
+        Node localNode=_cluster.getLocalNode();
+        String correlationId=_cluster.getLocalNode().getName();
+        while (_dispatcher.exchangeSend(localNode.getDestination(), _coordinatorNode.getDestination(), correlationId, request, _inactiveTime)==null) {
+        	_log.warn("could not contact Coordinator - backing off for "+_inactiveTime+" millis...");
+        	Thread.sleep(_inactiveTime);
+        }
+        
         _dispatcher.deregister("onBucketTransferCommand", BucketTransferCommand.class, 5000);
         _dispatcher.deregister("onBucketTransferRequest", BucketTransferRequest.class, 5000);
         _dispatcher.deregister("onBucketEvacuationRequest", BucketEvacuationRequest.class, 5000);
@@ -165,10 +165,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         _dispatcher.deregister("onDIndexRelocationRequest", DIndexRelocationRequest.class, 5000);
         _dispatcher.deregister("onDIndexForwardRequest", DIndexForwardRequest.class, 5000);
         _dispatcher.deregister("onBucketRepopulateRequest", BucketRepopulateRequest.class, 5000);
-
+        
         if (_coordinator!=null) {
-            _coordinator.stop();
-            _coordinator=null;
+        	_coordinator.stop();
+        	_coordinator=null;
         }
         _log.info("...stopped");
     }
@@ -271,7 +271,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         int numKeys=missingBuckets.size();
         if (numKeys>0) {
         	assert _allowRegenerationOfMissingBuckets;
-            _log.warn("missing buckets- regenerating: "+missingBuckets);
             // convert to int[]
             int[] missingKeys=new int[numKeys];
             int key=0;
@@ -289,7 +288,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                 facade.setContent(time, local);
             }
             BucketKeys newKeys=new BucketKeys(_buckets);
-            _log.warn("new Keys: "+newKeys);
             _log.warn("REPOPULATING BUCKETS...: "+missingBuckets);
             String correlationId=_dispatcher.nextCorrelationId();
             Quipu rv=_dispatcher.setRendezVous(correlationId, _cluster.getNodes().size());
@@ -310,7 +308,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                 _log.warn("unexpected interruption", e);
             }
             Collection results=rv.getResults();
-            _log.warn("RESULTS: "+results.size());
 
             for (Iterator i=results.iterator(); i.hasNext(); ) {
                 ObjectMessage message=(ObjectMessage)i.next();
@@ -440,16 +437,16 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             }
         }
         try {
-            BucketKeys keys=new BucketKeys(_buckets);
-            _distributedState.put(_bucketKeysKey, keys);
-            _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
-            _log.info("local state (after giving): "+keys);
-            _log.info("local state updated");
-            _cluster.getLocalNode().setState(_distributedState);
-	    _log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
-            _dispatcher.reply(om, new BucketTransferAcknowledgement(true)); // what if failure - TODO
+        	BucketKeys keys=new BucketKeys(_buckets);
+        	_distributedState.put(_bucketKeysKey, keys);
+        	_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
+        	_log.info("local state (after giving): "+keys);
+        	_cluster.getLocalNode().setState(_distributedState);
+        	_log.info("distributed state updated: "+_cluster.getLocalNode().getState());
+        	// FIXME - RACE - between update of distributed state and ack - they should be one and the same thing...
+        	_dispatcher.reply(om, new BucketTransferAcknowledgement(true)); // what if failure - TODO
         } catch (JMSException e) {
-            _log.warn("could not acknowledge safe transfer to Coordinator", e);
+        	_log.warn("could not acknowledge safe transfer to Coordinator", e);
         }
     }
 
