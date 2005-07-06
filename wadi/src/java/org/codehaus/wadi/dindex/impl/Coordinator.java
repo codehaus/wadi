@@ -107,9 +107,9 @@ public class Coordinator implements Runnable {
 
             Map nodeMap=_cluster.getNodes();
 
-            Collection livingNodes=nodeMap.values();
-            synchronized (livingNodes) {livingNodes=new ArrayList(livingNodes);} // snapshot
-            livingNodes.add(_cluster.getLocalNode());
+            Collection stayingNodes=nodeMap.values();
+            synchronized (stayingNodes) {stayingNodes=new ArrayList(stayingNodes);} // snapshot
+            stayingNodes.add(_cluster.getLocalNode());
 
             Collection l=_config.getLeavers();
             synchronized (l) {l=new ArrayList(l);} // snapshot
@@ -120,28 +120,33 @@ public class Coordinator implements Runnable {
                 Node leaver=getNode(d);
                 if (leaver!=null) {
                     leavingNodes.add(leaver);
-                    livingNodes.remove(leaver);
+                    stayingNodes.remove(leaver);
                 }
             }
 
-            if (livingNodes.size()==0) {
+            if (stayingNodes.size()==0) {
                 _log.warn("we are the last node - no need to rebalance cluster");
                 return;
             }
 
-            _log.info("LIVING:");
-            printNodes(livingNodes);
+            _log.info("--------");
+            _log.info("STAYING:");
+            printNodes(stayingNodes);
             _log.info("LEAVING:");
             printNodes(leavingNodes);
+            _log.info("--------");
 
-            Node [] living=(Node[])livingNodes.toArray(new Node[livingNodes.size()]);
+            Node [] living=(Node[])stayingNodes.toArray(new Node[stayingNodes.size()]);
             Node [] leaving=(Node[])leavingNodes.toArray(new Node[leavingNodes.size()]);
 
             _config.regenerateMissingBuckets(living, leaving);
 
             RedistributionPlan plan=new RedistributionPlan(living, leaving, _numItems);
 
+            _log.info("--------");
+            _log.info("BEFORE:");
             printNodes(living, leaving);
+            _log.info("--------");
 
             Map rvMap=_config.getRendezVousMap();
             Quipu rv=new Quipu(0);
@@ -173,7 +178,6 @@ public class Coordinator implements Runnable {
                 for (int i=0; i<leaving.length; i++) {
                     Node node=leaving[i];
                     if (!left.contains(node.getDestination())) {
-                        _log.info("acknowledging evacuation of "+DIndex.getNodeName(node));
                         BucketEvacuationResponse response=new BucketEvacuationResponse();
                         if (!_dispatcher.send(_cluster.getLocalNode().getDestination(), node.getDestination(), node.getName(), response)) {
                             _log.error("problem sending EvacuationResponse to "+DIndex.getNodeName(node));
@@ -183,7 +187,10 @@ public class Coordinator implements Runnable {
                     }
                 }
             }
+            _log.info("--------");
+            _log.info("AFTER:");
             printNodes(living, leaving);
+            _log.info("--------");
         } catch (Throwable t) {
             _log.warn("problem rebalancing indeces", t);
             failures++;
@@ -241,7 +248,7 @@ public class Coordinator implements Runnable {
             total+=printNode(living[i]);
         for (int i=0; i<leaving.length; i++)
             total+=printNode(leaving[i]);
-        _log.info("total : "+total);
+        _log.info("TOTAL: "+total);
     }
 
     protected int printNode(Node node) {

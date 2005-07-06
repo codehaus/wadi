@@ -41,6 +41,11 @@ public class BucketTransferRequest implements Serializable {
 	}
 	
     public String toString() {
-        return "<BucketTransferRequest: "+_buckets+">";
+    	StringBuffer buffer=new StringBuffer("<BucketTransferRequest: ");
+    	for (int i=0; i<_buckets.length; i++)
+    		buffer.append((i==0?"":",")+_buckets[i]);
+    	buffer.append(">");
+        return buffer.toString();
     }
+    
 }

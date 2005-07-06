@@ -194,32 +194,33 @@ public class Dispatcher implements MessageListener {
     }
 
     public void onMessage(Message message) {
-        try {
-            ObjectMessage objectMessage=null;
-            Serializable serializable=null;
-            InternalDispatcher dispatcher;
-            if (
-                    message instanceof ObjectMessage &&
-                    (objectMessage=(ObjectMessage)message)!=null &&
-                    (serializable=objectMessage.getObject())!=null &&
-                    (dispatcher=(InternalDispatcher)_map.get(serializable.getClass()))!=null
-            ) {
-                do {
-                    try {
-                        synchronized (dispatcher) {
-                            _executor.execute(new DispatchRunner(dispatcher, objectMessage, serializable)); // TODO - pool DispatchRunner ?
-                            dispatcher.incCount();
-                        }
-                    } catch (InterruptedException e) {
-                        // ignore
-                    }
-                } while (Thread.interrupted());
-            } else {
-                _log.warn("spurious message received: "+message);
-            }
-        } catch (JMSException e) {
-            _log.warn("bad message", e);
-        }
+    	try {
+    		ObjectMessage objectMessage=null;
+    		Serializable body=null;
+    		InternalDispatcher dispatcher;
+    		if (
+    				message instanceof ObjectMessage &&
+    				(objectMessage=(ObjectMessage)message)!=null &&
+    				(body=objectMessage.getObject())!=null &&
+    				(dispatcher=(InternalDispatcher)_map.get(body.getClass()))!=null
+    		) {
+                _log.trace("receive: "+body+" from "+getNodeName(message.getJMSReplyTo()));
+    			do {
+    				try {
+    					synchronized (dispatcher) {
+    						_executor.execute(new DispatchRunner(dispatcher, objectMessage, body)); // TODO - pool DispatchRunner ?
+    						dispatcher.incCount();
+    					}
+    				} catch (InterruptedException e) {
+    					// ignore
+    				}
+    			} while (Thread.interrupted());
+    		} else {
+    			_log.warn("spurious message received: "+message);
+    		}
+    	} catch (JMSException e) {
+    		_log.warn("bad message", e);
+    	}
     }
 
 	class DispatchRunner implements Runnable {
@@ -272,7 +273,7 @@ public class Dispatcher implements MessageListener {
             om.setJMSDestination(to);
             om.setJMSCorrelationID(correlationId);
             om.setObject(body);
-            _log.trace("sending message ("+body+") from "+getNodeName(from)+" -> "+getNodeName(to)+" with correlation: "+correlationId);
+            _log.trace("send: "+body+" : "+getNodeName(from)+" -> "+getNodeName(to));
             _cluster.send(to, om);
             return true;
         } catch (JMSException e) {
