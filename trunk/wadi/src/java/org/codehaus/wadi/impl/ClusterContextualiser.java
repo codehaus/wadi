@@ -390,13 +390,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     // ClusterListener
     
     public void onNodeAdd(ClusterEvent event) {
-        _log.info("node joined: "+event.getNode().getState().get(_nodeNameKey));
+        //_log.info("node joined: "+event.getNode().getState().get(_nodeNameKey));
         refreshEvacuationPartnersCount();
         onNodeStateChange(event);
     }
     
     public void onNodeUpdate(ClusterEvent event) {
-        _log.info("node updated: "+event.getNode().getState().get(_nodeNameKey));
+        //_log.info("node updated: "+event.getNode().getState().get(_nodeNameKey));
         refreshEvacuationPartnersCount();
         onNodeStateChange(event);
     }
@@ -405,14 +405,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         Map state=event.getNode().getState();
         String nodeName=(String)state.get(_nodeNameKey);
         
-        if (nodeName==null) {
-            _log.error("null nodeName - should never happen");
-            return;
-        }
-        
         if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
         
-        _log.info("node state changed: "+nodeName+" : "+state);
+        //_log.info("node state changed: "+nodeName+" : "+state);
         Destination evacuationQueue=(Destination)state.get(_evacuationQueueKey);
         if (evacuationQueue==null) {
             ensureEvacuationLeft(nodeName);

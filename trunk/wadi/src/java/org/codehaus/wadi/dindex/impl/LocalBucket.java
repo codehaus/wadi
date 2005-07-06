@@ -58,7 +58,7 @@ public class LocalBucket extends AbstractBucket implements Serializable {
     }
 
     public String toString() {
-        return "<local>";
+        return "<local:"+_key+">";
     }
     
     public Destination put(String name, Destination location) {

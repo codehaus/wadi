@@ -199,7 +199,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
 
         long timeStamp=((Long)node.getState().get(_timeStampKey)).longValue();
         BucketKeys keys=(BucketKeys)node.getState().get(_bucketKeysKey);
-        _log.info("keys: "+keys+" - location: "+getNodeName(node));
         updateBuckets(node, timeStamp, keys);
     }
 
@@ -212,7 +211,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
 
         long timeStamp=((Long)node.getState().get(_timeStampKey)).longValue();
         BucketKeys keys=(BucketKeys)node.getState().get(_bucketKeysKey);
-        _log.info("keys: "+keys+" - location: "+getNodeName(node));
         updateBuckets(node, timeStamp, keys);
     }
 
@@ -419,7 +417,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
 
                 // build request...
                 _log.info("local state (before giving): "+new BucketKeys(_buckets));
-                _log.info("transferring "+acquired.length+" buckets to "+getNodeName((Node)_cluster.getNodes().get(destination)));
                 BucketTransferRequest request=new BucketTransferRequest(timeStamp, acquired);
                 // send it...
                 ObjectMessage om3=_dispatcher.exchangeSend(_cluster.getLocalNode().getDestination(), destination, request, _inactiveTime);
@@ -473,7 +470,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     public synchronized void onBucketTransferRequest(ObjectMessage om, BucketTransferRequest request) {
         long timeStamp=request.getTimeStamp();
         LocalBucket[] buckets=request.getBuckets();
-        _log.info(""+timeStamp+" received "+buckets.length+" buckets from "+getNodeName(getSrcNode(om)));
         boolean success=false;
         // read incoming data into our own local model
         _log.info("local state (before receiving): "+new BucketKeys(_buckets));
@@ -588,7 +584,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     public void onBucketEvacuationRequest(ObjectMessage om, BucketEvacuationRequest request) {
         Node from=getSrcNode(om);
         assert from!=null;
-        _log.info("evacuation request from "+getNodeName(from));
         onNodeRemoved(new ClusterEvent(_cluster, from, ClusterEvent.REMOVE_NODE));
     }
 
