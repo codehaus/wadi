@@ -23,5 +23,10 @@ public class BucketEvacuationRequest implements Serializable {
     public BucketEvacuationRequest() {
         super();
     }
+    
+	
+    public String toString() {
+        return "<BucketEvacuationRequest>";
+    }
 
 }

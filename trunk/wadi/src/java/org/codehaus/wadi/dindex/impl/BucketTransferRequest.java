@@ -19,25 +19,28 @@ package org.codehaus.wadi.dindex.impl;
 import java.io.Serializable;
 
 public class BucketTransferRequest implements Serializable {
-
-  protected long _timeStamp;
-    protected LocalBucket[] _buckets;
-
-  public BucketTransferRequest(long timeStamp, LocalBucket[] buckets) {
-    _timeStamp=timeStamp;
-    _buckets=buckets;
-  }
-
-    protected BucketTransferRequest() {
-        // for deserialisation
+	
+	protected long _timeStamp;
+	protected LocalBucket[] _buckets;
+	
+	public BucketTransferRequest(long timeStamp, LocalBucket[] buckets) {
+		_timeStamp=timeStamp;
+		_buckets=buckets;
+	}
+	
+	protected BucketTransferRequest() {
+		// for deserialisation
+	}
+	
+	public long getTimeStamp() {
+		return _timeStamp;
+	}
+	
+	public LocalBucket[] getBuckets() {
+		return _buckets;
+	}
+	
+    public String toString() {
+        return "<BucketTransferRequest: "+_buckets+">";
     }
-
-  public long getTimeStamp() {
-    return _timeStamp;
-  }
-
-    public LocalBucket[] getBuckets() {
-        return _buckets;
-    }
-
 }

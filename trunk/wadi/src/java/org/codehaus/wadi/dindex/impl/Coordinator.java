@@ -208,12 +208,12 @@ public class Coordinator implements Runnable {
                 if (consumer==null)
                     consumer=c.hasNext()?(BucketOwner)c.next():null;
                     if (producer._deviation>=consumer._deviation) {
-                        transfers.add(new BucketTransfer(consumer._node.getDestination(), consumer._deviation));
+                        transfers.add(new BucketTransfer(consumer._node.getDestination(), DIndex.getNodeName(consumer._node), consumer._deviation));
                         producer._deviation-=consumer._deviation;
                         consumer._deviation=0;
                         consumer=null;
                     } else {
-                        transfers.add(new BucketTransfer(consumer._node.getDestination(), producer._deviation));
+                        transfers.add(new BucketTransfer(consumer._node.getDestination(), DIndex.getNodeName(consumer._node), producer._deviation));
                         consumer._deviation-=producer._deviation;
                         producer._deviation=0;
                     }

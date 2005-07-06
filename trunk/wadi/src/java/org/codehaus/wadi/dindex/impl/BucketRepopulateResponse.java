@@ -35,4 +35,9 @@ public class BucketRepopulateResponse implements Serializable {
     public Collection[] getKeys() {
         return _keys;
     }
+    
+	
+    public String toString() {
+        return "<BucketRepopulateResponse"+_keys+">";
+    }
 }

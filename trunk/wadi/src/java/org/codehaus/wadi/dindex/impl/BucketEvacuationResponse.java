@@ -25,4 +25,8 @@ public class BucketEvacuationResponse implements Serializable {
         // TODO Auto-generated constructor stub
     }
 
+	
+    public String toString() {
+        return "<BucketEvacuationResponse>";
+    }
 }

@@ -34,4 +34,9 @@ public class BucketRepopulateRequest implements Serializable {
     int[] getKeys() {
         return _keys;
     }
+    
+	
+    public String toString() {
+        return "<BucketRepopulateRequest"+_keys+">";
+    }
 }

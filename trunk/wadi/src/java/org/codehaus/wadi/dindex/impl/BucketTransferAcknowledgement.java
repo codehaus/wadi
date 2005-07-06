@@ -34,4 +34,8 @@ public class BucketTransferAcknowledgement implements Serializable {
         return _success;
     }
     
+	
+    public String toString() {
+        return "<BucketTransferAcknowledgement: "+_success+">";
+    }
 }
