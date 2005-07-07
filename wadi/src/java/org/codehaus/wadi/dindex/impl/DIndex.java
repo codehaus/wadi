@@ -204,17 +204,19 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         long timeStamp=((Long)state.get(_timeStampKey)).longValue();
         BucketKeys keys=(BucketKeys)state.get(_bucketKeysKey);
         updateBuckets(node, timeStamp, keys);
-        
+        correlateStateUpdate(state);
+    }
+    
+    protected void correlateStateUpdate(Map state) {
         Map correlationIDMap=(Map)state.get(_correlationIDMapKey);
         Destination local=_cluster.getLocalNode().getDestination();
         String correlationID=(String)correlationIDMap.get(local);
-        _log.info("CID: "+correlationID);
+    	_log.info("CID IS: "+correlationID+":"+correlationID);
         if (correlationID!=null) {
         	Quipu rv=(Quipu)_dispatcher.getRendezVousMap().get(correlationID);
-        	_log.info("QUIPU IS: "+rv);
-          	//rv.putResult(state);
+        	_log.info("RV IS: "+correlationID+":"+rv);
+        	rv.putResult(state);
         }
-        	
     }
 
     public void onNodeAdd(ClusterEvent event) {
@@ -463,9 +465,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         	correlationIDMap.put(from, correlationID);
         	_cluster.getLocalNode().setState(_distributedState);
         	_log.info("distributed state updated: "+_cluster.getLocalNode().getState());
+        	correlateStateUpdate(_distributedState); // onStateUpdate() does not get called locally
         	correlationIDMap.remove(from);
         	// FIXME - RACE - between update of distributed state and ack - they should be one and the same thing...
-        	_dispatcher.reply(om, new BucketTransferAcknowledgement(true)); // what if failure - TODO
+        	//_dispatcher.reply(om, new BucketTransferAcknowledgement(true)); // what if failure - TODO
         } catch (JMSException e) {
         	_log.warn("could not acknowledge safe transfer to Coordinator", e);
         }

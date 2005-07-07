@@ -160,7 +160,7 @@ public class Coordinator implements Runnable {
                     _log.info("RENDEZVOUS SUCCESSFUL");
                     Collection results=rv.getResults();
                 } else {
-                    _log.info("RENDEZVOUS FAILED");
+                    _log.warn("RENDEZVOUS FAILED");
                     failures++;
                 }
             } catch (TimeoutException e) {
