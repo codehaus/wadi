@@ -74,7 +74,7 @@ public class Dispatcher implements MessageListener {
         _config=config;
         _cluster=_config.getCluster();
         boolean excludeSelf;
-        excludeSelf=true;
+        excludeSelf=false;
         _clusterConsumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
         _clusterConsumer.setMessageListener(this);
         excludeSelf=false;
