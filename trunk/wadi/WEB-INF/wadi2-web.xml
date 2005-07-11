@@ -184,4 +184,43 @@
     <constructor-arg index="15"><value>72</value></constructor-arg>
   </bean>
 
+
+<!-- JMX support -->
+
+<!--
+    <property name="beans">
+      <map>
+        <entry key="bean:name=testBean1">
+	  <ref bean="SessionManager"/>
+	</entry>
+      </map>
+    </property>
+-->
+
+    <!--
+    <property name="serviceUrl" value="service:jmx:rmi:///jndi/rmi://localhost:9875"/>
+    -->
+
+  <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean"/>
+
+  <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
+    <property name="autodetect"><value>true</value></property>
+    <property name="server" ref="mbeanServer"/>
+  </bean>
+
+  <bean id="serverConnector" class="org.springframework.jmx.support.ConnectorServerFactoryBean">
+    <property name="objectName" value="connector:name=rmi"/>
+    <property name="serviceUrl" value="service:jmx:rmi://localhost:9875"/>
+    <property name="server"><ref local="mbeanServer"/></property>
+    <property name="threaded" value="true"/>
+    <property name="daemon" value="true"/>
+  </bean>
+
+  <bean id="clientConnector" class="org.springframework.jmx.support.MBeanServerConnectionFactoryBean">
+    <property name="serviceUrl" value="service:jmx:rmi:///jndi/rmi://localhost:9875"/>
+  </bean>
+
+<!--  -->
+
 </beans>
+

@@ -60,6 +60,10 @@ public class SpringManagerFactory {
 
             StandardManager manager=(StandardManager)dlbf.getBean(bean);
 
+	    dlbf.getBean("exporter");
+	    dlbf.getBean("serverConnector");
+	    dlbf.getBean("clientConnector");
+
             if (manager==null)
                 if (_log.isErrorEnabled()) _log.error("could not find WADI Manager bean: "+bean);
             else
