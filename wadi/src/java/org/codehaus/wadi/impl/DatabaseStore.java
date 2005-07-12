@@ -40,6 +40,12 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
         _dataSource=dataSource;
         _table=table;
         _useNIO=useNIO;
+        
+        try {
+        	DatabaseMotable.init(_dataSource, _table);
+        } catch (SQLException e) {
+        	_log.warn("unexpected exception", e);
+        }
     }
     
     public DataSource getDataSource() {return _dataSource;}

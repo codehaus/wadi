@@ -69,7 +69,6 @@ public class SimpleContextualiserStack implements Contextualiser {
     protected Evicter _databaseEvicter;
     protected final SharedStoreContextualiser _database;
     
-    protected final Map _clusterMap;
     protected final Relocater _clusterRelocater;
     protected final ClusterContextualiser _cluster;
     
@@ -101,13 +100,12 @@ public class SimpleContextualiserStack implements Contextualiser {
         _dummy=new DummyContextualiser();
         _databaseDataSource=dataSource;
         _databaseTable="WADI";
-        DatabaseMotable.init(_databaseDataSource, _databaseTable);
+        //DatabaseMotable.init(_databaseDataSource, _databaseTable);
         _database=new SharedStoreContextualiser(_dummy, _collapser, true, _databaseDataSource, _databaseTable);
         InetAddress localhost=InetAddress.getLocalHost();
         System.out.println("LOCALHOST: "+localhost);
-        _clusterMap=new ConcurrentHashMap();
         _clusterRelocater=relocater;
-        _cluster=new ClusterContextualiser(_database, _collapser, _clusterMap, _clusterRelocater);
+        _cluster=new ClusterContextualiser(_database, _collapser, _clusterRelocater);
         
         _statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
         _statelessMethodFlag=true;
@@ -132,7 +130,6 @@ public class SimpleContextualiserStack implements Contextualiser {
         _requestPool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - use a ThreadLocal based Pool
         _memory=new MemoryContextualiser(_serial, _memoryEvicter, _memoryMap, _streamer, _memoryPool, _requestPool);
         
-        _cluster.setTop(_memory);
         // ready to rock !
     }
     

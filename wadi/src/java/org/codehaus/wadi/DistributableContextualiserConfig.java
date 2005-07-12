@@ -51,4 +51,6 @@ public interface DistributableContextualiserConfig extends ContextualiserConfig 
     Dispatcher getDispatcher();
     DIndex getDIndex();
     
+    Contextualiser getContextualiser();
+    
 }
