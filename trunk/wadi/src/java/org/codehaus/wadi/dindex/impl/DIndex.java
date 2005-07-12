@@ -211,11 +211,14 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         Map correlationIDMap=(Map)state.get(_correlationIDMapKey);
         Destination local=_cluster.getLocalNode().getDestination();
         String correlationID=(String)correlationIDMap.get(local);
-    	_log.info("CID IS: "+correlationID+":"+correlationID);
         if (correlationID!=null) {
         	Quipu rv=(Quipu)_dispatcher.getRendezVousMap().get(correlationID);
-        	_log.info("RV IS: "+correlationID+":"+rv);
-        	rv.putResult(state);
+        	if (rv==null)
+        		_log.warn("no one waiting for: "+correlationID);
+        	else {
+        		_log.trace("successful correlation: "+correlationID);
+        		rv.putResult(state);
+        	}
         }
     }
 
@@ -358,17 +361,25 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     }
 
 
+    public boolean amCoordinator() {
+    	return _coordinatorNode.getDestination().equals(_cluster.getLocalNode().getDestination());
+    }
+    
     public void onNodeFailed(ClusterEvent event) {
         Node node=event.getNode();
+        _log.info("NODE FAILED: "+getNodeName(node));
         if (_leavers.remove(node.getDestination())) {
             // we have already been explicitly informed of this node's wish to leave...
             _left.remove(node);
+            _log.trace("onNodeFailed:"+getNodeName(node)+"- already evacuated - ignoring");
         } else {
             _log.error("onNodeFailed: "+getNodeName(node));
-            if (_coordinatorNode.getDestination().equals(_cluster.getLocalNode().getDestination())) {
+            if (amCoordinator()) {
                 _log.error("CATASTROPHIC FAILURE on: "+getNodeName(node));
                 if (_coordinator!=null)
                     _coordinator.queueRebalancing();
+                else
+                	_log.warn("coordinator thread not running");
             }
         }
     }

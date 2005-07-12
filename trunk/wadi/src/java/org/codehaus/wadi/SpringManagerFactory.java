@@ -58,11 +58,9 @@ public class SpringManagerFactory {
             cfg.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
             cfg.postProcessBeanFactory(dlbf);
 
+    	    dlbf.getBean("exporter");
+    	    dlbf.getBean("serverConnector");
             StandardManager manager=(StandardManager)dlbf.getBean(bean);
-
-	    dlbf.getBean("exporter");
-	    dlbf.getBean("serverConnector");
-	    dlbf.getBean("clientConnector");
 
             if (manager==null)
                 if (_log.isErrorEnabled()) _log.error("could not find WADI Manager bean: "+bean);
