@@ -20,6 +20,7 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpProxy;
@@ -60,51 +61,55 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
     protected Map _state=new HashMap();
 
     public Object getDistributedState(Object key) {
-        return _state.get(key);
+    	return _state.get(key);
     }
-
+    
     public Object putDistributedState(Object key, Object newValue) {
-        return _state.put(key, newValue);
+    	return _state.put(key, newValue);
     }
-
+    
     public Object removeDistributedState(Object key) {
-        return _state.remove(key);
+    	return _state.remove(key);
     }
-
-  public void distributeState() {
-  }
-
+    
+    public void distributeState() {
+    }
+    
     public boolean getAccessOnLoad() {
-        // TODO Auto-generated method stub
-        return false;
+    	// TODO Auto-generated method stub
+    	return false;
     }
-
+    
     public SynchronizedBoolean getShuttingDown() {
-        // TODO Auto-generated method stub
-        return null;
+    	// TODO Auto-generated method stub
+    	return null;
     }
-
+    
     public Map getDistributedState() {
-        // TODO Auto-generated method stub
-        return null;
+    	// TODO Auto-generated method stub
+    	return null;
     }
-
+    
     public long getInactiveTime() {
-        // TODO Auto-generated method stub
-        return 0;
+    	// TODO Auto-generated method stub
+    	return 0;
     }
-
+    
     public int getNumBuckets() {
-        // TODO Auto-generated method stub
-        return 0;
+    	// TODO Auto-generated method stub
+    	return 0;
     }
-
+    
     public Dispatcher getDispatcher() {
-        return null;
+    	return null;
     }
     
     public DIndex getDIndex() {
-        return null;
+    	return null;
+    }
+    
+    public Contextualiser getContextualiser() {
+    	return null;
     }
 
 }

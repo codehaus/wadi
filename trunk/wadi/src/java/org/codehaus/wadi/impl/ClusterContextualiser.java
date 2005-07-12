@@ -111,10 +111,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     /**
      * @param next
      * @param evicter
-     * @param map
      * @param location TODO
      */
-    public ClusterContextualiser(Contextualiser next, Collapser collapser, Map map, Relocater relocater) {
+    public ClusterContextualiser(Contextualiser next, Collapser collapser, Relocater relocater) {
         super(next, new CollapsingLocker(collapser), false);
         _collapser=collapser;
         _relocater=relocater;
@@ -133,6 +132,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     protected Destination _evacuationQueue;
     protected Dispatcher _dispatcher;
     protected DIndex _dindex;
+    protected Contextualiser _top;
     
     public void init(ContextualiserConfig config) {
         super.init(config);
@@ -147,6 +147,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         _dispatcher.register(this, "onEmigrationRequest", EmigrationRequest.class);
         _dispatcher.register(EmigrationResponse.class, _resTimeout);
         _relocater.init(this);
+        _top=dcc.getContextualiser();
     }
     
     public String getStartInfo() {
@@ -198,11 +199,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
             return _next.getSharedDemoter();
         }
     }
-    
-    // this field forms part of a circular dependency - so we need a setter rather than ctor param
-    protected Contextualiser _top;
-    public Contextualiser getTop() {return _top;}
-    public void setTop(Contextualiser top) {_top=top;}
     
     public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock) throws IOException, ServletException {
         return _relocater.relocate(hreq, hres, chain, id, immoter, motionLock);

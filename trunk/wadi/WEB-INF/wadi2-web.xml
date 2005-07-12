@@ -57,7 +57,7 @@
   <!-- the Contextualiser stack...(shorthand for now) -->
 
   <bean
-    id="SessionMap"
+    id="MemoryMap"
     class="EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap"
     >
   </bean>
@@ -106,15 +106,166 @@
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
   </bean>
 
+  <!-- the contextualiser stack -->
+
   <bean
-    id="Contextualiser"
-    class="org.codehaus.wadi.impl.SimpleContextualiserStack"
+    id="Streamer2"
+    class="org.codehaus.wadi.impl.SimpleStreamer"
     >
-    <constructor-arg><ref bean="SessionMap"/></constructor-arg>
-    <constructor-arg><ref bean="ContextPool"/></constructor-arg> <!-- enclosed SessionPool will be init()-ed by Manager -->
+  </bean>
+
+  <bean
+    id="Collapser"
+    class="org.codehaus.wadi.impl.DebugCollapser"
+    ><!-- should be a HashingCollapser -->
+  </bean>
+
+  <bean
+    id="DummyContextualiser"
+    class="org.codehaus.wadi.impl.DummyContextualiser"
+    >
+  </bean>
+
+  <bean
+    id="DatabaseContextualiser"
+    class="org.codehaus.wadi.impl.SharedStoreContextualiser"
+    >
+    <constructor-arg><ref bean="DummyContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="Collapser"/></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg>
     <constructor-arg><ref bean="DataSource"/></constructor-arg>
+    <constructor-arg><value>WADI</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="ClusterContextualiser"
+    class="org.codehaus.wadi.impl.ClusterContextualiser"
+    >
+    <constructor-arg><ref bean="DatabaseContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="Collapser"/></constructor-arg>
     <constructor-arg><ref bean="Relocater"/></constructor-arg>
   </bean>
+
+  <bean
+    id="StatelessMethods"
+    class="java.util.regex.Pattern"
+    factory-method="compile"
+    >
+    <constructor-arg><value>GET|POST</value></constructor-arg>
+    <constructor-arg type="int"><value>2</value></constructor-arg><!--  Pattern.CASE_INSENSITIVE -->
+  </bean>
+
+  <bean
+    id="StatelessURIs"
+    class="java.util.regex.Pattern"
+    factory-method="compile"
+    >
+    <constructor-arg><value>.*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)</value></constructor-arg>
+    <constructor-arg type="int"><value>2</value></constructor-arg><!--  Pattern.CASE_INSENSITIVE -->
+  </bean>
+
+  <bean
+    id="StatelessContextualiser"
+    class="org.codehaus.wadi.impl.StatelessContextualiser"
+    >
+    <constructor-arg><ref bean="ClusterContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="StatelessMethods"/></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg><ref bean="StatelessURIs"/></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="TmpDirectory"
+    class="java.io.File"
+    >
+    <constructor-arg><value>${java.io.tmpdir}</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="DiscDirectory"
+    class="java.io.File"
+    >
+    <constructor-arg><ref bean="TmpDirectory"/></constructor-arg>
+    <constructor-arg><value>sessions</value></constructor-arg>
+  </bean>
+
+<!--
+        dir.delete();
+        dir.mkdir();
+-->
+
+  <bean
+    id="DiscEvicter"
+    class="org.codehaus.wadi.impl.NeverEvicter"
+    >
+    <constructor-arg type="int"><value>20</value></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+  </bean> <!-- sessions never pass below this point, unless the node is shutdown -->
+
+  <bean
+    id="DiscMap"
+    class="EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap"
+    >
+  </bean>
+
+  <bean
+    id="DiscContextualiser"
+    class="org.codehaus.wadi.impl.ExclusiveStoreContextualiser"
+    >
+    <constructor-arg><ref bean="StatelessContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="Collapser"/></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg><ref bean="DiscEvicter"/></constructor-arg>
+    <constructor-arg><ref bean="DiscMap"/></constructor-arg>
+    <constructor-arg><ref bean="Streamer"/></constructor-arg>
+    <constructor-arg><ref bean="DiscDirectory"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="SerialContextualiser"
+    class="org.codehaus.wadi.impl.SerialContextualiser"
+    >
+    <constructor-arg><ref bean="DiscContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="Collapser"/></constructor-arg>
+    <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="MemoryEvicter"
+    class="org.codehaus.wadi.impl.AbsoluteEvicter"
+    >
+    <constructor-arg type="int"><value>10</value></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg type="int"><value>10</value></constructor-arg>
+  </bean> <!-- if a session is inactive for 10 secs, it moves to disc -->
+
+  <bean
+    id="RequestPool"
+    class="org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool"
+    >
+  </bean>
+
+  <bean
+    id="MemoryContextualiser"
+    class="org.codehaus.wadi.impl.MemoryContextualiser"
+    >
+    <constructor-arg><ref bean="SerialContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="MemoryEvicter"/></constructor-arg>
+    <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
+    <constructor-arg><ref bean="Streamer2"/></constructor-arg>
+    <constructor-arg><ref bean="ContextPool"/></constructor-arg>
+    <constructor-arg><ref bean="RequestPool"/></constructor-arg>
+  </bean>
+
+
+<!--
+        _cluster.setTop(_memory);
+-->
+
+
+  <!-- the contextualiser stack -->
+
 
   <!-- the Router (load-balancer integration) -->
 
@@ -168,8 +319,8 @@
     <constructor-arg><ref bean="ValuePool"/></constructor-arg>
     <constructor-arg><ref bean="SessionWrapperFactory"/></constructor-arg>
     <constructor-arg><ref bean="SessionIdFactory"/></constructor-arg>
-    <constructor-arg><ref bean="Contextualiser"/></constructor-arg>
-    <constructor-arg><ref bean="SessionMap"/></constructor-arg>
+    <constructor-arg><ref bean="MemoryContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
     <constructor-arg><ref bean="Router"/></constructor-arg>
     <constructor-arg><ref bean="Streamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
@@ -198,7 +349,8 @@
     <property name="beans">
       <map>
         <entry key="WADI:name=SessionManager"> <ref bean="SessionManager"/> </entry>
-        <entry key="WADI:name=Contextualiser"> <ref bean="Contextualiser"/> </entry>
+        <entry key="WADI:name=MemoryContextualiser"> <ref bean="MemoryContextualiser"/> </entry>
+        <entry key="WADI:name=DiscContextualiser"> <ref bean="DiscContextualiser"/> </entry>
         <entry key="WADI:name=Router"> <ref bean="Router"/> </entry>
         <entry key="WADI:name=HttpProxy"> <ref bean="HttpProxy"/> </entry>
         <entry key="WADI:name=HttpAddress"> <ref bean="HttpAddress"/> </entry>

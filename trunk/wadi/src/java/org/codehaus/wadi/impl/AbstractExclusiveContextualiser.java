@@ -143,7 +143,11 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
     }
 
     public int getLocalSessionCount() {
-    	return _map.size()+_next.getLocalSessionCount();
+    	return getSize()+_next.getLocalSessionCount();
+    }
+    
+    public int getSize() {
+    	return _map.size();
     }
     
     // EvicterConfig

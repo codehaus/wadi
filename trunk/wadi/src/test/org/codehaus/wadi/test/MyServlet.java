@@ -99,7 +99,7 @@ public class MyServlet implements Servlet {
         _nodeName=nodeName;
 		_clusterMap=new HashMap();
 		_relocater=relocater;
-		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _clusterMap, _relocater);
+		_clusterContextualiser=new ClusterContextualiser(new DummyContextualiser(), _collapser, _relocater);
 		//(Contextualiser next, Pattern methods, boolean methodFlag, Pattern uris, boolean uriFlag)
 		Pattern methods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
 		Pattern uris=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);
@@ -107,7 +107,6 @@ public class MyServlet implements Servlet {
 		_memoryMap=new HashMap();
         _serialContextualiser=new SerialContextualiser(_statelessContextualiser, _collapser, _memoryMap);
 		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamer(), contextPool, new MyDummyHttpServletRequestWrapperPool());
-        _clusterContextualiser.setTop(_memoryContextualiser);
         _httpProxy=httpProxy;
         _httpAddress=httpAddress;
         _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, _nodeName, _httpProxy, _httpAddress, 24);
