@@ -44,4 +44,5 @@ public abstract class AbstractDelegatingContextualiser extends AbstractChainedCo
     
     public void load(Emoter emoter, Immoter immoter) {_next.load(emoter, immoter);}
     
+    public int getLocalSessionCount() {return _next.getLocalSessionCount();}
 }
