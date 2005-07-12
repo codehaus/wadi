@@ -64,4 +64,6 @@ public interface Contextualiser extends Lifecycle {
 
     void findRelevantSessionNames(int numBuckets, Collection[] resultSet);
     
+    int getLocalSessionCount();
+    
 }

@@ -59,5 +59,4 @@ public abstract class AbstractChainedContextualiser extends AbstractContextualis
           _next.findRelevantSessionNames(numBuckets, resultSet);
   }
   
-
 }

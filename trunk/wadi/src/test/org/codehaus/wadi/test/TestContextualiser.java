@@ -337,7 +337,10 @@ public class TestContextualiser extends TestCase {
 
         public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){/* empty */}
         public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
-
+        
+        public int getLocalSessionCount() {
+        	return 0;
+        }
     }
 
     class MyActiveContextualiser extends AbstractContextualiser {
@@ -380,6 +383,10 @@ public class TestContextualiser extends TestCase {
         public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){/* empty */}
         public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
 
+        
+        public int getLocalSessionCount() {
+        	return 0;
+        }
     }
 
     class MyRunnable implements Runnable {

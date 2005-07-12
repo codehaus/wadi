@@ -185,4 +185,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _memory.findRelevantSessionNames(numBuckets, resultSet);
     }
     
+    public int getLocalSessionCount() {
+    	return _memory.getLocalSessionCount();
+    }
 }

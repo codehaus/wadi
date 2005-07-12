@@ -35,4 +35,7 @@ public abstract class AbstractSharedContextualiser extends AbstractMotingContext
         return false;
     }
     
+    public int getLocalSessionCount() {
+    	return 0;
+    }
 }
