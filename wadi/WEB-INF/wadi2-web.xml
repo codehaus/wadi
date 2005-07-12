@@ -187,15 +187,6 @@
 
 <!-- JMX support -->
 
-<!--
-    <property name="beans">
-      <map>
-        <entry key="bean:name=testBean1">
-	  <ref bean="SessionManager"/>
-	</entry>
-      </map>
-    </property>
--->
 
     <!--
     <property name="serviceUrl" value="service:jmx:rmi:///jndi/rmi://localhost:9875"/>
@@ -204,21 +195,37 @@
   <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean"/>
 
   <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
-    <property name="autodetect"><value>true</value></property>
+    <property name="beans">
+      <map>
+        <entry key="WADI:name=SessionManager"> <ref bean="SessionManager"/> </entry>
+        <entry key="WADI:name=Contextualiser"> <ref bean="Contextualiser"/> </entry>
+        <entry key="WADI:name=Router"> <ref bean="Router"/> </entry>
+        <entry key="WADI:name=HttpProxy"> <ref bean="HttpProxy"/> </entry>
+        <entry key="WADI:name=HttpAddress"> <ref bean="HttpAddress"/> </entry>
+        <entry key="WADI:name=Relocater"> <ref bean="Relocater"/> </entry>
+        <entry key="WADI:name=SessionIdFactory"> <ref bean="SessionIdFactory"/> </entry>
+      </map>
+    </property>
     <property name="server" ref="mbeanServer"/>
   </bean>
 
-  <bean id="serverConnector" class="org.springframework.jmx.support.ConnectorServerFactoryBean">
+  <bean id="registry" class="java.rmi.registry.LocateRegistry" factory-method="createRegistry">
+    <constructor-arg value="${jndi.port}"/>
+  </bean>
+
+  <bean id="serverConnector" class="org.springframework.jmx.support.ConnectorServerFactoryBean" depends-on="registry">
     <property name="objectName" value="connector:name=rmi"/>
-    <property name="serviceUrl" value="service:jmx:rmi://localhost:9875"/>
+    <property name="serviceUrl" value="service:jmx:rmi://localhost/jndi/rmi://localhost:${jndi.port}/wadi"/>
     <property name="server"><ref local="mbeanServer"/></property>
     <property name="threaded" value="true"/>
     <property name="daemon" value="true"/>
   </bean>
 
+<!--
   <bean id="clientConnector" class="org.springframework.jmx.support.MBeanServerConnectionFactoryBean">
-    <property name="serviceUrl" value="service:jmx:rmi:///jndi/rmi://localhost:9875"/>
+    <property name="serviceUrl" value="service:jmx:rmi://localhost/jndi/rmi://localhost:${jndi.port}/wadi"/>
   </bean>
+-->
 
 <!--  -->
 

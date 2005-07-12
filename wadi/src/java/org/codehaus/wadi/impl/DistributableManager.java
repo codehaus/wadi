@@ -109,13 +109,13 @@ public class DistributableManager extends StandardManager implements Distributab
         }
         super.init();
     }
-
+    
     public void start() throws Exception {
-        _cluster.getLocalNode().setState(_distributedState);
-	_log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
-        _cluster.start();
-        _dindex.start();
-        super.start();
+    	_cluster.getLocalNode().setState(_distributedState);
+    	_log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
+    	_cluster.start();
+    	_dindex.start();
+    	super.start();
     }
 
     public void stop() throws Exception {

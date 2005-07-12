@@ -204,7 +204,7 @@ public class Dispatcher implements MessageListener {
     				(body=objectMessage.getObject())!=null &&
     				(dispatcher=(InternalDispatcher)_map.get(body.getClass()))!=null
     		) {
-                _log.trace("receive: "+body+" from "+getNodeName(message.getJMSReplyTo())+" -> "+getNodeName(message.getJMSDestination()));
+                _log.trace("receive: "+getNodeName(message.getJMSReplyTo())+" -> "+getNodeName(message.getJMSDestination())+" : "+body);
     			do {
     				try {
     					synchronized (dispatcher) {
@@ -273,7 +273,7 @@ public class Dispatcher implements MessageListener {
             om.setJMSDestination(to);
             om.setJMSCorrelationID(correlationId);
             om.setObject(body);
-            _log.trace("send: "+body+" : "+getNodeName(from)+" -> "+getNodeName(to));
+            _log.trace("send: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
             _cluster.send(to, om);
             return true;
         } catch (JMSException e) {
