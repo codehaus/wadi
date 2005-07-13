@@ -127,8 +127,9 @@ public class SpringManagerFactory {
             	_log.error("problem initialising component factories", e);
             }
             
-    	    dlbf.getBean("exporter");
-    	    dlbf.getBean("serverConnector");
+    	    //dlbf.getBean("exporter");
+    	    //dlbf.getBean("serverConnector");
+    	    dlbf.preInstantiateSingletons();
             StandardManager manager=(StandardManager)dlbf.getBean(bean);
 
             if (manager==null)

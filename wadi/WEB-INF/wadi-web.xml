@@ -336,13 +336,26 @@
 
 <!-- JMX support -->
 
+  <!--
+  This allows introspection via e.g mc4j (http://mc4j.sourceforge.net) on a running WADI system.
 
-    <!--
-    <property name="serviceUrl" value="service:jmx:rmi:///jndi/rmi://localhost:9875"/>
-    -->
+  If you are using Tomcat 5.0.28, you will need to remove bin/jmx.jar,
+  d/l mx4j-3.0.1 and place mx4j-tools.jar and mx4j-remote.jar into
+  server/lib/.
 
-  <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean"/>
+  If you do not require JMX support, feel free to comment out this section.
 
+  For further information please view the Spring JMX integration documentation.
+  -->
+
+  <!--
+  This will create a new MBeanServer unless one already exists, in which case it will be reused.
+  -->
+  <bean id="mbeanServer" class="org.codehaus.wadi.impl.MBeanServerFactoryBean"/>
+
+  <!--
+  This will register the beans mentioned in its 'beans' map with the MBeanServer.
+  -->
   <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
     <property name="beans">
       <map>
@@ -360,10 +373,19 @@
     <property name="server" ref="mbeanServer"/>
   </bean>
 
+  <!--
+  if you are running your own jndi registry, you may comment this out
+  (untested)
+  -->
   <bean id="registry" class="java.rmi.registry.LocateRegistry" factory-method="createRegistry">
     <constructor-arg value="${jndi.port}"/>
   </bean>
 
+  <!--
+  if you are running your own jmx remote connector, you may comment this out
+  you will also need to remove the reference to 'serverConnector' in the 'exporter' bean definition.
+  (untested)
+  -->
   <bean id="serverConnector" class="org.springframework.jmx.support.ConnectorServerFactoryBean" depends-on="registry">
     <property name="objectName" value="connector:name=rmi"/>
     <property name="serviceUrl" value="service:jmx:rmi://localhost/jndi/rmi://localhost:${jndi.port}/wadi"/>
@@ -371,13 +393,5 @@
     <property name="threaded" value="true"/>
     <property name="daemon" value="true"/>
   </bean>
-
-<!--
-  <bean id="clientConnector" class="org.springframework.jmx.support.MBeanServerConnectionFactoryBean">
-    <property name="serviceUrl" value="service:jmx:rmi://localhost/jndi/rmi://localhost:${jndi.port}/wadi"/>
-  </bean>
--->
-
-<!--  -->
 
 </beans>
