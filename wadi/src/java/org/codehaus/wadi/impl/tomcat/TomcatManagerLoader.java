@@ -26,16 +26,16 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
+import org.apache.catalina.core.StandardContext;
 import org.codehaus.wadi.SpringManagerFactory;
 
 public class TomcatManagerLoader implements Manager, Lifecycle {
 
   protected TomcatManager _peer;
-
-  public TomcatManagerLoader() throws Exception {
-	  super();
+  
+  public void init(String docBase) {
 	  try {
-		  String path=System.getProperty("wadi.home")+"/WEB-INF/wadi-web.xml";
+		  String path=docBase+"/WEB-INF/wadi-web.xml";
 		  String sessionFactoryClass=TomcatSessionFactory.class.getName();
 		  String sessionWrapperFactoryClass=TomcatSessionWrapperFactory.class.getName();
 		  String sessionManagerClass=TomcatManager.class.getName();
@@ -50,7 +50,7 @@ public class TomcatManagerLoader implements Manager, Lifecycle {
 
   public String              getInfo()                                                     {return _peer.getInfo();}
   public Container           getContainer()                                                {return _peer.getContainer();}
-  public void                setContainer(Container container)                             {_peer.setContainer(container);}
+  public void                setContainer(Container container)                             {init(((StandardContext)container).getDocBase()); _peer.setContainer(container);}
   public DefaultContext      getDefaultContext()                                           {return _peer.getDefaultContext();}
   public void                setDefaultContext(DefaultContext defaultContext)              {_peer.setDefaultContext(defaultContext);}
   public boolean             getDistributable()                                            {return _peer.getDistributable();}

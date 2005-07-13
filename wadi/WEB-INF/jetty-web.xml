@@ -43,15 +43,31 @@
 
 <!-- Set up the WADI Session Manager -->
 
+<!--
+  <New id="wadiii" class="java.lang.String"><Arg>WADIIIII</Arg></New>
+  <Ref id="wadiii"/>
+	<Arg>
+	  <Get name="WebInf">
+	    <Call name="addPath">
+	      <Arg>"wadi-web.xml"</Arg>
+	    </Call>
+	  </Get>
+	</Arg>
+-->
+
+
   <Get name="ServletHandler">
     <Set name="SessionManager">
+<!--
       <Call class="org.codehaus.wadi.SpringManagerFactory" name="create">
-	    <Arg><SystemProperty name="wadi.home"/>/WEB-INF/wadi-web.xml</Arg>
-	    <Arg>SessionManager</Arg>
-	    <Arg>org.codehaus.wadi.impl.DistributableSessionFactory</Arg>
-	    <Arg>org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory</Arg>
-	    <Arg>org.codehaus.wadi.impl.jetty.JettyManager</Arg>
+	<Arg>WEB-INF/wadi-web.xml</Arg>
+	<Arg>SessionManager</Arg>
+	<Arg>org.codehaus.wadi.impl.DistributableSessionFactory</Arg>
+	<Arg>org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory</Arg>
+	<Arg>org.codehaus.wadi.impl.jetty.JettyManager</Arg>
       </Call>
+-->
+      <New class="org.codehaus.wadi.impl.jetty.JettyManagerLoader"/>
     </Set>
   </Get>
 
