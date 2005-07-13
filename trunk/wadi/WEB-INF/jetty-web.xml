@@ -3,17 +3,56 @@
 <!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure 1.2//EN" "http://jetty.mortbay.org/configure_1_2.dtd">
 
 <Configure class="org.mortbay.jetty.servlet.WebApplicationContext">
+
+<!-- Set up the WADI Proxy Handler -->
+
+  <Call name="addHandler">
+    <Arg>
+     <New class="org.codehaus.wadi.impl.jetty.Handler">
+	  <Arg>
+	   <Call class="java.util.regex.Pattern" name="compile">
+	    <Arg>127\\.0\\.0\\.1|192\\.168\\.0\\.\\d{1,3}</Arg>
+	   </Call>
+	  </Arg>
+     </New>
+    </Arg>
+  </Call>
+
+<!-- Set up the WADI Filter -->
+
+  <Call name="getWebApplicationHandler">
+
+   <Call name="defineFilter">
+    <Arg>WadiFilter</Arg>
+    <Arg>org.codehaus.wadi.impl.Filter</Arg>
+   </Call>
+
+   <Call name="addFilterPathMapping">
+    <Arg>/*</Arg>
+    <Arg>WadiFilter</Arg>
+    <Arg type="int">15</Arg> <!-- ALL dispatch types -->
+   </Call>
+
+  </Call>
+
+<!-- needed for StopGracefully (set on Server) to work -->
+  <Set name="StatsOn">true</Set>
+<!-- needed for session evacuation under load -->
+<!--  <Set name="StopGracefully">true</Set> -->
+
+
+<!-- Set up the WADI Session Manager -->
+
   <Get name="ServletHandler">
     <Set name="SessionManager">
-      <New class="org.codehaus.wadi.jetty.Manager">
-
-	<!-- jetty-specific config included here -->
-
-	<Set name="HouseKeepingInterval">40</Set><!-- run housekeeping tasks every N secs -->
-
-	<!-- common config loaded from WEB-INF/wadi-web.xml -->
-
-      </New>
+      <Call class="org.codehaus.wadi.SpringManagerFactory" name="create">
+	    <Arg><SystemProperty name="wadi.home"/>/WEB-INF/wadi-web.xml</Arg>
+	    <Arg>SessionManager</Arg>
+	    <Arg>org.codehaus.wadi.impl.DistributableSessionFactory</Arg>
+	    <Arg>org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory</Arg>
+	    <Arg>org.codehaus.wadi.impl.jetty.JettyManager</Arg>
+      </Call>
     </Set>
   </Get>
+
 </Configure>

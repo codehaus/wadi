@@ -33,12 +33,16 @@ public class TomcatManagerLoader implements Manager, Lifecycle {
   protected TomcatManager _peer;
 
   public TomcatManagerLoader() throws Exception {
-    super();
-    try {
-      _peer=(TomcatManager)SpringManagerFactory.create(System.getProperty("wadi.home")+"/WEB-INF/wadi-tomcat-web.xml", "SessionManager");
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+	  super();
+	  try {
+		  String path=System.getProperty("wadi.home")+"/WEB-INF/wadi-web.xml";
+		  String sessionFactoryClass=TomcatSessionFactory.class.getName();
+		  String sessionWrapperFactoryClass=TomcatSessionWrapperFactory.class.getName();
+		  String sessionManagerClass=TomcatManager.class.getName();
+		  _peer=(TomcatManager)SpringManagerFactory.create(path, "SessionManager", sessionFactoryClass, sessionWrapperFactoryClass, sessionManagerClass);
+	  } catch (Exception e) {
+		  throw new RuntimeException(e);
+	  }
   }
 
   public void                start() throws LifecycleException                             {_peer.start();}
