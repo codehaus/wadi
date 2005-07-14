@@ -219,7 +219,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
     // integrate with Filter instance
     protected Filter _filter;
 
-    public void setFilter(Filter filter){_filter=filter;}
+    public void setFilter(Filter filter){(_filter=filter).setManager(this);}
 
     public boolean getDistributable(){return false;}
 

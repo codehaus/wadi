@@ -60,5 +60,6 @@
 	<classpathentry sourcepath="/usr/local/java/mx4j-3.0.1/src/core" kind="lib" path="/usr/local/java/mx4j-3.0.1/lib/mx4j-remote.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/common/lib/naming-java.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/server/lib/tomcat-jk2.jar"/>
+	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/bin/bootstrap.jar"/>
 	<classpathentry kind="output" path="WEB-INF/classes"/>
 </classpath>

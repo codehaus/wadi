@@ -1,5 +1,6 @@
 package org.codehaus.wadi.impl.jetty;
 
+import java.io.InputStream;
 import java.util.EventListener;
 
 import javax.servlet.http.Cookie;
@@ -8,8 +9,10 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.SpringManagerFactory;
+import org.codehaus.wadi.PlaceHolder;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
+import org.codehaus.wadi.impl.Filter;
+import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.impl.tomcat.TomcatManager;
 import org.codehaus.wadi.impl.tomcat.TomcatSessionFactory;
 import org.codehaus.wadi.impl.tomcat.TomcatSessionWrapperFactory;
@@ -23,21 +26,24 @@ public class JettyManagerLoader implements SessionManager {
 	
 	protected JettyManager _peer;
 	
-	public void init(String path) {
+	public void init(InputStream descriptor) {
 		try {
 			String sessionFactoryClass=DistributableSessionFactory.class.getName();
 			String sessionWrapperFactoryClass=JettySessionWrapperFactory.class.getName();
 			String sessionManagerClass=JettyManager.class.getName();
-			_peer=(JettyManager)SpringManagerFactory.create(path, "SessionManager", sessionFactoryClass, sessionWrapperFactoryClass, sessionManagerClass);
+			_peer=(JettyManager)SpringManagerFactory.create(descriptor, "SessionManager", sessionFactoryClass, sessionWrapperFactoryClass, sessionManagerClass);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
+	// org.mortbay.jetty.servlet.SessionManager
 	
 	public void initialize(ServletHandler handler) {
 		try {
-			init(((WebApplicationContext)handler.getHttpContext()).getWebInf().addPath("wadi-web.xml").getName());
+			WebApplicationContext context=(WebApplicationContext)handler.getHttpContext();
+			InputStream is=context.getResource("WEB-INF/wadi-web.xml").getInputStream();
+			init(is);
 		} catch (Exception e) {
 			_log.error("unexpected problem initialising SessionManager", e);
 		}

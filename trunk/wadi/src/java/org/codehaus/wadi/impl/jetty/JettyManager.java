@@ -27,6 +27,7 @@ import javax.servlet.http.HttpSession;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.HttpProxy;
+import org.codehaus.wadi.PlaceHolder;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
@@ -39,7 +40,7 @@ import org.apache.commons.logging.LogFactory;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.SessionManager;
 
-public class JettyManager extends org.codehaus.wadi.impl.DistributableManager implements SessionManager {
+public class JettyManager extends org.codehaus.wadi.impl.DistributableManager implements SessionManager, PlaceHolder {
 
     protected final Log _log = LogFactory.getLog(getClass());
 

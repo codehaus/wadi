@@ -17,40 +17,70 @@
 package org.codehaus.wadi.impl.tomcat;
 
 import java.beans.PropertyChangeListener;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+
+import javax.servlet.ServletContext;
 
 import org.apache.catalina.Container;
+import org.apache.catalina.Context;
 import org.apache.catalina.DefaultContext;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
+import org.apache.catalina.core.ApplicationContextFacade;
 import org.apache.catalina.core.StandardContext;
-import org.codehaus.wadi.SpringManagerFactory;
+import org.apache.catalina.deploy.ContextResource;
+import org.codehaus.wadi.PlaceHolder;
+import org.codehaus.wadi.impl.Filter;
+import org.codehaus.wadi.impl.SpringManagerFactory;
 
-public class TomcatManagerLoader implements Manager, Lifecycle {
-
-  protected TomcatManager _peer;
-  
-  public void init(String docBase) {
-	  try {
-		  String path=docBase+"/WEB-INF/wadi-web.xml";
-		  String sessionFactoryClass=TomcatSessionFactory.class.getName();
-		  String sessionWrapperFactoryClass=TomcatSessionWrapperFactory.class.getName();
-		  String sessionManagerClass=TomcatManager.class.getName();
-		  _peer=(TomcatManager)SpringManagerFactory.create(path, "SessionManager", sessionFactoryClass, sessionWrapperFactoryClass, sessionManagerClass);
-	  } catch (Exception e) {
-		  throw new RuntimeException(e);
-	  }
-  }
-
-  public void                start() throws LifecycleException                             {_peer.start();}
-  public void                stop() throws LifecycleException                              {_peer.stop();}
+public class TomcatManagerLoader implements Manager, Lifecycle, PlaceHolder {
+	
+	protected Container _container;
+	protected TomcatManager _peer;
+	
+	public void init(ServletContext context) {
+		InputStream is=context.getResourceAsStream("/WEB-INF/wadi-web.xml");
+		try {
+			String sessionFactoryClass=TomcatSessionFactory.class.getName();
+			String sessionWrapperFactoryClass=TomcatSessionWrapperFactory.class.getName();
+			String sessionManagerClass=TomcatManager.class.getName();
+			_peer=(TomcatManager)SpringManagerFactory.create(is, "SessionManager", sessionFactoryClass, sessionWrapperFactoryClass, sessionManagerClass);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	// PlaceHolder
+	public void setFilter(Filter filter) {
+		_peer.setFilter(filter);
+	}
+	
+	// org.apache.catalina.Manager
+	
+	public void setContainer(Container container) {
+		_container=container;
+	}
+	
+	public void start() throws LifecycleException {
+		StandardContext standardContext=(StandardContext)_container;
+		ServletContext servletContext=standardContext.getServletContext();
+		init(servletContext);
+		_peer.setContainer(_container);
+		_peer.start();
+		servletContext.setAttribute(org.codehaus.wadi.impl.StandardManager.class.getName(), this);
+	}
+	
+	public void stop() throws LifecycleException {
+		_peer.stop();
+	}
 
   public String              getInfo()                                                     {return _peer.getInfo();}
   public Container           getContainer()                                                {return _peer.getContainer();}
-  public void                setContainer(Container container)                             {init(((StandardContext)container).getDocBase()); _peer.setContainer(container);}
   public DefaultContext      getDefaultContext()                                           {return _peer.getDefaultContext();}
   public void                setDefaultContext(DefaultContext defaultContext)              {_peer.setDefaultContext(defaultContext);}
   public boolean             getDistributable()                                            {return _peer.getDistributable();}
