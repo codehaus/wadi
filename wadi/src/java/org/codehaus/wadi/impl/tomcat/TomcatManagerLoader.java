@@ -17,28 +17,23 @@
 package org.codehaus.wadi.impl.tomcat;
 
 import java.beans.PropertyChangeListener;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import javax.servlet.ServletContext;
 
 import org.apache.catalina.Container;
-import org.apache.catalina.Context;
 import org.apache.catalina.DefaultContext;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
-import org.apache.catalina.core.ApplicationContextFacade;
 import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.deploy.ContextResource;
-import org.codehaus.wadi.PlaceHolder;
 import org.codehaus.wadi.impl.Filter;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 
-public class TomcatManagerLoader implements Manager, Lifecycle, PlaceHolder {
+public class TomcatManagerLoader implements Manager, Lifecycle {
 	
 	protected Container _container;
 	protected TomcatManager _peer;
@@ -69,7 +64,6 @@ public class TomcatManagerLoader implements Manager, Lifecycle, PlaceHolder {
 		init(servletContext);
 		_peer.setContainer(_container);
 		_peer.start();
-		servletContext.setAttribute(org.codehaus.wadi.impl.StandardManager.class.getName(), this);
 	}
 	
 	public void stop() throws LifecycleException {

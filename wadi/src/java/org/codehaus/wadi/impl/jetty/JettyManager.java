@@ -27,20 +27,18 @@ import javax.servlet.http.HttpSession;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.HttpProxy;
-import org.codehaus.wadi.PlaceHolder;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.impl.StandardManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.SessionManager;
 
-public class JettyManager extends org.codehaus.wadi.impl.DistributableManager implements SessionManager, PlaceHolder {
+public class JettyManager extends org.codehaus.wadi.impl.DistributableManager implements SessionManager {
 
     protected final Log _log = LogFactory.getLog(getClass());
 
@@ -55,7 +53,6 @@ public class JettyManager extends org.codehaus.wadi.impl.DistributableManager im
     // Lifecyle - Jetty & WADI
     
     public void start() throws Exception {
-        getServletContext().setAttribute(StandardManager.class.getName(), this); // TODO - is putting ourselves in an attribute a security risk ?
         super.start();
     }
 

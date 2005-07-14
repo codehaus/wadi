@@ -97,6 +97,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         _log.info("starting");
         _contextualiser.promoteToExclusive(null);
         _contextualiser.start();
+		getServletContext().setAttribute(StandardManager.class.getName(), this); // TODO - security risk ?
         _started=true;
     }
 
@@ -219,7 +220,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
     // integrate with Filter instance
     protected Filter _filter;
 
-    public void setFilter(Filter filter){(_filter=filter).setManager(this);}
+    public void setFilter(Filter filter){_filter=filter;}
 
     public boolean getDistributable(){return false;}
 
