@@ -34,7 +34,6 @@ public class BucketTransferResponse implements Serializable {
         return _success;
     }
     
-	
     public String toString() {
         return "<BucketTransferResponse: "+_success+">";
     }
