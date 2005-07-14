@@ -9,13 +9,8 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.PlaceHolder;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
-import org.codehaus.wadi.impl.Filter;
 import org.codehaus.wadi.impl.SpringManagerFactory;
-import org.codehaus.wadi.impl.tomcat.TomcatManager;
-import org.codehaus.wadi.impl.tomcat.TomcatSessionFactory;
-import org.codehaus.wadi.impl.tomcat.TomcatSessionWrapperFactory;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.SessionManager;
 import org.mortbay.jetty.servlet.WebApplicationContext;
