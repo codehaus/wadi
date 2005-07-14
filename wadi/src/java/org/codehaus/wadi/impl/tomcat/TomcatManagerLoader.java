@@ -44,12 +44,9 @@ public class TomcatManagerLoader implements Manager, Lifecycle, PlaceHolder {
 	protected TomcatManager _peer;
 	
 	public void init(ServletContext context) {
-		InputStream is=context.getResourceAsStream("/WEB-INF/wadi-web.xml");
 		try {
-			String sessionFactoryClass=TomcatSessionFactory.class.getName();
-			String sessionWrapperFactoryClass=TomcatSessionWrapperFactory.class.getName();
-			String sessionManagerClass=TomcatManager.class.getName();
-			_peer=(TomcatManager)SpringManagerFactory.create(is, "SessionManager", sessionFactoryClass, sessionWrapperFactoryClass, sessionManagerClass);
+			InputStream is=context.getResourceAsStream("/WEB-INF/wadi-web.xml");
+			_peer=(TomcatManager)SpringManagerFactory.create(is, "SessionManager", new TomcatSessionFactory(), new TomcatSessionWrapperFactory(), new TomcatManagerFactory());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

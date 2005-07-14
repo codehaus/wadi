@@ -26,12 +26,10 @@ public class JettyManagerLoader implements SessionManager {
 	
 	protected JettyManager _peer;
 	
-	public void init(InputStream descriptor) {
+	public void init(WebApplicationContext context) {
 		try {
-			String sessionFactoryClass=DistributableSessionFactory.class.getName();
-			String sessionWrapperFactoryClass=JettySessionWrapperFactory.class.getName();
-			String sessionManagerClass=JettyManager.class.getName();
-			_peer=(JettyManager)SpringManagerFactory.create(descriptor, "SessionManager", sessionFactoryClass, sessionWrapperFactoryClass, sessionManagerClass);
+			InputStream descriptor=context.getResource("WEB-INF/wadi-web.xml").getInputStream();
+			_peer=(JettyManager)SpringManagerFactory.create(descriptor, "SessionManager", new DistributableSessionFactory(), new JettySessionWrapperFactory(), new JettyManagerFactory());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -42,8 +40,7 @@ public class JettyManagerLoader implements SessionManager {
 	public void initialize(ServletHandler handler) {
 		try {
 			WebApplicationContext context=(WebApplicationContext)handler.getHttpContext();
-			InputStream is=context.getResource("WEB-INF/wadi-web.xml").getInputStream();
-			init(is);
+			init(context);
 		} catch (Exception e) {
 			_log.error("unexpected problem initialising SessionManager", e);
 		}
