@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.HttpServletRequestWrapperPool;
+import org.codehaus.wadi.PlaceHolder;
 import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.impl.StandardManager;
@@ -53,13 +54,14 @@ public class Filter implements javax.servlet.Filter {
     public void
       init(FilterConfig filterConfig) throws ServletException
     {
-      _manager=(StandardManager)filterConfig.getServletContext().getAttribute(StandardManager.class.getName());
+      PlaceHolder holder=(PlaceHolder)filterConfig.getServletContext().getAttribute(StandardManager.class.getName());
+      if (holder!=null)
+    	  holder.setFilter(this); // causes manager to call setManager() on us...
       if (_manager==null)
         _log.fatal("Manager not found");
       else
           if (_log.isInfoEnabled())_log.info("Manager found: "+_manager);
 
-      _manager.setFilter(this);
       _distributable=_manager.getDistributable();
       _contextualiser=_manager.getContextualiser();
       _router=_manager.getRouter();
@@ -67,6 +69,10 @@ public class Filter implements javax.servlet.Filter {
       _acceptingSessions=_manager.getAcceptingSessions();
     }
 
+    public void setManager(StandardManager manager) {
+    	_manager=manager;
+    }
+    
     public void
     destroy()
     {

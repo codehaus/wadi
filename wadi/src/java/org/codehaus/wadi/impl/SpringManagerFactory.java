@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.impl;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -24,7 +24,15 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.impl.StandardManager;
+import org.codehaus.wadi.AttributesFactory;
+import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.HttpProxy;
+import org.codehaus.wadi.Router;
+import org.codehaus.wadi.SessionIdFactory;
+import org.codehaus.wadi.SessionPool;
+import org.codehaus.wadi.SessionWrapperFactory;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.jetty.JettySessionWrapperFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -35,13 +43,13 @@ public class SpringManagerFactory {
 
     protected final static Log _log = LogFactory.getLog(SpringManagerFactory.class);
 
-    protected final String _descriptor;
+    protected final InputStream _descriptor;
     protected final String _bean;
     protected final String _sessionFactoryClass;
     protected final String _sessionWrapperFactoryClass;
     protected final String _sessionManagerClass;
 
-    public SpringManagerFactory(String descriptor, String bean, String sessionFactoryClass, String sessionWrapperFactoryClass, String sessionManagerClass) {
+    public SpringManagerFactory(InputStream descriptor, String bean, String sessionFactoryClass, String sessionWrapperFactoryClass, String sessionManagerClass) {
         _descriptor=descriptor;
         _bean=bean;
         _sessionFactoryClass=sessionFactoryClass;
@@ -104,44 +112,38 @@ public class SpringManagerFactory {
     	
     }
     
-    public static StandardManager create(String descriptor, String bean, String sessionFactoryClass, String sessionWrapperFactoryClass, String sessionManagerClass) throws FileNotFoundException {
-
+    public static StandardManager create(InputStream descriptor, String bean, String sessionFactoryClass, String sessionWrapperFactoryClass, String sessionManagerClass) throws FileNotFoundException {
+    	
     	//ClassLoader cl=SpringManagerFactory.class.getClassLoader();
-        ClassLoader cl=Thread.currentThread().getContextClassLoader();
-        if (_log.isTraceEnabled()) _log.trace("Manager ClassLoader: "+cl);
-
-        //InputStream is=cl.getResourceAsStream(descriptor);
-        InputStream is=new FileInputStream(descriptor);
-        if (is!=null) {
-            DefaultListableBeanFactory dlbf=new DefaultListableBeanFactory();
-            PropertyPlaceholderConfigurer cfg=new PropertyPlaceholderConfigurer();
-            new XmlBeanDefinitionReader(dlbf).loadBeanDefinitions(new InputStreamResource(is));
-            cfg.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
-            cfg.postProcessBeanFactory(dlbf);
-
-            try {
-            	dlbf.registerSingleton("SessionFactory", Class.forName(sessionFactoryClass, true, cl).newInstance());
-            	dlbf.registerSingleton("SessionWrapperFactory", Class.forName(sessionWrapperFactoryClass, true, cl).newInstance());
-            	dlbf.registerSingleton("SessionManagerFactory", new SessionManagerFactory(Class.forName(sessionManagerClass, true, cl)));
-            } catch (Exception e) {
-            	_log.error("problem initialising component factories", e);
-            }
-            
-    	    //dlbf.getBean("exporter");
-    	    //dlbf.getBean("serverConnector");
-    	    dlbf.preInstantiateSingletons();
-            StandardManager manager=(StandardManager)dlbf.getBean(bean);
-
-            if (manager==null)
-                if (_log.isErrorEnabled()) _log.error("could not find WADI Manager bean: "+bean);
-            else
-	      if (_log.isInfoEnabled()) _log.info("loaded bean: "+bean+" from WADI descriptor: "+descriptor);
-
-            return manager;
-        } else {
-            if (_log.isErrorEnabled())_log.error("could not find WADI descriptor: "+descriptor);
-            return null;
-        }
+    	ClassLoader cl=Thread.currentThread().getContextClassLoader();
+    	if (_log.isTraceEnabled()) _log.trace("Manager ClassLoader: "+cl);
+    	
+    	//InputStream is=cl.getResourceAsStream(descriptor);
+    	DefaultListableBeanFactory dlbf=new DefaultListableBeanFactory();
+    	PropertyPlaceholderConfigurer cfg=new PropertyPlaceholderConfigurer();
+    	new XmlBeanDefinitionReader(dlbf).loadBeanDefinitions(new InputStreamResource(descriptor));
+    	cfg.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
+    	cfg.postProcessBeanFactory(dlbf);
+    	
+    	try {
+    		dlbf.registerSingleton("SessionFactory", Class.forName(sessionFactoryClass, true, cl).newInstance());
+    		dlbf.registerSingleton("SessionWrapperFactory", Class.forName(sessionWrapperFactoryClass, true, cl).newInstance());
+    		dlbf.registerSingleton("SessionManagerFactory", new SessionManagerFactory(Class.forName(sessionManagerClass, true, cl)));
+    	} catch (Exception e) {
+    		_log.error("problem initialising component factories", e);
+    	}
+    	
+    	//dlbf.getBean("exporter");
+    	//dlbf.getBean("serverConnector");
+    	dlbf.preInstantiateSingletons();
+    	StandardManager manager=(StandardManager)dlbf.getBean(bean);
+    	
+    	if (manager==null)
+    		if (_log.isErrorEnabled()) _log.error("could not find WADI Manager bean: "+bean);
+    		else
+    			if (_log.isInfoEnabled()) _log.info("loaded bean: "+bean+" from WADI descriptor: "+descriptor);
+    	
+    	return manager;
     }
 
 }

@@ -55,6 +55,7 @@ $properties \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.HybridRelocater=info \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.ClusterContextualiser=info \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.Dispatcher=trace \
+-Dorg.apache.commons.logging.simplelog.log.org.mortbay=info \
 -Dorg.apache.commons.logging.simplelog.showShortLogname=true \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
 -Djava.io.tmpdir=$INSTANCE \
