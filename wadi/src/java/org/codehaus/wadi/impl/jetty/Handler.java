@@ -37,12 +37,12 @@ import org.mortbay.http.handler.AbstractHttpHandler;
 public class Handler extends AbstractHttpHandler {
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final Pattern _trustedIps;
-
+	
 	public Handler(Pattern trustedIps) {
 		_trustedIps=trustedIps;
 		if (_log.isInfoEnabled()) _log.info("WADI Handler in place: "+_trustedIps.pattern());
 	}
-
+	
 	public void handle(String pathInContext, String pathParams, HttpRequest request, HttpResponse response) {
 		// request must have been :
 		//  proxied by WADI
@@ -55,7 +55,7 @@ public class Handler extends AbstractHttpHandler {
 				((Securable)request.getHttpConnection()).setSecure(true);
 			} else {
 				// otherwise we have a configuration issue or are being spoofed...
-			  if (_log.isWarnEnabled()) _log.warn("purported WADI request arrived from suspect IP address: "+_trustedIps.pattern()+" !~ "+ip);
+				if (_log.isWarnEnabled()) _log.warn("purported WADI request arrived from suspect IP address: "+_trustedIps.pattern()+" !~ "+ip);
 			}
 		}
 	}

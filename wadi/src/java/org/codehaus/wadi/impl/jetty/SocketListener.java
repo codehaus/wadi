@@ -34,22 +34,23 @@ import org.mortbay.http.HttpListener;
  */
 
 public class SocketListener extends org.mortbay.http.SocketListener {
-	public static class HttpConnection extends org.mortbay.http.HttpConnection implements Securable {
 
+	public static class HttpConnection extends org.mortbay.http.HttpConnection implements Securable {
+		
 		public HttpConnection(HttpListener listener, InetAddress remoteAddr, InputStream in, OutputStream out, Object connection) {
 			super(listener, remoteAddr, in, out, connection);
 		}
-
+		
 		protected boolean _secure;
 		public boolean getSecure(){return _secure;}
 		public void setSecure(boolean secure){_secure=secure;}
 	}
-
+	
 	protected org.mortbay.http.HttpConnection createConnection(Socket socket) throws IOException {
 		HttpConnection connection=new HttpConnection(this, socket.getInetAddress(), socket.getInputStream(), socket.getOutputStream(), socket);
 		return connection;
 	}
-
+	
 	public boolean isIntegral(org.mortbay.http.HttpConnection connection){return ((HttpConnection)connection).getSecure();}
-    public boolean isConfidential(org.mortbay.http.HttpConnection connection){return ((HttpConnection)connection).getSecure();}
+	public boolean isConfidential(org.mortbay.http.HttpConnection connection){return ((HttpConnection)connection).getSecure();}
 }

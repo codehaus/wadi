@@ -42,36 +42,37 @@ import org.apache.commons.logging.LogFactory;
 // how do we install this ?
 
 public class Valve extends ValveBase {
-
-  protected final Log _log=LogFactory.getLog(getClass());
-  protected final Pattern _trustedIps;
-
-  public Valve(Pattern trustedIps) {
-    _trustedIps=trustedIps;
-    if (_log.isInfoEnabled()) _log.info("WADI Valve in place: "+_trustedIps.pattern());
-  }
-
-  /* (non-Javadoc)
-   * @see org.apache.catalina.Valve#invoke(org.apache.catalina.Request, org.apache.catalina.Response, org.apache.catalina.ValveContext)
-   */
-  public void invoke(Request request, Response response, ValveContext context) throws IOException, ServletException {
-    if (request instanceof HttpRequest) {
-      HttpServletRequest hreq=(HttpServletRequest) request;
-      // request must have been :
-      //  proxied by WADI
-      String val=hreq.getHeader("Via");
-      if (val!=null && val.endsWith("\"WADI\"")) { // TODO - should we ignore case ?
-	String ip=hreq.getRemoteAddr();
-	//  from a trusted IP...
-	if (_trustedIps.matcher(ip).matches()) {
-	  if (_log.isTraceEnabled()) _log.trace("securing proxied request: "+hreq.getRequestURL());
-	  request.setSecure(true);
-	} else {
-	  // otherwise we have a configuration issue or are being spoofed...
-	  if (_log.isWarnEnabled()) _log.warn("purported WADI request arrived from suspect IP address: "+_trustedIps.pattern()+" !~ "+ip);
+	
+	protected final Log _log=LogFactory.getLog(getClass());
+	protected final Pattern _trustedIps;
+	
+	public Valve(Pattern trustedIps) {
+		_trustedIps=trustedIps;
+		if (_log.isInfoEnabled()) _log.info("WADI Valve in place: "+_trustedIps.pattern());
 	}
-      }
-    }
-    context.invokeNext(request, response);
-  }
+	
+	/* (non-Javadoc)
+	 * @see org.apache.catalina.Valve#invoke(org.apache.catalina.Request, org.apache.catalina.Response, org.apache.catalina.ValveContext)
+	 */
+	public void invoke(Request request, Response response, ValveContext context) throws IOException, ServletException {
+		if (request instanceof HttpRequest) {
+			HttpServletRequest hreq=(HttpServletRequest) request;
+			// request must have been :
+			//  proxied by WADI
+			String val=hreq.getHeader("Via");
+			if (val!=null && val.endsWith("\"WADI\"")) { // TODO - should we ignore case ?
+				String ip=hreq.getRemoteAddr();
+				//  from a trusted IP...
+				if (_trustedIps.matcher(ip).matches()) {
+					if (_log.isTraceEnabled()) _log.trace("securing proxied request: "+hreq.getRequestURL());
+					request.setSecure(true);
+				} else {
+					// otherwise we have a configuration issue or are being spoofed...
+					if (_log.isWarnEnabled()) _log.warn("purported WADI request arrived from suspect IP address: "+_trustedIps.pattern()+" !~ "+ip);
+				}
+			}
+		}
+		context.invokeNext(request, response);
+	}
+	
 }

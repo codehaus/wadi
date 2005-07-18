@@ -47,7 +47,6 @@ public class TomcatManagerLoader implements Manager, Lifecycle {
 		}
 	}
 	
-	// PlaceHolder
 	public void setFilter(Filter filter) {
 		_peer.setFilter(filter);
 	}
