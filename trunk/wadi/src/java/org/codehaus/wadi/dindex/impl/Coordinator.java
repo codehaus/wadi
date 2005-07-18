@@ -131,66 +131,69 @@ public class Coordinator implements Runnable {
     		printNodes(leavingNodes);
     		_log.info("--------");
     		
-    		if (stayingNodes.size()==0) {
-    			_log.warn("we are the last node - no need to rebalance cluster");
-    			return;
-    		}
-    		
-    		Node [] living=(Node[])stayingNodes.toArray(new Node[stayingNodes.size()]);
     		Node [] leaving=(Node[])leavingNodes.toArray(new Node[leavingNodes.size()]);
     		
-    		_config.regenerateMissingBuckets(living, leaving);
-    		
-    		RedistributionPlan plan=new RedistributionPlan(living, leaving, _numItems);
-    		
-    		_log.info("--------");
-    		_log.info("BEFORE:");
-    		printNodes(living, leaving);
-    		_log.info("--------");
-    		
-    		Map rvMap=_config.getRendezVousMap();
-    		Quipu rv=new Quipu(0);
-    		String correlationId=_dispatcher.nextCorrelationId();
-    		rvMap.put(correlationId, rv);
-    		execute(plan, correlationId, rv); // quipu will be incremented as participants are invited
-    		
-    		try {
-    			_log.info("WAITING ON RENDEZVOUS");
-    			if (rv.waitFor(_inactiveTime)) {
-    				_log.info("RENDEZVOUS SUCCESSFUL");
-    				Collection results=rv.getResults();
-    			} else {
-    				_log.warn("RENDEZVOUS FAILED");
-    				failures++;
-    			}
-    		} catch (TimeoutException e) {
-    			_log.warn("timed out waiting for response", e);
-    			failures++;
-    		} catch (InterruptedException e) {
-    			_log.warn("unexpected interruption", e);
-    			failures++;
-    		} finally {
-    			rvMap.remove(correlationId);
-    			// somehow check all returned success.. - TODO
+    		if (stayingNodes.size()==0) {
+    			_log.warn("we are the last node - no need to rebalance cluster");
+    		} else {
     			
-    			// send EvacuationResponses to each leaving node... - hmmm....
-    			Collection left=_config.getLeft();
-    			for (int i=0; i<leaving.length; i++) {
-    				Node node=leaving[i];
-    				if (!left.contains(node.getDestination())) {
-    					BucketEvacuationResponse response=new BucketEvacuationResponse();
-    					if (!_dispatcher.send(_cluster.getLocalNode().getDestination(), node.getDestination(), node.getName(), response)) {
-    						_log.error("problem sending EvacuationResponse to "+DIndex.getNodeName(node));
-    						failures++;
-    					}
-    					left.add(node.getDestination());
+    			Node [] living=(Node[])stayingNodes.toArray(new Node[stayingNodes.size()]);
+    			
+    			_config.regenerateMissingBuckets(living, leaving);
+    			
+    			RedistributionPlan plan=new RedistributionPlan(living, leaving, _numItems);
+    			
+    			_log.info("--------");
+    			_log.info("BEFORE:");
+    			printNodes(living, leaving);
+    			_log.info("--------");
+    			
+    			Map rvMap=_config.getRendezVousMap();
+    			Quipu rv=new Quipu(0);
+    			String correlationId=_dispatcher.nextCorrelationId();
+    			rvMap.put(correlationId, rv);
+    			execute(plan, correlationId, rv); // quipu will be incremented as participants are invited
+    			
+    			try {
+    				_log.info("WAITING ON RENDEZVOUS");
+    				if (rv.waitFor(_inactiveTime)) {
+    					_log.info("RENDEZVOUS SUCCESSFUL");
+    					Collection results=rv.getResults();
+    				} else {
+    					_log.warn("RENDEZVOUS FAILED");
+    					failures++;
     				}
+    			} catch (TimeoutException e) {
+    				_log.warn("timed out waiting for response", e);
+    				failures++;
+    			} catch (InterruptedException e) {
+    				_log.warn("unexpected interruption", e);
+    				failures++;
+    			} finally {
+    				rvMap.remove(correlationId);
+    				// somehow check all returned success.. - TODO
+    			}
+    			
+    			_log.info("--------");
+    			_log.info("AFTER:");
+    			printNodes(living, leaving);
+    			_log.info("--------");
+    		}
+    		
+    		// send EvacuationResponses to each leaving node... - hmmm....
+    		Collection left=_config.getLeft();
+    		for (int i=0; i<leaving.length; i++) {
+    			Node node=leaving[i];
+    			if (!left.contains(node.getDestination())) {
+    				BucketEvacuationResponse response=new BucketEvacuationResponse();
+    				if (!_dispatcher.send(_cluster.getLocalNode().getDestination(), node.getDestination(), node.getName(), response)) {
+    					_log.error("problem sending EvacuationResponse to "+DIndex.getNodeName(node));
+    					failures++;
+    				}
+    				left.add(node.getDestination());
     			}
     		}
-    		_log.info("--------");
-    		_log.info("AFTER:");
-    		printNodes(living, leaving);
-    		_log.info("--------");
+    		
     	} catch (Throwable t) {
     		_log.warn("problem rebalancing indeces", t);
     		failures++;
