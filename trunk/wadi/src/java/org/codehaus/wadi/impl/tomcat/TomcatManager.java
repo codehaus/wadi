@@ -34,7 +34,6 @@ import org.apache.catalina.DefaultContext;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.deploy.FilterDef;
@@ -52,7 +51,7 @@ import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.DistributableManager;
 import org.codehaus.wadi.impl.Filter;
 
-public class TomcatManager extends DistributableManager implements Manager, Lifecycle {
+public class TomcatManager extends DistributableManager implements Lifecycle {
 	
 	public TomcatManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterUri, String clusterName, String nodeName, HttpProxy httpProxy, InetSocketAddress httpAddress, int numBuckets) {
 		super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad, clusterUri, clusterName, nodeName, httpProxy, httpAddress, numBuckets);
