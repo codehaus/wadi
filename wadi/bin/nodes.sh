@@ -6,16 +6,16 @@ then
 fi
 export JETTY_HOME
 
-if [ -z "$TOMCAT_HOME" ]
+if [ -z "$CATALINA_HOME" ]
 then
-    TOMCAT_HOME=/usr/local/java/jakarta-tomcat-5.0.28
+    CATALINA_HOME=/usr/local/java/jakarta-tomcat-5.0.28
 fi
-export TOMCAT_HOME
+export CATALINA_HOME
 
 
 if [ -z "$JAVA_HOME" ]
 then
-    JAVA_HOME=/usr/local/java/sun-j2sdk1.4.2_05
+    JAVA_HOME=/usr/local/java/sun-j2sdk1.4.2_08
 fi
 export JAVA_HOME
 
