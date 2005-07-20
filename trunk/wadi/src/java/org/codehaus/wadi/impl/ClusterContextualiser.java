@@ -108,11 +108,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     protected final Emoter _emoter;
     protected final int _resTimeout=500; // TODO - parameterise
     
-    /**
-     * @param next
-     * @param evicter
-     * @param location TODO
-     */
     public ClusterContextualiser(Contextualiser next, Collapser collapser, Relocater relocater) {
         super(next, new CollapsingLocker(collapser), false);
         _collapser=collapser;
