@@ -28,6 +28,7 @@
 
   <postGoal name="clean">
     <delete dir="${maven.build.dest}.javac"/>
+    <delete dir="${maven.test.dest}"/>
     <delete dir="${maven.test.dest}.javac"/>
     <delete dir="${maven.clover.build.classes}.javac"/>
   </postGoal>

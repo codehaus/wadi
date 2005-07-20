@@ -11,6 +11,8 @@ exec time java\
 -Dorg.apache.commons.logging.simplelog.log.org=info \
 -Dorg.apache.commons.logging.simplelog.showShortLogname=true \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
+-Dorg.apache.commons.logging.simplelog.log.org.activecluster=info \
+-Dorg.apache.commons.logging.simplelog.log.org.activemq=info \
 -classpath \
 WEB-INF/classes:\
 WEB-INF-classes:\

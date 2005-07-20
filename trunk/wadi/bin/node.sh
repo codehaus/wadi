@@ -26,7 +26,7 @@ export JETTY6_HOME=/usr/local/java/jetty-6.0.alpha1
 echo "JAVA_HOME=$JAVA_HOME"
 echo "WADI_HOME=$WADI_HOME"
 echo "JETTY_HOME=$JETTY_HOME"
-echo "TOMCAT_HOME=$TOMCAT_HOME"
+echo "CATALINA_HOME=$CATALINA_HOME"
 $JAVA -fullversion
 
 properties=`sed -e '/#.*/d' -e 's/${wadi.home}/$WADI_HOME/g' -e 's/\(.*\)/-D\1/g' $WADI_HOME/conf/node.$instance.properties | tr '\n' ' '`
@@ -47,7 +47,7 @@ $properties \
 -Dorg.apache.commons.logging.simplelog.log.org=info \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.activecluster=warn \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.activemq=warn \
--Dorg.apache.commons.logging.simplelog.log.org.springframework=warn \
+-Dorg.apache.commons.logging.simplelog.log.org.springframework=info \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=debug \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.AbsoluteEvicter=info \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.NeverEvicter=info \
@@ -69,7 +69,7 @@ then
     properties="\
     $properties\
     -Djetty.home=$JETTY_BASE\
-    -Djava.endorsed.dirs=$TOMCAT_HOME/common/endorsed\
+    -Djava.endorsed.dirs=$CATALINA_HOME/common/endorsed\
     -Dcatalina.base=$TOMCAT_BASE\
     "
 
@@ -83,20 +83,20 @@ then
 
     mkdir -p $TOMCAT_BASE/webapps
     mkdir -p $TOMCAT_BASE/work
-    cp -r $TOMCAT_HOME/conf $TOMCAT_BASE/
+    cp -r $CATALINA_HOME/conf $TOMCAT_BASE/
     rm -fr $TOMCAT_BASE/conf/Catalina/localhost
     mkdir -p $TOMCAT_BASE/conf/Catalina/localhost
 
-    cd $TOMCAT_HOME/bin
+    cd $CATALINA_HOME/bin
 
     properties="\
     $properties\
-    -Dcatalina.home=$TOMCAT_HOME\
-    -Djava.endorsed.dirs=$TOMCAT_HOME/common/endorsed\
+    -Dcatalina.home=$CATALINA_HOME\
+    -Djava.endorsed.dirs=$CATALINA_HOME/common/endorsed\
     -Dcatalina.base=$TOMCAT_BASE\
     "
 
-    classpath=`find $TOMCAT_HOME/. $WADI_HOME/lib $WADI_HOME/WEB-INF/lib $JAVA_HOME/lib/tools.jar -name "*.jar" | tr '\n' ':'`:$WADI_HOME/WEB-INF/classes
+    classpath=`find $CATALINA_HOME/. $WADI_HOME/lib $WADI_HOME/WEB-INF/lib $JAVA_HOME/lib/tools.jar -name "*.jar" | tr '\n' ':'`:$WADI_HOME/WEB-INF/classes
 
     $XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.apache.catalina.startup.Bootstrap -config $WADI_HOME/conf/tomcat.xml start
 fi
