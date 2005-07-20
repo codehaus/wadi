@@ -44,14 +44,18 @@
     <p>WADI can currently be plugged into the following J2EE web
     containers:</p>
     <ul>
-    <li>Tomcat 5.1.28+</li>
+    <li>Tomcat 5.0.28+</li>
     <li>Jetty 5.1.3+</li>
     </ul>
 
     <p>WADI is currently undergoing a major rearchitecture. New
-    documentation is being entered into the
-    <a href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI">WADI WIKI</a>
-    . We hope to have a 2.0 release out shortly.</p>
+    documentation is being entered into the <a
+    href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI">WADI
+    WIKI</a> . We hope to have a 2.0 release out shortly.</p>
+
+    <p>Please use the <a
+    href="http://docs.codehaus.org/display/WADI/Getting+Started">Getting
+    Started Page</a> to boostrap yourself into WADI's world</p>
 
     <p>Please browse our <a href="./faq.html">FAQ</a> for further detail.</p>
 
@@ -75,9 +79,9 @@
   <url>http://wadi.codehaus.org/</url>
   <issueTrackingUrl>http://jira.codehaus.org</issueTrackingUrl>
 
-  <siteAddress>www.codehaus.org</siteAddress>
-  <siteDirectory>/home/projects/wadi/public_html/maven</siteDirectory>
-  <distributionDirectory>/www/dist.codehaus.org/wadi/dist</distributionDirectory>
+  <siteAddress>wadi.codehaus.org</siteAddress>
+  <siteDirectory>/home/projects/wadi/public_html</siteDirectory>
+  <distributionDirectory>/www/dist.codehaus.org/wadi/public_html/dist</distributionDirectory>
 
   <repository>
     <connection>scm:cvs:pserver:anonymous@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi</connection>
