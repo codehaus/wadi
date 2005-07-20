@@ -38,15 +38,17 @@ public interface Relocater {
     void init(RelocaterConfig config);
     void destroy();
     
-	/** Either relocate the request to the session by proxying/redirection, or the session to the request, by migration...
+	/**
+	 * Either relocate the request to the session by proxying/redirection, or the session to the request, by migration...
 	 * @param hreq
 	 * @param hres
 	 * @param chain
 	 * @param name
 	 * @param immoter
 	 * @param motionLock
-	 * @param locationMap
 	 * @return - whether, or not, the request was contextualised
+	 * @throws IOException
+	 * @throws ServletException
 	 */
 	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException;
 }
