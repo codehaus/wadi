@@ -146,3 +146,17 @@ there are insufficient resources available in the cluster for more
 than N-1 peers for each colony, then they should settle on this
 number...
 
+
+
+
+If a primary session is needed on a node that already hold a secondary replicant - switch their roles without moving them
+
+protocol :
+
+- secondary send message containing its version via bucket-owner
+- bucket owner forwards to primary
+- primary locks access and compares versions
+
+- if same needs to swap roles at bucket owner and let secondary know that it is now primary
+- if not same, needs to send update to secondary and then do as if same
+
