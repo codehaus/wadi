@@ -26,5 +26,9 @@ public class DIndexInsertionResponse implements DIndexResponse, Serializable {
         super();
         // TODO Auto-generated constructor stub
     }
-
+    
+    public String toString() {
+        return "<DIndexInsertionResponse>";
+    }
+    
 }

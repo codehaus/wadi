@@ -27,4 +27,8 @@ public class DIndexRelocationResponse implements DIndexResponse, Serializable {
         // TODO Auto-generated constructor stub
     }
 
+    public String toString() {
+        return "<DIndexRelocationResponse>";
+    }
+ 
 }

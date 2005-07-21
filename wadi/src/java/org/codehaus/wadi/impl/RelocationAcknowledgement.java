@@ -20,4 +20,9 @@ import java.io.Serializable;
 
 public class RelocationAcknowledgement implements Serializable {
     // NYI
+
+    public String toString() {
+        return "<RelocationAcknowledgement>";
+    }
+    
 }
