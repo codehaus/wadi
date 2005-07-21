@@ -141,8 +141,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         _cluster.addClusterListener(this);
         _dispatcher.register(this, "onEmigrationRequest", EmigrationRequest.class);
         _dispatcher.register(EmigrationResponse.class, _resTimeout);
-        _relocater.init(this);
         _top=dcc.getContextualiser();
+        _relocater.init(this);
     }
     
     public String getStartInfo() {
