@@ -167,7 +167,7 @@ public class Dispatcher implements MessageListener {
 
 	  public void dispatch(ObjectMessage om, Serializable obj) throws JMSException {
 	      // rendez-vous with waiting thread...
-	      String correlationId=om.getJMSCorrelationID();
+	      String correlationId=om.getStringProperty(_replyToIdKey);
 	      synchronized (_rvMap2) {
 	          Quipu rv=(Quipu)_rvMap2.get(correlationId);
 	          if (rv==null) {
@@ -204,7 +204,7 @@ public class Dispatcher implements MessageListener {
     				(body=objectMessage.getObject())!=null &&
     				(dispatcher=(InternalDispatcher)_map.get(body.getClass()))!=null
     		) {
-                _log.trace("receive {"+message.getJMSCorrelationID()+"}: "+getNodeName(message.getJMSReplyTo())+" -> "+getNodeName(message.getJMSDestination())+" : "+body);
+                _log.trace("receive {"+message.getStringProperty(_replyToIdKey)+"}: "+getNodeName(message.getJMSReplyTo())+" -> "+getNodeName(message.getJMSDestination())+" : "+body);
     			do {
     				try {
     					synchronized (dispatcher) {
@@ -266,12 +266,15 @@ public class Dispatcher implements MessageListener {
         return "<unknown>";
     }
 
+    protected static String _sentFromIdKey="sentFromId";
+    protected static String _replyToIdKey="replyToId";
+    
     public boolean send(Destination from, Destination to, String correlationId, Serializable body) {
         try {
             ObjectMessage om=_cluster.createObjectMessage();
             om.setJMSReplyTo(from);
             om.setJMSDestination(to);
-            om.setJMSCorrelationID(correlationId);
+            om.setStringProperty(_sentFromIdKey, correlationId);
             om.setObject(body);
             _log.trace("send {"+correlationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
             _cluster.send(to, om);
@@ -281,9 +284,23 @@ public class Dispatcher implements MessageListener {
             return false;
         }
     }
-
+    
     public ObjectMessage exchangeSend(Destination from, Destination to, Serializable body, long timeout) {
-        return exchangeSend(from, to, nextCorrelationId(), body, timeout);
+        try {
+            ObjectMessage om=_cluster.createObjectMessage();
+            om.setJMSReplyTo(from);
+            om.setJMSDestination(to);
+            om.setObject(body);
+            String correlationId=nextCorrelationId();
+            om.setStringProperty(_sentFromIdKey, correlationId);
+            Quipu rv=setRendezVous(correlationId, 1);
+            _log.trace("exchangeSend {"+correlationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
+            _cluster.send(to, om);
+            return attemptRendezVous(correlationId, rv, timeout);
+        } catch (JMSException e) {
+            _log.error("problem sending "+body, e);
+            return null;
+        }
     }
 
     public ObjectMessage exchangeSend(Destination from, Destination to, String correlationId, Serializable body, long timeout) {
@@ -300,7 +317,17 @@ public class Dispatcher implements MessageListener {
 
     public boolean reply(ObjectMessage message, Serializable body) {
         try {
-            return send(_cluster.getLocalNode().getDestination(), message.getJMSReplyTo(), message.getJMSCorrelationID(), body);
+            ObjectMessage om=_cluster.createObjectMessage();
+        	Destination from=_cluster.getLocalNode().getDestination();
+            om.setJMSReplyTo(from);
+        	Destination to=message.getJMSReplyTo();
+            om.setJMSDestination(to);
+            String theirCorrelationId=message.getStringProperty(_sentFromIdKey);
+            om.setStringProperty(_replyToIdKey, theirCorrelationId);
+            om.setObject(body);
+            _log.trace("reply {"+theirCorrelationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
+            _cluster.send(to, om);
+            return true;
         } catch (JMSException e) {
             _log.error("problem replying to message", e);
             return false;
@@ -308,7 +335,25 @@ public class Dispatcher implements MessageListener {
     }
 
     public ObjectMessage exchangeReply(ObjectMessage message, Serializable body, long timeout) {
-        return exchangeReply(message, nextCorrelationId(), body, timeout);
+        try {
+            ObjectMessage om=_cluster.createObjectMessage();
+        	Destination from=_cluster.getLocalNode().getDestination();
+            om.setJMSReplyTo(from);
+        	Destination to=message.getJMSReplyTo();
+            om.setJMSDestination(to);
+            String theirCorrelationId=message.getStringProperty(_sentFromIdKey);
+            om.setStringProperty(_replyToIdKey, theirCorrelationId);
+            String ourCorrelationId=nextCorrelationId();
+            om.setStringProperty(_sentFromIdKey, ourCorrelationId);
+            om.setObject(body);
+            Quipu rv=setRendezVous(ourCorrelationId, 1);
+            _log.trace("exchangeSend {"+ourCorrelationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
+            _cluster.send(to, om);
+            return attemptRendezVous(ourCorrelationId, rv, timeout);
+        } catch (JMSException e) {
+            _log.error("problem sending "+body, e);
+            return null;
+        }
     }
 
     public ObjectMessage exchangeReply(ObjectMessage message, String correlationId, Serializable body, long timeout) {
@@ -334,7 +379,7 @@ public class Dispatcher implements MessageListener {
 
     public boolean forward(ObjectMessage message, Destination destination, Serializable body) {
         try {
-            return send(message.getJMSReplyTo(), destination, message.getJMSCorrelationID(), body);
+            return send(message.getJMSReplyTo(), destination, message.getStringProperty(_sentFromIdKey), body);
         } catch (JMSException e) {
             _log.error("problem forwarding message", e);
             return false;
