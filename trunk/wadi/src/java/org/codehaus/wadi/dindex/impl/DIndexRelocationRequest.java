@@ -24,4 +24,8 @@ public class DIndexRelocationRequest extends AbstractDIndexRequest implements Se
         super(name);
     }
 
+    public String toString() {
+        return "<DIndexRelocationRequest: "+_name+">";
+    }
+    
 }

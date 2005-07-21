@@ -25,6 +25,7 @@ public class DIndexInsertionRequest extends AbstractDIndexRequest implements Ser
     }
 
     public String toString() {
-        return "<insert "+_name+">";
+        return "<DIndexInsertionRequest: "+_name+">";
     }
+    
 }

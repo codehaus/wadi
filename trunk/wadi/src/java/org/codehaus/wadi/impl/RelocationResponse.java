@@ -72,4 +72,7 @@ public class RelocationResponse implements Serializable {
         return _address;
     }
 
+    public String toString() {
+        return "<RelocationResponse: "+_sessionName+" -> "+_nodeName+": "+(_motable!=null?"session":_address!=null?"request":"failed")+">";
+    }
 }
