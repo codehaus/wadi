@@ -96,7 +96,7 @@ then
     -Dcatalina.base=$TOMCAT_BASE\
     "
 
-    classpath=`find $CATALINA_HOME/. $WADI_HOME/lib $WADI_HOME/WEB-INF/lib $JAVA_HOME/lib/tools.jar -name "*.jar" | tr '\n' ':'`:$WADI_HOME/WEB-INF/classes
+    classpath=`find $CATALINA_HOME/. $WADI_HOME/WEB-INF/lib $JAVA_HOME/lib/tools.jar -name "*.jar" | tr '\n' ':'`:$WADI_HOME/WEB-INF/classes
 
     $XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.apache.catalina.startup.Bootstrap -config $WADI_HOME/conf/tomcat.xml start
 fi
@@ -113,6 +113,6 @@ if [ tomcat55 = "$container" ]
 then
     cd $TOMCAT55_HOME/bin
     properties="-Djava.endorsed.dirs=$TOMCAT55_HOME/common/endorsed -Dcatalina.base=$TOMCAT55_HOME -Dcatalina.home=$TOMCAT55_HOME -Djava.io.tmpdir=$TOMCAT55_HOME/temp $properties"
-    classpath=`find $TOMCAT55_HOME/. $WADI_HOME/lib $WADI_HOME/WEB-INF/lib $JETTY_HOME/lib/org.mortbay.jetty.jar $JAVA_HOME/lib/tools.jar -name "*.jar" | tr '\n' ':'`:$WADI_HOME/WEB-INF/classes
+    classpath=`find $TOMCAT55_HOME/. $WADI_HOME/WEB-INF/lib $JETTY_HOME/lib/org.mortbay.jetty.jar $JAVA_HOME/lib/tools.jar -name "*.jar" | tr '\n' ':'`:$WADI_HOME/WEB-INF/classes
     $XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.apache.catalina.startup.Bootstrap -config $WADI_HOME/conf/tomcat55.xml start
 fi
