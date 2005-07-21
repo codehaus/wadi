@@ -143,7 +143,7 @@ public class BucketFacade extends AbstractBucket {
         String correlationId=dispatcher.nextCorrelationId();
         Quipu rv=dispatcher.setRendezVous(correlationId, 1);
         try {
-            message.setJMSCorrelationID(correlationId);
+            message.setStringProperty("sentFromId", correlationId); // FIXME - reference key in Dispatcher...
             dispatch(message, request);
         } catch (JMSException e) {
             _log.error("could not dispatch message", e);
