@@ -31,32 +31,29 @@
     such as :</p>
 
     <ul>
-    <li>Simple HttpSession semantics and a guaranteed resolution to
-    application vs container space concurrency issues within the
-    HttpSession</li>
+    <li>A resolution to application vs container space concurrency issues surrounding HttpSessions</li>
     <li>HttpSession Migration (inter-node and node-store-node)</li>
+    <li>Pluggable HttpSession serialisation strategies - per-session, per-attribute</li>
     <li>HttpRequest relocation (by redirection and proxying)</li>
     <li>Pluggable/Stackable HttpSession persistance mechanisms (File, Database, etc.)</li>
-    <li>NYI - pluggable HttpSession state replication strategies - in-vm, db, file etc..</li>
-    <li>NYI - pluggable self-partitioning, self-healing clustering substrate.</li>
+    <li>A scalable, self-partitioning, self-healing clustering substrate - a distributed index/map</li>
+    <li>NYI - Efficient in-vm replication for HA state</li>
+    <li>NYI - pluggable replication strategies - immediate, end-of-request-group, timed</li>
     </ul>
 
-    <p>WADI can currently be plugged into the following J2EE web
-    containers:</p>
+    <p>WADI currently supports the following J2EE web containers:</p>
     <ul>
     <li>Tomcat 5.0.28+</li>
     <li>Jetty 5.1.3+</li>
     </ul>
 
-    <p>WADI is currently undergoing a major rearchitecture. New
-    documentation is being entered into the <a
-    href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI">WADI
-    WIKI</a> . We hope to have a 2.0 release out shortly.</p>
+    <p>
+    WADI-2.0 is a complete rearchitecture and rewrite.
+    New documentation is being entered into the <a href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI">WADI WIKI</a>.
+    We hope to have a 2.0 release out shortly.
+    </p>
 
-    <p>Please use the <a
-    href="http://docs.codehaus.org/display/WADI/Getting+Started">Getting
-    Started Page</a> to boostrap yourself into WADI's world</p>
-
+    <p>Please use the <a href="http://docs.codehaus.org/display/WADI/Getting+Started">Getting Started Page</a> to boostrap yourself into WADI's world</p>.
     <p>Please browse our <a href="./faq.html">FAQ</a> for further detail.</p>
 
    <table border="1">
@@ -67,10 +64,22 @@
      <th>ZIP</th>
     </tr>
     <tr>
-     <th>13th June 2004</th>
-     <th>0.9</th>
-     <th><a href="http://dist.codehaus.org/wadi/distributions/wadi-0.9.tgz">wadi-0.9.tgz</a></th>
-     <th><a href="http://dist.codehaus.org/wadi/distributions/wadi-0.9.zip">wadi-0.9.zip</a></th>
+     <td>13th June 2004</td>
+     <td>0.9</td>
+     <td><a href="http://dist.codehaus.org/wadi/distributions/wadi-0.9.tgz">wadi-0.9.tgz</a></td>
+     <td><a href="http://dist.codehaus.org/wadi/distributions/wadi-0.9.zip">wadi-0.9.zip</a></td>
+    </tr>
+    <tr>
+     <th>Date</th>
+     <th>Release</th>
+     <th>WAR</th>
+     <th>Size</th>
+    </tr>
+    <tr>
+     <td>11th July 2005 +</td>
+     <td>2.0-SNAPSHOT</td>
+     <td><a href="http://dist.codehaus.org/wadi/wadi/wars/wadi-2.0-SNAPSHOT.war">wadi-2.0-SNAPSHOT.war</a></td>
+     <td>6.2M</td>
     </tr>
    </table>
     ]]>
