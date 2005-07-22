@@ -29,7 +29,7 @@ import org.codehaus.wadi.Motable;
  */
 public class EmigrationRequest implements Serializable {
 	protected Motable _motable;
-
+	
 	/**
 	 *
 	 */
@@ -37,15 +37,17 @@ public class EmigrationRequest implements Serializable {
 		super();
 		_motable=motable;
 	}
-
+	
 	public EmigrationRequest() {
 		// for use when demarshalling...
 	}
-
-	public Motable getMotable(){return _motable;}
-
-  public String toString() {
-    return "<EmigrationRequest: "+_motable.getName()+">";
-  }
-
+	
+	public Motable getMotable() {
+		return _motable;
+	}
+	
+	public String toString() {
+		return "<EmigrationRequest: "+_motable.getName()+">";
+	}
+	
 }

@@ -266,8 +266,8 @@ public class Dispatcher implements MessageListener {
         return "<unknown>";
     }
 
-    protected static String _sentFromIdKey="sentFromId";
-    protected static String _replyToIdKey="replyToId";
+    public static String _sentFromIdKey="sentFromId";
+    public static String _replyToIdKey="replyToId";
     
     public boolean send(Destination from, Destination to, String correlationId, Serializable body) {
         try {
@@ -275,6 +275,7 @@ public class Dispatcher implements MessageListener {
             om.setJMSReplyTo(from);
             om.setJMSDestination(to);
             om.setStringProperty(_sentFromIdKey, correlationId);
+            om.setStringProperty(_replyToIdKey, correlationId);
             om.setObject(body);
             _log.trace("send {"+correlationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
             _cluster.send(to, om);
