@@ -28,20 +28,29 @@ import org.codehaus.wadi.Location;
  * @version $Revision$
  */
 public class EmigrationResponse implements Serializable {
-
-    protected String _name;
-    protected Location _location;
-
-    public EmigrationResponse(String name, Location location) {
-        _name=name;
-        _location=location;
-    }
-
-    protected EmigrationResponse() {
-        // for deserialisation ...
-    }
-    
-	public String getId(){return _name;}
-	public Location getLocation() {return _location;}
-
+	
+	protected String _name;
+	protected Location _location;
+	
+	public EmigrationResponse(String name, Location location) {
+		_name=name;
+		_location=location;
+	}
+	
+	protected EmigrationResponse() {
+		// for deserialisation ...
+	}
+	
+	public String getId() {
+		return _name;
+	}
+	
+	public Location getLocation() {
+		return _location;
+	}
+	
+	public String toString() {
+		return "<EmigrationResponse: "+_name+">";
+	}
+	
 }
