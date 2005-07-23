@@ -256,14 +256,6 @@
   </bean>
 
 
-<!--
-        _cluster.setTop(_memory);
--->
-
-
-  <!-- the contextualiser stack -->
-
-
   <!-- the Router (load-balancer integration) -->
 
 <!--
