@@ -196,6 +196,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         }
     }
 
+    public int getBucket() {
+    	// TODO - think about synchronisation...
+    	BucketKeys keys=(BucketKeys)_distributedState.get(_bucketKeysKey);
+    	return keys.getKeys()[Math.abs((int)(Math.random()*keys.size()))];
+    }
+    
     public void onNodeUpdate(ClusterEvent event) {
         Node node=event.getNode();
         _log.info("onNodeUpdate: "+getNodeName(node)+": "+node.getState());
