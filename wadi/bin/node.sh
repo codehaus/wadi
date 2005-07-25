@@ -29,6 +29,8 @@ echo "JETTY_HOME=$JETTY_HOME"
 echo "CATALINA_HOME=$CATALINA_HOME"
 $JAVA -fullversion
 
+cp $WADI_HOME/conf/simplelog.properties $WADI_HOME/WEB-INF/classes
+
 properties=`sed -e '/#.*/d' -e 's/${wadi.home}/$WADI_HOME/g' -e 's/\(.*\)/-D\1/g' $WADI_HOME/conf/node.$instance.properties | tr '\n' ' '`
 properties=`eval "echo $properties"`
 
@@ -41,25 +43,11 @@ properties="\
 -Dcycle.me=true \
 $properties \
 -Dwadi.home=$WADI_HOME \
--Dactivemq.persistenceAdapter=org.codehaus.activemq.store.vm.VMPersistenceAdapter \
 -Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog \
--Dorg.apache.commons.logging.LogFactory=org.apache.commons.logging.impl.LogFactoryImpl \
--Dorg.apache.commons.logging.simplelog.log.org=info \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.activecluster=warn \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.activemq=warn \
--Dorg.apache.commons.logging.simplelog.log.org.springframework=info \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=debug \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.AbsoluteEvicter=info \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.NeverEvicter=info \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.dindex=debug \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.HybridRelocater=info \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.ClusterContextualiser=info \
--Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.Dispatcher=trace \
--Dorg.apache.commons.logging.simplelog.log.org.mortbay=info \
--Dorg.apache.commons.logging.simplelog.showShortLogname=true \
--Dorg.apache.commons.logging.simplelog.showdatetime=true \
 -Djava.io.tmpdir=$INSTANCE \
 "
+
+classpath=`find $WADI_HOME/WEB-INF/lib -name "*.jar" | tr '\n' ':'`$WADI_HOME/WEB-INF/classes:$JAVA_HOME/lib/tools.jar
 
 if [ jetty = "$container" ]
 then
@@ -69,35 +57,32 @@ then
     properties="\
     $properties\
     -Djetty.home=$JETTY_BASE\
-    -Djava.endorsed.dirs=$CATALINA_HOME/common/endorsed\
-    -Dcatalina.base=$TOMCAT_BASE\
     "
 
-    classpath=`find lib ext $WADI_HOME/WEB-INF/lib -name "*.jar" | tr '\n' ':'`./start.jar:$JAVA_HOME/lib/tools.jar:$WADI_HOME/WEB-INF/classes
+    classpath=`find ./start.jar lib ext -name "*.jar" | tr '\n' ':'`$classpath
     $XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.mortbay.jetty.Server $WADI_HOME/conf/jetty.xml
 fi
 
 if [ tomcat = "$container" ]
 then
-    TOMCAT_BASE=$INSTANCE
-
-    mkdir -p $TOMCAT_BASE/webapps
-    mkdir -p $TOMCAT_BASE/work
-    cp -r $CATALINA_HOME/conf $TOMCAT_BASE/
-    rm -fr $TOMCAT_BASE/conf/Catalina/localhost
-    mkdir -p $TOMCAT_BASE/conf/Catalina/localhost
-
+    CATALINA_BASE=$INSTANCE
     cd $CATALINA_HOME/bin
+
+    mkdir -p $CATALINA_BASE/webapps
+    mkdir -p $CATALINA_BASE/work
+    cp -r $CATALINA_HOME/conf $CATALINA_BASE/
+    rm -fr $CATALINA_BASE/conf/Catalina/localhost
+    mkdir -p $CATALINA_BASE/conf/Catalina/localhost
+
 
     properties="\
     $properties\
     -Dcatalina.home=$CATALINA_HOME\
     -Djava.endorsed.dirs=$CATALINA_HOME/common/endorsed\
-    -Dcatalina.base=$TOMCAT_BASE\
+    -Dcatalina.base=$CATALINA_BASE\
     "
 
-    classpath=`find $CATALINA_HOME/. $WADI_HOME/WEB-INF/lib $JAVA_HOME/lib/tools.jar -name "*.jar" | tr '\n' ':'`:$WADI_HOME/WEB-INF/classes
-
+    classpath=`find $CATALINA_HOME/. -name "*.jar" | tr '\n' ':'`$classpath
     $XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.apache.catalina.startup.Bootstrap -config $WADI_HOME/conf/tomcat.xml start
 fi
 
