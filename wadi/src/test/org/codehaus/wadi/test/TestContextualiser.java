@@ -137,14 +137,16 @@ public class TestContextualiser extends TestCase {
         _log.info("starting ...");
         _httpAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8888);
         DatabaseMotable.init(_ds, _table);
+        _dir.mkdir();
     }
 
     /*
      * @see TestCase#tearDown()
      */
     protected void tearDown() throws Exception {
-        super.tearDown();
+    	_dir.delete();
         DatabaseMotable.destroy(_ds, _table);
+        super.tearDown();
         _log.info("...stopped");
     }
 
@@ -458,7 +460,7 @@ public class TestContextualiser extends TestCase {
     // shared
     protected final Streamer _streamer=new SimpleStreamer();
     protected final Contextualiser _dummyContextualiser=new DummyContextualiser();
-    protected final File _dir=new File("/tmp/wadi/"+System.getProperty("node.name"));
+    protected final File _dir=new File("/tmp/wadi-test-"+System.currentTimeMillis());
     protected final Collapser _collapser=new HashingCollapser(1, 2000);
     protected final SessionWrapperFactory _sessionWrapperFactory=new JettySessionWrapperFactory();
     protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
