@@ -475,7 +475,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         	_distributedState.put(_bucketKeysKey, keys);
         	_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
         	_log.info("local state (after giving): "+keys);
-        	String correlationID=om.getStringProperty(Dispatcher._sentFromIdKey);
+        	String correlationID=om.getStringProperty(Dispatcher._outgoingCorrelationIdKey);
         	_log.info("CORRELATIONID: "+correlationID);
         	Map correlationIDMap=(Map)_distributedState.get(_correlationIDMapKey);
         	Destination from=om.getJMSReplyTo();

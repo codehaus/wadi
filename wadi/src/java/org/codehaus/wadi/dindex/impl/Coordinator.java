@@ -186,7 +186,7 @@ public class Coordinator implements Runnable {
     			Node node=leaving[i];
     			if (!left.contains(node.getDestination())) {
     				BucketEvacuationResponse response=new BucketEvacuationResponse();
-    				if (!_dispatcher.send(_cluster.getLocalNode().getDestination(), node.getDestination(), node.getName(), response)) {
+    				if (!_dispatcher.reply(_cluster.getLocalNode().getDestination(), node.getDestination(), node.getName(), response)) {
     					_log.error("problem sending EvacuationResponse to "+DIndex.getNodeName(node));
     					failures++;
     				}
