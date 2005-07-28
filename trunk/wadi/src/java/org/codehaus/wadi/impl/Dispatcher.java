@@ -167,7 +167,7 @@ public class Dispatcher implements MessageListener {
 
 	  public void dispatch(ObjectMessage om, Serializable obj) throws JMSException {
 	      // rendez-vous with waiting thread...
-	      String correlationId=om.getStringProperty(_replyToIdKey);
+	      String correlationId=om.getStringProperty(_incomingCorrelationIdKey);
 	      synchronized (_rvMap2) {
 	          Quipu rv=(Quipu)_rvMap2.get(correlationId);
 	          if (rv==null) {
@@ -204,7 +204,7 @@ public class Dispatcher implements MessageListener {
     				(body=objectMessage.getObject())!=null &&
     				(dispatcher=(InternalDispatcher)_map.get(body.getClass()))!=null
     		) {
-                _log.trace("receive {"+message.getStringProperty(_replyToIdKey)+"}: "+getNodeName(message.getJMSReplyTo())+" -> "+getNodeName(message.getJMSDestination())+" : "+body);
+                _log.trace("receive {"+message.getStringProperty(_incomingCorrelationIdKey)+"}: "+getNodeName(message.getJMSReplyTo())+" -> "+getNodeName(message.getJMSDestination())+" : "+body);
     			do {
     				try {
     					synchronized (dispatcher) {
@@ -266,16 +266,18 @@ public class Dispatcher implements MessageListener {
         return "<unknown>";
     }
 
-    public static String _sentFromIdKey="sentFromId";
-    public static String _replyToIdKey="replyToId";
+    //-----------------------------------------------------------------------------------------------
+
+    public static String _outgoingCorrelationIdKey="outgoingCorrelationId";
+    public static String _incomingCorrelationIdKey="incomingCorrelationId";
     
     public boolean send(Destination from, Destination to, String correlationId, Serializable body) {
         try {
             ObjectMessage om=_cluster.createObjectMessage();
             om.setJMSReplyTo(from);
             om.setJMSDestination(to);
-            om.setStringProperty(_sentFromIdKey, correlationId);
-            om.setStringProperty(_replyToIdKey, correlationId);
+            om.setStringProperty(_outgoingCorrelationIdKey, correlationId);
+            om.setStringProperty(_incomingCorrelationIdKey, correlationId);
             om.setObject(body);
             _log.trace("send {"+correlationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
             _cluster.send(to, om);
@@ -293,7 +295,7 @@ public class Dispatcher implements MessageListener {
             om.setJMSDestination(to);
             om.setObject(body);
             String correlationId=nextCorrelationId();
-            om.setStringProperty(_sentFromIdKey, correlationId);
+            om.setStringProperty(_outgoingCorrelationIdKey, correlationId);
             Quipu rv=setRendezVous(correlationId, 1);
             _log.trace("exchangeSend {"+correlationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
             _cluster.send(to, om);
@@ -316,6 +318,22 @@ public class Dispatcher implements MessageListener {
         }
     }
 
+    public boolean reply(Destination from, Destination to, String correlationId, Serializable body) {
+        try {
+            ObjectMessage om=_cluster.createObjectMessage();
+            om.setJMSReplyTo(from);
+            om.setJMSDestination(to);
+            om.setStringProperty(_incomingCorrelationIdKey, correlationId);
+            om.setObject(body);
+            _log.trace("send: "+getNodeName(from)+" -> "+getNodeName(to)+" {"+correlationId+"} : "+body);
+            _cluster.send(to, om);
+            return true;
+        } catch (JMSException e) {
+            _log.error("problem sending "+body, e);
+            return false;
+        }
+    }
+    
     public boolean reply(ObjectMessage message, Serializable body) {
         try {
             ObjectMessage om=_cluster.createObjectMessage();
@@ -323,10 +341,10 @@ public class Dispatcher implements MessageListener {
             om.setJMSReplyTo(from);
         	Destination to=message.getJMSReplyTo();
             om.setJMSDestination(to);
-            String theirCorrelationId=message.getStringProperty(_sentFromIdKey);
-            om.setStringProperty(_replyToIdKey, theirCorrelationId);
+            String correlationId=message.getStringProperty(_outgoingCorrelationIdKey);
+            om.setStringProperty(_incomingCorrelationIdKey, correlationId);
             om.setObject(body);
-            _log.trace("reply {"+theirCorrelationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
+            _log.trace("reply: "+getNodeName(from)+" -> "+getNodeName(to)+" {"+correlationId+"} : "+body);
             _cluster.send(to, om);
             return true;
         } catch (JMSException e) {
@@ -342,10 +360,10 @@ public class Dispatcher implements MessageListener {
             om.setJMSReplyTo(from);
         	Destination to=message.getJMSReplyTo();
             om.setJMSDestination(to);
-            String theirCorrelationId=message.getStringProperty(_sentFromIdKey);
-            om.setStringProperty(_replyToIdKey, theirCorrelationId);
+            String theirCorrelationId=message.getStringProperty(_outgoingCorrelationIdKey);
+            om.setStringProperty(_incomingCorrelationIdKey, theirCorrelationId);
             String ourCorrelationId=nextCorrelationId();
-            om.setStringProperty(_sentFromIdKey, ourCorrelationId);
+            om.setStringProperty(_outgoingCorrelationIdKey, ourCorrelationId);
             om.setObject(body);
             Quipu rv=setRendezVous(ourCorrelationId, 1);
             _log.trace("exchangeSend {"+ourCorrelationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
@@ -380,7 +398,7 @@ public class Dispatcher implements MessageListener {
 
     public boolean forward(ObjectMessage message, Destination destination, Serializable body) {
         try {
-            return send(message.getJMSReplyTo(), destination, message.getStringProperty(_sentFromIdKey), body);
+            return send(message.getJMSReplyTo(), destination, message.getStringProperty(_outgoingCorrelationIdKey), body);
         } catch (JMSException e) {
             _log.error("problem forwarding message", e);
             return false;
