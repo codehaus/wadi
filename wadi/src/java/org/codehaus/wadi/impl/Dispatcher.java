@@ -268,19 +268,20 @@ public class Dispatcher implements MessageListener {
 
     //-----------------------------------------------------------------------------------------------
 
-    protected static String _outgoingCorrelationIdKey="outgoingCorrelationId";
     protected static String _incomingCorrelationIdKey="incomingCorrelationId";
     
     public static String getIncomingCorrelationId(ObjectMessage message) throws JMSException {
     	return message.getStringProperty(_incomingCorrelationIdKey);
     }
     
-    public static String getOutgoingCorrelationId(ObjectMessage message) throws JMSException {
-    	return message.getStringProperty(_outgoingCorrelationIdKey);
-    }
-    
     public static void setIncomingCorrelationId(ObjectMessage message, String id) throws JMSException {
     	message.setStringProperty(_incomingCorrelationIdKey, id);
+    }
+    
+    protected static String _outgoingCorrelationIdKey="outgoingCorrelationId";
+
+    public static String getOutgoingCorrelationId(ObjectMessage message) throws JMSException {
+    	return message.getStringProperty(_outgoingCorrelationIdKey);
     }
     
     public static void setOutgoingCorrelationId(ObjectMessage message, String id) throws JMSException {
@@ -288,15 +289,14 @@ public class Dispatcher implements MessageListener {
     }
     
     
-    public boolean send(Destination from, Destination to, String correlationId, Serializable body) {
+    public boolean send(Destination from, Destination to, String outgoingCorrelationId, Serializable body) {
         try {
             ObjectMessage om=_cluster.createObjectMessage();
             om.setJMSReplyTo(from);
             om.setJMSDestination(to);
-            setOutgoingCorrelationId(om, correlationId);
-            setIncomingCorrelationId(om, correlationId);
+            setOutgoingCorrelationId(om, outgoingCorrelationId);
             om.setObject(body);
-            _log.trace("send {"+correlationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
+            _log.trace("send {"+outgoingCorrelationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
             _cluster.send(to, om);
             return true;
         } catch (JMSException e) {
@@ -323,26 +323,26 @@ public class Dispatcher implements MessageListener {
         }
     }
 
-    public ObjectMessage exchangeSend(Destination from, Destination to, String correlationId, Serializable body, long timeout) {
+    public ObjectMessage exchangeSend(Destination from, Destination to, String outgoingCorrelationId, Serializable body, long timeout) {
         Quipu rv=null;
         // set up a rendez-vous...
-        rv=setRendezVous(correlationId, 1);
+        rv=setRendezVous(outgoingCorrelationId, 1);
         // send the message...
-        if (send(from, to, correlationId, body)) {
-            return attemptRendezVous(correlationId, rv, timeout);
+        if (send(from, to, outgoingCorrelationId, body)) {
+            return attemptRendezVous(outgoingCorrelationId, rv, timeout);
         } else {
             return null;
         }
     }
 
-    public boolean reply(Destination from, Destination to, String correlationId, Serializable body) {
+    public boolean reply(Destination from, Destination to, String incomingCorrelationId, Serializable body) {
         try {
             ObjectMessage om=_cluster.createObjectMessage();
             om.setJMSReplyTo(from);
             om.setJMSDestination(to);
-            setIncomingCorrelationId(om, correlationId);
+            setIncomingCorrelationId(om, incomingCorrelationId);
             om.setObject(body);
-            _log.trace("send: "+getNodeName(from)+" -> "+getNodeName(to)+" {"+correlationId+"} : "+body);
+            _log.trace("reply: "+getNodeName(from)+" -> "+getNodeName(to)+" {"+incomingCorrelationId+"} : "+body);
             _cluster.send(to, om);
             return true;
         } catch (JMSException e) {
@@ -358,10 +358,10 @@ public class Dispatcher implements MessageListener {
             om.setJMSReplyTo(from);
         	Destination to=message.getJMSReplyTo();
             om.setJMSDestination(to);
-            String correlationId=getOutgoingCorrelationId(message);
-            setIncomingCorrelationId(om, correlationId);
+            String incomingCorrelationId=getOutgoingCorrelationId(message);
+            setIncomingCorrelationId(om, incomingCorrelationId);
             om.setObject(body);
-            _log.trace("reply: "+getNodeName(from)+" -> "+getNodeName(to)+" {"+correlationId+"} : "+body);
+            _log.trace("reply: "+getNodeName(from)+" -> "+getNodeName(to)+" {"+incomingCorrelationId+"} : "+body);
             _cluster.send(to, om);
             return true;
         } catch (JMSException e) {
@@ -377,29 +377,17 @@ public class Dispatcher implements MessageListener {
             om.setJMSReplyTo(from);
         	Destination to=message.getJMSReplyTo();
             om.setJMSDestination(to);
-            String theirCorrelationId=getOutgoingCorrelationId(message);
-            setIncomingCorrelationId(om, theirCorrelationId);
-            String ourCorrelationId=nextCorrelationId();
-            setOutgoingCorrelationId(om, ourCorrelationId);
+            String incomingCorrelationId=getOutgoingCorrelationId(message);
+            setIncomingCorrelationId(om, incomingCorrelationId);
+            String outgoingCorrelationId=nextCorrelationId();
+            setOutgoingCorrelationId(om, outgoingCorrelationId);
             om.setObject(body);
-            Quipu rv=setRendezVous(ourCorrelationId, 1);
-            _log.trace("exchangeSend {"+ourCorrelationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
+            Quipu rv=setRendezVous(outgoingCorrelationId, 1);
+            _log.trace("exchangeSend {"+outgoingCorrelationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" {"+incomingCorrelationId+"} : "+body);
             _cluster.send(to, om);
-            return attemptRendezVous(ourCorrelationId, rv, timeout);
+            return attemptRendezVous(outgoingCorrelationId, rv, timeout);
         } catch (JMSException e) {
             _log.error("problem sending "+body, e);
-            return null;
-        }
-    }
-
-    public ObjectMessage exchangeReply(ObjectMessage message, String correlationId, Serializable body, long timeout) {
-        Quipu rv=null;
-        // set up a rendez-vous...
-        rv=setRendezVous(correlationId, 1);
-        // send the message...
-        if (reply(message, body)) {
-            return attemptRendezVous(correlationId, rv, timeout);
-        } else {
             return null;
         }
     }
