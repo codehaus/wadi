@@ -74,7 +74,7 @@ public class SoakTestClient implements Runnable {
                 _errors.increment();
             } finally {
                 int c=_completer.increment();
-                //_log.info(""+c+" = "+_state.getCookies()[0].getValue()+" : "+_path);
+                _log.info(""+c+" = "+_state.getCookies()[0].getValue()+" : "+_path);
                 if (_cleanUp) {
                 }
             }
@@ -186,6 +186,7 @@ public class SoakTestClient implements Runnable {
                 (clients[i]=new SoakTestClient(executor, requestsPerClient, numIterations, completer, errors, httpClients)).start();
             // wait for work to be done....
             int totalNumRequests=numClients*(requestsPerClient*numIterations+2); // create, render*n, destroy
+            _log.info("waiting for "+totalNumRequests+" requests to be completed...");
             completer.whenEqual(totalNumRequests, null);
             executor.shutdownNow();
             
