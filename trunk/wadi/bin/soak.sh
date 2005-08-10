@@ -17,6 +17,6 @@ WEB-INF/lib/concurrent-1.3.4.jar:\
 lib/commons-logging-1.0.4.jar:\
 /usr/local/java/commons-httpclient-3.0-rc2/commons-httpclient-3.0-rc2.jar\
  \
-org.codehaus.wadi.test.SoakTestClient 60000 10 6000 1
+org.codehaus.wadi.test.SoakTestClient 1000 10 100 1
 
 #WEB-INF/lib/commons-httpclient-2.0.2.jar\
