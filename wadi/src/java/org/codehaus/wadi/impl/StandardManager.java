@@ -47,6 +47,7 @@ import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.ValuePool;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 /**
  * TODO - JavaDoc this type
@@ -256,6 +257,12 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
     public String getSessionUrlParamName(){return "jsessionid";}
 
     public boolean getErrorIfSessionNotAcquired() {return _errorIfSessionNotAcquired;}
+    
+    protected SynchronizedInt _errorCounter=new SynchronizedInt(0);
+    
+    public void incrementErrorCounter() {_errorCounter.increment();}
+    
+    public int getErrorCount() {return _errorCounter.get();}
     
     public SynchronizedBoolean getAcceptingSessions() {return _acceptingSessions;}
     
