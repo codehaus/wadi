@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -32,6 +33,8 @@ import org.codehaus.wadi.impl.RelocationRequest;
 import org.codehaus.wadi.impl.RelocationResponse;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.Mutex;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class LocalBucket extends AbstractBucket implements Serializable {
 
@@ -61,64 +64,120 @@ public class LocalBucket extends AbstractBucket implements Serializable {
         return "<local:"+_key+">";
     }
     
-    public Destination put(String name, Destination location) {
-        return (Destination)_map.put(name, location);
+    public void put(String name, Destination location) {
+        _map.put(name, new LockableLocation(location));
     }
     
-    public void dispatch(ObjectMessage om, DIndexRequest request) {
-        try {
-            DIndexResponse response=null;
-            if (request instanceof DIndexInsertionRequest) {
-                Destination location=om.getJMSReplyTo();
-                put(request.getName(), location); // remember location of actual session...
-                _log.info("insertion {"+request.getName()+" : "+_config.getNodeName(location)+"}");
-                response=new DIndexInsertionResponse();
-                // we can optimise local-local send here - TODO
-                _config.getDispatcher().reply(om, response);
-            } else if (request instanceof DIndexDeletionRequest) {
-                Object oldValue=_map.remove(request.getName());
-                _log.info("delete "+request.getName()+" : "+_config.getNodeName((Destination)oldValue));
-                if (oldValue==null)
-                    throw new IllegalStateException();
-                response=new DIndexDeletionResponse();
-                // we can optimise local-local send here - TODO
-                _config.getDispatcher().reply(om, response);
-            } else if (request instanceof DIndexRelocationRequest) {
-                Destination location=om.getJMSReplyTo();
-                Destination oldLocation=put(request.getName(), location); // remember new location of actual session...
-                _log.info("relocate "+request.getName()+" : "+_config.getNodeName(oldLocation)+" -> "+_config.getNodeName(location));
-                response=new DIndexRelocationResponse();
-                // we can optimise local-local send here - TODO
-                _config.getDispatcher().reply(om, response);
-            } else if (request instanceof DIndexForwardRequest) {
-                // we have got to someone who actually knows where we want to go.
-                // strip off wrapper and deliver actual request to its final destination...
-                String name=request.getName();
-                Destination location=(Destination)_map.get(name);
-                if (location==null) {
-                    request=((DIndexForwardRequest)request).getRequest();
-                    if (request instanceof RelocationRequest) {
-                        assert om!=null;
-                        assert name!=null;
-                        assert _config!=null;
-                        _config.getDispatcher().reply(om, new RelocationResponse(name));
-                    } else {
-                        _log.warn("unexpected nested request structure - ignoring: "+request);
-                    }
-                } else {
-                    assert location!=null;
-                    assert request!=null;
-                    assert location!=null;
-                    assert _config!=null;
-                    _log.info("directing: " +request+" -> "+_config.getNodeName(location));
-                    if (!_config.getDispatcher().forward(om, location, ((DIndexForwardRequest)request).getRequest()))
-                        _log.warn("could not forward message");
-                }
-            } else {
-                _log.info("What should I do with this ?: "+request);
-            }
-        } catch (JMSException e) {
-            _log.info("gor blimey!", e);
-        }
+    public void dispatch(ObjectMessage message, DIndexRequest request) {
+    	if (request instanceof DIndexInsertionRequest) {
+    		onMessage(message, (DIndexInsertionRequest)request);
+    	} else if (request instanceof DIndexDeletionRequest) {
+    		onMessage(message, (DIndexDeletionRequest)request);
+    	} else if (request instanceof DIndexRelocationRequest) {
+    		onMessage(message, (DIndexRelocationRequest)request);
+    	} else if (request instanceof DIndexForwardRequest) {
+    		onMessage(message, (DIndexForwardRequest)request);
+    	} else {
+    		_log.info("What should I do with this ?: "+request);
+    	}
     }
+    
+    public static class LockableLocation implements Serializable {
+
+    	public Destination _location;
+    	public transient Sync _lock;
+    	
+    	public LockableLocation(Destination location) {
+    		_lock=new Mutex();
+    		_location=location;
+    	}
+
+    	protected LockableLocation() {
+    		_lock=new Mutex();
+    	}
+
+    	// prevents Object from being Serialised whilst locked...
+    	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    		try {
+    			_lock.acquire();
+    			out.defaultWriteObject();
+    			_lock.release();
+    		} catch (Exception e) {
+    			_log.error("unexpected problem", e);
+    		}
+    	}
+
+    }
+    
+    protected void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
+        Destination location=null;
+        try{location=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
+        _map.put(request.getName(), new LockableLocation(location)); // remember location of actual session...
+        _log.info("insertion {"+request.getName()+" : "+_config.getNodeName(location)+"}");
+        DIndexResponse response=new DIndexInsertionResponse();
+        // we can optimise local-local send here - TODO
+        _config.getDispatcher().reply(message, response);
+    }
+    
+    protected void onMessage(ObjectMessage message, DIndexDeletionRequest request) {
+		LockableLocation oldValue=(LockableLocation)_map.remove(request.getName());
+		_log.info("delete "+request.getName()+" : "+_config.getNodeName(oldValue._location));
+		if (oldValue==null)
+			throw new IllegalStateException();
+		DIndexResponse response=new DIndexDeletionResponse();
+		// we can optimise local-local send here - TODO
+		_config.getDispatcher().reply(message, response);
+    }
+    
+    protected void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
+        Destination newLocation=null;
+        try{newLocation=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
+        LockableLocation ll=(LockableLocation)_map.get(request.getName());
+        Destination oldLocation=ll._location;
+        ll._location=newLocation;
+        _log.info("relocate "+request.getName()+" : "+_config.getNodeName(oldLocation)+" -> "+_config.getNodeName(newLocation));
+		_log.info("RELEASING MIGRATION LOCK");
+        // TODO - UNLOCK - release session Migration Lock
+		ll._lock.release();
+        DIndexResponse response=new DIndexRelocationResponse();
+        // we can optimise local-local send here - TODO
+        _config.getDispatcher().reply(message, response);
+    }
+    
+    protected void onMessage(ObjectMessage message, DIndexForwardRequest request) {
+        // we have got to someone who actually knows where we want to go.
+        // strip off wrapper and deliver actual request to its final destination...
+        String name=request.getName();
+        LockableLocation ll=(LockableLocation)_map.get(name);
+        if (ll==null) { // session could not be located...
+        	DIndexRequest r=request.getRequest();
+            if (r instanceof RelocationRequest) {
+                assert message!=null;
+                assert name!=null;
+                assert _config!=null;
+                _config.getDispatcher().reply(message, new RelocationResponse(name));
+            } else {
+                _log.warn("unexpected nested request structure - ignoring: "+r);
+            }
+        } else { // session succesfully located...
+        	assert ll!=null;
+        	assert request!=null;
+        	assert _config!=null;
+        	// TODO - LOCK - acquire Session Migration Lock
+        	DIndexRequest r=request.getRequest();
+        	if (r instanceof RelocationRequest) {
+        		try {
+        			_log.info("ACQUIRING MIGRATION LOCK");
+        			ll._lock.acquire();
+        		} catch (Exception e) {
+        			_log.error("unexpected problem, e");
+        		}
+        	}
+        	
+        	_log.info("directing: " +request+" -> "+_config.getNodeName(ll._location));
+        	if (!_config.getDispatcher().forward(message, ll._location, request.getRequest()))
+        		_log.warn("could not forward message");
+        }	
+    }
+
 }
