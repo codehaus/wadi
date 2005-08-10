@@ -111,10 +111,20 @@
     >
   </bean>
 
+<!--
   <bean
     id="Collapser"
     class="org.codehaus.wadi.impl.DebugCollapser"
-    ><!-- should be a HashingCollapser -->
+    >
+  </bean>
+-->
+
+  <bean
+    id="Collapser"
+    class="org.codehaus.wadi.impl.HashingCollapser"
+    >
+    <constructor-arg type="int"><value>1024</value></constructor-arg>
+    <constructor-arg type="long"><value>10000</value></constructor-arg>
   </bean>
 
   <bean
