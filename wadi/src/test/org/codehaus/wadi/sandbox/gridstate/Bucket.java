@@ -17,11 +17,7 @@ public class Bucket implements BucketInterface {
 		_bucket.init(config);
 	}
 	
-	public Destination getDestination() {
-		return _bucket.getDestination();
-	}
-	
-	public Destination putAbsent(Serializable key, Destination location) {
+	public boolean putAbsent(Serializable key, Destination location) {
 		return _bucket.putAbsent(key, location);
 	}
 

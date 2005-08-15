@@ -47,7 +47,7 @@ public class TestGCache extends TestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        _numBuckets=6;
+        _numBuckets=12;
         _factory=new FixedWidthSessionIdFactory(10, "0123456789".toCharArray(), _numBuckets);
         _mapper=new BucketMapper() { public int map(Serializable key) { return _factory.getBucket((String)key);} };
     }
@@ -86,20 +86,30 @@ public class TestGCache extends TestCase {
         	_gcache=new GCache(nodeName, numBuckets, _dispatcher, _mapper);
         }
         
-        public void start() {
+        public void start() throws Exception {
+        	_cluster.start();
         	_gcache.start();
         }
         
-        public void stop() {
+        public void stop() throws Exception {
         	_gcache.stop();
+        	_cluster.stop();
         }
         
         public Cluster getCluster() {
         	return _cluster;
         }
         
+        public Bucket[] getBuckets() {
+        	return _gcache.getBuckets();
+        }
+        
+        public GCache getGCache() {
+        	return _gcache;
+        }
+        
         public Object putAbsent(Object key, Object value) {
-        	return _gcache.put(key, value);
+        	return _gcache.putAbsent(key, value);
         }
 
         public Object putExists(Object key, Object value) {
@@ -135,6 +145,24 @@ public class TestGCache extends TestCase {
         assertTrue(true);
         //String nodeName, int numBuckets, Dispatcher dispatcher, BucketMapper mapper
         MyNode red=new MyNode("red", _numBuckets);
+        MyNode green=new MyNode("green", _numBuckets);
+        {
+        	Bucket[] buckets=red.getBuckets();
+        	for (int i=6; i<_numBuckets; i++) {
+        		Bucket bucket=new Bucket(new RemoteBucket(green.getCluster().getLocalNode().getDestination()));
+        		bucket.init(red.getGCache());
+        		buckets[i]=bucket;
+        	}
+        }
+        {
+        	Bucket[] buckets=green.getBuckets();
+        	for (int i=0; i<6; i++) {
+        		Bucket bucket=new Bucket(new RemoteBucket(red.getCluster().getLocalNode().getDestination()));
+        		bucket.init(green.getGCache());
+        		buckets[i]=bucket;
+        	}
+        }
+        
         //GCache green=new GCache("green", _numBuckets);
         //GCache blue=new GCache("blue", _numBuckets);
 
@@ -142,10 +170,10 @@ public class TestGCache extends TestCase {
         red.start();
         red.getCluster().waitForClusterToComplete(1, 6000);
         _log.info("1 node running");
-//        green.start();
-//        red.getCluster().waitForClusterToComplete(2, 6000);
-//        green.getCluster().waitForClusterToComplete(2, 6000);
-//        _log.info("2 nodes running");
+        green.start();
+        red.getCluster().waitForClusterToComplete(2, 6000);
+        green.getCluster().waitForClusterToComplete(2, 6000);
+        _log.info("2 nodes running");
 //        blue.start();
 //        red.getCluster().waitForClusterToComplete(3, 6000);
 //        green.getCluster().waitForClusterToComplete(3, 6000);
@@ -159,16 +187,16 @@ public class TestGCache extends TestCase {
             _log.info("key: "+key);
             String data=key+"-data";
             red.putAbsent(key, data);
-            assertTrue(red.get(key).equals(data));
-            red.remove(key);
+            //assertTrue(red.get(key).equals(data));
+            //red.remove(key);
         }
         
 //        _log.info("3 nodes running");
 //        blue.stop();
-//        green.getCluster().waitForClusterToComplete(2, 6000);
-//        red.getCluster().waitForClusterToComplete(2, 6000);
-//        _log.info("2 nodes running");
-//        green.stop();
+        green.getCluster().waitForClusterToComplete(2, 6000);
+        red.getCluster().waitForClusterToComplete(2, 6000);
+        _log.info("2 nodes running");
+        green.stop();
         red.getCluster().waitForClusterToComplete(1, 6000);
         _log.info("1 nodes running");
         red.stop();

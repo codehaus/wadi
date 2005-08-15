@@ -16,18 +16,14 @@ public class LocalBucket implements BucketInterface {
 		_config=config;
 	}
 	
-	public Destination getDestination() {
-		return _config.getLocalNode().getDestination();
-	}
-	
-	public Destination putAbsent(Serializable key, Destination destination) { // consider optimisations...
+	public boolean putAbsent(Serializable key, Destination destination) { // consider optimisations...
 		synchronized (_map) {
 			Location location=(Location)_map.get(key);
 			if (location==null) {
 				_map.put(key, new Location(destination));
-				return null;
+				return true;
 			} else {
-				return location.getDestination();
+				return false;
 			}
 		}
 	}
@@ -43,7 +39,7 @@ public class LocalBucket implements BucketInterface {
 	public Serializable removeReturn(Serializable key, Map data) {
 		synchronized (_map) {
 			Location location=(Location)_map.remove(key);
-			if (location!=null && location.getDestination()==getDestination()) { // i.e. Data and Bucket present in same vm...
+			if (location!=null && location.getDestination()==_config.getLocalNode().getDestination()) { // i.e. Data and Bucket present in same vm...
 				synchronized (data) {
 					return (Serializable)data.remove(key);
 				}

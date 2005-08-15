@@ -12,6 +12,7 @@ import javax.cache.CacheException;
 import javax.cache.CacheListener;
 import javax.cache.CacheStatistics;
 import javax.jms.Destination;
+import javax.jms.ObjectMessage;
 
 import org.activecluster.Cluster;
 import org.activecluster.LocalNode;
@@ -19,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentRequest;
+import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentResponse;
 import org.codehaus.wadi.sandbox.gridstate.messages.PutRequest;
 
 
@@ -63,18 +65,15 @@ public class GCache implements Cache, BucketConfig {
 		
 		public Protocol() {
 			_dispatcher.register(this, "onMessage", PutAbsentRequest.class);
+			_dispatcher.register(PutAbsentResponse.class, 2000);
 		}
 		
 		public boolean putAbsent(Serializable key) {
-			Bucket bucket=_buckets[_mapper.map(key)];
-			Destination destination=bucket.getDestination();
-			return bucket.putAbsent(key, destination)==null;
+			return _buckets[_mapper.map(key)].putAbsent(key, _cluster.getLocalNode().getDestination());
 		}
 		
 		public void putExists(Serializable key) {
-			Bucket bucket=_buckets[_mapper.map(key)];
-			Destination destination=bucket.getDestination();
-			bucket.putExists(key, destination);
+			_buckets[_mapper.map(key)].putExists(key, _cluster.getLocalNode().getDestination());
 		}
 		
 		public Serializable removeReturn(Serializable key, Map map) {
@@ -85,10 +84,11 @@ public class GCache implements Cache, BucketConfig {
 			_buckets[_mapper.map(key)].removeNoReturn(key);
 		}
 		
-		public void onMessage(PutAbsentRequest request, String correlationId) {
+		public void onMessage(ObjectMessage message, PutAbsentRequest request) {
 			_log.info(request);
 			Serializable key=request.getKey();
-			_buckets[_mapper.map(key)].putAbsent(key, _cluster.getLocalNode().getDestination());
+			boolean success=_buckets[_mapper.map(key)].putAbsent(key, _cluster.getLocalNode().getDestination());
+			_dispatcher.reply(message, new PutAbsentResponse(success));
 		}
 		
 		public void destroy(String key) {
@@ -282,6 +282,10 @@ public class GCache implements Cache, BucketConfig {
   public LocalNode getLocalNode() {
 	  return _cluster.getLocalNode();
   }
+  
+  public Dispatcher getDispatcher() {
+	  return _dispatcher;
+  }
 
   // Proprietary
   
@@ -290,6 +294,10 @@ public class GCache implements Cache, BucketConfig {
   
   public Cluster getCluster() {
 	  return _cluster;
+  }
+  
+  public Bucket[] getBuckets() {
+	  return _buckets;
   }
   
 }

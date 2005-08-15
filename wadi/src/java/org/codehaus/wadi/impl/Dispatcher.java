@@ -132,7 +132,7 @@ public class Dispatcher implements MessageListener {
             if (_log.isTraceEnabled()) _log.trace("registering: "+type.getName()+"."+methodName+"()");
             return nuw;
         } catch (NoSuchMethodException e) {
-            // ignore
+            _log.error("no method: "+methodName+"("+type.getName()+") on class: "+target.getClass().getName() , e);
             return null;
         }
     }
