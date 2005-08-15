@@ -7,8 +7,13 @@ import org.codehaus.wadi.SessionIdFactory;
 public class FixedWidthSessionIdFactory implements SessionIdFactory {
 
 	public String create() {
-		// TODO Auto-generated method stub
-		return null;
+		int width=_keyLength;
+		char[] buffer=new char[width];
+		
+		int offset=width-1;
+		while ((offset=encode(Math.abs(_random.nextLong()), _sectLength, buffer, offset))>=0);
+		
+		return new String(buffer);
 	}
 
 	public int getSessionIdLength() {
@@ -22,8 +27,8 @@ public class FixedWidthSessionIdFactory implements SessionIdFactory {
   //protected final static char[] _defaultChars="0123456789".toCharArray();
   protected final static char[] _defaultChars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
 
-  //protected final char[] _divider="-".toCharArray();
-  protected final char[] _divider="".toCharArray();
+  protected final char[] _divider="-".toCharArray();
+  //protected final char[] _divider="".toCharArray();
   protected Random _random=new Random();
   protected final int[] _lookup=new int[Character.MAX_VALUE];
 

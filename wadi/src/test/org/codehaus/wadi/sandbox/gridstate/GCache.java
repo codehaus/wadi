@@ -1,6 +1,8 @@
-package org.codehaus.wadi.dindex.impl;
+package org.codehaus.wadi.sandbox.gridstate;
 
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -9,6 +11,15 @@ import javax.cache.CacheEntry;
 import javax.cache.CacheException;
 import javax.cache.CacheListener;
 import javax.cache.CacheStatistics;
+import javax.jms.Destination;
+
+import org.activecluster.Cluster;
+import org.activecluster.LocalNode;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.impl.Dispatcher;
+import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentRequest;
+import org.codehaus.wadi.sandbox.gridstate.messages.PutRequest;
 
 
 
@@ -24,8 +35,72 @@ import javax.cache.CacheStatistics;
  * @author jules
  *
  */
-public class GCache implements Cache {
+public class GCache implements Cache, BucketConfig {
 
+	protected final Log _log=LogFactory.getLog(getClass().getName());
+
+	protected final Protocol _protocol;
+	protected final Bucket[] _buckets;
+	protected final Dispatcher _dispatcher;
+	protected final BucketMapper _mapper;
+	protected final Cluster _cluster;
+	
+	public GCache(String nodeName, int numBuckets, Dispatcher dispatcher, BucketMapper mapper) {
+		_buckets=new Bucket[numBuckets];
+		_dispatcher=dispatcher;
+		_cluster=_dispatcher.getCluster();
+		_protocol=new Protocol();
+		_mapper=mapper;
+		
+		for (int i=0; i<numBuckets; i++) {
+			Bucket bucket=new Bucket(new LocalBucket());
+			bucket.init(this);
+			_buckets[i]=bucket;
+		}
+	}
+	
+	public class Protocol {
+		
+		public Protocol() {
+			_dispatcher.register(this, "onMessage", PutAbsentRequest.class);
+		}
+		
+		public boolean putAbsent(Serializable key) {
+			Bucket bucket=_buckets[_mapper.map(key)];
+			Destination destination=bucket.getDestination();
+			return bucket.putAbsent(key, destination)==null;
+		}
+		
+		public void putExists(Serializable key) {
+			Bucket bucket=_buckets[_mapper.map(key)];
+			Destination destination=bucket.getDestination();
+			bucket.putExists(key, destination);
+		}
+		
+		public Serializable removeReturn(Serializable key, Map map) {
+			return _buckets[_mapper.map(key)].removeReturn(key, map);
+		}
+
+		public void removeNoReturn(Serializable key) {
+			_buckets[_mapper.map(key)].removeNoReturn(key);
+		}
+		
+		public void onMessage(PutAbsentRequest request, String correlationId) {
+			_log.info(request);
+			Serializable key=request.getKey();
+			_buckets[_mapper.map(key)].putAbsent(key, _cluster.getLocalNode().getDestination());
+		}
+		
+		public void destroy(String key) {
+			
+		}
+		
+		public void fetch(String key) {
+			
+		}
+		
+	}
+	
   /*
    * second pass
    */
@@ -86,8 +161,7 @@ public class GCache implements Cache {
    * first pass
    */
   public Object get(Object key) {
-    // TODO Auto-generated method stub
-    return null;
+	  return _map.get(key);
   }
 
   /*
@@ -123,11 +197,22 @@ public class GCache implements Cache {
   /*
    * first pass ?
    */
+  protected Map _map=new HashMap();
+  
   public Object put(Object key, Object value) {
-    // TODO Auto-generated method stub
-    return null;
+	  _protocol.putExists((Serializable)key);
+	  //_dindex.insert((String)key);
+	  // should do a fetch here ? - TODO
+	  return _map.put(key, value);
   }
 
+  // for WADI
+  public Object putAbsent(Object key, Object value) {
+	  _protocol.putAbsent((Serializable)key);
+	  assert _map.put(key, value)==null;
+	  return null;
+  }
+  
   /*
    * first pass ?
    * interesting - perhaps this is how we make location accessible
@@ -157,10 +242,13 @@ public class GCache implements Cache {
    * first pass
    */
   public Object remove(Object key) {
-    // TODO Auto-generated method stub
-    return null;
+	  return _protocol.removeReturn((Serializable)key, _map);
   }
 
+  public void removeNoReturn(Object key) {
+	  _protocol.removeNoReturn((Serializable)key);
+  }
+  
   /*
    * third pass
    */
@@ -188,5 +276,20 @@ public class GCache implements Cache {
   public void removeListener(CacheListener listener) {
 	  throw new UnsupportedOperationException();
   }
+  
+  // BucketConfig
+  
+  public LocalNode getLocalNode() {
+	  return _cluster.getLocalNode();
+  }
 
+  // Proprietary
+  
+  public void start() {}
+  public void stop() {}
+  
+  public Cluster getCluster() {
+	  return _cluster;
+  }
+  
 }
