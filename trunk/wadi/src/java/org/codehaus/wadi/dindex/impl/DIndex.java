@@ -739,5 +739,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         return _inactiveTime;
     }
 
+    
+    // only for use whilst developing GridState...
+    
+    public BucketFacade[] getBuckets() {
+    	return _buckets;
+    }
+
 }
 
