@@ -4,6 +4,18 @@ import java.io.Serializable;
 
 public class PutAbsentResponse implements Serializable {
 
-	// empty
+	protected boolean _success;
+	
+	public PutAbsentResponse(boolean success) {
+		_success=success;
+	}
+	
+	protected PutAbsentResponse() {
+		// for deserialisation...
+	}
+	
+	public boolean getSuccess() {
+		return _success;
+	}
 	
 }

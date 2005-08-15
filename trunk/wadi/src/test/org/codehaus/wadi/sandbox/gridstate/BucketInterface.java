@@ -9,15 +9,13 @@ public interface BucketInterface {
 
 	void init(BucketConfig config);
 	
-	Destination getDestination();
-	
 	/**
 	 * Put a fresh association into the Map unless the key is already in use.
 	 * @param key
 	 * @param location
 	 * @return
 	 */
-	Destination putAbsent(Serializable key, Destination location);
+	boolean putAbsent(Serializable key, Destination location);
 
 	/**
 	 * Add an association to the map, overwriting old value if it already existed.
