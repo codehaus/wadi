@@ -108,7 +108,7 @@ public class TestGCache extends TestCase {
         	return _gcache;
         }
         
-        public Object putAbsent(Object key, Object value) {
+        public boolean putAbsent(Object key, Object value) {
         	return _gcache.putAbsent(key, value);
         }
 
@@ -142,8 +142,6 @@ public class TestGCache extends TestCase {
     FixedWidthSessionIdFactory factory;
     
     public void testGCache() throws Exception {
-        assertTrue(true);
-        //String nodeName, int numBuckets, Dispatcher dispatcher, BucketMapper mapper
         MyNode red=new MyNode("red", _numBuckets);
         MyNode green=new MyNode("green", _numBuckets);
         {
@@ -180,13 +178,12 @@ public class TestGCache extends TestCase {
 //        blue.getCluster().waitForClusterToComplete(3, 6000);
 //        _log.info("3 nodes running");
 
-        assertTrue(true);
-
         for (int i=0; i<_numBuckets; i++) {
             String key=_factory.create(i);
             _log.info("key: "+key);
             String data=key+"-data";
-            red.putAbsent(key, data);
+            assertTrue(red.putAbsent(key, data));
+            assertTrue(!red.putAbsent(key, data));
             //assertTrue(red.get(key).equals(data));
             //red.remove(key);
         }
@@ -201,8 +198,6 @@ public class TestGCache extends TestCase {
         _log.info("1 nodes running");
         red.stop();
         _log.info("0 nodes running");
-        assertTrue(true);
-
     }
 
 }

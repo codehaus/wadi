@@ -323,7 +323,12 @@ public class Dispatcher implements MessageListener {
         }
     }
 
-    public ObjectMessage exchangeSend(Destination from, Destination to, String outgoingCorrelationId, Serializable body, long timeout) {
+    public ObjectMessage exchangeSendLoop(Destination from, Destination to, Serializable body, long timeout) {
+    	return exchangeSend(from, to, body, timeout);
+    }
+
+    	
+    	public ObjectMessage exchangeSend(Destination from, Destination to, String outgoingCorrelationId, Serializable body, long timeout) {
         Quipu rv=null;
         // set up a rendez-vous...
         rv=setRendezVous(outgoingCorrelationId, 1);
@@ -392,9 +397,14 @@ public class Dispatcher implements MessageListener {
         }
     }
 
+    public ObjectMessage exchangeReplyLoop(ObjectMessage message, Serializable body, long timeout) { // TODO
+    	return exchangeReply(message, body, timeout);
+    }
+    
+    
     public boolean forward(ObjectMessage message, Destination destination) {
-        try {
-            return forward(message, destination, message.getObject());
+    	try {
+    		return forward(message, destination, message.getObject());
         } catch (JMSException e) {
             _log.error("problem forwarding message with new body", e);
             return false;
