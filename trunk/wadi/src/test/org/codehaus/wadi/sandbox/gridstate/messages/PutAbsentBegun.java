@@ -2,15 +2,15 @@ package org.codehaus.wadi.sandbox.gridstate.messages;
 
 import java.io.Serializable;
 
-public class PutAbsentResponse implements Serializable {
+public class PutAbsentBegun implements Serializable {
 
 	protected boolean _success;
 	
-	public PutAbsentResponse(boolean success) {
+	public PutAbsentBegun(boolean success) {
 		_success=success;
 	}
 	
-	protected PutAbsentResponse() {
+	protected PutAbsentBegun() {
 		// for deserialisation...
 	}
 	

@@ -12,6 +12,7 @@ import javax.cache.CacheException;
 import javax.cache.CacheListener;
 import javax.cache.CacheStatistics;
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.activecluster.Cluster;
@@ -19,8 +20,10 @@ import org.activecluster.LocalNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.Dispatcher;
-import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentRequest;
-import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentResponse;
+import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentCommit;
+import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentBegin;
+import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentBegun;
+import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentRollback;
 import org.codehaus.wadi.sandbox.gridstate.messages.PutRequest;
 
 
@@ -64,12 +67,28 @@ public class GCache implements Cache, BucketConfig {
 	public class Protocol {
 		
 		public Protocol() {
-			_dispatcher.register(this, "onMessage", PutAbsentRequest.class);
-			_dispatcher.register(PutAbsentResponse.class, 2000);
+			_dispatcher.register(this, "onMessage", PutAbsentBegin.class);
+			_dispatcher.register(PutAbsentBegun.class, 2000);
+			_dispatcher.register(PutAbsentCommit.class, 2000);
+			_dispatcher.register(PutAbsentRollback.class, 2000);
 		}
 		
-		public boolean putAbsent(Serializable key) {
-			return _buckets[_mapper.map(key)].putAbsent(key, _cluster.getLocalNode().getDestination());
+		public boolean putAbsent(Serializable key, Serializable value, Map map) {
+			// should take non-exclusive lock on bucket array... - // TODO
+			Bucket bucket=_buckets[_mapper.map(key)];
+			Destination destination=_cluster.getLocalNode().getDestination();
+			Conversation conversation=new Conversation();
+			boolean success=bucket.putAbsentBegin(conversation, key, destination);
+			if (success) {
+				Object oldValue=map.put(key, value);
+				assert oldValue==null;
+				bucket.putAbsentCommit(conversation, key, destination);
+			}
+			else {
+				bucket.putAbsentRollback(conversation, key, destination);
+			}
+			
+			return success; 
 		}
 		
 		public void putExists(Serializable key) {
@@ -84,11 +103,29 @@ public class GCache implements Cache, BucketConfig {
 			_buckets[_mapper.map(key)].removeNoReturn(key);
 		}
 		
-		public void onMessage(ObjectMessage message, PutAbsentRequest request) {
-			_log.info(request);
+		public void onMessage(ObjectMessage message, PutAbsentBegin request) {
 			Serializable key=request.getKey();
-			boolean success=_buckets[_mapper.map(key)].putAbsent(key, _cluster.getLocalNode().getDestination());
-			_dispatcher.reply(message, new PutAbsentResponse(success));
+			Destination destination=request.getDestination();
+			// should take read lock on bucket array... - TODO
+			Bucket bucket=_buckets[_mapper.map(key)];
+			Conversation conversation=new Conversation();
+			boolean success=bucket.putAbsentBegin(conversation, key, destination);
+			ObjectMessage reply=_dispatcher.exchangeReplyLoop(message, new PutAbsentBegun(success), 2000);
+			Object tmp=null;
+			try {
+				tmp=reply.getObject();
+			} catch (JMSException e) { // should be included in loop - TODO
+				_log.error("unexpected problem", e);
+			}
+			if (tmp instanceof PutAbsentCommit) {
+				PutAbsentCommit commit=(PutAbsentCommit)tmp;
+				bucket.putAbsentCommit(conversation, commit.getKey(), destination);
+			} else if (tmp instanceof PutAbsentRollback) {
+				PutAbsentRollback rollback=(PutAbsentRollback)tmp;
+				bucket.putAbsentRollback(conversation, rollback.getKey(), destination);
+			} else {
+				_log.error("unexpected message type: "+tmp.getClass().getName());
+			}
 		}
 		
 		public void destroy(String key) {
@@ -207,10 +244,8 @@ public class GCache implements Cache, BucketConfig {
   }
 
   // for WADI
-  public Object putAbsent(Object key, Object value) {
-	  _protocol.putAbsent((Serializable)key);
-	  assert _map.put(key, value)==null;
-	  return null;
+  public boolean putAbsent(Object key, Object value) {
+	  return _protocol.putAbsent((Serializable)key, (Serializable)value, _map);
   }
   
   /*

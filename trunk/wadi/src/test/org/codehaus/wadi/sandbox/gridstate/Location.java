@@ -10,6 +10,8 @@ import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 public class Location implements Serializable {
 
 	protected transient ReadWriteLock _lock;
+	protected transient boolean _invalid;
+	
 	protected Destination _destination;
 	
 	public Location(Destination destination) {
@@ -25,4 +27,11 @@ public class Location implements Serializable {
 		return _destination;
 	}
 	
+	public ReadWriteLock getLock() {
+		return _lock;
+	}
+	
+	public void invalidate() {
+		_invalid=true;
+	}
 }
