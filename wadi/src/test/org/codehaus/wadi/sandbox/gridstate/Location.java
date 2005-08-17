@@ -27,6 +27,10 @@ public class Location implements Serializable {
 		return _destination;
 	}
 	
+	public void setDestination(Destination destination) {
+		_destination=destination;
+	}
+	
 	public ReadWriteLock getLock() {
 		return _lock;
 	}

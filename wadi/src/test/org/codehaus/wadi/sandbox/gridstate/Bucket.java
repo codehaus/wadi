@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.jms.Destination;
 
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+
 public class Bucket implements BucketInterface {
 
 	protected final BucketInterface _bucket;
@@ -40,5 +42,21 @@ public class Bucket implements BucketInterface {
 	public void removeNoReturn(Serializable key) {
 		_bucket.removeNoReturn(key);
 	}
+	
+	public Destination getDestination() {
+		return _bucket.getDestination();
+	}
 
+	public Location getLocation(Serializable key) {
+		return _bucket.getLocation(key);
+	}
+	
+	public ReadWriteLock getLock() {
+		return _bucket.getLock();
+	}
+	
+	public Map getMap() {
+		return _bucket.getMap();
+	}
+	
 }

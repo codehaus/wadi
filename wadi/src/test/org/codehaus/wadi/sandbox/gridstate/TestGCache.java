@@ -77,11 +77,12 @@ public class TestGCache extends TestCase {
         protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
         protected final CustomClusterFactory _clusterFactory=new CustomClusterFactory(_connectionFactory);
         protected final Cluster _cluster;
-        protected final Dispatcher _dispatcher=new Dispatcher();
+        protected final Dispatcher _dispatcher;
         protected final GCache _gcache;
         
         public MyNode(String nodeName, int numBuckets) throws Exception {
         	_cluster=_clusterFactory.createCluster(_clusterName);
+        	_dispatcher=new Dispatcher(nodeName);
         	_dispatcher.init(new MyDispatcherConfig(_cluster));
         	_gcache=new GCache(nodeName, numBuckets, _dispatcher, _mapper);
         }
@@ -108,11 +109,11 @@ public class TestGCache extends TestCase {
         	return _gcache;
         }
         
-        public boolean putAbsent(Object key, Object value) {
-        	return _gcache.putAbsent(key, value);
+        public boolean putFirst(Object key, Object value) {
+        	return _gcache.putFirst(key, value);
         }
 
-        public Object putExists(Object key, Object value) {
+        public Object put(Object key, Object value) {
         	return _gcache.put(key, value);
         }
 
@@ -182,9 +183,20 @@ public class TestGCache extends TestCase {
             String key=_factory.create(i);
             _log.info("key: "+key);
             String data=key+"-data";
-            assertTrue(red.putAbsent(key, data));
-            assertTrue(!red.putAbsent(key, data));
-            //assertTrue(red.get(key).equals(data));
+            assertTrue(red.putFirst(key, data));
+            _log.info("put succeeded!");
+            assertTrue(!red.putFirst(key, data));
+            _log.info("put succeeded!");
+            if (i>5) {
+            assertTrue(red.get(key).equals(data));
+            _log.info("get succeeded!");
+            assertTrue(green.get(key).equals(data));
+            _log.info("get succeeded!");
+            assertTrue(red.get(key).equals(data));
+            _log.info("get succeeded!");
+            assertTrue(green.get(key).equals(data));
+            _log.info("get succeeded!");
+            }
             //red.remove(key);
         }
         

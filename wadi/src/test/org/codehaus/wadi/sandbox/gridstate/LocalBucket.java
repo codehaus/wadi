@@ -31,6 +31,27 @@ public class LocalBucket implements BucketInterface {
 		_config=config;
 	}
 	
+	public Destination getDestination() {
+		return _config.getLocalNode().getDestination();
+	}
+	
+	public Location getLocation(Serializable key) {
+		try {
+			Utils.safeAcquire(_lock.readLock());
+			return (Location)_map.get(key);
+		} finally {
+			_lock.readLock().release();
+		}
+	}
+	
+	public ReadWriteLock getLock() {
+		return _lock;
+	}
+	
+	public Map getMap() {
+		return _map;
+	}
+	
 	//--------------------------------------------------------------------------------
 	// PutAbsent Protocol
 	//--------------------------------------------------------------------------------
