@@ -14,6 +14,8 @@ import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentBegin;
 import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentBegun;
 import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentRollback;
 
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+
 public class RemoteBucket implements BucketInterface {
 	
 	protected final Log _log=LogFactory.getLog(getClass().getName());
@@ -27,6 +29,22 @@ public class RemoteBucket implements BucketInterface {
 	
 	public void init(BucketConfig config) {
 		_config=config;
+	}
+	
+	public Destination getDestination() {
+		return _destination;
+	}
+	
+	public Location getLocation(Serializable key) {
+		throw new UnsupportedOperationException("What should we do here?");
+	}
+	
+	public ReadWriteLock getLock() {
+		throw new UnsupportedOperationException("What should we do here?");
+	}
+	
+	public Map getMap() {
+		throw new UnsupportedOperationException("What should we do here?");
 	}
 
 	public boolean putAbsentBegin(Conversation conversation, Serializable key, Destination destination) {

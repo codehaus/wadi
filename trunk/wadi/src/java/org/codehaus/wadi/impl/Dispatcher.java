@@ -55,7 +55,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @version $Revision$
  */
 public class Dispatcher implements MessageListener {
-	protected final Log _log=LogFactory.getLog(getClass());
+	protected Log _log=LogFactory.getLog(getClass());
 	protected final Map _map=new HashMap();
     protected final PooledExecutor _executor;
 
@@ -63,6 +63,11 @@ public class Dispatcher implements MessageListener {
         _executor=new PooledExecutor(new LinkedQueue(), 100); // parameterise
         _executor.setMinimumPoolSize(4);
 	    }
+	
+	public Dispatcher(String name) {
+		this();
+		_log=LogFactory.getLog(getClass()+"#"+name);
+	}
 
     protected DispatcherConfig _config;
 
@@ -306,38 +311,44 @@ public class Dispatcher implements MessageListener {
     }
     
     public ObjectMessage exchangeSend(Destination from, Destination to, Serializable body, long timeout) {
-        try {
-            ObjectMessage om=_cluster.createObjectMessage();
-            om.setJMSReplyTo(from);
-            om.setJMSDestination(to);
-            om.setObject(body);
-            String correlationId=nextCorrelationId();
-            setOutgoingCorrelationId(om, correlationId);
-            Quipu rv=setRendezVous(correlationId, 1);
-            _log.trace("exchangeSend {"+correlationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
-            _cluster.send(to, om);
-            return attemptRendezVous(correlationId, rv, timeout);
-        } catch (JMSException e) {
-            _log.error("problem sending "+body, e);
-            return null;
-        }
+    	return exchangeSend(from, to, body, timeout, null);
     }
-
+    
+    public ObjectMessage exchangeSend(Destination from, Destination to, Serializable body, long timeout, String targetCorrelationId) {
+    	try {
+    		ObjectMessage om=_cluster.createObjectMessage();
+    		om.setJMSReplyTo(from);
+    		om.setJMSDestination(to);
+    		om.setObject(body);
+    		String correlationId=nextCorrelationId();
+    		setOutgoingCorrelationId(om, correlationId);
+    		if (targetCorrelationId!=null)
+    			setIncomingCorrelationId(om, targetCorrelationId);
+    		Quipu rv=setRendezVous(correlationId, 1);
+    		_log.trace("exchangeSend {"+correlationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
+    		_cluster.send(to, om);
+    		return attemptRendezVous(correlationId, rv, timeout);
+    	} catch (JMSException e) {
+    		_log.error("problem sending "+body, e);
+    		return null;
+    	}
+    }
+    
     public ObjectMessage exchangeSendLoop(Destination from, Destination to, Serializable body, long timeout) {
     	return exchangeSend(from, to, body, timeout);
     }
-
-    	
-    	public ObjectMessage exchangeSend(Destination from, Destination to, String outgoingCorrelationId, Serializable body, long timeout) {
-        Quipu rv=null;
-        // set up a rendez-vous...
-        rv=setRendezVous(outgoingCorrelationId, 1);
-        // send the message...
-        if (send(from, to, outgoingCorrelationId, body)) {
-            return attemptRendezVous(outgoingCorrelationId, rv, timeout);
-        } else {
-            return null;
-        }
+    
+    
+    public ObjectMessage exchangeSend(Destination from, Destination to, String outgoingCorrelationId, Serializable body, long timeout) {
+    	Quipu rv=null;
+    	// set up a rendez-vous...
+    	rv=setRendezVous(outgoingCorrelationId, 1);
+    	// send the message...
+    	if (send(from, to, outgoingCorrelationId, body)) {
+    		return attemptRendezVous(outgoingCorrelationId, rv, timeout);
+    	} else {
+    		return null;
+    	}
     }
 
     public boolean reply(Destination from, Destination to, String incomingCorrelationId, Serializable body) {
