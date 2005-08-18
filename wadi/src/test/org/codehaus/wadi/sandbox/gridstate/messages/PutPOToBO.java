@@ -7,12 +7,14 @@ import javax.jms.Destination;
 public class PutPOToBO implements Serializable {
 
 	protected Serializable _key;
+	protected boolean _valueIsNull;
 	protected boolean _overwrite;
 	protected boolean _returnOldValue;
 	protected Destination _po;
 	
-	public PutPOToBO(Serializable key, boolean overwrite, boolean returnOldValue, Destination po) {
+	public PutPOToBO(Serializable key, boolean valueIsNull, boolean overwrite, boolean returnOldValue, Destination po) {
 		_key=key;
+		_valueIsNull=valueIsNull;
 		_overwrite=overwrite;
 		_returnOldValue=returnOldValue;
 		_po=po;
@@ -24,6 +26,10 @@ public class PutPOToBO implements Serializable {
 	
 	public Serializable getKey() {
 		return _key;
+	}
+	
+	public boolean getValueIsNull() {
+		return _valueIsNull;
 	}
 	
 	public boolean getOverwrite() {

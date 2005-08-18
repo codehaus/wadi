@@ -30,8 +30,6 @@ import org.codehaus.wadi.sandbox.gridstate.messages.GetSOToPO;
 import org.codehaus.wadi.sandbox.gridstate.messages.PutBOToPO;
 import org.codehaus.wadi.sandbox.gridstate.messages.PutPOToBO;
 import org.codehaus.wadi.sandbox.gridstate.messages.PutSOToPO;
-import org.codehaus.wadi.sandbox.gridstate.messages.RemoveBOToPO;
-import org.codehaus.wadi.sandbox.gridstate.messages.RemovePOToBO;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -89,10 +87,6 @@ public class GCache implements Cache, BucketConfig {
 			// Put - 2 messages - PO->BO->PO
 			_dispatcher.register(this, "onMessage", PutPOToBO.class);
 			_dispatcher.register(PutBOToPO.class, 2000);
-
-			// Remove - 2 messages - PO->BO->PO
-			_dispatcher.register(this, "onMessage", RemovePOToBO.class);
-			_dispatcher.register(RemoveBOToPO.class, 2000);
 
 		}
 
@@ -223,18 +217,22 @@ public class GCache implements Cache, BucketConfig {
 		public Serializable put(Serializable key, Serializable value, boolean overwrite, boolean returnOldValue) {
 			// lock map [partition]
 			synchronized (_map) { // naive - should only lock map partition...
-				Serializable oldValue=(Serializable)_map.put(key, value);
-				if (oldValue!=null)
-					if (!overwrite) {
+				Serializable oldValue=(Serializable)(value==null?_map.remove(key):_map.put(key, value)); // assume a value of null removes association
+				boolean roundtrip=(oldValue==null && value!=null) || (oldValue!=null && value==null);
+				if (!overwrite) {
+					if (oldValue!=null) {
 						_map.put(key, oldValue);
-						return Boolean.FALSE;
-					} else
-						return returnOldValue?oldValue:null; // we are PO and SO, so BO already has correct location...
-				else {
+						oldValue=Boolean.FALSE;
+					} else {
+						oldValue=Boolean.TRUE;
+					}
+				}
+				
+				if (roundtrip) {				
 					// exchangeSendLoop PutPOToBO to BO
 					Destination po=_cluster.getLocalNode().getDestination();
 					Destination bo=_buckets[_mapper.map(key)].getDestination();
-					PutPOToBO request=new PutPOToBO(key, overwrite, returnOldValue, po);
+					PutPOToBO request=new PutPOToBO(key, value==null, overwrite, returnOldValue, po);
 					ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, 2000L);
 					Serializable response=null;
 					try {
@@ -246,11 +244,11 @@ public class GCache implements Cache, BucketConfig {
 					// 2 possibilities - 
 					// PutBO2PO (first time this key has been used...
 					if (response instanceof PutBOToPO) {
-						// therefore old value was null
+						// therefore old value was null, or we were already SO
 						if (!overwrite)
 							return ((PutBOToPO)response).getSuccess()?Boolean.TRUE:Boolean.FALSE;
 						else
-							return null;
+							return returnOldValue?oldValue:null;
 					} else if (response instanceof PutSOToPO) {
 						// key was already associated with some value...
 						return ((PutSOToPO)response).getValue();
@@ -258,9 +256,11 @@ public class GCache implements Cache, BucketConfig {
 						_log.error("unexpected response: "+response.getClass().getName());
 						return null;
 					}
-
-					// release map [partition]
 				}
+				else
+					return returnOldValue?oldValue:null;
+				
+				// release map [partition]
 			}
 		}
 
@@ -274,25 +274,20 @@ public class GCache implements Cache, BucketConfig {
 			try {
 				// get write lock on bucket
 				Utils.safeAcquire(bucketLock);
-				Location location=new Location(put.getPO());
-				Location oldLocation=(Location)bucketMap.put(key, location);
-				if (oldLocation==null) {
-					// no previous value
+				Location location=put.getValueIsNull()?null:new Location(put.getPO());
+				// remove or update location, remembering old value
+				Location oldLocation=(Location)(location==null?bucketMap.remove(key):bucketMap.put(key, location));
+				// if we are not allowed to overwrite, and we have...
+				if (!put.getOverwrite() && oldLocation!=null) {
+					//  undo our change
+					bucketMap.put(key, oldLocation);
+					// send BOToPO - failure
+					_dispatcher.reply(message1, new PutBOToPO(false));
+				} else if (oldLocation==null || (put.getPO().equals(oldLocation.getDestination()))) {
+					// if there was previously no SO, or there was, but it was PO ...
+					// then there is no need to go and remove the old value from the old SO
 					// send BOToPO - success
 					_dispatcher.reply(message1, new PutBOToPO(true));
-				} else if (!put.getOverwrite()) {
-					// we shouldn't have overwritten...
-					boolean success;
-					if (oldLocation.getDestination().equals(location.getDestination())) {
-						// location has not changed, so it does not matter...
-						success=true;
-					} else {
-						// replace oldLocation
-						bucketMap.put(key, oldLocation);
-						success=false;
-					}
-					// send BOToPO - failure
-					_dispatcher.reply(message1, new PutBOToPO(success));
 				} else {
 					// previous value needs removing and possibly returning...
 					// send BOToSO...
@@ -310,64 +305,8 @@ public class GCache implements Cache, BucketConfig {
 
 		// called on PO...
 		public Serializable remove(Serializable key, boolean returnOldValue) {
-			// lock map [partition]
-			synchronized (_map) { // naive - should only lock map partition...
-				Serializable oldValue=(Serializable)_map.remove(key);
-				// exchangeSendLoop RemovePOToBO to BO
-				Destination po=_cluster.getLocalNode().getDestination();
-				Destination bo=_buckets[_mapper.map(key)].getDestination();
-				RemovePOToBO request=new RemovePOToBO(key, returnOldValue, po);
-				ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, 2000L);
-				Serializable response=null;
-				try {
-					response=message.getObject();
-				} catch (JMSException e) {
-					_log.error("unexpected problem", e); // should be in loop - TODO
-				}
-				
-				// 2 possibilities - 
-				// RemoveBO2PO (first time this key has been used...
-				if (response instanceof RemoveBOToPO) {
-					// either the association did not exist, or it existed and we were SO.
-					return returnOldValue?oldValue:null;
-//				} else if (response instanceof PutSOToPO) {
-//					// key was already associated with some value...
-//					return ((PutSOToPO)response).getValue();
-				} else {
-					_log.error("unexpected response: "+response.getClass().getName());
-					return null;
-				}
-				
-				// release map [partition]
-			}
+			return put(key, null, true, returnOldValue); // a remove is a put(key, null)...
 		}
-
-		// called on BO...
-		public void onMessage(ObjectMessage message1, RemovePOToBO remove) {
-			// what if we are NOT the BO anymore ?
-			Serializable key=remove.getKey();
-			Bucket bucket=_buckets[_mapper.map(key)];
-			Map bucketMap=bucket.getMap();
-			Sync bucketLock=bucket.getLock().writeLock();
-			try {
-				// get write lock on bucket
-				Utils.safeAcquire(bucketLock);
-				Location oldLocation=(Location)bucketMap.remove(key);
-				if (oldLocation==null || oldLocation.getDestination().equals(remove.getPO())) {
-					// no previous value, or previous value, but PO was SO
-					// send BOToPO - success
-					_dispatcher.reply(message1, new RemoveBOToPO());
-				} else {
-					// previous value needs removing and possibly returning...
-					// send BOToSO...
-					throw new UnsupportedOperationException("NYI");
-				}
-				
-			} finally {
-				bucketLock.release();
-			}
-		}
-		
 
 	}
 	
@@ -473,7 +412,7 @@ public class GCache implements Cache, BucketConfig {
   
   // for WADI
   public boolean putFirst(Object key, Object value) {
-	  return ((Boolean)put(key, value, false, false)).booleanValue();
+	  return ((Boolean)put(key, value, false, true)).booleanValue();
   }
   
   // for WADI
