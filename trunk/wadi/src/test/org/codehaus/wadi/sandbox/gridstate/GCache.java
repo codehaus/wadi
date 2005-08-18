@@ -329,7 +329,7 @@ public class GCache implements Cache, BucketConfig {
 				// RemoveBO2PO (first time this key has been used...
 				if (response instanceof RemoveBOToPO) {
 					// either the association did not exist, or it existed and we were SO.
-					return oldValue;
+					return returnOldValue?oldValue:null;
 //				} else if (response instanceof PutSOToPO) {
 //					// key was already associated with some value...
 //					return ((PutSOToPO)response).getValue();

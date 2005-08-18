@@ -115,10 +115,18 @@ public class TestGCache extends TestCase {
         	return _gcache.put(key, value);
         }
 
+        public Object put(Object key, Object value, boolean overwrite, boolean returnOldValue) {
+        	return _gcache.put(key, value, overwrite, returnOldValue);
+        }
+
         public Object remove(Object key) {
         	return _gcache.remove(key);
         }
-        
+
+        public Object remove(Object key, boolean returnOldValue) {
+        	return _gcache.remove(key, returnOldValue);
+        }
+
         public Object get(Object key) {
         	return _gcache.get(key);
         }
@@ -189,8 +197,22 @@ public class TestGCache extends TestCase {
             String data=key+"-data";
             // insert an association for the first time...
             assertTrue(red.putFirst(key, data));
+            // remove a local association - returning its last value
+            assertTrue(red.remove(key).equals(data));
+            // remove a non-existant association
+            assertTrue(red.remove(key)==null);
+            // replace the association - expecting it to not already exist
+            assertTrue(red.putFirst(key, data));
+            // remove it again - not returning the last value
+            assertTrue(red.remove(key, false)==null);
+            // replace the association - expecting it to not already exist
+            assertTrue(red.putFirst(key, data));
             // insert an association that already exists, stating that this should fail (for session id insertion)
             assertTrue(!red.putFirst(key, data));
+            // try overwriting the [local] value with itself
+            assertTrue(red.put(key, data).equals(data));
+            // try overwriting the [local] value with itself - but not returning old value
+            assertTrue(red.put(key, data, true, false)==null);
             // retrieve an association from the StateOwner
             assertTrue(red.get(key).equals(data));
             // retrieve an association from a node that is not the StateOwner
