@@ -182,21 +182,22 @@ public class TestGCache extends TestCase {
         for (int i=0; i<_numBuckets; i++) {
             String key=_factory.create(i);
             _log.info("key: "+key);
+            // retrieve an association that does not exist...
+            assertTrue(red.get(key)==null);
+            assertTrue(green.get(key)==null);
             String data=key+"-data";
+            // insert an association for the first time...
             assertTrue(red.putFirst(key, data));
-            _log.info("put succeeded!");
+            // insert an association that already exists, stating that this should fail (for session id insertion)
             assertTrue(!red.putFirst(key, data));
-            _log.info("put succeeded!");
-            if (i>5) {
+            // retrieve an association from the StateOwner
             assertTrue(red.get(key).equals(data));
-            _log.info("get succeeded!");
+            // retrieve an association from a node that is not the StateOwner
             assertTrue(green.get(key).equals(data));
-            _log.info("get succeeded!");
+            // retrieve an association from a node that is not the StateOwner
             assertTrue(red.get(key).equals(data));
-            _log.info("get succeeded!");
+            // retrieve an association from a node that is not the StateOwner
             assertTrue(green.get(key).equals(data));
-            _log.info("get succeeded!");
-            }
             //red.remove(key);
         }
         

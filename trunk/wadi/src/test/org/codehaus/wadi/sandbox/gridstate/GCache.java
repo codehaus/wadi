@@ -21,6 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.sandbox.gridstate.messages.GetBOToPO;
 import org.codehaus.wadi.sandbox.gridstate.messages.GetBOToSO;
 import org.codehaus.wadi.sandbox.gridstate.messages.GetPOToBO;
 import org.codehaus.wadi.sandbox.gridstate.messages.GetPOToSO;
@@ -81,12 +82,14 @@ public class GCache implements Cache, BucketConfig {
 		
 		public Protocol() {
 			
-			// Get - 5 messages - PO->BO->SO->PO->SO->BO / PO->BO->PO (NYI)
+			// Get - 5 messages - PO->BO->SO->PO->SO->BO
 			_dispatcher.register(this, "onMessage", GetPOToBO.class);
 			_dispatcher.register(this, "onMessage", GetBOToSO.class);
 			_dispatcher.register(GetSOToPO.class, 2000);
 			_dispatcher.register(GetPOToSO.class, 2000);
 			_dispatcher.register(GetSOToBO.class, 2000);
+			// Get - 2 messages - PO->BO->PO (NYI)
+			_dispatcher.register(GetBOToPO.class, 2000);
 
 			// Put - 2 messages - PO->BO->PO
 			_dispatcher.register(this, "onMessage", PutPOToBO.class);
@@ -116,18 +119,25 @@ public class GCache implements Cache, BucketConfig {
 					Destination bo=_buckets[_mapper.map(key)].getDestination();
 					GetPOToBO request=new GetPOToBO(key, po);
 					ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, 2000L);
-					GetSOToPO response=null;
+					Serializable response=null;
 					try {
-						response=(GetSOToPO)message.getObject();
+						response=message.getObject();
 					} catch (JMSException e) {
 						_log.error("unexpected problem", e); // should be in loop - TODO
 					}
-					// associate returned value with key
-					value=response.getValue();
-					_map.put(key, value);
 					
-					// reply GetPOToSO to SO
-					_dispatcher.reply(message, new GetPOToSO());
+					if (response instanceof GetBOToPO) {
+						// association not present
+						value=null;
+					} else if (response instanceof GetSOToPO) {
+						// association exists
+						// associate returned value with key
+						value=((GetSOToPO)response).getValue();
+						_map.put(key, value);
+						
+						// reply GetPOToSO to SO
+						_dispatcher.reply(message, new GetPOToSO());
+					}
 					
 					return value;
 					// release map [partition]
@@ -141,9 +151,14 @@ public class GCache implements Cache, BucketConfig {
 			Serializable key=get.getKey();
 			Bucket bucket=_buckets[_mapper.map(key)];
 			Location location=bucket.getLocation(key);
+			if (location==null) {
+				_dispatcher.reply(message1,new GetBOToPO());
+				return;
+			}
+			Sync locationLock=location.getLock().writeLock();
 			try {
 				// get write lock on location
-				Utils.safeAcquire(location.getLock().writeLock()); // this should be done inside bucket lock
+				Utils.safeAcquire(locationLock); // this should be done inside bucket lock
 				// exchangeSendLoop GetBOToSO to SO
 				Destination po=get.getPO();
 				Destination bo=_cluster.getLocalNode().getDestination();
@@ -167,7 +182,7 @@ public class GCache implements Cache, BucketConfig {
 				location.setDestination(get.getPO());
 			} finally {
 				// release write lock on location
-				location.getLock().writeLock().release();
+				locationLock.release();
 			}
 		}
 		
