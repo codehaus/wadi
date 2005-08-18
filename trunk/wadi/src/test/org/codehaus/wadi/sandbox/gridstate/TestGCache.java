@@ -183,6 +183,9 @@ public class TestGCache extends TestCase {
             // retrieve an association that does not exist...
             assertTrue(red.get(key)==null);
             assertTrue(green.get(key)==null);
+            // remove an association that does not exist...
+            assertTrue(red.remove(key)==null);
+            assertTrue(green.remove(key)==null);
             String data=key+"-data";
             // insert an association for the first time...
             assertTrue(red.putFirst(key, data));
