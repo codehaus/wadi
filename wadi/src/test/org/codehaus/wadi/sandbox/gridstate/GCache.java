@@ -27,13 +27,8 @@ import org.codehaus.wadi.sandbox.gridstate.messages.GetPOToBO;
 import org.codehaus.wadi.sandbox.gridstate.messages.GetPOToSO;
 import org.codehaus.wadi.sandbox.gridstate.messages.GetSOToBO;
 import org.codehaus.wadi.sandbox.gridstate.messages.GetSOToPO;
-import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentCommit;
-import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentBegin;
-import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentBegun;
-import org.codehaus.wadi.sandbox.gridstate.messages.PutAbsentRollback;
 import org.codehaus.wadi.sandbox.gridstate.messages.PutBOToPO;
 import org.codehaus.wadi.sandbox.gridstate.messages.PutPOToBO;
-import org.codehaus.wadi.sandbox.gridstate.messages.PutRequest;
 import org.codehaus.wadi.sandbox.gridstate.messages.PutSOToPO;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -68,7 +63,7 @@ public class GCache implements Cache, BucketConfig {
 		_buckets=new Bucket[numBuckets];
 		_dispatcher=dispatcher;
 		_cluster=_dispatcher.getCluster();
-		_protocol=new Protocol();
+		_protocol=new IndirectProtocol();
 		_mapper=mapper;
 		
 		for (int i=0; i<numBuckets; i++) {
@@ -78,9 +73,9 @@ public class GCache implements Cache, BucketConfig {
 		}
 	}
 	
-	public class Protocol {
+	public class IndirectProtocol implements Protocol {
 		
-		public Protocol() {
+		public IndirectProtocol() {
 			
 			// Get - 5 messages - PO->BO->SO->PO->SO->BO
 			_dispatcher.register(this, "onMessage", GetPOToBO.class);
@@ -95,11 +90,6 @@ public class GCache implements Cache, BucketConfig {
 			_dispatcher.register(this, "onMessage", PutPOToBO.class);
 			_dispatcher.register(PutBOToPO.class, 2000);
 			
-			// PutAbsent
-			_dispatcher.register(this, "onMessage", PutAbsentBegin.class);
-			_dispatcher.register(PutAbsentBegun.class, 2000);
-			_dispatcher.register(PutAbsentCommit.class, 2000);
-			_dispatcher.register(PutAbsentRollback.class, 2000);
 		}
 
 		//--------------------------------------------------------------------------------
@@ -107,6 +97,9 @@ public class GCache implements Cache, BucketConfig {
 		//--------------------------------------------------------------------------------
 
 		// called on PO...
+		/* (non-Javadoc)
+		 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#get(java.io.Serializable)
+		 */
 		public Serializable get(Serializable key) {
 			// lock map [partition]
 			synchronized (_map) { // naive - should only lock map partition...
@@ -220,6 +213,9 @@ public class GCache implements Cache, BucketConfig {
 		//--------------------------------------------------------------------------------
 
 		// called on PO...
+		/* (non-Javadoc)
+		 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#put(java.io.Serializable, java.io.Serializable, boolean, boolean)
+		 */
 		public Serializable put(Serializable key, Serializable value, boolean overwrite, boolean returnOldValue) {
 			// lock map [partition]
 			synchronized (_map) { // naive - should only lock map partition...
@@ -305,72 +301,13 @@ public class GCache implements Cache, BucketConfig {
 		}
 		
 		//--------------------------------------------------------------------------------
-		// PutAbsent
+		// Remove
 		//--------------------------------------------------------------------------------
 
-		public boolean putAbsent(Serializable key, Serializable value, Map map) {
-			// should take non-exclusive lock on bucket array... - // TODO
-			Bucket bucket=_buckets[_mapper.map(key)];
-			Destination destination=_cluster.getLocalNode().getDestination();
-			Conversation conversation=new Conversation();
-			boolean success=bucket.putAbsentBegin(conversation, key, destination);
-			if (success) {
-				Object oldValue=map.put(key, value);
-				assert oldValue==null;
-				bucket.putAbsentCommit(conversation, key, destination);
-			}
-			else {
-				bucket.putAbsentRollback(conversation, key, destination);
-			}
-			
-			return success; 
-		}
-		
-		public void putExists(Serializable key) {
-			_buckets[_mapper.map(key)].putExists(key, _cluster.getLocalNode().getDestination());
-		}
-		
-		public Serializable removeReturn(Serializable key, Map map) {
-			return _buckets[_mapper.map(key)].removeReturn(key, map);
+		public Serializable remove(Serializable key, boolean returnOldValue) {
+			throw new UnsupportedOperationException("NYI");
 		}
 
-		public void removeNoReturn(Serializable key) {
-			_buckets[_mapper.map(key)].removeNoReturn(key);
-		}
-		
-		public void onMessage(ObjectMessage message, PutAbsentBegin request) {
-			Serializable key=request.getKey();
-			Destination destination=request.getDestination();
-			// should take read lock on bucket array... - TODO
-			Bucket bucket=_buckets[_mapper.map(key)];
-			Conversation conversation=new Conversation();
-			boolean success=bucket.putAbsentBegin(conversation, key, destination);
-			ObjectMessage reply=_dispatcher.exchangeReplyLoop(message, new PutAbsentBegun(success), 2000);
-			Object tmp=null;
-			try {
-				tmp=reply.getObject();
-			} catch (JMSException e) { // should be included in loop - TODO
-				_log.error("unexpected problem", e);
-			}
-			if (tmp instanceof PutAbsentCommit) {
-				PutAbsentCommit commit=(PutAbsentCommit)tmp;
-				bucket.putAbsentCommit(conversation, commit.getKey(), destination);
-			} else if (tmp instanceof PutAbsentRollback) {
-				PutAbsentRollback rollback=(PutAbsentRollback)tmp;
-				bucket.putAbsentRollback(conversation, rollback.getKey(), destination);
-			} else {
-				_log.error("unexpected message type: "+tmp.getClass().getName());
-			}
-		}
-		
-		public void destroy(String key) {
-			
-		}
-		
-		public void fetch(String key) {
-			
-		}
-		
 	}
 	
   /*
@@ -512,11 +449,11 @@ public class GCache implements Cache, BucketConfig {
    * first pass
    */
   public Object remove(Object key) {
-	  return _protocol.removeReturn((Serializable)key, _map);
+	  return _protocol.remove((Serializable)key, true);
   }
 
-  public void removeNoReturn(Object key) {
-	  _protocol.removeNoReturn((Serializable)key);
+  public Object remove(Object key, boolean returnOldValue) {
+	  return _protocol.remove((Serializable)key, returnOldValue);
   }
   
   /*

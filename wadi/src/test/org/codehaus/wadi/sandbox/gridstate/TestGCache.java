@@ -24,12 +24,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.ExtendedCluster;
-import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.dindex.impl.BucketFacade;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
-import org.codehaus.wadi.test.DIndexNode;
 
 import junit.framework.TestCase;
 
