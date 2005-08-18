@@ -30,10 +30,10 @@ import org.codehaus.wadi.sandbox.gridstate.messages.GetSOToPO;
 import org.codehaus.wadi.sandbox.gridstate.messages.PutBOToPO;
 import org.codehaus.wadi.sandbox.gridstate.messages.PutPOToBO;
 import org.codehaus.wadi.sandbox.gridstate.messages.PutSOToPO;
+import org.codehaus.wadi.sandbox.gridstate.messages.RemoveBOToPO;
+import org.codehaus.wadi.sandbox.gridstate.messages.RemovePOToBO;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
-
-
 
 /**
  * Geronimo is going to need a standard API for lookup of sessions across the Cluster.
@@ -89,7 +89,11 @@ public class GCache implements Cache, BucketConfig {
 			// Put - 2 messages - PO->BO->PO
 			_dispatcher.register(this, "onMessage", PutPOToBO.class);
 			_dispatcher.register(PutBOToPO.class, 2000);
-			
+
+			// Remove - 2 messages - PO->BO->PO
+			_dispatcher.register(this, "onMessage", RemovePOToBO.class);
+			_dispatcher.register(RemoveBOToPO.class, 2000);
+
 		}
 
 		//--------------------------------------------------------------------------------
@@ -304,9 +308,66 @@ public class GCache implements Cache, BucketConfig {
 		// Remove
 		//--------------------------------------------------------------------------------
 
+		// called on PO...
 		public Serializable remove(Serializable key, boolean returnOldValue) {
-			throw new UnsupportedOperationException("NYI");
+			// lock map [partition]
+			synchronized (_map) { // naive - should only lock map partition...
+				Serializable oldValue=(Serializable)_map.remove(key);
+				// exchangeSendLoop RemovePOToBO to BO
+				Destination po=_cluster.getLocalNode().getDestination();
+				Destination bo=_buckets[_mapper.map(key)].getDestination();
+				RemovePOToBO request=new RemovePOToBO(key, returnOldValue, po);
+				ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, 2000L);
+				Serializable response=null;
+				try {
+					response=message.getObject();
+				} catch (JMSException e) {
+					_log.error("unexpected problem", e); // should be in loop - TODO
+				}
+				
+				// 2 possibilities - 
+				// RemoveBO2PO (first time this key has been used...
+				if (response instanceof RemoveBOToPO) {
+					// either the association did not exist, or it existed and we were SO.
+					return oldValue;
+//				} else if (response instanceof PutSOToPO) {
+//					// key was already associated with some value...
+//					return ((PutSOToPO)response).getValue();
+				} else {
+					_log.error("unexpected response: "+response.getClass().getName());
+					return null;
+				}
+				
+				// release map [partition]
+			}
 		}
+
+		// called on BO...
+		public void onMessage(ObjectMessage message1, RemovePOToBO remove) {
+			// what if we are NOT the BO anymore ?
+			Serializable key=remove.getKey();
+			Bucket bucket=_buckets[_mapper.map(key)];
+			Map bucketMap=bucket.getMap();
+			Sync bucketLock=bucket.getLock().writeLock();
+			try {
+				// get write lock on bucket
+				Utils.safeAcquire(bucketLock);
+				Location oldLocation=(Location)bucketMap.remove(key);
+				if (oldLocation==null || oldLocation.getDestination().equals(remove.getPO())) {
+					// no previous value, or previous value, but PO was SO
+					// send BOToPO - success
+					_dispatcher.reply(message1, new RemoveBOToPO());
+				} else {
+					// previous value needs removing and possibly returning...
+					// send BOToSO...
+					throw new UnsupportedOperationException("NYI");
+				}
+				
+			} finally {
+				bucketLock.release();
+			}
+		}
+		
 
 	}
 	
