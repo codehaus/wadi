@@ -4,17 +4,17 @@ import java.io.Serializable;
 
 import javax.jms.Destination;
 
-public class GetPOToBO implements Serializable {
+public class ReadPOToBO implements Serializable {
 
 	protected Serializable _key;
 	protected Destination _po;
 	
-	public GetPOToBO(Serializable key, Destination po) {
+	public ReadPOToBO(Serializable key, Destination po) {
 		_key=key;
 		_po=po;
 	}
 	
-	protected GetPOToBO() {
+	protected ReadPOToBO() {
 		// for deserialisation ...
 	}
 	

@@ -21,15 +21,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.sandbox.gridstate.messages.GetBOToPO;
-import org.codehaus.wadi.sandbox.gridstate.messages.GetBOToSO;
-import org.codehaus.wadi.sandbox.gridstate.messages.GetPOToBO;
-import org.codehaus.wadi.sandbox.gridstate.messages.GetPOToSO;
-import org.codehaus.wadi.sandbox.gridstate.messages.GetSOToBO;
-import org.codehaus.wadi.sandbox.gridstate.messages.GetSOToPO;
-import org.codehaus.wadi.sandbox.gridstate.messages.PutBOToPO;
-import org.codehaus.wadi.sandbox.gridstate.messages.PutPOToBO;
-import org.codehaus.wadi.sandbox.gridstate.messages.PutSOToPO;
+import org.codehaus.wadi.sandbox.gridstate.messages.ReadBOToPO;
+import org.codehaus.wadi.sandbox.gridstate.messages.MoveBOToSO;
+import org.codehaus.wadi.sandbox.gridstate.messages.ReadPOToBO;
+import org.codehaus.wadi.sandbox.gridstate.messages.MovePOToSO;
+import org.codehaus.wadi.sandbox.gridstate.messages.MoveSOToBO;
+import org.codehaus.wadi.sandbox.gridstate.messages.MoveSOToPO;
+import org.codehaus.wadi.sandbox.gridstate.messages.WriteBOToPO;
+import org.codehaus.wadi.sandbox.gridstate.messages.WritePOToBO;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -76,17 +75,17 @@ public class GCache implements Cache, BucketConfig {
 		public IndirectProtocol() {
 			
 			// Get - 5 messages - PO->BO->SO->PO->SO->BO
-			_dispatcher.register(this, "onMessage", GetPOToBO.class);
-			_dispatcher.register(this, "onMessage", GetBOToSO.class);
-			_dispatcher.register(GetSOToPO.class, 2000);
-			_dispatcher.register(GetPOToSO.class, 2000);
-			_dispatcher.register(GetSOToBO.class, 2000);
+			_dispatcher.register(this, "onMessage", ReadPOToBO.class);
+			_dispatcher.register(this, "onMessage", MoveBOToSO.class);
+			_dispatcher.register(MoveSOToPO.class, 2000);
+			_dispatcher.register(MovePOToSO.class, 2000);
+			_dispatcher.register(MoveSOToBO.class, 2000);
 			// Get - 2 messages - PO->BO->PO (NYI)
-			_dispatcher.register(GetBOToPO.class, 2000);
+			_dispatcher.register(ReadBOToPO.class, 2000);
 
 			// Put - 2 messages - PO->BO->PO
-			_dispatcher.register(this, "onMessage", PutPOToBO.class);
-			_dispatcher.register(PutBOToPO.class, 2000);
+			_dispatcher.register(this, "onMessage", WritePOToBO.class);
+			_dispatcher.register(WriteBOToPO.class, 2000);
 
 		}
 
@@ -108,7 +107,7 @@ public class GCache implements Cache, BucketConfig {
 					// exchangeSendLoop GetPOToBO to BO
 					Destination po=_cluster.getLocalNode().getDestination();
 					Destination bo=_buckets[_mapper.map(key)].getDestination();
-					GetPOToBO request=new GetPOToBO(key, po);
+					ReadPOToBO request=new ReadPOToBO(key, po);
 					ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, 2000L);
 					Serializable response=null;
 					try {
@@ -117,17 +116,18 @@ public class GCache implements Cache, BucketConfig {
 						_log.error("unexpected problem", e); // should be in loop - TODO
 					}
 					
-					if (response instanceof GetBOToPO) {
+					if (response instanceof ReadBOToPO) {
 						// association not present
 						value=null;
-					} else if (response instanceof GetSOToPO) {
+					} else if (response instanceof MoveSOToPO) {
 						// association exists
 						// associate returned value with key
-						value=((GetSOToPO)response).getValue();
+						value=((MoveSOToPO)response).getValue();
+						_log.info("received "+key+"="+value+" <- SO");
 						_map.put(key, value);
 						
 						// reply GetPOToSO to SO
-						_dispatcher.reply(message, new GetPOToSO());
+						_dispatcher.reply(message, new MovePOToSO());
 					}
 					
 					return value;
@@ -137,72 +137,87 @@ public class GCache implements Cache, BucketConfig {
 		}
 		
 		// called on BO...
-		public void onMessage(ObjectMessage message1, GetPOToBO get) {
+		public void onMessage(ObjectMessage message1, ReadPOToBO get) {
 			// what if we are NOT the BO anymore ?
 			Serializable key=get.getKey();
 			Bucket bucket=_buckets[_mapper.map(key)];
-			Location location=bucket.getLocation(key);
-			if (location==null) {
-				_dispatcher.reply(message1,new GetBOToPO());
-				return;
-			}
-			Sync locationLock=location.getLock().writeLock();
+			Sync bucketLock=bucket.getLock().writeLock();
 			try {
 				// get write lock on location
-				Utils.safeAcquire(locationLock); // this should be done inside bucket lock
-				// exchangeSendLoop GetBOToSO to SO
-				Destination po=get.getPO();
-				Destination bo=_cluster.getLocalNode().getDestination();
-				Destination so=location.getDestination();
-				String poCorrelationId=null;
-				try {
-					poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
-					_log.info("Process Owner Correlation ID: "+poCorrelationId);
-				} catch (JMSException e) {
-					_log.error("unexpected problem", e);
+				Utils.safeAcquire(bucketLock);
+				
+				
+				
+				Location location=bucket.getLocation(key);
+				if (location==null) {
+					_dispatcher.reply(message1,new ReadBOToPO());
+					return;
 				}
-				GetBOToSO request=new GetBOToSO(key, po, bo, poCorrelationId);
-				ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, 2000L);
-				GetSOToBO response=null;
+				Sync locationLock=location.getLock().writeLock();
 				try {
-					response=(GetSOToBO)message2.getObject();
-				} catch (JMSException e) {
-					_log.error("unexpected problem", e); // should be sorted in loop
+					// get write lock on location
+					Utils.safeAcquire(locationLock); // this should be done inside bucket lock
+					// exchangeSendLoop GetBOToSO to SO
+					Destination po=get.getPO();
+					Destination bo=_cluster.getLocalNode().getDestination();
+					Destination so=location.getDestination();
+					String poCorrelationId=null;
+					try {
+						poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
+						_log.info("Process Owner Correlation ID: "+poCorrelationId);
+					} catch (JMSException e) {
+						_log.error("unexpected problem", e);
+					}
+					MoveBOToSO request=new MoveBOToSO(key, po, bo, poCorrelationId);
+					ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, 2000L);
+					MoveSOToBO response=null;
+					try {
+						response=(MoveSOToBO)message2.getObject();
+					} catch (JMSException e) {
+						_log.error("unexpected problem", e); // should be sorted in loop
+					}
+					// alter location
+					location.setDestination(get.getPO());
+				} finally {
+					// release write lock on location
+					locationLock.release();
 				}
-				// alter location
-				location.setDestination(get.getPO());
+				
+				
 			} finally {
-				// release write lock on location
-				locationLock.release();
+				bucketLock.release();
 			}
 		}
 		
 		// called on SO...
-		public void onMessage(ObjectMessage message1, GetBOToSO get) {
+		public void onMessage(ObjectMessage message1, MoveBOToSO get) {
 			Serializable key=get.getKey();
 			// lock map [partition]
 			synchronized (_map) { // naive
 				// send GetSOToPO to PO
 				Destination so=_cluster.getLocalNode().getDestination();
 				Destination po=get.getPO();
-				GetSOToPO request=new GetSOToPO((Serializable)_map.get(key));
+				Serializable value=(Serializable)_map.get(key);
+				_log.info("sending "+key+"="+value+" -> PO");
+				MoveSOToPO request=new MoveSOToPO(value);
+				// remove association
+				_map.remove(key);
 				ObjectMessage message2=(ObjectMessage)_dispatcher.exchangeSend(so, po, request, 2000L, get.getPOCorrelationId());
 				// wait
 				// receive GetPOToSO
-				GetPOToSO response=null;
+				MovePOToSO response=null;
 				try {
-					response=(GetPOToSO)message2.getObject();
+					response=(MovePOToSO)message2.getObject();
 				} catch (JMSException e) {
 					_log.error("unexpected problem", e);
+					_map.put(key, value); // something went wrong - rollback...
 				}
-				// remove association
-				_map.remove(key);
 				// unlock map [partition]
 			}
 
 			// send GetSOToBO to BO
 			Destination bo=get.getBO();
-			_dispatcher.reply(message1,new GetSOToBO());
+			_dispatcher.reply(message1,new MoveSOToBO());
 		}
 		
 		
@@ -218,7 +233,7 @@ public class GCache implements Cache, BucketConfig {
 			// lock map [partition]
 			synchronized (_map) { // naive - should only lock map partition...
 				Serializable oldValue=(Serializable)(value==null?_map.remove(key):_map.put(key, value)); // assume a value of null removes association
-				boolean roundtrip=(oldValue==null && value!=null) || (oldValue!=null && value==null);
+				boolean roundtrip=(oldValue==null || value==null);
 				if (!overwrite) {
 					if (oldValue!=null) {
 						_map.put(key, oldValue);
@@ -232,7 +247,7 @@ public class GCache implements Cache, BucketConfig {
 					// exchangeSendLoop PutPOToBO to BO
 					Destination po=_cluster.getLocalNode().getDestination();
 					Destination bo=_buckets[_mapper.map(key)].getDestination();
-					PutPOToBO request=new PutPOToBO(key, value==null, overwrite, returnOldValue, po);
+					WritePOToBO request=new WritePOToBO(key, value==null, overwrite, returnOldValue, po);
 					ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, 2000L);
 					Serializable response=null;
 					try {
@@ -243,15 +258,18 @@ public class GCache implements Cache, BucketConfig {
 					
 					// 2 possibilities - 
 					// PutBO2PO (first time this key has been used...
-					if (response instanceof PutBOToPO) {
+					if (response instanceof WriteBOToPO) {
 						// therefore old value was null, or we were already SO
 						if (!overwrite)
-							return ((PutBOToPO)response).getSuccess()?Boolean.TRUE:Boolean.FALSE;
+							return ((WriteBOToPO)response).getSuccess()?Boolean.TRUE:Boolean.FALSE;
 						else
 							return returnOldValue?oldValue:null;
-					} else if (response instanceof PutSOToPO) {
+					} else if (response instanceof MoveSOToPO) {
 						// key was already associated with some value...
-						return ((PutSOToPO)response).getValue();
+						oldValue=((MoveSOToPO)response).getValue();
+						// reply GetPOToSO to SO
+						_dispatcher.reply(message, new MovePOToSO());
+						return oldValue;
 					} else {
 						_log.error("unexpected response: "+response.getClass().getName());
 						return null;
@@ -265,33 +283,51 @@ public class GCache implements Cache, BucketConfig {
 		}
 
 		// called on BO...
-		public void onMessage(ObjectMessage message1, PutPOToBO put) {
+		public void onMessage(ObjectMessage message1, WritePOToBO write) {
 			// what if we are NOT the BO anymore ?
-			Serializable key=put.getKey();
+			Serializable key=write.getKey();
 			Bucket bucket=_buckets[_mapper.map(key)];
 			Map bucketMap=bucket.getMap();
 			Sync bucketLock=bucket.getLock().writeLock();
 			try {
 				// get write lock on bucket
 				Utils.safeAcquire(bucketLock);
-				Location location=put.getValueIsNull()?null:new Location(put.getPO());
+				Location location=write.getValueIsNull()?null:new Location(write.getPO());
 				// remove or update location, remembering old value
 				Location oldLocation=(Location)(location==null?bucketMap.remove(key):bucketMap.put(key, location));
 				// if we are not allowed to overwrite, and we have...
-				if (!put.getOverwrite() && oldLocation!=null) {
+				if (!write.getOverwrite() && oldLocation!=null) {
 					//  undo our change
 					bucketMap.put(key, oldLocation);
 					// send BOToPO - failure
-					_dispatcher.reply(message1, new PutBOToPO(false));
-				} else if (oldLocation==null || (put.getPO().equals(oldLocation.getDestination()))) {
+					_dispatcher.reply(message1, new WriteBOToPO(false));
+				} else if (oldLocation==null || (write.getPO().equals(oldLocation.getDestination()))) {
 					// if there was previously no SO, or there was, but it was PO ...
 					// then there is no need to go and remove the old value from the old SO
 					// send BOToPO - success
-					_dispatcher.reply(message1, new PutBOToPO(true));
+					_dispatcher.reply(message1, new WriteBOToPO(true));
 				} else {
 					// previous value needs removing and possibly returning...
 					// send BOToSO...
-					throw new UnsupportedOperationException("NYI");
+
+					String poCorrelationId=null;
+					try {
+						poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
+						_log.info("Process Owner Correlation ID: "+poCorrelationId);
+					} catch (JMSException e) {
+						_log.error("unexpected problem", e);
+					}
+					Destination po=write.getPO();
+					Destination bo=_cluster.getLocalNode().getDestination();
+					Destination so=oldLocation.getDestination();
+					MoveBOToSO request=new MoveBOToSO(key, po, bo, poCorrelationId);
+					ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, 2000L);
+					MoveSOToBO response=null;
+					try {
+						response=(MoveSOToBO)message2.getObject();
+					} catch (JMSException e) {
+						_log.error("unexpected problem", e); // should be sorted in loop
+					}
 				}
 				
 			} finally {
@@ -505,6 +541,11 @@ public class GCache implements Cache, BucketConfig {
   
   public Bucket[] getBuckets() {
 	  return _buckets;
+  }
+  
+  // for testing...
+  public Map getMap() {
+	  return _map;
   }
   
 }

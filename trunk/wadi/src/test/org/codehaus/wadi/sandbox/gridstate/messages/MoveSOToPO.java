@@ -2,15 +2,15 @@ package org.codehaus.wadi.sandbox.gridstate.messages;
 
 import java.io.Serializable;
 
-public class PutSOToPO implements Serializable {
+public class MoveSOToPO implements Serializable {
 
 	protected Serializable _value;
 	
-	public PutSOToPO(Serializable value) {
+	public MoveSOToPO(Serializable value) {
 		_value=value;
 	}
 	
-	protected PutSOToPO() {
+	protected MoveSOToPO() {
 		// for deserialisation...
 	}
 	

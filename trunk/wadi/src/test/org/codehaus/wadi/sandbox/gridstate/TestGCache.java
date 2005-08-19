@@ -17,6 +17,7 @@
 package org.codehaus.wadi.sandbox.gridstate;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import org.activecluster.Cluster;
 import org.activemq.ActiveMQConnectionFactory;
@@ -107,6 +108,10 @@ public class TestGCache extends TestCase {
         	return _gcache;
         }
         
+        public Map getMap() {
+        	return _gcache.getMap();
+        }
+        
         public boolean putFirst(Object key, Object value) {
         	return _gcache.putFirst(key, value);
         }
@@ -189,7 +194,9 @@ public class TestGCache extends TestCase {
             String key=_factory.create(i);
             _log.info("key: "+key);
             // retrieve an association that does not exist...
+            assertFalse(red.getMap().containsKey(key));
             assertTrue(red.get(key)==null);
+            assertFalse(green.getMap().containsKey(key));
             assertTrue(green.get(key)==null);
             // remove an association that does not exist...
             assertTrue(red.remove(key)==null);
@@ -197,16 +204,26 @@ public class TestGCache extends TestCase {
             String data=key+"-data";
             // insert an association for the first time...
             assertTrue(red.putFirst(key, data));
+            assertTrue(red.getMap().containsKey(key));
+            assertTrue(!green.getMap().containsKey(key));
             // remove a local association - returning its last value
             assertTrue(red.remove(key).equals(data));
+            assertTrue(!red.getMap().containsKey(key));
+            assertTrue(!green.getMap().containsKey(key));
             // remove a non-existant association
             assertTrue(red.remove(key)==null);
             // replace the association - expecting it to not already exist
             assertTrue(red.putFirst(key, data));
+            assertTrue(red.getMap().containsKey(key));
+            assertTrue(!green.getMap().containsKey(key));
             // remove it again - not returning the last value
             assertTrue(red.remove(key, false)==null);
+            assertTrue(!red.getMap().containsKey(key));
+            assertTrue(!green.getMap().containsKey(key));
             // replace the association - expecting it to not already exist
             assertTrue(red.putFirst(key, data));
+            assertTrue(red.getMap().containsKey(key));
+            assertTrue(!green.getMap().containsKey(key));
             // insert an association that already exists, stating that this should fail (for session id insertion)
             assertTrue(!red.putFirst(key, data));
             // try overwriting the [local] value with itself
@@ -215,13 +232,29 @@ public class TestGCache extends TestCase {
             assertTrue(red.put(key, data, true, false)==null);
             // retrieve an association from the StateOwner
             assertTrue(red.get(key).equals(data));
+            assertTrue(red.getMap().containsKey(key));
+            assertTrue(!green.getMap().containsKey(key));
             // retrieve an association from a node that is not the StateOwner
+            _log.info("get remote...");
             assertTrue(green.get(key).equals(data));
+            assertTrue(!red.getMap().containsKey(key));
+            assertTrue(green.getMap().containsKey(key));
             // retrieve an association from a node that is not the StateOwner
             assertTrue(red.get(key).equals(data));
+            assertTrue(red.getMap().containsKey(key));
+            assertTrue(!green.getMap().containsKey(key));
             // retrieve an association from a node that is not the StateOwner
             assertTrue(green.get(key).equals(data));
-            //red.remove(key);
+            assertTrue(!red.getMap().containsKey(key));
+            assertTrue(green.getMap().containsKey(key));
+            _log.info("remove remote...");
+            Object value=red.remove(key);
+            _log.info(key+" = "+value);
+            assertTrue(value.equals(data));
+            assertTrue(red.put(key, data)==null);
+            String newData=(data+".new");
+            assertTrue(green.put(key, newData).equals(data));
+            assertTrue(red.put(key, data).equals(newData));
         }
         
 //        _log.info("3 nodes running");
