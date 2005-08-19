@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import javax.jms.Destination;
 
-public class PutPOToBO implements Serializable {
+public class WritePOToBO implements Serializable {
 
 	protected Serializable _key;
 	protected boolean _valueIsNull;
@@ -12,7 +12,7 @@ public class PutPOToBO implements Serializable {
 	protected boolean _returnOldValue;
 	protected Destination _po;
 	
-	public PutPOToBO(Serializable key, boolean valueIsNull, boolean overwrite, boolean returnOldValue, Destination po) {
+	public WritePOToBO(Serializable key, boolean valueIsNull, boolean overwrite, boolean returnOldValue, Destination po) {
 		_key=key;
 		_valueIsNull=valueIsNull;
 		_overwrite=overwrite;
@@ -20,7 +20,7 @@ public class PutPOToBO implements Serializable {
 		_po=po;
 	}
 	
-	protected PutPOToBO() {
+	protected WritePOToBO() {
 		// for deserialisation...
 	}
 	
