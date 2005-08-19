@@ -54,6 +54,10 @@ public class GCache implements Cache, BucketConfig {
 	protected final BucketMapper _mapper;
 	protected final Cluster _cluster;
 	protected final Map _map=new HashMap();
+	
+	protected final SyncMap _poSyncs=new SyncMap();
+	protected final SyncMap _boSyncs=new SyncMap();
+	protected final SyncMap _soSyncs=new SyncMap();
 	  
 	
 	public GCache(String nodeName, int numBuckets, Dispatcher dispatcher, BucketMapper mapper) {
@@ -98,8 +102,9 @@ public class GCache implements Cache, BucketConfig {
 		 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#get(java.io.Serializable)
 		 */
 		public Serializable get(Serializable key) {
-			// lock map [partition]
-			synchronized (_map) { // naive - should only lock map partition...
+			Sync sync=null;
+			try {
+				sync=_poSyncs.acquire(key);
 				Serializable value=(Serializable)_map.get(key);
 				if (value!=null)
 					return value;
@@ -131,69 +136,59 @@ public class GCache implements Cache, BucketConfig {
 					}
 					
 					return value;
-					// release map [partition]
 				}
+			} finally {
+				sync.release();
 			}
 		}
 		
 		// called on BO...
 		public void onMessage(ObjectMessage message1, ReadPOToBO get) {
 			// what if we are NOT the BO anymore ?
+			// get write lock on location
 			Serializable key=get.getKey();
-			Bucket bucket=_buckets[_mapper.map(key)];
-			Sync bucketLock=bucket.getLock().writeLock();
+			Sync sync=null;
 			try {
-				// get write lock on location
-				Utils.safeAcquire(bucketLock);
-				
-				
-				
+				sync=_boSyncs.acquire(key);
+				Bucket bucket=_buckets[_mapper.map(key)];
 				Location location=bucket.getLocation(key);
 				if (location==null) {
 					_dispatcher.reply(message1,new ReadBOToPO());
 					return;
 				}
-				Sync locationLock=location.getLock().writeLock();
+				// exchangeSendLoop GetBOToSO to SO
+				Destination po=get.getPO();
+				Destination bo=_cluster.getLocalNode().getDestination();
+				Destination so=location.getDestination();
+				String poCorrelationId=null;
 				try {
-					// get write lock on location
-					Utils.safeAcquire(locationLock); // this should be done inside bucket lock
-					// exchangeSendLoop GetBOToSO to SO
-					Destination po=get.getPO();
-					Destination bo=_cluster.getLocalNode().getDestination();
-					Destination so=location.getDestination();
-					String poCorrelationId=null;
-					try {
-						poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
-						_log.info("Process Owner Correlation ID: "+poCorrelationId);
-					} catch (JMSException e) {
-						_log.error("unexpected problem", e);
-					}
-					MoveBOToSO request=new MoveBOToSO(key, po, bo, poCorrelationId);
-					ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, 2000L);
-					MoveSOToBO response=null;
-					try {
-						response=(MoveSOToBO)message2.getObject();
-					} catch (JMSException e) {
-						_log.error("unexpected problem", e); // should be sorted in loop
-					}
-					// alter location
-					location.setDestination(get.getPO());
-				} finally {
-					// release write lock on location
-					locationLock.release();
+					poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
+					_log.info("Process Owner Correlation ID: "+poCorrelationId);
+				} catch (JMSException e) {
+					_log.error("unexpected problem", e);
 				}
-				
+				MoveBOToSO request=new MoveBOToSO(key, po, bo, poCorrelationId);
+				ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, 2000L);
+				MoveSOToBO response=null;
+				try {
+					response=(MoveSOToBO)message2.getObject();
+				} catch (JMSException e) {
+					_log.error("unexpected problem", e); // should be sorted in loop
+				}
+				// alter location
+				location.setDestination(get.getPO());
 				
 			} finally {
-				bucketLock.release();
+				sync.release();
 			}
 		}
 		
 		// called on SO...
 		public void onMessage(ObjectMessage message1, MoveBOToSO get) {
 			Serializable key=get.getKey();
-			// lock map [partition]
-			synchronized (_map) { // naive
+			Sync sync=null;
+			try {
+				sync=_soSyncs.acquire(key);
 				// send GetSOToPO to PO
 				Destination so=_cluster.getLocalNode().getDestination();
 				Destination po=get.getPO();
@@ -212,7 +207,8 @@ public class GCache implements Cache, BucketConfig {
 					_log.error("unexpected problem", e);
 					_map.put(key, value); // something went wrong - rollback...
 				}
-				// unlock map [partition]
+			} finally {
+				sync.release();
 			}
 
 			// send GetSOToBO to BO
@@ -230,8 +226,9 @@ public class GCache implements Cache, BucketConfig {
 		 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#put(java.io.Serializable, java.io.Serializable, boolean, boolean)
 		 */
 		public Serializable put(Serializable key, Serializable value, boolean overwrite, boolean returnOldValue) {
-			// lock map [partition]
-			synchronized (_map) { // naive - should only lock map partition...
+			Sync sync=null;
+			try {
+				sync=_poSyncs.acquire(key);
 				Serializable oldValue=(Serializable)(value==null?_map.remove(key):_map.put(key, value)); // assume a value of null removes association
 				boolean roundtrip=(oldValue==null || value==null);
 				if (!overwrite) {
@@ -277,8 +274,8 @@ public class GCache implements Cache, BucketConfig {
 				}
 				else
 					return returnOldValue?oldValue:null;
-				
-				// release map [partition]
+			} finally {
+				sync.release();
 			}
 		}
 
@@ -288,10 +285,9 @@ public class GCache implements Cache, BucketConfig {
 			Serializable key=write.getKey();
 			Bucket bucket=_buckets[_mapper.map(key)];
 			Map bucketMap=bucket.getMap();
-			Sync bucketLock=bucket.getLock().writeLock();
+			Sync sync=null;
 			try {
-				// get write lock on bucket
-				Utils.safeAcquire(bucketLock);
+				sync=_boSyncs.acquire(key);
 				Location location=write.getValueIsNull()?null:new Location(write.getPO());
 				// remove or update location, remembering old value
 				Location oldLocation=(Location)(location==null?bucketMap.remove(key):bucketMap.put(key, location));
@@ -331,7 +327,7 @@ public class GCache implements Cache, BucketConfig {
 				}
 				
 			} finally {
-				bucketLock.release();
+				sync.release();
 			}
 		}
 		
