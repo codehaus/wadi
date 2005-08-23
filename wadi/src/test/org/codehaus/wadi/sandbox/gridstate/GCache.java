@@ -55,9 +55,9 @@ public class GCache implements Cache, BucketConfig {
 	protected final Cluster _cluster;
 	protected final Map _map=new HashMap();
 	
-	protected final SyncMap _poSyncs=new SyncMap();
-	protected final SyncMap _boSyncs=new SyncMap();
-	protected final SyncMap _soSyncs=new SyncMap();
+	protected final SyncMap _poSyncs=new SyncMap("PO");
+	protected final SyncMap _boSyncs=new SyncMap("BO");
+	protected final SyncMap _soSyncs=new SyncMap("SO");
 	  
 	
 	public GCache(String nodeName, int numBuckets, Dispatcher dispatcher, BucketMapper mapper) {
@@ -138,6 +138,7 @@ public class GCache implements Cache, BucketConfig {
 					return value;
 				}
 			} finally {
+				_log.info("[PO] releasing sync for: "+key+" - "+sync);
 				sync.release();
 			}
 		}
@@ -179,6 +180,7 @@ public class GCache implements Cache, BucketConfig {
 				location.setDestination(get.getPO());
 				
 			} finally {
+				_log.info("[BO] releasing sync for: "+key+" - "+sync);
 				sync.release();
 			}
 		}
@@ -208,6 +210,7 @@ public class GCache implements Cache, BucketConfig {
 					_map.put(key, value); // something went wrong - rollback...
 				}
 			} finally {
+				_log.info("[SO] releasing sync for: "+key+" - "+sync);
 				sync.release();
 			}
 
@@ -275,6 +278,7 @@ public class GCache implements Cache, BucketConfig {
 				else
 					return returnOldValue?oldValue:null;
 			} finally {
+				_log.info("[PO] releasing sync for: "+key+" - "+sync);
 				sync.release();
 			}
 		}
@@ -327,6 +331,7 @@ public class GCache implements Cache, BucketConfig {
 				}
 				
 			} finally {
+				_log.info("[BO] releasing sync for: "+key+" - "+sync);
 				sync.release();
 			}
 		}

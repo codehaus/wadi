@@ -244,6 +244,7 @@ public class TestGCache extends TestCase {
             assertTrue(red.getMap().containsKey(key));
             assertTrue(!green.getMap().containsKey(key));
             // retrieve an association from a node that is not the StateOwner
+            _log.info("read remote...");
             assertTrue(green.get(key).equals(data));
             assertTrue(!red.getMap().containsKey(key));
             assertTrue(green.getMap().containsKey(key));
