@@ -156,6 +156,27 @@ public class TestGCache extends TestCase {
     
     FixedWidthSessionIdFactory factory;
     
+    public static class Tester implements Runnable {
+    	
+    	MyNode _red;
+    	MyNode _green;
+    	Object _key;
+    	int _numIters;
+    	
+    	Tester(MyNode red, MyNode green, Object key, int numIters) {
+    		_red=red;
+    		_green=green;
+    		_key=key;
+    		_numIters=numIters;
+    	}
+    	
+    	public void run() {
+    		for (int i=0; i<_numIters; i++) {
+    			assertTrue(_red.get(_key).equals(_green.get(_key)));
+    		}
+    	}
+    }
+    
     public void testGCache() throws Exception {
         MyNode red=new MyNode("red", _numBuckets);
         MyNode green=new MyNode("green", _numBuckets);
@@ -266,6 +287,12 @@ public class TestGCache extends TestCase {
             Object value2=red.put(key, data);
             _log.info(key+" = "+value2);
             assertTrue(value2.equals(newData));
+            int numThreads=1000;
+            Thread[] thread=new Thread[numThreads];
+            for (int j=0; j<numThreads; j++)
+        		(thread[j]=new Thread(new Tester(red, green, key, 100))).start();
+            for (int j=0; j<numThreads; j++)
+            	thread[j].join();
         }
         
 //        _log.info("3 nodes running");
