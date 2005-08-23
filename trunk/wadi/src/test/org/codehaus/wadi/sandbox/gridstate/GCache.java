@@ -55,9 +55,9 @@ public class GCache implements Cache, BucketConfig {
 	protected final Cluster _cluster;
 	protected final Map _map=new HashMap();
 	
-	protected final SyncMap _poSyncs=new SyncMap("PO");
 	protected final SyncMap _boSyncs=new SyncMap("BO");
-	protected final SyncMap _soSyncs=new SyncMap("SO");
+	protected final SyncMap _soSyncs=new SyncMap("PO/SO");
+	protected final SyncMap _poSyncs=_soSyncs;
 	  
 	
 	public GCache(String nodeName, int numBuckets, Dispatcher dispatcher, BucketMapper mapper) {
@@ -105,7 +105,10 @@ public class GCache implements Cache, BucketConfig {
 			Sync sync=null;
 			try {
 				sync=_poSyncs.acquire(key);
-				Serializable value=(Serializable)_map.get(key);
+				Serializable value=null;
+				synchronized (_map) {
+					value=(Serializable)_map.get(key);
+				}
 				if (value!=null)
 					return value;
 				else {
@@ -129,8 +132,9 @@ public class GCache implements Cache, BucketConfig {
 						// associate returned value with key
 						value=((MoveSOToPO)response).getValue();
 						_log.info("received "+key+"="+value+" <- SO");
-						_map.put(key, value);
-						
+						synchronized (_map) {
+							_map.put(key, value);
+						}
 						// reply GetPOToSO to SO
 						_dispatcher.reply(message, new MovePOToSO());
 					}
@@ -194,29 +198,32 @@ public class GCache implements Cache, BucketConfig {
 				// send GetSOToPO to PO
 				Destination so=_cluster.getLocalNode().getDestination();
 				Destination po=get.getPO();
-				Serializable value=(Serializable)_map.get(key);
+				Serializable value;
+				synchronized (_map) {
+					value=(Serializable)_map.get(key);
+				}
 				_log.info("sending "+key+"="+value+" -> PO");
 				MoveSOToPO request=new MoveSOToPO(value);
-				// remove association
-				_map.remove(key);
 				ObjectMessage message2=(ObjectMessage)_dispatcher.exchangeSend(so, po, request, 2000L, get.getPOCorrelationId());
 				// wait
 				// receive GetPOToSO
 				MovePOToSO response=null;
 				try {
 					response=(MovePOToSO)message2.getObject();
+					// remove association
+					synchronized (_map) {
+						_map.remove(key);
+					}
+					// send GetSOToBO to BO
+					Destination bo=get.getBO();
+					_dispatcher.reply(message1,new MoveSOToBO());
 				} catch (JMSException e) {
 					_log.error("unexpected problem", e);
-					_map.put(key, value); // something went wrong - rollback...
 				}
 			} finally {
 				_log.info("[SO] releasing sync for: "+key+" - "+sync);
 				sync.release();
 			}
-
-			// send GetSOToBO to BO
-			Destination bo=get.getBO();
-			_dispatcher.reply(message1,new MoveSOToBO());
 		}
 		
 		
@@ -229,54 +236,77 @@ public class GCache implements Cache, BucketConfig {
 		 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#put(java.io.Serializable, java.io.Serializable, boolean, boolean)
 		 */
 		public Serializable put(Serializable key, Serializable value, boolean overwrite, boolean returnOldValue) {
+			boolean removal=(value==null);
 			Sync sync=null;
 			try {
 				sync=_poSyncs.acquire(key);
-				Serializable oldValue=(Serializable)(value==null?_map.remove(key):_map.put(key, value)); // assume a value of null removes association
-				boolean roundtrip=(oldValue==null || value==null);
-				if (!overwrite) {
-					if (oldValue!=null) {
-						_map.put(key, oldValue);
-						oldValue=Boolean.FALSE;
-					} else {
-						oldValue=Boolean.TRUE;
+				
+				if (!removal) { // removals must do the round trip to BO
+					boolean local;
+					synchronized (_map) {
+						local=_map.containsKey(key);
+					}
+					
+					if (local) {
+						// local
+						if (overwrite) {
+							synchronized (_map) {
+								Serializable oldValue=(Serializable)_map.put(key, value);
+								return returnOldValue?oldValue:null;
+							}
+						} else {
+							return Boolean.FALSE;
+						}
 					}
 				}
 				
-				if (roundtrip) {				
-					// exchangeSendLoop PutPOToBO to BO
-					Destination po=_cluster.getLocalNode().getDestination();
-					Destination bo=_buckets[_mapper.map(key)].getDestination();
-					WritePOToBO request=new WritePOToBO(key, value==null, overwrite, returnOldValue, po);
-					ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, 2000L);
-					Serializable response=null;
-					try {
-						response=message.getObject();
-					} catch (JMSException e) {
-						_log.error("unexpected problem", e); // should be in loop - TODO
-					}
-					
-					// 2 possibilities - 
-					// PutBO2PO (first time this key has been used...
-					if (response instanceof WriteBOToPO) {
-						// therefore old value was null, or we were already SO
-						if (!overwrite)
-							return ((WriteBOToPO)response).getSuccess()?Boolean.TRUE:Boolean.FALSE;
-						else
-							return returnOldValue?oldValue:null;
-					} else if (response instanceof MoveSOToPO) {
-						// key was already associated with some value...
-						oldValue=((MoveSOToPO)response).getValue();
-						// reply GetPOToSO to SO
-						_dispatcher.reply(message, new MovePOToSO());
-						return oldValue;
-					} else {
-						_log.error("unexpected response: "+response.getClass().getName());
-						return null;
-					}
+				// absent or remote
+				// exchangeSendLoop PutPOToBO to BO
+				Destination po=_cluster.getLocalNode().getDestination();
+				Destination bo=_buckets[_mapper.map(key)].getDestination();
+				WritePOToBO request=new WritePOToBO(key, value==null, overwrite, returnOldValue, po);
+				ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, 2000L);
+				Serializable response=null;
+				try {
+					response=message.getObject();
+				} catch (JMSException e) {
+					_log.error("unexpected problem", e); // should be in loop - TODO
 				}
-				else
-					return returnOldValue?oldValue:null;
+				
+				// 2 possibilities - 
+				// PutBO2PO - Absent
+				if (response instanceof WriteBOToPO) {
+					if (overwrite) {
+						synchronized (_map) {
+							Serializable oldValue=(Serializable)(removal?_map.remove(key):_map.put(key, value));
+							return returnOldValue?oldValue:null;
+						}
+					} else {
+						if (((WriteBOToPO)response).getSuccess()) {
+							synchronized (_map) {
+								_map.put(key, value);
+							}
+							return Boolean.TRUE;
+						} else {
+							return Boolean.FALSE;
+						}
+					}
+				} else if (response instanceof MoveSOToPO) {
+					// Present - remote
+					// reply GetPOToSO to SO
+					_dispatcher.reply(message, new MovePOToSO());
+					synchronized (_map) {
+						if (removal)
+							_map.remove(key);
+						else
+							_map.put(key, value);
+					}
+					return ((MoveSOToPO)response).getValue();
+				} else {
+					_log.error("unexpected response: "+response.getClass().getName());
+					return null;
+				}
+				
 			} finally {
 				_log.info("[PO] releasing sync for: "+key+" - "+sync);
 				sync.release();
@@ -350,9 +380,17 @@ public class GCache implements Cache, BucketConfig {
   /*
    * second pass
    */
-  public boolean containsKey(Object key) {
-	  throw new UnsupportedOperationException();
-  }
+	public boolean containsKey(Object key) {
+		Sync sync=null;
+		try {
+			sync=_soSyncs.acquire((Serializable)key);
+			synchronized (_map) {
+				return _map.containsKey(key);
+			}
+		} finally {
+			sync.release();
+		}
+	}
 
   /*
    * third pass
