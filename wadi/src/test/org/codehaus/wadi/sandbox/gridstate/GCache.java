@@ -58,6 +58,7 @@ public class GCache implements Cache, BucketConfig {
 	protected final SyncMap _boSyncs=new SyncMap("BO");
 	protected final SyncMap _soSyncs=new SyncMap("PO/SO");
 	protected final SyncMap _poSyncs=_soSyncs;
+	protected final long _timeout=60*60*1000L;
 	  
 	
 	public GCache(String nodeName, int numBuckets, Dispatcher dispatcher, BucketMapper mapper) {
@@ -81,15 +82,15 @@ public class GCache implements Cache, BucketConfig {
 			// Get - 5 messages - PO->BO->SO->PO->SO->BO
 			_dispatcher.register(this, "onMessage", ReadPOToBO.class);
 			_dispatcher.register(this, "onMessage", MoveBOToSO.class);
-			_dispatcher.register(MoveSOToPO.class, 2000);
-			_dispatcher.register(MovePOToSO.class, 2000);
-			_dispatcher.register(MoveSOToBO.class, 2000);
+			_dispatcher.register(MoveSOToPO.class, _timeout);
+			_dispatcher.register(MovePOToSO.class, _timeout);
+			_dispatcher.register(MoveSOToBO.class, _timeout);
 			// Get - 2 messages - PO->BO->PO (NYI)
-			_dispatcher.register(ReadBOToPO.class, 2000);
+			_dispatcher.register(ReadBOToPO.class, _timeout);
 
 			// Put - 2 messages - PO->BO->PO
 			_dispatcher.register(this, "onMessage", WritePOToBO.class);
-			_dispatcher.register(WriteBOToPO.class, 2000);
+			_dispatcher.register(WriteBOToPO.class, _timeout);
 
 		}
 
@@ -116,7 +117,7 @@ public class GCache implements Cache, BucketConfig {
 					Destination po=_cluster.getLocalNode().getDestination();
 					Destination bo=_buckets[_mapper.map(key)].getDestination();
 					ReadPOToBO request=new ReadPOToBO(key, po);
-					ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, 2000L);
+					ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, _timeout);
 					Serializable response=null;
 					try {
 						response=message.getObject();
@@ -131,7 +132,7 @@ public class GCache implements Cache, BucketConfig {
 						// association exists
 						// associate returned value with key
 						value=((MoveSOToPO)response).getValue();
-						_log.info("received "+key+"="+value+" <- SO");
+						//_log.info("received "+key+"="+value+" <- SO");
 						synchronized (_map) {
 							_map.put(key, value);
 						}
@@ -142,7 +143,7 @@ public class GCache implements Cache, BucketConfig {
 					return value;
 				}
 			} finally {
-				_log.info("[PO] releasing sync for: "+key+" - "+sync);
+				_log.trace("[PO] releasing sync for: "+key+" - "+sync);
 				sync.release();
 			}
 		}
@@ -168,12 +169,12 @@ public class GCache implements Cache, BucketConfig {
 				String poCorrelationId=null;
 				try {
 					poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
-					_log.info("Process Owner Correlation ID: "+poCorrelationId);
+					//_log.info("Process Owner Correlation ID: "+poCorrelationId);
 				} catch (JMSException e) {
 					_log.error("unexpected problem", e);
 				}
 				MoveBOToSO request=new MoveBOToSO(key, po, bo, poCorrelationId);
-				ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, 2000L);
+				ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, _timeout);
 				MoveSOToBO response=null;
 				try {
 					response=(MoveSOToBO)message2.getObject();
@@ -184,7 +185,7 @@ public class GCache implements Cache, BucketConfig {
 				location.setDestination(get.getPO());
 				
 			} finally {
-				_log.info("[BO] releasing sync for: "+key+" - "+sync);
+				_log.trace("[BO] releasing sync for: "+key+" - "+sync);
 				sync.release();
 			}
 		}
@@ -202,9 +203,9 @@ public class GCache implements Cache, BucketConfig {
 				synchronized (_map) {
 					value=(Serializable)_map.get(key);
 				}
-				_log.info("sending "+key+"="+value+" -> PO");
+				//_log.info("sending "+key+"="+value+" -> PO");
 				MoveSOToPO request=new MoveSOToPO(value);
-				ObjectMessage message2=(ObjectMessage)_dispatcher.exchangeSend(so, po, request, 2000L, get.getPOCorrelationId());
+				ObjectMessage message2=(ObjectMessage)_dispatcher.exchangeSend(so, po, request, _timeout, get.getPOCorrelationId());
 				// wait
 				// receive GetPOToSO
 				MovePOToSO response=null;
@@ -221,7 +222,7 @@ public class GCache implements Cache, BucketConfig {
 					_log.error("unexpected problem", e);
 				}
 			} finally {
-				_log.info("[SO] releasing sync for: "+key+" - "+sync);
+				_log.trace("[SO] releasing sync for: "+key+" - "+sync);
 				sync.release();
 			}
 		}
@@ -265,7 +266,7 @@ public class GCache implements Cache, BucketConfig {
 				Destination po=_cluster.getLocalNode().getDestination();
 				Destination bo=_buckets[_mapper.map(key)].getDestination();
 				WritePOToBO request=new WritePOToBO(key, value==null, overwrite, returnOldValue, po);
-				ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, 2000L);
+				ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, _timeout);
 				Serializable response=null;
 				try {
 					response=message.getObject();
@@ -308,7 +309,7 @@ public class GCache implements Cache, BucketConfig {
 				}
 				
 			} finally {
-				_log.info("[PO] releasing sync for: "+key+" - "+sync);
+				_log.trace("[PO] releasing sync for: "+key+" - "+sync);
 				sync.release();
 			}
 		}
@@ -343,7 +344,7 @@ public class GCache implements Cache, BucketConfig {
 					String poCorrelationId=null;
 					try {
 						poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
-						_log.info("Process Owner Correlation ID: "+poCorrelationId);
+						//_log.info("Process Owner Correlation ID: "+poCorrelationId);
 					} catch (JMSException e) {
 						_log.error("unexpected problem", e);
 					}
@@ -351,7 +352,7 @@ public class GCache implements Cache, BucketConfig {
 					Destination bo=_cluster.getLocalNode().getDestination();
 					Destination so=oldLocation.getDestination();
 					MoveBOToSO request=new MoveBOToSO(key, po, bo, poCorrelationId);
-					ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, 2000L);
+					ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, _timeout);
 					MoveSOToBO response=null;
 					try {
 						response=(MoveSOToBO)message2.getObject();
@@ -361,7 +362,7 @@ public class GCache implements Cache, BucketConfig {
 				}
 				
 			} finally {
-				_log.info("[BO] releasing sync for: "+key+" - "+sync);
+				_log.trace("[BO] releasing sync for: "+key+" - "+sync);
 				sync.release();
 			}
 		}

@@ -30,12 +30,12 @@ public class SyncMap {
 			sync=(Sync)_map.get(key);
 			if (sync==null) {
 					_map.put(key, sync=new Mutex());
-					_log.info("["+_prefix+"] created sync: "+key+" - "+this+" - "+sync);
+					_log.trace("["+_prefix+"] created sync: "+key+" - "+this+" - "+sync);
 			}
 		}
-		_log.info("["+_prefix+"] trying to acquire sync for: "+key+" - "+this+" - "+sync);
+		_log.trace("["+_prefix+"] trying to acquire sync for: "+key+" - "+this+" - "+sync);
 		Utils.safeAcquire(sync);
-		_log.info("["+_prefix+"] sync acquired for: "+key+" - "+this+" - "+sync);
+		_log.trace("["+_prefix+"] sync acquired for: "+key+" - "+this+" - "+sync);
 		return sync;
 	}
 
