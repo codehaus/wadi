@@ -19,8 +19,11 @@ package org.codehaus.wadi.sandbox.gridstate;
 import java.io.Serializable;
 import java.util.Map;
 
+import javax.jms.Destination;
+
 import org.activecluster.Cluster;
 import org.activemq.ActiveMQConnectionFactory;
+import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.DispatcherConfig;
@@ -46,6 +49,7 @@ public class TestGCache extends TestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
         _numBuckets=12;
         _factory=new FixedWidthSessionIdFactory(10, "0123456789".toCharArray(), _numBuckets);
         _mapper=new BucketMapper() { public int map(Serializable key) { return _factory.getBucket((String)key);} };
@@ -71,7 +75,8 @@ public class TestGCache extends TestCase {
     }
     
     class MyNode {
-        protected final String _clusterUri="tcp://smilodon:61616";
+    	protected final String _clusterUri="peer://org.codehaus.wadi";
+    	//protected final String _clusterUri="tcp://smilodon:61616";
         protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
         protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
         protected final CustomClusterFactory _clusterFactory=new CustomClusterFactory(_connectionFactory);
@@ -160,19 +165,24 @@ public class TestGCache extends TestCase {
     	
     	MyNode _red;
     	MyNode _green;
+    	MyNode _blue;
     	Object _key;
     	int _numIters;
     	
-    	Tester(MyNode red, MyNode green, Object key, int numIters) {
+    	Tester(MyNode red, MyNode green, MyNode blue, Object key, int numIters) {
     		_red=red;
     		_green=green;
+    		_blue=blue;
     		_key=key;
     		_numIters=numIters;
     	}
     	
     	public void run() {
     		for (int i=0; i<_numIters; i++) {
-    			assertTrue(_red.get(_key).equals(_green.get(_key)));
+    			Object r=_red.get(_key);
+    			Object g=_green.get(_key);
+    			Object b=_blue.get(_key);
+    			assertTrue(r.equals(g) && g.equals(b));
     		}
     	}
     }
@@ -180,26 +190,45 @@ public class TestGCache extends TestCase {
     public void testGCache() throws Exception {
         MyNode red=new MyNode("red", _numBuckets);
         MyNode green=new MyNode("green", _numBuckets);
+        MyNode blue=new MyNode("blue", _numBuckets);
         {
-        	Bucket[] buckets=red.getBuckets();
-        	for (int i=6; i<_numBuckets; i++) {
-        		Bucket bucket=new Bucket(new RemoteBucket(green.getCluster().getLocalNode().getDestination()));
-        		bucket.init(red.getGCache());
-        		buckets[i]=bucket;
+        	// red owns 0-3
+        	for (int i=0; i<4; i++) {
+        		Destination location=red.getCluster().getLocalNode().getDestination();
+        		Bucket g=new Bucket(new RemoteBucket(location));
+        		g.init(green.getGCache());
+        		green.getBuckets()[i]=g;
+        		Bucket b=new Bucket(new RemoteBucket(location));
+        		b.init(blue.getGCache());
+        		blue.getBuckets()[i]=b;
         	}
         }
         {
+        	// green owns 4-7
+        	for (int i=4; i<8; i++) {
+        		Destination location=green.getCluster().getLocalNode().getDestination();
+        		Bucket r=new Bucket(new RemoteBucket(location));
+        		r.init(red.getGCache());
+        		red.getBuckets()[i]=r;
+        		Bucket b=new Bucket(new RemoteBucket(location));
+        		b.init(blue.getGCache());
+        		blue.getBuckets()[i]=b;
+        		}
+        }
+        {
+        	// blue owns 8-11
         	Bucket[] buckets=green.getBuckets();
-        	for (int i=0; i<6; i++) {
-        		Bucket bucket=new Bucket(new RemoteBucket(red.getCluster().getLocalNode().getDestination()));
-        		bucket.init(green.getGCache());
-        		buckets[i]=bucket;
+        	for (int i=8; i<12; i++) {
+        		Destination location=blue.getCluster().getLocalNode().getDestination();
+        		Bucket r=new Bucket(new RemoteBucket(location));
+        		r.init(red.getGCache());
+        		red.getBuckets()[i]=r;
+        		Bucket g=new Bucket(new RemoteBucket(location));
+        		g.init(green.getGCache());
+        		green.getBuckets()[i]=g;
         	}
         }
         
-        //GCache green=new GCache("green", _numBuckets);
-        //GCache blue=new GCache("blue", _numBuckets);
-
         _log.info("0 nodes running");
         red.start();
         red.getCluster().waitForClusterToComplete(1, 6000);
@@ -208,15 +237,16 @@ public class TestGCache extends TestCase {
         red.getCluster().waitForClusterToComplete(2, 6000);
         green.getCluster().waitForClusterToComplete(2, 6000);
         _log.info("2 nodes running");
-//        blue.start();
-//        red.getCluster().waitForClusterToComplete(3, 6000);
-//        green.getCluster().waitForClusterToComplete(3, 6000);
-//        blue.getCluster().waitForClusterToComplete(3, 6000);
-//        _log.info("3 nodes running");
+        blue.start();
+        red.getCluster().waitForClusterToComplete(3, 6000);
+        green.getCluster().waitForClusterToComplete(3, 6000);
+        blue.getCluster().waitForClusterToComplete(3, 6000);
+        _log.info("3 nodes running");
 
+        long start=System.currentTimeMillis();
         for (int i=0; i<_numBuckets; i++) {
             String key=_factory.create(i);
-            _log.info("key: "+key);
+            //_log.info("key: "+key);
             // retrieve an association that does not exist...
             assertFalse(red.containsKey(key));
             assertTrue(red.get(key)==null);
@@ -263,7 +293,7 @@ public class TestGCache extends TestCase {
             assertTrue(red.containsKey(key));
             assertTrue(!green.containsKey(key));
             // retrieve an association from a node that is not the StateOwner
-            _log.info("get remote...");
+            //_log.info("get remote...");
             assertTrue(green.get(key).equals(data));
             assertTrue(!red.containsKey(key));
             assertTrue(green.containsKey(key));
@@ -272,31 +302,34 @@ public class TestGCache extends TestCase {
             assertTrue(red.containsKey(key));
             assertTrue(!green.containsKey(key));
             // retrieve an association from a node that is not the StateOwner
-            _log.info("read remote...");
+            //_log.info("read remote...");
             assertTrue(green.get(key).equals(data));
             assertTrue(!red.containsKey(key));
             assertTrue(green.containsKey(key));
-            _log.info("remove remote...");
+            //_log.info("remove remote...");
             Object value=red.remove(key);
-            _log.info(key+" = "+value);
+            //_log.info(key+" = "+value);
             assertTrue(value.equals(data));
             assertTrue(red.put(key, data)==null);
             String newData=(data+".new");
             assertTrue(green.put(key, newData).equals(data));
-            _log.info("put remote...");
+            //_log.info("put remote...");
             Object value2=red.put(key, data);
-            _log.info(key+" = "+value2);
+            //_log.info(key+" = "+value2);
             assertTrue(value2.equals(newData));
-            int numThreads=1000;
+            int numThreads=1;
             Thread[] thread=new Thread[numThreads];
             for (int j=0; j<numThreads; j++)
-        		(thread[j]=new Thread(new Tester(red, green, key, 100))).start();
+        		(thread[j]=new Thread(new Tester(red, green, blue, key, 10000))).start();
             for (int j=0; j<numThreads; j++)
             	thread[j].join();
+            _log.info("complete: "+(i+1)+"/"+_numBuckets);
         }
+        _log.info("elapsed: "+(System.currentTimeMillis()-start)+" millis");
+
         
-//        _log.info("3 nodes running");
-//        blue.stop();
+        _log.info("3 nodes running");
+        blue.stop();
         green.getCluster().waitForClusterToComplete(2, 6000);
         red.getCluster().waitForClusterToComplete(2, 6000);
         _log.info("2 nodes running");
