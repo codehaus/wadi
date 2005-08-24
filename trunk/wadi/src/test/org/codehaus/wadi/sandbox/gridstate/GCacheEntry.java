@@ -2,6 +2,8 @@ package org.codehaus.wadi.sandbox.gridstate;
 
 import javax.cache.CacheEntry;
 
+import org.codehaus.wadi.impl.Utils;
+
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -13,8 +15,12 @@ public class GCacheEntry implements CacheEntry {
 	protected ReadWriteLock _lock=new ReaderPreferenceReadWriteLock();
 	
 	// the read lock is used by any thread wanting to keep this entry in this JVM
-	public Sync getReadLock() {
-		return _lock.readLock();
+	public void acquireReadLock() {
+		Utils.safeAcquire(_lock.readLock());
+	}
+	
+	public void releaseReadLock() {
+		_lock.readLock().release();
 	}
 	
 	// the write lock is used by any thread wishing to remove this entry from this jvm
