@@ -58,7 +58,7 @@ public class GCache implements Cache, BucketConfig {
 	protected final SyncMap _boSyncs=new SyncMap("BO");
 	protected final SyncMap _soSyncs=new SyncMap("PO/SO");
 	protected final SyncMap _poSyncs=_soSyncs;
-	protected final long _timeout=60*60*1000L;
+	protected final long _timeout=30*1000L;
 	  
 	
 	public GCache(String nodeName, int numBuckets, Dispatcher dispatcher, BucketMapper mapper) {
@@ -117,7 +117,7 @@ public class GCache implements Cache, BucketConfig {
 					Destination po=_cluster.getLocalNode().getDestination();
 					Destination bo=_buckets[_mapper.map(key)].getDestination();
 					ReadPOToBO request=new ReadPOToBO(key, po);
-					ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, _timeout);
+					ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, _timeout, 10);
 					Serializable response=null;
 					try {
 						response=message.getObject();
@@ -174,7 +174,7 @@ public class GCache implements Cache, BucketConfig {
 					_log.error("unexpected problem", e);
 				}
 				MoveBOToSO request=new MoveBOToSO(key, po, bo, poCorrelationId);
-				ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, _timeout);
+				ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, _timeout, 10);
 				MoveSOToBO response=null;
 				try {
 					response=(MoveSOToBO)message2.getObject();
@@ -266,7 +266,7 @@ public class GCache implements Cache, BucketConfig {
 				Destination po=_cluster.getLocalNode().getDestination();
 				Destination bo=_buckets[_mapper.map(key)].getDestination();
 				WritePOToBO request=new WritePOToBO(key, value==null, overwrite, returnOldValue, po);
-				ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, _timeout);
+				ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, _timeout, 10);
 				Serializable response=null;
 				try {
 					response=message.getObject();
@@ -352,7 +352,7 @@ public class GCache implements Cache, BucketConfig {
 					Destination bo=_cluster.getLocalNode().getDestination();
 					Destination so=oldLocation.getDestination();
 					MoveBOToSO request=new MoveBOToSO(key, po, bo, poCorrelationId);
-					ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, _timeout);
+					ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, _timeout, 10);
 					MoveSOToBO response=null;
 					try {
 						response=(MoveSOToBO)message2.getObject();
