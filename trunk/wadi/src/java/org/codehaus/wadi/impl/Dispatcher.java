@@ -40,6 +40,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
+import EDU.oswego.cs.dl.util.concurrent.ThreadFactory;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 // TODO - we need a ThreadPool here - to stop a glut of incoming messages from overwhelming a node.
@@ -59,10 +60,17 @@ public class Dispatcher implements MessageListener {
 	protected final Map _map=new HashMap();
     protected final PooledExecutor _executor;
 
-	public Dispatcher() {
-        _executor=new PooledExecutor(new LinkedQueue(), 100); // parameterise
-        _executor.setMinimumPoolSize(4);
-	    }
+    public Dispatcher() {
+    	_executor=new PooledExecutor(new LinkedQueue(), 100); // parameterise
+    	_executor.setMinimumPoolSize(4);
+    	_executor.setThreadFactory(new ThreadFactory() {
+    		protected int _count;
+    		
+    		public synchronized Thread newThread(Runnable runnable) {
+    			return new Thread(runnable, "WADI Dispatcher ("+(_count++)+")");
+    		}
+    	});
+    }
 	
 	public Dispatcher(String name) {
 		this();
@@ -334,8 +342,14 @@ public class Dispatcher implements MessageListener {
     	}
     }
     
-    public ObjectMessage exchangeSendLoop(Destination from, Destination to, Serializable body, long timeout) {
-    	return exchangeSend(from, to, body, timeout);
+    public ObjectMessage exchangeSendLoop(Destination from, Destination to, Serializable body, long timeout, int iterations) {
+    	ObjectMessage response=null;
+    	for (int i=0; response==null && i<iterations; i++) {
+    		response=exchangeSend(from, to, body, timeout);
+    		if (response==null)
+    			_log.warn("null response - retrying: "+(i+1)+"/"+iterations);
+    	}
+    	return response;
     }
     
     
