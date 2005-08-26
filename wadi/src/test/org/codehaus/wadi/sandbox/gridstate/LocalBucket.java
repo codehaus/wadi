@@ -9,6 +9,7 @@ import javax.jms.Destination;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.Utils;
+import org.jgroups.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
@@ -30,8 +31,12 @@ public class LocalBucket implements BucketInterface {
 		_config=config;
 	}
 	
+	public Address getAddress() {
+		return _config.getLocalAddress();
+	}
+	
 	public Destination getDestination() {
-		return _config.getLocalNode().getDestination();
+		return _config.getLocalDestination();
 	}
 	
 	public Location getLocation(Serializable key) {

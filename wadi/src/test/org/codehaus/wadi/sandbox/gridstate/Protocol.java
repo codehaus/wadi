@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 public interface Protocol {
 
+	void init(ProtocolConfig config);
+	
 	// called on PO...
 	Serializable get(Serializable key);
 
@@ -12,4 +14,12 @@ public interface Protocol {
 
 	Serializable remove(Serializable key, boolean returnOldValue);
 	
+	Bucket[] getBuckets();
+	
+	BucketInterface createRemoteBucket();
+	
+    void start() throws Exception;
+    
+    void stop() throws Exception;
+
 }
