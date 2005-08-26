@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.jms.Destination;
 
+import org.jgroups.Address;
+
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
 public class Bucket implements BucketInterface {
@@ -21,6 +23,10 @@ public class Bucket implements BucketInterface {
 	
 	public Destination getDestination() {
 		return _bucket.getDestination();
+	}
+	
+	public Address getAddress() {
+		return _bucket.getAddress();
 	}
 
 	public Location getLocation(Serializable key) {

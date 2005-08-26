@@ -7,15 +7,16 @@ import javax.jms.Destination;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jgroups.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
-public class RemoteBucket implements BucketInterface {
+public class ActiveClusterRemoteBucket implements BucketInterface {
 	
 	protected final Log _log=LogFactory.getLog(getClass().getName());
 	protected final Destination _destination;
 	
-	public RemoteBucket(Destination destination) {
+	public ActiveClusterRemoteBucket(Destination destination) {
 		_destination=destination;
 	}
 	
@@ -27,6 +28,10 @@ public class RemoteBucket implements BucketInterface {
 	
 	public Destination getDestination() {
 		return _destination;
+	}
+
+	public Address getAddress() {
+		throw new UnsupportedOperationException("What should we do here?");
 	}
 	
 	public Location getLocation(Serializable key) {
