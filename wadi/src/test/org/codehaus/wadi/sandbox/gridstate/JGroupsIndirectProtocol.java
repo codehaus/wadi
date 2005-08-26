@@ -9,15 +9,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.Destination;
-import javax.jms.Message;
 
-import org.activecluster.LocalNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.sandbox.gridstate.messages.MovePOToSO;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveSOToBO;
-import org.codehaus.wadi.sandbox.gridstate.messages.MoveSOToPO;
 import org.codehaus.wadi.sandbox.gridstate.messages.ReadBOToPO;
 import org.codehaus.wadi.sandbox.gridstate.messages.WriteBOToPO;
 import org.jgroups.Address;
@@ -95,7 +92,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 		}
 		
 		_channel=new JChannel();
-		_dispatcher=new RpcDispatcher(_channel, _messageListener, _membershipListener, (Object)this, true, true);
+		_dispatcher=new RpcDispatcher(_channel, _messageListener, _membershipListener, this, true, true);
 	}
 	
 	protected ProtocolConfig _config;
@@ -146,30 +143,20 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 	}
 	
 	protected Object
-	rpc(Address address, String methodName, Class[] argClasses, Object[] argInstances) throws TimeoutException, SuspectedException
+	syncRpc(Object address, String methodName, Class[] argClasses, Object[] argInstances) throws TimeoutException, SuspectedException
 	{
 		_log.info("rpc-ing from:"+_address+" to:"+address);
-		if (address==null)
-			throw new NullPointerException();
-		return _dispatcher.callRemoteMethod(address, "dispatch", new Object[]{methodName, argClasses, argInstances}, new Class[]{String.class, Class[].class, Object[].class}, GroupRequest.GET_ALL, _timeout);
+		return _dispatcher.callRemoteMethod((Address)address, methodName, argInstances, argClasses, GroupRequest.GET_ALL, _timeout);
 	}
 	
-	public Object
-	dispatch(String methodName, Class[] argClasses, Object[] argInstances)
+	protected Object
+	asyncRpc(Object address, String methodName, Class[] argClasses, Object[] argInstances) throws TimeoutException, SuspectedException
 	{
-		_log.info("methodName: "+methodName);
-		for (int i=0; i<argClasses.length; i++)
-			_log.info("type: "+argClasses[i]+" : "+argInstances[i]);
-		
-		try {
-			return getClass().getMethod(methodName, argClasses).invoke(this, argInstances);
-		} catch (Exception e) {
-			_log.error("something went wrong", e);
-			return null;
-		}
+		_log.info("rpc-ing from:"+_address+" to:"+address);
+		return _dispatcher.callRemoteMethod((Address)address, methodName, argInstances, argClasses, GroupRequest.GET_NONE, _timeout);
 	}
 	
-	  //--------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------
 	// Get
 	//--------------------------------------------------------------------------------
 	
@@ -196,7 +183,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 				try {
 					Address po=_address;
 					Address bo=_buckets[_config.getBucketMapper().map(key)].getAddress();
-					response=rpc(bo, "dispatchReadPOToBO", new Class[]{Object.class, Address.class}, new Object[]{key, po});
+					response=syncRpc(bo, "onReadPOToBO", new Class[]{Object.class, Address.class}, new Object[]{key, po});
  				} catch(Exception e) {
 					_log.error("problem publishing change in state over JavaGroups", e);
 				}
@@ -224,8 +211,8 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 		}
 	}
 	
-	public Object dispatchMoveSOToPO(Object key, Object value) {
-		_log.info("[PO] - dispatchMoveSOToPO@"+_address);
+	public Object onMoveSOToPO(Object key, Object value) {
+		_log.info("[PO] - onMoveSOToPO@"+_address);
 		// association exists
 		// associate returned value with key
 		//_log.info("received "+key+"="+value+" <- SO");
@@ -240,15 +227,15 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 	}
 	
 	// called on BO...
-	public Object dispatchReadPOToBO(Object key, Address po) throws SuspectedException, TimeoutException {
+	public Object onReadPOToBO(Object key, Address po) throws SuspectedException, TimeoutException {
 		_log.info("po="+po);
 		// what if we are NOT the BO anymore ?
 		// get write lock on location
 		Sync sync=null;
 		try {
-			_log.info("dispatchReadPOToBO- [BO] trying for lock("+key+")...");
+			_log.info("onReadPOToBO- [BO] trying for lock("+key+")...");
 			sync=_config.getBOSyncs().acquire((Serializable)key);
-			_log.info("dispatchReadPOToBO- [BO] ...lock("+key+") acquired - "+sync);
+			_log.info("onReadPOToBO- [BO] ...lock("+key+") acquired - "+sync);
 			Bucket bucket=_buckets[_config.getBucketMapper().map((Serializable)key)];
 			JGroupsLocation location=(JGroupsLocation)bucket.getLocation((Serializable)key);
 			if (location==null) {
@@ -258,7 +245,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 			Address bo=_address;
 			Address so=location.getAddress();
 			
-			MoveSOToBO response=(MoveSOToBO)rpc(so, "dispatchMoveBOToSO", new Class[]{Object.class, Address.class, Address.class}, new Object[]{key, po, bo});
+			MoveSOToBO response=(MoveSOToBO)syncRpc(so, "onMoveBOToSO", new Class[]{Object.class, Address.class, Address.class}, new Object[]{key, po, bo});
 			// success - update location
 			boolean success=response.getSuccess();
 			if (success)
@@ -266,20 +253,20 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 			
 			return success?Boolean.TRUE:Boolean.FALSE; 
 		} finally {
-			_log.info("dispatchReadPOToBO- [BO] releasing lock("+key+") - "+sync);
+			_log.info("onReadPOToBO- [BO] releasing lock("+key+") - "+sync);
 			sync.release();
 		}	
 	}
 	
 	// called on SO...
-	public Object dispatchMoveBOToSO(Object key, Address po, Address bo) throws SuspectedException, TimeoutException {
-		_log.info("[SO] - dispatchMoveBOToSO@"+_address);
+	public Object onMoveBOToSO(Object key, Address po, Address bo) throws SuspectedException, TimeoutException {
+		_log.info("[SO] - onMoveBOToSO@"+_address);
 		_log.info("po="+po);
 		Sync sync=null;
 		try {
-			_log.info("dispatchMoveBOToSO - [SO] trying for lock("+key+")...");
+			_log.info("onMoveBOToSO - [SO] trying for lock("+key+")...");
 			sync=_config.getSOSyncs().acquire((Serializable)key);
-			_log.info("dispatchMoveBOToSO - [SO] ...lock("+key+") acquired< - "+sync);
+			_log.info("onMoveBOToSO - [SO] ...lock("+key+") acquired< - "+sync);
 			// send GetSOToPO to PO
 			Object value;
 			Map map=_config.getMap();
@@ -287,7 +274,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 				value=(Serializable)map.get(key);
 			}
 			_log.info("[SO] sending "+key+"="+value+" -> PO...");
-			MovePOToSO response=(MovePOToSO)rpc(po, "dispatchMoveSOToPO", new Class[]{Object.class, Object.class}, new Object[]{key, value});
+			MovePOToSO response=(MovePOToSO)syncRpc(po, "onMoveSOToPO", new Class[]{Object.class, Object.class}, new Object[]{key, value});
 			_log.info("[SO] ...response received <- PO");
 			boolean success=response.getSuccess();
 			if (success) {
@@ -298,7 +285,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 			}
 			return new MoveSOToBO(success);
 		} finally {
-			_log.info("dispatchMoveBOToSO - [SO] releasing lock("+key+") - "+sync);
+			_log.info("onMoveBOToSO - [SO] releasing lock("+key+") - "+sync);
 			sync.release();
 		}
 	}
@@ -345,7 +332,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 				// exchangeSendLoop PutPOToBO to BO
 				Address po=_address;
 				Address bo=_buckets[_config.getBucketMapper().map(key)].getAddress();
-				Object response=rpc(bo, "dispatchWritePOToBO",
+				Object response=syncRpc(bo, "onWritePOToBO",
 						new Class[]{Object.class, Boolean.TYPE, Boolean.TYPE, Boolean.TYPE, Address.class},
 						new Object[]{key, newValue==null?Boolean.TRUE:Boolean.FALSE, overwrite?Boolean.TRUE:Boolean.FALSE, returnOldValue?Boolean.TRUE:Boolean.FALSE, po});
 				
@@ -398,16 +385,16 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 	}
 	
 	// called on BO...
-	public Object dispatchWritePOToBO(Object key, boolean valueIsNull, boolean overwrite, boolean returnOldValue, Address po) throws SuspectedException, TimeoutException {
-		_log.info("[BO] - dispatchWritePOToBO@"+_address);
+	public Object onWritePOToBO(Object key, boolean valueIsNull, boolean overwrite, boolean returnOldValue, Address po) throws SuspectedException, TimeoutException {
+		_log.info("[BO] - onWritePOToBO@"+_address);
 		// what if we are NOT the BO anymore ?
 		Bucket bucket=_buckets[_config.getBucketMapper().map((Serializable)key)];
 		Map bucketMap=bucket.getMap();
 		Sync sync=null;
 		try {
-			_log.info("dispatchWritePOToBO- [BO] trying for lock("+key+")...");
+			_log.info("onWritePOToBO- [BO] trying for lock("+key+")...");
 			sync=_config.getBOSyncs().acquire((Serializable)key);
-			_log.info("dispatchWritePOToBO- [BO] ...lock("+key+") acquired - "+sync);
+			_log.info("onWritePOToBO- [BO] ...lock("+key+") acquired - "+sync);
 			Location location=valueIsNull?null:new JGroupsLocation(po);
 			// remove or update location, remembering old value
 			JGroupsLocation oldLocation=(JGroupsLocation)(location==null?bucketMap.remove(key):bucketMap.put(key, location));
@@ -428,11 +415,11 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 				Address bo=_address;
 				Address so=oldLocation.getAddress();
 				_log.info(""+po+"=="+so+" ? "+(po.equals(so)));
-				MoveSOToBO response=(MoveSOToBO)rpc(so, "dispatchMoveBOToSO", new Class[]{Object.class, Address.class, Address.class}, new Object[]{key, po, bo});
+				MoveSOToBO response=(MoveSOToBO)syncRpc(so, "onMoveBOToSO", new Class[]{Object.class, Address.class, Address.class}, new Object[]{key, po, bo});
 				return response.getSuccess()?Boolean.TRUE:Boolean.FALSE;
 			}
 		} finally {
-			_log.info("dispatchWritePOToBO- [BO] releasing lock("+key+") - "+sync);
+			_log.info("onWritePOToBO- [BO] releasing lock("+key+") - "+sync);
 			sync.release();
 		}
 	}
