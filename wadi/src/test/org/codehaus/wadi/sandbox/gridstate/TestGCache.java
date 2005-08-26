@@ -36,7 +36,7 @@ public class TestGCache extends TestCase {
         super(name);
     }
 
-    protected int _numNodes=4;
+    protected int _numNodes=3;
     protected GCache[] _nodes=new GCache[_numNodes];
     protected int _numBuckets=_numNodes*1;
     protected FixedWidthSessionIdFactory _factory;
@@ -83,8 +83,8 @@ public class TestGCache extends TestCase {
     
     public void testGCache() throws Exception {
     	for (int i=0; i<_numNodes; i++)
-    		_nodes[i]=new GCache(new ActiveClusterIndirectProtocol("node-"+i, _numBuckets, _mapper), _mapper);
-    	//	_nodes[i]=new GCache(new JGroupsIndirectProtocol("node-"+i, _numBuckets, _mapper), _mapper);
+    		//_nodes[i]=new GCache(new ActiveClusterIndirectProtocol("node-"+i, _numBuckets, _mapper), _mapper);
+    		_nodes[i]=new GCache(new JGroupsIndirectProtocol("node-"+i, _numBuckets, _mapper), _mapper);
 
     	int bucketsPerNode=_numBuckets/_numNodes;
     	for (int i=0; i<_numBuckets; i++) {
@@ -175,16 +175,16 @@ public class TestGCache extends TestCase {
             assertTrue(!red.containsKey(key));
             assertTrue(green.containsKey(key));
             //_log.info("remove remote...");
-//            Object value=red.remove(key);
-//            //_log.info(key+" = "+value);
-//            assertTrue(value.equals(data));
-//            assertTrue(red.put(key, data)==null);
-//            String newData=(data+".new");
-//            assertTrue(green.put(key, newData).equals(data));
-//            //_log.info("put remote...");
-//            Object value2=red.put(key, data);
-//            //_log.info(key+" = "+value2);
-//            assertTrue(value2.equals(newData));
+            Object value=red.remove(key);
+            //_log.info(key+" = "+value);
+            assertTrue(value.equals(data));
+            assertTrue(red.put(key, data)==null);
+            String newData=(data+".new");
+            assertTrue(green.put(key, newData).equals(data));
+            //_log.info("put remote...");
+            Object value2=red.put(key, data);
+            //_log.info(key+" = "+value2);
+            assertTrue(value2.equals(newData));
             int numThreads=1;
             Thread[] thread=new Thread[numThreads];
             for (int j=0; j<numThreads; j++)
