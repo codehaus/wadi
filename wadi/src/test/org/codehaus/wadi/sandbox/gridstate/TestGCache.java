@@ -81,10 +81,30 @@ public class TestGCache extends TestCase {
     	}
     }
     
+    interface ProtocolFactory {
+    	Protocol createProtocol(String name) throws Exception;
+    }
+    
+    class JGroupsIndirectProtocolFactory implements ProtocolFactory {
+    	public Protocol createProtocol(String name) throws Exception {
+    		return new JGroupsIndirectProtocol(name, _numBuckets, _mapper);
+    	}
+    }
+    
+    class ActiveClusterIndirectProtocolFactory implements ProtocolFactory {
+    	public Protocol createProtocol(String name) throws Exception {
+    		return new ActiveClusterIndirectProtocol(name, _numBuckets, _mapper);
+    	}
+    }
+    
     public void testGCache() throws Exception {
+    	testGCache(new JGroupsIndirectProtocolFactory());
+    	testGCache(new ActiveClusterIndirectProtocolFactory());
+    }
+    
+    public void testGCache(ProtocolFactory factory) throws Exception {
     	for (int i=0; i<_numNodes; i++)
-    		//_nodes[i]=new GCache(new ActiveClusterIndirectProtocol("node-"+i, _numBuckets, _mapper), _mapper);
-    		_nodes[i]=new GCache(new JGroupsIndirectProtocol("node-"+i, _numBuckets, _mapper), _mapper);
+    		_nodes[i]=new GCache(factory.createProtocol("node-"+i), _mapper);
 
     	int bucketsPerNode=_numBuckets/_numNodes;
     	for (int i=0; i<_numBuckets; i++) {
@@ -185,12 +205,12 @@ public class TestGCache extends TestCase {
             Object value2=red.put(key, data);
             //_log.info(key+" = "+value2);
             assertTrue(value2.equals(newData));
-            int numThreads=1;
-            Thread[] thread=new Thread[numThreads];
-            for (int j=0; j<numThreads; j++)
-        		(thread[j]=new Thread(new Tester(_nodes, key, 1000), "GCacheTestThread-"+j)).start();
-            for (int j=0; j<numThreads; j++)
-            	thread[j].join();
+//            int numThreads=1;
+//            Thread[] thread=new Thread[numThreads];
+//            for (int j=0; j<numThreads; j++)
+//        		(thread[j]=new Thread(new Tester(_nodes, key, 1000), "GCacheTestThread-"+j)).start();
+//            for (int j=0; j<numThreads; j++)
+//            	thread[j].join();
             _log.info("complete: "+(i+1)+"/"+_numBuckets+" - "+(System.currentTimeMillis()-start)+" millis");
         }
         _log.info("elapsed: "+(System.currentTimeMillis()-start)+" millis");
