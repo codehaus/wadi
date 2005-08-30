@@ -6,12 +6,12 @@ import javax.jms.Destination;
 
 public class MoveBOToSO implements Serializable {
 
-	protected Serializable _key;
-	protected Destination _po;
-	protected Destination _bo;
+	protected Object _key;
+	protected Object _po;
+	protected Object _bo;
 	protected String _poCorrelationId;
 	
-	public MoveBOToSO(Serializable key, Destination po, Destination bo, String poCorrelationId) {
+	public MoveBOToSO(Object key, Object po, Object bo, String poCorrelationId) {
 			_key=key;
 			_po=po;
 			_bo=po;
@@ -22,15 +22,15 @@ public class MoveBOToSO implements Serializable {
 		// for deserialisation...
 	}
 	
-	public Serializable getKey() {
+	public Object getKey() {
 		return _key;
 	}
 
-	public Destination getPO() {
+	public Object getPO() {
 		return _po;
 	}
 
-	public Destination getBO() {
+	public Object getBO() {
 		return _bo;
 	}
 	

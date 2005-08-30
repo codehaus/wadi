@@ -6,13 +6,13 @@ import javax.jms.Destination;
 
 public class WritePOToBO implements Serializable {
 
-	protected Serializable _key;
+	protected Object _key;
 	protected boolean _valueIsNull;
 	protected boolean _overwrite;
 	protected boolean _returnOldValue;
-	protected Destination _po;
+	protected Object _po;
 	
-	public WritePOToBO(Serializable key, boolean valueIsNull, boolean overwrite, boolean returnOldValue, Destination po) {
+	public WritePOToBO(Object key, boolean valueIsNull, boolean overwrite, boolean returnOldValue, Object po) {
 		_key=key;
 		_valueIsNull=valueIsNull;
 		_overwrite=overwrite;
@@ -24,7 +24,7 @@ public class WritePOToBO implements Serializable {
 		// for deserialisation...
 	}
 	
-	public Serializable getKey() {
+	public Object getKey() {
 		return _key;
 	}
 	
@@ -40,7 +40,7 @@ public class WritePOToBO implements Serializable {
 		return _returnOldValue;
 	}
 	
-	public Destination getPO() {
+	public Object getPO() {
 		return _po;
 	}
 	

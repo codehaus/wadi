@@ -98,11 +98,11 @@ public class TestGCache extends TestCase {
     }
     
     public void testGCache() throws Exception {
-    	testGCache(new JGroupsIndirectProtocolFactory());
-    	testGCache(new ActiveClusterIndirectProtocolFactory());
+    	testGCache(new JGroupsIndirectProtocolFactory(), 10);
+    	testGCache(new ActiveClusterIndirectProtocolFactory(), 10);
     }
     
-    public void testGCache(ProtocolFactory factory) throws Exception {
+    public void testGCache(ProtocolFactory factory, int numIterations) throws Exception {
     	for (int i=0; i<_numNodes; i++)
     		_nodes[i]=new GCache(factory.createProtocol("node-"+i), _mapper);
 
@@ -205,12 +205,12 @@ public class TestGCache extends TestCase {
             Object value2=red.put(key, data);
             //_log.info(key+" = "+value2);
             assertTrue(value2.equals(newData));
-//            int numThreads=1;
-//            Thread[] thread=new Thread[numThreads];
-//            for (int j=0; j<numThreads; j++)
-//        		(thread[j]=new Thread(new Tester(_nodes, key, 1000), "GCacheTestThread-"+j)).start();
-//            for (int j=0; j<numThreads; j++)
-//            	thread[j].join();
+            int numThreads=10;
+            Thread[] thread=new Thread[numThreads];
+            for (int j=0; j<numThreads; j++)
+        		(thread[j]=new Thread(new Tester(_nodes, key, numIterations), "GCacheTestThread-"+j)).start();
+            for (int j=0; j<numThreads; j++)
+            	thread[j].join();
             _log.info("complete: "+(i+1)+"/"+_numBuckets+" - "+(System.currentTimeMillis()-start)+" millis");
         }
         _log.info("elapsed: "+(System.currentTimeMillis()-start)+" millis");

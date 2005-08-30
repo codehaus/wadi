@@ -37,7 +37,8 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 	
 	protected final Log _log=LogFactory.getLog(getClass());
     //protected final String _clusterUri="peer://org.codehaus.wadi";
-	protected final String _clusterUri="tcp://smilodon:61616";
+	//protected final String _clusterUri="tcp://smilodon:61616";
+	protected final String _clusterUri="vm://localhost";
     protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
     protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
     protected final CustomClusterFactory _clusterFactory=new CustomClusterFactory(_connectionFactory);
@@ -182,7 +183,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 				} else if (response instanceof MoveSOToPO) {
 					// association exists
 					// associate returned value with key
-					value=((MoveSOToPO)response).getValue();
+					value=(Serializable)((MoveSOToPO)response).getValue();
 					//_log.info("received "+key+"="+value+" <- SO");
 					synchronized (_config.getMap()) {
 						map.put(key, value);
@@ -203,7 +204,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 	public void onMessage(ObjectMessage message1, ReadPOToBO get) {
 		// what if we are NOT the BO anymore ?
 		// get write lock on location
-		Serializable key=get.getKey();
+		Serializable key=(Serializable)get.getKey();
 		Sync sync=null;
 		try {
 			sync=_config.getBOSyncs().acquire(key);
@@ -214,7 +215,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 				return;
 			}
 			// exchangeSendLoop GetBOToSO to SO
-			Destination po=get.getPO();
+			Destination po=(Destination)get.getPO();
 			Destination bo=_cluster.getLocalNode().getDestination();
 			Destination so=location.getDestination();
 			String poCorrelationId=null;
@@ -233,7 +234,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 				_log.error("unexpected problem", e); // should be sorted in loop
 			}
 			// alter location
-			location.setDestination(get.getPO());
+			location.setDestination((Destination)get.getPO());
 			
 		} finally {
 			_log.trace("[BO] releasing sync for: "+key+" - "+sync);
@@ -243,20 +244,20 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 	
 	// called on SO...
 	public void onMessage(ObjectMessage message1, MoveBOToSO get) {
-		Serializable key=get.getKey();
+		Serializable key=(Serializable)get.getKey();
 		Sync sync=null;
 		try {
 			sync=_config.getSOSyncs().acquire(key);
 			// send GetSOToPO to PO
 			Destination so=_cluster.getLocalNode().getDestination();
-			Destination po=get.getPO();
+			Destination po=(Destination)get.getPO();
 			Serializable value;
 			Map map=_config.getMap();
 			synchronized (map) {
 				value=(Serializable)map.get(key);
 			}
 			//_log.info("sending "+key+"="+value+" -> PO");
-			MoveSOToPO request=new MoveSOToPO(value);
+			MoveSOToPO request=new MoveSOToPO(key, value);
 			ObjectMessage message2=(ObjectMessage)_dispatcher.exchangeSend(so, po, request, _timeout, get.getPOCorrelationId());
 			// wait
 			// receive GetPOToSO
@@ -268,7 +269,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 					map.remove(key);
 				}
 				// send GetSOToBO to BO
-				Destination bo=get.getBO();
+				Destination bo=(Destination)get.getBO();
 				_dispatcher.reply(message1,new MoveSOToBO());
 			} catch (JMSException e) {
 				_log.error("unexpected problem", e);
@@ -355,7 +356,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 					else
 						map.put(key, value);
 				}
-				return ((MoveSOToPO)response).getValue();
+				return (Serializable)((MoveSOToPO)response).getValue();
 			} else {
 				_log.error("unexpected response: "+response.getClass().getName());
 				return null;
@@ -370,13 +371,13 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 	// called on BO...
 	public void onMessage(ObjectMessage message1, WritePOToBO write) {
 		// what if we are NOT the BO anymore ?
-		Serializable key=write.getKey();
+		Serializable key=(Serializable)write.getKey();
 		Bucket bucket=_buckets[_config.getBucketMapper().map(key)];
 		Map bucketMap=bucket.getMap();
 		Sync sync=null;
 		try {
 			sync=_config.getBOSyncs().acquire(key);
-			Location location=write.getValueIsNull()?null:new ActiveClusterLocation(write.getPO());
+			Location location=write.getValueIsNull()?null:new ActiveClusterLocation((Destination)write.getPO());
 			// remove or update location, remembering old value
 			ActiveClusterLocation oldLocation=(ActiveClusterLocation)(location==null?bucketMap.remove(key):bucketMap.put(key, location));
 			// if we are not allowed to overwrite, and we have...
@@ -401,7 +402,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 				} catch (JMSException e) {
 					_log.error("unexpected problem", e);
 				}
-				Destination po=write.getPO();
+				Destination po=(Destination)write.getPO();
 				Destination bo=_cluster.getLocalNode().getDestination();
 				Destination so=oldLocation.getDestination();
 				MoveBOToSO request=new MoveBOToSO(key, po, bo, poCorrelationId);
