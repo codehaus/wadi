@@ -1,6 +1,5 @@
 package org.codehaus.wadi.sandbox.gridstate;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,11 +11,8 @@ import javax.cache.CacheException;
 import javax.cache.CacheListener;
 import javax.cache.CacheStatistics;
 
-import org.activecluster.Cluster;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.impl.Dispatcher;
-import org.codehaus.wadi.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -55,7 +51,7 @@ public class GCache implements Cache, ProtocolConfig {
 	public boolean containsKey(Object key) {
 		Sync sync=null;
 		try {
-			sync=_soSyncs.acquire((Serializable)key);
+			sync=_soSyncs.acquire(key);
 			synchronized (_map) {
 				return _map.containsKey(key);
 			}
@@ -117,7 +113,7 @@ public class GCache implements Cache, ProtocolConfig {
 	 * first pass
 	 */
 	public Object get(Object key) {
-		return _protocol.get((Serializable)key);
+		return _protocol.get(key);
 	}
 	
 	/*
@@ -163,8 +159,8 @@ public class GCache implements Cache, ProtocolConfig {
 	}
 	
 	// for WADI
-	protected Serializable put(Object key, Object value, boolean overwrite, boolean returnOldValue) {
-		return _protocol.put((Serializable)key, (Serializable)value, overwrite, returnOldValue);
+	protected Object put(Object key, Object value, boolean overwrite, boolean returnOldValue) {
+		return _protocol.put(key, value, overwrite, returnOldValue);
 	}
 	
 	/*
@@ -196,11 +192,11 @@ public class GCache implements Cache, ProtocolConfig {
 	 * first pass
 	 */
 	public Object remove(Object key) {
-		return _protocol.remove((Serializable)key, true);
+		return _protocol.remove(key, true);
 	}
 	
 	public Object remove(Object key, boolean returnOldValue) {
-		return _protocol.remove((Serializable)key, returnOldValue);
+		return _protocol.remove(key, returnOldValue);
 	}
 	
 	/*

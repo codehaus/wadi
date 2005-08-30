@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.sandbox.gridstate;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -45,7 +44,7 @@ public class TestGCache extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         _factory=new FixedWidthSessionIdFactory(10, "0123456789".toCharArray(), _numBuckets);
-        _mapper=new BucketMapper() { public int map(Serializable key) { return _factory.getBucket((String)key);} };
+        _mapper=new BucketMapper() { public int map(Object key) { return _factory.getBucket((String)key);} };
     }
 
     protected void tearDown() throws Exception {

@@ -1,6 +1,5 @@
 package org.codehaus.wadi.sandbox.gridstate;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -20,7 +19,7 @@ public interface BucketInterface {
 	Destination getDestination();
 	Address getAddress();
 	
-	Location getLocation(Serializable key);
+	Location getLocation(Object key);
 	ReadWriteLock getLock();
 	Map getMap();
 	

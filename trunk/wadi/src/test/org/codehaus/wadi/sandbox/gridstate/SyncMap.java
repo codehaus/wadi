@@ -1,6 +1,5 @@
 package org.codehaus.wadi.sandbox.gridstate;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -24,7 +23,7 @@ public class SyncMap {
 	
 	protected Map _map=new HashMap(); // was a WeakHashMap, assocs removed as keys fall out of use... - good idea ?
 	
-	public Sync acquire(Serializable key) {
+	public Sync acquire(Object key) {
 		Sync sync=null;
 		synchronized (_map) {
 			sync=(Sync)_map.get(key);

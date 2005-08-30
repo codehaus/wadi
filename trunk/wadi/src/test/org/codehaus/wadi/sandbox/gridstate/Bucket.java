@@ -1,6 +1,5 @@
 package org.codehaus.wadi.sandbox.gridstate;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -29,7 +28,7 @@ public class Bucket implements BucketInterface {
 		return _bucket.getAddress();
 	}
 
-	public Location getLocation(Serializable key) {
+	public Location getLocation(Object key) {
 		return _bucket.getLocation(key);
 	}
 	

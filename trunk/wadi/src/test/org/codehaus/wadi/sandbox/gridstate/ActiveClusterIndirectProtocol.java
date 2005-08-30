@@ -3,7 +3,6 @@
  */
 package org.codehaus.wadi.sandbox.gridstate;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -151,16 +150,16 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 
 	// called on PO...
 	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#get(java.io.Serializable)
+	 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#get(java.io.Object)
 	 */
-	public Serializable get(Serializable key) {
+	public Object get(Object key) {
 		Sync sync=null;
 		try {
 			sync=_config.getSOSyncs().acquire(key);
-			Serializable value=null;
+			Object value=null;
 			Map map=_config.getMap();
 			synchronized (map) {
-				value=(Serializable)map.get(key);
+				value=map.get(key);
 			}
 			if (value!=null)
 				return value;
@@ -170,7 +169,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 				Destination bo=_buckets[_config.getBucketMapper().map(key)].getDestination();
 				ReadPOToBO request=new ReadPOToBO(key, po);
 				ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, _timeout, 10);
-				Serializable response=null;
+				Object response=null;
 				try {
 					response=message.getObject();
 				} catch (JMSException e) {
@@ -183,7 +182,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 				} else if (response instanceof MoveSOToPO) {
 					// association exists
 					// associate returned value with key
-					value=(Serializable)((MoveSOToPO)response).getValue();
+					value=((MoveSOToPO)response).getValue();
 					//_log.info("received "+key+"="+value+" <- SO");
 					synchronized (_config.getMap()) {
 						map.put(key, value);
@@ -204,7 +203,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 	public void onMessage(ObjectMessage message1, ReadPOToBO get) {
 		// what if we are NOT the BO anymore ?
 		// get write lock on location
-		Serializable key=(Serializable)get.getKey();
+		Object key=get.getKey();
 		Sync sync=null;
 		try {
 			sync=_config.getBOSyncs().acquire(key);
@@ -244,17 +243,17 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 	
 	// called on SO...
 	public void onMessage(ObjectMessage message1, MoveBOToSO get) {
-		Serializable key=(Serializable)get.getKey();
+		Object key=get.getKey();
 		Sync sync=null;
 		try {
 			sync=_config.getSOSyncs().acquire(key);
 			// send GetSOToPO to PO
 			Destination so=_cluster.getLocalNode().getDestination();
 			Destination po=(Destination)get.getPO();
-			Serializable value;
+			Object value;
 			Map map=_config.getMap();
 			synchronized (map) {
-				value=(Serializable)map.get(key);
+				value=map.get(key);
 			}
 			//_log.info("sending "+key+"="+value+" -> PO");
 			MoveSOToPO request=new MoveSOToPO(key, value);
@@ -287,9 +286,9 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 
 	// called on PO...
 	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#put(java.io.Serializable, java.io.Serializable, boolean, boolean)
+	 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#put(java.io.Object, java.io.Object, boolean, boolean)
 	 */
-	public Serializable put(Serializable key, Serializable value, boolean overwrite, boolean returnOldValue) {
+	public Object put(Object key, Object value, boolean overwrite, boolean returnOldValue) {
 		boolean removal=(value==null);
 		Map map=_config.getMap();
 		Sync sync=null;
@@ -306,7 +305,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 					// local
 					if (overwrite) {
 						synchronized (map) {
-							Serializable oldValue=(Serializable)map.put(key, value);
+							Object oldValue=map.put(key, value);
 							return returnOldValue?oldValue:null;
 						}
 					} else {
@@ -321,7 +320,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 			Destination bo=_buckets[_config.getBucketMapper().map(key)].getDestination();
 			WritePOToBO request=new WritePOToBO(key, value==null, overwrite, returnOldValue, po);
 			ObjectMessage message=_dispatcher.exchangeSendLoop(po, bo, request, _timeout, 10);
-			Serializable response=null;
+			Object response=null;
 			try {
 				response=message.getObject();
 			} catch (JMSException e) {
@@ -333,7 +332,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 			if (response instanceof WriteBOToPO) {
 				if (overwrite) {
 					synchronized (map) {
-						Serializable oldValue=(Serializable)(removal?map.remove(key):map.put(key, value));
+						Object oldValue=(removal?map.remove(key):map.put(key, value));
 						return returnOldValue?oldValue:null;
 					}
 				} else {
@@ -356,7 +355,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 					else
 						map.put(key, value);
 				}
-				return (Serializable)((MoveSOToPO)response).getValue();
+				return ((MoveSOToPO)response).getValue();
 			} else {
 				_log.error("unexpected response: "+response.getClass().getName());
 				return null;
@@ -371,7 +370,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 	// called on BO...
 	public void onMessage(ObjectMessage message1, WritePOToBO write) {
 		// what if we are NOT the BO anymore ?
-		Serializable key=(Serializable)write.getKey();
+		Object key=write.getKey();
 		Bucket bucket=_buckets[_config.getBucketMapper().map(key)];
 		Map bucketMap=bucket.getMap();
 		Sync sync=null;
@@ -426,7 +425,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 	//--------------------------------------------------------------------------------
 
 	// called on PO...
-	public Serializable remove(Serializable key, boolean returnOldValue) {
+	public Object remove(Object key, boolean returnOldValue) {
 		return put(key, null, true, returnOldValue); // a remove is a put(key, null)...
 	}
 
