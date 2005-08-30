@@ -33,7 +33,7 @@ import org.jgroups.blocks.RpcDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
+public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements BucketConfig {
 	
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
@@ -141,10 +141,10 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 	}
 	
 	protected Object
-	syncRpc(Object address, String methodName, Class[] argClasses, Object[] argInstances) throws TimeoutException, SuspectedException
+	syncRpc(Object address, String methodName, Object message) throws TimeoutException, SuspectedException
 	{
 		_log.info("rpc-ing from:"+_address+" to:"+address);
-		return _dispatcher.callRemoteMethod((Address)address, methodName, argInstances, argClasses, GroupRequest.GET_ALL, _timeout);
+		return _dispatcher.callRemoteMethod((Address)address, methodName, new Object[]{message}, new Class[]{message.getClass()}, GroupRequest.GET_ALL, _timeout);
 	}
 	
 	protected Object
@@ -181,7 +181,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 				try {
 					Address po=_address;
 					Address bo=_buckets[_config.getBucketMapper().map(key)].getAddress();
-					response=syncRpc(bo, "onReadPOToBO", new Class[]{ReadPOToBO.class}, new Object[]{new ReadPOToBO(key, po)});
+					response=syncRpc(bo, "onReadPOToBO", new ReadPOToBO(key, po));
  				} catch(Exception e) {
 					_log.error("problem publishing change in state over JavaGroups", e);
 				}
@@ -247,7 +247,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 			Address bo=_address;
 			Address so=location.getAddress();
 			
-			MoveSOToBO response=(MoveSOToBO)syncRpc(so, "onMoveBOToSO", new Class[]{MoveBOToSO.class}, new Object[]{new MoveBOToSO(key, po, bo, null)});
+			MoveSOToBO response=(MoveSOToBO)syncRpc(so, "onMoveBOToSO", new MoveBOToSO(key, po, bo, null));
 			// success - update location
 			boolean success=response.getSuccess();
 			if (success)
@@ -279,7 +279,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 				value=map.get(key);
 			}
 			_log.info("[SO] sending "+key+"="+value+" -> PO...");
-			MovePOToSO response=(MovePOToSO)syncRpc(po, "onMoveSOToPO", new Class[]{MoveSOToPO.class}, new Object[]{new MoveSOToPO(key, value)});
+			MovePOToSO response=(MovePOToSO)syncRpc(po, "onMoveSOToPO", new MoveSOToPO(key, value));
 			_log.info("[SO] ...response received <- PO");
 			boolean success=response.getSuccess();
 			if (success) {
@@ -337,7 +337,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 				// exchangeSendLoop PutPOToBO to BO
 				Address po=_address;
 				Address bo=_buckets[_config.getBucketMapper().map(key)].getAddress();
-				Object response=syncRpc(bo, "onWritePOToBO", new Class[]{WritePOToBO.class}, new Object[]{new WritePOToBO(key, newValue==null, overwrite, returnOldValue, po)});
+				Object response=syncRpc(bo, "onWritePOToBO", new WritePOToBO(key, newValue==null, overwrite, returnOldValue, po));
 				
 				// 2 possibilities - 
 				// PutBO2PO - Absent
@@ -423,7 +423,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 				Address bo=_address;
 				Address so=oldLocation.getAddress();
 				_log.info(""+po+"=="+so+" ? "+(po.equals(so)));
-				MoveSOToBO response=(MoveSOToBO)syncRpc(so, "onMoveBOToSO", new Class[]{MoveBOToSO.class}, new Object[]{new MoveBOToSO(key, po, bo, null)});
+				MoveSOToBO response=(MoveSOToBO)syncRpc(so, "onMoveBOToSO", new MoveBOToSO(key, po, bo, null));
 				return response.getSuccess()?Boolean.TRUE:Boolean.FALSE;
 			}
 		} finally {
