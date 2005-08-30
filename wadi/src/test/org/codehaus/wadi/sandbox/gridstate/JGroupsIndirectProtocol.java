@@ -13,10 +13,14 @@ import javax.jms.Destination;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.Dispatcher;
+import org.codehaus.wadi.sandbox.gridstate.messages.MoveBOToSO;
 import org.codehaus.wadi.sandbox.gridstate.messages.MovePOToSO;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveSOToBO;
+import org.codehaus.wadi.sandbox.gridstate.messages.MoveSOToPO;
 import org.codehaus.wadi.sandbox.gridstate.messages.ReadBOToPO;
+import org.codehaus.wadi.sandbox.gridstate.messages.ReadPOToBO;
 import org.codehaus.wadi.sandbox.gridstate.messages.WriteBOToPO;
+import org.codehaus.wadi.sandbox.gridstate.messages.WritePOToBO;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.JChannel;
@@ -45,18 +49,15 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 	protected final MembershipListener _membershipListener=new MembershipListener() {
 		
 		public void viewAccepted(View arg0) {
-			// TODO Auto-generated method stub
-			
+			_log.info("MembershipListener:viewAccepted: "+ arg0);
 		}
 		
 		public void suspect(Address arg0) {
-			// TODO Auto-generated method stub
-			
+			_log.info("MembershipListener:suspect: "+ arg0);
 		}
 		
 		public void block() {
-			// TODO Auto-generated method stub
-			
+			_log.info("MembershipListener:block");
 		}
 		
 	};
@@ -64,18 +65,16 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 	protected final MessageListener _messageListener=new MessageListener() {
 
 		public void receive(org.jgroups.Message arg0) {
-			// TODO Auto-generated method stub
-			
+			_log.info("MessageListener:receive: "+arg0);
 		}
 
 		public byte[] getState() {
-			// TODO Auto-generated method stub
+			_log.info("MessageListener:getState");
 			return null;
 		}
 
 		public void setState(byte[] arg0) {
-			// TODO Auto-generated method stub
-			
+			_log.info("MessageListener:setState: "+arg0);
 		}
 		
 	};
@@ -183,7 +182,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 				try {
 					Address po=_address;
 					Address bo=_buckets[_config.getBucketMapper().map(key)].getAddress();
-					response=syncRpc(bo, "onReadPOToBO", new Class[]{Object.class, Address.class}, new Object[]{key, po});
+					response=syncRpc(bo, "onReadPOToBO", new Class[]{ReadPOToBO.class}, new Object[]{new ReadPOToBO(key, po)});
  				} catch(Exception e) {
 					_log.error("problem publishing change in state over JavaGroups", e);
 				}
@@ -211,12 +210,14 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 		}
 	}
 	
-	public Object onMoveSOToPO(Object key, Object value) {
+	public Object onMoveSOToPO(MoveSOToPO move) {
 		_log.info("[PO] - onMoveSOToPO@"+_address);
 		// association exists
 		// associate returned value with key
 		//_log.info("received "+key+"="+value+" <- SO");
 		//Map map=_config.getMap();
+		Object key=move.getKey();
+		Object value=move.getValue();
 		_log.info("putting: "+key+"="+value+ " - "+this+" localAddress:"+_address);
 		if (value!=null) {
 			synchronized (_rvMap) {
@@ -227,7 +228,9 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 	}
 	
 	// called on BO...
-	public Object onReadPOToBO(Object key, Address po) throws SuspectedException, TimeoutException {
+	public Object onReadPOToBO(ReadPOToBO read) throws SuspectedException, TimeoutException {
+		Object key=read.getKey();
+		Address po=(Address)read.getPO();
 		_log.info("po="+po);
 		// what if we are NOT the BO anymore ?
 		// get write lock on location
@@ -245,7 +248,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 			Address bo=_address;
 			Address so=location.getAddress();
 			
-			MoveSOToBO response=(MoveSOToBO)syncRpc(so, "onMoveBOToSO", new Class[]{Object.class, Address.class, Address.class}, new Object[]{key, po, bo});
+			MoveSOToBO response=(MoveSOToBO)syncRpc(so, "onMoveBOToSO", new Class[]{MoveBOToSO.class}, new Object[]{new MoveBOToSO(key, po, bo, null)});
 			// success - update location
 			boolean success=response.getSuccess();
 			if (success)
@@ -259,7 +262,10 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 	}
 	
 	// called on SO...
-	public Object onMoveBOToSO(Object key, Address po, Address bo) throws SuspectedException, TimeoutException {
+	public Object onMoveBOToSO(MoveBOToSO move) throws SuspectedException, TimeoutException {
+		Object key=move.getKey();
+		Address po=(Address)move.getPO();
+		Address bo=(Address)move.getBO();
 		_log.info("[SO] - onMoveBOToSO@"+_address);
 		_log.info("po="+po);
 		Sync sync=null;
@@ -274,7 +280,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 				value=(Serializable)map.get(key);
 			}
 			_log.info("[SO] sending "+key+"="+value+" -> PO...");
-			MovePOToSO response=(MovePOToSO)syncRpc(po, "onMoveSOToPO", new Class[]{Object.class, Object.class}, new Object[]{key, value});
+			MovePOToSO response=(MovePOToSO)syncRpc(po, "onMoveSOToPO", new Class[]{MoveSOToPO.class}, new Object[]{new MoveSOToPO(key, value)});
 			_log.info("[SO] ...response received <- PO");
 			boolean success=response.getSuccess();
 			if (success) {
@@ -332,9 +338,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 				// exchangeSendLoop PutPOToBO to BO
 				Address po=_address;
 				Address bo=_buckets[_config.getBucketMapper().map(key)].getAddress();
-				Object response=syncRpc(bo, "onWritePOToBO",
-						new Class[]{Object.class, Boolean.TYPE, Boolean.TYPE, Boolean.TYPE, Address.class},
-						new Object[]{key, newValue==null?Boolean.TRUE:Boolean.FALSE, overwrite?Boolean.TRUE:Boolean.FALSE, returnOldValue?Boolean.TRUE:Boolean.FALSE, po});
+				Object response=syncRpc(bo, "onWritePOToBO", new Class[]{WritePOToBO.class}, new Object[]{new WritePOToBO(key, newValue==null, overwrite, returnOldValue, po)});
 				
 				// 2 possibilities - 
 				// PutBO2PO - Absent
@@ -385,7 +389,12 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 	}
 	
 	// called on BO...
-	public Object onWritePOToBO(Object key, boolean valueIsNull, boolean overwrite, boolean returnOldValue, Address po) throws SuspectedException, TimeoutException {
+	public Object onWritePOToBO(WritePOToBO write) throws SuspectedException, TimeoutException {
+		Object key=write.getKey();
+		boolean valueIsNull=write.getValueIsNull();
+		boolean overwrite=write.getOverwrite();
+		boolean returnOldValue=write.getReturnOldValue();
+		Address po=(Address)write.getPO();
 		_log.info("[BO] - onWritePOToBO@"+_address);
 		// what if we are NOT the BO anymore ?
 		Bucket bucket=_buckets[_config.getBucketMapper().map((Serializable)key)];
@@ -415,7 +424,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 				Address bo=_address;
 				Address so=oldLocation.getAddress();
 				_log.info(""+po+"=="+so+" ? "+(po.equals(so)));
-				MoveSOToBO response=(MoveSOToBO)syncRpc(so, "onMoveBOToSO", new Class[]{Object.class, Address.class, Address.class}, new Object[]{key, po, bo});
+				MoveSOToBO response=(MoveSOToBO)syncRpc(so, "onMoveBOToSO", new Class[]{MoveBOToSO.class}, new Object[]{new MoveBOToSO(key, po, bo, null)});
 				return response.getSuccess()?Boolean.TRUE:Boolean.FALSE;
 			}
 		} finally {

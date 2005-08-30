@@ -4,9 +4,11 @@ import java.io.Serializable;
 
 public class MoveSOToPO implements Serializable {
 
-	protected Serializable _value;
+	protected Object _key;
+	protected Object _value;
 	
-	public MoveSOToPO(Serializable value) {
+	public MoveSOToPO(Object key, Object value) {
+		_key=key;
 		_value=value;
 	}
 	
@@ -14,8 +16,12 @@ public class MoveSOToPO implements Serializable {
 		// for deserialisation...
 	}
 	
-	public Serializable getValue() {
+	public Object getKey() {
+		return _key;
+	}
+
+	public Object getValue() {
 		return _value;
 	}
-	
+
 }

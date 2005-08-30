@@ -6,10 +6,10 @@ import javax.jms.Destination;
 
 public class ReadPOToBO implements Serializable {
 
-	protected Serializable _key;
-	protected Destination _po;
+	protected Object _key;
+	protected Object _po;
 	
-	public ReadPOToBO(Serializable key, Destination po) {
+	public ReadPOToBO(Object key, Object po) {
 		_key=key;
 		_po=po;
 	}
@@ -18,11 +18,11 @@ public class ReadPOToBO implements Serializable {
 		// for deserialisation ...
 	}
 	
-	public Serializable getKey() {
+	public Object getKey() {
 		return _key;
 	}
 	
-	public Destination getPO() {
+	public Object getPO() {
 		return _po;
 	}
 }
