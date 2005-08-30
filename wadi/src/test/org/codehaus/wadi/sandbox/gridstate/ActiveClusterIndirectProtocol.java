@@ -32,7 +32,7 @@ import org.jgroups.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
+public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol implements BucketConfig {
 	
 	protected final Log _log=LogFactory.getLog(getClass());
     //protected final String _clusterUri="peer://org.codehaus.wadi";
@@ -93,7 +93,7 @@ public class ActiveClusterIndirectProtocol implements Protocol, BucketConfig {
 		
 		// Get - 5 messages - PO->BO->SO->PO->SO->BO
 		_dispatcher.register(this, "onMessage", ReadPOToBO.class);
-		_dispatcher.register(this, "onMessage", MoveBOToSO.class);
+		_dispatcher.newRegister(this, "onMessage", MoveBOToSO.class);
 		_dispatcher.register(MoveSOToPO.class, _timeout);
 		_dispatcher.register(MovePOToSO.class, _timeout);
 		_dispatcher.register(MoveSOToBO.class, _timeout);

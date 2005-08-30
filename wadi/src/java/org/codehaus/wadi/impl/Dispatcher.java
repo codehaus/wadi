@@ -129,7 +129,32 @@ public class Dispatcher implements MessageListener {
         public synchronized int getCount() {return _count;}
     }
 
+    class NewTargetDispatcher implements InternalDispatcher {
+        protected final Object _target;
+        protected final Method _method;
+        protected final ThreadLocal _pair=new ThreadLocal(){protected Object initialValue() {return new Object[2];}};
 
+        public NewTargetDispatcher(Object target, Method method) {
+            _target=target;
+            _method=method;
+        }
+
+        public void dispatch(ObjectMessage om, Serializable obj) throws InvocationTargetException, IllegalAccessException {
+            Object[] pair=(Object[])_pair.get();
+            pair[0]=om;
+            pair[1]=obj;
+            _method.invoke(_target, pair);
+        }
+
+        public String toString() {
+            return "<TargetDispatcher: "+_method+" dispatched on: "+_target+">";
+        }
+
+        protected int _count;
+        public void incCount() {_count++;}
+        public void decCount() {_count--;}
+        public synchronized int getCount() {return _count;}
+    }
 
     public InternalDispatcher register(Object target, String methodName, Class type) {
         try {
@@ -149,26 +174,63 @@ public class Dispatcher implements MessageListener {
             return null;
         }
     }
+    
+    public InternalDispatcher newRegister(Object target, String methodName, Class type) {
+        try {
+            Method method=target.getClass().getMethod(methodName, new Class[] {ObjectMessage.class, type});
+            if (method==null) return null;
 
-  public boolean deregister(String methodName, Class type, int timeout) {
-    TargetDispatcher td=(TargetDispatcher)_map.get(type);
-    if (td==null)
-      return false;
-    else
-      // this isn't failproof - if onMessage has not yet been called,
-      // the counter may still read 0 - but it's the best we can do...
-      for (int i=timeout; td._count>0 && i>0; i--) {
-	try {
-	  Thread.sleep(1000);
-	} catch (InterruptedException e) {
-	  // ignore - TODO
-	}
-      }
+            InternalDispatcher nuw=new NewTargetDispatcher(target, method);
 
-    _map.remove(type);
-    return td._count<=0;
-  }
+            InternalDispatcher old=(InternalDispatcher)_map.put(type, nuw);
+            if (old!=null)
+                if (_log.isWarnEnabled()) _log.warn("later registration replaces earlier - multiple dispatch NYI: "+old+" -> "+nuw);
 
+            if (_log.isTraceEnabled()) _log.trace("registering: "+type.getName()+"."+methodName+"()");
+            return nuw;
+        } catch (NoSuchMethodException e) {
+            _log.error("no method: "+methodName+"("+type.getName()+") on class: "+target.getClass().getName() , e);
+            return null;
+        }
+    }
+
+    public boolean deregister(String methodName, Class type, int timeout) {
+    	TargetDispatcher td=(TargetDispatcher)_map.get(type);
+    	if (td==null)
+    		return false;
+    	else
+    		// this isn't failproof - if onMessage has not yet been called,
+    		// the counter may still read 0 - but it's the best we can do...
+    		for (int i=timeout; td._count>0 && i>0; i--) {
+    			try {
+    				Thread.sleep(1000);
+    			} catch (InterruptedException e) {
+    				// ignore - TODO
+    			}
+    		}
+    	
+    	_map.remove(type);
+    	return td._count<=0;
+    }
+
+    public boolean newDeregister(String methodName, Class type, int timeout) {
+    	NewTargetDispatcher td=(NewTargetDispatcher)_map.get(type);
+    	if (td==null)
+    		return false;
+    	else
+    		// this isn't failproof - if onMessage has not yet been called,
+    		// the counter may still read 0 - but it's the best we can do...
+    		for (int i=timeout; td._count>0 && i>0; i--) {
+    			try {
+    				Thread.sleep(1000);
+    			} catch (InterruptedException e) {
+    				// ignore - TODO
+    			}
+    		}
+    	
+    	_map.remove(type);
+    	return td._count<=0;
+    }
 	class RendezVousDispatcher implements InternalDispatcher {
 	  protected final Map _rvMap2;
 	  protected final long _timeout;
