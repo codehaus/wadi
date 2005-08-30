@@ -1,6 +1,5 @@
 package org.codehaus.wadi.sandbox.gridstate;
 
-import java.io.Serializable;
 
 public interface BucketMapper {
 
@@ -10,6 +9,6 @@ public interface BucketMapper {
 	 * @param key
 	 * @return
 	 */
-	int map(Serializable key);
+	int map(Object key);
 	
 }

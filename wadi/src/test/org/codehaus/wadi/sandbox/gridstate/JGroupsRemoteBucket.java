@@ -1,6 +1,5 @@
 package org.codehaus.wadi.sandbox.gridstate;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -34,7 +33,7 @@ public class JGroupsRemoteBucket implements BucketInterface {
 		throw new UnsupportedOperationException("Too ActiveCluster specific?");
 	}
 	
-	public Location getLocation(Serializable key) {
+	public Location getLocation(Object key) {
 		throw new UnsupportedOperationException("What should we do here?");
 	}
 	

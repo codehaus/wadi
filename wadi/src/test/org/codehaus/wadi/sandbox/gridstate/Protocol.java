@@ -1,18 +1,17 @@
 package org.codehaus.wadi.sandbox.gridstate;
 
-import java.io.Serializable;
 
 public interface Protocol {
 
 	void init(ProtocolConfig config);
 	
 	// called on PO...
-	Serializable get(Serializable key);
+	Object get(Object key);
 
 	// called on PO...
-	Serializable put(Serializable key, Serializable value, boolean overwrite, boolean returnOldValue);
+	Object put(Object key, Object value, boolean overwrite, boolean returnOldValue);
 
-	Serializable remove(Serializable key, boolean returnOldValue);
+	Object remove(Object key, boolean returnOldValue);
 	
 	Bucket[] getBuckets();
 	

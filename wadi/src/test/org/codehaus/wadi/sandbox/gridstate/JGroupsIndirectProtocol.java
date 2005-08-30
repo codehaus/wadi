@@ -4,7 +4,6 @@
 
 package org.codehaus.wadi.sandbox.gridstate;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -161,18 +160,18 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 	
 	// called on PO...
 	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#get(java.io.Serializable)
+	 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#get(java.io.Object)
 	 */
-	public Serializable get(Serializable key) {
+	public Object get(Object key) {
 		Sync sync=null;
 		try {
 			_log.info("get - [PO] trying for lock("+key+")...");
 			sync=_config.getSOSyncs().acquire(key);
 			_log.info("get - [PO] ...lock("+key+") acquired - "+sync);
-			Serializable value=null;
+			Object value=null;
 			Map map=_config.getMap();
 			synchronized (map) {
-				value=(Serializable)map.get(key);
+				value=map.get(key);
 			}
 			if (value!=null)
 				return value;
@@ -193,7 +192,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 				} else if (response instanceof Boolean) {
 					_log.info("get "+(((Boolean)response).booleanValue()?"succeeded":"failed"));
 					synchronized (_rvMap) {
-						value=(Serializable)_rvMap.remove(key);
+						value=_rvMap.remove(key);
 						_log.info("getting: "+key+"="+value+ " - "+this);
 						synchronized (map) {
 							map.put(key, value);
@@ -237,10 +236,10 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 		Sync sync=null;
 		try {
 			_log.info("onReadPOToBO- [BO] trying for lock("+key+")...");
-			sync=_config.getBOSyncs().acquire((Serializable)key);
+			sync=_config.getBOSyncs().acquire(key);
 			_log.info("onReadPOToBO- [BO] ...lock("+key+") acquired - "+sync);
-			Bucket bucket=_buckets[_config.getBucketMapper().map((Serializable)key)];
-			JGroupsLocation location=(JGroupsLocation)bucket.getLocation((Serializable)key);
+			Bucket bucket=_buckets[_config.getBucketMapper().map(key)];
+			JGroupsLocation location=(JGroupsLocation)bucket.getLocation(key);
 			if (location==null) {
 				return new ReadBOToPO();
 			}
@@ -271,13 +270,13 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 		Sync sync=null;
 		try {
 			_log.info("onMoveBOToSO - [SO] trying for lock("+key+")...");
-			sync=_config.getSOSyncs().acquire((Serializable)key);
+			sync=_config.getSOSyncs().acquire(key);
 			_log.info("onMoveBOToSO - [SO] ...lock("+key+") acquired< - "+sync);
 			// send GetSOToPO to PO
 			Object value;
 			Map map=_config.getMap();
 			synchronized (map) {
-				value=(Serializable)map.get(key);
+				value=map.get(key);
 			}
 			_log.info("[SO] sending "+key+"="+value+" -> PO...");
 			MovePOToSO response=(MovePOToSO)syncRpc(po, "onMoveSOToPO", new Class[]{MoveSOToPO.class}, new Object[]{new MoveSOToPO(key, value)});
@@ -302,9 +301,9 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 	
 	// called on PO...
 	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#put(java.io.Serializable, java.io.Serializable, boolean, boolean)
+	 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#put(java.io.Object, java.io.Object, boolean, boolean)
 	 */
-	public Serializable put(Serializable key, Serializable newValue, boolean overwrite, boolean returnOldValue) {
+	public Object put(Object key, Object newValue, boolean overwrite, boolean returnOldValue) {
 		_log.info("[PO] - put@"+_address);
 		boolean removal=(newValue==null);
 		Map map=_config.getMap();
@@ -324,7 +323,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 					// local
 					if (overwrite) {
 						synchronized (map) {
-							Serializable oldValue=(Serializable)map.put(key, newValue);
+							Object oldValue=map.put(key, newValue);
 							return returnOldValue?oldValue:null;
 						}
 					} else {
@@ -345,7 +344,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 				if (response instanceof WriteBOToPO) {
 					if (overwrite) {
 						synchronized (map) {
-							Serializable oldValue=(Serializable)(removal?map.remove(key):map.put(key, newValue));
+							Object oldValue=(removal?map.remove(key):map.put(key, newValue));
 							return returnOldValue?oldValue:null;
 						}
 					} else {
@@ -371,7 +370,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 								}
 							}
 						}
-						return (Serializable)oldValue;
+						return oldValue;
 					} else
 						return null;
 				} else {
@@ -397,12 +396,12 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 		Address po=(Address)write.getPO();
 		_log.info("[BO] - onWritePOToBO@"+_address);
 		// what if we are NOT the BO anymore ?
-		Bucket bucket=_buckets[_config.getBucketMapper().map((Serializable)key)];
+		Bucket bucket=_buckets[_config.getBucketMapper().map(key)];
 		Map bucketMap=bucket.getMap();
 		Sync sync=null;
 		try {
 			_log.info("onWritePOToBO- [BO] trying for lock("+key+")...");
-			sync=_config.getBOSyncs().acquire((Serializable)key);
+			sync=_config.getBOSyncs().acquire(key);
 			_log.info("onWritePOToBO- [BO] ...lock("+key+") acquired - "+sync);
 			Location location=valueIsNull?null:new JGroupsLocation(po);
 			// remove or update location, remembering old value
@@ -438,7 +437,7 @@ public class JGroupsIndirectProtocol implements Protocol , BucketConfig {
 	//--------------------------------------------------------------------------------
 	
 	// called on PO...
-	public Serializable remove(Serializable key, boolean returnOldValue) {
+	public Object remove(Object key, boolean returnOldValue) {
 		return put(key, null, true, returnOldValue); // a remove is a put(key, null)...
 	}
 	

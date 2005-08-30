@@ -1,10 +1,6 @@
 package org.codehaus.wadi.sandbox.gridstate;
 
-import java.io.Serializable;
-
 import javax.jms.Destination;
-
-import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 
 public class ActiveClusterLocation extends AbstractLocation {
 

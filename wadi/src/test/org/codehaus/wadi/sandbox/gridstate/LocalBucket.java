@@ -1,6 +1,5 @@
 package org.codehaus.wadi.sandbox.gridstate;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +38,7 @@ public class LocalBucket implements BucketInterface {
 		return _config.getLocalDestination();
 	}
 	
-	public Location getLocation(Serializable key) {
+	public Location getLocation(Object key) {
 		try {
 			Utils.safeAcquire(_lock.readLock());
 			return (Location)_map.get(key);
