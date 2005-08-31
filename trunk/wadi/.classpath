@@ -61,6 +61,6 @@
 	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/common/lib/naming-java.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/server/lib/tomcat-jk2.jar"/>
 	<classpathentry kind="lib" path="/usr/local/java/jakarta-tomcat-5.0.28/bin/bootstrap.jar"/>
-	<classpathentry kind="lib" path="WEB-INF/lib/jgroups-all-2.2.8.jar"/>
+	<classpathentry sourcepath="/jgroups/src" kind="lib" path="WEB-INF/lib/jgroups-all-2.2.8.jar"/>
 	<classpathentry kind="output" path="WEB-INF/classes"/>
 </classpath>

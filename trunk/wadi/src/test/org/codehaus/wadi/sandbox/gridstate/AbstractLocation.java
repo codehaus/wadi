@@ -5,7 +5,7 @@ import java.io.Serializable;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 
-public class AbstractLocation implements Location, Serializable {
+public abstract class AbstractLocation implements Location, Serializable {
 
 	protected transient ReadWriteLock _lock;
 	protected transient boolean _invalid;
@@ -21,5 +21,5 @@ public class AbstractLocation implements Location, Serializable {
 	public void invalidate() {
 		_invalid=true;
 	}
-
+	
 }

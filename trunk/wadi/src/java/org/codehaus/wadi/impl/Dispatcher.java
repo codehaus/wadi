@@ -35,6 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
+import org.codehaus.wadi.sandbox.gridstate.messages.MoveSOToBO;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
@@ -132,18 +133,18 @@ public class Dispatcher implements MessageListener {
     class NewTargetDispatcher implements InternalDispatcher {
         protected final Object _target;
         protected final Method _method;
-        protected final ThreadLocal _pair=new ThreadLocal(){protected Object initialValue() {return new Object[2];}};
+        protected final ThreadLocal _singleton=new ThreadLocal(){protected Object initialValue() {return new Object[1];}};
 
         public NewTargetDispatcher(Object target, Method method) {
             _target=target;
             _method=method;
         }
 
-        public void dispatch(ObjectMessage om, Serializable obj) throws InvocationTargetException, IllegalAccessException {
-            Object[] pair=(Object[])_pair.get();
-            pair[0]=om;
-            pair[1]=obj;
-            _method.invoke(_target, pair);
+        public void dispatch(ObjectMessage message, Serializable request) throws InvocationTargetException, IllegalAccessException {
+            Object[] singleton=(Object[])_singleton.get();
+            singleton[0]=request;
+            Object response=_method.invoke(_target, singleton);
+            reply(message, (Serializable)response);
         }
 
         public String toString() {
@@ -177,7 +178,7 @@ public class Dispatcher implements MessageListener {
     
     public InternalDispatcher newRegister(Object target, String methodName, Class type) {
         try {
-            Method method=target.getClass().getMethod(methodName, new Class[] {ObjectMessage.class, type});
+            Method method=target.getClass().getMethod(methodName, new Class[] {type});
             if (method==null) return null;
 
             InternalDispatcher nuw=new NewTargetDispatcher(target, method);
