@@ -20,5 +20,8 @@ public interface Protocol {
     void start() throws Exception;
     
     void stop() throws Exception;
+    
+	Object syncRpc(Object address, String methodName, Object message) throws Exception;
 
+	Object getLocalLocation();
 }

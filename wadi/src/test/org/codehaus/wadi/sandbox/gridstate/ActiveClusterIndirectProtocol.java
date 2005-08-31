@@ -3,6 +3,7 @@
  */
 package org.codehaus.wadi.sandbox.gridstate;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -14,8 +15,6 @@ import org.activecluster.ClusterEvent;
 import org.activecluster.ClusterListener;
 import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.impl.CustomClusterFactory;
@@ -34,8 +33,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol implements BucketConfig {
 	
-	protected final Log _log=LogFactory.getLog(getClass());
-    //protected final String _clusterUri="peer://org.codehaus.wadi";
+	//protected final String _clusterUri="peer://org.codehaus.wadi";
 	//protected final String _clusterUri="tcp://smilodon:61616";
 	protected final String _clusterUri="vm://localhost";
     protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
@@ -93,7 +91,9 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 		
 		// Get - 5 messages - PO->BO->SO->PO->SO->BO
 		_dispatcher.register(this, "onMessage", ReadPOToBO.class);
-		_dispatcher.newRegister(this, "onMessage", MoveBOToSO.class);
+//		_dispatcher.newRegister(this, "onReadPOToBO", ReadPOToBO.class);
+		_dispatcher.register(this, "onMessage", MoveBOToSO.class);
+//		_dispatcher.newRegister(this, "onMoveBOToSO", MoveBOToSO.class);
 		_dispatcher.register(MoveSOToPO.class, _timeout);
 		_dispatcher.register(MovePOToSO.class, _timeout);
 		_dispatcher.register(MoveSOToBO.class, _timeout);
@@ -104,12 +104,6 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 		_dispatcher.register(this, "onMessage", WritePOToBO.class);
 		_dispatcher.register(WriteBOToPO.class, _timeout);
 
-	}
-	
-	protected ProtocolConfig _config;
-	
-	public void init(ProtocolConfig config) {
-		_config=config;
 	}
 	
 	public BucketInterface createRemoteBucket() {
@@ -216,7 +210,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			// exchangeSendLoop GetBOToSO to SO
 			Destination po=(Destination)get.getPO();
 			Destination bo=_cluster.getLocalNode().getDestination();
-			Destination so=location.getDestination();
+			Destination so=(Destination)location.getValue();
 			String poCorrelationId=null;
 			try {
 				poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
@@ -233,7 +227,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 				_log.error("unexpected problem", e); // should be sorted in loop
 			}
 			// alter location
-			location.setDestination((Destination)get.getPO());
+			location.setValue((Destination)get.getPO());
 			
 		} finally {
 			_log.trace("[BO] releasing sync for: "+key+" - "+sync);
@@ -385,7 +379,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 				bucketMap.put(key, oldLocation);
 				// send BOToPO - failure
 				_dispatcher.reply(message1, new WriteBOToPO(false));
-			} else if (oldLocation==null || (write.getPO().equals(oldLocation.getDestination()))) {
+			} else if (oldLocation==null || (write.getPO().equals(oldLocation.getValue()))) {
 				// if there was previously no SO, or there was, but it was PO ...
 				// then there is no need to go and remove the old value from the old SO
 				// send BOToPO - success
@@ -403,7 +397,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 				}
 				Destination po=(Destination)write.getPO();
 				Destination bo=_cluster.getLocalNode().getDestination();
-				Destination so=oldLocation.getDestination();
+				Destination so=(Destination)oldLocation.getValue();
 				MoveBOToSO request=new MoveBOToSO(key, po, bo, poCorrelationId);
 				ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, _timeout, 10);
 				MoveSOToBO response=null;
@@ -429,4 +423,22 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 		return put(key, null, true, returnOldValue); // a remove is a put(key, null)...
 	}
 
+	//--------------------------------------------------------------------------------
+	// Protocol
+	//--------------------------------------------------------------------------------
+
+	public Object syncRpc(Object destination, String methodName, Object message) throws Exception {
+		ObjectMessage tmp=_dispatcher.exchangeSendLoop(_cluster.getLocalNode().getDestination(), (Destination)destination, (Serializable)message, _timeout, 10);
+		Object response=null;
+		try {
+			response=tmp.getObject();
+		} catch (JMSException e) {
+			_log.error("unexpected problem", e); // should be in loop - TODO
+		}
+		return response;
+	}
+
+	public Object getLocalLocation() {
+		return _cluster.getLocalNode().getDestination();
+	}
 }

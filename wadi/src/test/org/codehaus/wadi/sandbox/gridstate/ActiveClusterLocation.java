@@ -11,11 +11,11 @@ public class ActiveClusterLocation extends AbstractLocation {
 		_destination=destination;
 	}
 	
-	public Destination getDestination() {
+	public Object getValue() {
 		return _destination;
 	}
 	
-	public void setDestination(Destination destination) {
-		_destination=destination;
+	public void setValue(Object destination) {
+		_destination=(Destination)destination;
 	}
 }

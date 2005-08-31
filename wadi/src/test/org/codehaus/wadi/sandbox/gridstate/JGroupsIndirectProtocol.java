@@ -9,8 +9,6 @@ import java.util.Map;
 
 import javax.jms.Destination;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveBOToSO;
 import org.codehaus.wadi.sandbox.gridstate.messages.MovePOToSO;
@@ -35,7 +33,6 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements BucketConfig {
 	
-	protected final Log _log=LogFactory.getLog(getClass());
 	protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
 	protected final long _timeout=30*1000L;
 	protected final Bucket[] _buckets;
@@ -93,10 +90,8 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 		_dispatcher=new RpcDispatcher(_channel, _messageListener, _membershipListener, this, true, true);
 	}
 	
-	protected ProtocolConfig _config;
-	
 	public void init(ProtocolConfig config) {
-		_config=config;
+		super.init(config);
 		String channelName="WADI";
 		try {
 		_channel.connect(channelName);
@@ -140,18 +135,18 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 		throw new UnsupportedOperationException("bah");
 	}
 	
-	protected Object
-	syncRpc(Object address, String methodName, Object message) throws TimeoutException, SuspectedException
+	public Object
+	syncRpc(Object address, String methodName, Object message) throws Exception
 	{
-		_log.info("rpc-ing from:"+_address+" to:"+address);
+		_log.info("sync rpc-ing from:"+_address+" to:"+address);
 		return _dispatcher.callRemoteMethod((Address)address, methodName, new Object[]{message}, new Class[]{message.getClass()}, GroupRequest.GET_ALL, _timeout);
 	}
 	
-	protected Object
+	protected void
 	asyncRpc(Object address, String methodName, Class[] argClasses, Object[] argInstances) throws TimeoutException, SuspectedException
 	{
-		_log.info("rpc-ing from:"+_address+" to:"+address);
-		return _dispatcher.callRemoteMethod((Address)address, methodName, argInstances, argClasses, GroupRequest.GET_NONE, _timeout);
+		_log.info("async rpc-ing from:"+_address+" to:"+address);
+		_dispatcher.callRemoteMethod((Address)address, methodName, argInstances, argClasses, GroupRequest.GET_NONE, _timeout);
 	}
 	
 	//--------------------------------------------------------------------------------
@@ -225,79 +220,6 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 		}
 		return new MovePOToSO(true);
 	}
-	
-	// called on BO...
-	public Object onReadPOToBO(ReadPOToBO read) throws SuspectedException, TimeoutException {
-		Object key=read.getKey();
-		Address po=(Address)read.getPO();
-		_log.info("po="+po);
-		// what if we are NOT the BO anymore ?
-		// get write lock on location
-		Sync sync=null;
-		try {
-			_log.info("onReadPOToBO- [BO] trying for lock("+key+")...");
-			sync=_config.getBOSyncs().acquire(key);
-			_log.info("onReadPOToBO- [BO] ...lock("+key+") acquired - "+sync);
-			Bucket bucket=_buckets[_config.getBucketMapper().map(key)];
-			JGroupsLocation location=(JGroupsLocation)bucket.getLocation(key);
-			if (location==null) {
-				return new ReadBOToPO();
-			}
-			// exchangeSendLoop GetBOToSO to SO
-			Address bo=_address;
-			Address so=location.getAddress();
-			
-			MoveSOToBO response=(MoveSOToBO)syncRpc(so, "onMoveBOToSO", new MoveBOToSO(key, po, bo, null));
-			// success - update location
-			boolean success=response.getSuccess();
-			if (success)
-				location.setAddress(po);
-			
-			return success?Boolean.TRUE:Boolean.FALSE; 
-		} finally {
-			_log.info("onReadPOToBO- [BO] releasing lock("+key+") - "+sync);
-			sync.release();
-		}	
-	}
-	
-	// called on SO...
-	public Object onMoveBOToSO(MoveBOToSO move) throws SuspectedException, TimeoutException {
-		Object key=move.getKey();
-		Address po=(Address)move.getPO();
-		Address bo=(Address)move.getBO();
-		_log.info("[SO] - onMoveBOToSO@"+_address);
-		_log.info("po="+po);
-		Sync sync=null;
-		try {
-			_log.info("onMoveBOToSO - [SO] trying for lock("+key+")...");
-			sync=_config.getSOSyncs().acquire(key);
-			_log.info("onMoveBOToSO - [SO] ...lock("+key+") acquired< - "+sync);
-			// send GetSOToPO to PO
-			Object value;
-			Map map=_config.getMap();
-			synchronized (map) {
-				value=map.get(key);
-			}
-			_log.info("[SO] sending "+key+"="+value+" -> PO...");
-			MovePOToSO response=(MovePOToSO)syncRpc(po, "onMoveSOToPO", new MoveSOToPO(key, value));
-			_log.info("[SO] ...response received <- PO");
-			boolean success=response.getSuccess();
-			if (success) {
-				synchronized (map) {
-					map.remove(key);
-					return new MoveSOToBO();
-				}
-			}
-			return new MoveSOToBO(success);
-		} finally {
-			_log.info("onMoveBOToSO - [SO] releasing lock("+key+") - "+sync);
-			sync.release();
-		}
-	}
-	
-	//--------------------------------------------------------------------------------
-	// Put
-	//--------------------------------------------------------------------------------
 	
 	// called on PO...
 	/* (non-Javadoc)
@@ -388,7 +310,7 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 	}
 	
 	// called on BO...
-	public Object onWritePOToBO(WritePOToBO write) throws SuspectedException, TimeoutException {
+	public Object onWritePOToBO(WritePOToBO write) throws Exception {
 		Object key=write.getKey();
 		boolean valueIsNull=write.getValueIsNull();
 		boolean overwrite=write.getOverwrite();
@@ -412,7 +334,7 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 				bucketMap.put(key, oldLocation);
 				// send BOToPO - failure
 				return new WriteBOToPO(false);
-			} else if (oldLocation==null || (po.equals(oldLocation.getAddress()))) {
+			} else if (oldLocation==null || (po.equals(oldLocation.getValue()))) {
 				// if there was previously no SO, or there was, but it was PO ...
 				// then there is no need to go and remove the old value from the old SO
 				// send BOToPO - success
@@ -421,7 +343,7 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 				// previous value needs removing and possibly returning...
 				// send BOToSO...
 				Address bo=_address;
-				Address so=oldLocation.getAddress();
+				Object so=oldLocation.getValue();
 				_log.info(""+po+"=="+so+" ? "+(po.equals(so)));
 				MoveSOToBO response=(MoveSOToBO)syncRpc(so, "onMoveBOToSO", new MoveBOToSO(key, po, bo, null));
 				return response.getSuccess()?Boolean.TRUE:Boolean.FALSE;
@@ -441,4 +363,8 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 		return put(key, null, true, returnOldValue); // a remove is a put(key, null)...
 	}
 	
+	public Object getLocalLocation() {
+		return _address;
+	}
+
 }

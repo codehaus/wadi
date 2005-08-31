@@ -7,5 +7,8 @@ public interface Location {
 	ReadWriteLock getLock();
 
 	void invalidate();
+	
+	Object getValue();
+	void setValue(Object value);
 
 }

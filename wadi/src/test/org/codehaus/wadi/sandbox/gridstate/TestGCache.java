@@ -97,8 +97,8 @@ public class TestGCache extends TestCase {
     }
     
     public void testGCache() throws Exception {
-    	testGCache(new JGroupsIndirectProtocolFactory(), 10);
-    	testGCache(new ActiveClusterIndirectProtocolFactory(), 10);
+    	testGCache(new JGroupsIndirectProtocolFactory(), 1);
+    	testGCache(new ActiveClusterIndirectProtocolFactory(), 1);
     }
     
     public void testGCache(ProtocolFactory factory, int numIterations) throws Exception {

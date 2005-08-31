@@ -11,11 +11,11 @@ public class JGroupsLocation extends AbstractLocation {
 		_address=address;
 	}
 	
-	public Address getAddress() {
+	public Object getValue() {
 		return _address;
 	}
 	
-	public void setAddress(Address address) {
-		_address=address;
+	public void setValue(Object address) {
+		_address=(Address)address;
 	}
 }
