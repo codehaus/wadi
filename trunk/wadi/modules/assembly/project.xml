@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+    Copyright 2004 The Apache Software Foundation
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<!-- $Rev: 264882 $ $Date$ -->
+
+<project>
+    <pomVersion>3</pomVersion>
+    <extend>${basedir}/../../project.xml</extend>
+
+    <!-- ===================== -->
+    <!-- Module Identification -->
+    <!-- ===================== -->
+
+    <name>WADI :: Assembly</name>
+    <id>wadi</id>
+    <shortDescription>WADI Assembly</shortDescription>
+    <description>WADI Assembly creates a WADI distribution</description>
+    <url>http://wadi.codehaus.org</url>
+    <siteDirectory></siteDirectory>
+    <distributionDirectory></distributionDirectory>
+
+    <!-- ============ -->
+    <!-- Dependencies -->
+    <!-- ============ -->
+
+    <dependencies>
+
+        <dependency>
+            <groupId>wadi</groupId>
+            <artifactId>wadi-core</artifactId>
+            <version>${pom.currentVersion}</version>
+            <properties>
+                <wadi.module>true</wadi.module>
+            </properties>
+        </dependency>
+
+        <dependency>
+            <groupId>wadi</groupId>
+            <artifactId>wadi-jetty5</artifactId>
+            <version>${pom.currentVersion}</version>
+            <properties>
+                <wadi.module>true</wadi.module>
+            </properties>
+        </dependency>
+
+        <dependency>
+            <groupId>wadi</groupId>
+            <artifactId>wadi-jetty6</artifactId>
+            <version>${pom.currentVersion}</version>
+            <properties>
+                <wadi.module>true</wadi.module>
+            </properties>
+        </dependency>
+
+        <dependency>
+            <groupId>wadi</groupId>
+            <artifactId>wadi-tomcat50</artifactId>
+            <version>${pom.currentVersion}</version>
+            <properties>
+                <wadi.module>true</wadi.module>
+            </properties>
+        </dependency>
+
+        <dependency>
+            <groupId>wadi</groupId>
+            <artifactId>wadi-tomcat55</artifactId>
+            <version>${pom.currentVersion}</version>
+            <properties>
+                <wadi.module>true</wadi.module>
+            </properties>
+        </dependency>
+
+    </dependencies>
+
+</project>

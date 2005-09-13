@@ -1,22 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+    <a href="http://wadi.codehaus.org">WADI: Scalable, Highly Available Web Sessions</a>
 
+    Copyright 2004-2005 Core Developers Network Ltd
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<!DOCTYPE project>
 <project>
+
   <pomVersion>3</pomVersion>
+
   <name>WADI</name>
   <id>wadi</id>
   <currentVersion>2.0-SNAPSHOT</currentVersion>
 
   <organization>
-    <name>Core Developers Network</name>
+    <name>Core Developers Network Ltd.</name>
     <url>http://www.coredevelopers.net/</url>
-    <!--
-    <logo>http:/www.foo.org/images/logo.gif</logo>
-    -->
+    <logo>http://www.coredevelopers.co.uk/images/core_developers_micro.gif</logo>
   </organization>
   <logo></logo>
-
   <inceptionYear>2004</inceptionYear>
+
   <package>org.codehaus.wadi</package>
+  <packageGroups>
+    <packageGroup>
+      <title>WADI Core</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi</packages>
+    </packageGroup>
+    <packageGroup>
+      <title>WADI Jetty5</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.jetty5</packages>
+    </packageGroup>
+    <packageGroup>
+      <title>WADI Jetty6</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.jetty6</packages>
+    </packageGroup>
+    <packageGroup>
+      <title>WADI Tomcat50</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.tomcat50</packages>
+    </packageGroup>
+    <packageGroup>
+      <title>WADI Tomcat55</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.tomcat55</packages>
+    </packageGroup>
+  </packageGroups>
+
   <shortDescription>Clustered J2EE Web Tier State Management</shortDescription>
 
   <gumpRepositoryId>wadi</gumpRepositoryId>
@@ -134,90 +174,34 @@
   <branches>
   </branches>
 
-  <build>
-
-    <nagEmailAddress>jules@coredevelopers.net</nagEmailAddress>
-
-    <sourceDirectory>src/java</sourceDirectory>
-    <aspectSourceDirectory>src/aspectj</aspectSourceDirectory>
-
-    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
-
-    <unitTest>
-      <excludes>
-        <exclude>**/old/**</exclude>
-        <exclude>**/test/TestActiveCluster.java</exclude>
-        <exclude>**/test/TestActiveCluster.java</exclude>
-
-        <exclude>**/test/io/TestMotion.java</exclude><!-- seems to hang -->
-        <exclude>**/test/io/TestServers.java</exclude><!-- seems to hang -->
-        <exclude>**/test/TestRelocation.java</exclude><!-- seems to hang -->
-        <exclude>**/test/TestHttpSession.java</exclude><!-- seems to hang -->
-        <exclude>**/test/TestCluster.java</exclude><!-- seems to hang -->
-      </excludes>
-      <includes>
-        <include>**/test/Test*.java</include>
-        <include>**/test/io/Test*.java</include>
-	<!-- work -->
-<!--
-        <include>**/TestJCache.java</include>
-        <include>**/TestConcurrency.java</include>
-        <include>**/TestHttpSession.java</include>
-        <include>**/TestManagers.java</include>
-        <include>**/TestTopologies.java</include>
-	<include>**/TestCluster.java</include>
--->
-	<!-- should work -->
-	<!--
-	<include>**/TestAsyncToSyncAdaptor.java</include>
-	-->
-	<!-- fossils ? -->
-	<!--
-	<include>**/TestLocationClient.java</include>
-	<include>**/TestLocationServer.java</include>
-	<include>**/TestMigrationService.java</include>
-	<include>**/TestMulticastServer.java</include>
-	<include>**/TestSerialisation.java</include>
-	<include>**/TestUnicastClient.java</include>
-	-->
-      </includes>
-    </unitTest>
-
-<!--
-    <resources>
-      <resource>
-        <targetPath>/jsp</targetPath>
-        <directory>jsp</directory>
-      </resource>
-    </resources>
--->
-
-    <jars>
-    </jars>
-
-  </build>
-
   <!-- ========== -->
   <!-- Developers -->
   <!-- ========== -->
 
   <developers>
-
     <developer>
       <name>Jules Gosnell</name>
       <id>jules</id>
       <email>jules@coredevelopers.net</email>
       <organization>Core Developers Network</organization>
     </developer>
-
-    <developer>
-      <name>James Strachan</name>
-      <id>jstrachan</id>
-      <email>james@coredevelopers.net</email>
-      <organization>Core Developers Network</organization>
-    </developer>
-
   </developers>
+
+  <contributors>
+    <contributor>
+      <name>James Strachan</name>
+      <email></email>
+    </contributor>
+    <contributor>
+      <name>Greg Wilkins</name>
+      <email></email>
+    </contributor>
+    <contributor>
+      <name>Gianni Scenini</name>
+      <email></email>
+    </contributor>
+  </contributors>
+
 
   <!-- ============ -->
   <!-- Dependencies -->
@@ -301,7 +285,7 @@
     <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jetty</artifactId>
-      <version>5.1.3</version>
+      <version>5.1.5rc1</version>
       <url>http://jetty.mortbay.org/jetty</url>
       <javadoc>http://jetty.mortbay.org/javadoc</javadoc>
     </dependency>
@@ -320,7 +304,7 @@
     <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jmx</artifactId>
-      <version>5.1.3</version>
+      <version>5.1.5rc1</version>
       <url>http://jetty.mortbay.org/jetty</url>
       <javadoc>http://jetty.mortbay.org/javadoc</javadoc>
     </dependency>
@@ -438,9 +422,6 @@
     <dependency>
       <groupId>activemq</groupId>
       <artifactId>activemq</artifactId>
-<!--
-      <version>3.1-M1</version>
--->
       <version>3.1-SNAPSHOT</version>
       <url>http://activemq.codehaus.org</url>
       <javadoc>http://activemq.codehaus.org/maven/apidocs</javadoc>
@@ -585,7 +566,90 @@
       <version>2.4.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>jgroups</groupId>
+      <artifactId>jgroups-all</artifactId>
+      <version>2.2.8</version>
+    </dependency>
+
   </dependencies>
+
+  <build>
+
+    <nagEmailAddress>jules@coredevelopers.net</nagEmailAddress>
+
+    <sourceDirectory>src/java</sourceDirectory>
+    <aspectSourceDirectory>src/aspectj</aspectSourceDirectory>
+    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
+    <integrationUnitTestSourceDirectory/>
+
+    <unitTest>
+      <resources>
+        <resource>
+          <directory>src/test</directory>
+          <includes>
+            <include>**/*.properties</include>
+            <include>**/*.xml</include>
+          </includes>
+        </resource>
+      </resources>
+      <excludes>
+        <exclude>**/old/**</exclude>
+        <exclude>**/test/TestActiveCluster.java</exclude>
+        <exclude>**/test/TestActiveCluster.java</exclude>
+
+        <exclude>**/test/io/TestMotion.java</exclude><!-- seems to hang -->
+        <exclude>**/test/io/TestServers.java</exclude><!-- seems to hang -->
+        <exclude>**/test/TestRelocation.java</exclude><!-- seems to hang -->
+        <exclude>**/test/TestHttpSession.java</exclude><!-- seems to hang -->
+        <exclude>**/test/TestCluster.java</exclude><!-- seems to hang -->
+      </excludes>
+      <includes>
+        <include>**/test/Test*.java</include>
+        <include>**/test/io/Test*.java</include>
+	<!-- work -->
+<!--
+        <include>**/TestJCache.java</include>
+        <include>**/TestConcurrency.java</include>
+        <include>**/TestHttpSession.java</include>
+        <include>**/TestManagers.java</include>
+        <include>**/TestTopologies.java</include>
+	<include>**/TestCluster.java</include>
+-->
+	<!-- should work -->
+	<!--
+	<include>**/TestAsyncToSyncAdaptor.java</include>
+	-->
+	<!-- fossils ? -->
+	<!--
+	<include>**/TestLocationClient.java</include>
+	<include>**/TestLocationServer.java</include>
+	<include>**/TestMigrationService.java</include>
+	<include>**/TestMulticastServer.java</include>
+	<include>**/TestSerialisation.java</include>
+	<include>**/TestUnicastClient.java</include>
+	-->
+      </includes>
+    </unitTest>
+
+    <resources>
+      <resource>
+        <directory>src/conf</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>${basedir}/target/xmlbeans</directory>
+        <includes>
+          <include>schema/**/*.xsb</include>
+        </includes>
+      </resource>
+    </resources>
+
+    <jars>
+    </jars>
+  </build>
 
   <reports>
 <!--

@@ -64,7 +64,7 @@
 
 	<Context path="/wadi" docBase="${wadi.home}">
 	  <!-- <Valve className="org.codehaus.wadi.impl.tomcat.Valve"/> -->
-	  <Manager className="org.codehaus.wadi.impl.tomcat.TomcatManagerLoader"/>
+	  <Manager className="org.codehaus.wadi.tomcat55.TomcatManager"/>
 	</Context>
 
       </Host>
