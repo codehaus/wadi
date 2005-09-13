@@ -1,43 +1,19 @@
-#!/bin/sh
+#!/bin/sh -x
 
-if [ -z "$ANT_HOME" ]
-then
-    ANT_HOME=/usr/local/java/apache-ant-1.6.2
-fi
-export ANT_HOME
+## until I can work out maven, this will have to do :-(
+version=2.0-SNAPSHOT
 
-if [ -z "$JAVA_HOME" ]
-then
-    JAVA_HOME=/usr/local/java/sun-j2sdk1.4.2_05
-fi
-export JAVA_HOME
+maven clean-repo
+mkdir -p ~/.maven/repository/wadi/jars
+rm -f WEB-INF/lib/wadi-*-$version.jar
 
-if [ -z "$ASPECTJ_HOME" ]
-then
-    ASPECTJ_HOME=/usr/local/java/aspectj1.2.1
-fi
-export ASPECTJ_HOME
+for i in core jetty5 jetty6 tomcat50 tomcat55
+do
+    pushd modules/$i
+    maven -Dmaven.test.skip=true clean jar
+    cp target/wadi-$i-$version.jar ~/.maven/repository/wadi/jars/
+    cp target/wadi-$i-$version.jar ../../WEB-INF/lib
+    popd
+done
 
-if [ -z "$JETTY_HOME" ]
-then
-    JETTY_HOME=/usr/local/java/Jetty-5.1.1
-    JETTY_HOME=$HOME/cvs/jetty
-fi
-export JETTY_HOME
-
-if [ -z "$TOMCAT_HOME" ]
-then
-    TOMCAT_HOME=/usr/local/java/jakarta-tomcat-5.0.28
-fi
-export TOMCAT_HOME
-
-PATH=$ASPECTJ_HOME/bin:$JAVA_HOME/bin:$ANT_HOME/bin:$PATH
-export PATH
-
-echo JAVA_HOME=$JAVA_HOME
-echo ANT_HOME=$ANT_HOME
-echo ASPECTJ_HOME=$ASPECTJ_HOME
-echo TOMCAT_HOME=$TOMCAT_HOME
-echo JETTY_HOME=$JETTY_HOME
-
-sh $ANT_HOME/bin/ant -emacs $@
+rm -fr WEB-INF/classes

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE project>
+<project>
+  <pomVersion>3</pomVersion>
+  <extend>${basedir}/../../project.xml</extend>
+
+  <name>WADI :: Core</name>
+  <id>wadi-core</id>
+  <description>Core WADI functionality</description>
+  <shortDescription>WADI core</shortDescription>
+
+  <package>org.codehaus.wadi</package>
+  <packageGroups>
+    <packageGroup>
+      <title>WADI Core</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi</packages>
+    </packageGroup>
+  </packageGroups>
+
+  <!-- ============ -->
+  <!-- Dependencies -->
+  <!-- ============ -->
+  <dependencies>
+  </dependencies>
+
+  <build>
+    <nagEmailAddress>jules@coredevelopers.net</nagEmailAddress>
+    <sourceDirectory>src/java</sourceDirectory>
+    <aspectSourceDirectory>src/aspectj</aspectSourceDirectory>
+    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
+
+    <integrationUnitTestSourceDirectory/>
+
+    <unitTest>
+      <resources>
+        <resource>
+          <directory>src/test</directory>
+          <includes>
+            <include>**/*.properties</include>
+            <include>**/*.xml</include>
+          </includes>
+        </resource>
+      </resources>
+      <includes>
+        <include>**/*Test.*</include>
+      </includes>
+      <excludes>
+      </excludes>
+    </unitTest>
+
+    <defaultGoal>jar</defaultGoal>
+
+    <resources>
+      <resource>
+        <directory>src/conf</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+      </resource>
+    </resources>
+  </build>
+
+</project>
