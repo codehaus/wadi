@@ -1,7 +1,8 @@
 #!/bin/sh -x
 
 export JETTY5_HOME=/usr/local/java/jetty-5.1.3
-export JETTY6_HOME=/usr/local/java/jetty-6.0.alpha1
+export JETTY6_HOME=/usr/local/java/jetty-6.0.0alpha2
+export JETTY6_HOME=$HOME/cvs/jetty6
 export TOMCAT50_HOME=/usr/local/java/jakarta-tomcat-5.0.28-mx4j301
 export TOMCAT55_HOME=/usr/local/java/jakarta-tomcat-5.5.9
 
@@ -51,8 +52,7 @@ $properties \
 -Djava.io.tmpdir=$INSTANCE \
 "
 
-#classpath=`find $WADI_HOME/WEB-INF/lib -name "*.jar" | tr '\n' ':'`$JAVA_HOME/lib/tools.jar:$WADI_HOME/WEB-INF/classes
-classpath=`find $WADI_HOME/WEB-INF/lib -name "*.jar" | tr '\n' ':'`$JAVA_HOME/lib/tools.jar
+classpath=$WADI_HOME/target/classes:`find $WADI_HOME/lib -name "*.jar" | tr '\n' ':'`$JAVA_HOME/lib/tools.jar
 
 case "$container" in
 
@@ -65,7 +65,6 @@ case "$container" in
 	-Djetty.home=$JETTY_BASE\
 	"
 
-	##classpath=$JAVA_HOME/lib/tools.jar
 	classpath=`find ./start.jar lib ext -name "*.jar" | tr '\n' ':'`$classpath
 	$XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.mortbay.jetty.Server $WADI_HOME/conf/jetty5.xml
 	;;
@@ -80,8 +79,7 @@ case "$container" in
 	-Djetty.home=$JETTY_BASE\
 	"
 
-	##classpath=$JAVA_HOME/lib/tools.jar
-	classpath=`find ./start.jar lib ext  $WADI_HOME/lib -name "*.jar" | tr '\n' ':'`$classpath
+	classpath=`find ./start.jar lib ext -name "*.jar" | tr '\n' ':'`$classpath
 	$XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.mortbay.xml.XmlConfiguration $WADI_HOME/conf/jetty6.xml
 	;;
 
