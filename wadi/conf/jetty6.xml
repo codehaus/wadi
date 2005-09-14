@@ -26,7 +26,10 @@
       <Item>
 	<New id="wadi"  class="org.mortbay.jetty.webapp.WebAppHandler">
 	  <Set name="contextPath">/wadi</Set>
+<!--
 	  <Set name="war"><SystemProperty name="wadi.home" default="../../wadi"/></Set>
+-->
+	  <Set name="war"><SystemProperty name="wadi.home" default="../../wadi"/>/modules/webapp/target/webapp</Set>
 	  <Get name="SessionHandler">
 	    <Set name="SessionManager"><New class="org.codehaus.wadi.jetty6.JettyManager"/></Set>
 	  </Get>

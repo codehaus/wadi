@@ -451,6 +451,7 @@
       <javadoc>http://geronimo.apache.org/specs/servlet/apidocs</javadoc>
     </dependency>
 
+<!--
     <dependency>
       <groupId>tomcat</groupId>
       <artifactId>jasper-compiler</artifactId>
@@ -466,6 +467,7 @@
       <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc</url>
       <javadoc>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs/api</javadoc>
     </dependency>
+-->
 
     <dependency>
       <groupId>jdk</groupId>

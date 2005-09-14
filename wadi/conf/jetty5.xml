@@ -41,7 +41,7 @@
 
   <Call name="addWebApplication">
     <Arg>/wadi</Arg>
-    <Arg><SystemProperty name="wadi.home"/></Arg>
+    <Arg><SystemProperty name="wadi.home"/>/modules/webapp/target/webapp</Arg>
   </Call>
 
 <!--
