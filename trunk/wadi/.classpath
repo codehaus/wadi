@@ -27,5 +27,5 @@
 	<classpathentry kind="lib" path="lib/spring-1.2.2.jar"/>
 	<classpathentry kind="lib" path="lib.compile/geronimo-spec-servlet-2.4-rc2.jar"/>
 	<classpathentry kind="lib" path="lib.compile/junit-3.8.1.jar"/>
-	<classpathentry kind="output" path="WEB-INF/classes"/>
+	<classpathentry kind="output" path="modules/core/target/classes"/>
 </classpath>

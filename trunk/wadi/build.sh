@@ -10,14 +10,16 @@ rm -f lib/wadi-*-$version.jar
 for i in core jetty5 jetty6 tomcat50 tomcat55
 do
     pushd modules/$i
-    maven -Dmaven.test.skip=true clean jar
+    maven clean
+    maven
     cp target/wadi-$i-$version.jar ~/.maven/repository/wadi/jars/
     cp target/wadi-$i-$version.jar ../../lib
     popd
 done
 
 pushd modules/webapp
-maven -Dmaven.test.skip=true clean war:war
+maven clean
+maven
 popd
 
 rm -fr WEB-INF/classes

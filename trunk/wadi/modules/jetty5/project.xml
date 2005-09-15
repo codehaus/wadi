@@ -1,21 +1,26 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE project>
 
 <project>
   <pomVersion>3</pomVersion>
   <extend>${basedir}/../../project.xml</extend>
 
-    <!-- ===================== -->
-    <!-- Module Identification -->
-    <!-- ===================== -->
+  <!-- ===================== -->
+  <!-- Module Identification -->
+  <!-- ===================== -->
 
   <name>WADI :: Jetty5</name>
   <id>wadi-jetty5</id>
-    <shortDescription>WADI/Jetty5 integration</shortDescription>
-    <description>WADI/Jetty5 integration</description>
-    <siteDirectory></siteDirectory>
-    <distributionDirectory></distributionDirectory>
+  <description>WADI/Jetty5 integration</description>
+  <shortDescription>WADI/Jetty5 integration</shortDescription>
 
-    <package>org.codehaus.wadi.jetty5</package>
+  <package>org.codehaus.wadi.jetty5</package>
+  <packageGroups>
+    <packageGroup>
+      <title>WADI/Jetty5 integrations</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.jetty5</packages>
+    </packageGroup>
+  </packageGroups>
 
   <!-- ============ -->
   <!-- Dependencies -->
@@ -24,14 +29,6 @@
   <dependencies>
 
     <!-- compile time -->
-
-    <dependency>
-      <groupId>mx4j</groupId>
-      <artifactId>mx4j-jmx</artifactId>
-      <version>2.0.1</version>
-      <url>http://mx4j.sourceforge.net</url>
-      <javadoc>http://mx4j.sourceforge.net/docs/api</javadoc>
-    </dependency>
 
     <dependency>
       <groupId>jetty</groupId>
@@ -59,7 +56,5 @@
     <!-- run time -->
 
   </dependencies>
-
-  <defaultGoal>jar</defaultGoal>
 
 </project>

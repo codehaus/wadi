@@ -92,4 +92,10 @@
 
   </dependencies>
 
+  <build>
+
+    <defaultGoal>war:war</defaultGoal>
+
+  </build>
+
 </project>
