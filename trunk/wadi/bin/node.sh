@@ -52,7 +52,7 @@ $properties \
 -Djava.io.tmpdir=$INSTANCE \
 "
 
-classpath=$WADI_HOME/target/classes:`find $WADI_HOME/lib -name "*.jar" | tr '\n' ':'`$JAVA_HOME/lib/tools.jar
+classpath=$WADI_HOME/target/classes:`find $WADI_HOME/modules/assembly/target/lib -name "*.jar" | tr '\n' ':'`$JAVA_HOME/lib/tools.jar
 
 case "$container" in
 
