@@ -1,0 +1,68 @@
+<project
+  xmlns:j="jelly:core"
+  xmlns:ant="jelly:ant"
+  xmlns:maven="jelly:maven"
+  xmlns:aspectj="jelly:aspectj"
+  >
+
+  <!-- aspectj, the standard plugin just does not cut it for me... -->
+
+<!--
+  <postGoal name="clean">
+    <delete dir="${maven.build.dest}.javac"/>
+    <delete dir="${maven.test.dest}"/>
+    <delete dir="${maven.test.dest}.javac"/>
+    <delete dir="${maven.clover.build.classes}.javac"/>
+  </postGoal>
+-->
+
+  <preGoal name="java:compile">
+    <j:set var="iajc.dest" value="${maven.build.dest}"/>
+    <maven:set plugin="maven-java-plugin" property="maven.build.dest" value="${iajc.dest}.javac"/>
+    <ant:echo>### switching output dir ${iajc.dest} to ${iajc.dest}.javac</ant:echo>
+    <ant:mkdir dir="${iajc.dest}.javac"/>
+  </preGoal>
+
+  <postGoal name="java:compile">
+    <maven:set plugin="maven-java-plugin" property="maven.build.dest" value="${iajc.dest}"/>
+    <ant:echo>### switching output dir ${iajc.dest}.javac back to ${iajc.dest}</ant:echo>
+    <attainGoal name="aspectj:compile-and-weave"/>
+  </postGoal>
+
+  <preGoal name="test:compile">
+    <j:set var="iajc.dest" value="${maven.test.dest}"/>
+    <maven:set plugin="maven-test-plugin" property="maven.test.dest" value="${iajc.dest}.javac"/>
+    <ant:echo>### switching output dir ${iajc.dest} to ${iajc.dest}.javac</ant:echo>
+    <ant:mkdir dir="${iajc.dest}.javac"/>
+  </preGoal>
+
+  <postGoal name="test:compile">
+    <maven:set plugin="maven-test-plugin" property="maven.test.dest" value="${iajc.dest}"/>
+    <ant:echo>### switching output dir ${iajc.dest}.javac back to ${iajc.dest}</ant:echo>
+    <attainGoal name="aspectj:compile-and-weave"/>
+  </postGoal>
+
+  <goal name="aspectj:compile-and-weave" prereqs="aspectj:init">
+    <ant:echo>### compiling and weaving to ${iajc.dest}</ant:echo>
+<!--    <delete dir="${iajc.dest}"/> -->
+    <ant:iajc
+      destdir="${iajc.dest}"
+      debug="true"
+      verbose="true"
+      time="true"
+      source="1.4"
+      >
+      <ant:sourceroots>
+      	<ant:pathelement path="${pom.build.aspectSourceDirectory}"/>
+      </ant:sourceroots>
+      <ant:classpath>
+	<ant:path refid="maven.dependency.classpath"/>
+	<ant:pathelement path="${maven.build.dest}.javac"/>
+      </ant:classpath>
+      <ant:inpath>
+	<ant:pathelement path="${iajc.dest}.javac"/>
+      </ant:inpath>
+    </ant:iajc>
+  </goal>
+
+</project>
