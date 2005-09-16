@@ -80,3 +80,6 @@
       </frameset>
     </HTML>
 
+    <%
+      response.setHeader("Connection", "close");
+      %>
