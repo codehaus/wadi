@@ -79,3 +79,7 @@
       </BODY>
     </HTML>
 
+    <%
+      response.setHeader("Connection", "close");
+      %>
+
