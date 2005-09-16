@@ -24,8 +24,6 @@
   <Get name="ClassLoader">
     <Set name="ServerClasses">
       <Array type="java.lang.String">
-	<Item>
-	</Item>
       </Array>
     </Set>
   </Get>
