@@ -16,7 +16,6 @@ do
     maven $flags clean
     maven $flags
     cp target/wadi-$i-$version.jar ~/.maven/repository/wadi/jars/
-    cp target/wadi-$i-$version.jar ../../lib
     popd
 done
 
