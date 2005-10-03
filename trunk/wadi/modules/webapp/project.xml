@@ -11,7 +11,7 @@
   <!-- ===================== -->
 
   <name>WADI :: WebApp</name>
-  <id>webapp</id>
+  <id>wadi-webapp</id>
 
   <shortDescription>WADI demo webapp</shortDescription>
   <description>WADI demo webapp</description>

@@ -86,8 +86,6 @@
 
     <ant:delete dir="${maven.dist.bin.assembly.dir}"/>
     <ant:mkdir dir="${maven.dist.bin.assembly.dir}"/>
-    <ant:mkdir dir="${maven.build.dir}/bin"/>
-    <ant:mkdir dir="${maven.build.dir}/conf"/>
 
     <ant:echo>
       +-------------------------------------------------------+
@@ -95,23 +93,18 @@
       +-------------------------------------------------------+
     </ant:echo>
 
-<!--
     <ant:copy todir="${maven.dist.bin.assembly.dir}">
-        <ant:fileset dir="src/release"/>
+        <ant:fileset dir="src"/>
     </ant:copy>
--->
 
-<!-- copy in conf content -->
+    <ant:echo file="${maven.dist.bin.assembly.dir}/VERSION.txt">${pom.currentVersion}</ant:echo>
 
-<!-- copy in bin content -->
-
+    <ant:mkdir dir="${maven.build.dir}/bin"/>
     <ant:chmod perm="ugo+rx">
-      <ant:fileset dir="${maven.dist.bin.assembly.dir}/bin">
-        <ant:include name="*"/>
+      <ant:fileset dir="${maven.build.dir}/bin">
+        <ant:include name="*.sh"/>
       </ant:fileset>
     </ant:chmod>
-
-    <j:set var="libDir" value="${maven.dist.bin.assembly.dir}/lib"/>
 
     <j:forEach var="artifact" items="${pom.artifacts}">
         <j:set var="dependency" value="${artifact.dependency}"/>

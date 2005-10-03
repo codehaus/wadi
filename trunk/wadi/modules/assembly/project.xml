@@ -86,7 +86,7 @@
 
     <dependency>
       <groupId>wadi</groupId>
-      <artifactId>webapp</artifactId>
+      <artifactId>wadi-webapp</artifactId>
       <type>war</type>
       <version>${pom.currentVersion}</version>
       <properties>
@@ -165,15 +165,17 @@
   </dependencies>
 
   <build>
-    <sourceDirectory></sourceDirectory>
+    <sourceDirectory>${basedir}/src</sourceDirectory>
+<!--
     <resources>
       <resource>
-        <directory>src/conf</directory>
+        <directory>conf</directory>
         <includes>
-          <include>**/*</include>
+          <include>**</include>
         </includes>
       </resource>
     </resources>
+-->
   </build>
 
 </project>

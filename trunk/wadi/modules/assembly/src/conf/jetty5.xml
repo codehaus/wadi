@@ -29,19 +29,9 @@
     </Arg>
   </Call>
 
-<!--
-  <Set name="rootWebApp">root</Set>
-  <Call name="addWebApplications">
-    <Arg></Arg>
-    <Arg><SystemProperty name="jetty.home" default="."/>/webapps/</Arg>
-    <Arg><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Arg>
-    <Arg type="boolean">true</Arg>
-  </Call>
--->
-
   <Call name="addWebApplication">
     <Arg>/wadi</Arg>
-    <Arg><SystemProperty name="wadi.home"/>/modules/webapp/target/webapp</Arg>
+    <Arg><SystemProperty name="wadi.home"/>/webapps/wadi-webapp-<SystemProperty name="wadi.version"/>.war</Arg>
   </Call>
 
 <!--
@@ -58,6 +48,16 @@
   <Call name="addWebApplication">
     <Arg>/servlet-compat</Arg>
     <Arg><SystemProperty name="wadi.home"/>/watchdog/servlet-compat</Arg>
+  </Call>
+-->
+
+<!--
+  <Set name="rootWebApp">root</Set>
+  <Call name="addWebApplications">
+    <Arg></Arg>
+    <Arg><SystemProperty name="wadi.home" default="."/>/webapps/</Arg>
+    <Arg><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Arg>
+    <Arg type="boolean">true</Arg>
   </Call>
 -->
 
