@@ -2,3 +2,7 @@
 Pound (http://www.apsis.ch/pound/) is another load balancer. It seems
 to need to run as root, so a script is not currently provided, see
 ../conf/pound.cfg
+
+e.g.
+
+killall -9 pound; /usr/local/sbin/pound -f conf/pound.cfg

@@ -79,7 +79,7 @@
 	xmlNamespaceAware="false"
 	>
 
-	<Context path="/wadi" docBase="${wadi.home}/modules/webapp/target/webapp">
+	<Context path="/wadi" docBase="${wadi.home}/webapps/wadi-webapp-${wadi.version}.war">
 	  <!-- <Valve className="org.codehaus.wadi.impl.tomcat.Valve"/> -->
 	  <Manager className="org.codehaus.wadi.tomcat50.TomcatManager"/>
 	</Context>

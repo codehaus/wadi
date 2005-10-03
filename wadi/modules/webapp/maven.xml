@@ -38,7 +38,8 @@
       <arg value="-d"/><!-- outputDir -->
       <arg value="${jspOutDir}"/>
       <arg value="-p"/> <!-- package -->
-      <arg value="${pom.package}.jsp.${pom.artifactId}"/>
+<!--      <arg value="${pom.package}.jsp.${pom.artifactId}"/> -->
+      <arg value="${pom.package}.jsp.wadi"/><!-- artefactId has a '-' in it -->
       <arg value="-webinc"/><!-- webXmlFragment -->
       <arg value="${maven.build.dir}/web-fragment.xml"/>
       <arg value="-uriroot"/>

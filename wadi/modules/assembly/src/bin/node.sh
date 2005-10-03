@@ -1,17 +1,11 @@
-#!/bin/sh -x
-
-export JETTY5_HOME=/usr/local/java/jetty-5.1.3
-export JETTY6_HOME=/usr/local/java/jetty-6.0.0alpha2
-export JETTY6_HOME=$HOME/cvs/jetty6
-export TOMCAT50_HOME=/usr/local/java/jakarta-tomcat-5.0.28-mx4j301
-export TOMCAT55_HOME=/usr/local/java/jakarta-tomcat-5.5.9
+#!/bin/sh +x
 
 if [ "$1" = xterm ]
 then
-	XTERM="xterm -geometry 165x12 -bg \$instance -e"
-	shift
+    XTERM="xterm -geometry 165x12 -bg \$instance -e"
+    shift
 else
-	XTERM=
+    XTERM=
 fi
 
 container=$1
@@ -24,17 +18,18 @@ XTERM=`eval "echo $XTERM"`
 JAVA_OPTS="-Xmx512m -ea $JAVA_OPTS"
 
 WADI_HOME=`pwd`/..
+WADI_VERSION=`cat $WADI_HOME/VERSION.txt`
 JAVA=$JAVA_HOME/bin/java
+
 
 echo "JAVA_HOME=$JAVA_HOME"
 echo "WADI_HOME=$WADI_HOME"
+echo "WADI_VERSION=$WADI_VERSION"
 echo "JETTY5_HOME=$JETTY5_HOME"
 echo "JETTY6_HOME=$JETTY6_HOME"
 echo "TOMCAT50_HOME=$TOMCAT50_HOME"
 echo "TOMCAT55_HOME=$TOMCAT55_HOME"
 $JAVA -fullversion
-
-cp $WADI_HOME/conf/simplelog.properties $WADI_HOME/WEB-INF/classes/
 
 properties=`sed -e '/#.*/d' -e 's/${wadi.home}/$WADI_HOME/g' -e 's/\(.*\)/-D\1/g' $WADI_HOME/conf/node.$instance.properties | tr '\n' ' '`
 properties=`eval "echo $properties"`
@@ -48,15 +43,23 @@ properties="\
 -Dcycle.me=true \
 $properties \
 -Dwadi.home=$WADI_HOME \
+-Dwadi.version=$WADI_VERSION \
 -Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog \
 -Djava.io.tmpdir=$INSTANCE \
 "
 
-classpath=$WADI_HOME/target/classes:`find $WADI_HOME/modules/assembly/target/lib -name "*.jar" | tr '\n' ':'`$JAVA_HOME/lib/tools.jar
+classpath=$WADI_HOME/target/classes:`find $WADI_HOME/lib -name "*.jar" | tr '\n' ':'`$JAVA_HOME/lib/tools.jar
 
 case "$container" in
 
 	jetty5)
+
+	if [ -z "JETTY5_HOME" ]
+	then
+	    echo "Please set JETTY5_HOME"
+	    exit 1
+	fi
+
 	JETTY_BASE=$INSTANCE
 	cd $JETTY5_HOME
 
@@ -71,6 +74,12 @@ case "$container" in
 
 	jetty6)
 
+	if [ -z "JETTY6_HOME" ]
+	then
+	    echo "Please set JETTY6_HOME"
+	    exit 1
+	fi
+
 	JETTY_BASE=$INSTANCE
 	cd $JETTY6_HOME
 
@@ -84,6 +93,12 @@ case "$container" in
 	;;
 
 	tomcat50)
+	if [ -z "TOMCAT50_HOME" ]
+	then
+	    echo "Please set TOMCAT50_HOME"
+	    exit 1
+	fi
+
 	CATALINA_HOME=$TOMCAT50_HOME
 	CATALINA_BASE=$INSTANCE
 	cd $CATALINA_HOME/bin
@@ -107,6 +122,11 @@ case "$container" in
 	;;
 
 	tomcat55)
+	if [ -z "TOMCAT55_HOME" ]
+	then
+	    echo "Please set TOMCAT55_HOME"
+	    exit 1
+	fi
 	CATALINA_HOME=$TOMCAT55_HOME
 	CATALINA_BASE=$INSTANCE
 	cd $CATALINA_HOME/bin
