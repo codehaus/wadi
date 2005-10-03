@@ -24,7 +24,7 @@ pushd modules/webapp
 maven $flags clean
 maven $flags
 mkdir -p ~/.maven/repository/wadi/wars
-cp target/webapp-$version.war ~/.maven/repository/wadi/wars/
+cp target/wadi-webapp-$version.war ~/.maven/repository/wadi/wars/
 popd
 
 pushd modules/assembly
