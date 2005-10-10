@@ -42,7 +42,7 @@ import org.apache.catalina.util.LifecycleSupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ManagerConfig;
-import org.codehaus.wadi.impl.DistributableManager;
+import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.Filter;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.impl.StandardManager;
@@ -51,7 +51,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 {
 	protected static final Log _log = LogFactory.getLog(TomcatManager.class);
 
-	protected DistributableManager _wadi;
+	protected StandardManager _wadi;
 	protected Container _container;
 	protected boolean _distributable;
 	protected int _sessionCounter; // push back into WADI - TODO
@@ -109,7 +109,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 	public void start() throws LifecycleException {
 		try {
 			InputStream is=getServletContext().getResourceAsStream("/WEB-INF/wadi-web.xml");
-			_wadi=(DistributableManager)SpringManagerFactory.create(is, "SessionManager", new TomcatSessionFactory(), new TomcatSessionWrapperFactory(), new TomcatManagerFactory());
+			_wadi=(StandardManager)SpringManagerFactory.create(is, "SessionManager", new TomcatSessionFactory(), new TomcatSessionWrapperFactory());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

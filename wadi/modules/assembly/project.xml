@@ -165,6 +165,7 @@
   </dependencies>
 
   <build>
+    <defaultGoal>dist</defaultGoal>
     <sourceDirectory>${basedir}/src</sourceDirectory>
 <!--
     <resources>

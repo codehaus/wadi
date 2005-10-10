@@ -13,7 +13,7 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ManagerConfig;
-import org.codehaus.wadi.impl.DistributableManager;
+import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.ListenerSupport;
 import org.codehaus.wadi.impl.SpringManagerFactory;
@@ -27,7 +27,7 @@ public class JettyManager implements ManagerConfig, SessionManager {
 
   protected final ListenerSupport _listeners=new ListenerSupport();
 
-  protected DistributableManager _wadi;
+  protected StandardManager _wadi;
   protected ServletHandler _handler;
   protected boolean _secureCookies=false;
   protected boolean _httpOnly=true;
@@ -49,7 +49,7 @@ public class JettyManager implements ManagerConfig, SessionManager {
     _handler=handler;
     try {
       InputStream descriptor=_handler.getHttpContext().getResource("WEB-INF/wadi-web.xml").getInputStream();
-      _wadi=(DistributableManager)SpringManagerFactory.create(descriptor, "SessionManager", new DistributableSessionFactory(), new JettySessionWrapperFactory(), new JettyManagerFactory());
+      _wadi=(StandardManager)SpringManagerFactory.create(descriptor, "SessionManager", new DistributableSessionFactory(), new JettySessionWrapperFactory());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

@@ -15,7 +15,6 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ManagerConfig;
-import org.codehaus.wadi.impl.DistributableManager;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.ListenerSupport;
 import org.codehaus.wadi.impl.SpringManagerFactory;
@@ -31,7 +30,7 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 
   protected final ListenerSupport _listeners=new ListenerSupport();
 
-  protected DistributableManager _wadi;
+  protected StandardManager _wadi;
   protected ContextHandler.Context _context;
   protected boolean _usingCookies=true;
   protected int _maxInactiveInterval=60*30;
@@ -53,7 +52,7 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 
     try {
       InputStream descriptor=_context.getContextHandler().getBaseResource().addPath("WEB-INF/wadi-web.xml").getInputStream();
-      _wadi=(DistributableManager)SpringManagerFactory.create(descriptor, "SessionManager", new DistributableSessionFactory(), new JettySessionWrapperFactory(), new JettyManagerFactory());
+      _wadi=(StandardManager)SpringManagerFactory.create(descriptor, "SessionManager", new DistributableSessionFactory(), new JettySessionWrapperFactory());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

@@ -55,7 +55,7 @@ import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
-import org.codehaus.wadi.impl.DistributableManager;
+import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
@@ -118,22 +118,22 @@ extends TestCase
     protected SessionPool             _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _distributableValueFactory=new DistributableValueFactory();
     protected ValuePool               _distributableValuePool=new SimpleValuePool(_distributableValueFactory);
-    protected StandardManager         _distributableManager=new DistributableManager(_distributableSessionPool, _distributedAttributesFactory, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node0", _httpProxy, _httpAddress, 24);
+    protected StandardManager         _distributableManager=new ClusteredManager(_distributableSessionPool, _distributedAttributesFactory, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node0", _httpProxy, _httpAddress, 24);
     protected DummyManagerConfig      _distributableConfig=new DummyManagerConfig();
     // LazyValue
     protected SessionPool             _lazyValueSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _lazyValueFactory=new LazyValueFactory();
     protected ValuePool               _lazyValuePool=new SimpleValuePool(_lazyValueFactory);
-    protected StandardManager         _lazyValueManager=new DistributableManager(_lazyValueSessionPool, _distributedAttributesFactory, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node1", _httpProxy, _httpAddress, 24);
+    protected StandardManager         _lazyValueManager=new ClusteredManager(_lazyValueSessionPool, _distributedAttributesFactory, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node1", _httpProxy, _httpAddress, 24);
     protected DummyManagerConfig      _lazyValueConfig=new DummyManagerConfig();
     // LazyAttributes
     protected SessionPool             _lazyAttributesSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected AttributesFactory       _lazyAttributesFactory=new LazyAttributesFactory();
-    protected StandardManager         _lazyAttributesManager=new DistributableManager(_lazyAttributesSessionPool, _lazyAttributesFactory,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node2", _httpProxy, _httpAddress, 24);
+    protected StandardManager         _lazyAttributesManager=new ClusteredManager(_lazyAttributesSessionPool, _lazyAttributesFactory,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node2", _httpProxy, _httpAddress, 24);
     protected DummyManagerConfig      _lazyAttributesConfig=new DummyManagerConfig();
     // LazyBoth
     protected SessionPool             _lazyBothSessionPool=new SimpleSessionPool(_distributableSessionFactory);
-    protected StandardManager         _lazyBothManager=new DistributableManager(_lazyBothSessionPool, _lazyAttributesFactory,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node3", _httpProxy, _httpAddress, 24);
+    protected StandardManager         _lazyBothManager=new ClusteredManager(_lazyBothSessionPool, _lazyAttributesFactory,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node3", _httpProxy, _httpAddress, 24);
     protected DummyManagerConfig      _lazyBothConfig=new DummyManagerConfig();
 
 
@@ -1036,18 +1036,18 @@ extends TestCase
         testDistributableValidation(_lazyValueManager);
         testDistributableValidation(_lazyAttributesManager);
         testDistributableValidation(_lazyBothManager);
-        testCustomSerialisation((DistributableManager)_distributableManager);
-        testCustomSerialisation((DistributableManager)_lazyValueManager);
-        testCustomSerialisation((DistributableManager)_lazyAttributesManager);
-        testCustomSerialisation((DistributableManager)_lazyBothManager);
-        testDeserialisationOnReplacementWithListener((DistributableManager)_distributableManager);
-        testDeserialisationOnReplacementWithListener((DistributableManager)_lazyValueManager);
-        testDeserialisationOnReplacementWithListener((DistributableManager)_lazyAttributesManager);
-        testDeserialisationOnReplacementWithListener((DistributableManager)_lazyBothManager);
-        testDeserialisationOnReplacementWithoutListener((DistributableManager)_distributableManager);
-        testDeserialisationOnReplacementWithoutListener((DistributableManager)_lazyValueManager);
-        testDeserialisationOnReplacementWithoutListener((DistributableManager)_lazyAttributesManager);
-        testDeserialisationOnReplacementWithoutListener((DistributableManager)_lazyBothManager);
+        testCustomSerialisation((ClusteredManager)_distributableManager);
+        testCustomSerialisation((ClusteredManager)_lazyValueManager);
+        testCustomSerialisation((ClusteredManager)_lazyAttributesManager);
+        testCustomSerialisation((ClusteredManager)_lazyBothManager);
+        testDeserialisationOnReplacementWithListener((ClusteredManager)_distributableManager);
+        testDeserialisationOnReplacementWithListener((ClusteredManager)_lazyValueManager);
+        testDeserialisationOnReplacementWithListener((ClusteredManager)_lazyAttributesManager);
+        testDeserialisationOnReplacementWithListener((ClusteredManager)_lazyBothManager);
+        testDeserialisationOnReplacementWithoutListener((ClusteredManager)_distributableManager);
+        testDeserialisationOnReplacementWithoutListener((ClusteredManager)_lazyValueManager);
+        testDeserialisationOnReplacementWithoutListener((ClusteredManager)_lazyAttributesManager);
+        testDeserialisationOnReplacementWithoutListener((ClusteredManager)_lazyBothManager);
     }
 
     public void
@@ -1128,19 +1128,19 @@ extends TestCase
     }
 
 
-    public void testDeserialisationOnReplacementWithListener(DistributableManager manager) throws Exception {
+    public void testDeserialisationOnReplacementWithListener(ClusteredManager manager) throws Exception {
         testDeserialisationOnReplacement(manager);
         // TODO - test context level events here...
     }
 
-    public void testDeserialisationOnReplacementWithoutListener(DistributableManager manager) throws Exception {
+    public void testDeserialisationOnReplacementWithoutListener(ClusteredManager manager) throws Exception {
         manager.setSessionListeners(new HttpSessionListener[]{});
         manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
         testDeserialisationOnReplacement(manager);
         // TODO - test context level events here...
     }
 
-    public void testDeserialisationOnReplacement(DistributableManager manager) throws Exception {
+    public void testDeserialisationOnReplacement(ClusteredManager manager) throws Exception {
         DistributableSession s0=(DistributableSession)manager.create();
         DistributableSession s1=(DistributableSession)manager.create();
 
@@ -1246,7 +1246,7 @@ extends TestCase
         public Serializable replace(Object object) {return new IsSerializable(((NotSerializable)object)._content);}
     }
 
-    public void testCustomSerialisation(DistributableManager manager) throws Exception {
+    public void testCustomSerialisation(ClusteredManager manager) throws Exception {
         String content="foo";
         NotSerializable val0=new NotSerializable(content);
         Class type=val0.getClass();
