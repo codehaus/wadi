@@ -56,7 +56,7 @@ import org.codehaus.wadi.io.ServerConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
-public class DistributableManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, ServerConfig, DispatcherConfig, DIndexConfig {
+public class ClusteredManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, ServerConfig, DispatcherConfig, DIndexConfig {
 
     protected final Map _distributedState=new HashMap(); // TODO - make this a SynchronisedMap
     protected final SynchronizedBoolean _shuttingDown=new SynchronizedBoolean(false);
@@ -72,7 +72,7 @@ public class DistributableManager extends StandardManager implements Distributab
     protected final boolean _accessOnLoad=true; // TODO - parameterise...
     protected final int _numBuckets;
 
-    public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterUri, String clusterName, String nodeName, HttpProxy httpProxy, InetSocketAddress httpAddress, int numBuckets) {
+    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterUri, String clusterName, String nodeName, HttpProxy httpProxy, InetSocketAddress httpAddress, int numBuckets) {
         super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router);
         _streamer=streamer;
         _clusterUri=clusterUri;

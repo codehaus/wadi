@@ -42,7 +42,7 @@ import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.AbsoluteEvicter;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
-import org.codehaus.wadi.impl.DistributableManager;
+import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
@@ -136,7 +136,7 @@ public class TestEvicters extends TestCase {
         HttpProxy httpProxy=new StandardHttpProxy("jsessionid");
         InetSocketAddress httpAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8888);
         String nodeName="node0";
-        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, _clusterUri, _clusterName, nodeName, httpProxy, httpAddress, 24);
+        ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, _clusterUri, _clusterName, nodeName, httpProxy, httpAddress, 24);
         manager.setMaxInactiveInterval(2);
         manager.init(new DummyManagerConfig());
         //manager.start();

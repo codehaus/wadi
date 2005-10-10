@@ -22,7 +22,6 @@ import java.io.InputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SessionFactory;
-import org.codehaus.wadi.SessionManagerFactory;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -37,41 +36,38 @@ public class SpringManagerFactory {
     protected final String _beanName;
     protected final SessionFactory _sessionFactory;
     protected final SessionWrapperFactory _sessionWrapperFactory;
-    protected final SessionManagerFactory _sessionManagerFactory;
 
-    public SpringManagerFactory(InputStream descriptor, String beanName, SessionFactory sessionFactory, SessionWrapperFactory sessionWrapperFactory, SessionManagerFactory sessionManagerFactory) {
+    public SpringManagerFactory(InputStream descriptor, String beanName, SessionFactory sessionFactory, SessionWrapperFactory sessionWrapperFactory) {
         _descriptor=descriptor;
         _beanName=beanName;
         _sessionFactory=sessionFactory;
         _sessionWrapperFactory=sessionWrapperFactory;
-        _sessionManagerFactory=sessionManagerFactory;
     }
 
     public StandardManager create() throws FileNotFoundException {
-        return create(_descriptor, _beanName, _sessionFactory, _sessionWrapperFactory, _sessionManagerFactory);
+        return create(_descriptor, _beanName, _sessionFactory, _sessionWrapperFactory);
     }
 
-    public static StandardManager create(InputStream descriptor, String beanName, SessionFactory sessionFactory, SessionWrapperFactory sessionWrapperFactory, SessionManagerFactory sessionManagerFactory) throws FileNotFoundException {
+    public static StandardManager create(InputStream descriptor, String beanName, SessionFactory sessionFactory, SessionWrapperFactory sessionWrapperFactory) throws FileNotFoundException {
     	DefaultListableBeanFactory dlbf=new DefaultListableBeanFactory();
     	PropertyPlaceholderConfigurer cfg=new PropertyPlaceholderConfigurer();
     	new XmlBeanDefinitionReader(dlbf).loadBeanDefinitions(new InputStreamResource(descriptor));
     	cfg.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
     	cfg.postProcessBeanFactory(dlbf);
-    	
+
     	dlbf.registerSingleton("SessionFactory", sessionFactory);
     	dlbf.registerSingleton("SessionWrapperFactory", sessionWrapperFactory);
-    	dlbf.registerSingleton("SessionManagerFactory", sessionManagerFactory);
-    	
+
     	//dlbf.getBean("exporter");
     	//dlbf.getBean("serverConnector");
     	dlbf.preInstantiateSingletons();
     	StandardManager manager=(StandardManager)dlbf.getBean(beanName);
-    	
+
     	if (manager==null)
     		if (_log.isErrorEnabled()) _log.error("could not find WADI Manager bean: "+beanName);
     		else
     			if (_log.isInfoEnabled()) _log.info("loaded bean: "+beanName+" from WADI descriptor: "+descriptor);
-    	
+
     	return manager;
     }
 

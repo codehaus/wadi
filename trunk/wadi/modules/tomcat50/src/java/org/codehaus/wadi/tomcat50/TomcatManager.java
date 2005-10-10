@@ -43,16 +43,16 @@ import org.apache.catalina.util.LifecycleSupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ManagerConfig;
-import org.codehaus.wadi.impl.DistributableManager;
+import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.Filter;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.impl.StandardManager;
 
-public class TomcatManager implements ManagerConfig, Lifecycle, Manager 
+public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 {
 	protected static final Log _log = LogFactory.getLog(TomcatManager.class);
 
-	protected DistributableManager _wadi;
+	protected StandardManager _wadi;
 	protected Container _container;
 	protected DefaultContext _defaultContext;
 	protected boolean _distributable;
@@ -61,13 +61,13 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 	protected int _expiredSessions; // TODO - wire up
 	protected int _rejectedSessions; // TODO - wire up
 	protected PropertyChangeSupport _propertyChangeListeners=new PropertyChangeSupport(this); 	// actual notifications are done by aspects...
-	
+
 	// org.codehaus.wadi.ManagerConfig
 
 	public ServletContext getServletContext() {
 		return ((Context)_container).getServletContext();
 	}
-	
+
 	public void callback(StandardManager manager) {
 		// install Listeners ...
 		Context context=((Context)_container);
@@ -80,7 +80,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 				sll.add((HttpSessionListener)listener);
 		}
 		manager.setSessionListeners((HttpSessionListener[])sll.toArray(new HttpSessionListener[sll.size()]));
-		
+
 		Object[] attributeListeners=context.getApplicationEventListeners();
 		List all=new ArrayList();
 		for (int i=0; i<attributeListeners.length; i++) {
@@ -92,43 +92,43 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 	}
 
 	// org.apache.catalina.Lifecycle
-	
+
 	// actual notifications are done by aspects...
 	protected LifecycleSupport _lifecycleListeners=new LifecycleSupport(this);
-	
+
 	public void addLifecycleListener(LifecycleListener listener) {
 		_lifecycleListeners.addLifecycleListener(listener);
 	}
-	
+
 	public LifecycleListener[] findLifecycleListeners() {
 		return _lifecycleListeners.findLifecycleListeners();
 	}
-	
+
 	public void removeLifecycleListener(LifecycleListener listener) {
 		_lifecycleListeners.removeLifecycleListener(listener);
 	}
-	
+
 	public void start() throws LifecycleException {
 		try {
 			InputStream is=getServletContext().getResourceAsStream("/WEB-INF/wadi-web.xml");
-			_wadi=(DistributableManager)SpringManagerFactory.create(is, "SessionManager", new TomcatSessionFactory(), new TomcatSessionWrapperFactory(), new TomcatManagerFactory());
+			_wadi=(StandardManager)SpringManagerFactory.create(is, "SessionManager", new TomcatSessionFactory(), new TomcatSessionWrapperFactory());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		
+
 		_wadi.init(this);
 		try {
 			_wadi.start();
-			
+
 			if (_container==null)
 				_log.warn("container not set - fn-ality will be limited");
 			else
 			{
 				Context context=((Context)_container);
-				
+
 				// install Valve
 				((StandardContext)context).addValve(new Valve(Pattern.compile("127\\.0\\.0\\.1|192\\.168\\.0\\.\\d{1,3}")));
-				
+
 				// install filter
 				String filterName="WadiFilter";
 				FilterDef fd=new FilterDef();
@@ -139,13 +139,13 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 				fm.setFilterName(filterName);
 				fm.setURLPattern("/*");
 				context.addFilterMap(fm);
-				
+
 //				// is this a distributable webapp ?
 //				boolean distributable=context.getDistributable();
 //				if (distributable && !_distributable)
 //				setDistributable(distributable);
 			}
-			
+
 		} catch (Exception e) {
 			throw new LifecycleException(e);
 		}
@@ -160,11 +160,11 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 	}
 
 	// org.apache.catalina.Manager
-	
+
 	public Container getContainer() {
 		return _container;
 	}
-	
+
 	public void setContainer(Container container) {
 		_container=container;
 	}
@@ -172,11 +172,11 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 	public DefaultContext getDefaultContext() {
 		return _defaultContext;
 	}
-	
+
 	public void setDefaultContext(DefaultContext defaultContext) {
 		_defaultContext=defaultContext;
 	}
-	
+
 	public boolean getDistributable() {
 		return _distributable;
 	}
@@ -188,7 +188,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 	public String getInfo() {
 		return "<code>&lt;"+getClass().getName()+"&gt;/&lt;1.0b&gt;</code>";
 	}
-	
+
 	public int getMaxInactiveInterval() {
 		return _wadi.getMaxInactiveInterval();
 	}
@@ -200,98 +200,98 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 	public int getSessionIdLength() {
 		return _wadi.getSessionIdFactory().getSessionIdLength();
 	}
-	
+
 	public void setSessionIdLength(int sessionIdLength) {
 		_wadi.getSessionIdFactory().setSessionIdLength(sessionIdLength);
 	}
-	
+
 	public int getSessionCounter() {
 		return _sessionCounter;
 	}
-	
+
 	public void setSessionCounter(int sessionCounter) {
 		_sessionCounter=sessionCounter;
 	}
-	
+
 	public int getMaxActive() {
 		return _maxActive;
 	}
-	
+
 	public void setMaxActive(int maxActive) {
 		_maxActive=maxActive;
 	}
-	
+
 	public int getActiveSessions() {
 		// probably the size of the Memory map... - TODO
 		return 0;
 	}
-	
+
 	public int getExpiredSessions() {
 		return _expiredSessions;
 	}
-	
+
 	public void setExpiredSessions(int expiredSessions) {
 		_expiredSessions=expiredSessions;
 	}
-	
+
 	public int getRejectedSessions() {
 		return _rejectedSessions;
 	}
-	
+
 	public void setRejectedSessions(int rejectedSessions) {
 		_rejectedSessions=rejectedSessions;
 	}
-	
+
 	public void add(Session session) {
 		// perhaps hook up to an Immoter ? - TODO
 	}
-	
+
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		_propertyChangeListeners.addPropertyChangeListener(listener);
 	}
-	
+
 	public Session createEmptySession() {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	public Session createSession() {
 		return (TomcatSession)_wadi.create();
 	}
-	
+
 	public Session findSession(String id) throws IOException {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	public Session[] findSessions() {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	public void load() throws ClassNotFoundException, IOException {
 		// perhaps hook up to promoteToLocal();
 	}
-	
+
 	public void remove(Session session) {
 		// perhaps hook up to an Emoter - TODO
 	}
-	
+
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
 		_propertyChangeListeners.removePropertyChangeListener(listener);
 	}
-	
+
 	public void unload() throws IOException {
 		// perhaps hook up to demoteToShared();
 	}
-	
+
 	public void backgroundProcess() {
 		// not used - Evicter is attached to a Timer by super()...
 	}
 
 	// TODO - what was I doing with these ?
-	
+
 //	public void notifySessionCreated(HttpSessionListener listener, HttpSessionEvent event){super.notifySessionCreated(listener,event);}
 //	public void notifySessionDestroyed(HttpSessionListener listener, HttpSessionEvent event){super.notifySessionDestroyed(listener, event);}
 //	public void notifySessionAttributeAdded(HttpSessionAttributeListener listener, HttpSessionBindingEvent event){super.notifySessionAttributeAdded(listener, event);}
 //	public void notifySessionAttributeRemoved(HttpSessionAttributeListener listener, HttpSessionBindingEvent event){super.notifySessionAttributeRemoved(listener, event);}
 //	public void notifySessionAttributeReplaced(HttpSessionAttributeListener listener, HttpSessionBindingEvent event){super.notifySessionAttributeReplaced(listener, event);}
-	
+
 }

@@ -26,7 +26,7 @@ cp target/wadi-webapp-$version.war ~/.maven/repository/wadi/wars/
 popd
 
 pushd modules/assembly
-maven $flags prepare
+maven $flags dist
 popd
 
 rm -fr WEB-INF/classes

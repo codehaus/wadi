@@ -53,7 +53,7 @@ import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.ClusterContextualiser;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
-import org.codehaus.wadi.impl.DistributableManager;
+import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
@@ -112,7 +112,7 @@ public class TestCluster extends TestCase {
         protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool); 
         protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
         protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
-        protected final DistributableManager _manager;
+        protected final ClusteredManager _manager;
         
         public MyNode(String nodeName, ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
             _bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, ds, table);
@@ -125,7 +125,7 @@ public class TestCluster extends TestCase {
             _relocater=new DummyRelocater();
             _middle=new ClusterContextualiser(_bottom, _collapser, _relocater);
             _top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
-            _manager=new DistributableManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, _nodeName, proxy, isa, 24);
+            _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, _nodeName, proxy, isa, 24);
         }
         
         protected boolean _running;

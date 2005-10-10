@@ -7,7 +7,7 @@
 <!--
   Three Beans have already been created as part of the contract between WADI and Spring:
 
-    SessionFactory, SessionWrapperFactory and SessionManagerFactory
+    SessionFactory, SessionWrapperFactory
 
   This is so because these three types need to be parameterised according to within which
   WebContainer we are running...
@@ -311,8 +311,7 @@
 
   <bean
     id="SessionManager"
-    factory-bean="SessionManagerFactory"
-    factory-method="create"
+    class="org.codehaus.wadi.impl.ClusteredManager"
     >
     <constructor-arg><ref bean="SessionPool"/></constructor-arg>
     <constructor-arg><ref bean="AttributesFactory"/></constructor-arg>
