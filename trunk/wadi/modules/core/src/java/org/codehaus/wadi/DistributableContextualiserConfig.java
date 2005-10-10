@@ -16,41 +16,14 @@
  */
 package org.codehaus.wadi;
 
-import java.net.InetSocketAddress;
-import java.util.Map;
-
-import javax.jms.JMSException;
-
-import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.impl.Dispatcher;
-import org.codehaus.wadi.io.Server;
-
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
 public interface DistributableContextualiserConfig extends ContextualiserConfig {
 
-    ExtendedCluster getCluster();
-    Server getServer();
-    String getNodeName();
-    HttpProxy getHttpProxy();
-    InetSocketAddress getHttpAddress();
-
-    Object getDistributedState(Object key);
-    Object putDistributedState(Object key, Object value);
-    Object removeDistributedState(Object key);
-    void distributeState() throws JMSException;
-
     boolean getAccessOnLoad();
-    
     SynchronizedBoolean getShuttingDown();
-
-    Map getDistributedState();
-    long getInactiveTime();
-    int getNumBuckets();
-
-    Dispatcher getDispatcher();
-    DIndex getDIndex();
-    
     Contextualiser getContextualiser();
+
+
     
 }

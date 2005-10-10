@@ -118,22 +118,22 @@ extends TestCase
     protected SessionPool             _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _distributableValueFactory=new DistributableValueFactory();
     protected ValuePool               _distributableValuePool=new SimpleValuePool(_distributableValueFactory);
-    protected StandardManager         _distributableManager=new ClusteredManager(_distributableSessionPool, _distributedAttributesFactory, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node0", _httpProxy, _httpAddress, 24);
+    protected StandardManager         _distributableManager=new ClusteredManager(_distributableSessionPool, _distributedAttributesFactory, _distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _httpAddress, _httpProxy, _clusterUri, _clusterName, "node0", 24);
     protected DummyManagerConfig      _distributableConfig=new DummyManagerConfig();
     // LazyValue
     protected SessionPool             _lazyValueSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected ValueFactory            _lazyValueFactory=new LazyValueFactory();
     protected ValuePool               _lazyValuePool=new SimpleValuePool(_lazyValueFactory);
-    protected StandardManager         _lazyValueManager=new ClusteredManager(_lazyValueSessionPool, _distributedAttributesFactory, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node1", _httpProxy, _httpAddress, 24);
+    protected StandardManager         _lazyValueManager=new ClusteredManager(_lazyValueSessionPool, _distributedAttributesFactory, _lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _httpAddress, _httpProxy, _clusterUri, _clusterName, "node1", 24);
     protected DummyManagerConfig      _lazyValueConfig=new DummyManagerConfig();
     // LazyAttributes
     protected SessionPool             _lazyAttributesSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected AttributesFactory       _lazyAttributesFactory=new LazyAttributesFactory();
-    protected StandardManager         _lazyAttributesManager=new ClusteredManager(_lazyAttributesSessionPool, _lazyAttributesFactory,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node2", _httpProxy, _httpAddress, 24);
+    protected StandardManager         _lazyAttributesManager=new ClusteredManager(_lazyAttributesSessionPool, _lazyAttributesFactory,_distributableValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _httpAddress, _httpProxy, _clusterUri, _clusterName, "node2", 24);
     protected DummyManagerConfig      _lazyAttributesConfig=new DummyManagerConfig();
     // LazyBoth
     protected SessionPool             _lazyBothSessionPool=new SimpleSessionPool(_distributableSessionFactory);
-    protected StandardManager         _lazyBothManager=new ClusteredManager(_lazyBothSessionPool, _lazyAttributesFactory,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, "node3", _httpProxy, _httpAddress, 24);
+    protected StandardManager         _lazyBothManager=new ClusteredManager(_lazyBothSessionPool, _lazyAttributesFactory,_lazyValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _distributableContextualiser, _sessionMap, _router, _streamer, _accessOnLoad, _httpAddress, _httpProxy, _clusterUri, _clusterName, "node3", 24);
     protected DummyManagerConfig      _lazyBothConfig=new DummyManagerConfig();
 
 
