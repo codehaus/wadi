@@ -8,11 +8,13 @@ import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.DistributableSessionConfig;
+import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.ClusteredManager.HelperPair;
@@ -23,7 +25,7 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
  * @author jules
  * A StandardManager thatknows how to Serialise HttpSessions.
  */
-public class DistributableManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig {
+public class DistributableManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, StreamerConfig {
 
 	protected final List _helpers = new ArrayList();
 	protected final SynchronizedBoolean _shuttingDown = new SynchronizedBoolean(false);
@@ -32,10 +34,21 @@ public class DistributableManager extends StandardManager implements Distributab
 
 	public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, Streamer streamer, boolean accessOnLoad) {
     	super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, map, router);
-    	_streamer=streamer;
+    	(_streamer=streamer).init(this);
     	_accessOnLoad=accessOnLoad;
     }
 
+	protected ClassLoader _classLoader;
+	
+	public void init(ManagerConfig config) {
+		_classLoader= Thread.currentThread().getContextClassLoader();
+		super.init(config);
+	}
+	
+	public ClassLoader getClassLoader() {
+		return _classLoader;
+	}	
+	
 	/**
 	 * Register a ValueHelper for a particular type. During [de]serialisation
 	 * Objects flowing in/out of the persistance medium will be passed through this
@@ -87,6 +100,8 @@ public class DistributableManager extends StandardManager implements Distributab
 	    return _shuttingDown;
 	}
 
-	public Streamer getStreamer() {return _streamer;}
+	public Streamer getStreamer() {
+		return _streamer;
+	}
 	
 }

@@ -73,6 +73,36 @@
     <constructor-arg><ref bean="SessionPool"/></constructor-arg>
   </bean>
 
+<!--
+  <bean
+    id="Relocater"
+    class="org.codehaus.wadi.impl.MessagingMigratingRelocater"
+    >
+    <constructor-arg type="long" index="0"><value>2000</value></constructor-arg>
+    <constructor-arg type="long" index="1"><value>1000</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="Relocater"
+    class="org.codehaus.wadi.impl.ProxyingRelocater"
+    >
+    <constructor-arg type="long" index="0"><value>2000</value></constructor-arg>
+    <constructor-arg type="long" index="1"><value>2000</value></constructor-arg>
+  </bean>
+-->
+
+  <bean
+    id="Relocater"
+    class="org.codehaus.wadi.impl.HybridRelocater"
+    >
+    <constructor-arg type="long" index="0"><value>2000</value></constructor-arg>
+    <constructor-arg type="long" index="1"><value>2000</value></constructor-arg>
+<!--
+    <constructor-arg type="boolean"><value>false</value></constructor-arg>
+-->
+    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+  </bean>
+
   <!-- the contextualiser stack -->
 
   <bean
@@ -115,6 +145,15 @@
   </bean>
 
   <bean
+    id="ClusterContextualiser"
+    class="org.codehaus.wadi.impl.ClusterContextualiser"
+    >
+    <constructor-arg><ref bean="DatabaseContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="Collapser"/></constructor-arg>
+    <constructor-arg><ref bean="Relocater"/></constructor-arg>
+  </bean>
+
+  <bean
     id="StatelessMethods"
     class="java.util.regex.Pattern"
     factory-method="compile"
@@ -136,7 +175,7 @@
     id="StatelessContextualiser"
     class="org.codehaus.wadi.impl.StatelessContextualiser"
     >
-    <constructor-arg><ref bean="DatabaseContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="ClusterContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="StatelessMethods"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
     <constructor-arg><ref bean="StatelessURIs"/></constructor-arg>
@@ -244,11 +283,35 @@
     >
   </bean>
 
+  <!-- other stuff... -->
+
+  <bean
+    id="HttpProxy"
+    class="org.codehaus.wadi.impl.StandardHttpProxy"
+    >
+    <constructor-arg><value>jsessionid</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="LocalHost"
+    class="java.net.InetAddress"
+    factory-method="getLocalHost"
+    >
+  </bean>
+
+  <bean
+    id="HttpAddress"
+    class="java.net.InetSocketAddress"
+    >
+    <constructor-arg><ref bean="LocalHost"/></constructor-arg>
+    <constructor-arg type="int"><value>${http.port}</value></constructor-arg>
+  </bean>
+
   <!-- and finally - the SessionManager itself -->
 
   <bean
     id="SessionManager"
-    class="org.codehaus.wadi.impl.DistributableManager"
+    class="org.codehaus.wadi.impl.ClusteredManager"
     >
     <constructor-arg><ref bean="SessionPool"/></constructor-arg>
     <constructor-arg><ref bean="AttributesFactory"/></constructor-arg>
@@ -260,6 +323,15 @@
     <constructor-arg><ref bean="Router"/></constructor-arg>
     <constructor-arg><ref bean="Streamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
+    <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
+    <constructor-arg index="10"><value>tcp://localhost:61616</value></constructor-arg>
+<!--
+    <constructor-arg index="10"><value>peer://org.codehaus.wadi</value></constructor-arg>
+ -->
+    <constructor-arg index="11"><value>CLUSTER0</value></constructor-arg>
+    <constructor-arg index="12"><value>${node.name}</value></constructor-arg>
+    <constructor-arg index="15"><value>72</value></constructor-arg>
   </bean>
 
 
@@ -291,7 +363,11 @@
         <entry key="WADI:name=SessionManager"> <ref bean="SessionManager"/> </entry>
         <entry key="WADI:name=MemoryContextualiser"> <ref bean="MemoryContextualiser"/> </entry>
         <entry key="WADI:name=DiscContextualiser"> <ref bean="DiscContextualiser"/> </entry>
+        <entry key="WADI:name=ClusterContextualiser"> <ref bean="ClusterContextualiser"/> </entry>
         <entry key="WADI:name=Router"> <ref bean="Router"/> </entry>
+        <entry key="WADI:name=HttpProxy"> <ref bean="HttpProxy"/> </entry>
+        <entry key="WADI:name=HttpAddress"> <ref bean="HttpAddress"/> </entry>
+        <entry key="WADI:name=Relocater"> <ref bean="Relocater"/> </entry>
         <entry key="WADI:name=SessionIdFactory"> <ref bean="SessionIdFactory"/> </entry>
       </map>
     </property>

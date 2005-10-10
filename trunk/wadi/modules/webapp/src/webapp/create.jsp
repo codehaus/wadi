@@ -4,6 +4,7 @@
       <%@ page import="java.net.URL" %>
       <%@ page import="org.apache.commons.logging.Log" %>
       <%@ page import="org.apache.commons.logging.LogFactory" %>
+      <%@ page import="org.codehaus.wadi.webapp.CustomString" %>
       <%
       Log log=LogFactory.getLog(getClass());
       log.trace("CREATE: "+session.getId());
@@ -22,7 +23,7 @@
 	  <p/>
 	    <table>
 	      <%
-	      session.setAttribute(""+session.getLastAccessedTime(), colour);
+	      session.setAttribute(""+session.getLastAccessedTime(), new CustomString(colour));
 	      int j=0;
 	      for (Enumeration e=session.getAttributeNames(); e.hasMoreElements() && j<15;j++)
 	      {
