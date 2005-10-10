@@ -38,6 +38,7 @@ import org.activecluster.ClusterEvent;
 import org.activecluster.ClusterListener;
 import org.activecluster.LocalNode;
 import org.activecluster.Node;
+import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.ExtendedCluster;
@@ -131,17 +132,17 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     
     public void init(ContextualiserConfig config) {
         super.init(config);
-        DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)config;
-        _shuttingDown=dcc.getShuttingDown();
-        _nodeName=dcc.getNodeName();
-        _cluster=dcc.getCluster();
-        _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), dcc.getHttpAddress(), dcc.getHttpProxy());
-        _dispatcher=dcc.getDispatcher();
-        _dindex=dcc.getDIndex();
+        ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)config;
+        _shuttingDown=ccc.getShuttingDown();
+        _nodeName=ccc.getNodeName();
+        _cluster=ccc.getCluster();
+        _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), ccc.getHttpAddress(), ccc.getHttpProxy());
+        _dispatcher=ccc.getDispatcher();
+        _dindex=ccc.getDIndex();
         _cluster.addClusterListener(this);
         _dispatcher.register(this, "onEmigrationRequest", EmigrationRequest.class);
         _dispatcher.register(EmigrationResponse.class, _resTimeout);
-        _top=dcc.getContextualiser();
+        _top=ccc.getContextualiser();
         _relocater.init(this);
     }
     
@@ -201,11 +202,11 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     
     protected void createEvacuationQueue() throws JMSException {
         _log.trace("creating evacuation queue");
-        DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)_config;
-        dcc.putDistributedState(_shuttingDownKey, Boolean.TRUE);
+        ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)_config;
+        ccc.putDistributedState(_shuttingDownKey, Boolean.TRUE);
         _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
-        dcc.putDistributedState(_evacuationQueueKey, _evacuationQueue);
-        dcc.distributeState();
+        ccc.putDistributedState(_evacuationQueueKey, _evacuationQueue);
+        ccc.distributeState();
         
         // whilst we are evacuating...
         // 1) do not get involved in any other evacuations.
@@ -224,11 +225,11 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     }
     
     protected void destroyEvacuationQueue() throws JMSException {
-        DistributableContextualiserConfig dcc=(DistributableContextualiserConfig)_config;
+        ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)_config;
         // leave shuttingDown=true
         _evacuationQueue=null;
-        dcc.removeDistributedState(_evacuationQueueKey);
-        dcc.distributeState();
+        ccc.removeDistributedState(_evacuationQueueKey);
+        ccc.distributeState();
         //Utils.safeSleep(5*1000*2); // TODO - should be hearbeat period...
         // FIXME - can we destroy the queue ?
         _log.trace("emigration queue destroyed");
@@ -505,11 +506,11 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     public Dispatcher getDispatcher() {return _dispatcher;}
     public Location getLocation() {return _location;}
     public Contextualiser getContextualiser() {return _top;}
-    public Server getServer() {return ((DistributableContextualiserConfig)_config).getServer();}
+    public Server getServer() {return ((ClusteredContextualiserConfig)_config).getServer();}
     public String getNodeName() {return _nodeName;}
     public SynchronizedBoolean getShuttingDown() {return _shuttingDown;}
-    public HttpProxy getHttpProxy() {return ((DistributableContextualiserConfig)_config).getHttpProxy();}
-    public InetSocketAddress getHttpAddress() {return ((DistributableContextualiserConfig)_config).getHttpAddress();}
+    public HttpProxy getHttpProxy() {return ((ClusteredContextualiserConfig)_config).getHttpProxy();}
+    public InetSocketAddress getHttpAddress() {return ((ClusteredContextualiserConfig)_config).getHttpAddress();}
     
     public Cluster getCluster() {return _cluster;}
     

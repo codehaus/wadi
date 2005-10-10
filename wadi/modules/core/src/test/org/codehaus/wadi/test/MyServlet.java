@@ -108,7 +108,7 @@ public class MyServlet implements Servlet {
 		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamer(), contextPool, new MyDummyHttpServletRequestWrapperPool());
         _httpProxy=httpProxy;
         _httpAddress=httpAddress;
-        _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad, _clusterUri, _clusterName, _nodeName, _httpProxy, _httpAddress, 24);
+        _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad, _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
     }
     
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}

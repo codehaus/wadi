@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.jms.JMSException;
@@ -34,6 +33,7 @@ import org.activemq.broker.BrokerContainer;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.activemq.transport.TransportChannel;
 import org.codehaus.wadi.AttributesFactory;
+import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.DistributableSessionConfig;
@@ -54,32 +54,24 @@ import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.io.Server;
 import org.codehaus.wadi.io.ServerConfig;
 
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
-public class ClusteredManager extends StandardManager implements DistributableSessionConfig, DistributableContextualiserConfig, ServerConfig, DispatcherConfig, DIndexConfig {
+public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, ServerConfig, DispatcherConfig, DIndexConfig {
 
     protected final Map _distributedState=new HashMap(); // TODO - make this a SynchronisedMap
-    protected final SynchronizedBoolean _shuttingDown=new SynchronizedBoolean(false);
-
     protected final Dispatcher _dispatcher=new Dispatcher();
 
-    protected final Streamer _streamer;
     protected final String _clusterUri;
     protected final String _clusterName;
     protected final String _nodeName;
-    protected final HttpProxy _httpProxy;
-    protected final InetSocketAddress _httpAddress;
-    protected final boolean _accessOnLoad=true; // TODO - parameterise...
     protected final int _numBuckets;
 
-    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, String clusterUri, String clusterName, String nodeName, HttpProxy httpProxy, InetSocketAddress httpAddress, int numBuckets) {
-        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router);
-        _streamer=streamer;
+    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, InetSocketAddress httpAddress, HttpProxy httpProxy, String clusterUri, String clusterName, String nodeName, int numBuckets) {
+        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad);
+    	_httpAddress=httpAddress;
+    	_httpProxy=httpProxy;
         _clusterUri=clusterUri;
         _clusterName=clusterName;
         _nodeName=nodeName;
-        _httpProxy=httpProxy;
-        _httpAddress=httpAddress;
         _numBuckets=numBuckets;
     }
 
@@ -91,6 +83,8 @@ public class ClusteredManager extends StandardManager implements DistributableSe
     protected CustomClusterFactory _clusterFactory;
     protected ExtendedCluster _cluster;
     protected DIndex _dindex;
+	protected final HttpProxy _httpProxy;
+	protected final InetSocketAddress _httpAddress;
 
     public void init(ManagerConfig config) {
         // must be done before super.init() so that ContextualiserConfig contains a Cluster
@@ -138,9 +132,6 @@ public class ClusteredManager extends StandardManager implements DistributableSe
         Thread.sleep(5*1000);
     }
 
-    // Distributable
-    public Streamer getStreamer() {return _streamer;}
-
     static class HelperPair {
 
         final Class _type;
@@ -150,44 +141,6 @@ public class ClusteredManager extends StandardManager implements DistributableSe
             _type=type;
             _helper=helper;
         }
-    }
-
-    protected final List _helpers=new ArrayList();
-
-    /**
-     * Register a ValueHelper for a particular type. During [de]serialisation
-     * Objects flowing in/out of the persistance medium will be passed through this
-     * Helper, which will have the opportunity to convert them between Serializable
-     * and non-Serializable representations. Helpers will be returned in their registration
-     * order, so this is significant (as an Object may implement more than one interface
-     * or registered type).
-     *
-     * @param type
-     * @param helper
-     */
-
-    public void registerHelper(Class type, ValueHelper helper) {
-        _helpers.add(new HelperPair(type, helper));
-    }
-
-    public boolean deregisterHelper(Class type) {
-        int l=_helpers.size();
-        for (int i=0; i<l; i++)
-            if (type.equals(((HelperPair)_helpers.get(i))._type)) {
-                _helpers.remove(i);
-                return true;
-            }
-        return false;
-    }
-
-    public ValueHelper findHelper(Class type) {
-        int l=_helpers.size();
-        for (int i=0; i<l; i++) {
-            HelperPair p=(HelperPair)_helpers.get(i);
-            if (p._type.isAssignableFrom(type))
-                return p._helper;
-        }
-        return null;
     }
 
     public void destroy(Session session) {
@@ -208,26 +161,12 @@ public class ClusteredManager extends StandardManager implements DistributableSe
 
     // Lazy
 
-    public boolean getHttpSessionAttributeListenersRegistered(){return _attributeListeners.length>0;}
-
-    public boolean getDistributable(){return true;}
-
-    // ServerConfig
-
     public ExtendedCluster getCluster() {return _cluster;}
 
     // DistributableContextualiserConfig
 
     public Server getServer() {throw new UnsupportedOperationException();}
     public String getNodeName() {return _nodeName;} // NYI
-
-    public HttpProxy getHttpProxy() {
-        return _httpProxy;
-    }
-
-    public InetSocketAddress getHttpAddress() {
-        return _httpAddress;
-    }
 
     public Object getDistributedState(Object key) {
         synchronized (_distributedState) {
@@ -250,14 +189,6 @@ public class ClusteredManager extends StandardManager implements DistributableSe
     public void distributeState() throws JMSException {
         _cluster.getLocalNode().setState(_distributedState);
 	_log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
-    }
-
-    public boolean getAccessOnLoad() {
-        return _accessOnLoad;
-    }
-
-    public SynchronizedBoolean getShuttingDown() {
-        return _shuttingDown;
     }
 
     public Map getDistributedState() {
@@ -301,6 +232,14 @@ public class ClusteredManager extends StandardManager implements DistributableSe
         _log.info("findRelevantSessionNames");
         _contextualiser.findRelevantSessionNames(numBuckets, resultSet);
     }
+
+	public HttpProxy getHttpProxy() {
+	    return _httpProxy;
+	}
+
+	public InetSocketAddress getHttpAddress() {
+	    return _httpAddress;
+	}
 
 }
 
