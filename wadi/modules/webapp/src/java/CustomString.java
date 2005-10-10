@@ -15,31 +15,27 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi;
+package org.codehaus.wadi.webapp;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.OutputStream;
+import java.io.Serializable;
 
 /**
- * Abstract factory. Allows pluggable implementations of various
- * input/output streaming mechanisms to support e.g. compression,
- * encryption etc... I'd like to pool these, but the streams apis
- * don't allow the resetting of the streams that they wrap.
+ * A Custom class for use in the test Session to check that we have our
+ * ClassLoading working correctly...
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Streamer {
-	
-	void init(StreamerConfig confige);
-	
-	ObjectInput getInputStream(InputStream is) throws IOException;
-	ObjectOutput getOutputStream(OutputStream os) throws IOException;
-	String getSuffix();
-	String getSuffixWithDot();
-	
-}
+public class CustomString implements Serializable {
 
+  protected final String _string;
+
+  public CustomString(String string) {
+    _string=string;
+  }
+
+  public String toString() {
+    return _string;
+  }
+
+}

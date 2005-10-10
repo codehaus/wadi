@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi;
 
-
 /**
  * TODO - JavaDoc this type
  *

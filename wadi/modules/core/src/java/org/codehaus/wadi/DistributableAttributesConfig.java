@@ -18,7 +18,6 @@ package org.codehaus.wadi;
 
 import javax.servlet.http.HttpSessionEvent;
 
-
 /**
  * TODO - JavaDoc this type
  *

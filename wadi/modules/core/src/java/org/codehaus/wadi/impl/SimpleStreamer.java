@@ -20,12 +20,12 @@ package org.codehaus.wadi.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
 import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.StreamerConfig;
 
 /**
  * Don't do anything extra, just connect streams up directly.
@@ -35,8 +35,14 @@ import org.codehaus.wadi.Streamer;
  */
 public class SimpleStreamer implements Streamer {
     
-    public ObjectInput getInputStream(InputStream is) throws IOException {
-        return new ObjectInputStream(is);
+	protected StreamerConfig _config;
+	
+	public void init(StreamerConfig config) {
+		_config=config;
+	}
+	
+	public ObjectInput getInputStream(InputStream is) throws IOException {
+        return new ObjectInputStream(is, _config.getClassLoader());
     }
     
     public ObjectOutput getOutputStream(OutputStream os) throws IOException {

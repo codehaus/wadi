@@ -37,6 +37,10 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
         super();
         _cluster=cluster;
     }
+    
+    public ClassLoader getClassLoader() {
+    	return getClass().getClassLoader();
+    }
 
     public ExtendedCluster getCluster() {
         return _cluster;

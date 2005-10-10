@@ -39,7 +39,6 @@ import org.activecluster.ClusterListener;
 import org.activecluster.LocalNode;
 import org.activecluster.Node;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
-import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.Collapser;

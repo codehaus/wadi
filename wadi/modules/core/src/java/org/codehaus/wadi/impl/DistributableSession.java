@@ -35,9 +35,13 @@ import org.codehaus.wadi.ValueHelper;
 
 public class DistributableSession extends StandardSession implements DistributableAttributesConfig {
 
-    public DistributableSession(DistributableSessionConfig config) {super(config);}
+    public DistributableSession(DistributableSessionConfig config) {
+    	super(config);
+    }
 
-    public Streamer getStreamer() {return ((DistributableSessionConfig)_config).getStreamer();}
+    public Streamer getStreamer() {
+    	return ((DistributableSessionConfig)_config).getStreamer();
+    }
     
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         super.readContent(oi);

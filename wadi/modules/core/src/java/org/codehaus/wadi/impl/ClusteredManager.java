@@ -35,8 +35,6 @@ import org.activemq.transport.TransportChannel;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.DistributableContextualiserConfig;
-import org.codehaus.wadi.DistributableSessionConfig;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.DispatcherConfig;
