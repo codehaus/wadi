@@ -5,8 +5,10 @@ package org.codehaus.wadi.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectStreamClass;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
 
 public class ObjectInputStream extends java.io.ObjectInputStream {
 	
@@ -17,7 +19,7 @@ public class ObjectInputStream extends java.io.ObjectInputStream {
 		_classLoader=classLoader;
 	}
 	
-	// copied from super as this seems to be the easiest way to parameterise the ClassLoader... - TODO
+	// copied from super as this seems to be the only way to parameterise the ClassLoader... - TODO
 	
 	/*
 	 * @(#)ObjectInputStream.java	1.146 04/01/13
@@ -25,7 +27,36 @@ public class ObjectInputStream extends java.io.ObjectInputStream {
 	 * Copyright 2004 Sun Microsystems, Inc. All rights reserved.
 	 * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
 	 */
-	protected Class resolveProxyClass(String[] interfaces)
+	private static final HashMap primClasses = new HashMap(8, 1.0F);
+	static {
+		primClasses.put("boolean", boolean.class);
+		primClasses.put("byte", byte.class);
+		primClasses.put("char", char.class);
+		primClasses.put("short", short.class);
+		primClasses.put("int", int.class);
+		primClasses.put("long", long.class);
+		primClasses.put("float", float.class);
+		primClasses.put("double", double.class);
+		primClasses.put("void", void.class);
+	}
+	
+    protected Class resolveClass(ObjectStreamClass desc)
+	throws IOException, ClassNotFoundException
+	{
+		String name = desc.getName();
+		try {
+			return Class.forName(name, false, _classLoader);
+		} catch (ClassNotFoundException ex) {
+			Class cl = (Class) primClasses.get(name);
+			if (cl != null) {
+				return cl;
+			} else {
+				throw ex;
+			}
+		}
+	}
+    
+    protected Class resolveProxyClass(String[] interfaces)
 	throws IOException, ClassNotFoundException
 	{
 		ClassLoader latestLoader = _classLoader;
