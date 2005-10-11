@@ -5,16 +5,12 @@
       <%@ page import="java.util.Comparator" %>
       <%@ page import="java.util.Iterator" %>
       <%@ page import="java.net.URL" %>
+      <%@ page import="org.codehaus.wadi.webapp.CustomString" %>
       <%
       String colour=System.getProperty("node.name");
 
       URL tmp=new URL(request.getRequestURL().toString());
       int port=tmp.getPort();
-      if (port>8079 && port<8091) {
-      URL tmp2=new URL(tmp.getProtocol(), tmp.getHost(), 90, tmp.getFile()); // horrible tmp hack for jetty6 testing...
-      System.out.println("HACKING request url: "+tmp+" -> "+tmp2);
-      tmp=tmp2;
-      }
       String url=tmp.toString();
 
       String params="";
