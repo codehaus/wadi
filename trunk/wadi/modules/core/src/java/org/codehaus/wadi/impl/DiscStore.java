@@ -17,6 +17,7 @@
 package org.codehaus.wadi.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
@@ -36,13 +37,16 @@ public class DiscStore implements Store, DiscMotableConfig {
 
     public DiscStore(Streamer streamer, File dir, boolean useNIO) throws Exception {
         _streamer=streamer;
-        assert dir.exists();
-        assert dir.isDirectory();
-        assert dir.canRead();
-        assert dir.canWrite();
         _dir=dir;
         _useNIO=useNIO;
         
+        try {
+        	File.createTempFile("DiscStore_WriteTest",null , _dir).delete();
+        } catch (IOException e) {
+        	_log.error("bad directory: "+_dir, e);
+        	throw e;
+        }
+        	
         // TODO - for use by a SharedStoreContextualiser we need to figure out concurrency issues...
     }
     
