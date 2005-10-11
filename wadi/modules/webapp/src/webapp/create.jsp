@@ -23,6 +23,7 @@
 	  <p/>
 	    <table>
 	      <%
+	      synchronized (session) {
 	      session.setAttribute(""+session.getLastAccessedTime(), new CustomString(colour));
 	      int j=0;
 	      for (Enumeration e=session.getAttributeNames(); e.hasMoreElements() && j<15;j++)
@@ -35,6 +36,7 @@
 		</th>
 	      </tr>
 	      <%
+	      }
 	      }
 	      %>
 	    </table>
