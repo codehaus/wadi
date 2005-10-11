@@ -27,7 +27,6 @@
     TreeSet keys=new TreeSet();
     synchronized (session)
     {
-      String[] names=session.getValueNames();
       for (Enumeration e=session.getAttributeNames(); e.hasMoreElements();)
       keys.add(e.nextElement());
     }
@@ -60,10 +59,10 @@
 	      <%
 	      while (c++<cols)
 		{
-		String bg="black";
+		Object bg="black";
 
 		if (k.hasNext())
-		bg=(String)session.getValue((String)k.next());
+		bg=session.getValue((String)k.next());
 
 		%>
 		<td bgcolor="<%= bg %>" width="25" height="25"/>
