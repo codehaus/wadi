@@ -161,12 +161,17 @@ public class RWLock implements ReadWriteLock {
     return pass;
   }
 
+  protected boolean notifyReadEnded() {
+	  // TODO - run some form of callback here, before accepting fresh locks.
+	  return true;
+  }
+  
   /**
    * Called upon termination of a read.
    * Returns the object to signal to wake up a waiter, or null if no such
    **/
   protected synchronized Signaller endRead() {
-    if (--activeReaders_ == 0 && waitingWriters_ > 0)
+    if ((--activeReaders_==0 && notifyReadEnded()) && waitingWriters_ > 0)
       return writerLock_;
     else
     {
