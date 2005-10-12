@@ -17,7 +17,7 @@
 package org.codehaus.wadi;
 
 /**
- * TODO - JavaDoc this type
+ * Defines Objects holding the configuration required by a DistributableSession
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

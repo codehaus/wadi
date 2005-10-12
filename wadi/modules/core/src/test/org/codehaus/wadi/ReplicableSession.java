@@ -19,7 +19,7 @@ package org.codehaus.wadi;
 import org.codehaus.wadi.impl.DistributableSession;
 
 /**
- * TODO - JavaDoc this type
+ * A DistributableSession enhanced with functionality associated with replication - the frequent 'backing-up' of its content to provide against catastrophic failure.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

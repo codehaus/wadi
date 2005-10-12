@@ -44,6 +44,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.impl.StandardManager;
+import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.Filter;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.impl.StandardManager;
@@ -111,7 +112,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 	public void start() throws LifecycleException {
 		try {
 			InputStream is=getServletContext().getResourceAsStream("/WEB-INF/wadi-web.xml");
-			_wadi=(StandardManager)SpringManagerFactory.create(is, "SessionManager", new TomcatSessionFactory(), new TomcatSessionWrapperFactory());
+			_wadi=(StandardManager)SpringManagerFactory.create(is, "SessionManager", new TomcatSessionFactory(), new StandardSessionWrapperFactory());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

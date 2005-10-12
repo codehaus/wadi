@@ -14,13 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.tomcat50;
+package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionWrapperFactory;
 
-public class TomcatSessionWrapperFactory implements SessionWrapperFactory {
+public class StandardSessionWrapperFactory implements SessionWrapperFactory {
 
-    public javax.servlet.http.HttpSession create(Session session) {return new HttpSession(session);}
+    public javax.servlet.http.HttpSession create(Session session) {return new SessionWrapper(session);}
 
 }
