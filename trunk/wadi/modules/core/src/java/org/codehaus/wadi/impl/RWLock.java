@@ -44,6 +44,7 @@ package org.codehaus.wadi.impl;
 import EDU.oswego.cs.dl.util.concurrent.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.RWLockListener;
 
 /**
  * A read-write lock. Writers are preferred. Writers are ordered
@@ -77,6 +78,12 @@ public class RWLock implements ReadWriteLock {
       return tmp;
   }
 
+  protected RWLockListener _listener; // cheaper than an array of Listeners and we only need 0-1 (currently)
+  
+  public void setListener(RWLockListener listener) {
+	  _listener=listener;
+  }
+  
   protected final ReaderLock readerLock_ = new ReaderLock();
   protected final WriterLock writerLock_ = new WriterLock();
 
@@ -162,7 +169,9 @@ public class RWLock implements ReadWriteLock {
   }
 
   protected boolean notifyReadEnded() {
-	  // TODO - run some form of callback here, before accepting fresh locks.
+	  if (_listener!=null)
+		  _listener.readEnded();
+	  
 	  return true;
   }
   

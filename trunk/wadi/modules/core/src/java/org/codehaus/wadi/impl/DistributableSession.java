@@ -27,7 +27,7 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueHelper;
 
 /**
- * TODO - JavaDoc this type
+ * A Standard Session enhanced with functionality associated with [de]serialisation - necessary to allow the movement of the session from jvm to jvm/storage.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

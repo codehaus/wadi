@@ -14,13 +14,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.tomcat55;
 
-import org.codehaus.wadi.Session;
-import org.codehaus.wadi.SessionWrapperFactory;
+package org.codehaus.wadi;
 
-public class TomcatSessionWrapperFactory implements SessionWrapperFactory {
-
-    public javax.servlet.http.HttpSession create(Session session) {return new HttpSession(session);}
+/**
+ * Defines Objects holding the configuration required by a ReplicableSession
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public interface ReplicableSessionConfig extends DistributableSessionConfig {
 
 }
