@@ -30,6 +30,11 @@ import org.codehaus.wadi.ValueHelper;
 /**
  * An attribute Value that supports the notification of HttpSessionActivationListeners at the correct
  * times as well as the substition of non-Serializable content with the results of pluggable Helpers.
+ * This allows us to deal with the special cases mentioned in J2EE.6.4 in a non
+ * app-server specific manner. In other words, we can deal with attributes that
+ * are non-serialisable, provided that the application writer provides a mechanism
+ * for their persistance. Types such as EJBHome, EJBObject etc. are likely to be placed
+ * into distributable Sessions.
  * It does not expect to be accessed after serialisation, until a fresh deserialisation has occurred.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -43,6 +48,7 @@ public class DistributableValue extends StandardValue implements SerializableCon
     protected ValueHelper _helper;
     
     public synchronized Object setValue(Object newValue) {
+    	// set up helper if needed or warn if needed but not available...
         if (newValue!=null && !(newValue instanceof Serializable) && (_helper=((DistributableValueConfig)_config).findHelper(newValue.getClass()))==null)
             throw new IllegalArgumentException("Distributable HttpSession attribute values must be Serializable or of other designated type (see SRV.7.7.2)");
 
@@ -50,21 +56,28 @@ public class DistributableValue extends StandardValue implements SerializableCon
     }
      
     public synchronized void writeContent(ObjectOutput oo) throws IOException {
+    	// make necessary notification
         if (_value!=null && _value instanceof HttpSessionActivationListener) {
             ((HttpSessionActivationListener)_value).sessionWillPassivate(_config==null?null:((DistributableValueConfig)_config).getHttpSessionEvent());
         }
 
+        // use helper, if present, to serialise
         Object value=(_helper==null?_value:_helper.replace(_value));
+        
         oo.writeObject(value);
     }
     
     public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-        if ((_value=_value=oi.readObject())!=null && _value instanceof HttpSessionActivationListener) {
-            ((HttpSessionActivationListener)_value).sessionDidActivate(_config==null?null:((DistributableValueConfig)_config).getHttpSessionEvent());
-        }
-        
+    	_value=oi.readObject();
+    	
+        // reinstate helper, if one was used.
         if (_value!=null && !(_value instanceof Serializable))
             _helper=((DistributableValueConfig)_config).findHelper(_value.getClass());
+
+    	// make necessary notification
+        if (_value!=null && _value instanceof HttpSessionActivationListener) {
+            ((HttpSessionActivationListener)_value).sessionDidActivate(_config==null?null:((DistributableValueConfig)_config).getHttpSessionEvent());
+        }
     }
 
 }
