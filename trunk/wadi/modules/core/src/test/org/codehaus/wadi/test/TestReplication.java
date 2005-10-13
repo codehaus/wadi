@@ -28,6 +28,7 @@ import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AlwaysEvicter;
 import org.codehaus.wadi.impl.DatabaseMotable;
+import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DiscStore;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableManager;
@@ -37,6 +38,7 @@ import org.codehaus.wadi.impl.DummyHttpServletRequest;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.impl.ExclusiveStoreContextualiser;
+import org.codehaus.wadi.impl.GiannisContextualiser;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.NeverEvicter;
@@ -90,18 +92,16 @@ public class TestReplication extends TestCase {
         DataSource ds=msds;
         String table="TEST";
         DatabaseMotable.init(ds, table);
-        Contextualiser db=new SharedStoreContextualiser(terminator, collapser, true, ds, table);
+        Contextualiser db=new SharedStoreContextualiser(terminator, collapser, true, ds, "STORE");
 
-        // Disc
+        // Gianni
         Evicter devicter=new NeverEvicter(sweepInterval, strictOrdering);
         Map dmap=new HashMap();
-        File dir=Utils.createTempDirectory("wadi-", ".sessions", new File("/tmp"));
-        dir.mkdir();
-        Contextualiser disc=new ExclusiveStoreContextualiser(db, collapser, true, devicter, dmap, streamer, dir);
+        Contextualiser spool=new GiannisContextualiser(db, collapser, true, devicter, dmap, new DatabaseStore(ds, "SPOOL", false));
         
         Map mmap=new HashMap();
         
-        Contextualiser serial=new SerialContextualiser(disc, collapser, mmap);
+        Contextualiser serial=new SerialContextualiser(spool, collapser, mmap);
 
         SessionPool sessionPool=new SimpleSessionPool(new ReplicableSessionFactory());
         
@@ -134,22 +134,24 @@ public class TestReplication extends TestCase {
         assertTrue(dmap.size()==0);
         
         _log.info("TOUCHING SESSION");
+        long lat=session.getLastAccessedTime();
         memory.contextualise(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }, name, null, null, false);
+        assert(lat!=session.getLastAccessedTime());
         session=(ReplicableSession)mmap.get(name);
         assertTrue(mmap.size()==1);
         assertTrue(dmap.size()==0);
 
-        _log.info("DEMOTING SESSION to Disc");
+        _log.info("DEMOTING SESSION to short-term SPOOL");
         mevicter.evict();
         assertTrue(mmap.size()==0);
         assertTrue(dmap.size()==1);
         
-        _log.info("DEMOTING SESSION to Database");
+        _log.info("DEMOTING SESSION to long-term STORE");
         manager.stop();
         assertTrue(mmap.size()==0);
         assertTrue(dmap.size()==0);
 
-        _log.info("PROMOTING SESSION to Disc");
+        _log.info("PROMOTING SESSION to short-term SPOOL");
         manager.start();
         assertTrue(mmap.size()==0);
         assertTrue(dmap.size()==1);
@@ -169,7 +171,6 @@ public class TestReplication extends TestCase {
         
         manager.stop();
 
-        dir.delete();
         DatabaseMotable.destroy(ds, table);
     }
 }
