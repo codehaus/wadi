@@ -20,12 +20,7 @@ import org.codehaus.wadi.Value;
 import org.codehaus.wadi.ValueConfig;
 
 /**
- * Allows [de]serialisation of its content via optional pluggable Helper class.
- * This allows us to deal with the special cases mentioned in J2EE.6.4 in a non
- * app-server specific manner. In other words, we can deal with attributes that
- * are non-serialisable, provided that the application writer provides a mechanism
- * for their persistance. Types such as EJBHome, EJBObject etc. are likely to be placed
- * into distributable Sessions.
+ * A simple slot for holding and Attribute's value
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -35,7 +30,9 @@ public class StandardValue implements Value {
     
     protected final ValueConfig _config;
     
-    public StandardValue(ValueConfig config) {_config=config;}
+    public StandardValue(ValueConfig config) {
+    	_config=config;
+    }
     
     protected Object _value;
     
@@ -48,4 +45,5 @@ public class StandardValue implements Value {
         _value=newValue;
         return oldValue;
     }	
+
 }
