@@ -59,10 +59,8 @@ import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
-import org.codehaus.wadi.impl.DummyCluster;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyRouter;
-import org.codehaus.wadi.impl.DummySessionWrapperFactory;
 import org.codehaus.wadi.impl.LazyAttributesFactory;
 import org.codehaus.wadi.impl.LazyValueFactory;
 import org.codehaus.wadi.impl.StandardHttpProxy;
@@ -72,11 +70,10 @@ import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardAttributesFactory;
 import org.codehaus.wadi.impl.StandardSessionFactory;
+import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.StandardValueFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.io.impl.DummyServer;
-import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 /**
  * Test WADI's HttpSession implementation
@@ -99,7 +96,7 @@ extends TestCase
     protected Router                  _router=new DummyRouter();
     // Standard
     protected Contextualiser          _standardContextualiser=new DummyContextualiser();
-    protected SessionWrapperFactory   _standardSessionWrapperFactory=new DummySessionWrapperFactory();
+    protected SessionWrapperFactory   _standardSessionWrapperFactory=new StandardSessionWrapperFactory();
     protected SessionIdFactory        _standardSessionIdFactory=new TomcatSessionIdFactory();
     protected AttributesFactory       _standardAttributesFactory=new StandardAttributesFactory();
     protected SessionFactory          _standardSessionFactory=new StandardSessionFactory();
