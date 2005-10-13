@@ -148,7 +148,7 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
     }
 
     public StoreMotable create() {
-        return null; //new SharedJDBCImmoter(); - TODO
+        return new DatabaseMotable();
     }
     
     // DatabaseMotableConfig
