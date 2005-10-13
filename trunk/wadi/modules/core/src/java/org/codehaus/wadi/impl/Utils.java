@@ -18,6 +18,7 @@ package org.codehaus.wadi.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -242,5 +243,12 @@ public class Utils {
             }
         } while (Thread.interrupted());
     }  
+    
+    public static File createTempDirectory(String prefix, String suffix, File directory) throws IOException {
+    	File dir=File.createTempFile(prefix, suffix, directory);
+    	dir.delete();
+    	dir.mkdir();
+    	return dir;
+    }
     
 }
