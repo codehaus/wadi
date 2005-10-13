@@ -57,6 +57,7 @@ import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardHttpProxy;
+import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 
@@ -131,7 +132,7 @@ public class TestEvicters extends TestCase {
         // Manager
         AttributesFactory attributesFactory=new DistributableAttributesFactory();
         ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
-        SessionWrapperFactory wrapperFactory=new DummySessionWrapperFactory();
+        SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
         SessionIdFactory idFactory=new TomcatSessionIdFactory();
         HttpProxy httpProxy=new StandardHttpProxy("jsessionid");
         InetSocketAddress httpAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8888);

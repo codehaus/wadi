@@ -98,6 +98,7 @@ import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardAttributesFactory;
 import org.codehaus.wadi.impl.StandardSessionFactory;
+import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.StandardValueFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
@@ -458,7 +459,7 @@ public class TestContextualiser extends TestCase {
     protected final Contextualiser _dummyContextualiser=new DummyContextualiser();
     protected final File _dir=new File("/tmp/wadi-test-"+System.currentTimeMillis());
     protected final Collapser _collapser=new HashingCollapser(1, 2000);
-    protected final SessionWrapperFactory _sessionWrapperFactory=new DummySessionWrapperFactory();
+    protected final SessionWrapperFactory _sessionWrapperFactory=new StandardSessionWrapperFactory();
     protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
     protected final boolean _accessOnLoad=true;
     protected final Router _router=new DummyRouter();
