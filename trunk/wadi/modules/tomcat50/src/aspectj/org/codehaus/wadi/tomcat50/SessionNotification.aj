@@ -25,6 +25,7 @@ import org.apache.catalina.SessionEvent;
 import org.apache.catalina.SessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.impl.SessionWrapper;
 
 // corresponds to calls to fireSessionEvent in
 // org.apache.catalina.session.StandardSession
@@ -71,7 +72,7 @@ public privileged aspect
   void
     notify(javax.servlet.http.HttpSession session, String name)
   {
-    TomcatSession impl=(TomcatSession)((HttpSession)session)._session; // TODO - hacky
+    TomcatSession impl=(TomcatSession)((SessionWrapper)session)._session; // TODO - hacky
     List listeners=impl.getSessionListeners();
     int n=listeners.size();
     if (n>0)
