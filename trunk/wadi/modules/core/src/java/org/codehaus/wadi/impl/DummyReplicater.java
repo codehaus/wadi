@@ -2,9 +2,9 @@ package org.codehaus.wadi.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Replicater;
+import org.codehaus.wadi.NewReplicater;
 
-public class DummyReplicater implements Replicater {
+public class DummyReplicater implements NewReplicater {
 
     protected final Log _log = LogFactory.getLog(getClass());
 
