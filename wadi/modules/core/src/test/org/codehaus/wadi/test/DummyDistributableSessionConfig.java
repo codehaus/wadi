@@ -36,6 +36,7 @@ import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
+import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 
 public class DummyDistributableSessionConfig implements DistributableSessionConfig {
@@ -68,7 +69,7 @@ public class DummyDistributableSessionConfig implements DistributableSessionConf
         throw new UnsupportedOperationException();
     }
     
-    protected final SessionWrapperFactory _sessionWrapperFactory=new DummySessionWrapperFactory();
+    protected final SessionWrapperFactory _sessionWrapperFactory=new StandardSessionWrapperFactory();
     public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperFactory;}
 
     protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();

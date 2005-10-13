@@ -33,6 +33,7 @@ import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.SimpleValuePool;
+import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 
 class DummyStandardSessionConfig implements SessionConfig {
@@ -53,7 +54,7 @@ class DummyStandardSessionConfig implements SessionConfig {
     
     public void destroy(Session session) {_config.expire(session);}
     
-    protected final SessionWrapperFactory _sessionWrapperfactory=new DummySessionWrapperFactory();
+    protected final SessionWrapperFactory _sessionWrapperfactory=new StandardSessionWrapperFactory();
     public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperfactory;}
     
     protected SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();

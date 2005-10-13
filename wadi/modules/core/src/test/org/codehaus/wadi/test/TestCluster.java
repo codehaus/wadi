@@ -73,6 +73,7 @@ import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardManager;
+import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 
@@ -89,7 +90,7 @@ public class TestCluster extends TestCase {
     protected final Streamer _streamer=new SimpleStreamer();
     protected final Contextualiser _dummyContextualiser=new DummyContextualiser();
     protected final Collapser _collapser=new HashingCollapser(10, 2000);
-    protected final SessionWrapperFactory _sessionWrapperFactory=new DummySessionWrapperFactory();
+    protected final SessionWrapperFactory _sessionWrapperFactory=new StandardSessionWrapperFactory();
     protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
     protected final boolean _accessOnLoad=true;
     protected final Router _router=new DummyRouter();
