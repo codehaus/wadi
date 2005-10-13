@@ -67,14 +67,13 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
     protected final Log _log=LogFactory.getLog(getClass());
     protected final int _sweepInterval;
     protected final boolean _strictOrdering;
-    protected final TimerTask _task;
+    protected TimerTask _task;
 
     protected EvicterConfig _config;
 
     public AbstractBestEffortEvicter(int sweepInterval, boolean strictOrdering) {
         _sweepInterval=sweepInterval;
         _strictOrdering=strictOrdering;
-        _task=new BestEffortTask();
     }
 
     public void init(EvicterConfig config) {
@@ -85,7 +84,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
     public void start() throws Exception {
         if (_log.isTraceEnabled()) _log.trace("starting (sweep interval: "+_sweepInterval+" sec[s])");
         long interval=_sweepInterval*1000;
-        _config.getTimer().schedule(_task, interval, interval);
+        _config.getTimer().schedule((_task=new BestEffortTask()), interval, interval);
     }
 
     public void stop() throws Exception {
