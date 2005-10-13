@@ -83,10 +83,10 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
         Statement s=null;
         try {
             s=_connection.createStatement();
-            s.executeUpdate("DELETE FROM "+_config.getTable()+" WHERE Id='"+_name+"'");
+            s.executeUpdate("DELETE FROM "+_config.getTable()+" WHERE Name='"+_name+"'");
             if (_log.isTraceEnabled()) _log.trace("removed (database): "+_name);
         } catch (SQLException e) {
-            if (_log.isErrorEnabled()) _log.error("remove (database) failed: "+_name);
+            if (_log.isErrorEnabled()) _log.error("remove (database) failed: "+_name, e);
         } finally {
             try {
                 if (s!=null)
@@ -185,9 +185,10 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
         Connection c=dataSource.getConnection();
         Statement s=c.createStatement();
         try {
-            s.execute("CREATE TABLE "+table+"(Name varchar, CreationTime long, LastAccessedTime long, MaxInactiveInterval int, Body java_object)");
+            s.execute("CREATE TABLE "+table+"(Name varchar(50), CreationTime long, LastAccessedTime long, MaxInactiveInterval int, Body varbinary("+700*1024+"))");
         } catch (SQLException e) {
             // ignore - table may already exist...
+        	_log.warn(e);
         }
         s.close();
         c.close();
@@ -200,6 +201,7 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
             s.execute("DROP TABLE "+table);
         } catch (SQLException e) {
             // ignore - table may have already been deleted...
+        	_log.warn(e);
         }
 //      s.execute("SHUTDOWN");
         s.close();
