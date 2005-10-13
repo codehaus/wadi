@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.tomcat55;
 
-import org.codehaus.wadi.DistributableSessionConfig;
+import org.codehaus.wadi.ReplicableSessionConfig;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionConfig;
 import org.codehaus.wadi.SessionFactory;
@@ -24,7 +24,7 @@ import org.codehaus.wadi.SessionFactory;
 public class TomcatSessionFactory implements SessionFactory {
 
     public Session create(SessionConfig config) {
-        return new TomcatSession((DistributableSessionConfig)config);
+        return new TomcatSession((ReplicableSessionConfig)config);
     }
 
 }
