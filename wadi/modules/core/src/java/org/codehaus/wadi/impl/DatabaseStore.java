@@ -32,11 +32,13 @@ import org.codehaus.wadi.StoreMotable;
 public class DatabaseStore implements Store, DatabaseMotableConfig {
 
     protected final Log _log=LogFactory.getLog(getClass());
+    protected final String _label;
     protected final DataSource _dataSource;
     protected final String _table;
     protected final boolean _useNIO;
 
-    public DatabaseStore(DataSource dataSource, String table, boolean useNIO) {
+    public DatabaseStore(String label, DataSource dataSource, String table, boolean useNIO) {
+    	_label=label;
         _dataSource=dataSource;
         _table=table;
         _useNIO=useNIO;
@@ -47,7 +49,8 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
         	_log.warn("unexpected exception", e);
         }
     }
-    
+
+    public String getLabel() {return _label;}
     public DataSource getDataSource() {return _dataSource;}
     public Connection getConnection() throws SQLException {return _dataSource.getConnection();}
     public String getTable() {return _table;}
@@ -144,7 +147,7 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
     }
 
     public String getDescription() {
-        return "shared database";
+        return "database ["+_label+"/"+_table+"]";
     }
 
     public StoreMotable create() {

@@ -34,9 +34,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public interface Immoter extends Moter {
 
-    boolean prepare(String name, Motable emotable, Motable immotable);
-    
-	Motable nextMotable(String id, Motable emotable);
-
+    Motable nextMotable(String id, Motable emotable);
 	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) throws IOException, ServletException;
+	
 }

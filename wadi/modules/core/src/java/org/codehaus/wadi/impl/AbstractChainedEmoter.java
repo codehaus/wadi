@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Motable;
 
@@ -28,8 +30,16 @@ import org.codehaus.wadi.Motable;
  */
 public abstract class AbstractChainedEmoter implements Emoter {
 
-	public boolean prepare(String name, Motable emotable) {
-		return true;
+	protected final Log _log=LogFactory.getLog(getClass());
+	
+	public boolean prepare(String name, Motable emotable, Motable immotable) {
+		try {
+			immotable.copy(emotable);
+			return true;
+		} catch (Exception e) {
+			if (_log.isWarnEnabled()) _log.warn("problem during insertion: "+name, e);
+			return false;
+		}
 	}
 
 	public void commit(String name, Motable emotable) {

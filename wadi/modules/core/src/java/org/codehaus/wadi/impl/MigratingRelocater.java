@@ -120,7 +120,7 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
 		    _message=message;
 		}
 
-		public boolean prepare(String name, Motable emotable) {
+		public boolean prepare(String name, Motable emotable, Motable immotable) {
 			return true;
 		}
 

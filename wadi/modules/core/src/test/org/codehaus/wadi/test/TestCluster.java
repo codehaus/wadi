@@ -116,7 +116,7 @@ public class TestCluster extends TestCase {
         protected final ClusteredManager _manager;
         
         public MyNode(String nodeName, ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
-            _bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, ds, table);
+            _bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, "test", ds, table);
             _clusterName=clusterName;
             _nodeName=nodeName;
             _dispatcher=new Dispatcher();

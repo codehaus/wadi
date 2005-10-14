@@ -50,7 +50,7 @@ public class TestMotables extends TestCase {
         DataSource ds=new AxionDataSource("jdbc:axiondb:testdb");
         String table="SESSIONS";
         DatabaseMotable.init(ds, table);
-        testDatabaseMotables(new DatabaseStore(ds, table, false));
+        testDatabaseMotables(new DatabaseStore("test", ds, table, false));
 //        testDatabaseMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), true));
     }
 

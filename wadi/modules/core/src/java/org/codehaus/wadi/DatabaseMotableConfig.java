@@ -20,6 +20,7 @@ import javax.sql.DataSource;
 
 public interface DatabaseMotableConfig extends StoreMotableConfig {
 
+	String getLabel();
     DataSource getDataSource();
     String getTable();
     

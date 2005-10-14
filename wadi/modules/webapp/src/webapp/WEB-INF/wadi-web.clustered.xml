@@ -140,6 +140,7 @@
     <constructor-arg><ref bean="DummyContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="Collapser"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg><value>jdbc:axiondb:testdb</value></constructor-arg>
     <constructor-arg><ref bean="DataSource"/></constructor-arg>
     <constructor-arg><value>WADI</value></constructor-arg>
   </bean>

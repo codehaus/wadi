@@ -88,16 +88,20 @@ public class TestReplication extends TestCase {
         // DB
         //DataSource ds=new AxionDataSource("jdbc:axiondb:WADI");
         MysqlDataSource msds=new MysqlDataSource();
-        msds.setUrl("jdbc:mysql://localhost:3306/WADI?user=root");
+        String url="jdbc:mysql://localhost:3306/WADI";
+        msds.setUrl(url+"?user=root");
         DataSource ds=msds;
-        String table="TEST";
-        DatabaseMotable.init(ds, table);
-        Contextualiser db=new SharedStoreContextualiser(terminator, collapser, true, ds, "STORE");
+        String storeTable="STORE";
+        DatabaseMotable.init(ds, storeTable);
+        Contextualiser db=new SharedStoreContextualiser(terminator, collapser, true, url, ds, storeTable);
 
         // Gianni
         Evicter devicter=new NeverEvicter(sweepInterval, strictOrdering);
         Map dmap=new HashMap();
-        Contextualiser spool=new GiannisContextualiser(db, collapser, true, devicter, dmap, new DatabaseStore(ds, "SPOOL", false));
+        String spoolTable="SPOOL";
+        //Contextualiser spool=new GiannisContextualiser(db, collapser, true, devicter, dmap, new DatabaseStore(url, ds, spoolTable, false));
+        File dir=Utils.createTempDirectory("wadi", ".test", new File("/tmp"));
+        Contextualiser spool=new ExclusiveStoreContextualiser(db, collapser, false, devicter, dmap, new SimpleStreamer(), dir);
         
         Map mmap=new HashMap();
         
@@ -171,6 +175,8 @@ public class TestReplication extends TestCase {
         
         manager.stop();
 
-        DatabaseMotable.destroy(ds, table);
+        DatabaseMotable.destroy(ds, storeTable);
+        DatabaseMotable.destroy(ds, spoolTable);
+        dir.delete();
     }
 }

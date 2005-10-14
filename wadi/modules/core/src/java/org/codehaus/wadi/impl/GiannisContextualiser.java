@@ -1,6 +1,5 @@
 package org.codehaus.wadi.impl;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
@@ -8,13 +7,10 @@ import java.util.Map;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
-import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.Store;
-import org.codehaus.wadi.StoreMotable;
 
 /**
  * Maps id:File where file contains Context content...
@@ -26,24 +22,24 @@ public class GiannisContextualiser extends AbstractExclusiveContextualiser {
 
     protected final Immoter _immoter;
 	protected final Emoter _emoter;
-	protected final DatabaseStore _dbstore;
+	protected final DatabaseStore _store;
 
 	public GiannisContextualiser(Contextualiser next, Collapser collapser, boolean clean, Evicter evicter, Map map, DatabaseStore dbstore) throws Exception {
 	    super(next, new CollapsingLocker(collapser), clean, evicter, map);
-	    _immoter=new ExclusiveStoreImmoter(_map);
-	    _emoter=new ExclusiveStoreEmoter(_map);
-	    _dbstore=dbstore;
+	    _immoter=new GiannisImmoter(_map);
+	    _emoter=new GiannisEmoter(_map);
+	    _store=dbstore;
 	}
 
     public void init(ContextualiserConfig config) {
         super.init(config);
         // perhaps this should be done in start() ?
         if (_clean)
-            _dbstore.clean();
+            _store.clean();
     }
     
     public String getStartInfo() {
-        return "["+_dbstore.getStartInfo()+"]";
+        return "["+_store.getStartInfo()+"]";
     }
     
 	public boolean isExclusive(){
@@ -58,27 +54,28 @@ public class GiannisContextualiser extends AbstractExclusiveContextualiser {
 		return _emoter;
 	}
 	
-	class ExclusiveStoreImmoter extends AbstractMappedImmoter {
+	class GiannisImmoter extends AbstractMappedImmoter {
 
-	    public ExclusiveStoreImmoter(Map map) {
+	    public GiannisImmoter(Map map) {
 	        super(map);
 	    }
 
 		public Motable nextMotable(String name, Motable emotable) {
-            return _dbstore.create(); // TODO - Pool, maybe as ThreadLocal
+            return _store.create(); // TODO - Pool, maybe as ThreadLocal
 		}
 
 		public boolean prepare(String name, Motable emotable, Motable immotable) {
 			try {
-				Connection connection=_dbstore.getDataSource().getConnection();
+				Connection connection=_store.getDataSource().getConnection();
 				DatabaseMotable motable=(DatabaseMotable)immotable;
 				motable.setConnection(connection);
-                motable.init(_dbstore);
+                motable.init(_store);
 			} catch (Exception e) {
-                if (_log.isErrorEnabled()) _log.error("store ("+_dbstore.getDescription()+") failed", e);
+                if (_log.isErrorEnabled()) _log.error("store ("+_store.getDescription()+") failed", e);
 				return false;
 			}
 
+			// inserts immotable into map
 			return super.prepare(name, emotable, immotable);
 		}
 		
@@ -87,88 +84,94 @@ public class GiannisContextualiser extends AbstractExclusiveContextualiser {
 			Connection connection=motable.getConnection();
 			motable.setConnection(null);
 			try {
+				// noop
+				super.commit(name, immotable);
 				connection.close();
 			} catch (SQLException e) {
-                if (_log.isWarnEnabled()) _log.warn("store ("+_dbstore.getDescription()+") problem", e);
+                if (_log.isWarnEnabled()) _log.warn("store ("+_store.getDescription()+") problem", e);
 			}
-			super.commit(name, immotable);
 		}
 
 		public void rollback(String name, Motable immotable) {
-			super.rollback(name, immotable);
 			DatabaseMotable motable=((DatabaseMotable)immotable);
 			Connection connection=motable.getConnection();
 			motable.setConnection(null);
 			try {
+				// remove immotable from map
+				// destroy immotable
+				super.rollback(name, immotable);
 				connection.rollback();
 				connection.close();
 			} catch (SQLException e) {
-                if (_log.isWarnEnabled()) _log.warn("store ("+_dbstore.getDescription()+") problem", e);
+                if (_log.isWarnEnabled()) _log.warn("store ("+_store.getDescription()+") problem", e);
 			}
 		}
 		
 		public String getInfo() {
-			return _dbstore.getDescription();
+			return _store.getDescription();
 		}
 	}
 
-	class ExclusiveStoreEmoter extends AbstractMappedEmoter {
+	class GiannisEmoter extends AbstractMappedEmoter {
 
-		public ExclusiveStoreEmoter(Map map) {super(map);}
+		public GiannisEmoter(Map map) {super(map);}
 
-        public boolean prepare(String name, Motable emotable) {
-            if (super.prepare(name, emotable)) { // removes from map - should not...
-                try {
-                    DatabaseMotable motable=(DatabaseMotable)emotable;
-                    motable.setConnection(_dbstore.getConnection());
-                    motable.init(_dbstore, name);   // waste of time
-                } catch (Exception e) {
-                    if (_log.isErrorEnabled()) _log.error("load ("+_dbstore.getDescription()+") failed", e);
-                    return false;
-                }
-            } else
-                return false;
-            
-            return true;
-        }
+		public boolean prepare(String name, Motable emotable, Motable immotable) {
+			try {
+				DatabaseMotable motable=(DatabaseMotable)emotable;
+				motable.setConnection(_store.getConnection());
+				//motable.init(_store, name); // only loads header, we could load body as well...
+				// copies emotable content into immotable
+				return super.prepare(name, emotable, immotable);
+			} catch (Exception e) {
+				if (_log.isErrorEnabled()) _log.error("load ("+_store.getDescription()+") failed", e);
+				return false;
+			}
+		}
         
 		public void commit(String name, Motable emotable) {
-			super.commit(name, emotable);
 			DatabaseMotable motable=((DatabaseMotable)emotable);
 			Connection connection=motable.getConnection();
+			// remove emotable from map
+			// destroy emotable
+			super.commit(name, emotable);
 			motable.setConnection(null);
 			try {
 				connection.close();
 			} catch (SQLException e) {
-				if (_log.isWarnEnabled()) _log.warn("load ("+_dbstore.getDescription()+") problem", e);
+				if (_log.isWarnEnabled()) _log.warn("load ("+_store.getDescription()+") problem", e);
 			}
 		}
 
 		public void rollback(String name, Motable emotable) {
-			super.rollback(name, emotable);
 			DatabaseMotable motable=((DatabaseMotable)emotable);
 			Connection connection=motable.getConnection();
 			motable.setConnection(null);
 			try {
+				// noop
+				super.rollback(name, emotable);
 				connection.rollback();
 				connection.close();
 			} catch (SQLException e) {
-                if (_log.isWarnEnabled()) _log.warn("load ("+_dbstore.getDescription()+") problem", e);
+                if (_log.isWarnEnabled()) _log.warn("load ("+_store.getDescription()+") problem", e);
 			}
 		}
 		
 		public String getInfo() {
-			return _dbstore.getDescription();
+			return _store.getDescription();
 		}
 	}
 
     public void start() throws Exception {
-        Store.Putter putter=new Store.Putter() {
-            public void put(String name, Motable motable) {
-                _map.put(name, motable);
-            }
-        };
-        _dbstore.load(putter, ((DistributableContextualiserConfig)_config).getAccessOnLoad());
+//        Store.Putter putter=new Store.Putter() {
+//            public void put(String name, Motable motable) {
+//                _map.put(name, motable);
+//            }
+//        };
+//        _store.load(putter, ((DistributableContextualiserConfig)_config).getAccessOnLoad());
+    	
+    	// TODO - create DBMotables for all entries BEFORE any are promoted from further down the stack...
+    	
         super.start(); // continue down chain...
     }
 
