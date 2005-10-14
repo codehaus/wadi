@@ -18,6 +18,7 @@ package org.codehaus.wadi.impl;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
@@ -106,7 +107,7 @@ public class HybridRelocater extends AbstractRelocater {
             if (!emotable.checkTimeframe(System.currentTimeMillis()))
                 if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
             
-            Emoter emoter=new RelocationAcknowledgementEmoter(response.getNodeName(), message2);
+            Emoter emoter=new RelocationEmoter(response.getNodeName(), message2);
             Motable immotable=Utils.mote(emoter, immoter, emotable, name);
             if (null==immotable)
                 return false;
@@ -139,31 +140,44 @@ public class HybridRelocater extends AbstractRelocater {
         return false;
     }
     
-    class RelocationAcknowledgementEmoter extends AbstractChainedEmoter {
+    /* We send a RelocationRequest out to fetch a Session. We receive a RelocationResponse containing the Session. We pass a RelocationEmoter
+     * down the Contetualiser stack. It passes the incoming Session out to the relevant Contextualiser and sends a RelocationAcknowledgment
+     * back to the src of the RelocationResponse. (could be done in a Motable like Immoter?)
+     */
+    
+    class RelocationEmoter extends AbstractChainedEmoter {
         protected final Log _log=LogFactory.getLog(getClass());
         
         protected final String _nodeName;
         protected final ObjectMessage _message;
         
-        public RelocationAcknowledgementEmoter(String nodeName, ObjectMessage message) {
+        public RelocationEmoter(String nodeName, ObjectMessage message) {
             _nodeName=nodeName;
             _message=message;
         }
         
         public boolean prepare(String name, Motable emotable, Motable immotable) {
+        	try {
+        		immotable.copy(emotable);
+        	} catch (Exception e) {
+        		_log.warn(e);
+        		return false;
+        	}
+            _config.notifySessionRelocation(name);
+            
+            // TODO - move some of this to prepare()...
+            if (_log.isTraceEnabled()) _log.trace("sending RelocationAcknowledgement");
+            RelocationAcknowledgement ack=new RelocationAcknowledgement();//(name, _config.getLocation()); 
+            if (!_config.getDispatcher().reply(_message, ack)) {
+                if (_log.isErrorEnabled()) _log.error("could not send RelocationAcknowledgement: "+name);
+                return false;
+            }
+
             return true;
         }
         
         public void commit(String name, Motable emotable) {
             emotable.destroy(); // remove copy in store
-            
-            _config.notifySessionRelocation(name);
-            
-            // TODO - move some of this to prepare()...
-            if (_log.isTraceEnabled()) _log.trace("sending RelocationAcknowledgement");
-            RelocationAcknowledgement ack=new RelocationAcknowledgement();//(name, _config.getLocation());
-            if (!_config.getDispatcher().reply(_message, ack))
-                if (_log.isErrorEnabled()) _log.error("could not send RelocationAcknowledgement: "+name);
         }
         
         public void rollback(String name, Motable motable) {
@@ -226,7 +240,7 @@ public class HybridRelocater extends AbstractRelocater {
         
         try {
             // reverse direction...
-            Immoter promoter=new RelocationResponseImmoter(nodeName, om);
+            Immoter promoter=new RelocationImmoter(nodeName, om);
             RankedRWLock.setPriority(RankedRWLock.EMIGRATION_PRIORITY);
             boolean found=_contextualiser.contextualise(null,null,null,sessionName, promoter, motionLock, true); // if we own session, this will send the correct response...
             if (found)
@@ -241,53 +255,74 @@ public class HybridRelocater extends AbstractRelocater {
         // TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
     }
     
+    class ClusterEmotable extends AbstractMotable {
+    
+    	protected final String _name;
+        protected final String _tgtNodeName;
+        protected ObjectMessage _message;
+
+        public ClusterEmotable(String name, String nodeName, ObjectMessage message) {
+        	_name=name;
+            _tgtNodeName=nodeName;
+            _message=message;
+        }
+        public byte[] getBodyAsByteArray() throws Exception {
+        	throw new UnsupportedOperationException();
+        }
+        
+        public void setBodyAsByteArray(byte[] bytes) throws Exception {
+            // send the message
+            if (_log.isTraceEnabled()) _log.trace("sending RelocationResponse");
+            Motable immotable=new SimpleMotable();
+            immotable.setBodyAsByteArray(bytes);
+            RelocationResponse response=new RelocationResponse(_name, _nodeName, immotable);
+            ObjectMessage message=_dispatcher.exchangeReply(_message, response, _ackTimeout);
+            RelocationAcknowledgement ack=null;
+            ack=message==null?null:(RelocationAcknowledgement)message.getObject();
+
+            if (ack==null) {
+                if (_log.isWarnEnabled()) _log.warn("no ack received for session RelocationResponse"); // TODO - increment a counter somewhere...
+                // TODO - who owns the session now - consider a syn link to old owner to negotiate this..
+                throw new Exception("no ack received for session RelocationResponse");
+            }
+            if (_log.isTraceEnabled()) _log.trace("received relocation ack");
+        }
+
+        public ByteBuffer getBodyAsByteBuffer() throws Exception {
+        	throw new UnsupportedOperationException();
+        }
+        
+        public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {
+        	throw new UnsupportedOperationException();
+        }
+    }
+    
+    
     /**
-     * Manage the immotion of a session into the Cluster tier and thence its Emigration
-     * (in response to an RelocationRequest) thence to another node.
+     * We receive a RelocationRequest and pass a RelocationImmoter down the Contextualiser stack. The Session is passed to us
+     * through the Immoter and we pass it back to the Request-ing node...
      *
      * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
      * @version $Revision$
      */
-    class RelocationResponseImmoter implements Immoter {
+    class RelocationImmoter implements Immoter {
         protected final Log _log=LogFactory.getLog(getClass());
         
         protected final String _tgtNodeName;
         protected ObjectMessage _message;
         
-        public RelocationResponseImmoter(String nodeName, ObjectMessage message) {
+        public RelocationImmoter(String nodeName, ObjectMessage message) {
             _tgtNodeName=nodeName;
             _message=message;
         }
         
         public Motable nextMotable(String name, Motable emotable) {
-            return new SimpleMotable();
+            return new ClusterEmotable(name, _tgtNodeName, _message);
         }
         
         public boolean prepare(String name, Motable emotable, Motable immotable) {
-            try {
-                immotable.copy(emotable);
-            } catch (Exception e) {
-                _log.warn("unexpected problem", e);
-                return false;
-            }
-            // send the message
-            if (_log.isTraceEnabled()) _log.trace("sending RelocationResponse");
-            RelocationResponse response=new RelocationResponse(name, _nodeName, immotable);
-            ObjectMessage message=_dispatcher.exchangeReply(_message, response, _ackTimeout);
-            RelocationAcknowledgement ack=null;
-            try {
-                ack=message==null?null:(RelocationAcknowledgement)message.getObject();
-            } catch (JMSException e) {
-                _log.error("could not unpack response", e);
-            }
-            if (ack==null) {
-                if (_log.isWarnEnabled()) _log.warn("no ack received for session RelocationResponse"); // TODO - increment a counter somewhere...
-                // TODO - who owns the session now - consider a syn link to old owner to negotiate this..
-                return false;
-            }
-            if (_log.isTraceEnabled()) _log.trace("received relocation ack");
-            
-            return true;
+        	// work is done in ClusterEmotable...
+        	return true;
         }
         
         public void commit(String name, Motable immotable) {
