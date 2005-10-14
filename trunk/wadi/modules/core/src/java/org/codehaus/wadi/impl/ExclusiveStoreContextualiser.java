@@ -109,21 +109,6 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
 
 		public ExclusiveStoreEmoter(Map map) {super(map);}
 
-        public boolean prepare(String name, Motable emotable) {
-            if (super.prepare(name, emotable)) {
-                try {
-                    StoreMotable motable=(StoreMotable)emotable;
-                    motable.init(_store, name);
-                } catch (Exception e) {
-                    _log.error("problem loading ("+_store.getDescription()+")", e);
-                    return false;
-                }
-            } else
-                return false;
-            
-            return true;
-        }
-
 		public String getInfo(){return _store.getDescription();}
 	}
 

@@ -25,6 +25,6 @@ package org.codehaus.wadi;
 
 public interface Emoter extends Moter {
 
-    boolean prepare(String name, Motable emotable);
-    
+	// placeholder
+	
 }

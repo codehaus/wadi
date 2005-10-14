@@ -324,7 +324,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
             _message=message;
         }
         
-        public boolean prepare(String name, Motable emotable) {
+        public boolean prepare(String name, Motable emotable, Motable immotable) {
             return true;
         }
         

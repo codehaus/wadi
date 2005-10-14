@@ -19,6 +19,7 @@ package org.codehaus.wadi.impl;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -52,13 +53,18 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public SharedStoreContextualiser(Contextualiser next, Collapser collapser, boolean clean, DataSource dataSource, String table) {
+	public SharedStoreContextualiser(Contextualiser next, Collapser collapser, boolean clean, String label, DataSource dataSource, String table) {
 		super(next, new CollapsingLocker(collapser), clean);
-        _store=new DatabaseStore(dataSource, table, false);
+        _store=new DatabaseStore(label, dataSource, table, false);
 		_immoter=new SharedJDBCImmoter();
 		_emoter=new SharedJDBCEmoter();
 	}
 
+	  public String getStartInfo() {
+	      return "["+_store.getLabel()+"/"+_store.getTable()+"]";
+	  }
+	  
+	  
     public void init(ContextualiserConfig config) {
         super.init(config);
         if (_clean)
@@ -83,71 +89,10 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
 	 * @version $Revision$
 	 */
-	public class SharedJDBCEmoter extends AbstractChainedEmoter {
-
-        public boolean prepare(String name, Motable emotable) {
-            if (super.prepare(name, emotable)) {
-                try {
-                    DatabaseMotable motable=(DatabaseMotable)emotable;
-                    motable.setConnection(_store.getConnection());
-                    motable.init(_store, name);
-                } catch (Exception e) {
-                    if (_log.isErrorEnabled()) _log.error("load ("+_store.getDescription()+") failed", e);
-                    return false;
-                }
-            } else
-                return false;
-            
-            return true;
-        }
-        
-		public void commit(String name, Motable emotable) {
-			super.commit(name, emotable);
-			DatabaseMotable motable=((DatabaseMotable)emotable);
-			Connection connection=motable.getConnection();
-			motable.setConnection(null);
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				if (_log.isWarnEnabled()) _log.warn("load ("+_store.getDescription()+") problem", e);
-			}
-		}
-
-		public void rollback(String name, Motable emotable) {
-			super.rollback(name, emotable);
-			DatabaseMotable motable=((DatabaseMotable)emotable);
-			Connection connection=motable.getConnection();
-			motable.setConnection(null);
-			try {
-				connection.rollback();
-				connection.close();
-			} catch (SQLException e) {
-                if (_log.isWarnEnabled()) _log.warn("load ("+_store.getDescription()+") problem", e);
-			}
-		}
-
-		// TODO - abstract common code between this and Imoter...
-
-		public String getInfo() {
-            return _store.getDescription();
-            }
-        
-        public String getStartInfo() {
-            return _store.getStartInfo();
-        }
-
-	}
-
-	/**
-	 * An Immoter that deals in terms of SharedJDBCMotables
-	 *
-	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
-	 * @version $Revision$
-	 */
 	public class SharedJDBCImmoter extends AbstractImmoter {
 
 		public Motable nextMotable(String name, Motable emotable) {
-            return new DatabaseMotable();  // TODO - Pool this - could be ThreadLocal...
+            return _store.create(); // TODO - Pool, maybe as ThreadLocal
 		}
 
 		public boolean prepare(String name, Motable emotable, Motable immotable) {
@@ -161,15 +106,17 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 				return false;
 			}
 
+			// noop
 			return super.prepare(name, emotable, immotable);
 		}
-
+		
 		public void commit(String name, Motable immotable) {
-			super.commit(name, immotable);
 			DatabaseMotable motable=((DatabaseMotable)immotable);
 			Connection connection=motable.getConnection();
 			motable.setConnection(null);
 			try {
+				// noop
+				super.commit(name, immotable);
 				connection.close();
 			} catch (SQLException e) {
                 if (_log.isWarnEnabled()) _log.warn("store ("+_store.getDescription()+") problem", e);
@@ -177,20 +124,68 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 		}
 
 		public void rollback(String name, Motable immotable) {
-			super.rollback(name, immotable);
 			DatabaseMotable motable=((DatabaseMotable)immotable);
 			Connection connection=motable.getConnection();
 			motable.setConnection(null);
 			try {
+				// destroy immotable
+				super.rollback(name, immotable);
 				connection.rollback();
 				connection.close();
 			} catch (SQLException e) {
                 if (_log.isWarnEnabled()) _log.warn("store ("+_store.getDescription()+") problem", e);
 			}
 		}
-
+		
 		public String getInfo() {
-			return "database";
+			return _store.getDescription();
+		}
+	}
+
+	public class SharedJDBCEmoter extends AbstractChainedEmoter {
+
+		public boolean prepare(String name, Motable emotable, Motable immotable) {
+			try {
+				DatabaseMotable motable=(DatabaseMotable)emotable;
+				motable.setConnection(_store.getConnection());
+				//motable.init(_store, name); // only loads header, we could load body as well...
+				// copies emotable content into immotable
+				return super.prepare(name, emotable, immotable);
+			} catch (Exception e) {
+				if (_log.isErrorEnabled()) _log.error("load ("+_store.getDescription()+") failed", e);
+				return false;
+			}
+		}
+        
+		public void commit(String name, Motable emotable) {
+			DatabaseMotable motable=((DatabaseMotable)emotable);
+			Connection connection=motable.getConnection();
+			// destroy emotable
+			super.commit(name, emotable);
+			motable.setConnection(null);
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				if (_log.isWarnEnabled()) _log.warn("load ("+_store.getDescription()+") problem", e);
+			}
+		}
+
+		public void rollback(String name, Motable emotable) {
+			DatabaseMotable motable=((DatabaseMotable)emotable);
+			Connection connection=motable.getConnection();
+			motable.setConnection(null);
+			try {
+				// noop
+				super.rollback(name, emotable);
+				connection.rollback();
+				connection.close();
+			} catch (SQLException e) {
+                if (_log.isWarnEnabled()) _log.warn("load ("+_store.getDescription()+") problem", e);
+			}
+		}
+		
+		public String getInfo() {
+			return _store.getDescription();
 		}
 	}
 

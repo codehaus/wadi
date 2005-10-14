@@ -36,8 +36,16 @@ public abstract class AbstractMappedImmoter extends AbstractImmoter {
         _map=map;    
     }
     
-	public void commit(String name, Motable immotable) {
-		super.commit(name, immotable);
-		_map.put(name, immotable);
+	public boolean prepare(String name, Motable emotable, Motable immotable) {
+		if (!super.prepare(name, emotable, immotable))
+			return false;
+		
+		_map.put(name, immotable); // TODO - map locking ?
+		return true;
+	}
+
+	public void rollback(String name, Motable immotable) {
+		_map.remove(name);
+		super.rollback(name, immotable);
 	}
 }

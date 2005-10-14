@@ -79,14 +79,14 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
     }
     
     public void destroy() {
-        super.destroy();
+        String table=_config.getTable();
         Statement s=null;
         try {
             s=_connection.createStatement();
-            s.executeUpdate("DELETE FROM "+_config.getTable()+" WHERE Name='"+_name+"'");
-            if (_log.isTraceEnabled()) _log.trace("removed (database): "+_name);
+            s.executeUpdate("DELETE FROM "+table+" WHERE Name='"+_name+"'");
+            if (_log.isTraceEnabled()) _log.trace("removed (database ): "+_config.getLabel()+"/"+_config.getTable()+"/"+_name);
         } catch (SQLException e) {
-            if (_log.isErrorEnabled()) _log.error("remove (database) failed: "+_name, e);
+            if (_log.isErrorEnabled()) _log.error("remove (database ["+table+"]) failed: "+_name, e);
         } finally {
             try {
                 if (s!=null)
@@ -95,13 +95,15 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
                 _log.warn("problem closing database connection", e);
             }
         }
+        super.destroy();
     }
     
     protected void loadHeader() {
         Statement s=null;
+        String table=_config.getTable();
         try {
             s=_connection.createStatement();
-            ResultSet rs=s.executeQuery("SELECT CreationTime, LastAccessedTime, MaxInactiveInterval FROM "+_config.getTable()+" WHERE Name='"+_name+"'");
+            ResultSet rs=s.executeQuery("SELECT CreationTime, LastAccessedTime, MaxInactiveInterval FROM "+table+" WHERE Name='"+_name+"'");
             int i=1;
             if (rs.next()) {
                 _creationTime=rs.getLong(i++);
@@ -109,28 +111,29 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
                 _maxInactiveInterval=rs.getInt(i++);
                 
                 if (!checkTimeframe(System.currentTimeMillis()))
-                    if (_log.isWarnEnabled()) _log.warn("loaded (database) from the future!: "+_name);
+                    if (_log.isWarnEnabled()) _log.warn("loaded (database ["+table+"]) from the future!: "+_name);
                 
-                if (_log.isTraceEnabled()) _log.trace("loaded (database): "+_name);
+                if (_log.isTraceEnabled()) _log.trace("loaded (database ["+table+"]): "+_name);
             }
         } catch (SQLException e) {
-            if (_log.isWarnEnabled()) _log.warn("load (database) failed: "+_name, e);
+            if (_log.isWarnEnabled()) _log.warn("load (database ["+table+"]) failed: "+_name, e);
         } finally {
             if (s!=null)
                 try {
                     s.close();
                 } catch (SQLException e) {
-                    if (_log.isWarnEnabled()) _log.warn("load (database) problem: "+_name, e);
+                    if (_log.isWarnEnabled()) _log.warn("load (database ["+table+"]) problem: "+_name, e);
                 }
         }
     }
     
     protected Object loadBody(boolean useNIO) throws Exception {
+        String table=_config.getTable();
         Statement s=null;
         Object body=null;
         try {
             s=_connection.createStatement();
-            ResultSet rs=s.executeQuery("SELECT Body FROM "+_config.getTable()+" WHERE Name='"+_name+"'");
+            ResultSet rs=s.executeQuery("SELECT Body FROM "+table+" WHERE Name='"+_name+"'");
             int i=1;
             if (rs.next()) {
                 if (useNIO) {
@@ -138,20 +141,20 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
                 } else {
                     body=rs.getObject(i++);
                 }
-                if (_log.isTraceEnabled()) _log.trace("loaded (database): "+_name);
+                if (_log.isTraceEnabled()) _log.trace("loaded (database): "+_config.getLabel()+"/"+_config.getTable()+"/"+_name+": "+((byte[])body).length+" bytes");
                 return body;
             } else {
                 return null;
             }
         } catch (SQLException e) {
-            if (_log.isWarnEnabled()) _log.warn("load (database) failed: "+_name, e);
+            if (_log.isWarnEnabled()) _log.warn("load (database ["+table+"]) failed: "+_name, e);
             throw e;
         } finally {
             if (s!=null)
                 try {
                     s.close();
                 } catch (SQLException e) {
-                    if (_log.isWarnEnabled()) _log.warn("load (database) problem: "+_name, e);
+                    if (_log.isWarnEnabled()) _log.warn("load (database ["+table+"]) problem: "+_name, e);
                 }
         }
     }
@@ -171,7 +174,7 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
                 ps.setObject(i++, body);
             }
             ps.executeUpdate();
-            if (_log.isTraceEnabled()) _log.trace("stored (database): "+_name);
+            if (_log.isTraceEnabled()) _log.trace("stored (database): "+_config.getLabel()+"/"+_config.getTable()+"/"+_name+": "+((byte[])body).length+" bytes");
         } catch (SQLException e) {
             if (_log.isErrorEnabled()) _log.error("store (database) failed: "+_name, e);
             throw e;

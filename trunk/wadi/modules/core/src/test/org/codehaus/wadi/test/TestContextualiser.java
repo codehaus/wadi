@@ -265,7 +265,7 @@ public class TestContextualiser extends TestCase {
     }
 
     public void testSharedPromotion() throws Exception {
-        SharedStoreContextualiser db=new SharedStoreContextualiser(_dummyContextualiser, _collapser, true, _ds, _table);
+        SharedStoreContextualiser db=new SharedStoreContextualiser(_dummyContextualiser, _collapser, true, "test", _ds, _table);
         Map m=new HashMap();
         Contextualiser serial=new SerialContextualiser(db, _collapser, m);
         Contextualiser memory=new MemoryContextualiser(serial, _dummyEvicter, m, _streamer, _distributableContextPool, _requestPool);

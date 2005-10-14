@@ -357,7 +357,7 @@ public class TestMotion extends TestCase {
             long startTime=System.currentTimeMillis();
             Motable motable=new SimpleMotable();
             motable.copy(_emotable); // how can we avoid this copy...? write straight onto the stream...
-            boolean ok=_emoter.prepare(_name, _emotable);
+            boolean ok=_emoter.prepare(_name, _emotable, null); // FIXME - this should not be a null
             if (!ok) return ok;
             ok=false;
             ObjectOutputStream oos=null;

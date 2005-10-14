@@ -35,16 +35,9 @@ public abstract class AbstractMappedEmoter extends AbstractChainedEmoter {
 		_map=map;
 	}
 
-	public boolean prepare(String name, Motable emotable) {
-		if (super.prepare(name, emotable)) {
-			_map.remove(name); // remove ref in cache
-			return true;
-		} else
-			return false;
-	}
+    public void commit(String name, Motable emotable) {
+		_map.remove(name); // remove ref in cache
+        super.commit(name, emotable);
+    }
 
-	public void rollback(String name, Motable emotable) {
-		_map.put(name, emotable); // replace ref into cache
-	    super.rollback(name, emotable);
-	}
 }
