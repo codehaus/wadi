@@ -21,10 +21,10 @@ import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionConfig;
 import org.codehaus.wadi.SessionFactory;
 
-public class ReplicableSessionFactory implements SessionFactory {
+public class AtomicallyReplicableSessionFactory implements SessionFactory {
 
     public Session create(SessionConfig config) {
-        return new ReplicableSession((ReplicableSessionConfig)config);
+        return new AtomicallyReplicableSession((ReplicableSessionConfig)config);
     }
 }
 
