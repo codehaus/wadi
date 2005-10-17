@@ -9,15 +9,15 @@ public class DummyReplicater implements NewReplicater {
     protected final Log _log = LogFactory.getLog(getClass());
 
     public void create(Object tmp) {
-		_log.info("create: "+((ReplicableSession)tmp).getId());
+		_log.info("create: "+((AbstractReplicableSession)tmp).getId());
     }
     
     public void replicate(Object tmp) { //TODO
-		_log.info("replicate: "+((ReplicableSession)tmp).getId());
+		_log.info("replicate: "+((AbstractReplicableSession)tmp).getId());
 	}
 
     public void destroy(Object tmp) { //TODO
-		_log.info("destroy: "+((ReplicableSession)tmp).getId());
+		_log.info("destroy: "+((AbstractReplicableSession)tmp).getId());
 	}
 
 }

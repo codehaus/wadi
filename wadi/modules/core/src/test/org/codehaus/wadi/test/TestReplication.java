@@ -42,8 +42,8 @@ import org.codehaus.wadi.impl.GiannisContextualiser;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.NeverEvicter;
-import org.codehaus.wadi.impl.ReplicableSession;
-import org.codehaus.wadi.impl.ReplicableSessionFactory;
+import org.codehaus.wadi.impl.AbstractReplicableSession;
+import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.impl.SerialContextualiser;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SharedStoreContextualiser;
@@ -107,7 +107,7 @@ public class TestReplication extends TestCase {
         
         Contextualiser serial=new SerialContextualiser(spool, collapser, mmap);
 
-        SessionPool sessionPool=new SimpleSessionPool(new ReplicableSessionFactory());
+        SessionPool sessionPool=new SimpleSessionPool(new AtomicallyReplicableSessionFactory());
         
         // Memory
         Evicter mevicter=new AlwaysEvicter(sweepInterval, strictOrdering);
@@ -130,7 +130,7 @@ public class TestReplication extends TestCase {
         //devicter.stop();
 
         _log.info("CREATING SESSION");
-        ReplicableSession session=(ReplicableSession)manager.create();
+        AbstractReplicableSession session=(AbstractReplicableSession)manager.create();
         String foo="bar";
         session.setAttribute("foo", foo);
         String name=session.getId();
@@ -141,7 +141,7 @@ public class TestReplication extends TestCase {
         long lat=session.getLastAccessedTime();
         memory.contextualise(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }, name, null, null, false);
         assert(lat!=session.getLastAccessedTime());
-        session=(ReplicableSession)mmap.get(name);
+        session=(AbstractReplicableSession)mmap.get(name);
         assertTrue(mmap.size()==1);
         assertTrue(dmap.size()==0);
 
@@ -162,7 +162,7 @@ public class TestReplication extends TestCase {
 
         _log.info("PROMOTING SESSION to Memory");
         memory.contextualise(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }, name, null, null, false);
-        session=(ReplicableSession)mmap.get(name);
+        session=(AbstractReplicableSession)mmap.get(name);
         assertTrue(session.getAttribute("foo")!=foo);
         assertTrue(session.getAttribute("foo").equals(foo));
         assertTrue(mmap.size()==1);
