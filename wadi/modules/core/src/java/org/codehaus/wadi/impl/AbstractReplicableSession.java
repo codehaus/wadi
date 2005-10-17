@@ -20,7 +20,7 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.NewDirtier;
 import org.codehaus.wadi.RWLockListener;
 import org.codehaus.wadi.ReplicableSessionConfig;
-import org.codehaus.wadi.NewReplicater;
+import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.impl.DistributableSession;
 
 /**
@@ -32,11 +32,8 @@ import org.codehaus.wadi.impl.DistributableSession;
 
 public abstract class AbstractReplicableSession extends DistributableSession implements RWLockListener {
 	
-	protected final transient NewReplicater _replicater;
-
 	public AbstractReplicableSession(ReplicableSessionConfig config) {
         super(config);
-        _replicater=new DummyReplicater();
         _lock.setListener(this); // we could use a lock subclass to save space - need a lock factory in config - aargh !
     }
     
@@ -44,16 +41,16 @@ public abstract class AbstractReplicableSession extends DistributableSession imp
     
     public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name) {
     	super.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
-    	_replicater.create(this);        
+    	((ReplicableSessionConfig)_config).getReplicater().create(this);        
     }
     
 	public void copy(Motable motable) throws Exception {
 		super.copy(motable);
-		_replicater.create(this);
+		((ReplicableSessionConfig)_config).getReplicater().create(this);
 	}
     
     public void destroy() {
-    	_replicater.destroy(this);
+    	((ReplicableSessionConfig)_config).getReplicater().destroy(this);
     	super.destroy();
     }
     

@@ -35,6 +35,7 @@ import org.codehaus.wadi.impl.DistributableManager;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyHttpServletRequest;
+import org.codehaus.wadi.impl.DummyReplicater;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.impl.ExclusiveStoreContextualiser;
@@ -120,7 +121,7 @@ public class TestReplication extends TestCase {
         ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
         SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
         SessionIdFactory idFactory=new TomcatSessionIdFactory();
-        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true);
+        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, new DummyReplicater());
         manager.setSessionListeners(new HttpSessionListener[]{});
         manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
         manager.init(new DummyManagerConfig());

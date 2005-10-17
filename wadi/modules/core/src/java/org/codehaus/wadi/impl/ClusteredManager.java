@@ -39,6 +39,7 @@ import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionIdFactory;
@@ -63,8 +64,8 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     protected final String _nodeName;
     protected final int _numBuckets;
 
-    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, InetSocketAddress httpAddress, HttpProxy httpProxy, String clusterUri, String clusterName, String nodeName, int numBuckets) {
-        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad);
+    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, Replicater replicater, InetSocketAddress httpAddress, HttpProxy httpProxy, String clusterUri, String clusterName, String nodeName, int numBuckets) {
+        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad, replicater);
     	_httpAddress=httpAddress;
     	_httpProxy=httpProxy;
         _clusterUri=clusterUri;

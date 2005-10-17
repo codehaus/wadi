@@ -1,6 +1,6 @@
 package org.codehaus.wadi;
 
-public interface NewReplicater {
+public interface Replicater {
 
 	void create(Object tmp);
 	void replicate(Object tmp);

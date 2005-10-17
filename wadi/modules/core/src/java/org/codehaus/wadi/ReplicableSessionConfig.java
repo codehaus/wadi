@@ -25,4 +25,6 @@ package org.codehaus.wadi;
  */
 public interface ReplicableSessionConfig extends DistributableSessionConfig {
 
+	Replicater getReplicater();
+	
 }
