@@ -25,6 +25,7 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.DistributableSessionConfig;
 import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.ReplicableSessionConfig;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.SessionIdFactory;
@@ -48,11 +49,13 @@ public class DistributableManager extends StandardManager implements ReplicableS
 	protected final SynchronizedBoolean _shuttingDown = new SynchronizedBoolean(false);
     protected final Streamer _streamer;
 	protected final boolean _accessOnLoad;
+	protected final Replicater _replicater;
 
-	public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, Streamer streamer, boolean accessOnLoad) {
+	public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, Streamer streamer, boolean accessOnLoad, Replicater replicater) {
     	super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, map, router);
     	(_streamer=streamer).init(this);
     	_accessOnLoad=accessOnLoad;
+    	_replicater=replicater;
     }
 
 	protected ClassLoader _classLoader;
@@ -121,4 +124,9 @@ public class DistributableManager extends StandardManager implements ReplicableS
 		return _streamer;
 	}
 	
+	// ReplicableSessionConfig
+	
+	public Replicater getReplicater() {
+		return _replicater;
+	}
 }
