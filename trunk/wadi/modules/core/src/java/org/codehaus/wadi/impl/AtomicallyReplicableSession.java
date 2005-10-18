@@ -57,7 +57,7 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
     public void readEnded() {
     	// N.B. this is called from our RWLock inside an implicit exclusive lock, so we should not need to worry about synchronisation...
     	if (_dirty) {
-    		((ReplicableSessionConfig)_config).getReplicater().replicate(this); // checks for dirtiness and replicates
+    		((ReplicableSessionConfig)_config).getReplicater().update(this); // checks for dirtiness and replicates
     		_dirty=false;
     	}
     }

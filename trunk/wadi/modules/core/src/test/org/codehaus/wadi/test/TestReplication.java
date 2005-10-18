@@ -28,6 +28,7 @@ import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AlwaysEvicter;
 import org.codehaus.wadi.impl.DatabaseMotable;
 import org.codehaus.wadi.impl.DatabaseReplicater;
+import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableManager;
 import org.codehaus.wadi.impl.DistributableValueFactory;
@@ -116,7 +117,7 @@ public class TestReplication extends TestCase {
         ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
         SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
         SessionIdFactory idFactory=new TomcatSessionIdFactory();
-        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, new DatabaseReplicater());
+        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, new DatabaseReplicater(new DatabaseStore("jdbc:replicants", ds, "REPLICANTS", false)));
         manager.setSessionListeners(new HttpSessionListener[]{});
         manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
         manager.init(new DummyManagerConfig());

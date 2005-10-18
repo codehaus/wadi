@@ -79,14 +79,19 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
     }
     
     public void destroy() {
-        String table=_config.getTable();
+    	destroy(_config, _connection, _name);
+        super.destroy();
+    }
+    
+    public static void destroy(DatabaseMotableConfig config, Connection connection, String name) {
+        String table=config.getTable();
         Statement s=null;
         try {
-            s=_connection.createStatement();
-            s.executeUpdate("DELETE FROM "+table+" WHERE Name='"+_name+"'");
-            if (_log.isTraceEnabled()) _log.trace("removed (database ): "+_config.getLabel()+"/"+_config.getTable()+"/"+_name);
+            s=connection.createStatement();
+            s.executeUpdate("DELETE FROM "+table+" WHERE Name='"+name+"'");
+            if (_log.isTraceEnabled()) _log.trace("removed (database ): "+config.getLabel()+"/"+config.getTable()+"/"+name);
         } catch (SQLException e) {
-            if (_log.isErrorEnabled()) _log.error("remove (database ["+table+"]) failed: "+_name, e);
+            if (_log.isErrorEnabled()) _log.error("remove (database ["+table+"]) failed: "+name, e);
         } finally {
             try {
                 if (s!=null)
@@ -95,7 +100,6 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
                 _log.warn("problem closing database connection", e);
             }
         }
-        super.destroy();
     }
     
     protected void loadHeader() {
@@ -138,6 +142,7 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
             if (rs.next()) {
                 if (useNIO) {
                     // hmm...
+                	throw new UnsupportedOperationException("NYI");
                 } else {
                     body=rs.getObject(i++);
                 }
@@ -159,24 +164,56 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
         }
     }
     
-    protected void store(boolean useNIO, Object body) throws Exception {
+    // move back into store ?
+    public static void update(DatabaseMotableConfig config, Connection connection, boolean useNIO, String name, long lastAccessedTime, int maxInactiveInterval, byte[] body) throws Exception {
         PreparedStatement ps=null;
         try {
-            ps=_connection.prepareStatement("INSERT INTO "+_config.getTable()+" (Name, CreationTime, LastAccessedTime, MaxInactiveInterval, Body) VALUES (?, ?, ?, ?, ?)");
+            ps=connection.prepareStatement("UPDATE "+config.getTable()+" SET LastAccessedTime=?, MaxInactiveInterval=?, Body=? where Name=?");
             int i=1;
-            ps.setString(i++, _name);
-            ps.setLong(i++, _creationTime);
-            ps.setLong(i++, _lastAccessedTime);
-            ps.setInt(i++, _maxInactiveInterval);
+            ps.setLong(i++, lastAccessedTime);
+            ps.setInt(i++, maxInactiveInterval);
             if (useNIO) {
                 i++; // hmm...
+            	throw new UnsupportedOperationException("NYI");
+            } else {
+                ps.setObject(i++, body);
+            }
+            ps.setString(i++, name);
+            ps.executeUpdate();
+            if (_log.isTraceEnabled()) _log.trace("updated (database): "+config.getLabel()+"/"+config.getTable()+"/"+name+": "+body.length+" bytes");
+        } catch (SQLException e) {
+            if (_log.isErrorEnabled()) _log.error("update (database) failed: "+name, e);
+            throw e;
+        } finally {
+            if (ps!=null)
+                ps.close();
+        }
+    }
+
+    protected void store(boolean useNIO, Object body) throws Exception {
+    	store(_config, _connection, useNIO, _name, _creationTime, _lastAccessedTime, _maxInactiveInterval, body);
+    }
+    
+    // move back into store ?
+    public static void store(DatabaseMotableConfig config, Connection connection, boolean useNIO, String name, long creationTime, long lastAccessedTime, int maxInactiveInterval, Object body) throws Exception {
+        PreparedStatement ps=null;
+        try {
+            ps=connection.prepareStatement("INSERT INTO "+config.getTable()+" (Name, CreationTime, LastAccessedTime, MaxInactiveInterval, Body) VALUES (?, ?, ?, ?, ?)");
+            int i=1;
+            ps.setString(i++, name);
+            ps.setLong(i++, creationTime);
+            ps.setLong(i++, lastAccessedTime);
+            ps.setInt(i++, maxInactiveInterval);
+            if (useNIO) {
+                i++; // hmm...
+            	throw new UnsupportedOperationException("NYI");
             } else {
                 ps.setObject(i++, body);
             }
             ps.executeUpdate();
-            if (_log.isTraceEnabled()) _log.trace("stored (database): "+_config.getLabel()+"/"+_config.getTable()+"/"+_name+": "+((byte[])body).length+" bytes");
+            if (_log.isTraceEnabled()) _log.trace("stored (database): "+config.getLabel()+"/"+config.getTable()+"/"+name+": "+((byte[])body).length+" bytes");
         } catch (SQLException e) {
-            if (_log.isErrorEnabled()) _log.error("store (database) failed: "+_name, e);
+            if (_log.isErrorEnabled()) _log.error("store (database) failed: "+name, e);
             throw e;
         } finally {
             if (ps!=null)
