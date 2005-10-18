@@ -52,6 +52,7 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.ClusterContextualiser;
 import org.codehaus.wadi.impl.CustomClusterFactory;
+import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
@@ -116,8 +117,8 @@ public class TestCluster extends TestCase {
         protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
         protected final ClusteredManager _manager;
         
-        public MyNode(String nodeName, ClusterFactory factory, String clusterName, DataSource ds, String table) throws JMSException, ClusterException {
-            _bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, "test", ds, table);
+        public MyNode(String nodeName, ClusterFactory factory, String clusterName, DatabaseStore store) throws JMSException, ClusterException {
+            _bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, store);
             _clusterName=clusterName;
             _nodeName=nodeName;
             _dispatcher=new Dispatcher();
@@ -172,6 +173,8 @@ public class TestCluster extends TestCase {
 	protected final String _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
     protected final DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");
     protected final String _table="WADISESSIONS";
+    protected final DatabaseStore _store=new DatabaseStore("test", _ds, _table, false);
+
     protected boolean _preserveDB;
 
     protected MyNode _node0;
@@ -199,11 +202,11 @@ public class TestCluster extends TestCase {
 		super.setUp();
 
         if (!_preserveDB)
-            DatabaseMotable.init(_ds, _table);
+            _store.init();
             
-		(_node0=new MyNode("node0", _clusterFactory, _clusterName, _ds, _table)).start();
-		(_node1=new MyNode("node1", _clusterFactory, _clusterName, _ds, _table)).start();
-		(_node2=new MyNode("node2", _clusterFactory, _clusterName, _ds, _table)).start();
+		(_node0=new MyNode("node0", _clusterFactory, _clusterName, _store)).start();
+		(_node1=new MyNode("node1", _clusterFactory, _clusterName, _store)).start();
+		(_node2=new MyNode("node2", _clusterFactory, _clusterName, _store)).start();
 
 		//_node0.getCluster().waitForClusterToComplete(3, 6000);
 		//_node1.getCluster().waitForClusterToComplete(3, 6000);
@@ -225,7 +228,7 @@ public class TestCluster extends TestCase {
 //		Thread.sleep(10000);
         
         if (!_preserveDB)
-            DatabaseMotable.destroy(_ds, _table);
+            _store.destroy();
 	}
 
 	public void testEvacuation() throws Exception {

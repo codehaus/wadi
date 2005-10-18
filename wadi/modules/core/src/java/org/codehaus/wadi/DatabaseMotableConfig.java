@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi;
 
+import java.sql.Connection;
+
 import javax.sql.DataSource;
 
 public interface DatabaseMotableConfig extends StoreMotableConfig {
@@ -23,5 +25,10 @@ public interface DatabaseMotableConfig extends StoreMotableConfig {
 	String getLabel();
     DataSource getDataSource();
     String getTable();
+    
+    void insert(Connection connection, Motable motable, Object body) throws Exception;
+    void delete(Connection connection, Motable motable); // TODO - why no Exception ?
+	void loadHeader(Connection connection, Motable motable); // TODO - why no Exception ?
+	Object loadBody(Connection connection, Motable motable) throws Exception;
     
 }

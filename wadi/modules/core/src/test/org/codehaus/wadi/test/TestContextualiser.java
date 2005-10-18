@@ -69,6 +69,7 @@ import org.codehaus.wadi.impl.AbstractContextualiser;
 import org.codehaus.wadi.impl.ClusterContextualiser;
 import org.codehaus.wadi.impl.CustomCluster;
 import org.codehaus.wadi.impl.CustomClusterFactory;
+import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
@@ -118,6 +119,7 @@ public class TestContextualiser extends TestCase {
     protected Log _log = LogFactory.getLog(getClass());
     protected DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");	// db springs into existance in-vm beneath us
     protected String _table="MyTable";
+    protected DatabaseStore _store=new DatabaseStore("jdbc:axiondb:testdb", _ds, _table, false);
     protected final String _clusterUri=Utils.getClusterUri();
     protected final String _clusterName="WADI.TEST";
 
@@ -134,7 +136,7 @@ public class TestContextualiser extends TestCase {
         super.setUp();
         _log.info("starting ...");
         _httpAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8888);
-        DatabaseMotable.init(_ds, _table);
+        _store.init();
         _dir.mkdir();
     }
 
@@ -143,7 +145,7 @@ public class TestContextualiser extends TestCase {
      */
     protected void tearDown() throws Exception {
     	_dir.delete();
-        DatabaseMotable.destroy(_ds, _table);
+        _store.destroy();
         super.tearDown();
         _log.info("...stopped");
     }
@@ -266,7 +268,7 @@ public class TestContextualiser extends TestCase {
     }
 
     public void testSharedPromotion() throws Exception {
-        SharedStoreContextualiser db=new SharedStoreContextualiser(_dummyContextualiser, _collapser, true, "test", _ds, _table);
+        SharedStoreContextualiser db=new SharedStoreContextualiser(_dummyContextualiser, _collapser, true, _store);
         Map m=new HashMap();
         Contextualiser serial=new SerialContextualiser(db, _collapser, m);
         Contextualiser memory=new MemoryContextualiser(serial, _dummyEvicter, m, _streamer, _distributableContextPool, _requestPool);

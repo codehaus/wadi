@@ -53,9 +53,9 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public SharedStoreContextualiser(Contextualiser next, Collapser collapser, boolean clean, String label, DataSource dataSource, String table) {
+	public SharedStoreContextualiser(Contextualiser next, Collapser collapser, boolean clean, DatabaseStore store) {
 		super(next, new CollapsingLocker(collapser), clean);
-        _store=new DatabaseStore(label, dataSource, table, false);
+        _store=store;
 		_immoter=new SharedJDBCImmoter();
 		_emoter=new SharedJDBCEmoter();
 	}

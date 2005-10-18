@@ -26,7 +26,6 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AlwaysEvicter;
-import org.codehaus.wadi.impl.DatabaseMotable;
 import org.codehaus.wadi.impl.DatabaseReplicater;
 import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
@@ -89,14 +88,16 @@ public class TestReplication extends TestCase {
         msds.setUrl(url+"?user=root");
         DataSource ds=msds;
         String storeTable="STORE";
-        DatabaseMotable.init(ds, storeTable);
-        Contextualiser db=new SharedStoreContextualiser(terminator, collapser, true, url, ds, storeTable);
+        DatabaseStore longTermStore=new DatabaseStore(url, ds, storeTable, false);
+        longTermStore.init();
+        Contextualiser db=new SharedStoreContextualiser(terminator, collapser, true, longTermStore);
 
         // Gianni
         Evicter devicter=new NeverEvicter(sweepInterval, strictOrdering);
         Map dmap=new HashMap();
         String spoolTable="SPOOL";
-        //Contextualiser spool=new GiannisContextualiser(db, collapser, true, devicter, dmap, new DatabaseStore(url, ds, spoolTable, false));
+        DatabaseStore shortTermStore=new DatabaseStore(url, ds, spoolTable, false);
+        //Contextualiser spool=new GiannisContextualiser(db, collapser, true, devicter, dmap, shorttermStore);
         File dir=Utils.createTempDirectory("wadi", ".test", new File("/tmp"));
         Contextualiser spool=new ExclusiveStoreContextualiser(db, collapser, false, devicter, dmap, new SimpleStreamer(), dir);
         
@@ -172,8 +173,8 @@ public class TestReplication extends TestCase {
         
         manager.stop();
 
-        DatabaseMotable.destroy(ds, storeTable);
-        DatabaseMotable.destroy(ds, spoolTable);
+        longTermStore.destroy();
+        shortTermStore.destroy();
         dir.delete();
     }
 }
