@@ -21,7 +21,6 @@ import java.sql.Connection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Replicater;
 
 public class DatabaseReplicater implements Replicater {
@@ -41,7 +40,7 @@ public class DatabaseReplicater implements Replicater {
 		Connection connection=null;
 		try {
 			connection=_store.getConnection();
-			DatabaseMotable.store(_store, connection, false, name, session.getCreationTime(), session.getLastAccessedTime(), session.getMaxInactiveInterval(), session.getBodyAsByteArray());
+			_store.insert(connection, session, session.getBodyAsByteArray());
 		} catch (Exception e) {
 			_log.warn("problem creating replicant", e);
 		} finally {
@@ -62,7 +61,7 @@ public class DatabaseReplicater implements Replicater {
 		Connection connection=null;
 		try {
 			connection=_store.getConnection();
-			DatabaseMotable.update(_store, connection, false, name,session.getLastAccessedTime(), session.getMaxInactiveInterval(), session.getBodyAsByteArray());
+			_store.update(connection, session);
 		} catch (Exception e) {
 			_log.warn("problem updating replicant", e);
 		} finally {
@@ -83,7 +82,7 @@ public class DatabaseReplicater implements Replicater {
 		Connection connection=null;
 		try {
 			connection=_store.getConnection();
-			DatabaseMotable.destroy(_store, connection, name);
+			_store.delete(connection, session);
 		} catch (Exception e) {
 			_log.warn("problem destroying replicant", e);
 		} finally {

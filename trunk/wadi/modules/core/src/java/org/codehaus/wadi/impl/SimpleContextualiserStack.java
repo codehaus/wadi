@@ -101,7 +101,7 @@ public class SimpleContextualiserStack implements Contextualiser {
         _databaseDataSource=dataSource;
         _databaseTable="WADI";
         //DatabaseMotable.init(_databaseDataSource, _databaseTable);
-        _database=new SharedStoreContextualiser(_dummy, _collapser, true, "test", _databaseDataSource, _databaseTable);
+        _database=new SharedStoreContextualiser(_dummy, _collapser, true, new DatabaseStore("test", _databaseDataSource, _databaseTable, false));
         InetAddress localhost=InetAddress.getLocalHost();
         System.out.println("LOCALHOST: "+localhost);
         _clusterRelocater=relocater;
