@@ -15,26 +15,24 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.webapp;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Replicater;
+import java.io.Serializable;
 
-public class DummyReplicater implements Replicater {
+/**
+ * A Custom class for use in the test Session to check that we have our
+ * ClassLoading working correctly...
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public class BigString extends CustomString implements Serializable {
 
-    protected final Log _log = LogFactory.getLog(getClass());
+  protected final byte[] _deadWeight;
 
-    public void create(Object tmp) {
-    	// empty
-    }
-    
-    public void update(Object tmp) { //TODO
-    	// empty
-	}
-
-    public void destroy(Object tmp) { //TODO
-    	// empty
-	}
+  public BigString(String string, int deadWeight) {
+    super(string);
+    _deadWeight=new byte[deadWeight];
+  }
 
 }
