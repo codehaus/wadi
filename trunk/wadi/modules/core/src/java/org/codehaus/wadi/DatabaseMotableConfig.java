@@ -28,6 +28,7 @@ public interface DatabaseMotableConfig extends StoreMotableConfig {
     
     void insert(Connection connection, Motable motable, Object body) throws Exception;
     void delete(Connection connection, Motable motable); // TODO - why no Exception ?
+    void update(Connection connection, Motable motable) throws Exception;
 	void loadHeader(Connection connection, Motable motable); // TODO - why no Exception ?
 	Object loadBody(Connection connection, Motable motable) throws Exception;
     
