@@ -13,6 +13,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
@@ -82,11 +83,12 @@ public class TestReplication extends TestCase {
         Contextualiser terminator=new DummyContextualiser();
         
         // DB
-        //DataSource ds=new AxionDataSource("jdbc:axiondb:WADI");
-        MysqlDataSource msds=new MysqlDataSource();
-        String url="jdbc:mysql://localhost:3306/WADI";
-        msds.setUrl(url+"?user=root");
-        DataSource ds=msds;
+        String url="jdbc:axiondb:WADI";
+        DataSource ds=new AxionDataSource(url);
+        //MysqlDataSource msds=new MysqlDataSource();
+        //String url="jdbc:mysql://localhost:3306/WADI";
+        //msds.setUrl(url+"?user=root");
+        //DataSource ds=msds;
         String storeTable="STORE";
         DatabaseStore longTermStore=new DatabaseStore(url, ds, storeTable, false);
         longTermStore.init();
@@ -118,7 +120,9 @@ public class TestReplication extends TestCase {
         ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
         SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
         SessionIdFactory idFactory=new TomcatSessionIdFactory();
-        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, new DatabaseReplicater(new DatabaseStore("jdbc:replicants", ds, "REPLICANTS", false)));
+        String replicationTable="REPLICANTS";
+        DatabaseStore replicationStore=new DatabaseStore(url, ds, replicationTable, false);
+        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, new DatabaseReplicater(replicationStore));
         manager.setSessionListeners(new HttpSessionListener[]{});
         manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
         manager.init(new DummyManagerConfig());
