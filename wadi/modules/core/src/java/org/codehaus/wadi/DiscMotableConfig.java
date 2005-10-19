@@ -18,6 +18,7 @@ package org.codehaus.wadi;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.sql.Connection;
 
 public interface DiscMotableConfig extends StoreMotableConfig {
     
@@ -27,4 +28,10 @@ public interface DiscMotableConfig extends StoreMotableConfig {
     ByteBuffer take(int size);
     void put(ByteBuffer buffer);
 
+//    void insert(File dir, Motable motable, Object body) throws Exception;
+//    void delete(File dir, Motable motable); // TODO - why no Exception ?
+//    void update(File dir, Motable motable, Object body) throws Exception;
+//	long loadHeader(File dir, Motable motable); // TODO - why no Exception ?
+//	Object loadBody(File dir, Motable motable) throws Exception;
+    
 }
