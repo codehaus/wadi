@@ -18,7 +18,6 @@ package org.codehaus.wadi;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.sql.Connection;
 
 public interface DiscMotableConfig extends StoreMotableConfig {
     
