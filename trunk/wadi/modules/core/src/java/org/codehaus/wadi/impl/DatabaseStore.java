@@ -305,7 +305,7 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 		Statement s=null;
 		try {
 			s=connection.createStatement();
-			s.executeUpdate("DELETE FROM "+_table+" WHERE Name='"+motable+"'");
+			s.executeUpdate("DELETE FROM "+_table+" WHERE Name='"+motable.getName()+"'");
 			if (_log.isTraceEnabled()) _log.trace("removed (database ): "+_label+"/"+_table+"/"+motable);
 		} catch (SQLException e) {
 			if (_log.isErrorEnabled()) _log.error("remove (database ["+_table+"]) failed: "+motable, e);
