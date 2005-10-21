@@ -47,7 +47,7 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
 
 	public ExclusiveStoreContextualiser(Contextualiser next, Collapser collapser, boolean clean, Evicter evicter, Map map, Streamer streamer, File dir) throws Exception {
 	    super(next, new CollapsingLocker(collapser), clean, evicter, map);
-        _store=new DiscStore(streamer, dir, true);
+        _store=new DiscStore(streamer, dir, true, false);
 	    _immoter=new ExclusiveStoreImmoter(_map);
 	    _emoter=new ExclusiveStoreEmoter(_map);
 	}
@@ -81,17 +81,9 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
 	    }
 
 		public Motable nextMotable(String name, Motable emotable) {
-            return _store.create(); // TODO - Pool, maybe as ThreadLocal
-		}
-
-		public boolean prepare(String name, Motable emotable, Motable immotable) {
-			try {
-                ((StoreMotable)immotable).init(_store);
-            } catch (Exception e) {
-                _log.error("problem storing ("+_store.getDescription()+")", e);
-                return false;
-            }
-			return super.prepare(name, emotable, immotable);
+			StoreMotable motable=_store.create();
+			motable.init(_store);
+            return motable; // TODO - Pool, maybe as ThreadLocal
 		}
 
 		public String getInfo() {

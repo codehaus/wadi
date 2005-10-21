@@ -18,10 +18,12 @@ package org.codehaus.wadi.impl;
 
 import java.nio.ByteBuffer;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.DatabaseMotableConfig;
+import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.StoreMotable;
 import org.codehaus.wadi.StoreMotableConfig;
 
@@ -71,11 +73,52 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
     	throw new UnsupportedOperationException("NYI");
     }
     
-    public void destroy() {
+	public void copy(Motable motable) throws Exception {
+    	try {
+    		_connection=_config.getDataSource().getConnection();
+    		super.copy(motable);
+    	} finally {
+    		try {
+    			_connection.close();
+    			_connection=null;
+    		} catch (SQLException e) {
+    			if (_log.isWarnEnabled()) _log.warn("load (database) problem releasing connection", e);
+    		}
+    	}
+	}
+    
+    public void mote(Motable recipient) throws Exception {
+    	try {
+    		_connection=_config.getDataSource().getConnection();
+    		recipient.copy(this);
+    		destroy(recipient); // this is a transfer, so use special case destructor...
+    	} finally {
+    		try {
+    			_connection.close();
+    			_connection=null;
+    		} catch (SQLException e) {
+    			if (_log.isWarnEnabled()) _log.warn("load (database) problem releasing connection", e);
+    		}
+    	}
+    }
+
+    // we have two destroy usecases :
+    
+    // normal destruction - should remove corresponding row from db...
+    public void destroy() throws Exception {
     	_config.delete(_connection, this);
         super.destroy();
     }
-    
+        
+    // destruction as our data is transferred to another storage medium.
+    // if this is the same medium as we are using for replication, we do not want to remove this copy, as it saves making a fresh replicant...
+    public void destroy(Motable recipient) throws Exception {
+    	super.destroy();
+
+    	if (!_config.getReusingStore())
+    		_config.delete(_connection, this);
+    }
+
     protected void store(Object body) throws Exception {
     	_config.insert(_connection, this, body);
     }

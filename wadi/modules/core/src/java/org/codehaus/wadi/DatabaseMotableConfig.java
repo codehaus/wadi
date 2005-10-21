@@ -26,6 +26,8 @@ public interface DatabaseMotableConfig extends StoreMotableConfig {
     DataSource getDataSource();
     String getTable();
     
+    boolean getReusingStore();
+    
     void insert(Connection connection, Motable motable, Object body) throws Exception;
     void delete(Connection connection, Motable motable); // TODO - why no Exception ?
     void update(Connection connection, Motable motable) throws Exception;

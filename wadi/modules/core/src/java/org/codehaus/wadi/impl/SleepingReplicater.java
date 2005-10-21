@@ -10,6 +10,10 @@ public class SleepingReplicater implements Replicater {
 		_delay=delay;
 	}
 	
+	public boolean getReusingStore() {
+		return false;
+	}
+	
 	public void create(Object tmp) {
 		try {
 			Thread.sleep(_delay);

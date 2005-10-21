@@ -45,16 +45,14 @@ public abstract class AbstractImmoter implements Immoter {
 	}
 
 	public void commit(String name, Motable immotable) {
-	    // This method is provided as a placeholder. Subclasses can call super.rollback().
-	    // If we want to add anything here later, we can.
-	    // It is NOT intended that this form some sort of default behaviour !
+		// do nothing
 	}
 
 	public void rollback(String name, Motable immotable) {
 		try {
 			immotable.destroy();
 		} catch (Exception e) {
-			if (_log.isErrorEnabled()) _log.error("problem rolling back insertion: "+name, e);
+			if (_log.isErrorEnabled()) _log.error("problem rolling back immotion: "+name, e);
 		}
 	}
 

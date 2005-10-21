@@ -20,5 +20,7 @@ import org.codehaus.wadi.impl.AbstractChainedEmoter;
 
 
 public class EtherEmoter extends AbstractChainedEmoter {
+	
 	public String getInfo(){return "ether";}
+	
 }

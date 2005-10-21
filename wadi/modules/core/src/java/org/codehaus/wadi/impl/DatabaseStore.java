@@ -39,17 +39,23 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 	protected final DataSource _dataSource;
 	protected final String _table;
 	protected final boolean _useNIO;
+	protected final boolean _reusingStore;
+	protected final boolean _build;
 	
-	public DatabaseStore(String label, DataSource dataSource, String table, boolean useNIO) {
+	public DatabaseStore(String label, DataSource dataSource, String table, boolean useNIO, boolean reusingStore, boolean build) {
 		_label=label;
 		_dataSource=dataSource;
 		_table=table;
 		_useNIO=useNIO;
+		_reusingStore=reusingStore;
+		_build=build;
 		
-		try {
-			init();
-		} catch (SQLException e) {
-			_log.warn("unexpected exception", e);
+		if (_build) {
+			try {
+				init();
+			} catch (SQLException e) {
+				_log.warn("unexpected exception", e);
+			}
 		}
 	}
 	
@@ -67,6 +73,10 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 	
 	public String getTable() {
 		return _table;
+	}
+	
+	public boolean getReusingStore() {
+		return _reusingStore;
 	}
 	
 	// Store
@@ -105,9 +115,9 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 			connection=_dataSource.getConnection();
 			s=connection.createStatement();
 			s.executeUpdate("DELETE FROM "+_table);
-			if (_log.isTraceEnabled()) _log.trace("removed (shared database) sessions"); // TODO - how many ?
+			if (_log.isTraceEnabled()) _log.trace("removed (database) sessions from last run"); // TODO - how many ?
 		} catch (SQLException e) {
-			if (_log.isErrorEnabled()) _log.error("remove (shared database) failed", e);
+			if (_log.isErrorEnabled()) _log.error("remove (database) failed", e);
 		} finally {
 			try {
 				if (s!=null)
@@ -167,19 +177,21 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 					if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
 				}
 		}
-		
-		try {
-			s=connection.createStatement();
-			s.executeUpdate("DELETE FROM "+_table);
-		} catch (SQLException e) {
-			_log.warn("removal (shared database) failed", e);
-		} finally {
-			if (s!=null)
-				try {
-					s.close();
-				} catch (SQLException e) {
-					if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
-				}
+	
+		if (!_reusingStore) {
+			try {
+				s=connection.createStatement();
+				s.executeUpdate("DELETE FROM "+_table);
+			} catch (SQLException e) {
+				_log.warn("removal (shared database) failed", e);
+			} finally {
+				if (s!=null)
+					try {
+						s.close();
+					} catch (SQLException e) {
+						if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
+					}
+			}
 		}
 	}
 	
@@ -324,7 +336,7 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 	}
 	
 	public String getDescription() {
-		return "database ["+_label+"/"+_table+"]";
+		return "["+_label+"/"+_table+"]";
 	}
 	
 	public StoreMotable create() {

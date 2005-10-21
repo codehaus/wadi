@@ -143,7 +143,11 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         String name=session.getName();
         notifySessionDeletion(name);
         _map.remove(name);
-        session.destroy();
+        try {
+        	session.destroy();
+        } catch (Exception e) {
+        	_log.warn("unexpected problem destroying session", e);
+        }
         _sessionPool.put(session);
         if (_log.isDebugEnabled()) _log.debug("destruction: "+name);
     }

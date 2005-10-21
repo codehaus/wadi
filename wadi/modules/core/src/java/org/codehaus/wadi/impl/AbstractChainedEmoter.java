@@ -34,21 +34,20 @@ public abstract class AbstractChainedEmoter implements Emoter {
 	
 	public boolean prepare(String name, Motable emotable, Motable immotable) {
 		try {
-			immotable.copy(emotable);
+			emotable.mote(immotable);
 			return true;
 		} catch (Exception e) {
-			if (_log.isWarnEnabled()) _log.warn("problem during insertion: "+name, e);
+			if (_log.isWarnEnabled()) _log.warn("problem transferring data ownership: "+name, e);
 			return false;
 		}
 	}
-
-	public void commit(String name, Motable emotable) {
-		emotable.destroy(); // remove copy in store
+	
+	public void commit(String name, Motable motable) {
+		// do nothing
 	}
 
-	public void rollback(String name, Motable emotable) {
-	    // This method is provided as a placeholder. Subclasses can call super.rollback().
-	    // If we want to add anything here later, we can.
-	    // It is NOT intended that this form some sort of default behaviour !
+	public void rollback(String name, Motable motable) {
+		// immotable.mote(emotable);
 	}
+
 }

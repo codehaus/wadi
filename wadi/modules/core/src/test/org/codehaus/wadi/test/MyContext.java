@@ -48,8 +48,4 @@ public class MyContext extends AbstractContext {
 		oo.writeObject(_val);
 	}
 
-	public void destroy() {
-	    super.destroy();
-		_val=null;
-	}
 }

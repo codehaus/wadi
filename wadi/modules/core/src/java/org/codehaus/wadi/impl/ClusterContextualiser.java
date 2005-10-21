@@ -481,9 +481,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
             // ignore maxInactiveInterval
         }
         
-        public void destroy()  {throw new UnsupportedOperationException();}
+        public void destroy() throws Exception {throw new UnsupportedOperationException();}
         
         public void copy(Evictable evictable) {throw new UnsupportedOperationException();}
+        public void mote(Evictable recipient) {throw new UnsupportedOperationException();}
         
         public long getCreationTime() {return _lastAccessedTime;}
         public long getLastAccessedTime() {return _lastAccessedTime;}

@@ -57,128 +57,129 @@ import junit.framework.TestCase;
 
 public class TestReplication extends TestCase {
 
-	protected Log _log = LogFactory.getLog(getClass());
-	
-	public TestReplication(String arg0) {
-		super(arg0);
-	}
+  protected Log _log = LogFactory.getLog(getClass());
 
-    
-	protected void setUp() throws Exception {
-		super.setUp();
-	}
+  public TestReplication(String arg0) {
+    super(arg0);
+  }
 
-	protected void tearDown() throws Exception {
-		super.tearDown();
-	}
+  protected void setUp() throws Exception {
+    super.setUp();
+  }
 
-    public void testReplication() throws Exception {
+  protected void tearDown() throws Exception {
+    super.tearDown();
+  }
 
-        int sweepInterval=1000*60*60*24; // 1 eviction/day
-        boolean strictOrdering=true;
-        Streamer streamer=new SimpleStreamer();
-        Collapser collapser=new HashingCollapser(100, 1000);
+  public void testReplication() throws Exception {
 
-        // Terminator
-        Contextualiser terminator=new DummyContextualiser();
-        
-        // DB
-        String url="jdbc:axiondb:WADI";
-        DataSource ds=new AxionDataSource(url);
-        //MysqlDataSource msds=new MysqlDataSource();
-        //String url="jdbc:mysql://localhost:3306/WADI";
-        //msds.setUrl(url+"?user=root");
-        //DataSource ds=msds;
-        String storeTable="STORE";
-        DatabaseStore longTermStore=new DatabaseStore(url, ds, storeTable, false);
-        longTermStore.init();
-        Contextualiser db=new SharedStoreContextualiser(terminator, collapser, true, longTermStore);
+    int sweepInterval=1000*60*60*24; // 1 eviction/day
+    boolean strictOrdering=true;
+    Streamer streamer=new SimpleStreamer();
+    Collapser collapser=new HashingCollapser(100, 1000);
 
-        // Gianni
-        Evicter devicter=new NeverEvicter(sweepInterval, strictOrdering);
-        Map dmap=new HashMap();
-        String spoolTable="SPOOL";
-        DatabaseStore shortTermStore=new DatabaseStore(url, ds, spoolTable, false);
-        //Contextualiser spool=new GiannisContextualiser(db, collapser, true, devicter, dmap, shorttermStore);
-        File dir=Utils.createTempDirectory("wadi", ".test", new File("/tmp"));
-        Contextualiser spool=new ExclusiveStoreContextualiser(db, collapser, false, devicter, dmap, new SimpleStreamer(), dir);
-        
-        Map mmap=new HashMap();
-        
-        Contextualiser serial=new SerialContextualiser(spool, collapser, mmap);
+    // Terminator
+    Contextualiser terminator=new DummyContextualiser();
 
-        SessionPool sessionPool=new SimpleSessionPool(new AtomicallyReplicableSessionFactory());
-        
-        // Memory
-        Evicter mevicter=new AlwaysEvicter(sweepInterval, strictOrdering);
-        ContextPool contextPool=new SessionToContextPoolAdapter(sessionPool);
-        HttpServletRequestWrapperPool requestPool=new DummyStatefulHttpServletRequestWrapperPool();
-        AbstractExclusiveContextualiser memory=new MemoryContextualiser(serial, mevicter, mmap, streamer, contextPool, requestPool);
+    // DB
+    //String url="jdbc:axiondb:WADI";
+    //DataSource ds=new AxionDataSource(url);
+    MysqlDataSource msds=new MysqlDataSource();
+    String url="jdbc:mysql://localhost:3306/WADI";
+    msds.setUrl(url+"?user=root");
+    msds.setLoggerClassName(MySqlLogger.class.getName());
+    msds.setProfileSQL(true);
+    DataSource ds=msds;
+    String storeTable="STORE";
+    DatabaseStore longTermStore=new DatabaseStore(url, ds, storeTable, false, false, true);
+    Contextualiser db=new SharedStoreContextualiser(terminator, collapser, true, longTermStore);
 
-        // Manager
-        AttributesFactory attributesFactory=new DistributableAttributesFactory();
-        ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
-        SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
-        SessionIdFactory idFactory=new TomcatSessionIdFactory();
-        String replicationTable="REPLICANTS";
-        DatabaseStore replicationStore=new DatabaseStore(url, ds, replicationTable, false);
-        DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, new DatabaseReplicater(replicationStore));
-        manager.setSessionListeners(new HttpSessionListener[]{});
-        manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
-        manager.init(new DummyManagerConfig());
+    // Gianni
+    Evicter devicter=new NeverEvicter(sweepInterval, strictOrdering);
+    Map dmap=new HashMap();
+    String spoolTable="SPOOL";
+    DatabaseStore shortTermStore=new DatabaseStore(url, ds, spoolTable, false, false, true);
+    //Contextualiser spool=new GiannisContextualiser(db, collapser, true, devicter, dmap, shorttermStore);
+    File dir=Utils.createTempDirectory("wadi", ".test", new File("/tmp"));
+    Contextualiser spool=new ExclusiveStoreContextualiser(db, collapser, false, devicter, dmap, new SimpleStreamer(), dir);
 
-        manager.start();
-        //mevicter.stop(); // we'll run it by hand...
-        //devicter.stop();
+    Map mmap=new HashMap();
 
-        _log.info("CREATING SESSION");
-        AbstractReplicableSession session=(AbstractReplicableSession)manager.create();
-        String foo="bar";
-        session.setAttribute("foo", foo);
-        String name=session.getId();
-        assertTrue(mmap.size()==1);
-        assertTrue(dmap.size()==0);
-        
-        _log.info("TOUCHING SESSION");
-        long lat=session.getLastAccessedTime();
-        memory.contextualise(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }, name, null, null, false);
-        assert(lat!=session.getLastAccessedTime());
-        session=(AbstractReplicableSession)mmap.get(name);
-        assertTrue(mmap.size()==1);
-        assertTrue(dmap.size()==0);
+    Contextualiser serial=new SerialContextualiser(spool, collapser, mmap);
 
-        _log.info("DEMOTING SESSION to short-term SPOOL");
-        mevicter.evict();
-        assertTrue(mmap.size()==0);
-        assertTrue(dmap.size()==1);
-        
-        _log.info("DEMOTING SESSION to long-term STORE");
-        manager.stop();
-        assertTrue(mmap.size()==0);
-        assertTrue(dmap.size()==0);
+    SessionPool sessionPool=new SimpleSessionPool(new AtomicallyReplicableSessionFactory());
 
-        _log.info("PROMOTING SESSION to short-term SPOOL");
-        manager.start();
-        assertTrue(mmap.size()==0);
-        assertTrue(dmap.size()==1);
+    // Memory
+    Evicter mevicter=new AlwaysEvicter(sweepInterval, strictOrdering);
+    ContextPool contextPool=new SessionToContextPoolAdapter(sessionPool);
+    HttpServletRequestWrapperPool requestPool=new DummyStatefulHttpServletRequestWrapperPool();
+    AbstractExclusiveContextualiser memory=new MemoryContextualiser(serial, mevicter, mmap, streamer, contextPool, requestPool);
 
-        _log.info("PROMOTING SESSION to Memory");
-        memory.contextualise(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }, name, null, null, false);
-        session=(AbstractReplicableSession)mmap.get(name);
-        assertTrue(session.getAttribute("foo")!=foo);
-        assertTrue(session.getAttribute("foo").equals(foo));
-        assertTrue(mmap.size()==1);
-        assertTrue(dmap.size()==0);
-        
-        _log.info("DESTROYING SESSION");
-        manager.destroy(session);
-        assertTrue(mmap.size()==0);
-        assertTrue(dmap.size()==0);
-        
-        manager.stop();
+    // Manager
+    AttributesFactory attributesFactory=new DistributableAttributesFactory();
+    ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
+    SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
+    SessionIdFactory idFactory=new TomcatSessionIdFactory();
+    String replicationTable="REPLICANTS";
+    DatabaseStore replicationStore=new DatabaseStore(url, ds, replicationTable, false, false, false);
+    DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, new DatabaseReplicater(replicationStore, false));
+    manager.setSessionListeners(new HttpSessionListener[]{});
+    manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
+    manager.init(new DummyManagerConfig());
 
-        longTermStore.destroy();
-        shortTermStore.destroy();
-        dir.delete();
-    }
+    manager.start();
+    //mevicter.stop(); // we'll run it by hand...
+    //devicter.stop();
+
+    _log.info("CREATING SESSION");
+    AbstractReplicableSession session=(AbstractReplicableSession)manager.create();
+    String foo="bar";
+    session.setAttribute("foo", foo);
+    String name=session.getId();
+    assertTrue(mmap.size()==1);
+    assertTrue(dmap.size()==0);
+
+    _log.info("TOUCHING SESSION");
+    long lat=session.getLastAccessedTime();
+    memory.contextualise(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }, name, null, null, false);
+    assert(lat!=session.getLastAccessedTime());
+    session=(AbstractReplicableSession)mmap.get(name);
+    assertTrue(mmap.size()==1);
+    assertTrue(dmap.size()==0);
+
+    _log.info("DEMOTING SESSION to short-term SPOOL");
+    mevicter.evict();
+    assertTrue(mmap.size()==0);
+    assertTrue(dmap.size()==1);
+
+    _log.info("DEMOTING SESSION to long-term STORE");
+    manager.stop();
+    assertTrue(mmap.size()==0);
+    assertTrue(dmap.size()==0);
+
+    _log.info("PROMOTING SESSION to short-term SPOOL");
+    manager.start();
+    assertTrue(mmap.size()==0);
+    assertTrue(dmap.size()==1);
+
+    _log.info("PROMOTING SESSION to Memory");
+    memory.contextualise(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }, name, null, null, false);
+    session=(AbstractReplicableSession)mmap.get(name);
+    assertTrue(session.getAttribute("foo")!=foo);
+    assertTrue(session.getAttribute("foo").equals(foo));
+    assertTrue(mmap.size()==1);
+    assertTrue(dmap.size()==0);
+
+    _log.info("DESTROYING SESSION");
+    manager.destroy(session);
+    assertTrue(mmap.size()==0);
+    assertTrue(dmap.size()==0);
+
+    manager.stop();
+
+    longTermStore.destroy();
+    shortTermStore.destroy();
+    dir.delete();
+  }
+
 }

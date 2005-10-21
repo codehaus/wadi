@@ -27,9 +27,15 @@ public class DatabaseReplicater implements Replicater {
 	
 	protected final Log _log = LogFactory.getLog(getClass());
 	protected final DatabaseStore _store;
+	protected boolean _reusingStore;
 	
-	public DatabaseReplicater(DatabaseStore store) {
-		_store=store;    	
+	public DatabaseReplicater(DatabaseStore store, boolean reusingStore) {
+		_store=store;
+		_reusingStore=reusingStore;
+	}
+	
+	public boolean getReusingStore() {
+		return _reusingStore;
 	}
 	
 	public void create(Object tmp) {

@@ -27,8 +27,11 @@ package org.codehaus.wadi;
 public interface Evictable {
     
     void init(long creationTime, long lastAccessedTime, int maxInactiveInterval);
-    void destroy();
+    void destroy() throws Exception;
     void copy(Evictable evictable) throws Exception;
+
+    // transfers all our content into recipient. If this succeeds without an exception, remove our own content...
+	void mote(Evictable recipient) throws Exception;
     
 	long getCreationTime();
 	//void setCreationTime(long creationTime);

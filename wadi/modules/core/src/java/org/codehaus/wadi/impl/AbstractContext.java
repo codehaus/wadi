@@ -49,7 +49,12 @@ public abstract class AbstractContext extends AbstractMotable implements Context
 		Utils.setContent(this, bytes, new SimpleStreamer());
 	}
     
-    public ByteBuffer getBodyAsByteBuffer() throws Exception {throw new UnsupportedOperationException();}
-    public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {throw new UnsupportedOperationException();}
+    public ByteBuffer getBodyAsByteBuffer() throws Exception {
+    	throw new UnsupportedOperationException();
+    }
+    
+    public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {
+    	throw new UnsupportedOperationException();
+    }
 
 }

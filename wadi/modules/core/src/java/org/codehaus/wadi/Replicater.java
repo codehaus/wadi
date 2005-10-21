@@ -6,4 +6,6 @@ public interface Replicater {
 	void update(Object tmp);
 	void destroy(Object tmp);
 	
+	boolean getReusingStore();
+	
 }
