@@ -41,19 +41,61 @@ public abstract class AbstractReplicableSession extends DistributableSession imp
     
     public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name) {
     	super.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
-    	((ReplicableSessionConfig)_config).getReplicater().create(this);        
+
+    	Replicater replicater=((ReplicableSessionConfig)_config).getReplicater();
+    	replicater.create(this);
     }
     
-	public void copy(Motable motable) throws Exception {
-		super.copy(motable);
-		((ReplicableSessionConfig)_config).getReplicater().create(this);
-	}
+    public void init2(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name) {
+    	super.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
+
+    	Replicater replicater=((ReplicableSessionConfig)_config).getReplicater();
+
+    	if (!replicater.getReusingStore())
+    		replicater.create(this);
+    }
     
-    public void destroy() {
+
+    public void copy(Motable motable) throws Exception {
+    	Replicater replicater=((ReplicableSessionConfig)_config).getReplicater();
+
+    	if (!replicater.getReusingStore())
+    		replicater.create(this);
+    	
+    	super.copy(motable);
+	}
+
+    public void mote(Motable recipient) throws Exception {
+    	Replicater replicater=((ReplicableSessionConfig)_config).getReplicater();
+    	if (replicater.getReusingStore()) {
+    		recipient.init(_creationTime, _lastAccessedTime, _maxInactiveInterval, _name); // only copy metadata
+    	} else
+    		recipient.copy(this); // copy metadata and data
+    	
+    	destroy(recipient); // this is a transfer, so use special case destructor...
+    }
+
+    // we have two destroy usecases :
+    
+    // destruction through explicit (by app code) or implicit (by container timeout) invalidation
+    // MUST destroy replicated backups - else we spring a leak...
+    
+    public void destroy() throws Exception {
     	((ReplicableSessionConfig)_config).getReplicater().destroy(this);
     	super.destroy();
     }
     
+    // destruction as our data is transferred to another storage medium.
+    // if this is the same medium as we are using for replication, we do not want to remove our replicated copies...
+    public void destroy(Motable recipient) throws Exception {
+    	Replicater replicater=((ReplicableSessionConfig)_config).getReplicater();
+
+    	super.destroy();
+
+    	if (!replicater.getReusingStore())
+    		replicater.destroy(this);
+    }
+
     // lastAccessedTime NOT replicated - assume that, just as the node died, requests
     // were landing for every session that it contained. All the calls the setLastAccessedTime()
     // that should have happened were lost. So we have to refresh any session replicant as it is

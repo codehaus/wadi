@@ -119,7 +119,7 @@ public class TestContextualiser extends TestCase {
     protected Log _log = LogFactory.getLog(getClass());
     protected DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");	// db springs into existance in-vm beneath us
     protected String _table="MyTable";
-    protected DatabaseStore _store=new DatabaseStore("jdbc:axiondb:testdb", _ds, _table, false);
+    protected DatabaseStore _store=new DatabaseStore("jdbc:axiondb:testdb", _ds, _table, false, false, false);
     protected final String _clusterUri=Utils.getClusterUri();
     protected final String _clusterName="WADI.TEST";
 

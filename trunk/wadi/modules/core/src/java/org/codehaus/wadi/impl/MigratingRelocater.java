@@ -125,7 +125,11 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
 		}
 
 		public void commit(String name, Motable emotable) {
+			try {
 			emotable.destroy(); // remove copy in store
+			} catch (Exception e) {
+				throw new UnsupportedOperationException("NYI"); // NYI
+			}
 
 			// TODO - move some of this to prepare()...
 			if (_log.isTraceEnabled()) _log.trace("sending immigration ack");

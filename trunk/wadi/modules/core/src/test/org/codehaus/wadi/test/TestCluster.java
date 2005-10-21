@@ -173,7 +173,7 @@ public class TestCluster extends TestCase {
 	protected final String _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
     protected final DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");
     protected final String _table="WADISESSIONS";
-    protected final DatabaseStore _store=new DatabaseStore("test", _ds, _table, false);
+    protected final DatabaseStore _store=new DatabaseStore("test", _ds, _table, false, false, false);
 
     protected boolean _preserveDB;
 

@@ -21,7 +21,11 @@ import org.codehaus.wadi.Replicater;
 
 public class DummyReplicater implements Replicater {
 
-    public void create(Object tmp) {
+	public boolean getReusingStore() {
+		return false;
+	}
+	
+	public void create(Object tmp) {
     	// empty
     }
     

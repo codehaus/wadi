@@ -27,6 +27,8 @@ public interface DiscMotableConfig extends StoreMotableConfig {
     ByteBuffer take(int size);
     void put(ByteBuffer buffer);
 
+    boolean getReusingStore();
+    
 //    void insert(File dir, Motable motable, Object body) throws Exception;
 //    void delete(File dir, Motable motable); // TODO - why no Exception ?
 //    void update(File dir, Motable motable, Object body) throws Exception;

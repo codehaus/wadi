@@ -58,7 +58,7 @@ public class StandardSession extends AbstractContext implements Session, Attribu
         // TODO - resolve different APIs used by Factories and Pools...
         }
     
-    public void destroy() {
+    public void destroy() throws Exception {
         super.destroy();
         _attributes.clear();
         // NYI - other fields...
@@ -73,10 +73,14 @@ public class StandardSession extends AbstractContext implements Session, Attribu
     }
     
     // public access to the contents of this session should all be directed via wrapper
-    public HttpSession getWrapper() {return _wrapper;}
+    public HttpSession getWrapper() {
+    	return _wrapper;
+    }
     
     // cached events...
-    public HttpSessionEvent getHttpSessionEvent(){return _httpSessionEvent;}
+    public HttpSessionEvent getHttpSessionEvent() {
+    	return _httpSessionEvent;
+    }
     
     //public String getRealId() {return null;} // TODO - lose this method...
     
@@ -117,17 +121,28 @@ public class StandardSession extends AbstractContext implements Session, Attribu
         return _attributes.remove(name);
     }
     
-    public SessionConfig getConfig() {return _config;}
+    public SessionConfig getConfig() {
+    	return _config;
+    }
     
     // AttributesConfig
     
-    public ValuePool getValuePool(){return _config.getValuePool();}
+    public ValuePool getValuePool(){
+    	return _config.getValuePool();
+    }
     
     // if I don't actually have a method in this class, I cannot advise it, without runtime overhead...
     // is this correct ?
-    public void setLastAccessedTime(long lastAccessedTime) {super.setLastAccessedTime(lastAccessedTime);}
-    public void setMaxInactiveInterval(int maxInactiveInterval) {super.setMaxInactiveInterval(maxInactiveInterval);}
+    public void setLastAccessedTime(long lastAccessedTime) {
+    	super.setLastAccessedTime(lastAccessedTime);
+    }
     
-    public String getId() {return _config.getRouter().augment(_name);} // TODO - How can we cache this ?
+    public void setMaxInactiveInterval(int maxInactiveInterval) {
+    	super.setMaxInactiveInterval(maxInactiveInterval);
+    }
+    
+    public String getId() {
+    	return _config.getRouter().augment(_name);
+    } // TODO - How can we cache this ?
     
 }

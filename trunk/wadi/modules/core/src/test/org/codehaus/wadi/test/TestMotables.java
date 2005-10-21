@@ -49,7 +49,7 @@ public class TestMotables extends TestCase {
     public void testDatabaseMotables() throws Exception {
         DataSource ds=new AxionDataSource("jdbc:axiondb:testdb");
         String table="SESSIONS";
-        DatabaseStore store=new DatabaseStore("jdbc:axiondb:testdb", ds, table, false);
+        DatabaseStore store=new DatabaseStore("jdbc:axiondb:testdb", ds, table, false, false, false);
         store.init();
         testDatabaseMotables(store);
 //        testDatabaseMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), true));
@@ -59,8 +59,8 @@ public class TestMotables extends TestCase {
     }
     
     public void testDiscMotables() throws Exception {
-        testDiscMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), false));
-        testDiscMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), true));
+        testDiscMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), false, false));
+        testDiscMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), true, false));
     }
  
     public void testDiscMotables(Store store) throws Exception {

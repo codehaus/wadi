@@ -38,7 +38,7 @@ public abstract class SimpleEvictable implements Evictable, Serializable {
         _maxInactiveInterval=maxInactiveInterval;
     }
     
-    public void destroy() {
+    public void destroy() throws Exception {
         _creationTime=0;
         _lastAccessedTime=0;
         _maxInactiveInterval=0;
@@ -50,6 +50,11 @@ public abstract class SimpleEvictable implements Evictable, Serializable {
         _maxInactiveInterval=evictable.getMaxInactiveInterval();
     }
     
+    public void mote(Evictable recipient) throws Exception {
+    	recipient.copy(this);
+    	destroy();
+    }
+     
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         _creationTime=oi.readLong();
         _lastAccessedTime=oi.readLong();

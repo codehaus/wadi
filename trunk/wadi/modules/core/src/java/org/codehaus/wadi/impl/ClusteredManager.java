@@ -153,7 +153,11 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
         String name=session.getName();
         notifySessionDeletion(name);
         _map.remove(name);
-        session.destroy();
+        try {
+        	session.destroy();
+        } catch (Exception e) {
+        	_log.warn("unexpected problem destroying session", e);
+        }
         _sessionPool.put(session);
         if (_log.isDebugEnabled()) _log.debug("destroyed: "+name);
     }

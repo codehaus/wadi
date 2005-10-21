@@ -103,7 +103,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 	}
 
         RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
-        if (_log.isInfoEnabled()) _log.info("evacuated sessions: "+i);
+        if (_log.isInfoEnabled()) _log.info("unloaded sessions: "+i);
 	assert(_map.size()==0);
     }
 

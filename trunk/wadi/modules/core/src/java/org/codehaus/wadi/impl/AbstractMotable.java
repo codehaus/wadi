@@ -23,6 +23,7 @@ import java.io.Serializable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Motable;
 
 /**
@@ -36,25 +37,33 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
  
     protected static Log _log = LogFactory.getLog(AbstractMotable.class);
 
+    protected String _name;
+
     public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name) {
         init(creationTime, lastAccessedTime, maxInactiveInterval);
         _name=name;
     }
 
-    public void destroy() {
-        super.destroy();
+    public void destroy() throws Exception {
         _name=null;
-        // should setBytes(null)... - TODO - although init() does not initialise them...
+        super.destroy();
     }
 
 	public void copy(Motable motable) throws Exception {
-		super.copy(motable); // Evictable fields
+		super.copy(motable);
 		_name=motable.getName();
+		// how do we avoid doing this if motable is already replicated ?
 		setBodyAsByteArray(motable.getBodyAsByteArray());
 	}
 
-	protected String _name;
-	public String getName(){return _name;}
+    public void mote(Motable recipient) throws Exception {
+    	recipient.copy(this);
+    	destroy();
+    }
+    
+	public String getName() {
+		return _name;
+	}
 
 	// N.B. implementation of Bytes field is left abstract...
 

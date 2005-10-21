@@ -28,6 +28,7 @@ import java.nio.channels.FileChannel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.DiscMotableConfig;
+import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.StoreMotable;
 import org.codehaus.wadi.StoreMotableConfig;
 
@@ -75,12 +76,26 @@ public class DiscMotable extends AbstractMotable implements StoreMotable {
         store(true, body);
     }
     
-    public void destroy() {
+    // normal destruction - should remove corresponding row from db...
+    public void destroy() throws Exception {
         super.destroy();
         if (_file!=null && _file.exists()) {
             _file.delete();
             if (_log.isTraceEnabled()) _log.trace("removed (exclusive disc): "+_file+": "+_bodyLength+" bytes");
         }
+    }
+    
+    // destruction as our data is transferred to another storage medium.
+    // if this is the same medium as we are using for replication, we do not want to remove this copy, as it saves making a fresh replicant...
+    public void destroy(Motable recipient) throws Exception {
+    	super.destroy();
+
+    	if (!_config.getReusingStore()) {
+            if (_file!=null && _file.exists()) {
+                _file.delete();
+                if (_log.isTraceEnabled()) _log.trace("removed (exclusive disc): "+_file+": "+_bodyLength+" bytes");
+            }
+    	}
     }
     
     protected void ensureFile() {

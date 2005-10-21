@@ -177,7 +177,11 @@ public class HybridRelocater extends AbstractRelocater {
         }
         
         public void commit(String name, Motable emotable) {
+        	try {
             emotable.destroy(); // remove copy in store
+        	} catch (Exception e) {
+        		throw new UnsupportedOperationException("NYI"); // NYI
+        	}
         }
         
         public void rollback(String name, Motable motable) {

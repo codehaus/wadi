@@ -34,11 +34,13 @@ public class DiscStore implements Store, DiscMotableConfig {
     protected final File _dir;
     protected final boolean _useNIO;
     protected final DirectByteBufferCache _cache=new DirectByteBufferCache();
+    protected final boolean _reusingStore;
 
-    public DiscStore(Streamer streamer, File dir, boolean useNIO) throws Exception {
+    public DiscStore(Streamer streamer, File dir, boolean useNIO, boolean reusingStore) throws Exception {
         _streamer=streamer;
         _dir=dir;
         _useNIO=useNIO;
+        _reusingStore=reusingStore;
         
         try {
         	File.createTempFile("DiscStore_WriteTest",null , _dir).delete();
@@ -102,5 +104,9 @@ public class DiscStore implements Store, DiscMotableConfig {
     public boolean getUseNIO() {return _useNIO;}
     public ByteBuffer take(int size) {return _cache.take(size);}
     public void put(ByteBuffer buffer) {_cache.put(buffer);}
+    
+    public boolean getReusingStore() {
+    	return _reusingStore;
+    }
     
 }

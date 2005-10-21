@@ -37,11 +37,6 @@ public class SimpleMotable extends AbstractMotable implements Serializable {
     public ByteBuffer getBodyAsByteBuffer() throws Exception {throw new UnsupportedOperationException();}
     public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {throw new UnsupportedOperationException();}
 
-	public void destroy() {
-	    super.destroy();
-	    _bytes=null;
-	}
-    
     public boolean equals(Object object) {
         if (this==object)
             return true;
