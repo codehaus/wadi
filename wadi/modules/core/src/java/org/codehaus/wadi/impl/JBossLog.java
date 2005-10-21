@@ -19,10 +19,21 @@ import org.apache.commons.logging.Log;
 import org.jboss.logging.Logger;
 
 /**
- * Commons Logging -> JBoss Logging bridge.
+ * Commons Logging -> JBoss Logging bridge. I wrote it to ensure that commons-logging:trace went to
+ * jboss-logging:trace.
+ * 
+ * It took ages to figure out :
+ * 
+ * In your $JBOSS_HOME/server/<config>/conf/log4j.xml:
+ * 
+ *  1) remove the "Threshold" param to your target Appender
+ *  
+ *  2) try e.g. <category name="org.codehaus.wadi"><priority value="TRACE" class="org.jboss.logging.XLevel"/></category>
+ * 
+ * and you should see lots of TRACE statements when WADI runs (slowly)
  * 
  * @author jules
-  */
+ */
 public class JBossLog implements Log {
 
 	protected final Logger _log;
