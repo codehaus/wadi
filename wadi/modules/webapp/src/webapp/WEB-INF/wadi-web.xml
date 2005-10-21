@@ -148,6 +148,8 @@
     <constructor-arg><ref bean="DataSource"/></constructor-arg>
     <constructor-arg><value>SESSIONS</value></constructor-arg>
     <constructor-arg type="boolean"><value>false</value></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- reusingStore -->
+    <constructor-arg type="boolean"><value>true</value></constructor-arg><!-- build -->
   </bean>
 
   <bean
