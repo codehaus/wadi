@@ -6,8 +6,7 @@
   <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
     <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
     <param name="Target" value="System.out"/>
-    <param name="Threshold" value="TRACE"/>
-
+    <!--    <param name="Threshold" value="DEBUG"/> -->
     <layout class="org.apache.log4j.PatternLayout">
       <!-- The default pattern: Date Priority [Category] Message\n -->
       <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p [%c{1}] %m%n"/>
@@ -15,11 +14,11 @@
   </appender>
 
   <category name="org.codehaus.wadi">
+    <priority value="DEBUG"/>
+<!--
     <priority value="INFO"/>
-  </category>
-
-  <category name="org.codehaus.wadi.impl.Utils">
-    <priority value="INFO"/>
+    <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+ -->
   </category>
 
   <category name="org.codehaus.wadi.tomcat55">
