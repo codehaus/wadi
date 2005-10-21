@@ -129,14 +129,27 @@
       <version>2.2.8</version>
     </dependency>
 
+    <dependency>
+      <groupId>mysql-connector-java</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>3.1.11-bin</version>
+    </dependency>
+
+    <dependency>
+      <groupId>jboss</groupId>
+      <artifactId>jboss-common</artifactId>
+      <version>4.0.2</version>
+    </dependency>
+
   </dependencies>
 
   <build>
 
-    <unitTestSourceDirectory></unitTestSourceDirectory>
+    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
     <integrationUnitTestSourceDirectory/>
 
     <unitTest>
+
       <resources>
         <resource>
           <directory>src/test</directory>
@@ -146,6 +159,7 @@
           </includes>
         </resource>
       </resources>
+
       <excludes>
         <exclude>**/old/**</exclude>
         <exclude>**/test/TestActiveCluster.java</exclude>
@@ -157,7 +171,10 @@
         <exclude>**/test/TestHttpSession.java</exclude><!-- seems to hang -->
         <exclude>**/test/TestCluster.java</exclude><!-- seems to hang -->
       </excludes>
+
       <includes>
+        <include>**/TestReplication.java</include>
+        <include>**/TestGianni.java</include>
 <!--
         <include>**/test/Test*.java</include>
         <include>**/test/io/Test*.java</include>
@@ -185,6 +202,7 @@
 	<include>**/TestUnicastClient.java</include>
 	-->
       </includes>
+
     </unitTest>
 
     <resources>

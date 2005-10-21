@@ -38,6 +38,7 @@ import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.impl.ExclusiveStoreContextualiser;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
+import org.codehaus.wadi.impl.MySqlLog;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.AbstractReplicableSession;
 import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
@@ -87,7 +88,7 @@ public class TestReplication extends TestCase {
     MysqlDataSource msds=new MysqlDataSource();
     String url="jdbc:mysql://localhost:3306/WADI";
     msds.setUrl(url+"?user=root");
-    msds.setLoggerClassName(MySqlLogger.class.getName());
+    msds.setLoggerClassName(MySqlLog.class.getName());
     msds.setProfileSQL(true);
     DataSource ds=msds;
     String storeTable="STORE";

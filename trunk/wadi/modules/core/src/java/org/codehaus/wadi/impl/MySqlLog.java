@@ -15,16 +15,22 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class MySqlLogger implements com.mysql.jdbc.log.Log {
+
+/**
+ * MySql Logging -> Commons Logging bridge.
+ * 
+ * @author jules
+  */
+public class MySqlLog implements com.mysql.jdbc.log.Log {
 	
 	protected final Log _log;
 	
-	public MySqlLogger(String name) {
+	public MySqlLog(String name) {
 		_log=LogFactory.getLog(name);
 	}
 	

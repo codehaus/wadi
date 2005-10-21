@@ -9,7 +9,7 @@
 
     SessionFactory, SessionWrapperFactory
 
-  This is so because these three types need to be parameterised according to within which
+<  This is so because these three types need to be parameterised according to within which
   WebContainer we are running...
 -->
 
@@ -46,8 +46,8 @@
   </bean>
 
   <bean
-    id="Streamer"
-    class="org.codehaus.wadi.impl.SimpleStreamer"
+    id="SessionStreamer"
+    class="org.codehaus.wadi.impl.GZIPStreamer"
     >
   </bean>
 
@@ -59,11 +59,33 @@
     >
   </bean>
 
+<!--
   <bean
     id="DataSource"
     class="org.axiondb.jdbc.AxionDataSource"
     >
     <constructor-arg><value>jdbc:axiondb:testdb</value></constructor-arg>
+  </bean>
+-->
+
+<!--
+  <bean
+    id="DataSource"
+    class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource"
+    >
+    <property name="url"><value>jdbc:mysql://localhost:3306/WADI?user=root</value></property>
+    <property name="profileSQL"><value>true</value></property>
+  </bean>
+-->
+
+  <bean id="DataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <property name="driverClassName"><value>com.mysql.jdbc.Driver</value></property>
+    <property name="url"><value>jdbc:mysql://localhost/WADI?socket=/tmp/mysql.sock</value></property>
+    <property name="username"><value>root</value></property>
+    <!-- <property name="password"><value>password</value></property> -->
+    <property name="initialSize"><value>60</value></property>
+    <property name="maxActive"><value>60</value>
+    </property><property name="maxIdle"><value>60</value></property>
   </bean>
 
   <bean
@@ -76,7 +98,7 @@
   <!-- the contextualiser stack -->
 
   <bean
-    id="Streamer2"
+    id="AttributeStreamer"
     class="org.codehaus.wadi.impl.SimpleStreamer"
     >
   </bean>
@@ -104,14 +126,41 @@
   </bean>
 
   <bean
+    id="DatabaseStore"
+    class="org.codehaus.wadi.impl.DatabaseStore"
+    >
+    <constructor-arg><value>jdbc:mysql://localhost/WADI</value></constructor-arg>
+    <constructor-arg><ref bean="DataSource"/></constructor-arg>
+    <constructor-arg><value>SESSION_STORE</value></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg><!-- reusingStore -->
+    <constructor-arg type="boolean"><value>false</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="DatabaseEvicter"
+    class="org.codehaus.wadi.impl.NeverEvicter"
+    >
+    <constructor-arg type="int"><value>10</value></constructor-arg><!-- sweepInterval -->
+    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- strictOrdering -->
+  </bean>
+
+  <bean
+    id="DatabaseMap"
+    class="EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap"
+    >
+  </bean>
+
+  <bean
     id="DatabaseContextualiser"
-    class="org.codehaus.wadi.impl.SharedStoreContextualiser"
+    class="org.codehaus.wadi.impl.GiannisContextualiser"
     >
     <constructor-arg><ref bean="DummyContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="Collapser"/></constructor-arg>
-    <constructor-arg type="boolean"><value>true</value></constructor-arg>
-    <constructor-arg><ref bean="DataSource"/></constructor-arg>
-    <constructor-arg><value>WADI</value></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- clean? -->
+    <constructor-arg><ref bean="DatabaseEvicter"/></constructor-arg>
+    <constructor-arg><ref bean="DatabaseMap"/></constructor-arg>
+    <constructor-arg><ref bean="DatabaseStore"/></constructor-arg>
   </bean>
 
   <bean
@@ -144,57 +193,10 @@
   </bean>
 
   <bean
-    id="TmpDirectory"
-    class="java.io.File"
-    >
-    <constructor-arg><value>${java.io.tmpdir}</value></constructor-arg>
-  </bean>
-
-  <bean
-    id="DiscDirectory"
-    class="java.io.File"
-    >
-    <constructor-arg><ref bean="TmpDirectory"/></constructor-arg>
-    <constructor-arg><value>sessions</value></constructor-arg>
-  </bean>
-
-<!--
-        dir.delete();
-        dir.mkdir();
--->
-
-  <bean
-    id="DiscEvicter"
-    class="org.codehaus.wadi.impl.NeverEvicter"
-    >
-    <constructor-arg type="int"><value>20</value></constructor-arg>
-    <constructor-arg type="boolean"><value>true</value></constructor-arg>
-  </bean> <!-- sessions never pass below this point, unless the node is shutdown -->
-
-  <bean
-    id="DiscMap"
-    class="EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap"
-    >
-  </bean>
-
-  <bean
-    id="DiscContextualiser"
-    class="org.codehaus.wadi.impl.ExclusiveStoreContextualiser"
-    >
-    <constructor-arg><ref bean="StatelessContextualiser"/></constructor-arg>
-    <constructor-arg><ref bean="Collapser"/></constructor-arg>
-    <constructor-arg type="boolean"><value>true</value></constructor-arg>
-    <constructor-arg><ref bean="DiscEvicter"/></constructor-arg>
-    <constructor-arg><ref bean="DiscMap"/></constructor-arg>
-    <constructor-arg><ref bean="Streamer"/></constructor-arg>
-    <constructor-arg><ref bean="DiscDirectory"/></constructor-arg>
-  </bean>
-
-  <bean
     id="SerialContextualiser"
     class="org.codehaus.wadi.impl.SerialContextualiser"
     >
-    <constructor-arg><ref bean="DiscContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="StatelessContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="Collapser"/></constructor-arg>
     <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
   </bean>
@@ -203,10 +205,10 @@
     id="MemoryEvicter"
     class="org.codehaus.wadi.impl.AbsoluteEvicter"
     >
-    <constructor-arg type="int"><value>10</value></constructor-arg>
-    <constructor-arg type="boolean"><value>true</value></constructor-arg>
-    <constructor-arg type="int"><value>10</value></constructor-arg>
-  </bean> <!-- if a session is inactive for 10 secs, it moves to disc -->
+    <constructor-arg type="int"><value>10</value></constructor-arg><!-- sweepInterval -->
+    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- strictOrdering -->
+    <constructor-arg type="int"><value>10</value></constructor-arg><!-- inactivityInterval -->
+  </bean>
 
   <bean
     id="RequestPool"
@@ -221,7 +223,7 @@
     <constructor-arg><ref bean="SerialContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="MemoryEvicter"/></constructor-arg>
     <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
-    <constructor-arg><ref bean="Streamer2"/></constructor-arg>
+    <constructor-arg><ref bean="SessionStreamer"/></constructor-arg>
     <constructor-arg><ref bean="ContextPool"/></constructor-arg>
     <constructor-arg><ref bean="RequestPool"/></constructor-arg>
   </bean>
@@ -244,6 +246,28 @@
     >
   </bean>
 
+  <bean
+    id="DatabaseReplicater"
+    class="org.codehaus.wadi.impl.DatabaseReplicater"
+    >
+    <constructor-arg><ref bean="DatabaseStore"/></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+  </bean>
+
+<!--
+  <bean
+    id="DatabaseReplicater"
+    class="org.codehaus.wadi.impl.DummyReplicater"
+    >
+  </bean>
+  <bean
+    id="DatabaseReplicater"
+    class="org.codehaus.wadi.impl.SleepingReplicater"
+    >
+    <constructor-arg type="long"><value>1000</value></constructor-arg>
+  </bean>
+-->
+
   <!-- and finally - the SessionManager itself -->
 
   <bean
@@ -258,8 +282,9 @@
     <constructor-arg><ref bean="MemoryContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
     <constructor-arg><ref bean="Router"/></constructor-arg>
-    <constructor-arg><ref bean="Streamer"/></constructor-arg>
-    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg><ref bean="AttributeStreamer"/></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg><!-- accessOnLoad -->
+    <constructor-arg><ref bean="DatabaseReplicater"/></constructor-arg>
   </bean>
 
 
@@ -280,11 +305,14 @@
   <!--
   This will create a new MBeanServer unless one already exists, in which case it will be reused.
   -->
+<!--
   <bean id="mbeanServer" class="org.codehaus.wadi.impl.MBeanServerFactoryBean"/>
+-->
 
   <!--
   This will register the beans mentioned in its 'beans' map with the MBeanServer.
   -->
+<!--
   <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
     <property name="beans">
       <map>
@@ -297,20 +325,24 @@
     </property>
     <property name="server" ref="mbeanServer"/>
   </bean>
+-->
 
   <!--
   if you are running your own jndi registry, you may comment this out
   (untested)
   -->
+<!--
   <bean id="registry" class="java.rmi.registry.LocateRegistry" factory-method="createRegistry">
     <constructor-arg value="${jndi.port}"/>
   </bean>
+-->
 
   <!--
   if you are running your own jmx remote connector, you may comment this out
   you will also need to remove the reference to 'serverConnector' in the 'exporter' bean definition.
   (untested)
   -->
+<!--
   <bean id="serverConnector" class="org.springframework.jmx.support.ConnectorServerFactoryBean" depends-on="registry">
     <property name="objectName" value="connector:name=rmi"/>
     <property name="serviceUrl" value="service:jmx:rmi://localhost/jndi/rmi://localhost:${jndi.port}/wadi"/>
@@ -318,5 +350,6 @@
     <property name="threaded" value="true"/>
     <property name="daemon" value="true"/>
   </bean>
+-->
 
 </beans>
