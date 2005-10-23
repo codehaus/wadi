@@ -46,7 +46,9 @@
     </ant:echo>
 
     <ant:copy todir="${maven.dist.bin.assembly.dir}">
-      <ant:fileset dir="src"/>
+      <ant:fileset dir="src">
+          <ant:exclude name="**/main/**"/>
+      </ant:fileset>
     </ant:copy>
 
     <ant:chmod perm="ugo+rx">
