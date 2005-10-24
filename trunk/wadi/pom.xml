@@ -191,6 +191,7 @@
                 <artifactId>commons-collections</artifactId>
                 <version>3.1</version>
             </dependency>
+
             <dependency>
                 <groupId>commons-el</groupId>
                 <artifactId>commons-el</artifactId>
@@ -222,6 +223,12 @@
                 <groupId>commons-httpclient</groupId>
                 <artifactId>commons-httpclient</artifactId>
                 <version>2.0.2</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -284,6 +291,12 @@
             <dependency>
                 <groupId>mx4j</groupId>
                 <artifactId>mx4j</artifactId>
+                <version>3.0.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>mx4j</groupId>
+                <artifactId>mx4j-remote</artifactId>
                 <version>3.0.1</version>
             </dependency>
 
