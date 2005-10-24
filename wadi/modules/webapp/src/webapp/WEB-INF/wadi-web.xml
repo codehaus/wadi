@@ -46,7 +46,7 @@
   </bean>
 
   <bean
-    id="Streamer"
+    id="AttributeStreamer"
     class="org.codehaus.wadi.impl.SimpleStreamer"
     >
   </bean>
@@ -113,7 +113,7 @@
   <!-- the contextualiser stack -->
 
   <bean
-    id="Streamer2"
+    id="SessionStreamer"
     class="org.codehaus.wadi.impl.SimpleStreamer"
     >
   </bean>
@@ -243,7 +243,7 @@
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
     <constructor-arg><ref bean="DiscEvicter"/></constructor-arg>
     <constructor-arg><ref bean="DiscMap"/></constructor-arg>
-    <constructor-arg><ref bean="Streamer"/></constructor-arg>
+    <constructor-arg><ref bean="SessionStreamer"/></constructor-arg>
     <constructor-arg><ref bean="DiscDirectory"/></constructor-arg>
   </bean>
 
@@ -278,7 +278,7 @@
     <constructor-arg><ref bean="SerialContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="MemoryEvicter"/></constructor-arg>
     <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
-    <constructor-arg><ref bean="Streamer2"/></constructor-arg>
+    <constructor-arg><ref bean="SessionStreamer"/></constructor-arg>
     <constructor-arg><ref bean="ContextPool"/></constructor-arg>
     <constructor-arg><ref bean="RequestPool"/></constructor-arg>
   </bean>
@@ -346,15 +346,15 @@
     <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
     <constructor-arg><ref bean="Router"/></constructor-arg>
     <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- errorIfSessionNotAcquired -->
-    <constructor-arg><ref bean="Streamer"/></constructor-arg>
+    <constructor-arg><ref bean="AttributeStreamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
     <constructor-arg><ref bean="Replicater"/></constructor-arg>
     <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
-    <constructor-arg index="14"><value>tcp://localhost:61616</value></constructor-arg>
 <!--
     <constructor-arg index="14"><value>peer://org.codehaus.wadi</value></constructor-arg>
  -->
+    <constructor-arg index="14"><value>tcp://localhost:61616</value></constructor-arg>
     <constructor-arg index="15"><value>CLUSTER0</value></constructor-arg>
     <constructor-arg index="16"><value>${node.name}</value></constructor-arg>
     <constructor-arg index="17"><value>72</value></constructor-arg>
