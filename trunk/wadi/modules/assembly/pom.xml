@@ -67,6 +67,11 @@
             <groupId>mx4j</groupId>
             <artifactId>mx4j</artifactId>
         </dependency>
+        
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>regexp</groupId>
@@ -109,6 +114,7 @@
         <dependency>
             <groupId>wadi</groupId>
             <artifactId>wadi-webapp</artifactId>
+            <type>war</type>
         </dependency>
 
     </dependencies>

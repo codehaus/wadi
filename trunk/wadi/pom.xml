@@ -355,6 +355,7 @@
                 <groupId>wadi</groupId>
                 <artifactId>wadi-webapp</artifactId>
                 <version>${project.version}</version>
+                <type>war</type>
             </dependency>
 
             <dependency>
