@@ -51,8 +51,8 @@ public class DistributableManager extends StandardManager implements ReplicableS
 	protected final boolean _accessOnLoad;
 	protected final Replicater _replicater;
 
-	public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, Streamer streamer, boolean accessOnLoad, Replicater replicater) {
-    	super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, map, router);
+	public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, Replicater replicater) {
+    	super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, map, router, errorIfSessionNotAcquired);
     	(_streamer=streamer).init(this);
     	_accessOnLoad=accessOnLoad;
     	_replicater=replicater;

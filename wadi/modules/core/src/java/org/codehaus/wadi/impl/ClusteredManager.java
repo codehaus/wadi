@@ -64,8 +64,8 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     protected final String _nodeName;
     protected final int _numBuckets;
 
-    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, Streamer streamer, boolean accessOnLoad, Replicater replicater, InetSocketAddress httpAddress, HttpProxy httpProxy, String clusterUri, String clusterName, String nodeName, int numBuckets) {
-        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, streamer, accessOnLoad, replicater);
+    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, Replicater replicater, InetSocketAddress httpAddress, HttpProxy httpProxy, String clusterUri, String clusterName, String nodeName, int numBuckets) {
+        super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, errorIfSessionNotAcquired, streamer, accessOnLoad, replicater);
     	_httpAddress=httpAddress;
     	_httpProxy=httpProxy;
         _clusterUri=clusterUri;

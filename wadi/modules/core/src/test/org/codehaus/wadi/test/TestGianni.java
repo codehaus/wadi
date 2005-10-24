@@ -113,7 +113,7 @@ public class TestGianni extends TestCase {
 	    ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
 	    SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
 	    SessionIdFactory idFactory=new TomcatSessionIdFactory();
-	    DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, new DatabaseReplicater(store, true));
+	    DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DatabaseReplicater(store, true));
 	    manager.setSessionListeners(new HttpSessionListener[]{});
 	    manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
 	    manager.init(new DummyManagerConfig());
@@ -216,7 +216,7 @@ public class TestGianni extends TestCase {
 	    ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
 	    SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
 	    SessionIdFactory idFactory=new TomcatSessionIdFactory();
-	    DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, new DatabaseReplicater(store, true));
+	    DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DatabaseReplicater(store, true));
 	    manager.setSessionListeners(new HttpSessionListener[]{});
 	    manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
 	    manager.setMaxInactiveInterval(3);

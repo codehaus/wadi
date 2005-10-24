@@ -123,7 +123,7 @@ public class TestReplication extends TestCase {
     SessionIdFactory idFactory=new TomcatSessionIdFactory();
     String replicationTable="REPLICANTS";
     DatabaseStore replicationStore=new DatabaseStore(url, ds, replicationTable, false, false, false);
-    DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), streamer, true, new DatabaseReplicater(replicationStore, false));
+    DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DatabaseReplicater(replicationStore, false));
     manager.setSessionListeners(new HttpSessionListener[]{});
     manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
     manager.init(new DummyManagerConfig());

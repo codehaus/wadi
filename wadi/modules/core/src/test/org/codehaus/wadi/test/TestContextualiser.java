@@ -203,7 +203,7 @@ public class TestContextualiser extends TestCase {
         Map m=new HashMap();
         Contextualiser serial=new SerialContextualiser(disc1, _collapser, m);
         Contextualiser memory=new MemoryContextualiser(serial, _dummyEvicter, m, _streamer, _distributableContextPool, _requestPool);
-        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
+        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
         manager.init(new DummyManagerConfig());
 
         {
@@ -272,7 +272,7 @@ public class TestContextualiser extends TestCase {
         Map m=new HashMap();
         Contextualiser serial=new SerialContextualiser(db, _collapser, m);
         Contextualiser memory=new MemoryContextualiser(serial, _dummyEvicter, m, _streamer, _distributableContextPool, _requestPool);
-        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
+        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
         manager.init(new DummyManagerConfig());
 
         {
@@ -483,7 +483,7 @@ public class TestContextualiser extends TestCase {
         Map m=new HashMap();
         Evicter memoryEvicter=new NeverEvicter(30, true);
         MemoryContextualiser memory=new MemoryContextualiser(_dummyContextualiser, memoryEvicter, m, _streamer, _standardContextPool, _requestPool);
-        StandardManager manager=new StandardManager(_standardSessionPool, _standardAttributesFactory, _standardValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router);
+        StandardManager manager=new StandardManager(_standardSessionPool, _standardAttributesFactory, _standardValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true);
         manager.init(new DummyManagerConfig());
         Session session=manager.create();
         session.setMaxInactiveInterval(1);
@@ -503,7 +503,7 @@ public class TestContextualiser extends TestCase {
         Contextualiser serial=new SerialContextualiser(disc, _collapser, m);
         Evicter memoryEvicter=new AbsoluteEvicter(30, true, 1);
         Contextualiser memory=new MemoryContextualiser(serial, memoryEvicter, m, _streamer, _distributableContextPool, _requestPool);
-        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
+        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
         manager.init(new DummyManagerConfig());
 
         Session session=manager.create();
@@ -539,7 +539,7 @@ public class TestContextualiser extends TestCase {
         Contextualiser serial=new SerialContextualiser(disc, _collapser, m);
         Evicter memoryEvicter=new AbsoluteEvicter(30, true, 1);
         Contextualiser memory=new MemoryContextualiser(serial, memoryEvicter, m, _streamer, _distributableContextPool, _requestPool);
-        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
+        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
         manager.init(new DummyManagerConfig());
 
         Session session=manager.create();
@@ -629,7 +629,7 @@ public class TestContextualiser extends TestCase {
         Map map=new ConcurrentHashMap();
         CustomCluster cluster=(CustomCluster)new CustomClusterFactory(Utils.getConnectionFactory()).createCluster("ORG.CODEHAUS.WADI.CLUSTER");
         SimpleContextualiserStack stack=new SimpleContextualiserStack(map, _standardContextPool, _ds, new MigratingRelocater(2000, 1000));
-        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, stack, map, _router, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
+        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, stack, map, _router, true, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
         manager.init(new DummyManagerConfig());
         manager.start();
         Thread.sleep(2000);
