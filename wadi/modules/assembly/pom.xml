@@ -11,6 +11,21 @@
     <packaging>pom</packaging>
     <name>WADI :: Assembly</name>
     <dependencies>
+        
+        <dependency>
+            <groupId>activecluster</groupId>
+            <artifactId>activecluster</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>activemq</groupId>
+            <artifactId>activemq</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>axion</groupId>
@@ -18,8 +33,19 @@
         </dependency>
 
         <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib-full</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>concurrent</groupId>
+            <artifactId>concurrent</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging-api</artifactId>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -89,6 +115,11 @@
             <groupId>wadi</groupId>
             <artifactId>wadi-core</artifactId>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>wadi</groupId>
+            <artifactId>wadi-jboss4</artifactId>
         </dependency>
 
         <dependency>

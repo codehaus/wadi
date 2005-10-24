@@ -21,12 +21,14 @@
             <groupId>jetty</groupId>
             <artifactId>org.mortbay.jetty</artifactId>
             <version>5.1.5rc2</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>jetty</groupId>
             <artifactId>org.mortbay.jmx</artifactId>
             <version>5.1.5rc2</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
