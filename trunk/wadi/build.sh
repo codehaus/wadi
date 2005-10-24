@@ -8,7 +8,7 @@ version=2.0-SNAPSHOT
 
 maven $flags clean-repo
 
-for i in core jetty5 jetty6 tomcat50 tomcat55
+for i in core jboss4 jetty5 jetty6 tomcat50 tomcat55
 do
     pushd modules/$i
     maven $flags clean
