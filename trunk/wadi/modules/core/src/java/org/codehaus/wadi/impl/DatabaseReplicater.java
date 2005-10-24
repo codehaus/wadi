@@ -41,7 +41,7 @@ public class DatabaseReplicater implements Replicater {
 	public void create(Object tmp) {
 		AbstractReplicableSession session=(AbstractReplicableSession)tmp;
 		String name=session.getId();
-		_log.info("create (database): "+name);
+		if (_log.isTraceEnabled()) _log.trace("create (database): "+name);
 		// write a row into the DB
 		Connection connection=null;
 		try {
@@ -62,7 +62,7 @@ public class DatabaseReplicater implements Replicater {
 	public void update(Object tmp) { //TODO
 		AbstractReplicableSession session=(AbstractReplicableSession)tmp;
 		String name=session.getId();
-		_log.info("update (database) : "+name);
+		if (_log.isTraceEnabled()) _log.trace("update (database) : "+name);
 		// update a row in the DB
 		Connection connection=null;
 		try {
@@ -83,7 +83,7 @@ public class DatabaseReplicater implements Replicater {
 	public void destroy(Object tmp) { //TODO
 		AbstractReplicableSession session=(AbstractReplicableSession)tmp;
 		String name=session.getId();
-		_log.info("destroy (database) : "+name);
+		if (_log.isTraceEnabled()) _log.trace("destroy (database) : "+name);
 		// remove a row in the DB
 		Connection connection=null;
 		try {
