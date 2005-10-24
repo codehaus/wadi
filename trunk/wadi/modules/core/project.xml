@@ -135,12 +135,6 @@
       <version>3.1.11-bin</version>
     </dependency>
 
-    <dependency>
-      <groupId>jboss</groupId>
-      <artifactId>jboss-common</artifactId>
-      <version>4.0.2</version>
-    </dependency>
-
   </dependencies>
 
   <build>

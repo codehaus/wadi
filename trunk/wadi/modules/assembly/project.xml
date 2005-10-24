@@ -59,6 +59,15 @@
 
     <dependency>
       <groupId>wadi</groupId>
+      <artifactId>wadi-jboss4</artifactId>
+      <version>${pom.currentVersion}</version>
+      <properties>
+	<dist.bundle>lib</dist.bundle>
+      </properties>
+    </dependency>
+
+    <dependency>
+      <groupId>wadi</groupId>
       <artifactId>wadi-jetty6</artifactId>
       <version>${pom.currentVersion}</version>
       <properties>
