@@ -55,6 +55,10 @@
       <title>WADI Tomcat55</title>
       <packages>org.codehaus.wadi:org.codehaus.wadi.tomcat55</packages>
     </packageGroup>
+    <packageGroup>
+      <title>WADI JBoss4</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.jboss4</packages>
+    </packageGroup>
   </packageGroups>
 
   <shortDescription>Clustered J2EE Web Tier State Management</shortDescription>
