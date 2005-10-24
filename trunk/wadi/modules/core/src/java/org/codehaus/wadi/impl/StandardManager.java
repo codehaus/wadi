@@ -68,13 +68,13 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
     protected final Map _map;
     protected final Timer _timer;
     protected final Router _router;
-    protected final boolean _errorIfSessionNotAcquired=true; // TODO - parameterise
+    protected final boolean _errorIfSessionNotAcquired;
     protected final SynchronizedBoolean _acceptingSessions=new SynchronizedBoolean(true);
     
     protected HttpSessionListener[] _sessionListeners;
     protected HttpSessionAttributeListener[] _attributeListeners;
     
-    public StandardManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router) {
+    public StandardManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean errorIfSessionNotAcquired) {
         _sessionPool=sessionPool;
         _attributesFactory=attributesFactory;
         _valuePool=valuePool;
@@ -84,6 +84,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         _map=map; // TODO - can we get this from Contextualiser
         _timer=new Timer();
         _router=router;
+        _errorIfSessionNotAcquired=errorIfSessionNotAcquired;
     }
 
     protected ManagerConfig _config;

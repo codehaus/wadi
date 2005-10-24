@@ -60,10 +60,17 @@
   </bean>
 
   <bean
+    id="DatabaseURL"
+    class="java.lang.String"
+    >
+    <constructor-arg><value>jdbc:axiondb:WADI</value></constructor-arg>
+  </bean>
+
+  <bean
     id="DataSource"
     class="org.axiondb.jdbc.AxionDataSource"
     >
-    <constructor-arg><value>jdbc:axiondb:testdb</value></constructor-arg>
+    <constructor-arg><ref bean="DatabaseURL"/></constructor-arg>
   </bean>
 
   <bean
@@ -134,15 +141,25 @@
   </bean>
 
   <bean
+    id="DatabaseStore"
+    class="org.codehaus.wadi.impl.DatabaseStore"
+    >
+    <constructor-arg><ref bean="DatabaseURL"/></constructor-arg>
+    <constructor-arg><ref bean="DataSource"/></constructor-arg>
+    <constructor-arg><value>SESSIONS</value></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- reusingStore -->
+    <constructor-arg type="boolean"><value>true</value></constructor-arg><!-- build -->
+  </bean>
+
+  <bean
     id="DatabaseContextualiser"
     class="org.codehaus.wadi.impl.SharedStoreContextualiser"
     >
     <constructor-arg><ref bean="DummyContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="Collapser"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
-    <constructor-arg><value>jdbc:axiondb:testdb</value></constructor-arg>
-    <constructor-arg><ref bean="DataSource"/></constructor-arg>
-    <constructor-arg><value>WADI</value></constructor-arg>
+    <constructor-arg><ref bean="DatabaseStore"/></constructor-arg>
   </bean>
 
   <bean
@@ -328,18 +345,19 @@
     <constructor-arg><ref bean="MemoryContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
     <constructor-arg><ref bean="Router"/></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- errorIfSessionNotAcquired -->
     <constructor-arg><ref bean="Streamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
     <constructor-arg><ref bean="Replicater"/></constructor-arg>
     <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
-    <constructor-arg index="13"><value>tcp://localhost:61616</value></constructor-arg>
+    <constructor-arg index="14"><value>tcp://localhost:61616</value></constructor-arg>
 <!--
-    <constructor-arg index="13"><value>peer://org.codehaus.wadi</value></constructor-arg>
+    <constructor-arg index="14"><value>peer://org.codehaus.wadi</value></constructor-arg>
  -->
-    <constructor-arg index="14"><value>CLUSTER0</value></constructor-arg>
-    <constructor-arg index="15"><value>${node.name}</value></constructor-arg>
-    <constructor-arg index="16"><value>72</value></constructor-arg>
+    <constructor-arg index="15"><value>CLUSTER0</value></constructor-arg>
+    <constructor-arg index="16"><value>${node.name}</value></constructor-arg>
+    <constructor-arg index="17"><value>72</value></constructor-arg>
   </bean>
 
 

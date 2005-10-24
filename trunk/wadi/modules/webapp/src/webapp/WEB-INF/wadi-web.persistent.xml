@@ -132,9 +132,9 @@
     <constructor-arg><value>jdbc:mysql://localhost/WADI</value></constructor-arg>
     <constructor-arg><ref bean="DataSource"/></constructor-arg>
     <constructor-arg><value>SESSION_STORE</value></constructor-arg>
-    <constructor-arg type="boolean"><value>false</value></constructor-arg>
-    <constructor-arg type="boolean"><value>true</value></constructor-arg><!-- reusingStore -->
-    <constructor-arg type="boolean"><value>false</value></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg> <!-- useNIO NYI -->
+    <constructor-arg type="boolean"><value>true</value></constructor-arg> <!-- reusingStore -->
+    <constructor-arg type="boolean"><value>false</value></constructor-arg> <!-- build -->
   </bean>
 
   <bean
@@ -282,6 +282,7 @@
     <constructor-arg><ref bean="MemoryContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
     <constructor-arg><ref bean="Router"/></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- errorIfSessionNotAcquired -->
     <constructor-arg><ref bean="AttributeStreamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg><!-- accessOnLoad -->
     <constructor-arg><ref bean="DatabaseReplicater"/></constructor-arg>
