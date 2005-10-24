@@ -85,8 +85,8 @@ public class MyServlet implements Servlet {
     protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
     protected final boolean _accessOnLoad=true;
     protected final Router _router=new DummyRouter();
-    protected final SessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory()); 
-    protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool); 
+    protected final SessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory());
+    protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
     protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
     protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
     protected final HttpProxy _httpProxy;
@@ -110,9 +110,9 @@ public class MyServlet implements Servlet {
 		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamer(), contextPool, new MyDummyHttpServletRequestWrapperPool());
         _httpProxy=httpProxy;
         _httpAddress=httpAddress;
-        _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
+        _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
     }
-    
+
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}
 
 	public void init(ServletConfig config) {
@@ -126,9 +126,9 @@ public class MyServlet implements Servlet {
 				}
 
 				public void callback(StandardManager manager) {
-					// do nothing - should install Listeners...					
+					// do nothing - should install Listeners...
 				}
-            	
+
             });
             _manager.start();
         } catch (Exception e) {
