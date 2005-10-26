@@ -23,6 +23,9 @@ import java.util.Enumeration;
 import java.util.Set;
 
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.commons.logging.Log;
@@ -93,6 +96,9 @@ public class StandardSession extends AbstractContext implements Session, Attribu
     // Setters
     
     public Object getAttribute(String name) {
+        if (null==name)
+            throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
+        
         return _attributes.get(name);
     }
     
@@ -108,17 +114,73 @@ public class StandardSession extends AbstractContext implements Session, Attribu
         return _attributes.size()==0?_emptyStringArray:(String[])_attributes.keySet().toArray(new String[_attributes.size()]);
     }
     
-    public Object setAttribute(String name, Object value) {
-        // we can be sure that name is non-null, because this will have
-        // been checked in our facade...
-        return _attributes.put(name, value);
+    protected void notifyBindingListeners(String name, Object oldValue, Object newValue) {
+        if (null!=oldValue && oldValue instanceof HttpSessionBindingListener)
+            ((HttpSessionBindingListener)oldValue).valueUnbound(new HttpSessionBindingEvent(_wrapper, name, oldValue));
+        if (newValue instanceof HttpSessionBindingListener)
+            ((HttpSessionBindingListener)newValue).valueBound(new HttpSessionBindingEvent(_wrapper, name, newValue));
+	}
+
+    protected void notifyAttributeListeners(String name, Object oldValue, Object newValue) {
+		boolean replaced=(oldValue!=null);
+		HttpSessionAttributeListener[] listeners=_config.getAttributeListeners();
+		
+		int l=listeners.length;
+		if (l>0) {
+			if (replaced) { // only test once, instead of inside the loop - results in duplicate code...
+				HttpSessionBindingEvent hsbe=new HttpSessionBindingEvent(_wrapper, name, oldValue);
+				for (int i=0; i<l; i++)
+					listeners[i].attributeReplaced(hsbe);
+			} else {
+				HttpSessionBindingEvent hsbe=new HttpSessionBindingEvent(_wrapper, name, newValue);
+				for (int i=0; i<l; i++)
+					listeners[i].attributeAdded(hsbe);
+			}
+		}
+	}
+	
+    public Object setAttribute(String name, Object newValue) {
+        if (null==name)
+            throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
+
+        Object oldValue=_attributes.put(name, newValue);
+
+        notifyBindingListeners(name, oldValue, newValue);
+        notifyAttributeListeners(name, oldValue, newValue);
+
+        return oldValue;
     }
     
-    public Object removeAttribute(String name) {
-        // we could remove the Map if num entries fell back to '0' -
-        // but we would probably be creating more work than saving
-        // memory..
-        return _attributes.remove(name);
+    void notifyAttributeListeners(String name, Object oldValue) {
+		if (null!=oldValue) {
+			HttpSessionAttributeListener[] listeners=_config.getAttributeListeners();
+			int l=listeners.length;
+			if (l>0) {
+				HttpSessionBindingEvent hsbe=new HttpSessionBindingEvent(_wrapper, name, oldValue);
+				for (int i=0; i<l; i++)
+					listeners[i].attributeRemoved(hsbe);
+			}
+		}
+	}
+	
+    void notifyBindingListeners(String name, Object oldValue) {
+    	if (null!=oldValue && oldValue instanceof HttpSessionBindingListener) {
+    		((HttpSessionBindingListener)oldValue).valueUnbound(new HttpSessionBindingEvent(_wrapper, name, oldValue));
+    	}
+	}
+	
+	public Object removeAttribute(String name) {
+    	if (null==name)
+    		throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
+    	// we could remove the Map if num entries fell back to '0' -
+    	// but we would probably be creating more work than saving
+    	// memory..
+    	Object oldValue=_attributes.remove(name);
+    	
+    	notifyBindingListeners(name, oldValue);
+    	notifyAttributeListeners(name, oldValue);
+    	
+    	return oldValue;
     }
     
     public SessionConfig getConfig() {
@@ -131,14 +193,16 @@ public class StandardSession extends AbstractContext implements Session, Attribu
     	return _config.getValuePool();
     }
     
-    // if I don't actually have a method in this class, I cannot advise it, without runtime overhead...
-    // is this correct ?
-    public void setLastAccessedTime(long lastAccessedTime) {
-    	super.setLastAccessedTime(lastAccessedTime);
+    public void setLastAccessedTime(long newLastAccessedTime) {
+        long oldLastAccessedTime=_lastAccessedTime;
+    	super.setLastAccessedTime(newLastAccessedTime);
+    	_config.setLastAccessedTime(this, oldLastAccessedTime, newLastAccessedTime);
     }
     
-    public void setMaxInactiveInterval(int maxInactiveInterval) {
-    	super.setMaxInactiveInterval(maxInactiveInterval);
+    public void setMaxInactiveInterval(int newMaxInactiveInterval) {
+        int oldMaxInactiveInterval=_maxInactiveInterval;
+    	super.setMaxInactiveInterval(newMaxInactiveInterval);
+        _config.setMaxInactiveInterval(this, oldMaxInactiveInterval, newMaxInactiveInterval);
     }
     
     public String getId() {
