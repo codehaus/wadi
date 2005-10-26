@@ -24,6 +24,7 @@ import java.util.Timer;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
@@ -119,7 +120,21 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         _log.info("stopped"); // although this sometimes does not appear, it IS called...
     }
 
-    public void destroy() {
+    protected void notifySessionCreation(Session session) {
+    	int l=_sessionListeners.length;
+    	HttpSessionEvent hse=session.getHttpSessionEvent();
+    	for (int i=0; i<l; i++)
+    		_sessionListeners[i].sessionCreated(hse);
+    }
+	
+	protected void notifySessionDestruction(Session session) {
+		int l=_sessionListeners.length;
+		HttpSessionEvent hse=session.getHttpSessionEvent();
+		for (int i=0; i<l; i++)
+			_sessionListeners[i].sessionDestroyed(hse); // actually - about-to-be-destroyed - hasn't happened yet - see SRV.15.1.14.1
+	}
+	
+	public void destroy() {
         _router.destroy();
         _contextualiser.destroy();
         _sessionPool.destroy();
@@ -132,6 +147,8 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         session.init(time, time, _maxInactiveInterval, name);
         _map.put(name, session);
         notifySessionInsertion(name);
+        notifySessionCreation(session);
+        // TODO - somehow notify Evicter
         // _contextualiser.getEvicter().insert(session);
         if (_log.isDebugEnabled()) _log.debug("creation: "+name);
         return session;
@@ -141,8 +158,10 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         for (Iterator i=new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) // ALLOC ?
             session.removeAttribute((String)i.next()); // TODO - very inefficient
         // _contextualiser.getEvicter().remove(session);
+        // TODO - somehow notify Evicter
         String name=session.getName();
         notifySessionDeletion(name);
+        notifySessionDestruction(session);
         _map.remove(name);
         try {
         	session.destroy();
