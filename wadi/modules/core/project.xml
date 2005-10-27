@@ -180,7 +180,6 @@
         <exclude>**/old/**</exclude>
 
         <exclude>**/TestCluster.java</exclude><!-- hangs -->
-        <exclude>**/TestHttpSession.java</exclude><!-- hangs -->
 
         <exclude>**/TestJCache.java</exclude><!-- fails -->
         <exclude>**/TestAttributes.java</exclude><!-- fails -->
