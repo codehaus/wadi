@@ -91,6 +91,11 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
     protected ManagerConfig _config;
     
     public void init(ManagerConfig config) {
+    	if (_sessionListeners==null)
+    		_sessionListeners=new HttpSessionListener[]{};
+    	if (_attributeListeners==null)
+    		_attributeListeners=new HttpSessionAttributeListener[]{};
+
     	_config=config;
         _sessionPool.init(this);
         _contextualiser.init(this);
@@ -99,10 +104,13 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 
     protected boolean _started;
 
-    public boolean isStarted(){return _started;}
+    public boolean isStarted() {
+    	return _started;
+    }
     
     public void start() throws Exception {
         _log.info("starting");
+        
         _contextualiser.promoteToExclusive(null);
         _contextualiser.start();
         ServletContext context=getServletContext();
@@ -215,11 +223,6 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
     public void setFilter(Filter filter) {
     	_filter=filter;
     	_config.callback(this);
-    	
-    	if (_sessionListeners==null)
-    		_sessionListeners=new HttpSessionListener[]{};
-    	if (_attributeListeners==null)
-    		_attributeListeners=new HttpSessionAttributeListener[]{};
     }
 
     public boolean getDistributable(){return false;}
