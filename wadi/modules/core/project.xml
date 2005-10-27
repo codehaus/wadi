@@ -175,25 +175,25 @@
 
       <excludes>
 
-<!--        <exclude>**/**</exclude> -->
-
+<!-- dead code -->
         <exclude>**/old/**</exclude>
+        <exclude>**/io/TestMotion.java</exclude><!-- fails -->
+        <exclude>**/io/TestServers.java</exclude><!-- fails -->
+        <exclude>**/sandbox/jcache/TestJCache.java</exclude><!-- fails -->
 
-        <exclude>**/TestCluster.java</exclude><!-- hangs -->
+<!-- live code -->
 
-        <exclude>**/TestJCache.java</exclude><!-- fails -->
-        <exclude>**/TestAttributes.java</exclude><!-- fails -->
-        <exclude>**/TestContextualiser.java</exclude><!-- fails -->
-        <exclude>**/TestEvicters.java</exclude><!-- fails -->
-        <exclude>**/TestMotion.java</exclude><!-- fails -->
-        <exclude>**/TestServers.java</exclude><!-- fails -->
+        <exclude>**/TestEvicters.java</exclude><!-- fails: DIndex issue -->
 
-        <exclude>**/TestGCache.java</exclude><!-- slow -->
-        <exclude>**/TestDIndex.java</exclude><!-- slow -->
-        <exclude>**/TestActiveCluster.java</exclude><!-- slow -->
+        <exclude>**/TestGCache.java</exclude><!-- missing class: org.w3c.dom.ranges.DocumentRange -->
+        <exclude>**/TestContextualiser.java</exclude><!-- missing class: needs regexp for axion -->
 
         <exclude>**/TestGianni.java</exclude><!-- needs mysql running -->
         <exclude>**/TestReplication.java</exclude><!-- needs mysql running -->
+
+        <exclude>**/TestDIndex.java</exclude><!-- needs activemq broker (tcp://), slow -->
+        <exclude>**/TestActiveCluster.java</exclude><!-- needs activemq broker (tcp://), slow -->
+        <exclude>**/TestCluster.java</exclude> <!-- needs activemq broker (tcp://) -->
 
       </excludes>
 
