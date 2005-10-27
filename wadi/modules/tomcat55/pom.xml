@@ -18,14 +18,14 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
+            <groupId>geronimo-spec</groupId>
+            <artifactId>geronimo-spec-servlet</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
+            <groupId>wadi</groupId>
+            <artifactId>wadi-core</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -36,9 +36,9 @@
         </dependency>
 
         <dependency>
-            <groupId>wadi</groupId>
-            <artifactId>wadi-core</artifactId>
-            <scope>provided</scope>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

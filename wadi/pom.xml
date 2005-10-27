@@ -295,16 +295,16 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>jsp-api</artifactId>
-                <version>2.0</version>
+                <groupId>geronimo-spec</groupId>
+                <artifactId>geronimo-spec-jsp</artifactId>
+                <version>2.0-rc4</version>
                 <scope>provided</scope>
             </dependency>
 
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
-                <version>2.4</version>
+                <groupId>geronimo-spec</groupId>
+                <artifactId>geronimo-spec-servlet</artifactId>
+                <version>2.4-rc4</version>
                 <scope>provided</scope>
             </dependency>
 
