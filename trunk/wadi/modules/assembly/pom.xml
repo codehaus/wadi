@@ -11,20 +11,15 @@
     <packaging>pom</packaging>
     <name>WADI :: Assembly</name>
     <dependencies>
-        
+
         <dependency>
             <groupId>activecluster</groupId>
             <artifactId>activecluster</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>activemq</groupId>
             <artifactId>activemq</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
         </dependency>
 
         <dependency>
@@ -104,7 +99,7 @@
             <groupId>mx4j</groupId>
             <artifactId>mx4j-remote</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
