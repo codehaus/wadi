@@ -50,7 +50,7 @@
             <scope>runtime</scope>
         </dependencySet>
         <dependencySet>
-            <outputDirectory>/webapp</outputDirectory>
+            <outputDirectory>/webapps</outputDirectory>
             <includes>
                 <include>wadi:wadi-webapp</include>
             </includes>
