@@ -262,18 +262,6 @@
     </dependency>
 
     <dependency>
-      <groupId>cglib</groupId>
-      <artifactId>cglib-full</artifactId>
-      <version>2.0.2</version>
-      <url>http://www.sf.net/projects/cglib</url>
-      <javadoc>http://www.sf.net/projects/cglib</javadoc>
-      <type>jar</type>
-      <properties>
-	<dist.bundle>lib</dist.bundle>
-      </properties>
-    </dependency>
-
-    <dependency>
       <groupId>springframework</groupId>
       <artifactId>spring</artifactId>
       <version>1.2.2</version>
