@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.AttributesConfig;
 import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.Value;
 import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.ValueHelper;
@@ -186,6 +187,7 @@ public class TestAttributes extends TestCase {
     
     public void testAttributeSerialisation(DistributableValue a, DistributableValue b, Object s) throws Exception {
         Streamer streamer=new SimpleStreamer();
+        streamer.init(new StreamerConfig(){public ClassLoader getClassLoader() {return getClass().getClassLoader();}});
         a.setValue(s);
         byte[] bytes=Utils.getContent(a, streamer);
         assertTrue(a.getValue()==s); // activation
