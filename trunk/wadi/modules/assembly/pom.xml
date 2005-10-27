@@ -28,11 +28,6 @@
         </dependency>
 
         <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib-full</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>concurrent</groupId>
             <artifactId>concurrent</artifactId>
         </dependency>
