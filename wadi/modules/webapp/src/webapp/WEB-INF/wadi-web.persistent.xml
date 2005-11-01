@@ -247,8 +247,8 @@
   </bean>
 
   <bean
-    id="DatabaseReplicater"
-    class="org.codehaus.wadi.impl.DatabaseReplicater"
+    id="DatabaseReplicaterFactory"
+    class="org.codehaus.wadi.impl.DatabaseReplicaterFactory"
     >
     <constructor-arg><ref bean="DatabaseStore"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
@@ -256,13 +256,13 @@
 
 <!--
   <bean
-    id="DatabaseReplicater"
-    class="org.codehaus.wadi.impl.DummyReplicater"
+    id="DatabaseReplicaterFactory"
+    class="org.codehaus.wadi.impl.DummyReplicaterFactory"
     >
   </bean>
   <bean
-    id="DatabaseReplicater"
-    class="org.codehaus.wadi.impl.SleepingReplicater"
+    id="DatabaseReplicaterFactory"
+    class="org.codehaus.wadi.impl.SleepingReplicaterFactory"
     >
     <constructor-arg type="long"><value>1000</value></constructor-arg>
   </bean>
@@ -285,7 +285,7 @@
     <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- errorIfSessionNotAcquired -->
     <constructor-arg><ref bean="AttributeStreamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg><!-- accessOnLoad -->
-    <constructor-arg><ref bean="DatabaseReplicater"/></constructor-arg>
+    <constructor-arg><ref bean="DatabaseReplicaterFactory"/></constructor-arg>
   </bean>
 
 

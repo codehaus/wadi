@@ -19,8 +19,6 @@ package org.codehaus.wadi.test;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
@@ -43,31 +41,21 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
-import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DistributableSession;
-import org.codehaus.wadi.impl.DistributableSessionFactory;
-import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
-import org.codehaus.wadi.impl.DummyReplicater;
 import org.codehaus.wadi.impl.DummyRouter;
-import org.codehaus.wadi.impl.LazyAttributesFactory;
-import org.codehaus.wadi.impl.LazyValueFactory;
-import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.SimpleSessionPool;
-import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardAttributesFactory;
 import org.codehaus.wadi.impl.StandardSessionFactory;
@@ -331,7 +319,7 @@ public class TestHttpSession extends TestCase {
             assertTrue(pair.getType().equals("attributeRemoved"));
             HttpSessionEvent e=pair.getEvent();
             assertTrue(wrapper==e.getSession());
-            HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
+            //HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
         }
         {
             Pair pair=(Pair)_events.get(2);
@@ -339,7 +327,7 @@ public class TestHttpSession extends TestCase {
             assertTrue(pair.getType().equals("attributeRemoved"));
             HttpSessionEvent e=pair.getEvent();
             assertTrue(wrapper==e.getSession());
-            HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
+            //HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
         }
         {
             Pair pair=(Pair)_events.get(3);

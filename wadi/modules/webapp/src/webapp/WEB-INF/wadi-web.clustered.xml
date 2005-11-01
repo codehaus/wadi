@@ -311,8 +311,8 @@
   </bean>
 
   <bean
-    id="Replicater"
-    class="org.codehaus.wadi.impl.DummyReplicater"
+    id="ReplicaterFactory"
+    class="org.codehaus.wadi.impl.DummyReplicaterFactory"
     >
   </bean>
 
@@ -348,7 +348,7 @@
     <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- errorIfSessionNotAcquired -->
     <constructor-arg><ref bean="Streamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
-    <constructor-arg><ref bean="Replicater"/></constructor-arg>
+    <constructor-arg><ref bean="ReplicaterFactory"/></constructor-arg>
     <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
     <constructor-arg index="14"><value>tcp://localhost:61616</value></constructor-arg>

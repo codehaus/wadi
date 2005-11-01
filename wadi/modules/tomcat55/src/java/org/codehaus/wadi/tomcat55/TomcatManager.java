@@ -46,7 +46,6 @@ import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.Filter;
 import org.codehaus.wadi.impl.SpringManagerFactory;
-import org.codehaus.wadi.impl.StandardManager;
 
 public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 {

@@ -13,7 +13,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
@@ -27,7 +26,7 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AlwaysEvicter;
-import org.codehaus.wadi.impl.DatabaseReplicater;
+import org.codehaus.wadi.impl.DatabaseReplicaterFactory;
 import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableManager;
@@ -123,7 +122,7 @@ public class TestReplication extends TestCase {
     SessionIdFactory idFactory=new TomcatSessionIdFactory();
     String replicationTable="REPLICANTS";
     DatabaseStore replicationStore=new DatabaseStore(url, ds, replicationTable, false, false, false);
-    DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DatabaseReplicater(replicationStore, false));
+    DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DatabaseReplicaterFactory(replicationStore, false));
     manager.setSessionListeners(new HttpSessionListener[]{});
     manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
     manager.init(new DummyManagerConfig());

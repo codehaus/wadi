@@ -17,7 +17,6 @@
 package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.NewDirtier;
 import org.codehaus.wadi.RWLockListener;
 import org.codehaus.wadi.ReplicableSessionConfig;
 import org.codehaus.wadi.Replicater;

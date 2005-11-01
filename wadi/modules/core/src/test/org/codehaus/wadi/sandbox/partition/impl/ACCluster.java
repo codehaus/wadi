@@ -14,8 +14,6 @@ import org.activemq.ActiveMQConnectionFactory;
 //import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.dindex.impl.SeniorityElectionStrategy;
-import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.sandbox.partition.Cluster;
 
 public class ACCluster implements Cluster {

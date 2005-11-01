@@ -25,7 +25,7 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AlwaysEvicter;
-import org.codehaus.wadi.impl.DatabaseReplicater;
+import org.codehaus.wadi.impl.DatabaseReplicaterFactory;
 import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableManager;
@@ -113,7 +113,7 @@ public class TestGianni extends TestCase {
 	    ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
 	    SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
 	    SessionIdFactory idFactory=new TomcatSessionIdFactory();
-	    DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DatabaseReplicater(store, true));
+	    DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DatabaseReplicaterFactory(store, true));
 	    manager.setSessionListeners(new HttpSessionListener[]{});
 	    manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
 	    manager.init(new DummyManagerConfig());
@@ -216,7 +216,7 @@ public class TestGianni extends TestCase {
 	    ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
 	    SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
 	    SessionIdFactory idFactory=new TomcatSessionIdFactory();
-	    DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DatabaseReplicater(store, true));
+	    DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DatabaseReplicaterFactory(store, true));
 	    manager.setSessionListeners(new HttpSessionListener[]{});
 	    manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
 	    manager.setMaxInactiveInterval(3);
@@ -228,7 +228,7 @@ public class TestGianni extends TestCase {
 	    AbstractReplicableSession session=(AbstractReplicableSession)manager.create();
 	    String foo="bar";
 	    session.setAttribute("foo", foo);
-	    String name=session.getId();
+	    //String name=session.getId();
 	    assertTrue(mmap.size()==1);
 	    assertTrue(dmap.size()==0);
 

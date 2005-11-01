@@ -17,15 +17,11 @@
 package org.codehaus.wadi.impl;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
 
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;

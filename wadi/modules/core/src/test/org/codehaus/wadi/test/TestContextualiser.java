@@ -78,7 +78,7 @@ import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyDistributableContextualiserConfig;
 import org.codehaus.wadi.impl.DummyEvicter;
 import org.codehaus.wadi.impl.DummyHttpServletRequest;
-import org.codehaus.wadi.impl.DummyReplicater;
+import org.codehaus.wadi.impl.DummyReplicaterFactory;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.ExclusiveStoreContextualiser;
 import org.codehaus.wadi.impl.GZIPStreamer;
@@ -92,7 +92,6 @@ import org.codehaus.wadi.impl.ProxyingRelocater;
 import org.codehaus.wadi.impl.SerialContextualiser;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SharedStoreContextualiser;
-import org.codehaus.wadi.impl.DatabaseMotable;
 import org.codehaus.wadi.impl.SimpleContextualiserStack;
 import org.codehaus.wadi.impl.SimpleEvictable;
 import org.codehaus.wadi.impl.SimpleSessionPool;
@@ -203,7 +202,7 @@ public class TestContextualiser extends TestCase {
         Map m=new HashMap();
         Contextualiser serial=new SerialContextualiser(disc1, _collapser, m);
         Contextualiser memory=new MemoryContextualiser(serial, _dummyEvicter, m, _streamer, _distributableContextPool, _requestPool);
-        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
+        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
         manager.init(new DummyManagerConfig());
 
         {
@@ -272,7 +271,7 @@ public class TestContextualiser extends TestCase {
         Map m=new HashMap();
         Contextualiser serial=new SerialContextualiser(db, _collapser, m);
         Contextualiser memory=new MemoryContextualiser(serial, _dummyEvicter, m, _streamer, _distributableContextPool, _requestPool);
-        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
+        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
         manager.init(new DummyManagerConfig());
 
         {
@@ -503,7 +502,7 @@ public class TestContextualiser extends TestCase {
         Contextualiser serial=new SerialContextualiser(disc, _collapser, m);
         Evicter memoryEvicter=new AbsoluteEvicter(30, true, 1);
         Contextualiser memory=new MemoryContextualiser(serial, memoryEvicter, m, _streamer, _distributableContextPool, _requestPool);
-        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
+        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
         manager.init(new DummyManagerConfig());
 
         Session session=manager.create();
@@ -539,7 +538,7 @@ public class TestContextualiser extends TestCase {
         Contextualiser serial=new SerialContextualiser(disc, _collapser, m);
         Evicter memoryEvicter=new AbsoluteEvicter(30, true, 1);
         Contextualiser memory=new MemoryContextualiser(serial, memoryEvicter, m, _streamer, _distributableContextPool, _requestPool);
-        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
+        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
         manager.init(new DummyManagerConfig());
 
         Session session=manager.create();
@@ -578,8 +577,8 @@ public class TestContextualiser extends TestCase {
         //-------------------
         // do the test
 
-        Location location0=new MyLocation();
-        Map c0=new HashMap();
+        //Location location0=new MyLocation();
+        //Map c0=new HashMap();
         Relocater relocater0=new ProxyingRelocater(2000, 3000);
         Collapser collapser0=new HashingCollapser(10, 2000);
         ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, relocater0);
@@ -588,8 +587,8 @@ public class TestContextualiser extends TestCase {
         Contextualiser memory0=new MemoryContextualiser(clstr0, new NeverEvicter(30000, true), m0, new GZIPStreamer(), new MyContextPool(), _requestPool);
         memory0.init(new DummyDistributableContextualiserConfig(cluster0));
 
-        Location location1=new MyLocation();
-        Map c1=new HashMap();
+        //Location location1=new MyLocation();
+        //Map c1=new HashMap();
         Relocater relocater1=new ProxyingRelocater(2000, 3000);
         Collapser collapser1=new HashingCollapser(10, 2000);
         ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, relocater1);
@@ -627,9 +626,9 @@ public class TestContextualiser extends TestCase {
     public void testStack() throws Exception {
         _log.info("putting complete stack together...");
         Map map=new ConcurrentHashMap();
-        CustomCluster cluster=(CustomCluster)new CustomClusterFactory(Utils.getConnectionFactory()).createCluster("ORG.CODEHAUS.WADI.CLUSTER");
+        //CustomCluster cluster=(CustomCluster)new CustomClusterFactory(Utils.getConnectionFactory()).createCluster("ORG.CODEHAUS.WADI.CLUSTER");
         SimpleContextualiserStack stack=new SimpleContextualiserStack(map, _standardContextPool, _ds, new MigratingRelocater(2000, 1000));
-        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, stack, map, _router, true, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
+        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, stack, map, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
         manager.init(new DummyManagerConfig());
         manager.start();
         Thread.sleep(2000);

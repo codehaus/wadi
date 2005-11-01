@@ -18,6 +18,7 @@
 package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.ReplicableSessionConfig;
+import org.codehaus.wadi.Replicater;
 
 
 public class AtomicallyReplicableSession extends AbstractReplicableSession {
@@ -48,16 +49,18 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
 	
 	protected transient boolean _dirty;
 	protected transient Semantics _semantics=new ByReferenceSemantics(); // move into config if successful
+	protected transient Replicater _replicater;
 	
 	public AtomicallyReplicableSession(ReplicableSessionConfig config) {
 		super(config);
 		_dirty=false;
+		_replicater=((ReplicableSessionConfig)_config).getReplicater(); // take ownership of the Replicater - it may carry per-Session state
 	}
 	
     public void readEnded() {
     	// N.B. this is called from our RWLock inside an implicit exclusive lock, so we should not need to worry about synchronisation...
     	if (_dirty) {
-    		((ReplicableSessionConfig)_config).getReplicater().update(this); // checks for dirtiness and replicates
+    		_replicater.update(this); // checks for dirtiness and replicates
     		_dirty=false;
     	}
     }

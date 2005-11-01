@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
-import javax.jms.ConnectionFactory;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -30,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import junit.framework.TestCase;
 
-import org.activecluster.ClusterFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
@@ -38,7 +36,6 @@ import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Immoter;
@@ -46,13 +43,10 @@ import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.impl.AbstractRelocater;
 import org.codehaus.wadi.impl.CommonsHttpProxy;
-import org.codehaus.wadi.impl.CustomClusterFactory;
-import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.HybridRelocater;
 import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.ProxyingRelocater;
 import org.codehaus.wadi.impl.StandardHttpProxy;
-import org.codehaus.wadi.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -111,9 +105,9 @@ public class TestRelocation extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-        ConnectionFactory connectionFactory = Utils.getConnectionFactory();
-		ClusterFactory clusterFactory       = new CustomClusterFactory(connectionFactory);
-		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
+        //ConnectionFactory connectionFactory = Utils.getConnectionFactory();
+		//ClusterFactory clusterFactory       = new CustomClusterFactory(connectionFactory);
+		//String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
 
 		InetSocketAddress httpAddress0=new InetSocketAddress("localhost", 8080);
 		HttpProxy httpProxy0=new StandardHttpProxy("jsessionid");
@@ -168,7 +162,7 @@ public class TestRelocation extends TestCase {
 		}
 
 	public void testMigrateInsecureRelocation() throws Exception {
-        Collapser collapser=new HashingCollapser(10, 2000);
+        //Collapser collapser=new HashingCollapser(10, 2000);
 		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 500, true));
 		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 500, true));
 		testInsecureRelocation(true);
@@ -307,7 +301,7 @@ public class TestRelocation extends TestCase {
 		}
 
 	public void testMigrateSecureRelocation() throws Exception {
-        Collapser collapser=new HashingCollapser(10, 2000);
+        //Collapser collapser=new HashingCollapser(10, 2000);
 		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 500, true));
 		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 500, true));
 		testSecureRelocation(true);
@@ -393,7 +387,7 @@ public class TestRelocation extends TestCase {
 		}
 
 	public void testMigrateStatelessContextualiser() throws Exception {
-        Collapser collapser=new HashingCollapser(10, 2000);
+        //Collapser collapser=new HashingCollapser(10, 2000);
 		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 500, true));
 		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 500, true));
 		testStatelessContextualiser(true);

@@ -10,7 +10,6 @@ import org.codehaus.wadi.sandbox.gridstate.messages.MoveSOToBO;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveSOToPO;
 import org.codehaus.wadi.sandbox.gridstate.messages.ReadBOToPO;
 import org.codehaus.wadi.sandbox.gridstate.messages.ReadPOToBO;
-import org.jgroups.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -27,7 +26,7 @@ public abstract class AbstractIndirectProtocol implements Protocol {
 	public Object onMoveBOToSO(MoveBOToSO move) throws Exception {
 		Object key=move.getKey();
 		Object po=move.getPO();
-		Object bo=move.getBO();
+		//Object bo=move.getBO();
 		_log.info("[SO] - onMoveBOToSO@"/*+_address*/);
 		_log.info("po="+po);
 		Sync sync=null;

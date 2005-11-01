@@ -255,7 +255,7 @@ public class TomcatSessionIdFactory
 	if (this.random == null) {
 	  // Calculate the new random number generator seed
 	  long seed = System.currentTimeMillis();
-	  long t1 = seed;
+	  //long t1 = seed;
 	  char entropy[] = getEntropy().toCharArray();
 	  for (int i = 0; i < entropy.length; i++) {
 	    long update = ((byte) entropy[i]) << ((i % 8) * 8);
@@ -273,7 +273,7 @@ public class TomcatSessionIdFactory
 	    this.random = new java.util.Random();
 	    this.random.setSeed(seed);
 	  }
-	  long t2=System.currentTimeMillis();
+//	  long t2=System.currentTimeMillis();
 //	  if( (t2-t1) > 100 )
 //	    if (log.isTraceEnabled())
 //	      log.trace(sm.getString("managerBase.seeding", randomClass) + " " + (t2-t1));
@@ -369,7 +369,7 @@ public class TomcatSessionIdFactory
   public synchronized MessageDigest getDigest() {
 
     if (this.digest == null) {
-      long t1=System.currentTimeMillis();
+      //long t1=System.currentTimeMillis();
 //      if (log.isTraceEnabled())
 //	log.trace(sm.getString("managerBase.getting", algorithm));
       try {
@@ -386,7 +386,7 @@ public class TomcatSessionIdFactory
       }
 //      if (log.isTraceEnabled())
 //	log.trace(sm.getString("managerBase.gotten"));
-      long t2=System.currentTimeMillis();
+//      long t2=System.currentTimeMillis();
 //      if( log.isTraceEnabled() )
 //	log.trace("getDigest() " + (t2-t1));
     }

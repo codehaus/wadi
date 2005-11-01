@@ -24,13 +24,10 @@ import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Router;
-import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionConfig;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.impl.AbstractMotingContextualiser;
-import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DummyRouter;
-import org.codehaus.wadi.impl.SimpleSessionPool;
 
 class DummyContextualiserConfig implements ContextualiserConfig {
 

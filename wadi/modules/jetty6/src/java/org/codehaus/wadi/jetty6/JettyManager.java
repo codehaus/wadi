@@ -1,16 +1,12 @@
 package org.codehaus.wadi.jetty6;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.EventListener;
-import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
