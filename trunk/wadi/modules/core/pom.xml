@@ -113,6 +113,19 @@
             <artifactId>jgroups-all</artifactId>
         </dependency>
 
+<!-- Needed for running tests with Axion
+
+            <dependency>
+                <groupId>axion</groupId>
+                <artifactId>axion</artifactId>
+            </dependency>
+
+           <dependency>
+               <groupId>regexp</groupId>
+               <artifactId>regexp</artifactId>
+           </dependency>
+-->
+
     </dependencies>
 
     <build>
