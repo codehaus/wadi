@@ -213,19 +213,19 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			Destination so=(Destination)location.getValue();
 			String poCorrelationId=null;
 			try {
-				poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
+				poCorrelationId=Dispatcher.getOutgoingCorrelationId(message1);
 				//_log.info("Process Owner Correlation ID: "+poCorrelationId);
 			} catch (JMSException e) {
 				_log.error("unexpected problem", e);
 			}
 			MoveBOToSO request=new MoveBOToSO(key, po, bo, poCorrelationId);
-			ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, _timeout, 10);
-			MoveSOToBO response=null;
-			try {
-				response=(MoveSOToBO)message2.getObject();
-			} catch (JMSException e) {
-				_log.error("unexpected problem", e); // should be sorted in loop
-			}
+			/*ObjectMessage message2=*/_dispatcher.exchangeSendLoop(bo, so, request, _timeout, 10);
+//			MoveSOToBO response=null;
+//			try {
+//				response=(MoveSOToBO)message2.getObject();
+//			} catch (JMSException e) {
+//				_log.error("unexpected problem", e); // should be sorted in loop
+//			}
 			// alter location
 			location.setValue((Destination)get.getPO());
 			
@@ -251,22 +251,22 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			}
 			//_log.info("sending "+key+"="+value+" -> PO");
 			MoveSOToPO request=new MoveSOToPO(key, value);
-			ObjectMessage message2=(ObjectMessage)_dispatcher.exchangeSend(so, po, request, _timeout, get.getPOCorrelationId());
+			/*ObjectMessage message2=(ObjectMessage)*/_dispatcher.exchangeSend(so, po, request, _timeout, get.getPOCorrelationId());
 			// wait
 			// receive GetPOToSO
-			MovePOToSO response=null;
-			try {
-				response=(MovePOToSO)message2.getObject();
+			//MovePOToSO response=null;
+			//try {
+				//response=(MovePOToSO)message2.getObject();
 				// remove association
 				synchronized (map) {
 					map.remove(key);
 				}
 				// send GetSOToBO to BO
-				Destination bo=(Destination)get.getBO();
+				//Destination bo=(Destination)get.getBO();
 				_dispatcher.reply(message1,new MoveSOToBO());
-			} catch (JMSException e) {
-				_log.error("unexpected problem", e);
-			}
+			//} catch (JMSException e) {
+			//	_log.error("unexpected problem", e);
+			//}
 		} finally {
 			_log.trace("[SO] releasing sync for: "+key+" - "+sync);
 			sync.release();
@@ -390,7 +390,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 
 				String poCorrelationId=null;
 				try {
-					poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
+					poCorrelationId=Dispatcher.getOutgoingCorrelationId(message1);
 					//_log.info("Process Owner Correlation ID: "+poCorrelationId);
 				} catch (JMSException e) {
 					_log.error("unexpected problem", e);
@@ -399,13 +399,13 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 				Destination bo=_cluster.getLocalNode().getDestination();
 				Destination so=(Destination)oldLocation.getValue();
 				MoveBOToSO request=new MoveBOToSO(key, po, bo, poCorrelationId);
-				ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, _timeout, 10);
-				MoveSOToBO response=null;
-				try {
-					response=(MoveSOToBO)message2.getObject();
-				} catch (JMSException e) {
-					_log.error("unexpected problem", e); // should be sorted in loop
-				}
+				/*ObjectMessage message2=*/_dispatcher.exchangeSendLoop(bo, so, request, _timeout, 10);
+//				MoveSOToBO response=null;
+//				try {
+//					response=(MoveSOToBO)message2.getObject();
+//				} catch (JMSException e) {
+//					_log.error("unexpected problem", e); // should be sorted in loop
+//				}
 			}
 			
 		} finally {

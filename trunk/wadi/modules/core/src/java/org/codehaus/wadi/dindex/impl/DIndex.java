@@ -327,9 +327,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             _config.findRelevantSessionNames(_numBuckets, c);
             repopulate(_cluster.getLocalNode().getDestination(), c);
 
-            boolean success=false;
+            //boolean success=false;
             try {
-                success=rv.waitFor(_inactiveTime);
+                /*success=*/rv.waitFor(_inactiveTime);
             } catch (InterruptedException e) {
                 _log.warn("unexpected interruption", e);
             }

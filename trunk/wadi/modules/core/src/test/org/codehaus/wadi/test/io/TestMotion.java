@@ -28,7 +28,6 @@ import java.util.Map;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -36,12 +35,10 @@ import org.activecluster.Cluster;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Collapser;
-import org.codehaus.wadi.Config;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableSessionConfig;
 import org.codehaus.wadi.Emoter;
-import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.HttpServletRequestWrapperPool;
@@ -51,13 +48,11 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionRelocater;
-import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
-import org.codehaus.wadi.impl.DummyHttpServletRequest;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.NeverEvicter;
@@ -84,7 +79,6 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
-import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 public class TestMotion extends TestCase {
@@ -442,7 +436,7 @@ public class TestMotion extends TestCase {
         SessionRelocater relocater=new StreamingMigratingRelocater();
         relocater.init(new DummyRelocaterConfig());
         Sync motionLock=new NullSync();
-        Map locationMap=new HashMap();
+        //Map locationMap=new HashMap();
         HttpServletRequest req=null;
         HttpServletResponse res=null;
         FilterChain chain=null;

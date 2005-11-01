@@ -2,8 +2,6 @@ package org.codehaus.wadi.sandbox.gridstate.messages;
 
 import java.io.Serializable;
 
-import javax.jms.Destination;
-
 public class WritePOToBO implements Serializable {
 
 	protected Object _key;

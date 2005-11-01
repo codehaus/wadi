@@ -314,7 +314,7 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 		Object key=write.getKey();
 		boolean valueIsNull=write.getValueIsNull();
 		boolean overwrite=write.getOverwrite();
-		boolean returnOldValue=write.getReturnOldValue();
+		//boolean returnOldValue=write.getReturnOldValue();
 		Address po=(Address)write.getPO();
 		_log.info("[BO] - onWritePOToBO@"+_address);
 		// what if we are NOT the BO anymore ?

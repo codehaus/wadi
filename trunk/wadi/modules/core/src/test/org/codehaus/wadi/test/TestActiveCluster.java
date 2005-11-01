@@ -19,28 +19,17 @@ package org.codehaus.wadi.test;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.jms.BytesMessage;
-import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 
 import junit.framework.TestCase;
 
 import org.activecluster.Cluster;
 import org.activecluster.ClusterEvent;
-import org.activecluster.ClusterFactory;
 import org.activecluster.ClusterListener;
-import org.activecluster.impl.ActiveMQClusterFactory;
 import org.activemq.ActiveMQConnectionFactory;
-import org.activemq.broker.impl.BrokerContainerFactoryImpl;
-import org.activemq.store.vm.VMPersistenceAdapter;
-import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.CustomClusterFactory;
-import org.codehaus.wadi.impl.RestartableClusterFactory;
 import org.codehaus.wadi.impl.Utils;
 
 

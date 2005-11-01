@@ -131,7 +131,7 @@ public class
 
       Thread[] threads=new Thread[MAX_PRIORITY+1];
 
-      lock.setPriority(EVICTION_PRIORITY);
+      RWLock.setPriority(EVICTION_PRIORITY);
 
       lock.readLock().attempt(60000);
 
@@ -145,12 +145,12 @@ public class
 	    {
 	      try
 	      {
-		lock.setPriority(p);
+		RWLock.setPriority(p);
 		if (acquire)
 		  lock.writeLock().acquire();
 		else
 		  lock.writeLock().attempt(60000);
-		int priority=lock.getPriority();
+		int priority=RWLock.getPriority();
 		if (_log.isInfoEnabled()) _log.info("priority: "+priority);
 		assertTrue(priority<_priority);
 		_priority=priority;
@@ -203,7 +203,7 @@ public class
  	  {
  	    try
  	    {
-	      lock.setPriority(EVICTION_PRIORITY);
+	      RWLock.setPriority(EVICTION_PRIORITY);
  	      lock.writeLock().acquire();
  	      _log.info("I lost");
 	      assertTrue(_first==false);
@@ -217,7 +217,7 @@ public class
  	};
       t1.start();
 
-      lock.setPriority(INVALIDATION_PRIORITY);
+      RWLock.setPriority(INVALIDATION_PRIORITY);
       lock.overlap();
       _log.info("I won");
       assertTrue(_first==true);

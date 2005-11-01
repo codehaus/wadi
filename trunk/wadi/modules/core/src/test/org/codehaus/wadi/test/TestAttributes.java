@@ -24,7 +24,6 @@ import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.AttributesConfig;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.Value;
@@ -204,7 +203,7 @@ public class TestAttributes extends TestCase {
     }
     
     public void testAtomicAttributes() throws Exception {
-        AttributesConfig config=null;
+        //AttributesConfig config=null;
 //        AttributesFactory factory=new 
     }
     

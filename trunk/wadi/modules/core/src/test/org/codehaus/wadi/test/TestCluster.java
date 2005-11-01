@@ -60,7 +60,7 @@ import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyEvicter;
 import org.codehaus.wadi.impl.DummyRelocater;
-import org.codehaus.wadi.impl.DummyReplicater;
+import org.codehaus.wadi.impl.DummyReplicaterFactory;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.impl.HashingCollapser;
@@ -69,7 +69,6 @@ import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.RestartableClusterFactory;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SharedStoreContextualiser;
-import org.codehaus.wadi.impl.DatabaseMotable;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
@@ -128,7 +127,7 @@ public class TestCluster extends TestCase {
             _relocater=new DummyRelocater();
             _middle=new ClusterContextualiser(_bottom, _collapser, _relocater);
             _top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
-            _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, true, _streamer, _accessOnLoad, new DummyReplicater(), isa, proxy, _clusterUri, _clusterName, _nodeName, 24);
+            _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), isa, proxy, _clusterUri, _clusterName, _nodeName, 24);
         }
         
         protected boolean _running;

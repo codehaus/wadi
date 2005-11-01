@@ -16,13 +16,9 @@
  */
 package org.codehaus.wadi.test;
 
-import org.activemq.util.IdGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.dindex.impl.BucketFacade;
-import org.codehaus.wadi.dindex.impl.DummyBucket;
-import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 
 import junit.framework.TestCase;
 

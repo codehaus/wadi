@@ -24,7 +24,6 @@ import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Store;
 import org.codehaus.wadi.StoreMotable;
-import org.codehaus.wadi.impl.DatabaseMotable;
 import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DiscStore;
 import org.codehaus.wadi.impl.SimpleMotable;

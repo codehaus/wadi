@@ -2,7 +2,6 @@ package org.codehaus.wadi.sandbox.gridstate;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

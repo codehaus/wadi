@@ -49,7 +49,7 @@ import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
-import org.codehaus.wadi.impl.DummyReplicater;
+import org.codehaus.wadi.impl.DummyReplicaterFactory;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.StandardManager;
@@ -110,7 +110,7 @@ public class MyServlet implements Servlet {
 		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamer(), contextPool, new MyDummyHttpServletRequestWrapperPool());
         _httpProxy=httpProxy;
         _httpAddress=httpAddress;
-        _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicater(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
+        _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _httpAddress, _httpProxy, _clusterUri, _clusterName, _nodeName, 24);
     }
 
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}

@@ -2,8 +2,6 @@ package org.codehaus.wadi.sandbox.gridstate.messages;
 
 import java.io.Serializable;
 
-import org.omg.PortableInterceptor.SUCCESSFUL;
-
 public class MoveSOToBO implements Serializable {
 
 	boolean _success;

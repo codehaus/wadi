@@ -16,13 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.gridstate;
 
-import java.util.Map;
-
-import javax.jms.Destination;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.dindex.impl.BucketFacade;
 import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
 
 import junit.framework.TestCase;
@@ -120,7 +115,7 @@ public class TestGCache extends TestCase {
 
     	GCache red=_nodes[0];
     	GCache green=_nodes[1];
-    	GCache blue=_nodes[2];
+    	//GCache blue=_nodes[2];
     	
         _log.info("0 nodes running");
         for (int i=0; i<_numNodes; i++)

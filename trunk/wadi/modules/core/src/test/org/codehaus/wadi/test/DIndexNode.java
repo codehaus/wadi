@@ -21,8 +21,6 @@ import java.util.Map;
 
 import javax.jms.Destination;
 
-import org.activecluster.Cluster;
-import org.activecluster.impl.DefaultClusterFactory;
 import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;

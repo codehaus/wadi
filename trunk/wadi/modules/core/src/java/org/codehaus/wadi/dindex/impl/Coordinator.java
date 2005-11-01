@@ -158,7 +158,7 @@ public class Coordinator implements Runnable {
     				_log.info("WAITING ON RENDEZVOUS");
     				if (rv.waitFor(_inactiveTime)) {
     					_log.info("RENDEZVOUS SUCCESSFUL");
-    					Collection results=rv.getResults();
+    					//Collection results=rv.getResults();
     				} else {
     					_log.warn("RENDEZVOUS FAILED");
     					failures++;

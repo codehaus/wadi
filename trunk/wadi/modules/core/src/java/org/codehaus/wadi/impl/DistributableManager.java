@@ -23,10 +23,10 @@ import java.util.Map;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
-import org.codehaus.wadi.DistributableSessionConfig;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.ReplicableSessionConfig;
+import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
@@ -49,13 +49,13 @@ public class DistributableManager extends StandardManager implements ReplicableS
 	protected final SynchronizedBoolean _shuttingDown = new SynchronizedBoolean(false);
     protected final Streamer _streamer;
 	protected final boolean _accessOnLoad;
-	protected final Replicater _replicater;
+	protected final ReplicaterFactory _replicaterFactory;
 
-	public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, Replicater replicater) {
+	public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory) {
     	super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, map, router, errorIfSessionNotAcquired);
     	(_streamer=streamer).init(this);
     	_accessOnLoad=accessOnLoad;
-    	_replicater=replicater;
+    	_replicaterFactory=replicaterFactory;
     }
 
 	protected ClassLoader _classLoader;
@@ -127,6 +127,6 @@ public class DistributableManager extends StandardManager implements ReplicableS
 	// ReplicableSessionConfig
 	
 	public Replicater getReplicater() {
-		return _replicater;
+		return _replicaterFactory.create();
 	}
 }
