@@ -21,18 +21,18 @@ public class MemoryReplicater implements Replicater {
 	// client part
 	
 	public void create(Object tmp) {
-		_log.trace("create: "+tmp);
+		_log.info("create: "+tmp);
 		// decide on replication partners (not ourselves)
 		// sned messages (sync) to insert replicants on these partners
 	}
 
 	public void update(Object tmp) {
-		_log.trace("update: "+tmp);
+		_log.info("update: "+tmp);
 		// send messages (sync) to replicate to our partners
 	}
 
 	public void destroy(Object tmp) {
-		_log.trace("destroy: "+tmp);
+		_log.info("destroy: "+tmp);
 		// send messages (sync) to remove replicants on partners
 	}
 
@@ -44,16 +44,16 @@ public class MemoryReplicater implements Replicater {
 	protected Map _replicants=new ConcurrentHashMap();
 	
 	public void insert(String key, Object tmp) {
-		_log.trace("insert: "+key);
+		_log.info("insert: "+key);
 		_replicants.put(key, tmp);
 	}
 	
 	public void replicate(String key, Object value) {
-		_log.trace("replicate: "+key);
+		_log.info("replicate: "+key);
 	}
 	
 	public void remove(String key) {
-		_log.trace("remove: "+key);
+		_log.info("remove: "+key);
 	}
 	
 	// restore
