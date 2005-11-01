@@ -1,24 +1,26 @@
 package org.codehaus.wadi.test;
 
 import java.io.File;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionListener;
 import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Evicter;
+import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.HttpServletRequestWrapperPool;
+import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
@@ -26,18 +28,19 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AlwaysEvicter;
-import org.codehaus.wadi.impl.DatabaseReplicaterFactory;
+import org.codehaus.wadi.impl.ClusterContextualiser;
+import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
-import org.codehaus.wadi.impl.DistributableManager;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
+import org.codehaus.wadi.impl.DummyRelocater;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.impl.ExclusiveStoreContextualiser;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
-import org.codehaus.wadi.impl.MySqlLog;
+import org.codehaus.wadi.impl.MemoryReplicaterFactory;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.AbstractReplicableSession;
 import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
@@ -47,11 +50,10 @@ import org.codehaus.wadi.impl.SharedStoreContextualiser;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
+import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
-
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 
 import junit.framework.TestCase;
 
@@ -80,28 +82,24 @@ public class TestReplication extends TestCase {
 
     // Terminator
     Contextualiser terminator=new DummyContextualiser();
+    Streamer sessionStreamer=new SimpleStreamer();
 
     // DB
-    //String url="jdbc:axiondb:WADI";
-    //DataSource ds=new AxionDataSource(url);
-    MysqlDataSource msds=new MysqlDataSource();
-    String url="jdbc:mysql://localhost:3306/WADI";
-    msds.setUrl(url+"?user=root");
-    msds.setLoggerClassName(MySqlLog.class.getName());
-    msds.setProfileSQL(true);
-    DataSource ds=msds;
-    String storeTable="STORE";
-    DatabaseStore longTermStore=new DatabaseStore(url, ds, storeTable, false, false, true);
-    Contextualiser db=new SharedStoreContextualiser(terminator, collapser, true, longTermStore);
-
-    // Gianni
+    String url="jdbc:axiondb:WADI";
+    DataSource ds=new AxionDataSource(url);
+    String storeTable="SESSIONS";
+    DatabaseStore store=new DatabaseStore(url, ds, storeTable, false, true, true);
+    boolean clean=true;
+    Contextualiser db=new SharedStoreContextualiser(terminator, collapser, clean, store);
+    
+    // Cluster
+    Contextualiser cluster=new ClusterContextualiser(db, collapser, new DummyRelocater());
+    
+    // Disc
     Evicter devicter=new NeverEvicter(sweepInterval, strictOrdering);
     Map dmap=new HashMap();
-    String spoolTable="SPOOL";
-    DatabaseStore shortTermStore=new DatabaseStore(url, ds, spoolTable, false, false, true);
-    //Contextualiser spool=new GiannisContextualiser(db, collapser, true, devicter, dmap, shorttermStore);
     File dir=Utils.createTempDirectory("wadi", ".test", new File("/tmp"));
-    Contextualiser spool=new ExclusiveStoreContextualiser(db, collapser, false, devicter, dmap, new SimpleStreamer(), dir);
+    Contextualiser spool=new ExclusiveStoreContextualiser(cluster, collapser, false, devicter, dmap, sessionStreamer, dir);
 
     Map mmap=new HashMap();
 
@@ -116,15 +114,21 @@ public class TestReplication extends TestCase {
     AbstractExclusiveContextualiser memory=new MemoryContextualiser(serial, mevicter, mmap, streamer, contextPool, requestPool);
 
     // Manager
+    int numPartitions=72;
     AttributesFactory attributesFactory=new DistributableAttributesFactory();
     ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
     SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
     SessionIdFactory idFactory=new TomcatSessionIdFactory();
-    String replicationTable="REPLICANTS";
-    DatabaseStore replicationStore=new DatabaseStore(url, ds, replicationTable, false, false, false);
-    DistributableManager manager=new DistributableManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DatabaseReplicaterFactory(replicationStore, false));
-    manager.setSessionListeners(new HttpSessionListener[]{});
-    manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
+    ReplicaterFactory replicaterfactory=new MemoryReplicaterFactory(numPartitions);
+    InetSocketAddress httpAddress=new InetSocketAddress("localhost", 8080);
+    HttpProxy httpProxy=new StandardHttpProxy("jsessionid");
+    //String clusterUri="peer://wadi";
+    String clusterUri="tcp://localhost:61616";
+    String clusterName="TEST";
+    String nodeName="test.1";
+    ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, httpAddress, httpProxy, clusterUri, clusterName, nodeName, numPartitions);
+//    manager.setSessionListeners(new HttpSessionListener[]{});
+    //manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
     manager.init(new DummyManagerConfig());
 
     manager.start();
@@ -152,16 +156,16 @@ public class TestReplication extends TestCase {
     assertTrue(mmap.size()==0);
     assertTrue(dmap.size()==1);
 
-    _log.info("DEMOTING SESSION to long-term STORE");
-    manager.stop();
-    assertTrue(mmap.size()==0);
-    assertTrue(dmap.size()==0);
-
-    _log.info("PROMOTING SESSION to short-term SPOOL");
-    manager.start();
-    assertTrue(mmap.size()==0);
-    assertTrue(dmap.size()==1);
-
+//    _log.info("DEMOTING SESSION to long-term STORE");
+//    manager.stop();
+//    assertTrue(mmap.size()==0);
+//    assertTrue(dmap.size()==0);
+//
+//    _log.info("PROMOTING SESSION to short-term SPOOL");
+//    manager.start();
+//    assertTrue(mmap.size()==0);
+//    assertTrue(dmap.size()==1);
+//
     _log.info("PROMOTING SESSION to Memory");
     memory.contextualise(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }, name, null, null, false);
     session=(AbstractReplicableSession)mmap.get(name);
@@ -177,8 +181,6 @@ public class TestReplication extends TestCase {
 
     manager.stop();
 
-    longTermStore.destroy();
-    shortTermStore.destroy();
     dir.delete();
   }
 
