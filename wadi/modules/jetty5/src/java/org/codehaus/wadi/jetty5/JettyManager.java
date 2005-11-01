@@ -11,8 +11,8 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.impl.StandardManager;
-import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.ListenerSupport;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.mortbay.jetty.servlet.ServletHandler;
@@ -46,7 +46,7 @@ public class JettyManager implements ManagerConfig, SessionManager {
     _handler=handler;
     try {
       InputStream descriptor=_handler.getHttpContext().getResource("WEB-INF/wadi-web.xml").getInputStream();
-      _wadi=(StandardManager)SpringManagerFactory.create(descriptor, "SessionManager", new DistributableSessionFactory(), new JettySessionWrapperFactory());
+      _wadi=(StandardManager)SpringManagerFactory.create(descriptor, "SessionManager", new AtomicallyReplicableSessionFactory(), new JettySessionWrapperFactory());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
