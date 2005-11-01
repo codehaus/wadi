@@ -38,6 +38,7 @@ import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
 import org.codehaus.wadi.dindex.DIndexConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
+import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
@@ -58,24 +59,20 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     protected final Dispatcher _dispatcher;
     protected final String _nodeName;
     protected final Log _log;
-    protected final int _numBuckets;
-    protected final BucketFacade[] _buckets;
+    protected final int _numPartitions;
     protected final long _inactiveTime;
     protected final Cluster _cluster;
+    protected final PartitionManager _partitionManager;
 
-    public DIndex(String nodeName, int numBuckets, long inactiveTime, Cluster cluster, Dispatcher dispatcher, Map distributedState) {
+    public DIndex(String nodeName, int numPartitions, long inactiveTime, Cluster cluster, Dispatcher dispatcher, Map distributedState) {
         _nodeName=nodeName;
         _log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
-        _numBuckets=numBuckets;
+        _numPartitions=numPartitions;
         _cluster=cluster;
         _inactiveTime=inactiveTime;
         _dispatcher=dispatcher;
         _distributedState=distributedState;
-        _buckets=new BucketFacade[_numBuckets];
-        long timeStamp=System.currentTimeMillis();
-        boolean queueing=true;
-        for (int i=0; i<_numBuckets; i++)
-            _buckets[i]=new BucketFacade(i, timeStamp, new DummyBucket(i), queueing, this);
+        _partitionManager=new SimplePartitionManager(_nodeName, _numPartitions, this);
     }
 
     protected Node _coordinatorNode;
@@ -90,7 +87,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         _distributedState.put(_nodeNameKey, _nodeName);
         _distributedState.put(_correlationIDMapKey, new HashMap());
         _distributedState.put(_birthTimeKey, new Long(System.currentTimeMillis()));
-        BucketKeys keys=new BucketKeys(_buckets);
+        BucketKeys keys=_partitionManager.getBucketKeys();
         _distributedState.put(_bucketKeysKey, keys);
         _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
         _log.info("local state: "+keys);
@@ -121,16 +118,16 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
 
         // If our wait timed out, then we must be the coordinator...
         if (!isNotCoordinator) {
-            _log.info("allocating "+_numBuckets+" buckets");
+            _log.info("allocating "+_numPartitions+" buckets");
             long timeStamp=System.currentTimeMillis();
-            for (int i=0; i<_numBuckets; i++) {
-                BucketFacade facade=_buckets[i];
+            for (int i=0; i<_numPartitions; i++) {
+                BucketFacade facade=_partitionManager.getBucket(i);
                 LocalBucket bucket=new LocalBucket(i);
                 bucket.init(this);
                 facade.setContent(timeStamp, bucket);
             }
 
-            BucketKeys k=new BucketKeys(_buckets);
+            BucketKeys k=_partitionManager.getBucketKeys();
             _distributedState.put(_bucketKeysKey, k);
             _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
             _log.info("local state: "+k);
@@ -141,8 +138,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         }
 
         // whether we are the coordinator or not...
-        for (int i=0; i<_numBuckets; i++)
-            _buckets[i].dequeue();
+        for (int i=0; i<_numPartitions; i++)
+            _partitionManager.getBucket(i).dequeue();
 
         _log.info("...started");
     }
@@ -159,7 +156,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         	_log.warn("could not contact Coordinator - backing off for "+_inactiveTime+" millis...");
         	Thread.sleep(_inactiveTime);
         }
-        
+
         _dispatcher.deregister("onBucketTransferCommand", BucketTransferCommand.class, 5000);
         _dispatcher.deregister("onBucketTransferRequest", BucketTransferRequest.class, 5000);
         _dispatcher.deregister("onBucketEvacuationRequest", BucketEvacuationRequest.class, 5000);
@@ -168,7 +165,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         _dispatcher.deregister("onDIndexRelocationRequest", DIndexRelocationRequest.class, 5000);
         _dispatcher.deregister("onDIndexForwardRequest", DIndexForwardRequest.class, 5000);
         _dispatcher.deregister("onBucketRepopulateRequest", BucketRepopulateRequest.class, 5000);
-        
+
         if (_coordinator!=null) {
         	_coordinator.stop();
         	_coordinator=null;
@@ -191,7 +188,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         int[] k=keys._keys;
         for (int i=0; i<k.length; i++) {
             int key=k[i];
-            BucketFacade facade=_buckets[key];
+            BucketFacade facade=_partitionManager.getBucket(key);
             facade.setContentRemote(timeStamp, _dispatcher, location);
         }
     }
@@ -201,7 +198,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     	BucketKeys keys=(BucketKeys)_distributedState.get(_bucketKeysKey);
     	return keys.getKeys()[Math.abs((int)(Math.random()*keys.size()))];
     }
-    
+
     public void onNodeUpdate(ClusterEvent event) {
         Node node=event.getNode();
         _log.info("onNodeUpdate: "+getNodeName(node)+": "+node.getState());
@@ -212,7 +209,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         updateBuckets(node, timeStamp, keys);
         correlateStateUpdate(state);
     }
-    
+
     protected void correlateStateUpdate(Map state) {
         Map correlationIDMap=(Map)state.get(_correlationIDMapKey);
         Destination local=_cluster.getLocalNode().getDestination();
@@ -271,10 +268,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
 
     public void repopulate(Destination location, Collection[] keys) {
         assert location!=null;
-        for (int i=0; i<_numBuckets; i++) {
+        for (int i=0; i<_numPartitions; i++) {
             Collection c=keys[i];
             if (c!=null) {
-                BucketFacade facade=_buckets[i];
+                BucketFacade facade=_partitionManager.getBucket(i);
                 LocalBucket local=(LocalBucket)facade.getContent();
                 for (Iterator j=c.iterator(); j.hasNext(); ) {
                     String name=(String)j.next();
@@ -285,7 +282,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     }
 
     public void regenerateMissingBuckets(Node[] living, Node[] leaving) {
-        boolean[] bucketIsPresent=new boolean[_numBuckets];
+        boolean[] bucketIsPresent=new boolean[_numPartitions];
         markExistingBuckets(living, bucketIsPresent);
         markExistingBuckets(leaving, bucketIsPresent);
         Collection missingBuckets=new ArrayList();
@@ -307,13 +304,13 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             long time=System.currentTimeMillis();
             for (int i=0; i<missingKeys.length; i++) {
                 int k=missingKeys[i];
-                BucketFacade facade=_buckets[k];
+                BucketFacade facade=_partitionManager.getBucket(k);
                 facade.enqueue();
                 LocalBucket local=new LocalBucket(k);
                 local.init(this);
                 facade.setContent(time, local);
             }
-            BucketKeys newKeys=new BucketKeys(_buckets);
+            BucketKeys newKeys=_partitionManager.getBucketKeys();
             _log.warn("REPOPULATING BUCKETS...: "+missingBuckets);
             String correlationId=_dispatcher.nextCorrelationId();
             Quipu rv=_dispatcher.setRendezVous(correlationId, _cluster.getNodes().size());
@@ -323,8 +320,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
 
             // whilst we are waiting for the other nodes to get back to us, figure out which relevant sessions
             // we are carrying ourselves...
-            Collection[] c=createResultSet(_numBuckets, missingKeys);
-            _config.findRelevantSessionNames(_numBuckets, c);
+            Collection[] c=createResultSet(_numPartitions, missingKeys);
+            _config.findRelevantSessionNames(_numPartitions, c);
             repopulate(_cluster.getLocalNode().getDestination(), c);
 
             //boolean success=false;
@@ -352,7 +349,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             _log.warn("...BUCKETS REPOPULATED: "+missingBuckets);
             for (int i=0; i<missingKeys.length; i++) {
                 int k=missingKeys[i];
-                BucketFacade facade=_buckets[k];
+                BucketFacade facade=_partitionManager.getBucket(k);
                 facade.dequeue();
             }
             // relayout dindex
@@ -370,7 +367,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     public boolean amCoordinator() {
     	return _coordinatorNode.getDestination().equals(_cluster.getLocalNode().getDestination());
     }
-    
+
     public void onNodeFailed(ClusterEvent event) {
         Node node=event.getNode();
         _log.info("NODE FAILED: "+getNodeName(node));
@@ -396,7 +393,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             if (c!=null) {
                 for (Iterator j=c.iterator(); j.hasNext(); ) {
                     String key=(String)j.next();
-                    LocalBucket bucket=(LocalBucket)_buckets[i].getContent();
+                    LocalBucket bucket=(LocalBucket)_partitionManager.getBucket(i).getContent();
                     bucket._map.put(key, location);
                 }
             }
@@ -433,8 +430,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             LocalBucket[] acquired=null;
             try {
                 Collection c=new ArrayList();
-                for (int j=0; j<_buckets.length && c.size()<amount; j++) {
-                    BucketFacade facade=_buckets[j];
+                for (int j=0; j<_numPartitions && c.size()<amount; j++) {
+                	BucketFacade facade=_partitionManager.getBucket(j);
                     if (facade.isLocal()) {
                         facade.enqueue();
                         Bucket bucket=facade.getContent();
@@ -447,7 +444,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                 long timeStamp=System.currentTimeMillis();
 
                 // build request...
-                _log.info("local state (before giving): "+new BucketKeys(_buckets));
+                _log.info("local state (before giving): "+_partitionManager.getBucketKeys());
                 BucketTransferRequest request=new BucketTransferRequest(timeStamp, acquired);
                 // send it...
                 ObjectMessage om3=_dispatcher.exchangeSend(_cluster.getLocalNode().getDestination(), destination, request, _inactiveTime);
@@ -456,7 +453,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
                     for (int j=0; j<acquired.length; j++) {
                         BucketFacade facade=null;
                         try {
-                            facade=_buckets[acquired[j].getKey()];
+                        	facade=_partitionManager.getBucket(acquired[j].getKey());
                             facade.setContentRemote(timeStamp, _dispatcher, destination); // TODO - should we use a more recent ts ?
                         } finally {
                             if (facade!=null)
@@ -471,7 +468,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             }
         }
         try {
-        	BucketKeys keys=new BucketKeys(_buckets);
+        	BucketKeys keys=_partitionManager.getBucketKeys();
         	_distributedState.put(_bucketKeysKey, keys);
         	_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
         	_log.info("local state (after giving): "+keys);
@@ -510,16 +507,16 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         LocalBucket[] buckets=request.getBuckets();
         boolean success=false;
         // read incoming data into our own local model
-        _log.info("local state (before receiving): "+new BucketKeys(_buckets));
+        _log.info("local state (before receiving): "+_partitionManager.getBucketKeys());
         for (int i=0; i<buckets.length; i++) {
             LocalBucket bucket=buckets[i];
             bucket.init(this);
-            BucketFacade facade=_buckets[bucket.getKey()];
+            BucketFacade facade=_partitionManager.getBucket(bucket.getKey());
             facade.setContent(timeStamp, bucket);
         }
         success=true;
         try {
-            BucketKeys keys=new BucketKeys(_buckets);
+            BucketKeys keys=_partitionManager.getBucketKeys();
             _distributedState.put(_bucketKeysKey, keys);
             _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
             _log.info("local state (after receiving): "+keys);
@@ -547,11 +544,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     public void onBucketRepopulateRequest(ObjectMessage om, BucketRepopulateRequest request) {
         int keys[]=request.getKeys();
         _log.trace("BucketRepopulateRequest ARRIVED: "+keys);
-        Collection[] c=createResultSet(_numBuckets, keys);
+        Collection[] c=createResultSet(_numPartitions, keys);
         try {
             _log.info("findRelevantSessionNames - starting");
             _log.info(_config.getClass().getName());
-            _config.findRelevantSessionNames(_numBuckets, c);
+            _config.findRelevantSessionNames(_numPartitions, c);
             _log.info("findRelevantSessionNames - finished");
         } catch (Throwable t) {
             _log.warn("ERROR", t);
@@ -603,8 +600,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         }
     }
 
-    public int getNumItems() {
-        return _numBuckets;
+    public int getNumPartitions() {
+        return _numPartitions;
     }
 
     public Node getLocalNode() {
@@ -667,8 +664,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     }
 
     protected void onDIndexRequest(ObjectMessage om, DIndexRequest request) {
-        int bucketKey=request.getBucketKey(_numBuckets);
-        _buckets[bucketKey].dispatch(om, request);
+        int bucketKey=request.getBucketKey(_numPartitions);
+        _partitionManager.getBucket(bucketKey).dispatch(om, request);
     }
 
     // temporary test methods...
@@ -679,7 +676,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
             DIndexInsertionRequest request=new DIndexInsertionRequest(name);
             message.setObject(request);
-            return _buckets[getKey(name)].exchange(message, request, _inactiveTime);
+            return _partitionManager.getBucket(getKey(name)).exchange(message, request, _inactiveTime);
         } catch (JMSException e) {
             _log.info("oops...", e);
         }
@@ -692,7 +689,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
             DIndexDeletionRequest request=new DIndexDeletionRequest(name);
             message.setObject(request);
-            _buckets[getKey(name)].exchange(message, request, _inactiveTime);
+            _partitionManager.getBucket(getKey(name)).exchange(message, request, _inactiveTime);
         } catch (JMSException e) {
             _log.info("oops...", e);
         }
@@ -704,7 +701,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
             DIndexRelocationRequest request=new DIndexRelocationRequest(name);
             message.setObject(request);
-            _buckets[getKey(name)].exchange(message, request, _inactiveTime);
+            _partitionManager.getBucket(getKey(name)).exchange(message, request, _inactiveTime);
         } catch (JMSException e) {
             _log.info("oops...", e);
         }
@@ -716,7 +713,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
             _log.trace("wrapping request");
             request=new DIndexForwardRequest(request);
             message.setObject(request);
-            return _buckets[key].exchange(message, request, timeout);
+            return _partitionManager.getBucket(key).exchange(message, request, timeout);
         } catch (JMSException e) {
             _log.info("oops...", e);
             return null;
@@ -724,7 +721,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
     }
 
     protected int getKey(String name) {
-        return Math.abs(name.hashCode()%_numBuckets);
+        return Math.abs(name.hashCode()%_numPartitions);
     }
 
     // BucketConfig
@@ -739,12 +736,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig 
         return _inactiveTime;
     }
 
-    
+
     // only for use whilst developing GridState...
-    
-    public BucketFacade[] getBuckets() {
-    	return _buckets;
-    }
+
+//    public BucketFacade[] getBuckets() {
+//    	return _buckets;
+//    }
 
 }
 

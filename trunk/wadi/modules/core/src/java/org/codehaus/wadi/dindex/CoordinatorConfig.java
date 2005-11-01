@@ -25,7 +25,7 @@ import org.codehaus.wadi.impl.Dispatcher;
 
 public interface CoordinatorConfig {
     
-    int getNumItems();
+    int getNumPartitions();
     
     Node getLocalNode();
     Collection getRemoteNodes();

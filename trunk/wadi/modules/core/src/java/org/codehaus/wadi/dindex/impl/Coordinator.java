@@ -56,7 +56,7 @@ public class Coordinator implements Runnable {
         _cluster=_config.getCluster();
         _dispatcher=_config.getDispatcher();
         _localNode=_cluster.getLocalNode();
-        _numItems=_config.getNumItems();
+        _numItems=_config.getNumPartitions();
         _inactiveTime=_config.getInactiveTime();
     }
 

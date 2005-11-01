@@ -39,9 +39,9 @@ public class DIndexNode implements DispatcherConfig, DIndexConfig {
 
     protected final Log _log=LogFactory.getLog(getClass());
 
-    //protected final String _clusterUri="peer://org.codehaus.wadi";
+    protected final String _clusterUri="peer://org.codehaus.wadi";
     //protected final String _clusterUri="tcp://localhost:61616";
-    protected final String _clusterUri="tcp://smilodon:61616";
+    //protected final String _clusterUri="tcp://smilodon:61616";
     protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
     protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
     protected final CustomClusterFactory _clusterFactory=new CustomClusterFactory(_connectionFactory);
