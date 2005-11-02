@@ -84,7 +84,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>jspc-maven-plugin</artifactId>
-                <version>1.0</version>
+                <version>1.0.1</version>
                 <executions>
                     <execution>
                         <id>jspc</id>
@@ -95,7 +95,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <warSourceDirectory>src/webapp</warSourceDirectory>
+                    <warSourceDirectory>${basedir}/src/webapp</warSourceDirectory>
+                    <inputWebXml>${basedir}/src/webapp/WEB-INF/web.xml</inputWebXml>
                 </configuration>
             </plugin>
             <plugin>
