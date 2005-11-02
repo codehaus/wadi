@@ -10,6 +10,13 @@
     <version>2.0-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>WADI :: WebApp</name>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jgenender</id>
+            <name>Jeff Genender's  Repository on codehaus</name>
+            <url>http://codehaus.org/~jgenender/maven2</url>
+        </pluginRepository>
+    </pluginRepositories>
     <dependencies>
         <dependency>
             <groupId>ant</groupId>
@@ -75,10 +82,28 @@
         <testSourceDirectory>src/test</testSourceDirectory>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jspc-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <id>jspc</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <warSourceDirectory>src/webapp</warSourceDirectory>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
                     <warSourceDirectory>src/webapp</warSourceDirectory>
+                    <webXml>${basedir}/target/jspweb.xml</webXml>
                 </configuration>
             </plugin>
         </plugins>
