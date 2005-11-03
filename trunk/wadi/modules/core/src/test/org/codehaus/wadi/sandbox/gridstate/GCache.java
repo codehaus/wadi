@@ -20,7 +20,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 /**
  * Geronimo is going to need a standard API for lookup of sessions across the Cluster.
  * JCache is the obvious choice.
- * This will allow the plugging of either e.g. GCache (WADI), Tangosol's Coherence or IBMs solution without changing of Geronimo code.
+ * This will allow the plugging of either e.g. GCache (WADI), Tangosol's Coherence or IPMs solution without changing of Geronimo code.
  * In fact, this will allow WADI to sit on top of any of these three.
  *
  * GCache is a JCache compatible interface onto DIndex - WADI's own distributed index, which fulfills
@@ -40,7 +40,7 @@ public class GCache implements Cache, ProtocolConfig {
 	protected final Protocol _protocol;
 	protected final PartitionMapper _mapper;
 	protected final Map _map=new HashMap();
-	protected final LockManager _boSyncs=new BadLockManager("BM");
+	protected final LockManager _boSyncs=new BadLockManager("PM");
 	protected final LockManager _soSyncs=new BadLockManager("IM/SM");
 
 
@@ -274,7 +274,7 @@ public class GCache implements Cache, ProtocolConfig {
 		return _mapper;
 	}
 
-	public LockManager getBMSyncs() {
+	public LockManager getPMSyncs() {
 		return _boSyncs;
 	}
 

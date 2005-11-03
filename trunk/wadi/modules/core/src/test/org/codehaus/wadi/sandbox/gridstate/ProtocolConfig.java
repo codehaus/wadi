@@ -7,7 +7,7 @@ interface ProtocolConfig {
 
 	public PartitionMapper getPartitionMapper();
 	public Map getMap();
-	public LockManager getBMSyncs();
+	public LockManager getPMSyncs();
 	public LockManager getSMSyncs();
 
 }

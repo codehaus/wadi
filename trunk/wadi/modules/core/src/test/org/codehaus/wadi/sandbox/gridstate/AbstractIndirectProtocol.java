@@ -23,17 +23,17 @@ public abstract class AbstractIndirectProtocol implements Protocol {
 		_config=config;
 	}
 
-	public Object onMoveBMToSM(MovePMToSM move) throws Exception {
+	public Object onMovePMToSM(MovePMToSM move) throws Exception {
 		Object key=move.getKey();
 		Object im=move.getIM();
 		//Object pm=move.getPM();
-		_log.info("[SM] - onMoveBMToSM@"/*+_address*/);
+		_log.info("[SM] - onMovePMToSM@"/*+_address*/);
 		_log.info("im="+im);
 		Sync sync=null;
 		try {
-			_log.trace("onMoveBMToSM - [SM] trying for lock("+key+")...");
+			_log.trace("onMovePMToSM - [SM] trying for lock("+key+")...");
 			sync=_config.getSMSyncs().acquire(key);
-			_log.trace("onMoveBMToSM - [SM] ...lock("+key+") acquired< - "+sync);
+			_log.trace("onMovePMToSM - [SM] ...lock("+key+") acquired< - "+sync);
 			// send GetSMToIM to IM
 			Object value;
 			Map map=_config.getMap();
@@ -52,33 +52,33 @@ public abstract class AbstractIndirectProtocol implements Protocol {
 			}
 			return new MoveSMToPM(success);
 		} finally {
-			_log.trace("onMoveBMToSM - [SM] releasing lock("+key+") - "+sync);
+			_log.trace("onMovePMToSM - [SM] releasing lock("+key+") - "+sync);
 			sync.release();
-			_log.trace("onMoveBMToSM - [SM] released lock("+key+") - "+sync);
+			_log.trace("onMovePMToSM - [SM] released lock("+key+") - "+sync);
 		}
 	}
 
-	public Object onReadIMToBM(ReadIMToPM read) throws Exception {
+	public Object onReadIMToPM(ReadIMToPM read) throws Exception {
 		Object key=read.getKey();
 		Object im=read.getIM();
 		_log.info("im="+im);
-		// what if we are NOT the BM anymore ?
+		// what if we are NOT the PM anymore ?
 		// get write lock on location
 		Sync sync=null;
 		try {
-			_log.trace("onReadIMToBM- [BM] trying for lock("+key+")...");
-			sync=_config.getBMSyncs().acquire(key);
-			_log.trace("onReadIMToBM- [BM] ...lock("+key+") acquired - "+sync);
+			_log.trace("onReadIMToPM- [PM] trying for lock("+key+")...");
+			sync=_config.getPMSyncs().acquire(key);
+			_log.trace("onReadIMToPM- [PM] ...lock("+key+") acquired - "+sync);
 			Partition partition=getPartitions()[_config.getPartitionMapper().map(key)];
 			Location location=partition.getLocation(key);
 			if (location==null) {
 				return new ReadPMToIM();
 			}
-			// exchangeSendLoop GetBMToSM to SM
+			// exchangeSendLoop GetPMToSM to SM
 			Object pm=getLocalLocation();
 			Object sm=location.getValue();
 
-			MoveSMToPM response=(MoveSMToPM)syncRpc(sm, "onMoveBMToSM", new MovePMToSM(key, im, pm, null));
+			MoveSMToPM response=(MoveSMToPM)syncRpc(sm, "onMovePMToSM", new MovePMToSM(key, im, pm, null));
 			// success - update location
 			boolean success=response.getSuccess();
 			if (success)
@@ -86,9 +86,9 @@ public abstract class AbstractIndirectProtocol implements Protocol {
 
 			return success?Boolean.TRUE:Boolean.FALSE;
 		} finally {
-			_log.trace("onReadIMToBM- [BM] releasing lock("+key+") - "+sync);
+			_log.trace("onReadIMToPM- [PM] releasing lock("+key+") - "+sync);
 			sync.release();
-			_log.trace("onReadIMToBM- [BM] released lock("+key+") - "+sync);
+			_log.trace("onReadIMToPM- [PM] released lock("+key+") - "+sync);
 		}
 	}
 
