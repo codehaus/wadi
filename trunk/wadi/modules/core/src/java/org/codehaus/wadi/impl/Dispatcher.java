@@ -37,7 +37,6 @@ import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.ThreadFactory;
