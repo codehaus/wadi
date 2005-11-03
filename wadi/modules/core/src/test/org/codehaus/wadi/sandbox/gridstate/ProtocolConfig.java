@@ -7,7 +7,7 @@ interface ProtocolConfig {
 	
 	public BucketMapper getBucketMapper();
 	public Map getMap();
-	public SyncMap getBOSyncs();
-	public SyncMap getSOSyncs();
+	public LockManager getBOSyncs();
+	public LockManager getSOSyncs();
 	
 }

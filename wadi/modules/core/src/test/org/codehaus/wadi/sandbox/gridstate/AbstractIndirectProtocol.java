@@ -31,9 +31,9 @@ public abstract class AbstractIndirectProtocol implements Protocol {
 		_log.info("po="+po);
 		Sync sync=null;
 		try {
-			_log.info("onMoveBOToSO - [SO] trying for lock("+key+")...");
+			_log.trace("onMoveBOToSO - [SO] trying for lock("+key+")...");
 			sync=_config.getSOSyncs().acquire(key);
-			_log.info("onMoveBOToSO - [SO] ...lock("+key+") acquired< - "+sync);
+			_log.trace("onMoveBOToSO - [SO] ...lock("+key+") acquired< - "+sync);
 			// send GetSOToPO to PO
 			Object value;
 			Map map=_config.getMap();
@@ -52,8 +52,9 @@ public abstract class AbstractIndirectProtocol implements Protocol {
 			}
 			return new MoveSOToBO(success);
 		} finally {
-			_log.info("onMoveBOToSO - [SO] releasing lock("+key+") - "+sync);
+			_log.trace("onMoveBOToSO - [SO] releasing lock("+key+") - "+sync);
 			sync.release();
+			_log.trace("onMoveBOToSO - [SO] released lock("+key+") - "+sync);
 		}
 	}
 
@@ -65,9 +66,9 @@ public abstract class AbstractIndirectProtocol implements Protocol {
 		// get write lock on location
 		Sync sync=null;
 		try {
-			_log.info("onReadPOToBO- [BO] trying for lock("+key+")...");
+			_log.trace("onReadPOToBO- [BO] trying for lock("+key+")...");
 			sync=_config.getBOSyncs().acquire(key);
-			_log.info("onReadPOToBO- [BO] ...lock("+key+") acquired - "+sync);
+			_log.trace("onReadPOToBO- [BO] ...lock("+key+") acquired - "+sync);
 			Bucket bucket=getBuckets()[_config.getBucketMapper().map(key)];
 			Location location=bucket.getLocation(key);
 			if (location==null) {
@@ -85,8 +86,9 @@ public abstract class AbstractIndirectProtocol implements Protocol {
 			
 			return success?Boolean.TRUE:Boolean.FALSE; 
 		} finally {
-			_log.info("onReadPOToBO- [BO] releasing lock("+key+") - "+sync);
+			_log.trace("onReadPOToBO- [BO] releasing lock("+key+") - "+sync);
 			sync.release();
+			_log.trace("onReadPOToBO- [BO] released lock("+key+") - "+sync);
 		}	
 	}
 

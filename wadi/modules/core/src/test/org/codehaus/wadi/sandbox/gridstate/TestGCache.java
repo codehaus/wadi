@@ -30,47 +30,74 @@ public class TestGCache extends TestCase {
         super(name);
     }
 
-    protected int _numNodes=3;
-    protected GCache[] _nodes=new GCache[_numNodes];
-    protected int _numBuckets=_numNodes*1;
-    protected FixedWidthSessionIdFactory _factory;
-    protected BucketMapper _mapper;
+    protected final int _numNodes=4;
+    protected final int _numBuckets=_numNodes;
+    //protected final int _numBuckets=1;
+    protected final int _numThreads=2;
+    protected final int _numIters=100;
+    protected final FixedWidthSessionIdFactory _factory=new FixedWidthSessionIdFactory(10, "0123456789".toCharArray(), _numBuckets);
+    protected final BucketMapper _mapper=new BucketMapper() { public int map(Object key) { return _factory.getBucket((String)key);} };
     
+    protected GCache[] _nodes=new GCache[_numNodes];
+
     protected void setUp() throws Exception {
         super.setUp();
-        _factory=new FixedWidthSessionIdFactory(10, "0123456789".toCharArray(), _numBuckets);
-        _mapper=new BucketMapper() { public int map(Object key) { return _factory.getBucket((String)key);} };
+
+
     }
 
     protected void tearDown() throws Exception {
-        _numBuckets=0;
         super.tearDown();
     }
     
-    FixedWidthSessionIdFactory factory;
+    protected void setUp(ProtocolFactory factory) throws Exception {
+        for (int i=0; i<_numNodes; i++)
+    		_nodes[i]=new GCache(factory.createProtocol("node-"+i), _mapper);
+
+    	// initialise the buckets...
+    	int bucketsPerNode=_numBuckets/_numNodes;
+    	for (int i=0; i<_numBuckets; i++) {
+    		// figure out which node is bucket owner...
+    		int index=i/bucketsPerNode;
+    		GCache local=_nodes[index];
+    		_log.info("bucket-"+i+" -> node-"+index);
+    		// go through all the nodes...
+    		for (int j=0; j<_numNodes; j++) {
+    			GCache node=_nodes[j];
+    			if (node!=local) {
+    				// if node is not bucket owner - make bucket remote
+    				Bucket bucket=new Bucket(local.getProtocol().createRemoteBucket());
+    				bucket.init(node.getBucketConfig());
+    				node.getBuckets()[i]=bucket;
+    			}
+    			// else, I guess default bucket type is 'local'...
+    		}
+    	}
+    }
     
     public class Tester implements Runnable {
     	
-    	GCache[] _nodes;
     	Object _key;
-    	int _numIters;
     	
-    	Tester(GCache[] nodes, Object key, int numIters) {
-    		_nodes=nodes;
+    	Tester(Object key) {
     		_key=key;
-    		_numIters=numIters;
     	}
     	
     	public void run() {
-    		_log.info("starting");
     		for (int i=0; i<_numIters; i++) {
+    			long start=System.currentTimeMillis();
     			//_log.info("iter: "+i);
     			Object[] values=new Object[_numNodes];
     			for (int j=0; j<_numNodes; j++) {
+    				_log.trace("node-"+j+": acquiring: "+_key+" ..."+" <"+Thread.currentThread().getName()+">");
     				values[j]=_nodes[j].get(_key);
+    				_log.trace("node-"+j+": ...acquired: "+_key+"="+values[j]+" <"+Thread.currentThread().getName()+">");
     				if (j>0)
     					assertTrue(values[j-1].equals(values[j]));
     			}
+    			long elapsed=System.currentTimeMillis()-start;
+    			int numFetches=_numIters*_numNodes;
+    			_log.warn("rate: "+numFetches+" in "+elapsed+" millis = "+(elapsed/numFetches)+" millis/fetch");
     		}
     	}
     }
@@ -79,40 +106,56 @@ public class TestGCache extends TestCase {
     	Protocol createProtocol(String name) throws Exception;
     }
     
-    class JGroupsIndirectProtocolFactory implements ProtocolFactory {
+    abstract class AbstractProtocolFactory implements ProtocolFactory {
+    	
+    	protected final long _timeout;
+    	
+    	public AbstractProtocolFactory(long timeout) {
+    		_timeout=timeout;
+    	}
+    }
+    
+    class JGroupsIndirectProtocolFactory extends AbstractProtocolFactory {
+    	
+    	public JGroupsIndirectProtocolFactory(long timeout) {
+    		super(timeout);
+    	}
+    	
     	public Protocol createProtocol(String name) throws Exception {
-    		return new JGroupsIndirectProtocol(name, _numBuckets, _mapper);
+    		return new JGroupsIndirectProtocol(name, _numBuckets, _mapper, _timeout);
     	}
     }
     
-    class ActiveClusterIndirectProtocolFactory implements ProtocolFactory {
+    class ActiveClusterIndirectProtocolFactory extends AbstractProtocolFactory {
+    	
+    	public ActiveClusterIndirectProtocolFactory(long timeout) {
+    		super(timeout);
+    	}
+    	
     	public Protocol createProtocol(String name) throws Exception {
-    		return new ActiveClusterIndirectProtocol(name, _numBuckets, _mapper);
+    		return new ActiveClusterIndirectProtocol(name, _numBuckets, _mapper, _timeout);
     	}
     }
     
-    public void testGCache() throws Exception {
-    	testGCache(new JGroupsIndirectProtocolFactory(), 1);
-    	testGCache(new ActiveClusterIndirectProtocolFactory(), 1);
+//    public void testFunctionality() throws Exception {
+//    	//testGCache(new JGroupsIndirectProtocolFactory(), 1);
+//    	testFunctionality(new ActiveClusterIndirectProtocolFactory(60*1000), 1);
+//    }
+//
+//    public void testConcurrency() throws Exception {
+//    	//testGCache(new JGroupsIndirectProtocolFactory(), 1);ping smilodon
+//    	testConcurrency(new ActiveClusterIndirectProtocolFactory(60*1000), 100, 100);
+//    }
+
+    public void testSoak() throws Exception {
+    	//testGCache(new JGroupsIndirectProtocolFactory(), 1);ping smilodon
+    	testSoak(new ActiveClusterIndirectProtocolFactory(60*1000));
     }
-    
-    public void testGCache(ProtocolFactory factory, int numIterations) throws Exception {
-    	for (int i=0; i<_numNodes; i++)
-    		_nodes[i]=new GCache(factory.createProtocol("node-"+i), _mapper);
 
-    	int bucketsPerNode=_numBuckets/_numNodes;
-    	for (int i=0; i<_numBuckets; i++) {
-    		GCache local=_nodes[i/bucketsPerNode];
-    		for (int j=0; j<_numNodes; j++) {
-    			GCache node=_nodes[j];
-    			if (node!=local) {
-    				Bucket bucket=new Bucket(local.getProtocol().createRemoteBucket());
-    				bucket.init(node.getBucketConfig());
-    				node.getBuckets()[i]=bucket;
-    			}
-    		}
-    	}
+    public void testFunctionality(ProtocolFactory factory) throws Exception {
 
+    	setUp(factory);
+    	
     	GCache red=_nodes[0];
     	GCache green=_nodes[1];
     	//GCache blue=_nodes[2];
@@ -199,13 +242,6 @@ public class TestGCache extends TestCase {
             Object value2=red.put(key, data);
             //_log.info(key+" = "+value2);
             assertTrue(value2.equals(newData));
-            int numThreads=10;
-            Thread[] thread=new Thread[numThreads];
-            for (int j=0; j<numThreads; j++)
-        		(thread[j]=new Thread(new Tester(_nodes, key, numIterations), "GCacheTestThread-"+j)).start();
-            for (int j=0; j<numThreads; j++)
-            	thread[j].join();
-            _log.info("complete: "+(i+1)+"/"+_numBuckets+" - "+(System.currentTimeMillis()-start)+" millis");
         }
         _log.info("elapsed: "+(System.currentTimeMillis()-start)+" millis");
 
@@ -221,4 +257,109 @@ public class TestGCache extends TestCase {
         _log.info("0 nodes running");
     }
 
+    public void testConcurrency(ProtocolFactory factory) throws Exception {
+    	
+    	setUp(factory);
+
+        _log.info("0 nodes running");
+        for (int i=0; i<_numNodes; i++)
+        	_nodes[i].start();
+        
+        Thread.sleep(12000);
+        //_nodes[_numNodes-1].getCluster().waitForClusterToComplete(_numNodes, 6000);
+        _log.warn(_numNodes+" nodes running");
+
+        _log.info("starting");
+        for (int i=0; i<_numBuckets; i++) { // do this for each bucket...
+            String key=_factory.create(i);
+
+            
+            // put something into the cache
+            _nodes[0].put(key, key+"-data");
+
+            Thread[] thread=new Thread[_numThreads];
+            for (int j=0; j<_numThreads; j++)
+        		(thread[j]=new Thread(new Tester(key), "GCacheTestThread-"+j)).start();
+            for (int j=0; j<_numThreads; j++)
+            	thread[j].join();
+        }
+        _log.warn("finished");
+        
+        Thread.sleep(6000);
+        _log.info(_numNodes+" nodes running");
+        for (int i=0; i<_numNodes; i++)
+        	_nodes[i].stop();
+
+        //red.getCluster().waitForClusterToComplete(1, 6000);
+        Thread.sleep(6000);
+        _log.info("0 nodes running");
+    }
+    
+    public class Soaker implements Runnable {
+    	
+    	String[] _keys;
+    	
+    	Soaker(String[] keys) {
+    		_keys=keys;
+    	}
+    	
+    	public void run() {
+    		long start=System.currentTimeMillis();
+    		for (int i=0; i<_numIters; i++) {
+    			for (int j=0; j<_nodes.length; j++) {
+    				GCache cache=_nodes[j];
+    				for (int k=0; k<_keys.length; k++) {
+    					String key=_keys[k];
+    					
+    					cache.put(key, key+"-data");
+    					//cache.get(key);
+    					cache.remove(key);
+    				}
+    			}
+    		}
+    		long elapsed=System.currentTimeMillis()-start;
+    		int numOperations=_numIters*_numNodes*_keys.length*2;
+    		_log.warn("rate: "+numOperations+" in "+elapsed+" millis = "+(elapsed/numOperations)+" millis/operation");
+    	}
+    }
+    
+    public void testSoak(ProtocolFactory factory) throws Exception {
+    	
+    	setUp(factory);
+    	
+        _log.info("0 nodes running");
+        for (int i=0; i<_numNodes; i++)
+        	_nodes[i].start();
+        
+        Thread.sleep(12000);
+        //_nodes[_numNodes-1].getCluster().waitForClusterToComplete(_numNodes, 6000);
+        _log.warn(_numNodes+" nodes running");
+
+        _log.info("starting");
+        
+        // make up keys that will hash into every bucket/partition...
+        GCache node=_nodes[0];
+        String[] keys=new String[_numBuckets];
+        for (int i=0; i<_numBuckets; i++) {
+        	String key=_factory.create(i);
+        	keys[i]=key;
+        	node.put(key, key+"-data");
+    	}	
+
+        Thread[] thread=new Thread[_numThreads];
+        for (int j=0; j<_numThreads; j++)
+    		(thread[j]=new Thread(new Soaker(keys), "SoakThread-"+j)).start();
+        for (int j=0; j<_numThreads; j++)
+        	thread[j].join();
+        _log.warn("finished");
+        
+        Thread.sleep(6000);
+        _log.info(_numNodes+" nodes running");
+        for (int i=0; i<_numNodes; i++)
+        	_nodes[i].stop();
+
+        Thread.sleep(6000);
+        _log.info("0 nodes running");
+    }
+    
 }
