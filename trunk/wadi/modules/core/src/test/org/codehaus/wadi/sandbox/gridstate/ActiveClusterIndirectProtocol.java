@@ -46,9 +46,6 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 	protected final long _timeout;
 	protected final Partition[] _partitions;
 	protected final String _nodeName;
-	protected final LockManager _invocationLockManager;
-	protected final LockManager _stateLockManager;
-	protected final LockManager _partitionLockManager;
 
     class MyDispatcherConfig implements DispatcherConfig {
 
@@ -63,7 +60,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
     	}
     }
 
-    public ActiveClusterIndirectProtocol(String nodeName, int numPartitions, PartitionMapper mapper, long timeout, LockManager invocationLockManager, LockManager stateLockManager, LockManager partitionLockManager) throws Exception {
+    public ActiveClusterIndirectProtocol(String nodeName, int numPartitions, PartitionMapper mapper, long timeout) throws Exception {
     	_nodeName=nodeName;
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
     	//_clusterFactory.setInactiveTime(100000L); // ???
@@ -113,9 +110,6 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 		_dispatcher.register(this, "onMessage", WriteIMToPM.class);
 		_dispatcher.register(WritePMToIM.class, _timeout);
 
-		_invocationLockManager=invocationLockManager;
-		_stateLockManager=stateLockManager;
-		_partitionLockManager=partitionLockManager;
 	}
 
 	public PartitionInterface createRemotePartition() {
@@ -161,7 +155,6 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#get(java.io.Object)
 	 */
-	  
 	public Object get(Object key) {
 		Sync sync=null;
 		String agent=_nodeName;
