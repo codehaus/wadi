@@ -61,12 +61,14 @@ public class Dispatcher implements MessageListener {
     protected final PooledExecutor _executor;
 
     public Dispatcher() {
-    	_executor=new PooledExecutor(new LinkedQueue(), 100); // parameterise
-    	_executor.setMinimumPoolSize(4);
+    	_executor=new PooledExecutor(); // parameterise
+    	//_executor.setMinimumPoolSize(200);
+    	//_executor.runWhenBlocked();
     	_executor.setThreadFactory(new ThreadFactory() {
     		protected int _count;
 
     		public synchronized Thread newThread(Runnable runnable) {
+    			//_log.info("CREATING THREAD: "+_count);
     			return new Thread(runnable, "WADI Dispatcher ("+(_count++)+")");
     		}
     	});
