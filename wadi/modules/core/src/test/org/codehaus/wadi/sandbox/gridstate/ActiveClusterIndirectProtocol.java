@@ -95,18 +95,18 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 
 		_timeout=timeout;
 
-		// Get - 5 messages - IM->BM->SM->IM->SM->BM
+		// Get - 5 messages - IM->PM->SM->IM->SM->PM
 		_dispatcher.register(this, "onMessage", ReadIMToPM.class);
-//		_dispatcher.newRegister(this, "onReadIMToBM", ReadIMToBM.class);
+//		_dispatcher.newRegister(this, "onReadIMToPM", ReadIMToPM.class);
 		_dispatcher.register(this, "onMessage", MovePMToSM.class);
-//		_dispatcher.newRegister(this, "onMoveBMToSM", MoveBMToSM.class);
+//		_dispatcher.newRegister(this, "onMovePMToSM", MovePMToSM.class);
 		_dispatcher.register(MoveSMToIM.class, _timeout);
 		_dispatcher.register(MoveIMToSM.class, _timeout);
 		_dispatcher.register(MoveSMToPM.class, _timeout);
-		// Get - 2 messages - IM->BM->IM (NYI)
+		// Get - 2 messages - IM->PM->IM (NYI)
 		_dispatcher.register(ReadPMToIM.class, _timeout);
 
-		// Put - 2 messages - IM->BM->IM
+		// Put - 2 messages - IM->PM->IM
 		_dispatcher.register(this, "onMessage", WriteIMToPM.class);
 		_dispatcher.register(WritePMToIM.class, _timeout);
 
@@ -170,7 +170,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			if (value!=null)
 				return value;
 			else {
-				// exchangeSendLoop GetIMToBM to BM
+				// exchangeSendLoop GetIMToPM to PM
 				Destination im=_cluster.getLocalNode().getDestination();
 				Destination pm=_partitions[_config.getPartitionMapper().map(key)].getDestination();
 				ReadIMToPM request=new ReadIMToPM(key, im);
@@ -218,24 +218,24 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 		return name;
 	}
 
-	// called on BM...
+	// called on PM...
 	public void onMessage(ObjectMessage message1, ReadIMToPM get) {
-		// what if we are NOT the BM anymore ?
+		// what if we are NOT the PM anymore ?
 		// get write lock on location
 		Object key=get.getKey();
 		Sync sync=null;
 		String agent=getNodeName((Destination)get.getIM());
 		try {
-			_log.trace("["+agent+"@"+_nodeName+"(BM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
-			sync=_config.getBMSyncs().acquire(key); // TODO - BMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
-			_log.trace("["+agent+"@"+_nodeName+"(BM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
+			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
+			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
 			Partition partition=_partitions[_config.getPartitionMapper().map(key)];
 			ActiveClusterLocation location=(ActiveClusterLocation)partition.getLocation(key);
 			if (location==null) {
 				_dispatcher.reply(message1,new ReadPMToIM());
 				return;
 			}
-			// exchangeSendLoop GetBMToSM to SM
+			// exchangeSendLoop GetPMToSM to SM
 			Destination im=(Destination)get.getIM();
 			Destination pm=_cluster.getLocalNode().getDestination();
 			Destination sm=(Destination)location.getValue();
@@ -261,9 +261,9 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			location.setValue((Destination)get.getIM());
 
 		} finally {
-			_log.trace("["+agent+"@"+_nodeName+"(BM)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync.release();
-			_log.trace("["+agent+"@"+_nodeName+"(BM)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
+			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
 		}
 	}
 
@@ -301,7 +301,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 				synchronized (map) {
 					map.remove(key);
 				}
-				// send GetSMToBM to BM
+				// send GetSMToPM to PM
 				//Destination pm=(Destination)get.getPM();
 				_dispatcher.reply(message1,new MoveSMToPM());
 			} catch (JMSException e) {
@@ -333,7 +333,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			sync=_config.getSMSyncs().acquire(key);
 			_log.trace("["+agent+"@"+_nodeName+"(IM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
 
-			if (!removal) { // removals must do the round trip to BM
+			if (!removal) { // removals must do the round trip to PM
 				boolean local;
 				synchronized (map) {
 					local=map.containsKey(key);
@@ -353,7 +353,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			}
 
 			// absent or remote
-			// exchangeSendLoop PutIMToBM to BM
+			// exchangeSendLoop PutIMToPM to PM
 			Destination im=_cluster.getLocalNode().getDestination();
 			Destination pm=_partitions[_config.getPartitionMapper().map(key)].getDestination();
 			WriteIMToPM request=new WriteIMToPM(key, value==null, overwrite, returnOldValue, im);
@@ -366,7 +366,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			}
 
 			// 2 possibilities -
-			// PutBM2IM - Absent
+			// PutPM2IM - Absent
 			if (response instanceof WritePMToIM) {
 				if (overwrite) {
 					synchronized (map) {
@@ -406,18 +406,18 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 		}
 	}
 
-	// called on BM...
+	// called on PM...
 	public void onMessage(ObjectMessage message1, WriteIMToPM write) {
-		// what if we are NOT the BM anymore ?
+		// what if we are NOT the PM anymore ?
 		Object key=write.getKey();
 		Partition partition=_partitions[_config.getPartitionMapper().map(key)];
 		Map partitionMap=partition.getMap();
 		Sync sync=null;
 		String agent=getNodeName((Destination)write.getIM());
 		try {
-			_log.trace("["+agent+"@"+_nodeName+"(BM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
-			sync=_config.getBMSyncs().acquire(key);
-			_log.trace("["+agent+"@"+_nodeName+"(BM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
+			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+			sync=_config.getPMSyncs().acquire(key);
+			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
 			Location location=write.getValueIsNull()?null:new ActiveClusterLocation((Destination)write.getIM());
 			// remove or update location, remembering old value
 			ActiveClusterLocation oldLocation=(ActiveClusterLocation)(location==null?partitionMap.remove(key):partitionMap.put(key, location));
@@ -425,16 +425,16 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			if (!write.getOverwrite() && oldLocation!=null) {
 				//  undo our change
 				partitionMap.put(key, oldLocation);
-				// send BMToIM - failure
+				// send PMToIM - failure
 				_dispatcher.reply(message1, new WritePMToIM(false));
 			} else if (oldLocation==null || (write.getIM().equals(oldLocation.getValue()))) {
 				// if there was previously no SM, or there was, but it was IM ...
 				// then there is no need to go and remove the old value from the old SM
-				// send BMToIM - success
+				// send PMToIM - success
 				_dispatcher.reply(message1, new WritePMToIM(true));
 			} else {
 				// previous value needs removing and possibly returning...
-				// send BMToSM...
+				// send PMToSM...
 
 				String poCorrelationId=null;
 				try {
@@ -448,18 +448,18 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 				Destination sm=(Destination)oldLocation.getValue();
 				MovePMToSM request=new MovePMToSM(key, im, pm, poCorrelationId);
 				/*ObjectMessage message2=*/_dispatcher.exchangeSendLoop(pm, sm, request, _timeout, 10);
-//				MoveSMToBM response=null;
+//				MoveSMToPM response=null;
 //				try {
-//					response=(MoveSMToBM)message2.getObject();
+//					response=(MoveSMToPM)message2.getObject();
 //				} catch (JMSException e) {
 //					_log.error("unexpected problem", e); // should be sorted in loop
 //				}
 			}
 
 		} finally {
-			_log.trace("["+agent+"@"+_nodeName+"(BM)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync.release();
-			_log.trace("["+agent+"@"+_nodeName+"(BM)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
+			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
 		}
 	}
 

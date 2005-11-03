@@ -172,12 +172,12 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 			if (value!=null)
 				return value;
 			else {
-				// exchangeSendLoop GetIMToBM to BM
+				// exchangeSendLoop GetIMToPM to PM
 				Object response=null;
 				try {
 					Address im=_address;
 					Address pm=_partitions[_config.getPartitionMapper().map(key)].getAddress();
-					response=syncRpc(pm, "onReadIMToBM", new ReadIMToPM(key, im));
+					response=syncRpc(pm, "onReadIMToPM", new ReadIMToPM(key, im));
  				} catch(Exception e) {
 					_log.error("problem publishing change in state over JavaGroups", e);
 				}
@@ -236,7 +236,7 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 			sync=_config.getSMSyncs().acquire(key);
 			_log.info("put- [IM] ...lock("+key+") acquired - "+sync);
 
-			if (!removal) { // removals must do the round trip to BM
+			if (!removal) { // removals must do the round trip to PM
 				boolean local;
 				synchronized (map) {
 					local=map.containsKey(key);
@@ -257,13 +257,13 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 
 			try {
 				// absent or remote
-				// exchangeSendLoop PutIMToBM to BM
+				// exchangeSendLoop PutIMToPM to PM
 				Address im=_address;
 				Address pm=_partitions[_config.getPartitionMapper().map(key)].getAddress();
-				Object response=syncRpc(pm, "onWriteIMToBM", new WriteIMToPM(key, newValue==null, overwrite, returnOldValue, im));
+				Object response=syncRpc(pm, "onWriteIMToPM", new WriteIMToPM(key, newValue==null, overwrite, returnOldValue, im));
 
 				// 2 possibilities -
-				// PutBM2IM - Absent
+				// PutPM2IM - Absent
 				if (response instanceof WritePMToIM) {
 					if (overwrite) {
 						synchronized (map) {
@@ -310,22 +310,22 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 		}
 	}
 
-	// called on BM...
-	public Object onWriteIMToBM(WriteIMToPM write) throws Exception {
+	// called on PM...
+	public Object onWriteIMToPM(WriteIMToPM write) throws Exception {
 		Object key=write.getKey();
 		boolean valueIsNull=write.getValueIsNull();
 		boolean overwrite=write.getOverwrite();
 		//boolean returnOldValue=write.getReturnOldValue();
 		Address im=(Address)write.getIM();
-		_log.info("[BM] - onWriteIMToBM@"+_address);
-		// what if we are NOT the BM anymore ?
+		_log.info("[PM] - onWriteIMToPM@"+_address);
+		// what if we are NOT the PM anymore ?
 		Partition partition=_partitions[_config.getPartitionMapper().map(key)];
 		Map partitionMap=partition.getMap();
 		Sync sync=null;
 		try {
-			_log.info("onWriteIMToBM- [BM] trying for lock("+key+")...");
-			sync=_config.getBMSyncs().acquire(key);
-			_log.info("onWriteIMToBM- [BM] ...lock("+key+") acquired - "+sync);
+			_log.info("onWriteIMToPM- [PM] trying for lock("+key+")...");
+			sync=_config.getPMSyncs().acquire(key);
+			_log.info("onWriteIMToPM- [PM] ...lock("+key+") acquired - "+sync);
 			Location location=valueIsNull?null:new JGroupsLocation(im);
 			// remove or update location, remembering old value
 			JGroupsLocation oldLocation=(JGroupsLocation)(location==null?partitionMap.remove(key):partitionMap.put(key, location));
@@ -333,16 +333,16 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 			if (!overwrite && oldLocation!=null) {
 				//  undo our change
 				partitionMap.put(key, oldLocation);
-				// send BMToIM - failure
+				// send PMToIM - failure
 				return new WritePMToIM(false);
 			} else if (oldLocation==null || (im.equals(oldLocation.getValue()))) {
 				// if there was previously no SM, or there was, but it was IM ...
 				// then there is no need to go and remove the old value from the old SM
-				// send BMToIM - success
+				// send PMToIM - success
 				return new WritePMToIM(true);
 			} else {
 				// previous value needs removing and possibly returning...
-				// send BMToSM...
+				// send PMToSM...
 				Address pm=_address;
 				Object sm=oldLocation.getValue();
 				_log.info(""+im+"=="+sm+" ? "+(im.equals(sm)));
@@ -350,7 +350,7 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 				return response.getSuccess()?Boolean.TRUE:Boolean.FALSE;
 			}
 		} finally {
-			_log.info("onWriteIMToBM- [BM] releasing lock("+key+") - "+sync);
+			_log.info("onWriteIMToPM- [PM] releasing lock("+key+") - "+sync);
 			sync.release();
 		}
 	}
