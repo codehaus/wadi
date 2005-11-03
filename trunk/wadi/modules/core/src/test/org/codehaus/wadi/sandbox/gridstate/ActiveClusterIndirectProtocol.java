@@ -4,6 +4,7 @@
 package org.codehaus.wadi.sandbox.gridstate;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -13,6 +14,7 @@ import javax.jms.ObjectMessage;
 import org.activecluster.Cluster;
 import org.activecluster.ClusterEvent;
 import org.activecluster.ClusterListener;
+import org.activecluster.Node;
 import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.codehaus.wadi.DispatcherConfig;
@@ -41,8 +43,9 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
     protected final CustomClusterFactory _clusterFactory=new CustomClusterFactory(_connectionFactory);
 	protected final Dispatcher _dispatcher;
 	protected final Cluster _cluster;
-	protected final long _timeout=30*1000L;
+	protected final long _timeout;
 	protected final Bucket[] _buckets;
+	protected final String _nodeName;
 	
     class MyDispatcherConfig implements DispatcherConfig {
 
@@ -57,9 +60,10 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
     	}
     }
     
-    public ActiveClusterIndirectProtocol(String nodeName, int numBuckets, BucketMapper mapper) throws Exception {
+    public ActiveClusterIndirectProtocol(String nodeName, int numBuckets, BucketMapper mapper, long timeout) throws Exception {
+    	_nodeName=nodeName;
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
-    	_clusterFactory.setInactiveTime(100000L);
+    	//_clusterFactory.setInactiveTime(100000L); // ???
     	_cluster=_clusterFactory.createCluster(_clusterName);
     	_cluster.addClusterListener(new ClusterListener() {
 
@@ -89,6 +93,8 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			_buckets[i]=bucket;
 		}
 		
+		_timeout=timeout;
+		
 		// Get - 5 messages - PO->BO->SO->PO->SO->BO
 		_dispatcher.register(this, "onMessage", ReadPOToBO.class);
 //		_dispatcher.newRegister(this, "onReadPOToBO", ReadPOToBO.class);
@@ -112,6 +118,9 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 
     
     public void start() throws Exception {
+    	Map state=new HashMap();
+    	state.put("nodeName", _nodeName);
+    	_cluster.getLocalNode().setState(state);
     	_cluster.start();
     }
     
@@ -148,8 +157,11 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 	 */
 	public Object get(Object key) {
 		Sync sync=null;
+		String agent=_nodeName;
 		try {
-			sync=_config.getSOSyncs().acquire(key);
+			_log.trace("["+agent+"@"+_nodeName+"(PO)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+			sync=_config.getSOSyncs().acquire(key); // TODO - an SOSync should actually be a lock in the state itself - read or write ?
+			_log.trace("["+agent+"@"+_nodeName+"(PO)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
 			Object value=null;
 			Map map=_config.getMap();
 			synchronized (map) {
@@ -188,9 +200,22 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 				return value;
 			}
 		} finally {
-			_log.trace("[PO] releasing sync for: "+key+" - "+sync);
+			_log.trace("["+agent+"@"+_nodeName+"(PO)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync.release();
+			_log.trace("["+agent+"@"+_nodeName+"(PO)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
 		}
+	}
+	
+	protected String getNodeName(Destination destination) {
+		Node node;
+		if (destination.equals(_cluster.getLocalNode().getDestination()))
+			node=_cluster.getLocalNode();
+		else
+			node=(Node)_cluster.getNodes().get(destination);
+
+		Map state=node.getState();
+		String name=(String)state.get("nodeName");
+		return name;
 	}
 	
 	// called on BO...
@@ -199,8 +224,11 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 		// get write lock on location
 		Object key=get.getKey();
 		Sync sync=null;
+		String agent=getNodeName((Destination)get.getPO());
 		try {
-			sync=_config.getBOSyncs().acquire(key);
+			_log.trace("["+agent+"@"+_nodeName+"(BO)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+			sync=_config.getBOSyncs().acquire(key); // TODO - BOSyncs are actually WLocks on a given sessions location (bucket entry) - itegrate
+			_log.trace("["+agent+"@"+_nodeName+"(BO)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
 			Bucket bucket=_buckets[_config.getBucketMapper().map(key)];
 			ActiveClusterLocation location=(ActiveClusterLocation)bucket.getLocation(key);
 			if (location==null) {
@@ -219,28 +247,35 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 				_log.error("unexpected problem", e);
 			}
 			MoveBOToSO request=new MoveBOToSO(key, po, bo, poCorrelationId);
-			/*ObjectMessage message2=*/_dispatcher.exchangeSendLoop(bo, so, request, _timeout, 10);
-//			MoveSOToBO response=null;
-//			try {
-//				response=(MoveSOToBO)message2.getObject();
-//			} catch (JMSException e) {
-//				_log.error("unexpected problem", e); // should be sorted in loop
-//			}
+			ObjectMessage message2=_dispatcher.exchangeSendLoop(bo, so, request, _timeout, 10);
+			if (message2==null)
+				_log.error("NO RESPONSE WITHIN TIMEFRAME - PANIC!");
+			
+			MoveSOToBO response=null;
+			try {
+				response=(MoveSOToBO)message2.getObject();
+			} catch (JMSException e) {
+				_log.error("unexpected problem", e); // should be sorted in loop
+			}
 			// alter location
 			location.setValue((Destination)get.getPO());
 			
 		} finally {
-			_log.trace("[BO] releasing sync for: "+key+" - "+sync);
+			_log.trace("["+agent+"@"+_nodeName+"(BO)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync.release();
+			_log.trace("["+agent+"@"+_nodeName+"(BO)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
 		}
 	}
 	
 	// called on SO...
 	public void onMessage(ObjectMessage message1, MoveBOToSO get) {
 		Object key=get.getKey();
+		String agent=getNodeName((Destination)get.getPO());
 		Sync sync=null;
 		try {
+			_log.trace("["+agent+"@"+_nodeName+"(SO)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync=_config.getSOSyncs().acquire(key);
+			_log.trace("["+agent+"@"+_nodeName+"(SO)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
 			// send GetSOToPO to PO
 			Destination so=_cluster.getLocalNode().getDestination();
 			Destination po=(Destination)get.getPO();
@@ -251,12 +286,17 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			}
 			//_log.info("sending "+key+"="+value+" -> PO");
 			MoveSOToPO request=new MoveSOToPO(key, value);
-			/*ObjectMessage message2=(ObjectMessage)*/_dispatcher.exchangeSend(so, po, request, _timeout, get.getPOCorrelationId());
+			ObjectMessage message2=(ObjectMessage)_dispatcher.exchangeSend(so, po, request, _timeout, get.getPOCorrelationId());
 			// wait
 			// receive GetPOToSO
-			//MovePOToSO response=null;
-			//try {
-				//response=(MovePOToSO)message2.getObject();
+			
+			if (message2==null) {
+				_log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
+			} else {
+			}
+			MovePOToSO response=null;
+			try {
+				response=(MovePOToSO)message2.getObject();
 				// remove association
 				synchronized (map) {
 					map.remove(key);
@@ -264,12 +304,13 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 				// send GetSOToBO to BO
 				//Destination bo=(Destination)get.getBO();
 				_dispatcher.reply(message1,new MoveSOToBO());
-			//} catch (JMSException e) {
-			//	_log.error("unexpected problem", e);
-			//}
+			} catch (JMSException e) {
+				_log.error("unexpected problem", e);
+			}
 		} finally {
-			_log.trace("[SO] releasing sync for: "+key+" - "+sync);
+			_log.trace("["+agent+"@"+_nodeName+"(SO)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync.release();
+			_log.trace("["+agent+"@"+_nodeName+"(SO)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
 		}
 	}
 	
@@ -286,8 +327,11 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 		boolean removal=(value==null);
 		Map map=_config.getMap();
 		Sync sync=null;
+		String agent=_nodeName;
 		try {
+			_log.trace("["+agent+"@"+_nodeName+"(PO)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync=_config.getSOSyncs().acquire(key);
+			_log.trace("["+agent+"@"+_nodeName+"(PO)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
 			
 			if (!removal) { // removals must do the round trip to BO
 				boolean local;
@@ -356,8 +400,9 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			}
 			
 		} finally {
-			_log.trace("[PO] releasing sync for: "+key+" - "+sync);
+			_log.trace("["+agent+"@"+_nodeName+"(PO)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync.release();
+			_log.trace("["+agent+"@"+_nodeName+"(PO)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
 		}
 	}
 
@@ -368,8 +413,11 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 		Bucket bucket=_buckets[_config.getBucketMapper().map(key)];
 		Map bucketMap=bucket.getMap();
 		Sync sync=null;
+		String agent=getNodeName((Destination)write.getPO());
 		try {
+			_log.trace("["+agent+"@"+_nodeName+"(BO)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync=_config.getBOSyncs().acquire(key);
+			_log.trace("["+agent+"@"+_nodeName+"(BO)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
 			Location location=write.getValueIsNull()?null:new ActiveClusterLocation((Destination)write.getPO());
 			// remove or update location, remembering old value
 			ActiveClusterLocation oldLocation=(ActiveClusterLocation)(location==null?bucketMap.remove(key):bucketMap.put(key, location));
@@ -409,8 +457,9 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			}
 			
 		} finally {
-			_log.trace("[BO] releasing sync for: "+key+" - "+sync);
+			_log.trace("["+agent+"@"+_nodeName+"(BO)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync.release();
+			_log.trace("["+agent+"@"+_nodeName+"(BO)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
 		}
 	}
 	

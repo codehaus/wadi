@@ -34,7 +34,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements BucketConfig {
 	
 	protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
-	protected final long _timeout=30*1000L;
+	protected final long _timeout;
 	protected final Bucket[] _buckets;
 	
 	protected final Channel _channel;
@@ -76,7 +76,7 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 	};
 	
 	
-	public JGroupsIndirectProtocol(String nodeName, int numBuckets, BucketMapper mapper) throws Exception {
+	public JGroupsIndirectProtocol(String nodeName, int numBuckets, BucketMapper mapper, long timeout) throws Exception {
 		
 		_buckets=new Bucket[numBuckets];
 		
@@ -86,6 +86,7 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 			_buckets[i]=bucket;
 		}
 		
+		_timeout=timeout;
 		_channel=new JChannel();
 		_dispatcher=new RpcDispatcher(_channel, _messageListener, _membershipListener, this, true, true);
 	}

@@ -29,6 +29,10 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author jules
  *
  */
+/**
+ * @author jules
+ *
+ */
 public class GCache implements Cache, ProtocolConfig {
 	
 	protected final Log _log=LogFactory.getLog(getClass().getName());
@@ -36,8 +40,8 @@ public class GCache implements Cache, ProtocolConfig {
 	protected final Protocol _protocol;
 	protected final BucketMapper _mapper;
 	protected final Map _map=new HashMap();
-	protected final SyncMap _boSyncs=new SyncMap("BO");
-	protected final SyncMap _soSyncs=new SyncMap("PO/SO");
+	protected final LockManager _boSyncs=new LockManager("BO");
+	protected final LockManager _soSyncs=new LockManager("PO/SO");
 	
 	
 	public GCache(Protocol protocol, BucketMapper mapper) {
@@ -46,7 +50,7 @@ public class GCache implements Cache, ProtocolConfig {
 	}
 	
 	/*
-	 * second pass
+	 * Does the local cache contain the given key ?
 	 */
 	public boolean containsKey(Object key) {
 		Sync sync=null;
@@ -110,7 +114,7 @@ public class GCache implements Cache, ProtocolConfig {
 	}
 	
 	/*
-	 * first pass
+	 * Find, globally, the value associated with this key and return it.
 	 */
 	public Object get(Object key) {
 		return _protocol.get(key);
@@ -120,8 +124,7 @@ public class GCache implements Cache, ProtocolConfig {
 	 * first/second pass
 	 */
 	public Map getAll(Collection keys) throws CacheException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 	
 	/*
@@ -139,7 +142,7 @@ public class GCache implements Cache, ProtocolConfig {
 	}
 	
 	/*
-	 * first pass ?
+	 * Find, locally, the value associated with this key and return it (no loaders called)
 	 */
 	public Object peek(Object key) {
 		// TODO Auto-generated method stub
@@ -147,18 +150,39 @@ public class GCache implements Cache, ProtocolConfig {
 	}
 	
 	/*
-	 * first pass ?
+	 * Put, globally, this key:value association, returning any value previously globally associated with the same key.
 	 */
 	public Object put(Object key, Object value) {
 		return put(key, value, true, true);
 	}
 	
-	// for WADI
+	
+	/**
+	 * Extension: Insert, globally, the key:value association for the first time. This can be more efficient than a put(), 
+	 * as we can be sure that it will not have to return a value that is held remotely. Returns success if the insertion was
+	 * able to occur (i.e. there was no value previously associated with this key).
+	 * 
+	 * @param key
+	 * @param value
+	 * @return
+	 */
 	public boolean putFirst(Object key, Object value) {
 		return ((Boolean)put(key, value, false, true)).booleanValue();
 	}
 	
-	// for WADI
+	
+	/**
+	 * Extension: Insert, globally, the key:value association only overwriting a previous value and returning it, if
+	 * the relevant flags are passed in. If overwrite is true, returnOldValue will return any value previously associated
+	 * with this key, else the insertion will occur and return Boolean.TRUE only if NO previous association exists otherwise
+	 * Boolean.FALSE will be returned.
+	 * 
+	 * @param key
+	 * @param value
+	 * @param overwrite
+	 * @param returnOldValue
+	 * @return
+	 */
 	protected Object put(Object key, Object value, boolean overwrite, boolean returnOldValue) {
 		return _protocol.put(key, value, overwrite, returnOldValue);
 	}
@@ -189,12 +213,20 @@ public class GCache implements Cache, ProtocolConfig {
 	}
 	
 	/*
-	 * first pass
+	 * Remove, globally, any current association with this key, returning the correspondong value.
 	 */
 	public Object remove(Object key) {
 		return _protocol.remove(key, true);
 	}
 	
+	/**
+	 * Remove the key's association globally, returning its current value if the flag is true.
+	 * If the value is held remotely and not required, it will save bandwidth to pass in a value of false.
+	 * 
+	 * @param key
+	 * @param returnOldValue
+	 * @return
+	 */
 	public Object remove(Object key, boolean returnOldValue) {
 		return _protocol.remove(key, returnOldValue);
 	}
@@ -242,11 +274,11 @@ public class GCache implements Cache, ProtocolConfig {
 		return _mapper;
 	}
 	
-	public SyncMap getBOSyncs() {
+	public LockManager getBOSyncs() {
 		return _boSyncs;
 	}
 	
-	public SyncMap getSOSyncs() {
+	public LockManager getSOSyncs() {
 		return _soSyncs;
 	}
 	

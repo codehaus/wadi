@@ -10,13 +10,22 @@ import org.codehaus.wadi.impl.Utils;
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public class SyncMap {
+/**
+ * This should actually be a LockManager giving out SyncWrappers which contain a Sync and a counter, hooked into a backing Map.
+ * Syncs that do not exist in the Map are created on demand.
+ * When the counter hits '0', the Sync is removed from the Map.
+ * Also needs to be integrated with the rest of WADI's locking policies...
+ * 
+ * @author jules
+ *
+ */
+public class LockManager {
 
-	protected static final Log _log=LogFactory.getLog(SyncMap.class);
+	protected static final Log _log=LogFactory.getLog(LockManager.class);
 	
 	protected String _prefix;
 	
-	public SyncMap(String prefix) {
+	public LockManager(String prefix) {
 		_prefix=prefix;
 	}
 	
