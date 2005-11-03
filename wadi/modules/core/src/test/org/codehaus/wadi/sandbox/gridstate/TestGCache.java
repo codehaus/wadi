@@ -49,10 +49,15 @@ public class TestGCache extends TestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
+
+    protected final LockManager _invocationLockManager=new BadLockManager("InvocationMaster");
+    protected final LockManager _stateLockManager=new BadLockManager("StateMaster");
+    protected final LockManager _partitionLockManager=new BadLockManager("PartitionMaster");
+    
     
     protected void setUp(ProtocolFactory factory) throws Exception {
         for (int i=0; i<_numNodes; i++)
-    		_nodes[i]=new GCache(factory.createProtocol("node-"+i), _mapper);
+    		_nodes[i]=new GCache(factory.createProtocol("node-"+i), _mapper, _invocationLockManager, _stateLockManager, _partitionLockManager);
 
     	// initialise the partitions...
     	int partitionsPerNode=_numPartitions/_numNodes;
@@ -133,7 +138,7 @@ public class TestGCache extends TestCase {
     	}
     	
     	public Protocol createProtocol(String name) throws Exception {
-    		return new ActiveClusterIndirectProtocol(name, _numPartitions, _mapper, _timeout);
+    		return new ActiveClusterIndirectProtocol(name, _numPartitions, _mapper, _timeout, _invocationLockManager, _stateLockManager, _partitionLockManager);
     	}
     }
     
