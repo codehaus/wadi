@@ -13,20 +13,20 @@ import org.jgroups.Address;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 
-public class LocalBucket implements BucketInterface {
+public class LocalPartition implements PartitionInterface {
 	
-	protected static final Log _log=LogFactory.getLog(LocalBucket.class);
+	protected static final Log _log=LogFactory.getLog(LocalPartition.class);
 	
 	protected final transient ReadWriteLock _lock;
 	protected Map _map=new HashMap();
 
-	protected BucketConfig _config;
+	protected PartitionConfig _config;
 
-	public LocalBucket() {
+	public LocalPartition() {
 		_lock=new ReaderPreferenceReadWriteLock();
 	}
 	
-	public void init(BucketConfig config) {
+	public void init(PartitionConfig config) {
 		_config=config;
 	}
 	

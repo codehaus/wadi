@@ -8,9 +8,9 @@ import org.jgroups.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
-public interface BucketInterface {
+public interface PartitionInterface {
 
-	void init(BucketConfig config);
+	void init(PartitionConfig config);
 	
 	// Serializable executeSync(Object process);
 	// void executeASync(Object process);

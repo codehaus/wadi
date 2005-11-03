@@ -4,12 +4,12 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.sandbox.gridstate.messages.MoveBOToSO;
-import org.codehaus.wadi.sandbox.gridstate.messages.MovePOToSO;
-import org.codehaus.wadi.sandbox.gridstate.messages.MoveSOToBO;
-import org.codehaus.wadi.sandbox.gridstate.messages.MoveSOToPO;
-import org.codehaus.wadi.sandbox.gridstate.messages.ReadBOToPO;
-import org.codehaus.wadi.sandbox.gridstate.messages.ReadPOToBO;
+import org.codehaus.wadi.sandbox.gridstate.messages.MovePMToSM;
+import org.codehaus.wadi.sandbox.gridstate.messages.MoveIMToSM;
+import org.codehaus.wadi.sandbox.gridstate.messages.MoveSMToPM;
+import org.codehaus.wadi.sandbox.gridstate.messages.MoveSMToIM;
+import org.codehaus.wadi.sandbox.gridstate.messages.ReadPMToIM;
+import org.codehaus.wadi.sandbox.gridstate.messages.ReadIMToPM;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -23,73 +23,73 @@ public abstract class AbstractIndirectProtocol implements Protocol {
 		_config=config;
 	}
 
-	public Object onMoveBOToSO(MoveBOToSO move) throws Exception {
+	public Object onMoveBMToSM(MovePMToSM move) throws Exception {
 		Object key=move.getKey();
-		Object po=move.getPO();
-		//Object bo=move.getBO();
-		_log.info("[SO] - onMoveBOToSO@"/*+_address*/);
-		_log.info("po="+po);
+		Object im=move.getIM();
+		//Object pm=move.getPM();
+		_log.info("[SM] - onMoveBMToSM@"/*+_address*/);
+		_log.info("im="+im);
 		Sync sync=null;
 		try {
-			_log.trace("onMoveBOToSO - [SO] trying for lock("+key+")...");
-			sync=_config.getSOSyncs().acquire(key);
-			_log.trace("onMoveBOToSO - [SO] ...lock("+key+") acquired< - "+sync);
-			// send GetSOToPO to PO
+			_log.trace("onMoveBMToSM - [SM] trying for lock("+key+")...");
+			sync=_config.getSMSyncs().acquire(key);
+			_log.trace("onMoveBMToSM - [SM] ...lock("+key+") acquired< - "+sync);
+			// send GetSMToIM to IM
 			Object value;
 			Map map=_config.getMap();
 			synchronized (map) {
 				value=map.get(key);
 			}
-			_log.info("[SO] sending "+key+"="+value+" -> PO...");
-			MovePOToSO response=(MovePOToSO)syncRpc(po, "onMoveSOToPO", new MoveSOToPO(key, value));
-			_log.info("[SO] ...response received <- PO");
+			_log.info("[SM] sending "+key+"="+value+" -> IM...");
+			MoveIMToSM response=(MoveIMToSM)syncRpc(im, "onMoveSMToIM", new MoveSMToIM(key, value));
+			_log.info("[SM] ...response received <- IM");
 			boolean success=response.getSuccess();
 			if (success) {
 				synchronized (map) {
 					map.remove(key);
-					return new MoveSOToBO();
+					return new MoveSMToPM();
 				}
 			}
-			return new MoveSOToBO(success);
+			return new MoveSMToPM(success);
 		} finally {
-			_log.trace("onMoveBOToSO - [SO] releasing lock("+key+") - "+sync);
+			_log.trace("onMoveBMToSM - [SM] releasing lock("+key+") - "+sync);
 			sync.release();
-			_log.trace("onMoveBOToSO - [SO] released lock("+key+") - "+sync);
+			_log.trace("onMoveBMToSM - [SM] released lock("+key+") - "+sync);
 		}
 	}
 
-	public Object onReadPOToBO(ReadPOToBO read) throws Exception {
+	public Object onReadIMToBM(ReadIMToPM read) throws Exception {
 		Object key=read.getKey();
-		Object po=read.getPO();
-		_log.info("po="+po);
-		// what if we are NOT the BO anymore ?
+		Object im=read.getIM();
+		_log.info("im="+im);
+		// what if we are NOT the BM anymore ?
 		// get write lock on location
 		Sync sync=null;
 		try {
-			_log.trace("onReadPOToBO- [BO] trying for lock("+key+")...");
-			sync=_config.getBOSyncs().acquire(key);
-			_log.trace("onReadPOToBO- [BO] ...lock("+key+") acquired - "+sync);
-			Bucket bucket=getBuckets()[_config.getBucketMapper().map(key)];
-			Location location=bucket.getLocation(key);
+			_log.trace("onReadIMToBM- [BM] trying for lock("+key+")...");
+			sync=_config.getBMSyncs().acquire(key);
+			_log.trace("onReadIMToBM- [BM] ...lock("+key+") acquired - "+sync);
+			Partition partition=getPartitions()[_config.getPartitionMapper().map(key)];
+			Location location=partition.getLocation(key);
 			if (location==null) {
-				return new ReadBOToPO();
+				return new ReadPMToIM();
 			}
-			// exchangeSendLoop GetBOToSO to SO
-			Object bo=getLocalLocation();
-			Object so=location.getValue();
-			
-			MoveSOToBO response=(MoveSOToBO)syncRpc(so, "onMoveBOToSO", new MoveBOToSO(key, po, bo, null));
+			// exchangeSendLoop GetBMToSM to SM
+			Object pm=getLocalLocation();
+			Object sm=location.getValue();
+
+			MoveSMToPM response=(MoveSMToPM)syncRpc(sm, "onMoveBMToSM", new MovePMToSM(key, im, pm, null));
 			// success - update location
 			boolean success=response.getSuccess();
 			if (success)
-				location.setValue(po);
-			
-			return success?Boolean.TRUE:Boolean.FALSE; 
+				location.setValue(im);
+
+			return success?Boolean.TRUE:Boolean.FALSE;
 		} finally {
-			_log.trace("onReadPOToBO- [BO] releasing lock("+key+") - "+sync);
+			_log.trace("onReadIMToBM- [BM] releasing lock("+key+") - "+sync);
 			sync.release();
-			_log.trace("onReadPOToBO- [BO] released lock("+key+") - "+sync);
-		}	
+			_log.trace("onReadIMToBM- [BM] released lock("+key+") - "+sync);
+		}
 	}
 
 }

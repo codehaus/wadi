@@ -2,23 +2,23 @@ package org.codehaus.wadi.sandbox.gridstate.messages;
 
 import java.io.Serializable;
 
-public class WritePOToBO implements Serializable {
+public class WriteIMToPM implements Serializable {
 
 	protected Object _key;
 	protected boolean _valueIsNull;
 	protected boolean _overwrite;
 	protected boolean _returnOldValue;
-	protected Object _po;
+	protected Object _im;
 	
-	public WritePOToBO(Object key, boolean valueIsNull, boolean overwrite, boolean returnOldValue, Object po) {
+	public WriteIMToPM(Object key, boolean valueIsNull, boolean overwrite, boolean returnOldValue, Object im) {
 		_key=key;
 		_valueIsNull=valueIsNull;
 		_overwrite=overwrite;
 		_returnOldValue=returnOldValue;
-		_po=po;
+		_im=im;
 	}
 	
-	protected WritePOToBO() {
+	protected WriteIMToPM() {
 		// for deserialisation...
 	}
 	
@@ -38,8 +38,8 @@ public class WritePOToBO implements Serializable {
 		return _returnOldValue;
 	}
 	
-	public Object getPO() {
-		return _po;
+	public Object getIM() {
+		return _im;
 	}
 	
 }

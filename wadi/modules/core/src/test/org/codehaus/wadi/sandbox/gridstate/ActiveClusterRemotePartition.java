@@ -10,18 +10,18 @@ import org.jgroups.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
-public class ActiveClusterRemoteBucket implements BucketInterface {
+public class ActiveClusterRemotePartition implements PartitionInterface {
 	
 	protected final Log _log=LogFactory.getLog(getClass().getName());
 	protected final Destination _destination;
 	
-	public ActiveClusterRemoteBucket(Destination destination) {
+	public ActiveClusterRemotePartition(Destination destination) {
 		_destination=destination;
 	}
 	
-	protected BucketConfig _config;
+	protected PartitionConfig _config;
 	
-	public void init(BucketConfig config) {
+	public void init(PartitionConfig config) {
 		_config=config;
 	}
 	

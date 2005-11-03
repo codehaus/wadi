@@ -2,17 +2,17 @@ package org.codehaus.wadi.sandbox.gridstate.messages;
 
 import java.io.Serializable;
 
-public class ReadPOToBO implements Serializable {
+public class ReadIMToPM implements Serializable {
 
 	protected Object _key;
-	protected Object _po;
+	protected Object _im;
 	
-	public ReadPOToBO(Object key, Object po) {
+	public ReadIMToPM(Object key, Object im) {
 		_key=key;
-		_po=po;
+		_im=im;
 	}
 	
-	protected ReadPOToBO() {
+	protected ReadIMToPM() {
 		// for deserialisation ...
 	}
 	
@@ -20,8 +20,8 @@ public class ReadPOToBO implements Serializable {
 		return _key;
 	}
 	
-	public Object getPO() {
-		return _po;
+	public Object getIM() {
+		return _im;
 	}
 
 }

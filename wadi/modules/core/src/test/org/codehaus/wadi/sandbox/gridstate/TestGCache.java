@@ -31,12 +31,12 @@ public class TestGCache extends TestCase {
     }
 
     protected final int _numNodes=4;
-    protected final int _numBuckets=_numNodes;
-    //protected final int _numBuckets=1;
+    protected final int _numPartitions=_numNodes;
+    //protected final int _numPartitions=1;
     protected final int _numThreads=2;
     protected final int _numIters=100;
-    protected final FixedWidthSessionIdFactory _factory=new FixedWidthSessionIdFactory(10, "0123456789".toCharArray(), _numBuckets);
-    protected final BucketMapper _mapper=new BucketMapper() { public int map(Object key) { return _factory.getBucket((String)key);} };
+    protected final FixedWidthSessionIdFactory _factory=new FixedWidthSessionIdFactory(10, "0123456789".toCharArray(), _numPartitions);
+    protected final PartitionMapper _mapper=new PartitionMapper() { public int map(Object key) { return _factory.getPartition((String)key);} };
     
     protected GCache[] _nodes=new GCache[_numNodes];
 
@@ -54,23 +54,23 @@ public class TestGCache extends TestCase {
         for (int i=0; i<_numNodes; i++)
     		_nodes[i]=new GCache(factory.createProtocol("node-"+i), _mapper);
 
-    	// initialise the buckets...
-    	int bucketsPerNode=_numBuckets/_numNodes;
-    	for (int i=0; i<_numBuckets; i++) {
-    		// figure out which node is bucket owner...
-    		int index=i/bucketsPerNode;
+    	// initialise the partitions...
+    	int partitionsPerNode=_numPartitions/_numNodes;
+    	for (int i=0; i<_numPartitions; i++) {
+    		// figure out which node is Partition Master...
+    		int index=i/partitionsPerNode;
     		GCache local=_nodes[index];
-    		_log.info("bucket-"+i+" -> node-"+index);
+    		_log.info("partition-"+i+" -> node-"+index);
     		// go through all the nodes...
     		for (int j=0; j<_numNodes; j++) {
     			GCache node=_nodes[j];
     			if (node!=local) {
-    				// if node is not bucket owner - make bucket remote
-    				Bucket bucket=new Bucket(local.getProtocol().createRemoteBucket());
-    				bucket.init(node.getBucketConfig());
-    				node.getBuckets()[i]=bucket;
+    				// if node is not PartitionMaster - make partition remote
+    				Partition partition=new Partition(local.getProtocol().createRemotePartition());
+    				partition.init(node.getPartitionConfig());
+    				node.getPartitions()[i]=partition;
     			}
-    			// else, I guess default bucket type is 'local'...
+    			// else, I guess default partition type is 'local'...
     		}
     	}
     }
@@ -122,7 +122,7 @@ public class TestGCache extends TestCase {
     	}
     	
     	public Protocol createProtocol(String name) throws Exception {
-    		return new JGroupsIndirectProtocol(name, _numBuckets, _mapper, _timeout);
+    		return new JGroupsIndirectProtocol(name, _numPartitions, _mapper, _timeout);
     	}
     }
     
@@ -133,7 +133,7 @@ public class TestGCache extends TestCase {
     	}
     	
     	public Protocol createProtocol(String name) throws Exception {
-    		return new ActiveClusterIndirectProtocol(name, _numBuckets, _mapper, _timeout);
+    		return new ActiveClusterIndirectProtocol(name, _numPartitions, _mapper, _timeout);
     	}
     }
     
@@ -169,7 +169,7 @@ public class TestGCache extends TestCase {
         _log.info(_numNodes+" nodes running");
 
         long start=System.currentTimeMillis();
-        for (int i=0; i<_numBuckets; i++) {
+        for (int i=0; i<_numPartitions; i++) {
             String key=_factory.create(i);
             //_log.info("key: "+key);
             // retrieve an association that does not exist...
@@ -213,20 +213,20 @@ public class TestGCache extends TestCase {
             assertTrue(red.put(key, data).equals(data));
             // try overwriting the [local] value with itself - but not returning old value
             assertTrue(red.put(key, data, true, false)==null);
-            // retrieve an association from the StateOwner
+            // retrieve an association from the StateMaster
             assertTrue(red.get(key).equals(data));
             assertTrue(red.containsKey(key));
             assertTrue(!green.containsKey(key));
-            // retrieve an association from a node that is not the StateOwner
+            // retrieve an association from a node that is not the StateMaster
             //_log.info("get remote...");
             assertTrue(green.get(key).equals(data));
             assertTrue(!red.containsKey(key));
             assertTrue(green.containsKey(key));
-            // retrieve an association from a node that is not the StateOwner
+            // retrieve an association from a node that is not the StateMaster
             assertTrue(red.get(key).equals(data));
             assertTrue(red.containsKey(key));
             assertTrue(!green.containsKey(key));
-            // retrieve an association from a node that is not the StateOwner
+            // retrieve an association from a node that is not the StateMaster
             //_log.info("read remote...");
             assertTrue(green.get(key).equals(data));
             assertTrue(!red.containsKey(key));
@@ -270,7 +270,7 @@ public class TestGCache extends TestCase {
         _log.warn(_numNodes+" nodes running");
 
         _log.info("starting");
-        for (int i=0; i<_numBuckets; i++) { // do this for each bucket...
+        for (int i=0; i<_numPartitions; i++) { // do this for each partition...
             String key=_factory.create(i);
 
             
@@ -312,8 +312,8 @@ public class TestGCache extends TestCase {
     					String key=_keys[k];
     					
     					cache.put(key, key+"-data");
-    					//cache.get(key);
-    					cache.remove(key);
+    					cache.get(key);
+    					//cache.remove(key);
     				}
     			}
     		}
@@ -337,10 +337,10 @@ public class TestGCache extends TestCase {
 
         _log.info("starting");
         
-        // make up keys that will hash into every bucket/partition...
+        // make up keys that will hash into every partition...
         GCache node=_nodes[0];
-        String[] keys=new String[_numBuckets];
-        for (int i=0; i<_numBuckets; i++) {
+        String[] keys=new String[_numPartitions];
+        for (int i=0; i<_numPartitions; i++) {
         	String key=_factory.create(i);
         	keys[i]=key;
         	node.put(key, key+"-data");

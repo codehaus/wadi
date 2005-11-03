@@ -4,10 +4,10 @@ import java.util.Map;
 
 
 interface ProtocolConfig {
-	
-	public BucketMapper getBucketMapper();
+
+	public PartitionMapper getPartitionMapper();
 	public Map getMap();
-	public LockManager getBOSyncs();
-	public LockManager getSOSyncs();
-	
+	public LockManager getBMSyncs();
+	public LockManager getSMSyncs();
+
 }

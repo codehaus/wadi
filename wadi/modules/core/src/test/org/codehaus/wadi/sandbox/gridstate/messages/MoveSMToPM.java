@@ -2,15 +2,15 @@ package org.codehaus.wadi.sandbox.gridstate.messages;
 
 import java.io.Serializable;
 
-public class MoveSOToBO implements Serializable {
+public class MoveSMToPM implements Serializable {
 
 	boolean _success;
 	
-	public MoveSOToBO(boolean success) {
+	public MoveSMToPM(boolean success) {
 		_success=success;
 	}
 	
-	public MoveSOToBO() {
+	public MoveSMToPM() {
 		this(true);
 	}
 	
