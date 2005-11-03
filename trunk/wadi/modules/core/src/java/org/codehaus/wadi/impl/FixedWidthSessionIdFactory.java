@@ -86,7 +86,7 @@ public class FixedWidthSessionIdFactory implements SessionIdFactory {
     return offset;
   }
 
-  public int getBucket(String key) {
+  public int getPartition(String key) {
     return decode(key.toCharArray(), key.length()-_bucketLength, _bucketLength);
   }
 
@@ -127,7 +127,7 @@ public class FixedWidthSessionIdFactory implements SessionIdFactory {
       int bucket=Math.abs(r.nextInt())%numBuckets;
       String key=factory.create(bucket);
       System.out.println(key+" - "+bucket);
-      assert bucket==factory.getBucket(key);
+      assert bucket==factory.getPartition(key);
     }
   }
 

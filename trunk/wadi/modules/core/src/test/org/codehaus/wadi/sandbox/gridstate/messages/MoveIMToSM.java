@@ -2,20 +2,19 @@ package org.codehaus.wadi.sandbox.gridstate.messages;
 
 import java.io.Serializable;
 
-public class WriteBOToPO implements Serializable {
+public class MoveIMToSM implements Serializable {
 
 	protected boolean _success;
 	
-	public WriteBOToPO(boolean success) {
+	public MoveIMToSM(boolean success) {
 		_success=success;
 	}
 	
-	protected WriteBOToPO() {
-		// for deserialisation...
+	public MoveIMToSM() {
+		this(true);
 	}
 	
 	public boolean getSuccess() {
 		return _success;
 	}
-	
 }

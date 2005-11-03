@@ -2,17 +2,17 @@ package org.codehaus.wadi.sandbox.gridstate.messages;
 
 import java.io.Serializable;
 
-public class MoveSOToPO implements Serializable {
+public class MoveSMToIM implements Serializable {
 
 	protected Object _key;
 	protected Object _value;
 	
-	public MoveSOToPO(Object key, Object value) {
+	public MoveSMToIM(Object key, Object value) {
 		_key=key;
 		_value=value;
 	}
 	
-	protected MoveSOToPO() {
+	protected MoveSMToIM() {
 		// for deserialisation...
 	}
 	

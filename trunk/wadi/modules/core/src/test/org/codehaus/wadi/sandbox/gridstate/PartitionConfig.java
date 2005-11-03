@@ -5,7 +5,7 @@ import javax.jms.Destination;
 import org.codehaus.wadi.impl.Dispatcher;
 import org.jgroups.Address;
 
-public interface BucketConfig {
+public interface PartitionConfig {
 
 	Destination getLocalDestination();
 	Address getLocalAddress();

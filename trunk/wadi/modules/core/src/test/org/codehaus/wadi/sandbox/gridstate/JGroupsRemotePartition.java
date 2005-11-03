@@ -10,18 +10,18 @@ import org.jgroups.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
-public class JGroupsRemoteBucket implements BucketInterface {
+public class JGroupsRemotePartition implements PartitionInterface {
 	
 	protected final Log _log=LogFactory.getLog(getClass().getName());
 	protected final Address _address;
 	
-	public JGroupsRemoteBucket(Address address) {
+	public JGroupsRemotePartition(Address address) {
 		_address=address;
 	}
 	
-	protected BucketConfig _config;
+	protected PartitionConfig _config;
 	
-	public void init(BucketConfig config) {
+	public void init(PartitionConfig config) {
 		_config=config;
 	}
 	

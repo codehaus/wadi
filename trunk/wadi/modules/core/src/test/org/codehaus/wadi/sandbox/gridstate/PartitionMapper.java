@@ -1,10 +1,10 @@
 package org.codehaus.wadi.sandbox.gridstate;
 
 
-public interface BucketMapper {
+public interface PartitionMapper {
 
 	/**
-	 * Given a key, map it to the corresponding Bucket index.
+	 * Given a key, map it to the corresponding Partition index.
 	 * 
 	 * @param key
 	 * @return
