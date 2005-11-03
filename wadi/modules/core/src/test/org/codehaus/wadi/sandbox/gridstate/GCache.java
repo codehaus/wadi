@@ -40,17 +40,13 @@ public class GCache implements Cache, ProtocolConfig {
 	protected final Protocol _protocol;
 	protected final PartitionMapper _mapper;
 	protected final Map _map=new HashMap();
-	protected final LockManager _partitionLockManager;
-	protected final LockManager _stateLockManager;
-	protected final LockManager _invocationLockManager;
+	protected final LockManager _boSyncs=new BadLockManager("BM");
+	protected final LockManager _soSyncs=new BadLockManager("IM/SM");
 
 
-	public GCache(Protocol protocol, PartitionMapper mapper, LockManager invocationLockManager, LockManager stateLockManager, LockManager partitionLockManager) {
+	public GCache(Protocol protocol, PartitionMapper mapper) {
 		(_protocol=protocol).init(this);
 		_mapper=mapper;
-		_invocationLockManager=invocationLockManager;
-		_stateLockManager=stateLockManager;
-		_partitionLockManager=partitionLockManager;
 	}
 
 	/*
@@ -59,7 +55,7 @@ public class GCache implements Cache, ProtocolConfig {
 	public boolean containsKey(Object key) {
 		Sync sync=null;
 		try {
-			sync=_stateLockManager.acquire(key);
+			sync=_soSyncs.acquire(key);
 			synchronized (_map) {
 				return _map.containsKey(key);
 			}
@@ -279,11 +275,11 @@ public class GCache implements Cache, ProtocolConfig {
 	}
 
 	public LockManager getBMSyncs() {
-		return _partitionLockManager;
+		return _boSyncs;
 	}
 
 	public LockManager getSMSyncs() {
-		return _stateLockManager;
+		return _soSyncs;
 	}
 
 	public PartitionConfig getPartitionConfig() {
