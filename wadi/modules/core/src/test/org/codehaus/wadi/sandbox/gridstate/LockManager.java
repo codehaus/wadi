@@ -5,5 +5,6 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public interface LockManager {
 
 	Sync acquire(Object key);
+	//Sync acquire(Object key, Object value);
 
 }
