@@ -10,6 +10,8 @@ import org.codehaus.wadi.impl.Utils;
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+// FIXME - DOES NOT WORK :-(
+
 /**
  * Creates, reuses and destroys, on-the-fly, a lock for a given Key.
  * 
@@ -61,17 +63,16 @@ public class SmartLockManager implements LockManager {
 		}
 		
 		protected void dec() {
-			if (--_count==0) {
-				synchronized (_syncs) {
+			synchronized (_syncs) {
+				if (--_count==0) {
 					_syncs.remove(_key);
 					//_log.info("dec: "+_key+" ->"+_count+" : "+Thread.currentThread().getName());
 					//_log.info("destroyed: "+_key+" : "+Thread.currentThread().getName());
+				} else {	
+					//_log.info("dec: "+_key+" ->"+_count+" : "+Thread.currentThread().getName());
 				}
-			} else {
-				//_log.info("dec: "+_key+" ->"+_count+" : "+Thread.currentThread().getName());
-			}
+			}		
 		}
-		
 	}
 	
 	protected final String _name;
@@ -91,9 +92,9 @@ public class SmartLockManager implements LockManager {
 				_syncs.put(key, (sync=new ManagedSync(key)));
 				//_log.info("created: "+key+" : "+Thread.currentThread().getName());
 			}
+			Utils.safeAcquire(sync);
 		}
 		
-		Utils.safeAcquire(sync);
 		return sync;
 	}
 	
