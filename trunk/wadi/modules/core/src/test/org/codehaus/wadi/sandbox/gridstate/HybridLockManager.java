@@ -17,10 +17,16 @@ public class HybridLockManager extends SmartLockManager {
 
 	interface Adaptor {
 		Sync adapt(Object value);
+		boolean isValid(Object value);
 	}
 	
 	protected final Adaptor _adaptor;
 	protected final boolean _always; 
+	
+	// There are two ways we can lock :
+	// 1. keep locks outside objects locked - even if we have not yet got the object in our hand we can lock it
+	// 2. keep lock in object - retrieve object, lock it and then check it is still valid (may have been removed between finding object and acquiring lock)
+	// This class allows us to use (2) in the case where the object sometimes does not exist at lock time...
 	
 	public HybridLockManager(String name, Adaptor adaptor, boolean always) { // TODO - NEEDS TESTING !!
 		super(name);
@@ -42,8 +48,17 @@ public class HybridLockManager extends SmartLockManager {
 			}
 		} else {
 			sync=_adaptor.adapt(value);
-			Utils.safeAcquire(sync);
-			return sync;
+			if (sync==null) {
+				return null;
+			} else {
+				Utils.safeAcquire(sync);
+				if (_adaptor.isValid(value)) {
+					return sync;
+				} else {
+					sync.release();
+					return null;
+				}
+			}
 		}
 	}
 
