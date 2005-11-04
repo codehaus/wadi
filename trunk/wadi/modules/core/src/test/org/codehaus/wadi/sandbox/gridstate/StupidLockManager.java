@@ -11,21 +11,18 @@ import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * This should actually be a LockManager giving out SyncWrappers which contain a Sync and a counter, hooked into a backing Map.
- * Syncs that do not exist in the Map are created on demand.
- * When the counter hits '0', the Sync is removed from the Map.
- * Also needs to be integrated with the rest of WADI's locking policies...
+ * Creates and reuses, on-the-fly, a lock for a given Key, but will never destroy the lock - temporary solution...
  * 
  * @author jules
  *
  */
-public class BadLockManager implements LockManager {
+public class StupidLockManager implements LockManager {
 
-	protected static final Log _log=LogFactory.getLog(BadLockManager.class);
+	protected static final Log _log=LogFactory.getLog(StupidLockManager.class);
 	
 	protected String _prefix;
 	
-	public BadLockManager(String prefix) {
+	public StupidLockManager(String prefix) {
 		_prefix=prefix;
 	}
 	
@@ -35,6 +32,11 @@ public class BadLockManager implements LockManager {
 	 * @see org.codehaus.wadi.sandbox.gridstate.LockManagerAPI#acquire(java.lang.Object)
 	 */
 	public Sync acquire(Object key) {
+		return acquire(key, null);
+	}
+
+	public Sync acquire(Object key, Object value) {
+		// value not used - locks are always held externally...
 		Sync sync=null;
 		synchronized (_map) {
 			sync=(Sync)_map.get(key);

@@ -14,9 +14,6 @@ import javax.cache.CacheStatistics;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
-
 /**
  * Geronimo is going to need a standard API for lookup of sessions across the Cluster.
  * JCache is the obvious choice.
@@ -40,8 +37,8 @@ public class GCache implements Cache, ProtocolConfig {
 	protected final Protocol _protocol;
 	protected final PartitionMapper _mapper;
 	protected final Map _map=new HashMap();
-	protected final LockManager _pmSyncs=new BadLockManager("PM");
-	protected final LockManager _smSyncs=new BadLockManager("IM/SM");
+	protected final LockManager _pmSyncs=new SmartLockManager("PM");
+	protected final LockManager _smSyncs=new SmartLockManager("IM/SM");
 
 
 	public GCache(Protocol protocol, PartitionMapper mapper) {
@@ -50,19 +47,15 @@ public class GCache implements Cache, ProtocolConfig {
 	}
 
 	/*
-	 * Does the local cache contain the given key ?
+	 * Does the local cache contain the given key ? Does no locking, so if it replies true
+	 *  and you go back to the cache for the value, it may have evaporated...Is this correct ?
 	 */
 	public boolean containsKey(Object key) {
-		Sync sync=null;
-		try {
-			sync=_smSyncs.acquire(key);
-			synchronized (_map) {
-				return _map.containsKey(key);
-			}
-		} finally {
-			sync.release();
+		// TODO - correct ?
+		synchronized (_map) {
+			return _map.containsKey(key);
 		}
-	}
+	}	
 
 	/*
 	 * third pass
