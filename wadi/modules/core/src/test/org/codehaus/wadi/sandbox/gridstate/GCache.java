@@ -37,8 +37,8 @@ public class GCache implements Cache, ProtocolConfig {
 	protected final Protocol _protocol;
 	protected final PartitionMapper _mapper;
 	protected final Map _map=new HashMap();
-	protected final LockManager _pmSyncs=new SmartLockManager("PM");
-	protected final LockManager _smSyncs=new SmartLockManager("IM/SM");
+	protected final LockManager _pmSyncs=new StupidLockManager("PM");
+	protected final LockManager _smSyncs=new StupidLockManager("IM/SM");
 
 
 	public GCache(Protocol protocol, PartitionMapper mapper) {

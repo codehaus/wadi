@@ -26,7 +26,7 @@ public class StupidLockManager implements LockManager {
 		_prefix=prefix;
 	}
 	
-	protected Map _map=new HashMap(); // was a WeakHashMap, assocs removed as keys fall out of use... - good idea ?
+	protected Map _syncs=new HashMap(); // was a WeakHashMap, assocs removed as keys fall out of use... - good idea ?
 	
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.gridstate.LockManagerAPI#acquire(java.lang.Object)
@@ -38,10 +38,9 @@ public class StupidLockManager implements LockManager {
 	public Sync acquire(Object key, Object value) {
 		// value not used - locks are always held externally...
 		Sync sync=null;
-		synchronized (_map) {
-			sync=(Sync)_map.get(key);
-			if (sync==null) {
-					_map.put(key, sync=new Mutex());
+		synchronized (_syncs) {
+			if ((sync=(Sync)_syncs.get(key))==null) {
+					_syncs.put(key, (sync=new Mutex()));
 					_log.trace("["+_prefix+"] created sync: "+key+" - "+this+" - "+sync);
 			}
 		}
