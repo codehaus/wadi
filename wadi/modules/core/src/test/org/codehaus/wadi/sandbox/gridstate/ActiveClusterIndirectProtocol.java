@@ -44,7 +44,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 	protected final Dispatcher _dispatcher;
 	protected final Cluster _cluster;
 	protected final long _timeout;
-	protected final Partition[] _partitions;
+	protected final PartitionManager _partitionManager;
 	protected final String _nodeName;
 
     class MyDispatcherConfig implements DispatcherConfig {
@@ -60,7 +60,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
     	}
     }
 
-    public ActiveClusterIndirectProtocol(String nodeName, int numPartitions, PartitionMapper mapper, long timeout) throws Exception {
+    public ActiveClusterIndirectProtocol(String nodeName, int numPartitions, PartitionManager manager, PartitionMapper mapper, long timeout) throws Exception {
     	_nodeName=nodeName;
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
     	//_clusterFactory.setInactiveTime(100000L); // ???
@@ -85,14 +85,6 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
     	});
     	_dispatcher=new Dispatcher(nodeName);
     	_dispatcher.init(new MyDispatcherConfig(_cluster));
-		_partitions=new Partition[numPartitions];
-
-		for (int i=0; i<numPartitions; i++) {
-			Partition partition=new Partition(new LocalPartition());
-			partition.init(this);
-			_partitions[i]=partition;
-		}
-
 		_timeout=timeout;
 
 		// Get - 5 messages - IM->PM->SM->IM->SM->PM
@@ -109,6 +101,9 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 		// Put - 2 messages - IM->PM->IM
 		_dispatcher.register(this, "onMessage", WriteIMToPM.class);
 		_dispatcher.register(WritePMToIM.class, _timeout);
+		
+		_partitionManager=manager;
+		_partitionManager.init(this);
 
 	}
 
@@ -130,7 +125,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 
 
 	public Partition[] getPartitions() {
-		return _partitions;
+		return _partitionManager.getPartitions();
 	}
 
 	// PartitionConfig
@@ -172,7 +167,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			else {
 				// exchangeSendLoop GetIMToPM to PM
 				Destination im=_cluster.getLocalNode().getDestination();
-				Destination pm=_partitions[_config.getPartitionMapper().map(key)].getDestination();
+				Destination pm=_partitionManager.getPartitions()[_config.getPartitionMapper().map(key)].getDestination();
 				ReadIMToPM request=new ReadIMToPM(key, im);
 				ObjectMessage message=_dispatcher.exchangeSendLoop(im, pm, request, _timeout, 10);
 				Object response=null;
@@ -229,7 +224,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
 			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
-			Partition partition=_partitions[_config.getPartitionMapper().map(key)];
+			Partition partition=_partitionManager.getPartitions()[_config.getPartitionMapper().map(key)];
 			ActiveClusterLocation location=(ActiveClusterLocation)partition.getLocation(key);
 			if (location==null) {
 				_dispatcher.reply(message1,new ReadPMToIM());
@@ -355,7 +350,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			// absent or remote
 			// exchangeSendLoop PutIMToPM to PM
 			Destination im=_cluster.getLocalNode().getDestination();
-			Destination pm=_partitions[_config.getPartitionMapper().map(key)].getDestination();
+			Destination pm=_partitionManager.getPartitions()[_config.getPartitionMapper().map(key)].getDestination();
 			WriteIMToPM request=new WriteIMToPM(key, value==null, overwrite, returnOldValue, im);
 			ObjectMessage message=_dispatcher.exchangeSendLoop(im, pm, request, _timeout, 10);
 			Object response=null;
@@ -410,7 +405,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 	public void onMessage(ObjectMessage message1, WriteIMToPM write) {
 		// what if we are NOT the PM anymore ?
 		Object key=write.getKey();
-		Partition partition=_partitions[_config.getPartitionMapper().map(key)];
+		Partition partition=_partitionManager.getPartitions()[_config.getPartitionMapper().map(key)];
 		Map partitionMap=partition.getMap();
 		Sync sync=null;
 		String agent=getNodeName((Destination)write.getIM());
