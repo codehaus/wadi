@@ -74,6 +74,11 @@
         </dependency>
 
         <dependency>
+            <groupId>backport-util-concurrent</groupId>
+            <artifactId>backport-util-concurrent</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>activecluster</groupId>
             <artifactId>activecluster</artifactId>
         </dependency>
