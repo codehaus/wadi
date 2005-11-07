@@ -39,11 +39,10 @@ public class TestGCache extends TestCase {
     protected final PartitionMapper _mapper=new PartitionMapper() { public int map(Object key) { return _factory.getPartition((String)key);} };
     
     protected GCache[] _nodes=new GCache[_numNodes];
+    protected PartitionManager[] _partitionManagers=new PartitionManager[_numNodes];
 
     protected void setUp() throws Exception {
         super.setUp();
-
-
     }
 
     protected void tearDown() throws Exception {
@@ -51,28 +50,13 @@ public class TestGCache extends TestCase {
     }
     
     protected void setUp(ProtocolFactory factory) throws Exception {
-        for (int i=0; i<_numNodes; i++)
-    		_nodes[i]=new GCache(factory.createProtocol("node-"+i), _mapper);
+        for (int i=0; i<_numNodes; i++) {
+        	PartitionManager manager=new StaticPartitionManager(_numPartitions);
+        	_partitionManagers[i]=manager;
+    		_nodes[i]=new GCache(factory.createProtocol("node-"+i, manager), _mapper);
+        }
 
-    	// initialise the partitions...
-    	int partitionsPerNode=_numPartitions/_numNodes;
-    	for (int i=0; i<_numPartitions; i++) {
-    		// figure out which node is Partition Master...
-    		int index=i/partitionsPerNode;
-    		GCache local=_nodes[index];
-    		_log.info("partition-"+i+" -> node-"+index);
-    		// go through all the nodes...
-    		for (int j=0; j<_numNodes; j++) {
-    			GCache node=_nodes[j];
-    			if (node!=local) {
-    				// if node is not PartitionMaster - make partition remote
-    				Partition partition=new Partition(local.getProtocol().createRemotePartition());
-    				partition.init(node.getPartitionConfig());
-    				node.getPartitions()[i]=partition;
-    			}
-    			// else, I guess default partition type is 'local'...
-    		}
-    	}
+        StaticPartitionManager.partition(_nodes, _partitionManagers, _numPartitions);
     }
     
     public class Tester implements Runnable {
@@ -103,7 +87,7 @@ public class TestGCache extends TestCase {
     }
     
     interface ProtocolFactory {
-    	Protocol createProtocol(String name) throws Exception;
+    	Protocol createProtocol(String name, PartitionManager manager) throws Exception;
     }
     
     abstract class AbstractProtocolFactory implements ProtocolFactory {
@@ -121,7 +105,7 @@ public class TestGCache extends TestCase {
     		super(timeout);
     	}
     	
-    	public Protocol createProtocol(String name) throws Exception {
+    	public Protocol createProtocol(String name, PartitionManager manager) throws Exception {
     		return new JGroupsIndirectProtocol(name, _numPartitions, _mapper, _timeout);
     	}
     }
@@ -132,8 +116,8 @@ public class TestGCache extends TestCase {
     		super(timeout);
     	}
     	
-    	public Protocol createProtocol(String name) throws Exception {
-    		return new ActiveClusterIndirectProtocol(name, _numPartitions, _mapper, _timeout);
+    	public Protocol createProtocol(String name, PartitionManager manager) throws Exception {
+    		return new ActiveClusterIndirectProtocol(name, _numPartitions, manager, _mapper, _timeout);
     	}
     }
     
@@ -311,9 +295,10 @@ public class TestGCache extends TestCase {
     				for (int k=0; k<_keys.length; k++) {
     					String key=_keys[k];
     					
-    					cache.put(key, key+"-data");
-    					cache.get(key);
-    					//cache.remove(key);
+    					cache.put(key, key+"-data"); // add a lock
+    					cache.get(key); // we already have this lock
+    					//cache.remove(key); // remove item and leave lock until release...
+    					cache.release(); // release all locks in this interaction...
     				}
     			}
     		}
