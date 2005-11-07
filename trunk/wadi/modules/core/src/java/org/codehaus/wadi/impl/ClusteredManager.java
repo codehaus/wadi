@@ -57,7 +57,7 @@ import org.codehaus.wadi.io.ServerConfig;
 public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, ServerConfig, DispatcherConfig, DIndexConfig {
 
     protected final Map _distributedState=new HashMap(); // TODO - make this a SynchronisedMap
-    protected final Dispatcher _dispatcher=new Dispatcher();
+    protected final ActiveClusterDispatcher _dispatcher=new ActiveClusterDispatcher();
 
     protected final String _clusterUri;
     protected final String _clusterName;
@@ -206,7 +206,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
         return 72; // TODO - parameterise...
     }
 
-    public Dispatcher getDispatcher() {
+    public ActiveClusterDispatcher getDispatcher() {
         return _dispatcher;
     }
 

@@ -25,12 +25,13 @@ import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.dindex.DIndexConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.impl.CustomClusterFactory;
-import org.codehaus.wadi.impl.Dispatcher;
+import org.codehaus.wadi.impl.ActiveClusterDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
@@ -45,7 +46,7 @@ public class DIndexNode implements DispatcherConfig, DIndexConfig {
     protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
     protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
     protected final CustomClusterFactory _clusterFactory=new CustomClusterFactory(_connectionFactory);
-    protected final Dispatcher _dispatcher=new Dispatcher();
+    protected final Dispatcher _dispatcher=new ActiveClusterDispatcher();
     protected final Map _distributedState=new ConcurrentHashMap();
     protected final String _nodeName;
     protected final int _numBuckets;

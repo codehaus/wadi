@@ -14,11 +14,12 @@ import org.activecluster.ClusterEvent;
 import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.dindex.Bucket;
 import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.DIndexConfig;
 import org.codehaus.wadi.dindex.PartitionManager;
-import org.codehaus.wadi.impl.Dispatcher;
+import org.codehaus.wadi.impl.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
 /**
@@ -179,7 +180,7 @@ public class SimplePartitionManager implements PartitionManager {
 	    	_distributedState.put(_bucketKeysKey, keys);
 	    	_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
 	    	_log.info("local state (after giving): "+keys);
-	    	String correlationID=Dispatcher.getOutgoingCorrelationId(om);
+	    	String correlationID=ActiveClusterDispatcher.getOutgoingCorrelationId(om);
 	    	_log.info("CORRELATIONID: "+correlationID);
 	    	Map correlationIDMap=(Map)_distributedState.get(_correlationIDMapKey);
 	    	Destination from=om.getJMSReplyTo();

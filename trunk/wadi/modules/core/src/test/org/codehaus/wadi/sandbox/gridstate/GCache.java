@@ -2,6 +2,7 @@ package org.codehaus.wadi.sandbox.gridstate;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,6 +14,8 @@ import javax.cache.CacheStatistics;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * Geronimo is going to need a standard API for lookup of sessions across the Cluster.
@@ -39,7 +42,40 @@ public class GCache implements Cache, ProtocolConfig {
 	protected final Map _map=new HashMap();
 	protected final LockManager _pmSyncs=new StupidLockManager("PM");
 	protected final LockManager _smSyncs=new StupidLockManager("IM/SM");
+	
+	// interactional state - ThreadLocal
+	
+	protected ThreadLocal _threadLocks=new ThreadLocal() {
+		public Object initialValue() {
+			return new HashMap();
+		}
+	}; 
 
+	// release the whole LockSet - the end of an 'interaction'
+	public void release() {
+		// Map is ThreadLocal - so no need to synchronise...
+		for (Iterator i=((Map)_threadLocks.get()).entrySet().iterator(); i.hasNext(); ) {
+			Entry entry=(Entry)i.next();
+			Object key=entry.getKey();
+			Sync sync=(Sync)entry.getValue();
+			sync.release();
+			i.remove();
+			_log.info("released: "+key);
+		}
+	}
+
+	// add a lock to the LockSet/interaction
+	protected void addLock(Object key, Sync newSync) {
+		Map locks=(Map)_threadLocks.get();
+		Sync oldSync=(Sync)locks.get(key);
+		
+		_log.info("adding: "+key);
+		if (oldSync==null) {
+			locks.put(key, newSync);
+		} else {
+			_log.warn("NYI...");
+		}
+	}
 
 	public GCache(Protocol protocol, PartitionMapper mapper) {
 		(_protocol=protocol).init(this);
