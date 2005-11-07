@@ -35,7 +35,7 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 
 	protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
 	protected final long _timeout;
-	protected final Partition[] _partitions;
+	protected final PartitionManager _partitionManager;
 
 	protected final Channel _channel;
 	protected RpcDispatcher _dispatcher;
@@ -76,16 +76,8 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 	};
 
 
-	public JGroupsIndirectProtocol(String nodeName, int numPartitions, PartitionMapper mapper, long timeout) throws Exception {
-
-		_partitions=new Partition[numPartitions];
-
-		for (int i=0; i<numPartitions; i++) {
-			Partition partition=new Partition(new LocalPartition());
-			partition.init(this);
-			_partitions[i]=partition;
-		}
-
+	public JGroupsIndirectProtocol(String nodeName, PartitionManager manager, PartitionMapper mapper, long timeout) throws Exception {
+	        (_partitionManager=manager).init(this);
 		_timeout=timeout;
 		_channel=new JChannel();
 		_dispatcher=new RpcDispatcher(_channel, _messageListener, _membershipListener, this, true, true);
@@ -119,7 +111,7 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 
 
 	public Partition[] getPartitions() {
-		return _partitions;
+		return _partitionManager.getPartitions();
 	}
 
 	// PartitionConfig
@@ -176,7 +168,7 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 				Object response=null;
 				try {
 					Address im=_address;
-					Address pm=_partitions[_config.getPartitionMapper().map(key)].getAddress();
+					Address pm=_partitionManager.getPartitions()[_config.getPartitionMapper().map(key)].getAddress();
 					response=syncRpc(pm, "onReadIMToPM", new ReadIMToPM(key, im));
  				} catch(Exception e) {
 					_log.error("problem publishing change in state over JavaGroups", e);
@@ -259,7 +251,7 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 				// absent or remote
 				// exchangeSendLoop PutIMToPM to PM
 				Address im=_address;
-				Address pm=_partitions[_config.getPartitionMapper().map(key)].getAddress();
+				Address pm=_partitionManager.getPartitions()[_config.getPartitionMapper().map(key)].getAddress();
 				Object response=syncRpc(pm, "onWriteIMToPM", new WriteIMToPM(key, newValue==null, overwrite, returnOldValue, im));
 
 				// 2 possibilities -
@@ -319,7 +311,7 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 		Address im=(Address)write.getIM();
 		_log.info("[PM] - onWriteIMToPM@"+_address);
 		// what if we are NOT the PM anymore ?
-		Partition partition=_partitions[_config.getPartitionMapper().map(key)];
+		Partition partition=_partitionManager.getPartitions()[_config.getPartitionMapper().map(key)];
 		Map partitionMap=partition.getMap();
 		Sync sync=null;
 		try {

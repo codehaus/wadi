@@ -106,7 +106,7 @@ public class TestGCache extends TestCase {
     	}
     	
     	public Protocol createProtocol(String name, PartitionManager manager) throws Exception {
-    		return new JGroupsIndirectProtocol(name, _numPartitions, _mapper, _timeout);
+    		return new JGroupsIndirectProtocol(name, manager, _mapper, _timeout);
     	}
     }
     
@@ -117,7 +117,7 @@ public class TestGCache extends TestCase {
     	}
     	
     	public Protocol createProtocol(String name, PartitionManager manager) throws Exception {
-    		return new ActiveClusterIndirectProtocol(name, _numPartitions, manager, _mapper, _timeout);
+    		return new ActiveClusterIndirectProtocol(name, manager, _mapper, _timeout);
     	}
     }
     
@@ -132,7 +132,7 @@ public class TestGCache extends TestCase {
 //    }
 
     public void testSoak() throws Exception {
-    	//testGCache(new JGroupsIndirectProtocolFactory(), 1);ping smilodon
+    	testSoak(new JGroupsIndirectProtocolFactory(60*1000));
     	testSoak(new ActiveClusterIndirectProtocolFactory(60*1000));
     }
 
