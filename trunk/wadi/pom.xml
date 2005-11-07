@@ -260,7 +260,7 @@
             <dependency>
                 <groupId>activemq</groupId>
                 <artifactId>activemq</artifactId>
-                <version>3.2-M1</version>
+                <version>WADI-3.2</version>
             </dependency>
 
             <dependency>
