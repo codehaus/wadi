@@ -9,7 +9,7 @@ import java.util.Map;
 
 import javax.jms.Destination;
 
-import org.codehaus.wadi.impl.Dispatcher;
+import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.sandbox.gridstate.messages.MovePMToSM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveIMToSM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveSMToPM;

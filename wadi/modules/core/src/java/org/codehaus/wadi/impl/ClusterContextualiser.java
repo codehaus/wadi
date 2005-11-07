@@ -125,7 +125,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     protected ExtendedCluster _cluster;
     protected Location _location;
     protected Destination _evacuationQueue;
-    protected Dispatcher _dispatcher;
+    protected ActiveClusterDispatcher _dispatcher;
     protected DIndex _dindex;
     protected Contextualiser _top;
     
@@ -503,7 +503,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     // RelocaterConfig
     
     public Collapser getCollapser() {return _collapser;}
-    public Dispatcher getDispatcher() {return _dispatcher;}
+    public ActiveClusterDispatcher getDispatcher() {return _dispatcher;}
     public Location getLocation() {return _location;}
     public Contextualiser getContextualiser() {return _top;}
     public Server getServer() {return ((ClusteredContextualiserConfig)_config).getServer();}

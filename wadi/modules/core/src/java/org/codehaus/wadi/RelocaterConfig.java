@@ -20,7 +20,7 @@ import java.net.InetSocketAddress;
 
 import org.activecluster.Cluster;
 import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.impl.Dispatcher;
+import org.codehaus.wadi.impl.ActiveClusterDispatcher;
 import org.codehaus.wadi.io.Server;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
@@ -28,7 +28,7 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 public interface RelocaterConfig extends Config {
 
     Collapser getCollapser();
-    Dispatcher getDispatcher();
+    ActiveClusterDispatcher getDispatcher();
     Location getLocation();
     Cluster getCluster();
     Contextualiser getContextualiser();

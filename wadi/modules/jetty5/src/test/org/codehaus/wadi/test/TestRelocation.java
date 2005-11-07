@@ -37,6 +37,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Location;
@@ -44,7 +45,6 @@ import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.impl.AbstractRelocater;
 import org.codehaus.wadi.impl.CommonsHttpProxy;
 import org.codehaus.wadi.impl.HybridRelocater;
-import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.ProxyingRelocater;
 import org.codehaus.wadi.impl.StandardHttpProxy;
 

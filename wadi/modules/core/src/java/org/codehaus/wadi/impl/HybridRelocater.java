@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Immoter;

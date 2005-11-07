@@ -32,12 +32,12 @@ import org.activecluster.ClusterListener;
 import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
 import org.codehaus.wadi.dindex.DIndexConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.PartitionManager;
-import org.codehaus.wadi.impl.Dispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;

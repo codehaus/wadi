@@ -17,10 +17,11 @@ import org.activecluster.ClusterListener;
 import org.activecluster.Node;
 import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
+import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.impl.CustomClusterFactory;
-import org.codehaus.wadi.impl.Dispatcher;
+import org.codehaus.wadi.impl.ActiveClusterDispatcher;
 import org.codehaus.wadi.sandbox.gridstate.messages.MovePMToSM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveIMToSM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveSMToPM;
@@ -83,7 +84,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			public void onCoordinatorChanged(ClusterEvent arg0) {
 			}
     	});
-    	_dispatcher=new Dispatcher(nodeName);
+    	_dispatcher=new ActiveClusterDispatcher(nodeName);
     	_dispatcher.init(new MyDispatcherConfig(_cluster));
 		_timeout=timeout;
 
@@ -236,7 +237,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 			Destination sm=(Destination)location.getValue();
 			String poCorrelationId=null;
 			try {
-				poCorrelationId=Dispatcher.getOutgoingCorrelationId(message1);
+				poCorrelationId=ActiveClusterDispatcher.getOutgoingCorrelationId(message1);
 				//_log.info("Process Owner Correlation ID: "+poCorrelationId);
 			} catch (JMSException e) {
 				_log.error("unexpected problem", e);
@@ -433,7 +434,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 
 				String poCorrelationId=null;
 				try {
-					poCorrelationId=Dispatcher.getOutgoingCorrelationId(message1);
+					poCorrelationId=ActiveClusterDispatcher.getOutgoingCorrelationId(message1);
 					//_log.info("Process Owner Correlation ID: "+poCorrelationId);
 				} catch (JMSException e) {
 					_log.error("unexpected problem", e);

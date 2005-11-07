@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpProxy;

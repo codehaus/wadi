@@ -22,10 +22,11 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.dindex.Bucket;
 import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
-import org.codehaus.wadi.impl.Dispatcher;
+import org.codehaus.wadi.impl.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
@@ -143,7 +144,7 @@ public class BucketFacade extends AbstractBucket {
         String correlationId=dispatcher.nextCorrelationId();
         Quipu rv=dispatcher.setRendezVous(correlationId, 1);
         try {
-            Dispatcher.setOutgoingCorrelationId(message, correlationId);
+            ActiveClusterDispatcher.setOutgoingCorrelationId(message, correlationId);
             dispatch(message, request);
         } catch (JMSException e) {
             _log.error("could not dispatch message", e);

@@ -33,6 +33,7 @@ import org.activecluster.Cluster;
 import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 
@@ -54,12 +55,12 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class Dispatcher implements MessageListener {
+public class ActiveClusterDispatcher implements MessageListener, Dispatcher {
 	protected Log _log=LogFactory.getLog(getClass());
 	protected final Map _map=new HashMap();
     protected final PooledExecutor _executor;
 
-    public Dispatcher() {
+    public ActiveClusterDispatcher() {
     	_executor=new PooledExecutor(); // parameterise
     	//_executor.setMinimumPoolSize(200);
     	//_executor.runWhenBlocked();
@@ -73,7 +74,7 @@ public class Dispatcher implements MessageListener {
     	});
     }
 
-	public Dispatcher(String name) {
+	public ActiveClusterDispatcher(String name) {
 		this();
 		_log=LogFactory.getLog(getClass()+"#"+name);
 	}
@@ -84,6 +85,9 @@ public class Dispatcher implements MessageListener {
     protected MessageConsumer _clusterConsumer;
     protected MessageConsumer _nodeConsumer;
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#init(org.codehaus.wadi.DispatcherConfig)
+	 */
     public void init(DispatcherConfig config) throws JMSException {
         _config=config;
         _cluster=_config.getCluster();
@@ -94,13 +98,6 @@ public class Dispatcher implements MessageListener {
         excludeSelf=false;
         _nodeConsumer=_cluster.createConsumer(_cluster.getLocalNode().getDestination(), null, excludeSelf);
         _nodeConsumer.setMessageListener(this);
-    }
-
-    interface InternalDispatcher {
-        void dispatch(ObjectMessage om, Serializable obj) throws Exception;
-        void incCount();
-        void decCount();
-        int getCount();
     }
 
     class TargetDispatcher implements InternalDispatcher {
@@ -157,6 +154,9 @@ public class Dispatcher implements MessageListener {
         public synchronized int getCount() {return _count;}
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#register(java.lang.Object, java.lang.String, java.lang.Class)
+	 */
     public InternalDispatcher register(Object target, String methodName, Class type) {
         try {
             Method method=target.getClass().getMethod(methodName, new Class[] {ObjectMessage.class, type});
@@ -176,6 +176,9 @@ public class Dispatcher implements MessageListener {
         }
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#newRegister(java.lang.Object, java.lang.String, java.lang.Class)
+	 */
     public InternalDispatcher newRegister(Object target, String methodName, Class type) {
         try {
             Method method=target.getClass().getMethod(methodName, new Class[] {type});
@@ -195,6 +198,9 @@ public class Dispatcher implements MessageListener {
         }
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#deregister(java.lang.String, java.lang.Class, int)
+	 */
     public boolean deregister(String methodName, Class type, int timeout) {
     	TargetDispatcher td=(TargetDispatcher)_map.get(type);
     	if (td==null)
@@ -214,6 +220,9 @@ public class Dispatcher implements MessageListener {
     	return td._count<=0;
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#newDeregister(java.lang.String, java.lang.Class, int)
+	 */
     public boolean newDeregister(String methodName, Class type, int timeout) {
     	NewTargetDispatcher td=(NewTargetDispatcher)_map.get(type);
     	if (td==null)
@@ -264,6 +273,9 @@ public class Dispatcher implements MessageListener {
       public synchronized int getCount() {return _count;}
 	}
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#register(java.lang.Class, long)
+	 */
     public void register(Class type, long timeout) {
         _map.put(type, new RendezVousDispatcher(_rvMap, timeout));
         if (_log.isTraceEnabled()) _log.trace("registering class: "+type.getName());
@@ -365,6 +377,9 @@ public class Dispatcher implements MessageListener {
     }
 
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#send(javax.jms.Destination, javax.jms.Destination, java.lang.String, java.io.Serializable)
+	 */
     public boolean send(Destination from, Destination to, String outgoingCorrelationId, Serializable body) {
         try {
             ObjectMessage om=_cluster.createObjectMessage();
@@ -381,10 +396,16 @@ public class Dispatcher implements MessageListener {
         }
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#exchangeSend(javax.jms.Destination, javax.jms.Destination, java.io.Serializable, long)
+	 */
     public ObjectMessage exchangeSend(Destination from, Destination to, Serializable body, long timeout) {
     	return exchangeSend(from, to, body, timeout, null);
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#exchangeSend(javax.jms.Destination, javax.jms.Destination, java.io.Serializable, long, java.lang.String)
+	 */
     public ObjectMessage exchangeSend(Destination from, Destination to, Serializable body, long timeout, String targetCorrelationId) {
     	try {
     		ObjectMessage om=_cluster.createObjectMessage();
@@ -405,6 +426,9 @@ public class Dispatcher implements MessageListener {
     	}
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#exchangeSendLoop(javax.jms.Destination, javax.jms.Destination, java.io.Serializable, long, int)
+	 */
     public ObjectMessage exchangeSendLoop(Destination from, Destination to, Serializable body, long timeout, int iterations) {
     	ObjectMessage response=null;
     	for (int i=0; response==null && i<iterations; i++) {
@@ -416,6 +440,9 @@ public class Dispatcher implements MessageListener {
     }
 
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#exchangeSend(javax.jms.Destination, javax.jms.Destination, java.lang.String, java.io.Serializable, long)
+	 */
     public ObjectMessage exchangeSend(Destination from, Destination to, String outgoingCorrelationId, Serializable body, long timeout) {
     	Quipu rv=null;
     	// set up a rendez-vous...
@@ -428,6 +455,9 @@ public class Dispatcher implements MessageListener {
     	}
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#reply(javax.jms.Destination, javax.jms.Destination, java.lang.String, java.io.Serializable)
+	 */
     public boolean reply(Destination from, Destination to, String incomingCorrelationId, Serializable body) {
         try {
             ObjectMessage om=_cluster.createObjectMessage();
@@ -444,6 +474,9 @@ public class Dispatcher implements MessageListener {
         }
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#reply(javax.jms.ObjectMessage, java.io.Serializable)
+	 */
     public boolean reply(ObjectMessage message, Serializable body) {
         try {
             ObjectMessage om=_cluster.createObjectMessage();
@@ -463,6 +496,9 @@ public class Dispatcher implements MessageListener {
         }
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#exchangeReply(javax.jms.ObjectMessage, java.io.Serializable, long)
+	 */
     public ObjectMessage exchangeReply(ObjectMessage message, Serializable body, long timeout) {
         try {
             ObjectMessage om=_cluster.createObjectMessage();
@@ -485,11 +521,17 @@ public class Dispatcher implements MessageListener {
         }
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#exchangeReplyLoop(javax.jms.ObjectMessage, java.io.Serializable, long)
+	 */
     public ObjectMessage exchangeReplyLoop(ObjectMessage message, Serializable body, long timeout) { // TODO
     	return exchangeReply(message, body, timeout);
     }
 
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#forward(javax.jms.ObjectMessage, javax.jms.Destination)
+	 */
     public boolean forward(ObjectMessage message, Destination destination) {
     	try {
     		return forward(message, destination, message.getObject());
@@ -499,6 +541,9 @@ public class Dispatcher implements MessageListener {
         }
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#forward(javax.jms.ObjectMessage, javax.jms.Destination, java.io.Serializable)
+	 */
     public boolean forward(ObjectMessage message, Destination destination, Serializable body) {
         try {
             return send(message.getJMSReplyTo(), destination, getOutgoingCorrelationId(message), body);
@@ -525,20 +570,32 @@ public class Dispatcher implements MessageListener {
     protected final SimpleCorrelationIDFactory _factory=new SimpleCorrelationIDFactory();
     protected final Map _rvMap=new ConcurrentHashMap();
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#getRendezVousMap()
+	 */
     public Map getRendezVousMap() {
         return _rvMap;
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#nextCorrelationId()
+	 */
     public String nextCorrelationId() {
         return _factory.create();
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#setRendezVous(java.lang.String, int)
+	 */
     public Quipu setRendezVous(String correlationId, int numLlamas) {
         Quipu rv=new Quipu(numLlamas);
         _rvMap.put(correlationId, rv);
         return rv;
     }
 
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#attemptRendezVous(java.lang.String, org.codehaus.wadi.impl.Quipu, long)
+	 */
     public ObjectMessage attemptRendezVous(String correlationId, Quipu rv, long timeout) {
         // rendez-vous with response/timeout...
         ObjectMessage response=null;
@@ -568,8 +625,13 @@ public class Dispatcher implements MessageListener {
         return response;
     }
 
-    public Cluster getCluster(){return _cluster;}
+    public Cluster getCluster() {
+    	return _cluster;
+    }
 
+	/* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#addDestination(javax.jms.Destination)
+	 */
 	public MessageConsumer addDestination(Destination destination) throws JMSException {
 	    boolean excludeSelf=true;
 	    MessageConsumer consumer=_cluster.createConsumer(destination, null, excludeSelf);
@@ -577,12 +639,18 @@ public class Dispatcher implements MessageListener {
 	    return consumer;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#removeDestination(javax.jms.MessageConsumer)
+	 */
 	public void removeDestination(MessageConsumer consumer) throws JMSException {
 	  consumer.close();
 	}
 
     // TODO - rather than owning this, we should be given a pointer to it at init()
     // time, and this accessor should be removed...
+    /* (non-Javadoc)
+	 * @see org.codehaus.wadi.impl.Dispatcher#getExecutor()
+	 */
     public PooledExecutor getExecutor() {
         return _executor;
     }

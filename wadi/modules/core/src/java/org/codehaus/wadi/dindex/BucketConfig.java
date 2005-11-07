@@ -19,7 +19,7 @@ package org.codehaus.wadi.dindex;
 import javax.jms.Destination;
 
 import org.activecluster.Cluster;
-import org.codehaus.wadi.impl.Dispatcher;
+import org.codehaus.wadi.Dispatcher;
 
 public interface BucketConfig {
 
