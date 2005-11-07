@@ -109,11 +109,6 @@
         </dependency>
 
         <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xerces</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>jgroups</groupId>
             <artifactId>jgroups-all</artifactId>
         </dependency>

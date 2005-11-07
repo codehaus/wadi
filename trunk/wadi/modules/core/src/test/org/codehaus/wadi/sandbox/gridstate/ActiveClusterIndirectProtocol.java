@@ -61,7 +61,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
     	}
     }
 
-    public ActiveClusterIndirectProtocol(String nodeName, int numPartitions, PartitionManager manager, PartitionMapper mapper, long timeout) throws Exception {
+    public ActiveClusterIndirectProtocol(String nodeName, PartitionManager manager, PartitionMapper mapper, long timeout) throws Exception {
     	_nodeName=nodeName;
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
     	//_clusterFactory.setInactiveTime(100000L); // ???
@@ -102,7 +102,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 		// Put - 2 messages - IM->PM->IM
 		_dispatcher.register(this, "onMessage", WriteIMToPM.class);
 		_dispatcher.register(WritePMToIM.class, _timeout);
-		
+
 		_partitionManager=manager;
 		_partitionManager.init(this);
 
