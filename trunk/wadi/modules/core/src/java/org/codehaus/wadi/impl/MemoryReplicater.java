@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.impl;
 
 import java.util.Map;
@@ -12,14 +28,14 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 public class MemoryReplicater implements Replicater {
 
 	protected final Log _log = LogFactory.getLog(getClass());
-	
+
 	protected int numReplicants;
-	
+
 	public MemoryReplicater(int numReplicants) {
 	}
-	
+
 	// client part
-	
+
 	public void create(Object tmp) {
 		_log.info("create: "+tmp);
 		// decide on replication partners (not ourselves)
@@ -42,26 +58,26 @@ public class MemoryReplicater implements Replicater {
 
 	// server part
 	protected Map _replicants=new ConcurrentHashMap();
-	
+
 	public void insert(String key, Object tmp) {
 		_log.info("insert: "+key);
 		_replicants.put(key, tmp);
 	}
-	
+
 	public void replicate(String key, Object value) {
 		_log.info("replicate: "+key);
 	}
-	
+
 	public void remove(String key) {
 		_log.info("remove: "+key);
 	}
-	
+
 	// restore
-	
+
 	public void nodeDied(Node node) {
 		// the partitions owned by this node will be reconstructed and repopulated with session-key:location pairs
 		// we need to know which sessions this node was owner of when it died - partition owners will know
 		// these sessions may then be promoted to memory in our node and the partition owners will need to be updated as to their new location.
 	}
-	
+
 }

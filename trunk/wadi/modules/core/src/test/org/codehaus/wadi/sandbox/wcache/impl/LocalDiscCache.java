@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 /*
  * Created on Feb 14, 2005
  *
@@ -24,16 +40,16 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
  * Demotion to this cache will result in the storing of content onto local disc.
  * Assumptions are made about the exclusive ownership of the directory and files used.
  * Content keys will be cached in memory, values on disc.
- * 
+ *
  * This tier is intended as a disc spool for large amounts of frequently used content.
- * 
+ *
  * This could return lazy references to on disc objects... consider...
  */
 public class LocalDiscCache extends AbstractMappedCache {
 
 	protected File _dir;
 	protected Streamer _streamingStrategy;
-	
+
 	public LocalDiscCache(File dir, Streamer streamingStrategy, Evicter evicter, Cache subcache) {
 		super(new ConcurrentHashMap(), evicter, subcache);
 	    assert dir.exists();
@@ -43,7 +59,7 @@ public class LocalDiscCache extends AbstractMappedCache {
 	    _dir=dir;
 	    _streamingStrategy=streamingStrategy;
 	}
-	
+
 	public RequestProcessor put(String key, RequestProcessor val) {
 		try
 		{
@@ -53,21 +69,21 @@ public class LocalDiscCache extends AbstractMappedCache {
 			sc.writeContent(oos);
 			oos.flush();
 			oos.close();
-			
+
 			// do we need to worry about ttl ?
 			//	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
 			//	file.setLastModified(willTimeOutAt);
-			
+
 			_log.info("stored (local disc): "+key+" : "+val);
 		}
 		catch (Exception e)
 		{
 			_log.error("store (local disc) failed: "+key, e);
 		}
-		
+
 		return (RequestProcessor)_map.put(key, val);
 	}
-	
+
 	public RequestProcessor peek(String key) {
 //	    Object value=null;
 //
@@ -94,7 +110,7 @@ public class LocalDiscCache extends AbstractMappedCache {
 //	    //return value;
 		return (RequestProcessor)_map.get(key);
 		}
-	
+
 	public RequestProcessor remove(String key) { // Aaargh - we don't want to return a value here - too costly... or can we get away with just two methods in a store ?
 //		   boolean success=false;
 //

@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 /*
  * Created on Feb 14, 2005
  *
@@ -37,7 +53,7 @@ import junit.framework.TestCase;
  */
 public class TestCache extends TestCase {
 	protected static Log _log = LogFactory.getLog(TestCache.class);
-	
+
 	/*
 	 * @see TestCase#setUp()
 	 */
@@ -62,11 +78,11 @@ public class TestCache extends TestCase {
 
 	class MyRequestProcessor implements RequestProcessor {
 		String _content;
-		
+
 		public MyRequestProcessor(String content) {
 			_content=content;
 		}
-		
+
 		public boolean equals(Object o) {
 			if (o instanceof MyRequestProcessor) {
 				MyRequestProcessor that=(MyRequestProcessor)o;
@@ -75,11 +91,11 @@ public class TestCache extends TestCase {
 			else
 				return false;
 		}
-		
+
 		public void process(ServletRequest req, ServletResponse res, FilterChain chain) {
 			_log.info("processing MyRequest: "+_content);
 		}
-		
+
 		protected long _ttl;
 		public long getTimeToLive() {return _ttl;}
 		public void setTimeToLive(long ttl) {_ttl=ttl;}
@@ -87,8 +103,8 @@ public class TestCache extends TestCase {
 		protected int _mii;
 		public int getMaxInactiveInterval() {return _mii;}
 		public void setMaxInactiveInterval(int mii) {_mii=mii;}
-		
-		
+
+
 		public void readContent(ObjectInput is)
 		    throws IOException, ClassNotFoundException {
 			_content=(String)is.readObject();
@@ -99,8 +115,8 @@ public class TestCache extends TestCase {
 			os.writeObject(_content);
 		  }
 		}
-	
-	
+
+
 	public void testCacheStack()
 	throws Exception
 	{
@@ -111,30 +127,30 @@ public class TestCache extends TestCase {
 	    File dir=new File(name);
 	    _log.info("dir="+dir);
 	    assertTrue(dir.mkdirs());
-	    
+
 	    // TODO - insert Replicated and DB cache tiers here...
 		Cache database=new JDBCCache(new NeverEvicter(), null);
 		Cache cluster=new ClusterCache(new InvalidEvicter(), database);
 		Cache disc=new LocalDiscCache(dir, new SimpleStreamer(), new MaxInactiveIntervalEvicter(), cluster);
 		Cache cache=new MemoryCache(new InactiveEvicter(), disc);
-		
+
 		String key="xxx";
 		RequestProcessor val=new MyRequestProcessor("test");
 		val.setTimeToLive(0);
 		cache.put(key, val);
 		cache.evict();
 		disc.evict();
-		
+
 //		RequestProcessor tmp=cache.get(key);
-//		
+//
 //		assertTrue(val.equals(tmp));
-//		
+//
 //		tmp.process(null, null, null);
-//		
+//
 //		String k="foo";
 //		RequestProcessor foo=new MyRequestProcessor(k);
 //		cluster.put(k, foo);
-//		
+//
 //		cache.get(k).process(null, null, null);
 	}
 }

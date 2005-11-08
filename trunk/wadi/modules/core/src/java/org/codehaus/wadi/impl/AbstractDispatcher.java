@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.impl;
 
 import java.io.Serializable;
@@ -21,10 +37,10 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 public abstract class AbstractDispatcher implements Dispatcher {
 
-	
+
 	protected final Map _map = new HashMap();
 	protected final PooledExecutor _executor;
-	
+
 	public AbstractDispatcher() {
     	_executor=new PooledExecutor(); // parameterise
     	//_executor.setMinimumPoolSize(200);
@@ -36,7 +52,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
     			//_log.info("CREATING THREAD: "+_count);
     			return new Thread(runnable, "WADI Dispatcher ("+(_count++)+")");
     		}
-    	});		
+    	});
 	}
 
 	protected Log _log = LogFactory.getLog(getClass());
@@ -46,7 +62,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
     public void init(DispatcherConfig config) throws Exception {
         _config=config;
     }
-    
+
     class TargetDispatcher implements InternalDispatcher {
         protected final Object _target;
         protected final Method _method;
@@ -188,7 +204,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
     	_map.remove(type);
     	return td._count<=0;
     }
-    
+
 	class RendezVousDispatcher implements InternalDispatcher {
 	  protected final Map _rvMap2;
 	  protected final long _timeout;
@@ -328,8 +344,8 @@ public abstract class AbstractDispatcher implements Dispatcher {
     public PooledExecutor getExecutor() {
         return _executor;
     }
-    
-    
+
+
     public abstract String getIncomingCorrelationId(ObjectMessage message) throws Exception;
 
 }

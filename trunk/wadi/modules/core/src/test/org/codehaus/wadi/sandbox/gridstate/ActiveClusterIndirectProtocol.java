@@ -1,5 +1,18 @@
 /**
  *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package org.codehaus.wadi.sandbox.gridstate;
 
@@ -12,8 +25,6 @@ import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.activecluster.Cluster;
-import org.activecluster.ClusterEvent;
-import org.activecluster.ClusterListener;
 import org.activecluster.Node;
 import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
@@ -35,27 +46,27 @@ import org.jgroups.Address;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
-	
+
 	//protected final String _clusterUri="peer://org.codehaus.wadi";
 	//protected final String _clusterUri="tcp://smilodon:61616";
 	protected final String _clusterUri="vm://localhost";
 	protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
 	protected final CustomClusterFactory _clusterFactory=new CustomClusterFactory(_connectionFactory);
 	protected final Cluster _cluster;
-	
+
 	class MyDispatcherConfig implements ActiveClusterDispatcherConfig {
-		
+
 		protected final Cluster _cluster;
-		
+
 		MyDispatcherConfig(Cluster cluster) {
 			_cluster=cluster;
 		}
-		
+
 		public ExtendedCluster getCluster() {
 			return (ExtendedCluster)_cluster;
 		}
 	}
-	
+
 	public ActiveClusterIndirectProtocol(String nodeName, PartitionManager manager, PartitionMapper mapper, long timeout) throws Exception {
 		super(nodeName, manager, mapper, timeout, null);
 		System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
@@ -63,8 +74,8 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 		_cluster=_clusterFactory.createCluster(_clusterName);
 		_dispatcher=new ActiveClusterDispatcher(nodeName);
 		_dispatcher.init(new MyDispatcherConfig(_cluster));
-		
-    	
+
+
 		// Get - 5 messages - IM->PM->SM->IM->SM->PM
 		_dispatcher.register(this, "onMessage", ReadIMToPM.class);
 //		_dispatcher.newRegister(this, "onReadIMToPM", ReadIMToPM.class);
@@ -80,40 +91,40 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 		_dispatcher.register(this, "onMessage", WriteIMToPM.class);
 		_dispatcher.register(WritePMToIM.class, _timeout);
 	}
-	
+
 	public PartitionInterface createRemotePartition() {
 		return new ActiveClusterRemotePartition(_cluster.getLocalNode().getDestination());
 	}
-	
-	
+
+
 	public void start() throws Exception {
 		Map state=new HashMap();
 		state.put("nodeName", _nodeName);
 		_cluster.getLocalNode().setState(state);
 		_cluster.start();
 	}
-	
+
 	public void stop() throws Exception {
 		_cluster.stop();
 	}
-	
-	
+
+
 	public Destination getLocalDestination() {
 		return _cluster.getLocalNode().getDestination();
 	}
-	
+
 	public Address getLocalAddress() {
 		throw new UnsupportedOperationException("impossible");
 	}
-	
+
 	public Dispatcher getDispatcher() {
 		return _dispatcher;
 	}
-	
+
 	//--------------------------------------------------------------------------------
 	// Get
 	//--------------------------------------------------------------------------------
-	
+
 	// called on IM...
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#get(java.io.Object)
@@ -144,7 +155,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 				} catch (JMSException e) {
 					_log.error("unexpected problem", e); // should be in loop - TODO
 				}
-				
+
 				if (response instanceof ReadPMToIM) {
 					// association not present
 					value=null;
@@ -159,7 +170,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 					// reply GetIMToSM to SM
 					_dispatcher.reply(message, new MoveIMToSM());
 				}
-				
+
 				return value;
 			}
 		} finally {
@@ -168,7 +179,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 			_log.trace("["+agent+"@"+_nodeName+"(IM)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
 		}
 	}
-	
+
 	// called on PM...
 	public void onMessage(ObjectMessage message1, ReadIMToPM get) {
 		// what if we are NOT the PM anymore ?
@@ -201,7 +212,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 			ObjectMessage message2=_dispatcher.exchangeSendLoop(pm, sm, request, _timeout, 10);
 			if (message2==null)
 				_log.error("NO RESPONSE WITHIN TIMEFRAME - PANIC!");
-			
+
 			MoveSMToPM response=null;
 			try {
 				response=(MoveSMToPM)message2.getObject();
@@ -210,14 +221,14 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 			}
 			// alter location
 			location.setValue((Destination)get.getIM());
-			
+
 		} finally {
 			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync.release();
 			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
 		}
 	}
-	
+
 	// called on SM...
 	public void onMessage(ObjectMessage message1, MovePMToSM get) {
 		Object key=get.getKey();
@@ -240,7 +251,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 			ObjectMessage message2=(ObjectMessage)_dispatcher.exchangeSend(sm, im, request, _timeout, get.getIMCorrelationId());
 			// wait
 			// receive GetIMToSM
-			
+
 			if (message2==null) {
 				_log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
 			} else {
@@ -264,12 +275,12 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 			_log.trace("["+agent+"@"+_nodeName+"(SM)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
 		}
 	}
-	
-	
+
+
 	//--------------------------------------------------------------------------------
 	// Put
 	//--------------------------------------------------------------------------------
-	
+
 	// called on IM...
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#put(java.io.Object, java.io.Object, boolean, boolean)
@@ -283,13 +294,13 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 			_log.trace("["+agent+"@"+_nodeName+"(IM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync=_config.getSMSyncs().acquire(key);
 			_log.trace("["+agent+"@"+_nodeName+"(IM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
-			
+
 			if (!removal) { // removals must do the round trip to PM
 				boolean local;
 				synchronized (map) {
 					local=map.containsKey(key);
 				}
-				
+
 				if (local) {
 					// local
 					if (overwrite) {
@@ -302,7 +313,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 					}
 				}
 			}
-			
+
 			// absent or remote
 			// exchangeSendLoop PutIMToPM to PM
 			Destination im=_cluster.getLocalNode().getDestination();
@@ -315,7 +326,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 			} catch (JMSException e) {
 				_log.error("unexpected problem", e); // should be in loop - TODO
 			}
-			
+
 			// 2 possibilities -
 			// PutPM2IM - Absent
 			if (response instanceof WritePMToIM) {
@@ -349,14 +360,14 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 				_log.error("unexpected response: "+response.getClass().getName());
 				return null;
 			}
-			
+
 		} finally {
 			_log.trace("["+agent+"@"+_nodeName+"(IM)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync.release();
 			_log.trace("["+agent+"@"+_nodeName+"(IM)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
 		}
 	}
-	
+
 	// called on PM...
 	public void onMessage(ObjectMessage message1, WriteIMToPM write) {
 		// what if we are NOT the PM anymore ?
@@ -386,7 +397,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 			} else {
 				// previous value needs removing and possibly returning...
 				// send PMToSM...
-				
+
 				String poCorrelationId=null;
 				try {
 					poCorrelationId=ActiveClusterDispatcher.getOutgoingCorrelationId(message1);
@@ -406,27 +417,27 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 //				_log.error("unexpected problem", e); // should be sorted in loop
 //				}
 			}
-			
+
 		} finally {
 			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync.release();
 			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
 		}
 	}
-	
+
 	//--------------------------------------------------------------------------------
 	// Remove
 	//--------------------------------------------------------------------------------
-	
+
 	// called on IM...
 	public Object remove(Object key, boolean returnOldValue) {
 		return put(key, null, true, returnOldValue); // a remove is a put(key, null)...
 	}
-	
+
 	//--------------------------------------------------------------------------------
 	// Protocol
 	//--------------------------------------------------------------------------------
-	
+
 	public Object syncRpc(Object destination, String methodName, Object message) throws Exception {
 		ObjectMessage tmp=_dispatcher.exchangeSendLoop(_cluster.getLocalNode().getDestination(), (Destination)destination, (Serializable)message, _timeout, 10);
 		Object response=null;
@@ -437,22 +448,22 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 		}
 		return response;
 	}
-	
+
 	public Object getLocalLocation() {
 		return _cluster.getLocalNode().getDestination();
 	}
-	
-	
+
+
 	protected String getNodeName(Destination destination) {
 		Node node;
 		if (destination.equals(_cluster.getLocalNode().getDestination()))
 			node=_cluster.getLocalNode();
 		else
 			node=(Node)_cluster.getNodes().get(destination);
-		
+
 		Map state=node.getState();
 		String name=(String)state.get("nodeName");
 		return name;
 	}
-	
+
 }

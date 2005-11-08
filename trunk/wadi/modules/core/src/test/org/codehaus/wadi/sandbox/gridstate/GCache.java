@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.sandbox.gridstate;
 
 import java.util.Collection;
@@ -29,10 +45,6 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author jules
  *
  */
-/**
- * @author jules
- *
- */
 public class GCache implements Cache, ProtocolConfig {
 
 	protected final Log _log=LogFactory.getLog(getClass().getName());
@@ -42,14 +54,14 @@ public class GCache implements Cache, ProtocolConfig {
 	protected final Map _map=new HashMap();
 	protected final LockManager _pmSyncs=new StupidLockManager("PM");
 	protected final LockManager _smSyncs=new StupidLockManager("IM/SM");
-	
+
 	// interactional state - ThreadLocal
-	
+
 	protected ThreadLocal _threadLocks=new ThreadLocal() {
 		public Object initialValue() {
 			return new HashMap();
 		}
-	}; 
+	};
 
 	// release the whole LockSet - the end of an 'interaction'
 	public void release() {
@@ -68,7 +80,7 @@ public class GCache implements Cache, ProtocolConfig {
 	protected void addLock(Object key, Sync newSync) {
 		Map locks=(Map)_threadLocks.get();
 		Sync oldSync=(Sync)locks.get(key);
-		
+
 		_log.info("adding: "+key);
 		if (oldSync==null) {
 			locks.put(key, newSync);
@@ -91,7 +103,7 @@ public class GCache implements Cache, ProtocolConfig {
 		synchronized (_map) {
 			return _map.containsKey(key);
 		}
-	}	
+	}
 
 	/*
 	 * third pass
