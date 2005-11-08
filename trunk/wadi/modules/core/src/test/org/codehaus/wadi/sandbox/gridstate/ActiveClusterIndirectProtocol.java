@@ -17,8 +17,8 @@ import org.activecluster.ClusterListener;
 import org.activecluster.Node;
 import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
+import org.codehaus.wadi.ActiveClusterDispatcherConfig;
 import org.codehaus.wadi.Dispatcher;
-import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.ActiveClusterDispatcher;
@@ -48,7 +48,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol impl
 	protected final PartitionManager _partitionManager;
 	protected final String _nodeName;
 
-    class MyDispatcherConfig implements DispatcherConfig {
+    class MyDispatcherConfig implements ActiveClusterDispatcherConfig {
 
     	protected final Cluster _cluster;
 

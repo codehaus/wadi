@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
 import javax.jms.ObjectMessage;
 
 import org.codehaus.wadi.impl.Quipu;
@@ -22,7 +20,7 @@ public interface Dispatcher {
     }
 
 
-    void init(DispatcherConfig config) throws JMSException;
+    void init(DispatcherConfig config) throws Exception;
 
 	InternalDispatcher register(Object target, String methodName, Class type);
 
@@ -63,10 +61,6 @@ public interface Dispatcher {
 	Quipu setRendezVous(String correlationId, int numLlamas);
 
 	ObjectMessage attemptRendezVous(String correlationId, Quipu rv, long timeout);
-
-	MessageConsumer addDestination(Destination destination) throws JMSException;
-
-	void removeDestination(MessageConsumer consumer) throws JMSException;
 
 	// TODO - rather than owning this, we should be given a pointer to it at init()
 	// time, and this accessor should be removed...

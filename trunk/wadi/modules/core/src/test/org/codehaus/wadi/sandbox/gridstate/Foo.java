@@ -14,10 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox.gridstate;
 
-public interface DispatcherConfig {
+public class Foo {
 
-// empty
-	
+	public Foo() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 }
