@@ -32,12 +32,12 @@ import org.activemq.broker.BrokerConnector;
 import org.activemq.broker.BrokerContainer;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.activemq.transport.TransportChannel;
+import org.codehaus.wadi.ActiveClusterDispatcherConfig;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpProxy;
-import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Router;
@@ -54,7 +54,7 @@ import org.codehaus.wadi.io.Server;
 import org.codehaus.wadi.io.ServerConfig;
 
 
-public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, ServerConfig, DispatcherConfig, DIndexConfig {
+public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, ServerConfig, ActiveClusterDispatcherConfig, DIndexConfig {
 
     protected final Map _distributedState=new HashMap(); // TODO - make this a SynchronisedMap
     protected final ActiveClusterDispatcher _dispatcher=new ActiveClusterDispatcher();

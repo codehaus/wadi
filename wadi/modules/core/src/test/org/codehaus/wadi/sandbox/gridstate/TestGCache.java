@@ -30,11 +30,11 @@ public class TestGCache extends TestCase {
         super(name);
     }
 
-    protected final int _numNodes=4;
+    protected final int _numNodes=3;
     protected final int _numPartitions=_numNodes;
     //protected final int _numPartitions=1;
-    protected final int _numThreads=2;
-    protected final int _numIters=100;
+    protected final int _numThreads=1;
+    protected final int _numIters=1;
     protected final FixedWidthSessionIdFactory _factory=new FixedWidthSessionIdFactory(10, "0123456789".toCharArray(), _numPartitions);
     protected final PartitionMapper _mapper=new PartitionMapper() { public int map(Object key) { return _factory.getPartition((String)key);} };
     
@@ -132,7 +132,7 @@ public class TestGCache extends TestCase {
 //    }
 
     public void testSoak() throws Exception {
-    	testSoak(new JGroupsIndirectProtocolFactory(60*1000));
+    	//testSoak(new JGroupsIndirectProtocolFactory(60*1000));
     	testSoak(new ActiveClusterIndirectProtocolFactory(60*1000));
     }
 
