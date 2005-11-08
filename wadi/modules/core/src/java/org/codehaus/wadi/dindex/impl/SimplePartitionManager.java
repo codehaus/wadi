@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.dindex.impl;
 
 import java.util.ArrayList;
@@ -24,14 +40,14 @@ import org.codehaus.wadi.impl.Quipu;
 
 /**
  * A Simple PartitionManager.
- * 
+ *
  * @author jules
  *
  */
 public class SimplePartitionManager implements PartitionManager {
 
 	interface Callback {void onNodeRemoved(ClusterEvent event);}
-	
+
 	protected final static String _bucketKeysKey="bucketKeys";
     protected final static String _timeStampKey="timeStamp";
     protected final static String _correlationIDMapKey="correlationIDMap";
@@ -47,7 +63,7 @@ public class SimplePartitionManager implements PartitionManager {
     protected final long _inactiveTime;
 	protected final boolean _allowRegenerationOfMissingPartitions = true;
 	protected final Callback _callback;
-    
+
     public SimplePartitionManager(String nodeName, int numPartitions, BucketConfig config, Cluster cluster, Dispatcher dispatcher, Map distributedState, long inactiveTime, Callback callback) {
     	_nodeName=nodeName;
     	_log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
@@ -58,7 +74,7 @@ public class SimplePartitionManager implements PartitionManager {
         boolean queueing=true;
         for (int i=0; i<_numPartitions; i++)
             _partitions[i]=new BucketFacade(i, timeStamp, new DummyBucket(i), queueing, config);
-        
+
         _partitionConfig=config;
         _cluster=cluster;
         _dispatcher=dispatcher;
@@ -66,9 +82,9 @@ public class SimplePartitionManager implements PartitionManager {
         _inactiveTime=inactiveTime;
         _callback=callback;
     }
-    
+
     protected DIndexConfig _dindexConfig;
-    
+
     public void init(DIndexConfig config) {
     	_dindexConfig=config;
     	_log.trace("init");
@@ -86,7 +102,7 @@ public class SimplePartitionManager implements PartitionManager {
     public void start() throws Exception {
     	_log.trace("start");
     }
-    
+
     public void stop() throws Exception {
     	_log.trace("stop");
     	// detach relevant message handlers from dispatcher...
@@ -95,11 +111,11 @@ public class SimplePartitionManager implements PartitionManager {
         _dispatcher.deregister("onBucketEvacuationRequest", BucketEvacuationRequest.class, 5000);
         _dispatcher.deregister("onBucketRepopulateRequest", BucketRepopulateRequest.class, 5000);
     }
-    
+
 	public BucketFacade getPartition(int bucket) {
 		return _partitions[bucket];
 	}
-	
+
 	// a node wants to shutdown...
 	public void onBucketEvacuationRequest(ObjectMessage om, BucketEvacuationRequest request) {
 	    Node from=getSrcNode(om);
@@ -133,7 +149,7 @@ public class SimplePartitionManager implements PartitionManager {
 	        BucketTransfer transfer=transfers[i];
 	        int amount=transfer.getAmount();
 	        Destination destination=transfer.getDestination();
-	
+
 	        // acquire buckets for transfer...
 	        LocalBucket[] acquired=null;
 	        try {
@@ -148,9 +164,9 @@ public class SimplePartitionManager implements PartitionManager {
 	            }
 	            acquired=(LocalBucket[])c.toArray(new LocalBucket[c.size()]);
 	            assert amount==acquired.length;
-	
+
 	            long timeStamp=System.currentTimeMillis();
-	
+
 	            // build request...
 	            _log.info("local state (before giving): "+getPartitionKeys());
 	            BucketTransferRequest request=new BucketTransferRequest(timeStamp, acquired);
@@ -252,7 +268,7 @@ public class SimplePartitionManager implements PartitionManager {
     }
 
 	// ClusterListener
-	
+
 	public void update(Node node) {
         Map state=node.getState();
         long timeStamp=((Long)state.get(_timeStampKey)).longValue();
@@ -266,7 +282,7 @@ public class SimplePartitionManager implements PartitionManager {
 	    }
 	}
 
-	
+
 	public void markExistingBuckets(Node[] nodes, boolean[] bucketIsPresent) {
 	    for (int i=0; i<nodes.length; i++) {
 	        Node node=nodes[i];
@@ -296,7 +312,7 @@ public class SimplePartitionManager implements PartitionManager {
 	        if (!bucketIsPresent[i])
 	            missingBuckets.add(new Integer(i));
 	    }
-	
+
 	    int numKeys=missingBuckets.size();
 	    if (numKeys>0) {
 	    	assert _allowRegenerationOfMissingPartitions;
@@ -305,7 +321,7 @@ public class SimplePartitionManager implements PartitionManager {
 	        int key=0;
 	        for (Iterator i=missingBuckets.iterator(); i.hasNext(); )
 	            missingKeys[key++]=((Integer)i.next()).intValue();
-	
+
 	        _log.warn("RECREATING BUCKETS...: "+missingBuckets);
 	        long time=System.currentTimeMillis();
 	        for (int i=0; i<missingKeys.length; i++) {
@@ -323,13 +339,13 @@ public class SimplePartitionManager implements PartitionManager {
 	        if (!_dispatcher.send(_cluster.getLocalNode().getDestination(), _cluster.getDestination(), correlationId, new BucketRepopulateRequest(missingKeys))) {
 	            _log.error("unexpected problem repopulating lost index");
 	        }
-	
+
 	        // whilst we are waiting for the other nodes to get back to us, figure out which relevant sessions
 	        // we are carrying ourselves...
 	        Collection[] c=createResultSet(_numPartitions, missingKeys);
 	        _dindexConfig.findRelevantSessionNames(_numPartitions, c);
 	        repopulate(_cluster.getLocalNode().getDestination(), c);
-	
+
 	        //boolean success=false;
 	        try {
 	            /*success=*/rv.waitFor(_inactiveTime);
@@ -337,21 +353,21 @@ public class SimplePartitionManager implements PartitionManager {
 	            _log.warn("unexpected interruption", e);
 	        }
 	        Collection results=rv.getResults();
-	
+
 	        for (Iterator i=results.iterator(); i.hasNext(); ) {
 	            ObjectMessage message=(ObjectMessage)i.next();
 	            try {
 	                Destination from=message.getJMSReplyTo();
 	                BucketRepopulateResponse response=(BucketRepopulateResponse)message.getObject();
 	                Collection[] relevantKeys=response.getKeys();
-	
+
 	                repopulate(from, relevantKeys);
-	
+
 	            } catch (JMSException e) {
 	                _log.warn("unexpected problem interrogating response", e);
 	            }
 	        }
-	
+
 	        _log.warn("...BUCKETS REPOPULATED: "+missingBuckets);
 	        for (int i=0; i<missingKeys.length; i++) {
 	            int k=missingKeys[i];
@@ -432,5 +448,5 @@ public class SimplePartitionManager implements PartitionManager {
 //	        }
 //	    }
 //	}
-    
+
 }

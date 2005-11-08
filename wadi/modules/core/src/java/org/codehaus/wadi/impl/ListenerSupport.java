@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.impl;
 
 import java.util.ArrayList;
@@ -19,7 +35,7 @@ public class ListenerSupport {
 	public synchronized void addEventListener(EventListener listener) throws IllegalArgumentException, IllegalStateException {
 //		if (isStarted())
 //			throw new IllegalStateException("EventListeners must be added before a Session Manager starts");
-		
+
 		boolean known=false;
 		if (listener instanceof HttpSessionAttributeListener)
 		{
@@ -33,7 +49,7 @@ public class ListenerSupport {
 			_sessionListeners.add(listener);
 			known=true;
 		}
-		
+
 		if (!known)
 			throw new IllegalArgumentException("Unknown EventListener type "+listener);
 	}
@@ -41,7 +57,7 @@ public class ListenerSupport {
 	public synchronized void removeEventListener(EventListener listener) throws IllegalStateException {
 //		if (isStarted())
 //			throw new IllegalStateException("EventListeners may not be removed while a Session Manager is running");
-		
+
 		boolean known=false;
 		if (listener instanceof HttpSessionAttributeListener)
 		{
@@ -53,11 +69,11 @@ public class ListenerSupport {
 			if (_log.isDebugEnabled()) _log.debug("removing HttpSessionListener: "+listener);
 			known|=_sessionListeners.remove(listener);
 		}
-		
+
 		if (!known)
 			if (_log.isWarnEnabled()) _log.warn("EventListener not registered: "+listener);
 	}
-	
+
 	public void installListeners(StandardManager manager) {
 		manager.setSessionListeners((HttpSessionListener[])_sessionListeners.toArray(new HttpSessionListener[_sessionListeners.size()]));
 		manager.setAttributelisteners((HttpSessionAttributeListener[])_attributeListeners.toArray(new HttpSessionAttributeListener[_attributeListeners.size()]));

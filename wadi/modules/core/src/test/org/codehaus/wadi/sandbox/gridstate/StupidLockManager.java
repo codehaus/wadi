@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.sandbox.gridstate;
 
 import java.util.HashMap;
@@ -12,22 +28,22 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * Creates and reuses, on-the-fly, a lock for a given Key, but will never destroy the lock - temporary solution...
- * 
+ *
  * @author jules
  *
  */
 public class StupidLockManager implements LockManager {
 
 	protected static final Log _log=LogFactory.getLog(StupidLockManager.class);
-	
+
 	protected String _prefix;
-	
+
 	public StupidLockManager(String prefix) {
 		_prefix=prefix;
 	}
-	
+
 	protected Map _syncs=new HashMap(); // was a WeakHashMap, assocs removed as keys fall out of use... - good idea ?
-	
+
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.gridstate.LockManagerAPI#acquire(java.lang.Object)
 	 */
