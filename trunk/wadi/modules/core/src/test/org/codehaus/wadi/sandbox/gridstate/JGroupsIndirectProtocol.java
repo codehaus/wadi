@@ -33,12 +33,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements PartitionConfig {
 	
-	protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
-	protected final long _timeout;
-	protected final PartitionManager _partitionManager;
-	
 	protected final Channel _channel;
-	protected RpcDispatcher _dispatcher;
 	protected Address _address;
 	protected final Map _rvMap=new HashMap();
 	
@@ -75,12 +70,12 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 		
 	};
 	
+	protected final RpcDispatcher _rpcDispatcher;
 	
 	public JGroupsIndirectProtocol(String nodeName, PartitionManager manager, PartitionMapper mapper, long timeout) throws Exception {
-		(_partitionManager=manager).init(this);
-		_timeout=timeout;
+		super(nodeName, manager, mapper, timeout, null);
 		_channel=new JChannel();
-		_dispatcher=new RpcDispatcher(_channel, _messageListener, _membershipListener, this, true, true);
+		_rpcDispatcher=new RpcDispatcher(_channel, _messageListener, _membershipListener, this, true, true);
 	}
 	
 	public void init(ProtocolConfig config) {
@@ -101,11 +96,11 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 	
 	public void start() throws Exception {
 		_log.debug("starting....");
-		_dispatcher.start();
+		_rpcDispatcher.start();
 	}
 	
 	public void stop() throws Exception {
-		_dispatcher.stop();
+		_rpcDispatcher.stop();
 		_channel.disconnect();
 	}
 	
@@ -132,14 +127,14 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 	syncRpc(Object address, String methodName, Object message) throws Exception
 	{
 		_log.info("sync rpc-ing from:"+_address+" to:"+address);
-		return _dispatcher.callRemoteMethod((Address)address, methodName, new Object[]{message}, new Class[]{message.getClass()}, GroupRequest.GET_ALL, _timeout);
+		return _rpcDispatcher.callRemoteMethod((Address)address, methodName, new Object[]{message}, new Class[]{message.getClass()}, GroupRequest.GET_ALL, _timeout);
 	}
 	
 	protected void
 	asyncRpc(Object address, String methodName, Class[] argClasses, Object[] argInstances) throws TimeoutException, SuspectedException
 	{
 		_log.info("async rpc-ing from:"+_address+" to:"+address);
-		_dispatcher.callRemoteMethod((Address)address, methodName, argInstances, argClasses, GroupRequest.GET_NONE, _timeout);
+		_rpcDispatcher.callRemoteMethod((Address)address, methodName, argInstances, argClasses, GroupRequest.GET_NONE, _timeout);
 	}
 	
 	//--------------------------------------------------------------------------------
