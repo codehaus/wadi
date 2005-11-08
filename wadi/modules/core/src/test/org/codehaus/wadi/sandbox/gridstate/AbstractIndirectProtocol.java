@@ -2,21 +2,42 @@ package org.codehaus.wadi.sandbox.gridstate;
 
 import java.util.Map;
 
+import javax.jms.Destination;
+
+import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.sandbox.gridstate.messages.MovePMToSM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveIMToSM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveSMToPM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveSMToIM;
 import org.codehaus.wadi.sandbox.gridstate.messages.ReadPMToIM;
 import org.codehaus.wadi.sandbox.gridstate.messages.ReadIMToPM;
+import org.codehaus.wadi.sandbox.gridstate.messages.WriteIMToPM;
+import org.codehaus.wadi.sandbox.gridstate.messages.WritePMToIM;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public abstract class AbstractIndirectProtocol implements Protocol {
+public abstract class AbstractIndirectProtocol implements Protocol, PartitionConfig {
 
 	protected final Log _log = LogFactory.getLog(getClass());
 
+	protected final String _clusterName = "ORG.CODEHAUS.WADI.TEST";
+	protected final String _nodeName;
+	protected final PartitionManager _partitionManager;
+	protected final long _timeout;
+
+	protected Dispatcher _dispatcher; // should be final
+
+    public AbstractIndirectProtocol(String nodeName, PartitionManager manager, PartitionMapper mapper, long timeout, Dispatcher dispatcher) throws Exception {
+    	_nodeName=nodeName;
+    	(_partitionManager=manager).init(this);
+    	_timeout=timeout;
+    	_dispatcher=dispatcher;
+
+    }
+    
 	protected ProtocolConfig _config;
 
 	public void init(ProtocolConfig config) {
@@ -90,6 +111,10 @@ public abstract class AbstractIndirectProtocol implements Protocol {
 			sync.release();
 			_log.trace("onReadIMToPM- [PM] released lock("+key+") - "+sync);
 		}
+	}
+
+	public Partition[] getPartitions() {
+		return _partitionManager.getPartitions();
 	}
 
 }
