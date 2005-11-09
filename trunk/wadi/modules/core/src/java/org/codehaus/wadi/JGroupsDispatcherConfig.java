@@ -16,6 +16,10 @@
  */
 package org.codehaus.wadi;
 
+import org.jgroups.Channel;
+
 public interface JGroupsDispatcherConfig extends DispatcherConfig {
 
+	Channel getChannel();
+	
 }
