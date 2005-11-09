@@ -1,7 +1,6 @@
     <%@ page language="java" contentType="text/html" session="true" %>
       <%@ page import="java.util.Date" %>
       <%@ page import="java.util.Enumeration" %>
-      <%@ page import="java.net.URL" %>
       <%@ page import="org.apache.commons.logging.Log" %>
       <%@ page import="org.apache.commons.logging.LogFactory" %>
       <%@ page import="org.codehaus.wadi.webapp.BigString" %>

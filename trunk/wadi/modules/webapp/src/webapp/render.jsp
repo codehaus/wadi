@@ -1,10 +1,7 @@
     <%@ page language="java" contentType="text/html" session="true" %>
-      <%@ page import="java.util.Date" %>
       <%@ page import="java.util.Enumeration" %>
       <%@ page import="java.util.TreeSet" %>
-      <%@ page import="java.util.Comparator" %>
       <%@ page import="java.util.Iterator" %>
-      <%@ page import="java.net.URL" %>
       <%
       String colour=System.getProperty("node.name");
       String refresh=request.getParameter("refresh");
@@ -49,7 +46,6 @@
 	<table border="2">
 	  <%
 	  int r=0;
-	  int e=0;
 	  Iterator k=keys.iterator();
 	  while (r++<rows)
 	    {
