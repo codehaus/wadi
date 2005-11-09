@@ -23,6 +23,7 @@ import java.util.Map;
 import javax.jms.Destination;
 
 import org.codehaus.wadi.Dispatcher;
+import org.codehaus.wadi.JGroupsDispatcherConfig;
 import org.codehaus.wadi.sandbox.gridstate.messages.MovePMToSM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveIMToSM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveSMToPM;
@@ -44,7 +45,7 @@ import org.jgroups.blocks.RpcDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements PartitionConfig {
+public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements PartitionConfig, JGroupsDispatcherConfig {
 
 	protected final Channel _channel;
 	protected Address _address;
@@ -86,9 +87,11 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 	protected final RpcDispatcher _rpcDispatcher;
 
 	public JGroupsIndirectProtocol(String nodeName, PartitionManager manager, PartitionMapper mapper, long timeout) throws Exception {
-		super(nodeName, manager, mapper, timeout, null);
+		super(nodeName, manager, mapper, timeout, new JGroupsDispatcher());
 		_channel=new JChannel();
-		_rpcDispatcher=new RpcDispatcher(_channel, _messageListener, _membershipListener, this, true, true);
+		//_rpcDispatcher=new RpcDispatcher(_channel, _messageListener, _membershipListener, this, true, true);
+		_rpcDispatcher=null;
+		_dispatcher.init(this);
 	}
 
 	public void init(ProtocolConfig config) {
@@ -109,11 +112,11 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 
 	public void start() throws Exception {
 		_log.debug("starting....");
-		_rpcDispatcher.start();
+		//_rpcDispatcher.start();
 	}
 
 	public void stop() throws Exception {
-		_rpcDispatcher.stop();
+		//_rpcDispatcher.stop();
 		_channel.disconnect();
 	}
 
@@ -366,6 +369,12 @@ public class JGroupsIndirectProtocol extends AbstractIndirectProtocol implements
 
 	public Object getLocalLocation() {
 		return _address;
+	}
+	
+	// JGroupsDispatcherConfig API
+
+	public Channel getChannel() {
+		return _channel;
 	}
 
 }

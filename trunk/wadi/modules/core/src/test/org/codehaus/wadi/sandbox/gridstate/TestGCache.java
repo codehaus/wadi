@@ -132,8 +132,8 @@ public class TestGCache extends TestCase {
 //    }
 
     public void testSoak() throws Exception {
-    	//testSoak(new JGroupsIndirectProtocolFactory(60*1000));
-    	testSoak(new ActiveClusterIndirectProtocolFactory(60*1000));
+    	testSoak(new JGroupsIndirectProtocolFactory(60*1000));
+    	//testSoak(new ActiveClusterIndirectProtocolFactory(60*1000));
     }
 
     public void testFunctionality(ProtocolFactory factory) throws Exception {
