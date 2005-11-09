@@ -81,5 +81,14 @@ public interface Dispatcher {
 	// TODO - rather than owning this, we should be given a pointer to it at init()
 	// time, and this accessor should be removed...
 	PooledExecutor getExecutor();
+	
+	Destination getLocalDestination();
 
+	void setDistributedState(Map state) throws Exception;
+	
+	void start() throws Exception;
+	void stop() throws Exception;
+	
+	String getNodeName(Destination destination);
+	
 }

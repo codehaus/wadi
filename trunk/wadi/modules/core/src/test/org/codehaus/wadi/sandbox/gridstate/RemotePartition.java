@@ -22,17 +22,16 @@ import javax.jms.Destination;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jgroups.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
-public class JGroupsRemotePartition implements PartitionInterface {
+public class RemotePartition implements PartitionInterface {
 
 	protected final Log _log=LogFactory.getLog(getClass().getName());
-	protected final Address _address;
+	protected final Destination _destination;
 
-	public JGroupsRemotePartition(Address address) {
-		_address=address;
+	public RemotePartition(Destination destination) {
+		_destination=destination;
 	}
 
 	protected PartitionConfig _config;
@@ -41,12 +40,8 @@ public class JGroupsRemotePartition implements PartitionInterface {
 		_config=config;
 	}
 
-	public Address getAddress() {
-		return _address;
-	}
-
 	public Destination getDestination() {
-		throw new UnsupportedOperationException("Too ActiveCluster specific?");
+		return _destination;
 	}
 
 	public Location getLocation(Object key) {

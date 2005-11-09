@@ -16,9 +16,20 @@
  */
 package org.codehaus.wadi.sandbox.gridstate;
 
+import org.activecluster.Cluster;
+import org.activemq.ActiveMQConnectionFactory;
+import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.ActiveClusterDispatcherConfig;
+import org.codehaus.wadi.Dispatcher;
+import org.codehaus.wadi.ExtendedCluster;
+import org.codehaus.wadi.JGroupsDispatcherConfig;
+import org.codehaus.wadi.impl.ActiveClusterDispatcher;
+import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
+import org.codehaus.wadi.sandbox.gridstate.jgroups.JGroupsDispatcher;
+import org.jgroups.Channel;
 
 import junit.framework.TestCase;
 
@@ -99,16 +110,49 @@ public class TestGCache extends TestCase {
     	}
     }
     
-    class JGroupsIndirectProtocolFactory extends AbstractProtocolFactory {
+	class MyJGroupsDispatcherConfig implements JGroupsDispatcherConfig {
+
+		public Channel getChannel() {
+			throw new UnsupportedOperationException("NYI");
+		}
+
+	}
+
+	class JGroupsIndirectProtocolFactory extends AbstractProtocolFactory {
     	
     	public JGroupsIndirectProtocolFactory(long timeout) {
     		super(timeout);
     	}
     	
     	public Protocol createProtocol(String name, PartitionManager manager) throws Exception {
-    		return new JGroupsIndirectProtocol(name, manager, _mapper, _timeout);
+    		Dispatcher dispatcher=new JGroupsDispatcher();
+    		dispatcher.init(new MyJGroupsDispatcherConfig());
+    		return new IndirectProtocol(name, manager, _mapper, dispatcher, _timeout);
     	}
     }
+    
+    // do something whith this...
+	//protected final String _clusterUri="peer://org.codehaus.wadi";
+	//protected final String _clusterUri="tcp://smilodon:61616";
+	protected final String _clusterUri="vm://localhost";
+	protected final String _clusterName="WADI";
+	protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
+	protected final CustomClusterFactory _clusterFactory=new CustomClusterFactory(_connectionFactory);
+	protected Cluster _cluster;
+
+	class MyActiveClusterDispatcherConfig implements ActiveClusterDispatcherConfig {
+
+		protected final Cluster _cluster;
+
+		MyActiveClusterDispatcherConfig(Cluster cluster) {
+			_cluster=cluster;
+		}
+
+		public ExtendedCluster getCluster() {
+			return (ExtendedCluster)_cluster;
+		}
+	}
+
     
     class ActiveClusterIndirectProtocolFactory extends AbstractProtocolFactory {
     	
@@ -117,7 +161,12 @@ public class TestGCache extends TestCase {
     	}
     	
     	public Protocol createProtocol(String name, PartitionManager manager) throws Exception {
-    		return new ActiveClusterIndirectProtocol(name, manager, _mapper, _timeout);
+    		System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
+    		//_clusterFactory.setInactiveTime(100000L); // ???
+    		_cluster=_clusterFactory.createCluster(_clusterName);
+    		Dispatcher dispatcher=new ActiveClusterDispatcher(name);
+    		dispatcher.init(new MyActiveClusterDispatcherConfig(_cluster));
+    		return new IndirectProtocol(name, manager, _mapper, dispatcher, _timeout);
     	}
     }
     
@@ -132,8 +181,8 @@ public class TestGCache extends TestCase {
 //    }
 
     public void testSoak() throws Exception {
-    	testSoak(new JGroupsIndirectProtocolFactory(60*1000));
-    	//testSoak(new ActiveClusterIndirectProtocolFactory(60*1000));
+    	//testSoak(new JGroupsIndirectProtocolFactory(60*1000));
+    	testSoak(new ActiveClusterIndirectProtocolFactory(60*1000));
     }
 
     public void testFunctionality(ProtocolFactory factory) throws Exception {

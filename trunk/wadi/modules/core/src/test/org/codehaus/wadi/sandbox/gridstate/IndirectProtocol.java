@@ -24,15 +24,9 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
-import org.activecluster.Cluster;
-import org.activecluster.Node;
-import org.activemq.ActiveMQConnectionFactory;
-import org.activemq.store.vm.VMPersistenceAdapterFactory;
-import org.codehaus.wadi.ActiveClusterDispatcherConfig;
 import org.codehaus.wadi.Dispatcher;
-import org.codehaus.wadi.ExtendedCluster;
-import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.ActiveClusterDispatcher;
+import org.codehaus.wadi.sandbox.gridstate.activecluster.ActiveClusterLocation;
 import org.codehaus.wadi.sandbox.gridstate.messages.MovePMToSM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveIMToSM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveSMToPM;
@@ -45,36 +39,11 @@ import org.jgroups.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
+public class IndirectProtocol extends AbstractIndirectProtocol {
 
-	//protected final String _clusterUri="peer://org.codehaus.wadi";
-	//protected final String _clusterUri="tcp://smilodon:61616";
-	protected final String _clusterUri="vm://localhost";
-	protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
-	protected final CustomClusterFactory _clusterFactory=new CustomClusterFactory(_connectionFactory);
-	protected final Cluster _cluster;
-
-	class MyDispatcherConfig implements ActiveClusterDispatcherConfig {
-
-		protected final Cluster _cluster;
-
-		MyDispatcherConfig(Cluster cluster) {
-			_cluster=cluster;
-		}
-
-		public ExtendedCluster getCluster() {
-			return (ExtendedCluster)_cluster;
-		}
-	}
-
-	public ActiveClusterIndirectProtocol(String nodeName, PartitionManager manager, PartitionMapper mapper, long timeout) throws Exception {
+	public IndirectProtocol(String nodeName, PartitionManager manager, PartitionMapper mapper, Dispatcher dispatcher, long timeout) throws Exception {
 		super(nodeName, manager, mapper, timeout, null);
-		System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
-		//_clusterFactory.setInactiveTime(100000L); // ???
-		_cluster=_clusterFactory.createCluster(_clusterName);
-		_dispatcher=new ActiveClusterDispatcher(nodeName);
-		_dispatcher.init(new MyDispatcherConfig(_cluster));
-
+		_dispatcher=dispatcher;
 
 		// Get - 5 messages - IM->PM->SM->IM->SM->PM
 		_dispatcher.register(this, "onMessage", ReadIMToPM.class);
@@ -93,24 +62,24 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 	}
 
 	public PartitionInterface createRemotePartition() {
-		return new ActiveClusterRemotePartition(_cluster.getLocalNode().getDestination());
+		return new RemotePartition(_dispatcher.getLocalDestination());
 	}
 
 
 	public void start() throws Exception {
 		Map state=new HashMap();
 		state.put("nodeName", _nodeName);
-		_cluster.getLocalNode().setState(state);
-		_cluster.start();
+		_dispatcher.setDistributedState(state);
+		_dispatcher.start();
 	}
 
 	public void stop() throws Exception {
-		_cluster.stop();
+		_dispatcher.stop();
 	}
 
 
 	public Destination getLocalDestination() {
-		return _cluster.getLocalNode().getDestination();
+		return _dispatcher.getLocalDestination();
 	}
 
 	public Address getLocalAddress() {
@@ -145,7 +114,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 				return value;
 			else {
 				// exchangeSendLoop GetIMToPM to PM
-				Destination im=_cluster.getLocalNode().getDestination();
+				Destination im=_dispatcher.getLocalDestination();
 				Destination pm=_partitionManager.getPartitions()[_config.getPartitionMapper().map(key)].getDestination();
 				ReadIMToPM request=new ReadIMToPM(key, im);
 				ObjectMessage message=_dispatcher.exchangeSendLoop(im, pm, request, _timeout, 10);
@@ -186,7 +155,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 		// get write lock on location
 		Object key=get.getKey();
 		Sync sync=null;
-		String agent=getNodeName((Destination)get.getIM());
+		String agent=_dispatcher.getNodeName((Destination)get.getIM());
 		try {
 			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
@@ -199,7 +168,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 			}
 			// exchangeSendLoop GetPMToSM to SM
 			Destination im=(Destination)get.getIM();
-			Destination pm=_cluster.getLocalNode().getDestination();
+			Destination pm=_dispatcher.getLocalDestination();
 			Destination sm=(Destination)location.getValue();
 			String poCorrelationId=null;
 			try {
@@ -232,14 +201,14 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 	// called on SM...
 	public void onMessage(ObjectMessage message1, MovePMToSM get) {
 		Object key=get.getKey();
-		String agent=getNodeName((Destination)get.getIM());
+		String agent=_dispatcher.getNodeName((Destination)get.getIM());
 		Sync sync=null;
 		try {
 			_log.trace("["+agent+"@"+_nodeName+"(SM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync=_config.getSMSyncs().acquire(key);
 			_log.trace("["+agent+"@"+_nodeName+"(SM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
 			// send GetSMToIM to IM
-			Destination sm=_cluster.getLocalNode().getDestination();
+			Destination sm=_dispatcher.getLocalDestination();
 			Destination im=(Destination)get.getIM();
 			Object value;
 			Map map=_config.getMap();
@@ -316,7 +285,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 
 			// absent or remote
 			// exchangeSendLoop PutIMToPM to PM
-			Destination im=_cluster.getLocalNode().getDestination();
+			Destination im=_dispatcher.getLocalDestination();
 			Destination pm=_partitionManager.getPartitions()[_config.getPartitionMapper().map(key)].getDestination();
 			WriteIMToPM request=new WriteIMToPM(key, value==null, overwrite, returnOldValue, im);
 			ObjectMessage message=_dispatcher.exchangeSendLoop(im, pm, request, _timeout, 10);
@@ -375,7 +344,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 		Partition partition=_partitionManager.getPartitions()[_config.getPartitionMapper().map(key)];
 		Map partitionMap=partition.getMap();
 		Sync sync=null;
-		String agent=getNodeName((Destination)write.getIM());
+		String agent=_dispatcher.getNodeName((Destination)write.getIM());
 		try {
 			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync=_config.getPMSyncs().acquire(key);
@@ -406,7 +375,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 					_log.error("unexpected problem", e);
 				}
 				Destination im=(Destination)write.getIM();
-				Destination pm=_cluster.getLocalNode().getDestination();
+				Destination pm=_dispatcher.getLocalDestination();
 				Destination sm=(Destination)oldLocation.getValue();
 				MovePMToSM request=new MovePMToSM(key, im, pm, poCorrelationId);
 				/*ObjectMessage message2=*/_dispatcher.exchangeSendLoop(pm, sm, request, _timeout, 10);
@@ -439,7 +408,7 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 	//--------------------------------------------------------------------------------
 
 	public Object syncRpc(Object destination, String methodName, Object message) throws Exception {
-		ObjectMessage tmp=_dispatcher.exchangeSendLoop(_cluster.getLocalNode().getDestination(), (Destination)destination, (Serializable)message, _timeout, 10);
+		ObjectMessage tmp=_dispatcher.exchangeSendLoop(_dispatcher.getLocalDestination(), (Destination)destination, (Serializable)message, _timeout, 10);
 		Object response=null;
 		try {
 			response=tmp.getObject();
@@ -450,20 +419,8 @@ public class ActiveClusterIndirectProtocol extends AbstractIndirectProtocol {
 	}
 
 	public Object getLocalLocation() {
-		return _cluster.getLocalNode().getDestination();
+		return _dispatcher.getLocalDestination();
 	}
 
-
-	protected String getNodeName(Destination destination) {
-		Node node;
-		if (destination.equals(_cluster.getLocalNode().getDestination()))
-			node=_cluster.getLocalNode();
-		else
-			node=(Node)_cluster.getNodes().get(destination);
-
-		Map state=node.getState();
-		String name=(String)state.get("nodeName");
-		return name;
-	}
 
 }

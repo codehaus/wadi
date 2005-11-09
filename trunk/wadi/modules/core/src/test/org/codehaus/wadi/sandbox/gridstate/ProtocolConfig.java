@@ -19,7 +19,7 @@ package org.codehaus.wadi.sandbox.gridstate;
 import java.util.Map;
 
 
-interface ProtocolConfig {
+public interface ProtocolConfig {
 
 	public PartitionMapper getPartitionMapper();
 	public Map getMap();

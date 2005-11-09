@@ -14,24 +14,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.gridstate;
+package org.codehaus.wadi.sandbox.gridstate.jgroups;
 
-import javax.jms.Destination;
+import org.codehaus.wadi.sandbox.gridstate.AbstractLocation;
+import org.jgroups.Address;
 
-public class ActiveClusterLocation extends AbstractLocation {
+public class JGroupsLocation extends AbstractLocation {
 
-	protected Destination _destination;
+	protected Address _address;
 
-	public ActiveClusterLocation(Destination destination) {
+	public JGroupsLocation(Address address) {
 		super();
-		_destination=destination;
+		_address=address;
 	}
 
 	public Object getValue() {
-		return _destination;
+		return _address;
 	}
 
-	public void setValue(Object destination) {
-		_destination=(Destination)destination;
+	public void setValue(Object address) {
+		_address=(Address)address;
 	}
 }
