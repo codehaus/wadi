@@ -1,11 +1,8 @@
     <%@ page language="java" contentType="text/html" session="true" %>
-      <%@ page import="java.util.Date" %>
       <%@ page import="java.util.Enumeration" %>
       <%@ page import="java.util.TreeSet" %>
-      <%@ page import="java.util.Comparator" %>
       <%@ page import="java.util.Iterator" %>
       <%@ page import="java.net.URL" %>
-      <%@ page import="org.codehaus.wadi.webapp.CustomString" %>
       <%
       String colour=System.getProperty("node.name");
 
