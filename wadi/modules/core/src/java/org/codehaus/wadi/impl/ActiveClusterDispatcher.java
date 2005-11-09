@@ -17,6 +17,7 @@
 package org.codehaus.wadi.impl;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -101,7 +102,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 
     //-----------------------------------------------------------------------------------------------
 
-    protected String getNodeName(Destination destination) {
+    public String getNodeName(Destination destination) {
         Node localNode=_cluster.getLocalNode();
         Destination localDestination=localNode.getDestination();
 
@@ -119,6 +120,18 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
         return "<unknown>";
     }
 
+//	protected String getNodeName(Destination destination) {
+//		Node node;
+//		if (destination.equals(_cluster.getLocalNode().getDestination()))
+//			node=_cluster.getLocalNode();
+//		else
+//			node=(Node)_cluster.getNodes().get(destination);
+//
+//		Map state=node.getState();
+//		String name=(String)state.get("nodeName");
+//		return name;
+//	}
+    
     //-----------------------------------------------------------------------------------------------
 
     protected static String _incomingCorrelationIdKey="incomingCorrelationId";
@@ -337,5 +350,23 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 	public void removeDestination(MessageConsumer consumer) throws JMSException {
 	  consumer.close();
 	}
+	
+	public Destination getLocalDestination() {
+		return _cluster.getLocalNode().getDestination();
+	}
+
+	public void setDistributedState(Map state) throws Exception {
+		_cluster.getLocalNode().setState(state);
+		}
+	
+	public void start() throws Exception {
+		_cluster.start();
+	}
+	
+	public void stop() throws Exception {
+		_cluster.stop();
+	}
+	
+
 
 }

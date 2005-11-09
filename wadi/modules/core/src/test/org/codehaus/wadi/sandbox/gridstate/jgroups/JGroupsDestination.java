@@ -14,13 +14,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.gridstate;
+package org.codehaus.wadi.sandbox.gridstate.jgroups;
 
-public class Foo {
+import javax.jms.Destination;
 
-	public Foo() {
-		super();
-		// TODO Auto-generated constructor stub
+import org.jgroups.Address;
+
+public class JGroupsDestination implements Destination {
+
+	protected final Address _address;
+	
+	public JGroupsDestination(Address address) {
+		_address=address;
 	}
 
+	public Address getAddress() {
+		return _address;
+	}
+	
 }

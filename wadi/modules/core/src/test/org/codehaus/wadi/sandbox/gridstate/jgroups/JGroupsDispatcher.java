@@ -14,9 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.sandbox.gridstate;
+package org.codehaus.wadi.sandbox.gridstate.jgroups;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import javax.jms.Destination;
 import javax.jms.ObjectMessage;
@@ -118,6 +119,31 @@ public class JGroupsDispatcher extends AbstractDispatcher implements RequestHand
     public String getIncomingCorrelationId(ObjectMessage message) throws Exception {
     	throw new UnsupportedOperationException("NYI");
     }
+
+	public Destination getLocalDestination() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setDistributedState(Map state) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void start() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void stop() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public String getNodeName(Destination destination) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 
 }

@@ -20,8 +20,6 @@ import java.util.Map;
 
 import javax.jms.Destination;
 
-import org.jgroups.Address;
-
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
 public class Partition implements PartitionInterface {
@@ -38,10 +36,6 @@ public class Partition implements PartitionInterface {
 
 	public Destination getDestination() {
 		return _partition.getDestination();
-	}
-
-	public Address getAddress() {
-		return _partition.getAddress();
 	}
 
 	public Location getLocation(Object key) {
