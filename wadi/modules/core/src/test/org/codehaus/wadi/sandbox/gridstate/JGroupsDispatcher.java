@@ -21,20 +21,32 @@ import java.io.Serializable;
 import javax.jms.Destination;
 import javax.jms.ObjectMessage;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.DispatcherConfig;
+import org.codehaus.wadi.JGroupsDispatcherConfig;
 import org.codehaus.wadi.impl.AbstractDispatcher;
+import org.jgroups.Channel;
 import org.jgroups.Message;
+import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
 
 public class JGroupsDispatcher extends AbstractDispatcher implements RequestHandler {
 
+	protected final Log _log=LogFactory.getLog(getClass().getName());
+	
 	public JGroupsDispatcher() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
+
+	protected Channel _channel;
+	protected MessageDispatcher _dispatcher;
 
 	public void init(DispatcherConfig config) throws Exception {
 		super.init(config);
+		_channel=((JGroupsDispatcherConfig)_config).getChannel();
+		_dispatcher=new MessageDispatcher(_channel, null, null, this);
+		_dispatcher.start();
 	}
 
 	// AbstractDispatcher api
@@ -97,7 +109,7 @@ public class JGroupsDispatcher extends AbstractDispatcher implements RequestHand
 	// RequestHandler api (JGroups)
 
 	public Object handle(Message msg) {
-		// TODO Auto-generated method stub
+		_log.info("JGROUPS MESSAGE: "+msg);
 		return null;
 	}
 
