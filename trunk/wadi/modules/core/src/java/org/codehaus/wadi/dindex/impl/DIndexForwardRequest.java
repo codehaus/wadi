@@ -21,29 +21,29 @@ import java.io.Serializable;
 import org.codehaus.wadi.dindex.DIndexRequest;
 
 public class DIndexForwardRequest implements DIndexRequest, Serializable {
-    
+
     protected DIndexRequest _request;
-    
+
     public DIndexForwardRequest(DIndexRequest request) {
         _request=request;
     }
-    
+
     protected DIndexForwardRequest() {
         // for deserialisation...
     }
-    
+
     public DIndexRequest getRequest() {
         return _request;
     }
-    
-    public int getBucketKey(int numBuckets) {
-        return _request.getBucketKey(numBuckets);
+
+    public int getPartitionKey(int numPartitions) {
+        return _request.getPartitionKey(numPartitions);
     }
-    
+
     public String getName() {
         return _request.getName();
     }
-    
+
     public String toString() {
         return "["+_request.toString()+"]";
     }

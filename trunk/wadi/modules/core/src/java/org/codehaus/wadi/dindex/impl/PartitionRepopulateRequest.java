@@ -18,25 +18,25 @@ package org.codehaus.wadi.dindex.impl;
 
 import java.io.Serializable;
 
-public class BucketRepopulateRequest implements Serializable {
+public class PartitionRepopulateRequest implements Serializable {
 
     protected int[] _keys;
-    
-    public BucketRepopulateRequest(int[] keys) {
+
+    public PartitionRepopulateRequest(int[] keys) {
         super();
         _keys=keys;
     }
-    
-    protected BucketRepopulateRequest() {
+
+    protected PartitionRepopulateRequest() {
         // for deserialisation...
     }
 
     int[] getKeys() {
         return _keys;
     }
-    
-	
+
+
     public String toString() {
-        return "<BucketRepopulateRequest"+_keys+">";
+        return "<PartitionRepopulateRequest"+_keys+">";
     }
 }

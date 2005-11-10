@@ -18,34 +18,34 @@ package org.codehaus.wadi.dindex.impl;
 
 import java.io.Serializable;
 
-import javax.jms.Destination;
+public class PartitionTransferRequest implements Serializable {
 
-public class BucketTransfer implements Serializable {
+	protected long _timeStamp;
+	protected LocalPartition[] _partitions;
 
-    public Destination _destination;
-    public String _name; // TODO - only here for debugging...
-    public int _amount;
-    
-    public BucketTransfer(Destination destination, String name, int amount) {
-        _destination=destination;
-        _name=name;
-        _amount=amount;
-    }
-    
-    protected BucketTransfer() {
-        // for deserialisation...
-    }
+	public PartitionTransferRequest(long timeStamp, LocalPartition[] partitions) {
+		_timeStamp=timeStamp;
+		_partitions=partitions;
+	}
 
-    public Destination getDestination() {
-        return _destination;
-    }
-    
-    public int getAmount() {
-        return _amount;
-    }
-    
+	protected PartitionTransferRequest() {
+		// for deserialisation
+	}
+
+	public long getTimeStamp() {
+		return _timeStamp;
+	}
+
+	public LocalPartition[] getPartitions() {
+		return _partitions;
+	}
+
     public String toString() {
-        return "<transfer: "+_amount+"->"+_name+">";
+    	StringBuffer buffer=new StringBuffer("<PartitionTransferRequest: ");
+    	for (int i=0; i<_partitions.length; i++)
+    		buffer.append((i==0?"":",")+_partitions[i]);
+    	buffer.append(">");
+        return buffer.toString();
     }
-    
+
 }

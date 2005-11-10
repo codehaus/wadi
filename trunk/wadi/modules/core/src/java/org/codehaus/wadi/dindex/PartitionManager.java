@@ -17,8 +17,8 @@
 package org.codehaus.wadi.dindex;
 
 import org.activecluster.Node;
-import org.codehaus.wadi.dindex.impl.BucketFacade;
-import org.codehaus.wadi.dindex.impl.BucketKeys;
+import org.codehaus.wadi.dindex.impl.PartitionFacade;
+import org.codehaus.wadi.dindex.impl.PartitionKeys;
 
 /**
  * A PartitionManager is responsible for unambiguously renegotiating Partition ownership every time
@@ -32,8 +32,8 @@ import org.codehaus.wadi.dindex.impl.BucketKeys;
  */
 public interface PartitionManager {
 
-	BucketFacade getPartition(int bucket);
-	BucketKeys getPartitionKeys();
+	PartitionFacade getPartition(int partition);
+	PartitionKeys getPartitionKeys();
 
 	void init(DIndexConfig config);
 	void start() throws Exception;

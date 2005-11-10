@@ -33,11 +33,11 @@ public class FixedWidthSessionIdFactory implements SessionIdFactory {
 	}
 
 	public int getSessionIdLength() {
-		return _keyLength+_divider.length+_bucketLength;
+		return _keyLength+_divider.length+_partitionLength;
 	}
 
 	public void setSessionIdLength(int l) {
-		//_width=l-_divider.length-_bucketSize;
+		//_width=l-_divider.length-_partitionSize;
 	}
 
   //protected final static char[] _defaultChars="0123456789".toCharArray();
@@ -52,19 +52,19 @@ public class FixedWidthSessionIdFactory implements SessionIdFactory {
   protected final char[] _chars;
   protected final int _base;
   protected final int _sectLength;
-  protected final int _numBuckets;
-  protected final int _bucketLength;
+  protected final int _numPartitions;
+  protected final int _partitionLength;
 
-  public FixedWidthSessionIdFactory(int width, int numBuckets) {
-    this(width, _defaultChars, numBuckets);
+  public FixedWidthSessionIdFactory(int width, int numPartitions) {
+    this(width, _defaultChars, numPartitions);
   }
 
-  public FixedWidthSessionIdFactory(int width, char[] chars, int numBuckets) {
+  public FixedWidthSessionIdFactory(int width, char[] chars, int numPartitions) {
     _keyLength=width;
     _chars=chars;
     _base=_chars.length;
-    _numBuckets=numBuckets;
-    _bucketLength=size(_numBuckets);
+    _numPartitions=numPartitions;
+    _partitionLength=size(_numPartitions);
 
     //    System.out.println("radix="+_radix);
     // initialise reverse lookup table...
@@ -78,12 +78,12 @@ public class FixedWidthSessionIdFactory implements SessionIdFactory {
     //    System.out.println("iters="+_iters);
   }
 
-  public String create(int bucket) {
-    int width=_keyLength+_divider.length+_bucketLength;
+  public String create(int partition) {
+    int width=_keyLength+_divider.length+_partitionLength;
     char[] buffer=new char[width];
 
     int offset=width-1;
-    offset=encode(bucket, _bucketLength, buffer, offset);
+    offset=encode(partition, _partitionLength, buffer, offset);
 
     for (int i=_divider.length-1; i>=0; i--)
       buffer[offset--]=_divider[i];
@@ -103,7 +103,7 @@ public class FixedWidthSessionIdFactory implements SessionIdFactory {
   }
 
   public int getPartition(String key) {
-    return decode(key.toCharArray(), key.length()-_bucketLength, _bucketLength);
+    return decode(key.toCharArray(), key.length()-_partitionLength, _partitionLength);
   }
 
   protected int decode(char[] buffer, int from, int length) {
@@ -136,23 +136,23 @@ public class FixedWidthSessionIdFactory implements SessionIdFactory {
   }
 
   public static void main(String[] args) {
-    int numBuckets=1024;
-    FixedWidthSessionIdFactory factory=new FixedWidthSessionIdFactory(32, numBuckets);
+    int numPartitions=1024;
+    FixedWidthSessionIdFactory factory=new FixedWidthSessionIdFactory(32, numPartitions);
     Random r=new Random();
-    for (int i=0; i<numBuckets; i++) {
-      int bucket=Math.abs(r.nextInt())%numBuckets;
-      String key=factory.create(bucket);
-      System.out.println(key+" - "+bucket);
-      assert bucket==factory.getPartition(key);
+    for (int i=0; i<numPartitions; i++) {
+      int partition=Math.abs(r.nextInt())%numPartitions;
+      String key=factory.create(partition);
+      System.out.println(key+" - "+partition);
+      assert partition==factory.getPartition(key);
     }
   }
 
   // should we shuffle the _chars used for the key ?
-  // cannot shuffle _chars for bucket - since must be the same on every node
+  // cannot shuffle _chars for partition - since must be the same on every node
   // rename name->key where dealing with sessions...
 
-  // when we allocate a session, we need to decide which bucket to put it in
-  // allocation and entry into bucket must be atomic - I guess the entry could chase the bucket...
+  // when we allocate a session, we need to decide which partition to put it in
+  // allocation and entry into partition must be atomic - I guess the entry could chase the partition...
 
 
 }

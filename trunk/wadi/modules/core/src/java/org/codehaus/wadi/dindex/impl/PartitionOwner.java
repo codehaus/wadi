@@ -16,17 +16,18 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
-import java.io.Serializable;
+import org.activecluster.Node;
 
-public class BucketEvacuationRequest implements Serializable {
-
-    public BucketEvacuationRequest() {
-        super();
-    }
+public class PartitionOwner {
     
-	
-    public String toString() {
-        return "<BucketEvacuationRequest>";
+    protected Node _node;
+    protected int _deviation;
+    protected boolean _leaving;
+    
+    public PartitionOwner(Node node, int deviation, boolean leaving) {
+        _node=node;
+        _deviation=deviation;
+        _leaving=leaving;
     }
 
 }

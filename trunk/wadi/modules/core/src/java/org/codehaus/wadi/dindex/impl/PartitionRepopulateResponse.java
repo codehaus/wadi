@@ -17,23 +17,34 @@
 package org.codehaus.wadi.dindex.impl;
 
 import java.io.Serializable;
+import java.util.Collection;
 
-import org.codehaus.wadi.dindex.Bucket;
+public class PartitionRepopulateResponse implements Serializable {
 
-public abstract class AbstractBucket implements Bucket, Serializable {
+    protected Collection[] _keys;
 
-    protected int _key;
-    
-    public AbstractBucket(int key) {
-        _key=key;
-    }
-    
-    protected AbstractBucket() {
-        // for deserialisation...
-    }
-    
-    public int getKey() {
-        return _key;
+    public PartitionRepopulateResponse(Collection[] keys) {
+        super();
+        _keys=keys;
     }
 
+    protected PartitionRepopulateResponse() {
+        // for deserialisation
+    }
+
+    public Collection[] getKeys() {
+        return _keys;
+    }
+
+
+    public String toString() {
+    	StringBuffer buffer=new StringBuffer("<PartitionRepopulateResponse: ");
+    	for (int i=0; i<_keys.length; i++) {
+    		Collection c=_keys[i];
+    		if (c!=null)
+    			buffer.append(""+i+":"+c.toString()+", ");
+    	}
+    	buffer.append(">");
+    	return buffer.toString();
+    }
 }

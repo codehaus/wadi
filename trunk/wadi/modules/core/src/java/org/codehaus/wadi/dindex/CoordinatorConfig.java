@@ -24,20 +24,20 @@ import org.activecluster.Node;
 import org.codehaus.wadi.Dispatcher;
 
 public interface CoordinatorConfig {
-    
+
     int getNumPartitions();
-    
+
     Node getLocalNode();
     Collection getRemoteNodes();
     Cluster getCluster();
     Dispatcher getDispatcher();
-    
+
     Map getRendezVousMap();
-    
+
     Collection getLeavers();
     Collection getLeft();
-    
+
     long getInactiveTime();
-    void regenerateMissingBuckets(Node[] living, Node[] leaving);
-    
+    void regenerateMissingPartitions(Node[] living, Node[] leaving);
+
 }

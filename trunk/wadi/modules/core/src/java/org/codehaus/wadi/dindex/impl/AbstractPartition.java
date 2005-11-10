@@ -18,34 +18,22 @@ package org.codehaus.wadi.dindex.impl;
 
 import java.io.Serializable;
 
-public class BucketTransferRequest implements Serializable {
-	
-	protected long _timeStamp;
-	protected LocalBucket[] _buckets;
-	
-	public BucketTransferRequest(long timeStamp, LocalBucket[] buckets) {
-		_timeStamp=timeStamp;
-		_buckets=buckets;
-	}
-	
-	protected BucketTransferRequest() {
-		// for deserialisation
-	}
-	
-	public long getTimeStamp() {
-		return _timeStamp;
-	}
-	
-	public LocalBucket[] getBuckets() {
-		return _buckets;
-	}
-	
-    public String toString() {
-    	StringBuffer buffer=new StringBuffer("<BucketTransferRequest: ");
-    	for (int i=0; i<_buckets.length; i++)
-    		buffer.append((i==0?"":",")+_buckets[i]);
-    	buffer.append(">");
-        return buffer.toString();
+import org.codehaus.wadi.dindex.Partition;
+
+public abstract class AbstractPartition implements Partition, Serializable {
+
+    protected int _key;
+
+    public AbstractPartition(int key) {
+        _key=key;
     }
-    
+
+    protected AbstractPartition() {
+        // for deserialisation...
+    }
+
+    public int getKey() {
+        return _key;
+    }
+
 }

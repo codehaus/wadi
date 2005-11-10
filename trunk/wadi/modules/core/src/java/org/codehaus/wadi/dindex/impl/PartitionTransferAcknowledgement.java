@@ -16,18 +16,26 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
-import org.activecluster.Node;
+import java.io.Serializable;
 
-public class BucketOwner {
-    
-    protected Node _node;
-    protected int _deviation;
-    protected boolean _leaving;
-    
-    public BucketOwner(Node node, int deviation, boolean leaving) {
-        _node=node;
-        _deviation=deviation;
-        _leaving=leaving;
+public class PartitionTransferAcknowledgement implements Serializable {
+
+    protected boolean _success;
+
+    public PartitionTransferAcknowledgement(boolean success) {
+        _success=success;
     }
 
+    protected PartitionTransferAcknowledgement() {
+        // used during deserialisation...
+    }
+
+    public boolean getSuccess() {
+        return _success;
+    }
+
+
+    public String toString() {
+        return "<PartitionTransferAcknowledgement: "+_success+">";
+    }
 }

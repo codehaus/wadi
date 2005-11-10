@@ -20,6 +20,6 @@ import java.util.Collection;
 
 public interface DIndexConfig {
 
-    void findRelevantSessionNames(int numBuckets, Collection[] resultSet);
-    
+    void findRelevantSessionNames(int numPartitions, Collection[] resultSet);
+
 }

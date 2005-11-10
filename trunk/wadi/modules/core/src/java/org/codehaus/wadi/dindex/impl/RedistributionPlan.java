@@ -27,63 +27,63 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class RedistributionPlan {
-    
+
     protected final Log _log=LogFactory.getLog(getClass());
     protected final List _producers = new ArrayList();
     protected final List _consumers = new ArrayList();
-    
-    public RedistributionPlan(Node[] living, Node[] leaving, int totalNumBuckets) {
-        int numBucketsPerNode=totalNumBuckets/living.length;
+
+    public RedistributionPlan(Node[] living, Node[] leaving, int totalNumPartitions) {
+        int numPartitionsPerNode=totalNumPartitions/living.length;
 
         for (int i=0; i<leaving.length; i++) {
             Node node=leaving[i];
-            int numBuckets=DIndex.getBucketKeys(node).size();
-//            _log.info("LEAVING: "+numBuckets);
-            if (numBuckets>0)
-                _producers.add(new BucketOwner(node, numBuckets, true));
+            int numPartitions=DIndex.getPartitionKeys(node).size();
+//            _log.info("LEAVING: "+numPartitions);
+            if (numPartitions>0)
+                _producers.add(new PartitionOwner(node, numPartitions, true));
         }
 
         for (int i=0; i<living.length; i++) {
             Node node=living[i];
-            int numBuckets=DIndex.getBucketKeys(node).size();
-//            _log.info("LIVING: "+numBuckets);
-            decide(node, numBuckets, numBucketsPerNode, _producers, _consumers);
+            int numPartitions=DIndex.getPartitionKeys(node).size();
+//            _log.info("LIVING: "+numPartitions);
+            decide(node, numPartitions, numPartitionsPerNode, _producers, _consumers);
         }
 
         // sort lists...
-        Collections.sort(_producers, new BucketOwnerGreaterThanComparator());
-        Collections.sort(_consumers, new BucketOwnerLessThanComparator());
+        Collections.sort(_producers, new PartitionOwnerGreaterThanComparator());
+        Collections.sort(_consumers, new PartitionOwnerLessThanComparator());
 
-        // account for uneven division of buckets...
-        int remainingBuckets=totalNumBuckets%living.length;
+        // account for uneven division of partitions...
+        int remainingPartitions=totalNumPartitions%living.length;
 
-        for (ListIterator i=_producers.listIterator(); remainingBuckets>0 && i.hasNext(); ) {
-            BucketOwner p=(BucketOwner)i.next();
+        for (ListIterator i=_producers.listIterator(); remainingPartitions>0 && i.hasNext(); ) {
+            PartitionOwner p=(PartitionOwner)i.next();
             if (!p._leaving) {
-                remainingBuckets--;
+                remainingPartitions--;
                 if ((--p._deviation)==0)
                     i.remove();
             }
         }
 
-        for (ListIterator i=_consumers.listIterator(); remainingBuckets>0 && i.hasNext(); ) {
-            BucketOwner p=(BucketOwner)i.next();
-            remainingBuckets--;
+        for (ListIterator i=_consumers.listIterator(); remainingPartitions>0 && i.hasNext(); ) {
+            PartitionOwner p=(PartitionOwner)i.next();
+            remainingPartitions--;
             ++p._deviation;
         }
 
-        assert remainingBuckets==0;
+        assert remainingPartitions==0;
     }
 
-    protected void decide(Node node, int numBuckets, int numBucketsPerNode, Collection producers, Collection consumers) {
-        int deviation=numBuckets-numBucketsPerNode;
+    protected void decide(Node node, int numPartitions, int numPartitionsPerNode, Collection producers, Collection consumers) {
+        int deviation=numPartitions-numPartitionsPerNode;
 //        _log.info("DEVIATION: "+deviation);
         if (deviation>0) {
-            producers.add(new BucketOwner(node, deviation, false));
+            producers.add(new PartitionOwner(node, deviation, false));
             return;
         }
         if (deviation<0) {
-            consumers.add(new BucketOwner(node, -deviation, false));
+            consumers.add(new PartitionOwner(node, -deviation, false));
             return;
         }
     }

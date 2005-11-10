@@ -49,15 +49,15 @@ public class DIndexNode implements ActiveClusterDispatcherConfig, DIndexConfig {
     protected final Dispatcher _dispatcher=new ActiveClusterDispatcher();
     protected final Map _distributedState=new ConcurrentHashMap();
     protected final String _nodeName;
-    protected final int _numBuckets;
+    protected final int _numPartitions;
 
     protected String getContextPath() {
         return "/";
     }
 
-    public DIndexNode(String nodeName, int numBuckets) {
+    public DIndexNode(String nodeName, int numPartitions) {
         _nodeName=nodeName;
-        _numBuckets=numBuckets;
+        _numPartitions=numPartitions;
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
     }
 
@@ -68,7 +68,7 @@ public class DIndexNode implements ActiveClusterDispatcherConfig, DIndexConfig {
         _connectionFactory.start();
         _cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
         _dispatcher.init(this);
-        _dindex=new DIndex(_nodeName, _numBuckets, _clusterFactory.getInactiveTime(), _cluster, _dispatcher, _distributedState);
+        _dindex=new DIndex(_nodeName, _numPartitions, _clusterFactory.getInactiveTime(), _cluster, _dispatcher, _distributedState);
         _dindex.init(this);
         _log.info("starting Cluster...");
         _cluster.getLocalNode().setState(_distributedState);
@@ -90,17 +90,17 @@ public class DIndexNode implements ActiveClusterDispatcherConfig, DIndexConfig {
     public DIndex getDIndex() {
         return _dindex;
     }
-    
+
     public Destination getDestination() {
         return _cluster.getLocalNode().getDestination();
     }
-    
+
     // DIndexConfig
-    
-    public void findRelevantSessionNames(int numBuckets, Collection[] resultSet) {
+
+    public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
         _log.warn("findRelevantSessionNames() - NYI");
     }
-    
+
     //-----------------------------------------------------------
 
   protected static Latch _latch0=new Latch();
@@ -111,7 +111,7 @@ public class DIndexNode implements ActiveClusterDispatcherConfig, DIndexConfig {
     public static void main(String[] args) throws Exception {
         String nodeName=args[0];
         int numIndexPartitions=Integer.parseInt(args[1]);
-        
+
         try {
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 public void run() {
@@ -124,12 +124,12 @@ public class DIndexNode implements ActiveClusterDispatcherConfig, DIndexConfig {
                     }
                 }
             });
-            
+
             DIndexNode node=new DIndexNode(nodeName, numIndexPartitions);
             node.start();
-            
+
             _latch0.acquire();
-            
+
             node.stop();
         } finally {
             _latch1.release();

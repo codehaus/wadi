@@ -19,47 +19,47 @@ package org.codehaus.wadi.dindex.impl;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import org.codehaus.wadi.dindex.Bucket;
+import org.codehaus.wadi.dindex.Partition;
 
-public class BucketKeys implements Serializable {
-    
+public class PartitionKeys implements Serializable {
+
     protected int[] _keys;
-    
-    public BucketKeys(BucketFacade[] buckets) {
-        ArrayList list=new ArrayList(buckets.length);
-        for (int i=0; i<buckets.length; i++) {
-            Bucket bucket=buckets[i];
-            if (bucket.isLocal())
-                list.add(new Integer(bucket.getKey()));
+
+    public PartitionKeys(PartitionFacade[] partitions) {
+        ArrayList list=new ArrayList(partitions.length);
+        for (int i=0; i<partitions.length; i++) {
+            Partition partition=partitions[i];
+            if (partition.isLocal())
+                list.add(new Integer(partition.getKey()));
         }
         _keys=new int[list.size()];
         for (int i=0; i<_keys.length; i++)
             _keys[i]=((Integer)list.get(i)).intValue();
     }
-    
-    protected BucketKeys() {
+
+    protected PartitionKeys() {
         // for deserialisation...
     }
-    
+
     public boolean equals(Object obj) {
         if (obj==this)
             return true;
-        
-        if (! (obj instanceof BucketKeys))
+
+        if (! (obj instanceof PartitionKeys))
             return false;
-        
-        BucketKeys that=(BucketKeys)obj;
-        
+
+        PartitionKeys that=(PartitionKeys)obj;
+
         if (this._keys.length!=that._keys.length)
             return false;
-        
+
         for (int i=0; i<_keys.length; i++)
             if (this._keys[i]!=that._keys[i])
                 return false;
-        
+
         return true;
     }
-    
+
     public String toString() {
         StringBuffer buffer=new StringBuffer();
         buffer.append("{");
@@ -71,13 +71,13 @@ public class BucketKeys implements Serializable {
         buffer.append("}");
         return buffer.toString();
     }
-    
+
     public int size() {
         return _keys.length;
     }
-    
+
     public int[] getKeys() {
         return _keys;
     }
-    
+
 }

@@ -16,31 +16,23 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
-import java.io.Serializable;
+import java.util.Comparator;
 
-public class BucketTransferCommand implements Serializable {
 
-    protected BucketTransfer[] _transfers;
-    
-    public BucketTransferCommand(BucketTransfer[] transfers) {
-        _transfers=transfers;
+public class PartitionOwnerLessThanComparator implements Comparator {
+
+    public int compare(Object o1, Object o2) {
+        PartitionOwner p1=(PartitionOwner)o1;
+        PartitionOwner p2=(PartitionOwner)o2;
+        int tmp=p1._deviation-p2._deviation;
+        if (tmp!=0)
+            return tmp;
+        else
+            return p1._node.getName().compareTo(p2._node.getName());
     }
     
-    protected BucketTransferCommand() {
-        // for deserialisation...
+    public boolean equals(Object obj) {
+        return obj==this || obj.getClass()==getClass();
     }
-    
-    public BucketTransfer[] getTransfers() {
-        return _transfers;
-    }
-    
-	
-    public String toString() {
-    	StringBuffer buffer=new StringBuffer("<BucketTransferCommand: ");
-    	for (int i=0; i<_transfers.length; i++)
-    		buffer.append((i==0?"":",")+_transfers[i]);
-    	buffer.append(">");
-        return buffer.toString();
-    }
-    
+
 }
