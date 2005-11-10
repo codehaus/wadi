@@ -16,13 +16,10 @@
  */
 package org.codehaus.wadi.dindex;
 
-import javax.jms.ObjectMessage;
+import java.util.Collection;
 
+public interface PartitionManagerConfig {
 
-public interface Partition {
+    void findRelevantSessionNames(int numPartitions, Collection[] resultSet);
 
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
-    
 }

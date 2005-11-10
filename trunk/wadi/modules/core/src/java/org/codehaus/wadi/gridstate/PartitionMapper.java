@@ -14,15 +14,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex;
+package org.codehaus.wadi.gridstate;
 
-import javax.jms.ObjectMessage;
+public interface PartitionMapper {
 
+	/**
+	 * Given a key, map it to the corresponding Partition index.
+	 *
+	 * @param key
+	 * @return
+	 */
+	int map(Object key);
 
-public interface Partition {
-
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
-    
 }

@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ActiveClusterDispatcherConfig;
 import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.ExtendedCluster;
-import org.codehaus.wadi.dindex.DIndexConfig;
+import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.ActiveClusterDispatcher;
@@ -36,7 +36,7 @@ import org.codehaus.wadi.impl.ActiveClusterDispatcher;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
-public class DIndexNode implements ActiveClusterDispatcherConfig, DIndexConfig {
+public class DIndexNode implements ActiveClusterDispatcherConfig, PartitionManagerConfig {
 
     protected final Log _log=LogFactory.getLog(getClass());
 

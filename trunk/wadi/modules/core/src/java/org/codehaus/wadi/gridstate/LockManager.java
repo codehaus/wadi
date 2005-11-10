@@ -14,15 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex;
+package org.codehaus.wadi.gridstate;
 
-import javax.jms.ObjectMessage;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+public interface LockManager {
 
-public interface Partition {
+	Sync acquire(Object key);
+	//Sync acquire(Object key, Object value);
 
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
-    
 }

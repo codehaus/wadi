@@ -35,9 +35,9 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
-import org.codehaus.wadi.dindex.DIndexConfig;
-import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.PartitionManager;
+import org.codehaus.wadi.dindex.PartitionManagerConfig;
+import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
@@ -74,9 +74,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
 
     protected Node _coordinatorNode;
     protected Coordinator _coordinator;
-    protected DIndexConfig _config;
+    protected PartitionManagerConfig _config;
 
-    public void init(DIndexConfig config) {
+    public void init(PartitionManagerConfig config) {
         _log.info("init-ing...");
         _config=config;
         _cluster.setElectionStrategy(new SeniorityElectionStrategy());

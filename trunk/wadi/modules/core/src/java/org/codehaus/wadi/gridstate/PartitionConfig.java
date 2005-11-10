@@ -14,15 +14,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex;
+package org.codehaus.wadi.gridstate;
 
-import javax.jms.ObjectMessage;
+import javax.jms.Destination;
 
+import org.codehaus.wadi.Dispatcher;
 
-public interface Partition {
+public interface PartitionConfig {
 
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
-    
+	Destination getLocalDestination();
+	Dispatcher getDispatcher();
+
 }

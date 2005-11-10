@@ -48,13 +48,13 @@ import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.dindex.DIndexConfig;
+import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.io.Server;
 import org.codehaus.wadi.io.ServerConfig;
 
 
-public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, ServerConfig, ActiveClusterDispatcherConfig, DIndexConfig {
+public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, ServerConfig, ActiveClusterDispatcherConfig, PartitionManagerConfig {
 
     protected final Map _distributedState=new HashMap(); // TODO - make this a SynchronisedMap
     protected final ActiveClusterDispatcher _dispatcher=new ActiveClusterDispatcher();

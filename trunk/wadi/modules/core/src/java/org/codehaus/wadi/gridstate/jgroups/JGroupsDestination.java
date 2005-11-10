@@ -14,15 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex;
+package org.codehaus.wadi.gridstate.jgroups;
 
-import javax.jms.ObjectMessage;
+import java.io.Serializable;
 
+import javax.jms.Destination;
 
-public interface Partition {
+import org.jgroups.Address;
 
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
-    
+public class JGroupsDestination implements Destination, Serializable {
+
+	protected final Address _address;
+	
+	public JGroupsDestination(Address address) {
+		_address=address;
+	}
+
+	public Address getAddress() {
+		return _address;
+	}
+	
+	// TODO - custom Serialisation - consider ensuring Object Identity between different incoming instances of this class
+	// it would save [de]allocation but impact concurrency....
+	
 }
