@@ -14,10 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.gridstate.jgroups;
 
-public interface DispatcherConfig {
+import org.codehaus.wadi.gridstate.DispatcherConfig;
+import org.jgroups.Channel;
 
-	// empty
+public interface JGroupsDispatcherConfig extends DispatcherConfig {
+
+	Channel getChannel();
 	
 }

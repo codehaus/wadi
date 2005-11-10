@@ -32,7 +32,6 @@ import org.activemq.broker.BrokerConnector;
 import org.activemq.broker.BrokerContainer;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.activemq.transport.TransportChannel;
-import org.codehaus.wadi.ActiveClusterDispatcherConfig;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Contextualiser;
@@ -51,6 +50,7 @@ import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
+import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcherConfig;
 import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 
 public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, ActiveClusterDispatcherConfig, PartitionManagerConfig {

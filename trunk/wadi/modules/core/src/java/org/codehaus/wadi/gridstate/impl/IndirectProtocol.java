@@ -26,7 +26,7 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Dispatcher;
+import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionConfig;
 import org.codehaus.wadi.gridstate.PartitionInterface;
 import org.codehaus.wadi.gridstate.PartitionManager;

@@ -27,10 +27,9 @@ import javax.jms.ObjectMessage;
 import org.activecluster.Cluster;
 import org.activecluster.Node;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.ActiveClusterDispatcherConfig;
-import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.impl.AbstractDispatcher;
+import org.codehaus.wadi.gridstate.AbstractDispatcher;
+import org.codehaus.wadi.gridstate.DispatcherConfig;
 
 /**
  * A Dispatcher for ActiveCluster

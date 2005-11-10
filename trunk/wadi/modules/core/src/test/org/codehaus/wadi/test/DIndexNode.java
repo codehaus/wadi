@@ -25,12 +25,12 @@ import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.ActiveClusterDispatcherConfig;
-import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
+import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
+import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcherConfig;
 import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;

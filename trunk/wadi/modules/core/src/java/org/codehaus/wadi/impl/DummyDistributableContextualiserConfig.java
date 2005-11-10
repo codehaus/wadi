@@ -21,10 +21,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.dindex.impl.DIndex;
+import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;

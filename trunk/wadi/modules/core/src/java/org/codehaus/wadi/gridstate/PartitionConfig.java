@@ -18,7 +18,6 @@ package org.codehaus.wadi.gridstate;
 
 import javax.jms.Destination;
 
-import org.codehaus.wadi.Dispatcher;
 
 public interface PartitionConfig {
 

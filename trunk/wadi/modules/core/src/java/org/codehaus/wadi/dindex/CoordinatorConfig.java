@@ -21,7 +21,7 @@ import java.util.Map;
 
 import org.activecluster.Cluster;
 import org.activecluster.Node;
-import org.codehaus.wadi.Dispatcher;
+import org.codehaus.wadi.gridstate.Dispatcher;
 
 public interface CoordinatorConfig {
 
