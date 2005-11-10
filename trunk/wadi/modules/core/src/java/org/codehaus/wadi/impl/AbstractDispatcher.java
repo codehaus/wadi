@@ -38,8 +38,15 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.ThreadFactory;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
+// TODO - has grown and grown - could do with pruning/refactoring...
+
+/**
+ * The portable aspects of a Dispatcher implementation
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class AbstractDispatcher implements Dispatcher {
-	
 	
 	protected final Map _map = new HashMap();
 	protected final PooledExecutor _executor;
@@ -347,9 +354,6 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	public PooledExecutor getExecutor() {
 		return _executor;
 	}
-	
-	
-	public abstract String getIncomingCorrelationId(ObjectMessage message) throws Exception;
 	
 	
 	/* (non-Javadoc)
