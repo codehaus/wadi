@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.sandbox.gridstate.jgroups;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -24,6 +25,7 @@ import javax.jms.ObjectMessage;
 import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.JGroupsDispatcherConfig;
 import org.codehaus.wadi.impl.AbstractDispatcher;
+import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.Message;
 import org.jgroups.MessageListener;
@@ -40,9 +42,13 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 	protected Channel _channel;
 	protected MessageDispatcher _dispatcher;
 	protected Destination _localDestination;
-
+	protected Map _localState;
+	protected Map _clusterState;
+	
 	public JGroupsDispatcher() {
 		super();
+		_clusterState=new HashMap();
+		register(this, "onMessage", JGroupsStateUpdate.class);
 	}
 
     //-----------------------------------------------------------------------------------------------
@@ -54,11 +60,11 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 
 	public byte[] getState() {
 		return null;
-		// NYI
+		// not used
 	}
 
 	public void setState(byte[] state) {
-		// NYI
+		// not used
 	}
 
 	public void init(DispatcherConfig config) throws Exception {
@@ -88,19 +94,45 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 		_channel.send(((JGroupsDestination)to).getAddress(), _channel.getLocalAddress(), (JGroupsObjectMessage)message);
 	}
 
+	protected Map getState(Address address) {
+		if (_channel.getLocalAddress()==address)
+			return _localState;
+		else
+			return (Map)_clusterState.get(address);
+	}
+	
 	public String getNodeName(Destination destination) {
-		return "<unknown>";
-		// NYI
+		Map state=getState(((JGroupsDestination)destination).getAddress());
+		if (state==null)
+			return "<unknown>";
+		else
+			return (String)state.get("nodeName"); // TODO - use a static String
 	}
 
 	public Destination getLocalDestination() {
 		return _localDestination;
 	}
 
-	public void setDistributedState(Map state) throws Exception {
-		_log.warn("setDistributedState - NYI"); // NYI
+	public synchronized void setDistributedState(Map state) throws Exception {
+		// this seems to be the only test that ActiveCluster does, so there is no point in us doing any more...
+		if (_localState!=state) {
+			_localState=state;
+			ObjectMessage message=new JGroupsObjectMessage();
+			message.setJMSReplyTo(_localDestination);
+			message.setObject(new JGroupsStateUpdate(_localState));
+			_channel.send(null, _channel.getLocalAddress(), (JGroupsObjectMessage)message); // broadcast
+		}
 	}
 
+	public void onMessage(ObjectMessage message, JGroupsStateUpdate update) throws Exception {
+		Address from=((JGroupsDestination)message.getJMSReplyTo()).getAddress();
+		_log.trace("STATE UPDATE: "+update+" from: "+from);
+		synchronized (_clusterState) {
+			_clusterState.put(from, update.getState());
+		}
+		// FIXME - Memory Leak here, until we start removing dead nodes from the table - need membership listener
+	}
+	
 	public String getIncomingCorrelationId(ObjectMessage message) throws Exception {
     	return ((JGroupsObjectMessage)message).getIncomingCorrelationId();
     }
