@@ -33,8 +33,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.LockManager;
 import org.codehaus.wadi.gridstate.PartitionConfig;
 import org.codehaus.wadi.gridstate.PartitionMapper;
-import org.codehaus.wadi.gridstate.Protocol;
-import org.codehaus.wadi.gridstate.ProtocolConfig;
+import org.codehaus.wadi.gridstate.StateManager;
+import org.codehaus.wadi.gridstate.StateManagerConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -50,11 +50,11 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author jules
  *
  */
-public class GCache implements Cache, ProtocolConfig {
+public class GCache implements Cache, StateManagerConfig {
 
 	protected final Log _log=LogFactory.getLog(getClass().getName());
 
-	protected final Protocol _protocol;
+	protected final StateManager _stateManager;
 	protected final PartitionMapper _mapper;
 	protected final Map _map=new HashMap();
 	protected final LockManager _pmSyncs=new StupidLockManager("PM");
@@ -94,8 +94,8 @@ public class GCache implements Cache, ProtocolConfig {
 		}
 	}
 
-	public GCache(Protocol protocol, PartitionMapper mapper) {
-		(_protocol=protocol).init(this);
+	public GCache(StateManager stateManager, PartitionMapper mapper) {
+		(_stateManager=stateManager).init(this);
 		_mapper=mapper;
 	}
 
@@ -163,7 +163,7 @@ public class GCache implements Cache, ProtocolConfig {
 	 * Find, globally, the value associated with this key and return it.
 	 */
 	public Object get(Object key) {
-		return _protocol.get(key);
+		return _stateManager.get(key);
 	}
 
 	/*
@@ -230,7 +230,7 @@ public class GCache implements Cache, ProtocolConfig {
 	 * @return
 	 */
 	public Object put(Object key, Object value, boolean overwrite, boolean returnOldValue) {
-		return _protocol.put(key, value, overwrite, returnOldValue);
+		return _stateManager.put(key, value, overwrite, returnOldValue);
 	}
 
 	/*
@@ -262,7 +262,7 @@ public class GCache implements Cache, ProtocolConfig {
 	 * Remove, globally, any current association with this key, returning the correspondong value.
 	 */
 	public Object remove(Object key) {
-		return _protocol.remove(key, true);
+		return _stateManager.remove(key, true);
 	}
 
 	/**
@@ -274,7 +274,7 @@ public class GCache implements Cache, ProtocolConfig {
 	 * @return
 	 */
 	public Object remove(Object key, boolean returnOldValue) {
-		return _protocol.remove(key, returnOldValue);
+		return _stateManager.remove(key, returnOldValue);
 	}
 
 	/*
@@ -308,7 +308,7 @@ public class GCache implements Cache, ProtocolConfig {
 	// Proprietary
 
 	public Partition[] getPartitions() {
-		return _protocol.getPartitions();
+		return _stateManager.getPartitions();
 	}
 
 	// for testing...
@@ -329,19 +329,19 @@ public class GCache implements Cache, ProtocolConfig {
 	}
 
 	public PartitionConfig getPartitionConfig() {
-		return (PartitionConfig)_protocol;
+		return (PartitionConfig)_stateManager;
 	}
 
-	public Protocol getProtocol() {
-		return _protocol;
+	public StateManager getStateManager() {
+		return _stateManager;
 	}
 
 	public void start() throws Exception {
-    	_protocol.start();
+    	_stateManager.start();
     }
 
     public void stop() throws Exception {
-    	_protocol.stop();
+    	_stateManager.stop();
     }
 
 }

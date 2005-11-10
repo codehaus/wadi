@@ -31,8 +31,8 @@ import org.codehaus.wadi.gridstate.PartitionConfig;
 import org.codehaus.wadi.gridstate.PartitionInterface;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionMapper;
-import org.codehaus.wadi.gridstate.Protocol;
-import org.codehaus.wadi.gridstate.ProtocolConfig;
+import org.codehaus.wadi.gridstate.StateManager;
+import org.codehaus.wadi.gridstate.StateManagerConfig;
 import org.codehaus.wadi.gridstate.messages.MoveIMToSM;
 import org.codehaus.wadi.gridstate.messages.MovePMToSM;
 import org.codehaus.wadi.gridstate.messages.MoveSMToIM;
@@ -46,7 +46,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 // TODO - needs tidying up..
 
-public class IndirectProtocol implements Protocol, PartitionConfig {
+public class IndirectStateManager implements StateManager, PartitionConfig {
 
 	protected final Log _log = LogFactory.getLog(getClass());
 
@@ -56,10 +56,10 @@ public class IndirectProtocol implements Protocol, PartitionConfig {
 	protected final long _timeout;
 
 	protected Dispatcher _dispatcher; // should be final
-	protected ProtocolConfig _config;
+	protected StateManagerConfig _config;
 
 
-	public IndirectProtocol(String nodeName, PartitionManager manager, PartitionMapper mapper, Dispatcher dispatcher, long timeout) throws Exception {
+	public IndirectStateManager(String nodeName, PartitionManager manager, PartitionMapper mapper, Dispatcher dispatcher, long timeout) throws Exception {
     	_nodeName=nodeName;
     	(_partitionManager=manager).init(this);
     	_timeout=timeout;
@@ -83,7 +83,7 @@ public class IndirectProtocol implements Protocol, PartitionConfig {
 		_dispatcher.register(WritePMToIM.class, _timeout);
 	}
 
-	public void init(ProtocolConfig config) {
+	public void init(StateManagerConfig config) {
 		_config=config;
 	}
 
@@ -189,7 +189,7 @@ public class IndirectProtocol implements Protocol, PartitionConfig {
 
 	// called on IM...
 	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#get(java.io.Object)
+	 * @see org.codehaus.wadi.sandbox.gridstate.StateManager#get(java.io.Object)
 	 */
 	public Object get(Object key) {
 		Sync sync=null;
@@ -345,7 +345,7 @@ public class IndirectProtocol implements Protocol, PartitionConfig {
 
 	// called on IM...
 	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.gridstate.Protocol#put(java.io.Object, java.io.Object, boolean, boolean)
+	 * @see org.codehaus.wadi.sandbox.gridstate.StateManager#put(java.io.Object, java.io.Object, boolean, boolean)
 	 */
 	public Object put(Object key, Object value, boolean overwrite, boolean returnOldValue) {
 		boolean removal=(value==null);
@@ -497,7 +497,7 @@ public class IndirectProtocol implements Protocol, PartitionConfig {
 	}
 
 	//--------------------------------------------------------------------------------
-	// Protocol
+	// StateManager
 	//--------------------------------------------------------------------------------
 
 	public Object syncRpc(Destination destination, String methodName, Object message) throws Exception {
