@@ -26,15 +26,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
+import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcherConfig;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
-public class DIndexNode implements ActiveClusterDispatcherConfig, PartitionManagerConfig {
+public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 
     protected final Log _log=LogFactory.getLog(getClass());
 

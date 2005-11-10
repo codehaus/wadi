@@ -28,6 +28,7 @@ import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.impl.AbstractDispatcher;
 import org.jgroups.Address;
 import org.jgroups.Channel;
+import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.MessageListener;
 import org.jgroups.blocks.MessageDispatcher;
@@ -70,9 +71,9 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 
 	public void init(DispatcherConfig config) throws Exception {
 		super.init(config);
-		_channel=((JGroupsDispatcherConfig)_config).getChannel();
+		_channel=new JChannel();
 		_dispatcher=new MessageDispatcher(_channel, this, null, null);
-		_channel.connect("WADI"); // TODO - parameterise name
+		_channel.connect(_clusterName);
 		_localDestination=new JGroupsDestination(_channel.getLocalAddress());
 	}
 

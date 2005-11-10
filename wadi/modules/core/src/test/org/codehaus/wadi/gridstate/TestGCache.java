@@ -16,24 +16,17 @@
  */
 package org.codehaus.wadi.gridstate;
 
-import org.activecluster.Cluster;
-import org.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.gridstate.StateManager;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcherConfig;
-import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 import org.codehaus.wadi.gridstate.impl.GCache;
 import org.codehaus.wadi.gridstate.impl.IndirectStateManager;
 import org.codehaus.wadi.gridstate.impl.StaticPartitionManager;
 import org.codehaus.wadi.gridstate.jgroups.JGroupsDispatcher;
-import org.codehaus.wadi.gridstate.jgroups.JGroupsDispatcherConfig;
 import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
-import org.jgroups.Channel;
-import org.jgroups.JChannel;
 
 import junit.framework.TestCase;
 
@@ -114,18 +107,13 @@ public class TestGCache extends TestCase {
     	}
     }
 
-	class MyJGroupsDispatcherConfig implements JGroupsDispatcherConfig {
+	//protected final String _clusterUri="peer://org.codehaus.wadi";
+	//protected final String _clusterUri="tcp://smilodon:61616";
+	protected final String _clusterUri="vm://localhost";
+	protected final String _clusterName="WADI";
 
-		protected final Channel _channel;
+	class MyDispatcherConfig implements DispatcherConfig {
 
-		MyJGroupsDispatcherConfig() throws Exception {
-			_channel=new JChannel();
-		}
-
-		public Channel getChannel() {
-			return _channel;
-		}
-		
 		public String getContextPath() {
 			return "/";
 		}
@@ -140,38 +128,10 @@ public class TestGCache extends TestCase {
 
     	public StateManager createStateManager(String nodeName, PartitionManager partitionManager) throws Exception {
     		Dispatcher dispatcher=new JGroupsDispatcher(nodeName, _clusterName, partitionManager);
-    		dispatcher.init(new MyJGroupsDispatcherConfig());
+    		dispatcher.init(new MyDispatcherConfig());
     		return new IndirectStateManager(nodeName, partitionManager, _mapper, dispatcher, _timeout);
     	}
     }
-
-    // do something whith this...
-	//protected final String _clusterUri="peer://org.codehaus.wadi";
-	//protected final String _clusterUri="tcp://smilodon:61616";
-	protected final String _clusterUri="vm://localhost";
-	protected final String _clusterName="WADI";
-	protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
-	protected final CustomClusterFactory _clusterFactory=new CustomClusterFactory(_connectionFactory);
-	protected Cluster _cluster;
-
-	class MyActiveClusterDispatcherConfig implements ActiveClusterDispatcherConfig {
-
-		protected final Cluster _cluster;
-
-		MyActiveClusterDispatcherConfig(Cluster cluster) {
-			_cluster=cluster;
-		}
-
-		public ExtendedCluster getCluster() {
-			return (ExtendedCluster)_cluster;
-		}
-
-		public String getContextPath() {
-			return "/";
-		}
-
-	}
-
 
     class ActiveClusterIndirectStateManagerFactory extends AbstractStateManagerFactory {
 
@@ -181,7 +141,7 @@ public class TestGCache extends TestCase {
 
     	public StateManager createStateManager(String nodeName, PartitionManager partitionManager) throws Exception {
     		Dispatcher dispatcher=new ActiveClusterDispatcher(nodeName, _clusterName, partitionManager, _clusterUri, 5000L);
-    		dispatcher.init(new MyActiveClusterDispatcherConfig(_cluster));
+    		dispatcher.init(new MyDispatcherConfig());
     		return new IndirectStateManager(nodeName, partitionManager, _mapper, dispatcher, _timeout);
     	}
     }
