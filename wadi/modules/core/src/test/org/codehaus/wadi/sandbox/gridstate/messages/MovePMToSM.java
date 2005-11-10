@@ -18,14 +18,16 @@ package org.codehaus.wadi.sandbox.gridstate.messages;
 
 import java.io.Serializable;
 
+import javax.jms.Destination;
+
 public class MovePMToSM implements Serializable {
 
 	protected Object _key;
-	protected Object _im;
-	protected Object _pm;
+	protected Destination _im;
+	protected Destination _pm;
 	protected String _imCorrelationId;
 
-	public MovePMToSM(Object key, Object im, Object pm, String imCorrelationId) {
+	public MovePMToSM(Object key, Destination im, Destination pm, String imCorrelationId) {
 			_key=key;
 			_im=im;
 			_pm=im;
@@ -40,11 +42,11 @@ public class MovePMToSM implements Serializable {
 		return _key;
 	}
 
-	public Object getIM() {
+	public Destination getIM() {
 		return _im;
 	}
 
-	public Object getPM() {
+	public Destination getPM() {
 		return _pm;
 	}
 

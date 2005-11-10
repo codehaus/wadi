@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.sandbox.gridstate;
 
+import javax.jms.Destination;
+
 
 public interface Protocol {
 
@@ -37,7 +39,7 @@ public interface Protocol {
 
     void stop() throws Exception;
 
-	Object syncRpc(Object address, String methodName, Object message) throws Exception;
+	Object syncRpc(Destination destination, String methodName, Object message) throws Exception;
 
-	Object getLocalLocation();
+	//Object getLocalLocation();
 }

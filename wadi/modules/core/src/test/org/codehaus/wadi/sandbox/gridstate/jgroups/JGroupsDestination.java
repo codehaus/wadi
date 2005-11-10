@@ -16,11 +16,13 @@
  */
 package org.codehaus.wadi.sandbox.gridstate.jgroups;
 
+import java.io.Serializable;
+
 import javax.jms.Destination;
 
 import org.jgroups.Address;
 
-public class JGroupsDestination implements Destination {
+public class JGroupsDestination implements Destination, Serializable {
 
 	protected final Address _address;
 	

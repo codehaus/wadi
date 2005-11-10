@@ -18,6 +18,8 @@ package org.codehaus.wadi.sandbox.gridstate;
 
 import java.util.Map;
 
+import javax.jms.Destination;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Dispatcher;
@@ -57,7 +59,7 @@ public abstract class AbstractIndirectProtocol implements Protocol, PartitionCon
 
 	public Object onMovePMToSM(MovePMToSM move) throws Exception {
 		Object key=move.getKey();
-		Object im=move.getIM();
+		Destination im=move.getIM();
 		//Object pm=move.getPM();
 		_log.info("[SM] - onMovePMToSM@"/*+_address*/);
 		_log.info("im="+im);
@@ -92,7 +94,7 @@ public abstract class AbstractIndirectProtocol implements Protocol, PartitionCon
 
 	public Object onReadIMToPM(ReadIMToPM read) throws Exception {
 		Object key=read.getKey();
-		Object im=read.getIM();
+		Destination im=read.getIM();
 		_log.info("im="+im);
 		// what if we are NOT the PM anymore ?
 		// get write lock on location
@@ -107,8 +109,8 @@ public abstract class AbstractIndirectProtocol implements Protocol, PartitionCon
 				return new ReadPMToIM();
 			}
 			// exchangeSendLoop GetPMToSM to SM
-			Object pm=getLocalLocation();
-			Object sm=location.getValue();
+			Destination pm=getLocalDestination();
+			Destination sm=(Destination)location.getValue();
 
 			MoveSMToPM response=(MoveSMToPM)syncRpc(sm, "onMovePMToSM", new MovePMToSM(key, im, pm, null));
 			// success - update location

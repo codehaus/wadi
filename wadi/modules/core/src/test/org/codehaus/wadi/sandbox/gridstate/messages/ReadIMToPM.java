@@ -18,12 +18,14 @@ package org.codehaus.wadi.sandbox.gridstate.messages;
 
 import java.io.Serializable;
 
+import javax.jms.Destination;
+
 public class ReadIMToPM implements Serializable {
 
 	protected Object _key;
-	protected Object _im;
+	protected Destination _im;
 
-	public ReadIMToPM(Object key, Object im) {
+	public ReadIMToPM(Object key, Destination im) {
 		_key=key;
 		_im=im;
 	}
@@ -36,7 +38,7 @@ public class ReadIMToPM implements Serializable {
 		return _key;
 	}
 
-	public Object getIM() {
+	public Destination getIM() {
 		return _im;
 	}
 

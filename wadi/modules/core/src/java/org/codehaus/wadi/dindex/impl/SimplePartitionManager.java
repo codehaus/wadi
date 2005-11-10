@@ -35,7 +35,6 @@ import org.codehaus.wadi.dindex.Bucket;
 import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.DIndexConfig;
 import org.codehaus.wadi.dindex.PartitionManager;
-import org.codehaus.wadi.impl.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
 /**
@@ -196,7 +195,7 @@ public class SimplePartitionManager implements PartitionManager {
 	    	_distributedState.put(_bucketKeysKey, keys);
 	    	_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
 	    	_log.info("local state (after giving): "+keys);
-	    	String correlationID=ActiveClusterDispatcher.getOutgoingCorrelationId(om);
+	    	String correlationID=_dispatcher.getOutgoingCorrelationId(om);
 	    	_log.info("CORRELATIONID: "+correlationID);
 	    	Map correlationIDMap=(Map)_distributedState.get(_correlationIDMapKey);
 	    	Destination from=om.getJMSReplyTo();
@@ -207,7 +206,7 @@ public class SimplePartitionManager implements PartitionManager {
 	    	correlationIDMap.remove(from);
 	    	// FIXME - RACE - between update of distributed state and ack - they should be one and the same thing...
 	    	//_dispatcher.reply(om, new BucketTransferAcknowledgement(true)); // what if failure - TODO
-	    } catch (JMSException e) {
+	    } catch (Exception e) {
 	    	_log.warn("could not acknowledge safe transfer to Coordinator", e);
 	    }
 	}
