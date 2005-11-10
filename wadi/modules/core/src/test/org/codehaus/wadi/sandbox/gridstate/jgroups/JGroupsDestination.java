@@ -34,4 +34,7 @@ public class JGroupsDestination implements Destination, Serializable {
 		return _address;
 	}
 	
+	// TODO - custom Serialisation - consider ensuring Object Identity between different incoming instances of this class
+	// it would save [de]allocation but impact concurrency....
+	
 }

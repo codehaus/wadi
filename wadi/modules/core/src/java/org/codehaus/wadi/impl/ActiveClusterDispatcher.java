@@ -32,125 +32,61 @@ import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 
 /**
- * A Class responsible for the sending of outgoing and dispatching of incoming messages,
- * along with other functionality, like synchronous message exchange etcetera
+ * A Dispatcher for ActiveCluster
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public class ActiveClusterDispatcher extends AbstractDispatcher implements MessageListener {
-
+	
+	protected static String _incomingCorrelationIdKey="incomingCorrelationId";
+	protected static String _outgoingCorrelationIdKey="outgoingCorrelationId";
+	
+	protected Cluster _cluster;
+	protected MessageConsumer _clusterConsumer;
+	protected MessageConsumer _nodeConsumer;
+	
 	public ActiveClusterDispatcher() {
 		super();
-    }
-
+	}
+	
 	public ActiveClusterDispatcher(String name) {
 		this();
 		_log=LogFactory.getLog(getClass()+"#"+name);
 	}
-
-    protected Cluster _cluster;
-    protected MessageConsumer _clusterConsumer;
-    protected MessageConsumer _nodeConsumer;
-
-    /* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#init(org.codehaus.wadi.DispatcherConfig)
-	 */
-    public void init(DispatcherConfig config) throws Exception {
-        super.init(config);
-        _cluster=((ActiveClusterDispatcherConfig)_config).getCluster();
-        boolean excludeSelf;
-        excludeSelf=false;
-        _clusterConsumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
-        _clusterConsumer.setMessageListener(this);
-        excludeSelf=false;
-        _nodeConsumer=_cluster.createConsumer(_cluster.getLocalNode().getDestination(), null, excludeSelf);
-        _nodeConsumer.setMessageListener(this);
-    }
-
-    //-----------------------------------------------------------------------------------------------
-
-    public String getNodeName(Destination destination) {
-        Node localNode=_cluster.getLocalNode();
-        Destination localDestination=localNode.getDestination();
-
-        if (destination.equals(localDestination))
-            return DIndex.getNodeName(localNode);
-
-        Destination clusterDestination=_cluster.getDestination();
-        if (destination.equals(clusterDestination))
-            return "cluster";
-
-        Node node=null;
-        if ((node=(Node)_cluster.getNodes().get(destination))!=null)
-            return DIndex.getNodeName(node);
-
-        return "<unknown>";
-    }
-
-//	protected String getNodeName(Destination destination) {
-//		Node node;
-//		if (destination.equals(_cluster.getLocalNode().getDestination()))
-//			node=_cluster.getLocalNode();
-//		else
-//			node=(Node)_cluster.getNodes().get(destination);
-//
-//		Map state=node.getState();
-//		String name=(String)state.get("nodeName");
-//		return name;
-//	}
-    
-    //-----------------------------------------------------------------------------------------------
-
-    protected static String _incomingCorrelationIdKey="incomingCorrelationId";
-
-    public String getIncomingCorrelationId(ObjectMessage message) throws Exception {
-    	return message.getStringProperty(_incomingCorrelationIdKey);
-    }
-
-    public void setIncomingCorrelationId(ObjectMessage message, String id) throws JMSException {
-    	message.setStringProperty(_incomingCorrelationIdKey, id);
-    }
-
-    protected static String _outgoingCorrelationIdKey="outgoingCorrelationId";
-
-    public String getOutgoingCorrelationId(ObjectMessage message) throws JMSException {
-    	return message.getStringProperty(_outgoingCorrelationIdKey);
-    }
-
-    public void setOutgoingCorrelationId(ObjectMessage message, String id) throws JMSException {
-    	message.setStringProperty(_outgoingCorrelationIdKey, id);
-    }
-
-
-    public Cluster getCluster() {
-    	return _cluster;
-    }
-
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#addDestination(javax.jms.Destination)
-	 */
-	public MessageConsumer addDestination(Destination destination) throws JMSException {
-	    boolean excludeSelf=true;
-	    MessageConsumer consumer=_cluster.createConsumer(destination, null, excludeSelf);
-	    consumer.setMessageListener(this);
-	    return consumer;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#removeDestination(javax.jms.MessageConsumer)
-	 */
-	public void removeDestination(MessageConsumer consumer) throws JMSException {
-	  consumer.close();
+	
+	public Cluster getCluster() {
+		return _cluster;
 	}
 	
-	public Destination getLocalDestination() {
-		return _cluster.getLocalNode().getDestination();
+	public MessageConsumer addDestination(Destination destination) throws JMSException {
+		boolean excludeSelf=true;
+		MessageConsumer consumer=_cluster.createConsumer(destination, null, excludeSelf);
+		consumer.setMessageListener(this);
+		return consumer;
 	}
-
-	public void setDistributedState(Map state) throws Exception {
-		_cluster.getLocalNode().setState(state);
-		}
+	
+	public void removeDestination(MessageConsumer consumer) throws JMSException {
+		consumer.close();
+	}
+	
+	//-----------------------------------------------------------------------------------------------
+	// AbstractDispatcher overrides
+	
+	public void init(DispatcherConfig config) throws Exception {
+		super.init(config);
+		_cluster=((ActiveClusterDispatcherConfig)_config).getCluster();
+		boolean excludeSelf;
+		excludeSelf=false;
+		_clusterConsumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
+		_clusterConsumer.setMessageListener(this);
+		excludeSelf=false;
+		_nodeConsumer=_cluster.createConsumer(_cluster.getLocalNode().getDestination(), null, excludeSelf);
+		_nodeConsumer.setMessageListener(this);
+	}
+	
+	//-----------------------------------------------------------------------------------------------
+	// Dispatcher API
 	
 	public void start() throws Exception {
 		_cluster.start();
@@ -159,16 +95,55 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 	public void stop() throws Exception {
 		_cluster.stop();
 	}
-
-	public void send(Destination to, ObjectMessage message) throws Exception {
-		_cluster.send(to, message);
-		
-	}
-
+	
 	public ObjectMessage createObjectMessage() throws Exception {
 		return _cluster.createObjectMessage();
 	}
+
+	public void send(Destination to, ObjectMessage message) throws Exception {
+		_cluster.send(to, message);
+	}
+
+	public Destination getLocalDestination() {
+		return _cluster.getLocalNode().getDestination();
+	}
+
+	public void setDistributedState(Map state) throws Exception {
+		_cluster.getLocalNode().setState(state);
+	}
+
+	public String getNodeName(Destination destination) {
+		Node localNode=_cluster.getLocalNode();
+		Destination localDestination=localNode.getDestination();
+		
+		if (destination.equals(localDestination))
+			return DIndex.getNodeName(localNode);
+		
+		Destination clusterDestination=_cluster.getDestination();
+		if (destination.equals(clusterDestination))
+			return "cluster";
+		
+		Node node=null;
+		if ((node=(Node)_cluster.getNodes().get(destination))!=null)
+			return DIndex.getNodeName(node);
+		
+		return "<unknown>";
+	}
 	
-
-
+	public String getIncomingCorrelationId(ObjectMessage message) throws Exception {
+		return message.getStringProperty(_incomingCorrelationIdKey);
+	}
+	
+	public void setIncomingCorrelationId(ObjectMessage message, String id) throws JMSException {
+		message.setStringProperty(_incomingCorrelationIdKey, id);
+	}
+	
+	public String getOutgoingCorrelationId(ObjectMessage message) throws JMSException {
+		return message.getStringProperty(_outgoingCorrelationIdKey);
+	}
+	
+	public void setOutgoingCorrelationId(ObjectMessage message, String id) throws JMSException {
+		message.setStringProperty(_outgoingCorrelationIdKey, id);
+	}
+	
 }

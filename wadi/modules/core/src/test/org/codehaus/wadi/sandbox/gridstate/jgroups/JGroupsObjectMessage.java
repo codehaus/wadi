@@ -23,21 +23,62 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
+import org.jgroups.Address;
+
 public class JGroupsObjectMessage implements ObjectMessage, Serializable {
 	
-	public JGroupsObjectMessage() {
-		super();
-		// TODO Auto-generated constructor stub
+	protected Address _replyTo;
+	protected Address _destination;
+	protected String _outgoingCorrelationId;
+	protected String _incomingCorrelationId;
+	protected Serializable _letter;
+	
+	// JGroupObjectMessage API
+	
+	public String getIncomingCorrelationId() {
+		return _incomingCorrelationId;
 	}
 	
-	public void setObject(Serializable arg0) throws JMSException {
-		throw new UnsupportedOperationException("NYI");
+	public void setIncomingCorrelationId(String correlationId) {
+		_incomingCorrelationId=correlationId;
 	}
+	
+	public String getOutgoingCorrelationId() {
+		return _outgoingCorrelationId;
+	}
+	
+	public void setOutgoingCorrelationId(String correlationId) {
+		_outgoingCorrelationId=correlationId;
+	}
+	
+	// ObjectMessage API - implemented
 	
 	public Serializable getObject() throws JMSException {
-		throw new UnsupportedOperationException("NYI");
-		//return null;
+		return _letter;
 	}
+	
+	public void setObject(Serializable letter) throws JMSException {
+		_letter=letter;
+	}
+	
+	public Destination getJMSReplyTo() throws JMSException {
+		return new JGroupsDestination(_replyTo);
+	}
+
+	public void setJMSReplyTo(Destination destination) throws JMSException {
+		_replyTo=((JGroupsDestination)destination).getAddress();
+	}
+
+	public Destination getJMSDestination() throws JMSException {
+		return new JGroupsDestination(_destination);
+	}
+	
+	
+	public void setJMSDestination(Destination destination) throws JMSException {
+		_destination=((JGroupsDestination)destination).getAddress();
+	}
+	
+	// ObjectMessage API - not required
 	
 	public String getJMSMessageID() throws JMSException {
 		throw new UnsupportedOperationException("NYI");
@@ -73,24 +114,6 @@ public class JGroupsObjectMessage implements ObjectMessage, Serializable {
 	public String getJMSCorrelationID() throws JMSException {
 		throw new UnsupportedOperationException("NYI");
 		//return null;
-	}
-	
-	public Destination getJMSReplyTo() throws JMSException {
-		throw new UnsupportedOperationException("NYI");
-		//return null;
-	}
-	
-	public void setJMSReplyTo(Destination arg0) throws JMSException {
-		throw new UnsupportedOperationException("NYI");
-	}
-	
-	public Destination getJMSDestination() throws JMSException {
-		throw new UnsupportedOperationException("NYI");
-		//return null;
-	}
-	
-	public void setJMSDestination(Destination arg0) throws JMSException {
-		throw new UnsupportedOperationException("NYI");
 	}
 	
 	public int getJMSDeliveryMode() throws JMSException {
