@@ -16,11 +16,8 @@
  */
 package org.codehaus.wadi.gridstate;
 
-import org.codehaus.wadi.DispatcherConfig;
-import org.jgroups.Channel;
+public interface DispatcherConfig {
 
-public interface JGroupsDispatcherConfig extends DispatcherConfig {
-
-	Channel getChannel();
+	// empty
 	
 }
