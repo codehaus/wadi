@@ -21,18 +21,18 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.dindex.BucketConfig;
+import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 
-public class RemoteBucket extends AbstractBucket {
+public class RemotePartition extends AbstractPartition {
 
-    protected static final Log _log = LogFactory.getLog(RemoteBucket.class);
+    protected static final Log _log = LogFactory.getLog(RemotePartition.class);
 
-    protected final BucketConfig _config;
-    
+    protected final PartitionConfig _config;
+
     protected Destination _location;
 
-    public RemoteBucket(int key, BucketConfig config, Destination location) {
+    public RemotePartition(int key, PartitionConfig config, Destination location) {
         super(key);
         _config=config;
         _location=location;
@@ -70,5 +70,5 @@ public class RemoteBucket extends AbstractBucket {
         if (!_config.getDispatcher().forward(om, _location))
             _log.warn("could not forward message");
     }
-    
+
 }

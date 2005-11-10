@@ -14,21 +14,34 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.dindex.impl;
 
-import java.net.InetSocketAddress;
-import java.util.Map;
+import javax.jms.ObjectMessage;
 
+import org.codehaus.wadi.dindex.DIndexRequest;
 
-public interface SessionManagerFactory {
+public class DummyPartition extends AbstractPartition {
 
-	public abstract Object create(SessionPool sessionPool,
-			AttributesFactory attributesFactory, ValuePool valuePool,
-			SessionWrapperFactory sessionWrapperFactory,
-			SessionIdFactory sessionIdFactory, Contextualiser contextualiser,
-			Map sessionMap, Router router, Streamer streamer,
-			boolean accessOnLoad, String clusterUri, String clusterName,
-			String nodeName, HttpProxy httpProxy,
-			InetSocketAddress httpAddress, int numPartitions) throws Exception;
+    public DummyPartition(int key) {
+        super(key);
+    }
+
+    protected DummyPartition() {
+        super();
+        // for seriflisation...
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean isLocal() {
+        return false;
+    }
+
+	public String toString() {
+        return "<unknown>";
+    }
+
+    public void dispatch(ObjectMessage om, DIndexRequest request) {
+        throw new UnsupportedOperationException();
+    }
 
 }

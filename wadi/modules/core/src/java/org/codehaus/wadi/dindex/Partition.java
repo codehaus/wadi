@@ -14,19 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.impl;
+package org.codehaus.wadi.dindex;
 
-import java.io.Serializable;
+import javax.jms.ObjectMessage;
 
-public class BucketEvacuationResponse implements Serializable {
+public interface Partition {
 
-    public BucketEvacuationResponse() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
-
-	
-    public String toString() {
-        return "<BucketEvacuationResponse>";
-    }
+    boolean isLocal();
+    int getKey();
+    void dispatch(ObjectMessage om, DIndexRequest request);
+    
 }

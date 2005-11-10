@@ -19,11 +19,11 @@ package org.codehaus.wadi.dindex.impl;
 import java.util.Comparator;
 
 
-public class BucketOwnerLessThanComparator implements Comparator {
+public class PartitionOwnerGreaterThanComparator implements Comparator {
 
-    public int compare(Object o1, Object o2) {
-        BucketOwner p1=(BucketOwner)o1;
-        BucketOwner p2=(BucketOwner)o2;
+    public int compare(Object o2, Object o1) {
+        PartitionOwner p1=(PartitionOwner)o1;
+        PartitionOwner p2=(PartitionOwner)o2;
         int tmp=p1._deviation-p2._deviation;
         if (tmp!=0)
             return tmp;

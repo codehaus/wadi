@@ -16,23 +16,26 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
-import java.util.Comparator;
+import java.io.Serializable;
 
+public class PartitionTransferResponse implements Serializable {
 
-public class BucketOwnerGreaterThanComparator implements Comparator {
+    protected boolean _success;
 
-    public int compare(Object o2, Object o1) {
-        BucketOwner p1=(BucketOwner)o1;
-        BucketOwner p2=(BucketOwner)o2;
-        int tmp=p1._deviation-p2._deviation;
-        if (tmp!=0)
-            return tmp;
-        else
-            return p1._node.getName().compareTo(p2._node.getName());
+    public PartitionTransferResponse(boolean success) {
+        _success=success;
     }
-    
-    public boolean equals(Object obj) {
-        return obj==this || obj.getClass()==getClass();
+
+    protected PartitionTransferResponse() {
+        // used during deserialisation...
+    }
+
+    public boolean getSuccess() {
+        return _success;
+    }
+
+    public String toString() {
+        return "<PartitionTransferResponse: "+_success+">";
     }
 
 }

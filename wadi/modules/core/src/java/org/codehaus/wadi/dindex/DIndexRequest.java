@@ -18,7 +18,7 @@ package org.codehaus.wadi.dindex;
 
 public interface DIndexRequest extends DIndexMessage {
 
-    int getBucketKey(int numBuckets);
+    int getPartitionKey(int numPartitions);
     String getName();
-    
+
 }

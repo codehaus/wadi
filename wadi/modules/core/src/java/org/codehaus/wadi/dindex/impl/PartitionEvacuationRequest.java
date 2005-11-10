@@ -14,14 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex;
+package org.codehaus.wadi.dindex.impl;
 
-import javax.jms.ObjectMessage;
+import java.io.Serializable;
 
-public interface Bucket {
+public class PartitionEvacuationRequest implements Serializable {
 
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
-    
+    public PartitionEvacuationRequest() {
+        super();
+    }
+
+
+    public String toString() {
+        return "<PartitionEvacuationRequest>";
+    }
+
 }

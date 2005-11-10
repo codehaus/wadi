@@ -18,7 +18,7 @@ package org.codehaus.wadi.test;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.dindex.impl.BucketFacade;
+import org.codehaus.wadi.dindex.impl.PartitionFacade;
 
 import junit.framework.TestCase;
 
@@ -31,7 +31,7 @@ public class TestDIndex extends TestCase {
     }
 
     protected int _numIndexPartitions;
-    
+
     protected void setUp() throws Exception {
         super.setUp();
         _numIndexPartitions=24;
@@ -41,53 +41,53 @@ public class TestDIndex extends TestCase {
         _numIndexPartitions=0;
         super.tearDown();
     }
-    
+
     class Foo implements Runnable {
-        
-        protected final BucketFacade _facade;
-        
-        public Foo(BucketFacade facade) {
+
+        protected final PartitionFacade _facade;
+
+        public Foo(PartitionFacade facade) {
             _facade=facade;
         }
-        
+
         public void run() {
-            
+
         }
-        
+
     }
-    
+
 //    public void testQueueing() {
-//        
+//
 //        boolean isQueueing=true;
 //        long timeStamp=System.currentTimeMillis();
-//        BucketFacade facade=new BucketFacade(0, timeStamp, new DummyBucket(0), isQueueing);
-//        
+//        PartitionFacade facade=new PartitionFacade(0, timeStamp, new DummyPartition(0), isQueueing);
+//
 //        int numThreads=10;
 //        Thread thread[]=new Thread[numThreads];
 //        for (int i=0; i<numThreads; i++) {
 //            (thread[i]=new Thread(new Foo(facade))).start();
 //        }
-//        
-//        // do stuff with BucketFacade
-//        
+//
+//        // do stuff with PartitionFacade
+//
 //        try {
 //            for (int i=0; i<numThreads; i++) {
 //                thread[i].join();
-//            } 
+//            }
 //        } catch (InterruptedException e) {
 //            _log.warn("interrupted", e);
 //        }
 //    }
-    
+
     public void testDindex() throws Exception {
         assertTrue(true);
-        
+
         DIndexNode red=new DIndexNode("red", _numIndexPartitions);
         DIndexNode green=new DIndexNode("green", _numIndexPartitions);
         DIndexNode blue=new DIndexNode("blue", _numIndexPartitions);
         DIndexNode yellow=new DIndexNode("yellow", _numIndexPartitions);
         DIndexNode pink=new DIndexNode("pink", _numIndexPartitions);
-        
+
         _log.info("0 nodes running");
         red.start();
         red.getCluster().waitForClusterToComplete(1, 6000);
@@ -114,9 +114,9 @@ public class TestDIndex extends TestCase {
         yellow.getCluster().waitForClusterToComplete(5, 6000);
         pink.getCluster().waitForClusterToComplete(5, 6000);
         _log.info("5 nodes running");
-        
+
 //        SessionIdFactory factory=new TomcatSessionIdFactory();
-//        
+//
 //        for (int i=0; i<10; i++) {
 //            String name=factory.create();
 //            red.getDIndex().put(name, name, green.getDestination());
@@ -124,7 +124,7 @@ public class TestDIndex extends TestCase {
 //            //blue.getDIndex().put(name, name);
 //            //yellow.getDIndex().remove(name);
 //        }
-        
+
         _log.info("5 nodes running");
         pink.stop();
         yellow.getCluster().waitForClusterToComplete(4, 6000);

@@ -37,11 +37,11 @@ public abstract class AbstractContextualiser implements Contextualiser {
   public String getStartInfo() {
       return "";
   }
-  
+
   public void stop() throws Exception {
     _log.info("stopped: "+getStopInfo());
   }
-  
+
   public String getStopInfo() {
       return "";
   }
@@ -49,8 +49,8 @@ public abstract class AbstractContextualiser implements Contextualiser {
   public void destroy() {
     _log.info("destroyed");
   }
-  
-  public void findRelevantSessionNames(int numBuckets, Collection[] resultSet) {
+
+  public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
       _log.trace("finding relevant session names");
   }
 

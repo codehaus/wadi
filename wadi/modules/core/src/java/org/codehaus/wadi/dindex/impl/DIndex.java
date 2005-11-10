@@ -33,7 +33,7 @@ import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Dispatcher;
-import org.codehaus.wadi.dindex.BucketConfig;
+import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
 import org.codehaus.wadi.dindex.DIndexConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
@@ -42,10 +42,10 @@ import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
-public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig, SimplePartitionManager.Callback {
+public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConfig, SimplePartitionManager.Callback {
 
     protected final static String _nodeNameKey="nodeName";
-    protected final static String _bucketKeysKey="bucketKeys";
+    protected final static String _partitionKeysKey="partitionKeys";
     protected final static String _timeStampKey="timeStamp";
     protected final static String _birthTimeKey="birthTime";
     protected final static String _correlationIDMapKey="correlationIDMap";
@@ -84,8 +84,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig,
         _distributedState.put(_nodeNameKey, _nodeName);
         _distributedState.put(_correlationIDMapKey, new HashMap());
         _distributedState.put(_birthTimeKey, new Long(System.currentTimeMillis()));
-        BucketKeys keys=_partitionManager.getPartitionKeys();
-        _distributedState.put(_bucketKeysKey, keys);
+        PartitionKeys keys=_partitionManager.getPartitionKeys();
+        _distributedState.put(_partitionKeysKey, keys);
         _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
         _log.info("local state: "+keys);
         _partitionManager.init(config);
@@ -103,7 +103,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig,
         _log.info("starting...");
 
         _partitionManager.start();
-        
+
         _log.info("sleeping...");
         boolean isNotCoordinator=_coordinatorLatch.attempt(_inactiveTime); // wait to find out if we are the Coordinator
         _log.info("...waking");
@@ -111,8 +111,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig,
         // If our wait timed out, then we must be the coordinator...
         if (!isNotCoordinator) {
         	_partitionManager.localise();
-            BucketKeys k=_partitionManager.getPartitionKeys();
-            _distributedState.put(_bucketKeysKey, k);
+            PartitionKeys k=_partitionManager.getPartitionKeys();
+            _distributedState.put(_partitionKeysKey, k);
             _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
             _log.info("local state: "+k);
             _cluster.getLocalNode().setState(_distributedState);
@@ -123,7 +123,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig,
 
         // whether we are the coordinator or not...
         _partitionManager.dequeue();
-        
+
         _log.info("...started");
     }
 
@@ -132,7 +132,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig,
 
         Thread.interrupted();
 
-        BucketEvacuationRequest request=new BucketEvacuationRequest();
+        PartitionEvacuationRequest request=new PartitionEvacuationRequest();
         Node localNode=_cluster.getLocalNode();
         String correlationId=_cluster.getLocalNode().getName();
         while (_dispatcher.exchangeSend(localNode.getDestination(), _coordinatorNode.getDestination(), correlationId, request, _inactiveTime)==null) {
@@ -149,9 +149,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig,
         	_coordinator.stop();
         	_coordinator=null;
         }
-        
+
         _partitionManager.stop();
-        
+
         _log.info("...stopped");
     }
 
@@ -165,9 +165,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig,
 
     // ClusterListener
 
-    public int getBucket() {
+    public int getPartition() {
     	// TODO - think about synchronisation...
-    	BucketKeys keys=(BucketKeys)_distributedState.get(_bucketKeysKey);
+    	PartitionKeys keys=(PartitionKeys)_distributedState.get(_partitionKeysKey);
     	return keys.getKeys()[Math.abs((int)(Math.random()*keys.size()))];
     }
 
@@ -176,7 +176,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig,
         _log.info("onNodeUpdate: "+getNodeName(node)+": "+node.getState());
 
         _partitionManager.update(node);
-        
+
         Map state=node.getState();
         correlateStateUpdate(state);
     }
@@ -254,8 +254,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig,
         }
     }
 
-    public Collection[] createResultSet(int numBuckets, int[] keys) {
-        Collection[] c=new Collection[numBuckets];
+    public Collection[] createResultSet(int numPartitions, int[] keys) {
+        Collection[] c=new Collection[numPartitions];
         for (int i=0; i<keys.length; i++)
             c[keys[i]]=new ArrayList();
         return c;
@@ -332,7 +332,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig,
             _log.info(DIndex.getNodeName(node)+" : <unknown> - {?...}");
             return 0;
         } else {
-            BucketKeys keys=DIndex.getBucketKeys(node);
+            PartitionKeys keys=DIndex.getPartitionKeys(node);
             int amount=keys.size();
             _log.info(DIndex.getNodeName(node)+" : "+amount+" - "+keys);
             return amount;
@@ -356,8 +356,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig,
     }
 
     protected void onDIndexRequest(ObjectMessage om, DIndexRequest request) {
-        int bucketKey=request.getBucketKey(_numPartitions);
-        _partitionManager.getPartition(bucketKey).dispatch(om, request);
+        int partitionKey=request.getPartitionKey(_numPartitions);
+        _partitionManager.getPartition(partitionKey).dispatch(om, request);
     }
 
     // temporary test methods...
@@ -416,7 +416,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig,
         return Math.abs(name.hashCode()%_numPartitions);
     }
 
-    // BucketConfig
+    // PartitionConfig
 
     public String getNodeName(Destination destination) {
         Node local=_cluster.getLocalNode();
@@ -428,19 +428,19 @@ public class DIndex implements ClusterListener, CoordinatorConfig, BucketConfig,
         return _inactiveTime;
     }
 
-	public void regenerateMissingBuckets(Node[] living, Node[] leaving) {
+	public void regenerateMissingPartitions(Node[] living, Node[] leaving) {
 		_partitionManager.regenerateMissingPartitions(living, leaving);
 	}
 
-	public static BucketKeys getBucketKeys(Node node) {
-	    return ((BucketKeys)node.getState().get(_bucketKeysKey));
+	public static PartitionKeys getPartitionKeys(Node node) {
+	    return ((PartitionKeys)node.getState().get(_partitionKeysKey));
 	}
 
 
     // only for use whilst developing GridState...
 
-//    public BucketFacade[] getBuckets() {
-//    	return _buckets;
+//    public PartitionFacade[] getPartitions() {
+//    	return _partitions;
 //    }
 
 }

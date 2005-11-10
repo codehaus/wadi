@@ -18,24 +18,29 @@ package org.codehaus.wadi.dindex.impl;
 
 import java.io.Serializable;
 
-public class BucketTransferAcknowledgement implements Serializable {
+public class PartitionTransferCommand implements Serializable {
 
-    protected boolean _success;
-    
-    public BucketTransferAcknowledgement(boolean success) {
-        _success=success;
+    protected PartitionTransfer[] _transfers;
+
+    public PartitionTransferCommand(PartitionTransfer[] transfers) {
+        _transfers=transfers;
     }
-    
-    protected BucketTransferAcknowledgement() {
-        // used during deserialisation...
+
+    protected PartitionTransferCommand() {
+        // for deserialisation...
     }
-    
-    public boolean getSuccess() {
-        return _success;
+
+    public PartitionTransfer[] getTransfers() {
+        return _transfers;
     }
-    
-	
+
+
     public String toString() {
-        return "<BucketTransferAcknowledgement: "+_success+">";
+    	StringBuffer buffer=new StringBuffer("<PartitionTransferCommand: ");
+    	for (int i=0; i<_transfers.length; i++)
+    		buffer.append((i==0?"":",")+_transfers[i]);
+    	buffer.append(">");
+        return buffer.toString();
     }
+
 }

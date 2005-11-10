@@ -62,16 +62,16 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     protected final String _clusterUri;
     protected final String _clusterName;
     protected final String _nodeName;
-    protected final int _numBuckets;
+    protected final int _numPartitions;
 
-    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, InetSocketAddress httpAddress, HttpProxy httpProxy, String clusterUri, String clusterName, String nodeName, int numBuckets) {
+    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, InetSocketAddress httpAddress, HttpProxy httpProxy, String clusterUri, String clusterName, String nodeName, int numPartitions) {
         super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, errorIfSessionNotAcquired, streamer, accessOnLoad, replicaterFactory);
     	_httpAddress=httpAddress;
     	_httpProxy=httpProxy;
         _clusterUri=clusterUri;
         _clusterName=clusterName;
         _nodeName=nodeName;
-        _numBuckets=numBuckets;
+        _numPartitions=numPartitions;
     }
 
     public String getContextPath() { // TODO - integrate with Jetty/Tomcat
@@ -96,14 +96,14 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
             _dispatcher.init(this);
             _distributedState.put("name", _nodeName);
             _distributedState.put("http", _httpAddress);
-            _dindex=new DIndex(_nodeName, _numBuckets, _clusterFactory.getInactiveTime(), _cluster, _dispatcher, _distributedState);
+            _dindex=new DIndex(_nodeName, _numPartitions, _clusterFactory.getInactiveTime(), _cluster, _dispatcher, _distributedState);
             _dindex.init(this);
         } catch (Exception e) {
             _log.error("problem starting Cluster", e);
         }
         super.init(config);
     }
-    
+
     public void start() throws Exception {
     	_cluster.getLocalNode().setState(_distributedState);
     	_log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
@@ -202,7 +202,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
         return ((DefaultClusterFactory)_clusterFactory).getInactiveTime();
     }
 
-    public int getNumBuckets() {
+    public int getNumPartitions() {
         return 72; // TODO - parameterise...
     }
 
@@ -231,9 +231,9 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 
     // DIndexConfig
 
-    public void findRelevantSessionNames(int numBuckets, Collection[] resultSet) {
+    public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
         _log.info("findRelevantSessionNames");
-        _contextualiser.findRelevantSessionNames(numBuckets, resultSet);
+        _contextualiser.findRelevantSessionNames(numPartitions, resultSet);
     }
 
 	public HttpProxy getHttpProxy() {

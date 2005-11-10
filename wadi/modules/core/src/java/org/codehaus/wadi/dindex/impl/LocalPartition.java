@@ -26,7 +26,7 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.dindex.BucketConfig;
+import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.DIndexResponse;
 import org.codehaus.wadi.impl.RelocationRequest;
@@ -36,23 +36,23 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public class LocalBucket extends AbstractBucket implements Serializable {
+public class LocalPartition extends AbstractPartition implements Serializable {
 
-    protected static final Log _log = LogFactory.getLog(LocalBucket.class);
+    protected static final Log _log = LogFactory.getLog(LocalPartition.class);
 
     protected Map _map=new ConcurrentHashMap();
-    protected transient BucketConfig _config;
-    
-    public LocalBucket(int key) {
+    protected transient PartitionConfig _config;
+
+    public LocalPartition(int key) {
         super(key);
     }
 
-    protected LocalBucket() {
+    protected LocalPartition() {
         super();
         // for deserialisation...
     }
-    
-    public void init(BucketConfig config) {
+
+    public void init(PartitionConfig config) {
         _config=config;
     }
 
@@ -63,11 +63,11 @@ public class LocalBucket extends AbstractBucket implements Serializable {
     public String toString() {
         return "<local:"+_key+">";
     }
-    
+
     public void put(String name, Destination location) {
         _map.put(name, new LockableLocation(location));
     }
-    
+
     public void dispatch(ObjectMessage message, DIndexRequest request) {
     	if (request instanceof DIndexInsertionRequest) {
     		onMessage(message, (DIndexInsertionRequest)request);
@@ -81,12 +81,12 @@ public class LocalBucket extends AbstractBucket implements Serializable {
     		_log.info("What should I do with this ?: "+request);
     	}
     }
-    
+
     public static class LockableLocation implements Serializable {
 
     	public Destination _location;
     	public transient Sync _lock;
-    	
+
     	public LockableLocation(Destination location) {
     		_lock=new Mutex();
     		_location=location;
@@ -108,7 +108,7 @@ public class LocalBucket extends AbstractBucket implements Serializable {
     	}
 
     }
-    
+
     protected void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
         Destination location=null;
         try{location=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
@@ -118,7 +118,7 @@ public class LocalBucket extends AbstractBucket implements Serializable {
         // we can optimise local-local send here - TODO
         _config.getDispatcher().reply(message, response);
     }
-    
+
     protected void onMessage(ObjectMessage message, DIndexDeletionRequest request) {
 		LockableLocation oldValue=(LockableLocation)_map.remove(request.getName());
 		_log.info("delete "+request.getName()+" : "+_config.getNodeName(oldValue._location));
@@ -128,7 +128,7 @@ public class LocalBucket extends AbstractBucket implements Serializable {
 		// we can optimise local-local send here - TODO
 		_config.getDispatcher().reply(message, response);
     }
-    
+
     protected void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
         Destination newLocation=null;
         try{newLocation=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
@@ -143,7 +143,7 @@ public class LocalBucket extends AbstractBucket implements Serializable {
         // we can optimise local-local send here - TODO
         _config.getDispatcher().reply(message, response);
     }
-    
+
     protected void onMessage(ObjectMessage message, DIndexForwardRequest request) {
         // we have got to someone who actually knows where we want to go.
         // strip off wrapper and deliver actual request to its final destination...
@@ -173,11 +173,11 @@ public class LocalBucket extends AbstractBucket implements Serializable {
         			_log.error("unexpected problem, e");
         		}
         	}
-        	
+
         	_log.info("directing: " +request+" -> "+_config.getNodeName(ll._location));
         	if (!_config.getDispatcher().forward(message, ll._location, request.getRequest()))
         		_log.warn("could not forward message");
-        }	
+        }
     }
 
 }

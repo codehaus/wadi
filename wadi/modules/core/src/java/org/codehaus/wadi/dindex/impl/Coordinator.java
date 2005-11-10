@@ -104,16 +104,16 @@ public class Coordinator implements Runnable {
     public void rebalanceClusterState() {
     	int failures=0;
     	try {
-    		
+
     		Map nodeMap=_cluster.getNodes();
-    		
+
     		Collection stayingNodes=nodeMap.values();
     		synchronized (stayingNodes) {stayingNodes=new ArrayList(stayingNodes);} // snapshot
     		stayingNodes.add(_cluster.getLocalNode());
-    		
+
     		Collection l=_config.getLeavers();
     		synchronized (l) {l=new ArrayList(l);} // snapshot
-    		
+
     		Collection leavingNodes=new ArrayList();
     		for (Iterator i=l.iterator(); i.hasNext(); ) {
     			Destination d=(Destination)i.next();
@@ -123,37 +123,37 @@ public class Coordinator implements Runnable {
     				stayingNodes.remove(leaver);
     			}
     		}
-    		
+
     		_log.info("--------");
     		_log.info("STAYING:");
     		printNodes(stayingNodes);
     		_log.info("LEAVING:");
     		printNodes(leavingNodes);
     		_log.info("--------");
-    		
+
     		Node [] leaving=(Node[])leavingNodes.toArray(new Node[leavingNodes.size()]);
-    		
+
     		if (stayingNodes.size()==0) {
     			_log.warn("we are the last node - no need to rebalance cluster");
     		} else {
-    			
+
     			Node [] living=(Node[])stayingNodes.toArray(new Node[stayingNodes.size()]);
-    			
-    			_config.regenerateMissingBuckets(living, leaving);
-    			
+
+    			_config.regenerateMissingPartitions(living, leaving);
+
     			RedistributionPlan plan=new RedistributionPlan(living, leaving, _numItems);
-    			
+
     			_log.info("--------");
     			_log.info("BEFORE:");
     			printNodes(living, leaving);
     			_log.info("--------");
-    			
+
     			Map rvMap=_config.getRendezVousMap();
     			Quipu rv=new Quipu(0);
     			String correlationId=_dispatcher.nextCorrelationId();
     			rvMap.put(correlationId, rv);
     			execute(plan, correlationId, rv); // quipu will be incremented as participants are invited
-    			
+
     			try {
     				_log.info("WAITING ON RENDEZVOUS");
     				if (rv.waitFor(_inactiveTime)) {
@@ -173,19 +173,19 @@ public class Coordinator implements Runnable {
     				rvMap.remove(correlationId);
     				// somehow check all returned success.. - TODO
     			}
-    			
+
     			_log.info("--------");
     			_log.info("AFTER:");
     			printNodes(living, leaving);
     			_log.info("--------");
     		}
-    		
+
     		// send EvacuationResponses to each leaving node... - hmmm....
     		Collection left=_config.getLeft();
     		for (int i=0; i<leaving.length; i++) {
     			Node node=leaving[i];
     			if (!left.contains(node.getDestination())) {
-    				BucketEvacuationResponse response=new BucketEvacuationResponse();
+    				PartitionEvacuationResponse response=new PartitionEvacuationResponse();
     				if (!_dispatcher.reply(_cluster.getLocalNode().getDestination(), node.getDestination(), node.getName(), response)) {
     					_log.error("problem sending EvacuationResponse to "+DIndex.getNodeName(node));
     					failures++;
@@ -193,12 +193,12 @@ public class Coordinator implements Runnable {
     				left.add(node.getDestination());
     			}
     		}
-    		
+
     	} catch (Throwable t) {
     		_log.warn("problem rebalancing indeces", t);
     		failures++;
     	}
-    	
+
     	if (failures>0) {
     		_log.warn("rebalance failed - backing off for "+_inactiveTime+" millis...");
     		queueRebalancing();
@@ -210,26 +210,26 @@ public class Coordinator implements Runnable {
         Iterator p=plan.getProducers().iterator();
         Iterator c=plan.getConsumers().iterator();
 
-        BucketOwner consumer=null;
+        PartitionOwner consumer=null;
         while (p.hasNext()) {
-            BucketOwner producer=(BucketOwner)p.next();
+            PartitionOwner producer=(PartitionOwner)p.next();
             Collection transfers=new ArrayList();
             while (producer._deviation>0) {
                 if (consumer==null)
-                    consumer=c.hasNext()?(BucketOwner)c.next():null;
+                    consumer=c.hasNext()?(PartitionOwner)c.next():null;
                     if (producer._deviation>=consumer._deviation) {
-                        transfers.add(new BucketTransfer(consumer._node.getDestination(), DIndex.getNodeName(consumer._node), consumer._deviation));
+                        transfers.add(new PartitionTransfer(consumer._node.getDestination(), DIndex.getNodeName(consumer._node), consumer._deviation));
                         producer._deviation-=consumer._deviation;
                         consumer._deviation=0;
                         consumer=null;
                     } else {
-                        transfers.add(new BucketTransfer(consumer._node.getDestination(), DIndex.getNodeName(consumer._node), producer._deviation));
+                        transfers.add(new PartitionTransfer(consumer._node.getDestination(), DIndex.getNodeName(consumer._node), producer._deviation));
                         consumer._deviation-=producer._deviation;
                         producer._deviation=0;
                     }
             }
 
-            BucketTransferCommand command=new BucketTransferCommand((BucketTransfer[])transfers.toArray(new BucketTransfer[transfers.size()]));
+            PartitionTransferCommand command=new PartitionTransferCommand((PartitionTransfer[])transfers.toArray(new PartitionTransfer[transfers.size()]));
             quipu.increment();
             if (!_dispatcher.send(_cluster.getLocalNode().getDestination(), producer._node.getDestination(), correlationId, command)) {
                 _log.error("problem sending transfer command");
@@ -261,7 +261,7 @@ public class Coordinator implements Runnable {
             _log.info(DIndex.getNodeName(node)+" : <unknown>");
             return 0;
         } else {
-            BucketKeys keys=DIndex.getBucketKeys(node);
+            PartitionKeys keys=DIndex.getPartitionKeys(node);
             int amount=keys.size();
             _log.info(DIndex.getNodeName(node)+" : "+amount+" - "+keys);
             return amount;

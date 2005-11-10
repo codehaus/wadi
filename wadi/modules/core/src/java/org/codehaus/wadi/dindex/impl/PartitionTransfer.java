@@ -18,24 +18,34 @@ package org.codehaus.wadi.dindex.impl;
 
 import java.io.Serializable;
 
-public class BucketTransferResponse implements Serializable {
+import javax.jms.Destination;
 
-    protected boolean _success;
+public class PartitionTransfer implements Serializable {
+
+    public Destination _destination;
+    public String _name; // TODO - only here for debugging...
+    public int _amount;
     
-    public BucketTransferResponse(boolean success) {
-        _success=success;
+    public PartitionTransfer(Destination destination, String name, int amount) {
+        _destination=destination;
+        _name=name;
+        _amount=amount;
     }
     
-    protected BucketTransferResponse() {
-        // used during deserialisation...
+    protected PartitionTransfer() {
+        // for deserialisation...
+    }
+
+    public Destination getDestination() {
+        return _destination;
     }
     
-    public boolean getSuccess() {
-        return _success;
+    public int getAmount() {
+        return _amount;
     }
     
     public String toString() {
-        return "<BucketTransferResponse: "+_success+">";
+        return "<transfer: "+_amount+"->"+_name+">";
     }
     
 }

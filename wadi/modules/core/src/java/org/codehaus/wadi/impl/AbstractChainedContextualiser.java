@@ -52,11 +52,11 @@ public abstract class AbstractChainedContextualiser extends AbstractContextualis
 
   public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {/* do nothing */}
   public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newTime) {/* do nothing */}
-  
-  public void findRelevantSessionNames(int numBuckets, Collection[] resultSet) {
-      super.findRelevantSessionNames(numBuckets, resultSet);
+
+  public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
+      super.findRelevantSessionNames(numPartitions, resultSet);
       if (_next.isExclusive())
-          _next.findRelevantSessionNames(numBuckets, resultSet);
+          _next.findRelevantSessionNames(numPartitions, resultSet);
   }
-  
+
 }

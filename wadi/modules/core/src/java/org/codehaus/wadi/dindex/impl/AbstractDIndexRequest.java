@@ -23,12 +23,12 @@ import org.codehaus.wadi.dindex.DIndexRequest;
 public abstract class AbstractDIndexRequest implements DIndexRequest, Serializable {
 
     protected String _name;
-    
+
     public AbstractDIndexRequest(String name) {
         super();
         _name=name;
     }
-    
+
     protected AbstractDIndexRequest() {
         // for deserialisation...
     }
@@ -37,8 +37,8 @@ public abstract class AbstractDIndexRequest implements DIndexRequest, Serializab
         return _name;
     }
 
-    public int getBucketKey(int numBuckets) {
-        return Math.abs(_name.hashCode()%numBuckets);
+    public int getPartitionKey(int numPartitions) {
+        return Math.abs(_name.hashCode()%numPartitions);
     }
 
 }

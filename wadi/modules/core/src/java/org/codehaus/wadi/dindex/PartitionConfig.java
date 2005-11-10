@@ -21,7 +21,7 @@ import javax.jms.Destination;
 import org.activecluster.Cluster;
 import org.codehaus.wadi.Dispatcher;
 
-public interface BucketConfig {
+public interface PartitionConfig {
 
     Dispatcher getDispatcher();
     Cluster getCluster();

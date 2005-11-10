@@ -145,11 +145,11 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
     public int getLocalSessionCount() {
     	return getSize()+_next.getLocalSessionCount();
     }
-    
+
     public int getSize() {
     	return _map.size();
     }
-    
+
     // EvicterConfig
 
     // BestEffortEvicters
@@ -179,12 +179,12 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
     public int getMaxInactiveInterval() {return _config.getMaxInactiveInterval();}
 
     // enumerate the keys of all exclusively owned sessions in our stack...
-    public void findRelevantSessionNames(int numBuckets, Collection[] resultSet) {
-        super.findRelevantSessionNames(numBuckets, resultSet);
+    public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
+        super.findRelevantSessionNames(numPartitions, resultSet);
         int matches=0;
         for (Iterator i=_map.keySet().iterator(); i.hasNext(); ) {
             String name=(String)i.next();
-            int key=Math.abs(name.hashCode()%numBuckets);
+            int key=Math.abs(name.hashCode()%numPartitions);
             Collection c=resultSet[key];
             if (c!=null) {
                 c.add(name);
@@ -194,5 +194,5 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         if (matches>0)
             _log.debug("matches found: "+matches);
     }
-    
+
 }

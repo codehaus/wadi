@@ -38,7 +38,7 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
         super();
         _cluster=cluster;
     }
-    
+
     public ClassLoader getClassLoader() {
     	return getClass().getClassLoader();
     }
@@ -68,51 +68,51 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
     public Object getDistributedState(Object key) {
     	return _state.get(key);
     }
-    
+
     public Object putDistributedState(Object key, Object newValue) {
     	return _state.put(key, newValue);
     }
-    
+
     public Object removeDistributedState(Object key) {
     	return _state.remove(key);
     }
-    
+
     public void distributeState() {
     }
-    
+
     public boolean getAccessOnLoad() {
     	// TODO Auto-generated method stub
     	return false;
     }
-    
+
     public SynchronizedBoolean getShuttingDown() {
     	// TODO Auto-generated method stub
     	return null;
     }
-    
+
     public Map getDistributedState() {
     	// TODO Auto-generated method stub
     	return null;
     }
-    
+
     public long getInactiveTime() {
     	// TODO Auto-generated method stub
     	return 0;
     }
-    
-    public int getNumBuckets() {
+
+    public int getNumPartitions() {
     	// TODO Auto-generated method stub
     	return 0;
     }
-    
+
     public Dispatcher getDispatcher() {
     	return null;
     }
-    
+
     public DIndex getDIndex() {
     	return null;
     }
-    
+
     public Contextualiser getContextualiser() {
     	return null;
     }

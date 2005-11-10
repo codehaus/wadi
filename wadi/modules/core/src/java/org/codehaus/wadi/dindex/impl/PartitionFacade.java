@@ -23,8 +23,8 @@ import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Dispatcher;
-import org.codehaus.wadi.dindex.Bucket;
-import org.codehaus.wadi.dindex.BucketConfig;
+import org.codehaus.wadi.dindex.Partition;
+import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.impl.Quipu;
 
@@ -33,19 +33,19 @@ import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
-public class BucketFacade extends AbstractBucket {
+public class PartitionFacade extends AbstractPartition {
 
-    protected static final Log _log = LogFactory.getLog(BucketFacade.class);
+    protected static final Log _log = LogFactory.getLog(PartitionFacade.class);
 
     protected final ReadWriteLock _lock=new WriterPreferenceReadWriteLock();
     protected final LinkedQueue _queue=new LinkedQueue();
-    protected final BucketConfig _config;
-    
+    protected final PartitionConfig _config;
+
     protected boolean _queueing;
     protected long _timeStamp;
-    protected Bucket _content;
+    protected Partition _content;
 
-    public BucketFacade(int key, long timeStamp, Bucket content, boolean queueing, BucketConfig config) {
+    public PartitionFacade(int key, long timeStamp, Partition content, boolean queueing, PartitionConfig config) {
         super(key);
         _config=config;
         _timeStamp=timeStamp;
@@ -73,7 +73,7 @@ public class BucketFacade extends AbstractBucket {
         throw new UnsupportedOperationException();
     }
 
-    public Bucket getContent() {
+    public Partition getContent() {
         Sync sync=_lock.writeLock();
         boolean acquired=false;
         try {
@@ -92,7 +92,7 @@ public class BucketFacade extends AbstractBucket {
         throw new UnsupportedOperationException();
     }
 
-    public void setContent(long timeStamp, Bucket content) {
+    public void setContent(long timeStamp, Partition content) {
         Sync sync=_lock.writeLock();
         boolean acquired=false;
         try {
@@ -122,11 +122,11 @@ public class BucketFacade extends AbstractBucket {
 
             if (timeStamp>_timeStamp) {
                 _timeStamp=timeStamp;
-                if (_content instanceof RemoteBucket) {
-                    ((RemoteBucket)_content).setLocation(location);
+                if (_content instanceof RemotePartition) {
+                    ((RemotePartition)_content).setLocation(location);
                 } else {
                     _log.trace("["+_key+"] changing location from: "+_content+" to: "+location);
-                    _content=new RemoteBucket(_key, _config, location);
+                    _content=new RemotePartition(_key, _config, location);
                 }
             }
 
@@ -137,7 +137,7 @@ public class BucketFacade extends AbstractBucket {
                 sync.release();
         }
     }
-    
+
     public ObjectMessage exchange(ObjectMessage message, DIndexRequest request, long timeout) {
         Dispatcher dispatcher=_config.getDispatcher();
         String correlationId=dispatcher.nextCorrelationId();
@@ -150,7 +150,7 @@ public class BucketFacade extends AbstractBucket {
         }
         return dispatcher.attemptRendezVous(correlationId, rv, timeout);
     }
-    
+
     public void dispatch(ObjectMessage om, DIndexRequest request) {
         // two modes:
         // direct dispatch

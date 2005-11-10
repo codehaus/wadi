@@ -16,32 +16,17 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
-import javax.jms.ObjectMessage;
+import java.io.Serializable;
 
-import org.codehaus.wadi.dindex.DIndexRequest;
+public class PartitionEvacuationResponse implements Serializable {
 
-public class DummyBucket extends AbstractBucket {
-
-    public DummyBucket(int key) {
-        super(key);
-    }
-
-    protected DummyBucket() {
+    public PartitionEvacuationResponse() {
         super();
-        // for seriflisation...
-        throw new UnsupportedOperationException();
+        // TODO Auto-generated constructor stub
     }
 
-    public boolean isLocal() {
-        return false;
-    }
 
-	public String toString() {
-        return "<unknown>";
+    public String toString() {
+        return "<PartitionEvacuationResponse>";
     }
-
-    public void dispatch(ObjectMessage om, DIndexRequest request) {
-        throw new UnsupportedOperationException();
-    }
-
 }

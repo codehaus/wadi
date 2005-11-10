@@ -40,7 +40,7 @@ public interface ClusteredContextualiserConfig extends DistributableContextualis
 
     Map getDistributedState();
     long getInactiveTime();
-    int getNumBuckets();
+    int getNumPartitions();
     ActiveClusterDispatcher getDispatcher();
     DIndex getDIndex();
 

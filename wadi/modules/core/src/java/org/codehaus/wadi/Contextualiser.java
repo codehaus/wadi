@@ -43,7 +43,7 @@ public interface Contextualiser extends Lifecycle {
 
     void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
     void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
-    
+
 	boolean isExclusive();
 
 	/**
@@ -58,12 +58,12 @@ public interface Contextualiser extends Lifecycle {
     // perhaps these two could be collapsed...
     void promoteToExclusive(Immoter immoter); // TODO - 'orrible name...
     void load(Emoter emoter, Immoter immoter);
-    
+
     void init(ContextualiserConfig config);
     void destroy();
 
-    void findRelevantSessionNames(int numBuckets, Collection[] resultSet);
-    
+    void findRelevantSessionNames(int numPartitions, Collection[] resultSet);
+
     int getLocalSessionCount();
-    
+
 }
