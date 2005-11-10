@@ -14,12 +14,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox.io;
 
-import org.codehaus.wadi.gridstate.ExtendedCluster;
+import javax.jms.BytesMessage;
+import javax.jms.JMSException;
 
-public interface ActiveClusterDispatcherConfig extends DispatcherConfig {
+import org.codehaus.wadi.Config;
 
-    ExtendedCluster getCluster();
+public interface BytesMessageOutputStreamConfig extends Config {
+
+    void send(BytesMessage message) throws JMSException;
+    BytesMessage createBytesMessage() throws JMSException;
 
 }

@@ -14,12 +14,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox.io;
 
-import org.codehaus.wadi.gridstate.ExtendedCluster;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-public interface ActiveClusterDispatcherConfig extends DispatcherConfig {
+public interface StreamConnection {
 
-    ExtendedCluster getCluster();
-
+    InputStream getInputStream() throws IOException;
+    OutputStream getOutputStream() throws IOException;
+    
 }

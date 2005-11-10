@@ -14,12 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox.io.impl;
 
-import org.codehaus.wadi.gridstate.ExtendedCluster;
+public class ThreadFactory implements EDU.oswego.cs.dl.util.concurrent.ThreadFactory {
 
-public interface ActiveClusterDispatcherConfig extends DispatcherConfig {
+    protected int _count;
 
-    ExtendedCluster getCluster();
+    public Thread newThread(Runnable runnable) {
+        return new Thread(runnable, "WADI Pool ("+(_count++)+")");
+    }
 
 }

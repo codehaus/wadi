@@ -40,7 +40,6 @@ import org.activecluster.LocalNode;
 import org.activecluster.Node;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Evictable;
-import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
@@ -52,7 +51,8 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.io.Server;
+import org.codehaus.wadi.gridstate.ExtendedCluster;
+import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
@@ -506,7 +506,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     public ActiveClusterDispatcher getDispatcher() {return _dispatcher;}
     public Location getLocation() {return _location;}
     public Contextualiser getContextualiser() {return _top;}
-    public Server getServer() {return ((ClusteredContextualiserConfig)_config).getServer();}
     public String getNodeName() {return _nodeName;}
     public SynchronizedBoolean getShuttingDown() {return _shuttingDown;}
     public HttpProxy getHttpProxy() {return ((ClusteredContextualiserConfig)_config).getHttpProxy();}

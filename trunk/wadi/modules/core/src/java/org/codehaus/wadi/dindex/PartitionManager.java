@@ -19,8 +19,6 @@ package org.codehaus.wadi.dindex;
 import org.activecluster.Node;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
 import org.codehaus.wadi.dindex.impl.PartitionKeys;
-import org.codehaus.wadi.gridstate.PartitionConfig;
-import org.codehaus.wadi.gridstate.impl.Partition;
 
 /**
  * A PartitionManager is responsible for unambiguously renegotiating Partition ownership every time

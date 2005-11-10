@@ -39,7 +39,6 @@ import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableSessionConfig;
 import org.codehaus.wadi.Emoter;
-import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.Immoter;
@@ -49,12 +48,13 @@ import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionRelocater;
 import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.impl.CustomClusterFactory;
+import org.codehaus.wadi.gridstate.ExtendedCluster;
+import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
+import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
-import org.codehaus.wadi.impl.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SimpleMotable;
@@ -62,13 +62,13 @@ import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.StreamingMigratingRelocater;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.io.Pipe;
-import org.codehaus.wadi.io.PeerConfig;
-import org.codehaus.wadi.io.Server;
-import org.codehaus.wadi.io.ServerConfig;
-import org.codehaus.wadi.io.impl.ClusterServer;
-import org.codehaus.wadi.io.impl.Peer;
-import org.codehaus.wadi.io.impl.ThreadFactory;
+import org.codehaus.wadi.sandbox.io.PeerConfig;
+import org.codehaus.wadi.sandbox.io.Pipe;
+import org.codehaus.wadi.sandbox.io.Server;
+import org.codehaus.wadi.sandbox.io.ServerConfig;
+import org.codehaus.wadi.sandbox.io.impl.ClusterServer;
+import org.codehaus.wadi.sandbox.io.impl.Peer;
+import org.codehaus.wadi.sandbox.io.impl.ThreadFactory;
 import org.codehaus.wadi.test.DummyDistributableSessionConfig;
 import org.codehaus.wadi.test.EtherEmoter;
 import org.codehaus.wadi.test.MyDummyHttpServletRequestWrapperPool;
@@ -392,7 +392,6 @@ public class TestMotion extends TestCase {
         public Map getMap() {return null;}
         public Cluster getCluster() {return null;}
         public Contextualiser getContextualiser() {return null;}
-        public Server getServer() {return null;}
         public String getNodeName() {return null;}
         public SynchronizedBoolean getShuttingDown() {return null;}
         public HttpProxy getHttpProxy() {return null;}

@@ -19,7 +19,7 @@ package org.codehaus.wadi.test.io;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import org.codehaus.wadi.io.impl.ByteBufferInputStream;
+import org.codehaus.wadi.sandbox.io.impl.ByteBufferInputStream;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import junit.framework.TestCase;

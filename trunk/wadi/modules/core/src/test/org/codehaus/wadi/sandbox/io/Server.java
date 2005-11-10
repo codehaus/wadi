@@ -14,12 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox.io;
 
-import org.codehaus.wadi.gridstate.ExtendedCluster;
+public interface Server {
 
-public interface ActiveClusterDispatcherConfig extends DispatcherConfig {
-
-    ExtendedCluster getCluster();
-
+    void init(ServerConfig config);
+    void start() throws Exception;
+    void stop() throws Exception;
+    void waitForExistingPipes();
+    void stopAcceptingPipes();
+    
+    // Connection container...
+    
+    void run(Pipe pipe);
+    
 }

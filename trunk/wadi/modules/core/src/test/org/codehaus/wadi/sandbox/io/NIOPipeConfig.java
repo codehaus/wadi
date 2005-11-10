@@ -14,12 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox.io;
 
-import org.codehaus.wadi.gridstate.ExtendedCluster;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public interface ActiveClusterDispatcherConfig extends DispatcherConfig {
+public interface NIOPipeConfig extends PipeConfig {
 
-    ExtendedCluster getCluster();
-
+    Sync getLock();
+    
 }

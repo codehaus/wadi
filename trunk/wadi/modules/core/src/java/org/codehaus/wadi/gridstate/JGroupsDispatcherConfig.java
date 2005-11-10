@@ -14,12 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.gridstate;
 
-import org.codehaus.wadi.gridstate.ExtendedCluster;
+import org.codehaus.wadi.DispatcherConfig;
+import org.jgroups.Channel;
 
-public interface ActiveClusterDispatcherConfig extends DispatcherConfig {
+public interface JGroupsDispatcherConfig extends DispatcherConfig {
 
-    ExtendedCluster getCluster();
-
+	Channel getChannel();
+	
 }

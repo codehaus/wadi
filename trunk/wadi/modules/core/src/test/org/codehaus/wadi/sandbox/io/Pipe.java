@@ -14,12 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox.io;
 
-import org.codehaus.wadi.gridstate.ExtendedCluster;
+import java.io.IOException;
 
-public interface ActiveClusterDispatcherConfig extends DispatcherConfig {
+import org.codehaus.wadi.sandbox.io.impl.Peer;
 
-    ExtendedCluster getCluster();
+public interface Pipe extends Runnable, StreamConnection {
+
+    void run(); // reads peer from input, and runs it...
+    boolean run(Peer peer) throws Exception; // run a Peer ...
+    //void commit() throws IOException; // producer has finished
+    void close() throws IOException; // consumer has finished
 
 }
