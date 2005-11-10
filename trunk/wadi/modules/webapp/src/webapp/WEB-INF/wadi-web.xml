@@ -339,6 +339,27 @@
     <constructor-arg type="int"><value>${http.port}</value></constructor-arg>
   </bean>
 
+  <bean
+    id="PartitionManager"
+    class="org.codehaus.wadi.gridstate.impl.DummyPartitionManager"
+    >
+    <constructor-arg><ref bean="NumPartitions"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="Dispatcher"
+    class="org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher"
+    >
+    <constructor-arg><value>${node.name}</value></constructor-arg>
+    <constructor-arg><value>CLUSTER0</value></constructor-arg>
+    <constructor-arg><ref bean="PartitionManager"/></constructor-arg>
+<!--
+    <constructor-arg><value>peer://org.codehaus.wadi</value></constructor-arg>
+ -->
+    <constructor-arg><value>tcp://localhost:61616</value></constructor-arg>
+    <constructor-arg type="long"><value>5000</value></constructor-arg>
+  </bean>
+
   <!-- and finally - the SessionManager itself -->
 
   <bean
@@ -359,13 +380,7 @@
     <constructor-arg><ref bean="ReplicaterFactory"/></constructor-arg>
     <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
-<!--
-    <constructor-arg index="14"><value>peer://org.codehaus.wadi</value></constructor-arg>
- -->
-    <constructor-arg index="14"><value>tcp://localhost:61616</value></constructor-arg>
-    <constructor-arg index="15"><value>CLUSTER0</value></constructor-arg>
-    <constructor-arg index="16"><value>${node.name}</value></constructor-arg>
-    <constructor-arg index="17"><ref bean="NumPartitions"/></constructor-arg>
+    <constructor-arg><ref bean="Dispatcher"/></constructor-arg>
   </bean>
 
 

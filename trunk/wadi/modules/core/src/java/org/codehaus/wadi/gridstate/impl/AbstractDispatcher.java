@@ -29,8 +29,10 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
+import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
@@ -47,12 +49,19 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractDispatcher implements Dispatcher {
+public abstract class AbstractDispatcher implements Dispatcher, PartitionManagerConfig {
 	
+    protected final String _nodeName;
+    protected final String _clusterName;
+    protected final PartitionManager _partitionManager;
+
 	protected final Map _map = new HashMap();
 	protected final PooledExecutor _executor;
 	
-	public AbstractDispatcher() {
+	public AbstractDispatcher(String nodeName, String clusterName, PartitionManager partitionManager) {
+		_nodeName=nodeName;
+		_clusterName=clusterName;
+		_partitionManager=partitionManager;
 		_executor=new PooledExecutor(); // parameterise
 		//_executor.setMinimumPoolSize(200);
 		//_executor.runWhenBlocked();
@@ -564,6 +573,14 @@ public abstract class AbstractDispatcher implements Dispatcher {
 			_log.error("problem forwarding message", e);
 			return false;
 		}
+	}
+	
+	public String getNodeName() {
+		return _nodeName;
+	}
+	
+	public PartitionManager getPartitionManager() {
+		return _partitionManager;
 	}
 	
 }

@@ -43,6 +43,10 @@ public class StaticPartitionManager implements PartitionManager {
 	public Partition[] getPartitions() {
 		return _partitions;
 	}
+	
+	public int getNumPartitions() {
+		return _partitions.length;
+	}
 
     protected final static Log _log=LogFactory.getLog(StaticPartitionManager.class);
 

@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.gridstate.jgroups;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ import javax.jms.Destination;
 import javax.jms.ObjectMessage;
 
 import org.codehaus.wadi.gridstate.DispatcherConfig;
+import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.impl.AbstractDispatcher;
 import org.jgroups.Address;
 import org.jgroups.Channel;
@@ -44,8 +46,8 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 	protected Map _localState;
 	protected Map _clusterState;
 	
-	public JGroupsDispatcher() {
-		super();
+	public JGroupsDispatcher(String nodeName, String clusterName, PartitionManager partitionManager) {
+		super(nodeName, clusterName, partitionManager);
 		_clusterState=new HashMap();
 		register(this, "onMessage", JGroupsStateUpdate.class);
 	}
@@ -147,5 +149,9 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
     public void setOutgoingCorrelationId(ObjectMessage message, String correlationId) throws Exception {
     	((JGroupsObjectMessage)message).setOutgoingCorrelationId(correlationId);
     }
+
+    public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
+		throw new UnsupportedOperationException("NYI");
+	}
 	
 }

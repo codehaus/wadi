@@ -18,7 +18,6 @@ package org.codehaus.wadi.gridstate;
 
 import org.activecluster.Cluster;
 import org.activemq.ActiveMQConnectionFactory;
-import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.PartitionManager;
@@ -103,7 +102,7 @@ public class TestGCache extends TestCase {
     }
 
     interface StateManagerFactory {
-    	StateManager createStateManager(String name, PartitionManager manager) throws Exception;
+    	StateManager createStateManager(String name, PartitionManager partitionManager) throws Exception;
     }
 
     abstract class AbstractStateManagerFactory implements StateManagerFactory {
@@ -126,6 +125,10 @@ public class TestGCache extends TestCase {
 		public Channel getChannel() {
 			return _channel;
 		}
+		
+		public String getContextPath() {
+			return "/";
+		}
 
 	}
 
@@ -135,10 +138,10 @@ public class TestGCache extends TestCase {
     		super(timeout);
     	}
 
-    	public StateManager createStateManager(String name, PartitionManager manager) throws Exception {
-    		Dispatcher dispatcher=new JGroupsDispatcher();
+    	public StateManager createStateManager(String nodeName, PartitionManager partitionManager) throws Exception {
+    		Dispatcher dispatcher=new JGroupsDispatcher(nodeName, _clusterName, partitionManager);
     		dispatcher.init(new MyJGroupsDispatcherConfig());
-    		return new IndirectStateManager(name, manager, _mapper, dispatcher, _timeout);
+    		return new IndirectStateManager(nodeName, partitionManager, _mapper, dispatcher, _timeout);
     	}
     }
 
@@ -162,6 +165,11 @@ public class TestGCache extends TestCase {
 		public ExtendedCluster getCluster() {
 			return (ExtendedCluster)_cluster;
 		}
+
+		public String getContextPath() {
+			return "/";
+		}
+
 	}
 
 
@@ -171,13 +179,10 @@ public class TestGCache extends TestCase {
     		super(timeout);
     	}
 
-    	public StateManager createStateManager(String name, PartitionManager manager) throws Exception {
-    		System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
-    		//_clusterFactory.setInactiveTime(100000L); // ???
-    		_cluster=_clusterFactory.createCluster(_clusterName);
-    		Dispatcher dispatcher=new ActiveClusterDispatcher(name);
+    	public StateManager createStateManager(String nodeName, PartitionManager partitionManager) throws Exception {
+    		Dispatcher dispatcher=new ActiveClusterDispatcher(nodeName, _clusterName, partitionManager, _clusterUri, 5000L);
     		dispatcher.init(new MyActiveClusterDispatcherConfig(_cluster));
-    		return new IndirectStateManager(name, manager, _mapper, dispatcher, _timeout);
+    		return new IndirectStateManager(nodeName, partitionManager, _mapper, dispatcher, _timeout);
     	}
     }
 

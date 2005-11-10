@@ -21,17 +21,15 @@ import java.util.Map;
 
 import javax.jms.Destination;
 
-import org.activemq.ActiveMQConnectionFactory;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcherConfig;
-import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
+import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
@@ -44,47 +42,40 @@ public class DIndexNode implements ActiveClusterDispatcherConfig, PartitionManag
     //protected final String _clusterUri="tcp://localhost:61616";
     //protected final String _clusterUri="tcp://smilodon:61616";
     protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
-    protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
-    protected final CustomClusterFactory _clusterFactory=new CustomClusterFactory(_connectionFactory);
-    protected final Dispatcher _dispatcher=new ActiveClusterDispatcher();
+    protected final ActiveClusterDispatcher _dispatcher;
     protected final Map _distributedState=new ConcurrentHashMap();
     protected final String _nodeName;
     protected final int _numPartitions;
 
-    protected String getContextPath() {
+    public String getContextPath() {
         return "/";
     }
 
     public DIndexNode(String nodeName, int numPartitions) {
         _nodeName=nodeName;
+        _dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, new DummyPartitionManager(numPartitions), _clusterUri, 5000L);
         _numPartitions=numPartitions;
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
     }
 
     protected DIndex _dindex;
-    protected ExtendedCluster _cluster;
 
     public void start() throws Exception {
-        _connectionFactory.start();
-        _cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
         _dispatcher.init(this);
-        _dindex=new DIndex(_nodeName, _numPartitions, _clusterFactory.getInactiveTime(), _cluster, _dispatcher, _distributedState);
+        _dindex=new DIndex(_nodeName, _numPartitions, _dispatcher.getInactiveTime(), _dispatcher.getCluster(), _dispatcher, _distributedState);
         _dindex.init(this);
         _log.info("starting Cluster...");
-        _cluster.getLocalNode().setState(_distributedState);
-        _cluster.start();
+        _dispatcher.setDistributedState(_distributedState);
         _log.info("...Cluster started");
         _dindex.start();
     }
 
     public void stop() throws Exception {
         _dindex.stop();
-        _cluster.stop();
-        _connectionFactory.stop();
     }
 
     public ExtendedCluster getCluster() {
-        return _cluster;
+        return (ExtendedCluster)_dispatcher.getCluster();
     }
 
     public DIndex getDIndex() {
@@ -92,7 +83,7 @@ public class DIndexNode implements ActiveClusterDispatcherConfig, PartitionManag
     }
 
     public Destination getDestination() {
-        return _cluster.getLocalNode().getDestination();
+        return _dispatcher.getLocalDestination();
     }
 
     // DIndexConfig

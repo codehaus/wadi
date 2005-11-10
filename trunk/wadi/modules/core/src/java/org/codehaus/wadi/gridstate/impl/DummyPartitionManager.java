@@ -14,14 +14,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate;
+package org.codehaus.wadi.gridstate.impl;
 
-import org.codehaus.wadi.gridstate.impl.Partition;
+import org.codehaus.wadi.gridstate.PartitionConfig;
+import org.codehaus.wadi.gridstate.PartitionManager;
 
-public interface PartitionManager {
+public class DummyPartitionManager implements PartitionManager {
 
-	void init(PartitionConfig config);
-	Partition[] getPartitions();
-	int getNumPartitions();
+	protected final int _numPartitions;
+	
+	public DummyPartitionManager(int numPartitions) {
+		super();
+		_numPartitions=numPartitions;
+	}
+
+	public void init(PartitionConfig config) {
+		// TODO Auto-generated method stub
+	}
+
+	public Partition[] getPartitions() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public int getNumPartitions() {
+		return _numPartitions;
+	}
 
 }

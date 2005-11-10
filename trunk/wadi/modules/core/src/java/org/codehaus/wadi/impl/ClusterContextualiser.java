@@ -136,7 +136,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         _nodeName=ccc.getNodeName();
         _cluster=ccc.getCluster();
         _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), ccc.getHttpAddress(), ccc.getHttpProxy());
-        _dispatcher=ccc.getDispatcher();
+        _dispatcher=(ActiveClusterDispatcher)ccc.getDispatcher();
         _dindex=ccc.getDIndex();
         _cluster.addClusterListener(this);
         _dispatcher.register(this, "onEmigrationRequest", EmigrationRequest.class);
@@ -199,7 +199,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         return _relocater.relocate(hreq, hres, chain, id, immoter, motionLock);
     }
     
-    protected void createEvacuationQueue() throws JMSException {
+    protected void createEvacuationQueue() throws Exception {
         _log.trace("creating evacuation queue");
         ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)_config;
         ccc.putDistributedState(_shuttingDownKey, Boolean.TRUE);
@@ -223,7 +223,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         Utils.safeSleep(2000);
     }
     
-    protected void destroyEvacuationQueue() throws JMSException {
+    protected void destroyEvacuationQueue() throws Exception {
         ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)_config;
         // leave shuttingDown=true
         _evacuationQueue=null;
@@ -240,7 +240,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
                 if (_shuttingDown.get()) {
                     createEvacuationQueue();
                 }
-            } catch (JMSException e) {
+            } catch (Exception e) {
                 _log.error("emmigration queue initialisation failed", e);
                 _evacuationQueue=null;
             }
