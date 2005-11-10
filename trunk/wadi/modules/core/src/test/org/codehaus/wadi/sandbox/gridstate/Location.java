@@ -16,15 +16,38 @@
  */
 package org.codehaus.wadi.sandbox.gridstate;
 
+import java.io.Serializable;
+
+import javax.jms.Destination;
+
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 
-public interface Location {
 
-	ReadWriteLock getLock();
+public class Location implements Serializable {
 
-	void invalidate();
+	protected transient ReadWriteLock _lock;
+	protected transient boolean _invalid;
+	protected Destination _destination;
 
-	Object getValue();
-	void setValue(Object value);
+	public Location(Destination destination) {
+		_lock=new ReaderPreferenceReadWriteLock();
+		_destination=destination;
+	}
 
+	public ReadWriteLock getLock() {
+		return _lock;
+	}
+
+	public void invalidate() {
+		_invalid=true;
+	}
+
+	public Object getValue() {
+		return _destination;
+	}
+
+	public void setValue(Object destination) {
+		_destination=(Destination)destination;
+	}
 }

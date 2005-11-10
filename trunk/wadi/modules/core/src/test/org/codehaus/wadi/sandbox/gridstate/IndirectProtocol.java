@@ -25,7 +25,6 @@ import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.codehaus.wadi.Dispatcher;
-import org.codehaus.wadi.sandbox.gridstate.activecluster.ActiveClusterLocation;
 import org.codehaus.wadi.sandbox.gridstate.messages.MovePMToSM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveIMToSM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveSMToPM;
@@ -153,7 +152,7 @@ public class IndirectProtocol extends AbstractIndirectProtocol {
 			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
 			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
 			Partition partition=_partitionManager.getPartitions()[_config.getPartitionMapper().map(key)];
-			ActiveClusterLocation location=(ActiveClusterLocation)partition.getLocation(key);
+			Location location=(Location)partition.getLocation(key);
 			if (location==null) {
 				_dispatcher.reply(message1,new ReadPMToIM());
 				return;
@@ -341,9 +340,9 @@ public class IndirectProtocol extends AbstractIndirectProtocol {
 			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
 			sync=_config.getPMSyncs().acquire(key);
 			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
-			Location location=write.getValueIsNull()?null:new ActiveClusterLocation((Destination)write.getIM());
+			Location location=write.getValueIsNull()?null:new Location(write.getIM());
 			// remove or update location, remembering old value
-			ActiveClusterLocation oldLocation=(ActiveClusterLocation)(location==null?partitionMap.remove(key):partitionMap.put(key, location));
+			Location oldLocation=(Location)(location==null?partitionMap.remove(key):partitionMap.put(key, location));
 			// if we are not allowed to overwrite, and we have...
 			if (!write.getOverwrite() && oldLocation!=null) {
 				//  undo our change
