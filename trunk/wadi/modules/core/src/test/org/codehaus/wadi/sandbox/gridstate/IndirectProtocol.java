@@ -25,7 +25,6 @@ import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.codehaus.wadi.Dispatcher;
-import org.codehaus.wadi.impl.ActiveClusterDispatcher;
 import org.codehaus.wadi.sandbox.gridstate.activecluster.ActiveClusterLocation;
 import org.codehaus.wadi.sandbox.gridstate.messages.MovePMToSM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveIMToSM;
@@ -35,7 +34,6 @@ import org.codehaus.wadi.sandbox.gridstate.messages.ReadPMToIM;
 import org.codehaus.wadi.sandbox.gridstate.messages.ReadIMToPM;
 import org.codehaus.wadi.sandbox.gridstate.messages.WritePMToIM;
 import org.codehaus.wadi.sandbox.gridstate.messages.WriteIMToPM;
-import org.jgroups.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -65,7 +63,6 @@ public class IndirectProtocol extends AbstractIndirectProtocol {
 		return new RemotePartition(_dispatcher.getLocalDestination());
 	}
 
-
 	public void start() throws Exception {
 		Map state=new HashMap();
 		state.put("nodeName", _nodeName);
@@ -77,13 +74,8 @@ public class IndirectProtocol extends AbstractIndirectProtocol {
 		_dispatcher.stop();
 	}
 
-
 	public Destination getLocalDestination() {
 		return _dispatcher.getLocalDestination();
-	}
-
-	public Address getLocalAddress() {
-		throw new UnsupportedOperationException("impossible");
 	}
 
 	public Dispatcher getDispatcher() {
@@ -172,9 +164,9 @@ public class IndirectProtocol extends AbstractIndirectProtocol {
 			Destination sm=(Destination)location.getValue();
 			String poCorrelationId=null;
 			try {
-				poCorrelationId=ActiveClusterDispatcher.getOutgoingCorrelationId(message1);
+				poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
 				//_log.info("Process Owner Correlation ID: "+poCorrelationId);
-			} catch (JMSException e) {
+			} catch (Exception e) {
 				_log.error("unexpected problem", e);
 			}
 			MovePMToSM request=new MovePMToSM(key, im, pm, poCorrelationId);
@@ -369,9 +361,9 @@ public class IndirectProtocol extends AbstractIndirectProtocol {
 
 				String poCorrelationId=null;
 				try {
-					poCorrelationId=ActiveClusterDispatcher.getOutgoingCorrelationId(message1);
+					poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
 					//_log.info("Process Owner Correlation ID: "+poCorrelationId);
-				} catch (JMSException e) {
+				} catch (Exception e) {
 					_log.error("unexpected problem", e);
 				}
 				Destination im=(Destination)write.getIM();
@@ -407,7 +399,7 @@ public class IndirectProtocol extends AbstractIndirectProtocol {
 	// Protocol
 	//--------------------------------------------------------------------------------
 
-	public Object syncRpc(Object destination, String methodName, Object message) throws Exception {
+	public Object syncRpc(Destination destination, String methodName, Object message) throws Exception {
 		ObjectMessage tmp=_dispatcher.exchangeSendLoop(_dispatcher.getLocalDestination(), (Destination)destination, (Serializable)message, _timeout, 10);
 		Object response=null;
 		try {
@@ -418,9 +410,8 @@ public class IndirectProtocol extends AbstractIndirectProtocol {
 		return response;
 	}
 
-	public Object getLocalLocation() {
-		return _dispatcher.getLocalDestination();
-	}
-
+//	public Object getLocalLocation() {
+//		return _dispatcher.getLocalDestination();
+//	}
 
 }

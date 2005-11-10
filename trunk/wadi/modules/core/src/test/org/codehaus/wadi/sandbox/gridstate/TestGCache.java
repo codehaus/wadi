@@ -30,6 +30,7 @@ import org.codehaus.wadi.impl.CustomClusterFactory;
 import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
 import org.codehaus.wadi.sandbox.gridstate.jgroups.JGroupsDispatcher;
 import org.jgroups.Channel;
+import org.jgroups.JChannel;
 
 import junit.framework.TestCase;
 
@@ -112,8 +113,14 @@ public class TestGCache extends TestCase {
     
 	class MyJGroupsDispatcherConfig implements JGroupsDispatcherConfig {
 
+		protected final Channel _channel;
+		
+		MyJGroupsDispatcherConfig() throws Exception {
+			_channel=new JChannel();
+		}
+		
 		public Channel getChannel() {
-			throw new UnsupportedOperationException("NYI");
+			return _channel;
 		}
 
 	}

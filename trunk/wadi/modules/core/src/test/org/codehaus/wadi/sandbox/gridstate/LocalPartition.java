@@ -24,7 +24,6 @@ import javax.jms.Destination;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.Utils;
-import org.jgroups.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
@@ -44,10 +43,6 @@ public class LocalPartition implements PartitionInterface {
 
 	public void init(PartitionConfig config) {
 		_config=config;
-	}
-
-	public Address getAddress() {
-		return _config.getLocalAddress();
 	}
 
 	public Destination getDestination() {

@@ -136,7 +136,7 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
 		} else {
 			try {
 				Destination replyTo=message.getJMSReplyTo();
-				String correlationId=ActiveClusterDispatcher.getOutgoingCorrelationId(message);
+				String correlationId=_config.getDispatcher().getOutgoingCorrelationId(message);
 				long handShakePeriod=request.getHandOverPeriod();
 				// TODO - the peekTimeout should be specified by the remote node...
 				FilterChain fc=new LocationResponseFilterChain(replyTo, correlationId, _config.getLocation(), id, handShakePeriod);
@@ -172,7 +172,7 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
 			try {
 				ObjectMessage m=_config.getDispatcher().getCluster().createObjectMessage();
 				m.setJMSReplyTo(_replyTo);
-				ActiveClusterDispatcher.setIncomingCorrelationId(m, _correlationId);
+				_config.getDispatcher().setIncomingCorrelationId(m, _correlationId);
 				m.setObject(lr);
 				_config.getDispatcher().getCluster().send(_replyTo, m);
 

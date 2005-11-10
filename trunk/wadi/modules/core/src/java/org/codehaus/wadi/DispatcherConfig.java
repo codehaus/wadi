@@ -18,6 +18,6 @@ package org.codehaus.wadi;
 
 public interface DispatcherConfig {
 
-// empty
+	// empty
 	
 }

@@ -16,12 +16,10 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
@@ -70,36 +68,6 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
         _nodeConsumer.setMessageListener(this);
     }
 
-    public void onMessage(Message message) {
-    	try {
-    		ObjectMessage objectMessage=null;
-    		Serializable body=null;
-    		InternalDispatcher dispatcher;
-    		if (
-    				message instanceof ObjectMessage &&
-    				(objectMessage=(ObjectMessage)message)!=null &&
-    				(body=objectMessage.getObject())!=null &&
-    				(dispatcher=(InternalDispatcher)_map.get(body.getClass()))!=null
-    		) {
-                _log.trace("receive {"+getIncomingCorrelationId(objectMessage)+"}: "+getNodeName(message.getJMSReplyTo())+" -> "+getNodeName(message.getJMSDestination())+" : "+body);
-    			do {
-    				try {
-    					synchronized (dispatcher) {
-    						_executor.execute(new DispatchRunner(dispatcher, objectMessage, body)); // TODO - pool DispatchRunner ?
-    						dispatcher.incCount();
-    					}
-    				} catch (InterruptedException e) {
-    					// ignore
-    				}
-    			} while (Thread.interrupted());
-    		} else {
-    			_log.warn("spurious message received: "+message);
-    		}
-    	} catch (Exception e) {
-    		_log.warn("bad message", e);
-    	}
-    }
-
     //-----------------------------------------------------------------------------------------------
 
     public String getNodeName(Destination destination) {
@@ -140,196 +108,21 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
     	return message.getStringProperty(_incomingCorrelationIdKey);
     }
 
-    public static void setIncomingCorrelationId(ObjectMessage message, String id) throws JMSException {
+    public void setIncomingCorrelationId(ObjectMessage message, String id) throws JMSException {
     	message.setStringProperty(_incomingCorrelationIdKey, id);
     }
 
     protected static String _outgoingCorrelationIdKey="outgoingCorrelationId";
 
-    public static String getOutgoingCorrelationId(ObjectMessage message) throws JMSException {
+    public String getOutgoingCorrelationId(ObjectMessage message) throws JMSException {
     	return message.getStringProperty(_outgoingCorrelationIdKey);
     }
 
-    public static void setOutgoingCorrelationId(ObjectMessage message, String id) throws JMSException {
+    public void setOutgoingCorrelationId(ObjectMessage message, String id) throws JMSException {
     	message.setStringProperty(_outgoingCorrelationIdKey, id);
     }
 
 
-    /* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#send(javax.jms.Destination, javax.jms.Destination, java.lang.String, java.io.Serializable)
-	 */
-    public boolean send(Destination from, Destination to, String outgoingCorrelationId, Serializable body) {
-        try {
-            ObjectMessage om=_cluster.createObjectMessage();
-            om.setJMSReplyTo(from);
-            om.setJMSDestination(to);
-            setOutgoingCorrelationId(om, outgoingCorrelationId);
-            om.setObject(body);
-            _log.trace("send {"+outgoingCorrelationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
-            _cluster.send(to, om);
-            return true;
-        } catch (JMSException e) {
-            _log.error("problem sending "+body, e);
-            return false;
-        }
-    }
-
-    /* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#exchangeSend(javax.jms.Destination, javax.jms.Destination, java.io.Serializable, long)
-	 */
-    public ObjectMessage exchangeSend(Destination from, Destination to, Serializable body, long timeout) {
-    	return exchangeSend(from, to, body, timeout, null);
-    }
-
-    /* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#exchangeSend(javax.jms.Destination, javax.jms.Destination, java.io.Serializable, long, java.lang.String)
-	 */
-    public ObjectMessage exchangeSend(Destination from, Destination to, Serializable body, long timeout, String targetCorrelationId) {
-    	try {
-    		ObjectMessage om=_cluster.createObjectMessage();
-    		om.setJMSReplyTo(from);
-    		om.setJMSDestination(to);
-    		om.setObject(body);
-    		String correlationId=nextCorrelationId();
-    		setOutgoingCorrelationId(om, correlationId);
-    		if (targetCorrelationId!=null)
-    			setIncomingCorrelationId(om, targetCorrelationId);
-    		Quipu rv=setRendezVous(correlationId, 1);
-    		_log.trace("exchangeSend {"+correlationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
-    		_cluster.send(to, om);
-    		return attemptRendezVous(correlationId, rv, timeout);
-    	} catch (JMSException e) {
-    		_log.error("problem sending "+body, e);
-    		return null;
-    	}
-    }
-
-    /* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#exchangeSendLoop(javax.jms.Destination, javax.jms.Destination, java.io.Serializable, long, int)
-	 */
-    public ObjectMessage exchangeSendLoop(Destination from, Destination to, Serializable body, long timeout, int iterations) {
-    	ObjectMessage response=null;
-    	for (int i=0; response==null && i<iterations; i++) {
-    		response=exchangeSend(from, to, body, timeout);
-    		if (response==null)
-    			_log.warn("null response - retrying: "+(i+1)+"/"+iterations);
-    	}
-    	return response;
-    }
-
-
-    /* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#exchangeSend(javax.jms.Destination, javax.jms.Destination, java.lang.String, java.io.Serializable, long)
-	 */
-    public ObjectMessage exchangeSend(Destination from, Destination to, String outgoingCorrelationId, Serializable body, long timeout) {
-    	Quipu rv=null;
-    	// set up a rendez-vous...
-    	rv=setRendezVous(outgoingCorrelationId, 1);
-    	// send the message...
-    	if (send(from, to, outgoingCorrelationId, body)) {
-    		return attemptRendezVous(outgoingCorrelationId, rv, timeout);
-    	} else {
-    		return null;
-    	}
-    }
-
-    /* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#reply(javax.jms.Destination, javax.jms.Destination, java.lang.String, java.io.Serializable)
-	 */
-    public boolean reply(Destination from, Destination to, String incomingCorrelationId, Serializable body) {
-        try {
-            ObjectMessage om=_cluster.createObjectMessage();
-            om.setJMSReplyTo(from);
-            om.setJMSDestination(to);
-            setIncomingCorrelationId(om, incomingCorrelationId);
-            om.setObject(body);
-            _log.trace("reply: "+getNodeName(from)+" -> "+getNodeName(to)+" {"+incomingCorrelationId+"} : "+body);
-            _cluster.send(to, om);
-            return true;
-        } catch (JMSException e) {
-            _log.error("problem sending "+body, e);
-            return false;
-        }
-    }
-
-    /* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#reply(javax.jms.ObjectMessage, java.io.Serializable)
-	 */
-    public boolean reply(ObjectMessage message, Serializable body) {
-        try {
-            ObjectMessage om=_cluster.createObjectMessage();
-        	Destination from=_cluster.getLocalNode().getDestination();
-            om.setJMSReplyTo(from);
-        	Destination to=message.getJMSReplyTo();
-            om.setJMSDestination(to);
-            String incomingCorrelationId=getOutgoingCorrelationId(message);
-            setIncomingCorrelationId(om, incomingCorrelationId);
-            om.setObject(body);
-            _log.trace("reply: "+getNodeName(from)+" -> "+getNodeName(to)+" {"+incomingCorrelationId+"} : "+body);
-            _cluster.send(to, om);
-            return true;
-        } catch (JMSException e) {
-            _log.error("problem replying to message", e);
-            return false;
-        }
-    }
-
-    /* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#exchangeReply(javax.jms.ObjectMessage, java.io.Serializable, long)
-	 */
-    public ObjectMessage exchangeReply(ObjectMessage message, Serializable body, long timeout) {
-        try {
-            ObjectMessage om=_cluster.createObjectMessage();
-        	Destination from=_cluster.getLocalNode().getDestination();
-            om.setJMSReplyTo(from);
-        	Destination to=message.getJMSReplyTo();
-            om.setJMSDestination(to);
-            String incomingCorrelationId=getOutgoingCorrelationId(message);
-            setIncomingCorrelationId(om, incomingCorrelationId);
-            String outgoingCorrelationId=nextCorrelationId();
-            setOutgoingCorrelationId(om, outgoingCorrelationId);
-            om.setObject(body);
-            Quipu rv=setRendezVous(outgoingCorrelationId, 1);
-            _log.trace("exchangeSend {"+outgoingCorrelationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" {"+incomingCorrelationId+"} : "+body);
-            _cluster.send(to, om);
-            return attemptRendezVous(outgoingCorrelationId, rv, timeout);
-        } catch (JMSException e) {
-            _log.error("problem sending "+body, e);
-            return null;
-        }
-    }
-
-    /* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#exchangeReplyLoop(javax.jms.ObjectMessage, java.io.Serializable, long)
-	 */
-    public ObjectMessage exchangeReplyLoop(ObjectMessage message, Serializable body, long timeout) { // TODO
-    	return exchangeReply(message, body, timeout);
-    }
-
-
-    /* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#forward(javax.jms.ObjectMessage, javax.jms.Destination)
-	 */
-    public boolean forward(ObjectMessage message, Destination destination) {
-    	try {
-    		return forward(message, destination, message.getObject());
-        } catch (JMSException e) {
-            _log.error("problem forwarding message with new body", e);
-            return false;
-        }
-    }
-
-    /* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#forward(javax.jms.ObjectMessage, javax.jms.Destination, java.io.Serializable)
-	 */
-    public boolean forward(ObjectMessage message, Destination destination, Serializable body) {
-        try {
-            return send(message.getJMSReplyTo(), destination, getOutgoingCorrelationId(message), body);
-        } catch (JMSException e) {
-            _log.error("problem forwarding message", e);
-            return false;
-        }
-    }
     public Cluster getCluster() {
     	return _cluster;
     }
@@ -365,6 +158,15 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 	
 	public void stop() throws Exception {
 		_cluster.stop();
+	}
+
+	public void send(Destination to, ObjectMessage message) throws Exception {
+		_cluster.send(to, message);
+		
+	}
+
+	public ObjectMessage createObjectMessage() throws Exception {
+		return _cluster.createObjectMessage();
 	}
 	
 

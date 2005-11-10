@@ -91,4 +91,11 @@ public interface Dispatcher {
 	
 	String getNodeName(Destination destination);
 	
+    String getIncomingCorrelationId(ObjectMessage message) throws Exception;
+    void setIncomingCorrelationId(ObjectMessage message, String correlationId) throws Exception;
+    String getOutgoingCorrelationId(ObjectMessage message) throws Exception;
+    void setOutgoingCorrelationId(ObjectMessage message, String correlationId) throws Exception;
+	void send(Destination to, ObjectMessage message) throws Exception;
+	ObjectMessage createObjectMessage() throws Exception;
+
 }

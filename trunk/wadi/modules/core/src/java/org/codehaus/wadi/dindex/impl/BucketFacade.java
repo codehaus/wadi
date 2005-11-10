@@ -26,7 +26,6 @@ import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.dindex.Bucket;
 import org.codehaus.wadi.dindex.BucketConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
-import org.codehaus.wadi.impl.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
@@ -144,9 +143,9 @@ public class BucketFacade extends AbstractBucket {
         String correlationId=dispatcher.nextCorrelationId();
         Quipu rv=dispatcher.setRendezVous(correlationId, 1);
         try {
-            ActiveClusterDispatcher.setOutgoingCorrelationId(message, correlationId);
+            dispatcher.setOutgoingCorrelationId(message, correlationId);
             dispatch(message, request);
-        } catch (JMSException e) {
+        } catch (Exception e) {
             _log.error("could not dispatch message", e);
         }
         return dispatcher.attemptRendezVous(correlationId, rv, timeout);
