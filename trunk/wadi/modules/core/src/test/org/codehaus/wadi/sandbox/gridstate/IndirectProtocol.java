@@ -24,6 +24,8 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.sandbox.gridstate.messages.MovePMToSM;
 import org.codehaus.wadi.sandbox.gridstate.messages.MoveIMToSM;
@@ -36,10 +38,27 @@ import org.codehaus.wadi.sandbox.gridstate.messages.WriteIMToPM;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-public class IndirectProtocol extends AbstractIndirectProtocol {
+// TODO - needs tidying up..
+
+public class IndirectProtocol implements Protocol, PartitionConfig {
+
+	protected final Log _log = LogFactory.getLog(getClass());
+
+	protected final String _clusterName = "ORG.CODEHAUS.WADI.TEST";
+	protected final String _nodeName;
+	protected final PartitionManager _partitionManager;
+	protected final long _timeout;
+
+	protected Dispatcher _dispatcher; // should be final
+	protected ProtocolConfig _config;
+
 
 	public IndirectProtocol(String nodeName, PartitionManager manager, PartitionMapper mapper, Dispatcher dispatcher, long timeout) throws Exception {
-		super(nodeName, manager, mapper, timeout, null);
+    	_nodeName=nodeName;
+    	(_partitionManager=manager).init(this);
+    	_timeout=timeout;
+    	_dispatcher=dispatcher;
+
 		_dispatcher=dispatcher;
 
 		// Get - 5 messages - IM->PM->SM->IM->SM->PM
@@ -56,6 +75,83 @@ public class IndirectProtocol extends AbstractIndirectProtocol {
 		// Put - 2 messages - IM->PM->IM
 		_dispatcher.register(this, "onMessage", WriteIMToPM.class);
 		_dispatcher.register(WritePMToIM.class, _timeout);
+	}
+
+	public void init(ProtocolConfig config) {
+		_config=config;
+	}
+
+	public Object onMovePMToSM(MovePMToSM move) throws Exception {
+		Object key=move.getKey();
+		Destination im=move.getIM();
+		//Object pm=move.getPM();
+		_log.info("[SM] - onMovePMToSM@"/*+_address*/);
+		_log.info("im="+im);
+		Sync sync=null;
+		try {
+			_log.trace("onMovePMToSM - [SM] trying for lock("+key+")...");
+			sync=_config.getSMSyncs().acquire(key);
+			_log.trace("onMovePMToSM - [SM] ...lock("+key+") acquired< - "+sync);
+			// send GetSMToIM to IM
+			Object value;
+			Map map=_config.getMap();
+			synchronized (map) {
+				value=map.get(key);
+			}
+			_log.info("[SM] sending "+key+"="+value+" -> IM...");
+			MoveIMToSM response=(MoveIMToSM)syncRpc(im, "onMoveSMToIM", new MoveSMToIM(key, value));
+			_log.info("[SM] ...response received <- IM");
+			boolean success=response.getSuccess();
+			if (success) {
+				synchronized (map) {
+					map.remove(key);
+					return new MoveSMToPM();
+				}
+			}
+			return new MoveSMToPM(success);
+		} finally {
+			_log.trace("onMovePMToSM - [SM] releasing lock("+key+") - "+sync);
+			sync.release();
+			_log.trace("onMovePMToSM - [SM] released lock("+key+") - "+sync);
+		}
+	}
+
+	public Object onReadIMToPM(ReadIMToPM read) throws Exception {
+		Object key=read.getKey();
+		Destination im=read.getIM();
+		_log.info("im="+im);
+		// what if we are NOT the PM anymore ?
+		// get write lock on location
+		Sync sync=null;
+		try {
+			_log.trace("onReadIMToPM- [PM] trying for lock("+key+")...");
+			sync=_config.getPMSyncs().acquire(key);
+			_log.trace("onReadIMToPM- [PM] ...lock("+key+") acquired - "+sync);
+			Partition partition=getPartitions()[_config.getPartitionMapper().map(key)];
+			Location location=partition.getLocation(key);
+			if (location==null) {
+				return new ReadPMToIM();
+			}
+			// exchangeSendLoop GetPMToSM to SM
+			Destination pm=getLocalDestination();
+			Destination sm=(Destination)location.getValue();
+
+			MoveSMToPM response=(MoveSMToPM)syncRpc(sm, "onMovePMToSM", new MovePMToSM(key, im, pm, null));
+			// success - update location
+			boolean success=response.getSuccess();
+			if (success)
+				location.setValue(im);
+
+			return success?Boolean.TRUE:Boolean.FALSE;
+		} finally {
+			_log.trace("onReadIMToPM- [PM] releasing lock("+key+") - "+sync);
+			sync.release();
+			_log.trace("onReadIMToPM- [PM] released lock("+key+") - "+sync);
+		}
+	}
+
+	public Partition[] getPartitions() {
+		return _partitionManager.getPartitions();
 	}
 
 	public PartitionInterface createRemotePartition() {
