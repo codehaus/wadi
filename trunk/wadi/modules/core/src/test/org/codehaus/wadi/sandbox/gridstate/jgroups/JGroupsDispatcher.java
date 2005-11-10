@@ -28,7 +28,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.DispatcherConfig;
 import org.codehaus.wadi.JGroupsDispatcherConfig;
 import org.codehaus.wadi.impl.AbstractDispatcher;
-import org.codehaus.wadi.impl.Quipu;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.Message;
@@ -52,15 +51,11 @@ public class JGroupsDispatcher extends AbstractDispatcher implements RequestHand
 		super.init(config);
 		_channel=((JGroupsDispatcherConfig)_config).getChannel();
 		_dispatcher=new MessageDispatcher(_channel, this, null, this);
+		_channel.connect("WADI"); // TODO - parameterise name
 		_localDestination=new JGroupsDestination(_channel.getLocalAddress());
 	}
 
 	// AbstractDispatcher api
-
-	public boolean send(Destination from, Destination to, String outgoingCorrelationId, Serializable body) {
-		throw new UnsupportedOperationException("NYI");
-		//return false;
-	}
 
 	public static class Envelope extends JGroupsObjectMessage {
 		
@@ -96,66 +91,13 @@ public class JGroupsDispatcher extends AbstractDispatcher implements RequestHand
 		public void setJMSDestination(Destination destination) throws JMSException {
 			_destination=((JGroupsDestination)destination).getAddress();
 		}
-
 	}
 	
 	public void send(Destination to, ObjectMessage message) throws Exception {
+		//_log.info("JGROUPS MESSAGE SENT: "+((Envelope)message)._letter+" -> "+((JGroupsDestination)to).getAddress());
 		_channel.send(((JGroupsDestination)to).getAddress(), _channel.getLocalAddress(), (Envelope)message);
 	}
-	
-    /* (non-Javadoc)
-	 * @see org.codehaus.wadi.impl.Dispatcher#exchangeSend(javax.jms.Destination, javax.jms.Destination, java.io.Serializable, long, java.lang.String)
-	 */
-    public ObjectMessage exchangeSend(Destination from, Destination to, Serializable body, long timeout, String targetCorrelationId) {
-    	Envelope envelope=new Envelope();
-    	envelope._replyTo=((JGroupsDestination)from).getAddress();
-    	envelope._destination=((JGroupsDestination)to).getAddress();
-    	envelope._letter=body;
-		String correlationId=nextCorrelationId();
-		envelope._outgoingCorrelationId=correlationId;
-		if (targetCorrelationId!=null)
-			envelope._incomingCorrelationId=targetCorrelationId;
-    	try {
-    		Quipu rv=setRendezVous(correlationId, 1);
-    		_log.trace("exchangeSend {"+correlationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
-    		_channel.send(envelope._destination, envelope._replyTo, envelope);
-    		return attemptRendezVous(correlationId, rv, timeout);
-    	} catch (Exception e) {
-    		_log.error("problem sending "+body, e);
-    		return null;
-    	}
-    }
-    
-	public ObjectMessage exchangeSend(Destination from, Destination to, String outgoingCorrelationId, Serializable body, long timeout) {
-		throw new UnsupportedOperationException("NYI");
-		//return null;
-	}
 
-	public boolean reply(Destination from, Destination to, String incomingCorrelationId, Serializable body) {
-		throw new UnsupportedOperationException("NYI");
-		//return false;
-	}
-
-	public ObjectMessage exchangeReply(ObjectMessage message, Serializable body, long timeout) {
-		throw new UnsupportedOperationException("NYI");
-		//return null;
-	}
-
-	public ObjectMessage exchangeReplyLoop(ObjectMessage message, Serializable body, long timeout) {
-		throw new UnsupportedOperationException("NYI");
-		//return null;
-	}
-
-	public boolean forward(ObjectMessage message, Destination destination) {
-		throw new UnsupportedOperationException("NYI");
-		//return false;
-	}
-
-	public boolean forward(ObjectMessage message, Destination destination, Serializable body) {
-		throw new UnsupportedOperationException("NYI");
-		//return false;
-	}
-	
 	public ObjectMessage createObjectMessage() {
 		return new Envelope();
 	}
@@ -195,16 +137,15 @@ public class JGroupsDispatcher extends AbstractDispatcher implements RequestHand
 	}
 
 	public void start() throws Exception {
-		_channel.connect("WADI"); // TODO - parameterise name
 		_dispatcher.start();
 	}
 
 	public void stop() throws Exception {
-		throw new UnsupportedOperationException("NYI");
+		_dispatcher.stop();
 	}
 
 	public String getNodeName(Destination destination) {
-		_log.warn("getNodeName- NYI");
+		//_log.warn("getNodeName- NYI");
 		//throw new UnsupportedOperationException("NYI");
 		return "<unknown>";
 	}
@@ -213,7 +154,7 @@ public class JGroupsDispatcher extends AbstractDispatcher implements RequestHand
 
 	public void receive(Message msg) {
 		Envelope envelope=(Envelope)msg.getObject();
-		_log.info("JGROUPS MESSAGE RECEIVED: "+envelope);
+		//_log.info("JGROUPS MESSAGE RECEIVED: "+envelope._letter);
 
 		// an Envelope is an Object Message...
 		
