@@ -33,8 +33,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.dindex.Partition;
 import org.codehaus.wadi.dindex.PartitionConfig;
-import org.codehaus.wadi.dindex.DIndexConfig;
 import org.codehaus.wadi.dindex.PartitionManager;
+import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.impl.Quipu;
 
 /**
@@ -82,9 +82,9 @@ public class SimplePartitionManager implements PartitionManager {
         _callback=callback;
     }
 
-    protected DIndexConfig _dindexConfig;
+    protected PartitionManagerConfig _dindexConfig;
 
-    public void init(DIndexConfig config) {
+    public void init(PartitionManagerConfig config) {
     	_dindexConfig=config;
     	_log.trace("init");
     	// attach relevant message handlers to dispatcher...

@@ -14,15 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex;
+package org.codehaus.wadi.gridstate.messages;
 
-import javax.jms.ObjectMessage;
+import java.io.Serializable;
 
+public class ReadPMToIM implements Serializable {
 
-public interface Partition {
-
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
-    
 }

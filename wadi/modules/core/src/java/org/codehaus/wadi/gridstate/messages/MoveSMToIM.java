@@ -14,15 +14,30 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex;
+package org.codehaus.wadi.gridstate.messages;
 
-import javax.jms.ObjectMessage;
+import java.io.Serializable;
 
+public class MoveSMToIM implements Serializable {
 
-public interface Partition {
+	protected Object _key;
+	protected Object _value;
 
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
-    
+	public MoveSMToIM(Object key, Object value) {
+		_key=key;
+		_value=value;
+	}
+
+	protected MoveSMToIM() {
+		// for deserialisation...
+	}
+
+	public Object getKey() {
+		return _key;
+	}
+
+	public Object getValue() {
+		return _value;
+	}
+
 }

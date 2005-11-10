@@ -14,15 +14,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex;
+package org.codehaus.wadi.gridstate.jgroups;
 
-import javax.jms.ObjectMessage;
+import java.io.Serializable;
+import java.util.Map;
 
+public class JGroupsStateUpdate implements Serializable {
 
-public interface Partition {
+	protected final Map _state;
+	
+	public JGroupsStateUpdate(Map state) {
+		_state=state;
+	}
+	
+	public Map getState() {
+		return _state;
+	}
 
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
-    
+	// TODO - custom serilaliser
 }

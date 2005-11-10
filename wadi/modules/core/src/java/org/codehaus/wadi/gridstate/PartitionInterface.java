@@ -14,15 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex;
+package org.codehaus.wadi.gridstate;
 
-import javax.jms.ObjectMessage;
+import java.util.Map;
 
+import javax.jms.Destination;
 
-public interface Partition {
+import org.codehaus.wadi.gridstate.impl.Location;
 
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
-    
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+
+public interface PartitionInterface {
+
+	void init(PartitionConfig config);
+
+	// Serializable executeSync(Object process);
+	// void executeASync(Object process);
+
+	Destination getDestination();
+
+	Location getLocation(Object key);
+	ReadWriteLock getLock();
+	Map getMap();
+
 }
