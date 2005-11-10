@@ -61,7 +61,7 @@ public class StaticPartitionManager implements PartitionManager {
     			GCache cache=caches[j];
     			if (cache!=master) {
     				// if node is not PartitionMaster - make partition remote, pointing to PartitionMaster
-    				Partition partition=new Partition(master.getProtocol().createRemotePartition());
+    				Partition partition=new Partition(master.getStateManager().createRemotePartition());
     				partition.init(cache.getPartitionConfig());
     				cache.getPartitions()[i]=partition;
     			}

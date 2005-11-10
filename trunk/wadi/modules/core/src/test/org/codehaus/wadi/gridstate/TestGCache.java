@@ -23,12 +23,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionMapper;
-import org.codehaus.wadi.gridstate.Protocol;
+import org.codehaus.wadi.gridstate.StateManager;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcherConfig;
 import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 import org.codehaus.wadi.gridstate.impl.GCache;
-import org.codehaus.wadi.gridstate.impl.IndirectProtocol;
+import org.codehaus.wadi.gridstate.impl.IndirectStateManager;
 import org.codehaus.wadi.gridstate.impl.StaticPartitionManager;
 import org.codehaus.wadi.gridstate.jgroups.JGroupsDispatcher;
 import org.codehaus.wadi.gridstate.jgroups.JGroupsDispatcherConfig;
@@ -53,7 +53,7 @@ public class TestGCache extends TestCase {
     protected final int _numIters=10;
     protected final FixedWidthSessionIdFactory _factory=new FixedWidthSessionIdFactory(10, "0123456789".toCharArray(), _numPartitions);
     protected final PartitionMapper _mapper=new PartitionMapper() { public int map(Object key) { return _factory.getPartition((String)key);} };
-    
+
     protected GCache[] _nodes=new GCache[_numNodes];
     protected PartitionManager[] _partitionManagers=new PartitionManager[_numNodes];
 
@@ -64,25 +64,25 @@ public class TestGCache extends TestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
-    
-    protected void setUp(ProtocolFactory factory) throws Exception {
+
+    protected void setUp(StateManagerFactory factory) throws Exception {
         for (int i=0; i<_numNodes; i++) {
         	PartitionManager manager=new StaticPartitionManager(_numPartitions);
         	_partitionManagers[i]=manager;
-    		_nodes[i]=new GCache(factory.createProtocol("node-"+i, manager), _mapper);
+    		_nodes[i]=new GCache(factory.createStateManager("node-"+i, manager), _mapper);
         }
 
         StaticPartitionManager.partition(_nodes, _partitionManagers, _numPartitions);
     }
-    
+
     public class Tester implements Runnable {
-    	
+
     	Object _key;
-    	
+
     	Tester(Object key) {
     		_key=key;
     	}
-    	
+
     	public void run() {
     		for (int i=0; i<_numIters; i++) {
     			long start=System.currentTimeMillis();
@@ -101,47 +101,47 @@ public class TestGCache extends TestCase {
     		}
     	}
     }
-    
-    interface ProtocolFactory {
-    	Protocol createProtocol(String name, PartitionManager manager) throws Exception;
+
+    interface StateManagerFactory {
+    	StateManager createStateManager(String name, PartitionManager manager) throws Exception;
     }
-    
-    abstract class AbstractProtocolFactory implements ProtocolFactory {
-    	
+
+    abstract class AbstractStateManagerFactory implements StateManagerFactory {
+
     	protected final long _timeout;
-    	
-    	public AbstractProtocolFactory(long timeout) {
+
+    	public AbstractStateManagerFactory(long timeout) {
     		_timeout=timeout;
     	}
     }
-    
+
 	class MyJGroupsDispatcherConfig implements JGroupsDispatcherConfig {
 
 		protected final Channel _channel;
-		
+
 		MyJGroupsDispatcherConfig() throws Exception {
 			_channel=new JChannel();
 		}
-		
+
 		public Channel getChannel() {
 			return _channel;
 		}
 
 	}
 
-	class JGroupsIndirectProtocolFactory extends AbstractProtocolFactory {
-    	
-    	public JGroupsIndirectProtocolFactory(long timeout) {
+	class JGroupsIndirectStateManagerFactory extends AbstractStateManagerFactory {
+
+    	public JGroupsIndirectStateManagerFactory(long timeout) {
     		super(timeout);
     	}
-    	
-    	public Protocol createProtocol(String name, PartitionManager manager) throws Exception {
+
+    	public StateManager createStateManager(String name, PartitionManager manager) throws Exception {
     		Dispatcher dispatcher=new JGroupsDispatcher();
     		dispatcher.init(new MyJGroupsDispatcherConfig());
-    		return new IndirectProtocol(name, manager, _mapper, dispatcher, _timeout);
+    		return new IndirectStateManager(name, manager, _mapper, dispatcher, _timeout);
     	}
     }
-    
+
     // do something whith this...
 	//protected final String _clusterUri="peer://org.codehaus.wadi";
 	//protected final String _clusterUri="tcp://smilodon:61616";
@@ -164,50 +164,50 @@ public class TestGCache extends TestCase {
 		}
 	}
 
-    
-    class ActiveClusterIndirectProtocolFactory extends AbstractProtocolFactory {
-    	
-    	public ActiveClusterIndirectProtocolFactory(long timeout) {
+
+    class ActiveClusterIndirectStateManagerFactory extends AbstractStateManagerFactory {
+
+    	public ActiveClusterIndirectStateManagerFactory(long timeout) {
     		super(timeout);
     	}
-    	
-    	public Protocol createProtocol(String name, PartitionManager manager) throws Exception {
+
+    	public StateManager createStateManager(String name, PartitionManager manager) throws Exception {
     		System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
     		//_clusterFactory.setInactiveTime(100000L); // ???
     		_cluster=_clusterFactory.createCluster(_clusterName);
     		Dispatcher dispatcher=new ActiveClusterDispatcher(name);
     		dispatcher.init(new MyActiveClusterDispatcherConfig(_cluster));
-    		return new IndirectProtocol(name, manager, _mapper, dispatcher, _timeout);
+    		return new IndirectStateManager(name, manager, _mapper, dispatcher, _timeout);
     	}
     }
-    
+
 //    public void testFunctionality() throws Exception {
-//    	//testGCache(new JGroupsIndirectProtocolFactory(), 1);
-//    	testFunctionality(new ActiveClusterIndirectProtocolFactory(60*1000), 1);
+//    	//testGCache(new JGroupsIndirectStateManagerFactory(), 1);
+//    	testFunctionality(new ActiveClusterIndirectStateManagerFactory(60*1000), 1);
 //    }
 //
 //    public void testConcurrency() throws Exception {
-//    	//testGCache(new JGroupsIndirectProtocolFactory(), 1);ping smilodon
-//    	testConcurrency(new ActiveClusterIndirectProtocolFactory(60*1000), 100, 100);
+//    	//testGCache(new JGroupsIndirectStateManagerFactory(), 1);ping smilodon
+//    	testConcurrency(new ActiveClusterIndirectStateManagerFactory(60*1000), 100, 100);
 //    }
 
     public void testSoak() throws Exception {
-    	testSoak(new JGroupsIndirectProtocolFactory(60*1000));
-    	testSoak(new ActiveClusterIndirectProtocolFactory(60*1000));
+    	testSoak(new JGroupsIndirectStateManagerFactory(60*1000));
+    	testSoak(new ActiveClusterIndirectStateManagerFactory(60*1000));
     }
 
-    public void testFunctionality(ProtocolFactory factory) throws Exception {
+    public void testFunctionality(StateManagerFactory factory) throws Exception {
 
     	setUp(factory);
-    	
+
     	GCache red=_nodes[0];
     	GCache green=_nodes[1];
     	//GCache blue=_nodes[2];
-    	
+
         _log.info("0 nodes running");
         for (int i=0; i<_numNodes; i++)
         	_nodes[i].start();
-        
+
         Thread.sleep(12000);
         //red.getCluster().waitForClusterToComplete(_numNodes, 6000);
         _log.info(_numNodes+" nodes running");
@@ -289,7 +289,7 @@ public class TestGCache extends TestCase {
         }
         _log.info("elapsed: "+(System.currentTimeMillis()-start)+" millis");
 
-        
+
         Thread.sleep(6000);
         _log.info(_numNodes+" nodes running");
         for (int i=1; i<_numNodes; i++)
@@ -301,14 +301,14 @@ public class TestGCache extends TestCase {
         _log.info("0 nodes running");
     }
 
-    public void testConcurrency(ProtocolFactory factory) throws Exception {
-    	
+    public void testConcurrency(StateManagerFactory factory) throws Exception {
+
     	setUp(factory);
 
         _log.info("0 nodes running");
         for (int i=0; i<_numNodes; i++)
         	_nodes[i].start();
-        
+
         Thread.sleep(12000);
         //_nodes[_numNodes-1].getCluster().waitForClusterToComplete(_numNodes, 6000);
         _log.warn(_numNodes+" nodes running");
@@ -317,7 +317,7 @@ public class TestGCache extends TestCase {
         for (int i=0; i<_numPartitions; i++) { // do this for each partition...
             String key=_factory.create(i);
 
-            
+
             // put something into the cache
             _nodes[0].put(key, key+"-data");
 
@@ -328,7 +328,7 @@ public class TestGCache extends TestCase {
             	thread[j].join();
         }
         _log.warn("finished");
-        
+
         Thread.sleep(6000);
         _log.info(_numNodes+" nodes running");
         for (int i=0; i<_numNodes; i++)
@@ -338,15 +338,15 @@ public class TestGCache extends TestCase {
         Thread.sleep(6000);
         _log.info("0 nodes running");
     }
-    
+
     public class Soaker implements Runnable {
-    	
+
     	String[] _keys;
-    	
+
     	Soaker(String[] keys) {
     		_keys=keys;
     	}
-    	
+
     	public void run() {
     		long start=System.currentTimeMillis();
     		for (int i=0; i<_numIters; i++) {
@@ -354,7 +354,7 @@ public class TestGCache extends TestCase {
     				GCache cache=_nodes[j];
     				for (int k=0; k<_keys.length; k++) {
     					String key=_keys[k];
-    					
+
     					cache.put(key, key+"-data"); // add a lock
     					cache.get(key); // we already have this lock
     					//cache.remove(key); // remove item and leave lock until release...
@@ -367,21 +367,21 @@ public class TestGCache extends TestCase {
     		_log.warn("rate: "+numOperations+" in "+elapsed+" millis = "+(elapsed/numOperations)+" millis/operation");
     	}
     }
-    
-    public void testSoak(ProtocolFactory factory) throws Exception {
-    	
+
+    public void testSoak(StateManagerFactory factory) throws Exception {
+
     	setUp(factory);
-    	
+
         _log.info("0 nodes running");
         for (int i=0; i<_numNodes; i++)
         	_nodes[i].start();
-        
+
         Thread.sleep(12000);
         //_nodes[_numNodes-1].getCluster().waitForClusterToComplete(_numNodes, 6000);
         _log.warn(_numNodes+" nodes running");
 
         _log.info("starting");
-        
+
         // make up keys that will hash into every partition...
         GCache node=_nodes[0];
         String[] keys=new String[_numPartitions];
@@ -389,7 +389,7 @@ public class TestGCache extends TestCase {
         	String key=_factory.create(i);
         	keys[i]=key;
         	node.put(key, key+"-data");
-    	}	
+    	}
 
         Thread[] thread=new Thread[_numThreads];
         for (int j=0; j<_numThreads; j++)
@@ -397,7 +397,7 @@ public class TestGCache extends TestCase {
         for (int j=0; j<_numThreads; j++)
         	thread[j].join();
         _log.warn("finished");
-        
+
         Thread.sleep(6000);
         _log.info(_numNodes+" nodes running");
         for (int i=0; i<_numNodes; i++)
@@ -406,5 +406,5 @@ public class TestGCache extends TestCase {
         Thread.sleep(6000);
         _log.info("0 nodes running");
     }
-    
+
 }

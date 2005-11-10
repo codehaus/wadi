@@ -21,9 +21,9 @@ import javax.jms.Destination;
 import org.codehaus.wadi.gridstate.impl.Partition;
 
 
-public interface Protocol {
+public interface StateManager {
 
-	void init(ProtocolConfig config);
+	void init(StateManagerConfig config);
 
 	// called on IM...
 	Object get(Object key);
