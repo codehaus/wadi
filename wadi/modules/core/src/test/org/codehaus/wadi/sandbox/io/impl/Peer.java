@@ -14,12 +14,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox.io.impl;
 
-import org.codehaus.wadi.gridstate.ExtendedCluster;
+import java.io.Serializable;
 
-public interface ActiveClusterDispatcherConfig extends DispatcherConfig {
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.sandbox.io.PeerConfig;
 
-    ExtendedCluster getCluster();
+public abstract class Peer implements Serializable {
+    
+    protected static final Log _log=LogFactory.getLog(Peer.class);
 
+    public Peer() {
+        // used for deserialisation
+    }
+    
+    public abstract boolean run(PeerConfig config) throws Exception;
+    
 }

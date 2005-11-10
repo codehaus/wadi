@@ -23,7 +23,7 @@ import javax.jms.Destination;
 import javax.jms.ObjectMessage;
 
 import org.codehaus.wadi.DispatcherConfig;
-import org.codehaus.wadi.JGroupsDispatcherConfig;
+import org.codehaus.wadi.gridstate.JGroupsDispatcherConfig;
 import org.codehaus.wadi.impl.AbstractDispatcher;
 import org.jgroups.Address;
 import org.jgroups.Channel;

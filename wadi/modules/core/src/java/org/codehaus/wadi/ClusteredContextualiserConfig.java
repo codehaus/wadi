@@ -22,13 +22,12 @@ import java.util.Map;
 import javax.jms.JMSException;
 
 import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.impl.ActiveClusterDispatcher;
-import org.codehaus.wadi.io.Server;
+import org.codehaus.wadi.gridstate.ExtendedCluster;
+import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 
 public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
 
 	ExtendedCluster getCluster();
-    Server getServer();
     String getNodeName();
     HttpProxy getHttpProxy();
     InetSocketAddress getHttpAddress();

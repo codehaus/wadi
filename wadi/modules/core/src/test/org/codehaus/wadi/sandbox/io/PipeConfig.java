@@ -14,12 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox.io;
 
-import org.codehaus.wadi.gridstate.ExtendedCluster;
+import org.codehaus.wadi.Config;
+import org.codehaus.wadi.Contextualiser;
 
-public interface ActiveClusterDispatcherConfig extends DispatcherConfig {
+public interface PipeConfig extends Config {
 
-    ExtendedCluster getCluster();
+    void notifyIdle(Pipe pipe); // called by Connection on becoming idle...
+    void notifyClosed(Pipe pipe); // called by Connection on being closed...
+    
+    Contextualiser getContextualiser();
+    String getNodeId();
 
 }

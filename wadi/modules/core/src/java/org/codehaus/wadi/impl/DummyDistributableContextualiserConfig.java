@@ -23,10 +23,9 @@ import java.util.Map;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Dispatcher;
 import org.codehaus.wadi.DistributableContextualiserConfig;
-import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.io.Server;
+import org.codehaus.wadi.gridstate.ExtendedCluster;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
@@ -45,10 +44,6 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
 
     public ExtendedCluster getCluster() {
         return _cluster;
-    }
-
-    public Server getServer() {
-        return null;
     }
 
     public String getNodeName() {

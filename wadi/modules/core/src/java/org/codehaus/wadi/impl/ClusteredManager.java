@@ -36,7 +36,6 @@ import org.codehaus.wadi.ActiveClusterDispatcherConfig;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.ExtendedCluster;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.ReplicaterFactory;
@@ -50,11 +49,11 @@ import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.io.Server;
-import org.codehaus.wadi.io.ServerConfig;
+import org.codehaus.wadi.gridstate.ExtendedCluster;
+import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
+import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 
-
-public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, ServerConfig, ActiveClusterDispatcherConfig, PartitionManagerConfig {
+public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, ActiveClusterDispatcherConfig, PartitionManagerConfig {
 
     protected final Map _distributedState=new HashMap(); // TODO - make this a SynchronisedMap
     protected final ActiveClusterDispatcher _dispatcher=new ActiveClusterDispatcher();
@@ -168,7 +167,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 
     // DistributableContextualiserConfig
 
-    public Server getServer() {throw new UnsupportedOperationException();}
     public String getNodeName() {return _nodeName;} // NYI
 
     public Object getDistributedState(Object key) {

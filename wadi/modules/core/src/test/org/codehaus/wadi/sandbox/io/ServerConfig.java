@@ -14,12 +14,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox.io;
 
+import org.codehaus.wadi.Config;
+import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
 
-public interface ActiveClusterDispatcherConfig extends DispatcherConfig {
+public interface ServerConfig extends Config {
 
-    ExtendedCluster getCluster();
-
+        ExtendedCluster getCluster();
+        Contextualiser getContextualiser();
+        String getNodeName();
+    
 }

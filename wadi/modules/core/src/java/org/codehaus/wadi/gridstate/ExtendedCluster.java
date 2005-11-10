@@ -14,12 +14,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.gridstate;
 
-import org.codehaus.wadi.gridstate.ExtendedCluster;
+import javax.jms.Connection;
+import javax.jms.Destination;
+import javax.jms.JMSException;
 
-public interface ActiveClusterDispatcherConfig extends DispatcherConfig {
+/**
+ * An ActiveCluster Cluster that exposes an API for the dynamic creation of Queues.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public interface ExtendedCluster extends org.activecluster.Cluster /*, Lifecycle */ {
 
-    ExtendedCluster getCluster();
-
+    Destination createQueue(String name) throws JMSException;
+    Connection getConnection();
+    
 }
