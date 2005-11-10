@@ -18,6 +18,7 @@ package org.codehaus.wadi.gridstate;
 
 public interface DispatcherConfig {
 
-	// empty
+	String getContextPath();
+	
 	
 }

@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.gridstate.activecluster;
 
+import java.util.Collection;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -26,9 +27,17 @@ import javax.jms.ObjectMessage;
 
 import org.activecluster.Cluster;
 import org.activecluster.Node;
+import org.activemq.ActiveMQConnection;
+import org.activemq.ActiveMQConnectionFactory;
+import org.activemq.broker.BrokerConnector;
+import org.activemq.broker.BrokerContainer;
+import org.activemq.store.vm.VMPersistenceAdapterFactory;
+import org.activemq.transport.TransportChannel;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
+import org.codehaus.wadi.gridstate.ExtendedCluster;
+import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.impl.AbstractDispatcher;
 
 /**
@@ -46,17 +55,21 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 	protected MessageConsumer _clusterConsumer;
 	protected MessageConsumer _nodeConsumer;
 	
-	public ActiveClusterDispatcher() {
-		super();
-	}
-	
-	public ActiveClusterDispatcher(String name) {
-		this();
-		_log=LogFactory.getLog(getClass()+"#"+name);
+    protected final String _clusterUri;
+    protected final long _inactiveTime;
+    
+	public ActiveClusterDispatcher(String nodeName, String clusterName, PartitionManager partitionManager, String clusterUri, long inactiveTime) {
+		super(nodeName, clusterName, partitionManager);
+		_clusterUri=clusterUri;
+		_inactiveTime=inactiveTime;
+		_log=LogFactory.getLog(getClass()+"#"+_nodeName);
 	}
 	
 	public Cluster getCluster() {
 		return _cluster;
+	}
+	public long getInactiveTime() {
+		return _clusterFactory.getInactiveTime();
 	}
 	
 	public MessageConsumer addDestination(Destination destination) throws JMSException {
@@ -73,10 +86,23 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 	//-----------------------------------------------------------------------------------------------
 	// AbstractDispatcher overrides
 	
+    protected ActiveMQConnectionFactory _connectionFactory;
+    protected CustomClusterFactory _clusterFactory;
+
 	public void init(DispatcherConfig config) throws Exception {
 		super.init(config);
-		_cluster=((ActiveClusterDispatcherConfig)_config).getCluster();
-		boolean excludeSelf;
+        try {
+            _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
+            _connectionFactory.start();
+    		System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // do we need this ?
+            _clusterFactory=new CustomClusterFactory(_connectionFactory);
+            _clusterFactory.setInactiveTime(_inactiveTime);
+            _cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName);
+        } catch (Exception e) {
+            _log.error("problem starting Cluster", e);
+        }
+
+        boolean excludeSelf;
 		excludeSelf=false;
 		_clusterConsumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
 		_clusterConsumer.setMessageListener(this);
@@ -93,7 +119,19 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 	}
 	
 	public void stop() throws Exception {
+        // shut down activemq cleanly - what happens if we are running more than one distributable webapp ?
+        // there must be an easier way - :-(
+        ActiveMQConnection connection=(ActiveMQConnection)((ExtendedCluster)_cluster).getConnection();
+        TransportChannel channel=(connection==null?null:connection.getTransportChannel());
+        BrokerConnector connector=(channel==null?null:channel.getEmbeddedBrokerConnector());
+        BrokerContainer container=(connector==null?null:connector.getBrokerContainer());
+        if (container!=null)
+            container.stop(); // for peer://
+
 		_cluster.stop();
+        _connectionFactory.stop();
+        
+        Thread.sleep(5*1000);
 	}
 	
 	public ObjectMessage createObjectMessage() throws Exception {
@@ -144,6 +182,10 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 	
 	public void setOutgoingCorrelationId(ObjectMessage message, String id) throws JMSException {
 		message.setStringProperty(_outgoingCorrelationIdKey, id);
+	}
+
+	public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
+		throw new UnsupportedOperationException("NYI");
 	}
 	
 }

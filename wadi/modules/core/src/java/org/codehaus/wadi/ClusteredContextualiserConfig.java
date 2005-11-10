@@ -19,11 +19,9 @@ package org.codehaus.wadi;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
-import javax.jms.JMSException;
-
 import org.codehaus.wadi.dindex.impl.DIndex;
+import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 
 public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
 
@@ -35,12 +33,12 @@ public interface ClusteredContextualiserConfig extends DistributableContextualis
     Object getDistributedState(Object key);
     Object putDistributedState(Object key, Object value);
     Object removeDistributedState(Object key);
-    void distributeState() throws JMSException;
+    void distributeState() throws Exception;
 
     Map getDistributedState();
     long getInactiveTime();
     int getNumPartitions();
-    ActiveClusterDispatcher getDispatcher();
+    Dispatcher getDispatcher();
     DIndex getDIndex();
 
 }

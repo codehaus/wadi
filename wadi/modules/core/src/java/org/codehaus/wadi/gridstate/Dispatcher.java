@@ -98,4 +98,7 @@ public interface Dispatcher {
 	void send(Destination to, ObjectMessage message) throws Exception;
 	ObjectMessage createObjectMessage() throws Exception;
 
+	String getNodeName();
+	PartitionManager getPartitionManager();
+	
 }

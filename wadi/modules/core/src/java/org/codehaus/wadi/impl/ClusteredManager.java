@@ -23,15 +23,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.jms.JMSException;
-
-import org.activecluster.impl.DefaultClusterFactory;
-import org.activemq.ActiveMQConnection;
-import org.activemq.ActiveMQConnectionFactory;
-import org.activemq.broker.BrokerConnector;
-import org.activemq.broker.BrokerContainer;
-import org.activemq.store.vm.VMPersistenceAdapterFactory;
-import org.activemq.transport.TransportChannel;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Contextualiser;
@@ -48,38 +39,28 @@ import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
+import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcherConfig;
-import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 
-public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, ActiveClusterDispatcherConfig, PartitionManagerConfig {
+public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, DispatcherConfig, PartitionManagerConfig {
 
-    protected final Map _distributedState=new HashMap(); // TODO - make this a SynchronisedMap
-    protected final ActiveClusterDispatcher _dispatcher=new ActiveClusterDispatcher();
+    protected final Dispatcher _dispatcher;
+    protected final Map _distributedState;
 
-    protected final String _clusterUri;
-    protected final String _clusterName;
-    protected final String _nodeName;
-    protected final int _numPartitions;
-
-    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, InetSocketAddress httpAddress, HttpProxy httpProxy, String clusterUri, String clusterName, String nodeName, int numPartitions) {
+    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, InetSocketAddress httpAddress, HttpProxy httpProxy, Dispatcher dispatcher) {
         super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, errorIfSessionNotAcquired, streamer, accessOnLoad, replicaterFactory);
     	_httpAddress=httpAddress;
     	_httpProxy=httpProxy;
-        _clusterUri=clusterUri;
-        _clusterName=clusterName;
-        _nodeName=nodeName;
-        _numPartitions=numPartitions;
+    	_dispatcher=dispatcher;
+    	_distributedState=new HashMap(); // TODO - make this a SynchronisedMap
     }
 
     public String getContextPath() { // TODO - integrate with Jetty/Tomcat
         return "/";
     }
 
-    protected ActiveMQConnectionFactory _connectionFactory;
-    protected CustomClusterFactory _clusterFactory;
-    protected ExtendedCluster _cluster;
     protected DIndex _dindex;
 	protected final HttpProxy _httpProxy;
 	protected final InetSocketAddress _httpAddress;
@@ -87,15 +68,12 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     public void init(ManagerConfig config) {
         // must be done before super.init() so that ContextualiserConfig contains a Cluster
         try {
-            _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
-            _connectionFactory.start();
-            System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName());
-            _clusterFactory=new CustomClusterFactory(_connectionFactory);
-            _cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName+"-"+getContextPath());
             _dispatcher.init(this);
-            _distributedState.put("name", _nodeName);
+            String nodeName=_dispatcher.getNodeName();
+            int numPartitions=_dispatcher.getPartitionManager().getNumPartitions();
+            _distributedState.put("name", nodeName);
             _distributedState.put("http", _httpAddress);
-            _dindex=new DIndex(_nodeName, _numPartitions, _clusterFactory.getInactiveTime(), _cluster, _dispatcher, _distributedState);
+            _dindex=new DIndex(nodeName, numPartitions, ((ActiveClusterDispatcher)_dispatcher).getInactiveTime(), ((ActiveClusterDispatcher)_dispatcher).getCluster(), _dispatcher, _distributedState);
             _dindex.init(this);
         } catch (Exception e) {
             _log.error("problem starting Cluster", e);
@@ -104,9 +82,9 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     }
 
     public void start() throws Exception {
-    	_cluster.getLocalNode().setState(_distributedState);
-    	_log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
-    	_cluster.start();
+    	_dispatcher.setDistributedState(_distributedState);
+    	_log.trace("distributed state updated: "+_distributedState);
+    	_dispatcher.start();
     	_dindex.start();
     	super.start();
     }
@@ -115,19 +93,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
         _shuttingDown.set(true);
         super.stop();
         _dindex.stop();
-        _cluster.stop();
-        _connectionFactory.stop();
-
-        // shut down activemq cleanly - what happens if we are running more than one distributable webapp ?
-        // there must be an easier way - :-(
-        ActiveMQConnection connection=(ActiveMQConnection)_cluster.getConnection();
-        TransportChannel channel=(connection==null?null:connection.getTransportChannel());
-        BrokerConnector connector=(channel==null?null:channel.getEmbeddedBrokerConnector());
-        BrokerContainer container=(connector==null?null:connector.getBrokerContainer());
-        if (container!=null)
-            container.stop(); // for peer://
-
-        Thread.sleep(5*1000);
+        _dispatcher.stop();
     }
 
     static class HelperPair {
@@ -163,11 +129,15 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 
     // Lazy
 
-    public ExtendedCluster getCluster() {return _cluster;}
+    public ExtendedCluster getCluster() {
+    	return (ExtendedCluster)((ActiveClusterDispatcher)_dispatcher).getCluster();
+    }
 
     // DistributableContextualiserConfig
 
-    public String getNodeName() {return _nodeName;} // NYI
+    public String getNodeName() {
+    	return _dispatcher.getNodeName();
+    }
 
     public Object getDistributedState(Object key) {
         synchronized (_distributedState) {
@@ -187,9 +157,9 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
         }
     }
 
-    public void distributeState() throws JMSException {
-        _cluster.getLocalNode().setState(_distributedState);
-	_log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
+    public void distributeState() throws Exception {
+        _dispatcher.setDistributedState(_distributedState);
+        _log.trace("distributed state updated: "+_distributedState);
     }
 
     public Map getDistributedState() {
@@ -197,14 +167,14 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     }
 
     public long getInactiveTime() {
-        return ((DefaultClusterFactory)_clusterFactory).getInactiveTime();
+        return ((ActiveClusterDispatcher)_dispatcher).getInactiveTime();
     }
 
     public int getNumPartitions() {
         return 72; // TODO - parameterise...
     }
 
-    public ActiveClusterDispatcher getDispatcher() {
+    public Dispatcher getDispatcher() {
         return _dispatcher;
     }
 
