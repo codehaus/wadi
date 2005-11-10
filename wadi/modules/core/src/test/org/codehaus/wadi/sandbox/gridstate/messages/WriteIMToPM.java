@@ -18,15 +18,17 @@ package org.codehaus.wadi.sandbox.gridstate.messages;
 
 import java.io.Serializable;
 
+import javax.jms.Destination;
+
 public class WriteIMToPM implements Serializable {
 
 	protected Object _key;
 	protected boolean _valueIsNull;
 	protected boolean _overwrite;
 	protected boolean _returnOldValue;
-	protected Object _im;
+	protected Destination _im;
 
-	public WriteIMToPM(Object key, boolean valueIsNull, boolean overwrite, boolean returnOldValue, Object im) {
+	public WriteIMToPM(Object key, boolean valueIsNull, boolean overwrite, boolean returnOldValue, Destination im) {
 		_key=key;
 		_valueIsNull=valueIsNull;
 		_overwrite=overwrite;
@@ -54,7 +56,7 @@ public class WriteIMToPM implements Serializable {
 		return _returnOldValue;
 	}
 
-	public Object getIM() {
+	public Destination getIM() {
 		return _im;
 	}
 
