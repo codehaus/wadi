@@ -119,7 +119,9 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
       _wadi.start();
 
       if (_container==null)
-	_log.warn("container not set - fn-ality will be limited");
+          if ( _log.isWarnEnabled() ) {
+        _log.warn("container not set - fn-ality will be limited");
+    }
       else
       {
 	Context context=((Context)_container);
@@ -269,14 +271,18 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
   }
 
   public Session createSession(String arg0) {
-    _log.info("createSession("+arg0+")");
-    return (TomcatSession)_wadi.create();
+      if ( _log.isInfoEnabled() ) {
+          _log.info("createSession("+arg0+")");
+      }
+      return (TomcatSession)_wadi.create();
   }
 
   public Session findSession(String id) throws IOException {
     //throw new UnsupportedOperationException();
-    _log.warn("findSession("+id+") called - currently unsupported");
-    return null;
+      if ( _log.isWarnEnabled() ) {
+          _log.warn("findSession("+id+") called - currently unsupported");
+      }
+      return null;
   }
 
   public Session[] findSessions() {

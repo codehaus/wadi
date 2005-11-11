@@ -59,7 +59,9 @@ public class TomcatSession extends DistributableSession implements Session {
     try {
       super.destroy();
     } catch (Exception e) {
-      _log.warn("unexpected problem destroying session", e);
+        if ( _log.isWarnEnabled() ) {
+            _log.warn("unexpected problem destroying session", e);
+        }
     }
   }
 
