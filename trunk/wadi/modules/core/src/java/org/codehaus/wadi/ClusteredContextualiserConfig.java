@@ -21,11 +21,9 @@ import java.util.Map;
 
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.ExtendedCluster;
 
 public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
 
-	ExtendedCluster getCluster();
     String getNodeName();
     HttpProxy getHttpProxy();
     InetSocketAddress getHttpAddress();

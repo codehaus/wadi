@@ -48,8 +48,8 @@ import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionRelocater;
 import org.codehaus.wadi.dindex.impl.DIndex;
+import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
@@ -387,7 +387,7 @@ public class TestMotion extends TestCase {
     public static class DummyRelocaterConfig implements RelocaterConfig {
 
         public Collapser getCollapser() {return null;}
-        public ActiveClusterDispatcher getDispatcher() {return null;}
+        public Dispatcher getDispatcher() {return null;}
         public Location getLocation() {return null;}
         public Map getMap() {return null;}
         public Cluster getCluster() {return null;}

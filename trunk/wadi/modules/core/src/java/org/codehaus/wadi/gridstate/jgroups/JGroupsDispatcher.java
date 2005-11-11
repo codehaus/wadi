@@ -41,15 +41,18 @@ import org.jgroups.blocks.MessageDispatcher;
  */
 public class JGroupsDispatcher extends AbstractDispatcher implements MessageListener {
 
+	protected final Destination _clusterDestination;
+	protected final Map _clusterState;
+
 	protected Channel _channel;
 	protected MessageDispatcher _dispatcher;
 	protected Destination _localDestination;
 	protected Map _localState;
-	protected Map _clusterState;
 	
-	public JGroupsDispatcher(String nodeName, String clusterName, PartitionManager partitionManager) {
-		super(nodeName, clusterName, partitionManager);
+	public JGroupsDispatcher(String nodeName, String clusterName, PartitionManager partitionManager, long inactiveTime) {
+		super(nodeName, clusterName, partitionManager, inactiveTime);
 		_clusterState=new HashMap();
+		_clusterDestination=new JGroupsDestination(null); // null Address means 'all nodes'
 		register(this, "onMessage", JGroupsStateUpdate.class);
 	}
 
@@ -114,7 +117,15 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 	public Destination getLocalDestination() {
 		return _localDestination;
 	}
+	
+	public Destination getClusterDestination() {
+		return _clusterDestination;
+	}
 
+	public Map getDistributedState() {
+		return _localState;
+	}
+	
 	public synchronized void setDistributedState(Map state) throws Exception {
 		// this seems to be the only test that ActiveCluster does, so there is no point in us doing any more...
 		if (_localState!=state) {

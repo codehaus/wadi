@@ -41,8 +41,6 @@ import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
-import org.codehaus.wadi.gridstate.ExtendedCluster;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 
 public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, DispatcherConfig, PartitionManagerConfig {
 
@@ -73,7 +71,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
             int numPartitions=_dispatcher.getPartitionManager().getNumPartitions();
             _distributedState.put("name", nodeName);
             _distributedState.put("http", _httpAddress);
-            _dindex=new DIndex(nodeName, numPartitions, ((ActiveClusterDispatcher)_dispatcher).getInactiveTime(), ((ActiveClusterDispatcher)_dispatcher).getCluster(), _dispatcher, _distributedState);
+            _dindex=new DIndex(nodeName, numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState);
             _dindex.init(this);
         } catch (Exception e) {
             _log.error("problem starting Cluster", e);
@@ -129,10 +127,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 
     // Lazy
 
-    public ExtendedCluster getCluster() {
-    	return (ExtendedCluster)((ActiveClusterDispatcher)_dispatcher).getCluster();
-    }
-
     // DistributableContextualiserConfig
 
     public String getNodeName() {
@@ -167,7 +161,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     }
 
     public long getInactiveTime() {
-        return ((ActiveClusterDispatcher)_dispatcher).getInactiveTime();
+        return _dispatcher.getInactiveTime();
     }
 
     public int getNumPartitions() {

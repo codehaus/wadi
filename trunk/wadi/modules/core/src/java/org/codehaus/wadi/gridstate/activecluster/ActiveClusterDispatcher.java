@@ -56,21 +56,20 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 	protected MessageConsumer _nodeConsumer;
 	
     protected final String _clusterUri;
-    protected final long _inactiveTime;
     
 	public ActiveClusterDispatcher(String nodeName, String clusterName, PartitionManager partitionManager, String clusterUri, long inactiveTime) {
-		super(nodeName, clusterName, partitionManager);
+		super(nodeName, clusterName, partitionManager, inactiveTime);
 		_clusterUri=clusterUri;
-		_inactiveTime=inactiveTime;
 		_log=LogFactory.getLog(getClass()+"#"+_nodeName);
 	}
+	
+	// 5 calls
 	
 	public Cluster getCluster() {
 		return _cluster;
 	}
-	public long getInactiveTime() {
-		return _clusterFactory.getInactiveTime();
-	}
+
+	// soon to be obsolete...
 	
 	public MessageConsumer addDestination(Destination destination) throws JMSException {
 		boolean excludeSelf=true;
@@ -87,7 +86,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 	// AbstractDispatcher overrides
 	
     protected ActiveMQConnectionFactory _connectionFactory;
-    protected CustomClusterFactory _clusterFactory;
+    public CustomClusterFactory _clusterFactory;
 
 	public void init(DispatcherConfig config) throws Exception {
 		super.init(config);
@@ -146,6 +145,14 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 		return _cluster.getLocalNode().getDestination();
 	}
 
+	public Destination getClusterDestination() {
+		return _cluster.getDestination();
+	}
+
+	public Map getDistributedState() {
+		return _cluster.getLocalNode().getState();
+	}
+	
 	public void setDistributedState(Map state) throws Exception {
 		_cluster.getLocalNode().setState(state);
 	}

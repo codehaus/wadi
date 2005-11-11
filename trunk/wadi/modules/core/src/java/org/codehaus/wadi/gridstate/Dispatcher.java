@@ -83,7 +83,9 @@ public interface Dispatcher {
 	PooledExecutor getExecutor();
 	
 	Destination getLocalDestination();
+	Destination getClusterDestination();
 
+	Map getDistributedState();
 	void setDistributedState(Map state) throws Exception;
 	
 	void start() throws Exception;
@@ -100,5 +102,6 @@ public interface Dispatcher {
 
 	String getNodeName();
 	PartitionManager getPartitionManager();
+	long getInactiveTime();
 	
 }

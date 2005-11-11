@@ -90,15 +90,15 @@ public class HybridRelocater extends AbstractRelocater {
         ObjectMessage message2=null;
         RelocationResponse response=null;
         try {
-            ObjectMessage message=_config.getCluster().createObjectMessage();
-            message.setJMSReplyTo(_config.getCluster().getLocalNode().getDestination());
+            ObjectMessage message=_dispatcher.createObjectMessage();
+            message.setJMSReplyTo(_dispatcher.getLocalDestination());
             RelocationRequest request=new RelocationRequest(sessionName, nodeName, sessionOrRequestPreferred, shuttingDown, lastKnownTime, lastKnownPlace, _requestHandOverTimeout);
             message.setObject(request);
             message2=_config.getDIndex().forwardAndExchange(sessionName, message, request, _resTimeout);
             
             if (message2==null || (response=(RelocationResponse)message2.getObject())==null)
                 return false;
-        } catch (JMSException e) {
+        } catch (Exception e) {
             _log.warn("problem arranging relocation", e);
         }
         

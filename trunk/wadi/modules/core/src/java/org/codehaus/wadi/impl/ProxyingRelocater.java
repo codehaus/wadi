@@ -69,7 +69,7 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
 	protected Location locate(String name) {
 		if (_log.isTraceEnabled()) _log.trace("sending location request: "+name);
 		Destination from=_config.getLocation().getDestination();
-		Destination to=_config.getDispatcher().getCluster().getDestination();
+		Destination to=_config.getDispatcher().getClusterDestination();
 		LocationRequest request=new LocationRequest(name, _proxyHandOverPeriod);
         ObjectMessage message=_config.getDispatcher().exchangeSend(from, to, request, _timeout);
         
@@ -170,11 +170,11 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
 			if (_log.isTraceEnabled()) _log.trace("sending location response: "+_name);
 			LocationResponse lr=new LocationResponse(_config.getLocation(), Collections.singleton(_name));
 			try {
-				ObjectMessage m=_config.getDispatcher().getCluster().createObjectMessage();
+				ObjectMessage m=_config.getDispatcher().createObjectMessage();
 				m.setJMSReplyTo(_replyTo);
 				_config.getDispatcher().setIncomingCorrelationId(m, _correlationId);
 				m.setObject(lr);
-				_config.getDispatcher().getCluster().send(_replyTo, m);
+				_config.getDispatcher().send(_replyTo, m);
 
 				// Now wait for a while so that the session is locked into this container, giving the other node a chance to proxy to this location and still find it here...
 				// instead of just waiting a set period, we could use a Rendezvous object with a timeout - more complexity - consider...
@@ -187,7 +187,7 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
 					// TODO - should we loop here until timeout is up ?
 				}
 
-			} catch (JMSException e) {
+			} catch (Exception e) {
 				if (_log.isErrorEnabled()) _log.error("problem sending location response: "+_name, e);
 			}
 		}
