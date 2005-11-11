@@ -35,16 +35,28 @@
             <organization>Virtuas</organization>
         </developer>
         <developer>
+            <id>jim</id>
+            <name>Jim Goodwill</name>
+            <email>james@virtuas.com</email>
+            <organization>Virtuas</organization>
+        </developer>
+        <developer>
             <id>jules</id>
             <name>Jules Gosnell</name>
             <email>jules@coredevelopers.net</email>
             <organization>Core Developers Network</organization>
         </developer>
         <developer>
+            <id>gianni</id>
+            <name>Giani Scenini</name>
+            <email>gianni.scenini@gmail.com</email>
+            <organization>?</organization>
+        </developer>
+        <developer>
             <id>bruce</id>
             <name>Bruce Snyder</name>
             <email>bsnyder@codehaus.org</email>
-            <organization>Virtuas</organization>
+            <organization>LogicBlaze</organization>
         </developer>
     </developers>
 
