@@ -103,5 +103,6 @@ public interface Dispatcher {
 	String getNodeName();
 	PartitionManager getPartitionManager();
 	long getInactiveTime();
+	int getNumNodes();
 	
 }

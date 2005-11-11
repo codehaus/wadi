@@ -133,6 +133,10 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
         Thread.sleep(5*1000);
 	}
 	
+	public int getNumNodes() {
+		return _cluster.getNodes().size()+1; // TODO - really inefficient... - allocates a Map
+	}
+	
 	public ObjectMessage createObjectMessage() throws Exception {
 		return _cluster.createObjectMessage();
 	}
