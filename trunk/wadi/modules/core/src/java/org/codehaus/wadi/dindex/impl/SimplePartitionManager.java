@@ -117,9 +117,21 @@ public class SimplePartitionManager implements PartitionManager {
 
 	// a node wants to shutdown...
 	public void onPartitionEvacuationRequest(ObjectMessage om, PartitionEvacuationRequest request) {
-	    Node from=getSrcNode(om);
-	    assert from!=null;
-	    _callback.onNodeRemoved(new ClusterEvent(_cluster, from, ClusterEvent.REMOVE_NODE));
+		Node from;
+		try {
+			Destination destination=om.getJMSReplyTo();
+			Node local=_cluster.getLocalNode();
+			if (destination.equals(local.getDestination()))
+				from=local;
+			else
+				from=(Node)_cluster.getNodes().get(destination);
+		} catch (JMSException e) {
+			_log.warn("could not read src node from message", e);
+			from=null;
+		}
+		
+		assert from!=null;
+		_callback.onNodeRemoved(new ClusterEvent(_cluster, from, ClusterEvent.REMOVE_NODE));
 	}
 
 	// a node wants to rebuild a lost partition
@@ -170,7 +182,7 @@ public class SimplePartitionManager implements PartitionManager {
 	            _log.info("local state (before giving): "+getPartitionKeys());
 	            PartitionTransferRequest request=new PartitionTransferRequest(timeStamp, acquired);
 	            // send it...
-	            ObjectMessage om3=_dispatcher.exchangeSend(_cluster.getLocalNode().getDestination(), destination, request, _inactiveTime);
+	            ObjectMessage om3=_dispatcher.exchangeSend(_dispatcher.getLocalDestination(), destination, request, _inactiveTime);
 	            // process response...
 	            if (om3!=null && ((PartitionTransferResponse)om3.getObject()).getSuccess()) {
 	                for (int j=0; j<acquired.length; j++) {
@@ -200,8 +212,8 @@ public class SimplePartitionManager implements PartitionManager {
 	    	Map correlationIDMap=(Map)_distributedState.get(_correlationIDMapKey);
 	    	Destination from=om.getJMSReplyTo();
 	    	correlationIDMap.put(from, correlationID);
-	    	_cluster.getLocalNode().setState(_distributedState);
-	    	_log.info("distributed state updated: "+_cluster.getLocalNode().getState());
+	    	_dispatcher.setDistributedState(_distributedState);
+	    	_log.info("distributed state updated: "+_dispatcher.getDistributedState());
 	    	correlateStateUpdate(_distributedState); // onStateUpdate() does not get called locally
 	    	correlationIDMap.remove(from);
 	    	// FIXME - RACE - between update of distributed state and ack - they should be one and the same thing...
@@ -230,9 +242,9 @@ public class SimplePartitionManager implements PartitionManager {
 	        _distributedState.put(_partitionKeysKey, keys);
 	        _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
 	        _log.info("local state (after receiving): "+keys);
-	        _cluster.getLocalNode().setState(_distributedState);
-	    _log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
-	    } catch (JMSException e) {
+	        _dispatcher.setDistributedState(_distributedState);
+	    _log.trace("distributed state updated: "+_dispatcher.getDistributedState());
+	    } catch (Exception e) {
 	        _log.error("could not update distributed state", e);
 	    }
 	    // acknowledge safe receipt to donor
@@ -241,20 +253,6 @@ public class SimplePartitionManager implements PartitionManager {
 	    } else {
 	        _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died");
 	        // chuck them... - TODO
-	    }
-	}
-
-	protected Node getSrcNode(ObjectMessage om) {
-	    try {
-	        Destination destination=om.getJMSReplyTo();
-	        Node local=_cluster.getLocalNode();
-	        if (destination.equals(local.getDestination()))
-	            return local;
-	        else
-	            return (Node)_cluster.getNodes().get(destination);
-	    } catch (JMSException e) {
-	        _log.warn("could not read src node from message", e);
-	        return null;
 	    }
 	}
 
@@ -334,8 +332,8 @@ public class SimplePartitionManager implements PartitionManager {
 	        PartitionKeys newKeys=getPartitionKeys();
 	        _log.warn("REPOPULATING PARTITIONS...: "+missingPartitions);
 	        String correlationId=_dispatcher.nextCorrelationId();
-	        Quipu rv=_dispatcher.setRendezVous(correlationId, _cluster.getNodes().size());
-	        if (!_dispatcher.send(_cluster.getLocalNode().getDestination(), _cluster.getDestination(), correlationId, new PartitionRepopulateRequest(missingKeys))) {
+	        Quipu rv=_dispatcher.setRendezVous(correlationId, _dispatcher.getNumNodes()-1);
+	        if (!_dispatcher.send(_dispatcher.getLocalDestination(), _dispatcher.getClusterDestination(), correlationId, new PartitionRepopulateRequest(missingKeys))) {
 	            _log.error("unexpected problem repopulating lost index");
 	        }
 
@@ -343,7 +341,7 @@ public class SimplePartitionManager implements PartitionManager {
 	        // we are carrying ourselves...
 	        Collection[] c=createResultSet(_numPartitions, missingKeys);
 	        _dindexConfig.findRelevantSessionNames(_numPartitions, c);
-	        repopulate(_cluster.getLocalNode().getDestination(), c);
+	        repopulate(_dispatcher.getLocalDestination(), c);
 
 	        //boolean success=false;
 	        try {
@@ -376,9 +374,9 @@ public class SimplePartitionManager implements PartitionManager {
 	        // relayout dindex
 	        _distributedState.put(_partitionKeysKey, newKeys);
 	        try {
-	            _cluster.getLocalNode().setState(_distributedState);
-		_log.trace("distributed state updated: "+_cluster.getLocalNode().getState());
-	        } catch (JMSException e) {
+	            _dispatcher.setDistributedState(_distributedState);
+		_log.trace("distributed state updated: "+_dispatcher.getDistributedState());
+	        } catch (Exception e) {
 	            _log.error("could not update distributed state", e);
 	        }
 	    }
@@ -417,7 +415,7 @@ public class SimplePartitionManager implements PartitionManager {
 	// TODO - duplicate code - see DIndex...
     protected void correlateStateUpdate(Map state) {
         Map correlationIDMap=(Map)state.get(_correlationIDMapKey);
-        Destination local=_cluster.getLocalNode().getDestination();
+        Destination local=_dispatcher.getLocalDestination();
         String correlationID=(String)correlationIDMap.get(local);
         if (correlationID!=null) {
         	Quipu rv=(Quipu)_dispatcher.getRendezVousMap().get(correlationID);

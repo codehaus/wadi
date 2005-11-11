@@ -18,6 +18,7 @@ package org.codehaus.wadi.gridstate.jgroups;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -29,8 +30,11 @@ import org.codehaus.wadi.gridstate.impl.AbstractDispatcher;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.JChannel;
+import org.jgroups.MembershipListener;
+import org.jgroups.MergeView;
 import org.jgroups.Message;
 import org.jgroups.MessageListener;
+import org.jgroups.View;
 import org.jgroups.blocks.MessageDispatcher;
 
 /**
@@ -39,7 +43,7 @@ import org.jgroups.blocks.MessageDispatcher;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class JGroupsDispatcher extends AbstractDispatcher implements MessageListener {
+public class JGroupsDispatcher extends AbstractDispatcher implements MessageListener, MembershipListener {
 
 	protected final Destination _clusterDestination;
 	protected final Map _clusterState;
@@ -48,6 +52,7 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 	protected MessageDispatcher _dispatcher;
 	protected Destination _localDestination;
 	protected Map _localState;
+    protected List _members;
 	
 	public JGroupsDispatcher(String nodeName, String clusterName, PartitionManager partitionManager, long inactiveTime) {
 		super(nodeName, clusterName, partitionManager, inactiveTime);
@@ -75,7 +80,7 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 	public void init(DispatcherConfig config) throws Exception {
 		super.init(config);
 		_channel=new JChannel();
-		_dispatcher=new MessageDispatcher(_channel, this, null, null);
+		_dispatcher=new MessageDispatcher(_channel, this, this, null);
 		_channel.connect(_clusterName);
 		_localDestination=new JGroupsDestination(_channel.getLocalAddress());
 	}
@@ -91,6 +96,10 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 		_dispatcher.stop();
 	}
 
+	public int getNumNodes() {
+		return _members.size();
+	}
+	
 	public ObjectMessage createObjectMessage() {
 		return new JGroupsObjectMessage();
 	}
@@ -164,6 +173,34 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 
     public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
 		throw new UnsupportedOperationException("NYI");
+	}
+    
+    // MembershipListener API
+
+    public void viewAccepted(View newView) {
+    	if (_log.isTraceEnabled()) _log.trace("handling JGroups viewAccepted("+newView+")...");
+    	
+    	// this is meant to happen if a network split is healed and two
+    	// clusters try to reconcile their separate states into one -
+    	// I have a plan...
+    	if(newView instanceof MergeView)
+    		_log.warn("NYI - merging: view is " + newView);
+    	
+    	_members=newView.getMembers(); // N.B. This View includes ourself
+    	_log.info("JGroups View: "+_members);
+    }
+
+    public void suspect(Address suspected_mbr) {
+    	if (_log.isTraceEnabled()) _log.trace("handling suspect("+suspected_mbr+")...");
+    	_log.warn("cluster suspects member may have been lost: "+suspected_mbr);
+    	_log.trace("...suspect() handled");
+    }
+
+	  // Block sending and receiving of messages until viewAccepted() is called
+	public void block() {
+		_log.trace("handling block()...");
+		// NYI
+		_log.trace("... block() handled");
 	}
 	
 }
