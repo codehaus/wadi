@@ -81,11 +81,15 @@ public class ProxyServlet implements Servlet {
 			// hres.setStatus(502, message);
 			try {
 				String message="problem proxying request to; "+location;
-				_log.warn(message, e);
-				hres.sendError(502, "Bad Gateway: "+message);
+                if ( _log.isWarnEnabled() ) {
+                    _log.warn(message, e);
+                }
+                hres.sendError(502, "Bad Gateway: "+message);
 			} catch (IOException e2) {
-				_log.warn("could not return error to client", e2);
-			}
+                if ( _log.isWarnEnabled() ) {
+                    _log.warn("could not return error to client", e2);
+                }
+            }
 		}
 	}
 
@@ -110,11 +114,13 @@ public class ProxyServlet implements Servlet {
 
 	    public void service(ServletRequest req, ServletResponse res) {
 	        HttpServletRequest hreq=(HttpServletRequest)req;
-	        _log.info("Via: "+hreq.getHeader("Via"));
-	        _log.info("Max-Forwards: "+hreq.getHeader("Max-Forwards"));
-	        _log.info("X-Forwarded-For: "+hreq.getHeader("X-Forwarded-For"));
-	        _log.info("remote location was: "+req.getRemoteAddr()+"/"+req.getRemoteHost()+":"+req.getRemotePort());
-	    }
+            if ( _log.isInfoEnabled() ) {
+                _log.info("Via: "+hreq.getHeader("Via"));
+                _log.info("Max-Forwards: "+hreq.getHeader("Max-Forwards"));
+                _log.info("X-Forwarded-For: "+hreq.getHeader("X-Forwarded-For"));
+                _log.info("remote location was: "+req.getRemoteAddr()+"/"+req.getRemoteHost()+":"+req.getRemotePort());
+            }
+        }
 
 	    public String getServletInfo() {return null;}
 

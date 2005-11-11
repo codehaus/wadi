@@ -123,7 +123,9 @@ public class MyServlet implements Servlet {
 
 	public void init(ServletConfig config) {
 		_config = config;
-		_log.info("Servlet.init()");
+        if ( _log.isInfoEnabled() ) {
+            _log.info("Servlet.init()");
+        }
         try {
             _manager.init(new ManagerConfig() {
 
@@ -138,7 +140,9 @@ public class MyServlet implements Servlet {
             });
             _manager.start();
         } catch (Exception e) {
-            _log.warn(e);
+            if ( _log.isWarnEnabled() ) {
+                _log.warn(e);
+            }
         }
 	}
 
@@ -148,9 +152,11 @@ public class MyServlet implements Servlet {
 
 	public void service(ServletRequest req, ServletResponse res) {
 		String sessionId=((HttpServletRequest)req).getRequestedSessionId();
-		_log.info("Servlet.service("+((sessionId==null)?"":sessionId)+")");
+        if ( _log.isInfoEnabled() ) {
+            _log.info("Servlet.service("+((sessionId==null)?"":sessionId)+")");
+        }
 
-		if (_test!=null)
+        if (_test!=null)
 			_test.test(req, res);
 	}
 
@@ -163,8 +169,10 @@ public class MyServlet implements Servlet {
             _manager.stop();
             _manager.destroy();
 		} catch (Exception e) {
-			_log.warn("unexpected problem", e);
-		}
+            if ( _log.isWarnEnabled() ) {
+                _log.warn("unexpected problem", e);
+            }
+        }
 	}
 
 	interface Test {

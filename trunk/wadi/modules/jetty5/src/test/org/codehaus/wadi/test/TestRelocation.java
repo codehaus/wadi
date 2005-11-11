@@ -124,15 +124,19 @@ public class TestRelocation extends TestCase {
 		_filter1=new MyFilter("1", _servlet1);
 		(_node1=new JettyNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
 	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
-	    _log.info("STARTING NOW!");
-	}
+          if ( _log.isInfoEnabled() ) {
+              _log.info("STARTING NOW!");
+          }
+      }
 
 	/*
 	 * @see TestCase#tearDown()
 	 */
 	protected void tearDown() throws Exception {
-	    _log.info("STOPPING NOW!");
-	    Thread.sleep(2000); // activecluster needs a little time to sort itself out...
+        if ( _log.isInfoEnabled() ) {
+            _log.info("STOPPING NOW!");
+        }
+        Thread.sleep(2000); // activecluster needs a little time to sort itself out...
 
 	    _node1.stop();
 		_node0.stop();
@@ -207,8 +211,10 @@ public class TestRelocation extends TestCase {
 		// 2/4 sessions available locally
 		_filter0.setExclusiveOnly(true);
 		int status=get(client, method0, "/test;jsessionid=foo");
-		_log.info("STATUS="+status);
-		assertTrue(status==200);
+        if ( _log.isInfoEnabled() ) {
+            _log.info("STATUS="+status);
+        }
+        assertTrue(status==200);
 		assertTrue(get(client, method0, "/test;jsessionid=bar")!=200);
 		_filter1.setExclusiveOnly(true);
 		assertTrue(get(client, method1, "/test;jsessionid=foo")!=200);
@@ -246,11 +252,13 @@ public class TestRelocation extends TestCase {
 			Thread.sleep(1000); // can take a while for ACK to be processed
 			assertTrue(m0.size()==0);
 			assertTrue(c0.size()==2); // n0 should now know that both sessions are on n1
-			_log.info("M0="+m0);
-			_log.info("M1="+m1);
-			_log.info("C0="+c0);
-			_log.info("C1="+c1);
-			assertTrue(c1.size()==0); // n1 has all the sessions and doesn't need to know anything...
+            if ( _log.isInfoEnabled() ) {
+                _log.info("M0="+m0);
+                _log.info("M1="+m1);
+                _log.info("C0="+c0);
+                _log.info("C1="+c1);
+            }
+            assertTrue(c1.size()==0); // n1 has all the sessions and doesn't need to know anything...
 		} else {
 			assertTrue(m0.size()==1);
 			assertTrue(m1.size()==1);

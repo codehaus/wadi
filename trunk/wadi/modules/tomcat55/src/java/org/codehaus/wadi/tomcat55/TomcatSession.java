@@ -61,7 +61,9 @@ public class TomcatSession extends AtomicallyReplicableSession implements Sessio
     try {
       super.destroy();
     } catch (Exception e) {
-      _log.warn("unexpected problem destroying session");
+        if ( _log.isWarnEnabled() ) {
+            _log.warn("unexpected problem destroying session");
+        }
     }
   }
 

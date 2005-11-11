@@ -73,14 +73,18 @@ public class TestJetty extends TestCase {
 	        HttpServletResponse hres=(HttpServletResponse)res;
 	        String name=hreq.getPathInfo();
 	        name=name.substring(1, name.length());
-	        _log.info("invoking: "+name);
-	        Class[] argTypes=new Class[]{HttpServletRequest.class, HttpServletResponse.class};
+            if ( _log.isInfoEnabled() ) {
+                _log.info("invoking: "+name);
+            }
+            Class[] argTypes=new Class[]{HttpServletRequest.class, HttpServletResponse.class};
 	        Object[] argInstances=new Object[]{hreq, hres};
 	        try {
 	            TestJetty.class.getMethod(name, argTypes).invoke(TestJetty.this, argInstances);
 	        } catch (Exception e) {
-	            _log.error(e);
-	            assertTrue(false);
+                if ( _log.isErrorEnabled() ) {
+                    _log.error(e);
+                }
+                assertTrue(false);
 	        }
 	    }
 	}
@@ -145,20 +149,26 @@ public class TestJetty extends TestCase {
 
 	public void testHeaders(HttpServletRequest hreq, HttpServletResponse hres) {
 
-		_log.info("HttpServletRequest.class is: "+hreq.getClass().getName());
+        if ( _log.isInfoEnabled() ) {
+            _log.info("HttpServletRequest.class is: "+hreq.getClass().getName());
+        }
 
-		for (Enumeration e=hreq.getHeaderNames(); e.hasMoreElements(); ) {
+        for (Enumeration e=hreq.getHeaderNames(); e.hasMoreElements(); ) {
 			String key=(String)e.nextElement();
 			for (Enumeration f=hreq.getHeaders(key); f.hasMoreElements(); ) {
 				String val=(String)f.nextElement();
-				_log.info(key+":"+val);
-			}
+                if ( _log.isInfoEnabled() ) {
+                    _log.info(key+":"+val);
+                }
+            }
 		}
 
 		for (Enumeration e=hreq.getHeaderNames(); e.hasMoreElements(); ) {
 			String key=(String)e.nextElement();
 			String val=hreq.getHeader(key);
-			_log.info(key+":"+val);
-		}
+            if ( _log.isInfoEnabled() ) {
+                _log.info(key+":"+val);
+            }
+        }
 	}
 }

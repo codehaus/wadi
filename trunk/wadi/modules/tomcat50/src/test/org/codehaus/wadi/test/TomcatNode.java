@@ -106,8 +106,10 @@ public class TomcatNode implements Node {
 		try {
 			servlet=_wrapper.allocate();
 		} catch (ServletException e) {
-			_log.error(e);
-		}
+            if ( _log.isErrorEnabled() ) {
+                _log.error(e);
+            }
+        }
 		return servlet;
 	}
 

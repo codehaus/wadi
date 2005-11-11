@@ -141,7 +141,9 @@ public class JettyManager implements ManagerConfig, SessionManager {
     try {
       _wadi.stop();
     } catch (Exception e) {
-      _log.warn("unexpected problem shutting down", e);
+        if ( _log.isWarnEnabled() ) {
+            _log.warn("unexpected problem shutting down", e);
+        }
     }
   }
 

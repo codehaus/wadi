@@ -121,8 +121,10 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 			_wadi.start();
 
 			if (_container==null)
-				_log.warn("container not set - fn-ality will be limited");
-			else
+                if ( _log.isWarnEnabled() ) {
+                    _log.warn("container not set - fn-ality will be limited");
+                }
+            else
 			{
 				Context context=((Context)_container);
 
