@@ -33,7 +33,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.activecluster.Cluster;
 import org.activecluster.ClusterEvent;
 import org.activecluster.ClusterListener;
 import org.activecluster.LocalNode;
@@ -51,6 +50,7 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
+import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 
@@ -122,10 +122,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     
     protected SynchronizedBoolean _shuttingDown;
     protected String _nodeName;
-    protected ExtendedCluster _cluster;
-    protected Location _location;
     protected Destination _evacuationQueue;
     protected ActiveClusterDispatcher _dispatcher;
+    protected ExtendedCluster _cluster;
+    protected Location _location;
     protected DIndex _dindex;
     protected Contextualiser _top;
     
@@ -134,9 +134,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)config;
         _shuttingDown=ccc.getShuttingDown();
         _nodeName=ccc.getNodeName();
-        _cluster=ccc.getCluster();
-        _location=new HttpProxyLocation(_cluster.getLocalNode().getDestination(), ccc.getHttpAddress(), ccc.getHttpProxy());
         _dispatcher=(ActiveClusterDispatcher)ccc.getDispatcher();
+        _cluster=(ExtendedCluster)((ActiveClusterDispatcher)_dispatcher).getCluster();
+        _location=new HttpProxyLocation(_dispatcher.getLocalDestination(), ccc.getHttpAddress(), ccc.getHttpProxy());
         _dindex=ccc.getDIndex();
         _cluster.addClusterListener(this);
         _dispatcher.register(this, "onEmigrationRequest", EmigrationRequest.class);
@@ -273,7 +273,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
                 return false;
             }
             Destination to=_evacuationQueue;
-            Destination from=_cluster.getLocalNode().getDestination();
+            Destination from=_dispatcher.getLocalDestination();
             EmigrationRequest request=new EmigrationRequest(immotable);
             ObjectMessage message=_dispatcher.exchangeSend(from, to, request, _resTimeout);
             EmigrationResponse ack=null;
@@ -503,15 +503,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     // RelocaterConfig
     
     public Collapser getCollapser() {return _collapser;}
-    public ActiveClusterDispatcher getDispatcher() {return _dispatcher;}
+    public Dispatcher getDispatcher() {return _dispatcher;}
     public Location getLocation() {return _location;}
     public Contextualiser getContextualiser() {return _top;}
     public String getNodeName() {return _nodeName;}
     public SynchronizedBoolean getShuttingDown() {return _shuttingDown;}
     public HttpProxy getHttpProxy() {return ((ClusteredContextualiserConfig)_config).getHttpProxy();}
     public InetSocketAddress getHttpAddress() {return ((ClusteredContextualiserConfig)_config).getHttpAddress();}
-    
-    public Cluster getCluster() {return _cluster;}
     
     public DIndex getDIndex() {
         return _dindex;

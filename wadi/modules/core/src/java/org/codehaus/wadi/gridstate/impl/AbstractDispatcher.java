@@ -54,14 +54,16 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
     protected final String _nodeName;
     protected final String _clusterName;
     protected final PartitionManager _partitionManager;
-
-	protected final Map _map = new HashMap();
+    protected final long _inactiveTime;
+	protected final Map _map;
 	protected final PooledExecutor _executor;
 	
-	public AbstractDispatcher(String nodeName, String clusterName, PartitionManager partitionManager) {
+	public AbstractDispatcher(String nodeName, String clusterName, PartitionManager partitionManager, long inactiveTime) {
 		_nodeName=nodeName;
 		_clusterName=clusterName;
 		_partitionManager=partitionManager;
+		_inactiveTime=inactiveTime;
+		_map=new HashMap();
 		_executor=new PooledExecutor(); // parameterise
 		//_executor.setMinimumPoolSize(200);
 		//_executor.runWhenBlocked();
@@ -581,6 +583,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 	
 	public PartitionManager getPartitionManager() {
 		return _partitionManager;
+	}
+
+	public long getInactiveTime() {
+		return _inactiveTime;
 	}
 	
 }

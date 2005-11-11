@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.test.activecluster;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -79,6 +79,7 @@ import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.test.EtherEmoter;
 
 /**
  * Test the shutdown of a Contextualiser stack as live sessions are distributed to other nodes in the cluster
@@ -162,7 +163,7 @@ public class TestCluster extends TestCase {
         }
         
         public Map getClusterContextualiserMap() {return _cmap;}
-        public ExtendedCluster getCluster(){return _manager.getCluster();}
+        public ExtendedCluster getCluster(){return (ExtendedCluster)((ActiveClusterDispatcher)_dispatcher).getCluster();}
         public ClusterContextualiser getClusterContextualiser() {return _middle;}
         
         public Map getMemoryContextualiserMap() {return _mmap;}

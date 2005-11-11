@@ -18,18 +18,16 @@ package org.codehaus.wadi;
 
 import java.net.InetSocketAddress;
 
-import org.activecluster.Cluster;
 import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
+import org.codehaus.wadi.gridstate.Dispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
 public interface RelocaterConfig extends Config {
 
     Collapser getCollapser();
-    ActiveClusterDispatcher getDispatcher();
+    Dispatcher getDispatcher();
     Location getLocation();
-    Cluster getCluster();
     Contextualiser getContextualiser();
     String getNodeName();
     SynchronizedBoolean getShuttingDown();

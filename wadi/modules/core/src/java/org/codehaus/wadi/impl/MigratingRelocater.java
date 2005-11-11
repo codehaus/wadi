@@ -78,7 +78,7 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
     protected int _counter;
     public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException {
         
-        Destination destination=_config.getDispatcher().getCluster().getDestination();
+        Destination destination=_config.getDispatcher().getClusterDestination();
         
         Destination from=_config.getLocation().getDestination();
         Destination to=destination;

@@ -38,11 +38,11 @@ public class TestGCache extends TestCase {
         super(name);
     }
 
-    protected final int _numNodes=3;
-    protected final int _numPartitions=_numNodes;
+    protected final int _numNodes=5;
+    protected final int _numPartitions=_numNodes*2;
     //protected final int _numPartitions=1;
-    protected final int _numThreads=1;
-    protected final int _numIters=10;
+    protected final int _numThreads=10;
+    protected final int _numIters=20;
     protected final FixedWidthSessionIdFactory _factory=new FixedWidthSessionIdFactory(10, "0123456789".toCharArray(), _numPartitions);
     protected final PartitionMapper _mapper=new PartitionMapper() { public int map(Object key) { return _factory.getPartition((String)key);} };
 
@@ -127,7 +127,7 @@ public class TestGCache extends TestCase {
     	}
 
     	public StateManager createStateManager(String nodeName, PartitionManager partitionManager) throws Exception {
-    		Dispatcher dispatcher=new JGroupsDispatcher(nodeName, _clusterName, partitionManager);
+    		Dispatcher dispatcher=new JGroupsDispatcher(nodeName, _clusterName, partitionManager, 5000L);
     		dispatcher.init(new MyDispatcherConfig());
     		return new IndirectStateManager(nodeName, partitionManager, _mapper, dispatcher, _timeout);
     	}
