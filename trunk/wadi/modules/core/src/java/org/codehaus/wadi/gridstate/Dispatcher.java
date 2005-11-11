@@ -22,6 +22,7 @@ import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.ObjectMessage;
 
+import org.activecluster.ClusterListener;
 import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
@@ -104,5 +105,9 @@ public interface Dispatcher {
 	PartitionManager getPartitionManager();
 	long getInactiveTime();
 	int getNumNodes();
+	
+	// yeugh - AC i/f is creeping in here - temporary...
+	
+	void setClusterListener(ClusterListener listener);
 	
 }

@@ -81,7 +81,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
         _log.info("init-ing...");
         _config=config;
         _cluster.setElectionStrategy(new SeniorityElectionStrategy());
-        _cluster.addClusterListener(this);
+        _dispatcher.setClusterListener(this);
         _distributedState.put(_nodeNameKey, _nodeName);
         _distributedState.put(_correlationIDMapKey, new HashMap());
         _distributedState.put(_birthTimeKey, new Long(System.currentTimeMillis()));

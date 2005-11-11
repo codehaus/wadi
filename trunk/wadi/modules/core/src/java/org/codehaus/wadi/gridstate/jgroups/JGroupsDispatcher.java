@@ -18,12 +18,15 @@ package org.codehaus.wadi.gridstate.jgroups;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import javax.jms.Destination;
 import javax.jms.ObjectMessage;
 
+import org.activecluster.ClusterEvent;
+import org.activecluster.ClusterListener;
+import org.activecluster.Node;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.impl.AbstractDispatcher;
@@ -52,7 +55,8 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 	protected MessageDispatcher _dispatcher;
 	protected Destination _localDestination;
 	protected Map _localState;
-    protected List _members;
+    protected Vector _members;
+    protected JGroupsCluster _cluster;
 	
 	public JGroupsDispatcher(String nodeName, String clusterName, PartitionManager partitionManager, long inactiveTime) {
 		super(nodeName, clusterName, partitionManager, inactiveTime);
@@ -177,6 +181,8 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
     
     // MembershipListener API
 
+    protected final Object _viewLock=new Object();
+    
     public void viewAccepted(View newView) {
     	if (_log.isTraceEnabled()) _log.trace("handling JGroups viewAccepted("+newView+")...");
     	
@@ -186,9 +192,28 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
     	if(newView instanceof MergeView)
     		_log.warn("NYI - merging: view is " + newView);
     	
+    	synchronized (_viewLock) {
+    		Vector oldMembers=_members;
+    		Vector newMembers=newView.getMembers();
+
+    		// notify nodes removed
+    		for (int i=0; i<oldMembers.size(); i++) {
+    			Address address=(Address)oldMembers.get(i);
+    			if (!newMembers.contains(address))
+    				_listener.onNodeAdd(new ClusterEvent(null, ensureNode(address) ,ClusterEvent.FAILED_NODE));
+    		}
+    		// notify nodes added
+    		for (int i=0; i<newMembers.size(); i++) {
+    			Address address=(Address)newMembers.get(i);
+    			if (!oldMembers.contains(address))
+    				_listener.onNodeAdd(new ClusterEvent(null, ensureNode(address) ,ClusterEvent.ADD_NODE));
+    		}
+		}
+
     	_members=newView.getMembers(); // N.B. This View includes ourself
     	_log.info("JGroups View: "+_members);
-    }
+    	
+}
 
     public void suspect(Address suspected_mbr) {
     	if (_log.isTraceEnabled()) _log.trace("handling suspect("+suspected_mbr+")...");
@@ -201,6 +226,58 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 		_log.trace("handling block()...");
 		// NYI
 		_log.trace("... block() handled");
+	}
+	
+	//------------------------------------------------------------------------------------
+	// aargh ! - we are using an AC i/f here - short-term - saves rewriting everything...
+	
+	protected ClusterListener _listener;
+	
+	public void setClusterListener(ClusterListener listener) {
+		_listener=listener;
+	}
+	
+	protected final Map _nodes=new HashMap();
+	
+	protected Node ensureNode(Address address) {
+		Node node;
+		synchronized (_nodes) {
+			if ((node=(Node)_nodes.get(address))==null)
+				_nodes.put(address, (node=new JGroupsNode(new JGroupsDestination(address))));
+		}
+		return node;
+	}
+	
+	class JGroupsNode implements Node {
+
+		protected final JGroupsDestination _destination;
+
+		protected boolean _isCoordinator=false;
+		
+		JGroupsNode(JGroupsDestination destination) {
+			_destination=destination;
+		}
+		
+		public Destination getDestination() {
+			return _destination;
+		}
+
+		public Map getState() {
+			return JGroupsDispatcher.this.getState(_destination.getAddress());
+		}
+
+		public String getName() {
+			return JGroupsDispatcher.this.getNodeName(_destination);
+		}
+
+		public boolean isCoordinator() {
+			return false;
+		}
+
+		public Object getZone() {
+			throw new UnsupportedOperationException("not used");
+		}
+		
 	}
 	
 }

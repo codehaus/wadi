@@ -26,6 +26,7 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
 import org.activecluster.Cluster;
+import org.activecluster.ClusterListener;
 import org.activecluster.Node;
 import org.activemq.ActiveMQConnection;
 import org.activemq.ActiveMQConnectionFactory;
@@ -197,6 +198,12 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 
 	public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
 		throw new UnsupportedOperationException("NYI");
+	}
+
+	// temporary
+	
+	public void setClusterListener(ClusterListener listener) {
+		_cluster.addClusterListener(listener);
 	}
 	
 }
