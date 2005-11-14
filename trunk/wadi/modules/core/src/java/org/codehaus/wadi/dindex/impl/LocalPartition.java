@@ -147,11 +147,9 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         if ( _log.isInfoEnabled() ) {
 
             _log.info("relocate " + request.getName() + " : " + _config.getNodeName(oldLocation) + " -> " + _config.getNodeName(newLocation));
-        }
-        if ( _log.isInfoEnabled() ) {
-
             _log.info("RELEASING MIGRATION LOCK");
         }
+
         // TODO - UNLOCK - release session Migration Lock
 		ll._lock.release();
         DIndexResponse response=new DIndexRelocationResponse();

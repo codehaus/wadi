@@ -48,14 +48,20 @@ public class RemotePartition extends AbstractPartition {
 	  // _location is already null
 	} else {
 	  // they cannot be equal - update
-	  _log.trace("["+_key+"] updating location from: "+_config.getNodeName(_location)+" to: "+_config.getNodeName(location));
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("[" + _key + "] updating location from: " + _config.getNodeName(_location) + " to: " + _config.getNodeName(location));
+        }
 	  _location=location;
 	}
       } else {
 	if (_location.equals(location)) {
 	  // no need to update
 	} else {
-	  _log.trace("["+_key+"] updating location from: "+_config.getNodeName(_location)+" to: "+_config.getNodeName(location));
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("[" + _key + "] updating location from: " + _config.getNodeName(_location) + " to: " + _config.getNodeName(location));
+        }
 	  _location=location;
 	}
       }

@@ -51,7 +51,10 @@ public class PartitionFacade extends AbstractPartition {
         _timeStamp=timeStamp;
         _content=content;
         _queueing=queueing;
-        _log.trace("["+_key+"] initialising location to: "+_content);
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("[" + _key + "] initialising location to: " + _content);
+        }
     }
 
     public boolean isLocal() { // locking ?
@@ -100,7 +103,10 @@ public class PartitionFacade extends AbstractPartition {
             acquired=true;
 
             if (timeStamp>_timeStamp) {
-                _log.trace("["+_key+"] changing location from: "+_content+" to: "+content);
+                if ( _log.isTraceEnabled() ) {
+
+                    _log.trace("[" + _key + "] changing location from: " + _content + " to: " + content);
+                }
                 _timeStamp=timeStamp;
                 _content=content;
             }
@@ -125,7 +131,10 @@ public class PartitionFacade extends AbstractPartition {
                 if (_content instanceof RemotePartition) {
                     ((RemotePartition)_content).setLocation(location);
                 } else {
-                    _log.trace("["+_key+"] changing location from: "+_content+" to: "+location);
+                    if ( _log.isTraceEnabled() ) {
+
+                        _log.trace("[" + _key + "] changing location from: " + _content + " to: " + location);
+                    }
                     _content=new RemotePartition(_key, _config, location);
                 }
             }
@@ -161,7 +170,10 @@ public class PartitionFacade extends AbstractPartition {
             sync.acquire();
             acquired=true;
             if (!_queueing) {
-                _log.trace("exec-ing message");
+                if ( _log.isTraceEnabled() ) {
+
+                    _log.trace("exec-ing message");
+                }
                 _content.dispatch(om, request);
             }
             else {

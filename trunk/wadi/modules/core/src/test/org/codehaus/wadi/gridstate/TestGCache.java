@@ -81,9 +81,15 @@ public class TestGCache extends TestCase {
     			//_log.info("iter: "+i);
     			Object[] values=new Object[_numNodes];
     			for (int j=0; j<_numNodes; j++) {
-    				_log.trace("node-"+j+": acquiring: "+_key+" ..."+" <"+Thread.currentThread().getName()+">");
+                    if ( _log.isTraceEnabled() ) {
+
+                        _log.trace("node-" + j + ": acquiring: " + _key + " ..." + " <" + Thread.currentThread().getName() + ">");
+                    }
     				values[j]=_nodes[j].get(_key);
-    				_log.trace("node-"+j+": ...acquired: "+_key+"="+values[j]+" <"+Thread.currentThread().getName()+">");
+                    if ( _log.isTraceEnabled() ) {
+
+                        _log.trace("node-" + j + ": ...acquired: " + _key + "=" + values[j] + " <" + Thread.currentThread().getName() + ">");
+                    }
     				if (j>0)
     					assertTrue(values[j-1].equals(values[j]));
     			}

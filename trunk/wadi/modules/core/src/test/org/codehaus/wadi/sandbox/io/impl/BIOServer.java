@@ -86,7 +86,10 @@ public class BIOServer extends AbstractSocketServer {
             try {
                 _thread.join();
             } catch (InterruptedException e) {
-                _log.trace("unexpected interruption - ignoring", e);
+                if ( _log.isTraceEnabled() ) {
+
+                    _log.trace("unexpected interruption - ignoring", e);
+                }
             }
         } while (Thread.interrupted());
         if ( _log.isInfoEnabled() ) {

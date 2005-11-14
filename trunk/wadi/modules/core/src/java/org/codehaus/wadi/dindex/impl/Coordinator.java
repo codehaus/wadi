@@ -145,14 +145,12 @@ public class Coordinator implements Runnable {
     			}
     		}
 
-            if ( _log.isInfoEnabled() ) {
+    		if ( _log.isInfoEnabled() ) {
 
                 _log.info("--------");
-            }
-            if ( _log.isInfoEnabled() ) {
-
                 _log.info("STAYING:");
             }
+
     		printNodes(stayingNodes);
             if ( _log.isInfoEnabled() ) {
 

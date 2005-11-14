@@ -99,9 +99,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 
 		Sync sync=null;
 		try {
-			_log.trace("onMovePMToSM - [SM] trying for lock("+key+")...");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("onMovePMToSM - [SM] trying for lock(" + key + ")...");
+            }
 			sync=_config.getSMSyncs().acquire(key);
-			_log.trace("onMovePMToSM - [SM] ...lock("+key+") acquired< - "+sync);
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("onMovePMToSM - [SM] ...lock(" + key + ") acquired< - " + sync);
+            }
 			// send GetSMToIM to IM
 			Object value;
 			Map map=_config.getMap();
@@ -126,9 +132,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 			}
 			return new MoveSMToPM(success);
 		} finally {
-			_log.trace("onMovePMToSM - [SM] releasing lock("+key+") - "+sync);
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("onMovePMToSM - [SM] releasing lock(" + key + ") - " + sync);
+            }
 			sync.release();
-			_log.trace("onMovePMToSM - [SM] released lock("+key+") - "+sync);
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("onMovePMToSM - [SM] released lock(" + key + ") - " + sync);
+            }
 		}
 	}
 
@@ -143,9 +155,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 		// get write lock on location
 		Sync sync=null;
 		try {
-			_log.trace("onReadIMToPM- [PM] trying for lock("+key+")...");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("onReadIMToPM- [PM] trying for lock(" + key + ")...");
+            }
 			sync=_config.getPMSyncs().acquire(key);
-			_log.trace("onReadIMToPM- [PM] ...lock("+key+") acquired - "+sync);
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("onReadIMToPM- [PM] ...lock(" + key + ") acquired - " + sync);
+            }
 			Partition partition=getPartitions()[_config.getPartitionMapper().map(key)];
 			Location location=partition.getLocation(key);
 			if (location==null) {
@@ -163,9 +181,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 
 			return success?Boolean.TRUE:Boolean.FALSE;
 		} finally {
-			_log.trace("onReadIMToPM- [PM] releasing lock("+key+") - "+sync);
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("onReadIMToPM- [PM] releasing lock(" + key + ") - " + sync);
+            }
 			sync.release();
-			_log.trace("onReadIMToPM- [PM] released lock("+key+") - "+sync);
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("onReadIMToPM- [PM] released lock(" + key + ") - " + sync);
+            }
 		}
 	}
 
@@ -208,9 +232,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 		Sync sync=null;
 		String agent=_nodeName;
 		try {
-			_log.trace("["+agent+"@"+_nodeName+"(IM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
+            }
 			sync=_config.getSMSyncs().acquire(key); // TODO - an SMSync should actually be a lock in the state itself - read or write ?
-			_log.trace("["+agent+"@"+_nodeName+"(IM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
+            }
 			Object value=null;
 			Map map=_config.getMap();
 			synchronized (map) {
@@ -249,9 +279,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 				return value;
 			}
 		} finally {
-			_log.trace("["+agent+"@"+_nodeName+"(IM)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
+            }
 			sync.release();
-			_log.trace("["+agent+"@"+_nodeName+"(IM)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
+            }
 		}
 	}
 
@@ -263,9 +299,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 		Sync sync=null;
 		String agent=_dispatcher.getNodeName((Destination)get.getIM());
 		try {
-			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
+            }
 			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
-			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
+            }
 			Partition partition=_partitionManager.getPartitions()[_config.getPartitionMapper().map(key)];
 			Location location=(Location)partition.getLocation(key);
 			if (location==null) {
@@ -298,9 +340,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 			location.setValue((Destination)get.getIM());
 
 		} finally {
-			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
+            }
 			sync.release();
-			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
+            }
 		}
 	}
 
@@ -310,9 +358,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 		String agent=_dispatcher.getNodeName((Destination)get.getIM());
 		Sync sync=null;
 		try {
-			_log.trace("["+agent+"@"+_nodeName+"(SM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(SM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
+            }
 			sync=_config.getSMSyncs().acquire(key);
-			_log.trace("["+agent+"@"+_nodeName+"(SM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(SM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
+            }
 			// send GetSMToIM to IM
 			Destination sm=_dispatcher.getLocalDestination();
 			Destination im=(Destination)get.getIM();
@@ -345,9 +399,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 				_log.error("unexpected problem", e);
 			}
 		} finally {
-			_log.trace("["+agent+"@"+_nodeName+"(SM)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(SM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
+            }
 			sync.release();
-			_log.trace("["+agent+"@"+_nodeName+"(SM)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(SM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
+            }
 		}
 	}
 
@@ -366,9 +426,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 		Sync sync=null;
 		String agent=_nodeName;
 		try {
-			_log.trace("["+agent+"@"+_nodeName+"(IM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
+            }
 			sync=_config.getSMSyncs().acquire(key);
-			_log.trace("["+agent+"@"+_nodeName+"(IM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
+            }
 
 			if (!removal) { // removals must do the round trip to PM
 				boolean local;
@@ -437,9 +503,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 			}
 
 		} finally {
-			_log.trace("["+agent+"@"+_nodeName+"(IM)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
+            }
 			sync.release();
-			_log.trace("["+agent+"@"+_nodeName+"(IM)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
+            }
 		}
 	}
 
@@ -452,9 +524,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 		Sync sync=null;
 		String agent=_dispatcher.getNodeName((Destination)write.getIM());
 		try {
-			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - acquiring sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
+            }
 			sync=_config.getPMSyncs().acquire(key);
-			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - ...sync("+sync+") acquired"+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
+            }
 			Location location=write.getValueIsNull()?null:new Location(write.getIM());
 			// remove or update location, remembering old value
 			Location oldLocation=(Location)(location==null?partitionMap.remove(key):partitionMap.put(key, location));
@@ -494,9 +572,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 			}
 
 		} finally {
-			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - releasing sync("+sync+")..."+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
+            }
 			sync.release();
-			_log.trace("["+agent+"@"+_nodeName+"(PM)] - "+key+" - ...sync("+sync+") released"+" <"+Thread.currentThread().getName()+">");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
+            }
 		}
 	}
 
