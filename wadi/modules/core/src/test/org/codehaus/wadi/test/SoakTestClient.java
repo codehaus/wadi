@@ -74,7 +74,10 @@ public class SoakTestClient implements Runnable {
                 _errors.increment();
             } finally {
                 int c=_completer.increment();
-                _log.info(""+c+" = "+_state.getCookies()[0].getValue()+" : "+_path);
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("" + c + " = " + _state.getCookies()[0].getValue() + " : " + _path);
+                }
                 if (_cleanUp) {
                 }
             }
@@ -95,7 +98,10 @@ public class SoakTestClient implements Runnable {
         int i=before.lastIndexOf(".");
         if (before.regionMatches(0, after, 0, i)) {
             // session relocated
-            _log.info("session cookie association: "+before+" --> "+after);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("session cookie association: " + before + " --> " + after);
+            }
             return;
         }
         
@@ -165,14 +171,26 @@ public class SoakTestClient implements Runnable {
         try {
             
             int numClients=Integer.parseInt(args[0]);
-            _log.info("number of clients: "+numClients);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("number of clients: " + numClients);
+            }
             int requestsPerClient=Integer.parseInt(args[1]);
-            _log.info("number of concurrent requests per client: "+requestsPerClient);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("number of concurrent requests per client: " + requestsPerClient);
+            }
             int numThreads=Integer.parseInt(args[2]);
-            _log.info("number of concurrent threads: "+numThreads);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("number of concurrent threads: " + numThreads);
+            }
             int numIterations=Integer.parseInt(args[3]);
-            _log.info("number of iterations to perform: "+numIterations);
-            
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("number of iterations to perform: " + numIterations);
+            }
+
             Channel httpClients=new LinkedQueue(); // a Pool of HttpClients - otherwise we run out of fds...
             for (int i=0; i<numThreads; i++)
                 httpClients.put(new HttpClient());
@@ -186,7 +204,10 @@ public class SoakTestClient implements Runnable {
                 (clients[i]=new SoakTestClient(executor, requestsPerClient, numIterations, completer, errors, httpClients)).start();
             // wait for work to be done....
             int totalNumRequests=numClients*(requestsPerClient*numIterations+2); // create, render*n, destroy
-            _log.info("waiting for "+totalNumRequests+" requests to be completed...");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("waiting for " + totalNumRequests + " requests to be completed...");
+            }
             completer.whenEqual(totalNumRequests, null);
             executor.shutdownNow();
             
@@ -194,7 +215,10 @@ public class SoakTestClient implements Runnable {
             if (e>0)
                 _log.error("finished: "+totalNumRequests+" requests and "+e+" ERRORS");
             else
-                _log.info("finished: "+totalNumRequests+" requests and no errors");
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("finished: " + totalNumRequests + " requests and no errors");
+                }
             
         } catch (InterruptedException e) {
             _log.warn("interrupted - aborting...");

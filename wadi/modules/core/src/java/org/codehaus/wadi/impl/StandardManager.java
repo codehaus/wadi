@@ -109,8 +109,11 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
     }
     
     public void start() throws Exception {
-        _log.info("starting");
-        
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("starting");
+        }
+
         _contextualiser.promoteToExclusive(null);
         _contextualiser.start();
         ServletContext context=getServletContext();
@@ -125,7 +128,10 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         _started=false;
         _acceptingSessions.set(false);
         _contextualiser.stop();
-        _log.info("stopped"); // although this sometimes does not appear, it IS called...
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("stopped"); // although this sometimes does not appear, it IS called...
+        }
     }
 
     protected void notifySessionCreation(Session session) {

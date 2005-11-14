@@ -58,7 +58,10 @@ public class DiscStore implements Store, DiscMotableConfig {
         for (int i=0; i<l; i++) {
             files[i].delete();
         }
-        _log.info("removed (exclusive disc): "+l+" files");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("removed (exclusive disc): " + l + " files");
+        }
     }
     
     public void load(Putter putter, boolean accessOnLoad) {

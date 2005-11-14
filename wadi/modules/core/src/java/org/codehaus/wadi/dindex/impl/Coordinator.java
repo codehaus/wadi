@@ -65,29 +65,47 @@ public class Coordinator implements Runnable {
 
 
     public synchronized void start() throws Exception {
-        _log.info("starting...");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("starting...");
+        }
         _thread=new Thread(this, "WADI Coordinator");
         _thread.start();
-        _log.info("...started");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("...started");
+        }
     }
 
     public synchronized void stop() throws Exception {
         // somehow wake up thread
-        _log.info("stopping...");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("stopping...");
+        }
         _flag.put(Boolean.FALSE);
         _thread.join();
         _thread=null;
-        _log.info("...stopped");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("...stopped");
+        }
     }
 
     public synchronized void queueRebalancing() {
-        _log.info("queueing rebalancing...");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("queueing rebalancing...");
+        }
         try {
             _flag.offer(Boolean.TRUE, 0);
         } catch (InterruptedException e) {
             _log.warn("unexpected interruption");
         }
-        _log.info("...rebalancing queued");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("...rebalancing queued");
+        }
     }
 
     public void run() {
@@ -97,7 +115,10 @@ public class Coordinator implements Runnable {
             }
         } catch (InterruptedException e) {
             Thread.interrupted();
-            _log.info("interrupted"); // hmmm.... - TODO
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("interrupted"); // hmmm.... - TODO
+            }
         }
     }
 
@@ -124,12 +145,24 @@ public class Coordinator implements Runnable {
     			}
     		}
 
-    		_log.info("--------");
-    		_log.info("STAYING:");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("--------");
+            }
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("STAYING:");
+            }
     		printNodes(stayingNodes);
-    		_log.info("LEAVING:");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("LEAVING:");
+            }
     		printNodes(leavingNodes);
-    		_log.info("--------");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("--------");
+            }
 
     		Node [] leaving=(Node[])leavingNodes.toArray(new Node[leavingNodes.size()]);
 
@@ -143,10 +176,16 @@ public class Coordinator implements Runnable {
 
     			RedistributionPlan plan=new RedistributionPlan(living, leaving, _numItems);
 
-    			_log.info("--------");
-    			_log.info("BEFORE:");
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("--------");
+                    _log.info("BEFORE:");
+                }
     			printNodes(living, leaving);
-    			_log.info("--------");
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("--------");
+                }
 
     			Map rvMap=_config.getRendezVousMap();
     			Quipu rv=new Quipu(0);
@@ -155,9 +194,15 @@ public class Coordinator implements Runnable {
     			execute(plan, correlationId, rv); // quipu will be incremented as participants are invited
 
     			try {
-    				_log.info("WAITING ON RENDEZVOUS");
+                    if ( _log.isInfoEnabled() ) {
+
+                        _log.info("WAITING ON RENDEZVOUS");
+                    }
     				if (rv.waitFor(_inactiveTime)) {
-    					_log.info("RENDEZVOUS SUCCESSFUL");
+                        if ( _log.isInfoEnabled() ) {
+
+                            _log.info("RENDEZVOUS SUCCESSFUL");
+                        }
     					//Collection results=rv.getResults();
     				} else {
     					_log.warn("RENDEZVOUS FAILED");
@@ -174,10 +219,16 @@ public class Coordinator implements Runnable {
     				// somehow check all returned success.. - TODO
     			}
 
-    			_log.info("--------");
-    			_log.info("AFTER:");
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("--------");
+    			    _log.info("AFTER:");
+                }
     			printNodes(living, leaving);
-    			_log.info("--------");
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("--------");
+                }
     		}
 
     		// send EvacuationResponses to each leaving node... - hmmm....
@@ -251,19 +302,28 @@ public class Coordinator implements Runnable {
             total+=printNode(living[i]);
         for (int i=0; i<leaving.length; i++)
             total+=printNode(leaving[i]);
-        _log.info("TOTAL: "+total);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("TOTAL: " + total);
+        }
     }
 
     protected int printNode(Node node) {
         if (node!=_cluster.getLocalNode())
             node=(Node)_cluster.getNodes().get(node.getDestination());
         if (node==null) {
-            _log.info(DIndex.getNodeName(node)+" : <unknown>");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info(DIndex.getNodeName(node) + " : <unknown>");
+            }
             return 0;
         } else {
             PartitionKeys keys=DIndex.getPartitionKeys(node);
             int amount=keys.size();
-            _log.info(DIndex.getNodeName(node)+" : "+amount+" - "+keys);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info(DIndex.getNodeName(node) + " : " + amount + " - " + keys);
+            }
             return amount;
         }
     }

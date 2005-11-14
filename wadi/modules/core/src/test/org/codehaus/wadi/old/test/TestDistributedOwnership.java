@@ -78,7 +78,10 @@ public class TestDistributedOwnership extends TestCase {
 
 			try
 			{
-			_log.info("running...");
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("running...");
+                }
 			Thread.sleep(10000);
 		} catch (InterruptedException e) {
 			_log.error("interrupted", e);

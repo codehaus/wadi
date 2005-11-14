@@ -73,9 +73,15 @@ public class
     _cluster1           = _clusterFactory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
 
     _cluster0.start();
-    _log.info("started node0: "+_cluster0.getLocalNode().getDestination());
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("started node0: " + _cluster0.getLocalNode().getDestination());
+      }
     _cluster1.start();
-    _log.info("started node1: "+_cluster1.getLocalNode().getDestination());
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("started node1: " + _cluster1.getLocalNode().getDestination());
+      }
   }
 
   protected void
@@ -100,31 +106,46 @@ public class
     public void
       onNodeAdd(ClusterEvent ce)
     {
-      _log.info("node added: " + ce.getNode());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("node added: " + ce.getNode());
+        }
     }
 
     public void
       onNodeFailed(ClusterEvent ce)
     {
-      _log.info("node failed: " + ce.getNode());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("node failed: " + ce.getNode());
+        }
     }
 
     public void
       onNodeRemoved(ClusterEvent ce)
     {
-      _log.info("node removed: " + ce.getNode());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("node removed: " + ce.getNode());
+        }
     }
 
     public void
       onNodeUpdate(ClusterEvent ce)
     {
-      _log.info("node updated: " + ce.getNode());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("node updated: " + ce.getNode());
+        }
     }
 
     public void
       onCoordinatorChanged(ClusterEvent ce)
     {
-      _log.info("coordinator changed: " + ce.getNode());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("coordinator changed: " + ce.getNode());
+        }
     }
   }
 
@@ -138,7 +159,10 @@ public class
     map.put("text", "testing123");
     _cluster0.getLocalNode().setState(map);
 
-    _log.info("nodes: " + _cluster0.getNodes());
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("nodes: " + _cluster0.getNodes());
+      }
     Thread.sleep(10000);
     assertTrue(true);
   }
@@ -171,7 +195,10 @@ public class
     public void
       onMessage(Message message)
     {
-      _log.info("message received: "+message);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("message received: " + message);
+        }
 
       ObjectMessage om=null;
       Object tmp=null;
@@ -185,9 +212,15 @@ public class
 	    tmp instanceof Invocation &&
 	    (invocation=(Invocation)tmp)!=null)
 	{
-	  _log.info("invoking message on: "+_cluster.getLocalNode());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("invoking message on: " + _cluster.getLocalNode());
+        }
 	  invocation.invoke(_cluster, om);
-	  _log.info("message successfully invoked on: "+_cluster.getLocalNode());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("message successfully invoked on: " + _cluster.getLocalNode());
+        }
 	}
 	else
 	{
@@ -281,12 +314,18 @@ public class
     _cluster0.send(_cluster0.getLocalNode().getDestination(), om);
     Thread.sleep(3000);
     assertTrue(testResponsePassed);
-    _log.info("request/response between same node OK");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("request/response between same node OK");
+      }
 
     testResponsePassed=false;
     _cluster0.send(_cluster1.getLocalNode().getDestination(), om);
     Thread.sleep(3000);
     assertTrue(testResponsePassed);
-    _log.info("request/response between two different nodes OK");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("request/response between two different nodes OK");
+      }
   }
 }

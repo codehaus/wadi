@@ -137,7 +137,10 @@ public class TestContextualiser extends TestCase {
      */
     protected void setUp() throws Exception {
         super.setUp();
-        _log.info("starting ...");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("starting ...");
+        }
         _httpAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8888);
         _store.init();
         _dir.mkdir();
@@ -150,7 +153,10 @@ public class TestContextualiser extends TestCase {
     	_dir.delete();
         _store.destroy();
         super.tearDown();
-        _log.info("...stopped");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("...stopped");
+        }
     }
 
     /**
@@ -191,7 +197,10 @@ public class TestContextualiser extends TestCase {
     {
         public void
         doFilter(ServletRequest request, ServletResponse response) {
-            _log.info("invoking FilterChain...");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("invoking FilterChain...");
+            }
         }
     }
 
@@ -367,7 +376,10 @@ public class TestContextualiser extends TestCase {
             try {
                 shared.acquire();
                 motionLock.release();
-                _log.info("running locally: "+id);
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("running locally: " + id);
+                }
                 chain.doFilter(hreq, hres);
                 shared.release();
                 return true;
@@ -610,7 +622,10 @@ public class TestContextualiser extends TestCase {
         memory1.init(new DummyDistributableContextualiserConfig(cluster1));
 
         Thread.sleep(2000); // activecluster needs a little time to sort itself out...
-        _log.info("STARTING NOW!");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("STARTING NOW!");
+        }
         FilterChain fc=new MyFilterChain();
 
         assertTrue(!m0.containsKey("bar"));
@@ -624,7 +639,10 @@ public class TestContextualiser extends TestCase {
         assertTrue(!memory1.contextualise(null,null,fc,"baz", null, null, false));
 
         Thread.sleep(2000);
-        _log.info("STOPPING NOW!");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("STOPPING NOW!");
+        }
         // ------------------
         cluster1.stop();
         cluster1=null;
@@ -636,7 +654,10 @@ public class TestContextualiser extends TestCase {
 
     // TODO - add some content to this test...
     public void testStack() throws Exception {
-        _log.info("putting complete stack together...");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("putting complete stack together...");
+        }
         Map map=new ConcurrentHashMap();
         //CustomCluster cluster=(CustomCluster)new CustomClusterFactory(Utils.getConnectionFactory()).createCluster("ORG.CODEHAUS.WADI.CLUSTER");
         SimpleContextualiserStack stack=new SimpleContextualiserStack(map, _standardContextPool, _ds, new MigratingRelocater(2000, 1000));
@@ -648,7 +669,10 @@ public class TestContextualiser extends TestCase {
         Thread.sleep(2000);
         stack.stop();
         Thread.sleep(2000);
-        _log.info("...done");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("...done");
+        }
     }
 
 }

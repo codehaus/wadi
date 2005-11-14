@@ -74,7 +74,10 @@ public class LocalDiscCache extends AbstractMappedCache {
 			//	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
 			//	file.setLastModified(willTimeOutAt);
 
-			_log.info("stored (local disc): "+key+" : "+val);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("stored (local disc): " + key + " : " + val);
+            }
 		}
 		catch (Exception e)
 		{

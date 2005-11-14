@@ -60,7 +60,10 @@ public class
     assert dir.canWrite();
 
     _dir               =dir;
-    _log.info("created: "+this);
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("created: " + this);
+      }
   }
 
   public String
@@ -86,7 +89,10 @@ public class
 	oi.close();
 
 	value=sc;
-	_log.info("loaded (local disc): "+key+" : "+value);
+          if ( _log.isInfoEnabled() ) {
+
+              _log.info("loaded (local disc): " + key + " : " + value);
+          }
       }
       catch (Exception e)
       {
@@ -115,7 +121,10 @@ public class
       //	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
       //	file.setLastModified(willTimeOutAt);
 
-      _log.info("stored (local disc): "+key+" : "+value);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("stored (local disc): " + key + " : " + value);
+        }
       success=true;
     }
     catch (Exception e)
@@ -141,7 +150,10 @@ public class
     {
       File file=new File(_dir, key.toString()+"."+_streamingStrategy.getSuffix());
       file.delete();
-      _log.info("removed (local disc): "+key);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("removed (local disc): " + key);
+        }
       success=true;
     }
     catch (Exception e)

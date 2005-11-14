@@ -71,19 +71,29 @@ public class NIOServer extends AbstractSocketServer implements NIOPipeConfig {
         _channel.socket().bind(_address);
         _channel.socket().setSoTimeout((int)_serverTimeout);
         //_channel.socket().setReuseAddress(true);
-        _log.info(_channel);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info(_channel);
+        }
         _address=(InetSocketAddress)_channel.socket().getLocalSocketAddress(); // in case address was not fully specified
         _selector= Selector.open();
         _key=_channel.register(_selector, SelectionKey.OP_ACCEPT);
         _running=true;
         _accepting.set(true);
         (_thread=new Thread(new Producer(), "WADI NIO Server")).start();
-        _log.info("Producer thread started");
-        _log.info("started: "+_channel);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("Producer thread started");
+            _log.info("started: " + _channel);
+        }
+
     }
     
     public synchronized void stop() throws Exception {
-        _log.info("stopping: "+_channel);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("stopping: " + _channel);
+        }
         stopAcceptingPipes();
         waitForExistingPipes();
         // stop Producer loop
@@ -92,11 +102,17 @@ public class NIOServer extends AbstractSocketServer implements NIOPipeConfig {
         _thread.join();
         _selector.close();
         _thread=null;
-        _log.info("Producer thread stopped");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("Producer thread stopped");
+        }
         // tidy up
         _channel.socket().close();
         _channel.close();
-        _log.info("stopped: "+_address);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("stopped: " + _address);
+        }
     }
     
     public void stopAcceptingPipes() {

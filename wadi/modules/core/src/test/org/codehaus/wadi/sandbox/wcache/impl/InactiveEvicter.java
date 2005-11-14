@@ -40,7 +40,12 @@ public class InactiveEvicter implements Evicter {
 	 */
 	public boolean evict(String key, RequestProcessor val) {
 		boolean tmp=val.getTimeToLive()<10000;
-		if (tmp) _log.info("evicting due to lack of activity: "+key);
+		if (tmp) {
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("evicting due to lack of activity: " + key);
+            }
+        }
 		return tmp;
 	}
 }

@@ -89,7 +89,10 @@ public abstract class
     if (value==null)
       _log.warn("load failed: "+key);
     else
-      _log.info("loaded: "+key+" : "+value);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("loaded: " + key + " : " + value);
+        }
 
     return value;
   }
@@ -111,7 +114,10 @@ public abstract class
     if (map.size()==0)
       _log.warn("loadAll failed: "+keys);
     else
-      _log.info("loadAll: "+map);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("loadAll: " + map);
+        }
 
     return map;
   }
@@ -122,35 +128,50 @@ public abstract class
   public CacheEntry
     createEntry(Object key, Object value, long ttl)
   {
-    _log.info("createEntry");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("createEntry");
+      }
     return new _CacheEntry(key, value, ttl);	// Pool these ?
   }
 
   public void
     discardEntry(CacheEntry e)
   {
-    _log.info("discardEntry: "+e);
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("discardEntry: " + e);
+      }
     removeValue(e.getKey());
   }
 
   public void
     touchEntry(CacheEntry entry)
   {
-    _log.info("touchEntry");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("touchEntry");
+      }
     // update ttl on file ?
   }
 
   public void
     clear()
   {
-    _log.info("clear");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("clear");
+      }
     // could remove files one by one - or whole directory ?
   }
 
   public Map
     evict(Cache c)
   {
-    _log.info("evict: "+c);
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("evict: " + c);
+      }
 
     Map evictees=new HashMap();	// TODO - ouch - Maps are expensive - cache ?
 
@@ -194,56 +215,80 @@ public abstract class
     public long
       getCost()
     {
-      _log.info("getCost");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("getCost");
+        }
       return _cost;
     }
 
     public long
       getCreationTime()
     {
-      _log.info("getCreationTime");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("getCreationTime");
+        }
       return _creationTime;
     }
 
     public long
       getExpirationTime()
     {
-      _log.info("getExpirationTime");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("getExpirationTime");
+        }
       return _expirationTime;
     }
 
     public int
       getHits()
     {
-      _log.info("getHits");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("getHits");
+        }
       return _hits;
     }
 
     public long
       getLastAccessTime()
     {
-      _log.info("getLastAccessTime");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("getLastAccessTime");
+        }
       return _lastAccessedTime;
     }
 
     public long
       getLastUpdateTime()
     {
-      _log.info("getLastUpdateTime");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("getLastUpdateTime");
+        }
       return _lastUpdateTime;
     }
 
     public long
       getVersion()
     {
-      _log.info("getVersion");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("getVersion");
+        }
       return _version;
     }
 
     public boolean
       isValid()
     {
-      _log.info("isValid");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("isValid");
+        }
       return _valid;
     }
 
@@ -272,14 +317,20 @@ public abstract class
     public int
       hashCode()
     {
-      _log.info("hashCode");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("hashCode");
+        }
       throw new UnsupportedOperationException();
     }
 
     public boolean
       equals()
     {
-      _log.info("equals");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("equals");
+        }
       throw new UnsupportedOperationException();
     }
   }

@@ -72,7 +72,10 @@ public abstract class AbstractCache implements Cache {
 				val=subcache.get(key);
 				put(key, val);
 				_subcache.remove(key);
-				_log.info("promoted: "+key+ " from "+subcache);
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("promoted: " + key + " from " + subcache);
+                }
 			}
 		}
 		return val;

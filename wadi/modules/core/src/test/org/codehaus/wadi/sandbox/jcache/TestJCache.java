@@ -119,14 +119,20 @@ public class
     setUp()
     throws Exception
     {
-      _log.info("starting test");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("starting test");
+      }
     }
 
   protected void
     tearDown()
     throws InterruptedException
     {
-      _log.info("stopping test");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("stopping test");
+      }
     }
 
   class
@@ -257,7 +263,10 @@ public class
     String name=tmp.toString();
     tmp.delete();
     File dir=new File(name);
-    _log.info("dir="+dir);
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("dir=" + dir);
+      }
     assertTrue(dir.mkdirs());
 
     Cache backing=new BasicCache();

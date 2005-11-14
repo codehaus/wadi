@@ -53,23 +53,38 @@ public class ACCluster implements Cluster {
 		_cluster.addClusterListener(new ClusterListener() {
 
 			public void onNodeAdd(ClusterEvent arg0) {
-				_log.info("onNodeAdd: "+getNodeName(arg0.getNode()));
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("onNodeAdd: " + getNodeName(arg0.getNode()));
+                }
 			}
 
 			public void onNodeUpdate(ClusterEvent arg0) {
-				_log.info("onNodeUpdate: "+getNodeName(arg0.getNode()));
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("onNodeUpdate: " + getNodeName(arg0.getNode()));
+                }
 			}
 
 			public void onNodeRemoved(ClusterEvent arg0) {
-				_log.info("onNodeRemoved: "+getNodeName(arg0.getNode()));
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("onNodeRemoved: " + getNodeName(arg0.getNode()));
+                }
 			}
 
 			public void onNodeFailed(ClusterEvent arg0) {
-				_log.info("onNodeFailed: "+getNodeName(arg0.getNode()));
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("onNodeFailed: " + getNodeName(arg0.getNode()));
+                }
 			}
 
 			public void onCoordinatorChanged(ClusterEvent arg0) {
-				_log.info("onCoordinatorChanged: "+getNodeName(arg0.getNode()));
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("onCoordinatorChanged: " + getNodeName(arg0.getNode()));
+                }
 			}
 		});
 	}
@@ -79,9 +94,15 @@ public class ACCluster implements Cluster {
 	}
 
 	public void start() throws JMSException {
-		_log.info("starting...");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("starting...");
+        }
 		_cluster.start();
-		_log.info("...started");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("...started");
+        }
 	}
 
 	public void stop() {

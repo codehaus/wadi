@@ -77,7 +77,10 @@ public class GCache implements Cache, StateManagerConfig {
 			Sync sync=(Sync)entry.getValue();
 			sync.release();
 			i.remove();
-			_log.info("released: "+key);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("released: " + key);
+            }
 		}
 	}
 
@@ -86,7 +89,10 @@ public class GCache implements Cache, StateManagerConfig {
 		Map locks=(Map)_threadLocks.get();
 		Sync oldSync=(Sync)locks.get(key);
 
-		_log.info("adding: "+key);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("adding: " + key);
+        }
 		if (oldSync==null) {
 			locks.put(key, newSync);
 		} else {

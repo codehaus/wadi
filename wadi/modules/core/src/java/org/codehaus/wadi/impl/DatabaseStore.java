@@ -166,7 +166,10 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 					if (_log.isErrorEnabled()) _log.error("load (shared database) failed: "+name, e);
 				}
 			}
-			_log.info("loaded sessions: "+count);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("loaded sessions: " + count);
+            }
 		} catch (SQLException e) {
 			_log.warn("list (shared database) failed", e);
 		} finally {

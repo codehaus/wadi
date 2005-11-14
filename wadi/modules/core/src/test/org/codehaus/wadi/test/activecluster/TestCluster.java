@@ -255,10 +255,16 @@ public class TestCluster extends TestCase {
 
         // shutdown node0
         // sessions should be evacuated to remaining two nodes...
-        _log.info("NODES: "+_node0.getCluster().getNodes().size());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("NODES: " + _node0.getCluster().getNodes().size());
+        }
 		_node0.stop();
         Thread.sleep(6000); // time for other nodes to notice...
-        _log.info("NODES: "+_node1.getCluster().getNodes().size());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("NODES: " + _node1.getCluster().getNodes().size());
+        }
 
 		// where are all the sessions now ?
 		// the sum of nodes 1 and 2 should total n Contexts
@@ -266,7 +272,10 @@ public class TestCluster extends TestCase {
 		    int s0=m0.size();
 		    int s1=m1.size();
 		    int s2=m2.size();
-		    _log.info("dispersal - n0:"+s0+", n1:"+s1+", n2:"+s2);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("dispersal - n0:" + s0 + ", n1:" + s1 + ", n2:" + s2);
+            }
 		    assertTrue(s0==0);
 		    assertTrue(s1+s2==numContexts);
             // TODO - hmmmm...
@@ -275,10 +284,16 @@ public class TestCluster extends TestCase {
 
         // shutdown node1
         // sessions should all be evacuated to node2
-        _log.info("NODES: "+_node1.getCluster().getNodes().size());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("NODES: " + _node1.getCluster().getNodes().size());
+        }
 		_node1.stop();
         Thread.sleep(6000); // time for other nodes to notice...
-        _log.info("NODES: "+_node2.getCluster().getNodes().size());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("NODES: " + _node2.getCluster().getNodes().size());
+        }
 		{
 		    int s0=m0.size();
 		    int s1=m1.size();
@@ -292,10 +307,16 @@ public class TestCluster extends TestCase {
 		}
 		
         // shutdown node2
-        _log.info("NODES: "+_node2.getCluster().getNodes().size());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("NODES: " + _node2.getCluster().getNodes().size());
+        }
 		_node2.stop();
         Thread.sleep(6000); // time for other nodes to notice...
-        _log.info("NODES: should be 0");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("NODES: should be 0");
+        }
 		{
 		    int s0=m0.size();
 		    int s1=m1.size();

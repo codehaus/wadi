@@ -47,7 +47,10 @@ public class
   public void
     start()
   {
-    _log.info("starting: "+_id);
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("starting: " + _id);
+      }
 
     try
     {
@@ -62,7 +65,10 @@ public class
   public void
     stop()
   {
-    _log.info("stopping: "+_id);
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("stopping: " + _id);
+      }
 
     try
     {

@@ -245,14 +245,27 @@ public class TestMotion extends TestCase {
         protected static final Log _log=LogFactory.getLog(SingleRoundTripServerPeer.class);
         
         public boolean run(PeerConfig config) throws IOException {
-            _log.info("server - starting");
-            _log.info("server - creating output stream");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("server - starting");
+                _log.info("server - creating output stream");
+            }
+
             ObjectOutputStream oos=config.getObjectOutputStream();
-            _log.info("server - writing response");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("server - writing response");
+            }
             oos.writeBoolean(true); // ack
-            _log.info("server - flushing response");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("server - flushing response");
+            }
             oos.flush();
-            _log.info("server - finished");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("server - finished");
+            }
             //config.close();
             return true;
         }
@@ -263,18 +276,37 @@ public class TestMotion extends TestCase {
         protected static final Log _log=LogFactory.getLog(SingleRoundTripClientPeer.class);
         
         public boolean run(PeerConfig config) throws IOException {
-            _log.info("client - starting");
-            _log.info("client - creating output stream");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("client - starting");
+                _log.info("client - creating output stream");
+            }
+
             ObjectOutputStream oos=config.getObjectOutputStream();
-            _log.info("client - writing server");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("client - writing server");
+            }
             oos.writeObject(new SingleRoundTripServerPeer());
-            _log.info("client - flushing server");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("client - flushing server");
+            }
             oos.flush();
-            _log.info("client - creating input stream");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("client - creating input stream");
+            }
             ObjectInputStream ois=config.getObjectInputStream();
-            _log.info("client - reading response");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("client - reading response");
+            }
             boolean result=ois.readBoolean();
-            _log.info("client - finished: "+result);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("client - finished: " + result);
+            }
             assertTrue(result);
             //config.close();
             return result;
@@ -282,30 +314,52 @@ public class TestMotion extends TestCase {
     }
     
     public void testRoundTripping() throws Exception {
-        
-        _log.info("START");
+
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("START");
+        }
         Pipe us2them=_us.getClient(_remoteLocation);
         try {
-            _log.info("us -> them (1st trip)");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("us -> them (1st trip)");
+            }
             us2them.run(new SingleRoundTripClientPeer());
-            _log.info("us -> them (2nd trip)");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("us -> them (2nd trip)");
+            }
             us2them.run(new SingleRoundTripClientPeer());
         } finally {
             us2them.close();
         }
-        _log.info("FINISH");
-        
-        _log.info("START");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("FINISH");
+
+            _log.info("START");
+        }
+
         Pipe them2us=_them.getClient(_localLocation);
         try {
-            _log.info("them -> us (1st trip)");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("them -> us (1st trip)");
+            }
             them2us.run(new SingleRoundTripClientPeer());
-            _log.info("them -> us (2nd trip)");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("them -> us (2nd trip)");
+            }
             them2us.run(new SingleRoundTripClientPeer());
         } finally {
             them2us.close();
         }
-        _log.info("FINISH");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("FINISH");
+        }
     }
 
     public static class EmotionServerPeer extends Peer implements Serializable {
@@ -414,15 +468,24 @@ public class TestMotion extends TestCase {
         String name1="bar";
         s1.init(time, time, 30*60, name1);
 
-        _log.info("START");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("START");
+        }
         Pipe us2them=_us.getClient(_remoteLocation);
         try {
-            _log.info("us -> them (1st trip)");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("us -> them (1st trip)");
+            }
             us2them.run(new EmotionClientPeer(s0.getName(), emoter, s0));
             assertTrue(_localMap.size()==0);
             assertTrue(_remoteMap.size()==1);
             assertTrue(_remoteMap.containsKey(name0));
-            _log.info("us -> them (2nd trip)");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("us -> them (2nd trip)");
+            }
             us2them.run(new EmotionClientPeer(s1.getName(), emoter, s1));
             assertTrue(_localMap.size()==0);
             assertTrue(_remoteMap.size()==2);
@@ -430,8 +493,11 @@ public class TestMotion extends TestCase {
         } finally {
             us2them.close();
         }
-        _log.info("FINISH");
-        
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("FINISH");
+        }
+
         SessionRelocater relocater=new StreamingMigratingRelocater();
         relocater.init(new DummyRelocaterConfig());
         Sync motionLock=new NullSync();

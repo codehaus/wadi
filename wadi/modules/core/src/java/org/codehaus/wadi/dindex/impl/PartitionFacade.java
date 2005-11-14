@@ -165,7 +165,10 @@ public class PartitionFacade extends AbstractPartition {
                 _content.dispatch(om, request);
             }
             else {
-                _log.info("queueing message");
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("queueing message");
+                }
                 _queue.put(om);
             }
         } catch (InterruptedException e) {

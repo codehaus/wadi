@@ -103,7 +103,10 @@ public class JkRouter implements Router {
         String oldId=id;
         String newId=augment(id);
 
-        _log.info("rerouting cookie: "+oldId+" -> "+newId);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("rerouting cookie: " + oldId + " -> " + newId);
+        }
 
         Cookie[] cookies=req.getCookies();
 

@@ -91,8 +91,12 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 		Object key=move.getKey();
 		Destination im=move.getIM();
 		//Object pm=move.getPM();
-		_log.info("[SM] - onMovePMToSM@"/*+_address*/);
-		_log.info("im="+im);
+		if ( _log.isInfoEnabled() ) {
+
+            _log.info("[SM] - onMovePMToSM@"/*+_address*/);
+            _log.info("im=" + im);
+        }
+
 		Sync sync=null;
 		try {
 			_log.trace("onMovePMToSM - [SM] trying for lock("+key+")...");
@@ -104,9 +108,15 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 			synchronized (map) {
 				value=map.get(key);
 			}
-			_log.info("[SM] sending "+key+"="+value+" -> IM...");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("[SM] sending " + key + "=" + value + " -> IM...");
+            }
 			MoveIMToSM response=(MoveIMToSM)syncRpc(im, "onMoveSMToIM", new MoveSMToIM(key, value));
-			_log.info("[SM] ...response received <- IM");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("[SM] ...response received <- IM");
+            }
 			boolean success=response.getSuccess();
 			if (success) {
 				synchronized (map) {
@@ -125,7 +135,10 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 	public Object onReadIMToPM(ReadIMToPM read) throws Exception {
 		Object key=read.getKey();
 		Destination im=read.getIM();
-		_log.info("im="+im);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("im=" + im);
+        }
 		// what if we are NOT the PM anymore ?
 		// get write lock on location
 		Sync sync=null;

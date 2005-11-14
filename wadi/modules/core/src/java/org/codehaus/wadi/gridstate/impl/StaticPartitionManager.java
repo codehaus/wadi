@@ -59,7 +59,10 @@ public class StaticPartitionManager implements PartitionManager {
     		// figure out which node is Partition Master...
     		int index=i/partitionsPerCache;
     		GCache master=caches[index];
-    		_log.info("partition-"+i+" -> node-"+index);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("partition-" + i + " -> node-" + index);
+            }
     		// go through all the nodes...
     		for (int j=0; j<numCaches; j++) {
     			GCache cache=caches[j];

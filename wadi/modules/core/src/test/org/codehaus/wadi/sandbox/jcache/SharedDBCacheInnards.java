@@ -63,7 +63,10 @@ class
 
     _ds                =ds;
     _table             =table;
-    _log.info("created: "+this);
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("created: " + this);
+      }
   }
 
   public String
@@ -90,7 +93,10 @@ class
     	oi.close();
 
     	value=sc;
-    	_log.info("loaded (database): "+key+" : "+value);
+          if ( _log.isInfoEnabled() ) {
+
+              _log.info("loaded (database): " + key + " : " + value);
+          }
       }
 
       s.close();
@@ -124,7 +130,10 @@ class
       //	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
       //	file.setLastModified(willTimeOutAt);
 
-      _log.info("stored (database): "+key+" : "+value);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("stored (database): " + key + " : " + value);
+        }
       success=true;
     }
     catch (Exception e)
@@ -160,7 +169,10 @@ class
       //	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
       //	file.setLastModified(willTimeOutAt);
 
-      _log.info("stored (database): "+key+" : "+value);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("stored (database): " + key + " : " + value);
+        }
       success=true;
     }
     catch (Exception e)
@@ -183,7 +195,10 @@ class
       s.close();
       c.close();
 
-      _log.info("removed (database): "+key);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("removed (database): " + key);
+        }
       success=true;
     }
     catch (Exception e)

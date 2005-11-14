@@ -57,7 +57,10 @@ public class BIOServer extends AbstractSocketServer {
         //_socket.setReuseAddress(true);
         _address=new InetSocketAddress(host, _socket. getLocalPort());
         (_thread=new Thread(new Producer(), "WADI BIO Server")).start();
-        _log.info("Producer thread started");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("Producer thread started");
+        }
         if (_log.isDebugEnabled()) _log.debug("started: "+_socket);
     }
     
@@ -86,7 +89,10 @@ public class BIOServer extends AbstractSocketServer {
                 _log.trace("unexpected interruption - ignoring", e);
             }
         } while (Thread.interrupted());
-        _log.info("Producer thread stopped");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("Producer thread stopped");
+        }
         _thread=null;
     }
     

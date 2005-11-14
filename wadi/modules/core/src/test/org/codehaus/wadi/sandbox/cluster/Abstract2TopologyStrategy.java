@@ -54,18 +54,28 @@ public abstract class
     localPeer=localPeer!=null?localPeer:p; // TODO - hack
     Map newCells=combineMap(localPeer, _peers.values(), Math.min(_k,_peers.size()));
 
-    _log.info("old peers="+_oldPeers);
-    _log.info("old rel cells="+_oldCells.keySet());
-    _log.info("new peers="+_peers.keySet());
-    _log.info("new rel cells="+newCells.keySet());
+    if ( _log.isInfoEnabled() ) {
+
+        _log.info("old peers=" + _oldPeers);
+        _log.info("old rel cells=" + _oldCells.keySet());
+        _log.info("new peers=" + _peers.keySet());
+        _log.info("new rel cells=" + newCells.keySet());
+    }
+
 
     Map joiningCells=new TreeMap(newCells);
     joiningCells.keySet().removeAll(_oldCells.keySet());
-    _log.info("joining cells="+joiningCells.keySet());
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("joining cells=" + joiningCells.keySet());
+      }
 
     Map leavingCells=new TreeMap(_oldCells);
     leavingCells.keySet().removeAll(newCells.keySet());
-    _log.info("leaving cells="+leavingCells.keySet());
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("leaving cells=" + leavingCells.keySet());
+      }
 
     _oldPeers=new TreeSet(_peers.values());
     _oldCells=newCells;
@@ -80,20 +90,29 @@ public abstract class
     localPeer=localPeer!=null?localPeer:p; // TODO - hack
     Collection newCells=combineCollection(localPeer, _peers.values(), Math.min(_k,_peers.size()));
 
-    _log.info("old peers="+_oldPeers);
-    _log.info("old rel cells="+_oldCells2);
-    _log.info("new peers="+_peers.keySet());
-    _log.info("new rel cells="+newCells);
+    if ( _log.isInfoEnabled() ) {
+
+        _log.info("old peers=" + _oldPeers);
+        _log.info("old rel cells=" + _oldCells2);
+        _log.info("new peers=" + _peers.keySet());
+        _log.info("new rel cells=" + newCells);
+    }
 
     Collection joiningCells=new TreeSet(new CollectionComparator());
     joiningCells.addAll(newCells);
     joiningCells.removeAll(_oldCells2);
-    _log.info("joining cells="+joiningCells);
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("joining cells=" + joiningCells);
+      }
 
     Collection leavingCells=new TreeSet(new CollectionComparator());
     leavingCells.addAll(_oldCells2);
     leavingCells.removeAll(newCells);
-    _log.info("leaving cells="+leavingCells);
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("leaving cells=" + leavingCells);
+      }
 
     _oldPeers=new TreeSet(_peers.values());
     _oldCells2=newCells;
