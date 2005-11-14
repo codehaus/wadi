@@ -78,7 +78,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
     protected PartitionManagerConfig _config;
 
     public void init(PartitionManagerConfig config) {
-        _log.info("init-ing...");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("init-ing...");
+        }
         _config=config;
         _cluster.setElectionStrategy(new SeniorityElectionStrategy());
         _dispatcher.setClusterListener(this);
@@ -88,7 +91,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
         PartitionKeys keys=_partitionManager.getPartitionKeys();
         _distributedState.put(_partitionKeysKey, keys);
         _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
-        _log.info("local state: "+keys);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("local state: " + keys);
+        }
         _partitionManager.init(config);
         _dispatcher.register(this, "onDIndexInsertionRequest", DIndexInsertionRequest.class);
         _dispatcher.register(DIndexInsertionResponse.class, _inactiveTime);
@@ -97,17 +103,29 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
         _dispatcher.register(this, "onDIndexRelocationRequest", DIndexRelocationRequest.class);
         _dispatcher.register(DIndexRelocationResponse.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexForwardRequest", DIndexForwardRequest.class);
-        _log.info("...init-ed");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("...init-ed");
+        }
     }
 
     public void start() throws Exception {
-        _log.info("starting...");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("starting...");
+        }
 
         _partitionManager.start();
 
-        _log.info("sleeping...");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("sleeping...");
+        }
         boolean isNotCoordinator=_coordinatorLatch.attempt(_inactiveTime); // wait to find out if we are the Coordinator
-        _log.info("...waking");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("...waking");
+        }
 
         // If our wait timed out, then we must be the coordinator...
         if (!isNotCoordinator) {
@@ -115,7 +133,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
             PartitionKeys k=_partitionManager.getPartitionKeys();
             _distributedState.put(_partitionKeysKey, k);
             _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
-            _log.info("local state: "+k);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("local state: " + k);
+            }
             _dispatcher.setDistributedState(_distributedState);
             _log.trace("distributed state updated: "+_dispatcher.getDistributedState());
             onCoordinatorChanged(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.ELECTED_COORDINATOR));
@@ -125,11 +146,17 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
         // whether we are the coordinator or not...
         _partitionManager.dequeue();
 
-        _log.info("...started");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("...started");
+        }
     }
 
     public void stop() throws Exception {
-        _log.info("stopping...");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("stopping...");
+        }
 
         Thread.interrupted();
 
@@ -153,7 +180,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
 
         _partitionManager.stop();
 
-        _log.info("...stopped");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("...stopped");
+        }
     }
 
     public Cluster getCluster() {
@@ -174,7 +204,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
 
     public void onNodeUpdate(ClusterEvent event) {
         Node node=event.getNode();
-        _log.info("onNodeUpdate: "+getNodeName(node)+": "+node.getState());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("onNodeUpdate: " + getNodeName(node) + ": " + node.getState());
+        }
 
         _partitionManager.update(node);
 
@@ -199,7 +232,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
 
     public void onNodeAdd(ClusterEvent event) {
         Node node=event.getNode();
-        _log.info("onNodeAdd: "+getNodeName(node)+": "+node.getState());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("onNodeAdd: " + getNodeName(node) + ": " + node.getState());
+        }
         if (_cluster.getLocalNode()==_coordinatorNode) {
             _coordinator.queueRebalancing();
         }
@@ -209,7 +245,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
 
     public void onNodeRemoved(ClusterEvent event) {
         Node node=event.getNode();
-        _log.info("onNodeRemoved: "+getNodeName(node));
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("onNodeRemoved: " + getNodeName(node));
+        }
         _leavers.add(node.getDestination());
         if (_coordinator!=null)
             _coordinator.queueRebalancing();
@@ -222,7 +261,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
 
     public void onNodeFailed(ClusterEvent event) {
         Node node=event.getNode();
-        _log.info("NODE FAILED: "+getNodeName(node));
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("NODE FAILED: " + getNodeName(node));
+        }
         if (_leavers.remove(node.getDestination())) {
             // we have already been explicitly informed of this node's wish to leave...
             _left.remove(node);
@@ -241,7 +283,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
 
     public void onCoordinatorChanged(ClusterEvent event) {
         synchronized (_coordinatorLock) {
-            _log.info("onCoordinatorChanged: "+getNodeName(event.getNode()));
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("onCoordinatorChanged: " + getNodeName(event.getNode()));
+            }
             Node newCoordinator=event.getNode();
             if (newCoordinator!=_coordinatorNode) {
                 if (_coordinatorNode==_cluster.getLocalNode())
@@ -263,7 +308,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
     }
 
     public void onElection(ClusterEvent event) {
-        _log.info("accepting coordinatorship");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("accepting coordinatorship");
+        }
         try {
             (_coordinator=new Coordinator(this)).start();
             _coordinator.queueRebalancing();
@@ -273,7 +321,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
     }
 
     public void onDismissal(ClusterEvent event) {
-        _log.info("resigning coordinatorship"); // never happens - coordinatorship is for life..
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("resigning coordinatorship"); // never happens - coordinatorship is for life..
+        }
         try {
             _coordinator.stop();
             _coordinator=null;
@@ -330,12 +381,18 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
         if (node!=_cluster.getLocalNode())
             node=(Node)_cluster.getNodes().get(node.getDestination());
         if (node==null) {
-            _log.info(DIndex.getNodeName(node)+" : <unknown> - {?...}");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info(DIndex.getNodeName(node) + " : <unknown> - {?...}");
+            }
             return 0;
         } else {
             PartitionKeys keys=DIndex.getPartitionKeys(node);
             int amount=keys.size();
-            _log.info(DIndex.getNodeName(node)+" : "+amount+" - "+keys);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info(DIndex.getNodeName(node) + " : " + amount + " - " + keys);
+            }
             return amount;
         }
     }
@@ -371,7 +428,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
             message.setObject(request);
             return _partitionManager.getPartition(getKey(name)).exchange(message, request, _inactiveTime);
         } catch (Exception e) {
-            _log.info("oops...", e);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("oops...", e);
+            }
         }
         return null;
     }
@@ -384,7 +444,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
             message.setObject(request);
             _partitionManager.getPartition(getKey(name)).exchange(message, request, _inactiveTime);
         } catch (Exception e) {
-            _log.info("oops...", e);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("oops...", e);
+            }
         }
     }
 
@@ -396,7 +459,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
             message.setObject(request);
             _partitionManager.getPartition(getKey(name)).exchange(message, request, _inactiveTime);
         } catch (Exception e) {
-            _log.info("oops...", e);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("oops...", e);
+            }
         }
     }
 
@@ -408,7 +474,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
             message.setObject(request);
             return _partitionManager.getPartition(key).exchange(message, request, timeout);
         } catch (JMSException e) {
-            _log.info("oops...", e);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("oops...", e);
+            }
             return null;
         }
     }

@@ -141,14 +141,20 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
     public void waitForExistingPipes() {
         int numPipes;
         while ((numPipes=getNumPipes())>0) {
-            _log.info("waiting for: "+numPipes+" Pipe[s]");
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("waiting for: " + numPipes + " Pipe[s]");
+            }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 _log.trace("unexpected interruption - ignoring", e);
             }
         }
-        _log.info("existing Pipes have finished running");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("existing Pipes have finished running");
+        }
     }
     
     // PipeConfig

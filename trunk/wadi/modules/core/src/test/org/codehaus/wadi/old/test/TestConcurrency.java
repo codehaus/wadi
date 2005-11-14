@@ -167,7 +167,10 @@ public class
       }
 
       Thread.yield();
-      _log.info("releasing read lock");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("releasing read lock");
+      }
       lock.readLock().release();
 
       for (int i=0;i<=MAX_PRIORITY;i++)
@@ -205,7 +208,10 @@ public class
  	    {
 	      RWLock.setPriority(EVICTION_PRIORITY);
  	      lock.writeLock().acquire();
- 	      _log.info("I lost");
+             if ( _log.isInfoEnabled() ) {
+
+                 _log.info("I lost");
+             }
 	      assertTrue(_first==false);
  	      lock.writeLock().release();
  	    }
@@ -219,7 +225,10 @@ public class
 
       RWLock.setPriority(INVALIDATION_PRIORITY);
       lock.overlap();
-      _log.info("I won");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("I won");
+        }
       assertTrue(_first==true);
       _first=false;
       lock.writeLock().release();

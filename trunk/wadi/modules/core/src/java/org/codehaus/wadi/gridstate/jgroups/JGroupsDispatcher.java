@@ -211,7 +211,10 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 		}
 
     	_members=newView.getMembers(); // N.B. This View includes ourself
-    	_log.info("JGroups View: "+_members);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("JGroups View: " + _members);
+        }
     	
 }
 

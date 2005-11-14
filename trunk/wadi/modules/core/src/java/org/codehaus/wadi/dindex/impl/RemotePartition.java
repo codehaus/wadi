@@ -66,7 +66,10 @@ public class RemotePartition extends AbstractPartition {
     }
 
     public void dispatch(ObjectMessage om, DIndexRequest request) {
-        _log.info("indirecting: "+request+" via "+_config.getNodeName(_location));
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("indirecting: " + request + " via " + _config.getNodeName(_location));
+        }
         if (!_config.getDispatcher().forward(om, _location))
             _log.warn("could not forward message");
     }

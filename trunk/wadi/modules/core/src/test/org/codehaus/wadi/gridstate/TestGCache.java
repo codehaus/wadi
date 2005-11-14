@@ -169,13 +169,19 @@ public class TestGCache extends TestCase {
     	GCache green=_nodes[1];
     	//GCache blue=_nodes[2];
 
-        _log.info("0 nodes running");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("0 nodes running");
+        }
         for (int i=0; i<_numNodes; i++)
         	_nodes[i].start();
 
         Thread.sleep(12000);
         //red.getCluster().waitForClusterToComplete(_numNodes, 6000);
-        _log.info(_numNodes+" nodes running");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info(_numNodes + " nodes running");
+        }
 
         long start=System.currentTimeMillis();
         for (int i=0; i<_numPartitions; i++) {
@@ -252,25 +258,40 @@ public class TestGCache extends TestCase {
             //_log.info(key+" = "+value2);
             assertTrue(value2.equals(newData));
         }
-        _log.info("elapsed: "+(System.currentTimeMillis()-start)+" millis");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("elapsed: " + ( System.currentTimeMillis() - start ) + " millis");
+        }
 
 
         Thread.sleep(6000);
-        _log.info(_numNodes+" nodes running");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info(_numNodes + " nodes running");
+        }
         for (int i=1; i<_numNodes; i++)
         	_nodes[i].stop();
 
         //red.getCluster().waitForClusterToComplete(1, 6000);
-        _log.info("1 node running");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("1 node running");
+        }
         red.stop();
-        _log.info("0 nodes running");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("0 nodes running");
+        }
     }
 
     public void testConcurrency(StateManagerFactory factory) throws Exception {
 
     	setUp(factory);
 
-        _log.info("0 nodes running");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("0 nodes running");
+        }
         for (int i=0; i<_numNodes; i++)
         	_nodes[i].start();
 
@@ -278,7 +299,10 @@ public class TestGCache extends TestCase {
         //_nodes[_numNodes-1].getCluster().waitForClusterToComplete(_numNodes, 6000);
         _log.warn(_numNodes+" nodes running");
 
-        _log.info("starting");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("starting");
+        }
         for (int i=0; i<_numPartitions; i++) { // do this for each partition...
             String key=_factory.create(i);
 
@@ -295,13 +319,19 @@ public class TestGCache extends TestCase {
         _log.warn("finished");
 
         Thread.sleep(6000);
-        _log.info(_numNodes+" nodes running");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info(_numNodes + " nodes running");
+        }
         for (int i=0; i<_numNodes; i++)
         	_nodes[i].stop();
 
         //red.getCluster().waitForClusterToComplete(1, 6000);
         Thread.sleep(6000);
-        _log.info("0 nodes running");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("0 nodes running");
+        }
     }
 
     public class Soaker implements Runnable {
@@ -337,7 +367,10 @@ public class TestGCache extends TestCase {
 
     	setUp(factory);
 
-        _log.info("0 nodes running");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("0 nodes running");
+        }
         for (int i=0; i<_numNodes; i++)
         	_nodes[i].start();
 
@@ -345,7 +378,10 @@ public class TestGCache extends TestCase {
         //_nodes[_numNodes-1].getCluster().waitForClusterToComplete(_numNodes, 6000);
         _log.warn(_numNodes+" nodes running");
 
-        _log.info("starting");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("starting");
+        }
 
         // make up keys that will hash into every partition...
         GCache node=_nodes[0];
@@ -364,12 +400,18 @@ public class TestGCache extends TestCase {
         _log.warn("finished");
 
         Thread.sleep(6000);
-        _log.info(_numNodes+" nodes running");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info(_numNodes + " nodes running");
+        }
         for (int i=0; i<_numNodes; i++)
         	_nodes[i].stop();
 
         Thread.sleep(6000);
-        _log.info("0 nodes running");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("0 nodes running");
+        }
     }
 
 }

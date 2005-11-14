@@ -66,13 +66,19 @@ public class TestLocation extends TestCase {
 		protected int _count;
 
 		public void acquire() throws InterruptedException {
-			_log.info("acquiring: "+_count++);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("acquiring: " + _count++);
+            }
 			super.acquire();
 		}
 
 		public void release() {
 			super.release();
-			_log.info("releasing: "+(--_count));
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("releasing: " + ( --_count ));
+            }
 		}
 
 	}

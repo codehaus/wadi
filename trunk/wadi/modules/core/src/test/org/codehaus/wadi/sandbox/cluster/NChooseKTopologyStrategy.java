@@ -115,7 +115,10 @@ public class
 
       if (filter)
       {
-	_log.info("[1] START : "+e);
+          if ( _log.isInfoEnabled() ) {
+
+              _log.info("[1] START : " + e);
+          }
 	// calculate all subcombinations...
 	e=new TreeSet(e);
 	e.remove(local);
@@ -128,7 +131,10 @@ public class
       }
       else
       {
-	_log.info("[2] START : "+e);
+          if ( _log.isInfoEnabled() ) {
+
+              _log.info("[2] START : " + e);
+          }
 	_log.warn("",new Exception());
 	combs=combineCollection(e.toArray(), -1, k);
       }
@@ -156,7 +162,10 @@ public class
 	  Set newComb=new TreeSet(comb);
 	  newComb.add(peer);
 	  combsOut.add(newComb);
-	  _log.info("newComb="+newComb+", "+offset);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("newComb=" + newComb + ", " + offset);
+        }
 	}
       }
     }

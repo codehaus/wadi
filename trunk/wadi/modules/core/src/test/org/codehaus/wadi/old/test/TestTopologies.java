@@ -70,7 +70,10 @@ public class
     e.add(p2);
     e.add(p3);
 
-    _log.info("in     :"+e);
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("in     :" + e);
+      }
 
     Abstract2TopologyStrategy ts=new RingTopologyStrategy(local.getId(), "test", null, null, 2);
     Map result;
@@ -99,28 +102,44 @@ public class
     Collection result2;
 
     result=ts.combineMap(null, e, k);
-    _log.info("out    :"+result);
-    _log.info("control:"+control);
+    if ( _log.isInfoEnabled() ) {
+
+        _log.info("out    :" + result);
+        _log.info("control:" + control);
+    }
+
     assertTrue(control.equals(result));
 
     result2=ts.combineCollection(null, e, k);
     control2=new ArrayList(control.values());
-    _log.info("out2    :"+result2);
-    _log.info("control2:"+control2);
+    if ( _log.isInfoEnabled() ) {
+
+        _log.info("out2    :" + result2);
+        _log.info("control2:" + control2);
+    }
+
     assertTrue(control2.equals(result2));
 
     control.remove("1-2");
     control.remove("2-3");
 
     result=ts.combineMap(local, e, k);
-    _log.info("out    :"+result);
-    _log.info("control:"+control);
+    if ( _log.isInfoEnabled() ) {
+
+        _log.info("out    :" + result);
+        _log.info("control:" + control);
+    }
+
     assertTrue(control.equals(result));
 
     result2=ts.combineCollection(local, e, k);
     control2=new ArrayList(control.values());
-    _log.info("out2    :"+result2);
-    _log.info("control2:"+control2);
+    if ( _log.isInfoEnabled() ) {
+
+        _log.info("out2    :" + result2);
+        _log.info("control2:" + control2);
+    }
+
     assertTrue(control2.equals(result2));
 
     // now some timings...
@@ -135,32 +154,50 @@ public class
     start=System.currentTimeMillis();
     ts.combineMap(null, e, k);
     end=System.currentTimeMillis();
-    _log.info("combineMap Ring x500 :"+(end-start)+" milis");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("combineMap Ring x500 :" + ( end - start ) + " milis");
+      }
 
     start=System.currentTimeMillis();
     ts.combineMap(null, e, k);
     end=System.currentTimeMillis();
-    _log.info("combineMap Ring x500 :"+(end-start)+" milis");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("combineMap Ring x500 :" + ( end - start ) + " milis");
+      }
 
     start=System.currentTimeMillis();
     ts.combineMap(null, e, k);
     end=System.currentTimeMillis();
-    _log.info("combineMap Ring x500 :"+(end-start)+" milis");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("combineMap Ring x500 :" + ( end - start ) + " milis");
+      }
 
     start=System.currentTimeMillis();
     ts.combineCollection(null, e, k);
     end=System.currentTimeMillis();
-    _log.info("combineCollection Ring x500 :"+(end-start)+" milis");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("combineCollection Ring x500 :" + ( end - start ) + " milis");
+      }
 
     start=System.currentTimeMillis();
     ts.combineCollection(null, e, k);
     end=System.currentTimeMillis();
-    _log.info("combineCollection Ring x500 :"+(end-start)+" milis");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("combineCollection Ring x500 :" + ( end - start ) + " milis");
+      }
 
     start=System.currentTimeMillis();
     ts.combineCollection(null, e, k);
     end=System.currentTimeMillis();
-    _log.info("combineCollection Ring x500 :"+(end-start)+" milis");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("combineCollection Ring x500 :" + ( end - start ) + " milis");
+      }
   }
 
 //  public void

@@ -27,11 +27,17 @@ public abstract class AbstractContextualiser implements Contextualiser {
   protected final Log _log = LogFactory.getLog(getClass());
 
   public void init(ContextualiserConfig config) {
-    _log.info("initialising");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("initialising");
+      }
   }
 
   public void start() throws Exception {
-    _log.info("starting: "+getStartInfo());
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("starting: " + getStartInfo());
+      }
   }
 
   public String getStartInfo() {
@@ -39,7 +45,10 @@ public abstract class AbstractContextualiser implements Contextualiser {
   }
 
   public void stop() throws Exception {
-    _log.info("stopped: "+getStopInfo());
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("stopped: " + getStopInfo());
+      }
   }
 
   public String getStopInfo() {
@@ -47,7 +56,10 @@ public abstract class AbstractContextualiser implements Contextualiser {
   }
 
   public void destroy() {
-    _log.info("destroyed");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("destroyed");
+      }
   }
 
   public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {

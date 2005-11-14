@@ -48,12 +48,18 @@ public class CustomClusterFactory extends DefaultClusterFactory {
   protected Cluster createCluster(Connection connection, Session session, Topic groupDestination) throws JMSException {
     Topic dataTopic = session.createTopic(getDataTopicPrefix() + groupDestination.getTopicName());
 
-    log.info("Creating cluster group producer on topic: " + groupDestination);
+      if ( log.isInfoEnabled() ) {
+
+          log.info("Creating cluster group producer on topic: " + groupDestination);
+      }
 
     MessageProducer producer = createProducer(session, null);
     producer.setDeliveryMode(getDeliveryMode());
 
-    log.info("Creating cluster data producer on topic: " + dataTopic);
+      if ( log.isInfoEnabled() ) {
+
+          log.info("Creating cluster data producer on topic: " + dataTopic);
+      }
 
     MessageProducer keepAliveProducer = session.createProducer(dataTopic);
     keepAliveProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);

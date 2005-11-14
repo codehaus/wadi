@@ -51,14 +51,21 @@ public class
     Destination thisNode              =node.getLocalNode().getDestination();
     Destination thisCluster           =node.getDestination();
 
-    _log.info("Node:    "+thisNode);
-    _log.info("Cluster: "+thisCluster);
+    if ( _log.isInfoEnabled() ) {
+
+        _log.info("Node:    " + thisNode);
+        _log.info("Cluster: " + thisCluster);
+    }
+
 
     // attach listeners here...
 
     node.start();
 
-    _log.info("started node: "+thisNode);
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("started node: " + thisNode);
+      }
 
     ObjectMessage om=node.createObjectMessage();
     om.setObject("payload");
@@ -68,6 +75,9 @@ public class
 
     node.stop();
 
-    _log.info("request/response to self OK");
+      if ( _log.isInfoEnabled() ) {
+
+          _log.info("request/response to self OK");
+      }
   }
 }

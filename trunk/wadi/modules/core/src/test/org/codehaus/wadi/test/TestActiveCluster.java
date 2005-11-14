@@ -164,13 +164,19 @@ public class TestActiveCluster extends TestCase {
         cluster1.waitForClusterToComplete(1, 6000);
 
         Thread.sleep(20*1000);
-        
-        _log.info("stopping");
+
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("stopping");
+        }
         cluster1.stop();
         Thread.sleep(20*1000);
         cluster0.stop();
         Thread.sleep(20*1000);
-        _log.info("stopped");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("stopped");
+        }
     }
 
 }

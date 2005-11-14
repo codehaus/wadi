@@ -55,7 +55,10 @@ public abstract class AbstractMappedCache extends AbstractCache {
 			if (_evicter.evict(key, val)) {
 				_subcache.put(key, val);
 				i.remove();
-				_log.info("demoted: "+key+ " to "+_subcache);
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("demoted: " + key + " to " + _subcache);
+                }
 			}
 			// TODO - release exclusive lock here...
 		}

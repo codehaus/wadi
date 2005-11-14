@@ -78,7 +78,10 @@ public class LocalPartition extends AbstractPartition implements Serializable {
     	} else if (request instanceof DIndexForwardRequest) {
     		onMessage(message, (DIndexForwardRequest)request);
     	} else {
-    		_log.info("What should I do with this ?: "+request);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("What should I do with this ?: " + request);
+            }
     	}
     }
 
@@ -113,7 +116,10 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         Destination location=null;
         try{location=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
         _map.put(request.getName(), new LockableLocation(location)); // remember location of actual session...
-        _log.info("insertion {"+request.getName()+" : "+_config.getNodeName(location)+"}");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("insertion {" + request.getName() + " : " + _config.getNodeName(location) + "}");
+        }
         DIndexResponse response=new DIndexInsertionResponse();
         // we can optimise local-local send here - TODO
         _config.getDispatcher().reply(message, response);
@@ -121,7 +127,10 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 
     protected void onMessage(ObjectMessage message, DIndexDeletionRequest request) {
 		LockableLocation oldValue=(LockableLocation)_map.remove(request.getName());
-		_log.info("delete "+request.getName()+" : "+_config.getNodeName(oldValue._location));
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("delete " + request.getName() + " : " + _config.getNodeName(oldValue._location));
+        }
 		if (oldValue==null)
 			throw new IllegalStateException();
 		DIndexResponse response=new DIndexDeletionResponse();
@@ -135,8 +144,14 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         LockableLocation ll=(LockableLocation)_map.get(request.getName());
         Destination oldLocation=ll._location;
         ll._location=newLocation;
-        _log.info("relocate "+request.getName()+" : "+_config.getNodeName(oldLocation)+" -> "+_config.getNodeName(newLocation));
-		_log.info("RELEASING MIGRATION LOCK");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("relocate " + request.getName() + " : " + _config.getNodeName(oldLocation) + " -> " + _config.getNodeName(newLocation));
+        }
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("RELEASING MIGRATION LOCK");
+        }
         // TODO - UNLOCK - release session Migration Lock
 		ll._lock.release();
         DIndexResponse response=new DIndexRelocationResponse();
@@ -167,14 +182,20 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         	DIndexRequest r=request.getRequest();
         	if (r instanceof RelocationRequest) {
         		try {
-        			_log.info("ACQUIRING MIGRATION LOCK");
+                    if ( _log.isInfoEnabled() ) {
+
+                        _log.info("ACQUIRING MIGRATION LOCK");
+                    }
         			ll._lock.acquire();
         		} catch (Exception e) {
         			_log.error("unexpected problem, e");
         		}
         	}
 
-        	_log.info("directing: " +request+" -> "+_config.getNodeName(ll._location));
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("directing: " + request + " -> " + _config.getNodeName(ll._location));
+            }
         	if (!_config.getDispatcher().forward(message, ll._location, request.getRequest()))
         		_log.warn("could not forward message");
         }

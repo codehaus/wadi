@@ -152,7 +152,10 @@ public class GiannisContextualiser extends AbstractExclusiveContextualiser {
     }
 
     protected void unload() {
-    	_log.info("unloaded sessions: "+_map.size());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("unloaded sessions: " + _map.size());
+        }
     	_map.clear();
 	}
 

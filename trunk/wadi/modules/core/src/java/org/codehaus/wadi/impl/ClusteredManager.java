@@ -194,7 +194,10 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     // DIndexConfig
 
     public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
-        _log.info("findRelevantSessionNames");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("findRelevantSessionNames");
+        }
         _contextualiser.findRelevantSessionNames(numPartitions, resultSet);
     }
 

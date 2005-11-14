@@ -209,9 +209,15 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         
         // whilst we are evacuating...
         // 1) do not get involved in any other evacuations.
-        _log.info("ignoring further evacuation appeals");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("ignoring further evacuation appeals");
+        }
         // 2) withdraw from any other evacuation in which we may be involved
-        _log.info("withdrawing from ongoing evacuations: "+_evacuations.size());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("withdrawing from ongoing evacuations: " + _evacuations.size());
+        }
         synchronized (_evacuations) {
             for (Iterator i=new ArrayList(_evacuations.keySet()).iterator(); i.hasNext(); ) {
                 String nodeName=(String)i.next();
@@ -446,7 +452,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     public void onNodeRemoved(ClusterEvent event) {
         Map state=event.getNode().getState();
         String nodeName=(String)state.get(_nodeNameKey);
-        _log.info("node left: "+nodeName);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("node left: " + nodeName);
+        }
         refreshEvacuationPartnersCount();
         ensureEvacuationLeft(nodeName);
     }
@@ -454,7 +463,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     public void onNodeFailed(ClusterEvent event)  {
         Map state=event.getNode().getState();
         String nodeName=(String)state.get(_nodeNameKey);
-        _log.info("node failed: "+nodeName);
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("node failed: " + nodeName);
+        }
         refreshEvacuationPartnersCount();
         ensureEvacuationLeft(nodeName);
     }

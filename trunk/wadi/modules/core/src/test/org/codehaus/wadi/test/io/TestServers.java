@@ -183,7 +183,10 @@ public class TestServers extends TestCase {
             //_log.info("count: "+i);
         }
         long elapsed=System.currentTimeMillis()-start;
-        _log.info(info+" rate="+(_count*1000/elapsed)+" round-trips/second");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info(info + " rate=" + ( _count * 1000 / elapsed ) + " round-trips/second");
+        }
     }
 
     public void testMultipleRoundTrip() throws Exception {
@@ -202,7 +205,10 @@ public class TestServers extends TestCase {
         }
         pipe.close();
         long elapsed=System.currentTimeMillis()-start;
-        _log.info(info+" rate="+(_count*1000/(elapsed+1))+" round-trips/second");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info(info + " rate=" + ( _count * 1000 / ( elapsed + 1 ) ) + " round-trips/second");
+        }
     }
     
 //    public static class MixedContentServerPeer extends Peer {
