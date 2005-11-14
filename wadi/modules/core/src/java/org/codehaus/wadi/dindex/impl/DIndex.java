@@ -138,7 +138,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
                 _log.info("local state: " + k);
             }
             _dispatcher.setDistributedState(_distributedState);
-            _log.trace("distributed state updated: "+_dispatcher.getDistributedState());
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("distributed state updated: " + _dispatcher.getDistributedState());
+            }
             onCoordinatorChanged(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.ELECTED_COORDINATOR));
             _coordinator.queueRebalancing();
         }
@@ -224,7 +227,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
         	if (rv==null)
         		_log.warn("no one waiting for: "+correlationID);
         	else {
-        		_log.trace("successful correlation: "+correlationID);
+                if ( _log.isTraceEnabled() ) {
+
+                    _log.trace("successful correlation: " + correlationID);
+                }
         		rv.putResult(state);
         	}
         }
@@ -268,7 +274,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
         if (_leavers.remove(node.getDestination())) {
             // we have already been explicitly informed of this node's wish to leave...
             _left.remove(node);
-            _log.trace("onNodeFailed:"+getNodeName(node)+"- already evacuated - ignoring");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("onNodeFailed:" + getNodeName(node) + "- already evacuated - ignoring");
+            }
         } else {
             _log.error("onNodeFailed: "+getNodeName(node));
             if (amCoordinator()) {
@@ -469,7 +478,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
     public ObjectMessage forwardAndExchange(String name, ObjectMessage message, DIndexRequest request, long timeout) {
         int key=getKey(name);
         try {
-            _log.trace("wrapping request");
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("wrapping request");
+            }
             request=new DIndexForwardRequest(request);
             message.setObject(request);
             return _partitionManager.getPartition(key).exchange(message, request, timeout);

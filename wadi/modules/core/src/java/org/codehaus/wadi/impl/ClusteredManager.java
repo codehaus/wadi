@@ -81,7 +81,10 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 
     public void start() throws Exception {
     	_dispatcher.setDistributedState(_distributedState);
-    	_log.trace("distributed state updated: "+_distributedState);
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("distributed state updated: " + _distributedState);
+        }
     	_dispatcher.start();
     	_dindex.start();
     	super.start();
@@ -153,7 +156,10 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 
     public void distributeState() throws Exception {
         _dispatcher.setDistributedState(_distributedState);
-        _log.trace("distributed state updated: "+_distributedState);
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("distributed state updated: " + _distributedState);
+        }
     }
 
     public Map getDistributedState() {

@@ -401,7 +401,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 					(body=objectMessage.getObject())!=null &&
 					(dispatcher=(InternalDispatcher)_map.get(body.getClass()))!=null
 			) {
-				_log.trace("receive {"+getIncomingCorrelationId(objectMessage)+"}: "+getNodeName(message.getJMSReplyTo())+" -> "+getNodeName(message.getJMSDestination())+" : "+body);
+                if ( _log.isTraceEnabled() ) {
+
+                    _log.trace("receive {" + getIncomingCorrelationId(objectMessage) + "}: " + getNodeName(message.getJMSReplyTo()) + " -> " + getNodeName(message.getJMSDestination()) + " : " + body);
+                }
 				do {
 					try {
 						synchronized (dispatcher) {
@@ -433,7 +436,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 			String incomingCorrelationId=getOutgoingCorrelationId(message);
 			setIncomingCorrelationId(om, incomingCorrelationId);
 			om.setObject(body);
-			_log.trace("reply: "+getNodeName(from)+" -> "+getNodeName(to)+" {"+incomingCorrelationId+"} : "+body);
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("reply: " + getNodeName(from) + " -> " + getNodeName(to) + " {" + incomingCorrelationId + "} : " + body);
+            }
 			send(to, om);
 			return true;
 		} catch (Exception e) {
@@ -453,7 +459,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 			om.setJMSDestination(to);
 			setOutgoingCorrelationId(om, outgoingCorrelationId);
 			om.setObject(body);
-			_log.trace("send {"+outgoingCorrelationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("send {" + outgoingCorrelationId + "}: " + getNodeName(from) + " -> " + getNodeName(to) + " : " + body);
+            }
 			send(to, om);
 			return true;
 		} catch (Exception e) {
@@ -477,7 +486,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 			if (targetCorrelationId!=null)
 				setIncomingCorrelationId(om, targetCorrelationId);
 			Quipu rv=setRendezVous(correlationId, 1);
-			_log.trace("exchangeSend {"+correlationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" : "+body);
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("exchangeSend {" + correlationId + "}: " + getNodeName(from) + " -> " + getNodeName(to) + " : " + body);
+            }
 			send(to, om);
 			return attemptRendezVous(correlationId, rv, timeout);
 		} catch (Exception e) {
@@ -511,7 +523,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 			om.setJMSDestination(to);
 			setIncomingCorrelationId(om, incomingCorrelationId);
 			om.setObject(body);
-			_log.trace("reply: "+getNodeName(from)+" -> "+getNodeName(to)+" {"+incomingCorrelationId+"} : "+body);
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("reply: " + getNodeName(from) + " -> " + getNodeName(to) + " {" + incomingCorrelationId + "} : " + body);
+            }
 			send(to, om);
 			return true;
 		} catch (Exception e) {
@@ -536,7 +551,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 			setOutgoingCorrelationId(om, outgoingCorrelationId);
 			om.setObject(body);
 			Quipu rv=setRendezVous(outgoingCorrelationId, 1);
-			_log.trace("exchangeSend {"+outgoingCorrelationId+"}: "+getNodeName(from)+" -> "+getNodeName(to)+" {"+incomingCorrelationId+"} : "+body);
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("exchangeSend {" + outgoingCorrelationId + "}: " + getNodeName(from) + " -> " + getNodeName(to) + " {" + incomingCorrelationId + "} : " + body);
+            }
 			send(to, om);
 			return attemptRendezVous(outgoingCorrelationId, rv, timeout);
 		} catch (Exception e) {

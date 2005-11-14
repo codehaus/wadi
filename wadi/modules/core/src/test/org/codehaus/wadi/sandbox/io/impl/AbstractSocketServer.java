@@ -57,7 +57,10 @@ public abstract class AbstractSocketServer extends AbstractServer {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                _log.trace("unexpected interruption - ignoring", e);
+                if ( _log.isTraceEnabled() ) {
+
+                    _log.trace("unexpected interruption - ignoring", e);
+                }
             }
         }
         if ( _log.isInfoEnabled() ) {

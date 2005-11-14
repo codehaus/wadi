@@ -152,7 +152,10 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 
 	public void onMessage(ObjectMessage message, JGroupsStateUpdate update) throws Exception {
 		Address from=((JGroupsDestination)message.getJMSReplyTo()).getAddress();
-		_log.trace("STATE UPDATE: "+update+" from: "+from);
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("STATE UPDATE: " + update + " from: " + from);
+        }
 		synchronized (_clusterState) {
 			_clusterState.put(from, update.getState());
 		}
@@ -221,14 +224,21 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
     public void suspect(Address suspected_mbr) {
     	if (_log.isTraceEnabled()) _log.trace("handling suspect("+suspected_mbr+")...");
     	_log.warn("cluster suspects member may have been lost: "+suspected_mbr);
-    	_log.trace("...suspect() handled");
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("...suspect() handled");
+        }
     }
 
 	  // Block sending and receiving of messages until viewAccepted() is called
 	public void block() {
-		_log.trace("handling block()...");
-		// NYI
-		_log.trace("... block() handled");
+		if ( _log.isTraceEnabled() ) {
+
+            _log.trace("handling block()...");
+            // NYI
+            _log.trace("... block() handled");
+        }
+
 	}
 	
 	//------------------------------------------------------------------------------------

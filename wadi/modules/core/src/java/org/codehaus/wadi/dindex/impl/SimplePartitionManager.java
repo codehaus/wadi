@@ -86,7 +86,10 @@ public class SimplePartitionManager implements PartitionManager {
 
     public void init(PartitionManagerConfig config) {
     	_dindexConfig=config;
-    	_log.trace("init");
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("init");
+        }
     	// attach relevant message handlers to dispatcher...
         _dispatcher.register(this, "onPartitionTransferCommand", PartitionTransferCommand.class);
         _dispatcher.register(PartitionTransferAcknowledgement.class, _inactiveTime);
@@ -99,11 +102,17 @@ public class SimplePartitionManager implements PartitionManager {
     }
 
     public void start() throws Exception {
-    	_log.trace("start");
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("start");
+        }
     }
 
     public void stop() throws Exception {
-    	_log.trace("stop");
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("stop");
+        }
     	// detach relevant message handlers from dispatcher...
         _dispatcher.deregister("onPartitionTransferCommand", PartitionTransferCommand.class, 5000);
         _dispatcher.deregister("onPartitionTransferRequest", PartitionTransferRequest.class, 5000);
@@ -137,7 +146,10 @@ public class SimplePartitionManager implements PartitionManager {
 	// a node wants to rebuild a lost partition
 	public void onPartitionRepopulateRequest(ObjectMessage om, PartitionRepopulateRequest request) {
 	    int keys[]=request.getKeys();
-	    _log.trace("PartitionRepopulateRequest ARRIVED: "+keys);
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("PartitionRepopulateRequest ARRIVED: " + keys);
+        }
 	    Collection[] c=createResultSet(_numPartitions, keys);
 	    try {
 	        _log.info("findRelevantSessionNames - starting");
@@ -179,7 +191,10 @@ public class SimplePartitionManager implements PartitionManager {
 	            long timeStamp=System.currentTimeMillis();
 
 	            // build request...
-	            _log.info("local state (before giving): "+getPartitionKeys());
+                if ( _log.isInfoEnabled() ) {
+
+                    _log.info("local state (before giving): " + getPartitionKeys());
+                }
 	            PartitionTransferRequest request=new PartitionTransferRequest(timeStamp, acquired);
 	            // send it...
 	            ObjectMessage om3=_dispatcher.exchangeSend(_dispatcher.getLocalDestination(), destination, request, _inactiveTime);
@@ -206,14 +221,23 @@ public class SimplePartitionManager implements PartitionManager {
 	    	PartitionKeys keys=getPartitionKeys();
 	    	_distributedState.put(_partitionKeysKey, keys);
 	    	_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
-	    	_log.info("local state (after giving): "+keys);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("local state (after giving): " + keys);
+            }
 	    	String correlationID=_dispatcher.getOutgoingCorrelationId(om);
-	    	_log.info("CORRELATIONID: "+correlationID);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("CORRELATIONID: " + correlationID);
+            }
 	    	Map correlationIDMap=(Map)_distributedState.get(_correlationIDMapKey);
 	    	Destination from=om.getJMSReplyTo();
 	    	correlationIDMap.put(from, correlationID);
 	    	_dispatcher.setDistributedState(_distributedState);
-	    	_log.info("distributed state updated: "+_dispatcher.getDistributedState());
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("distributed state updated: " + _dispatcher.getDistributedState());
+            }
 	    	correlateStateUpdate(_distributedState); // onStateUpdate() does not get called locally
 	    	correlationIDMap.remove(from);
 	    	// FIXME - RACE - between update of distributed state and ack - they should be one and the same thing...
@@ -229,7 +253,10 @@ public class SimplePartitionManager implements PartitionManager {
 	    LocalPartition[] partitions=request.getPartitions();
 	    boolean success=false;
 	    // read incoming data into our own local model
-	    _log.info("local state (before receiving): "+getPartitionKeys());
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("local state (before receiving): " + getPartitionKeys());
+        }
 	    for (int i=0; i<partitions.length; i++) {
 	        LocalPartition partition=partitions[i];
 	        partition.init(_partitionConfig);
@@ -241,9 +268,15 @@ public class SimplePartitionManager implements PartitionManager {
 	        PartitionKeys keys=getPartitionKeys();
 	        _distributedState.put(_partitionKeysKey, keys);
 	        _distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
-	        _log.info("local state (after receiving): "+keys);
+            if ( _log.isInfoEnabled() ) {
+
+                _log.info("local state (after receiving): " + keys);
+            }
 	        _dispatcher.setDistributedState(_distributedState);
-	    _log.trace("distributed state updated: "+_dispatcher.getDistributedState());
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("distributed state updated: " + _dispatcher.getDistributedState());
+            }
 	    } catch (Exception e) {
 	        _log.error("could not update distributed state", e);
 	    }
@@ -375,7 +408,10 @@ public class SimplePartitionManager implements PartitionManager {
 	        _distributedState.put(_partitionKeysKey, newKeys);
 	        try {
 	            _dispatcher.setDistributedState(_distributedState);
-		_log.trace("distributed state updated: "+_dispatcher.getDistributedState());
+                if ( _log.isTraceEnabled() ) {
+
+                    _log.trace("distributed state updated: " + _dispatcher.getDistributedState());
+                }
 	        } catch (Exception e) {
 	            _log.error("could not update distributed state", e);
 	        }
@@ -402,7 +438,10 @@ public class SimplePartitionManager implements PartitionManager {
 	}
 
 	public void localise() {
-	    _log.info("allocating "+_numPartitions+" partitions");
+        if ( _log.isInfoEnabled() ) {
+
+            _log.info("allocating " + _numPartitions + " partitions");
+        }
 	    long timeStamp=System.currentTimeMillis();
 	    for (int i=0; i<_numPartitions; i++) {
 	        PartitionFacade facade=_partitions[i];
@@ -422,7 +461,10 @@ public class SimplePartitionManager implements PartitionManager {
         	if (rv==null)
         		_log.warn("no one waiting for: "+correlationID);
         	else {
-        		_log.trace("successful correlation: "+correlationID);
+                if ( _log.isTraceEnabled() ) {
+
+                    _log.trace("successful correlation: " + correlationID);
+                }
         		rv.putResult(state);
         	}
         }

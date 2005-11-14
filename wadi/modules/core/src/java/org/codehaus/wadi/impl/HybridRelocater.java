@@ -127,7 +127,10 @@ public class HybridRelocater extends AbstractRelocater {
                 //FIXME - API should not be in terms of HttpProxy but in terms of RequestRelocater...
                 
                 _httpProxy.proxy(address, hreq, hres);
-                _log.trace("PROXY WAS SUCCESSFUL");
+                if ( _log.isTraceEnabled() ) {
+
+                    _log.trace("PROXY WAS SUCCESSFUL");
+                }
                 motionLock.release();
                 return true;
             } catch (Exception e) {
@@ -202,7 +205,10 @@ public class HybridRelocater extends AbstractRelocater {
     // the request arrives ...
     
     public void onMessage(ObjectMessage om, RelocationRequest request) {
-        _log.trace("RelocationRequest received from "+request.getNodeName()+" for "+request.getSessionName()+" on "+_nodeName);
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("RelocationRequest received from " + request.getNodeName() + " for " + request.getSessionName() + " on " + _nodeName);
+        }
         // both of these may be out of date immediately... :-(
         boolean theyAreShuttingDown=request.getShuttingDown();
         boolean weAreShuttingDown=_shuttingDown.get();
@@ -352,7 +358,10 @@ public class HybridRelocater extends AbstractRelocater {
     protected void relocateRequestToUs(ObjectMessage om, String sessionName) {
         try {
             String src=_config.getDIndex().getNodeName(om.getJMSReplyTo());
-            _log.trace("arranging for request to be relocated - sending response to: "+src);
+            if ( _log.isTraceEnabled() ) {
+
+                _log.trace("arranging for request to be relocated - sending response to: " + src);
+            }
             RelocationResponse response=new RelocationResponse(sessionName, _nodeName, _config.getHttpAddress());
             _config.getDispatcher().reply(om, response);
         } catch (JMSException e) {

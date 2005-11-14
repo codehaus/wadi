@@ -63,7 +63,10 @@ public abstract class AbstractContextualiser implements Contextualiser {
   }
 
   public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
-      _log.trace("finding relevant session names");
+      if ( _log.isTraceEnabled() ) {
+
+          _log.trace("finding relevant session names");
+      }
   }
 
 }

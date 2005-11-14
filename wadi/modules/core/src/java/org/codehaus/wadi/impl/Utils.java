@@ -95,7 +95,10 @@ public class Utils {
 	            Thread.interrupted(); // TODO - not sure if we need to clear the interrupted flag ?
 	            throw e; // a TimeoutException isa InterruptedException
 	        } catch (InterruptedException e) {
-	            _log.trace("unexpected interruption - ignoring", e);
+                if ( _log.isTraceEnabled() ) {
+
+                    _log.trace("unexpected interruption - ignoring", e);
+                }
 	        }
 	    } while (Thread.interrupted());
 	}
@@ -112,7 +115,10 @@ public class Utils {
 	        try {
 	            acquired=sync.attempt(0);
 	        } catch (InterruptedException e) {
-	            _log.trace("unexpected interruption - ignoring", e);
+                if ( _log.isTraceEnabled() ) {
+
+                    _log.trace("unexpected interruption - ignoring", e);
+                }
 	        }
 	    } while (Thread.interrupted());
 	    return acquired;

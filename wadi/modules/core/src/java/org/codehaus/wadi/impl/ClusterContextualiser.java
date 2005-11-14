@@ -200,7 +200,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     }
     
     protected void createEvacuationQueue() throws Exception {
-        _log.trace("creating evacuation queue");
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("creating evacuation queue");
+        }
         ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)_config;
         ccc.putDistributedState(_shuttingDownKey, Boolean.TRUE);
         _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
@@ -237,7 +240,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         ccc.distributeState();
         //Utils.safeSleep(5*1000*2); // TODO - should be hearbeat period...
         // FIXME - can we destroy the queue ?
-        _log.trace("emigration queue destroyed");
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("emigration queue destroyed");
+        }
     }
     
     protected synchronized void ensureEvacuationQueue() {
@@ -472,7 +478,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     }
     
     public void onCoordinatorChanged(ClusterEvent event) {
-        _log.trace("coordinator changed: "+event.getNode().getState().get(_nodeNameKey)); // we don't use this...
+        if ( _log.isTraceEnabled() ) {
+
+            _log.trace("coordinator changed: " + event.getNode().getState().get(_nodeNameKey)); // we don't use this...
+        }
     }
     
     protected int _locationMaxInactiveInterval=30;
