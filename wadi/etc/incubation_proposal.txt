@@ -60,7 +60,7 @@ Section 4: identify the initial set of committers
 -------------------------------------------------
 * Bruce Snyder (Castor, Geronimo PMC, ServiceMix, TranQL, WADI)
 * Gianni Scenini [???]
-* Jeff Genender (Geroniom PMC, OpenEJB, WADI)
+* Jeff Genender (Geroniom PMC, OpenEJB, ServiceMix, Mojo, WADI)
 * James Goodwill (WADI)
 * Jules Gosnell (Jetty, Geronimo PMC, WADI)
 
