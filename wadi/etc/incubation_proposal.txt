@@ -15,17 +15,31 @@ Section 0.1 : criteria
 ----------------------
 We believe that this project has a continued probability of success at the ASF under the guidance of the Geronimo PMC. WADI already has a code base and a group of committers - only two of which are not already Geronimo committers. The following considerations have gone into this line of thinking: 
 
-a) Meritocracy - The project will be meritocratic - the usual Apachemeritocracy rules would apply.
+a) Meritocracy: The project will be meritocratic - the usual Apache meritocracy rules would apply.
 
-b) Community - The initial developer community will consist of the current WADI committers as well as the existing Geronimo developer community. As the project is integrated with Geronimo, we expect this community to grow. 
+b) Community: The initial developer community will consist of the current WADI committers as well as the existing Geronimo developer community. As the project is integrated with Geronimo, we expect this community to grow. 
 
-c) Alignment - The alignment of WADI with Geronimo is only one offering. WADI will also align nicely with Tomcat and possibly other projects at the ASF. 
+c) Core Developers: WADI was founded by Jules Gosnell in 200?. 
 
-d) License - WADI already utilizes the Apache License 2.0. 
+d) Alignment: The alignment of WADI with Geronimo is only one offering. WADI will also align nicely with Tomcat and possibly other projects at the ASF. 
+
+e) License: WADI already utilizes the Apache License 2.0. 
 
 
 Section 0.2 :  Warning Signs
 ----------------------------
+
+a) Orphaned Software: WADI contains no software that was abandoned and the developers on the project have no intentions of leaving the project behind at the ASF. 
+
+b) Experience With Open Source:
+
+c) Homogenous Developers:
+
+d) Reliance on salaried developers:
+
+e) No Ties to Other Apache Products: WADI already provides clustering and high availability to the Tomcat project and will be providing the same thing for the Geronimo project. 
+
+f) Achieving the Apache Brand is a Prominent Goal: WADI shares a set of common goals with the ASF and it is already licensed using the Apache License 2.0.  The developer base agrees that joining the ASF will help the project continue to flourish and grow. The ASF model for growing communities is ideal for WADI. 
 
 
 Section 1 : Scope of the project
@@ -41,20 +55,25 @@ Section 3: Identify the ASF resources to be created
 ----------------------------------------------------
 
 Section 3.1 : Mailing Lists
+---------------------------
 
 * wadi-dev
+* wadi-ppmc
 * wadi-user
 
 Section 3.2: SVN Repositories
+-----------------------------
 
 * wadi
 
 Section 3.3: Issue Tracking
+---------------------------
 
 * WADI
 
-Section 4: identify the initial set of committers
+Section 4: Identify the Initial Set of Committers
 -------------------------------------------------
+* Bill Dudney (MyFaces)
 * Bruce Snyder (Castor, Geronimo PMC, ServiceMix, TranQL, WADI)
 * Gianni Scenini 
 * Jeff Genender (Geroniom PMC, OpenEJB, ServiceMix, Mojo, WADI)
@@ -62,11 +81,12 @@ Section 4: identify the initial set of committers
 * Jules Gosnell (Jetty, Geronimo PMC, WADI)
 
 
-Section 5: identify apache sponsoring individual
-------------------------------------------------
+Section 5: Identify ASF Sponsor
+-------------------------------
+The sponsor for Incubation will be the Geronimo PMC. 
 
 
-Section 6: open issues for discussion
+Section 6: Open Issues for Discussion
 -------------------------------------
 
 --------------------------------------------------------------------------------
