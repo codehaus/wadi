@@ -32,7 +32,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.LockManager;
 import org.codehaus.wadi.gridstate.PartitionConfig;
-import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.gridstate.StateManager;
 import org.codehaus.wadi.gridstate.StateManagerConfig;
 
@@ -55,7 +54,6 @@ public class GCache implements Cache, StateManagerConfig {
 	protected final Log _log=LogFactory.getLog(getClass().getName());
 
 	protected final StateManager _stateManager;
-	protected final PartitionMapper _mapper;
 	protected final Map _map=new HashMap();
 	protected final LockManager _pmSyncs=new StupidLockManager("PM");
 	protected final LockManager _smSyncs=new StupidLockManager("IM/SM");
@@ -100,9 +98,8 @@ public class GCache implements Cache, StateManagerConfig {
 		}
 	}
 
-	public GCache(StateManager stateManager, PartitionMapper mapper) {
+	public GCache(StateManager stateManager) {
 		(_stateManager=stateManager).init(this);
-		_mapper=mapper;
 	}
 
 	/*
@@ -320,10 +317,6 @@ public class GCache implements Cache, StateManagerConfig {
 	// for testing...
 	public Map getMap() {
 		return _map;
-	}
-
-	public PartitionMapper getPartitionMapper() {
-		return _mapper;
 	}
 
 	public LockManager getPMSyncs() {

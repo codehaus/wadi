@@ -41,4 +41,9 @@ public class DummyPartitionManager implements PartitionManager {
 		return _numPartitions;
 	}
 
+	public Partition getPartition(Object key) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

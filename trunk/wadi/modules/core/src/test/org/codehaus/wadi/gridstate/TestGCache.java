@@ -59,9 +59,9 @@ public class TestGCache extends TestCase {
 
     protected void setUp(StateManagerFactory factory) throws Exception {
         for (int i=0; i<_numNodes; i++) {
-        	PartitionManager manager=new StaticPartitionManager(_numPartitions);
+        	PartitionManager manager=new StaticPartitionManager(_numPartitions, _mapper);
         	_partitionManagers[i]=manager;
-    		_nodes[i]=new GCache(factory.createStateManager("node-"+i, manager), _mapper);
+    		_nodes[i]=new GCache(factory.createStateManager("node-"+i, manager));
         }
 
         StaticPartitionManager.partition(_nodes, _partitionManagers, _numPartitions);
@@ -135,7 +135,7 @@ public class TestGCache extends TestCase {
     	public StateManager createStateManager(String nodeName, PartitionManager partitionManager) throws Exception {
     		Dispatcher dispatcher=new JGroupsDispatcher(nodeName, _clusterName, partitionManager, 5000L);
     		dispatcher.init(new MyDispatcherConfig());
-    		return new IndirectStateManager(nodeName, partitionManager, _mapper, dispatcher, _timeout);
+    		return new IndirectStateManager(nodeName, partitionManager, dispatcher, _timeout);
     	}
     }
 
@@ -148,7 +148,7 @@ public class TestGCache extends TestCase {
     	public StateManager createStateManager(String nodeName, PartitionManager partitionManager) throws Exception {
     		Dispatcher dispatcher=new ActiveClusterDispatcher(nodeName, _clusterName, partitionManager, _clusterUri, 5000L);
     		dispatcher.init(new MyDispatcherConfig());
-    		return new IndirectStateManager(nodeName, partitionManager, _mapper, dispatcher, _timeout);
+    		return new IndirectStateManager(nodeName, partitionManager, dispatcher, _timeout);
     	}
     }
 
