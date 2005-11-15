@@ -55,7 +55,7 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 	protected MessageDispatcher _dispatcher;
 	protected Destination _localDestination;
 	protected Map _localState;
-    protected Vector _members;
+    protected Vector _members=new Vector();
     protected JGroupsCluster _cluster;
 	
 	public JGroupsDispatcher(String nodeName, String clusterName, PartitionManager partitionManager, long inactiveTime) {
@@ -203,13 +203,15 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
     		for (int i=0; i<oldMembers.size(); i++) {
     			Address address=(Address)oldMembers.get(i);
     			if (!newMembers.contains(address))
-    				_listener.onNodeAdd(new ClusterEvent(null, ensureNode(address) ,ClusterEvent.FAILED_NODE));
+    				if (_listener!=null)
+    					_listener.onNodeAdd(new ClusterEvent(null, ensureNode(address) ,ClusterEvent.FAILED_NODE));
     		}
     		// notify nodes added
     		for (int i=0; i<newMembers.size(); i++) {
     			Address address=(Address)newMembers.get(i);
     			if (!oldMembers.contains(address))
-    				_listener.onNodeAdd(new ClusterEvent(null, ensureNode(address) ,ClusterEvent.ADD_NODE));
+    				if (_listener!=null)
+    					_listener.onNodeAdd(new ClusterEvent(null, ensureNode(address) ,ClusterEvent.ADD_NODE));
     		}
 		}
 
