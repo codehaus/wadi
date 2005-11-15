@@ -48,7 +48,7 @@
         </developer>
         <developer>
             <id>gianni</id>
-            <name>Giani Scenini</name>
+            <name>Gianni Scenini</name>
             <email>gianni.scenini@gmail.com</email>
             <organization>?</organization>
         </developer>
@@ -70,7 +70,11 @@
             <email></email>
         </contributor>
         <contributor>
-            <name>Gianni Scenini</name>
+            <name>Simone Bordet</name>
+            <email></email>
+        </contributor>
+        <contributor>
+            <name>Bill Dudney</name>
             <email></email>
         </contributor>
     </contributors>
