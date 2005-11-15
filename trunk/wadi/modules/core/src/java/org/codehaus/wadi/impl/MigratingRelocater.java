@@ -89,7 +89,10 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
         try {
             response=(ImmigrationResponse)message.getObject();
         } catch (JMSException e) {
-            _log.error("problem reading response", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("problem reading response", e);
+            }
         }
         if (_log.isTraceEnabled()) _log.trace("received immigration response");
         // take out session, prepare to promote it...
@@ -227,7 +230,10 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
             try {
                 ack=(ImmigrationAcknowledgement)message.getObject();
             } catch (JMSException e) {
-                _log.error("could not unpack response", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("could not unpack response", e);
+                }
             }
             
 		    if (ack==null) {

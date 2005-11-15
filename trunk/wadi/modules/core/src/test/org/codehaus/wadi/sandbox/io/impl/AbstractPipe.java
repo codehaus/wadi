@@ -71,7 +71,10 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
             try {
             run(peer);
             } catch (Exception e) {
-                _log.error("problem running Peer", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("problem running Peer", e);
+                }
             }
             //_log.info("...ran");
         } catch (EOFException e) {
@@ -93,7 +96,10 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
                 try {
                     close();
                 } catch (IOException e) {
-                    _log.error("problem closing server Connection", e);
+                    if ( _log.isErrorEnabled() ) {
+
+                        _log.error("problem closing server Connection", e);
+                    }
                 }
         }
         //_log.info("...idle");

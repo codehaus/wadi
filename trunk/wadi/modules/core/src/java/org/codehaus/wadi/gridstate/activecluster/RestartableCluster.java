@@ -155,7 +155,10 @@ public class RestartableCluster implements ExtendedCluster {
             else
                 _cluster=(ExtendedCluster)_factory.createCluster(_topic);
         } catch (Exception e) {
-            _log.error("could not start Cluster", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("could not start Cluster", e);
+            }
         }
     }
 

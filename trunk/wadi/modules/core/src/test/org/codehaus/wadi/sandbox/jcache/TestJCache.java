@@ -240,7 +240,10 @@ public class
     }
     catch (Exception e)
     {
-      _log.error("test failed", e);
+        if ( _log.isErrorEnabled() ) {
+
+            _log.error("test failed", e);
+        }
     }
 
     assertTrue(success);
@@ -320,7 +323,10 @@ public class
     }
     catch (Exception e)
     {
-      _log.error("test failed", e);
+        if ( _log.isErrorEnabled() ) {
+
+            _log.error("test failed", e);
+        }
     }
 
     assertTrue(success);

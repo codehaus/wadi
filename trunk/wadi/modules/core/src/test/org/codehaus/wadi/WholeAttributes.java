@@ -95,7 +95,10 @@ public class WholeAttributes implements Attributes {
                 for (int i=0; i<l; i++) 
                     ((HttpSessionActivationListener)activationListeners.get(i)).sessionDidActivate(_event);
             } catch (Exception e) {
-                _log.error("unexpected problem converting byte[] to Attributes", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("unexpected problem converting byte[] to Attributes", e);
+                }
             }
         }
         return _objectRep;
@@ -135,7 +138,10 @@ public class WholeAttributes implements Attributes {
                     _objectRepValid=false;
                 }
             } catch (Exception e) {
-                _log.error("unexpected problem converting Attributes to byte[]", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("unexpected problem converting Attributes to byte[]", e);
+                }
             }
         }
         return _byteRep;

@@ -129,7 +129,10 @@ public class TestMotion extends TestCase {
             try {
                 _cluster=(ExtendedCluster)_factory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
             } catch (Exception e) {
-                _log.error("unexpected problem", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("unexpected problem", e);
+                }
             }
         }
         
@@ -424,7 +427,10 @@ public class TestMotion extends TestCase {
                 nodeName=(String)ois.readObject();
                 ok=ois.readBoolean();
             } catch (Exception e) {
-                _log.error("unexpected problem", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("unexpected problem", e);
+                }
             } finally {
                 if (ok) {
                     _emoter.commit(_name, _emotable);

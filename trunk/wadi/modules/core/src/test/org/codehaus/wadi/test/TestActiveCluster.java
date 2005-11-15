@@ -115,7 +115,10 @@ public class TestActiveCluster extends TestCase {
         try {
             cluster.getLocalNode().setState(state);
         } catch (JMSException e){
-            _log.error("could not initialise node state", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("could not initialise node state", e);
+            }
         }
         
         cluster.addClusterListener(new ClusterListener() {

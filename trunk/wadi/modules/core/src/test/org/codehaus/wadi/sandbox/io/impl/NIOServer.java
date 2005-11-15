@@ -151,7 +151,10 @@ public class NIOServer extends AbstractSocketServer implements NIOPipeConfig {
                 if (_log.isTraceEnabled()) _log.trace("running server Pipe: "+pipe);
                 _executor.execute(pipe);
             } catch (InterruptedException e) { // TODO - do this safely...
-                _log.error("problem running Pipe", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("problem running Pipe", e);
+                }
             }
         }
     }
@@ -210,7 +213,10 @@ public class NIOServer extends AbstractSocketServer implements NIOPipeConfig {
                         
                     }
                 } catch (Throwable t) {
-                    _log.error("unexpected problem", t);
+                    if ( _log.isErrorEnabled() ) {
+
+                        _log.error("unexpected problem", t);
+                    }
                 } finally {
                     lock.release();
                     // now threads who want to close selectors, channels etc can run on a read lock...

@@ -49,7 +49,10 @@ public class LazyValue extends DistributableValue {
             super.readContent(ois);
             ois.close();
         } catch (Exception e) {
-            _log.error("unexpected problem lazily deserialising session attribute value - data lost", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("unexpected problem lazily deserialising session attribute value - data lost", e);
+            }
         } finally {
             _bytes=null;
         }

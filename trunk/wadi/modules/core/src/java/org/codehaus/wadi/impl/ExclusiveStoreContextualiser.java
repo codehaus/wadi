@@ -129,7 +129,10 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
                 motable=null;
                 _config.expire(loaded);
             } catch (Exception e) {
-                _log.error("unexpected problem expiring from disc", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("unexpected problem expiring from disc", e);
+                }
             }
             loaded=null;
         } else {

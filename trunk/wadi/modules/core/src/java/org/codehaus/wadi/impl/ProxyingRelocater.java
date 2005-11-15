@@ -77,7 +77,10 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
         try {
             response=(LocationResponse)message.getObject();
         } catch (JMSException e) {
-            _log.error("could not unpack response", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("could not unpack response", e);
+            }
         }
 
 		if (response==null)

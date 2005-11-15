@@ -96,7 +96,10 @@ public class
       }
       catch (Exception e)
       {
-	_log.error("load (local disc) failed: "+key, e);
+          if ( _log.isErrorEnabled() ) {
+
+              _log.error("load (local disc) failed: " + key, e);
+          }
       }
     }
 
@@ -129,7 +132,10 @@ public class
     }
     catch (Exception e)
     {
-      _log.error("store (local disc) failed: "+key, e);
+        if ( _log.isErrorEnabled() ) {
+
+            _log.error("store (local disc) failed: " + key, e);
+        }
     }
 
     return success;
@@ -158,7 +164,10 @@ public class
     }
     catch (Exception e)
     {
-      _log.error("removal (local disc) failed: "+key, e);
+        if ( _log.isErrorEnabled() ) {
+
+            _log.error("removal (local disc) failed: " + key, e);
+        }
     }
 
     return success;

@@ -134,7 +134,10 @@ public class HybridRelocater extends AbstractRelocater {
                 motionLock.release();
                 return true;
             } catch (Exception e) {
-                _log.error("problem proxying request", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("problem proxying request", e);
+                }
                 return false;
             }
         }

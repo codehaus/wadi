@@ -81,7 +81,10 @@ public class LocalDiscCache extends AbstractMappedCache {
 		}
 		catch (Exception e)
 		{
-			_log.error("store (local disc) failed: "+key, e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("store (local disc) failed: " + key, e);
+            }
 		}
 
 		return (RequestProcessor)_map.put(key, val);

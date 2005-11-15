@@ -121,7 +121,10 @@ public class JGroupsCluster implements Cluster {
 			_channel.connect(_channelName);
 			_dispatcher.start();
 		} catch (Exception e) {
-			_log.error("ohoh!", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("ohoh!", e);
+            }
 		}
 
 		if (!_channel.getState(null, 5000))

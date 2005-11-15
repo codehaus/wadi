@@ -45,7 +45,10 @@ public class DiscStore implements Store, DiscMotableConfig {
         try {
         	File.createTempFile("DiscStore_WriteTest",null , _dir).delete();
         } catch (IOException e) {
-        	_log.error("bad directory: "+_dir, e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("bad directory: " + _dir, e);
+            }
         	throw e;
         }
         	

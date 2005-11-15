@@ -39,7 +39,10 @@ public class BytesMessageInputStream extends AbstractAsyncInputStream implements
         try {
             _remaining=_buffer==null?0:_buffer.getBodyLength();
         } catch (JMSException e) {
-            _log.error("could not ascertain input length", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("could not ascertain input length", e);
+            }
         }
     }
     
@@ -53,7 +56,10 @@ public class BytesMessageInputStream extends AbstractAsyncInputStream implements
             _remaining--;
             return b;
         } catch (JMSException e) {
-            _log.error("could not read next byte", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("could not read next byte", e);
+            }
             throw new IOException();
         }
     }
@@ -69,7 +75,10 @@ public class BytesMessageInputStream extends AbstractAsyncInputStream implements
             }
             _remaining-=len;
         } catch (JMSException e) {
-            _log.error("problem reading bytes", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("problem reading bytes", e);
+            }
             throw new IOException();
         }
     }

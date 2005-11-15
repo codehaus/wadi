@@ -253,7 +253,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
                     createEvacuationQueue();
                 }
             } catch (Exception e) {
-                _log.error("emmigration queue initialisation failed", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("emmigration queue initialisation failed", e);
+                }
                 _evacuationQueue=null;
             }
         }
@@ -292,7 +295,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
             try {
                 ack=message==null?null:(EmigrationResponse)message.getObject();
             } catch (JMSException e) {
-                _log.error("could not unpack response", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("could not unpack response", e);
+                }
             }
             
             if (ack==null) {

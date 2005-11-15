@@ -278,7 +278,10 @@ public class SimplePartitionManager implements PartitionManager {
                 _log.trace("distributed state updated: " + _dispatcher.getDistributedState());
             }
 	    } catch (Exception e) {
-	        _log.error("could not update distributed state", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("could not update distributed state", e);
+            }
 	    }
 	    // acknowledge safe receipt to donor
 	    if (_dispatcher.reply(om, new PartitionTransferResponse(success))) {
@@ -323,7 +326,10 @@ public class SimplePartitionManager implements PartitionManager {
 	                for (int j=0; j<k.length; j++) {
 	                    int index=k[j];
 	                    if (partitionIsPresent[index]) {
-	                        _log.error("partition "+index+" found on more than one node");
+                            if ( _log.isErrorEnabled() ) {
+
+                                _log.error("partition " + index + " found on more than one node");
+                            }
 	                    } else {
 	                        partitionIsPresent[index]=true;
 	                    }
@@ -367,7 +373,10 @@ public class SimplePartitionManager implements PartitionManager {
 	        String correlationId=_dispatcher.nextCorrelationId();
 	        Quipu rv=_dispatcher.setRendezVous(correlationId, _dispatcher.getNumNodes()-1);
 	        if (!_dispatcher.send(_dispatcher.getLocalDestination(), _dispatcher.getClusterDestination(), correlationId, new PartitionRepopulateRequest(missingKeys))) {
-	            _log.error("unexpected problem repopulating lost index");
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("unexpected problem repopulating lost index");
+                }
 	        }
 
 	        // whilst we are waiting for the other nodes to get back to us, figure out which relevant sessions
@@ -413,7 +422,10 @@ public class SimplePartitionManager implements PartitionManager {
                     _log.trace("distributed state updated: " + _dispatcher.getDistributedState());
                 }
 	        } catch (Exception e) {
-	            _log.error("could not update distributed state", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("could not update distributed state", e);
+                }
 	        }
 	    }
 	}

@@ -279,9 +279,15 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
                 _log.trace("onNodeFailed:" + getNodeName(node) + "- already evacuated - ignoring");
             }
         } else {
-            _log.error("onNodeFailed: "+getNodeName(node));
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("onNodeFailed: " + getNodeName(node));
+            }
             if (amCoordinator()) {
-                _log.error("CATASTROPHIC FAILURE on: "+getNodeName(node));
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("CATASTROPHIC FAILURE on: " + getNodeName(node));
+                }
                 if (_coordinator!=null)
                     _coordinator.queueRebalancing();
                 else
@@ -325,7 +331,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
             (_coordinator=new Coordinator(this)).start();
             _coordinator.queueRebalancing();
         } catch (Exception e) {
-            _log.error("problem starting Coordinator");
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("problem starting Coordinator");
+            }
         }
     }
 
@@ -338,7 +347,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
             _coordinator.stop();
             _coordinator=null;
         } catch (Exception e) {
-            _log.error("problem starting Balancer");
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("problem starting Balancer");
+            }
         }
     }
 

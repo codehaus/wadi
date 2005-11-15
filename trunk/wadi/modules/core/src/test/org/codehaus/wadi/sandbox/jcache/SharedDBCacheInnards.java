@@ -104,7 +104,10 @@ class
     }
     catch (Exception e)
     {
-      _log.error("loading (database) failed: "+key, e);
+        if ( _log.isErrorEnabled() ) {
+
+            _log.error("loading (database) failed: " + key, e);
+        }
     }
 
     return value;
@@ -138,7 +141,10 @@ class
     }
     catch (Exception e)
     {
-      _log.error("eviction (database) failed: "+key, e);
+        if ( _log.isErrorEnabled() ) {
+
+            _log.error("eviction (database) failed: " + key, e);
+        }
     }
 
     return success;
@@ -177,7 +183,10 @@ class
     }
     catch (Exception e)
     {
-      _log.error("eviction (database) failed: "+key, e);
+        if ( _log.isErrorEnabled() ) {
+
+            _log.error("eviction (database) failed: " + key, e);
+        }
     }
 
     return success;
@@ -203,7 +212,10 @@ class
     }
     catch (Exception e)
     {
-      _log.error("removal (database) failed: "+key, e);
+        if ( _log.isErrorEnabled() ) {
+
+            _log.error("removal (database) failed: " + key, e);
+        }
     }
 
     return success;

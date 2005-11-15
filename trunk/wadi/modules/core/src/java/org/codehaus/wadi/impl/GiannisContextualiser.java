@@ -130,7 +130,10 @@ public class GiannisContextualiser extends AbstractExclusiveContextualiser {
                 dbm.setConnection(null);
                 _config.expire(loaded);
             } catch (Exception e) {
-                _log.error("unexpected problem expiring from store", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("unexpected problem expiring from store", e);
+                }
             } finally {
             	if (connection!=null) {
             		try {

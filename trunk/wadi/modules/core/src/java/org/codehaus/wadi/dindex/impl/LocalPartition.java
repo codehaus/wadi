@@ -106,7 +106,10 @@ public class LocalPartition extends AbstractPartition implements Serializable {
     			out.defaultWriteObject();
     			_lock.release();
     		} catch (Exception e) {
-    			_log.error("unexpected problem", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("unexpected problem", e);
+                }
     		}
     	}
 
@@ -186,7 +189,10 @@ public class LocalPartition extends AbstractPartition implements Serializable {
                     }
         			ll._lock.acquire();
         		} catch (Exception e) {
-        			_log.error("unexpected problem, e");
+                    if ( _log.isErrorEnabled() ) {
+
+                        _log.error("unexpected problem, e");
+                    }
         		}
         	}
 

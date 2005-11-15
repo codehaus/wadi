@@ -40,7 +40,10 @@ public class BytesMessageOutputStream extends OutputStream {
         try {
             allocate();
         } catch (IOException e) {
-            _log.error(e); // should we let this go further ?
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error(e); // should we let this go further ?
+            }
         }
     }
     
@@ -50,7 +53,10 @@ public class BytesMessageOutputStream extends OutputStream {
         try {
             _buffer=_config.createBytesMessage();
         } catch (JMSException e) {
-            _log.error(e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error(e);
+            }
             throw new IOException();
         }   
     }
@@ -62,7 +68,10 @@ public class BytesMessageOutputStream extends OutputStream {
                 _config.send(message);
             }
         } catch (Exception e) {
-            _log.error(e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error(e);
+            }
             throw new IOException("problem sending bytes");
         }
     }
@@ -90,7 +99,10 @@ public class BytesMessageOutputStream extends OutputStream {
         try {
             _buffer.writeByte((byte)b);
         } catch (JMSException e) {
-            _log.error(e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error(e);
+            }
             throw new IOException();
         }
     }
@@ -99,7 +111,10 @@ public class BytesMessageOutputStream extends OutputStream {
         try {
             _buffer.writeBytes(b, off, len);// can the message run out of space ? - we might have to break it up... - TODO
         } catch (JMSException e) {
-            _log.error(e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error(e);
+            }
             throw new IOException();
         }
     }
