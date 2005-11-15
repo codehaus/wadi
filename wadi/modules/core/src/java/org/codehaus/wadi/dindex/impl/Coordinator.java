@@ -236,7 +236,10 @@ public class Coordinator implements Runnable {
     			if (!left.contains(node.getDestination())) {
     				PartitionEvacuationResponse response=new PartitionEvacuationResponse();
     				if (!_dispatcher.reply(_cluster.getLocalNode().getDestination(), node.getDestination(), node.getName(), response)) {
-    					_log.error("problem sending EvacuationResponse to "+DIndex.getNodeName(node));
+                        if ( _log.isErrorEnabled() ) {
+
+                            _log.error("problem sending EvacuationResponse to " + DIndex.getNodeName(node));
+                        }
     					failures++;
     				}
     				left.add(node.getDestination());
@@ -281,7 +284,10 @@ public class Coordinator implements Runnable {
             PartitionTransferCommand command=new PartitionTransferCommand((PartitionTransfer[])transfers.toArray(new PartitionTransfer[transfers.size()]));
             quipu.increment();
             if (!_dispatcher.send(_cluster.getLocalNode().getDestination(), producer._node.getDestination(), correlationId, command)) {
-                _log.error("problem sending transfer command");
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("problem sending transfer command");
+                }
             }
         }
         quipu.decrement(); // remove safety margin

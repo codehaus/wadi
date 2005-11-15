@@ -65,7 +65,10 @@ public abstract class AbstractServer implements Server, PipeConfig {
         try {
             _executor.execute(pipe);
         } catch (InterruptedException e) { // TODO - do this safely...
-            _log.error(e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error(e);
+            }
         }
     }
 

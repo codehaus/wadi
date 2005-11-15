@@ -156,7 +156,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 			if (_log.isTraceEnabled()) _log.trace("registering: "+type.getName()+"."+methodName+"()");
 			return nuw;
 		} catch (NoSuchMethodException e) {
-			_log.error("no method: "+methodName+"("+type.getName()+") on class: "+target.getClass().getName() , e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("no method: " + methodName + "(" + type.getName() + ") on class: " + target.getClass().getName(), e);
+            }
 			return null;
 		}
 	}
@@ -178,7 +181,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 			if (_log.isTraceEnabled()) _log.trace("registering: "+type.getName()+"."+methodName+"()");
 			return nuw;
 		} catch (NoSuchMethodException e) {
-			_log.error("no method: "+methodName+"("+type.getName()+") on class: "+target.getClass().getName() , e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("no method: " + methodName + "(" + type.getName() + ") on class: " + target.getClass().getName(), e);
+            }
 			return null;
 		}
 	}
@@ -285,7 +291,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 					_dispatcher.decCount();
 				}
 			} catch (Exception e) {
-				_log.error("problem dispatching message", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("problem dispatching message", e);
+                }
 			}
 		}
 	}
@@ -443,7 +452,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 			send(to, om);
 			return true;
 		} catch (Exception e) {
-			_log.error("problem replying to message", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("problem replying to message", e);
+            }
 			return false;
 		}
 	}
@@ -466,7 +478,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 			send(to, om);
 			return true;
 		} catch (Exception e) {
-			_log.error("problem sending "+body, e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("problem sending " + body, e);
+            }
 			return false;
 		}
 	}
@@ -493,7 +508,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 			send(to, om);
 			return attemptRendezVous(correlationId, rv, timeout);
 		} catch (Exception e) {
-			_log.error("problem sending "+body, e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("problem sending " + body, e);
+            }
 			return null;
 		}
 	}
@@ -530,7 +548,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 			send(to, om);
 			return true;
 		} catch (Exception e) {
-			_log.error("problem sending "+body, e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("problem sending " + body, e);
+            }
 			return false;
 		}
 	}
@@ -558,7 +579,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 			send(to, om);
 			return attemptRendezVous(outgoingCorrelationId, rv, timeout);
 		} catch (Exception e) {
-			_log.error("problem sending "+body, e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("problem sending " + body, e);
+            }
 			return null;
 		}
 	}
@@ -578,7 +602,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 		try {
 			return forward(message, destination, message.getObject());
 		} catch (JMSException e) {
-			_log.error("problem forwarding message with new body", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("problem forwarding message with new body", e);
+            }
 			return false;
 		}
 	}
@@ -590,7 +617,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 		try {
 			return send(message.getJMSReplyTo(), destination, getOutgoingCorrelationId(message), body);
 		} catch (Exception e) {
-			_log.error("problem forwarding message", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("problem forwarding message", e);
+            }
 			return false;
 		}
 	}

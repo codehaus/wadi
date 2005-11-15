@@ -136,7 +136,10 @@ public class Utils {
 	    try {
 	        return byteArrayToObject(bytes, streamer);
 	    } catch (Exception e) {
-	        _log.error("unexpected problem whilst unmarshalling", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("unexpected problem whilst unmarshalling", e);
+            }
 	        return null;
 	    }
 	}
@@ -153,7 +156,10 @@ public class Utils {
         try {
             return objectToByteArray(object, streamer);
         } catch (Exception e) {
-            _log.error("unexpected problem whilst marshalling", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("unexpected problem whilst marshalling", e);
+            }
             return null;
         }
     }
@@ -170,7 +176,10 @@ public class Utils {
         try {
             return getContent(object, streamer);
         } catch (Exception e) {
-            _log.error("unexpected problem whilst marshalling", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("unexpected problem whilst marshalling", e);
+            }
             return null;
         }
     }
@@ -187,7 +196,10 @@ public class Utils {
         try {
             return setContent(object, content, streamer);
         } catch (Exception e) {
-            _log.error("unexpected problem whilst marshalling", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("unexpected problem whilst marshalling", e);
+            }
             return null;
         }
     }

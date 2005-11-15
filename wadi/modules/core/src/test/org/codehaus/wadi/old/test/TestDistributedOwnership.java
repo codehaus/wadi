@@ -73,7 +73,10 @@ public class TestDistributedOwnership extends TestCase {
 			try {
 				_cluster.start();
 			} catch (JMSException e) {
-				_log.error("could not start node", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("could not start node", e);
+                }
 			}
 
 			try
@@ -84,12 +87,18 @@ public class TestDistributedOwnership extends TestCase {
                 }
 			Thread.sleep(10000);
 		} catch (InterruptedException e) {
-			_log.error("interrupted", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("interrupted", e);
+                }
 		}
 			try {
 				_cluster.stop();
 			} catch (JMSException e) {
-				_log.error("could not stop node", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("could not stop node", e);
+                }
 			}
 			_cluster = null;
 		}

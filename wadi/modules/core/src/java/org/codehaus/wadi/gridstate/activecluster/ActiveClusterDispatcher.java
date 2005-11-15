@@ -99,7 +99,10 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
             _clusterFactory.setInactiveTime(_inactiveTime);
             _cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName);
         } catch (Exception e) {
-            _log.error("problem starting Cluster", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("problem starting Cluster", e);
+            }
         }
 
         boolean excludeSelf;

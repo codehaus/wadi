@@ -114,7 +114,10 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
                 }
             }
         } catch (JMSException e) {
-            _log.error("unexpected problem", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("unexpected problem", e);
+            }
         }
     }
     

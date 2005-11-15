@@ -155,7 +155,10 @@ public class PartitionFacade extends AbstractPartition {
             dispatcher.setOutgoingCorrelationId(message, correlationId);
             dispatch(message, request);
         } catch (Exception e) {
-            _log.error("could not dispatch message", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("could not dispatch message", e);
+            }
         }
         return dispatcher.attemptRendezVous(correlationId, rv, timeout);
     }

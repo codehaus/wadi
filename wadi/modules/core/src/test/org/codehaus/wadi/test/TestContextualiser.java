@@ -425,7 +425,10 @@ public class TestContextualiser extends TestCase {
             try {
                 _contextualiser.contextualise(null, null, _chain, _id, null, null, false);
             } catch (Exception e) {
-                _log.error("unexpected problem", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("unexpected problem", e);
+                }
                 assertTrue(false);
             }
         }

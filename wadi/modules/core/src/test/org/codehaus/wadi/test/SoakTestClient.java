@@ -60,7 +60,10 @@ public class SoakTestClient implements Runnable {
                 InputStream is=_request.getResponseBodyAsStream();
                 while (is.read(_buffer)>0); // read complete body of response and chuck...
                 if (status!=200) {
-                    _log.error("bad status: "+status+" : "+_request.getStatusText());
+                    if ( _log.isErrorEnabled() ) {
+
+                        _log.error("bad status: " + status + " : " + _request.getStatusText());
+                    }
                     _errors.increment();
                 }
                 String after=_state.getCookies()[0].getValue();
@@ -70,7 +73,10 @@ public class SoakTestClient implements Runnable {
                 _httpClients.put(httpClient); // don't put it back if anything goes wrong...
                 _request.recycle();
             } catch (Exception e) {
-                _log.error("problem executing http request", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("problem executing http request", e);
+                }
                 _errors.increment();
             } finally {
                 int c=_completer.increment();
@@ -104,8 +110,11 @@ public class SoakTestClient implements Runnable {
             }
             return;
         }
-        
-        _log.error("session changed:  "+before+" --> "+after);
+
+        if ( _log.isErrorEnabled() ) {
+
+            _log.error("session changed:  " + before + " --> " + after);
+        }
         _errors.increment();
     }
     
@@ -213,7 +222,10 @@ public class SoakTestClient implements Runnable {
             
             int e=errors.get();
             if (e>0)
-                _log.error("finished: "+totalNumRequests+" requests and "+e+" ERRORS");
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("finished: " + totalNumRequests + " requests and " + e + " ERRORS");
+            }
             else
                 if ( _log.isInfoEnabled() ) {
 

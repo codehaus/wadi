@@ -58,10 +58,16 @@ public abstract class AbstractAsyncInputStream extends InputStream implements Pu
             try {
                 tmp=_inputQueue.poll(_timeout); // we need a fresh buffer...
             } catch (TimeoutException e) {
-                _log.error("timed out", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("timed out", e);
+                }
                 throw new IOException();
             } catch (InterruptedException e) {
-                _log.error("interrupted", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("interrupted", e);
+                }
             }
         } while (Thread.interrupted());
         

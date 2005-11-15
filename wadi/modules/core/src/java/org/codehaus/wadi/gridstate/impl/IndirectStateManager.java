@@ -258,7 +258,10 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 				try {
 					response=message.getObject();
 				} catch (JMSException e) {
-					_log.error("unexpected problem", e); // should be in loop - TODO
+                    if ( _log.isErrorEnabled() ) {
+
+                        _log.error("unexpected problem", e); // should be in loop - TODO
+                    }
 				}
 
 				if (response instanceof ReadPMToIM) {
@@ -323,18 +326,27 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 				poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
 				//_log.info("Process Owner Correlation ID: "+poCorrelationId);
 			} catch (Exception e) {
-				_log.error("unexpected problem", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("unexpected problem", e);
+                }
 			}
 			MovePMToSM request=new MovePMToSM(key, im, pm, poCorrelationId);
 			ObjectMessage message2=_dispatcher.exchangeSendLoop(pm, sm, request, _timeout, 10);
 			if (message2==null)
-				_log.error("NO RESPONSE WITHIN TIMEFRAME - PANIC!");
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("NO RESPONSE WITHIN TIMEFRAME - PANIC!");
+                }
 
 			MoveSMToPM response=null;
 			try {
 				response=(MoveSMToPM)message2.getObject();
 			} catch (JMSException e) {
-				_log.error("unexpected problem", e); // should be sorted in loop
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("unexpected problem", e); // should be sorted in loop
+                }
 			}
 			// alter location
 			location.setValue((Destination)get.getIM());
@@ -382,7 +394,10 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 			// receive GetIMToSM
 
 			if (message2==null) {
-				_log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
+                }
 			} else {
 			}
 			MoveIMToSM response=null;
@@ -396,7 +411,10 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 				//Destination pm=(Destination)get.getPM();
 				_dispatcher.reply(message1,new MoveSMToPM());
 			} catch (JMSException e) {
-				_log.error("unexpected problem", e);
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("unexpected problem", e);
+                }
 			}
 		} finally {
             if ( _log.isTraceEnabled() ) {
@@ -465,7 +483,10 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 			try {
 				response=message.getObject();
 			} catch (JMSException e) {
-				_log.error("unexpected problem", e); // should be in loop - TODO
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("unexpected problem", e); // should be in loop - TODO
+                }
 			}
 
 			// 2 possibilities -
@@ -498,7 +519,10 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 				}
 				return ((MoveSMToIM)response).getValue();
 			} else {
-				_log.error("unexpected response: "+response.getClass().getName());
+                if ( _log.isErrorEnabled() ) {
+
+                    _log.error("unexpected response: " + response.getClass().getName());
+                }
 				return null;
 			}
 
@@ -556,7 +580,10 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 					poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
 					//_log.info("Process Owner Correlation ID: "+poCorrelationId);
 				} catch (Exception e) {
-					_log.error("unexpected problem", e);
+                    if ( _log.isErrorEnabled() ) {
+
+                        _log.error("unexpected problem", e);
+                    }
 				}
 				Destination im=(Destination)write.getIM();
 				Destination pm=_dispatcher.getLocalDestination();
@@ -603,7 +630,10 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 		try {
 			response=tmp.getObject();
 		} catch (JMSException e) {
-			_log.error("unexpected problem", e); // should be in loop - TODO
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("unexpected problem", e); // should be in loop - TODO
+            }
 		}
 		return response;
 	}

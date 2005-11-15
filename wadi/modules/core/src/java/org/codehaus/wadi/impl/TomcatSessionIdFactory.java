@@ -268,8 +268,10 @@ public class TomcatSessionIdFactory
 	    this.random.setSeed(seed);
 	  } catch (Exception e) {
 	    // Fall back to the simple case
-	    log.error(sm.getString("managerBase.random", randomClass),
-		      e);
+          if ( _log.isErrorEnabled() ) {
+
+              log.error(sm.getString("managerBase.random", randomClass), e);
+          }
 	    this.random = new java.util.Random();
 	    this.random.setSeed(seed);
 	  }
@@ -379,8 +381,16 @@ public class TomcatSessionIdFactory
 	try {
 	  this.digest = MessageDigest.getInstance(DEFAULT_ALGORITHM);
 	} catch (NoSuchAlgorithmException f) {
-	  log.error(sm.getString("managerBase.digest",
-				 DEFAULT_ALGORITHM), e);
+	  if ( _log.isErrorEnabled() ) {
+
+          if ( _log.isErrorEnabled() ) {
+
+              log.error(sm.getString("managerBase.digest",
+                                     DEFAULT_ALGORITHM), e);
+          }
+
+      }
+
 	  this.digest = null;
 	}
       }

@@ -74,7 +74,10 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
             _dindex=new DIndex(nodeName, numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState);
             _dindex.init(this);
         } catch (Exception e) {
-            _log.error("problem starting Cluster", e);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("problem starting Cluster", e);
+            }
         }
         super.init(config);
     }

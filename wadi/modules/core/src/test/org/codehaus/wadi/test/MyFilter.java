@@ -61,7 +61,10 @@ public class MyFilter implements Filter {
 
 		// only here for testing...
 		if (!found) {
-		  _log.error("could not locate session: "+sessionId);
+            if ( _log.isErrorEnabled() ) {
+
+                _log.error("could not locate session: " + sessionId);
+            }
 		  hres.sendError(410, "could not locate session: "+sessionId);
 		}
 
