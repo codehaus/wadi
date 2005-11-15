@@ -15,8 +15,7 @@ Section 0.1 : criteria
 ----------------------
 We believe that this project has a continued probability of success at the ASF under the guidance of the Geronimo PMC. WADI already has a code base and a group of committers - only two of which are not already Geronimo committers. The following considerations have gone into this line of thinking: 
 
-a) Meritocracy - The project will be meritocratic - the usual Apache
-meritocracy rules would apply.
+a) Meritocracy - The project will be meritocratic - the usual Apachemeritocracy rules would apply.
 
 b) Community - The initial developer community will consist of the current WADI committers as well as the existing Geronimo developer community. As the project is integrated with Geronimo, we expect this community to grow. 
 
@@ -25,41 +24,39 @@ c) Alignment - The alignment of WADI with Geronimo is only one offering. WADI wi
 d) License - WADI already utilizes the Apache License 2.0. 
 
 
-Section 0.2 :  warning signs
+Section 0.2 :  Warning Signs
 ----------------------------
 
 
-Section 1 : scope of the project
+Section 1 : Scope of the project
 --------------------------------
 
 
-Section 2 : initial source from which the project is to be populated
+Section 2 : Initial source from which the project is to be populated
 --------------------------------------------------------------------
 The initial source code will come from a subset of the code from the WADI project at Codehaus (http://wadi.codehaus.org/). 
 
-Section 3: identify the ASF resources to be created
+
+Section 3: Identify the ASF resources to be created
 ----------------------------------------------------
 
-Section 3.1 : mailing lists
+Section 3.1 : Mailing Lists
 
 * wadi-dev
 * wadi-user
 
-
-Section 3.2: SVN repositories
+Section 3.2: SVN Repositories
 
 * wadi
 
-
-Section 3.3: JIRA
+Section 3.3: Issue Tracking
 
 * WADI
-
 
 Section 4: identify the initial set of committers
 -------------------------------------------------
 * Bruce Snyder (Castor, Geronimo PMC, ServiceMix, TranQL, WADI)
-* Gianni Scenini [???]
+* Gianni Scenini 
 * Jeff Genender (Geroniom PMC, OpenEJB, ServiceMix, Mojo, WADI)
 * James Goodwill (WADI)
 * Jules Gosnell (Jetty, Geronimo PMC, WADI)
@@ -67,11 +64,9 @@ Section 4: identify the initial set of committers
 
 Section 5: identify apache sponsoring individual
 ------------------------------------------------
-[I think that James Strachan would sponsor WADI and possibly Geir Magnusson (???)]
 
 
 Section 6: open issues for discussion
 -------------------------------------
-
 
 --------------------------------------------------------------------------------
