@@ -46,7 +46,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 // TODO - needs tidying up..
 
-public class IndirectStateManager implements StateManager, PartitionConfig {
+public class IndirectStateManager implements StateManager, PartitionConfig { // Should be PartitionManagerConfig
 
 	protected final Log _log = LogFactory.getLog(getClass());
 
@@ -69,9 +69,7 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 
 		// Get - 5 messages - IM->PM->SM->IM->SM->PM
 		_dispatcher.register(this, "onMessage", ReadIMToPM.class);
-//		_dispatcher.newRegister(this, "onReadIMToPM", ReadIMToPM.class);
 		_dispatcher.register(this, "onMessage", MovePMToSM.class);
-//		_dispatcher.newRegister(this, "onMovePMToSM", MovePMToSM.class);
 		_dispatcher.register(MoveSMToIM.class, _timeout);
 		_dispatcher.register(MoveIMToSM.class, _timeout);
 		_dispatcher.register(MoveSMToPM.class, _timeout);
@@ -85,112 +83,6 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 
 	public void init(StateManagerConfig config) {
 		_config=config;
-	}
-
-	public Object onMovePMToSM(MovePMToSM move) throws Exception {
-		Object key=move.getKey();
-		Destination im=move.getIM();
-		//Object pm=move.getPM();
-		if ( _log.isInfoEnabled() ) {
-
-            _log.info("[SM] - onMovePMToSM@"/*+_address*/);
-            _log.info("im=" + im);
-        }
-
-		Sync sync=null;
-		try {
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("onMovePMToSM - [SM] trying for lock(" + key + ")...");
-            }
-			sync=_config.getSMSyncs().acquire(key);
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("onMovePMToSM - [SM] ...lock(" + key + ") acquired< - " + sync);
-            }
-			// send GetSMToIM to IM
-			Object value;
-			Map map=_config.getMap();
-			synchronized (map) {
-				value=map.get(key);
-			}
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("[SM] sending " + key + "=" + value + " -> IM...");
-            }
-			MoveIMToSM response=(MoveIMToSM)syncRpc(im, "onMoveSMToIM", new MoveSMToIM(key, value));
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("[SM] ...response received <- IM");
-            }
-			boolean success=response.getSuccess();
-			if (success) {
-				synchronized (map) {
-					map.remove(key);
-					return new MoveSMToPM();
-				}
-			}
-			return new MoveSMToPM(success);
-		} finally {
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("onMovePMToSM - [SM] releasing lock(" + key + ") - " + sync);
-            }
-			sync.release();
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("onMovePMToSM - [SM] released lock(" + key + ") - " + sync);
-            }
-		}
-	}
-
-	public Object onReadIMToPM(ReadIMToPM read) throws Exception {
-		Object key=read.getKey();
-		Destination im=read.getIM();
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("im=" + im);
-        }
-		// what if we are NOT the PM anymore ?
-		// get write lock on location
-		Sync sync=null;
-		try {
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("onReadIMToPM- [PM] trying for lock(" + key + ")...");
-            }
-			sync=_config.getPMSyncs().acquire(key);
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("onReadIMToPM- [PM] ...lock(" + key + ") acquired - " + sync);
-            }
-			Partition partition=getPartitions()[_config.getPartitionMapper().map(key)];
-			Location location=partition.getLocation(key);
-			if (location==null) {
-				return new ReadPMToIM();
-			}
-			// exchangeSendLoop GetPMToSM to SM
-			Destination pm=getLocalDestination();
-			Destination sm=(Destination)location.getValue();
-
-			MoveSMToPM response=(MoveSMToPM)syncRpc(sm, "onMovePMToSM", new MovePMToSM(key, im, pm, null));
-			// success - update location
-			boolean success=response.getSuccess();
-			if (success)
-				location.setValue(im);
-
-			return success?Boolean.TRUE:Boolean.FALSE;
-		} finally {
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("onReadIMToPM- [PM] releasing lock(" + key + ") - " + sync);
-            }
-			sync.release();
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("onReadIMToPM- [PM] released lock(" + key + ") - " + sync);
-            }
-		}
 	}
 
 	public Partition[] getPartitions() {
@@ -624,7 +516,7 @@ public class IndirectStateManager implements StateManager, PartitionConfig {
 	// StateManager
 	//--------------------------------------------------------------------------------
 
-	public Object syncRpc(Destination destination, String methodName, Object message) throws Exception {
+	public Object syncRpc(Destination destination, Object message) throws Exception {
 		ObjectMessage tmp=_dispatcher.exchangeSendLoop(_dispatcher.getLocalDestination(), (Destination)destination, (Serializable)message, _timeout, 10);
 		Object response=null;
 		try {

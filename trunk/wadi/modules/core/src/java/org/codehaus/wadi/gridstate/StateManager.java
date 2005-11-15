@@ -41,7 +41,7 @@ public interface StateManager {
 
     void stop() throws Exception;
 
-	Object syncRpc(Destination destination, String methodName, Object message) throws Exception;
+	Object syncRpc(Destination destination, Object message) throws Exception;
 
 	//Object getLocalLocation();
 }
