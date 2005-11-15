@@ -20,14 +20,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.PartitionConfig;
 import org.codehaus.wadi.gridstate.PartitionManager;
+import org.codehaus.wadi.gridstate.PartitionMapper;
 
 public class StaticPartitionManager implements PartitionManager {
 
 	protected final Partition[] _partitions;
+	protected final PartitionMapper _mapper;
 
-	public StaticPartitionManager(int numPartitions) {
+	public StaticPartitionManager(int numPartitions, PartitionMapper mapper) {
 		_partitions=new Partition[numPartitions];
-
+		_mapper=mapper;
 	}
 
 	public void init(PartitionConfig config) {
@@ -75,6 +77,10 @@ public class StaticPartitionManager implements PartitionManager {
     			// else, I guess default partition type is 'local'...
     		}
     	}
+	}
+
+	public Partition getPartition(Object key) {
+		return _partitions[_mapper.map(key)];
 	}
 
 }

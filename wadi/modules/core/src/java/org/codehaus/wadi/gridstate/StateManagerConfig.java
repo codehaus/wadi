@@ -21,7 +21,6 @@ import java.util.Map;
 
 public interface StateManagerConfig {
 
-	public PartitionMapper getPartitionMapper();
 	public Map getMap();
 	public LockManager getPMSyncs();
 	public LockManager getSMSyncs();

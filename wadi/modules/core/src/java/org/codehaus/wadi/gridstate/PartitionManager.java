@@ -23,5 +23,7 @@ public interface PartitionManager {
 	void init(PartitionConfig config);
 	Partition[] getPartitions();
 	int getNumPartitions();
+	
+	Partition getPartition(Object key);
 
 }
