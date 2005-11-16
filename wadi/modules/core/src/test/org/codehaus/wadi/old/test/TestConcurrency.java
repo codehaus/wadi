@@ -158,7 +158,10 @@ public class
 	      }
 	      catch (Exception e)
 	      {
-		_log.warn("oops", e);
+              if ( _log.isWarnEnabled() ) {
+
+                  _log.warn("oops", e);
+              }
 	      }
 	    }
 	  };
@@ -217,7 +220,10 @@ public class
  	    }
  	    catch (Exception e)
  	    {
- 	      _log.warn(e);
+             if ( _log.isWarnEnabled() ) {
+
+                 _log.warn(e);
+             }
  	    }
  	  }
  	};

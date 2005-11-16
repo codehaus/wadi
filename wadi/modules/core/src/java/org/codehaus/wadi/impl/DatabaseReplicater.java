@@ -48,13 +48,19 @@ public class DatabaseReplicater implements Replicater {
 			connection=_store.getConnection();
 			_store.insert(connection, session, session.getBodyAsByteArray());
 		} catch (Exception e) {
-			_log.warn("problem creating replicant", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem creating replicant", e);
+            }
 		} finally {
 			if (connection!=null)
 				try {
 					connection.close();
 				} catch (Exception e) {
-					_log.warn("problem releasing connection", e);
+                    if ( _log.isWarnEnabled() ) {
+
+                        _log.warn("problem releasing connection", e);
+                    }
 				}
 		}
 	}
@@ -69,13 +75,19 @@ public class DatabaseReplicater implements Replicater {
 			connection=_store.getConnection();
 			_store.update(connection, session);
 		} catch (Exception e) {
-			_log.warn("problem updating replicant", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem updating replicant", e);
+            }
 		} finally {
 			if (connection!=null)
 				try {
 					connection.close();
 				} catch (Exception e) {
-					_log.warn("problem releasing connection", e);
+                    if ( _log.isWarnEnabled() ) {
+
+                        _log.warn("problem releasing connection", e);
+                    }
 				}
 		}
 	}
@@ -90,13 +102,19 @@ public class DatabaseReplicater implements Replicater {
 			connection=_store.getConnection();
 			_store.delete(connection, session);
 		} catch (Exception e) {
-			_log.warn("problem destroying replicant", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem destroying replicant", e);
+            }
 		} finally {
 			if (connection!=null)
 				try {
 					connection.close();
 				} catch (Exception e) {
-					_log.warn("problem releasing connection", e);
+                    if ( _log.isWarnEnabled() ) {
+
+                        _log.warn("problem releasing connection", e);
+                    }
 				}
 		}
 	}

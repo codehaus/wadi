@@ -166,7 +166,10 @@ public class SoakTestClient implements Runnable {
                 _executor.execute(_destroyRequest);
             }
         } catch (InterruptedException e) {
-            _log.warn("interruption detected - aborting...");
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("interruption detected - aborting...");
+            }
         }
     }
     
@@ -233,7 +236,10 @@ public class SoakTestClient implements Runnable {
                 }
             
         } catch (InterruptedException e) {
-            _log.warn("interrupted - aborting...");
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("interrupted - aborting...");
+            }
         }
         
     }

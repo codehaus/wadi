@@ -87,7 +87,10 @@ public abstract class
     Object value=loadValue(key);
 
     if (value==null)
-      _log.warn("load failed: "+key);
+        if ( _log.isWarnEnabled() ) {
+
+            _log.warn("load failed: " + key);
+        }
     else
         if ( _log.isInfoEnabled() ) {
 
@@ -112,7 +115,10 @@ public abstract class
     }
 
     if (map.size()==0)
-      _log.warn("loadAll failed: "+keys);
+        if ( _log.isWarnEnabled() ) {
+
+            _log.warn("loadAll failed: " + keys);
+        }
     else
         if ( _log.isInfoEnabled() ) {
 

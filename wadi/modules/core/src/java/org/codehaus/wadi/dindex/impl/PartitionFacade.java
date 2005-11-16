@@ -67,7 +67,10 @@ public class PartitionFacade extends AbstractPartition {
             return _content.isLocal();
 
         } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("unexpected problem", e);
+            }
         } finally {
             if (acquired)
                 sync.release();
@@ -86,7 +89,10 @@ public class PartitionFacade extends AbstractPartition {
             return _content;
 
         } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("unexpected problem", e);
+            }
         } finally {
             if (acquired)
                 sync.release();
@@ -112,7 +118,10 @@ public class PartitionFacade extends AbstractPartition {
             }
 
         } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("unexpected problem", e);
+            }
         } finally {
             if (acquired)
                 sync.release();
@@ -140,7 +149,10 @@ public class PartitionFacade extends AbstractPartition {
             }
 
         } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("unexpected problem", e);
+            }
         } finally {
             if (acquired)
                 sync.release();
@@ -187,7 +199,10 @@ public class PartitionFacade extends AbstractPartition {
                 _queue.put(om);
             }
         } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("unexpected problem", e);
+            }
         } finally {
             if (acquired)
                 sync.release();
@@ -208,7 +223,10 @@ public class PartitionFacade extends AbstractPartition {
                 success=true;
             }
         } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("unexpected problem", e);
+            }
         } finally {
             if (acquired)
                 sync.release();
@@ -232,13 +250,19 @@ public class PartitionFacade extends AbstractPartition {
                         DIndexRequest request=(DIndexRequest)message.getObject();
                         _content.dispatch(message, request); // perhaps this should be done on another thread ? - TODO
                     } catch (JMSException e) {
-                        _log.warn("unexpected problem dispatching message");
+                        if ( _log.isWarnEnabled() ) {
+
+                            _log.warn("unexpected problem dispatching message");
+                        }
                     }
                 }
                 success=true;
             }
         } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("unexpected problem", e);
+            }
         } finally {
             if (acquired)
                 sync.release();

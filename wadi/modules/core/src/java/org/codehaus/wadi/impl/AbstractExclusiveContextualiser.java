@@ -98,7 +98,10 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 	      }
 	    }
 	  } catch (Exception e) {
-	    _log.warn("unexpected problem", e);
+          if ( _log.isWarnEnabled() ) {
+
+              _log.warn("unexpected problem", e);
+          }
 	  }
 	}
 

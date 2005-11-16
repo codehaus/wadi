@@ -165,7 +165,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
         Node localNode=_cluster.getLocalNode();
         String correlationId=_cluster.getLocalNode().getName();
         while (_dispatcher.exchangeSend(localNode.getDestination(), _coordinatorNode.getDestination(), correlationId, request, _inactiveTime)==null) {
-        	_log.warn("could not contact Coordinator - backing off for "+_inactiveTime+" millis...");
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("could not contact Coordinator - backing off for " + _inactiveTime + " millis...");
+            }
         	Thread.sleep(_inactiveTime);
         }
 
@@ -220,7 +223,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
         if (correlationID!=null) {
         	Quipu rv=(Quipu)_dispatcher.getRendezVousMap().get(correlationID);
         	if (rv==null)
-        		_log.warn("no one waiting for: "+correlationID);
+if ( _log.isWarnEnabled() ) {
+
+    _log.warn("no one waiting for: " + correlationID);
+}
         	else {
                 if ( _log.isTraceEnabled() ) {
 
@@ -286,7 +292,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
                 if (_coordinator!=null)
                     _coordinator.queueRebalancing();
                 else
-                	_log.warn("coordinator thread not running");
+                    if ( _log.isWarnEnabled() ) {
+
+                        _log.warn("coordinator thread not running");
+                    }
             }
         }
     }

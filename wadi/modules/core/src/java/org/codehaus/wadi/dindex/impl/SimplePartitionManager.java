@@ -135,7 +135,10 @@ public class SimplePartitionManager implements PartitionManager {
 			else
 				from=(Node)_cluster.getNodes().get(destination);
 		} catch (JMSException e) {
-			_log.warn("could not read src node from message", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("could not read src node from message", e);
+            }
 			from=null;
 		}
 		
@@ -157,10 +160,16 @@ public class SimplePartitionManager implements PartitionManager {
 	        _dindexConfig.findRelevantSessionNames(_numPartitions, c);
 	        _log.info("findRelevantSessionNames - finished");
 	    } catch (Throwable t) {
-	        _log.warn("ERROR", t);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("ERROR", t);
+            }
 	    }
 	    if (!_dispatcher.reply(om, new PartitionRepopulateResponse(c)))
-	        _log.warn("unexpected problem responding to partition repopulation request");
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("unexpected problem responding to partition repopulation request");
+            }
 	}
 
 	// receive a command to transfer IndexPartitions to another node
@@ -211,10 +220,16 @@ public class SimplePartitionManager implements PartitionManager {
 	                    }
 	                }
 	            } else {
-	                _log.warn("transfer unsuccessful");
+                    if ( _log.isWarnEnabled() ) {
+
+                        _log.warn("transfer unsuccessful");
+                    }
 	            }
 	        } catch (Throwable t) {
-	            _log.warn("unexpected problem", t);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("unexpected problem", t);
+                }
 	        }
 	    }
 	    try {
@@ -243,7 +258,10 @@ public class SimplePartitionManager implements PartitionManager {
 	    	// FIXME - RACE - between update of distributed state and ack - they should be one and the same thing...
 	    	//_dispatcher.reply(om, new PartitionTransferAcknowledgement(true)); // what if failure - TODO
 	    } catch (Exception e) {
-	    	_log.warn("could not acknowledge safe transfer to Coordinator", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("could not acknowledge safe transfer to Coordinator", e);
+            }
 	    }
 	}
 
@@ -287,7 +305,10 @@ public class SimplePartitionManager implements PartitionManager {
 	    if (_dispatcher.reply(om, new PartitionTransferResponse(success))) {
 	        // unlock Partitions here... - TODO
 	    } else {
-	        _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died");
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died");
+            }
 	        // chuck them... - TODO
 	    }
 	}
@@ -358,7 +379,10 @@ public class SimplePartitionManager implements PartitionManager {
 	        for (Iterator i=missingPartitions.iterator(); i.hasNext(); )
 	            missingKeys[key++]=((Integer)i.next()).intValue();
 
-	        _log.warn("RECREATING PARTITIONS...: "+missingPartitions);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("RECREATING PARTITIONS...: " + missingPartitions);
+            }
 	        long time=System.currentTimeMillis();
 	        for (int i=0; i<missingKeys.length; i++) {
 	            int k=missingKeys[i];
@@ -369,7 +393,10 @@ public class SimplePartitionManager implements PartitionManager {
 	            facade.setContent(time, local);
 	        }
 	        PartitionKeys newKeys=getPartitionKeys();
-	        _log.warn("REPOPULATING PARTITIONS...: "+missingPartitions);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("REPOPULATING PARTITIONS...: " + missingPartitions);
+            }
 	        String correlationId=_dispatcher.nextCorrelationId();
 	        Quipu rv=_dispatcher.setRendezVous(correlationId, _dispatcher.getNumNodes()-1);
 	        if (!_dispatcher.send(_dispatcher.getLocalDestination(), _dispatcher.getClusterDestination(), correlationId, new PartitionRepopulateRequest(missingKeys))) {
@@ -389,7 +416,10 @@ public class SimplePartitionManager implements PartitionManager {
 	        try {
 	            /*success=*/rv.waitFor(_inactiveTime);
 	        } catch (InterruptedException e) {
-	            _log.warn("unexpected interruption", e);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("unexpected interruption", e);
+                }
 	        }
 	        Collection results=rv.getResults();
 
@@ -403,11 +433,17 @@ public class SimplePartitionManager implements PartitionManager {
 	                repopulate(from, relevantKeys);
 
 	            } catch (JMSException e) {
-	                _log.warn("unexpected problem interrogating response", e);
+                    if ( _log.isWarnEnabled() ) {
+
+                        _log.warn("unexpected problem interrogating response", e);
+                    }
 	            }
 	        }
 
-	        _log.warn("...PARTITIONS REPOPULATED: "+missingPartitions);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("...PARTITIONS REPOPULATED: " + missingPartitions);
+            }
 	        for (int i=0; i<missingKeys.length; i++) {
 	            int k=missingKeys[i];
 	            PartitionFacade facade=getPartition(k);
@@ -471,7 +507,10 @@ public class SimplePartitionManager implements PartitionManager {
         if (correlationID!=null) {
         	Quipu rv=(Quipu)_dispatcher.getRendezVousMap().get(correlationID);
         	if (rv==null)
-        		_log.warn("no one waiting for: "+correlationID);
+                if ( _log.isWarnEnabled() ) {
+
+                  _log.warn("no one waiting for: " + correlationID);
+                }
         	else {
                 if ( _log.isTraceEnabled() ) {
 

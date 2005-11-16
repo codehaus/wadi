@@ -128,7 +128,10 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
         try {
         	session.destroy();
         } catch (Exception e) {
-        	_log.warn("unexpected problem destroying session", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("unexpected problem destroying session", e);
+            }
         }
         _sessionPool.put(session);
         if (_log.isDebugEnabled()) _log.debug("destroyed: "+name);

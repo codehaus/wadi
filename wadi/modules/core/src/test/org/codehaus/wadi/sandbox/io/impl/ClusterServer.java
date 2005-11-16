@@ -74,7 +74,10 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
         _clusterConsumer.setMessageListener(null);
         _nodeConsumer.setMessageListener(null);
         } catch (JMSException e) {
-            _log.warn("could not remove Listeners", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("could not remove Listeners", e);
+            }
         }
     }
     

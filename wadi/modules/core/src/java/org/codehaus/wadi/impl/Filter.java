@@ -114,7 +114,10 @@ public class Filter implements javax.servlet.Filter {
         // sync point - expensive, but will only hit sessionless requests...
         if (!_acceptingSessions.get()) {
             // think about what to do here... proxy or error page ?
-            _log.warn("sessionless request has arived during shutdown - permitting");
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("sessionless request has arived during shutdown - permitting");
+            }
             // TODO
         }
 

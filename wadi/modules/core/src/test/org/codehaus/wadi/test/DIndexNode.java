@@ -95,7 +95,10 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
     // DIndexConfig
 
     public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
-        _log.warn("findRelevantSessionNames() - NYI");
+        if ( _log.isWarnEnabled() ) {
+
+            _log.warn("findRelevantSessionNames() - NYI");
+        }
     }
 
     //-----------------------------------------------------------

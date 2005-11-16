@@ -141,7 +141,10 @@ public class TestDistributedOwnership extends TestCase {
 		}
 	 	catch (InterruptedException e)
 		{
-	 		_log.warn("interrupted whilst stopping thread", e);
+             if ( _log.isWarnEnabled() ) {
+
+                 _log.warn("interrupted whilst stopping thread", e);
+             }
 		}
 	 }
 	}

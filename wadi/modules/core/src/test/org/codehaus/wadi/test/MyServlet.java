@@ -137,7 +137,10 @@ public class MyServlet implements Servlet {
             });
             _manager.start();
         } catch (Exception e) {
-            _log.warn(e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn(e);
+            }
         }
 	}
 
@@ -165,7 +168,10 @@ public class MyServlet implements Servlet {
             _manager.stop();
             _manager.destroy();
 		} catch (Exception e) {
-			_log.warn("unexpected problem", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("unexpected problem", e);
+            }
 		}
 	}
 

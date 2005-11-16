@@ -118,7 +118,10 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         _contextualiser.start();
         ServletContext context=getServletContext();
         if (context==null)
-        	_log.warn("null ServletContext");
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("null ServletContext");
+            }
         else
         	context.setAttribute(StandardManager.class.getName(), this); // TODO - security risk ?
         _started=true;
@@ -180,7 +183,10 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         try {
         	session.destroy();
         } catch (Exception e) {
-        	_log.warn("unexpected problem destroying session", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("unexpected problem destroying session", e);
+            }
         }
         _sessionPool.put(session);
         if (_log.isDebugEnabled()) _log.debug("destruction: "+name);

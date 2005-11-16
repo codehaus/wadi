@@ -100,7 +100,10 @@ public class Coordinator implements Runnable {
         try {
             _flag.offer(Boolean.TRUE, 0);
         } catch (InterruptedException e) {
-            _log.warn("unexpected interruption");
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("unexpected interruption");
+            }
         }
         if ( _log.isInfoEnabled() ) {
 
@@ -165,7 +168,10 @@ public class Coordinator implements Runnable {
     		Node [] leaving=(Node[])leavingNodes.toArray(new Node[leavingNodes.size()]);
 
     		if (stayingNodes.size()==0) {
-    			_log.warn("we are the last node - no need to rebalance cluster");
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("we are the last node - no need to rebalance cluster");
+                }
     		} else {
 
     			Node [] living=(Node[])stayingNodes.toArray(new Node[stayingNodes.size()]);
@@ -203,14 +209,23 @@ public class Coordinator implements Runnable {
                         }
     					//Collection results=rv.getResults();
     				} else {
-    					_log.warn("RENDEZVOUS FAILED");
+                        if ( _log.isWarnEnabled() ) {
+
+                            _log.warn("RENDEZVOUS FAILED");
+                        }
     					failures++;
     				}
     			} catch (TimeoutException e) {
-    				_log.warn("timed out waiting for response", e);
+                    if ( _log.isWarnEnabled() ) {
+
+                        _log.warn("timed out waiting for response", e);
+                    }
     				failures++;
     			} catch (InterruptedException e) {
-    				_log.warn("unexpected interruption", e);
+                    if ( _log.isWarnEnabled() ) {
+
+                        _log.warn("unexpected interruption", e);
+                    }
     				failures++;
     			} finally {
     				rvMap.remove(correlationId);
@@ -247,12 +262,18 @@ public class Coordinator implements Runnable {
     		}
 
     	} catch (Throwable t) {
-    		_log.warn("problem rebalancing indeces", t);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem rebalancing indeces", t);
+            }
     		failures++;
     	}
 
     	if (failures>0) {
-    		_log.warn("rebalance failed - backing off for "+_inactiveTime+" millis...");
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("rebalance failed - backing off for " + _inactiveTime + " millis...");
+            }
     		queueRebalancing();
     	}
     }

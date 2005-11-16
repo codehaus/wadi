@@ -135,7 +135,10 @@ public class
 
               _log.info("[2] START : " + e);
           }
-	_log.warn("",new Exception());
+          if ( _log.isWarnEnabled() ) {
+
+              _log.warn("", new Exception());
+          }
 	combs=combineCollection(e.toArray(), -1, k);
       }
 

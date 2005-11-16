@@ -58,7 +58,10 @@ public class
     }
     catch (Exception e)
     {
-      _log.warn("unexpected problem starting Cell: "+_id, e);
+        if ( _log.isWarnEnabled() ) {
+
+            _log.warn("unexpected problem starting Cell: " + _id, e);
+        }
     }
   }
 
@@ -77,7 +80,10 @@ public class
     }
     catch (Exception e)
     {
-      _log.warn("unexpected problem stopping Cell: "+_id, e);
+        if ( _log.isWarnEnabled() ) {
+
+            _log.warn("unexpected problem stopping Cell: " + _id, e);
+        }
     }
   }
 

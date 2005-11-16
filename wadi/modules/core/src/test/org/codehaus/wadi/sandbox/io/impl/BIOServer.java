@@ -73,7 +73,10 @@ public class BIOServer extends AbstractSocketServer {
         try {
             _socket.close();
         } catch (IOException e) {
-            _log.warn("problem closing server socket", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem closing server socket", e);
+            }
         }
         _socket=null;
         
@@ -116,7 +119,10 @@ public class BIOServer extends AbstractSocketServer {
                     }
                 }
             } catch (IOException e) {
-                _log.warn("unexpected io problem - stopping");
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("unexpected io problem - stopping");
+                }
             }
         }
         
