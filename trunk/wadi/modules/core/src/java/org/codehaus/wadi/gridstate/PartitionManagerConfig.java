@@ -16,16 +16,10 @@
  */
 package org.codehaus.wadi.gridstate;
 
-import org.codehaus.wadi.gridstate.impl.Partition;
+import javax.jms.Destination;
 
-public interface PartitionManager {
+public interface PartitionManagerConfig {
 
-	void init(PartitionManagerConfig config);
-	void start() throws Exception;
-	void stop() throws Exception;
-
-	int getNumPartitions();
-	Partition[] getPartitions();
-	Partition getPartition(Object key);
-
+	Destination getLocalDestination();
+	
 }

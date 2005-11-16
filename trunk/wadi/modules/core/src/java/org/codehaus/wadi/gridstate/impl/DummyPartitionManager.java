@@ -16,8 +16,8 @@
  */
 package org.codehaus.wadi.gridstate.impl;
 
-import org.codehaus.wadi.gridstate.PartitionConfig;
 import org.codehaus.wadi.gridstate.PartitionManager;
+import org.codehaus.wadi.gridstate.PartitionManagerConfig;
 
 public class DummyPartitionManager implements PartitionManager {
 
@@ -28,8 +28,16 @@ public class DummyPartitionManager implements PartitionManager {
 		_numPartitions=numPartitions;
 	}
 
-	public void init(PartitionConfig config) {
-		// TODO Auto-generated method stub
+	public void init(PartitionManagerConfig config) {
+		// empty
+	}
+
+	public void start() {
+		// empty
+	}
+	
+	public void stop() {
+		// empty
 	}
 
 	public Partition[] getPartitions() {

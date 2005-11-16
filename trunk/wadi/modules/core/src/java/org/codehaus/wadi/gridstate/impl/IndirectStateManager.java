@@ -51,16 +51,14 @@ public class IndirectStateManager implements StateManager, PartitionConfig { // 
 
 	protected final String _clusterName = "ORG.CODEHAUS.WADI.TEST";
 	protected final String _nodeName;
-	protected final PartitionManager _partitionManager;
 	protected final long _timeout;
 
 	protected Dispatcher _dispatcher; // should be final
 	protected StateManagerConfig _config;
 
 
-	public IndirectStateManager(String nodeName, PartitionManager manager, Dispatcher dispatcher, long timeout) throws Exception {
+	public IndirectStateManager(String nodeName, PartitionManager partitionManager, Dispatcher dispatcher, long timeout) throws Exception {
     	_nodeName=nodeName;
-    	(_partitionManager=manager).init(this);
     	_timeout=timeout;
     	_dispatcher=dispatcher;
 
@@ -82,10 +80,6 @@ public class IndirectStateManager implements StateManager, PartitionConfig { // 
 
 	public void init(StateManagerConfig config) {
 		_config=config;
-	}
-
-	public Partition[] getPartitions() {
-		return _partitionManager.getPartitions();
 	}
 
 	public PartitionInterface createRemotePartition() {
@@ -142,7 +136,7 @@ public class IndirectStateManager implements StateManager, PartitionConfig { // 
 			else {
 				// exchangeSendLoop GetIMToPM to PM
 				Destination im=_dispatcher.getLocalDestination();
-				Destination pm=_partitionManager.getPartition(key).getDestination();
+				Destination pm=_config.getPartition(key).getDestination();
 				ReadIMToPM request=new ReadIMToPM(key, im);
 				ObjectMessage message=_dispatcher.exchangeSendLoop(im, pm, request, _timeout, 10);
 				Object response=null;
@@ -202,7 +196,7 @@ public class IndirectStateManager implements StateManager, PartitionConfig { // 
 
                 _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
             }
-			Partition partition=_partitionManager.getPartition(key);
+			Partition partition=_config.getPartition(key);
 			Location location=(Location)partition.getLocation(key);
 			if (location==null) {
 				_dispatcher.reply(message1,new ReadPMToIM());
@@ -367,7 +361,7 @@ public class IndirectStateManager implements StateManager, PartitionConfig { // 
 			// absent or remote
 			// exchangeSendLoop PutIMToPM to PM
 			Destination im=_dispatcher.getLocalDestination();
-			Destination pm=_partitionManager.getPartition(key).getDestination();
+			Destination pm=_config.getPartition(key).getDestination();
 			WriteIMToPM request=new WriteIMToPM(key, value==null, overwrite, returnOldValue, im);
 			ObjectMessage message=_dispatcher.exchangeSendLoop(im, pm, request, _timeout, 10);
 			Object response=null;
@@ -434,7 +428,7 @@ public class IndirectStateManager implements StateManager, PartitionConfig { // 
 	public void onMessage(ObjectMessage message1, WriteIMToPM write) {
 		// what if we are NOT the PM anymore ?
 		Object key=write.getKey();
-		Partition partition=_partitionManager.getPartition(key);
+		Partition partition=_config.getPartition(key);
 		Map partitionMap=partition.getMap();
 		Sync sync=null;
 		String agent=_dispatcher.getNodeName((Destination)write.getIM());
