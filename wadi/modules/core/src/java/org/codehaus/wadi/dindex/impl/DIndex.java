@@ -37,13 +37,15 @@ import org.codehaus.wadi.dindex.CoordinatorConfig;
 import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
+import org.codehaus.wadi.dindex.StateManager;
+import org.codehaus.wadi.dindex.StateManagerConfig;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
-public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConfig, SimplePartitionManager.Callback {
+public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConfig, SimplePartitionManager.Callback, StateManagerConfig {
 
     protected final static String _nodeNameKey="nodeName";
     protected final static String _partitionKeysKey="partitionKeys";
@@ -61,6 +63,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
     protected final int _numPartitions;
     protected final long _inactiveTime;
     protected final PartitionManager _partitionManager;
+    protected final StateManager _stateManager;
 
     public DIndex(String nodeName, int numPartitions, long inactiveTime, Dispatcher dispatcher, Map distributedState) {
         _nodeName=nodeName;
@@ -71,6 +74,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
         _cluster=((ActiveClusterDispatcher)_dispatcher).getCluster();
         _distributedState=distributedState;
         _partitionManager=new SimplePartitionManager(_nodeName, _numPartitions, this, _cluster, _dispatcher, _distributedState, _inactiveTime, this);
+        _stateManager=new SimpleStateManager(_dispatcher, _inactiveTime);
     }
 
     protected Node _coordinatorNode;
@@ -96,13 +100,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
             _log.info("local state: " + keys);
         }
         _partitionManager.init(config);
-        _dispatcher.register(this, "onDIndexInsertionRequest", DIndexInsertionRequest.class);
-        _dispatcher.register(DIndexInsertionResponse.class, _inactiveTime);
-        _dispatcher.register(this, "onDIndexDeletionRequest", DIndexDeletionRequest.class);
-        _dispatcher.register(DIndexDeletionResponse.class, _inactiveTime);
-        _dispatcher.register(this, "onDIndexRelocationRequest", DIndexRelocationRequest.class);
-        _dispatcher.register(DIndexRelocationResponse.class, _inactiveTime);
-        _dispatcher.register(this, "onDIndexForwardRequest", DIndexForwardRequest.class);
+        _stateManager.init(this);
         if ( _log.isInfoEnabled() ) {
 
             _log.info("...init-ed");
@@ -171,10 +169,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
         	Thread.sleep(_inactiveTime);
         }
 
-        _dispatcher.deregister("onDIndexInsertionRequest", DIndexInsertionRequest.class, 5000);
-        _dispatcher.deregister("onDIndexDeletionRequest", DIndexDeletionRequest.class, 5000);
-        _dispatcher.deregister("onDIndexRelocationRequest", DIndexRelocationRequest.class, 5000);
-        _dispatcher.deregister("onDIndexForwardRequest", DIndexForwardRequest.class, 5000);
+        _stateManager.stop();
 
         if (_coordinator!=null) {
         	_coordinator.stop();
@@ -417,28 +412,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
             return amount;
         }
     }
-
-    public void onDIndexInsertionRequest(ObjectMessage om, DIndexInsertionRequest request) {
-        onDIndexRequest(om, request);
-    }
-
-    public void onDIndexDeletionRequest(ObjectMessage om, DIndexDeletionRequest request) {
-        onDIndexRequest(om, request);
-    }
-
-    public void onDIndexForwardRequest(ObjectMessage om, DIndexForwardRequest request) {
-        onDIndexRequest(om, request);
-    }
-
-    public void onDIndexRelocationRequest(ObjectMessage om, DIndexRelocationRequest request) {
-        onDIndexRequest(om, request);
-    }
-
-    protected void onDIndexRequest(ObjectMessage om, DIndexRequest request) {
-        int partitionKey=request.getPartitionKey(_numPartitions);
-        _partitionManager.getPartition(partitionKey).dispatch(om, request);
-    }
-
     // temporary test methods...
 
     public Object insert(String name) {
@@ -537,5 +510,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
 //    	return _partitions;
 //    }
 
+	// StateManagerConfig API
+	
+	public PartitionFacade getPartition(int key) {
+		return _partitionManager.getPartition(key);
+	}
+	
 }
 

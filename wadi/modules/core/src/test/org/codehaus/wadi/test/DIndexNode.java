@@ -37,9 +37,10 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 
     protected final Log _log=LogFactory.getLog(getClass());
 
-    protected final String _clusterUri="peer://org.codehaus.wadi";
+    //protected final String _clusterUri="peer://org.codehaus.wadi";
     //protected final String _clusterUri="tcp://localhost:61616";
     //protected final String _clusterUri="tcp://smilodon:61616";
+    protected final String _clusterUri="vm://localhost";
     protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
     protected final ActiveClusterDispatcher _dispatcher;
     protected final Map _distributedState=new ConcurrentHashMap();
