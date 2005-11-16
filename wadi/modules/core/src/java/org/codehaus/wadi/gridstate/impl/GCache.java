@@ -338,7 +338,11 @@ public class GCache implements Cache, DispatcherConfig, StateManagerConfig, Part
 	}
 
 	public PartitionConfig getPartitionConfig() {
-		return (PartitionConfig)_stateManager;
+		return (PartitionConfig)_partitionManager;
+	}
+
+	public PartitionManager getPartitionManager() {
+		return _partitionManager;
 	}
 
 	public StateManager getStateManager() {

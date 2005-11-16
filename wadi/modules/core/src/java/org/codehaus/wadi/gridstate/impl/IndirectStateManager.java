@@ -27,9 +27,6 @@ import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.PartitionConfig;
-import org.codehaus.wadi.gridstate.PartitionInterface;
-import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.StateManager;
 import org.codehaus.wadi.gridstate.StateManagerConfig;
 import org.codehaus.wadi.gridstate.messages.MoveIMToSM;
@@ -45,24 +42,22 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 // TODO - needs tidying up..
 
-public class IndirectStateManager implements StateManager, PartitionConfig { // Should be PartitionManagerConfig
+public class IndirectStateManager implements StateManager {
 
 	protected final Log _log = LogFactory.getLog(getClass());
 
 	protected final String _clusterName = "ORG.CODEHAUS.WADI.TEST";
-	protected final String _nodeName;
 	protected final long _timeout;
+	protected final Dispatcher _dispatcher; // should be final
+	protected final String _nodeName;
 
-	protected Dispatcher _dispatcher; // should be final
 	protected StateManagerConfig _config;
 
 
-	public IndirectStateManager(String nodeName, PartitionManager partitionManager, Dispatcher dispatcher, long timeout) throws Exception {
-    	_nodeName=nodeName;
-    	_timeout=timeout;
+	public IndirectStateManager(Dispatcher dispatcher, long timeout) throws Exception {
     	_dispatcher=dispatcher;
-
-		_dispatcher=dispatcher;
+    	_timeout=timeout;
+    	_nodeName=_dispatcher.getNodeName();
 
 		// Get - 5 messages - IM->PM->SM->IM->SM->PM
 		_dispatcher.register(this, "onMessage", ReadIMToPM.class);
@@ -82,10 +77,6 @@ public class IndirectStateManager implements StateManager, PartitionConfig { // 
 		_config=config;
 	}
 
-	public PartitionInterface createRemotePartition() {
-		return new RemotePartition(_dispatcher.getLocalDestination());
-	}
-
 	public void start() throws Exception {
 		Map state=new HashMap();
 		state.put("nodeName", _nodeName);
@@ -95,14 +86,6 @@ public class IndirectStateManager implements StateManager, PartitionConfig { // 
 
 	public void stop() throws Exception {
 		_dispatcher.stop();
-	}
-
-	public Destination getLocalDestination() {
-		return _dispatcher.getLocalDestination();
-	}
-
-	public Dispatcher getDispatcher() {
-		return _dispatcher;
 	}
 
 	//--------------------------------------------------------------------------------

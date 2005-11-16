@@ -38,7 +38,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
-import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.impl.AbstractDispatcher;
 
 /**
@@ -58,8 +57,8 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 	
     protected final String _clusterUri;
     
-	public ActiveClusterDispatcher(String nodeName, String clusterName, PartitionManager partitionManager, String clusterUri, long inactiveTime) {
-		super(nodeName, clusterName, partitionManager, inactiveTime);
+	public ActiveClusterDispatcher(String nodeName, String clusterName, String clusterUri, long inactiveTime) {
+		super(nodeName, clusterName, inactiveTime);
 		_clusterUri=clusterUri;
 		_log=LogFactory.getLog(getClass()+"#"+_nodeName);
 	}

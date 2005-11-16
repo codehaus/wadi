@@ -123,14 +123,14 @@ public class TestCluster extends TestCase {
             _bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, store);
             _clusterName=clusterName;
             _nodeName=nodeName;
-            _dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, new DummyPartitionManager(24), _clusterUri, 5000L);
+            _dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
             InetSocketAddress isa=new InetSocketAddress("localhost", 8080);
             HttpProxy proxy=new StandardHttpProxy("jsessionid");
             //_relocater=new SwitchableRelocationStrategy();
             _relocater=new DummyRelocater();
             _middle=new ClusterContextualiser(_bottom, _collapser, _relocater);
             _top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
-            _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), isa, proxy, _dispatcher);
+            _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), isa, proxy, _dispatcher, new DummyPartitionManager(24));
         }
         
         protected boolean _running;

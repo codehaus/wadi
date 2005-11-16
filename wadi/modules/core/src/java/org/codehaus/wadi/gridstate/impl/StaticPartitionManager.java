@@ -21,42 +21,25 @@ import javax.jms.Destination;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.PartitionConfig;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionManagerConfig;
 import org.codehaus.wadi.gridstate.PartitionMapper;
 
 public class StaticPartitionManager implements PartitionManager {
 
+	protected final Dispatcher _dispatcher;
 	protected final Partition[] _partitions;
 	protected final PartitionMapper _mapper;
 
-	public StaticPartitionManager(int numPartitions, PartitionMapper mapper) {
+	public StaticPartitionManager(Dispatcher dispatcher, int numPartitions, PartitionMapper mapper) {
+		_dispatcher=dispatcher;
 		_partitions=new Partition[numPartitions];
 		_mapper=mapper;
 	}
 
-	class StaticPartitionConfig implements PartitionConfig {
-
-		protected final Destination _localDestination;
-		
-		StaticPartitionConfig(Destination localDestination) {
-			_localDestination=localDestination;
-		}
-		
-		public Destination getLocalDestination() {
-			return _localDestination;
-		}
-
-		public Dispatcher getDispatcher() {
-			return null;
-		}
-		
-	}
-	
 	public void init(PartitionManagerConfig config) {
 		for (int i=0; i<_partitions.length; i++) {
-			_partitions[i].init(new StaticPartitionConfig(config.getLocalDestination()));
+			_partitions[i].init(this);
 		}
 	}
 
@@ -88,7 +71,7 @@ public class StaticPartitionManager implements PartitionManager {
     			GCache cache=caches[j];
     			if (cache!=master) {
     				// if node is not PartitionMaster - make partition remote, pointing to PartitionMaster
-    				Partition partition=new Partition(master.getStateManager().createRemotePartition());
+    				Partition partition=new Partition(new RemotePartition(master.getLocalDestination()));
     				partition.init(cache.getPartitionConfig());
     				cache.getPartitions()[i]=partition;
     			} else {
@@ -111,4 +94,12 @@ public class StaticPartitionManager implements PartitionManager {
 		// empty
 	}
 
+	public Dispatcher getDispatcher() {
+		return _dispatcher;
+	}
+	
+	public Destination getLocalDestination() {
+		return _dispatcher.getLocalDestination();
+	}
+	
 }

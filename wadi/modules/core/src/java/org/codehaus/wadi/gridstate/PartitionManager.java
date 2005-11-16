@@ -18,7 +18,7 @@ package org.codehaus.wadi.gridstate;
 
 import org.codehaus.wadi.gridstate.impl.Partition;
 
-public interface PartitionManager {
+public interface PartitionManager extends PartitionConfig {
 
 	void init(PartitionManagerConfig config);
 	void start() throws Exception;

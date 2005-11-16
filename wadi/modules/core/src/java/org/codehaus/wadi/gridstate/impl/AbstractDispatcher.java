@@ -32,7 +32,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
-import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
@@ -53,15 +52,13 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 	
     protected final String _nodeName;
     protected final String _clusterName;
-    protected final PartitionManager _partitionManager;
     protected final long _inactiveTime;
 	protected final Map _map;
 	protected final PooledExecutor _executor;
 	
-	public AbstractDispatcher(String nodeName, String clusterName, PartitionManager partitionManager, long inactiveTime) {
+	public AbstractDispatcher(String nodeName, String clusterName, long inactiveTime) {
 		_nodeName=nodeName;
 		_clusterName=clusterName;
-		_partitionManager=partitionManager;
 		_inactiveTime=inactiveTime;
 		_map=new HashMap();
 		_executor=new PooledExecutor(); // parameterise
@@ -629,10 +626,6 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 		return _nodeName;
 	}
 	
-	public PartitionManager getPartitionManager() {
-		return _partitionManager;
-	}
-
 	public long getInactiveTime() {
 		return _inactiveTime;
 	}
