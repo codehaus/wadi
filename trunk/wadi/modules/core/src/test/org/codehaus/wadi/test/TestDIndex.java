@@ -18,7 +18,9 @@ package org.codehaus.wadi.test;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
+import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 
 import junit.framework.TestCase;
 
@@ -84,9 +86,9 @@ public class TestDIndex extends TestCase {
 
         DIndexNode red=new DIndexNode("red", _numIndexPartitions);
         DIndexNode green=new DIndexNode("green", _numIndexPartitions);
-        DIndexNode blue=new DIndexNode("blue", _numIndexPartitions);
-        DIndexNode yellow=new DIndexNode("yellow", _numIndexPartitions);
-        DIndexNode pink=new DIndexNode("pink", _numIndexPartitions);
+//        DIndexNode blue=new DIndexNode("blue", _numIndexPartitions);
+//        DIndexNode yellow=new DIndexNode("yellow", _numIndexPartitions);
+//        DIndexNode pink=new DIndexNode("pink", _numIndexPartitions);
 
         if ( _log.isInfoEnabled() ) {
 
@@ -105,68 +107,68 @@ public class TestDIndex extends TestCase {
 
             _log.info("2 nodes running");
         }
-        blue.start();
-        red.getCluster().waitForClusterToComplete(3, 6000);
-        green.getCluster().waitForClusterToComplete(3, 6000);
-        blue.getCluster().waitForClusterToComplete(3, 6000);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("3 nodes running");
-        }
-        yellow.start();
-        red.getCluster().waitForClusterToComplete(4, 6000);
-        green.getCluster().waitForClusterToComplete(4, 6000);
-        blue.getCluster().waitForClusterToComplete(4, 6000);
-        yellow.getCluster().waitForClusterToComplete(4, 6000);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("4 nodes running");
-        }
-        pink.start();
-        red.getCluster().waitForClusterToComplete(5, 6000);
-        green.getCluster().waitForClusterToComplete(5, 6000);
-        blue.getCluster().waitForClusterToComplete(5, 6000);
-        yellow.getCluster().waitForClusterToComplete(5, 6000);
-        pink.getCluster().waitForClusterToComplete(5, 6000);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("5 nodes running");
-        }
-
-//        SessionIdFactory factory=new TomcatSessionIdFactory();
+//        blue.start();
+//        red.getCluster().waitForClusterToComplete(3, 6000);
+//        green.getCluster().waitForClusterToComplete(3, 6000);
+//        blue.getCluster().waitForClusterToComplete(3, 6000);
+//        if ( _log.isInfoEnabled() ) {
 //
-//        for (int i=0; i<10; i++) {
-//            String name=factory.create();
-//            red.getDIndex().put(name, name, green.getDestination());
-//            green.getDIndex().remove(name, red.getDestination());
-//            //blue.getDIndex().put(name, name);
-//            //yellow.getDIndex().remove(name);
+//            _log.info("3 nodes running");
+//        }
+//        yellow.start();
+//        red.getCluster().waitForClusterToComplete(4, 6000);
+//        green.getCluster().waitForClusterToComplete(4, 6000);
+//        blue.getCluster().waitForClusterToComplete(4, 6000);
+//        yellow.getCluster().waitForClusterToComplete(4, 6000);
+//        if ( _log.isInfoEnabled() ) {
+//
+//            _log.info("4 nodes running");
+//        }
+//        pink.start();
+//        red.getCluster().waitForClusterToComplete(5, 6000);
+//        green.getCluster().waitForClusterToComplete(5, 6000);
+//        blue.getCluster().waitForClusterToComplete(5, 6000);
+//        yellow.getCluster().waitForClusterToComplete(5, 6000);
+//        pink.getCluster().waitForClusterToComplete(5, 6000);
+//        if ( _log.isInfoEnabled() ) {
+//
+//            _log.info("5 nodes running");
 //        }
 
-        if ( _log.isInfoEnabled() ) {
+        SessionIdFactory factory=new TomcatSessionIdFactory();
 
-            _log.info("5 nodes running");
+        for (int i=0; i<10; i++) {
+            String name=factory.create();
+            red.getDIndex().insert(name);
+            green.getDIndex().remove(name);
+            //blue.getDIndex().put(name, name);
+            //yellow.getDIndex().remove(name);
         }
-        pink.stop();
-        yellow.getCluster().waitForClusterToComplete(4, 6000);
-        blue.getCluster().waitForClusterToComplete(4, 6000);
-        green.getCluster().waitForClusterToComplete(4, 6000);
-        red.getCluster().waitForClusterToComplete(4, 6000);
-        if ( _log.isInfoEnabled() ) {
 
-            _log.info("4 nodes running");
-        }
-        yellow.stop();
-        blue.getCluster().waitForClusterToComplete(3, 6000);
-        green.getCluster().waitForClusterToComplete(3, 6000);
-        red.getCluster().waitForClusterToComplete(3, 6000);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("3 nodes running");
-        }
-        blue.stop();
-        green.getCluster().waitForClusterToComplete(2, 6000);
-        red.getCluster().waitForClusterToComplete(2, 6000);
+//        if ( _log.isInfoEnabled() ) {
+//
+//            _log.info("5 nodes running");
+//        }
+//        pink.stop();
+//        yellow.getCluster().waitForClusterToComplete(4, 6000);
+//        blue.getCluster().waitForClusterToComplete(4, 6000);
+//        green.getCluster().waitForClusterToComplete(4, 6000);
+//        red.getCluster().waitForClusterToComplete(4, 6000);
+//        if ( _log.isInfoEnabled() ) {
+//
+//            _log.info("4 nodes running");
+//        }
+//        yellow.stop();
+//        blue.getCluster().waitForClusterToComplete(3, 6000);
+//        green.getCluster().waitForClusterToComplete(3, 6000);
+//        red.getCluster().waitForClusterToComplete(3, 6000);
+//        if ( _log.isInfoEnabled() ) {
+//
+//            _log.info("3 nodes running");
+//        }
+//        blue.stop();
+//        green.getCluster().waitForClusterToComplete(2, 6000);
+//        red.getCluster().waitForClusterToComplete(2, 6000);
         if ( _log.isInfoEnabled() ) {
 
             _log.info("2 nodes running");
