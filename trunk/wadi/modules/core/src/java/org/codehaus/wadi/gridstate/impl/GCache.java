@@ -101,7 +101,10 @@ public class GCache implements Cache, DispatcherConfig, StateManagerConfig, Part
 		if (oldSync==null) {
 			locks.put(key, newSync);
 		} else {
-			_log.warn("NYI...");
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("NYI...");
+            }
 		}
 	}
 

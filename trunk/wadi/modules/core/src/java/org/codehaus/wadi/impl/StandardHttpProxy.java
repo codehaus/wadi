@@ -217,7 +217,10 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		  try {
 		    toServer.close(); // IOException
 		  } catch (IOException e) {
-		    _log.warn("problem closing server request stream", e);
+              if ( _log.isWarnEnabled() ) {
+
+                  _log.warn("problem closing server request stream", e);
+              }
 		  }
 		}
 	      }
@@ -322,7 +325,10 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		  fromServer.close();
 		} catch (IOException e) {
 		  // well - we did our best...
-		  _log.warn("problem closing server response stream", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem closing server response stream", e);
+            }
 		}
 	      }
 	    }

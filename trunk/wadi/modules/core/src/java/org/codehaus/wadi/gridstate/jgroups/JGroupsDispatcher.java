@@ -192,8 +192,11 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
     	// clusters try to reconcile their separate states into one -
     	// I have a plan...
     	if(newView instanceof MergeView)
-    		_log.warn("NYI - merging: view is " + newView);
-    	
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("NYI - merging: view is " + newView);
+            }
+
     	synchronized (_viewLock) {
     		Vector oldMembers=_members;
     		Vector newMembers=newView.getMembers();
@@ -224,7 +227,10 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 
     public void suspect(Address suspected_mbr) {
     	if (_log.isTraceEnabled()) _log.trace("handling suspect("+suspected_mbr+")...");
-    	_log.warn("cluster suspects member may have been lost: "+suspected_mbr);
+        if ( _log.isWarnEnabled() ) {
+
+            _log.warn("cluster suspects member may have been lost: " + suspected_mbr);
+        }
         if ( _log.isTraceEnabled() ) {
 
             _log.trace("...suspect() handled");

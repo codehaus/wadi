@@ -139,7 +139,10 @@ public class GiannisContextualiser extends AbstractExclusiveContextualiser {
             		try {
             		connection.close();
             		} catch (SQLException e) {
-            			_log.warn("unexpected problem closing connection", e);
+                        if ( _log.isWarnEnabled() ) {
+
+                            _log.warn("unexpected problem closing connection", e);
+                        }
             		}
             	}
             }

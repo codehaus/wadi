@@ -101,13 +101,19 @@ public class TestLocation extends TestCase {
 			try {
 				_mutex.acquire();
 			} catch (InterruptedException ie) {
-				_log.warn("interruption", ie);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("interruption", ie);
+                }
 			}
 
 			try {
 			_location.proxy(null, null);
 			} catch (Exception e) {
-				_log.warn("proxy problem", e);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("proxy problem", e);
+                }
 			} finally {
 			  _mutex.release();
 			}

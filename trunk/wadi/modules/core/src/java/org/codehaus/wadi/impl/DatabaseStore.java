@@ -54,7 +54,10 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 			try {
 				init();
 			} catch (SQLException e) {
-				_log.warn("unexpected exception", e);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("unexpected exception", e);
+                }
 			}
 		}
 	}
@@ -88,7 +91,10 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 			s.execute("CREATE TABLE "+_table+"(Name varchar(50), CreationTime long, LastAccessedTime long, MaxInactiveInterval int, Body varbinary("+700*1024+"))");
 		} catch (SQLException e) {
 			// ignore - table may already exist...
-			_log.warn(e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn(e);
+            }
 		}
 		s.close();
 		c.close();
@@ -101,7 +107,10 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 			s.execute("DROP TABLE "+_table);
 		} catch (SQLException e) {
 			// ignore - table may have already been deleted...
-			_log.warn(e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn(e);
+            }
 		}
 //		s.execute("SHUTDOWN");
 		s.close();
@@ -123,13 +132,19 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 				if (s!=null)
 					s.close();
 			} catch (SQLException e) {
-				_log.warn("problem closing database statement", e);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("problem closing database statement", e);
+                }
 			}
 			try {
 				if (connection!=null)
 					connection.close();
 			} catch (SQLException e) {
-				_log.warn("problem closing database connection", e);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("problem closing database connection", e);
+                }
 			}
 		}
 	}
@@ -171,7 +186,10 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
                 _log.info("loaded sessions: " + count);
             }
 		} catch (SQLException e) {
-			_log.warn("list (shared database) failed", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("list (shared database) failed", e);
+            }
 		} finally {
 			if (s!=null)
 				try {
@@ -186,7 +204,10 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 				s=connection.createStatement();
 				s.executeUpdate("DELETE FROM "+_table);
 			} catch (SQLException e) {
-				_log.warn("removal (shared database) failed", e);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("removal (shared database) failed", e);
+                }
 			} finally {
 				if (s!=null)
 					try {
@@ -329,7 +350,10 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 				if (s!=null)
 					s.close();
 			} catch (SQLException e) {
-				_log.warn("problem closing database connection", e);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("problem closing database connection", e);
+                }
 			}
 		}
 	}

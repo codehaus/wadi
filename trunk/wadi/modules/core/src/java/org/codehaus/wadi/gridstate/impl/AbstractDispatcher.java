@@ -382,7 +382,10 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 		for (int i=0; response==null && i<iterations; i++) {
 			response=exchangeSend(from, to, body, timeout);
 			if (response==null)
-				_log.warn("null response - retrying: "+(i+1)+"/"+iterations);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("null response - retrying: " + ( i + 1 ) + "/" + iterations);
+                }
 		}
 		return response;
 	}
@@ -422,10 +425,16 @@ public abstract class AbstractDispatcher implements Dispatcher, PartitionManager
 					}
 				} while (Thread.interrupted());
 			} else {
-				_log.warn("spurious message received: "+message);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("spurious message received: " + message);
+                }
 			}
 		} catch (Exception e) {
-			_log.warn("bad message", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("bad message", e);
+            }
 		}
 	}
 	

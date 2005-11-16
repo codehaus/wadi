@@ -135,7 +135,10 @@ public class ProxyingRelocater extends AbstractRelocater implements RequestReloc
 		if (_log.isTraceEnabled()) _log.trace("receiving location request: "+id);
         Contextualiser top=_config.getContextualiser();
 		if (top==null) {
-			_log.warn("no Contextualiser set - cannot respond to LocationRequests");
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("no Contextualiser set - cannot respond to LocationRequests");
+            }
 		} else {
 			try {
 				Destination replyTo=message.getJMSReplyTo();

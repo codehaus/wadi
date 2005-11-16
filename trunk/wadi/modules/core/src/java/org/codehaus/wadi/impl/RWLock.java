@@ -74,7 +74,10 @@ public class RWLock implements ReadWriteLock {
   public static int getPriority() {
       int tmp=((Integer)_priority.get()).intValue();
       if (0==tmp && _log.isWarnEnabled())
-          _log.warn("no thread priority specified", new Exception());
+          if ( _log.isWarnEnabled() ) {
+
+              _log.warn("no thread priority specified", new Exception());
+          }
       return tmp;
   }
 

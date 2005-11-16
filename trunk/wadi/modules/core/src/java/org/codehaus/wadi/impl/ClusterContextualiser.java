@@ -440,7 +440,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 //                  } catch (IllegalStateException e) {
 //                  _log.debug("evacuation finished before we could join: "+nodeName);
                 } catch (JMSException e) {
-                    _log.warn("unexpected problem", e);
+                    if ( _log.isWarnEnabled() ) {
+
+                        _log.warn("unexpected problem", e);
+                    }
                 }
             }
         }
@@ -454,7 +457,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
                 try {
                     _dispatcher.removeDestination(consumer);
                 } catch (JMSException e) {
-                    _log.warn("could not leave evacuation", e);
+                    if ( _log.isWarnEnabled() ) {
+
+                        _log.warn("could not leave evacuation", e);
+                    }
                 }
                 _evacuations.remove(nodeName);
             }

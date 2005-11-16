@@ -102,14 +102,23 @@ public class
       }
       catch (JMSException e)
       {
-	log.warn("unexpected problem", e);
+          if ( log.isWarnEnabled() ) {
+
+              log.warn("unexpected problem", e);
+          }
 	Exception c = e.getLinkedException();
 	if (c != null)
-	  log.warn("unexpected problem", c);
+        if ( log.isWarnEnabled() ) {
+
+            log.warn("unexpected problem", c);
+        }
       }
       catch (Throwable e)
       {
-	log.warn("unexpected problem", e);
+          if ( log.isWarnEnabled() ) {
+
+              log.warn("unexpected problem", e);
+          }
       }
     }
   }

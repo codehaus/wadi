@@ -254,7 +254,10 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		}
 		catch (IOException e)	// TODO
 		{
-			_log.warn("problem proxying connection:",e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem proxying connection:", e);
+            }
 		}
 
 		InputStream fromServer = null;
@@ -271,7 +274,10 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		try {
 			fromServer=hm.getResponseBodyAsStream(); // IOException
 		} catch (IOException e) {
-			_log.warn("problem acquiring http client output", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem acquiring http client output", e);
+            }
 		}
 
 
@@ -303,13 +309,19 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 				OutputStream toClient=hres.getOutputStream();// IOException
 				server2ClientTotal+=copy(fromServer, toClient, 8192);// IOException
 			} catch (IOException e) {
-				_log.warn("problem proxying server response back to client", e);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("problem proxying server response back to client", e);
+                }
 			} finally {
 				try {
 					fromServer.close();
 				} catch (IOException e) {
 					// well - we did our best...
-					_log.warn("problem closing server response stream", e);
+                    if ( _log.isWarnEnabled() ) {
+
+                        _log.warn("problem closing server response stream", e);
+                    }
 				}
 			}
 		}

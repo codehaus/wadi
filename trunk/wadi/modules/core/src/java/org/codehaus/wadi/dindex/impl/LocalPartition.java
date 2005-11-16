@@ -173,7 +173,10 @@ public class LocalPartition extends AbstractPartition implements Serializable {
                 assert _config!=null;
                 _config.getDispatcher().reply(message, new RelocationResponse(name));
             } else {
-                _log.warn("unexpected nested request structure - ignoring: "+r);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("unexpected nested request structure - ignoring: " + r);
+                }
             }
         } else { // session succesfully located...
         	assert ll!=null;
@@ -201,7 +204,10 @@ public class LocalPartition extends AbstractPartition implements Serializable {
                 _log.info("directing: " + request + " -> " + _config.getNodeName(ll._location));
             }
         	if (!_config.getDispatcher().forward(message, ll._location, request.getRequest()))
-        		_log.warn("could not forward message");
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("could not forward message");
+                }
         }
     }
 

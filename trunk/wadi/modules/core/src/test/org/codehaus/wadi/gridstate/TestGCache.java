@@ -103,7 +103,10 @@ public class TestGCache extends TestCase {
     			}
     			long elapsed=System.currentTimeMillis()-start;
     			int numFetches=_numIters*_numNodes;
-    			_log.warn("rate: "+numFetches+" in "+elapsed+" millis = "+(elapsed/numFetches)+" millis/fetch");
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("rate: " + numFetches + " in " + elapsed + " millis = " + ( elapsed / numFetches ) + " millis/fetch");
+                }
     		}
     	}
     }
@@ -282,7 +285,10 @@ public class TestGCache extends TestCase {
 
         Thread.sleep(12000);
         //_nodes[_numNodes-1].getCluster().waitForClusterToComplete(_numNodes, 6000);
-        _log.warn(_numNodes+" nodes running");
+        if ( _log.isWarnEnabled() ) {
+
+            _log.warn(_numNodes + " nodes running");
+        }
 
         if ( _log.isInfoEnabled() ) {
 
@@ -301,7 +307,10 @@ public class TestGCache extends TestCase {
             for (int j=0; j<_numThreads; j++)
             	thread[j].join();
         }
-        _log.warn("finished");
+        if ( _log.isWarnEnabled() ) {
+
+            _log.warn("finished");
+        }
 
         Thread.sleep(6000);
         if ( _log.isInfoEnabled() ) {
@@ -344,7 +353,10 @@ public class TestGCache extends TestCase {
     		}
     		long elapsed=System.currentTimeMillis()-start;
     		int numOperations=_numIters*_numNodes*_keys.length*2;
-    		_log.warn("rate: "+numOperations+" in "+elapsed+" millis = "+(elapsed/numOperations)+" millis/operation");
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("rate: " + numOperations + " in " + elapsed + " millis = " + ( elapsed / numOperations ) + " millis/operation");
+            }
     	}
     }
 
@@ -361,7 +373,10 @@ public class TestGCache extends TestCase {
 
         Thread.sleep(12000);
         //_nodes[_numNodes-1].getCluster().waitForClusterToComplete(_numNodes, 6000);
-        _log.warn(_numNodes+" nodes running");
+        if ( _log.isWarnEnabled() ) {
+
+            _log.warn(_numNodes + " nodes running");
+        }
 
         if ( _log.isInfoEnabled() ) {
 
@@ -382,7 +397,10 @@ public class TestGCache extends TestCase {
     		(thread[j]=new Thread(new Soaker(keys), "SoakThread-"+j)).start();
         for (int j=0; j<_numThreads; j++)
         	thread[j].join();
-        _log.warn("finished");
+        if ( _log.isWarnEnabled() ) {
+
+            _log.warn("finished");
+        }
 
         Thread.sleep(6000);
         if ( _log.isInfoEnabled() ) {

@@ -122,7 +122,10 @@ public class TomcatSessionIdFactory
     
     public void setSessionIdLength(int l) {
         if (l!=getSessionIdLength())
-            _log.warn("session id length is not a writeable attribute - ignoring new setting: "+l);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("session id length is not a writeable attribute - ignoring new setting: " + l);
+            }
     }
 
 //   // we should be able to better than this - can't we work out the

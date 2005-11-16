@@ -157,7 +157,10 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
         if (_log.isTraceEnabled()) _log.trace("receiving immigration request: "+id);
         Contextualiser top=_config.getContextualiser();
         if (top==null) {
-            _log.warn("no Contextualiser set - cannot respond to ImmigrationRequests");
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("no Contextualiser set - cannot respond to ImmigrationRequests");
+            }
         } else {
             Sync motionLock=_config.getCollapser().getLock(id);
             boolean acquired=false;
@@ -220,7 +223,10 @@ public class MigratingRelocater extends AbstractRelocater implements SessionRelo
 		    try {
 		        immotable.copy(emotable);
 		    } catch (Exception e) {
-		        _log.warn("unexpected problem", e);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn("unexpected problem", e);
+                }
 		        return false;
 		    }
             ImmigrationResponse response=new ImmigrationResponse(name, immotable);

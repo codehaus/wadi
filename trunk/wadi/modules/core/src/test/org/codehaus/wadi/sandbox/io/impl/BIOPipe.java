@@ -38,7 +38,10 @@ public class BIOPipe extends AbstractPipe {
         try {
             _socket.setSoTimeout((int)_timeout); // TODO - parameterise
         } catch (SocketException e) {
-            _log.warn("could not set socket timeout", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("could not set socket timeout", e);
+            }
         }
     }
     
@@ -51,8 +54,16 @@ public class BIOPipe extends AbstractPipe {
     
     public void close() throws IOException {
         super.close(); // deals with streams...
-        try{_socket.close();}catch(Exception e){_log.warn("problem closing socket",e);}
+        try{
+            _socket.close();
         }
+        catch(Exception e){
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem closing socket", e);
+            }
+        }
+    }
 
     // StreamConnection
 

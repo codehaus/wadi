@@ -224,12 +224,18 @@ public class
 	}
 	else
 	{
-	  _log.warn("bad message: "+message);
+        if ( _log.isWarnEnabled() ) {
+
+            _log.warn("bad message: " + message);
+        }
 	}
       }
       catch (JMSException e)
       {
-	_log.warn("unexpected problem", e);
+          if ( _log.isWarnEnabled() ) {
+
+              _log.warn("unexpected problem", e);
+          }
       }
     }
   }

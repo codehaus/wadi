@@ -99,7 +99,10 @@ public class HybridRelocater extends AbstractRelocater {
             if (message2==null || (response=(RelocationResponse)message2.getObject())==null)
                 return false;
         } catch (Exception e) {
-            _log.warn("problem arranging relocation", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem arranging relocation", e);
+            }
         }
         
         Motable emotable=response.getMotable();
@@ -143,7 +146,10 @@ public class HybridRelocater extends AbstractRelocater {
         }
         
         // if we are still here - session could not be found
-        _log.warn("session not found: "+sessionName);
+        if ( _log.isWarnEnabled() ) {
+
+            _log.warn("session not found: " + sessionName);
+        }
         return false;
     }
     
@@ -167,7 +173,10 @@ public class HybridRelocater extends AbstractRelocater {
         	try {
         		immotable.copy(emotable);
         	} catch (Exception e) {
-        		_log.warn(e);
+                if ( _log.isWarnEnabled() ) {
+
+                    _log.warn(e);
+                }
         		return false;
         	}
             _config.notifySessionRelocation(name);

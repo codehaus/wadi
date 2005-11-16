@@ -82,10 +82,16 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
             if (_log.isTraceEnabled()) _log.trace("Connection reached end of input - quitting...: "+this);
             _valid=false;
         } catch (IOException e) {
-            _log.warn("problem reading object off wire", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem reading object off wire", e);
+            }
             _valid=false; // this socket is trashed...
         } catch (ClassNotFoundException e) {
-            _log.warn("unknown Peer type - version/security problem?", e);
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("unknown Peer type - version/security problem?", e);
+            }
             _valid=false; // this stream is unfixable ?
         } finally {
             _ois=null;
@@ -126,9 +132,24 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
         //_log.info("closing...");
         InputStream is=getInputStream();
         OutputStream os=getOutputStream();
-        try{os.flush();}catch(IOException e){_log.warn("problem flushing socket output",e);}
-        try{is.close();}catch(IOException e){_log.warn("problem closing socket input",e);}
-        try{os.close();}catch(IOException e){_log.warn("problem closing socket output",e);}
+        try{os.flush();}catch(IOException e){
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem flushing socket output", e);
+            }
+        }
+        try{is.close();}catch(IOException e){
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem closing socket input", e);
+            }
+        }
+        try{os.close();}catch(IOException e){
+            if ( _log.isWarnEnabled() ) {
+
+                _log.warn("problem closing socket output", e);
+            }
+        }
         _config.notifyClosed(this);
         //_log.info("...closed");
     }
