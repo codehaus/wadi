@@ -29,7 +29,6 @@ import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
-import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
@@ -53,7 +52,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 
     public DIndexNode(String nodeName, int numPartitions) {
         _nodeName=nodeName;
-        _dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, new DummyPartitionManager(numPartitions), _clusterUri, 5000L);
+        _dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
         _numPartitions=numPartitions;
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
     }

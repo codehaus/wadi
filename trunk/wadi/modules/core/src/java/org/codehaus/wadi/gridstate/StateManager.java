@@ -30,8 +30,6 @@ public interface StateManager {
 
 	Object remove(Object key, boolean returnOldValue);
 
-	PartitionInterface createRemotePartition();
-
     void start() throws Exception;
 
     void stop() throws Exception;

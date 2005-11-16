@@ -102,12 +102,11 @@ public interface Dispatcher {
 	ObjectMessage createObjectMessage() throws Exception;
 
 	String getNodeName();
-	PartitionManager getPartitionManager();
 	long getInactiveTime();
 	int getNumNodes();
 	
 	// yeugh - AC i/f is creeping in here - temporary...
 	
 	void setClusterListener(ClusterListener listener);
-	
+		
 }

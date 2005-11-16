@@ -352,7 +352,6 @@
     >
     <constructor-arg><value>${node.name}</value></constructor-arg>
     <constructor-arg><value>CLUSTER0</value></constructor-arg>
-    <constructor-arg><ref bean="PartitionManager"/></constructor-arg>
 <!--
     <constructor-arg><value>peer://org.codehaus.wadi</value></constructor-arg>
  -->
@@ -381,6 +380,7 @@
     <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
     <constructor-arg><ref bean="Dispatcher"/></constructor-arg>
+    <constructor-arg><ref bean="PartitionManager"/></constructor-arg>
   </bean>
 
 

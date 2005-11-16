@@ -16,6 +16,9 @@
  */
 package org.codehaus.wadi.gridstate.impl;
 
+import javax.jms.Destination;
+
+import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionManagerConfig;
 
@@ -51,6 +54,16 @@ public class DummyPartitionManager implements PartitionManager {
 
 	public Partition getPartition(Object key) {
 		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	// PartitionConfig
+	
+	public Dispatcher getDispatcher() {
+		return null;
+	}
+
+	public Destination getLocalDestination() {
 		return null;
 	}
 

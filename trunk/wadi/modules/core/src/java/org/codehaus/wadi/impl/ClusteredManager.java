@@ -41,17 +41,20 @@ import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
+import org.codehaus.wadi.gridstate.PartitionManager;
 
 public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, DispatcherConfig, PartitionManagerConfig {
 
     protected final Dispatcher _dispatcher;
+    protected final PartitionManager _partitionManager;
     protected final Map _distributedState;
 
-    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, InetSocketAddress httpAddress, HttpProxy httpProxy, Dispatcher dispatcher) {
+    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, InetSocketAddress httpAddress, HttpProxy httpProxy, Dispatcher dispatcher, PartitionManager partitionManager) {
         super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, errorIfSessionNotAcquired, streamer, accessOnLoad, replicaterFactory);
     	_httpAddress=httpAddress;
     	_httpProxy=httpProxy;
     	_dispatcher=dispatcher;
+    	_partitionManager=partitionManager;
     	_distributedState=new HashMap(); // TODO - make this a SynchronisedMap
     }
 
@@ -68,7 +71,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
         try {
             _dispatcher.init(this);
             String nodeName=_dispatcher.getNodeName();
-            int numPartitions=_dispatcher.getPartitionManager().getNumPartitions();
+            int numPartitions=_partitionManager.getNumPartitions();
             _distributedState.put("name", nodeName);
             _distributedState.put("http", _httpAddress);
             _dindex=new DIndex(nodeName, numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState);

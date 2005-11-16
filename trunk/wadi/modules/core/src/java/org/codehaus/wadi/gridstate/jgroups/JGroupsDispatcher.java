@@ -28,7 +28,6 @@ import org.activecluster.ClusterEvent;
 import org.activecluster.ClusterListener;
 import org.activecluster.Node;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
-import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.impl.AbstractDispatcher;
 import org.jgroups.Address;
 import org.jgroups.Channel;
@@ -58,8 +57,8 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
     protected Vector _members=new Vector();
     protected JGroupsCluster _cluster;
 	
-	public JGroupsDispatcher(String nodeName, String clusterName, PartitionManager partitionManager, long inactiveTime) {
-		super(nodeName, clusterName, partitionManager, inactiveTime);
+	public JGroupsDispatcher(String nodeName, String clusterName, long inactiveTime) {
+		super(nodeName, clusterName, inactiveTime);
 		_clusterState=new HashMap();
 		_clusterDestination=new JGroupsDestination(null); // null Address means 'all nodes'
 		register(this, "onMessage", JGroupsStateUpdate.class);

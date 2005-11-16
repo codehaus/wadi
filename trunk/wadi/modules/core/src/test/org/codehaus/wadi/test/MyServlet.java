@@ -112,7 +112,7 @@ public class MyServlet implements Servlet {
 		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamer(), contextPool, new MyDummyHttpServletRequestWrapperPool());
         _httpProxy=httpProxy;
         _httpAddress=httpAddress;
-        _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _httpAddress, _httpProxy, new ActiveClusterDispatcher(_nodeName, _clusterName,  new DummyPartitionManager(24), _clusterUri, 5000L));
+        _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _httpAddress, _httpProxy, new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L),  new DummyPartitionManager(24));
     }
     
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}

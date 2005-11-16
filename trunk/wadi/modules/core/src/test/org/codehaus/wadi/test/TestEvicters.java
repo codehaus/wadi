@@ -143,8 +143,8 @@ public class TestEvicters extends TestCase {
         InetSocketAddress httpAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8888);
         String nodeName="node0";
         PartitionManager partitionManager=new DummyPartitionManager(24);
-        Dispatcher dispatcher=new ActiveClusterDispatcher(nodeName, _clusterName, partitionManager, _clusterUri, 5000L);
-        ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DummyReplicaterFactory(), httpAddress, httpProxy, dispatcher);
+        Dispatcher dispatcher=new ActiveClusterDispatcher(nodeName, _clusterName, _clusterUri, 5000L);
+        ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DummyReplicaterFactory(), httpAddress, httpProxy, dispatcher, partitionManager);
         manager.setMaxInactiveInterval(2);
         manager.init(new DummyManagerConfig());
         //manager.start();

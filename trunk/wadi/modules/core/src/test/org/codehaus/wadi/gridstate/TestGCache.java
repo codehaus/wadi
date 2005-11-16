@@ -61,9 +61,9 @@ public class TestGCache extends TestCase {
     	long timeout=5000L;
         for (int i=0; i<_numNodes; i++) {
         	String nodeName="node-"+i;
-        	PartitionManager partitionManager=new StaticPartitionManager(_numPartitions, _mapper);
-        	Dispatcher dispatcher=factory.create(nodeName, _clusterName, partitionManager, timeout);
-        	StateManager stateManager=new IndirectStateManager(nodeName, partitionManager, dispatcher, timeout);
+        	Dispatcher dispatcher=factory.create(nodeName, _clusterName, timeout);
+        	PartitionManager partitionManager=new StaticPartitionManager(dispatcher, _numPartitions, _mapper);
+        	StateManager stateManager=new IndirectStateManager(dispatcher, timeout);
         	_partitionManagers[i]=partitionManager;
     		_nodes[i]=new GCache(dispatcher, partitionManager, stateManager);
         }
@@ -109,7 +109,7 @@ public class TestGCache extends TestCase {
     }
 
     interface DispatcherFactory {
-    	Dispatcher create(String nodeName, String clusterName, PartitionManager partitionManager, long timeout) throws Exception;
+    	Dispatcher create(String nodeName, String clusterName, long timeout) throws Exception;
     }
 
 	//protected final String _clusterUri="peer://org.codehaus.wadi";
@@ -119,15 +119,15 @@ public class TestGCache extends TestCase {
 
 	class JGroupsDispatcherFactory implements DispatcherFactory {
 
-    	public Dispatcher create(String nodeName, String clusterName, PartitionManager partitionManager, long timeout) throws Exception {
-    		return new JGroupsDispatcher(nodeName, clusterName, partitionManager, timeout);
+    	public Dispatcher create(String nodeName, String clusterName, long timeout) throws Exception {
+    		return new JGroupsDispatcher(nodeName, clusterName, timeout);
     	}
     }
 
     class ActiveClusterDispatcherFactory implements DispatcherFactory {
 
-    	public Dispatcher create(String nodeName, String clusterName, PartitionManager partitionManager, long timeout) throws Exception {
-    		return new ActiveClusterDispatcher(nodeName, clusterName, partitionManager, _clusterUri, timeout);
+    	public Dispatcher create(String nodeName, String clusterName, long timeout) throws Exception {
+    		return new ActiveClusterDispatcher(nodeName, clusterName, _clusterUri, timeout);
     	}
     }
 
