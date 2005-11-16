@@ -16,10 +16,14 @@
  */
 package org.codehaus.wadi.gridstate.impl;
 
+import javax.jms.Destination;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionConfig;
 import org.codehaus.wadi.gridstate.PartitionManager;
+import org.codehaus.wadi.gridstate.PartitionManagerConfig;
 import org.codehaus.wadi.gridstate.PartitionMapper;
 
 public class StaticPartitionManager implements PartitionManager {
@@ -32,13 +36,27 @@ public class StaticPartitionManager implements PartitionManager {
 		_mapper=mapper;
 	}
 
-	public void init(PartitionConfig config) {
+	class StaticPartitionConfig implements PartitionConfig {
+
+		protected final Destination _localDestination;
+		
+		StaticPartitionConfig(Destination localDestination) {
+			_localDestination=localDestination;
+		}
+		
+		public Destination getLocalDestination() {
+			return _localDestination;
+		}
+
+		public Dispatcher getDispatcher() {
+			return null;
+		}
+		
+	}
+	
+	public void init(PartitionManagerConfig config) {
 		for (int i=0; i<_partitions.length; i++) {
-			if (_partitions[i]==null) {
-			Partition partition=new Partition(new LocalPartition());
-			partition.init(config);
-			_partitions[i]=partition;
-			}
+			_partitions[i].init(new StaticPartitionConfig(config.getLocalDestination()));
 		}
 	}
 
@@ -73,14 +91,24 @@ public class StaticPartitionManager implements PartitionManager {
     				Partition partition=new Partition(master.getStateManager().createRemotePartition());
     				partition.init(cache.getPartitionConfig());
     				cache.getPartitions()[i]=partition;
+    			} else {
+    				Partition partition=new Partition(new LocalPartition());
+    				cache.getPartitions()[i]=partition;
     			}
-    			// else, I guess default partition type is 'local'...
     		}
     	}
 	}
 
 	public Partition getPartition(Object key) {
 		return _partitions[_mapper.map(key)];
+	}
+
+	public void start() throws Exception {
+		// empty
+	}
+
+	public void stop() throws Exception {
+		// empty
 	}
 
 }

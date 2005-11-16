@@ -27,11 +27,16 @@ import javax.cache.CacheEntry;
 import javax.cache.CacheException;
 import javax.cache.CacheListener;
 import javax.cache.CacheStatistics;
+import javax.jms.Destination;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.LockManager;
 import org.codehaus.wadi.gridstate.PartitionConfig;
+import org.codehaus.wadi.gridstate.PartitionManager;
+import org.codehaus.wadi.gridstate.PartitionManagerConfig;
 import org.codehaus.wadi.gridstate.StateManager;
 import org.codehaus.wadi.gridstate.StateManagerConfig;
 
@@ -49,10 +54,12 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author jules
  *
  */
-public class GCache implements Cache, StateManagerConfig {
+public class GCache implements Cache, DispatcherConfig, StateManagerConfig, PartitionManagerConfig {
 
 	protected final Log _log=LogFactory.getLog(getClass().getName());
 
+	protected final Dispatcher _dispatcher;
+	protected final PartitionManager _partitionManager;
 	protected final StateManager _stateManager;
 	protected final Map _map=new HashMap();
 	protected final LockManager _pmSyncs=new StupidLockManager("PM");
@@ -98,8 +105,11 @@ public class GCache implements Cache, StateManagerConfig {
 		}
 	}
 
-	public GCache(StateManager stateManager) {
-		(_stateManager=stateManager).init(this);
+	public GCache(Dispatcher dispatcher, PartitionManager partitionManager, StateManager stateManager) throws Exception {
+		_dispatcher=dispatcher;
+		_dispatcher.init(this);
+		_partitionManager=partitionManager;
+		_stateManager=stateManager;
 	}
 
 	/*
@@ -311,7 +321,7 @@ public class GCache implements Cache, StateManagerConfig {
 	// Proprietary
 
 	public Partition[] getPartitions() {
-		return _stateManager.getPartitions();
+		return _partitionManager.getPartitions();
 	}
 
 	// for testing...
@@ -336,11 +346,36 @@ public class GCache implements Cache, StateManagerConfig {
 	}
 
 	public void start() throws Exception {
+    	_partitionManager.start();
     	_stateManager.start();
     }
 
     public void stop() throws Exception {
     	_stateManager.stop();
+    	_partitionManager.stop();
     }
 
+	public Partition getPartition(Object key) {
+		return _partitionManager.getPartition(key);
+	}
+	
+	// PartitionManagerConfig
+	
+	public Destination getLocalDestination() {
+		return _dispatcher.getLocalDestination();
+	}
+
+	// LifeCycle
+	
+	public void init() throws Exception {
+		_partitionManager.init(this);
+		_stateManager.init(this);
+	}
+
+	// DispatcherConfig API
+	
+	public String getContextPath() {
+		return "/";
+	}
+	
 }

@@ -57,14 +57,22 @@ public class TestGCache extends TestCase {
         super.tearDown();
     }
 
-    protected void setUp(StateManagerFactory factory) throws Exception {
+    protected void setUp(DispatcherFactory factory) throws Exception {
+    	long timeout=5000L;
         for (int i=0; i<_numNodes; i++) {
-        	PartitionManager manager=new StaticPartitionManager(_numPartitions, _mapper);
-        	_partitionManagers[i]=manager;
-    		_nodes[i]=new GCache(factory.createStateManager("node-"+i, manager));
+        	String nodeName="node-"+i;
+        	PartitionManager partitionManager=new StaticPartitionManager(_numPartitions, _mapper);
+        	Dispatcher dispatcher=factory.create(nodeName, _clusterName, partitionManager, timeout);
+        	StateManager stateManager=new IndirectStateManager(nodeName, partitionManager, dispatcher, timeout);
+        	_partitionManagers[i]=partitionManager;
+    		_nodes[i]=new GCache(dispatcher, partitionManager, stateManager);
         }
 
         StaticPartitionManager.partition(_nodes, _partitionManagers, _numPartitions);
+        
+        for (int i=0; i<_nodes.length; i++)
+        	_nodes[i].init();
+
     }
 
     public class Tester implements Runnable {
@@ -100,17 +108,8 @@ public class TestGCache extends TestCase {
     	}
     }
 
-    interface StateManagerFactory {
-    	StateManager createStateManager(String name, PartitionManager partitionManager) throws Exception;
-    }
-
-    abstract class AbstractStateManagerFactory implements StateManagerFactory {
-
-    	protected final long _timeout;
-
-    	public AbstractStateManagerFactory(long timeout) {
-    		_timeout=timeout;
-    	}
+    interface DispatcherFactory {
+    	Dispatcher create(String nodeName, String clusterName, PartitionManager partitionManager, long timeout) throws Exception;
     }
 
 	//protected final String _clusterUri="peer://org.codehaus.wadi";
@@ -118,37 +117,17 @@ public class TestGCache extends TestCase {
 	protected final String _clusterUri="vm://localhost";
 	protected final String _clusterName="WADI";
 
-	class MyDispatcherConfig implements DispatcherConfig {
+	class JGroupsDispatcherFactory implements DispatcherFactory {
 
-		public String getContextPath() {
-			return "/";
-		}
-
-	}
-
-	class JGroupsIndirectStateManagerFactory extends AbstractStateManagerFactory {
-
-    	public JGroupsIndirectStateManagerFactory(long timeout) {
-    		super(timeout);
-    	}
-
-    	public StateManager createStateManager(String nodeName, PartitionManager partitionManager) throws Exception {
-    		Dispatcher dispatcher=new JGroupsDispatcher(nodeName, _clusterName, partitionManager, 5000L);
-    		dispatcher.init(new MyDispatcherConfig());
-    		return new IndirectStateManager(nodeName, partitionManager, dispatcher, _timeout);
+    	public Dispatcher create(String nodeName, String clusterName, PartitionManager partitionManager, long timeout) throws Exception {
+    		return new JGroupsDispatcher(nodeName, clusterName, partitionManager, timeout);
     	}
     }
 
-    class ActiveClusterIndirectStateManagerFactory extends AbstractStateManagerFactory {
+    class ActiveClusterDispatcherFactory implements DispatcherFactory {
 
-    	public ActiveClusterIndirectStateManagerFactory(long timeout) {
-    		super(timeout);
-    	}
-
-    	public StateManager createStateManager(String nodeName, PartitionManager partitionManager) throws Exception {
-    		Dispatcher dispatcher=new ActiveClusterDispatcher(nodeName, _clusterName, partitionManager, _clusterUri, 5000L);
-    		dispatcher.init(new MyDispatcherConfig());
-    		return new IndirectStateManager(nodeName, partitionManager, dispatcher, _timeout);
+    	public Dispatcher create(String nodeName, String clusterName, PartitionManager partitionManager, long timeout) throws Exception {
+    		return new ActiveClusterDispatcher(nodeName, clusterName, partitionManager, _clusterUri, timeout);
     	}
     }
 
@@ -163,11 +142,11 @@ public class TestGCache extends TestCase {
 //    }
 
     public void testSoak() throws Exception {
-    	testSoak(new JGroupsIndirectStateManagerFactory(60*1000));
-    	testSoak(new ActiveClusterIndirectStateManagerFactory(60*1000));
+    	testSoak(new JGroupsDispatcherFactory());
+    	testSoak(new ActiveClusterDispatcherFactory());
     }
 
-    public void testFunctionality(StateManagerFactory factory) throws Exception {
+    public void testFunctionality(DispatcherFactory factory) throws Exception {
 
     	setUp(factory);
 
@@ -290,7 +269,7 @@ public class TestGCache extends TestCase {
         }
     }
 
-    public void testConcurrency(StateManagerFactory factory) throws Exception {
+    public void testConcurrency(DispatcherFactory factory) throws Exception {
 
     	setUp(factory);
 
@@ -369,7 +348,7 @@ public class TestGCache extends TestCase {
     	}
     }
 
-    public void testSoak(StateManagerFactory factory) throws Exception {
+    public void testSoak(DispatcherFactory factory) throws Exception {
 
     	setUp(factory);
 

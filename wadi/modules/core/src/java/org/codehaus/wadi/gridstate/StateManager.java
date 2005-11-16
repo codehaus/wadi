@@ -18,9 +18,6 @@ package org.codehaus.wadi.gridstate;
 
 import javax.jms.Destination;
 
-import org.codehaus.wadi.gridstate.impl.Partition;
-
-
 public interface StateManager {
 
 	void init(StateManagerConfig config);
@@ -32,8 +29,6 @@ public interface StateManager {
 	Object put(Object key, Object value, boolean overwrite, boolean returnOldValue);
 
 	Object remove(Object key, boolean returnOldValue);
-
-	Partition[] getPartitions();
 
 	PartitionInterface createRemotePartition();
 

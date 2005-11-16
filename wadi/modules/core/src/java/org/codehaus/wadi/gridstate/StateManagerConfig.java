@@ -18,11 +18,15 @@ package org.codehaus.wadi.gridstate;
 
 import java.util.Map;
 
+import org.codehaus.wadi.gridstate.impl.Partition;
+
 
 public interface StateManagerConfig {
 
 	public Map getMap();
 	public LockManager getPMSyncs();
 	public LockManager getSMSyncs();
+	
+	public Partition getPartition(Object key);
 
 }
