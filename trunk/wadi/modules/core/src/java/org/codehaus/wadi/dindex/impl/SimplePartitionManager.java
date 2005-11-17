@@ -34,6 +34,14 @@ import org.codehaus.wadi.dindex.Partition;
 import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
+import org.codehaus.wadi.dindex.messages.PartitionEvacuationRequest;
+import org.codehaus.wadi.dindex.messages.PartitionEvacuationResponse;
+import org.codehaus.wadi.dindex.messages.PartitionRepopulateRequest;
+import org.codehaus.wadi.dindex.messages.PartitionRepopulateResponse;
+import org.codehaus.wadi.dindex.messages.PartitionTransferAcknowledgement;
+import org.codehaus.wadi.dindex.messages.PartitionTransferCommand;
+import org.codehaus.wadi.dindex.messages.PartitionTransferRequest;
+import org.codehaus.wadi.dindex.messages.PartitionTransferResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
@@ -538,5 +546,9 @@ public class SimplePartitionManager implements PartitionManager {
 //	        }
 //	    }
 //	}
+	
+	public int getNumPartitions() {
+		return _numPartitions;
+	}
 
 }

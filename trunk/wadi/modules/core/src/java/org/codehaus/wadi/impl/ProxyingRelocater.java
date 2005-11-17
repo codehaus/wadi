@@ -39,6 +39,8 @@ import org.codehaus.wadi.ProxyingException;
 import org.codehaus.wadi.RecoverableException;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.RequestRelocater;
+import org.codehaus.wadi.dindex.messages.LocationRequest;
+import org.codehaus.wadi.dindex.messages.LocationResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;

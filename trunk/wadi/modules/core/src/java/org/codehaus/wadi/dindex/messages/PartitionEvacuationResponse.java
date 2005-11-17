@@ -14,33 +14,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
-public class PartitionTransferCommand implements Serializable {
+import org.codehaus.wadi.OldMessage;
 
-    protected PartitionTransfer[] _transfers;
+public class PartitionEvacuationResponse implements OldMessage, Serializable {
 
-    public PartitionTransferCommand(PartitionTransfer[] transfers) {
-        _transfers=transfers;
-    }
-
-    protected PartitionTransferCommand() {
-        // for deserialisation...
-    }
-
-    public PartitionTransfer[] getTransfers() {
-        return _transfers;
+    public PartitionEvacuationResponse() {
+        super();
+        // TODO Auto-generated constructor stub
     }
 
 
     public String toString() {
-    	StringBuffer buffer=new StringBuffer("<PartitionTransferCommand: ");
-    	for (int i=0; i<_transfers.length; i++)
-    		buffer.append((i==0?"":",")+_transfers[i]);
-    	buffer.append(">");
-        return buffer.toString();
+        return "<PartitionEvacuationResponse>";
     }
-
 }

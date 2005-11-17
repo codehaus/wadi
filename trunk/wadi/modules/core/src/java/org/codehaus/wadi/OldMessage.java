@@ -14,29 +14,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.impl;
+package org.codehaus.wadi;
 
-import java.io.Serializable;
+public interface OldMessage {
 
-public class PartitionRepopulateRequest implements Serializable {
-
-    protected int[] _keys;
-
-    public PartitionRepopulateRequest(int[] keys) {
-        super();
-        _keys=keys;
-    }
-
-    protected PartitionRepopulateRequest() {
-        // for deserialisation...
-    }
-
-    int[] getKeys() {
-        return _keys;
-    }
-
-
-    public String toString() {
-        return "<PartitionRepopulateRequest"+_keys+">";
-    }
 }

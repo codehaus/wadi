@@ -50,6 +50,8 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
+import org.codehaus.wadi.dindex.messages.EmigrationRequest;
+import org.codehaus.wadi.dindex.messages.EmigrationResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;

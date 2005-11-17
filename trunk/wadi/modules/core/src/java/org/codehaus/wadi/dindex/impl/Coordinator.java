@@ -28,6 +28,8 @@ import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
+import org.codehaus.wadi.dindex.messages.PartitionEvacuationResponse;
+import org.codehaus.wadi.dindex.messages.PartitionTransferCommand;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.impl.Quipu;
 

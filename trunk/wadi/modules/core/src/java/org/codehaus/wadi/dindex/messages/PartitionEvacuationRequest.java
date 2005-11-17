@@ -14,11 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
-public class PartitionEvacuationRequest implements Serializable {
+import org.codehaus.wadi.OldMessage;
+
+public class PartitionEvacuationRequest implements OldMessage, Serializable {
 
     public PartitionEvacuationRequest() {
         super();

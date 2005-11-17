@@ -35,6 +35,9 @@ import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RelocaterConfig;
+import org.codehaus.wadi.dindex.messages.RelocationAcknowledgement;
+import org.codehaus.wadi.dindex.messages.RelocationRequest;
+import org.codehaus.wadi.dindex.messages.RelocationResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;

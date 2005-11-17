@@ -14,11 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
-public class PartitionTransferRequest implements Serializable {
+import org.codehaus.wadi.OldMessage;
+import org.codehaus.wadi.dindex.impl.LocalPartition;
+
+public class PartitionTransferRequest implements OldMessage, Serializable {
 
 	protected long _timeStamp;
 	protected LocalPartition[] _partitions;

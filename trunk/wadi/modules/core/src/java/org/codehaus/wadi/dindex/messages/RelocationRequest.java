@@ -14,16 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
+import org.codehaus.wadi.OldMessage;
 import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
 
-public class RelocationRequest extends AbstractDIndexRequest implements Serializable {
+public class RelocationRequest extends AbstractDIndexRequest implements OldMessage, Serializable {
 
-    protected static final boolean _RELOCATE_SESSION_PREFERRED=true;
-    protected static final boolean _RELOCATE_REQUEST_PREFERRED=false;
+    public static final boolean _RELOCATE_SESSION_PREFERRED=true;
+    public static final boolean _RELOCATE_REQUEST_PREFERRED=false;
     
     protected long _timeSent=System.currentTimeMillis();
 

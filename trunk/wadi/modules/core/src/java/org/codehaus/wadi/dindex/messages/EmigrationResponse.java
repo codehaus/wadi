@@ -14,35 +14,44 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
 import org.codehaus.wadi.Location;
+import org.codehaus.wadi.OldMessage;
 
 /**
- * A message used to acknowledge a successful immigration
+ * A query for the location of the session with the enclosed ID - The response
+ * should be a LocationResponse object sent whence this request arrived.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ImmigrationAcknowledgement implements Serializable {
-	protected String _id;
+public class EmigrationResponse implements OldMessage, Serializable {
+	
+	protected String _name;
 	protected Location _location;
-
-	/**
-	 *
-	 */
-	public ImmigrationAcknowledgement(String id, Location location) {
-		super();
-		_id=id;
+	
+	public EmigrationResponse(String name, Location location) {
+		_name=name;
 		_location=location;
 	}
-
-	public ImmigrationAcknowledgement() {
-		// for use when demarshalling...
+	
+	protected EmigrationResponse() {
+		// for deserialisation ...
 	}
-
-	public String getId(){return _id;}
-	public Location getLocation(){return _location;}
+	
+	public String getId() {
+		return _name;
+	}
+	
+	public Location getLocation() {
+		return _location;
+	}
+	
+	public String toString() {
+		return "<EmigrationResponse: "+_name+">";
+	}
+	
 }

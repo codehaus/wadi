@@ -14,34 +14,36 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
+import org.codehaus.wadi.Location;
+import org.codehaus.wadi.OldMessage;
+
 /**
- * A query for the location of the session with the enclosed ID - The response
- * should be a LocationResponse object sent whence this request arrived.
+ * A message used to acknowledge a successful immigration
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class LocationRequest implements Serializable {
+public class ImmigrationAcknowledgement implements OldMessage, Serializable {
 	protected String _id;
-	protected long _handOverPeriod;
+	protected Location _location;
 
 	/**
 	 *
 	 */
-	public LocationRequest(String id, long handOverPeriod) {
+	public ImmigrationAcknowledgement(String id, Location location) {
 		super();
 		_id=id;
-		_handOverPeriod=handOverPeriod;
+		_location=location;
 	}
 
-	public LocationRequest() {
+	public ImmigrationAcknowledgement() {
 		// for use when demarshalling...
 	}
 
 	public String getId(){return _id;}
-	public long getHandOverPeriod(){return _handOverPeriod;}
+	public Location getLocation(){return _location;}
 }
