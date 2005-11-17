@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE project>
+
+<project>
+  <pomVersion>3</pomVersion>
+  <extend>${basedir}/../../project.xml</extend>
+
+  <!-- ===================== -->
+  <!-- Module Identification -->
+  <!-- ===================== -->
+
+  <name>WADI :: JGroups</name>
+  <id>wadi-jgroups</id>
+  <description>WADI/JGroups integration</description>
+  <shortDescription>WADI/JGroups integration</shortDescription>
+
+  <package>org.codehaus.wadi.gridstate.jgroups</package>
+  <packageGroups>
+    <packageGroup>
+      <title>WADI/JGroups integrations</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.gridstate.jgroups</packages>
+    </packageGroup>
+  </packageGroups>
+
+  <!-- ============ -->
+  <!-- Dependencies -->
+  <!-- ============ -->
+
+  <dependencies>
+
+    <!-- compile time -->
+
+    <dependency>
+      <id>commons-logging</id>
+      <version>1.0.4</version>
+      <url>http://jakarta.apache.org/commons/logging/</url>
+      <javadoc>http://jakarta.apache.org/commons/logging/apidocs</javadoc>
+      <properties>
+	<dist.bundle>lib</dist.bundle>
+      </properties>
+    </dependency>
+
+    <dependency>
+      <groupId>jgroups</groupId>
+      <artifactId>jgroups-all</artifactId>
+      <version>2.2.8</version>
+    </dependency>
+
+    <!-- run time -->
+
+  </dependencies>
+
+</project>

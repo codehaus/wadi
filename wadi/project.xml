@@ -40,12 +40,12 @@
       <packages>org.codehaus.wadi:org.codehaus.wadi</packages>
     </packageGroup>
     <packageGroup>
-      <title>WADI Jetty5</title>
-      <packages>org.codehaus.wadi:org.codehaus.wadi.jetty5</packages>
+      <title>WADI JGroups</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.gridstate.jgroups</packages>
     </packageGroup>
     <packageGroup>
-      <title>WADI Jetty6</title>
-      <packages>org.codehaus.wadi:org.codehaus.wadi.jetty6</packages>
+      <title>WADI JBoss4</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.jboss4</packages>
     </packageGroup>
     <packageGroup>
       <title>WADI Tomcat50</title>
@@ -56,8 +56,12 @@
       <packages>org.codehaus.wadi:org.codehaus.wadi.tomcat55</packages>
     </packageGroup>
     <packageGroup>
-      <title>WADI JBoss4</title>
-      <packages>org.codehaus.wadi:org.codehaus.wadi.jboss4</packages>
+      <title>WADI Jetty5</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.jetty5</packages>
+    </packageGroup>
+    <packageGroup>
+      <title>WADI Jetty6</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.jetty6</packages>
     </packageGroup>
   </packageGroups>
 
