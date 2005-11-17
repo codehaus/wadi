@@ -11,17 +11,17 @@ Clustering, load balancing and failover is a necessity for any application serve
 WADI is a clustering, load balancing and failover solution for the web application container tier. It currently supports both Jetty and Tomcat and plans are currently afoot to add full J2EE clustering functionality. WADI will help Geronimo to achieve vertical scalability.
 
 
-Section 0.1 : criteria
+Section 0.1 : Criteria
 ----------------------
-We believe that this project has a continued probability of success at the ASF under the guidance of the Geronimo PMC. WADI already has a code base and a group of committers - only two of which are not already Geronimo committers. The following considerations have gone into this line of thinking:
+We believe that this project has a continued probability of success at the ASF under the guidance of the Geronimo PMC. WADI already has a code base and a group of committers. The following considerations have gone into this line of thinking:
 
 a) Meritocracy: The project will be meritocratic - the usual Apache meritocracy rules would apply.
 
-b) Community: The initial developer community will consist of the current WADI committers as well as the existing Geronimo developer community. As the project is integrated with Geronimo, we expect this community to grow.
+b) Community: The initial developer community will consist of the current WADI committers as well as the existing Geronimo developer community. The need for a full service clustering and caching component in the open source is tremendous as its use can be applied in many areas, thus providing the potential for an incredibly large community.  In addition, as the project is integrated with Geronimo, we expect this community to grow immensely.
 
-c) Core Developers: WADI was founded by Jules Gosnell in 200?.
+c) Core Developers: WADI was founded by Jules Gosnell in 2004, it now has a strong base of developers from Geronimo, Castor, OpenEJB, Mojo, Jetty, ActiveCluster, ActiveMQ, and ServiceMix.  
 
-d) Alignment: The alignment of WADI with Geronimo is only one offering. WADI will also align nicely with Tomcat and possibly other projects at the ASF.
+d) Alignment: The alignment of WADI with Geronimo is only one offering. WADI will also align nicely with Tomcat and very likely other projects at the ASF.  The need for WADI should allow for powerful alignment in nearly any server based offering in Apache that required high availability.
 
 e) License: WADI already utilizes the Apache License 2.0.
 
@@ -31,15 +31,15 @@ Section 0.2 :  Warning Signs
 
 a) Orphaned Software: WADI contains no software that was abandoned and the developers on the project have no intentions of leaving the project behind at the ASF.
 
-b) Experience With Open Source:
+b) Experience With Open Source: Most of the comitters have a proven track record in open source at Apache and Codehaus.
 
-c) Homogenous Developers:
+c) Homogenous Developers: There are developers from various companies: Core Developer's Network, Logic Blaze, Virtuas, Gordon Technologies, Savoir Technologies, Mortbay, and Quativa.  Our developers are currently all over the world, including the UK, US, and France.
 
-d) Reliance on salaried developers:
+d) Reliance on salaried developers: All committers are a part of WADI due to their interest in producing a clustering component.  This project does not rely on 9-5-only workers who are paid soley to work on WADI.
 
-e) No Ties to Other Apache Products: WADI already provides clustering and high availability to the Tomcat project and will be providing the same thing for the Geronimo project.
+e) No Ties to Other Apache Products: WADI already provides clustering and high availability to the Tomcat and Jetty projects and will be providing the same thing for OpenEJB and the Geronimo project.
 
-f) Achieving the Apache Brand is a Prominent Goal: WADI shares a set of common goals with the ASF and it is already licensed using the Apache License 2.0.  The developer base agrees that joining the ASF will help the project continue to flourish and grow. The ASF model for growing communities is ideal for WADI.
+f) Achieving the Apache Brand is a Prominent Goal: WADI shares a set of common goals with the ASF and it is already licensed using the Apache License 2.0.  The developer base agrees that joining the ASF will help the project continue to flourish and grow. The ASF model for growing communities is ideal for WADI.  WAID already exercises meritocracy and Apache best practices.
 
 
 Section 1 : Scope of the project
