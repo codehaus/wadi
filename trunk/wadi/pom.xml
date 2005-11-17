@@ -145,11 +145,12 @@
     </repositories>
     <modules>
         <module>modules/core</module>
+        <module>modules/jgroups</module>
+        <module>modules/jboss4</module>
         <module>modules/tomcat50</module>
         <module>modules/tomcat55</module>
         <module>modules/jetty5</module>
         <module>modules/jetty6</module>
-        <module>modules/jboss4</module>
         <module>modules/webapp</module>
         <module>modules/assembly</module>
     </modules>
@@ -368,19 +369,13 @@
 
             <dependency>
                 <groupId>wadi</groupId>
+                <artifactId>wadi-jgroups</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>wadi</groupId>
                 <artifactId>wadi-jboss4</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>wadi</groupId>
-                <artifactId>wadi-jetty5</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>wadi</groupId>
-                <artifactId>wadi-jetty6</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -393,6 +388,18 @@
             <dependency>
                 <groupId>wadi</groupId>
                 <artifactId>wadi-tomcat55</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>wadi</groupId>
+                <artifactId>wadi-jetty5</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>wadi</groupId>
+                <artifactId>wadi-jetty6</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
