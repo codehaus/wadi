@@ -117,13 +117,13 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         _contextualiser.promoteToExclusive(null);
         _contextualiser.start();
         ServletContext context=getServletContext();
-        if (context==null)
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("null ServletContext");
-            }
-        else
+        if (context==null) {
+        	if (_log.isWarnEnabled()) {
+        		_log.warn("null ServletContext");
+        	}
+        } else {
         	context.setAttribute(StandardManager.class.getName(), this); // TODO - security risk ?
+        }
         _started=true;
     }
 
