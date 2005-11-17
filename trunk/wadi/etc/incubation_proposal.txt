@@ -87,6 +87,7 @@ Section 5: Identify ASF Sponsor
 -------------------------------
 The sponsor for Incubation will be the Geronimo PMC.
 
+The Champions will be James Strachan and Geir Magnusson.
 
 Section 6: Open Issues for Discussion
 -------------------------------------
