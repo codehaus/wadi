@@ -1,35 +1,35 @@
 --------------------------------------------------------------------------------
-Proposal for WADI (Web Application Distribution Infrastructure) to Join Geronimo 
+Proposal for WADI (Web Application Distribution Infrastructure) to Join Geronimo
 --------------------------------------------------------------------------------
 
 Section 0 : Rationale
 ---------------------
-Achieving software infrastructure scalability is a tenet of Return on Investment (ROI) for any IT infrastructure and usually takes place in two forms: vertical scalability and horizontal scalability. Vertical addresses the scalability within the software itself whereas horizontal deals with it from the amount of hardware that can be added. 
+Achieving software infrastructure scalability is a tenet of Return on Investment (ROI) for any IT infrastructure and usually takes place in two forms: vertical scalability and horizontal scalability. Vertical addresses the scalability within the software itself whereas horizontal deals with it from the amount of hardware that can be added.
 
-Clustering, load balancing and failover is a necessity for any application server to be taken seriously in the enterprise in terms of scalability. Without the ability to cluster the application server, vertical scalability cannot take place. Without such veritical scalability, applications built on top of it can only be scaled horizontally. In order to make Geronimo more enterprise ready, it needs to provide such vertical scalability. 
+Clustering, load balancing and failover is a necessity for any application server to be taken seriously in the enterprise in terms of scalability. Without the ability to cluster the application server, vertical scalability cannot take place. Without such vertical scalability, applications built on top of it can only be scaled horizontally. In order to make Geronimo more enterprise ready, it needs to provide such vertical scalability.
 
-WADI is a clustering, load balancing and failover solution for the web application container tier. It currently supports both Jetty and Tomcat and plans are currently afoot to add full J2EE clustering functionality. WADI will help Geronimo to achieve vertical scalability. 
+WADI is a clustering, load balancing and failover solution for the web application container tier. It currently supports both Jetty and Tomcat and plans are currently afoot to add full J2EE clustering functionality. WADI will help Geronimo to achieve vertical scalability.
 
 
 Section 0.1 : criteria
 ----------------------
-We believe that this project has a continued probability of success at the ASF under the guidance of the Geronimo PMC. WADI already has a code base and a group of committers - only two of which are not already Geronimo committers. The following considerations have gone into this line of thinking: 
+We believe that this project has a continued probability of success at the ASF under the guidance of the Geronimo PMC. WADI already has a code base and a group of committers - only two of which are not already Geronimo committers. The following considerations have gone into this line of thinking:
 
 a) Meritocracy: The project will be meritocratic - the usual Apache meritocracy rules would apply.
 
-b) Community: The initial developer community will consist of the current WADI committers as well as the existing Geronimo developer community. As the project is integrated with Geronimo, we expect this community to grow. 
+b) Community: The initial developer community will consist of the current WADI committers as well as the existing Geronimo developer community. As the project is integrated with Geronimo, we expect this community to grow.
 
-c) Core Developers: WADI was founded by Jules Gosnell in 200?. 
+c) Core Developers: WADI was founded by Jules Gosnell in 200?.
 
-d) Alignment: The alignment of WADI with Geronimo is only one offering. WADI will also align nicely with Tomcat and possibly other projects at the ASF. 
+d) Alignment: The alignment of WADI with Geronimo is only one offering. WADI will also align nicely with Tomcat and possibly other projects at the ASF.
 
-e) License: WADI already utilizes the Apache License 2.0. 
+e) License: WADI already utilizes the Apache License 2.0.
 
 
 Section 0.2 :  Warning Signs
 ----------------------------
 
-a) Orphaned Software: WADI contains no software that was abandoned and the developers on the project have no intentions of leaving the project behind at the ASF. 
+a) Orphaned Software: WADI contains no software that was abandoned and the developers on the project have no intentions of leaving the project behind at the ASF.
 
 b) Experience With Open Source:
 
@@ -37,9 +37,9 @@ c) Homogenous Developers:
 
 d) Reliance on salaried developers:
 
-e) No Ties to Other Apache Products: WADI already provides clustering and high availability to the Tomcat project and will be providing the same thing for the Geronimo project. 
+e) No Ties to Other Apache Products: WADI already provides clustering and high availability to the Tomcat project and will be providing the same thing for the Geronimo project.
 
-f) Achieving the Apache Brand is a Prominent Goal: WADI shares a set of common goals with the ASF and it is already licensed using the Apache License 2.0.  The developer base agrees that joining the ASF will help the project continue to flourish and grow. The ASF model for growing communities is ideal for WADI. 
+f) Achieving the Apache Brand is a Prominent Goal: WADI shares a set of common goals with the ASF and it is already licensed using the Apache License 2.0.  The developer base agrees that joining the ASF will help the project continue to flourish and grow. The ASF model for growing communities is ideal for WADI.
 
 
 Section 1 : Scope of the project
@@ -48,7 +48,7 @@ Section 1 : Scope of the project
 
 Section 2 : Initial source from which the project is to be populated
 --------------------------------------------------------------------
-The initial source code will come from a subset of the code from the WADI project at Codehaus (http://wadi.codehaus.org/). 
+The initial source code will come from a subset of the code from the WADI project at Codehaus (http://wadi.codehaus.org/).
 
 
 Section 3: Identify the ASF resources to be created
@@ -75,15 +75,17 @@ Section 4: Identify the Initial Set of Committers
 -------------------------------------------------
 * Bill Dudney (MyFaces)
 * Bruce Snyder (Castor, Geronimo PMC, ServiceMix, TranQL, WADI)
-* Gianni Scenini 
-* Jeff Genender (Geroniom PMC, OpenEJB, ServiceMix, Mojo, WADI)
+* Gianni Scenini (WADI)
+* Greg Wilkins (Geronimo PMC, Jetty, WADI)
 * James Goodwill (WADI)
-* Jules Gosnell (Jetty, Geronimo PMC, WADI)
+* James Strachan (Geronimo PMC, ActiveCluster, ActiveMQ, ServiceMix, WADI, ...)
+* Jeff Genender (Geronimo PMC, OpenEJB, ServiceMix, Mojo, WADI)
+* Jules Gosnell (Geronimo PMC, Jetty, WADI)
 
 
 Section 5: Identify ASF Sponsor
 -------------------------------
-The sponsor for Incubation will be the Geronimo PMC. 
+The sponsor for Incubation will be the Geronimo PMC.
 
 
 Section 6: Open Issues for Discussion
