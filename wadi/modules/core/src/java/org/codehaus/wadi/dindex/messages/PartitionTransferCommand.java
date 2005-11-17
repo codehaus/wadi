@@ -14,37 +14,36 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
-import java.util.Collection;
 
-public class PartitionRepopulateResponse implements Serializable {
+import org.codehaus.wadi.OldMessage;
+import org.codehaus.wadi.dindex.impl.PartitionTransfer;
 
-    protected Collection[] _keys;
+public class PartitionTransferCommand implements OldMessage, Serializable {
 
-    public PartitionRepopulateResponse(Collection[] keys) {
-        super();
-        _keys=keys;
+    protected PartitionTransfer[] _transfers;
+
+    public PartitionTransferCommand(PartitionTransfer[] transfers) {
+        _transfers=transfers;
     }
 
-    protected PartitionRepopulateResponse() {
-        // for deserialisation
+    protected PartitionTransferCommand() {
+        // for deserialisation...
     }
 
-    public Collection[] getKeys() {
-        return _keys;
+    public PartitionTransfer[] getTransfers() {
+        return _transfers;
     }
 
 
     public String toString() {
-    	StringBuffer buffer=new StringBuffer("<PartitionRepopulateResponse: ");
-    	for (int i=0; i<_keys.length; i++) {
-    		Collection c=_keys[i];
-    		if (c!=null)
-    			buffer.append(""+i+":"+c.toString()+", ");
-    	}
+    	StringBuffer buffer=new StringBuffer("<PartitionTransferCommand: ");
+    	for (int i=0; i<_transfers.length; i++)
+    		buffer.append((i==0?"":",")+_transfers[i]);
     	buffer.append(">");
-    	return buffer.toString();
+        return buffer.toString();
     }
+
 }

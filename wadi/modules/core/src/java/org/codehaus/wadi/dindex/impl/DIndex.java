@@ -39,6 +39,7 @@ import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.StateManagerConfig;
+import org.codehaus.wadi.dindex.messages.PartitionEvacuationRequest;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.Quipu;
@@ -60,7 +61,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
     protected final Cluster _cluster;
     protected final String _nodeName;
     protected final Log _log;
-    protected final int _numPartitions;
     protected final long _inactiveTime;
     protected final PartitionManager _partitionManager;
     protected final StateManager _stateManager;
@@ -68,12 +68,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
     public DIndex(String nodeName, int numPartitions, long inactiveTime, Dispatcher dispatcher, Map distributedState) {
         _nodeName=nodeName;
         _log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
-        _numPartitions=numPartitions;
         _inactiveTime=inactiveTime;
         _dispatcher=dispatcher;
         _cluster=((ActiveClusterDispatcher)_dispatcher).getCluster();
         _distributedState=distributedState;
-        _partitionManager=new SimplePartitionManager(_nodeName, _numPartitions, this, _cluster, _dispatcher, _distributedState, _inactiveTime, this);
+        _partitionManager=new SimplePartitionManager(_nodeName, numPartitions, this, _cluster, _dispatcher, _distributedState, _inactiveTime, this);
         _stateManager=new SimpleStateManager(_dispatcher, _inactiveTime);
     }
 
@@ -376,7 +375,7 @@ if ( _log.isWarnEnabled() ) {
     }
 
     public int getNumPartitions() {
-        return _numPartitions;
+        return _partitionManager.getNumPartitions();
     }
 
     public Node getLocalNode() {
@@ -489,7 +488,7 @@ if ( _log.isWarnEnabled() ) {
     }
 
     protected int getKey(String name) {
-        return Math.abs(name.hashCode()%_numPartitions);
+        return Math.abs(name.hashCode()%_partitionManager.getNumPartitions());
     }
 
     // PartitionConfig

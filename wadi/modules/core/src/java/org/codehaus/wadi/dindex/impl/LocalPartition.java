@@ -29,8 +29,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.DIndexResponse;
-import org.codehaus.wadi.impl.RelocationRequest;
-import org.codehaus.wadi.impl.RelocationResponse;
+import org.codehaus.wadi.dindex.messages.RelocationRequest;
+import org.codehaus.wadi.dindex.messages.RelocationResponse;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Mutex;

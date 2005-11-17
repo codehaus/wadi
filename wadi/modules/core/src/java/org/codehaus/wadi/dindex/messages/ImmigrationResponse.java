@@ -14,14 +14,34 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
+import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.OldMessage;
 
-public interface DIndexMessage extends OldMessage, Serializable {
+/**
+ * A message sent in response to an ImmigrationRequest
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public class ImmigrationResponse implements OldMessage, Serializable {
     
-    // just a marker i/f - at the moment
+	protected String _name;
+	protected Motable _motable;
+
+    public ImmigrationResponse(String name, Motable motable) {
+        _name=name;
+        _motable=motable;
+    }
     
+    protected ImmigrationResponse() {
+        // for deserialisation...
+    }
+    
+	public String getName(){return _name;}
+	public Motable getMotable(){return _motable;}
+
 }

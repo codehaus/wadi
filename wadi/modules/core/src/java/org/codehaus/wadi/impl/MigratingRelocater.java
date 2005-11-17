@@ -34,6 +34,9 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.SessionRelocater;
+import org.codehaus.wadi.dindex.messages.ImmigrationAcknowledgement;
+import org.codehaus.wadi.dindex.messages.ImmigrationRequest;
+import org.codehaus.wadi.dindex.messages.ImmigrationResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;

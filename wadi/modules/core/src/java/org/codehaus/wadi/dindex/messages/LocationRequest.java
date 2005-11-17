@@ -14,11 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.Location;
+import org.codehaus.wadi.OldMessage;
 
 /**
  * A query for the location of the session with the enclosed ID - The response
@@ -27,30 +27,23 @@ import org.codehaus.wadi.Location;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class EmigrationResponse implements Serializable {
-	
-	protected String _name;
-	protected Location _location;
-	
-	public EmigrationResponse(String name, Location location) {
-		_name=name;
-		_location=location;
+public class LocationRequest implements OldMessage, Serializable {
+	protected String _id;
+	protected long _handOverPeriod;
+
+	/**
+	 *
+	 */
+	public LocationRequest(String id, long handOverPeriod) {
+		super();
+		_id=id;
+		_handOverPeriod=handOverPeriod;
 	}
-	
-	protected EmigrationResponse() {
-		// for deserialisation ...
+
+	public LocationRequest() {
+		// for use when demarshalling...
 	}
-	
-	public String getId() {
-		return _name;
-	}
-	
-	public Location getLocation() {
-		return _location;
-	}
-	
-	public String toString() {
-		return "<EmigrationResponse: "+_name+">";
-	}
-	
+
+	public String getId(){return _id;}
+	public long getHandOverPeriod(){return _handOverPeriod;}
 }

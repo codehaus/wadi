@@ -14,19 +14,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
-public class PartitionTransferResponse implements Serializable {
+import org.codehaus.wadi.OldMessage;
+
+public class PartitionTransferAcknowledgement implements OldMessage, Serializable {
 
     protected boolean _success;
 
-    public PartitionTransferResponse(boolean success) {
+    public PartitionTransferAcknowledgement(boolean success) {
         _success=success;
     }
 
-    protected PartitionTransferResponse() {
+    protected PartitionTransferAcknowledgement() {
         // used during deserialisation...
     }
 
@@ -34,8 +36,8 @@ public class PartitionTransferResponse implements Serializable {
         return _success;
     }
 
-    public String toString() {
-        return "<PartitionTransferResponse: "+_success+">";
-    }
 
+    public String toString() {
+        return "<PartitionTransferAcknowledgement: "+_success+">";
+    }
 }

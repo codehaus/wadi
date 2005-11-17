@@ -14,32 +14,36 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
-import java.util.Set;
 
-import org.codehaus.wadi.Location;
+import org.codehaus.wadi.OldMessage;
 
 /**
- * A message that is sent in response to a LocationRequest
+ * A message used as a query for the location of the session with the enclosed ID - The response
+ * should be a LocationResponse object sent whence this request arrived.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class LocationResponse implements Serializable {
+public class ImmigrationRequest implements OldMessage, Serializable {
+	protected String _id;
+	protected long _handOverPeriod;
 
-	protected final Location _location;
-	protected final Set _ids;
 	/**
 	 *
 	 */
-	public LocationResponse(Location location, Set ids) {
+	public ImmigrationRequest(String id, long handOverPeriod) {
 		super();
-		_location=location;
-		_ids=ids;
+		_id=id;
+		_handOverPeriod=handOverPeriod;
 	}
 
-	public Location getLocation(){return _location;}
-	public Set getIds(){return _ids;}
+	public ImmigrationRequest() {
+		// for use when demarshalling...
+	}
+
+	public String getId(){return _id;}
+	public long getHandOverPeriod(){return _handOverPeriod;}
 }

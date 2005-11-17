@@ -34,6 +34,7 @@ public interface PartitionManager {
 
 	PartitionFacade getPartition(int partition);
 	PartitionKeys getPartitionKeys();
+	int getNumPartitions();
 
 	void init(PartitionManagerConfig config);
 	void start() throws Exception;

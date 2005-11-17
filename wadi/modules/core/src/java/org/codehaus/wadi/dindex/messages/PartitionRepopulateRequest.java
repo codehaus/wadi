@@ -14,33 +14,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.OldMessage;
 
-/**
- * A message sent in response to an ImmigrationRequest
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
-public class ImmigrationResponse implements Serializable {
-    
-	protected String _name;
-	protected Motable _motable;
+public class PartitionRepopulateRequest implements OldMessage, Serializable {
 
-    public ImmigrationResponse(String name, Motable motable) {
-        _name=name;
-        _motable=motable;
+    protected int[] _keys;
+
+    public PartitionRepopulateRequest(int[] keys) {
+        super();
+        _keys=keys;
     }
-    
-    protected ImmigrationResponse() {
+
+    protected PartitionRepopulateRequest() {
         // for deserialisation...
     }
-    
-	public String getName(){return _name;}
-	public Motable getMotable(){return _motable;}
 
+    public int[] getKeys() {
+        return _keys;
+    }
+
+
+    public String toString() {
+        return "<PartitionRepopulateRequest"+_keys+">";
+    }
 }

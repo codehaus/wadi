@@ -14,14 +14,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.OldMessage;
 
-public class RelocationResponse implements Serializable {
+public class RelocationResponse implements OldMessage, Serializable {
 
     protected String _sessionName;
     protected String _nodeName;

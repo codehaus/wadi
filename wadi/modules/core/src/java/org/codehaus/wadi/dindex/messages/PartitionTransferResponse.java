@@ -14,15 +14,30 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
-public class RelocationAcknowledgement implements Serializable {
-    // NYI
+import org.codehaus.wadi.OldMessage;
+
+public class PartitionTransferResponse implements OldMessage, Serializable {
+
+    protected boolean _success;
+
+    public PartitionTransferResponse(boolean success) {
+        _success=success;
+    }
+
+    protected PartitionTransferResponse() {
+        // used during deserialisation...
+    }
+
+    public boolean getSuccess() {
+        return _success;
+    }
 
     public String toString() {
-        return "<RelocationAcknowledgement>";
+        return "<PartitionTransferResponse: "+_success+">";
     }
-    
+
 }
