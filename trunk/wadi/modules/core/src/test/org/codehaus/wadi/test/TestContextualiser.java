@@ -90,13 +90,11 @@ import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.MemoryContextualiser;
-import org.codehaus.wadi.impl.MigratingRelocater;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.ProxyingRelocater;
 import org.codehaus.wadi.impl.SerialContextualiser;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SharedStoreContextualiser;
-import org.codehaus.wadi.impl.SimpleContextualiserStack;
 import org.codehaus.wadi.impl.SimpleEvictable;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
@@ -108,7 +106,6 @@ import org.codehaus.wadi.impl.StandardValueFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -653,29 +650,6 @@ public class TestContextualiser extends TestCase {
         cluster0=null;
         clusterFactory=null;
         connectionFactory=null;
-    }
-
-    // TODO - add some content to this test...
-    public void testStack() throws Exception {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("putting complete stack together...");
-        }
-        Map map=new ConcurrentHashMap();
-        //CustomCluster cluster=(CustomCluster)new CustomClusterFactory(Utils.getConnectionFactory()).createCluster("ORG.CODEHAUS.WADI.CLUSTER");
-        SimpleContextualiserStack stack=new SimpleContextualiserStack(map, _standardContextPool, _ds, new MigratingRelocater(2000, 1000));
-        PartitionManager partitionManager=new DummyPartitionManager(24);
-        Dispatcher dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
-        StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, stack, map, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _httpAddress, _httpProxy, dispatcher, partitionManager);
-        manager.init(new DummyManagerConfig());
-        manager.start();
-        Thread.sleep(2000);
-        stack.stop();
-        Thread.sleep(2000);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("...done");
-        }
     }
 
 }
