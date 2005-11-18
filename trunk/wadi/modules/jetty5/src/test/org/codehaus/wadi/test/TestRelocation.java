@@ -41,11 +41,11 @@ import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Relocater;
+import org.codehaus.wadi.dindex.messages.RelocationRequest;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.impl.AbstractRelocater;
 import org.codehaus.wadi.impl.CommonsHttpProxy;
 import org.codehaus.wadi.impl.HybridRelocater;
-import org.codehaus.wadi.impl.ProxyingRelocater;
 import org.codehaus.wadi.impl.StandardHttpProxy;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -160,8 +160,8 @@ public class TestRelocation extends TestCase {
 	}
 
 	public void testProxyInsecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new ProxyingRelocater(2000, 3000));
-		_relocater1.setRelocationStrategy(new ProxyingRelocater(2000, 3000));
+		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 3000, RelocationRequest._RELOCATE_REQUEST_PREFERRED));
+		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 3000, RelocationRequest._RELOCATE_REQUEST_PREFERRED));
 		testInsecureRelocation(false);
 		}
 
@@ -303,8 +303,8 @@ public class TestRelocation extends TestCase {
 	}
 
 	public void testProxySecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new ProxyingRelocater(2000, 3000));
-		_relocater1.setRelocationStrategy(new ProxyingRelocater(2000, 3000));
+		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 3000, RelocationRequest._RELOCATE_REQUEST_PREFERRED));
+		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 3000, RelocationRequest._RELOCATE_REQUEST_PREFERRED));
 		testSecureRelocation(false);
 		}
 
@@ -389,8 +389,8 @@ public class TestRelocation extends TestCase {
 	}
 
 	public void testRelocationStatelessContextualiser() throws Exception {
-		_relocater0.setRelocationStrategy(new ProxyingRelocater(2000, 3000));
-		_relocater1.setRelocationStrategy(new ProxyingRelocater(2000, 3000));
+		_relocater0.setRelocationStrategy(new HybridRelocater(2000, 3000, RelocationRequest._RELOCATE_REQUEST_PREFERRED));
+		_relocater1.setRelocationStrategy(new HybridRelocater(2000, 3000, RelocationRequest._RELOCATE_REQUEST_PREFERRED));
 		testStatelessContextualiser(false);
 		}
 
