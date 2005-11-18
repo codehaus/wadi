@@ -88,10 +88,15 @@
         <url>http://jira.codehaus.org/browse/WADI</url>
     </issueManagement>
     <scm>
+        <connection>scm:cvs:pserver:anoncvs@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi</connection>
+        <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org/home/projects/wadi/scm:wadi</developerConnection>
+        <url>http://cvs.wadi.codehaus.org/wadi/</url>
+    </scm>
+    <!-- scm>
         <connection>scm:svn:svn://svn.codehaus.org/wadi/scm/trunk/</connection>
         <developerConnection>scm:svn:https://svn.codehaus.org/wadi/trunk</developerConnection>
         <url>http://svn.wadi.codehaus.org/trunk</url>
-    </scm>
+    </scm-->
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -435,10 +440,18 @@
                     <target>1.4</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
     <reporting>
         <plugins>
+            <plugin>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>surefire-report-maven-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
