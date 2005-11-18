@@ -78,6 +78,7 @@ ASF Committers
 * Bruce Snyder (Castor, Geronimo PMC, ServiceMix, TranQL)
 * Greg Wilkins (Geronimo PMC, Jetty)
 * James Strachan (Geronimo PMC, ActiveCluster, ActiveMQ, ServiceMix, ...)
+* Jan Bartel (Geronimo PMC, Jetty)
 * Jeff Genender (Geronimo PMC, OpenEJB, ServiceMix, Mojo)
 * Jules Gosnell (Geronimo PMC, Jetty)
 
