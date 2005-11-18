@@ -4,9 +4,7 @@ Proposal for WADI (Web Application Distribution Infrastructure) to Join Geronimo
 
 Section 0 : Rationale
 ---------------------
-Achieving software infrastructure scalability is a tenet of Return on Investment (ROI) for any IT infrastructure and usually takes place in two forms: vertical scalability and horizontal scalability. Vertical addresses the scalability within the software itself whereas horizontal deals with it from the amount of hardware that can be added.
-
-Clustering, load balancing and failover is a necessity for any application server to be taken seriously in the enterprise in terms of scalability. Without the ability to cluster the application server, vertical scalability cannot take place. Without such vertical scalability, applications built on top of it can only be scaled horizontally. In order to make Geronimo more enterprise ready, it needs to provide such vertical scalability.
+Achieving software infrastructure scalability is a tenet of Return on Investment (ROI) for any IT infrastructure and usually takes place in two forms: vertical scalability and horizontal scalability. Vertical addresses the scalability within the software itself whereas horizontal deals with it from the amount of hardware that can be utilized. Clustering, load balancing and failover is a necessity for any application server to be taken seriously in the enterprise in terms of scalability. Without the ability to cluster the application server, vertical scalability cannot take place. Without such vertical scalability, applications built on top of it can only be scaled horizontally. In order to make Geronimo more enterprise ready, it needs to provide such vertical scalability.
 
 WADI is a clustering, load balancing and failover solution for the web application container tier. It currently supports both Jetty and Tomcat and plans are currently afoot to add full J2EE clustering functionality. WADI will help Geronimo to achieve vertical scalability.
 
@@ -21,7 +19,7 @@ b) Community: The initial developer community will consist of the current WADI c
 
 c) Core Developers: WADI was founded by Jules Gosnell in 2004, it now has a strong base of developers from Geronimo, Castor, OpenEJB, Mojo, Jetty, ActiveCluster, ActiveMQ, and ServiceMix. 
 
-d) Alignment: The alignment of WADI with Geronimo is only one offering. WADI will also align nicely with Tomcat and very likely other projects at the ASF. The need for WADI should allow for powerful alignment in nearly any server based offering in Apache that required high availability.
+d) Alignment: The alignment of WADI with Geronimo is only one offering. WADI will also align nicely with Tomcat and very likely other projects at the ASF. The need for WADI should allow for powerful alignment in nearly any server based offering in Apache that requires high availability.
 
 e) License: WADI already utilizes the Apache License 2.0.
 
@@ -31,9 +29,9 @@ Section 0.2 : Warning Signs
 
 a) Orphaned Software: WADI contains no software that was abandoned and the developers on the project have no intentions of leaving the project behind at the ASF.
 
-b) Experience With Open Source: Most of the comitters have a proven track record in open source at Apache and Codehaus.
+b) Experience With Open Source: Most of the comitters have a proven track record in open source.
 
-c) Homogenous Developers: There are developers from various companies: Core Developer's Network, Logic Blaze, Virtuas, Gordon Technologies, Savoir Technologies, Mortbay, and Quativa. Our developers are currently all over the world, including the UK, US, and France.
+c) Homogenous Developers: WADI's developers are currently all over the world, including the UK, US, and France. There are developers from various companies: Core Developer's Network, Jailey Solutions, Virtuas, Gordon Technologies, Savoir Technologies, Mortbay, and Quativa. 
 
 d) Reliance on salaried developers: All committers are a part of WADI due to their interest in producing a clustering component. This project does not rely on 9-5-only workers who are paid soley to work on WADI.
 
@@ -85,9 +83,7 @@ Section 4: Identify the Initial Set of Committers
 
 Section 5: Identify ASF Sponsor
 -------------------------------
-The sponsor for Incubation will be the Geronimo PMC.
-
-The Champions will be James Strachan and Geir Magnusson.
+The Champions will be James Strachan and Geir Magnusson and the sponsor for Incubation will be the Geronimo PMC. 
 
 Section 6: Open Issues for Discussion
 -------------------------------------
