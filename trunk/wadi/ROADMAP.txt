@@ -11,6 +11,7 @@ refactor and tidy up DOCS
 sort through tests
 SNAPSHOT release
 remember list of registered MBeans and deregister them on Sessionmanager.stop()
+move WADI fn-ality from Filter to Valve/Handler..
 OpenEJB integration (see openejb/ROADMAP.txt)
 Transactions in GridState
 HA-JNDI
