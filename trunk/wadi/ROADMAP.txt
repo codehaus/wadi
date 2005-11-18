@@ -1,15 +1,17 @@
 
 Replace DIndex with GridState
 in-vm replication
+lose dead code
 SVN
 rename dirs/packages (mvn2 locations)
 move to ASF repo
 rename dirs/packages (e.g. wadi -> geronimo.cluster, core->web, etc)
 website (junit, clover, reports)
 refactor and tidy up DOCS
+sort through tests
 SNAPSHOT release
 remember list of registered MBeans and deregister them on Sessionmanager.stop()
-OpenEJB integration
+OpenEJB integration (see openejb/ROADMAP.txt)
 Transactions in GridState
 HA-JNDI
 Make GridState 1st class Geronimo service
