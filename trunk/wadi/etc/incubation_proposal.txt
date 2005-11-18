@@ -41,6 +41,7 @@ f) Achieving the Apache Brand is a Prominent Goal: WADI shares a set of common g
 
 Section 1 : Scope of the project
 --------------------------------
+The project is intended to be a subproject of Geronimo but given it's integration already with Tomcat, it could certainly be made more widely available. As stated above, WADI already works with Jetty and Tomcat. The current best location for WADI is with Geronimo to get full integration into that project.
 
 
 Section 2 : Initial source from which the project is to be populated
@@ -70,15 +71,20 @@ Section 3.3: Issue Tracking
 
 Section 4: Identify the Initial Set of Committers
 -------------------------------------------------
-* Bill Dudney (MyFaces)
-* Bruce Snyder (Castor, Geronimo PMC, ServiceMix, TranQL, WADI)
-* Gianni Scenini (WADI)
-* Greg Wilkins (Geronimo PMC, Jetty, WADI)
-* James Goodwill (WADI)
-* James Strachan (Geronimo PMC, ActiveCluster, ActiveMQ, ServiceMix, WADI, ...)
-* Jeff Genender (Geronimo PMC, OpenEJB, ServiceMix, Mojo, WADI)
-* Jules Gosnell (Geronimo PMC, Jetty, WADI)
 
+ASF Committers
+--------------
+* Bill Dudney (MyFaces)
+* Bruce Snyder (Castor, Geronimo PMC, ServiceMix, TranQL)
+* Greg Wilkins (Geronimo PMC, Jetty)
+* James Strachan (Geronimo PMC, ActiveCluster, ActiveMQ, ServiceMix, ...)
+* Jeff Genender (Geronimo PMC, OpenEJB, ServiceMix, Mojo)
+* Jules Gosnell (Geronimo PMC, Jetty)
+
+Non-ASF Committers
+------------------
+* Gianni Scenini 
+* James Goodwill 
 
 Section 5: Identify ASF Sponsor
 -------------------------------
