@@ -33,30 +33,49 @@
             <name>Jeff Genender</name>
             <email>jgenender@codehaus.org</email>
             <organization>Virtuas</organization>
+            <organizationUrl>http://www.virtuas.com</organizationUrl>
         </developer>
         <developer>
             <id>jim</id>
             <name>Jim Goodwill</name>
             <email>james@virtuas.com</email>
             <organization>Virtuas</organization>
+            <organizationUrl>http://www.virtuas.com</organizationUrl>
         </developer>
         <developer>
             <id>jules</id>
             <name>Jules Gosnell</name>
             <email>jules@coredevelopers.net</email>
             <organization>Core Developers Network</organization>
+            <organizationUrl>http://www.coredevelopers.net</organizationUrl>
+        </developer>
+        <developer>
+            <id>janb</id>
+            <name>Jan Bartel</name>
+            <email>janb@mortbay.com</email>
+            <organization>Mort Bay Consulting</organization>
+            <organizationUrl>http://www.mortbay.com</organizationUrl>
         </developer>
         <developer>
             <id>gianni</id>
             <name>Gianni Scenini</name>
             <email>gianni.scenini@gmail.com</email>
             <organization>Quativa</organization>
+            <!--<organizationUrl>http://www.quativa.com</organizationUrl>-->
         </developer>
         <developer>
             <id>bruce</id>
             <name>Bruce Snyder</name>
             <email>bsnyder@codehaus.org</email>
             <organization>LogicBlaze</organization>
+            <organizationUrl>http://www.logicblaze.com</organizationUrl>
+        </developer>
+        <developer>
+            <id>bdudney</id>
+            <name>Bill Dudney</name>
+            <email>bdudney@codehaus.org</email>
+            <organization>Virtuas</organization>
+            <organizationUrl>http://www.virtuas.com</organizationUrl>
         </developer>
     </developers>
 
@@ -64,21 +83,23 @@
         <contributor>
             <name>Greg Wilkins</name>
             <email></email>
+            <organization>Mort Bay Consulting</organization>
+            <organizationUrl>http://www.mortbay.com</organizationUrl>
         </contributor>
         <contributor>
             <name>James Strachan</name>
             <email></email>
+            <organization>LogicBlaze</organization>
+            <organizationUrl>http://www.logicblaze.com</organizationUrl>
         </contributor>
         <contributor>
             <name>Hiram Chirino</name>
             <email></email>
+            <organization>LogicBlaze</organization>
+            <organizationUrl>http://www.logicblaze.com</organizationUrl>
         </contributor>
         <contributor>
             <name>Simone Bordet</name>
-            <email></email>
-        </contributor>
-        <contributor>
-            <name>Bill Dudney</name>
             <email></email>
         </contributor>
     </contributors>
