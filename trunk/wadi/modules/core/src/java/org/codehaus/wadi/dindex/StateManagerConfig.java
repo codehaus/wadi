@@ -21,6 +21,7 @@ import org.codehaus.wadi.dindex.impl.PartitionFacade;
 public interface StateManagerConfig {
 
 	PartitionFacade getPartition(int key);
+	PartitionFacade getPartition(Object key);
 	int getNumPartitions();
 	
 }

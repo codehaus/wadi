@@ -41,6 +41,10 @@ public class RemotePartition extends AbstractPartition {
     public boolean isLocal() {
         return false;
     }
+    
+    public Destination getDestination() {
+    	return _location;
+    }
 
     public void setLocation(Destination location) {
       if (_location==null) {

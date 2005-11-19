@@ -49,6 +49,7 @@ import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
+import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.dindex.messages.EmigrationRequest;
 import org.codehaus.wadi.dindex.messages.EmigrationResponse;
@@ -96,7 +97,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, ClusterListener {
+public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, ClusterListener, StateManager.ImmigrationListener {
     
     protected final static String _nodeNameKey="name";
     protected final static String _evacuationQueueKey="evacuationQueue";
@@ -141,8 +142,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         _location=new HttpProxyLocation(_dispatcher.getLocalDestination(), ccc.getHttpAddress(), ccc.getHttpProxy());
         _dindex=ccc.getDIndex();
         _cluster.addClusterListener(this);
-        _dispatcher.register(this, "onEmigrationRequest", EmigrationRequest.class);
-        _dispatcher.register(EmigrationResponse.class, _resTimeout);
+        _dindex.getStateManager().setImmigrationListener(this);
         _top=ccc.getContextualiser();
         _relocater.init(this);
     }
@@ -289,27 +289,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
                 if (_log.isWarnEnabled()) _log.warn("problem sending emigration request: "+name, e);
                 return false;
             }
-            Destination to=_evacuationQueue;
-            Destination from=_dispatcher.getLocalDestination();
-            EmigrationRequest request=new EmigrationRequest(immotable);
-            ObjectMessage message=_dispatcher.exchangeSend(from, to, request, _resTimeout);
-            EmigrationResponse ack=null;
-            try {
-                ack=message==null?null:(EmigrationResponse)message.getObject();
-            } catch (JMSException e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("could not unpack response", e);
-                }
-            }
-            
-            if (ack==null) {
-                if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+_resTimeout+" millis): "+name);
-                return false;
-            } else {
-                if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+_resTimeout+" millis): "+name);
-                return true;
-            }
+            return _dindex.getStateManager().offerEmigrant(name, immotable, _resTimeout);
         }
         
         public void commit(String name, Motable immotable) {
@@ -350,9 +330,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         
         public void commit(String name, Motable emotable) {
             // TODO - consider moving this to prepare()...
-            if (!_dispatcher.reply(_message, new EmigrationResponse(name, _location))) { 
-                if (_log.isErrorEnabled()) _log.error("could not acknowledge safe receipt: "+name);
-            }
+        	_dindex.getStateManager().acceptImmigrant(_message, _location, name, emotable);
         }
         
         public void rollback(String name, Motable emotable) {
@@ -365,8 +343,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         }
     }
     
-    public void onEmigrationRequest(ObjectMessage message, EmigrationRequest request) {
-        Motable emotable=request.getMotable();
+    public void onImmigration(ObjectMessage message, Motable emotable) {
         String name=emotable.getName();
         if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+name);
         Sync lock=_locker.getLock(name, emotable);

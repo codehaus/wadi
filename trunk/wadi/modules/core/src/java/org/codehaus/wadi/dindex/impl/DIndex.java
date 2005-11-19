@@ -428,7 +428,7 @@ if ( _log.isWarnEnabled() ) {
             message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
             DIndexInsertionRequest request=new DIndexInsertionRequest(name);
             message.setObject(request);
-            return _partitionManager.getPartition(getKey(name)).exchange(message, request, _inactiveTime);
+            return getPartition(name).exchange(message, request, _inactiveTime);
         } catch (Exception e) {
             if ( _log.isInfoEnabled() ) {
 
@@ -444,7 +444,7 @@ if ( _log.isWarnEnabled() ) {
             message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
             DIndexDeletionRequest request=new DIndexDeletionRequest(name);
             message.setObject(request);
-            _partitionManager.getPartition(getKey(name)).exchange(message, request, _inactiveTime);
+            getPartition(name).exchange(message, request, _inactiveTime);
         } catch (Exception e) {
             if ( _log.isInfoEnabled() ) {
 
@@ -459,7 +459,7 @@ if ( _log.isWarnEnabled() ) {
             message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
             DIndexRelocationRequest request=new DIndexRelocationRequest(name);
             message.setObject(request);
-            _partitionManager.getPartition(getKey(name)).exchange(message, request, _inactiveTime);
+            getPartition(name).exchange(message, request, _inactiveTime);
         } catch (Exception e) {
             if ( _log.isInfoEnabled() ) {
 
@@ -469,7 +469,6 @@ if ( _log.isWarnEnabled() ) {
     }
 
     public ObjectMessage forwardAndExchange(String name, ObjectMessage message, DIndexRequest request, long timeout) {
-        int key=getKey(name);
         try {
             if ( _log.isTraceEnabled() ) {
 
@@ -477,7 +476,7 @@ if ( _log.isWarnEnabled() ) {
             }
             request=new DIndexForwardRequest(request);
             message.setObject(request);
-            return _partitionManager.getPartition(key).exchange(message, request, timeout);
+            return getPartition(name).exchange(message, request, timeout);
         } catch (JMSException e) {
             if ( _log.isInfoEnabled() ) {
 
@@ -487,8 +486,8 @@ if ( _log.isWarnEnabled() ) {
         }
     }
 
-    protected int getKey(String name) {
-        return Math.abs(name.hashCode()%_partitionManager.getNumPartitions());
+    public PartitionFacade getPartition(Object key) {	
+        return _partitionManager.getPartition(key);
     }
 
     // PartitionConfig
@@ -524,5 +523,8 @@ if ( _log.isWarnEnabled() ) {
 		return _partitionManager.getPartition(key);
 	}
 	
+	public StateManager getStateManager() {
+		return _stateManager;
+	}
 }
 
