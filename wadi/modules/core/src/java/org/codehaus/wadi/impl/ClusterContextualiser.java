@@ -18,21 +18,16 @@ package org.codehaus.wadi.impl;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
 import javax.jms.ObjectMessage;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.activecluster.Cluster;
 import org.activecluster.ClusterEvent;
 import org.activecluster.ClusterListener;
 import org.activecluster.LocalNode;
@@ -51,10 +46,7 @@ import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.dindex.messages.EmigrationRequest;
-import org.codehaus.wadi.dindex.messages.EmigrationResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.ExtendedCluster;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -100,10 +92,9 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, ClusterListener, StateManager.ImmigrationListener {
     
     protected final static String _nodeNameKey="name";
-    protected final static String _evacuationQueueKey="evacuationQueue";
     protected final static String _shuttingDownKey="shuttingDown";
+    protected final static String _evacuatingKey="evacuating";
     
-    protected final Map _evacuations=Collections.synchronizedMap(new HashMap());
     protected final SynchronizedInt _evacuationPartnerCount=new SynchronizedInt(0);
     protected final Collapser _collapser;
     protected final Relocater _relocater;
@@ -125,9 +116,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     
     protected SynchronizedBoolean _shuttingDown;
     protected String _nodeName;
-    protected Destination _evacuationQueue;
+    protected boolean _evacuating;
     protected ActiveClusterDispatcher _dispatcher;
-    protected ExtendedCluster _cluster;
+    protected Cluster _cluster;
     protected Location _location;
     protected DIndex _dindex;
     protected Contextualiser _top;
@@ -138,7 +129,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         _shuttingDown=ccc.getShuttingDown();
         _nodeName=ccc.getNodeName();
         _dispatcher=(ActiveClusterDispatcher)ccc.getDispatcher();
-        _cluster=(ExtendedCluster)((ActiveClusterDispatcher)_dispatcher).getCluster();
+        _cluster=((ActiveClusterDispatcher)_dispatcher).getCluster();
         _location=new HttpProxyLocation(_dispatcher.getLocalDestination(), ccc.getHttpAddress(), ccc.getHttpProxy());
         _dindex=ccc.getDIndex();
         _cluster.addClusterListener(this);
@@ -208,8 +199,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         }
         ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)_config;
         ccc.putDistributedState(_shuttingDownKey, Boolean.TRUE);
-        _evacuationQueue=_cluster.createQueue(_nodeName+"."+_evacuationQueueKey);
-        ccc.putDistributedState(_evacuationQueueKey, _evacuationQueue);
+        _evacuating=true;
+        ccc.putDistributedState(_evacuatingKey, Boolean.TRUE);
         ccc.distributeState();
         
         // whilst we are evacuating...
@@ -219,16 +210,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
             _log.info("ignoring further evacuation appeals");
         }
         // 2) withdraw from any other evacuation in which we may be involved
-        if ( _log.isInfoEnabled() ) {
 
-            _log.info("withdrawing from ongoing evacuations: " + _evacuations.size());
-        }
-        synchronized (_evacuations) {
-            for (Iterator i=new ArrayList(_evacuations.keySet()).iterator(); i.hasNext(); ) {
-                String nodeName=(String)i.next();
-                ensureEvacuationLeft(nodeName);
-            }
-        }
         // give time for threads that are already processing asylum applications to finish - can we join them ? -
         // TODO - use shutdownAfterProcessingCurrentlyQueuedTasks() and a separate ThreadPool...
         Utils.safeSleep(2000);
@@ -237,8 +219,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     protected void destroyEvacuationQueue() throws Exception {
         ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)_config;
         // leave shuttingDown=true
-        _evacuationQueue=null;
-        ccc.removeDistributedState(_evacuationQueueKey);
+        _evacuating=false;
+        ccc.removeDistributedState(_evacuatingKey);
         ccc.distributeState();
         //Utils.safeSleep(5*1000*2); // TODO - should be hearbeat period...
         // FIXME - can we destroy the queue ?
@@ -259,14 +241,14 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
                     _log.error("emmigration queue initialisation failed", e);
                 }
-                _evacuationQueue=null;
+                _evacuating=false;
             }
         }
     }
     
     public void stop() throws Exception {
         synchronized (_shuttingDown) {
-            if (_evacuationQueue!=null) { // evacuation is synchronous, so we will not get to here until all sessions are gone...
+            if (_evacuating) { // evacuation is synchronous, so we will not get to here until all sessions are gone...
                 destroyEvacuationQueue();
             }
         }
@@ -396,54 +378,25 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
         
         //_log.info("node state changed: "+nodeName+" : "+state);
-        Destination evacuationQueue=(Destination)state.get(_evacuationQueueKey);
-        if (evacuationQueue==null) {
+        boolean evacuating=((Boolean)state.get(_evacuatingKey)).booleanValue();
+        if (!evacuating) {
             ensureEvacuationLeft(nodeName);
         } else {
             // we must not ourselves be evacuating...
             synchronized (_shuttingDown) {
                 if (!_shuttingDown.get()) {
-                    ensureEvacuationJoined(nodeName, evacuationQueue);
+                    ensureEvacuationJoined(nodeName);
                 }
             }
         }
     }
     
-    protected void ensureEvacuationJoined(String nodeName, Destination evacuationQueue) {
-        synchronized (_evacuations) {
-            if (!_evacuations.containsKey(nodeName)) {
-                try {
-                    if (_log.isTraceEnabled()) _log.trace("joining evacuation: "+nodeName);
-                    MessageConsumer consumer=_dispatcher.addDestination(evacuationQueue);
-                    _evacuations.put(nodeName, consumer);
-//                  } catch (IllegalStateException e) {
-//                  _log.debug("evacuation finished before we could join: "+nodeName);
-                } catch (JMSException e) {
-                    if ( _log.isWarnEnabled() ) {
-
-                        _log.warn("unexpected problem", e);
-                    }
-                }
-            }
-        }
+    protected void ensureEvacuationJoined(String nodeName) {
+    	// TODO - all needs complete rethink
     }
     
     protected void ensureEvacuationLeft(String nodeName) {
-        synchronized (_evacuations) {
-            MessageConsumer consumer=(MessageConsumer)_evacuations.get(nodeName);
-            if (consumer!=null) {
-                if (_log.isTraceEnabled()) _log.trace("leaving evacuation: "+nodeName);
-                try {
-                    _dispatcher.removeDestination(consumer);
-                } catch (JMSException e) {
-                    if ( _log.isWarnEnabled() ) {
-
-                        _log.warn("could not leave evacuation", e);
-                    }
-                }
-                _evacuations.remove(nodeName);
-            }
-        }
+    	// TODO - all needs complete rethink
     }
     
     public void onNodeRemoved(ClusterEvent event) {

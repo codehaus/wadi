@@ -17,8 +17,6 @@
 package org.codehaus.wadi.gridstate;
 
 import javax.jms.Connection;
-import javax.jms.Destination;
-import javax.jms.JMSException;
 
 /**
  * An ActiveCluster Cluster that exposes an API for the dynamic creation of Queues.
@@ -28,7 +26,6 @@ import javax.jms.JMSException;
  */
 public interface ExtendedCluster extends org.activecluster.Cluster /*, Lifecycle */ {
 
-    Destination createQueue(String name) throws JMSException;
     Connection getConnection();
     
 }

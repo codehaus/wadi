@@ -179,10 +179,6 @@ public class RestartableCluster implements ExtendedCluster {
 
     // ExtendedCluster
 
-    public Destination createQueue(String name) throws JMSException {
-        return _cluster.createQueue(name);
-    }
-
     public Connection getConnection() {
         return _cluster.getConnection();
     }
