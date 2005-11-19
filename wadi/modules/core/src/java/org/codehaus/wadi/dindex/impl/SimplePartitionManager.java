@@ -43,6 +43,7 @@ import org.codehaus.wadi.dindex.messages.PartitionTransferCommand;
 import org.codehaus.wadi.dindex.messages.PartitionTransferRequest;
 import org.codehaus.wadi.dindex.messages.PartitionTransferResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.impl.Quipu;
 
 /**
@@ -70,6 +71,7 @@ public class SimplePartitionManager implements PartitionManager {
     protected final long _inactiveTime;
 	protected final boolean _allowRegenerationOfMissingPartitions = true;
 	protected final Callback _callback;
+    protected final PartitionMapper _mapper=new PartitionMapper() {public int map(Object key) {return Math.abs(key.hashCode()%_numPartitions);}};
 
     public SimplePartitionManager(String nodeName, int numPartitions, PartitionConfig config, Cluster cluster, Dispatcher dispatcher, Map distributedState, long inactiveTime, Callback callback) {
     	_nodeName=nodeName;
@@ -550,5 +552,9 @@ public class SimplePartitionManager implements PartitionManager {
 	public int getNumPartitions() {
 		return _numPartitions;
 	}
+	
+    public PartitionFacade getPartition(Object key) {
+    	return _partitions[_mapper.map(key)];
+    }
 
 }

@@ -33,6 +33,7 @@ import org.codehaus.wadi.dindex.impl.PartitionKeys;
 public interface PartitionManager {
 
 	PartitionFacade getPartition(int partition);
+	PartitionFacade getPartition(Object key);
 	PartitionKeys getPartitionKeys();
 	int getNumPartitions();
 

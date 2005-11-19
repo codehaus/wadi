@@ -16,18 +16,29 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
+import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Location;
+import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.StateManagerConfig;
+import org.codehaus.wadi.dindex.messages.EmigrationRequest;
+import org.codehaus.wadi.dindex.messages.EmigrationResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
 public class SimpleStateManager implements StateManager {
 
+    protected final Log _log = LogFactory.getLog(getClass());
+
 	protected final Dispatcher _dispatcher;
 	protected final long _inactiveTime;
-	
+    protected final int _resTimeout=500; // TODO - parameterise
+
 	protected StateManagerConfig _config;
 	
 	public SimpleStateManager(Dispatcher dispatcher, long inactiveTime) {
@@ -79,6 +90,59 @@ public class SimpleStateManager implements StateManager {
     protected void onDIndexRequest(ObjectMessage om, DIndexRequest request) {
         int partitionKey=request.getPartitionKey(_config.getNumPartitions());
         _config.getPartition(partitionKey).dispatch(om, request);
+    }
+
+    // evacuation protocol
+    
+    public boolean offerEmigrant(String key, Motable emotable, long timeout) {
+    	Destination to=((RemotePartition)_config.getPartition(key).getContent()).getDestination(); // TODO - HACK - temporary
+    	Destination from=_dispatcher.getLocalDestination();
+    	EmigrationRequest request=new EmigrationRequest(emotable);
+    	ObjectMessage message=_dispatcher.exchangeSend(from, to, request, timeout);
+    	EmigrationResponse ack=null;
+    	try {
+    		ack=message==null?null:(EmigrationResponse)message.getObject();
+    	} catch (JMSException e) {
+    		if ( _log.isErrorEnabled() ) {
+    			
+    			_log.error("could not unpack response", e);
+    		}
+    	}
+    	
+    	if (ack==null) {
+    		if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+timeout+" millis): "+key);
+    		return false;
+    	} else {
+    		if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+timeout+" millis): "+key);
+    		return true;
+    	}
+    }
+    
+    public void acceptImmigrant(ObjectMessage message, Location location, String name, Motable motable) {
+        if (!_dispatcher.reply(message, new EmigrationResponse(name, location))) { 
+            if (_log.isErrorEnabled()) _log.error("could not acknowledge safe receipt: "+name);
+        }
+    }
+    
+    protected ImmigrationListener _listener;
+    
+    public void setImmigrationListener(ImmigrationListener listener) {
+        _dispatcher.register(this, "onEmigrationRequest", EmigrationRequest.class);
+        _dispatcher.register(EmigrationResponse.class, _resTimeout);
+        _listener=listener;
+    }
+
+    public void unsetImmigrationListener(ImmigrationListener listener) {
+    	if (_listener==listener) {
+    		_listener=null;
+    		// TODO ...
+    		//_dispatcher.deregister("onEmigrationRequest", EmigrationRequest.class, _resTimeout);
+    		//_dispatcher.deregister("onEmigrationResponse", EmigrationResponse.class, _resTimeout);
+    	}
+    }
+    
+    public void onEmigrationRequest(ObjectMessage message, EmigrationRequest request) {
+    	_listener.onImmigration(message, request.getMotable());
     }
 
 }
