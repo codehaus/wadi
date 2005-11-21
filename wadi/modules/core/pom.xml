@@ -141,6 +141,7 @@
                         <exclude implementation="java.lang.String">**/io/TestMotion.java</exclude>
                         <exclude implementation="java.lang.String">**/io/TestServers.java</exclude>
                         <exclude implementation="java.lang.String">**/sandbox/jcache/TestJCache.java</exclude>
+                        <exclude implementation="java.lang.String">**/sandbox/partition/impl/TestExchange.java</exclude>
                         <exclude implementation="java.lang.String">**/TestEvicters.java</exclude>
                         <exclude implementation="java.lang.String">**/TestGCache.java</exclude>
                         <exclude implementation="java.lang.String">**/TestContextualiser.java</exclude>
