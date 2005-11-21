@@ -2,7 +2,7 @@
 
 <!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure 1.2//EN" "http://jetty.mortbay.org/configure_1_2.dtd">
 
-<Configure class="org.mortbay.jetty.webapp.WebAppHandler">
+<Configure class="org.mortbay.jetty.webapp.WebAppContext">
 
 <!-- Set up the WADI Proxy Handler
 
@@ -19,14 +19,6 @@
   </Call>
  -->
 
-<!-- Allow WADI to consume Jetty classes without raising security issues -->
-
-  <Get name="ClassLoader">
-    <Set name="ServerClasses">
-      <Array type="java.lang.String">
-      </Array>
-    </Set>
-  </Get>
 
 <!-- Set up the WADI Filter -->
 <!-- OhOh, this will overwrite Filters defined in web.xml ?? -->

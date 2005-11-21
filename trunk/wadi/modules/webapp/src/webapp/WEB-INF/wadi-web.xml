@@ -204,7 +204,7 @@
     id="TmpDirectory"
     class="java.io.File"
     >
-    <constructor-arg><value>${java.io.tmpdir}</value></constructor-arg>
+    <constructor-arg><value>${java.io.tmpdir}/${node.name}</value></constructor-arg>
   </bean>
 
   <bean
