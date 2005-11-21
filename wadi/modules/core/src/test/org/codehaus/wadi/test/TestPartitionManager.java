@@ -31,6 +31,8 @@ import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 
 import junit.framework.TestCase;
 
+// Put this off until later - no current need to disentangle DIndex and PartitionManager, althought it will have to be done eventually...
+
 public class TestPartitionManager extends TestCase {
 	
 	public static void main(String[] args) {
