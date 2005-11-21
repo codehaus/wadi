@@ -378,7 +378,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
         
         //_log.info("node state changed: "+nodeName+" : "+state);
-        boolean evacuating=((Boolean)state.get(_evacuatingKey)).booleanValue();
+        Boolean tmp=(Boolean)state.get(_evacuatingKey);
+        boolean evacuating=tmp==null?false:tmp.booleanValue();
         if (!evacuating) {
             ensureEvacuationLeft(nodeName);
         } else {
