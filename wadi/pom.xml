@@ -307,7 +307,10 @@
             <dependency>
                 <groupId>activemq</groupId>
                 <artifactId>activemq</artifactId>
-                <version>WADI-3.2</version>
+                <!--<version>3.2</version>--> <!-- broken distro -->
+                <!--<version>3.2-M1</version>--> <!-- works but old -->
+                <version>WADI-3.2</version> <!-- fixed distro -->
+                <!--<version>4.0-M1</version>--> <!-- broken distro -->
             </dependency>
 
             <dependency>
