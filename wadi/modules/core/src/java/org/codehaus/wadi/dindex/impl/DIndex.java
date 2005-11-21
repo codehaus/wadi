@@ -32,7 +32,6 @@ import org.activecluster.ClusterListener;
 import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
 import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
@@ -46,7 +45,7 @@ import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
-public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConfig, SimplePartitionManager.Callback, StateManagerConfig {
+public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartitionManager.Callback, StateManagerConfig {
 
     protected final static String _nodeNameKey="nodeName";
     protected final static String _partitionKeysKey="partitionKeys";
@@ -72,7 +71,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
         _dispatcher=dispatcher;
         _cluster=((ActiveClusterDispatcher)_dispatcher).getCluster();
         _distributedState=distributedState;
-        _partitionManager=new SimplePartitionManager(_nodeName, numPartitions, this, _cluster, _dispatcher, _distributedState, _inactiveTime, this);
+        _partitionManager=new SimplePartitionManager(_dispatcher, numPartitions, _distributedState, this);
         _stateManager=new SimpleStateManager(_dispatcher, _inactiveTime);
     }
 
@@ -163,6 +162,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, PartitionConf
         PartitionEvacuationRequest request=new PartitionEvacuationRequest();
         Node localNode=_cluster.getLocalNode();
         String correlationId=_cluster.getLocalNode().getName();
+        _log.info("Evacuating Partitions: "+localNode.getState().get("nodeName")+" -> "+_coordinatorNode.getState().get("nodeName"));
         while (_dispatcher.exchangeSend(localNode.getDestination(), _coordinatorNode.getDestination(), correlationId, request, _inactiveTime)==null) {
             if ( _log.isWarnEnabled() ) {
 
@@ -489,8 +489,6 @@ if ( _log.isWarnEnabled() ) {
     public PartitionFacade getPartition(Object key) {	
         return _partitionManager.getPartition(key);
     }
-
-    // PartitionConfig
 
     public String getNodeName(Destination destination) {
         Node local=_cluster.getLocalNode();

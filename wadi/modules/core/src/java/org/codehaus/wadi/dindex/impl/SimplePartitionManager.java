@@ -44,6 +44,7 @@ import org.codehaus.wadi.dindex.messages.PartitionTransferRequest;
 import org.codehaus.wadi.dindex.messages.PartitionTransferResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionMapper;
+import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
 /**
@@ -52,9 +53,9 @@ import org.codehaus.wadi.impl.Quipu;
  * @author jules
  *
  */
-public class SimplePartitionManager implements PartitionManager {
+public class SimplePartitionManager implements PartitionManager, PartitionConfig {
 
-	interface Callback {void onNodeRemoved(ClusterEvent event);}
+	public interface Callback {void onNodeRemoved(ClusterEvent event);}
 
 	protected final static String _partitionKeysKey="partitionKeys";
     protected final static String _timeStampKey="timeStamp";
@@ -65,7 +66,6 @@ public class SimplePartitionManager implements PartitionManager {
     protected final int _numPartitions;
     protected final PartitionFacade[] _partitions;
     protected final Cluster _cluster;
-    protected final PartitionConfig _partitionConfig;
     protected final Dispatcher _dispatcher;
     protected final Map _distributedState;
     protected final long _inactiveTime;
@@ -73,8 +73,9 @@ public class SimplePartitionManager implements PartitionManager {
 	protected final Callback _callback;
     protected final PartitionMapper _mapper=new PartitionMapper() {public int map(Object key) {return Math.abs(key.hashCode()%_numPartitions);}};
 
-    public SimplePartitionManager(String nodeName, int numPartitions, PartitionConfig config, Cluster cluster, Dispatcher dispatcher, Map distributedState, long inactiveTime, Callback callback) {
-    	_nodeName=nodeName;
+    public SimplePartitionManager(Dispatcher dispatcher, int numPartitions, Map distributedState, Callback callback) {
+        _dispatcher=dispatcher;
+    	_nodeName=_dispatcher.getNodeName();
     	_log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
     	_numPartitions=numPartitions;
 
@@ -82,13 +83,11 @@ public class SimplePartitionManager implements PartitionManager {
         long timeStamp=System.currentTimeMillis();
         boolean queueing=true;
         for (int i=0; i<_numPartitions; i++)
-            _partitions[i]=new PartitionFacade(i, timeStamp, new DummyPartition(i), queueing, config);
+            _partitions[i]=new PartitionFacade(i, timeStamp, new DummyPartition(i), queueing, this);
 
-        _partitionConfig=config;
-        _cluster=cluster;
-        _dispatcher=dispatcher;
+        _cluster=((ActiveClusterDispatcher)_dispatcher).getCluster();
         _distributedState=distributedState;
-        _inactiveTime=inactiveTime;
+        _inactiveTime=_dispatcher.getInactiveTime();
         _callback=callback;
     }
 
@@ -166,7 +165,6 @@ public class SimplePartitionManager implements PartitionManager {
 	    Collection[] c=createResultSet(_numPartitions, keys);
 	    try {
 	        _log.info("findRelevantSessionNames - starting");
-	        _log.info(_partitionConfig.getClass().getName());
 	        _dindexConfig.findRelevantSessionNames(_numPartitions, c);
 	        _log.info("findRelevantSessionNames - finished");
 	    } catch (Throwable t) {
@@ -287,7 +285,7 @@ public class SimplePartitionManager implements PartitionManager {
         }
 	    for (int i=0; i<partitions.length; i++) {
 	        LocalPartition partition=partitions[i];
-	        partition.init(_partitionConfig);
+	        partition.init(this);
 	        PartitionFacade facade=getPartition(partition.getKey());
 	        facade.setContent(timeStamp, partition);
 	    }
@@ -399,7 +397,7 @@ public class SimplePartitionManager implements PartitionManager {
 	            PartitionFacade facade=_partitions[k];
 	            facade.enqueue();
 	            LocalPartition local=new LocalPartition(k);
-	            local.init(_partitionConfig);
+	            local.init(this);
 	            facade.setContent(time, local);
 	        }
 	        PartitionKeys newKeys=getPartitionKeys();
@@ -504,7 +502,7 @@ public class SimplePartitionManager implements PartitionManager {
 	    for (int i=0; i<_numPartitions; i++) {
 	        PartitionFacade facade=_partitions[i];
 	        LocalPartition partition=new LocalPartition(i);
-	        partition.init(_partitionConfig);
+	        partition.init(this);
 	        facade.setContent(timeStamp, partition);
 	    }
 	}
@@ -556,5 +554,23 @@ public class SimplePartitionManager implements PartitionManager {
     public PartitionFacade getPartition(Object key) {
     	return _partitions[_mapper.map(key)];
     }
+
+	// PartitionConfig API
+	
+	public Dispatcher getDispatcher() {
+		return _dispatcher;
+	}
+
+	public Cluster getCluster() {
+		return _cluster;
+	}
+
+	public String getNodeName(Destination destination) {
+		return _nodeName;
+	}
+
+	public long getInactiveTime() {
+		return _inactiveTime;
+	}
 
 }
