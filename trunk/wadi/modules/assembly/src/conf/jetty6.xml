@@ -24,7 +24,7 @@
     <Array type="org.mortbay.jetty.Handler">
 
       <Item>
-	<New id="wadi"  class="org.mortbay.jetty.webapp.WebAppHandler">
+	<New id="wadi"  class="org.mortbay.jetty.webapp.WebAppContext">
 	  <Set name="contextPath">/wadi</Set>
 	  <Set name="war"><SystemProperty name="wadi.home"/>/webapps/wadi-webapp-<SystemProperty name="wadi.version"/>.war</Set>
 	  <Get name="SessionHandler">

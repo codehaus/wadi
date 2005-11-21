@@ -126,8 +126,9 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
   // cut-n-pasted from Jetty src - aargh !
   // Greg uses Apache-2.0 as well - so no licensing issue as yet - TODO
 
+  // now out of date - refresh - TODO
   public Cookie
-    getSessionCookie(javax.servlet.http.HttpSession session,boolean requestIsSecure)
+    getSessionCookie(javax.servlet.http.HttpSession session, String contextPath, boolean requestIsSecure)
   {
     if (isUsingCookies())
     {
@@ -135,7 +136,7 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 	?new HttpOnlyCookie(SessionManager.__SessionCookie,session.getId())
 	:new Cookie(SessionManager.__SessionCookie,session.getId());
 
-      cookie.setPath("/");
+      cookie.setPath(contextPath==null?"/":contextPath);
       cookie.setMaxAge(-1);
       cookie.setSecure(requestIsSecure && getSecureCookies());
 
@@ -145,7 +146,7 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 	String maxAge=_context.getInitParameter(SessionManager.__MaxAge);
 	String path=_context.getInitParameter(SessionManager.__SessionPath);
 
-	if (path==null)
+	if (path!=null)
 	  cookie.setPath(path);
 	if (domain!=null)
 	  cookie.setDomain(domain);
@@ -172,6 +173,11 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 
   protected boolean isUsingCookies() {
     return _usingCookies;
+  }
+
+  // TODO - implement ?
+  public void clearEventListeners() {
+    _log.warn("NYI");
   }
 
 }
