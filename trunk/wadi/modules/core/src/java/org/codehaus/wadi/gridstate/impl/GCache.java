@@ -323,7 +323,7 @@ public class GCache implements Cache, DispatcherConfig, StateManagerConfig, Part
 
 	// Proprietary
 
-	public Partition[] getPartitions() {
+	public PartitionFacade[] getPartitions() {
 		return _partitionManager.getPartitions();
 	}
 
@@ -362,7 +362,7 @@ public class GCache implements Cache, DispatcherConfig, StateManagerConfig, Part
     	_partitionManager.stop();
     }
 
-	public Partition getPartition(Object key) {
+	public PartitionFacade getPartition(Object key) {
 		return _partitionManager.getPartition(key);
 	}
 	

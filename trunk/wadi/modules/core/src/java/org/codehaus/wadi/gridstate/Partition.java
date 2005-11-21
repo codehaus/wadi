@@ -18,15 +18,24 @@ package org.codehaus.wadi.gridstate;
 
 import java.util.Map;
 
-import org.codehaus.wadi.gridstate.impl.PartitionFacade;
+import javax.jms.Destination;
 
+import org.codehaus.wadi.PMPartition;
+import org.codehaus.wadi.gridstate.impl.Location;
 
-public interface StateManagerConfig {
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
-	public Map getMap();
-	public LockManager getPMSyncs();
-	public LockManager getSMSyncs();
-	
-	public PartitionFacade getPartition(Object key);
+public interface Partition extends PMPartition {
+
+	void init(PartitionConfig config);
+
+	// Serializable executeSync(Object process);
+	// void executeASync(Object process);
+
+	Destination getDestination();
+
+	Location getLocation(Object key);
+	ReadWriteLock getLock();
+	Map getMap();
 
 }

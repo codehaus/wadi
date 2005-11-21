@@ -21,15 +21,15 @@ import java.util.Map;
 import javax.jms.Destination;
 
 import org.codehaus.wadi.gridstate.PartitionConfig;
-import org.codehaus.wadi.gridstate.PartitionInterface;
+import org.codehaus.wadi.gridstate.Partition;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
-public class Partition implements PartitionInterface {
+public class PartitionFacade implements Partition {
 
-	protected final PartitionInterface _partition;
+	protected final Partition _partition;
 
-	Partition(PartitionInterface partition) {
+	PartitionFacade(Partition partition) {
 		_partition=partition;
 	}
 
@@ -51,6 +51,16 @@ public class Partition implements PartitionInterface {
 
 	public Map getMap() {
 		return _partition.getMap();
+	}
+
+	// PMPartition API
+	
+	public boolean isLocal() {
+		return _partition.isLocal();
+	}
+	
+	public int getKey() {
+		throw new UnsupportedOperationException("NYI");
 	}
 
 }

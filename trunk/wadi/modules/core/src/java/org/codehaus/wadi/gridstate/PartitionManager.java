@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.gridstate;
 
-import org.codehaus.wadi.gridstate.impl.Partition;
+import org.codehaus.wadi.gridstate.impl.PartitionFacade;
 
 public interface PartitionManager extends PartitionConfig {
 
@@ -25,7 +25,7 @@ public interface PartitionManager extends PartitionConfig {
 	void stop() throws Exception;
 
 	int getNumPartitions();
-	Partition[] getPartitions();
-	Partition getPartition(Object key);
+	PartitionFacade[] getPartitions();
+	PartitionFacade getPartition(Object key);
 
 }

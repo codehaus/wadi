@@ -23,11 +23,11 @@ import javax.jms.Destination;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.PartitionConfig;
-import org.codehaus.wadi.gridstate.PartitionInterface;
+import org.codehaus.wadi.gridstate.Partition;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
-public class RemotePartition implements PartitionInterface {
+public class RemotePartition implements Partition {
 
 	protected final Log _log=LogFactory.getLog(getClass().getName());
 	protected final Destination _destination;
@@ -56,6 +56,17 @@ public class RemotePartition implements PartitionInterface {
 
 	public Map getMap() {
 		throw new UnsupportedOperationException("What should we do here?");
+	}
+
+
+	// PMPartition API
+	
+	public boolean isLocal() {
+		return false;
+	}
+	
+	public int getKey() {
+		throw new UnsupportedOperationException("NYI");
 	}
 
 }
