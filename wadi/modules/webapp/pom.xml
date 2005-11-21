@@ -42,11 +42,6 @@
             <artifactId>geronimo-spec-servlet</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>tomcat</groupId>
-            <artifactId>jasper-compiler</artifactId>
-        </dependency>
-
         <!-- run time -->
 
         <dependency>
