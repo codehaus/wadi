@@ -77,20 +77,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>jspc-maven-plugin</artifactId>
-                <version>1.0.1</version>
-                <executions>
-                    <execution>
-                        <id>jspc</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <warSourceDirectory>${basedir}/src/webapp</warSourceDirectory>
-                    <inputWebXml>${basedir}/src/webapp/WEB-INF/web.xml</inputWebXml>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
