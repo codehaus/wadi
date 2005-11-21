@@ -28,12 +28,12 @@ import org.codehaus.wadi.gridstate.PartitionMapper;
 public class StaticPartitionManager implements PartitionManager {
 
 	protected final Dispatcher _dispatcher;
-	protected final Partition[] _partitions;
+	protected final PartitionFacade[] _partitions;
 	protected final PartitionMapper _mapper;
 
 	public StaticPartitionManager(Dispatcher dispatcher, int numPartitions, PartitionMapper mapper) {
 		_dispatcher=dispatcher;
-		_partitions=new Partition[numPartitions];
+		_partitions=new PartitionFacade[numPartitions];
 		_mapper=mapper;
 	}
 
@@ -43,7 +43,7 @@ public class StaticPartitionManager implements PartitionManager {
 		}
 	}
 
-	public Partition[] getPartitions() {
+	public PartitionFacade[] getPartitions() {
 		return _partitions;
 	}
 	
@@ -71,18 +71,18 @@ public class StaticPartitionManager implements PartitionManager {
     			GCache cache=caches[j];
     			if (cache!=master) {
     				// if node is not PartitionMaster - make partition remote, pointing to PartitionMaster
-    				Partition partition=new Partition(new RemotePartition(master.getLocalDestination()));
+    				PartitionFacade partition=new PartitionFacade(new RemotePartition(master.getLocalDestination()));
     				partition.init(cache.getPartitionConfig());
     				cache.getPartitions()[i]=partition;
     			} else {
-    				Partition partition=new Partition(new LocalPartition());
+    				PartitionFacade partition=new PartitionFacade(new LocalPartition());
     				cache.getPartitions()[i]=partition;
     			}
     		}
     	}
 	}
 
-	public Partition getPartition(Object key) {
+	public PartitionFacade getPartition(Object key) {
 		return _partitions[_mapper.map(key)];
 	}
 

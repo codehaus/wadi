@@ -43,7 +43,7 @@ public class DummyPartitionManager implements PartitionManager {
 		// empty
 	}
 
-	public Partition[] getPartitions() {
+	public PartitionFacade[] getPartitions() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -52,7 +52,7 @@ public class DummyPartitionManager implements PartitionManager {
 		return _numPartitions;
 	}
 
-	public Partition getPartition(Object key) {
+	public PartitionFacade getPartition(Object key) {
 		// TODO Auto-generated method stub
 		return null;
 	}

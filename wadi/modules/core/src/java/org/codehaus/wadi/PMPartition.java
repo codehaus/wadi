@@ -14,19 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate;
+package org.codehaus.wadi;
 
-import java.util.Map;
+public interface PMPartition {
 
-import org.codehaus.wadi.gridstate.impl.PartitionFacade;
-
-
-public interface StateManagerConfig {
-
-	public Map getMap();
-	public LockManager getPMSyncs();
-	public LockManager getSMSyncs();
-	
-	public PartitionFacade getPartition(Object key);
+    boolean isLocal();
+    int getKey();
 
 }

@@ -16,13 +16,8 @@
  */
 package org.codehaus.wadi.dindex;
 
-import javax.jms.ObjectMessage;
+import org.codehaus.wadi.PMPartition;
 
+public interface Partition extends PMPartition, SMPartition {
 
-public interface Partition {
-
-    boolean isLocal();
-    int getKey();
-    void dispatch(ObjectMessage om, DIndexRequest request);
-    
 }

@@ -179,7 +179,7 @@ public class IndirectStateManager implements StateManager {
 
                 _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
             }
-			Partition partition=_config.getPartition(key);
+			PartitionFacade partition=_config.getPartition(key);
 			Location location=(Location)partition.getLocation(key);
 			if (location==null) {
 				_dispatcher.reply(message1,new ReadPMToIM());
@@ -411,7 +411,7 @@ public class IndirectStateManager implements StateManager {
 	public void onMessage(ObjectMessage message1, WriteIMToPM write) {
 		// what if we are NOT the PM anymore ?
 		Object key=write.getKey();
-		Partition partition=_config.getPartition(key);
+		PartitionFacade partition=_config.getPartition(key);
 		Map partitionMap=partition.getMap();
 		Sync sync=null;
 		String agent=_dispatcher.getNodeName((Destination)write.getIM());
