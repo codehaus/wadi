@@ -10,18 +10,6 @@
     <version>2.0-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>WADI :: WebApp</name>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>jgenender</id>
-            <name>Jeff Genender's  Repository on codehaus</name>
-            <url>http://codehaus.org/~jgenender/maven2</url>
-        </pluginRepository>
-        <pluginRepository>
-          <id>mortbay-repo</id>
-          <name>mortbay-repo</name>
-          <url>http://www.mortbay.org/maven2/snapshot</url>
-        </pluginRepository>
-    </pluginRepositories>
     <dependencies>
         <dependency>
             <groupId>ant</groupId>
@@ -115,7 +103,6 @@
             <plugin>
               <groupId>org.mortbay.jetty</groupId>
               <artifactId>maven-jetty6-plugin</artifactId>
-              <version>6.0-SNAPSHOT</version>
              <dependencies>
                <dependency>
                    <groupId>wadi</groupId>

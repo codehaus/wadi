@@ -113,11 +113,6 @@
         <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org/home/projects/wadi/scm:wadi</developerConnection>
         <url>http://cvs.wadi.codehaus.org/wadi/</url>
     </scm>
-    <!-- scm>
-        <connection>scm:svn:svn://svn.codehaus.org/wadi/scm/trunk/</connection>
-        <developerConnection>scm:svn:https://svn.codehaus.org/wadi/trunk</developerConnection>
-        <url>http://svn.wadi.codehaus.org/trunk</url>
-    </scm-->
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -161,6 +156,11 @@
             <url>http://codehaus.org/~jgenender/maven2</url>
         </repository>
         <repository>
+            <id>mortbay</id>
+            <name>Mortbay Repository on codehaus</name>
+            <url>http://www.mortbay.org/maven2/release</url>
+        </repository>
+        <repository>
             <id>snapshots</id>
             <name>Maven Central Development Repository</name>
             <url>http://snapshots.maven.codehaus.org/maven2</url>
@@ -169,6 +169,13 @@
             </releases>
         </repository>
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>mortbay-repo</id>
+            <name>Mortbay Repository on codehaus</name>
+            <url>http://www.mortbay.org/maven2/snapshot</url>
+        </pluginRepository>
+    </pluginRepositories>
     <modules>
         <module>modules/core</module>
         <module>modules/jgroups</module>
@@ -455,6 +462,15 @@
 
     </dependencyManagement>
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>maven-jetty6-plugin</artifactId>
+                    <version>6.0-SNAPSHOT</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -473,8 +489,8 @@
     <reporting>
         <plugins>
             <plugin>
-               <groupId>org.codehaus.mojo</groupId>
-               <artifactId>surefire-report-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>surefire-report-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
