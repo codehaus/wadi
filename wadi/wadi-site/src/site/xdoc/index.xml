@@ -71,7 +71,7 @@
                 WADI-2.0 is a complete rearchitecture and rewrite. New documentation is being entered into the <a href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI">WADI Wiki</a>. We hope to have a 2.0 release out shortly.
             </p>
             <p>
-                Please use the <a href="http://docs.codehaus.org/display/WADI/Getting+Started">Getting Started Page</a> to boostrap yourself into WADI's world.
+                Please use the <a href="./getting-started/index.html">Getting Started Page</a> to boostrap yourself into WADI's world.
             </p>
             <p>
                 Please browse our <a href="./faq.html">FAQ</a> for further details.
