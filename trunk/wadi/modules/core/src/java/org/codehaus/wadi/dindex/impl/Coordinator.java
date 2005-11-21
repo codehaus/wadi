@@ -250,11 +250,11 @@ public class Coordinator implements Runnable {
     		Collection left=_config.getLeft();
     		for (int i=0; i<leaving.length; i++) {
     			Node node=leaving[i];
+    			_log.info("sending evacuation response to: "+node.getState().get("nodeName"));
     			if (!left.contains(node.getDestination())) {
     				PartitionEvacuationResponse response=new PartitionEvacuationResponse();
     				if (!_dispatcher.reply(_cluster.getLocalNode().getDestination(), node.getDestination(), node.getName(), response)) {
                         if ( _log.isErrorEnabled() ) {
-
                             _log.error("problem sending EvacuationResponse to " + DIndex.getNodeName(node));
                         }
     					failures++;
