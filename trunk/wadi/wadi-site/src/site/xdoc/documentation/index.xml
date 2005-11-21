@@ -7,11 +7,19 @@
         <section name="Documentation">            
             <p>
                 <ul>
-                    <li><a href="./eclipse.html">Eclipse and WADI</a></li>
-                    <li>Manually Configuring WADI and TOMCAT</li>
-                    <li>Manually Configuring WADI and Jetty</li>
+                    <li><a href="../getting-started/index.html">Getting Started</a></li>
                 </ul>
-             </p>
+            </p>
+        </section>
+        <section name="Installation and Configuration">                  
+            <a name="installation"></a>
+            <p>
+                <ul>
+                    <li><a href="./eclipse.html">Eclipse and WADI</a></li>
+                    <li>Configuring WADI and TOMCAT (Comming Soon)</li>
+                    <li>Configuring WADI and Jetty (Coming Soon)</li>
+                </ul>
+            </p>
         </section>
     </body>
 </document>

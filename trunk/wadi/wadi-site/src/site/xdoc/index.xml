@@ -8,35 +8,27 @@
             <div id="downloadbox">
                 <h5>Get WADI</h5>
                 <p>
-                    <a href="download.html">
-                        <img valign="top" src="./images/folder-open.gif" border="0" alt="" title="download"/>
-                        Download
+                    <img valign="top" src="./images/folder-open.gif" border="0" alt="" title="download"/>
+                    Download                    
+                    <a href="http://dist.codehaus.org/wadi/wadi/wars/wadi-2.0-SNAPSHOT.war">
+                        WADI 2.0-SNAPSHOT.war
                     </a>
-                    WADI 2.0-SNAPSHOT
                     <small>(6.2Mb)</small>
                 </p>
                 <ul>
                     <li>
-                        <a href="">System Requirements</a>
+                        <a href="./documentation/index.html#installation">Installation Instructions</a>
+                    </li>                                          
+                    <li>
+                        <a href="./getting-started/index.html">Getting Started</a>
                     </li>
                     <li>
-                        <a href="">Installation Instructions</a>
-                    </li>
-                    <li>
-                        <a href="">Release Notes</a>
-                    </li>                         
-                    <li>
-                        <a href="http://docs.codehaus.org/display/WADI/Getting+Started">Getting Started</a>
-                    </li>
-                    <li>
-                        <a href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI">Documentation</a>
+                        <a href="./documentation/index.html">Documentation</a>
                     </li>          
                 </ul>
                 <p>
-                    <a href="download.html">
-                        <img valign="top" src="./images/folder-open.gif" border="0" alt="" title="download"/>
-                        Download
-                    </a>
+                    <img valign="top" src="./images/folder-open.gif" border="0" alt="" title="download"/>
+                    Download 
                     WADI 0.9
                     <a href="http://dist.codehaus.org/wadi/distributions/wadi-0.9.tgz">.tgz</a>,
                     <a href="http://dist.codehaus.org/wadi/distributions/wadi-0.9.zip">.zip</a>
@@ -44,7 +36,7 @@
                 </p>
                 <ul>
                     <li>
-                        <a href="">Documentation</a>
+                        <a href="./documentation/index.html">Documentation</a>
                     </li>
                 </ul>
 
