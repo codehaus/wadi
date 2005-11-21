@@ -108,7 +108,7 @@
              </dependencies>
               <configuration>
                 <scanIntervalSeconds>10</scanIntervalSeconds>
-                <webAppSourceDirectory>src/webapp</webAppSourceDirectory> 
+                <webAppSourceDirectory>src/webapp</webAppSourceDirectory>
                 <contextPath>/wadi</contextPath>
                 <connectors>
                   <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
@@ -133,10 +133,10 @@
                      <name>wadi.properties</name>
                      <value>${wadi.properties}</value>
                   </systemProperty>
-                  <systemProperty>
-                     <name>cycle.me</name>
-                     <value>true</value>
-                  </systemProperty>
+	    <systemProperty>
+	      <name>node.name</name>
+	      <value>${node.name}</value>
+	    </systemProperty>
                 </systemProperties>
               </configuration>
             </plugin>
