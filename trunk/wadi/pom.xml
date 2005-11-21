@@ -140,6 +140,11 @@
     </distributionManagement>
     <repositories>
         <repository>
+            <id>mortbay</id>
+            <name>Mortbay Repository on codehaus</name>
+            <url>http://www.mortbay.org/maven2/snapshot</url>
+        </repository>
+        <repository>
             <id>central</id>
             <name>Maven 2 Repository on ibibio</name>
             <url>http://repo1.maven.org/maven2</url>
@@ -154,11 +159,6 @@
             <id>jgenender</id>
             <name>Jeff Genender's  Repository on codehaus</name>
             <url>http://codehaus.org/~jgenender/maven2</url>
-        </repository>
-        <repository>
-            <id>mortbay</id>
-            <name>Mortbay Repository on codehaus</name>
-            <url>http://www.mortbay.org/maven2/release</url>
         </repository>
         <repository>
             <id>snapshots</id>
