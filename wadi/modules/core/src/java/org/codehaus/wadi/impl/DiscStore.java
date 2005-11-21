@@ -42,6 +42,13 @@ public class DiscStore implements Store, DiscMotableConfig {
         _useNIO=useNIO;
         _reusingStore=reusingStore;
         
+        if (!dir.exists()) {
+            _log.info("Creating directory: "+_dir.getCanonicalPath());
+            if (!dir.mkdirs())
+            throw new IOException("Couldn't create directory "+_dir.getCanonicalPath());
+        }
+       
+        
         try {
         	File.createTempFile("DiscStore_WriteTest",null , _dir).delete();
         } catch (IOException e) {

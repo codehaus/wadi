@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.impl;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
@@ -26,7 +27,9 @@ import org.codehaus.wadi.SessionWrapperFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 
 public class SpringManagerFactory {
 
@@ -50,7 +53,19 @@ public class SpringManagerFactory {
 
     public static StandardManager create(InputStream descriptor, String beanName, SessionFactory sessionFactory, SessionWrapperFactory sessionWrapperFactory) throws FileNotFoundException {
     	DefaultListableBeanFactory dlbf=new DefaultListableBeanFactory();
+        String wadiPropsName = System.getProperty("wadi.properties");
+        FileSystemResource props = null;
+        if ((wadiPropsName!=null) && (!"".equals(wadiPropsName.trim()))){
+            props = new FileSystemResource(new File(wadiPropsName.trim()));
+        }
     	PropertyPlaceholderConfigurer cfg=new PropertyPlaceholderConfigurer();
+        if ((props != null) && props.exists())
+                cfg.setLocation(props);
+        else
+            _log.info("properties file "+wadiPropsName+" does not exist");
+        
+        _log.info("java.io.tmpdir="+System.getProperty("java.io.tmpdir"));
+        
     	new XmlBeanDefinitionReader(dlbf).loadBeanDefinitions(new InputStreamResource(descriptor));
     	cfg.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
     	cfg.postProcessBeanFactory(dlbf);
