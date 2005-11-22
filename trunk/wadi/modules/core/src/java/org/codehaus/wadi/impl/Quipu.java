@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
 
 /**
@@ -31,7 +34,9 @@ import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
  */
 public class Quipu extends WaitableInt {
 
-    public Quipu(int numLlammas) {
+	protected final static Log _log = LogFactory.getLog(Quipu.class);
+	
+	public Quipu(int numLlammas) {
         super(numLlammas);
         // TODO Auto-generated constructor stub
     }
@@ -50,6 +55,7 @@ public class Quipu extends WaitableInt {
     
     public void putResult(Object result) {
         _results.add(result);
+        if (_log.isTraceEnabled()) _log.trace("result arrived: "+result);
         decrement();
     }
     
