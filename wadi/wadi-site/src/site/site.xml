@@ -23,6 +23,9 @@
          <item name="Wiki" href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI"/>
          <item name="How To Help" href="./help.html"/>
       </menu>
+      <menu name="Source">
+         <item name="Browse the Source" href="http://cvs.wadi.codehaus.org/" />
+      </menu>
       ${reports}
    </body>
 </project>
