@@ -617,6 +617,34 @@
       </answer>
     </faq>
 
+    <faq id="where">
+      <question>How does WADI relate to <a
+      href="http://openejb.codehaus.org/">OpenEJB</a>?
+      [22/11/05]</question>
+      <answer>
+
+	<p/>
+
+	WADI provides a number of clustering related services to the
+	web-tier which have direct equivalents in the EJB tier (The
+	management of clustered SFSBs).
+
+	<p/>
+
+	WADI and OpenEJB communities are in discussion as to how WADI
+	technology may be reused beneath OpenEJB in order to provide
+	HA EJBs.
+
+	<p/>
+
+	We expect the outcome to be a genericisation of a number of
+	WADI components, a number of intelligent client-side EJB
+	client proxies and some pluggable OpenEJB internals. Work is
+	underway on a complete OpenEJB integration.
+
+      </answer>
+    </faq>
+
     <faq id="involved">
       <question>This is interesting stuff - how do I get involved? [22/11/05]</question>
       <answer>
