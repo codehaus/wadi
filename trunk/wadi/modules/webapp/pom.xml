@@ -130,13 +130,29 @@
                      <value>org.apache.commons.logging.impl.SimpleLog</value>
                   </systemProperty>
                   <systemProperty>
+                     <name>org.apache.commons.logging.simplelog.showdatetime</name>
+                     <value>true</value>
+                  </systemProperty>
+                  <systemProperty>
+                     <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi</name>
+                     <value>debug</value>
+                  </systemProperty>
+                  <systemProperty>
+                     <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.AbsoluteEvicter</name>
+                     <value>info</value>
+                  </systemProperty>
+                  <systemProperty>
+                     <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.NeverEvicter</name>
+                     <value>info</value>
+                  </systemProperty>
+                  <systemProperty>
                      <name>wadi.properties</name>
                      <value>${wadi.properties}</value>
                   </systemProperty>
-	    <systemProperty>
-	      <name>node.name</name>
-	      <value>${node.name}</value>
-	    </systemProperty>
+	          <systemProperty>
+	            <name>node.name</name>
+	            <value>${node.name}</value>
+	          </systemProperty>
                 </systemProperties>
               </configuration>
             </plugin>
