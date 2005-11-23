@@ -421,21 +421,21 @@
       </map>
     </property>
     <property name="server" ref="mbeanServer"/>
+    <property name="registrationBehavior"><value>2</value></property> <!-- REGISTRATION_REPLACE_EXISTING -->
   </bean>
 
   <!--
   if you are running your own jndi registry, you may comment this out
   (untested)
-  -->
   <bean id="registry" class="java.rmi.registry.LocateRegistry" factory-method="createRegistry">
     <constructor-arg value="${jndi.port}"/>
   </bean>
+  -->
 
   <!--
   if you are running your own jmx remote connector, you may comment this out
   you will also need to remove the reference to 'serverConnector' in the 'exporter' bean definition.
   (untested)
-  -->
   <bean id="serverConnector" class="org.springframework.jmx.support.ConnectorServerFactoryBean" depends-on="registry">
     <property name="objectName" value="connector:name=rmi"/>
     <property name="serviceUrl" value="service:jmx:rmi://localhost/jndi/rmi://localhost:${jndi.port}/wadi"/>
@@ -443,5 +443,6 @@
     <property name="threaded" value="true"/>
     <property name="daemon" value="true"/>
   </bean>
+  -->
 
 </beans>
