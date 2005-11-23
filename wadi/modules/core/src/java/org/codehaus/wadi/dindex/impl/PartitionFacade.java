@@ -17,7 +17,6 @@
 package org.codehaus.wadi.dindex.impl;
 
 import javax.jms.Destination;
-import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
@@ -25,6 +24,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.Partition;
 import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
+import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
+import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
+import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
+import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
@@ -41,7 +44,6 @@ public class PartitionFacade extends AbstractPartition {
     protected final LinkedQueue _queue=new LinkedQueue();
     protected final PartitionConfig _config;
 
-    protected boolean _queueing;
     protected long _timeStamp;
     protected Partition _content;
 
@@ -50,11 +52,7 @@ public class PartitionFacade extends AbstractPartition {
         _config=config;
         _timeStamp=timeStamp;
         _content=content;
-        _queueing=queueing;
-        if ( _log.isTraceEnabled() ) {
-
-            _log.trace("[" + _key + "] initialising location to: " + _content);
-        }
+        if (_log.isTraceEnabled()) _log.trace("["+_key+"] initialising location to: "+_content);
     }
 
     public boolean isLocal() { // locking ?
@@ -63,19 +61,13 @@ public class PartitionFacade extends AbstractPartition {
         try {
             sync.acquire();
             acquired=true;
-
             return _content.isLocal();
-
         } catch (InterruptedException e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("unexpected problem", e);
-            }
+        	_log.warn("unexpected problem", e);
         } finally {
             if (acquired)
                 sync.release();
         }
-
         throw new UnsupportedOperationException();
     }
 
@@ -85,189 +77,140 @@ public class PartitionFacade extends AbstractPartition {
         try {
             sync.acquire();
             acquired=true;
-
             return _content;
-
         } catch (InterruptedException e) {
-            if ( _log.isWarnEnabled() ) {
-
                 _log.warn("unexpected problem", e);
-            }
         } finally {
             if (acquired)
                 sync.release();
         }
-
         throw new UnsupportedOperationException();
     }
 
     public void setContent(long timeStamp, Partition content) {
-        Sync sync=_lock.writeLock();
-        boolean acquired=false;
-        try {
-            sync.acquire();
-            acquired=true;
-
-            if (timeStamp>_timeStamp) {
-                if ( _log.isTraceEnabled() ) {
-
-                    _log.trace("[" + _key + "] changing location from: " + _content + " to: " + content);
-                }
-                _timeStamp=timeStamp;
-                _content=content;
-            }
-
-        } catch (InterruptedException e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("unexpected problem", e);
-            }
-        } finally {
-            if (acquired)
-                sync.release();
-        }
+    	Sync sync=_lock.writeLock();
+    	boolean acquired=false;
+    	try {
+    		sync.acquire();
+    		acquired=true;
+    		if (timeStamp>_timeStamp) {
+    			if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+content);
+    			_timeStamp=timeStamp;
+    			_content=content;
+    		}
+    		
+    	} catch (InterruptedException e) {
+    		_log.warn("unexpected problem", e);
+    	} finally {
+    		if (acquired)
+    			sync.release();
+    	}
     }
 
     public void setContentRemote(long timeStamp, Dispatcher dispatcher, Destination location) {
-        Sync sync=_lock.writeLock();
-        boolean acquired=false;
-        try {
-            sync.acquire();
-            acquired=true;
-
-            if (timeStamp>_timeStamp) {
-                _timeStamp=timeStamp;
-                if (_content instanceof RemotePartition) {
-                    ((RemotePartition)_content).setLocation(location);
-                } else {
-                    if ( _log.isTraceEnabled() ) {
-
-                        _log.trace("[" + _key + "] changing location from: " + _content + " to: " + location);
-                    }
-                    _content=new RemotePartition(_key, _config, location);
-                }
-            }
-
-        } catch (InterruptedException e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("unexpected problem", e);
-            }
-        } finally {
-            if (acquired)
-                sync.release();
-        }
+    	Sync sync=_lock.writeLock();
+    	boolean acquired=false;
+    	try {
+    		sync.acquire();
+    		acquired=true;
+    		if (timeStamp>_timeStamp) {
+    			_timeStamp=timeStamp;
+    			if (_content instanceof RemotePartition) {
+    				((RemotePartition)_content).setLocation(location);
+    			} else {
+    				if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+location);
+    				_content=new RemotePartition(_key, _config, location);
+    			}
+    		}
+    	} catch (InterruptedException e) {
+    		_log.warn("unexpected problem", e);
+    	} finally {
+    		if (acquired)
+    			sync.release();
+    	}
     }
 
     public ObjectMessage exchange(ObjectMessage message, DIndexRequest request, long timeout) {
-        Dispatcher dispatcher=_config.getDispatcher();
-        String correlationId=dispatcher.nextCorrelationId();
-        Quipu rv=dispatcher.setRendezVous(correlationId, 1);
-        try {
-            dispatcher.setOutgoingCorrelationId(message, correlationId);
-            dispatch(message, request);
-        } catch (Exception e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("could not dispatch message", e);
-            }
-        }
-        return dispatcher.attemptRendezVous(correlationId, rv, timeout);
+    	Dispatcher dispatcher=_config.getDispatcher();
+    	String correlationId=dispatcher.nextCorrelationId();
+    	Quipu rv=dispatcher.setRendezVous(correlationId, 1);
+    	try {
+    		dispatcher.setOutgoingCorrelationId(message, correlationId);
+    		// why do we have a type case here - not very OO !
+    		if (request instanceof DIndexInsertionRequest)
+    			onMessage(message, (DIndexInsertionRequest)request);
+    		else if (request instanceof DIndexDeletionRequest)
+    			onMessage(message, (DIndexDeletionRequest)request);
+    		else if (request instanceof DIndexRelocationRequest)
+    			onMessage(message, (DIndexRelocationRequest)request);
+    		else if (request instanceof DIndexForwardRequest)
+    			onMessage(message, (DIndexForwardRequest)request);
+    		else
+    			if (_log.isErrorEnabled()) _log.error("unknown request type: "+request.getClass());
+    	} catch (Exception e) {
+    		_log.error("could not dispatch message", e);
+    	}
+    	return dispatcher.attemptRendezVous(correlationId, rv, timeout);
     }
 
-    public void dispatch(ObjectMessage om, DIndexRequest request) {
-        // two modes:
-        // direct dispatch
-        // queued dispatch
-        Sync sync=_lock.readLock();
-        boolean acquired=false;
-        try {
-            sync.acquire();
-            acquired=true;
-            if (!_queueing) {
-                if ( _log.isTraceEnabled() ) {
-
-                    _log.trace("exec-ing message");
-                }
-                _content.dispatch(om, request);
-            }
-            else {
-                if ( _log.isInfoEnabled() ) {
-
-                    _log.info("queueing message");
-                }
-                _queue.put(om);
-            }
-        } catch (InterruptedException e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("unexpected problem", e);
-            }
-        } finally {
-            if (acquired)
-                sync.release();
-        }
+    public void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
+    	Sync sync=_lock.writeLock(); // EXCLUSIVE
+    	boolean acquired=false;
+    	try {
+    		sync.acquire();
+    		acquired=true;
+    		_content.onMessage(message, request);
+    	} catch (InterruptedException e) {
+    		_log.warn("unexpected problem", e);
+    	} finally {
+    		if (acquired)
+    			sync.release();
+    	}		
     }
-
-    public boolean enqueue() {
-        // decouple dispatch on content with a queue
-        // all further input will be queued
-        Sync sync=_lock.writeLock();
-        boolean acquired=false;
-        boolean success=false;
-        try {
-            sync.acquire();
-            acquired=true;
-            if (!_queueing) {
-                _queueing=true;
-                success=true;
-            }
-        } catch (InterruptedException e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("unexpected problem", e);
-            }
-        } finally {
-            if (acquired)
-                sync.release();
-        }
-        return success;
+    
+    public void onMessage(ObjectMessage message, DIndexDeletionRequest request) {
+    	Sync sync=_lock.writeLock(); // EXCLUSIVE
+    	boolean acquired=false;
+    	try {
+    		sync.acquire();
+    		acquired=true;
+    		_content.onMessage(message, request);
+    	} catch (InterruptedException e) {
+    		_log.warn("unexpected problem", e);
+    	} finally {
+    		if (acquired)
+    			sync.release();
+    	}		
     }
-
-    public boolean dequeue() {
-        // empty queue content into _content and recouple input directly...
-        Sync sync=_lock.writeLock();
-        boolean acquired=false;
-        boolean success=false;
-        try {
-            sync.acquire();
-            acquired=true;
-            if (_queueing) {
-                _queueing=false;
-                while(!_queue.isEmpty()) {
-                    try {
-                        ObjectMessage message=(ObjectMessage)_queue.take();
-                        DIndexRequest request=(DIndexRequest)message.getObject();
-                        _content.dispatch(message, request); // perhaps this should be done on another thread ? - TODO
-                    } catch (JMSException e) {
-                        if ( _log.isWarnEnabled() ) {
-
-                            _log.warn("unexpected problem dispatching message");
-                        }
-                    }
-                }
-                success=true;
-            }
-        } catch (InterruptedException e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("unexpected problem", e);
-            }
-        } finally {
-            if (acquired)
-                sync.release();
-        }
-        return success;
+    
+    public void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
+    	Sync sync=_lock.readLock(); // SHARED
+    	boolean acquired=false;
+    	try {
+    		sync.acquire();
+    		acquired=true;
+    		_content.onMessage(message, request);
+    	} catch (InterruptedException e) {
+    		_log.warn("unexpected problem", e);
+    	} finally {
+    		if (acquired)
+    			sync.release();
+    	}		
+    }
+    
+    public void onMessage(ObjectMessage message, DIndexForwardRequest request) {
+    	Sync sync=_lock.readLock(); // SHARED
+    	boolean acquired=false;
+    	try {
+    		sync.acquire();
+    		acquired=true;
+    		_content.onMessage(message, request);
+    	} catch (InterruptedException e) {
+    		_log.warn("unexpected problem", e);
+    	} finally {
+    		if (acquired)
+    			sync.release();
+    	}		
     }
 
 }

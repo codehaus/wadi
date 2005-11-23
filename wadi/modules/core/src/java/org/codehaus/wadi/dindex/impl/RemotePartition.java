@@ -22,7 +22,10 @@ import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.PartitionConfig;
-import org.codehaus.wadi.dindex.DIndexRequest;
+import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
+import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
+import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
+import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 
 public class RemotePartition extends AbstractPartition {
 	
@@ -68,10 +71,28 @@ public class RemotePartition extends AbstractPartition {
 	public String toString() {
 		return "<remote:"+(_location==null?null:_config.getNodeName(_location))+">";
 	}
-	
-	public void dispatch(ObjectMessage om, DIndexRequest request) {
+
+	public void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
 		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getNodeName(_location));
-		if (!_config.getDispatcher().forward(om, _location))
+		if (!_config.getDispatcher().forward(message, _location))
+			_log.warn("could not forward message");
+	}
+
+	public void onMessage(ObjectMessage message, DIndexDeletionRequest request) {
+		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getNodeName(_location));
+		if (!_config.getDispatcher().forward(message, _location))
+			_log.warn("could not forward message");
+	}
+
+	public void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
+		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getNodeName(_location));
+		if (!_config.getDispatcher().forward(message, _location))
+			_log.warn("could not forward message");
+	}
+
+	public void onMessage(ObjectMessage message, DIndexForwardRequest request) {
+		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getNodeName(_location));
+		if (!_config.getDispatcher().forward(message, _location))
 			_log.warn("could not forward message");
 	}
 	

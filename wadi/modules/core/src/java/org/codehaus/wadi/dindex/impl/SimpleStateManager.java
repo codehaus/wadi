@@ -24,7 +24,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.StateManagerConfig;
 import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
@@ -79,24 +78,19 @@ public class SimpleStateManager implements StateManager {
 
 
     public void onDIndexInsertionRequest(ObjectMessage om, DIndexInsertionRequest request) {
-        onDIndexRequest(om, request);
+        _config.getPartition(request.getPartitionKey(_config.getNumPartitions())).onMessage(om, request);
     }
 
     public void onDIndexDeletionRequest(ObjectMessage om, DIndexDeletionRequest request) {
-        onDIndexRequest(om, request);
+        _config.getPartition(request.getPartitionKey(_config.getNumPartitions())).onMessage(om, request);
     }
 
     public void onDIndexForwardRequest(ObjectMessage om, DIndexForwardRequest request) {
-        onDIndexRequest(om, request);
+        _config.getPartition(request.getPartitionKey(_config.getNumPartitions())).onMessage(om, request);
     }
 
     public void onDIndexRelocationRequest(ObjectMessage om, DIndexRelocationRequest request) {
-        onDIndexRequest(om, request);
-    }
-
-    protected void onDIndexRequest(ObjectMessage om, DIndexRequest request) {
-        int partitionKey=request.getPartitionKey(_config.getNumPartitions());
-        _config.getPartition(partitionKey).dispatch(om, request);
+        _config.getPartition(request.getPartitionKey(_config.getNumPartitions())).onMessage(om, request);
     }
 
     // evacuation protocol

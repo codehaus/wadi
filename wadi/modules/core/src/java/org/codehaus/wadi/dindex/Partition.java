@@ -16,8 +16,19 @@
  */
 package org.codehaus.wadi.dindex;
 
+import javax.jms.ObjectMessage;
+
 import org.codehaus.wadi.PMPartition;
+import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
+import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
+import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
+import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 
 public interface Partition extends PMPartition, SMPartition {
 
+	void onMessage(ObjectMessage message, DIndexInsertionRequest request);
+	void onMessage(ObjectMessage message, DIndexDeletionRequest request);
+	void onMessage(ObjectMessage message, DIndexRelocationRequest request);
+	void onMessage(ObjectMessage message, DIndexForwardRequest request);
+	
 }
