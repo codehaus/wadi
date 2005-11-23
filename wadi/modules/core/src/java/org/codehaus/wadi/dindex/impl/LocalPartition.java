@@ -146,7 +146,8 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		if (_log.isTraceEnabled()) _log.trace("RELEASING MIGRATION LOCK");
 		
 		// TODO - UNLOCK - release session Migration Lock
-		ll._lock.release();
+		if (ll._lock!=null)
+			ll._lock.release(); // TODO - looks dodgy
 		DIndexResponse response=new DIndexRelocationResponse();
 		// we can optimise local-local send here - TODO
 		_config.getDispatcher().reply(message, response);
