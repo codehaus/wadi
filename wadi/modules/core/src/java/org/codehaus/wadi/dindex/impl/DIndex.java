@@ -42,7 +42,6 @@ import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
-import org.codehaus.wadi.dindex.messages.PartitionEvacuationRequest;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.Quipu;
@@ -156,25 +155,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	}
 	
 	public void stop() throws Exception {
-		if ( _log.isInfoEnabled() ) {
-			
-			_log.info("stopping...");
-		}
-		
+		_log.info("stopping...");
+
 		Thread.interrupted();
 		
-		PartitionEvacuationRequest request=new PartitionEvacuationRequest();
-		Node localNode=_cluster.getLocalNode();
-		String correlationId=_cluster.getLocalNode().getName();
-		if (_log.isInfoEnabled()) _log.info("Evacuating Partitions...: "+_dispatcher.getNodeName(localNode.getDestination())+" -> "+_coordinatorNode.getState().get("nodeName"));
-		while (_dispatcher.exchangeSend(localNode.getDestination(), _coordinatorNode.getDestination(), correlationId, request, _inactiveTime)==null) {
-			if ( _log.isWarnEnabled() ) {
-				_log.warn("could not contact Coordinator - backing off for " + _inactiveTime + " millis...");
-			}
-			Thread.sleep(_inactiveTime);
-		}
-		
-		_log.info("...Partitions Evacuated");
 		_stateManager.stop();
 		
 		if (_coordinator!=null) {
@@ -198,6 +182,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		return _dispatcher;
 	}
 	
+    public PartitionManager getPartitionManager() {
+    	return _partitionManager;
+    }
+    
 	// ClusterListener
 	
 	public int getPartition() {

@@ -39,6 +39,7 @@ public interface PartitionManager {
 
 	void init(PartitionManagerConfig config);
 	void start() throws Exception;
+	void evacuate() throws Exception;
 	void stop() throws Exception;
 
 	void update(Node node);

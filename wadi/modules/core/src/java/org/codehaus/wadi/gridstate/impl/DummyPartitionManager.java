@@ -67,4 +67,9 @@ public class DummyPartitionManager implements PartitionManager {
 		return null;
 	}
 
+	public void evacuate() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

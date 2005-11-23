@@ -29,7 +29,6 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.impl.Quipu;
@@ -48,7 +47,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractDispatcher implements Dispatcher, PartitionManagerConfig {
+public abstract class AbstractDispatcher implements Dispatcher {
 	
     protected final String _nodeName;
     protected final String _clusterName;
