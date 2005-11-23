@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.activecluster.ClusterEvent;
+import org.activecluster.Node;
 import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.SimplePartitionManager;
@@ -87,6 +88,16 @@ public class TestPartitionManager extends TestCase {
 			public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
 				// TODO Auto-generated method stub
 				
+			}
+
+			public Node getCoordinatorNode() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			public long getInactiveTime() {
+				// TODO Auto-generated method stub
+				return 0;
 			}
 			
 		};

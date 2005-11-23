@@ -101,5 +101,9 @@ public class StaticPartitionManager implements PartitionManager {
 	public Destination getLocalDestination() {
 		return _dispatcher.getLocalDestination();
 	}
+
+	public void evacuate() {
+		throw new UnsupportedOperationException("NYI");		
+	}
 	
 }

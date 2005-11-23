@@ -18,8 +18,12 @@ package org.codehaus.wadi.dindex;
 
 import java.util.Collection;
 
+import org.activecluster.Node;
+
 public interface PartitionManagerConfig {
 
     void findRelevantSessionNames(int numPartitions, Collection[] resultSet);
+    Node getCoordinatorNode();
+    long getInactiveTime();
 
 }

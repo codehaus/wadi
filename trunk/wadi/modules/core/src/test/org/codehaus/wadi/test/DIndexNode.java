@@ -21,6 +21,7 @@ import java.util.Map;
 
 import javax.jms.Destination;
 
+import org.activecluster.Node;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -135,4 +136,12 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
             _latch1.release();
         }
     }
+
+	public Node getCoordinatorNode() {
+		throw new UnsupportedOperationException("NYI");
+	}
+
+	public long getInactiveTime() {
+		throw new UnsupportedOperationException("NYI");
+	}
 }

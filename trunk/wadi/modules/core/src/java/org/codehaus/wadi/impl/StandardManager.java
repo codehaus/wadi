@@ -109,32 +109,30 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
     }
     
     public void start() throws Exception {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("starting");
-        }
+    	_log.info("starting");
 
         _contextualiser.promoteToExclusive(null);
         _contextualiser.start();
         ServletContext context=getServletContext();
         if (context==null) {
-        	if (_log.isWarnEnabled()) {
-        		_log.warn("null ServletContext");
-        	}
+        	_log.warn("null ServletContext");
         } else {
         	context.setAttribute(StandardManager.class.getName(), this); // TODO - security risk ?
         }
         _started=true;
     }
 
+    public void aboutToStop() throws Exception {
+    	// do nothing
+    }
+    
     public void stop() throws Exception {
         _started=false;
         _acceptingSessions.set(false);
+        // if we are clustered, partitions must be evacuated before sessions - hack
+        aboutToStop();
         _contextualiser.stop();
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("stopped"); // although this sometimes does not appear, it IS called...
-        }
+        _log.info("stopped"); // although this sometimes does not appear, it IS called...
     }
 
     protected void notifySessionCreation(Session session) {
@@ -183,10 +181,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         try {
         	session.destroy();
         } catch (Exception e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("unexpected problem destroying session", e);
-            }
+        	_log.warn("unexpected problem destroying session", e);
         }
         _sessionPool.put(session);
         if (_log.isDebugEnabled()) _log.debug("destruction: "+name);

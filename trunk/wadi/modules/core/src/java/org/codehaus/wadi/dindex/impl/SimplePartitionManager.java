@@ -91,10 +91,10 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		_callback=callback;
 	}
 	
-	protected PartitionManagerConfig _dindexConfig;
+	protected PartitionManagerConfig _config;
 	
 	public void init(PartitionManagerConfig config) {
-		_dindexConfig=config;
+		_config=config;
 		_log.trace("init");
 		// attach relevant message handlers to dispatcher...
 		_dispatcher.register(this, "onPartitionTransferCommand", PartitionTransferCommand.class);
@@ -110,6 +110,21 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	public void start() throws Exception {
 		_log.trace("starting...");
 		_log.trace("...started");
+	}
+	
+	public void evacuate() throws Exception {
+		_log.info("evacuating...");
+		
+		PartitionEvacuationRequest request=new PartitionEvacuationRequest();
+		Node localNode=_cluster.getLocalNode();
+		String correlationId=_cluster.getLocalNode().getName();
+		if (_log.isTraceEnabled()) _log.trace("evacuating partitions...: "+_dispatcher.getNodeName(localNode.getDestination())+" -> "+_config.getCoordinatorNode().getState().get("nodeName"));
+		while (_dispatcher.exchangeSend(localNode.getDestination(), _config.getCoordinatorNode().getDestination(), correlationId, request, _inactiveTime)==null) {
+			if (_log.isWarnEnabled()) _log.warn("could not contact Coordinator - backing off for "+ _inactiveTime+" millis...");
+			Thread.sleep(_config.getInactiveTime());
+		}
+		
+		_log.info("...evacuated");
 	}
 	
 	public void stop() throws Exception {
@@ -152,7 +167,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		Collection[] c=createResultSet(_numPartitions, keys);
 		try {
 			_log.trace("findRelevantSessionNames - starting");
-			_dindexConfig.findRelevantSessionNames(_numPartitions, c);
+			_config.findRelevantSessionNames(_numPartitions, c);
 			_log.trace("findRelevantSessionNames - finished");
 		} catch (Throwable t) {
 			_log.warn("ERROR", t);
@@ -356,7 +371,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			// whilst we are waiting for the other nodes to get back to us, figure out which relevant sessions
 			// we are carrying ourselves...
 			Collection[] c=createResultSet(_numPartitions, missingKeys);
-			_dindexConfig.findRelevantSessionNames(_numPartitions, c);
+			_config.findRelevantSessionNames(_numPartitions, c);
 			repopulate(_dispatcher.getLocalDestination(), c);
 			
 			//boolean success=false;

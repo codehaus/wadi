@@ -22,6 +22,7 @@ public interface PartitionManager extends PartitionConfig {
 
 	void init(PartitionManagerConfig config);
 	void start() throws Exception;
+	void evacuate() throws Exception;
 	void stop() throws Exception;
 
 	int getNumPartitions();

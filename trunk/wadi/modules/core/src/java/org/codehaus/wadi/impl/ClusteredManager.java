@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.activecluster.Node;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Contextualiser;
@@ -96,6 +97,11 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     	super.start();
     }
 
+    public void aboutToStop() throws Exception {
+    	//_partitionManager.evacuate();
+    	_dindex.getPartitionManager().evacuate();
+    }
+    
     public void stop() throws Exception {
         _shuttingDown.set(true);
         super.stop();
@@ -222,6 +228,10 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 
 	public InetSocketAddress getHttpAddress() {
 	    return _httpAddress;
+	}
+	
+	public Node getCoordinatorNode() {
+		return _dindex.getCoordinator();
 	}
 
 }
