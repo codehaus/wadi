@@ -481,7 +481,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	}
 	
 	public String getNodeName(Destination destination) {
-		return _nodeName;
+		return _dispatcher.getNodeName(destination);
 	}
 	
 	public long getInactiveTime() {
