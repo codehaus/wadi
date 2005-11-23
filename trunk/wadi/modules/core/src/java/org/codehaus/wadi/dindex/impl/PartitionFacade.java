@@ -56,7 +56,7 @@ public class PartitionFacade extends AbstractPartition {
     }
 
     public boolean isLocal() { // locking ?
-        Sync sync=_lock.writeLock();
+        Sync sync=_lock.writeLock(); // EXCLUSIVE
         boolean acquired=false;
         try {
             sync.acquire();
@@ -72,7 +72,7 @@ public class PartitionFacade extends AbstractPartition {
     }
 
     public Partition getContent() {
-        Sync sync=_lock.writeLock();
+        Sync sync=_lock.writeLock(); // EXCLUSIVE
         boolean acquired=false;
         try {
             sync.acquire();
@@ -88,7 +88,7 @@ public class PartitionFacade extends AbstractPartition {
     }
 
     public void setContent(long timeStamp, Partition content) {
-    	Sync sync=_lock.writeLock();
+    	Sync sync=_lock.writeLock(); // EXCLUSIVE
     	boolean acquired=false;
     	try {
     		sync.acquire();
@@ -108,7 +108,7 @@ public class PartitionFacade extends AbstractPartition {
     }
 
     public void setContentRemote(long timeStamp, Dispatcher dispatcher, Destination location) {
-    	Sync sync=_lock.writeLock();
+    	Sync sync=_lock.writeLock(); // EXCLUSIVE
     	boolean acquired=false;
     	try {
     		sync.acquire();
@@ -154,7 +154,7 @@ public class PartitionFacade extends AbstractPartition {
     }
 
     public void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
-    	Sync sync=_lock.writeLock(); // EXCLUSIVE
+    	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
     	try {
     		sync.acquire();
@@ -169,7 +169,7 @@ public class PartitionFacade extends AbstractPartition {
     }
     
     public void onMessage(ObjectMessage message, DIndexDeletionRequest request) {
-    	Sync sync=_lock.writeLock(); // EXCLUSIVE
+    	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
     	try {
     		sync.acquire();

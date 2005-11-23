@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -69,60 +68,36 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		return "<local:"+_key+">";
 	}
 	
-	public void put(String name, Destination location) {
-		_map.put(name, new LockableLocation(location));
-	}
-	
-	public static class LockableLocation implements Serializable {
-		
-		public Destination _location;
-		
-		public LockableLocation(Destination location) {
-			_location=location;
-		}
-		
-		protected LockableLocation() {
-		}
-		
-		// prevents Object from being Serialised whilst locked...
-		private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-			try {
-				out.defaultWriteObject();
-			} catch (Exception e) {
-				_log.error("unexpected problem", e);
-			}
-		}
-		
+	public void put(String name, Destination destination) {
+		_map.put(name, destination);
 	}
 	
 	public void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
-		Destination location=null;
-		try{location=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
-		_map.put(request.getName(), new LockableLocation(location)); // remember location of actual session...
-		if (_log.isDebugEnabled()) _log.debug("insertion {" + request.getName() + " : " + _config.getNodeName(location) + "}");
+		Destination newDestination=null;
+		try{newDestination=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
+		// TODO - what if it already exists ?
+		_map.put(request.getName(), newDestination); // remember location of actual session...
+		if (_log.isDebugEnabled()) _log.debug("insertion {"+request.getName()+" : "+_config.getNodeName(newDestination) + "}");
 		DIndexResponse response=new DIndexInsertionResponse();
 		// we can optimise local-local send here - TODO
 		_config.getDispatcher().reply(message, response);
 	}
 	
 	public void onMessage(ObjectMessage message, DIndexDeletionRequest request) {
-		LockableLocation oldValue=(LockableLocation)_map.remove(request.getName());
-		if (_log.isDebugEnabled()) _log.debug("deletion {" + request.getName() + " : " + _config.getNodeName(oldValue._location)+"}");
-		if (oldValue==null)
-			throw new IllegalStateException();
+		Destination oldDestination=(Destination)_map.remove(request.getName());
+		String key=request.getName();
+		if (oldDestination==null) throw new IllegalStateException("session "+key+" is not known in this partition");
+		if (_log.isDebugEnabled()) _log.debug("deletion {"+key+" : "+_config.getNodeName(oldDestination)+"}");
 		DIndexResponse response=new DIndexDeletionResponse();
 		// we can optimise local-local send here - TODO
 		_config.getDispatcher().reply(message, response);
 	}
 	
 	public void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
-		Destination newLocation=null;
-		try{newLocation=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
-		LockableLocation ll=(LockableLocation)_map.get(request.getName());
-		Destination oldLocation=ll._location;
-		ll._location=newLocation;
-		if (_log.isDebugEnabled()) _log.debug("relocation {" + request.getName() + " : " + _config.getNodeName(oldLocation) + " -> " + _config.getNodeName(newLocation)+"}");
-		
+		Destination newDestination=null;
+		try{newDestination=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
+		Destination oldDestination=(Destination)_map.put(request.getName(), newDestination);
+		if (_log.isDebugEnabled()) _log.debug("relocation {"+request.getName()+" : "+_config.getNodeName(oldDestination)+" -> "+_config.getNodeName(newDestination)+"}");
 		DIndexResponse response=new DIndexRelocationResponse();
 		// we can optimise local-local send here - TODO
 		_config.getDispatcher().reply(message, response);
@@ -132,8 +107,8 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		// we have got to someone who actually knows where we want to go.
 		// strip off wrapper and deliver actual request to its final destination...
 		String name=request.getName();
-		LockableLocation ll=(LockableLocation)_map.get(name);
-		if (ll==null) { // session could not be located...
+		Destination destination=(Destination)_map.get(name);
+		if (destination==null) { // session could not be located...
 			DIndexRequest r=request.getRequest();
 			if (r instanceof RelocationRequest) {
 				assert message!=null;
@@ -144,11 +119,11 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 				if (_log.isWarnEnabled()) _log.warn("unexpected nested request structure - ignoring: " + r);
 			}
 		} else { // session succesfully located...
-			assert ll!=null;
+			assert destination!=null;
 			assert request!=null;
 			assert _config!=null;
-			if (_log.isTraceEnabled()) _log.trace("directing: " + request + " -> " + _config.getNodeName(ll._location));
-			if (!_config.getDispatcher().forward(message, ll._location, request.getRequest()))
+			if (_log.isTraceEnabled()) _log.trace("directing: " + request + " -> " + _config.getNodeName(destination));
+			if (!_config.getDispatcher().forward(message, destination, request.getRequest()))
 				_log.warn("could not forward message");
 		}
 	}
