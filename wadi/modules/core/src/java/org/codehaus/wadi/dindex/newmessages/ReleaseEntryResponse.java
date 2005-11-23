@@ -14,11 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.messages;
+package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.Location;
 import org.codehaus.wadi.OldMessage;
 
 /**
@@ -28,27 +28,30 @@ import org.codehaus.wadi.OldMessage;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class EmigrationRequest implements OldMessage, Serializable {
-	protected Motable _motable;
+public class ReleaseEntryResponse implements OldMessage, Serializable {
 	
-	/**
-	 *
-	 */
-	public EmigrationRequest(Motable motable) {
-		super();
-		_motable=motable;
+	protected String _name;
+	protected Location _location;
+	
+	public ReleaseEntryResponse(String name, Location location) {
+		_name=name;
+		_location=location;
 	}
 	
-	public EmigrationRequest() {
-		// for use when demarshalling...
+	protected ReleaseEntryResponse() {
+		// for deserialisation ...
 	}
 	
-	public Motable getMotable() {
-		return _motable;
+	public String getId() {
+		return _name;
+	}
+	
+	public Location getLocation() {
+		return _location;
 	}
 	
 	public String toString() {
-		return "<EmigrationRequest: "+_motable.getName()+">";
+		return "<EmigrationResponse: "+_name+">";
 	}
 	
 }

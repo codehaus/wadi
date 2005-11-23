@@ -14,44 +14,41 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.messages;
+package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.Location;
+import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.OldMessage;
 
 /**
- * A query for the location of the session with the enclosed ID - The response
- * should be a LocationResponse object sent whence this request arrived.
+ * A request for the emigration of the enclosed session - The response
+ * should be a ReleaseEntryResponse object sent whence this request arrived.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class EmigrationResponse implements OldMessage, Serializable {
+public class ReleaseEntryRequest implements OldMessage, Serializable {
+	protected Motable _motable;
 	
-	protected String _name;
-	protected Location _location;
-	
-	public EmigrationResponse(String name, Location location) {
-		_name=name;
-		_location=location;
+	/**
+	 *
+	 */
+	public ReleaseEntryRequest(Motable motable) {
+		super();
+		_motable=motable;
 	}
 	
-	protected EmigrationResponse() {
-		// for deserialisation ...
+	public ReleaseEntryRequest() {
+		// for use when demarshalling...
 	}
 	
-	public String getId() {
-		return _name;
-	}
-	
-	public Location getLocation() {
-		return _location;
+	public Motable getMotable() {
+		return _motable;
 	}
 	
 	public String toString() {
-		return "<EmigrationResponse: "+_name+">";
+		return "<EmigrationRequest: "+_motable.getName()+">";
 	}
 	
 }

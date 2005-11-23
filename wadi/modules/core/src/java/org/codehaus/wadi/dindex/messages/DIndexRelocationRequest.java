@@ -14,14 +14,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
-public class DIndexDeletionRequest extends AbstractDIndexRequest implements Serializable {
+import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
 
-    public DIndexDeletionRequest(String name) {
+public class DIndexRelocationRequest extends AbstractDIndexRequest implements Serializable {
+
+    public DIndexRelocationRequest(String name) {
         super(name);
     }
 
+    public String toString() {
+        return "<DIndexRelocationRequest: "+_name+">";
+    }
+    
 }

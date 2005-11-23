@@ -27,8 +27,15 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.StateManagerConfig;
-import org.codehaus.wadi.dindex.messages.EmigrationRequest;
-import org.codehaus.wadi.dindex.messages.EmigrationResponse;
+import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
+import org.codehaus.wadi.dindex.messages.DIndexDeletionResponse;
+import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
+import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
+import org.codehaus.wadi.dindex.messages.DIndexInsertionResponse;
+import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
+import org.codehaus.wadi.dindex.messages.DIndexRelocationResponse;
+import org.codehaus.wadi.dindex.newmessages.ReleaseEntryRequest;
+import org.codehaus.wadi.dindex.newmessages.ReleaseEntryResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
 public class SimpleStateManager implements StateManager {
@@ -96,12 +103,14 @@ public class SimpleStateManager implements StateManager {
     
     public boolean offerEmigrant(String key, Motable emotable, long timeout) {
     	Destination to=((RemotePartition)_config.getPartition(key).getContent()).getDestination(); // TODO - HACK - temporary
+    	_log.info("EVACUATING "+key+" TO: "+_dispatcher.getNodeName(to));
+    	_log.info(emotable);
     	Destination from=_dispatcher.getLocalDestination();
-    	EmigrationRequest request=new EmigrationRequest(emotable);
+    	ReleaseEntryRequest request=new ReleaseEntryRequest(emotable);
     	ObjectMessage message=_dispatcher.exchangeSend(from, to, request, timeout);
-    	EmigrationResponse ack=null;
+    	ReleaseEntryResponse ack=null;
     	try {
-    		ack=message==null?null:(EmigrationResponse)message.getObject();
+    		ack=message==null?null:(ReleaseEntryResponse)message.getObject();
     	} catch (JMSException e) {
     		if ( _log.isErrorEnabled() ) {
     			
@@ -119,7 +128,7 @@ public class SimpleStateManager implements StateManager {
     }
     
     public void acceptImmigrant(ObjectMessage message, Location location, String name, Motable motable) {
-        if (!_dispatcher.reply(message, new EmigrationResponse(name, location))) { 
+        if (!_dispatcher.reply(message, new ReleaseEntryResponse(name, location))) { 
             if (_log.isErrorEnabled()) _log.error("could not acknowledge safe receipt: "+name);
         }
     }
@@ -127,8 +136,8 @@ public class SimpleStateManager implements StateManager {
     protected ImmigrationListener _listener;
     
     public void setImmigrationListener(ImmigrationListener listener) {
-        _dispatcher.register(this, "onEmigrationRequest", EmigrationRequest.class);
-        _dispatcher.register(EmigrationResponse.class, _resTimeout);
+        _dispatcher.register(this, "onEmigrationRequest", ReleaseEntryRequest.class);
+        _dispatcher.register(ReleaseEntryResponse.class, _resTimeout);
         _listener=listener;
     }
 
@@ -141,7 +150,7 @@ public class SimpleStateManager implements StateManager {
     	}
     }
     
-    public void onEmigrationRequest(ObjectMessage message, EmigrationRequest request) {
+    public void onEmigrationRequest(ObjectMessage message, ReleaseEntryRequest request) {
     	_listener.onImmigration(message, request.getMotable());
     }
 

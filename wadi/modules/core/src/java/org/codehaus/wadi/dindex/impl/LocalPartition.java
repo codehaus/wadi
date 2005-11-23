@@ -29,6 +29,13 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.DIndexResponse;
+import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
+import org.codehaus.wadi.dindex.messages.DIndexDeletionResponse;
+import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
+import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
+import org.codehaus.wadi.dindex.messages.DIndexInsertionResponse;
+import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
+import org.codehaus.wadi.dindex.messages.DIndexRelocationResponse;
 import org.codehaus.wadi.dindex.messages.RelocationRequest;
 import org.codehaus.wadi.dindex.messages.RelocationResponse;
 
