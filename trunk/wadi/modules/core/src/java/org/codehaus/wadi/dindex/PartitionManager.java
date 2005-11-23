@@ -45,6 +45,5 @@ public interface PartitionManager {
 	void update(Node node);
 	void regenerateMissingPartitions(Node[] living, Node[] leaving);
 	void localise();
-	void dequeue();
 
 }

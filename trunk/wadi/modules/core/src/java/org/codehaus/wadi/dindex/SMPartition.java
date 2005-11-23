@@ -16,10 +16,6 @@
  */
 package org.codehaus.wadi.dindex;
 
-import javax.jms.ObjectMessage;
-
 public interface SMPartition {
 
-	void dispatch(ObjectMessage om, DIndexRequest request);
-    
 }

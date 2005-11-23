@@ -193,7 +193,6 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 				for (int j=0; j<_numPartitions && c.size()<amount; j++) {
 					PartitionFacade facade=_partitions[j];
 					if (facade.isLocal()) {
-						facade.enqueue();
 						Partition partition=facade.getContent();
 						c.add(partition);
 					}
@@ -212,13 +211,8 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 				if (om3!=null && ((PartitionTransferResponse)om3.getObject()).getSuccess()) {
 					for (int j=0; j<acquired.length; j++) {
 						PartitionFacade facade=null;
-						try {
-							facade=_partitions[acquired[j].getKey()];
-							facade.setContentRemote(timeStamp, _dispatcher, destination); // TODO - should we use a more recent ts ?
-						} finally {
-							if (facade!=null)
-								facade.dequeue();
-						}
+						facade=_partitions[acquired[j].getKey()];
+						facade.setContentRemote(timeStamp, _dispatcher, destination); // TODO - should we use a more recent ts ?
 					}
 					if (_log.isDebugEnabled()) _log.debug("released "+acquired.length+" partition[s] to "+_dispatcher.getNodeName(destination));
 				} else {
@@ -355,7 +349,6 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			for (int i=0; i<missingKeys.length; i++) {
 				int k=missingKeys[i];
 				PartitionFacade facade=_partitions[k];
-				facade.enqueue();
 				LocalPartition local=new LocalPartition(k);
 				local.init(this);
 				facade.setContent(time, local);
@@ -397,11 +390,6 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			}
 			
 			if (_log.isWarnEnabled()) _log.warn("...PARTITIONS REPOPULATED: " + missingPartitions);
-			for (int i=0; i<missingKeys.length; i++) {
-				int k=missingKeys[i];
-				PartitionFacade facade=getPartition(k);
-				facade.dequeue();
-			}
 			// relayout dindex
 			_distributedState.put(_partitionKeysKey, newKeys);
 			try {
@@ -457,11 +445,6 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 				rv.putResult(state);
 			}
 		}
-	}
-	
-	public void dequeue() {
-		for (int i=0; i<_numPartitions; i++)
-			_partitions[i].dequeue();
 	}
 	
 //	public void repopulatePartitions(Destination location, Collection[] keys) {

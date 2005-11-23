@@ -19,6 +19,10 @@ package org.codehaus.wadi.dindex.impl;
 import javax.jms.ObjectMessage;
 
 import org.codehaus.wadi.dindex.DIndexRequest;
+import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
+import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
+import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
+import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 
 public class DummyPartition extends AbstractPartition {
 
@@ -43,5 +47,25 @@ public class DummyPartition extends AbstractPartition {
     public void dispatch(ObjectMessage om, DIndexRequest request) {
         throw new UnsupportedOperationException();
     }
+
+	public void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onMessage(ObjectMessage message, DIndexDeletionRequest request) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onMessage(ObjectMessage message, DIndexForwardRequest request) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }
