@@ -70,7 +70,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 	public void put(String name, Destination destination) {
 		synchronized (_map) {
 			// TODO - check key was not already in use...
-			_map.put(name, destination);	
+			_map.put(name, destination);
 		}
 	}
 	
@@ -80,13 +80,15 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		boolean success=false;
 		String key=request.getName();
 		synchronized (_map) {
-			if (!_map.containsKey(key))
+			if (!_map.containsKey(key)) {
+				success=true;
 				_map.put(key, newDestination); // remember location of actual session...
+			}
 		}
 		if (success) {
 			if (_log.isDebugEnabled()) _log.debug("insertion {"+request.getName()+" : "+_config.getNodeName(newDestination) + "}");
 		} else {
-			if (_log.isWarnEnabled()) _log.warn("insertion {"+request.getName()+" : "+_config.getNodeName(newDestination) + "} failed - key alread in use");
+			if (_log.isWarnEnabled()) _log.warn("insertion {"+request.getName()+" : "+_config.getNodeName(newDestination) + "} failed - key already in use");
 		}
 		DIndexResponse response=new DIndexInsertionResponse(success);
 		_config.getDispatcher().reply(message, response);
