@@ -14,17 +14,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.dindex.DIndexResponse;
+import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
 
-public class DIndexDeletionResponse implements DIndexResponse, Serializable {
+/**
+ * Sent to Partition Owner requesting that an entry be removed from the index.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public class DIndexDeletionRequest extends AbstractDIndexRequest implements Serializable {
 
-    public DIndexDeletionResponse() {
-        super();
-        // TODO Auto-generated constructor stub
+    public DIndexDeletionRequest(String name) {
+        super(name);
     }
 
 }

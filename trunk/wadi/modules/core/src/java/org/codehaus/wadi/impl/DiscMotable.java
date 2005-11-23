@@ -163,7 +163,7 @@ public class DiscMotable extends AbstractMotable implements StoreMotable {
             throw e;
         } finally {
             try {
-                fis.close();
+                if (fis!=null) fis.close();
             } catch (IOException e) {
                 if (_log.isWarnEnabled()) _log.warn("load ("+(useNIO?"NIO ":"")+"exclusive disc) problem: "+_file, e);
             }

@@ -298,7 +298,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
      * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
      * @version $Revision$
      */
-    class ImmigrationEmoter implements Emoter {
+    class ImmigrationEmoter extends AbstractChainedEmoter {
         
         protected final ObjectMessage _message;
         
@@ -307,17 +307,19 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         }
         
         public boolean prepare(String name, Motable emotable, Motable immotable) {
-            return true;
+        	if (super.prepare(name, emotable, immotable)) {
+        		_dindex.getStateManager().acceptImmigrant(_message, _location, name, emotable);
+        		return true;
+        	} else {
+        		return false;
+        	}
         }
         
         public void commit(String name, Motable emotable) {
-            // TODO - consider moving this to prepare()...
-        	_dindex.getStateManager().acceptImmigrant(_message, _location, name, emotable);
         }
         
         public void rollback(String name, Motable emotable) {
             throw new RuntimeException("NYI");
-            // difficult !!!
         }
         
         public String getInfo() {

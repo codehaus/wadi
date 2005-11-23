@@ -14,21 +14,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.impl;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.dindex.DIndexResponse;
+import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
 
-public class DIndexRelocationResponse implements DIndexResponse, Serializable {
+public class DIndexInsertionRequest extends AbstractDIndexRequest implements Serializable {
 
-    public DIndexRelocationResponse() {
-        super();
-        // TODO Auto-generated constructor stub
+    public DIndexInsertionRequest(String name) {
+        super(name);
     }
+
+    // we need to pass the partition number through here as well...
 
     public String toString() {
-        return "<DIndexRelocationResponse>";
+        return "<DIndexInsertionRequest: "+_name+">";
     }
- 
+
 }
