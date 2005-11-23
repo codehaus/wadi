@@ -17,6 +17,7 @@
 package org.codehaus.wadi.dindex.impl;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -38,13 +39,11 @@ import org.codehaus.wadi.dindex.messages.DIndexRelocationResponse;
 import org.codehaus.wadi.dindex.messages.RelocationRequest;
 import org.codehaus.wadi.dindex.messages.RelocationResponse;
 
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
-
 public class LocalPartition extends AbstractPartition implements Serializable {
 	
 	protected static final Log _log = LogFactory.getLog(LocalPartition.class);
 	
-	protected Map _map=new ConcurrentHashMap();
+	protected Map _map=new HashMap();
 	protected transient PartitionConfig _config;
 	
 	public LocalPartition(int key) {
@@ -69,37 +68,51 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 	}
 	
 	public void put(String name, Destination destination) {
-		_map.put(name, destination);
+		synchronized (_map) {
+			// TODO - check key was not already in use...
+			_map.put(name, destination);	
+		}
 	}
 	
 	public void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
 		Destination newDestination=null;
 		try{newDestination=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
-		// TODO - what if it already exists ?
-		_map.put(request.getName(), newDestination); // remember location of actual session...
-		if (_log.isDebugEnabled()) _log.debug("insertion {"+request.getName()+" : "+_config.getNodeName(newDestination) + "}");
-		DIndexResponse response=new DIndexInsertionResponse();
-		// we can optimise local-local send here - TODO
+		boolean success=false;
+		String key=request.getName();
+		synchronized (_map) {
+			if (!_map.containsKey(key))
+				_map.put(key, newDestination); // remember location of actual session...
+		}
+		if (success) {
+			if (_log.isDebugEnabled()) _log.debug("insertion {"+request.getName()+" : "+_config.getNodeName(newDestination) + "}");
+		} else {
+			if (_log.isWarnEnabled()) _log.warn("insertion {"+request.getName()+" : "+_config.getNodeName(newDestination) + "} failed - key alread in use");
+		}
+		DIndexResponse response=new DIndexInsertionResponse(success);
 		_config.getDispatcher().reply(message, response);
 	}
 	
 	public void onMessage(ObjectMessage message, DIndexDeletionRequest request) {
-		Destination oldDestination=(Destination)_map.remove(request.getName());
+		Destination oldDestination;
 		String key=request.getName();
+		synchronized (_map) {
+			oldDestination=(Destination)_map.remove(key);
+		}
 		if (oldDestination==null) throw new IllegalStateException("session "+key+" is not known in this partition");
 		if (_log.isDebugEnabled()) _log.debug("deletion {"+key+" : "+_config.getNodeName(oldDestination)+"}");
 		DIndexResponse response=new DIndexDeletionResponse();
-		// we can optimise local-local send here - TODO
 		_config.getDispatcher().reply(message, response);
 	}
 	
 	public void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
 		Destination newDestination=null;
 		try{newDestination=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
-		Destination oldDestination=(Destination)_map.put(request.getName(), newDestination);
+		Destination oldDestination=null;
+		synchronized (_map) {
+			oldDestination=(Destination)_map.put(request.getName(), newDestination);
+		}
 		if (_log.isDebugEnabled()) _log.debug("relocation {"+request.getName()+" : "+_config.getNodeName(oldDestination)+" -> "+_config.getNodeName(newDestination)+"}");
 		DIndexResponse response=new DIndexRelocationResponse();
-		// we can optimise local-local send here - TODO
 		_config.getDispatcher().reply(message, response);
 	}
 	
@@ -107,7 +120,10 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		// we have got to someone who actually knows where we want to go.
 		// strip off wrapper and deliver actual request to its final destination...
 		String name=request.getName();
-		Destination destination=(Destination)_map.get(name);
+		Destination destination=null;
+		synchronized (_map) {
+			destination=(Destination)_map.get(name);
+		}
 		if (destination==null) { // session could not be located...
 			DIndexRequest r=request.getRequest();
 			if (r instanceof RelocationRequest) {
