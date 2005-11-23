@@ -197,6 +197,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
         return _dindex;
     }
 
+     // TODO - this should not be a notification - it is too late to reject the ID if it is already in use...
     public void notifySessionInsertion(String name) {
         super.notifySessionInsertion(name);
         _dindex.insert(name);

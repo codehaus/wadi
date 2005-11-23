@@ -22,9 +22,15 @@ import org.codehaus.wadi.dindex.DIndexResponse;
 
 public class DIndexInsertionResponse implements DIndexResponse, Serializable {
 
-    public DIndexInsertionResponse() {
+	protected boolean _succeeded;
+	
+    public DIndexInsertionResponse(boolean succeeded) {
         super();
         // TODO Auto-generated constructor stub
+    }
+    
+    public boolean getSucceeded() {
+    	return _succeeded;
     }
     
     public String toString() {
