@@ -45,6 +45,10 @@ $properties \
 -Dwadi.home=$WADI_HOME \
 -Dwadi.version=$WADI_VERSION \
 -Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog \
+-Dorg.apache.commons.logging.simplelog.showdatetime=true \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=debug \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.AbsoluteEvicter=info \
+-Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.NeverEvicter=info \
 -Djava.io.tmpdir=$INSTANCE \
 "
 
