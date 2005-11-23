@@ -323,7 +323,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         }
         
         public String getInfo() {
-            return "cluster";
+            return "cluster"; // TODO - figure out where session is going and append to info
         }
     }
     

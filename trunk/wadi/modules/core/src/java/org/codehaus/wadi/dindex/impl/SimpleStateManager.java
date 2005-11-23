@@ -103,8 +103,6 @@ public class SimpleStateManager implements StateManager {
     
     public boolean offerEmigrant(String key, Motable emotable, long timeout) {
     	Destination to=((RemotePartition)_config.getPartition(key).getContent()).getDestination(); // TODO - HACK - temporary
-    	_log.info("EVACUATING "+key+" TO: "+_dispatcher.getNodeName(to));
-    	_log.info(emotable);
     	Destination from=_dispatcher.getLocalDestination();
     	ReleaseEntryRequest request=new ReleaseEntryRequest(emotable);
     	ObjectMessage message=_dispatcher.exchangeSend(from, to, request, timeout);
