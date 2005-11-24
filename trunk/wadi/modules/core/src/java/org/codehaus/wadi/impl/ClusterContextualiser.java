@@ -224,7 +224,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     protected synchronized void ensureEvacuationQueue() {
         synchronized (_shuttingDown) {
             try {
-                if (_shuttingDown.get()) {
+                if (!_evacuating) {
                     createEvacuationQueue();
                 }
             } catch (Exception e) {

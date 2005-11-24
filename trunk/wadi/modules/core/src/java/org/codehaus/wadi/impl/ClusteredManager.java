@@ -188,7 +188,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
      // TODO - this should not be a notification - it is too late to reject the ID if it is already in use...
     public void notifySessionInsertion(String name) {
         super.notifySessionInsertion(name);
-        _dindex.insert(name);
     }
 
     public void notifySessionDeletion(String name) {
@@ -200,6 +199,11 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
         super.notifySessionRelocation(name);
         _dindex.relocate(name);
     }
+
+	protected boolean validateSessionName(String name) {
+		return _dindex.insert(name);
+	}
+	
 
     // DIndexConfig
 

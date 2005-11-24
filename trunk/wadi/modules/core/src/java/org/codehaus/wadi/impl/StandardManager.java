@@ -154,11 +154,19 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         _contextualiser.destroy();
         _sessionPool.destroy();
     }
-    
+
+	protected boolean validateSessionName(String name) {
+		return true;
+	}
+	
     public Session create() {
+    	String name=null;
+    	do {
+    		name=_sessionIdFactory.create(); // TODO - API on this class is wrong...
+    	} while (!validateSessionName(name));
+    	
         Session session=_sessionPool.take();
         long time=System.currentTimeMillis();
-        String name=_sessionIdFactory.create(); // TODO - API on this class is wrong...
         session.init(time, time, _maxInactiveInterval, name);
         _map.put(name, session);
         notifySessionInsertion(name);
