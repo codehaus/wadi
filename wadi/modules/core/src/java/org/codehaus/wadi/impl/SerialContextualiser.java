@@ -65,10 +65,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
                 Utils.acquireUninterrupted(motionLock);
                 needsRelease=true;
             } catch (TimeoutException e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("unexpected timeout - proceding without lock", e);
-                }
+	      _log.error("unexpected timeout - proceding without lock", e);
             }
 
             try {

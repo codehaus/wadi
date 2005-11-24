@@ -82,10 +82,7 @@ public class GCache implements Cache, DispatcherConfig, StateManagerConfig, Part
 			Sync sync=(Sync)entry.getValue();
 			sync.release();
 			i.remove();
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("released: " + key);
-            }
+            if (_log.isInfoEnabled()) _log.info("released: " + key);
 		}
 	}
 
@@ -94,17 +91,11 @@ public class GCache implements Cache, DispatcherConfig, StateManagerConfig, Part
 		Map locks=(Map)_threadLocks.get();
 		Sync oldSync=(Sync)locks.get(key);
 
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("adding: " + key);
-        }
+        if (_log.isInfoEnabled()) _log.info("adding: " + key);
 		if (oldSync==null) {
 			locks.put(key, newSync);
 		} else {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("NYI...");
-            }
+            if (_log.isWarnEnabled()) _log.warn("NYI...");
 		}
 	}
 
@@ -365,24 +356,24 @@ public class GCache implements Cache, DispatcherConfig, StateManagerConfig, Part
 	public PartitionFacade getPartition(Object key) {
 		return _partitionManager.getPartition(key);
 	}
-	
+
 	// PartitionManagerConfig
-	
+
 	public Destination getLocalDestination() {
 		return _dispatcher.getLocalDestination();
 	}
 
 	// LifeCycle
-	
+
 	public void init() throws Exception {
 		_partitionManager.init(this);
 		_stateManager.init(this);
 	}
 
 	// DispatcherConfig API
-	
+
 	public String getContextPath() {
 		return "/";
 	}
-	
+
 }

@@ -109,23 +109,20 @@ public class TomcatSessionIdFactory
   implements SessionIdFactory
   {
     protected final Log _log = LogFactory.getLog(getClass());
-    
+
     public String create() {
         String id=generateSessionId();
         if (log.isTraceEnabled()) log.trace("generated: "+id);
         return id;
     }
-    
+
     public int getSessionIdLength() {
         return 32;
     }
-    
+
     public void setSessionIdLength(int l) {
         if (l!=getSessionIdLength())
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("session id length is not a writeable attribute - ignoring new setting: " + l);
-            }
+            if (_log.isWarnEnabled()) _log.warn("session id length is not a writeable attribute - ignoring new setting: " + l);
     }
 
 //   // we should be able to better than this - can't we work out the
@@ -271,10 +268,7 @@ public class TomcatSessionIdFactory
 	    this.random.setSeed(seed);
 	  } catch (Exception e) {
 	    // Fall back to the simple case
-          if ( _log.isErrorEnabled() ) {
-
-              log.error(sm.getString("managerBase.random", randomClass), e);
-          }
+            log.error(sm.getString("managerBase.random", randomClass), e);
 	    this.random = new java.util.Random();
 	    this.random.setSeed(seed);
 	  }
@@ -384,16 +378,7 @@ public class TomcatSessionIdFactory
 	try {
 	  this.digest = MessageDigest.getInstance(DEFAULT_ALGORITHM);
 	} catch (NoSuchAlgorithmException f) {
-	  if ( _log.isErrorEnabled() ) {
-
-          if ( _log.isErrorEnabled() ) {
-
-              log.error(sm.getString("managerBase.digest",
-                                     DEFAULT_ALGORITHM), e);
-          }
-
-      }
-
+	  log.error(sm.getString("managerBase.digest", DEFAULT_ALGORITHM), e);
 	  this.digest = null;
 	}
       }

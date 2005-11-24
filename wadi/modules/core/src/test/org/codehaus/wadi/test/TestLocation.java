@@ -63,34 +63,28 @@ public class TestLocation extends TestCase {
 	}
 
 	class MyMutex extends Mutex {
-		protected int _count;
+	  protected int _count;
 
-		public void acquire() throws InterruptedException {
-            if ( _log.isInfoEnabled() ) {
+	  public void acquire() throws InterruptedException {
+	    _log.info("acquiring: " + _count++);
+	    super.acquire();
+	  }
 
-                _log.info("acquiring: " + _count++);
-            }
-			super.acquire();
-		}
-
-		public void release() {
-			super.release();
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("releasing: " + ( --_count ));
-            }
-		}
+	  public void release() {
+	    super.release();
+	    _log.info("releasing: " + ( --_count ));
+	  }
 
 	}
 
 	class MyLocation extends SimpleEvictable implements Location {
-	    
+
 		public void proxy(HttpServletRequest hreq, HttpServletResponse hres) {
 		    // do nothing
 		    }
-		
+
 		public Destination getDestination() {return null;}
-		
+
 	}
 
 	protected Sync _mutex=new MyMutex();
@@ -101,19 +95,13 @@ public class TestLocation extends TestCase {
 			try {
 				_mutex.acquire();
 			} catch (InterruptedException ie) {
-                if ( _log.isWarnEnabled() ) {
-
-                    _log.warn("interruption", ie);
-                }
+			  _log.warn("interruption", ie);
 			}
 
 			try {
 			_location.proxy(null, null);
 			} catch (Exception e) {
-                if ( _log.isWarnEnabled() ) {
-
-                    _log.warn("proxy problem", e);
-                }
+			  _log.warn("proxy problem", e);
 			} finally {
 			  _mutex.release();
 			}

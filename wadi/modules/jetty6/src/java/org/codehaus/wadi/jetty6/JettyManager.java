@@ -78,9 +78,7 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
     try {
       _wadi.stop();
     } catch (Exception e) {
-        if ( _log.isWarnEnabled() ) {
-            _log.warn("unexpected problem shutting down", e);
-        }
+      _log.warn("unexpected problem shutting down", e);
     }
   }
 

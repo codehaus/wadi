@@ -47,24 +47,15 @@ public class JGroupsCluster implements Cluster {
 	protected final MembershipListener _membershipListener=new MembershipListener() {
 
 		public void viewAccepted(View arg0) {
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("MembershipListener:viewAccepted: " + arg0);
-            }
+            if (_log.isInfoEnabled()) _log.info("MembershipListener:viewAccepted: " + arg0);
 		}
 
 		public void suspect(Address arg0) {
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("MembershipListener:suspect: " + arg0);
-            }
+            if (_log.isInfoEnabled()) _log.info("MembershipListener:suspect: " + arg0);
 		}
 
 		public void block() {
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("MembershipListener:block");
-            }
+		  _log.info("MembershipListener:block");
 		}
 
 	};
@@ -72,36 +63,26 @@ public class JGroupsCluster implements Cluster {
 	protected final MessageListener _messageListener=new MessageListener() {
 
 		public void receive(org.jgroups.Message arg0) {
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("MessageListener:receive: " + arg0);
-            }
+            if (_log.isInfoEnabled()) _log.info("MessageListener:receive: " + arg0);
 		}
 
 		public byte[] getState() {
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("MessageListener:getState");
-            }
+		  _log.info("MessageListener:getState");
 			return null;
 		}
 
 		public void setState(byte[] arg0) {
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("MessageListener:setState: " + arg0);
-            }
+            if (_log.isInfoEnabled()) _log.info("MessageListener:setState: " + arg0);
 		}
 
 	};
 
 	public JGroupsCluster(String nodeName) throws Exception {
 
-		if ( _log.isInfoEnabled() ) {
-
+	  if (_log.isInfoEnabled()) {
             _log.info(InetAddress.getLocalHost());
             _log.info(InetAddress.getLocalHost().getAddress());
-        }
+	  }
 
 
 		_channel=new JChannel();
@@ -113,31 +94,20 @@ public class JGroupsCluster implements Cluster {
 	}
 
 	public void start() throws ChannelNotConnectedException, ChannelClosedException {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("starting...");
-        }
+	  _log.info("starting...");
 		try {
 			_channel.connect(_channelName);
 			_dispatcher.start();
 		} catch (Exception e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("ohoh!", e);
-            }
+		  _log.error("ohoh!", e);
 		}
 
 		if (!_channel.getState(null, 5000))
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("cluster state is null - this must be the first node");
-        }
-		else
-			if ( _log.isInfoEnabled() ) {
-
-                _log.info("state received");
-                _log.info("..started");
-            }
+		  _log.info("cluster state is null - this must be the first node");
+		else {
+		  _log.info("state received");
+		  _log.info("..started");
+		}
 
 		_address=_channel.getLocalAddress();
 	}

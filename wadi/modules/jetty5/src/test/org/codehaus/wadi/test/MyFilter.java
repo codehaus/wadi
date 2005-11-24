@@ -41,9 +41,7 @@ public class MyFilter implements Filter {
 	}
 
 	public void init(FilterConfig config) {
-        if ( _log.isInfoEnabled() ) {
-            _log.info("Filter.init()");
-        }
+	  _log.info("Filter.init()");
     }
 
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
@@ -52,16 +50,12 @@ public class MyFilter implements Filter {
 		HttpServletRequest hreq=(HttpServletRequest)req;
 		HttpServletResponse hres=(HttpServletResponse)res;
 		String sessionId=hreq.getRequestedSessionId();
-            if ( _log.isInfoEnabled() ) {
-                _log.info("Filter.doFilter("+((sessionId==null)?"":sessionId)+")"+(hreq.isSecure()?" - SECURE":""));
-            }
+            if (_log.isInfoEnabled()) _log.info("Filter.doFilter("+((sessionId==null)?"":sessionId)+")"+(hreq.isSecure()?" - SECURE":""));
             boolean found=_servlet.getContextualiser().contextualise(hreq, hres, chain, sessionId, null, null, _exclusiveOnly);
 
 		// only here for testing...
 		if (!found) {
-            if ( _log.isErrorEnabled() ) {
-                _log.error("could not locate session: "+sessionId);
-            }
+            if (_log.isErrorEnabled()) _log.error("could not locate session: "+sessionId);
             hres.sendError(410, "could not locate session: "+sessionId);
 		}
 

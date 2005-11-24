@@ -39,13 +39,10 @@ public class InactiveEvicter implements Evicter {
 	 * @see org.codehaus.wadi.test.cache.Cache.Evicter#evict(java.lang.String, org.codehaus.wadi.test.cache.RequestProcessor)
 	 */
 	public boolean evict(String key, RequestProcessor val) {
-		boolean tmp=val.getTimeToLive()<10000;
-		if (tmp) {
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("evicting due to lack of activity: " + key);
-            }
-        }
-		return tmp;
+	  boolean tmp=val.getTimeToLive()<10000;
+	  if (tmp) {
+            if (_log.isInfoEnabled()) _log.info("evicting due to lack of activity: " + key);
+	  }
+	  return tmp;
 	}
 }

@@ -89,10 +89,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
 
     public void stop() throws Exception {
         _task.cancel();
-        if ( _log.isTraceEnabled() ) {
-
-            _log.trace("stopped");
-        }
+	_log.trace("stopped");
     }
 
     public void destroy() {
@@ -100,10 +97,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
     }
 
     public void evict() {
-        if ( _log.isTraceEnabled() ) {
-
-            _log.trace("sweep started");
-        }
+      _log.trace("sweep started");
 
         RankedRWLock.setPriority(RankedRWLock.EVICTION_PRIORITY); // TODO - shouldn't really be here, but...
 

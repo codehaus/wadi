@@ -178,10 +178,7 @@ public class SimpleContextualiserStack implements Contextualiser {
     public Contextualiser getTop() {return _memory;}
 
     public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("findRelevantSessionNames");
-        }
+      _log.info("findRelevantSessionNames");
         _memory.findRelevantSessionNames(numPartitions, resultSet);
     }
 

@@ -39,17 +39,17 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
 
     protected final boolean _excludeSelf;
     protected final Map _pipes;
-        
+
     public ClusterServer(PooledExecutor executor, long pipeTimeout, boolean excludeSelf) {
         super(executor, pipeTimeout);
         _excludeSelf=excludeSelf;
         _pipes=new HashMap();
     }
-    
+
     protected ExtendedCluster _cluster;
     protected MessageConsumer _nodeConsumer;
     protected MessageConsumer _clusterConsumer;
-    
+
     public void init(ServerConfig config) {
         super.init(config);
         _cluster=_config.getCluster();
@@ -68,19 +68,16 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
         waitForExistingPipes();
         super.stop();
     }
-    
+
     public void stopAcceptingPipes() {
         try {
         _clusterConsumer.setMessageListener(null);
         _nodeConsumer.setMessageListener(null);
         } catch (JMSException e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("could not remove Listeners", e);
-            }
+	  _log.warn("could not remove Listeners", e);
         }
     }
-    
+
     public void onMessage(Message message) {
         try {
             if (message instanceof BytesMessage) {
@@ -117,15 +114,12 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
                 }
             }
         } catch (JMSException e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("unexpected problem", e);
-            }
+	  _log.error("unexpected problem", e);
         }
     }
-    
+
     // needs more thought...
-    
+
     public Pipe makeClientPipe(String correlationId, Destination target) {
         Destination source=_cluster.getLocalNode().getDestination();
         LinkedQueue queue=new LinkedQueue();
@@ -137,37 +131,28 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
         }
         return pipe;
     }
-    
+
     protected int getNumPipes() {
         synchronized (_pipes) {
             return _pipes.size();
         }
     }
-    
+
     public void waitForExistingPipes() {
         int numPipes;
         while ((numPipes=getNumPipes())>0) {
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("waiting for: " + numPipes + " Pipe[s]");
-            }
+            if (_log.isInfoEnabled()) _log.info("waiting for: " + numPipes + " Pipe[s]");
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                if ( _log.isTraceEnabled() ) {
-
-                    _log.trace("unexpected interruption - ignoring", e);
-                }
+	      _log.trace("unexpected interruption - ignoring", e);
             }
         }
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("existing Pipes have finished running");
-        }
+	_log.info("existing Pipes have finished running");
     }
-    
+
     // PipeConfig
-    
+
     public void notifyClosed(Pipe pipe) {
         String correlationId=((AbstractClusterPipe)pipe)._ourCorrelationId;
         //_log.info("removing Pipe: "+correlationId);
@@ -181,5 +166,5 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
         //super.notifyIdle(pipe);
         notifyClosed(pipe);
     }
-    
+
 }

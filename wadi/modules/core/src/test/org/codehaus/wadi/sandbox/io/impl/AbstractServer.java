@@ -42,42 +42,33 @@ public abstract class AbstractServer implements Server, PipeConfig {
     protected ServerConfig _config;
     protected Thread _thread;
     protected volatile boolean _running;
-    
+
     public void init(ServerConfig config) {
         _config=config;
     }
-    
-    public void start() throws Exception {
-        if ( _log.isInfoEnabled() ) {
 
-            _log.info("starting");
-        }
+    public void start() throws Exception {
+      _log.info("starting");
     }
 
     public void stop() throws Exception {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("stopped");
-        }
+      _log.info("stopped");
     }
 
     public void run(Pipe pipe) {
         try {
             _executor.execute(pipe);
         } catch (InterruptedException e) { // TODO - do this safely...
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error(e);
-            }
+	  _log.error(e);
         }
     }
 
     // PipeConfig
-    
+
     public Contextualiser getContextualiser() {
         return _config.getContextualiser();
     }
-    
+
     public String getNodeId() {
         return _config.getNodeName();
     }

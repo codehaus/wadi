@@ -58,21 +58,12 @@ public class StupidLockManager implements LockManager {
 		synchronized (_syncs) {
 			if ((sync=(Sync)_syncs.get(key))==null) {
 					_syncs.put(key, (sync=new Mutex()));
-                if ( _log.isTraceEnabled() ) {
-
-                    _log.trace("[" + _prefix + "] created sync: " + key + " - " + this + " - " + sync);
-                }
+                if (_log.isTraceEnabled()) _log.trace("[" + _prefix + "] created sync: " + key + " - " + this + " - " + sync);
 			}
 		}
-        if ( _log.isTraceEnabled() ) {
-
-            _log.trace("[" + _prefix + "] trying to acquire sync for: " + key + " - " + this + " - " + sync);
-        }
+        if (_log.isTraceEnabled()) _log.trace("[" + _prefix + "] trying to acquire sync for: " + key + " - " + this + " - " + sync);
 		Utils.safeAcquire(sync);
-        if ( _log.isTraceEnabled() ) {
-
-            _log.trace("[" + _prefix + "] sync acquired for: " + key + " - " + this + " - " + sync);
-        }
+        if (_log.isTraceEnabled()) _log.trace("[" + _prefix + "] sync acquired for: " + key + " - " + this + " - " + sync);
 		return sync;
 	}
 

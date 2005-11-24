@@ -46,7 +46,7 @@ public class StaticPartitionManager implements PartitionManager {
 	public PartitionFacade[] getPartitions() {
 		return _partitions;
 	}
-	
+
 	public int getNumPartitions() {
 		return _partitions.length;
 	}
@@ -62,10 +62,7 @@ public class StaticPartitionManager implements PartitionManager {
     		// figure out which node is Partition Master...
     		int index=i/partitionsPerCache;
     		GCache master=caches[index];
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("partition-" + i + " -> node-" + index);
-            }
+            if (_log.isInfoEnabled()) _log.info("partition-" + i + " -> node-" + index);
     		// go through all the nodes...
     		for (int j=0; j<numCaches; j++) {
     			GCache cache=caches[j];
@@ -97,13 +94,13 @@ public class StaticPartitionManager implements PartitionManager {
 	public Dispatcher getDispatcher() {
 		return _dispatcher;
 	}
-	
+
 	public Destination getLocalDestination() {
 		return _dispatcher.getLocalDestination();
 	}
 
 	public void evacuate() {
-		throw new UnsupportedOperationException("NYI");		
+		throw new UnsupportedOperationException("NYI");
 	}
-	
+
 }

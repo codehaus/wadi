@@ -24,20 +24,20 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Replicater;
 
 public class DatabaseReplicater implements Replicater {
-	
+
 	protected final Log _log = LogFactory.getLog(getClass());
 	protected final DatabaseStore _store;
 	protected boolean _reusingStore;
-	
+
 	public DatabaseReplicater(DatabaseStore store, boolean reusingStore) {
 		_store=store;
 		_reusingStore=reusingStore;
 	}
-	
+
 	public boolean getReusingStore() {
 		return _reusingStore;
 	}
-	
+
 	public void create(Object tmp) {
 		AbstractReplicableSession session=(AbstractReplicableSession)tmp;
 		String name=session.getId();
@@ -48,23 +48,17 @@ public class DatabaseReplicater implements Replicater {
 			connection=_store.getConnection();
 			_store.insert(connection, session, session.getBodyAsByteArray());
 		} catch (Exception e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("problem creating replicant", e);
-            }
+		  _log.warn("problem creating replicant", e);
 		} finally {
 			if (connection!=null)
 				try {
 					connection.close();
 				} catch (Exception e) {
-                    if ( _log.isWarnEnabled() ) {
-
-                        _log.warn("problem releasing connection", e);
-                    }
+				  _log.warn("problem releasing connection", e);
 				}
 		}
 	}
-	
+
 	public void update(Object tmp) { //TODO
 		AbstractReplicableSession session=(AbstractReplicableSession)tmp;
 		String name=session.getId();
@@ -75,23 +69,17 @@ public class DatabaseReplicater implements Replicater {
 			connection=_store.getConnection();
 			_store.update(connection, session);
 		} catch (Exception e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("problem updating replicant", e);
-            }
+		  _log.warn("problem updating replicant", e);
 		} finally {
 			if (connection!=null)
 				try {
 					connection.close();
 				} catch (Exception e) {
-                    if ( _log.isWarnEnabled() ) {
-
-                        _log.warn("problem releasing connection", e);
-                    }
+				  _log.warn("problem releasing connection", e);
 				}
 		}
 	}
-	
+
 	public void destroy(Object tmp) { //TODO
 		AbstractReplicableSession session=(AbstractReplicableSession)tmp;
 		String name=session.getId();
@@ -102,22 +90,16 @@ public class DatabaseReplicater implements Replicater {
 			connection=_store.getConnection();
 			_store.delete(connection, session);
 		} catch (Exception e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("problem destroying replicant", e);
-            }
+		  _log.warn("problem destroying replicant", e);
 		} finally {
 			if (connection!=null)
 				try {
 					connection.close();
 				} catch (Exception e) {
-                    if ( _log.isWarnEnabled() ) {
-
-                        _log.warn("problem releasing connection", e);
-                    }
+				  _log.warn("problem releasing connection", e);
 				}
 		}
 	}
-	
+
 }
 

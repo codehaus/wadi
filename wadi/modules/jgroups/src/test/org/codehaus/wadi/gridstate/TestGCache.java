@@ -69,7 +69,7 @@ public class TestGCache extends TestCase {
         }
 
         StaticPartitionManager.partition(_nodes, _partitionManagers, _numPartitions);
-        
+
         for (int i=0; i<_nodes.length; i++)
         	_nodes[i].init();
 
@@ -89,24 +89,15 @@ public class TestGCache extends TestCase {
     			//_log.info("iter: "+i);
     			Object[] values=new Object[_numNodes];
     			for (int j=0; j<_numNodes; j++) {
-                    if ( _log.isTraceEnabled() ) {
-
-                        _log.trace("node-" + j + ": acquiring: " + _key + " ..." + " <" + Thread.currentThread().getName() + ">");
-                    }
+                    if (_log.isTraceEnabled()) _log.trace("node-" + j + ": acquiring: " + _key + " ..." + " <" + Thread.currentThread().getName() + ">");
     				values[j]=_nodes[j].get(_key);
-                    if ( _log.isTraceEnabled() ) {
-
-                        _log.trace("node-" + j + ": ...acquired: " + _key + "=" + values[j] + " <" + Thread.currentThread().getName() + ">");
-                    }
+                    if (_log.isTraceEnabled()) _log.trace("node-" + j + ": ...acquired: " + _key + "=" + values[j] + " <" + Thread.currentThread().getName() + ">");
     				if (j>0)
     					assertTrue(values[j-1].equals(values[j]));
     			}
     			long elapsed=System.currentTimeMillis()-start;
     			int numFetches=_numIters*_numNodes;
-                if ( _log.isWarnEnabled() ) {
-
-                    _log.warn("rate: " + numFetches + " in " + elapsed + " millis = " + ( elapsed / numFetches ) + " millis/fetch");
-                }
+                if (_log.isWarnEnabled()) _log.warn("rate: " + numFetches + " in " + elapsed + " millis = " + ( elapsed / numFetches ) + " millis/fetch");
     		}
     	}
     }
@@ -157,19 +148,13 @@ public class TestGCache extends TestCase {
     	GCache green=_nodes[1];
     	//GCache blue=_nodes[2];
 
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("0 nodes running");
-        }
+	_log.info("0 nodes running");
         for (int i=0; i<_numNodes; i++)
         	_nodes[i].start();
 
         Thread.sleep(12000);
         //red.getCluster().waitForClusterToComplete(_numNodes, 6000);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info(_numNodes + " nodes running");
-        }
+        if (_log.isInfoEnabled()) _log.info(_numNodes + " nodes running");
 
         long start=System.currentTimeMillis();
         for (int i=0; i<_numPartitions; i++) {
@@ -246,54 +231,33 @@ public class TestGCache extends TestCase {
             //_log.info(key+" = "+value2);
             assertTrue(value2.equals(newData));
         }
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("elapsed: " + ( System.currentTimeMillis() - start ) + " millis");
-        }
+        if (_log.isInfoEnabled()) _log.info("elapsed: " + ( System.currentTimeMillis() - start ) + " millis");
 
 
         Thread.sleep(6000);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info(_numNodes + " nodes running");
-        }
+        if (_log.isInfoEnabled()) _log.info(_numNodes + " nodes running");
         for (int i=1; i<_numNodes; i++)
         	_nodes[i].stop();
 
         //red.getCluster().waitForClusterToComplete(1, 6000);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("1 node running");
-        }
+	_log.info("1 node running");
         red.stop();
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("0 nodes running");
-        }
+	_log.info("0 nodes running");
     }
 
     public void testConcurrency(DispatcherFactory factory) throws Exception {
 
     	setUp(factory);
 
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("0 nodes running");
-        }
+	_log.info("0 nodes running");
         for (int i=0; i<_numNodes; i++)
         	_nodes[i].start();
 
         Thread.sleep(12000);
         //_nodes[_numNodes-1].getCluster().waitForClusterToComplete(_numNodes, 6000);
-        if ( _log.isWarnEnabled() ) {
+        if (_log.isWarnEnabled()) _log.warn(_numNodes + " nodes running");
 
-            _log.warn(_numNodes + " nodes running");
-        }
-
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("starting");
-        }
+	_log.info("starting");
         for (int i=0; i<_numPartitions; i++) { // do this for each partition...
             String key=_factory.create(i);
 
@@ -307,25 +271,16 @@ public class TestGCache extends TestCase {
             for (int j=0; j<_numThreads; j++)
             	thread[j].join();
         }
-        if ( _log.isWarnEnabled() ) {
-
-            _log.warn("finished");
-        }
+	_log.warn("finished");
 
         Thread.sleep(6000);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info(_numNodes + " nodes running");
-        }
+        if (_log.isInfoEnabled()) _log.info(_numNodes + " nodes running");
         for (int i=0; i<_numNodes; i++)
         	_nodes[i].stop();
 
         //red.getCluster().waitForClusterToComplete(1, 6000);
         Thread.sleep(6000);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("0 nodes running");
-        }
+	_log.info("0 nodes running");
     }
 
     public class Soaker implements Runnable {
@@ -353,10 +308,7 @@ public class TestGCache extends TestCase {
     		}
     		long elapsed=System.currentTimeMillis()-start;
     		int numOperations=_numIters*_numNodes*_keys.length*2;
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("rate: " + numOperations + " in " + elapsed + " millis = " + ( elapsed / numOperations ) + " millis/operation");
-            }
+            if (_log.isWarnEnabled()) _log.warn("rate: " + numOperations + " in " + elapsed + " millis = " + ( elapsed / numOperations ) + " millis/operation");
     	}
     }
 
@@ -364,24 +316,15 @@ public class TestGCache extends TestCase {
 
     	setUp(factory);
 
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("0 nodes running");
-        }
+	_log.info("0 nodes running");
         for (int i=0; i<_numNodes; i++)
         	_nodes[i].start();
 
         Thread.sleep(12000);
         //_nodes[_numNodes-1].getCluster().waitForClusterToComplete(_numNodes, 6000);
-        if ( _log.isWarnEnabled() ) {
+        if (_log.isWarnEnabled()) _log.warn(_numNodes + " nodes running");
 
-            _log.warn(_numNodes + " nodes running");
-        }
-
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("starting");
-        }
+	_log.info("starting");
 
         // make up keys that will hash into every partition...
         GCache node=_nodes[0];
@@ -397,24 +340,15 @@ public class TestGCache extends TestCase {
     		(thread[j]=new Thread(new Soaker(keys), "SoakThread-"+j)).start();
         for (int j=0; j<_numThreads; j++)
         	thread[j].join();
-        if ( _log.isWarnEnabled() ) {
-
-            _log.warn("finished");
-        }
+	_log.warn("finished");
 
         Thread.sleep(6000);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info(_numNodes + " nodes running");
-        }
+        if (_log.isInfoEnabled()) _log.info(_numNodes + " nodes running");
         for (int i=0; i<_numNodes; i++)
         	_nodes[i].stop();
 
         Thread.sleep(6000);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("0 nodes running");
-        }
+	_log.info("0 nodes running");
     }
 
 }

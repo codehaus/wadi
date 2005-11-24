@@ -119,20 +119,14 @@ public class
     setUp()
     throws Exception
     {
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("starting test");
-      }
+      _log.info("starting test");
     }
 
   protected void
     tearDown()
     throws InterruptedException
     {
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("stopping test");
-      }
+      _log.info("stopping test");
     }
 
   class
@@ -240,10 +234,7 @@ public class
     }
     catch (Exception e)
     {
-        if ( _log.isErrorEnabled() ) {
-
-            _log.error("test failed", e);
-        }
+      _log.error("test failed", e);
     }
 
     assertTrue(success);
@@ -266,10 +257,7 @@ public class
     String name=tmp.toString();
     tmp.delete();
     File dir=new File(name);
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("dir=" + dir);
-      }
+      if (_log.isInfoEnabled()) _log.info("dir=" + dir);
     assertTrue(dir.mkdirs());
 
     Cache backing=new BasicCache();
@@ -323,10 +311,7 @@ public class
     }
     catch (Exception e)
     {
-        if ( _log.isErrorEnabled() ) {
-
-            _log.error("test failed", e);
-        }
+      _log.error("test failed", e);
     }
 
     assertTrue(success);

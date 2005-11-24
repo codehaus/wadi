@@ -65,15 +65,9 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
         _dispatcher.init(this);
         _dindex=new DIndex(_nodeName, _numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState);
         _dindex.init(this);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("starting Cluster...");
-        }
+	_log.info("starting Cluster...");
         _dispatcher.setDistributedState(_distributedState);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("...Cluster started");
-        }
+	_log.info("...Cluster started");
         _dindex.start();
     }
 
@@ -96,10 +90,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
     // DIndexConfig
 
     public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
-        if ( _log.isWarnEnabled() ) {
-
-            _log.warn("findRelevantSessionNames() - NYI");
-        }
+      _log.warn("findRelevantSessionNames() - NYI");
     }
 
     //-----------------------------------------------------------

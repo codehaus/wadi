@@ -107,10 +107,7 @@ public class TestExchange extends TestCase {
 			assertTrue(node._numPartitionsInCluster==numPartitions);
 			assertTrue(node._numPartitionsOwned==numPartitionsPerNode || node._numPartitionsOwned==(numPartitionsPerNode+1));
 			numPartitionsInCluster+=node._numPartitionsOwned;
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("node[" + i + "]: " + node);
-            }
+            if (_log.isInfoEnabled()) _log.info("node[" + i + "]: " + node);
 		}
 		assertTrue(numPartitionsInCluster==numPartitions);
 

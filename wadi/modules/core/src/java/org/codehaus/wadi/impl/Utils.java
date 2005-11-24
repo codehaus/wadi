@@ -95,10 +95,7 @@ public class Utils {
 	            Thread.interrupted(); // TODO - not sure if we need to clear the interrupted flag ?
 	            throw e; // a TimeoutException isa InterruptedException
 	        } catch (InterruptedException e) {
-                if ( _log.isTraceEnabled() ) {
-
-                    _log.trace("unexpected interruption - ignoring", e);
-                }
+		  _log.trace("unexpected interruption - ignoring", e);
 	        }
 	    } while (Thread.interrupted());
 	}
@@ -115,10 +112,7 @@ public class Utils {
 	        try {
 	            acquired=sync.attempt(0);
 	        } catch (InterruptedException e) {
-                if ( _log.isTraceEnabled() ) {
-
-                    _log.trace("unexpected interruption - ignoring", e);
-                }
+		  _log.trace("unexpected interruption - ignoring", e);
 	        }
 	    } while (Thread.interrupted());
 	    return acquired;
@@ -136,10 +130,7 @@ public class Utils {
 	    try {
 	        return byteArrayToObject(bytes, streamer);
 	    } catch (Exception e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("unexpected problem whilst unmarshalling", e);
-            }
+	      _log.error("unexpected problem whilst unmarshalling", e);
 	        return null;
 	    }
 	}
@@ -156,10 +147,7 @@ public class Utils {
         try {
             return objectToByteArray(object, streamer);
         } catch (Exception e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("unexpected problem whilst marshalling", e);
-            }
+	  _log.error("unexpected problem whilst marshalling", e);
             return null;
         }
     }
@@ -176,10 +164,7 @@ public class Utils {
         try {
             return getContent(object, streamer);
         } catch (Exception e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("unexpected problem whilst marshalling", e);
-            }
+	  _log.error("unexpected problem whilst marshalling", e);
             return null;
         }
     }
@@ -196,10 +181,7 @@ public class Utils {
         try {
             return setContent(object, content, streamer);
         } catch (Exception e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("unexpected problem whilst marshalling", e);
-            }
+	  _log.error("unexpected problem whilst marshalling", e);
             return null;
         }
     }
@@ -207,7 +189,7 @@ public class Utils {
     public static String getClusterUri() {
         return "peer://org.codehaus.wadi";
     }
-    
+
     // this should really be passed in the top somewhere - but the tests need access too...
     public static ActiveMQConnectionFactory getConnectionFactory() {
         ActiveMQConnectionFactory cf=new ActiveMQConnectionFactory(getClusterUri());
@@ -237,10 +219,10 @@ public class Utils {
                 if (_log.isTraceEnabled()) _log.trace("unexpected interruption - ignoring", e);
             }
         } while (Thread.interrupted());
-        
+
         throw new IllegalStateException();
     }
-    
+
     public static void safeSleep(long period) {
         long end=System.currentTimeMillis()+(period);
         do {
@@ -260,13 +242,13 @@ public class Utils {
                 if (_log.isTraceEnabled()) _log.trace("unexpected interruption - ignoring", e);
             }
         } while (Thread.interrupted());
-    }  
-    
+    }
+
     public static File createTempDirectory(String prefix, String suffix, File directory) throws IOException {
     	File dir=File.createTempFile(prefix, suffix, directory);
     	dir.delete();
     	dir.mkdir();
     	return dir;
     }
-    
+
 }

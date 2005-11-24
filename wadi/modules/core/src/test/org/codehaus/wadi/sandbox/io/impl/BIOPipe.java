@@ -27,41 +27,35 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.io.PipeConfig;
 
 public class BIOPipe extends AbstractPipe {
-    
+
     protected static final Log _log=LogFactory.getLog(BIOPipe.class);
-    
+
     protected final Socket _socket;
-    
+
     public BIOPipe(PipeConfig config, long timeout, Socket socket) {
         super(config, timeout);
         _socket=socket;
         try {
             _socket.setSoTimeout((int)_timeout); // TODO - parameterise
         } catch (SocketException e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("could not set socket timeout", e);
-            }
+	  _log.warn("could not set socket timeout", e);
         }
     }
-    
+
     // Connection
-    
+
     public void run() {
         while (_valid)
             super.run(); // impossible to idle - loop until EOF...
     }
-    
+
     public void close() throws IOException {
         super.close(); // deals with streams...
         try{
             _socket.close();
         }
         catch(Exception e){
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("problem closing socket", e);
-            }
+	  _log.warn("problem closing socket", e);
         }
     }
 

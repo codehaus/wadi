@@ -33,14 +33,14 @@ public class SocketClientPipe extends AbstractPipe {
     public static class DummyPipeConfig implements PipeConfig {
         public void notifyIdle(Pipe pipe) {/* do nothing */}
         public void notifyClosed(Pipe pipe) {/* do nothing */}
-        public Contextualiser getContextualiser() {return null;}        
+        public Contextualiser getContextualiser() {return null;}
         public String getNodeId() {return null;}
     }
-    
-    
+
+
     protected final SocketChannel _channel;
     protected final Socket _socket;
-    
+
     public SocketClientPipe(InetSocketAddress address, long timeout) throws IOException {
         super(new DummyPipeConfig(), timeout);
         _channel=SocketChannel.open(address);
@@ -49,29 +49,23 @@ public class SocketClientPipe extends AbstractPipe {
         _socket.setKeepAlive(true);
         _socket.setSoTimeout((int)_timeout);
     }
-   
-    
+
+
     // Pipe
-    
+
     public void close() throws IOException {
         super.close(); // deals with streams...
         try{
             _socket.close();
         }
         catch(Exception e){
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("problem closing socket", e);
-            }
+	  _log.warn("problem closing socket", e);
         }
         try{
             _channel.close();
         }
         catch(Exception e){
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("problem closing socket", e);
-            }
+	  _log.warn("problem closing socket", e);
         }
     }
 

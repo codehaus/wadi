@@ -36,18 +36,18 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
  */
 
 public class BIOServer extends AbstractSocketServer {
-    
+
     protected final int _backlog; // 16?
     protected final long _serverTimeout; // secs
-    
+
     public BIOServer(PooledExecutor executor, long pipeTimeout, InetSocketAddress address, long serverTimeout, int backlog) {
         super(executor, pipeTimeout, address);
         _backlog=backlog;
         _serverTimeout=serverTimeout;
         }
-    
+
     protected ServerSocket _socket;
-    
+
     public void start() throws IOException {
         _running=true;
         int port=_address.getPort();
@@ -57,53 +57,41 @@ public class BIOServer extends AbstractSocketServer {
         //_socket.setReuseAddress(true);
         _address=new InetSocketAddress(host, _socket. getLocalPort());
         (_thread=new Thread(new Producer(), "WADI BIO Server")).start();
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("Producer thread started");
-        }
+	_log.info("Producer thread started");
         if (_log.isDebugEnabled()) _log.debug("started: "+_socket);
     }
-    
+
     public void stop() {
         if (_log.isDebugEnabled()) _log.debug("stopping: "+_socket);
-        
+
         stopAcceptingPipes();
         waitForExistingPipes();
-        
+
         try {
             _socket.close();
         } catch (IOException e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("problem closing server socket", e);
-            }
+	  _log.warn("problem closing server socket", e);
         }
         _socket=null;
-        
+
         if (_log.isDebugEnabled()) _log.debug("stopped: "+_address);
     }
-    
+
     public void stopAcceptingPipes() {
         _running=false;
         do {
             try {
                 _thread.join();
             } catch (InterruptedException e) {
-                if ( _log.isTraceEnabled() ) {
-
-                    _log.trace("unexpected interruption - ignoring", e);
-                }
+	      _log.trace("unexpected interruption - ignoring", e);
             }
         } while (Thread.interrupted());
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("Producer thread stopped");
-        }
+	_log.info("Producer thread stopped");
         _thread=null;
     }
-    
+
     public class Producer implements Runnable {
-        
+
         public void run() {
             try {
                 while (_running) {
@@ -113,25 +101,22 @@ public class BIOServer extends AbstractSocketServer {
                         BIOPipe pipe=new BIOPipe(BIOServer.this, _pipeTimeout, socket);
                         add(pipe);
                         BIOServer.this.run(pipe);
-                        
+
                     } catch (SocketTimeoutException ignore) {
                         // ignore...
                     }
                 }
             } catch (IOException e) {
-                if ( _log.isWarnEnabled() ) {
-
-                    _log.warn("unexpected io problem - stopping");
-                }
+	      _log.warn("unexpected io problem - stopping");
             }
         }
-        
+
     }
-    
+
     // PipeConfig
 
     public void notifyIdle(Pipe pipe) {
-        // BIOServer does not support idling Pipes :-(        
+        // BIOServer does not support idling Pipes :-(
     }
-    
+
 }

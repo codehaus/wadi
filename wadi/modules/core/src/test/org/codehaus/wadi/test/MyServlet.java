@@ -87,8 +87,8 @@ public class MyServlet implements Servlet {
     protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
     protected final boolean _accessOnLoad=true;
     protected final Router _router=new DummyRouter();
-    protected final SessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory()); 
-    protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool); 
+    protected final SessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory());
+    protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
     protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
     protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
     protected final HttpProxy _httpProxy;
@@ -114,15 +114,12 @@ public class MyServlet implements Servlet {
         _httpAddress=httpAddress;
         _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _httpAddress, _httpProxy, new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L),  new DummyPartitionManager(24));
     }
-    
+
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}
 
 	public void init(ServletConfig config) {
 		_config = config;
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("Servlet.init()");
-        }
+		_log.info("Servlet.init()");
         try {
             _manager.init(new ManagerConfig() {
 
@@ -131,16 +128,13 @@ public class MyServlet implements Servlet {
 				}
 
 				public void callback(StandardManager manager) {
-					// do nothing - should install Listeners...					
+					// do nothing - should install Listeners...
 				}
-            	
+
             });
             _manager.start();
         } catch (Exception e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn(e);
-            }
+	  _log.warn(e);
         }
 	}
 
@@ -150,10 +144,7 @@ public class MyServlet implements Servlet {
 
 	public void service(ServletRequest req, ServletResponse res) {
 		String sessionId=((HttpServletRequest)req).getRequestedSessionId();
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("Servlet.service(" + ( ( sessionId == null ) ? "" : sessionId ) + ")");
-        }
+        if (_log.isInfoEnabled()) _log.info("Servlet.service(" + ( ( sessionId == null ) ? "" : sessionId ) + ")");
 
 		if (_test!=null)
 			_test.test(req, res);
@@ -168,10 +159,7 @@ public class MyServlet implements Servlet {
             _manager.stop();
             _manager.destroy();
 		} catch (Exception e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("unexpected problem", e);
-            }
+		  _log.warn("unexpected problem", e);
 		}
 	}
 

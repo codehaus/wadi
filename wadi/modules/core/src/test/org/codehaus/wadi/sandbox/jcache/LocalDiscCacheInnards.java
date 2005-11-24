@@ -60,10 +60,7 @@ public class
     assert dir.canWrite();
 
     _dir               =dir;
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("created: " + this);
-      }
+      if (_log.isInfoEnabled()) _log.info("created: " + this);
   }
 
   public String
@@ -89,17 +86,11 @@ public class
 	oi.close();
 
 	value=sc;
-          if ( _log.isInfoEnabled() ) {
-
-              _log.info("loaded (local disc): " + key + " : " + value);
-          }
+          if (_log.isInfoEnabled()) _log.info("loaded (local disc): " + key + " : " + value);
       }
       catch (Exception e)
       {
-          if ( _log.isErrorEnabled() ) {
-
-              _log.error("load (local disc) failed: " + key, e);
-          }
+          if (_log.isErrorEnabled()) _log.error("load (local disc) failed: " + key, e);
       }
     }
 
@@ -124,18 +115,12 @@ public class
       //	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
       //	file.setLastModified(willTimeOutAt);
 
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("stored (local disc): " + key + " : " + value);
-        }
+        if (_log.isInfoEnabled()) _log.info("stored (local disc): " + key + " : " + value);
       success=true;
     }
     catch (Exception e)
     {
-        if ( _log.isErrorEnabled() ) {
-
-            _log.error("store (local disc) failed: " + key, e);
-        }
+        if (_log.isErrorEnabled()) _log.error("store (local disc) failed: " + key, e);
     }
 
     return success;
@@ -156,18 +141,12 @@ public class
     {
       File file=new File(_dir, key.toString()+"."+_streamingStrategy.getSuffix());
       file.delete();
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("removed (local disc): " + key);
-        }
+        if (_log.isInfoEnabled()) _log.info("removed (local disc): " + key);
       success=true;
     }
     catch (Exception e)
     {
-        if ( _log.isErrorEnabled() ) {
-
-            _log.error("removal (local disc) failed: " + key, e);
-        }
+        if (_log.isErrorEnabled()) _log.error("removal (local disc) failed: " + key, e);
     }
 
     return success;

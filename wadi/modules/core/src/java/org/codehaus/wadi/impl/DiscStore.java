@@ -41,39 +41,33 @@ public class DiscStore implements Store, DiscMotableConfig {
         _dir=dir;
         _useNIO=useNIO;
         _reusingStore=reusingStore;
-        
+
         if (!dir.exists()) {
             _log.info("Creating directory: "+_dir.getCanonicalPath());
             if (!dir.mkdirs())
             throw new IOException("Couldn't create directory "+_dir.getCanonicalPath());
         }
-       
-        
+
+
         try {
         	File.createTempFile("DiscStore_WriteTest",null , _dir).delete();
         } catch (IOException e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("bad directory: " + _dir, e);
-            }
+            if (_log.isErrorEnabled()) _log.error("bad directory: " + _dir, e);
         	throw e;
         }
-        	
+
         // TODO - for use by a SharedStoreContextualiser we need to figure out concurrency issues...
     }
-    
+
     public void clean() {
         File[] files=_dir.listFiles();
         int l=files.length;
         for (int i=0; i<l; i++) {
             files[i].delete();
         }
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("removed (exclusive disc): " + l + " files");
-        }
+        if (_log.isInfoEnabled()) _log.info("removed (exclusive disc): " + l + " files");
     }
-    
+
     public void load(Putter putter, boolean accessOnLoad) {
         // if our last incarnation suffered a catastrophic failure there may be some sessions
         // in our directory - FIXME - if replicating, we may not want to reload these...
@@ -102,24 +96,24 @@ public class DiscStore implements Store, DiscMotableConfig {
         }
         if (_log.isInfoEnabled())_log.info("loaded (exclusive disc): "+list.length);
     }
-    
+
     public StoreMotable create() {
         return new DiscMotable();
     }
-    
+
     public String getStartInfo() {return _dir.toString();}
     public String getDescription() {return "exclusive disc";}
-    
+
     // ExclusiveDiscMotableConfig
-    
+
     public File getDirectory() {return _dir;}
     public String getSuffix() {return _streamer.getSuffixWithDot();}
     public boolean getUseNIO() {return _useNIO;}
     public ByteBuffer take(int size) {return _cache.take(size);}
     public void put(ByteBuffer buffer) {_cache.put(buffer);}
-    
+
     public boolean getReusingStore() {
     	return _reusingStore;
     }
-    
+
 }

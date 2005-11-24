@@ -63,10 +63,7 @@ class
 
     _ds                =ds;
     _table             =table;
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("created: " + this);
-      }
+      if (_log.isInfoEnabled()) _log.info("created: " + this);
   }
 
   public String
@@ -93,10 +90,7 @@ class
     	oi.close();
 
     	value=sc;
-          if ( _log.isInfoEnabled() ) {
-
-              _log.info("loaded (database): " + key + " : " + value);
-          }
+          if (_log.isInfoEnabled()) _log.info("loaded (database): " + key + " : " + value);
       }
 
       s.close();
@@ -104,10 +98,7 @@ class
     }
     catch (Exception e)
     {
-        if ( _log.isErrorEnabled() ) {
-
-            _log.error("loading (database) failed: " + key, e);
-        }
+        if (_log.isErrorEnabled()) _log.error("loading (database) failed: " + key, e);
     }
 
     return value;
@@ -133,18 +124,12 @@ class
       //	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
       //	file.setLastModified(willTimeOutAt);
 
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("stored (database): " + key + " : " + value);
-        }
+        if (_log.isInfoEnabled()) _log.info("stored (database): " + key + " : " + value);
       success=true;
     }
     catch (Exception e)
     {
-        if ( _log.isErrorEnabled() ) {
-
-            _log.error("eviction (database) failed: " + key, e);
-        }
+        if (_log.isErrorEnabled()) _log.error("eviction (database) failed: " + key, e);
     }
 
     return success;
@@ -175,18 +160,12 @@ class
       //	long willTimeOutAt=impl.getLastAccessedTime()+(impl.getMaxInactiveInterval()*1000);
       //	file.setLastModified(willTimeOutAt);
 
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("stored (database): " + key + " : " + value);
-        }
+        if (_log.isInfoEnabled()) _log.info("stored (database): " + key + " : " + value);
       success=true;
     }
     catch (Exception e)
     {
-        if ( _log.isErrorEnabled() ) {
-
-            _log.error("eviction (database) failed: " + key, e);
-        }
+        if (_log.isErrorEnabled()) _log.error("eviction (database) failed: " + key, e);
     }
 
     return success;
@@ -204,18 +183,12 @@ class
       s.close();
       c.close();
 
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("removed (database): " + key);
-        }
+        if (_log.isInfoEnabled()) _log.info("removed (database): " + key);
       success=true;
     }
     catch (Exception e)
     {
-        if ( _log.isErrorEnabled() ) {
-
-            _log.error("removal (database) failed: " + key, e);
-        }
+        if (_log.isErrorEnabled()) _log.error("removal (database) failed: " + key, e);
     }
 
     return success;

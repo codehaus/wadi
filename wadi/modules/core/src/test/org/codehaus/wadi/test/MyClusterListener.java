@@ -30,45 +30,30 @@ public class MyClusterListener
 	public void
       onNodeAdd(ClusterEvent ce)
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("node added: " + ce.getNode());
-        }
+        if (_log.isInfoEnabled()) _log.info("node added: " + ce.getNode());
     }
 
     public void
       onNodeFailed(ClusterEvent ce)
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("node failed: " + ce.getNode());
-        }
+        if (_log.isInfoEnabled()) _log.info("node failed: " + ce.getNode());
     }
 
     public void
       onNodeRemoved(ClusterEvent ce)
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("node removed: " + ce.getNode());
-        }
+        if (_log.isInfoEnabled()) _log.info("node removed: " + ce.getNode());
     }
 
     public void
       onNodeUpdate(ClusterEvent ce)
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("node updated: " + ce.getNode());
-        }
+        if (_log.isInfoEnabled()) _log.info("node updated: " + ce.getNode());
     }
 
     public void
       onCoordinatorChanged(ClusterEvent ce)
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("coordinator changed: " + ce.getNode());
-        }
+        if (_log.isInfoEnabled()) _log.info("coordinator changed: " + ce.getNode());
     }
   }

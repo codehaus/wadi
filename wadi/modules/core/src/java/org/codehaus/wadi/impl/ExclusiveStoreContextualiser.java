@@ -58,11 +58,11 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
         if (_clean)
             _store.clean();
     }
-    
+
     public String getStartInfo() {
         return "["+_store.getStartInfo()+"]";
     }
-    
+
 	public boolean isExclusive(){return true;}
 
 	public Immoter getImmoter(){return _immoter;}
@@ -129,10 +129,7 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
                 motable=null;
                 _config.expire(loaded);
             } catch (Exception e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("unexpected problem expiring from disc", e);
-                }
+	      _log.error("unexpected problem expiring from disc", e);
             }
             loaded=null;
         } else {

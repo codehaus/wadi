@@ -74,19 +74,16 @@ public class RWLock implements ReadWriteLock {
   public static int getPriority() {
       int tmp=((Integer)_priority.get()).intValue();
       if (0==tmp && _log.isWarnEnabled())
-          if ( _log.isWarnEnabled() ) {
-
-              _log.warn("no thread priority specified", new Exception());
-          }
+	_log.warn("no thread priority specified", new Exception());
       return tmp;
   }
 
   protected RWLockListener _listener; // cheaper than an array of Listeners and we only need 0-1 (currently)
-  
+
   public void setListener(RWLockListener listener) {
 	  _listener=listener;
   }
-  
+
   protected final ReaderLock readerLock_ = new ReaderLock();
   protected final WriterLock writerLock_ = new WriterLock();
 
@@ -174,10 +171,10 @@ public class RWLock implements ReadWriteLock {
   protected boolean notifyReadEnded() {
 	  if (_listener!=null)
 		  _listener.readEnded();
-	  
+
 	  return true;
   }
-  
+
   /**
    * Called upon termination of a read.
    * Returns the object to signal to wake up a waiter, or null if no such

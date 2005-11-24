@@ -70,7 +70,7 @@ public class Filter implements javax.servlet.Filter {
     public void setManager(StandardManager manager) {
     	_manager=manager;
     }
-    
+
     public void
     destroy()
     {
@@ -97,10 +97,7 @@ public class Filter implements javax.servlet.Filter {
             // already associated with a session...
             String name=_router.strip(sessionId); // strip off any routing info...
             if (!_contextualiser.contextualise(request, response, chain, name, null, null, false)) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("could not acquire session: " + name);
-                }
+                if (_log.isErrorEnabled()) _log.error("could not acquire session: " + name);
                 if (_errorIfSessionNotAcquired) // send the client a 503...
                     response.sendError(503, "session "+name+" is not known"); // TODO - should we allow custom error page ?
                 else // process request without session - it may create a new one...
@@ -114,10 +111,7 @@ public class Filter implements javax.servlet.Filter {
         // sync point - expensive, but will only hit sessionless requests...
         if (!_acceptingSessions.get()) {
             // think about what to do here... proxy or error page ?
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("sessionless request has arived during shutdown - permitting");
-            }
+	  _log.warn("sessionless request has arived during shutdown - permitting");
             // TODO
         }
 

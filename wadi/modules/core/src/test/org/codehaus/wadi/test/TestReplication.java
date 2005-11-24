@@ -157,10 +157,7 @@ public class TestReplication extends TestCase {
     //mevicter.stop(); // we'll run it by hand...
     //devicter.stop();
 
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("CREATING SESSION");
-      }
+    _log.info("CREATING SESSION");
     AbstractReplicableSession session=(AbstractReplicableSession)manager.create();
     String foo="bar";
     session.setAttribute("foo", foo);
@@ -168,10 +165,7 @@ public class TestReplication extends TestCase {
     assertTrue(mmap.size()==1);
     assertTrue(dmap.size()==0);
 
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("TOUCHING SESSION");
-      }
+    _log.info("TOUCHING SESSION");
     long lat=session.getLastAccessedTime();
     memory.contextualise(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }, name, null, null, false);
     assert(lat!=session.getLastAccessedTime());
@@ -179,10 +173,7 @@ public class TestReplication extends TestCase {
     assertTrue(mmap.size()==1);
     assertTrue(dmap.size()==0);
 
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("DEMOTING SESSION to short-term SPOOL");
-      }
+    _log.info("DEMOTING SESSION to short-term SPOOL");
     mevicter.evict();
     assertTrue(mmap.size()==0);
     assertTrue(dmap.size()==1);
@@ -197,10 +188,7 @@ public class TestReplication extends TestCase {
 //    assertTrue(mmap.size()==0);
 //    assertTrue(dmap.size()==1);
 //
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("PROMOTING SESSION to Memory");
-      }
+    _log.info("PROMOTING SESSION to Memory");
     memory.contextualise(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }, name, null, null, false);
     session=(AbstractReplicableSession)mmap.get(name);
     assertTrue(session.getAttribute("foo")!=foo);
@@ -208,10 +196,7 @@ public class TestReplication extends TestCase {
     assertTrue(mmap.size()==1);
     assertTrue(dmap.size()==0);
 
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("DESTROYING SESSION");
-      }
+    _log.info("DESTROYING SESSION");
     manager.destroy(session);
     assertTrue(mmap.size()==0);
     assertTrue(dmap.size()==0);

@@ -135,10 +135,7 @@ public class TestContextualiser extends TestCase {
      */
     protected void setUp() throws Exception {
         super.setUp();
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("starting ...");
-        }
+	_log.info("starting ...");
         _httpAddress=new InetSocketAddress(InetAddress.getLocalHost(), 8888);
         _store.init();
         _dir.mkdir();
@@ -151,10 +148,7 @@ public class TestContextualiser extends TestCase {
     	_dir.delete();
         _store.destroy();
         super.tearDown();
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("...stopped");
-        }
+	_log.info("...stopped");
     }
 
     /**
@@ -195,10 +189,7 @@ public class TestContextualiser extends TestCase {
     {
         public void
         doFilter(ServletRequest request, ServletResponse response) {
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("invoking FilterChain...");
-            }
+	  _log.info("invoking FilterChain...");
         }
     }
 
@@ -353,7 +344,7 @@ public class TestContextualiser extends TestCase {
 
         public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){/* empty */}
         public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
-        
+
         public int getLocalSessionCount() {
         	return 0;
         }
@@ -374,10 +365,7 @@ public class TestContextualiser extends TestCase {
             try {
                 shared.acquire();
                 motionLock.release();
-                if ( _log.isInfoEnabled() ) {
-
-                    _log.info("running locally: " + id);
-                }
+                if (_log.isInfoEnabled()) _log.info("running locally: " + id);
                 chain.doFilter(hreq, hres);
                 shared.release();
                 return true;
@@ -402,7 +390,7 @@ public class TestContextualiser extends TestCase {
         public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){/* empty */}
         public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
 
-        
+
         public int getLocalSessionCount() {
         	return 0;
         }
@@ -423,10 +411,7 @@ public class TestContextualiser extends TestCase {
             try {
                 _contextualiser.contextualise(null, null, _chain, _id, null, null, false);
             } catch (Exception e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("unexpected problem", e);
-                }
+	      _log.error("unexpected problem", e);
                 assertTrue(false);
             }
         }
@@ -623,10 +608,7 @@ public class TestContextualiser extends TestCase {
         memory1.init(new DummyDistributableContextualiserConfig(cluster1));
 
         Thread.sleep(2000); // activecluster needs a little time to sort itself out...
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("STARTING NOW!");
-        }
+	_log.info("STARTING NOW!");
         FilterChain fc=new MyFilterChain();
 
         assertTrue(!m0.containsKey("bar"));
@@ -640,10 +622,7 @@ public class TestContextualiser extends TestCase {
         assertTrue(!memory1.contextualise(null,null,fc,"baz", null, null, false));
 
         Thread.sleep(2000);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("STOPPING NOW!");
-        }
+	_log.info("STOPPING NOW!");
         // ------------------
         cluster1.stop();
         cluster1=null;
