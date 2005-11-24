@@ -41,6 +41,7 @@ import org.codehaus.wadi.dindex.StateManagerConfig;
 import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
+import org.codehaus.wadi.dindex.messages.DIndexInsertionResponse;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
@@ -334,17 +335,18 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	}
 	// temporary test methods...
 
-	public Object insert(String name) {
+	public boolean insert(String name) {
 		try {
 			ObjectMessage message=_dispatcher.createObjectMessage();
 			message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
 			DIndexInsertionRequest request=new DIndexInsertionRequest(name);
 			message.setObject(request);
-			return getPartition(name).exchange(message, request, _inactiveTime);
+			ObjectMessage reply=getPartition(name).exchange(message, request, _inactiveTime);
+			return ((DIndexInsertionResponse)reply.getObject()).getSuccess();
 		} catch (Exception e) {
-		  _log.info("oops...", e);
+		  _log.warn("problem inserting session key into DHT", e);
+		  return false;
 		}
-		return null;
 	}
 
 	public void remove(String name) {
