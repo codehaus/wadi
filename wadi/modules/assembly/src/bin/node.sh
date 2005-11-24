@@ -49,7 +49,7 @@ $properties \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=debug \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.AbsoluteEvicter=info \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.NeverEvicter=info \
--Djava.io.tmpdir=$INSTANCE \
+-Djava.io.tmpdir=$WADI_HOME/tmp \
 "
 
 classpath=$WADI_HOME/target/classes:`find $WADI_HOME/lib -name "*.jar" | tr '\n' ':'`$JAVA_HOME/lib/tools.jar
