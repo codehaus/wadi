@@ -33,37 +33,31 @@ public class BytesMessageInputStream extends AbstractAsyncInputStream implements
 
     protected BytesMessage _buffer;
     protected long _remaining;
-    
+
     protected void setBuffer(Object object) {
         _buffer=(BytesMessage)object;
         try {
             _remaining=_buffer==null?0:_buffer.getBodyLength();
         } catch (JMSException e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("could not ascertain input length", e);
-            }
+	  _log.error("could not ascertain input length", e);
         }
     }
-    
+
     protected Object getBuffer() {
         return _buffer;
     }
-    
+
     protected int readByte() throws IOException {
         try {
             int b=_buffer.readUnsignedByte();
             _remaining--;
             return b;
         } catch (JMSException e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("could not read next byte", e);
-            }
+	  _log.error("could not read next byte", e);
             throw new IOException();
         }
     }
-    
+
     protected void readBytes(byte b[], int off, int len) throws IOException {
         try {
             if (off==0)
@@ -75,20 +69,17 @@ public class BytesMessageInputStream extends AbstractAsyncInputStream implements
             }
             _remaining-=len;
         } catch (JMSException e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("problem reading bytes", e);
-            }
+	  _log.error("problem reading bytes", e);
             throw new IOException();
         }
     }
-    
+
     protected long getRemaining() {
         return _remaining;
     }
-    
+
     protected void recycle(Object object) {
         // I don't see how we can recycle BytesMessages... ?
     }
-    
+
 }

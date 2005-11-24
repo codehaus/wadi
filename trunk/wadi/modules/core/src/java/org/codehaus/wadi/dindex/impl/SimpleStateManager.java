@@ -46,7 +46,7 @@ public class SimpleStateManager implements StateManager {
     protected final int _resTimeout=500; // TODO - parameterise
 
 	protected StateManagerConfig _config;
-	
+
 	public SimpleStateManager(Dispatcher dispatcher, long inactiveTime) {
 		super();
 		_dispatcher=dispatcher;
@@ -66,14 +66,14 @@ public class SimpleStateManager implements StateManager {
 
 	public void start() throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void stop() throws Exception {
         _dispatcher.deregister("onDIndexInsertionRequest", DIndexInsertionRequest.class, 5000);
         _dispatcher.deregister("onDIndexDeletionRequest", DIndexDeletionRequest.class, 5000);
         _dispatcher.deregister("onDIndexRelocationRequest", DIndexRelocationRequest.class, 5000);
-        _dispatcher.deregister("onDIndexForwardRequest", DIndexForwardRequest.class, 5000);		
+        _dispatcher.deregister("onDIndexForwardRequest", DIndexForwardRequest.class, 5000);
 	}
 
 
@@ -94,7 +94,7 @@ public class SimpleStateManager implements StateManager {
     }
 
     // evacuation protocol
-    
+
     public boolean offerEmigrant(String key, Motable emotable, long timeout) {
     	Destination to=((RemotePartition)_config.getPartition(key).getContent()).getDestination(); // TODO - HACK - temporary
     	Destination from=_dispatcher.getLocalDestination();
@@ -104,12 +104,9 @@ public class SimpleStateManager implements StateManager {
     	try {
     		ack=message==null?null:(ReleaseEntryResponse)message.getObject();
     	} catch (JMSException e) {
-    		if ( _log.isErrorEnabled() ) {
-    			
-    			_log.error("could not unpack response", e);
-    		}
+	  _log.error("could not unpack response", e);
     	}
-    	
+
     	if (ack==null) {
     		if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+timeout+" millis): "+key);
     		return false;
@@ -118,15 +115,15 @@ public class SimpleStateManager implements StateManager {
     		return true;
     	}
     }
-    
+
     public void acceptImmigrant(ObjectMessage message, Location location, String name, Motable motable) {
-        if (!_dispatcher.reply(message, new ReleaseEntryResponse(name, location))) { 
+        if (!_dispatcher.reply(message, new ReleaseEntryResponse(name, location))) {
             if (_log.isErrorEnabled()) _log.error("could not acknowledge safe receipt: "+name);
         }
     }
-    
+
     protected ImmigrationListener _listener;
-    
+
     public void setImmigrationListener(ImmigrationListener listener) {
         _dispatcher.register(this, "onEmigrationRequest", ReleaseEntryRequest.class);
         _dispatcher.register(ReleaseEntryResponse.class, _resTimeout);
@@ -141,7 +138,7 @@ public class SimpleStateManager implements StateManager {
     		//_dispatcher.deregister("onEmigrationResponse", EmigrationResponse.class, _resTimeout);
     	}
     }
-    
+
     public void onEmigrationRequest(ObjectMessage message, ReleaseEntryRequest request) {
     	_listener.onImmigration(message, request.getMotable());
     }

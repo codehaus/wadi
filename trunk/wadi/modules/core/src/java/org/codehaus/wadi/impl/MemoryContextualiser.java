@@ -130,10 +130,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
             try {
                 Utils.acquireUninterrupted(lock); // released in commit/rollback
             } catch (TimeoutException e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("unexpected timeout", e);
-                }
+	      _log.error("unexpected timeout", e);
                 return false;
             }
 

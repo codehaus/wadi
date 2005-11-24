@@ -47,10 +47,7 @@ public class
   public void
     start()
   {
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("starting: " + _id);
-      }
+      if (_log.isInfoEnabled()) _log.info("starting: " + _id);
 
     try
     {
@@ -58,20 +55,14 @@ public class
     }
     catch (Exception e)
     {
-        if ( _log.isWarnEnabled() ) {
-
-            _log.warn("unexpected problem starting Cell: " + _id, e);
-        }
+        if (_log.isWarnEnabled()) _log.warn("unexpected problem starting Cell: " + _id, e);
     }
   }
 
   public void
     stop()
   {
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("stopping: " + _id);
-      }
+      if (_log.isInfoEnabled()) _log.info("stopping: " + _id);
 
     try
     {
@@ -80,10 +71,7 @@ public class
     }
     catch (Exception e)
     {
-        if ( _log.isWarnEnabled() ) {
-
-            _log.warn("unexpected problem stopping Cell: " + _id, e);
-        }
+        if (_log.isWarnEnabled()) _log.warn("unexpected problem stopping Cell: " + _id, e);
     }
   }
 

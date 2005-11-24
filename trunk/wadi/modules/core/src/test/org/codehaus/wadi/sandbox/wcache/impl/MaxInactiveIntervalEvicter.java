@@ -41,10 +41,7 @@ public class MaxInactiveIntervalEvicter implements Evicter {
 	public boolean evict(String key, RequestProcessor val) {
 		boolean tmp=val.getTimeToLive()<=0;
 		if (tmp) {
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("evicting due to total inactivity: " + key);
-            }
+            if (_log.isInfoEnabled()) _log.info("evicting due to total inactivity: " + key);
         }
 		return tmp;
 	}

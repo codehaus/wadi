@@ -78,20 +78,14 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
             _dindex=new DIndex(nodeName, numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState);
             _dindex.init(this);
         } catch (Exception e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("problem starting Cluster", e);
-            }
+	  _log.error("problem starting Cluster", e);
         }
         super.init(config);
     }
 
     public void start() throws Exception {
     	_dispatcher.setDistributedState(_distributedState);
-        if ( _log.isTraceEnabled() ) {
-
-            _log.trace("distributed state updated: " + _distributedState);
-        }
+        if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _distributedState);
     	_dispatcher.start();
     	_dindex.start();
     	super.start();
@@ -101,7 +95,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     	//_partitionManager.evacuate();
     	_dindex.getPartitionManager().evacuate();
     }
-    
+
     public void stop() throws Exception {
         _shuttingDown.set(true);
         super.stop();
@@ -134,10 +128,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
         try {
         	session.destroy();
         } catch (Exception e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("unexpected problem destroying session", e);
-            }
+	  _log.warn("unexpected problem destroying session", e);
         }
         _sessionPool.put(session);
         if (_log.isDebugEnabled()) _log.debug("destroyed: "+name);
@@ -171,10 +162,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 
     public void distributeState() throws Exception {
         _dispatcher.setDistributedState(_distributedState);
-        if ( _log.isTraceEnabled() ) {
-
-            _log.trace("distributed state updated: " + _distributedState);
-        }
+        if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _distributedState);
     }
 
     public Map getDistributedState() {
@@ -216,11 +204,8 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     // DIndexConfig
 
     public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("findRelevantSessionNames");
-        }
-        _contextualiser.findRelevantSessionNames(numPartitions, resultSet);
+      _log.info("findRelevantSessionNames");
+      _contextualiser.findRelevantSessionNames(numPartitions, resultSet);
     }
 
 	public HttpProxy getHttpProxy() {
@@ -230,7 +215,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	public InetSocketAddress getHttpAddress() {
 	    return _httpAddress;
 	}
-	
+
 	public Node getCoordinatorNode() {
 		return _dindex.getCoordinator();
 	}

@@ -48,66 +48,60 @@ public abstract class AbstractAsyncInputStream extends InputStream implements Pu
     protected abstract void readBytes(byte b[], int off, int len) throws IOException;
     protected abstract long getRemaining();
     protected abstract void recycle(Object object);
-    
+
     protected boolean ensureBuffer() throws IOException {
         if (getBuffer()!=null)
             return true; // we still have input...
-        
+
         Object tmp=null;
         do {
             try {
                 tmp=_inputQueue.poll(_timeout); // we need a fresh buffer...
             } catch (TimeoutException e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("timed out", e);
-                }
+	      _log.error("timed out", e);
                 throw new IOException();
             } catch (InterruptedException e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("interrupted", e);
-                }
+	      _log.error("interrupted", e);
             }
         } while (Thread.interrupted());
-        
+
         if (tmp==_endOfQueue) {// no more input - our producer has committed his end of the queue...
             Utils.safePut(_endOfQueue, _inputQueue); // leave it there - clumsy
-            return false; 
+            return false;
         }
-        
+
         setBuffer(tmp);
         return true;
     }
 
     // InputStream
-    
+
     public int read() throws IOException {
         if (!ensureBuffer())
             return -1;
-        
+
         int b=readByte();
-        
+
         if (getRemaining()<=0) {
             Object object=getBuffer();
             setBuffer(null);
             recycle(object);
         }
-        
+
         //_log.info("reading: "+(char)b);
-        
+
         return b;
     }
 
     // InputStream
-    
+
     public int read(byte b[], int off, int len) throws IOException {
         int red=0; // read (pres.) and read (perf.) are homographs...
         while (red<len && ensureBuffer()) {
             int tranche=Math.min(len, (int)getRemaining());
             readBytes(b, off+red, tranche);
             red+=tranche;
-            
+
             if (getRemaining()<=0) {
                 Object object=getBuffer();
                 setBuffer(null);
@@ -119,22 +113,22 @@ public abstract class AbstractAsyncInputStream extends InputStream implements Pu
     }
 
     // InputStream
-    
+
     public void commit() {
         Utils.safePut(_endOfQueue, _inputQueue);
     }
-    
+
     // ByteBufferInputStream
-    
+
     public void read(ByteBuffer buffer, int from, int to) {
         throw new UnsupportedOperationException(); // NYI
     }
 
     // Puttable
-    
+
     public void put(Object item) throws InterruptedException {
         //_log.info("putting buffer on input queue: "+item);
-        _inputQueue.put(item);        
+        _inputQueue.put(item);
     }
 
     public boolean offer(Object item, long msecs) throws InterruptedException {

@@ -72,10 +72,7 @@ public class TestLockManager extends TestCase {
 	}
 
 	protected void run(LockManager lm) throws Exception {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("starting: " + lm);
-        }
+	  _log.info("starting: " + lm);
 		String key="abc";
 		for (int i=0; i<_numThreads; i++)
 			(_threads[i]=new Thread(new TestThread(key, lm), "TestThread-"+i)).start();
@@ -83,10 +80,7 @@ public class TestLockManager extends TestCase {
 			_threads[i].join();
 			_threads[i]=null;
 		}
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("finished: " + lm);
-        }
+        if (_log.isInfoEnabled()) _log.info("finished: " + lm);
 	}
 
 }

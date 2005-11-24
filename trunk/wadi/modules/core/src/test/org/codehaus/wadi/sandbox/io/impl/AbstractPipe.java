@@ -37,29 +37,29 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
 
     protected final PipeConfig _config;
     protected final long _timeout;
-    
+
     protected boolean _valid;
-    
+
     public AbstractPipe(PipeConfig config, long timeout) {
         _config=config;
         _timeout=timeout;
         _valid=true;
     }
-    
+
     protected ObjectInputStream _ois;
     public ObjectInputStream getObjectInputStream() throws IOException {
         if (_ois==null)
             _ois=new ObjectInputStream(getInputStream());
         return _ois;
     }
-    
+
     protected ObjectOutputStream _oos;
     public ObjectOutputStream getObjectOutputStream() throws IOException {
         if (_oos==null)
             _oos=new ObjectOutputStream(getOutputStream());
         return _oos;
     }
-    
+
     public void run() {
         try {
             //_log.info("running...");
@@ -71,10 +71,7 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
             try {
             run(peer);
             } catch (Exception e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("problem running Peer", e);
-                }
+	      _log.error("problem running Peer", e);
             }
             //_log.info("...ran");
         } catch (EOFException e) {
@@ -82,16 +79,10 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
             if (_log.isTraceEnabled()) _log.trace("Connection reached end of input - quitting...: "+this);
             _valid=false;
         } catch (IOException e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("problem reading object off wire", e);
-            }
+	  _log.warn("problem reading object off wire", e);
             _valid=false; // this socket is trashed...
         } catch (ClassNotFoundException e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("unknown Peer type - version/security problem?", e);
-            }
+	  _log.warn("unknown Peer type - version/security problem?", e);
             _valid=false; // this stream is unfixable ?
         } finally {
             _ois=null;
@@ -102,15 +93,12 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
                 try {
                     close();
                 } catch (IOException e) {
-                    if ( _log.isErrorEnabled() ) {
-
-                        _log.error("problem closing server Connection", e);
-                    }
+		  _log.error("problem closing server Connection", e);
                 }
         }
         //_log.info("...idle");
     }
-    
+
     public boolean run(Peer peer) throws Exception {
         try {
             return peer.run(this);
@@ -124,31 +112,22 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
 //          close();
 //          } catch (IOException e) {
 //          _log.error("problem closing server Connection", e);
-//          }     
+//          }
         }
     }
-    
+
     public void close() throws IOException {
         //_log.info("closing...");
         InputStream is=getInputStream();
         OutputStream os=getOutputStream();
         try{os.flush();}catch(IOException e){
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("problem flushing socket output", e);
-            }
+	  _log.warn("problem flushing socket output", e);
         }
         try{is.close();}catch(IOException e){
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("problem closing socket input", e);
-            }
+	  _log.warn("problem closing socket input", e);
         }
         try{os.close();}catch(IOException e){
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("problem closing socket output", e);
-            }
+	  _log.warn("problem closing socket output", e);
         }
         _config.notifyClosed(this);
         //_log.info("...closed");
@@ -163,9 +142,9 @@ public abstract class AbstractPipe implements Pipe, PeerConfig  {
     public boolean isOpen() {
         throw new UnsupportedOperationException();
     }
-    
+
     // PeerConfig
-    
+
     public Contextualiser getContextualiser() {
         return _config.getContextualiser();
     }

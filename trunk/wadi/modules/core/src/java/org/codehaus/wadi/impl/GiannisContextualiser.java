@@ -130,19 +130,13 @@ public class GiannisContextualiser extends AbstractExclusiveContextualiser {
                 dbm.setConnection(null);
                 _config.expire(loaded);
             } catch (Exception e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("unexpected problem expiring from store", e);
-                }
+	      _log.error("unexpected problem expiring from store", e);
             } finally {
             	if (connection!=null) {
             		try {
             		connection.close();
             		} catch (SQLException e) {
-                        if ( _log.isWarnEnabled() ) {
-
-                            _log.warn("unexpected problem closing connection", e);
-                        }
+			  _log.warn("unexpected problem closing connection", e);
             		}
             	}
             }
@@ -158,10 +152,7 @@ public class GiannisContextualiser extends AbstractExclusiveContextualiser {
     }
 
     protected void unload() {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("unloaded sessions: " + _map.size());
-        }
+        if (_log.isInfoEnabled()) _log.info("unloaded sessions: " + _map.size());
     	_map.clear();
 	}
 

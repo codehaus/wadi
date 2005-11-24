@@ -37,7 +37,7 @@ public class LazyAttributes extends DistributableAttributes {
         // TODO Auto-generated constructor stub
     }
     protected static final Log _log = LogFactory.getLog(LazyAttributes.class);
-    
+
     protected transient byte[] _bytes;
 
     protected void deserialise() {
@@ -48,15 +48,12 @@ public class LazyAttributes extends DistributableAttributes {
             super.readContent(ois);
             ois.close();
         } catch (Exception e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("unexpected problem lazily deserialising session attribute value - data lost", e);
-            }
+	  _log.error("unexpected problem lazily deserialising session attribute value - data lost", e);
         } finally {
             _bytes=null;
         }
     }
-    
+
     protected void serialise() throws IOException {
         ByteArrayOutputStream baos=new ByteArrayOutputStream(); // TODO - pool these objects...
         ObjectOutputStream oos=new ObjectOutputStream(baos);
@@ -64,14 +61,14 @@ public class LazyAttributes extends DistributableAttributes {
         oos.close();
         _bytes=baos.toByteArray();
     }
-    
+
     public synchronized Object get(Object key) {
         if (_bytes!=null)
             deserialise();
-        
+
         return super.get(key);
     }
-    
+
     public Object remove(Object key) {
         if (_bytes!=null)
             deserialise();
@@ -83,37 +80,37 @@ public class LazyAttributes extends DistributableAttributes {
             deserialise();
          return super.put(key, newValue);
     }
- 
+
     public int size() {
         if (_bytes!=null)
             deserialise();
         return super.size(); // TODO - this should not need deserialisation...
     }
-    
+
     public Set keySet(){
         if (_bytes!=null)
             deserialise();
         return super.keySet();
     }
-    
+
     public void clear(){
         _bytes=null;
     }
-    
+
     public Set getListenerNames() {
         if (_bytes!=null)
             deserialise();
         return _listenerNames;
     }
-        
+
     public synchronized void writeContent(ObjectOutput oo) throws IOException {
         if (_bytes==null)
             serialise(); // rebuild cache
-        
+
         oo.writeInt(_bytes.length);
         oo.write(_bytes);
     }
-    
+
     public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         int length=oi.readInt();
         _bytes=new byte[length];
@@ -121,5 +118,5 @@ public class LazyAttributes extends DistributableAttributes {
             throw new IOException("data truncated whilst reading Session Attributes- data lost");
         _map.clear();
     }
-    
+
 }

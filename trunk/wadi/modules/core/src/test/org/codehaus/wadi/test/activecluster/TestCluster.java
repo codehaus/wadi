@@ -101,7 +101,7 @@ public class TestCluster extends TestCase {
 
 
     class MyNode {
-    
+
         protected final String _clusterUri=Utils.getClusterUri();
         protected final String _clusterName;
         protected final String _nodeName;
@@ -113,12 +113,12 @@ public class TestCluster extends TestCase {
         protected final MemoryContextualiser _top;
         protected final ClusterContextualiser _middle;
         protected final SharedStoreContextualiser _bottom;
-        protected final SessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory()); 
-        protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool); 
+        protected final SessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory());
+        protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
         protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
         protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
         protected final ClusteredManager _manager;
-        
+
         public MyNode(String nodeName, ClusterFactory factory, String clusterName, DatabaseStore store) throws JMSException, ClusterException {
             _bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, store);
             _clusterName=clusterName;
@@ -132,9 +132,9 @@ public class TestCluster extends TestCase {
             _top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
             _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), isa, proxy, _dispatcher, new DummyPartitionManager(24));
         }
-        
+
         protected boolean _running;
-        
+
         public synchronized void start() throws Exception {
             if (!_running) {
                 _manager.init(new ManagerConfig() {
@@ -146,13 +146,13 @@ public class TestCluster extends TestCase {
 					public void callback(StandardManager manager) {
 						// do nothing - should install Listeners
 					}
-                	
+
                 });
                 _manager.start();
                 _running=true;
             }
         }
-        
+
         public synchronized void stop() throws Exception {
             if (_running) {
                 _manager.stop();
@@ -161,11 +161,11 @@ public class TestCluster extends TestCase {
                 _running=false;
             }
         }
-        
+
         public Map getClusterContextualiserMap() {return _cmap;}
         public ExtendedCluster getCluster(){return (ExtendedCluster)((ActiveClusterDispatcher)_dispatcher).getCluster();}
         public ClusterContextualiser getClusterContextualiser() {return _middle;}
-        
+
         public Map getMemoryContextualiserMap() {return _mmap;}
         public MemoryContextualiser getMemoryContextualiser(){return _top;}
     }
@@ -182,18 +182,18 @@ public class TestCluster extends TestCase {
     protected MyNode _node0;
     protected MyNode _node1;
     protected MyNode _node2;
-    
+
     /**
      * Constructor for TestCluster.
      * @param name
      */
     public TestCluster(String name) throws Exception {
         super(name);
-        
+
         String preserveDB=System.getProperty("preserve.db");
         if (preserveDB!=null && preserveDB.equals("true"))
-            _preserveDB=true;      
-        
+            _preserveDB=true;
+
         _log.info("TEST CTOR!");
     }
 
@@ -205,7 +205,7 @@ public class TestCluster extends TestCase {
 
         if (!_preserveDB)
             _store.init();
-            
+
 		(_node0=new MyNode("node0", _clusterFactory, _clusterName, _store)).start();
 		(_node1=new MyNode("node1", _clusterFactory, _clusterName, _store)).start();
 		(_node2=new MyNode("node2", _clusterFactory, _clusterName, _store)).start();
@@ -228,7 +228,7 @@ public class TestCluster extends TestCase {
 //		Thread.sleep(6000);
 		_node0.stop();
 //		Thread.sleep(10000);
-        
+
         if (!_preserveDB)
             _store.destroy();
 	}
@@ -237,7 +237,7 @@ public class TestCluster extends TestCase {
 		Map m0=_node0.getMemoryContextualiserMap();
 		Map m1=_node1.getMemoryContextualiserMap();
 		Map m2=_node2.getMemoryContextualiserMap();
-        
+
         // populate node0
         Contextualiser c0=_node0.getMemoryContextualiser();
 
@@ -255,16 +255,10 @@ public class TestCluster extends TestCase {
 
         // shutdown node0
         // sessions should be evacuated to remaining two nodes...
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("NODES: " + _node0.getCluster().getNodes().size());
-        }
+        if (_log.isInfoEnabled()) _log.info("NODES: " + _node0.getCluster().getNodes().size());
 		_node0.stop();
         Thread.sleep(6000); // time for other nodes to notice...
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("NODES: " + _node1.getCluster().getNodes().size());
-        }
+        if (_log.isInfoEnabled()) _log.info("NODES: " + _node1.getCluster().getNodes().size());
 
 		// where are all the sessions now ?
 		// the sum of nodes 1 and 2 should total n Contexts
@@ -272,10 +266,7 @@ public class TestCluster extends TestCase {
 		    int s0=m0.size();
 		    int s1=m1.size();
 		    int s2=m2.size();
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("dispersal - n0:" + s0 + ", n1:" + s1 + ", n2:" + s2);
-            }
+            if (_log.isInfoEnabled()) _log.info("dispersal - n0:" + s0 + ", n1:" + s1 + ", n2:" + s2);
 		    assertTrue(s0==0);
 		    assertTrue(s1+s2==numContexts);
             // TODO - hmmmm...
@@ -284,16 +275,10 @@ public class TestCluster extends TestCase {
 
         // shutdown node1
         // sessions should all be evacuated to node2
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("NODES: " + _node1.getCluster().getNodes().size());
-        }
+        if (_log.isInfoEnabled()) _log.info("NODES: " + _node1.getCluster().getNodes().size());
 		_node1.stop();
         Thread.sleep(6000); // time for other nodes to notice...
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("NODES: " + _node2.getCluster().getNodes().size());
-        }
+        if (_log.isInfoEnabled()) _log.info("NODES: " + _node2.getCluster().getNodes().size());
 		{
 		    int s0=m0.size();
 		    int s1=m1.size();
@@ -305,18 +290,12 @@ public class TestCluster extends TestCase {
             // TODO - hmmmm...
 		    //assertTrue(_node0.getClusterContextualiserMap().size()==numContexts); // node0 remembers where everything was sent...
 		}
-		
-        // shutdown node2
-        if ( _log.isInfoEnabled() ) {
 
-            _log.info("NODES: " + _node2.getCluster().getNodes().size());
-        }
+        // shutdown node2
+        if (_log.isInfoEnabled()) _log.info("NODES: " + _node2.getCluster().getNodes().size());
 		_node2.stop();
         Thread.sleep(6000); // time for other nodes to notice...
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("NODES: should be 0");
-        }
+	_log.info("NODES: should be 0");
 		{
 		    int s0=m0.size();
 		    int s1=m1.size();
@@ -329,9 +308,9 @@ public class TestCluster extends TestCase {
 		}
 
         // TODO - figure out what should happen to location caches, implement and test it.
-        
+
         // restart nodes - first one up should reload saved contexts...
-        
+
         assertTrue(m0.size()==0);
         _node0.start();
         assertTrue(m0.size()==numContexts);

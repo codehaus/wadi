@@ -86,16 +86,11 @@ public abstract class
   {
     Object value=loadValue(key);
 
-    if (value==null)
-        if ( _log.isWarnEnabled() ) {
-
-            _log.warn("load failed: " + key);
-        }
-    else
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("loaded: " + key + " : " + value);
-        }
+    if (value==null) {
+        if (_log.isWarnEnabled()) _log.warn("load failed: " + key);
+    } else {
+        if (_log.isInfoEnabled()) _log.info("loaded: " + key + " : " + value);
+    }
 
     return value;
   }
@@ -114,16 +109,11 @@ public abstract class
       map.put(key, load(key));
     }
 
-    if (map.size()==0)
-        if ( _log.isWarnEnabled() ) {
-
-            _log.warn("loadAll failed: " + keys);
-        }
-    else
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("loadAll: " + map);
-        }
+    if (map.size()==0) {
+        if (_log.isWarnEnabled()) _log.warn("loadAll failed: " + keys);
+    } else {
+        if (_log.isInfoEnabled()) _log.info("loadAll: " + map);
+    }
 
     return map;
   }
@@ -134,50 +124,35 @@ public abstract class
   public CacheEntry
     createEntry(Object key, Object value, long ttl)
   {
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("createEntry");
-      }
+    _log.info("createEntry");
     return new _CacheEntry(key, value, ttl);	// Pool these ?
   }
 
   public void
     discardEntry(CacheEntry e)
   {
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("discardEntry: " + e);
-      }
+      if (_log.isInfoEnabled()) _log.info("discardEntry: " + e);
     removeValue(e.getKey());
   }
 
   public void
     touchEntry(CacheEntry entry)
   {
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("touchEntry");
-      }
+    _log.info("touchEntry");
     // update ttl on file ?
   }
 
   public void
     clear()
   {
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("clear");
-      }
+    _log.info("clear");
     // could remove files one by one - or whole directory ?
   }
 
   public Map
     evict(Cache c)
   {
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("evict: " + c);
-      }
+      if (_log.isInfoEnabled()) _log.info("evict: " + c);
 
     Map evictees=new HashMap();	// TODO - ouch - Maps are expensive - cache ?
 
@@ -221,80 +196,56 @@ public abstract class
     public long
       getCost()
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("getCost");
-        }
+      _log.info("getCost");
       return _cost;
     }
 
     public long
       getCreationTime()
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("getCreationTime");
-        }
+      _log.info("getCreationTime");
       return _creationTime;
     }
 
     public long
       getExpirationTime()
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("getExpirationTime");
-        }
+      _log.info("getExpirationTime");
       return _expirationTime;
     }
 
     public int
       getHits()
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("getHits");
-        }
+      _log.info("getHits");
       return _hits;
     }
 
     public long
       getLastAccessTime()
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("getLastAccessTime");
-        }
+      _log.info("getLastAccessTime");
       return _lastAccessedTime;
     }
 
     public long
       getLastUpdateTime()
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("getLastUpdateTime");
-        }
+      _log.info("getLastUpdateTime");
       return _lastUpdateTime;
     }
 
     public long
       getVersion()
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("getVersion");
-        }
+      _log.info("getVersion");
       return _version;
     }
 
     public boolean
       isValid()
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("isValid");
-        }
+      _log.info("isValid");
       return _valid;
     }
 
@@ -323,20 +274,14 @@ public abstract class
     public int
       hashCode()
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("hashCode");
-        }
+      _log.info("hashCode");
       throw new UnsupportedOperationException();
     }
 
     public boolean
       equals()
     {
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("equals");
-        }
+      _log.info("equals");
       throw new UnsupportedOperationException();
     }
   }

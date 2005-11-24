@@ -41,29 +41,29 @@ import org.codehaus.wadi.Dirtier;
 
 public class WholeAttributes implements Attributes {
 	protected static final Log _log = LogFactory.getLog(WholeAttributes.class);
-    
+
     protected final Dirtier _dirtier;
     protected final Streamer _streamer;
     protected final boolean _evictObjectRepASAP;
     protected final boolean _evictByteRepASAP;
-    
+
     protected final Map _objectRep;
     protected byte[] _byteRep;
 
     protected boolean _objectRepValid;
     protected boolean _hasListeners;
-    
+
     public WholeAttributes(Dirtier dirtier, Streamer streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
         _dirtier=dirtier;
         _streamer=streamer;
         _evictObjectRepASAP=evictObjectRepASAP;
         _evictByteRepASAP=evictByteRepASAP;
-        
+
         _objectRep=new HashMap();
         _objectRepValid=true;
         _byteRep=null;
     }
-    
+
     protected synchronized Map getObjectRep() {
         if (!_objectRepValid) {
             List activationListeners=new ArrayList();
@@ -92,18 +92,15 @@ public class WholeAttributes implements Attributes {
                 if (_evictByteRepASAP) _byteRep=null;
                 // call activationListeners, now that we have a complete session...
                 int l=activationListeners.size();
-                for (int i=0; i<l; i++) 
+                for (int i=0; i<l; i++)
                     ((HttpSessionActivationListener)activationListeners.get(i)).sessionDidActivate(_event);
             } catch (Exception e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("unexpected problem converting byte[] to Attributes", e);
-                }
+	      _log.error("unexpected problem converting byte[] to Attributes", e);
             }
         }
         return _objectRep;
     }
-    
+
     synchronized byte[] getByteRep() {
         if (null==_byteRep) {
             // convert Object to byte[] rep
@@ -138,60 +135,57 @@ public class WholeAttributes implements Attributes {
                     _objectRepValid=false;
                 }
             } catch (Exception e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("unexpected problem converting Attributes to byte[]", e);
-                }
+	      _log.error("unexpected problem converting Attributes to byte[]", e);
             }
         }
         return _byteRep;
     }
-    
+
     public Object get(Object key) {
         Object tmp=getObjectRep().get(key);
         if (tmp!=null && _dirtier.readAccess()) _byteRep=null;
         return tmp;
     }
-    
+
     public Object remove(Object key) {
         Object tmp=getObjectRep().remove(key);
         if (tmp!=null && _dirtier.writeAccess()) _byteRep=null;
         return tmp;
     }
-    
+
     public Object put(Object key, Object value) {
         Object tmp=getObjectRep().put(key, value);
         if (_dirtier.writeAccess()) _byteRep=null; // no need to check for null value - this would become a remove()
         return tmp;
     }
-    
+
     public int size() {
         return getObjectRep().size();
     }
-    
+
     public Set keySet() {
         return getObjectRep().keySet();
     }
-    
+
     public byte[] getBytes() {
         return getByteRep();
     }
-    
+
     public synchronized void setBytes(byte[] bytes) {
         _objectRep.clear();
         _objectRepValid=false;
         _byteRep=bytes;
     }
-    
+
     public synchronized void clear() {
         _objectRep.clear();
         _objectRepValid=false;
         _byteRep=null;
     }
-    
+
     protected HttpSessionEvent _event;
     public void setHttpSessionEvent(HttpSessionEvent event) {_event=event;}
-    
+
     public Set getBindingListenerNames() {return null;} // NYI
     public Set getActivationListenerNames() {return null;} // NYI
 
@@ -203,7 +197,7 @@ public class WholeAttributes implements Attributes {
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         throw new NotSerializableException();
     }
-    
+
     public void writeContent(ObjectOutput oo) throws IOException {
         throw new NotSerializableException();
     }

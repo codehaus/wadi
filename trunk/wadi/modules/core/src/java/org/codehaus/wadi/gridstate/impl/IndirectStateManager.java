@@ -100,15 +100,9 @@ public class IndirectStateManager implements StateManager {
 		Sync sync=null;
 		String agent=_nodeName;
 		try {
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
 			sync=_config.getSMSyncs().acquire(key); // TODO - an SMSync should actually be a lock in the state itself - read or write ?
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
 			Object value=null;
 			Map map=_config.getMap();
 			synchronized (map) {
@@ -126,10 +120,7 @@ public class IndirectStateManager implements StateManager {
 				try {
 					response=message.getObject();
 				} catch (JMSException e) {
-                    if ( _log.isErrorEnabled() ) {
-
-                        _log.error("unexpected problem", e); // should be in loop - TODO
-                    }
+				  _log.error("unexpected problem", e); // should be in loop - TODO
 				}
 
 				if (response instanceof ReadPMToIM) {
@@ -150,15 +141,9 @@ public class IndirectStateManager implements StateManager {
 				return value;
 			}
 		} finally {
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
 			sync.release();
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
 		}
 	}
 
@@ -170,15 +155,9 @@ public class IndirectStateManager implements StateManager {
 		Sync sync=null;
 		String agent=_dispatcher.getNodeName((Destination)get.getIM());
 		try {
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
 			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
 			PartitionFacade partition=_config.getPartition(key);
 			Location location=(Location)partition.getLocation(key);
 			if (location==null) {
@@ -194,41 +173,26 @@ public class IndirectStateManager implements StateManager {
 				poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
 				//_log.info("Process Owner Correlation ID: "+poCorrelationId);
 			} catch (Exception e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("unexpected problem", e);
-                }
+			  _log.error("unexpected problem", e);
 			}
 			MovePMToSM request=new MovePMToSM(key, im, pm, poCorrelationId);
 			ObjectMessage message2=_dispatcher.exchangeSendLoop(pm, sm, request, _timeout, 10);
 			if (message2==null)
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("NO RESPONSE WITHIN TIMEFRAME - PANIC!");
-                }
+			  _log.error("NO RESPONSE WITHIN TIMEFRAME - PANIC!");
 
 			MoveSMToPM response=null;
 			try {
 				response=(MoveSMToPM)message2.getObject();
 			} catch (JMSException e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("unexpected problem", e); // should be sorted in loop
-                }
+			  _log.error("unexpected problem", e); // should be sorted in loop
 			}
 			// alter location
 			location.setValue((Destination)get.getIM());
 
 		} finally {
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
 			sync.release();
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
 		}
 	}
 
@@ -238,15 +202,9 @@ public class IndirectStateManager implements StateManager {
 		String agent=_dispatcher.getNodeName((Destination)get.getIM());
 		Sync sync=null;
 		try {
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(SM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(SM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
 			sync=_config.getSMSyncs().acquire(key);
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(SM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(SM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
 			// send GetSMToIM to IM
 			Destination sm=_dispatcher.getLocalDestination();
 			Destination im=(Destination)get.getIM();
@@ -262,10 +220,7 @@ public class IndirectStateManager implements StateManager {
 			// receive GetIMToSM
 
 			if (message2==null) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
-                }
+			  _log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
 			} else {
 			}
 			MoveIMToSM response=null;
@@ -279,21 +234,12 @@ public class IndirectStateManager implements StateManager {
 				//Destination pm=(Destination)get.getPM();
 				_dispatcher.reply(message1,new MoveSMToPM());
 			} catch (JMSException e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("unexpected problem", e);
-                }
+			  _log.error("unexpected problem", e);
 			}
 		} finally {
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(SM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(SM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
 			sync.release();
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(SM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(SM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
 		}
 	}
 
@@ -312,15 +258,9 @@ public class IndirectStateManager implements StateManager {
 		Sync sync=null;
 		String agent=_nodeName;
 		try {
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
 			sync=_config.getSMSyncs().acquire(key);
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
 
 			if (!removal) { // removals must do the round trip to PM
 				boolean local;
@@ -351,10 +291,7 @@ public class IndirectStateManager implements StateManager {
 			try {
 				response=message.getObject();
 			} catch (JMSException e) {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("unexpected problem", e); // should be in loop - TODO
-                }
+			  _log.error("unexpected problem", e); // should be in loop - TODO
 			}
 
 			// 2 possibilities -
@@ -387,23 +324,14 @@ public class IndirectStateManager implements StateManager {
 				}
 				return ((MoveSMToIM)response).getValue();
 			} else {
-                if ( _log.isErrorEnabled() ) {
-
-                    _log.error("unexpected response: " + response.getClass().getName());
-                }
+                if (_log.isErrorEnabled()) _log.error("unexpected response: " + response.getClass().getName());
 				return null;
 			}
 
 		} finally {
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
 			sync.release();
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(IM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
 		}
 	}
 
@@ -416,15 +344,9 @@ public class IndirectStateManager implements StateManager {
 		Sync sync=null;
 		String agent=_dispatcher.getNodeName((Destination)write.getIM());
 		try {
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - acquiring sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
 			sync=_config.getPMSyncs().acquire(key);
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - ...sync(" + sync + ") acquired" + " <" + Thread.currentThread().getName() + ">");
 			Location location=write.getValueIsNull()?null:new Location(write.getIM());
 			// remove or update location, remembering old value
 			Location oldLocation=(Location)(location==null?partitionMap.remove(key):partitionMap.put(key, location));
@@ -448,10 +370,7 @@ public class IndirectStateManager implements StateManager {
 					poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
 					//_log.info("Process Owner Correlation ID: "+poCorrelationId);
 				} catch (Exception e) {
-                    if ( _log.isErrorEnabled() ) {
-
-                        _log.error("unexpected problem", e);
-                    }
+				  _log.error("unexpected problem", e);
 				}
 				Destination im=(Destination)write.getIM();
 				Destination pm=_dispatcher.getLocalDestination();
@@ -467,15 +386,9 @@ public class IndirectStateManager implements StateManager {
 			}
 
 		} finally {
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
 			sync.release();
-            if ( _log.isTraceEnabled() ) {
-
-                _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
-            }
+            if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(PM)] - " + key + " - ...sync(" + sync + ") released" + " <" + Thread.currentThread().getName() + ">");
 		}
 	}
 
@@ -498,10 +411,7 @@ public class IndirectStateManager implements StateManager {
 		try {
 			response=tmp.getObject();
 		} catch (JMSException e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("unexpected problem", e); // should be in loop - TODO
-            }
+		  _log.error("unexpected problem", e); // should be in loop - TODO
 		}
 		return response;
 	}

@@ -28,39 +28,33 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.io.BytesMessageOutputStreamConfig;
 
 public class BytesMessageOutputStream extends OutputStream {
-    
+
     protected final static Log _log=LogFactory.getLog(BytesMessageOutputStream.class);
-    
+
     protected final BytesMessageOutputStreamConfig _config;
     protected BytesMessage _buffer;
-    
+
     public BytesMessageOutputStream(BytesMessageOutputStreamConfig config) {
         super();
         _config=config;
         try {
             allocate();
         } catch (IOException e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error(e); // should we let this go further ?
-            }
+	  _log.error(e); // should we let this go further ?
         }
     }
-    
+
     // impl
-    
+
     protected void allocate() throws IOException {
         try {
             _buffer=_config.createBytesMessage();
         } catch (JMSException e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error(e);
-            }
+	  _log.error(e);
             throw new IOException();
-        }   
+        }
     }
-    
+
     public void send(BytesMessage message) throws IOException {
         try {
             message.reset(); // switch to read-only mode
@@ -68,21 +62,18 @@ public class BytesMessageOutputStream extends OutputStream {
                 _config.send(message);
             }
         } catch (Exception e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error(e);
-            }
+	  _log.error(e);
             throw new IOException("problem sending bytes");
         }
     }
 
     // OutputStream
-    
+
     public void flush() throws IOException {
         send(_buffer);
         allocate();
     }
-    
+
     public void close() throws IOException {
 //        try {
 //            _buffer.setBooleanProperty("closing-stream", true);
@@ -99,31 +90,25 @@ public class BytesMessageOutputStream extends OutputStream {
         try {
             _buffer.writeByte((byte)b);
         } catch (JMSException e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error(e);
-            }
+	  _log.error(e);
             throw new IOException();
         }
     }
-    
+
     public void write(byte b[], int off, int len) throws IOException {
         try {
             _buffer.writeBytes(b, off, len);// can the message run out of space ? - we might have to break it up... - TODO
         } catch (JMSException e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error(e);
-            }
+	  _log.error(e);
             throw new IOException();
         }
     }
 
     // BytesMessageOutputStream
-    
-    
+
+
     public void write(ByteBuffer buffer, int from, int to) {
         throw new UnsupportedOperationException(); // cannot be done properly over ActiveMQ
     }
-    
+
 }

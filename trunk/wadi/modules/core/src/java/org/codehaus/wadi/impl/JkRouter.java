@@ -37,15 +37,15 @@ public class JkRouter implements Router {
     }
 
     protected RouterConfig _config;
-    
+
     public void init(RouterConfig config) {
         _config=config;
     }
-    
+
     public void destroy() {
         _config=null;
     }
-    
+
     public String strip(String session) {
         int i=session.lastIndexOf(".");
         if (i<0)
@@ -103,10 +103,7 @@ public class JkRouter implements Router {
         String oldId=id;
         String newId=augment(id);
 
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("rerouting cookie: " + oldId + " -> " + newId);
-        }
+        if (_log.isInfoEnabled()) _log.info("rerouting cookie: " + oldId + " -> " + newId);
 
         Cookie[] cookies=req.getCookies();
 

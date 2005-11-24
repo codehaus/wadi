@@ -93,10 +93,7 @@ public class TestCache extends TestCase {
 		}
 
 		public void process(ServletRequest req, ServletResponse res, FilterChain chain) {
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("processing MyRequest: " + _content);
-            }
+            if (_log.isInfoEnabled()) _log.info("processing MyRequest: " + _content);
 		}
 
 		protected long _ttl;
@@ -128,10 +125,7 @@ public class TestCache extends TestCase {
 	    String name=f.toString();
 	    f.delete();
 	    File dir=new File(name);
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("dir=" + dir);
-        }
+        if (_log.isInfoEnabled()) _log.info("dir=" + dir);
 	    assertTrue(dir.mkdirs());
 
 	    // TODO - insert Replicated and DB cache tiers here...

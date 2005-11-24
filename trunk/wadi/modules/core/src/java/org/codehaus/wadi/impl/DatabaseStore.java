@@ -33,7 +33,7 @@ import org.codehaus.wadi.Store;
 import org.codehaus.wadi.StoreMotable;
 
 public class DatabaseStore implements Store, DatabaseMotableConfig {
-	
+
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final String _label;
 	protected final DataSource _dataSource;
@@ -41,7 +41,7 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 	protected final boolean _useNIO;
 	protected final boolean _reusingStore;
 	protected final boolean _build;
-	
+
 	public DatabaseStore(String label, DataSource dataSource, String table, boolean useNIO, boolean reusingStore, boolean build) {
 		_label=label;
 		_dataSource=dataSource;
@@ -49,41 +49,38 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 		_useNIO=useNIO;
 		_reusingStore=reusingStore;
 		_build=build;
-		
+
 		if (_build) {
 			try {
 				init();
 			} catch (SQLException e) {
-                if ( _log.isWarnEnabled() ) {
-
-                    _log.warn("unexpected exception", e);
-                }
+			  _log.warn("unexpected exception", e);
 			}
 		}
 	}
-	
+
 	public String getLabel() {
 		return _label;
 	}
-	
+
 	public DataSource getDataSource() {
 		return _dataSource;
 	}
-	
+
 	public Connection getConnection() throws SQLException {
 		return _dataSource.getConnection();
 	}
-	
+
 	public String getTable() {
 		return _table;
 	}
-	
+
 	public boolean getReusingStore() {
 		return _reusingStore;
 	}
-	
+
 	// Store
-	
+
 	public void init() throws SQLException {
 		Connection c=_dataSource.getConnection();
 		Statement s=c.createStatement();
@@ -91,15 +88,12 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 			s.execute("CREATE TABLE "+_table+"(Name varchar(50), CreationTime long, LastAccessedTime long, MaxInactiveInterval int, Body varbinary("+700*1024+"))");
 		} catch (SQLException e) {
 			// ignore - table may already exist...
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn(e);
-            }
+		  _log.warn(e);
 		}
 		s.close();
 		c.close();
 	}
-	
+
 	public void destroy() throws SQLException {
 		Connection c=_dataSource.getConnection();
 		Statement s=c.createStatement();
@@ -107,16 +101,13 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 			s.execute("DROP TABLE "+_table);
 		} catch (SQLException e) {
 			// ignore - table may have already been deleted...
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn(e);
-            }
+		  _log.warn(e);
 		}
 //		s.execute("SHUTDOWN");
 		s.close();
 		c.close();
 	}
-	
+
 	public void clean() {
 		Connection connection=null;
 		Statement s=null;
@@ -132,23 +123,17 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 				if (s!=null)
 					s.close();
 			} catch (SQLException e) {
-                if ( _log.isWarnEnabled() ) {
-
-                    _log.warn("problem closing database statement", e);
-                }
+			  _log.warn("problem closing database statement", e);
 			}
 			try {
 				if (connection!=null)
 					connection.close();
 			} catch (SQLException e) {
-                if ( _log.isWarnEnabled() ) {
-
-                    _log.warn("problem closing database connection", e);
-                }
+			  _log.warn("problem closing database connection", e);
 			}
 		}
 	}
-	
+
 	public void load(Putter putter, boolean accessOnLoad) {
 		long time=System.currentTimeMillis();
 		Statement s=null;
@@ -181,15 +166,9 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 					if (_log.isErrorEnabled()) _log.error("load (shared database) failed: "+name, e);
 				}
 			}
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("loaded sessions: " + count);
-            }
+            if (_log.isInfoEnabled()) _log.info("loaded sessions: " + count);
 		} catch (SQLException e) {
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("list (shared database) failed", e);
-            }
+		  _log.warn("list (shared database) failed", e);
 		} finally {
 			if (s!=null)
 				try {
@@ -198,16 +177,13 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 					if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
 				}
 		}
-	
+
 		if (!_reusingStore) {
 			try {
 				s=connection.createStatement();
 				s.executeUpdate("DELETE FROM "+_table);
 			} catch (SQLException e) {
-                if ( _log.isWarnEnabled() ) {
-
-                    _log.warn("removal (shared database) failed", e);
-                }
+			  _log.warn("removal (shared database) failed", e);
 			} finally {
 				if (s!=null)
 					try {
@@ -218,7 +194,7 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 			}
 		}
 	}
-	
+
 	public void loadHeader(Connection connection, Motable motable) {
 		String name=motable.getName();
 		Statement s=null;
@@ -230,12 +206,12 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 				long creationTime=rs.getLong(i++);
 				long lastAccessedTime=rs.getLong(i++);
 				int maxInactiveInterval=rs.getInt(i++);
-				
+
 				motable.init(creationTime, lastAccessedTime, maxInactiveInterval);
-				
+
 				if (!motable.checkTimeframe(System.currentTimeMillis()))
 					if (_log.isWarnEnabled()) _log.warn("loaded (database ["+_table+"]) from the future!: "+name);
-				
+
 				if (_log.isTraceEnabled()) _log.trace("loaded (database ["+_table+"]): "+name);
 			}
 		} catch (SQLException e) {
@@ -249,7 +225,7 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 				}
 		}
 	}
-	
+
 	public Object loadBody(Connection connection, Motable motable) throws Exception {
 		String name=motable.getName();
 		Statement s=null;
@@ -282,7 +258,7 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 				}
 		}
 	}
-	
+
 	public void update(Connection connection, Motable motable) throws Exception {
 		PreparedStatement ps=null;
 		String name=motable.getName();
@@ -309,7 +285,7 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 				ps.close();
 		}
 	}
-	
+
 	public void insert(Connection connection, Motable motable, Object body) throws Exception {
 		PreparedStatement ps=null;
 		String name=motable.getName();
@@ -336,7 +312,7 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 				ps.close();
 		}
 	}
-	
+
 	public void delete(Connection connection, Motable motable) {
 		Statement s=null;
 		try {
@@ -350,30 +326,27 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
 				if (s!=null)
 					s.close();
 			} catch (SQLException e) {
-                if ( _log.isWarnEnabled() ) {
-
-                    _log.warn("problem closing database connection", e);
-                }
+			  _log.warn("problem closing database connection", e);
 			}
 		}
 	}
-	
+
 	public String getStartInfo() {
 		return _dataSource.toString();
 	}
-	
+
 	public String getDescription() {
 		return "["+_label+"/"+_table+"]";
 	}
-	
+
 	public StoreMotable create() {
 		return new DatabaseMotable();
 	}
-	
+
 	// DatabaseMotableConfig
-	
+
 	public boolean getUseNIO() {
 		return _useNIO;
 	}
-	
+
 }

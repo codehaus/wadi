@@ -158,10 +158,7 @@ public class
 	      }
 	      catch (Exception e)
 	      {
-              if ( _log.isWarnEnabled() ) {
-
-                  _log.warn("oops", e);
-              }
+		_log.warn("oops", e);
 	      }
 	    }
 	  };
@@ -170,10 +167,7 @@ public class
       }
 
       Thread.yield();
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("releasing read lock");
-      }
+      _log.info("releasing read lock");
       lock.readLock().release();
 
       for (int i=0;i<=MAX_PRIORITY;i++)
@@ -211,19 +205,13 @@ public class
  	    {
 	      RWLock.setPriority(EVICTION_PRIORITY);
  	      lock.writeLock().acquire();
-             if ( _log.isInfoEnabled() ) {
-
-                 _log.info("I lost");
-             }
+	      _log.info("I lost");
 	      assertTrue(_first==false);
  	      lock.writeLock().release();
  	    }
  	    catch (Exception e)
  	    {
-             if ( _log.isWarnEnabled() ) {
-
-                 _log.warn(e);
-             }
+	      _log.warn(e);
  	    }
  	  }
  	};
@@ -231,10 +219,7 @@ public class
 
       RWLock.setPriority(INVALIDATION_PRIORITY);
       lock.overlap();
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("I won");
-        }
+      _log.info("I won");
       assertTrue(_first==true);
       _first=false;
       lock.writeLock().release();

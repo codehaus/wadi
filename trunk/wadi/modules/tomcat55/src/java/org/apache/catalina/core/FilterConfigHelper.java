@@ -37,9 +37,7 @@ public class FilterConfigHelper {
 		try {
 			filter=((ApplicationFilterConfig)config).getFilter();
 		} catch (Exception e) {
-            if ( _log.isErrorEnabled() ) {
-                _log.error(e);
-            }
+		  _log.error(e);
         }
 		return filter;
 	}

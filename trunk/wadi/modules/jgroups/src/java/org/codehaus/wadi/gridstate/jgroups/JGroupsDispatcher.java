@@ -56,7 +56,7 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 	protected Map _localState;
     protected Vector _members=new Vector();
     protected JGroupsCluster _cluster;
-	
+
 	public JGroupsDispatcher(String nodeName, String clusterName, long inactiveTime) {
 		super(nodeName, clusterName, inactiveTime);
 		_clusterState=new HashMap();
@@ -102,7 +102,7 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 	public int getNumNodes() {
 		return _members.size();
 	}
-	
+
 	public ObjectMessage createObjectMessage() {
 		return new JGroupsObjectMessage();
 	}
@@ -117,7 +117,7 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 		else
 			return (Map)_clusterState.get(address);
 	}
-	
+
 	public String getNodeName(Destination destination) {
 		Map state=getState(((JGroupsDestination)destination).getAddress());
 		if (state==null)
@@ -129,7 +129,7 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 	public Destination getLocalDestination() {
 		return _localDestination;
 	}
-	
+
 	public Destination getClusterDestination() {
 		return _clusterDestination;
 	}
@@ -137,7 +137,7 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 	public Map getDistributedState() {
 		return _localState;
 	}
-	
+
 	public synchronized void setDistributedState(Map state) throws Exception {
 		// this seems to be the only test that ActiveCluster does, so there is no point in us doing any more...
 		if (_localState!=state) {
@@ -151,16 +151,13 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 
 	public void onMessage(ObjectMessage message, JGroupsStateUpdate update) throws Exception {
 		Address from=((JGroupsDestination)message.getJMSReplyTo()).getAddress();
-        if ( _log.isTraceEnabled() ) {
-
-            _log.trace("STATE UPDATE: " + update + " from: " + from);
-        }
+        if (_log.isTraceEnabled()) _log.trace("STATE UPDATE: " + update + " from: " + from);
 		synchronized (_clusterState) {
 			_clusterState.put(from, update.getState());
 		}
 		// FIXME - Memory Leak here, until we start removing dead nodes from the table - need membership listener
 	}
-	
+
 	public String getIncomingCorrelationId(ObjectMessage message) throws Exception {
     	return ((JGroupsObjectMessage)message).getIncomingCorrelationId();
     }
@@ -180,22 +177,19 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
     public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
 		throw new UnsupportedOperationException("NYI");
 	}
-    
+
     // MembershipListener API
 
     protected final Object _viewLock=new Object();
-    
+
     public void viewAccepted(View newView) {
     	if (_log.isTraceEnabled()) _log.trace("handling JGroups viewAccepted("+newView+")...");
-    	
+
     	// this is meant to happen if a network split is healed and two
     	// clusters try to reconcile their separate states into one -
     	// I have a plan...
     	if(newView instanceof MergeView)
-            if ( _log.isWarnEnabled() ) {
-
-                _log.warn("NYI - merging: view is " + newView);
-            }
+            if (_log.isWarnEnabled()) _log.warn("NYI - merging: view is " + newView);
 
     	synchronized (_viewLock) {
     		Vector oldMembers=_members;
@@ -218,47 +212,35 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 		}
 
     	_members=newView.getMembers(); // N.B. This View includes ourself
-        if ( _log.isInfoEnabled() ) {
+        if (_log.isInfoEnabled()) _log.info("JGroups View: " + _members);
 
-            _log.info("JGroups View: " + _members);
-        }
-    	
 }
 
     public void suspect(Address suspected_mbr) {
     	if (_log.isTraceEnabled()) _log.trace("handling suspect("+suspected_mbr+")...");
-        if ( _log.isWarnEnabled() ) {
-
-            _log.warn("cluster suspects member may have been lost: " + suspected_mbr);
-        }
-        if ( _log.isTraceEnabled() ) {
-
-            _log.trace("...suspect() handled");
-        }
+        if (_log.isWarnEnabled()) _log.warn("cluster suspects member may have been lost: " + suspected_mbr);
+	_log.trace("...suspect() handled");
     }
 
 	  // Block sending and receiving of messages until viewAccepted() is called
 	public void block() {
-		if ( _log.isTraceEnabled() ) {
-
-            _log.trace("handling block()...");
+	  _log.trace("handling block()...");
             // NYI
             _log.trace("... block() handled");
-        }
 
 	}
-	
+
 	//------------------------------------------------------------------------------------
 	// aargh ! - we are using an AC i/f here - short-term - saves rewriting everything...
-	
+
 	protected ClusterListener _listener;
-	
+
 	public void setClusterListener(ClusterListener listener) {
 		_listener=listener;
 	}
-	
+
 	protected final Map _nodes=new HashMap();
-	
+
 	protected Node ensureNode(Address address) {
 		Node node;
 		synchronized (_nodes) {
@@ -267,17 +249,17 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 		}
 		return node;
 	}
-	
+
 	class JGroupsNode implements Node {
 
 		protected final JGroupsDestination _destination;
 
 		protected boolean _isCoordinator=false;
-		
+
 		JGroupsNode(JGroupsDestination destination) {
 			_destination=destination;
 		}
-		
+
 		public Destination getDestination() {
 			return _destination;
 		}
@@ -297,7 +279,7 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
 		public Object getZone() {
 			throw new UnsupportedOperationException("not used");
 		}
-		
+
 	}
-	
+
 }

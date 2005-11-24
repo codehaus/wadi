@@ -91,10 +91,7 @@ public abstract class
  //     peers=_peers.values();
     }
 
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("adding: " + p);
-      }
+    _log.info("adding: " + p);
     //	  _log.info("nodes : " + peers);
 
  //   Object[] diffs=combineCollection(p);
@@ -115,10 +112,7 @@ public abstract class
 //      peers=_peers.values();
     }
 
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("removing: " + p);
-      }
+      if (_log.isInfoEnabled()) _log.info("removing: " + p);
     //	  _log.info("nodes   : " + peers);
 
 //    Object[] diffs=combineCollection(p);
@@ -139,11 +133,8 @@ public abstract class
     }
     p.setNode(node);	// important - this is the update...
 
-    if ( _log.isInfoEnabled() ) {
-
-        _log.info("updating: " + p);
-        _log.info("nodes   : " + peers);
-    }
+    _log.info("updating: " + p);
+    _log.info("nodes   : " + peers);
 
   }
 

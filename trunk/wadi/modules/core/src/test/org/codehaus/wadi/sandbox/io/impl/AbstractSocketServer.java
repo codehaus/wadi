@@ -50,23 +50,14 @@ public abstract class AbstractSocketServer extends AbstractServer {
 
     public void waitForExistingPipes() {
         while (_numPipes.get()>0) {
-            if ( _log.isInfoEnabled() ) {
-
-                _log.info("waiting for: " + _numPipes + " Pipe[s]");
-            }
+            if (_log.isInfoEnabled()) _log.info("waiting for: " + _numPipes + " Pipe[s]");
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                if ( _log.isTraceEnabled() ) {
-
-                    _log.trace("unexpected interruption - ignoring", e);
-                }
+	      _log.trace("unexpected interruption - ignoring", e);
             }
         }
-        if ( _log.isInfoEnabled() ) {
-
-            _log.info("existing Pipes have finished running");
-        }
+	_log.info("existing Pipes have finished running");
     }
 
 }

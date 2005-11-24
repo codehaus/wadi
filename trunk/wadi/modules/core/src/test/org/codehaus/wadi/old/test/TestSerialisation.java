@@ -46,10 +46,7 @@ class Shared
     writeReplace()
     throws ObjectStreamException
   {
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("writing porter");
-      }
+    _log.info("writing porter");
     Porter p=new Porter(this);
     if (_log.isInfoEnabled()) _log.info(""+p);
     return p;
@@ -128,20 +125,14 @@ public class
     setUp()
     throws Exception
     {
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("starting test");
-      }
+      _log.info("starting test");
     }
 
   protected void
     tearDown()
     throws InterruptedException
     {
-      if ( _log.isInfoEnabled() ) {
-
-          _log.info("stopping test");
-      }
+      _log.info("stopping test");
     }
 
   public void

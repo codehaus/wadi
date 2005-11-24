@@ -33,10 +33,10 @@ import org.codehaus.wadi.DistributableValueConfig;
 
 public class LazyValue extends DistributableValue {
     protected static final Log _log = LogFactory.getLog(LazyValue.class);
-    
+
     protected transient boolean _listener;
     protected transient byte[] _bytes;
-    
+
     public LazyValue(DistributableValueConfig config) {
         super(config);
     }
@@ -49,15 +49,12 @@ public class LazyValue extends DistributableValue {
             super.readContent(ois);
             ois.close();
         } catch (Exception e) {
-            if ( _log.isErrorEnabled() ) {
-
-                _log.error("unexpected problem lazily deserialising session attribute value - data lost", e);
-            }
+	  _log.error("unexpected problem lazily deserialising session attribute value - data lost", e);
         } finally {
             _bytes=null;
         }
     }
-    
+
     protected void serialise() throws IOException {
         ByteArrayOutputStream baos=new ByteArrayOutputStream(); // TODO - pool these objects...
         ObjectOutputStream oos=new ObjectOutputStream(baos);
@@ -65,34 +62,34 @@ public class LazyValue extends DistributableValue {
         oos.close();
         _bytes=baos.toByteArray();
     }
-    
+
     public synchronized Object getValue() {
         if (_bytes!=null)
             deserialise();
-        
+
         return super.getValue();
     }
-    
+
     public synchronized Object setValue(Object newValue) {
         if (_bytes!=null) {
             if (_listener || ((DistributableValueConfig)_config).getHttpSessionAttributeListenersRegistered())
                 deserialise(); // oldValue needs deserialising before it is chucked...
         }
-        
+
         Object tmp=super.setValue(newValue);
         _listener=(_value instanceof HttpSessionActivationListener) || (_value instanceof HttpSessionBindingListener); // doubles up on test in super...
         return tmp;
     }
-     
+
     public synchronized void writeContent(ObjectOutput oo) throws IOException {
         if (_bytes==null)
             serialise(); // rebuild cache
-        
+
         oo.writeBoolean(_listener);
         oo.writeInt(_bytes.length);
         oo.write(_bytes);
     }
-    
+
     public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         _listener=oi.readBoolean();
         int length=oi.readInt();
@@ -101,9 +98,9 @@ public class LazyValue extends DistributableValue {
             throw new IOException("data truncated whilst reading Session attribute value - data lost");
         _value=null;
     }
-    
+
     public boolean isListener(){return _listener;}
-    
+
     // should we register Listeners with our Attributes ?
 
 }

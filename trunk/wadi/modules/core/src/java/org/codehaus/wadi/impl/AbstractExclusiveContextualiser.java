@@ -98,10 +98,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 	      }
 	    }
 	  } catch (Exception e) {
-          if ( _log.isWarnEnabled() ) {
-
-              _log.warn("unexpected problem", e);
-          }
+	    _log.warn("unexpected problem", e);
 	  }
 	}
 
@@ -195,9 +192,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
             }
         }
         if (matches>0)
-            if ( _log.isDebugEnabled() ) {
-                _log.debug("matches found: "+matches);
-            }
+            if (_log.isDebugEnabled()) _log.debug("matches found: "+matches);
     }
 
 }
