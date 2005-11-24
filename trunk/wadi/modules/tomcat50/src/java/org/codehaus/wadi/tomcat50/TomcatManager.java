@@ -120,12 +120,9 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 		try {
 			_wadi.start();
 
-			if (_container==null)
-                if ( _log.isWarnEnabled() ) {
-                    _log.warn("container not set - fn-ality will be limited");
-                }
-            else
-			{
+			if (_container==null) {
+				_log.warn("container not set - fn-ality will be limited");
+			} else {
 				Context context=((Context)_container);
 
 				// install Valve
@@ -261,9 +258,11 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 	}
 
 	public Session findSession(String id) throws IOException {
-		throw new UnsupportedOperationException();
+		//throw new UnsupportedOperationException();
+		if (_log.isWarnEnabled()) _log.warn("findSession("+id+") called - currently unsupported");
+		return null;
 	}
-
+	
 	public Session[] findSessions() {
 		throw new UnsupportedOperationException();
 	}

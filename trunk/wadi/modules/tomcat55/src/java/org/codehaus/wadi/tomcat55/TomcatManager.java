@@ -107,48 +107,45 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
   }
 
   public void start() throws LifecycleException {
-    try {
-      InputStream is=getServletContext().getResourceAsStream("/WEB-INF/wadi-web.xml");
-      _wadi=(StandardManager)SpringManagerFactory.create(is, "SessionManager", new TomcatSessionFactory(), new StandardSessionWrapperFactory());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-
-    _wadi.init(this);
-    try {
-      _wadi.start();
-
-      if (_container==null)
-          if ( _log.isWarnEnabled() ) {
-        _log.warn("container not set - fn-ality will be limited");
-    }
-      else
-      {
-	Context context=((Context)_container);
-
-	// install Valve
-	((StandardContext)context).addValve(new Valve(Pattern.compile("127\\.0\\.0\\.1|192\\.168\\.0\\.\\d{1,3}")));
-
-	// install filter
-	String filterName="WadiFilter";
-	FilterDef fd=new FilterDef();
-	fd.setFilterName(filterName);
-	fd.setFilterClass(Filter.class.getName());
-	context.addFilterDef(fd);
-	FilterMap fm=new FilterMap();
-	fm.setFilterName(filterName);
-	fm.setURLPattern("/*");
-	context.addFilterMap(fm);
-
-	//				// is this a distributable webapp ?
-	//				boolean distributable=context.getDistributable();
-	//				if (distributable && !_distributable)
-	//				setDistributable(distributable);
-      }
-
-    } catch (Exception e) {
-      throw new LifecycleException(e);
-    }
+	  try {
+		  InputStream is=getServletContext().getResourceAsStream("/WEB-INF/wadi-web.xml");
+		  _wadi=(StandardManager)SpringManagerFactory.create(is, "SessionManager", new TomcatSessionFactory(), new StandardSessionWrapperFactory());
+	  } catch (Exception e) {
+		  throw new RuntimeException(e);
+	  }
+	  
+	  _wadi.init(this);
+	  try {
+		  _wadi.start();
+		  
+		  if (_container==null) {
+			  _log.warn("container not set - fn-ality will be limited");
+		  } else {
+			  Context context=((Context)_container);
+			  
+			  // install Valve
+			  ((StandardContext)context).addValve(new Valve(Pattern.compile("127\\.0\\.0\\.1|192\\.168\\.0\\.\\d{1,3}")));
+			  
+			  // install filter
+			  String filterName="WadiFilter";
+			  FilterDef fd=new FilterDef();
+			  fd.setFilterName(filterName);
+			  fd.setFilterClass(Filter.class.getName());
+			  context.addFilterDef(fd);
+			  FilterMap fm=new FilterMap();
+			  fm.setFilterName(filterName);
+			  fm.setURLPattern("/*");
+			  context.addFilterMap(fm);
+			  
+			  //				// is this a distributable webapp ?
+			  //				boolean distributable=context.getDistributable();
+			  //				if (distributable && !_distributable)
+			  //				setDistributable(distributable);
+		  }
+		  
+	  } catch (Exception e) {
+		  throw new LifecycleException(e);
+	  }
   }
 
   public void stop() throws LifecycleException {
@@ -271,18 +268,14 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
   }
 
   public Session createSession(String arg0) {
-      if ( _log.isInfoEnabled() ) {
-          _log.info("createSession("+arg0+")");
-      }
+      if (_log.isInfoEnabled()) _log.info("createSession("+arg0+")");
       return (TomcatSession)_wadi.create();
   }
 
   public Session findSession(String id) throws IOException {
-    //throw new UnsupportedOperationException();
-      if ( _log.isWarnEnabled() ) {
-          _log.warn("findSession("+id+") called - currently unsupported");
-      }
-      return null;
+	  //throw new UnsupportedOperationException();
+	  if (_log.isWarnEnabled()) _log.warn("findSession("+id+") called - currently unsupported");
+	  return null;
   }
 
   public Session[] findSessions() {

@@ -52,17 +52,15 @@ public class TomcatSession extends DistributableSession implements Session {
   }
 
   public void destroy() {
-    _authType=null;
-    _principal=null;
-    _notes.clear();
-    _listeners.clear();
-    try {
-      super.destroy();
-    } catch (Exception e) {
-        if ( _log.isWarnEnabled() ) {
-            _log.warn("unexpected problem destroying session", e);
-        }
-    }
+	  _authType=null;
+	  _principal=null;
+	  _notes.clear();
+	  _listeners.clear();
+	  try {
+		  super.destroy();
+	  } catch (Exception e) {
+		  _log.warn("unexpected problem destroying session", e);
+	  }
   }
 
   public void setId(String id) {

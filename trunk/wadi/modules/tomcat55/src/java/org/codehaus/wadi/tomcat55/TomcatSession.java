@@ -54,17 +54,15 @@ public class TomcatSession extends AtomicallyReplicableSession implements Sessio
   }
 
   public void destroy() {
-    _authType=null;
-    _principal=null;
-    _notes.clear();
-    _listeners.clear();
-    try {
-      super.destroy();
-    } catch (Exception e) {
-        if ( _log.isWarnEnabled() ) {
-            _log.warn("unexpected problem destroying session");
-        }
-    }
+	  _authType=null;
+	  _principal=null;
+	  _notes.clear();
+	  _listeners.clear();
+	  try {
+		  super.destroy();
+	  } catch (Exception e) {
+		  _log.warn("unexpected problem destroying session");
+	  }
   }
 
   public void setId(String id) {
