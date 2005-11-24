@@ -3,6 +3,7 @@
 
 
 <Configure id="Server" class="org.mortbay.jetty.Server">
+
   <Set name="connectors">
     <Array type="org.mortbay.jetty.Connector">
 
@@ -24,7 +25,7 @@
     <Array type="org.mortbay.jetty.Handler">
 
       <Item>
-	<New id="wadi"  class="org.mortbay.jetty.webapp.WebAppContext">
+	<New id="wadi" class="org.mortbay.jetty.webapp.WebAppContext">
 	  <Set name="contextPath">/wadi</Set>
 	  <Set name="war"><SystemProperty name="wadi.home"/>/webapps/wadi-webapp-<SystemProperty name="wadi.version"/>.war</Set>
 	  <Get name="SessionHandler">
@@ -39,6 +40,9 @@
 
     </Array>
   </Set>
+
+  <!-- ensure that shutdown hook is called on ctl C -->
+  <Set name="stopAtShutdown">true</Set>
 
   <Call name="start"/>
 
