@@ -14,21 +14,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.newmessages;
+package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
 
 import org.codehaus.wadi.OldMessage;
 import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
 
-public class RelocationRequestI2P extends AbstractDIndexRequest implements OldMessage, Serializable {
+public class RelocationRequest extends AbstractDIndexRequest implements OldMessage, Serializable {
 
     private String _sessionName;
     private String _nodeName;
     private int _numConcurrentInvocations;
     private boolean _shuttingDown;
     
-    public RelocationRequestI2P(String sessionName, String nodeName, int numConcurrentInvocations, boolean shuttingDown) {
+    public RelocationRequest(String sessionName, String nodeName, int numConcurrentInvocations, boolean shuttingDown) {
         super(sessionName);
         _sessionName=sessionName;
         _nodeName=nodeName;
@@ -36,7 +36,7 @@ public class RelocationRequestI2P extends AbstractDIndexRequest implements OldMe
         _shuttingDown=shuttingDown;
     }
     
-    protected RelocationRequestI2P() {
+    protected RelocationRequest() {
         // used when deserialising
     }
 

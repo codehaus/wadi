@@ -27,7 +27,7 @@ import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
-import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
+import org.codehaus.wadi.dindex.messages.RelocationRequest;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
@@ -229,7 +229,7 @@ public class PartitionFacade extends AbstractPartition {
     }
     
     // should superceded above method
-    public void onMessage(ObjectMessage message, RelocationRequestI2P request) {
+    public void onMessage(ObjectMessage message, RelocationRequest request) {
     	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
     	try {

@@ -23,7 +23,7 @@ import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
-import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
+import org.codehaus.wadi.dindex.messages.RelocationRequest;
 
 public interface Partition extends PMPartition, SMPartition {
 
@@ -32,6 +32,6 @@ public interface Partition extends PMPartition, SMPartition {
 	void onMessage(ObjectMessage message, DIndexRelocationRequest request);
 	void onMessage(ObjectMessage message, DIndexForwardRequest request);
 
-	void onMessage(ObjectMessage message, RelocationRequestI2P request);
+	void onMessage(ObjectMessage message, RelocationRequest request);
 
 }

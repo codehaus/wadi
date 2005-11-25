@@ -36,7 +36,7 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.dindex.messages.RelocationAcknowledgement;
-import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
+import org.codehaus.wadi.dindex.messages.RelocationRequest;
 import org.codehaus.wadi.dindex.messages.RelocationResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
@@ -77,7 +77,7 @@ public class HybridRelocater extends AbstractRelocater {
         _nodeName=_config.getNodeName();
         _contextualiser=_config.getContextualiser();
         _httpProxy=_config.getHttpProxy();
-        _dispatcher.register(this, "onMessage", RelocationRequestI2P.class);
+        _dispatcher.register(this, "onMessage", RelocationRequest.class);
         _dispatcher.register(RelocationResponse.class, _resTimeout);
         _dispatcher.register(RelocationAcknowledgement.class, _ackTimeout);
     }
@@ -196,7 +196,7 @@ public class HybridRelocater extends AbstractRelocater {
 
     // the request arrives ...
 
-    public void onMessage(ObjectMessage om, RelocationRequestI2P request) {
+    public void onMessage(ObjectMessage om, RelocationRequest request) {
         if (_log.isTraceEnabled()) _log.trace("RelocationRequest received from " + request.getNodeName() + " for " + request.getSessionName() + " on " + _nodeName);
         // both of these may be out of date immediately... :-(
         boolean theyAreShuttingDown=request.getShuttingDown();

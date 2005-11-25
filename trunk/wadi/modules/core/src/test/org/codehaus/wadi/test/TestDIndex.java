@@ -20,7 +20,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
 import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
-import org.codehaus.wadi.impl.SimplePartitionMapper;
 
 import junit.framework.TestCase;
 
@@ -32,15 +31,15 @@ public class TestDIndex extends TestCase {
         super(name);
     }
 
-    protected int _numPartitions;
+    protected final int _numPartitions=3;
+    protected final FixedWidthSessionIdFactory _factory=new FixedWidthSessionIdFactory(5, "0123456789".toCharArray(), _numPartitions);
+
 
     protected void setUp() throws Exception {
         super.setUp();
-        _numPartitions=3;
     }
 
     protected void tearDown() throws Exception {
-        _numPartitions=0;
         super.tearDown();
     }
 
@@ -61,9 +60,9 @@ public class TestDIndex extends TestCase {
     public void testDindex() throws Exception {
         assertTrue(true);
 
-        DIndexNode red=new DIndexNode("red", _numPartitions, new SimplePartitionMapper(_numPartitions));
-        DIndexNode green=new DIndexNode("green", _numPartitions, new SimplePartitionMapper(_numPartitions));
-        DIndexNode blue=new DIndexNode("blue", _numPartitions, new SimplePartitionMapper(_numPartitions));
+        DIndexNode red=new DIndexNode("red", _numPartitions, _factory);
+        DIndexNode green=new DIndexNode("green", _numPartitions, _factory);
+        DIndexNode blue=new DIndexNode("blue", _numPartitions, _factory);
 
 
         _log.info("0 nodes running");
@@ -71,19 +70,18 @@ public class TestDIndex extends TestCase {
         red.start();
         green.start();
         blue.start();
-        red.getCluster().waitForClusterToComplete(3, 6000);
-        green.getCluster().waitForClusterToComplete(3, 6000);
+        //red.getCluster().waitForClusterToComplete(3, 6000);
+        //green.getCluster().waitForClusterToComplete(3, 6000);
         blue.getCluster().waitForClusterToComplete(3, 6000);
         _log.info("3 nodes running");
 
-        FixedWidthSessionIdFactory factory=new FixedWidthSessionIdFactory(5, "0123456789".toCharArray(), _numPartitions);
-
-        String name=factory.create(_numPartitions-1);
+        String name=_factory.create(1); // blue
         red.getDIndex().insert(name);
         green.getDIndex().relocate(name, "green", 1, false, 2000L);
         //green.getDIndex().remove(name);
         //blue.getDIndex().put(name, name);
 
+        Thread.sleep(10*1000);
         blue.stop();
         green.stop();
         red.stop();
