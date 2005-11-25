@@ -36,8 +36,8 @@ import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionResponse;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationResponse;
-import org.codehaus.wadi.dindex.messages.RelocationRequest;
 import org.codehaus.wadi.dindex.messages.RelocationResponse;
+import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
 
 public class LocalPartition extends AbstractPartition implements Serializable {
 	
@@ -129,7 +129,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		}
 		if (destination==null) { // session could not be located...
 			DIndexRequest r=request.getRequest();
-			if (r instanceof RelocationRequest) {
+			if (r instanceof RelocationRequestI2P) {
 				assert message!=null;
 				assert name!=null;
 				assert _config!=null;

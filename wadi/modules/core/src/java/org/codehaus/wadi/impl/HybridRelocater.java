@@ -36,7 +36,7 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.dindex.messages.RelocationAcknowledgement;
-import org.codehaus.wadi.dindex.messages.RelocationRequest;
+import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
 import org.codehaus.wadi.dindex.messages.RelocationResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
@@ -56,7 +56,7 @@ public class HybridRelocater extends AbstractRelocater {
     protected final long _requestHandOverTimeout=2000;// TODO - parameterise
     protected final long _resTimeout;
     protected final long _ackTimeout;
-    protected final boolean _sessionOrRequestPreferred;
+    protected final boolean _sessionOrRequestPreferred; // true if relocation of session is preferred to relocation of request
 
     public HybridRelocater(long resTimeout, long ackTimeout, boolean sessionOrRequestPreferred) {
         _resTimeout=resTimeout;
@@ -77,7 +77,7 @@ public class HybridRelocater extends AbstractRelocater {
         _nodeName=_config.getNodeName();
         _contextualiser=_config.getContextualiser();
         _httpProxy=_config.getHttpProxy();
-        _dispatcher.register(this, "onMessage", RelocationRequest.class);
+        _dispatcher.register(this, "onMessage", RelocationRequestI2P.class);
         _dispatcher.register(RelocationResponse.class, _resTimeout);
         _dispatcher.register(RelocationAcknowledgement.class, _ackTimeout);
     }
@@ -86,16 +86,14 @@ public class HybridRelocater extends AbstractRelocater {
         if (_log.isTraceEnabled()) _log.trace("indirecting RelocationRequest from "+_nodeName+" for "+name);
         String sessionName=name;
         String nodeName=_config.getNodeName();
-        boolean sessionOrRequestPreferred=getSessionOrRequestPreferred();
         boolean shuttingDown=_shuttingDown.get();
-        long lastKnownTime=0L;
-        String lastKnownPlace=null;
         ObjectMessage message2=null;
         RelocationResponse response=null;
+        int concurrentRequestThreads=1;
         try {
             ObjectMessage message=_dispatcher.createObjectMessage();
             message.setJMSReplyTo(_dispatcher.getLocalDestination());
-            RelocationRequest request=new RelocationRequest(sessionName, nodeName, sessionOrRequestPreferred, shuttingDown, lastKnownTime, lastKnownPlace, _requestHandOverTimeout);
+            RelocationRequestI2P request=new RelocationRequestI2P(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
             message.setObject(request);
             message2=_config.getDIndex().forwardAndExchange(sessionName, message, request, _resTimeout);
 
@@ -204,21 +202,19 @@ public class HybridRelocater extends AbstractRelocater {
 
     // the request arrives ...
 
-    public void onMessage(ObjectMessage om, RelocationRequest request) {
+    public void onMessage(ObjectMessage om, RelocationRequestI2P request) {
         if (_log.isTraceEnabled()) _log.trace("RelocationRequest received from " + request.getNodeName() + " for " + request.getSessionName() + " on " + _nodeName);
         // both of these may be out of date immediately... :-(
         boolean theyAreShuttingDown=request.getShuttingDown();
         boolean weAreShuttingDown=_shuttingDown.get();
-        boolean sessionOrRequestPreferred=request.getSessionOrRequestPreferred();
+        boolean sessionOrRequestPreferred=_sessionOrRequestPreferred;
 
-        if (!theyAreShuttingDown &&
-                (weAreShuttingDown || sessionOrRequestPreferred==RelocationRequest._RELOCATE_SESSION_PREFERRED)) {
+        if (!theyAreShuttingDown && (weAreShuttingDown || sessionOrRequestPreferred)) {
             relocateSessionToThem(om, request.getSessionName(), request.getNodeName());
             return;
         }
 
-        if (!weAreShuttingDown &&
-                (theyAreShuttingDown || sessionOrRequestPreferred==RelocationRequest._RELOCATE_REQUEST_PREFERRED)) {
+        if (!weAreShuttingDown && (theyAreShuttingDown || !sessionOrRequestPreferred)) {
             relocateRequestToUs(om, request.getSessionName());
             return;
         }
