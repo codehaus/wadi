@@ -35,6 +35,7 @@ import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationResponse;
 import org.codehaus.wadi.dindex.newmessages.ReleaseEntryRequest;
 import org.codehaus.wadi.dindex.newmessages.ReleaseEntryResponse;
+import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
 public class SimpleStateManager implements StateManager {
@@ -62,7 +63,9 @@ public class SimpleStateManager implements StateManager {
         _dispatcher.register(this, "onDIndexRelocationRequest", DIndexRelocationRequest.class);
         _dispatcher.register(DIndexRelocationResponse.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexForwardRequest", DIndexForwardRequest.class);
-	}
+
+        _dispatcher.register(this, "onRelocationRequestI2P", RelocationRequestI2P.class);
+}
 
 	public void start() throws Exception {
 		// TODO Auto-generated method stub
@@ -93,6 +96,10 @@ public class SimpleStateManager implements StateManager {
         _config.getPartition(request.getPartitionKey(_config.getNumPartitions())).onMessage(om, request);
     }
 
+    public void onRelocationRequestI2P(ObjectMessage om, RelocationRequestI2P request) {
+    	_log.info("MESSAGE ARRIVED: "+request);
+        _config.getPartition(request.getNodeName()).onMessage(om, request);
+    }
     // evacuation protocol
 
     public boolean offerEmigrant(String key, Motable emotable, long timeout) {

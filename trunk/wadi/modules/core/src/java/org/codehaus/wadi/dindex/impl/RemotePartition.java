@@ -26,6 +26,7 @@ import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
+import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
 
 public class RemotePartition extends AbstractPartition {
 	
@@ -92,6 +93,12 @@ public class RemotePartition extends AbstractPartition {
 
 	public void onMessage(ObjectMessage message, DIndexForwardRequest request) {
 		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getNodeName(_location));
+		if (!_config.getDispatcher().forward(message, _location))
+			_log.warn("could not forward message");
+	}
+	
+	public void onMessage(ObjectMessage message, RelocationRequestI2P request) {
+		if (_log.isWarnEnabled()) _log.warn(_config.getLocalNodeName()+": not Master of Partition["+_key+"] - forwarding message to "+_config.getNodeName(_location));
 		if (!_config.getDispatcher().forward(message, _location))
 			_log.warn("could not forward message");
 	}

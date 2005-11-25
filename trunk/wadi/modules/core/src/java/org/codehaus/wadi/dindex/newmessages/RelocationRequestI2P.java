@@ -57,7 +57,7 @@ public class RelocationRequestI2P extends AbstractDIndexRequest implements OldMe
     }
 
     public String toString() {
-        return "<RelocationRequest: "+_sessionName+" -> "+_nodeName+">";
+        return "<RelocationRequestI2P: "+_sessionName+" -> "+_nodeName+">";
     }
     
 }

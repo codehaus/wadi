@@ -18,9 +18,8 @@ package org.codehaus.wadi.test;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
-import org.codehaus.wadi.impl.TomcatSessionIdFactory;
+import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
 
 import junit.framework.TestCase;
 
@@ -32,15 +31,15 @@ public class TestDIndex extends TestCase {
         super(name);
     }
 
-    protected int _numIndexPartitions;
+    protected int _numPartitions;
 
     protected void setUp() throws Exception {
         super.setUp();
-        _numIndexPartitions=24;
+        _numPartitions=3;
     }
 
     protected void tearDown() throws Exception {
-        _numIndexPartitions=0;
+        _numPartitions=0;
         super.tearDown();
     }
 
@@ -58,96 +57,37 @@ public class TestDIndex extends TestCase {
 
     }
 
-//    public void testQueueing() {
-//
-//        boolean isQueueing=true;
-//        long timeStamp=System.currentTimeMillis();
-//        PartitionFacade facade=new PartitionFacade(0, timeStamp, new DummyPartition(0), isQueueing);
-//
-//        int numThreads=10;
-//        Thread thread[]=new Thread[numThreads];
-//        for (int i=0; i<numThreads; i++) {
-//            (thread[i]=new Thread(new Foo(facade))).start();
-//        }
-//
-//        // do stuff with PartitionFacade
-//
-//        try {
-//            for (int i=0; i<numThreads; i++) {
-//                thread[i].join();
-//            }
-//        } catch (InterruptedException e) {
-//            _log.warn("interrupted", e);
-//        }
-//    }
-
     public void testDindex() throws Exception {
         assertTrue(true);
 
-        DIndexNode red=new DIndexNode("red", _numIndexPartitions);
-        DIndexNode green=new DIndexNode("green", _numIndexPartitions);
-//        DIndexNode blue=new DIndexNode("blue", _numIndexPartitions);
-//        DIndexNode yellow=new DIndexNode("yellow", _numIndexPartitions);
-//        DIndexNode pink=new DIndexNode("pink", _numIndexPartitions);
+        DIndexNode red=new DIndexNode("red", _numPartitions);
+        DIndexNode green=new DIndexNode("green", _numPartitions);
+        DIndexNode blue=new DIndexNode("blue", _numPartitions);
 
-	_log.info("0 nodes running");
+
+        _log.info("0 nodes running");
+
         red.start();
-        red.getCluster().waitForClusterToComplete(1, 6000);
-	_log.info("1 node running");
         green.start();
-        red.getCluster().waitForClusterToComplete(2, 6000);
-        green.getCluster().waitForClusterToComplete(2, 6000);
-	_log.info("2 nodes running");
-//        blue.start();
-//        red.getCluster().waitForClusterToComplete(3, 6000);
-//        green.getCluster().waitForClusterToComplete(3, 6000);
-//        blue.getCluster().waitForClusterToComplete(3, 6000);
-//        _log.info("3 nodes running");
-//        yellow.start();
-//        red.getCluster().waitForClusterToComplete(4, 6000);
-//        green.getCluster().waitForClusterToComplete(4, 6000);
-//        blue.getCluster().waitForClusterToComplete(4, 6000);
-//        yellow.getCluster().waitForClusterToComplete(4, 6000);
-//	 _log.info("4 nodes running");
-//        pink.start();
-//        red.getCluster().waitForClusterToComplete(5, 6000);
-//        green.getCluster().waitForClusterToComplete(5, 6000);
-//        blue.getCluster().waitForClusterToComplete(5, 6000);
-//        yellow.getCluster().waitForClusterToComplete(5, 6000);
-//        pink.getCluster().waitForClusterToComplete(5, 6000);
-//  	  _log.info("5 nodes running");
+        blue.start();
+        red.getCluster().waitForClusterToComplete(3, 6000);
+        green.getCluster().waitForClusterToComplete(3, 6000);
+        blue.getCluster().waitForClusterToComplete(3, 6000);
+        _log.info("3 nodes running");
 
-        SessionIdFactory factory=new TomcatSessionIdFactory();
+        FixedWidthSessionIdFactory factory=new FixedWidthSessionIdFactory(5, "0123456789".toCharArray(), _numPartitions);
 
-        for (int i=0; i<10; i++) {
-            String name=factory.create();
-            red.getDIndex().insert(name);
-            green.getDIndex().remove(name);
-            //blue.getDIndex().put(name, name);
-            //yellow.getDIndex().remove(name);
-        }
+        String name=factory.create(_numPartitions-1);
+        red.getDIndex().insert(name);
+        green.getDIndex().relocate(name);
+        //green.getDIndex().remove(name);
+        //blue.getDIndex().put(name, name);
 
-//	  _log.info("5 nodes running");
-//        pink.stop();
-//        yellow.getCluster().waitForClusterToComplete(4, 6000);
-//        blue.getCluster().waitForClusterToComplete(4, 6000);
-//        green.getCluster().waitForClusterToComplete(4, 6000);
-//        red.getCluster().waitForClusterToComplete(4, 6000);
-//	_log.info("4 nodes running");
-//        yellow.stop();
-//        blue.getCluster().waitForClusterToComplete(3, 6000);
-//        green.getCluster().waitForClusterToComplete(3, 6000);
-//        red.getCluster().waitForClusterToComplete(3, 6000);
-//	_log.info("3 nodes running");
-//        blue.stop();
-//        green.getCluster().waitForClusterToComplete(2, 6000);
-//        red.getCluster().waitForClusterToComplete(2, 6000);
-	_log.info("2 nodes running");
+        blue.stop();
         green.stop();
-        red.getCluster().waitForClusterToComplete(1, 6000);
-	_log.info("1 nodes running");
         red.stop();
-	_log.info("0 nodes running");
+        Thread.sleep(6000);
+        _log.info("0 nodes running");
     }
 
 }

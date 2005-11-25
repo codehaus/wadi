@@ -67,6 +67,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
         _dindex.init(this);
 	_log.info("starting Cluster...");
         _dispatcher.setDistributedState(_distributedState);
+        _dispatcher.start();
 	_log.info("...Cluster started");
         _dindex.start();
     }

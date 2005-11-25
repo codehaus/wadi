@@ -83,43 +83,36 @@ public class HybridRelocater extends AbstractRelocater {
     }
 
     public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException {
-        if (_log.isTraceEnabled()) _log.trace("indirecting RelocationRequest from "+_nodeName+" for "+name);
-        String sessionName=name;
-        String nodeName=_config.getNodeName();
-        boolean shuttingDown=_shuttingDown.get();
-        ObjectMessage message2=null;
-        RelocationResponse response=null;
-        int concurrentRequestThreads=1;
-        try {
-            ObjectMessage message=_dispatcher.createObjectMessage();
-            message.setJMSReplyTo(_dispatcher.getLocalDestination());
-            RelocationRequestI2P request=new RelocationRequestI2P(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
-            message.setObject(request);
-            //_config.getDIndex().getPartition(sessionName).exchange(message, request, timeout);
-            message2=_config.getDIndex().forwardAndExchange(sessionName, message, request, _resTimeout);
-
-            if (message2==null || (response=(RelocationResponse)message2.getObject())==null)
-                return false;
-        } catch (Exception e) {
-	  _log.warn("problem arranging relocation", e);
-        }
-
-        Motable emotable=response.getMotable();
-        if (emotable!=null) {
-            // relocate session...
-            if (!emotable.checkTimeframe(System.currentTimeMillis()))
-                if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
-
-            Emoter emoter=new RelocationEmoter(response.getNodeName(), message2);
-            Motable immotable=Utils.mote(emoter, immoter, emotable, name);
-            if (null==immotable)
-                return false;
-            else {
-                boolean answer=immoter.contextualise(hreq, hres, chain, name, immotable, motionLock);
-                return answer;
-            }
-
-        }
+    	String sessionName=name;
+    	String nodeName=_config.getNodeName();
+    	boolean shuttingDown=_shuttingDown.get();
+    	int concurrentRequestThreads=1;
+    	RelocationResponse response=null;
+    	ObjectMessage message2=null;
+    	try {
+    		message2=_config.getDIndex().relocate(sessionName, nodeName, concurrentRequestThreads, shuttingDown, _resTimeout);
+    		if (message2==null || (response=(RelocationResponse)message2.getObject())==null)
+    			return false;
+    	} catch (Exception e) {
+    		_log.warn("problem arranging relocation", e);
+    	}
+    	
+    	Motable emotable=response.getMotable();
+    	if (emotable!=null) {
+    		// relocate session...
+    		if (!emotable.checkTimeframe(System.currentTimeMillis()))
+    			if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
+    		
+    		Emoter emoter=new RelocationEmoter(response.getNodeName(), message2);
+    		Motable immotable=Utils.mote(emoter, immoter, emotable, name);
+    		if (null==immotable)
+    			return false;
+    		else {
+    			boolean answer=immoter.contextualise(hreq, hres, chain, name, immotable, motionLock);
+    			return answer;
+    		}
+    		
+    	}
 
         InetSocketAddress address=response.getAddress();
         if (address!=null) {
