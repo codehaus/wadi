@@ -24,4 +24,6 @@ public interface StateManagerConfig {
 	PartitionFacade getPartition(Object key);
 	int getNumPartitions();
 	
+	String getLocalNodeName();
+	
 }

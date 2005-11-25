@@ -149,11 +149,11 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 
 	public void onMessage(ObjectMessage message, RelocationRequestI2P request) {
 		String key=request.getName();
-		_log.info("RECEIVED RELOCATION REQUEST: "+key+" from "+request.getNodeName());
+		_log.info(_config.getLocalNodeName()+": RECEIVED RELOCATION REQUEST: "+key+" from "+request.getNodeName());
 		//_log.warn("foo", new Exception());
 		// lock
 		// exchange messages with StateMaster
-		_log.info("STATE MASTER is: "+_config.getNodeName((Destination)_map.get(key)));
+		_log.info(_config.getLocalNodeName()+": STATE MASTER is: "+_config.getNodeName((Destination)_map.get(key)));
 		// unlock
 	}
 	

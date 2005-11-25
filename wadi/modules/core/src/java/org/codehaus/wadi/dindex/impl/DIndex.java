@@ -433,5 +433,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	public StateManager getStateManager() {
 		return _stateManager;
 	}
+
+	// StateManagerConfig API
+	
+	public String getLocalNodeName() {
+		return _nodeName;
+	}
 }
 
