@@ -42,9 +42,9 @@ import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionResponse;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
-import org.codehaus.wadi.dindex.messages.RelocationResponse;
 import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
 import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
@@ -69,14 +69,14 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	protected final PartitionManager _partitionManager;
 	protected final StateManager _stateManager;
 
-	public DIndex(String nodeName, int numPartitions, long inactiveTime, Dispatcher dispatcher, Map distributedState) {
+	public DIndex(String nodeName, int numPartitions, long inactiveTime, Dispatcher dispatcher, Map distributedState, PartitionMapper mapper) {
 		_nodeName=nodeName;
 		_log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
 		_inactiveTime=inactiveTime;
 		_dispatcher=dispatcher;
 		_cluster=((ActiveClusterDispatcher)_dispatcher).getCluster();
 		_distributedState=distributedState;
-		_partitionManager=new SimplePartitionManager(_dispatcher, numPartitions, _distributedState, this);
+		_partitionManager=new SimplePartitionManager(_dispatcher, numPartitions, _distributedState, this, mapper);
 		_stateManager=new SimpleStateManager(_dispatcher, _inactiveTime);
 	}
 

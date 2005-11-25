@@ -29,7 +29,9 @@ import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
+import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
+import org.codehaus.wadi.impl.SimplePartitionMapper;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
@@ -46,24 +48,26 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
     protected final ActiveClusterDispatcher _dispatcher;
     protected final Map _distributedState=new ConcurrentHashMap();
     protected final String _nodeName;
+    protected final PartitionMapper _mapper;
     protected final int _numPartitions;
 
     public String getContextPath() {
         return "/";
     }
 
-    public DIndexNode(String nodeName, int numPartitions) {
+    public DIndexNode(String nodeName, int numPartitions, PartitionMapper mapper) {
         _nodeName=nodeName;
         _dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
         _numPartitions=numPartitions;
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
+        _mapper=mapper;
     }
 
     protected DIndex _dindex;
 
     public void start() throws Exception {
         _dispatcher.init(this);
-        _dindex=new DIndex(_nodeName, _numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState);
+        _dindex=new DIndex(_nodeName, _numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState, _mapper);
         _dindex.init(this);
 	_log.info("starting Cluster...");
         _dispatcher.setDistributedState(_distributedState);
@@ -103,7 +107,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 
     public static void main(String[] args) throws Exception {
         String nodeName=args[0];
-        int numIndexPartitions=Integer.parseInt(args[1]);
+        int numPartitions=Integer.parseInt(args[1]);
 
         try {
             Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -118,7 +122,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
                 }
             });
 
-            DIndexNode node=new DIndexNode(nodeName, numIndexPartitions);
+            DIndexNode node=new DIndexNode(nodeName, numPartitions, new SimplePartitionMapper(numPartitions));
             node.start();
 
             _latch0.acquire();

@@ -43,6 +43,7 @@ import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.PartitionManager;
+import org.codehaus.wadi.gridstate.PartitionMapper;
 
 public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, DispatcherConfig, PartitionManagerConfig {
 
@@ -75,7 +76,8 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
             int numPartitions=_partitionManager.getNumPartitions();
             _distributedState.put("name", nodeName);
             _distributedState.put("http", _httpAddress);
-            _dindex=new DIndex(nodeName, numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState);
+    		PartitionMapper mapper=new SimplePartitionMapper(numPartitions); // integrate with Session ID generator
+            _dindex=new DIndex(nodeName, numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState, mapper);
             _dindex.init(this);
         } catch (Exception e) {
 	  _log.error("problem starting Cluster", e);

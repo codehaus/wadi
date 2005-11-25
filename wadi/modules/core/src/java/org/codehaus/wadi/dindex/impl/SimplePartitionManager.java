@@ -71,9 +71,9 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	protected final long _inactiveTime;
 	protected final boolean _allowRegenerationOfMissingPartitions = true;
 	protected final Callback _callback;
-	protected final PartitionMapper _mapper=new PartitionMapper() {public int map(Object key) {return Math.abs(key.hashCode()%_numPartitions);}};
+	protected final PartitionMapper _mapper;
 	
-	public SimplePartitionManager(Dispatcher dispatcher, int numPartitions, Map distributedState, Callback callback) {
+	public SimplePartitionManager(Dispatcher dispatcher, int numPartitions, Map distributedState, Callback callback, PartitionMapper mapper) {
 		_dispatcher=dispatcher;
 		_nodeName=_dispatcher.getNodeName();
 		_log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
@@ -89,6 +89,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		_distributedState=distributedState;
 		_inactiveTime=_dispatcher.getInactiveTime();
 		_callback=callback;
+		_mapper=mapper;
 	}
 	
 	protected PartitionManagerConfig _config;
