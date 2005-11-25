@@ -40,13 +40,12 @@ import org.codehaus.wadi.gridstate.Dispatcher;
 
 public class SimpleStateManager implements StateManager {
 
-    protected final Log _log = LogFactory.getLog(getClass());
-
 	protected final Dispatcher _dispatcher;
 	protected final long _inactiveTime;
     protected final int _resTimeout=500; // TODO - parameterise
 
 	protected StateManagerConfig _config;
+    protected Log _log=LogFactory.getLog(getClass());
 
 	public SimpleStateManager(Dispatcher dispatcher, long inactiveTime) {
 		super();
@@ -56,6 +55,7 @@ public class SimpleStateManager implements StateManager {
 
 	public void init(StateManagerConfig config) {
 		_config=config;
+		_log=LogFactory.getLog(getClass().getName()+"#"+_config.getLocalNodeName());
         _dispatcher.register(this, "onDIndexInsertionRequest", DIndexInsertionRequest.class);
         _dispatcher.register(DIndexInsertionResponse.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexDeletionRequest", DIndexDeletionRequest.class);
