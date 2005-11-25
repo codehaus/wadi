@@ -35,7 +35,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
 import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
-import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.StateManagerConfig;
 import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
@@ -43,6 +42,7 @@ import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionResponse;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
+import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.Quipu;
@@ -373,12 +373,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		}
 	}
 
-	public ObjectMessage forwardAndExchange(String name, ObjectMessage message, DIndexRequest request, long timeout) {
+	public ObjectMessage forwardAndExchange(String name, ObjectMessage message, RelocationRequestI2P request, long timeout) {
 		try {
 		  _log.trace("wrapping request");
-			request=new DIndexForwardRequest(request);
-			message.setObject(request);
-			return getPartition(name).exchange(message, request, timeout);
+			DIndexForwardRequest request2=new DIndexForwardRequest(request);
+			message.setObject(request2);
+			return getPartition(name).exchange(message, request2, timeout);
 		} catch (JMSException e) {
 		  _log.info("oops...", e);
 			return null;
