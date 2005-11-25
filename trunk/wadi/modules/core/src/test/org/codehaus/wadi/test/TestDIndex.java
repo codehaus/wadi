@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
 import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
+import org.codehaus.wadi.impl.SimplePartitionMapper;
 
 import junit.framework.TestCase;
 
@@ -60,9 +61,9 @@ public class TestDIndex extends TestCase {
     public void testDindex() throws Exception {
         assertTrue(true);
 
-        DIndexNode red=new DIndexNode("red", _numPartitions);
-        DIndexNode green=new DIndexNode("green", _numPartitions);
-        DIndexNode blue=new DIndexNode("blue", _numPartitions);
+        DIndexNode red=new DIndexNode("red", _numPartitions, new SimplePartitionMapper(_numPartitions));
+        DIndexNode green=new DIndexNode("green", _numPartitions, new SimplePartitionMapper(_numPartitions));
+        DIndexNode blue=new DIndexNode("blue", _numPartitions, new SimplePartitionMapper(_numPartitions));
 
 
         _log.info("0 nodes running");
@@ -79,7 +80,7 @@ public class TestDIndex extends TestCase {
 
         String name=factory.create(_numPartitions-1);
         red.getDIndex().insert(name);
-        green.getDIndex().relocate(name);
+        green.getDIndex().relocate(name, "green", 1, false, 2000L);
         //green.getDIndex().remove(name);
         //blue.getDIndex().put(name, name);
 
