@@ -64,7 +64,6 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.dindex.messages.RelocationRequest;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
@@ -589,7 +588,7 @@ public class TestContextualiser extends TestCase {
 
         //Location location0=new MyLocation();
         //Map c0=new HashMap();
-        Relocater relocater0=new HybridRelocater(5000L, 5000L, RelocationRequest._RELOCATE_REQUEST_PREFERRED);
+        Relocater relocater0=new HybridRelocater(5000L, 5000L, true);
         Collapser collapser0=new HashingCollapser(10, 2000);
         ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, relocater0);
         Map m0=new HashMap();
@@ -599,7 +598,7 @@ public class TestContextualiser extends TestCase {
 
         //Location location1=new MyLocation();
         //Map c1=new HashMap();
-        Relocater relocater1=new HybridRelocater(5000L, 5000L, RelocationRequest._RELOCATE_REQUEST_PREFERRED);
+        Relocater relocater1=new HybridRelocater(5000L, 5000L, true);
         Collapser collapser1=new HashingCollapser(10, 2000);
         ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, relocater1);
         Map m1=new HashMap();
