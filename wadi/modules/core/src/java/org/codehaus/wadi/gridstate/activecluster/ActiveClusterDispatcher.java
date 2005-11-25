@@ -165,6 +165,10 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 		Node localNode=_cluster.getLocalNode();
 		Destination localDestination=localNode.getDestination();
 
+		if (destination==null) {
+			return "<NULL-DESTINATION>";
+		}
+		
 		if (destination.equals(localDestination))
 			return DIndex.getNodeName(localNode);
 

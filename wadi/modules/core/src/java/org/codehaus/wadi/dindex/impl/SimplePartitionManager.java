@@ -485,5 +485,11 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	public long getInactiveTime() {
 		return _inactiveTime;
 	}
+
+	// PartitionConfig API
+	
+	public String getLocalNodeName() {
+		return _nodeName;
+	}
 	
 }

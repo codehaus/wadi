@@ -28,4 +28,6 @@ public interface PartitionConfig {
     String getNodeName(Destination destination);
     long getInactiveTime();
     
+    String getLocalNodeName();
+    
 }

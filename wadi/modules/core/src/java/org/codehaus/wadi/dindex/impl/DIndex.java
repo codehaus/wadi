@@ -42,6 +42,7 @@ import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionResponse;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
+import org.codehaus.wadi.dindex.messages.RelocationResponse;
 import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
@@ -373,6 +374,15 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		}
 	}
 
+    public ObjectMessage relocate(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout) throws Exception {
+        ObjectMessage message=_dispatcher.createObjectMessage();
+        message.setJMSReplyTo(_dispatcher.getLocalDestination());
+        RelocationRequestI2P request=new RelocationRequestI2P(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
+        message.setObject(request);
+        //getPartition(sessionName).onMessage(message, request);
+        return forwardAndExchange(sessionName, message, request, timeout);
+    }
+    
 	public ObjectMessage forwardAndExchange(String name, ObjectMessage message, RelocationRequestI2P request, long timeout) {
 		try {
 		  _log.trace("wrapping request");

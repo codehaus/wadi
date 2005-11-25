@@ -23,6 +23,7 @@ import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
+import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
 
 public class DummyPartition extends AbstractPartition {
 
@@ -32,7 +33,7 @@ public class DummyPartition extends AbstractPartition {
 
     protected DummyPartition() {
         super();
-        // for seriflisation...
+        // for deserialisation...
         throw new UnsupportedOperationException();
     }
 
@@ -64,6 +65,11 @@ public class DummyPartition extends AbstractPartition {
 	}
 
 	public void onMessage(ObjectMessage message, DIndexForwardRequest request) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onMessage(ObjectMessage message, RelocationRequestI2P request) {
 		// TODO Auto-generated method stub
 		
 	}

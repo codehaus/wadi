@@ -86,9 +86,9 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 			}
 		}
 		if (success) {
-			if (_log.isDebugEnabled()) _log.debug("insertion {"+request.getName()+" : "+_config.getNodeName(newDestination) + "}");
+			if (_log.isDebugEnabled()) _log.debug(_config.getLocalNodeName()+": insertion {"+request.getName()+" : "+_config.getNodeName(newDestination) + "}");
 		} else {
-			if (_log.isWarnEnabled()) _log.warn("insertion {"+request.getName()+" : "+_config.getNodeName(newDestination) + "} failed - key already in use");
+			if (_log.isWarnEnabled()) _log.warn(_config.getLocalNodeName()+": insertion {"+request.getName()+" : "+_config.getNodeName(newDestination) + "} failed - key already in use");
 		}
 		
 		DIndexResponse response=new DIndexInsertionResponse(success);
@@ -145,6 +145,16 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 			if (!_config.getDispatcher().forward(message, destination, request.getRequest()))
 				_log.warn("could not forward message");
 		}
+	}
+
+	public void onMessage(ObjectMessage message, RelocationRequestI2P request) {
+		String key=request.getName();
+		_log.info("RECEIVED RELOCATION REQUEST: "+key+" from "+request.getNodeName());
+		//_log.warn("foo", new Exception());
+		// lock
+		// exchange messages with StateMaster
+		_log.info("STATE MASTER is: "+_config.getNodeName((Destination)_map.get(key)));
+		// unlock
 	}
 	
 }
