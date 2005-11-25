@@ -24,10 +24,12 @@ import org.activecluster.ClusterEvent;
 import org.activecluster.Node;
 import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
+import org.codehaus.wadi.dindex.impl.SimplePartitionManager;
 import org.codehaus.wadi.dindex.impl.SimplePartitionManager.Callback;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
+import org.codehaus.wadi.impl.SimplePartitionMapper;
 
 import junit.framework.TestCase;
 
@@ -74,7 +76,8 @@ public class TestPartitionManager extends TestCase {
 			}
 		};
 		
-		return null; //new SimplePartitionManager(dispatcher, 2, distributedState, callback);
+		int numPartitions=2;
+		return new SimplePartitionManager(dispatcher, numPartitions, distributedState, callback, new SimplePartitionMapper(numPartitions));
 	}	
 	
 	public void testPartitionManager() throws Exception {
