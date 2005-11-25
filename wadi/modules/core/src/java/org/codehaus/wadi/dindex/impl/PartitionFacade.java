@@ -23,7 +23,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.Partition;
 import org.codehaus.wadi.dindex.PartitionConfig;
-import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
@@ -130,28 +129,58 @@ public class PartitionFacade extends AbstractPartition {
     	}
     }
 
-    public ObjectMessage exchange(ObjectMessage message, DIndexRequest request, long timeout) {
+    public ObjectMessage exchange(ObjectMessage message, DIndexInsertionRequest request, long timeout) {
     	Dispatcher dispatcher=_config.getDispatcher();
     	String correlationId=dispatcher.nextCorrelationId();
     	Quipu rv=dispatcher.setRendezVous(correlationId, 1);
     	try {
     		dispatcher.setOutgoingCorrelationId(message, correlationId);
-    		// why do we have a type case here - not very OO !
-    		if (request instanceof DIndexInsertionRequest)
-    			onMessage(message, (DIndexInsertionRequest)request);
-    		else if (request instanceof DIndexDeletionRequest)
-    			onMessage(message, (DIndexDeletionRequest)request);
-    		else if (request instanceof DIndexRelocationRequest)
-    			onMessage(message, (DIndexRelocationRequest)request);
-    		else if (request instanceof DIndexForwardRequest)
-    			onMessage(message, (DIndexForwardRequest)request);
-    		else
-    			if (_log.isErrorEnabled()) _log.error("unknown request type: "+request.getClass());
+    		onMessage(message, request);
     	} catch (Exception e) {
     		_log.error("could not dispatch message", e);
     	}
     	return dispatcher.attemptRendezVous(correlationId, rv, timeout);
     }
+    
+    public ObjectMessage exchange(ObjectMessage message, DIndexDeletionRequest request, long timeout) {
+    	Dispatcher dispatcher=_config.getDispatcher();
+    	String correlationId=dispatcher.nextCorrelationId();
+    	Quipu rv=dispatcher.setRendezVous(correlationId, 1);
+    	try {
+    		dispatcher.setOutgoingCorrelationId(message, correlationId);
+    		onMessage(message, request);
+    	} catch (Exception e) {
+    		_log.error("could not dispatch message", e);
+    	}
+    	return dispatcher.attemptRendezVous(correlationId, rv, timeout);
+    }
+    
+    public ObjectMessage exchange(ObjectMessage message, DIndexRelocationRequest request, long timeout) {
+    	Dispatcher dispatcher=_config.getDispatcher();
+    	String correlationId=dispatcher.nextCorrelationId();
+    	Quipu rv=dispatcher.setRendezVous(correlationId, 1);
+    	try {
+    		dispatcher.setOutgoingCorrelationId(message, correlationId);
+    		onMessage(message, request);
+    	} catch (Exception e) {
+    		_log.error("could not dispatch message", e);
+    	}
+    	return dispatcher.attemptRendezVous(correlationId, rv, timeout);
+    }
+    
+    public ObjectMessage exchange(ObjectMessage message, DIndexForwardRequest request, long timeout) {
+    	Dispatcher dispatcher=_config.getDispatcher();
+    	String correlationId=dispatcher.nextCorrelationId();
+    	Quipu rv=dispatcher.setRendezVous(correlationId, 1);
+    	try {
+    		dispatcher.setOutgoingCorrelationId(message, correlationId);
+    		onMessage(message, request);
+    	} catch (Exception e) {
+    		_log.error("could not dispatch message", e);
+    	}
+    	return dispatcher.attemptRendezVous(correlationId, rv, timeout);
+    }
+    
 
     public void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
     	Sync sync=_lock.readLock(); // SHARED

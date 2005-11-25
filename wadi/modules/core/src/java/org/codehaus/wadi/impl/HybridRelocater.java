@@ -95,6 +95,7 @@ public class HybridRelocater extends AbstractRelocater {
             message.setJMSReplyTo(_dispatcher.getLocalDestination());
             RelocationRequestI2P request=new RelocationRequestI2P(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
             message.setObject(request);
+            //_config.getDIndex().getPartition(sessionName).exchange(message, request, timeout);
             message2=_config.getDIndex().forwardAndExchange(sessionName, message, request, _resTimeout);
 
             if (message2==null || (response=(RelocationResponse)message2.getObject())==null)
