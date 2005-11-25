@@ -19,8 +19,9 @@ package org.codehaus.wadi.impl;
 import java.util.Random;
 
 import org.codehaus.wadi.SessionIdFactory;
+import org.codehaus.wadi.gridstate.PartitionMapper;
 
-public class FixedWidthSessionIdFactory implements SessionIdFactory {
+public class FixedWidthSessionIdFactory implements SessionIdFactory, PartitionMapper {
 
 	public String create() {
 		int width=_keyLength;
@@ -145,6 +146,12 @@ public class FixedWidthSessionIdFactory implements SessionIdFactory {
       System.out.println(key+" - "+partition);
       assert partition==factory.getPartition(key);
     }
+  }
+
+  // PartitionMapper API
+
+  public int map(Object key) {
+	  return getPartition((String)key);
   }
 
   // should we shuffle the _chars used for the key ?
