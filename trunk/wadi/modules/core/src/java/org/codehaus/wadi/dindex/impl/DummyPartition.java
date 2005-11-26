@@ -23,7 +23,7 @@ import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
-import org.codehaus.wadi.dindex.messages.RelocationRequest;
+import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
 
 public class DummyPartition extends AbstractPartition {
 
@@ -69,7 +69,7 @@ public class DummyPartition extends AbstractPartition {
 		
 	}
 
-	public void onMessage(ObjectMessage message, RelocationRequest request) {
+	public void onMessage(ObjectMessage message, RelocationRequestI2P request) {
 		// TODO Auto-generated method stub
 		
 	}

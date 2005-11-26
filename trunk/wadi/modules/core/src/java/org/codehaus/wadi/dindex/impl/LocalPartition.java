@@ -38,6 +38,7 @@ import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationResponse;
 import org.codehaus.wadi.dindex.messages.RelocationRequest;
 import org.codehaus.wadi.dindex.messages.RelocationResponse;
+import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
 
 public class LocalPartition extends AbstractPartition implements Serializable {
 	
@@ -147,7 +148,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		}
 	}
 
-	public void onMessage(ObjectMessage message, RelocationRequest request) {
+	public void onMessage(ObjectMessage message, RelocationRequestI2P request) {
 		String key=request.getName();
 		_log.info(_config.getLocalNodeName()+": RECEIVED RELOCATION REQUEST: "+key+" from "+request.getNodeName());
 		//_log.warn("foo", new Exception());
