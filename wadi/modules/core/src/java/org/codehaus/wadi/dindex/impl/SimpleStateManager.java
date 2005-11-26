@@ -36,6 +36,7 @@ import org.codehaus.wadi.dindex.messages.DIndexRelocationResponse;
 import org.codehaus.wadi.dindex.messages.RelocationRequest;
 import org.codehaus.wadi.dindex.newmessages.ReleaseEntryRequest;
 import org.codehaus.wadi.dindex.newmessages.ReleaseEntryResponse;
+import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
 public class SimpleStateManager implements StateManager {
@@ -64,8 +65,8 @@ public class SimpleStateManager implements StateManager {
         _dispatcher.register(DIndexRelocationResponse.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexForwardRequest", DIndexForwardRequest.class);
 
-        _dispatcher.register(this, "onRelocationRequestI2P", RelocationRequest.class);
-}
+        //_dispatcher.register(this, "onMessage", RelocationRequestI2P.class);
+	}
 
 	public void start() throws Exception {
 		// TODO Auto-generated method stub
