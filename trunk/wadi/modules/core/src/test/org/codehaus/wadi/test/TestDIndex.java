@@ -77,7 +77,7 @@ public class TestDIndex extends TestCase {
 
         String name=_factory.create(1); // blue
         red.getDIndex().insert(name);
-        green.getDIndex().relocate(name, "green", 1, false, 2000L);
+        green.getDIndex().relocate2(name, "green", 1, false, 2000L);
         //green.getDIndex().remove(name);
         //blue.getDIndex().put(name, name);
 
