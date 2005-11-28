@@ -16,11 +16,28 @@
  */
 package org.codehaus.wadi.test;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionListener;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.AttributesFactory;
+import org.codehaus.wadi.DistributableSessionConfig;
+import org.codehaus.wadi.Evictable;
+import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.Router;
+import org.codehaus.wadi.Session;
+import org.codehaus.wadi.SessionIdFactory;
+import org.codehaus.wadi.SessionWrapperFactory;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValueHelper;
+import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
+import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
+import org.codehaus.wadi.impl.SimpleMotable;
 
 import junit.framework.TestCase;
 
@@ -85,8 +102,9 @@ public class TestDIndex extends TestCase {
 
         String name=_factory.create(1); // blue
         _log.info("inserting: "+name);
-        DIndex r=red.getDIndex();
-        r.insert(name, 30*1000L);
+        Motable motable=new DistributableSession(new DummyDistributableSessionConfig());
+        motable.init(0, 0, 100000, name);
+        red.insert(name, motable, 30*1000L);
         _log.info("inserted: "+name);
         _log.info("fetching: "+name);
         DIndex g=green.getDIndex();
