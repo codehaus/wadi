@@ -240,6 +240,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
 				if (rv==null) {
 					if (_log.isWarnEnabled()) _log.warn("no-one waiting: {"+correlationId+"} - "+obj);
 				} else {
+					_log.info("rendez-vous-ing with Quipu: "+correlationId);
 					rv.putResult(om);
 				}
 			}
@@ -397,7 +398,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
 					(body=objectMessage.getObject())!=null &&
 					(dispatcher=(InternalDispatcher)_map.get(body.getClass()))!=null
 			) {
-                if (_log.isTraceEnabled()) _log.trace("receive {" + getIncomingCorrelationId(objectMessage) + "}: " + getNodeName(message.getJMSReplyTo()) + " -> " + getNodeName(message.getJMSDestination()) + " : " + body);
+				if (_log.isTraceEnabled()) _log.trace("receive {" + getIncomingCorrelationId(objectMessage) + "}: " + getNodeName(message.getJMSReplyTo()) + " -> " + getNodeName(message.getJMSDestination()) + " : " + body);
 				do {
 					try {
 						synchronized (dispatcher) {
@@ -409,10 +410,10 @@ public abstract class AbstractDispatcher implements Dispatcher {
 					}
 				} while (Thread.interrupted());
 			} else {
-                if (_log.isWarnEnabled()) _log.warn("spurious message received: " + message);
+				if (_log.isWarnEnabled()) _log.warn("spurious message received: " + message);
 			}
 		} catch (Exception e) {
-		  _log.warn("bad message", e);
+			_log.warn("bad message", e);
 		}
 	}
 

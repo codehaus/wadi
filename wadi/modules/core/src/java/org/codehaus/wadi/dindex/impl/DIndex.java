@@ -17,6 +17,7 @@
 package org.codehaus.wadi.dindex.impl;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -38,10 +40,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
+import org.codehaus.wadi.dindex.DIndexMessage;
 import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.StateManagerConfig;
+import org.codehaus.wadi.dindex.impl.SimpleStateManager.PMToIMEmotable;
 import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
@@ -52,6 +56,8 @@ import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
+import org.codehaus.wadi.gridstate.messages.MoveIMToSM;
+import org.codehaus.wadi.gridstate.messages.MoveSMToIM;
 import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
@@ -384,7 +390,25 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
     
     public ObjectMessage relocate2(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout) throws Exception {
         RelocationRequestI2P request=new RelocationRequestI2P(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
-        getPartition(sessionName).exchange(request, timeout);
+        ObjectMessage message=getPartition(sessionName).exchange(request, timeout);
+        
+        try {
+        	Serializable dm=(Serializable)message.getObject();
+        	// the possibilities...
+        	if (dm instanceof MoveSMToIM) {
+        		_log.info("wow ! a message came back !!!");
+        		// insert motable into contextualiser stack...
+        		// then...
+        		MoveIMToSM response=new MoveIMToSM(true);
+        		_dispatcher.reply(message, response);
+        	} else if (dm instanceof PMToIMEmotable) {
+        		_log.info("looks like sessions didn't exist");
+        	} else {
+        		_log.warn("unexpected response returned - what should I do? : "+dm);
+        	}
+        } catch (JMSException e) {
+        	_log.warn("could not extract message body", e);
+        }
         return null;
     }
     
