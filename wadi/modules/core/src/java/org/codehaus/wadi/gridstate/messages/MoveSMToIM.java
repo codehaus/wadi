@@ -21,7 +21,7 @@ import java.io.Serializable;
 public class MoveSMToIM implements Serializable {
 
 	protected Object _key;
-	protected Object _value;
+	protected Object _value; // should be strictly typed to byte[] - TODO
 
 	public MoveSMToIM(Object key, Object value) {
 		_key=key;

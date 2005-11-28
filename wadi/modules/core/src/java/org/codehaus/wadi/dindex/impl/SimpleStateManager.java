@@ -81,6 +81,7 @@ public class SimpleStateManager implements StateManager {
 
         _dispatcher.register(this, "onMessage", RelocationRequestI2P.class);
         _dispatcher.register(this, "onMessage", MovePMToSM.class);
+        _dispatcher.register(this, "onMessage", MoveSMToIM.class);
 	}
 
 	public void start() throws Exception {
@@ -146,7 +147,7 @@ public class SimpleStateManager implements StateManager {
         	long timeout=_config.getInactiveTime();
         	Destination sm=dispatcher.getLocalDestination();
         	Destination im=(Destination)_get.getIM();
-        	MoveSMToIM request=new MoveSMToIM(key, this);
+        	MoveSMToIM request=new MoveSMToIM(key, bytes);
         	// send on state from StateMaster to InvocationMaster...
         	ObjectMessage message2=(ObjectMessage)dispatcher.exchangeSend(sm, im, request, timeout, _get.getIMCorrelationId());
         	// should receive response from IM confirming safe receipt...
@@ -244,6 +245,13 @@ public class SimpleStateManager implements StateManager {
     		}
     	} finally {
     	}
+    }
+    
+    public void onMessage(ObjectMessage message1, MoveSMToIM request) {
+    	_log.info("MoveSMToIM MESSAGE ARRIVED: "+request);
+        // DO NOT Dispatch onto Partition - deal with it here...
+    	// state needs emotion into Contextualiser stack...
+    	// ack needs to be sent back to SM, who will then ack to PM - then we are done !!
     }
     
     // evacuation protocol
