@@ -22,23 +22,23 @@ import org.codehaus.wadi.dindex.DIndexRequest;
 
 public abstract class AbstractDIndexRequest implements DIndexRequest, Serializable {
 
-    protected String _name;
+    protected String _key;
 
-    public AbstractDIndexRequest(String name) {
+    public AbstractDIndexRequest(String key) {
         super();
-        _name=name;
+        _key=key;
     }
 
     protected AbstractDIndexRequest() {
         // for deserialisation...
     }
 
-    public String getName() {
-        return _name;
+    public String getKey() {
+        return _key;
     }
 
     public int getPartitionKey(int numPartitions) {
-        return Math.abs(_name.hashCode()%numPartitions);
+        return Math.abs(_key.hashCode()%numPartitions);
     }
 
 }

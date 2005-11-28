@@ -31,7 +31,8 @@ public interface Partition extends PMPartition, SMPartition {
 	void onMessage(ObjectMessage message, DIndexDeletionRequest request);
 	void onMessage(ObjectMessage message, DIndexRelocationRequest request);
 	void onMessage(ObjectMessage message, DIndexForwardRequest request);
-
 	void onMessage(ObjectMessage message, RelocationRequestI2P request);
+
+	ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception;
 
 }

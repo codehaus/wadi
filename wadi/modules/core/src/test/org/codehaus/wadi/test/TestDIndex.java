@@ -18,6 +18,7 @@ package org.codehaus.wadi.test;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
 import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
 
@@ -56,28 +57,41 @@ public class TestDIndex extends TestCase {
         }
 
     }
+    
+    protected long heartbeatTimeout=5*1000;
+    protected long responseTimeout=30*60*1000;
+ 
 
     public void testDindex() throws Exception {
         assertTrue(true);
 
-        DIndexNode red=new DIndexNode("red", _numPartitions, _factory);
-        DIndexNode green=new DIndexNode("green", _numPartitions, _factory);
-        DIndexNode blue=new DIndexNode("blue", _numPartitions, _factory);
+        DIndexNode red=new DIndexNode("red", _numPartitions, _factory, heartbeatTimeout);
+        DIndexNode green=new DIndexNode("green", _numPartitions, _factory, heartbeatTimeout);
+        DIndexNode blue=new DIndexNode("blue", _numPartitions, _factory, heartbeatTimeout);
 
-
-        _log.info("0 nodes running");
 
         red.start();
         green.start();
         blue.start();
-        //red.getCluster().waitForClusterToComplete(3, 6000);
-        //green.getCluster().waitForClusterToComplete(3, 6000);
-        blue.getCluster().waitForClusterToComplete(3, 6000);
-        _log.info("3 nodes running");
+
+        while(red.getCluster().getNodes().size()<2 ||
+        	  green.getCluster().getNodes().size()<2 ||
+        	  blue.getCluster().getNodes().size()<2 ||
+        	  green.getDIndex().getPartitionManager().getPartitionKeys().size()==0 ||
+        	  blue.getDIndex().getPartitionManager().getPartitionKeys().size()==0)
+        	Thread.sleep(1000);
+
+        _log.info("partitions distributed");
 
         String name=_factory.create(1); // blue
-        red.getDIndex().insert(name);
-        green.getDIndex().relocate2(name, "green", 1, false, 2000L);
+        _log.info("inserting: "+name);
+        DIndex r=red.getDIndex();
+        r.insert(name, 30*1000L);
+        _log.info("inserted: "+name);
+        _log.info("fetching: "+name);
+        DIndex g=green.getDIndex();
+        g.relocate2(name, "green", 1, false, responseTimeout);
+        _log.info("fetched: "+name);
         //green.getDIndex().remove(name);
         //blue.getDIndex().put(name, name);
 

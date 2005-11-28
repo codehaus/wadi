@@ -27,7 +27,7 @@ public class DIndexRelocationRequest extends AbstractDIndexRequest implements Se
     }
 
     public String toString() {
-        return "<DIndexRelocationRequest: "+_name+">";
+        return "<DIndexRelocationRequest: "+_key+">";
     }
     
 }

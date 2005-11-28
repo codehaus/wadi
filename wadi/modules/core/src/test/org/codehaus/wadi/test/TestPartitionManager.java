@@ -16,12 +16,19 @@
  */
 package org.codehaus.wadi.test;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.activecluster.ClusterEvent;
 import org.activecluster.Node;
+import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.SimplePartitionManager;
@@ -30,6 +37,8 @@ import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.SimplePartitionMapper;
+
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 import junit.framework.TestCase;
 
@@ -100,6 +109,11 @@ public class TestPartitionManager extends TestCase {
 			public long getInactiveTime() {
 				// TODO Auto-generated method stub
 				return 0;
+			}
+
+			public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
+				// TODO Auto-generated method stub
+				return false;
 			}
 			
 		};

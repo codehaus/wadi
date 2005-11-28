@@ -29,7 +29,7 @@ public class DIndexInsertionRequest extends AbstractDIndexRequest implements Ser
     // we need to pass the partition number through here as well...
 
     public String toString() {
-        return "<DIndexInsertionRequest: "+_name+">";
+        return "<DIndexInsertionRequest: "+_key+">";
     }
 
 }

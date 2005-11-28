@@ -16,15 +16,21 @@
  */
 package org.codehaus.wadi.test;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
 import javax.jms.Destination;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.activecluster.Node;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
@@ -35,15 +41,16 @@ import org.codehaus.wadi.impl.SimplePartitionMapper;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 
     protected final Log _log=LogFactory.getLog(getClass());
 
     //protected final String _clusterUri="peer://org.codehaus.wadi";
-    //protected final String _clusterUri="tcp://localhost:61616";
+    protected final String _clusterUri="tcp://localhost:61616";
     //protected final String _clusterUri="tcp://smilodon:61616";
-    protected final String _clusterUri="vm://localhost";
+    //protected final String _clusterUri="vm://localhost";
     protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
     protected final ActiveClusterDispatcher _dispatcher;
     protected final Map _distributedState=new ConcurrentHashMap();
@@ -55,9 +62,9 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
         return "/";
     }
 
-    public DIndexNode(String nodeName, int numPartitions, PartitionMapper mapper) {
+    public DIndexNode(String nodeName, int numPartitions, PartitionMapper mapper, long inactiveTime) {
         _nodeName=nodeName;
-        _dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
+        _dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, inactiveTime);
         _numPartitions=numPartitions;
         System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
         _mapper=mapper;
@@ -122,7 +129,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
                 }
             });
 
-            DIndexNode node=new DIndexNode(nodeName, numPartitions, new SimplePartitionMapper(numPartitions));
+            DIndexNode node=new DIndexNode(nodeName, numPartitions, new SimplePartitionMapper(numPartitions), 5000L);
             node.start();
 
             _latch0.acquire();
@@ -139,5 +146,9 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 
 	public long getInactiveTime() {
 		throw new UnsupportedOperationException("NYI");
+	}
+
+    public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
+    	throw new UnsupportedOperationException("NYI");
 	}
 }

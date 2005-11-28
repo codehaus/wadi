@@ -40,8 +40,8 @@ public class DIndexForwardRequest implements DIndexRequest, Serializable {
         return _request.getPartitionKey(numPartitions);
     }
 
-    public String getName() {
-        return _request.getName();
+    public String getKey() {
+        return _request.getKey();
     }
 
     public String toString() {

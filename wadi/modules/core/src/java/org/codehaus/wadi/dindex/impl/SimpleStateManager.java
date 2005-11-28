@@ -16,12 +16,18 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
+import java.nio.ByteBuffer;
+
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
+import javax.servlet.FilterChain;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.dindex.StateManager;
@@ -37,6 +43,15 @@ import org.codehaus.wadi.dindex.newmessages.ReleaseEntryRequest;
 import org.codehaus.wadi.dindex.newmessages.ReleaseEntryResponse;
 import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
 import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.gridstate.messages.MoveIMToSM;
+import org.codehaus.wadi.gridstate.messages.MovePMToSM;
+import org.codehaus.wadi.gridstate.messages.MoveSMToIM;
+import org.codehaus.wadi.gridstate.messages.MoveSMToPM;
+import org.codehaus.wadi.impl.AbstractMotable;
+import org.codehaus.wadi.impl.RankedRWLock;
+import org.codehaus.wadi.impl.SimpleMotable;
+
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class SimpleStateManager implements StateManager {
 
@@ -65,6 +80,7 @@ public class SimpleStateManager implements StateManager {
         _dispatcher.register(this, "onDIndexForwardRequest", DIndexForwardRequest.class);
 
         _dispatcher.register(this, "onMessage", RelocationRequestI2P.class);
+        _dispatcher.register(this, "onMessage", MovePMToSM.class);
 	}
 
 	public void start() throws Exception {
@@ -81,25 +97,155 @@ public class SimpleStateManager implements StateManager {
 
 
     public void onDIndexInsertionRequest(ObjectMessage om, DIndexInsertionRequest request) {
-        _config.getPartition(request.getPartitionKey(_config.getNumPartitions())).onMessage(om, request);
+    	_log.info("DIndexInsertionRequest MESSAGE ARRIVED: "+request);
+        _config.getPartition(request.getKey()).onMessage(om, request);
     }
 
     public void onDIndexDeletionRequest(ObjectMessage om, DIndexDeletionRequest request) {
-        _config.getPartition(request.getPartitionKey(_config.getNumPartitions())).onMessage(om, request);
+        _config.getPartition(request.getKey()).onMessage(om, request);
     }
 
     public void onDIndexForwardRequest(ObjectMessage om, DIndexForwardRequest request) {
-        _config.getPartition(request.getPartitionKey(_config.getNumPartitions())).onMessage(om, request);
+        _config.getPartition(request.getKey()).onMessage(om, request);
     }
 
     public void onDIndexRelocationRequest(ObjectMessage om, DIndexRelocationRequest request) {
-        _config.getPartition(request.getPartitionKey(_config.getNumPartitions())).onMessage(om, request);
+        _config.getPartition(request.getKey()).onMessage(om, request);
     }
 
-    public void onMessage(ObjectMessage om, RelocationRequestI2P request) {
-    	_log.info("MESSAGE ARRIVED: "+request);
-        _config.getPartition(request.getNodeName()).onMessage(om, request);
+    public void onMessage(ObjectMessage message, RelocationRequestI2P request) {
+    	_log.info("RelocationRequestI2P MESSAGE ARRIVED: "+request);
+        _config.getPartition(request.getKey()).onMessage(message, request);
     }
+
+	//----------------------------------------------------------------------------------------------------
+
+    class PMToIMEmotable extends AbstractMotable {
+
+    	protected final String _name;
+        protected final String _tgtNodeName;
+        protected ObjectMessage _message1;
+        protected final MovePMToSM _get;
+
+        public PMToIMEmotable(String name, String nodeName, ObjectMessage message1, MovePMToSM get) {
+        	_name=name;
+            _tgtNodeName=nodeName;
+            _message1=message1;
+            _get=get;
+        }
+        public byte[] getBodyAsByteArray() throws Exception {
+        	throw new UnsupportedOperationException();
+        }
+
+        public void setBodyAsByteArray(byte[] bytes) throws Exception {
+        	Motable immotable=new SimpleMotable();
+        	immotable.setBodyAsByteArray(bytes);
+        	
+        	Object key=_get.getKey();
+        	Dispatcher dispatcher=_config.getDispatcher();
+        	long timeout=_config.getInactiveTime();
+        	Destination sm=dispatcher.getLocalDestination();
+        	Destination im=(Destination)_get.getIM();
+        	MoveSMToIM request=new MoveSMToIM(key, this);
+        	// send on state from StateMaster to InvocationMaster...
+        	ObjectMessage message2=(ObjectMessage)dispatcher.exchangeSend(sm, im, request, timeout, _get.getIMCorrelationId());
+        	// should receive response from IM confirming safe receipt...
+        	if (message2==null) {
+        		_log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
+        	} else {
+        		MoveIMToSM response=null;
+        		try {
+        			response=(MoveIMToSM)message2.getObject();
+        			// ackonowledge transfer completed to PartitionMaster, so it may unlock resource...
+        			dispatcher.reply(_message1,new MoveSMToPM());
+        		} catch (JMSException e) {
+        			_log.error("unexpected problem", e);
+        		}
+        	}
+        }
+
+        public ByteBuffer getBodyAsByteBuffer() throws Exception {
+        	throw new UnsupportedOperationException();
+        }
+
+        public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {
+        	throw new UnsupportedOperationException();
+        }
+    }
+
+    /**
+     * We receive a RelocationRequest and pass a RelocationImmoter down the Contextualiser stack. The Session is passed to us
+     * through the Immoter and we pass it back to the Request-ing node...
+     *
+     * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+     * @version $Revision$
+     */
+    class RelocationImmoter implements Immoter {
+        protected final Log _log=LogFactory.getLog(getClass());
+
+        protected final String _tgtNodeName;
+        protected ObjectMessage _message;
+        protected final MovePMToSM _request;
+
+        public RelocationImmoter(String nodeName, ObjectMessage message, MovePMToSM request) {
+            _tgtNodeName=nodeName;
+            _message=message;
+            _request=request;
+        }
+
+        public Motable nextMotable(String name, Motable emotable) {
+            return new PMToIMEmotable(name, _tgtNodeName, _message, _request);
+        }
+
+        public boolean prepare(String name, Motable emotable, Motable immotable) {
+        	// work is done in ClusterEmotable...
+        	return true;
+        }
+
+        public void commit(String name, Motable immotable) {
+            // do nothing
+        }
+
+        public void rollback(String name, Motable immotable) {
+            // this probably has to by NYI... - nasty...
+        }
+
+        public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) {
+            return false;
+        }
+
+        public String getInfo() {
+            return "emigration:"+_tgtNodeName;
+        }
+    }
+
+    //--------------------------------------------------------------------------------------
+    
+	// called on State Master...
+    public void onMessage(ObjectMessage message1, MovePMToSM request) {
+    	_log.info("MovePMToSM MESSAGE ARRIVED: "+request);
+        // DO NOT Dispatch onto Partition - deal with it here...
+    	Object key=request.getKey();
+    	String nodeName=_config.getLocalNodeName();
+    	try {
+    		RankedRWLock.setPriority(RankedRWLock.EMIGRATION_PRIORITY);
+
+    		// Tricky - we need to call a Moter at this point and start removal of State to other node...
+    		
+    		try {
+    			Immoter promoter=new RelocationImmoter(nodeName, message1, request);
+    			boolean found=_config.contextualise(null, null, null, (String)key, promoter, null, true); // if we own session, this will send the correct response...
+    			if (found)
+    				_log.error("WHAT SHOULD WE DO HERE?");
+    		} catch (Exception e) {
+    			if (_log.isWarnEnabled()) _log.warn("problem handling relocation request: "+key, e);
+    		} finally {
+    			RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
+    		}
+    	} finally {
+    	}
+    }
+    
     // evacuation protocol
 
     public boolean offerEmigrant(String key, Motable emotable, long timeout) {

@@ -43,8 +43,10 @@ import org.codehaus.wadi.dindex.messages.PartitionTransferCommand;
 import org.codehaus.wadi.dindex.messages.PartitionTransferRequest;
 import org.codehaus.wadi.dindex.messages.PartitionTransferResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.gridstate.LockManager;
 import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
+import org.codehaus.wadi.gridstate.impl.StupidLockManager;
 import org.codehaus.wadi.impl.Quipu;
 
 /**
@@ -72,10 +74,12 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	protected final boolean _allowRegenerationOfMissingPartitions = true;
 	protected final Callback _callback;
 	protected final PartitionMapper _mapper;
+	protected final LockManager _pmSyncs;
 	
 	public SimplePartitionManager(Dispatcher dispatcher, int numPartitions, Map distributedState, Callback callback, PartitionMapper mapper) {
 		_dispatcher=dispatcher;
 		_nodeName=_dispatcher.getNodeName();
+		_pmSyncs=new StupidLockManager(_nodeName);
 		_log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
 		_numPartitions=numPartitions;
 		
@@ -492,5 +496,9 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	public String getLocalNodeName() {
 		return _nodeName;
 	}
-	
+
+	public LockManager getPMSyncs() {
+		return _pmSyncs;
+	}
+
 }
