@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,8 +24,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.Destination;
-import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.activecluster.Cluster;
 import org.activecluster.ClusterEvent;
@@ -32,6 +36,7 @@ import org.activecluster.ClusterListener;
 import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
 import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
@@ -50,6 +55,7 @@ import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartitionManager.Callback, StateManagerConfig {
 
@@ -337,13 +343,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	}
 	// temporary test methods...
 
-	public boolean insert(String name) {
+	public boolean insert(String name, long timeout) {
 		try {
-			ObjectMessage message=_dispatcher.createObjectMessage();
-			message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
 			DIndexInsertionRequest request=new DIndexInsertionRequest(name);
-			message.setObject(request);
-			ObjectMessage reply=getPartition(name).exchange(message, request, _inactiveTime);
+			PartitionFacade pf=getPartition(name);
+			ObjectMessage reply=pf.exchange(request, timeout);
 			return ((DIndexInsertionResponse)reply.getObject()).getSuccess();
 		} catch (Exception e) {
 		  _log.warn("problem inserting session key into DHT", e);
@@ -353,11 +357,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	public void remove(String name) {
 		try {
-			ObjectMessage message=_dispatcher.createObjectMessage();
-			message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
 			DIndexDeletionRequest request=new DIndexDeletionRequest(name);
-			message.setObject(request);
-			getPartition(name).exchange(message, request, _inactiveTime);
+			getPartition(name).exchange(request, _inactiveTime);
 		} catch (Exception e) {
 		  _log.info("oops...", e);
 		}
@@ -365,11 +366,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	public void relocate(String name) {
 		try {
-			ObjectMessage message=_dispatcher.createObjectMessage();
-			message.setJMSReplyTo(_cluster.getLocalNode().getDestination());
 			DIndexRelocationRequest request=new DIndexRelocationRequest(name);
-			message.setObject(request);
-			getPartition(name).exchange(message, request, _inactiveTime);
+			getPartition(name).exchange(request, _inactiveTime);
 		} catch (Exception e) {
 		  _log.info("oops...", e);
 		}
@@ -381,28 +379,19 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         RelocationRequest request=new RelocationRequest(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
         message.setObject(request);
         //getPartition(sessionName).onMessage(message, request);
-        return forwardAndExchange(sessionName, message, request, timeout);
+        return forwardAndExchange(sessionName, request, timeout);
     }
     
     public ObjectMessage relocate2(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout) throws Exception {
-        ObjectMessage message=_dispatcher.createObjectMessage();
-        message.setJMSReplyTo(_dispatcher.getLocalDestination());
         RelocationRequestI2P request=new RelocationRequestI2P(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
-        message.setObject(request);
-        getPartition(sessionName).onMessage(message, request);
+        getPartition(sessionName).exchange(request, timeout);
         return null;
     }
     
-	public ObjectMessage forwardAndExchange(String name, ObjectMessage message, RelocationRequest request, long timeout) {
-		try {
-		  _log.trace("wrapping request");
-			DIndexForwardRequest request2=new DIndexForwardRequest(request);
-			message.setObject(request2);
-			return getPartition(name).exchange(message, request2, timeout);
-		} catch (JMSException e) {
-		  _log.info("oops...", e);
-			return null;
-		}
+	public ObjectMessage forwardAndExchange(String name, RelocationRequest request, long timeout) throws Exception {
+		_log.trace("wrapping request");
+		DIndexForwardRequest request2=new DIndexForwardRequest(request);
+		return getPartition(name).exchange(request2, timeout);
 	}
 
 	public PartitionFacade getPartition(Object key) {
@@ -449,5 +438,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	public String getLocalNodeName() {
 		return _nodeName;
 	}
+	
+	public 	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
+		return _config.contextualise(hreq, hres, chain, id, immoter, motionLock, exclusiveOnly);
+	}
+
 }
 

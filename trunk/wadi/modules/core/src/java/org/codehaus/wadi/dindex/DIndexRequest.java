@@ -19,6 +19,6 @@ package org.codehaus.wadi.dindex;
 public interface DIndexRequest extends DIndexMessage {
 
     int getPartitionKey(int numPartitions);
-    String getName();
+    String getKey();
 
 }

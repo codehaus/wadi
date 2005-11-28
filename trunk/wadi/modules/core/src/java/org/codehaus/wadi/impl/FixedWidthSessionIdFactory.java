@@ -18,11 +18,15 @@ package org.codehaus.wadi.impl;
 
 import java.util.Random;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.gridstate.PartitionMapper;
 
 public class FixedWidthSessionIdFactory implements SessionIdFactory, PartitionMapper {
 
+    protected final Log _log=LogFactory.getLog(getClass().getName());
+    
 	public String create() {
 		int width=_keyLength;
 		char[] buffer=new char[width];
@@ -151,7 +155,9 @@ public class FixedWidthSessionIdFactory implements SessionIdFactory, PartitionMa
   // PartitionMapper API
 
   public int map(Object key) {
-	  return getPartition((String)key);
+	  int index=getPartition((String)key);
+	  _log.info("mapped "+key+" -> "+index);
+	  return index;
   }
 
   // should we shuffle the _chars used for the key ?

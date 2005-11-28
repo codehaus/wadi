@@ -23,14 +23,12 @@ import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
 
 public class RelocationRequestI2P extends AbstractDIndexRequest implements OldMessage, Serializable {
 
-    private String _sessionName;
     private String _nodeName;
     private int _numConcurrentInvocations;
     private boolean _shuttingDown;
     
     public RelocationRequestI2P(String sessionName, String nodeName, int numConcurrentInvocations, boolean shuttingDown) {
         super(sessionName);
-        _sessionName=sessionName;
         _nodeName=nodeName;
         _numConcurrentInvocations=numConcurrentInvocations;
         _shuttingDown=shuttingDown;
@@ -40,10 +38,6 @@ public class RelocationRequestI2P extends AbstractDIndexRequest implements OldMe
         // used when deserialising
     }
 
-    public String getSessionName() {
-        return _sessionName;
-    }
-    
     public String getNodeName() {
     	return _nodeName;
     }
@@ -57,7 +51,7 @@ public class RelocationRequestI2P extends AbstractDIndexRequest implements OldMe
     }
 
     public String toString() {
-        return "<RelocationRequestI2P: "+_sessionName+" -> "+_nodeName+">";
+        return "<RelocationRequestI2P: "+_key+" -> "+_nodeName+">";
     }
     
 }

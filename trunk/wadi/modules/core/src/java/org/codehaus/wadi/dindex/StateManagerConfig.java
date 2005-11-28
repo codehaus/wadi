@@ -16,7 +16,18 @@
  */
 package org.codehaus.wadi.dindex;
 
+import java.io.IOException;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
+import org.codehaus.wadi.gridstate.Dispatcher;
+
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public interface StateManagerConfig {
 
@@ -25,5 +36,9 @@ public interface StateManagerConfig {
 	int getNumPartitions();
 	
 	String getLocalNodeName();
+	
+	Dispatcher getDispatcher();
+	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException;
+	long getInactiveTime();
 	
 }

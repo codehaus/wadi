@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.impl;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,11 +24,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.activecluster.Node;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.HttpProxy;
+import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Router;
@@ -44,6 +51,8 @@ import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionMapper;
+
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, DispatcherConfig, PartitionManagerConfig {
 
@@ -203,7 +212,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     }
 
 	protected boolean validateSessionName(String name) {
-		return _dindex.insert(name);
+		return _dindex.insert(name, getInactiveTime());
 	}
 	
 
@@ -224,6 +233,11 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 
 	public Node getCoordinatorNode() {
 		return _dindex.getCoordinator();
+	}
+
+	// PartitionManagerConfig API
+	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
+		return _contextualiser.contextualise(hreq, hres, chain, id, immoter, motionLock, exclusiveOnly);
 	}
 
 }

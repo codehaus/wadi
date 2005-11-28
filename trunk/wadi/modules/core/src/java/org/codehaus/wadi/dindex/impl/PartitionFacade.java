@@ -21,6 +21,7 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.Partition;
 import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
@@ -29,7 +30,6 @@ import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
 import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
@@ -38,11 +38,11 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 public class PartitionFacade extends AbstractPartition {
 
-    protected static final Log _log = LogFactory.getLog(PartitionFacade.class);
 
     protected final ReadWriteLock _lock=new WriterPreferenceReadWriteLock();
     protected final LinkedQueue _queue=new LinkedQueue();
     protected final PartitionConfig _config;
+    protected final Log _log;
 
     protected long _timeStamp;
     protected Partition _content;
@@ -52,7 +52,8 @@ public class PartitionFacade extends AbstractPartition {
         _config=config;
         _timeStamp=timeStamp;
         _content=content;
-        if (_log.isTraceEnabled()) _log.trace("["+_key+"] initialising location to: "+_content);
+        _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalNodeName());
+        if (_log.isTraceEnabled()) _log.trace("initialising location to: "+_content);
     }
 
     public boolean isLocal() { // locking ?
@@ -130,60 +131,12 @@ public class PartitionFacade extends AbstractPartition {
     	}
     }
 
-    public ObjectMessage exchange(ObjectMessage message, DIndexInsertionRequest request, long timeout) {
-    	Dispatcher dispatcher=_config.getDispatcher();
-    	String correlationId=dispatcher.nextCorrelationId();
-    	Quipu rv=dispatcher.setRendezVous(correlationId, 1);
-    	try {
-    		dispatcher.setOutgoingCorrelationId(message, correlationId);
-    		onMessage(message, request);
-    	} catch (Exception e) {
-    		_log.error("could not dispatch message", e);
-    	}
-    	return dispatcher.attemptRendezVous(correlationId, rv, timeout);
+    public ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception {
+    	return _content.exchange(request, timeout);
     }
     
-    public ObjectMessage exchange(ObjectMessage message, DIndexDeletionRequest request, long timeout) {
-    	Dispatcher dispatcher=_config.getDispatcher();
-    	String correlationId=dispatcher.nextCorrelationId();
-    	Quipu rv=dispatcher.setRendezVous(correlationId, 1);
-    	try {
-    		dispatcher.setOutgoingCorrelationId(message, correlationId);
-    		onMessage(message, request);
-    	} catch (Exception e) {
-    		_log.error("could not dispatch message", e);
-    	}
-    	return dispatcher.attemptRendezVous(correlationId, rv, timeout);
-    }
-    
-    public ObjectMessage exchange(ObjectMessage message, DIndexRelocationRequest request, long timeout) {
-    	Dispatcher dispatcher=_config.getDispatcher();
-    	String correlationId=dispatcher.nextCorrelationId();
-    	Quipu rv=dispatcher.setRendezVous(correlationId, 1);
-    	try {
-    		dispatcher.setOutgoingCorrelationId(message, correlationId);
-    		onMessage(message, request);
-    	} catch (Exception e) {
-    		_log.error("could not dispatch message", e);
-    	}
-    	return dispatcher.attemptRendezVous(correlationId, rv, timeout);
-    }
-    
-    public ObjectMessage exchange(ObjectMessage message, DIndexForwardRequest request, long timeout) {
-    	Dispatcher dispatcher=_config.getDispatcher();
-    	String correlationId=dispatcher.nextCorrelationId();
-    	Quipu rv=dispatcher.setRendezVous(correlationId, 1);
-    	try {
-    		dispatcher.setOutgoingCorrelationId(message, correlationId);
-    		onMessage(message, request);
-    	} catch (Exception e) {
-    		_log.error("could not dispatch message", e);
-    	}
-    	return dispatcher.attemptRendezVous(correlationId, rv, timeout);
-    }
-    
-
     public void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
+    	_log.info("dispatching: "+request+" on "+_content);
     	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
     	try {

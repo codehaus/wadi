@@ -21,16 +21,18 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
+import org.codehaus.wadi.gridstate.Dispatcher;
 
 public class RemotePartition extends AbstractPartition {
 	
-	protected static final Log _log = LogFactory.getLog(RemotePartition.class);
+	protected transient Log _log;
 	
 	protected final PartitionConfig _config;
 	
@@ -40,6 +42,7 @@ public class RemotePartition extends AbstractPartition {
 		super(key);
 		_config=config;
 		_location=location;
+		_log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalNodeName());
 	}
 	
 	public boolean isLocal() {
@@ -70,11 +73,11 @@ public class RemotePartition extends AbstractPartition {
 	}
 	
 	public String toString() {
-		return "<remote:"+(_location==null?null:_config.getNodeName(_location))+">";
+		return "<"+getClass()+":"+_key+"@"+_config.getLocalNodeName()+"->"+_config.getNodeName(_location)+">";
 	}
 
 	public void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
-		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getNodeName(_location));
+		if (_log.isTraceEnabled()) _log.trace("#"+_key+" : forwarding: " + request + " from "+_config.getLocalNodeName()+" to " + _config.getNodeName(_location));
 		if (!_config.getDispatcher().forward(message, _location))
 			_log.warn("could not forward message");
 	}
@@ -101,6 +104,14 @@ public class RemotePartition extends AbstractPartition {
 		if (_log.isWarnEnabled()) _log.warn(_config.getLocalNodeName()+": not Master of Partition["+_key+"] - forwarding message to "+_config.getNodeName(_location));
 		if (!_config.getDispatcher().forward(message, _location))
 			_log.warn("could not forward message");
+	}
+
+	public ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception {
+		Dispatcher dispatcher=_config.getDispatcher();
+		Destination from=dispatcher.getLocalDestination();
+		Destination to=_location;
+		_log.info("exchanging message ("+request+") with node: "+_config.getNodeName(to));
+		return dispatcher.exchangeSend(from, to, request, timeout);
 	}
 	
 }

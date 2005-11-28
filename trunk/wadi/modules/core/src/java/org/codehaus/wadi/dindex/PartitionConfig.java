@@ -20,6 +20,7 @@ import javax.jms.Destination;
 
 import org.activecluster.Cluster;
 import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.gridstate.LockManager;
 
 public interface PartitionConfig {
 
@@ -29,5 +30,6 @@ public interface PartitionConfig {
     long getInactiveTime();
     
     String getLocalNodeName();
+    LockManager getPMSyncs();
     
 }

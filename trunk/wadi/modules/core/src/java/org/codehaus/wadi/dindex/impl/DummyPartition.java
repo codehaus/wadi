@@ -24,6 +24,7 @@ import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
+import org.codehaus.wadi.gridstate.messages.MovePMToSM;
 
 public class DummyPartition extends AbstractPartition {
 
@@ -72,6 +73,16 @@ public class DummyPartition extends AbstractPartition {
 	public void onMessage(ObjectMessage message, RelocationRequestI2P request) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public void onMessage(ObjectMessage message, MovePMToSM request) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -16,14 +16,25 @@
  */
 package org.codehaus.wadi.dindex;
 
+import java.io.IOException;
 import java.util.Collection;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.activecluster.Node;
+import org.codehaus.wadi.Immoter;
+
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public interface PartitionManagerConfig {
 
     void findRelevantSessionNames(int numPartitions, Collection[] resultSet);
     Node getCoordinatorNode();
     long getInactiveTime();
+    
+    boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException;
 
 }

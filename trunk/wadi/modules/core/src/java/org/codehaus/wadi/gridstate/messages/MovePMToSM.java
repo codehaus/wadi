@@ -53,5 +53,9 @@ public class MovePMToSM implements Serializable {
 	public String getIMCorrelationId() {
 		return _imCorrelationId;
 	}
+	
+	public String toString() {
+		return "<MovePMToSM:"+_key+">";
+	}
 
 }
