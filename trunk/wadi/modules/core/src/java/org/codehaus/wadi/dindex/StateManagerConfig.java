@@ -18,6 +18,7 @@ package org.codehaus.wadi.dindex;
 
 import java.io.IOException;
 
+import javax.jms.Destination;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +37,8 @@ public interface StateManagerConfig {
 	int getNumPartitions();
 	
 	String getLocalNodeName();
-	
+	String getNodeName(Destination destination);
+		
 	Dispatcher getDispatcher();
 	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException;
 	long getInactiveTime();

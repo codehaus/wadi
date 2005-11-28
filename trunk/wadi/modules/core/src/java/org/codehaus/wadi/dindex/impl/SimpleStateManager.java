@@ -79,10 +79,13 @@ public class SimpleStateManager implements StateManager {
         _dispatcher.register(DIndexRelocationResponse.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexForwardRequest", DIndexForwardRequest.class);
 
-        _dispatcher.register(this, "onMessage", RelocationRequestI2P.class);
+		// GridState - Relocate - 5 messages - IM->PM->SM->IM->SM->PM
+		_dispatcher.register(this, "onMessage", RelocationRequestI2P.class);
         _dispatcher.register(this, "onMessage", MovePMToSM.class);
-        _dispatcher.register(this, "onMessage", MoveSMToIM.class);
-	}
+		_dispatcher.register(MoveSMToIM.class, _inactiveTime);
+		_dispatcher.register(MoveIMToSM.class, _inactiveTime);
+		_dispatcher.register(MoveSMToPM.class, _inactiveTime);
+		}
 
 	public void start() throws Exception {
 		// TODO Auto-generated method stub
@@ -149,6 +152,7 @@ public class SimpleStateManager implements StateManager {
         	Destination im=(Destination)_get.getIM();
         	MoveSMToIM request=new MoveSMToIM(key, bytes);
         	// send on state from StateMaster to InvocationMaster...
+        	_log.info("exchanging MoveSMToIM between: "+_config.getNodeName(sm)+"->"+_config.getNodeName(im));
         	ObjectMessage message2=(ObjectMessage)dispatcher.exchangeSend(sm, im, request, timeout, _get.getIMCorrelationId());
         	// should receive response from IM confirming safe receipt...
         	if (message2==null) {
@@ -245,13 +249,6 @@ public class SimpleStateManager implements StateManager {
     		}
     	} finally {
     	}
-    }
-    
-    public void onMessage(ObjectMessage message1, MoveSMToIM request) {
-    	_log.info("MoveSMToIM MESSAGE ARRIVED: "+request);
-        // DO NOT Dispatch onto Partition - deal with it here...
-    	// state needs emotion into Contextualiser stack...
-    	// ack needs to be sent back to SM, who will then ack to PM - then we are done !!
     }
     
     // evacuation protocol
