@@ -14,10 +14,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate.messages;
+package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
-public class ReadPMToIM implements Serializable {
+import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
 
+/**
+ * Sent from InvocationMaster to PartitionMaster requesting that an entry be removed from the index.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public class DeleteIMToPM extends AbstractDIndexRequest implements Serializable {
+
+    public DeleteIMToPM(String name) {
+        super(name);
+    }
+
+    public String toString() {
+    	return "<DeleteIMToPM:"+_key+">";
+    }
+    
 }

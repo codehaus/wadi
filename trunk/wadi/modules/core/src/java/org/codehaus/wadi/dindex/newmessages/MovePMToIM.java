@@ -14,28 +14,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate.messages;
+package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
-public class MoveIMToSM implements Serializable {
+/**
+ * Response from PartitionMaster to InvocationMaster, indicating that required State does not exist.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public class MovePMToIM implements Serializable {
 
-	protected boolean _success;
-
-	public MoveIMToSM(boolean success) {
-		_success=success;
-	}
-
-	public MoveIMToSM() {
-		this(true);
-	}
-
-	public boolean getSuccess() {
-		return _success;
+	public MovePMToIM() {
 	}
 	
 	public String toString() {
-		return "<MoveIMToSM:"+_success+">";
+		return "<MovePMToIM:false>";
 	}
-	
 }

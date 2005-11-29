@@ -14,19 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate.messages;
+package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
-public class MoveSMToPM implements Serializable {
+public class MoveIMToSM implements Serializable {
 
-	boolean _success;
+	protected boolean _success;
 
-	public MoveSMToPM(boolean success) {
+	public MoveIMToSM(boolean success) {
 		_success=success;
 	}
 
-	public MoveSMToPM() {
+	public MoveIMToSM() {
 		this(true);
 	}
 
@@ -35,7 +35,7 @@ public class MoveSMToPM implements Serializable {
 	}
 	
 	public String toString() {
-		return "<MovePMToSM:"+_success+">";
+		return "<MoveIMToSM:"+_success+">";
 	}
 	
 }
