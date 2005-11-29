@@ -32,21 +32,22 @@ import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.StateManagerConfig;
-import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
-import org.codehaus.wadi.dindex.messages.DIndexDeletionResponse;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationResponse;
+import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
+import org.codehaus.wadi.dindex.newmessages.DeletePMToIM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertPMToIM;
+import org.codehaus.wadi.dindex.newmessages.MoveIMToSM;
+import org.codehaus.wadi.dindex.newmessages.MovePMToIM;
+import org.codehaus.wadi.dindex.newmessages.MovePMToSM;
+import org.codehaus.wadi.dindex.newmessages.MoveSMToIM;
+import org.codehaus.wadi.dindex.newmessages.MoveSMToPM;
 import org.codehaus.wadi.dindex.newmessages.ReleaseEntryRequest;
 import org.codehaus.wadi.dindex.newmessages.ReleaseEntryResponse;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.messages.MoveIMToSM;
-import org.codehaus.wadi.gridstate.messages.MovePMToSM;
-import org.codehaus.wadi.gridstate.messages.MoveSMToIM;
-import org.codehaus.wadi.gridstate.messages.MoveSMToPM;
 import org.codehaus.wadi.impl.AbstractMotable;
 import org.codehaus.wadi.impl.RankedRWLock;
 import org.codehaus.wadi.impl.SimpleMotable;
@@ -73,8 +74,8 @@ public class SimpleStateManager implements StateManager {
 		_log=LogFactory.getLog(getClass().getName()+"#"+_config.getLocalNodeName());
         _dispatcher.register(this, "onDIndexInsertionRequest", InsertIMToPM.class);
         _dispatcher.register(InsertPMToIM.class, _inactiveTime);
-        _dispatcher.register(this, "onDIndexDeletionRequest", DIndexDeletionRequest.class);
-        _dispatcher.register(DIndexDeletionResponse.class, _inactiveTime);
+        _dispatcher.register(this, "onDIndexDeletionRequest", DeleteIMToPM.class);
+        _dispatcher.register(DeletePMToIM.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexRelocationRequest", DIndexRelocationRequest.class);
         _dispatcher.register(DIndexRelocationResponse.class, _inactiveTime);
         _dispatcher.register(this, "onDIndexForwardRequest", DIndexForwardRequest.class);
@@ -85,6 +86,8 @@ public class SimpleStateManager implements StateManager {
 		_dispatcher.register(MoveSMToIM.class, _inactiveTime);
 		_dispatcher.register(MoveIMToSM.class, _inactiveTime);
 		_dispatcher.register(MoveSMToPM.class, _inactiveTime);
+		// or possibly - IM->PM->IM (failure)
+		_dispatcher.register(MovePMToIM.class, _inactiveTime);
 		}
 
 	public void start() throws Exception {
@@ -94,7 +97,7 @@ public class SimpleStateManager implements StateManager {
 
 	public void stop() throws Exception {
         _dispatcher.deregister("onDIndexInsertionRequest", InsertIMToPM.class, 5000);
-        _dispatcher.deregister("onDIndexDeletionRequest", DIndexDeletionRequest.class, 5000);
+        _dispatcher.deregister("onDIndexDeletionRequest", DeleteIMToPM.class, 5000);
         _dispatcher.deregister("onDIndexRelocationRequest", DIndexRelocationRequest.class, 5000);
         _dispatcher.deregister("onDIndexForwardRequest", DIndexForwardRequest.class, 5000);
 	}
@@ -104,7 +107,7 @@ public class SimpleStateManager implements StateManager {
         _config.getPartition(request.getKey()).onMessage(om, request);
     }
 
-    public void onDIndexDeletionRequest(ObjectMessage om, DIndexDeletionRequest request) {
+    public void onDIndexDeletionRequest(ObjectMessage om, DeleteIMToPM request) {
         _config.getPartition(request.getKey()).onMessage(om, request);
     }
 

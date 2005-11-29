@@ -14,34 +14,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate.messages;
+package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
-public class MoveSMToIM implements Serializable {
+import org.codehaus.wadi.dindex.DIndexResponse;
 
-	protected Object _key;
-	protected Object _value; // should be strictly typed to byte[] - TODO
+/**
+ * Sent, from PartitionMaster to InvocationMaster, confirming removal of an item from the Partition's index.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public class DeletePMToIM implements DIndexResponse, Serializable {
 
-	public MoveSMToIM(Object key, Object value) {
-		_key=key;
-		_value=value;
-	}
+    public DeletePMToIM() {
+        super(); // TODO - should not need key
+    }
 
-	protected MoveSMToIM() {
-		// for deserialisation...
-	}
-
-	public Object getKey() {
-		return _key;
-	}
-
-	public Object getValue() {
-		return _value;
-	}
-	
-	public String toString() {
-		return "<MoveSMToIM:"+_key+">";
-	}
-
+    public String toString() {
+    	return "<DeletePMToIM>";
+    }
+    
 }

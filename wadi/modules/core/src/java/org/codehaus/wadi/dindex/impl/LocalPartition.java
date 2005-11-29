@@ -29,20 +29,20 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.DIndexResponse;
-import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
-import org.codehaus.wadi.dindex.messages.DIndexDeletionResponse;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationResponse;
 import org.codehaus.wadi.dindex.messages.RelocationRequest;
 import org.codehaus.wadi.dindex.messages.RelocationResponse;
+import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
+import org.codehaus.wadi.dindex.newmessages.DeletePMToIM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertPMToIM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
+import org.codehaus.wadi.dindex.newmessages.MovePMToSM;
+import org.codehaus.wadi.dindex.newmessages.MoveSMToPM;
+import org.codehaus.wadi.dindex.newmessages.MovePMToIM;
 import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.messages.MovePMToSM;
-import org.codehaus.wadi.gridstate.messages.MoveSMToPM;
-import org.codehaus.wadi.gridstate.messages.ReadPMToIM;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -103,7 +103,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		_config.getDispatcher().reply(message, response);
 	}
 	
-	public void onMessage(ObjectMessage message, DIndexDeletionRequest request) {
+	public void onMessage(ObjectMessage message, DeleteIMToPM request) {
 		Destination oldDestination;
 		String key=request.getKey();
 		synchronized (_map) {
@@ -111,7 +111,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		}
 		if (oldDestination==null) throw new IllegalStateException("session "+key+" is not known in this partition");
 		if (_log.isDebugEnabled()) _log.debug("deletion {"+key+" : "+_config.getNodeName(oldDestination)+"}");
-		DIndexResponse response=new DIndexDeletionResponse();
+		DIndexResponse response=new DeletePMToIM();
 		_config.getDispatcher().reply(message, response);
 	}
 	
@@ -188,7 +188,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 			
 			if (destination==null) {
 				// session does not exist - tell IM
-				_dispatcher.reply(message1,new ReadPMToIM());
+				_dispatcher.reply(message1,new MovePMToIM());
 			} else {
 				// session does exist - ask the SM to move it to the IM 
 				

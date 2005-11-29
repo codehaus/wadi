@@ -14,23 +14,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.messages;
+package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.dindex.DIndexResponse;
+public class MoveSMToPM implements Serializable {
 
-/**
- * Sent, in response to a DIndexDeletionRequest, back to the requestor, confirming removal of an item from the Partition's index.
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
-public class DIndexDeletionResponse implements DIndexResponse, Serializable {
+	boolean _success;
 
-    public DIndexDeletionResponse() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
+	public MoveSMToPM(boolean success) {
+		_success=success;
+	}
 
+	public MoveSMToPM() {
+		this(true);
+	}
+
+	public boolean getSuccess() {
+		return _success;
+	}
+	
+	public String toString() {
+		return "<MovePMToSM:"+_success+">";
+	}
+	
 }

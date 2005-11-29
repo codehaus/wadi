@@ -46,19 +46,19 @@ import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.StateManagerConfig;
-import org.codehaus.wadi.dindex.impl.SimpleStateManager.PMToIMEmotable;
-import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.messages.RelocationRequest;
+import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertPMToIM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
+import org.codehaus.wadi.dindex.newmessages.MoveIMToSM;
+import org.codehaus.wadi.dindex.newmessages.MovePMToIM;
+import org.codehaus.wadi.dindex.newmessages.MoveSMToIM;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
-import org.codehaus.wadi.gridstate.messages.MoveIMToSM;
-import org.codehaus.wadi.gridstate.messages.MoveSMToIM;
 import org.codehaus.wadi.impl.AbstractChainedEmoter;
 import org.codehaus.wadi.impl.Quipu;
 import org.codehaus.wadi.impl.SimpleMotable;
@@ -367,7 +367,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	public void remove(String name) {
 		try {
-			DIndexDeletionRequest request=new DIndexDeletionRequest(name);
+			DeleteIMToPM request=new DeleteIMToPM(name);
 			getPartition(name).exchange(request, _inactiveTime);
 		} catch (Exception e) {
 		  _log.info("oops...", e);
@@ -464,10 +464,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 //        			return answer;
 //        		}
         		
-        	} else if (dm instanceof PMToIMEmotable) {
-        		_log.info("looks like sessions didn't exist");
+        	} else if (dm instanceof MovePMToIM) {
+        		if (_log.isTraceEnabled()) _log.trace("unknown session: "+sessionName);
+        		return null;
         	} else {
         		_log.warn("unexpected response returned - what should I do? : "+dm);
+        		return null;
         	}
         } catch (JMSException e) {
         	_log.warn("could not extract message body", e);

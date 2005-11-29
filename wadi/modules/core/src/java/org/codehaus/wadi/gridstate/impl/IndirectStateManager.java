@@ -26,15 +26,15 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.dindex.newmessages.MoveIMToSM;
+import org.codehaus.wadi.dindex.newmessages.MovePMToSM;
+import org.codehaus.wadi.dindex.newmessages.MoveSMToIM;
+import org.codehaus.wadi.dindex.newmessages.MoveSMToPM;
+import org.codehaus.wadi.dindex.newmessages.MovePMToIM;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.StateManager;
 import org.codehaus.wadi.gridstate.StateManagerConfig;
-import org.codehaus.wadi.gridstate.messages.MoveIMToSM;
-import org.codehaus.wadi.gridstate.messages.MovePMToSM;
-import org.codehaus.wadi.gridstate.messages.MoveSMToIM;
-import org.codehaus.wadi.gridstate.messages.MoveSMToPM;
 import org.codehaus.wadi.gridstate.messages.ReadIMToPM;
-import org.codehaus.wadi.gridstate.messages.ReadPMToIM;
 import org.codehaus.wadi.gridstate.messages.WriteIMToPM;
 import org.codehaus.wadi.gridstate.messages.WritePMToIM;
 
@@ -66,7 +66,7 @@ public class IndirectStateManager implements StateManager {
 		_dispatcher.register(MoveIMToSM.class, _timeout);
 		_dispatcher.register(MoveSMToPM.class, _timeout);
 		// Get - 2 messages - IM->PM->IM (NYI)
-		_dispatcher.register(ReadPMToIM.class, _timeout);
+		_dispatcher.register(MovePMToIM.class, _timeout);
 
 		// Put - 2 messages - IM->PM->IM
 		_dispatcher.register(this, "onMessage", WriteIMToPM.class);
@@ -123,7 +123,7 @@ public class IndirectStateManager implements StateManager {
 				  _log.error("unexpected problem", e); // should be in loop - TODO
 				}
 
-				if (response instanceof ReadPMToIM) {
+				if (response instanceof MovePMToIM) {
 					// association not present
 					value=null;
 				} else if (response instanceof MoveSMToIM) {
@@ -161,7 +161,7 @@ public class IndirectStateManager implements StateManager {
 			PartitionFacade partition=_config.getPartition(key);
 			Location location=(Location)partition.getLocation(key);
 			if (location==null) {
-				_dispatcher.reply(message1,new ReadPMToIM());
+				_dispatcher.reply(message1,new MovePMToIM());
 				return;
 			}
 			// exchangeSendLoop GetPMToSM to SM

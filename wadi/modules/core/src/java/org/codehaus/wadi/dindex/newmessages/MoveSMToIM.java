@@ -14,48 +14,34 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate.messages;
+package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
-import javax.jms.Destination;
+public class MoveSMToIM implements Serializable {
 
-public class MovePMToSM implements Serializable {
-	
-	protected Object _key;
-	protected Destination _im;
-	protected Destination _pm;
-	protected String _imCorrelationId;
-	
-	public MovePMToSM(Object key, Destination im, Destination pm, String imCorrelationId) {
+	protected Object _key; // do we really need the key - TODO
+	protected Object _value; // should be strictly typed to byte[] - TODO
+
+	public MoveSMToIM(Object key, Object value) {
 		_key=key;
-		_im=im;
-		_pm=im;
-		_imCorrelationId=imCorrelationId;
+		_value=value;
 	}
-	
-	protected MovePMToSM() {
+
+	protected MoveSMToIM() {
 		// for deserialisation...
 	}
-	
+
 	public Object getKey() {
 		return _key;
 	}
-	
-	public Destination getIM() {
-		return _im;
-	}
-	
-	public Destination getPM() {
-		return _pm;
-	}
-	
-	public String getIMCorrelationId() {
-		return _imCorrelationId;
+
+	public Object getValue() {
+		return _value;
 	}
 	
 	public String toString() {
-		return "<MovePMToSM:"+_key+">";
+		return "<MoveSMToIM:"+_key+">";
 	}
-	
+
 }
