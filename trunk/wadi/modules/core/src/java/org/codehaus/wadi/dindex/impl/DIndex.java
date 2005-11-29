@@ -444,7 +444,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         	// the possibilities...
         	if (dm instanceof MoveSMToIM) {
         		MoveSMToIM req=(MoveSMToIM)dm;
-        		_log.info("wow ! a message came back !!!");
         		// insert motable into contextualiser stack...
         		byte[] bytes=(byte[])req.getValue();
         		Motable emotable=new SimpleMotable();
@@ -457,7 +456,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         		Emoter emoter=new SMToIMEmoter(_config.getNodeName(message.getJMSReplyTo()), message);
         		Immoter immoter=_config.getImmoter(sessionName, emotable);
         		Motable immotable=Utils.mote(emoter, immoter, emotable, sessionName);
-        		_log.info("IMMOTABLE: "+immotable);
         		return immotable;
 //        		if (null==immotable)
 //        			return false;

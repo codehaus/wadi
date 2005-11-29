@@ -240,7 +240,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
 				if (rv==null) {
 					if (_log.isWarnEnabled()) _log.warn("no-one waiting: {"+correlationId+"} - "+obj);
 				} else {
-					_log.info("rendez-vous-ing with Quipu: "+correlationId);
+					if (_log.isTraceEnabled()) _log.trace("rendez-vous-ing with Quipu: "+correlationId);
 					rv.putResult(om);
 				}
 			}

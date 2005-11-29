@@ -101,7 +101,6 @@ public class SimpleStateManager implements StateManager {
 
 
     public void onDIndexInsertionRequest(ObjectMessage om, DIndexInsertionRequest request) {
-    	_log.info("DIndexInsertionRequest MESSAGE ARRIVED: "+request);
         _config.getPartition(request.getKey()).onMessage(om, request);
     }
 
@@ -118,7 +117,6 @@ public class SimpleStateManager implements StateManager {
     }
 
     public void onMessage(ObjectMessage message, RelocationRequestI2P request) {
-    	_log.info("RelocationRequestI2P MESSAGE ARRIVED: "+request);
         _config.getPartition(request.getKey()).onMessage(message, request);
     }
 
@@ -152,7 +150,7 @@ public class SimpleStateManager implements StateManager {
         	Destination im=(Destination)_get.getIM();
         	MoveSMToIM request=new MoveSMToIM(key, bytes);
         	// send on state from StateMaster to InvocationMaster...
-        	_log.info("exchanging MoveSMToIM between: "+_config.getNodeName(sm)+"->"+_config.getNodeName(im));
+        	if (_log.isTraceEnabled()) _log.trace("exchanging MoveSMToIM between: "+_config.getNodeName(sm)+"->"+_config.getNodeName(im));
         	ObjectMessage message2=(ObjectMessage)dispatcher.exchangeSend(sm, im, request, timeout, _get.getIMCorrelationId());
         	// should receive response from IM confirming safe receipt...
         	if (message2==null) {
@@ -228,7 +226,6 @@ public class SimpleStateManager implements StateManager {
     
 	// called on State Master...
     public void onMessage(ObjectMessage message1, MovePMToSM request) {
-    	_log.info("MovePMToSM MESSAGE ARRIVED: "+request);
         // DO NOT Dispatch onto Partition - deal with it here...
     	Object key=request.getKey();
     	String nodeName=_config.getLocalNodeName();
