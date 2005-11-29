@@ -89,51 +89,66 @@ public class HybridRelocater extends AbstractRelocater {
     	int concurrentRequestThreads=1;
     	RelocationResponse response=null;
     	ObjectMessage message2=null;
-    	try {
-    		message2=_config.getDIndex().relocate(sessionName, nodeName, concurrentRequestThreads, shuttingDown, _resTimeout);
-    		if (message2==null || (response=(RelocationResponse)message2.getObject())==null)
-    			return false;
-    	} catch (Exception e) {
-    		_log.warn("problem arranging relocation", e);
-    	}
+
+    	boolean useGridState=false;
     	
-    	Motable emotable=response.getMotable();
-    	if (emotable!=null) {
-    		// relocate session...
-    		if (!emotable.checkTimeframe(System.currentTimeMillis()))
-    			if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
+    	if (useGridState) {
+    		Motable immotable=null;
+    		try {
+    			immotable=_config.getDIndex().relocate2(sessionName, nodeName, concurrentRequestThreads, shuttingDown, _resTimeout);
+    		} catch (Exception e) {
+    			_log.error("unexpected error", e);
+    		}
+    		boolean answer=immoter.contextualise(hreq, hres, chain, name, immotable, motionLock);
+    		return answer;
+    	} else {
     		
-    		Emoter emoter=new RelocationEmoter(response.getNodeName(), message2);
-    		Motable immotable=Utils.mote(emoter, immoter, emotable, name);
-    		if (null==immotable)
-    			return false;
-    		else {
-    			boolean answer=immoter.contextualise(hreq, hres, chain, name, immotable, motionLock);
-    			return answer;
+    		try {
+    			message2=_config.getDIndex().relocate(sessionName, nodeName, concurrentRequestThreads, shuttingDown, _resTimeout);
+    			if (message2==null || (response=(RelocationResponse)message2.getObject())==null)
+    				return false;
+    		} catch (Exception e) {
+    			_log.warn("problem arranging relocation", e);
     		}
     		
+    		Motable emotable=response.getMotable();
+    		if (emotable!=null) {
+    			// relocate session...
+    			if (!emotable.checkTimeframe(System.currentTimeMillis()))
+    				if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
+    			
+    			Emoter emoter=new RelocationEmoter(response.getNodeName(), message2);
+    			Motable immotable=Utils.mote(emoter, immoter, emotable, name);
+    			if (null==immotable)
+    				return false;
+    			else {
+    				boolean answer=immoter.contextualise(hreq, hres, chain, name, immotable, motionLock);
+    				return answer;
+    			}
+    			
+    		}
+    		
+    		InetSocketAddress address=response.getAddress();
+    		if (address!=null) {
+    			// relocate request...
+    			try {
+    				
+    				//FIXME - API should not be in terms of HttpProxy but in terms of RequestRelocater...
+    				
+    				_httpProxy.proxy(address, hreq, hres);
+    				_log.trace("PROXY WAS SUCCESSFUL");
+    				motionLock.release();
+    				return true;
+    			} catch (Exception e) {
+    				_log.error("problem proxying request", e);
+    				return false;
+    			}
+    		}
+    		
+    		// if we are still here - session could not be found
+    		if (_log.isWarnEnabled()) _log.warn("session not found: " + sessionName);
+    		return false;
     	}
-
-        InetSocketAddress address=response.getAddress();
-        if (address!=null) {
-            // relocate request...
-            try {
-
-                //FIXME - API should not be in terms of HttpProxy but in terms of RequestRelocater...
-
-                _httpProxy.proxy(address, hreq, hres);
-		_log.trace("PROXY WAS SUCCESSFUL");
-                motionLock.release();
-                return true;
-            } catch (Exception e) {
-	      _log.error("problem proxying request", e);
-                return false;
-            }
-        }
-
-        // if we are still here - session could not be found
-        if (_log.isWarnEnabled()) _log.warn("session not found: " + sessionName);
-        return false;
     }
 
     /* We send a RelocationRequest out to fetch a Session. We receive a RelocationResponse containing the Session. We pass a RelocationEmoter

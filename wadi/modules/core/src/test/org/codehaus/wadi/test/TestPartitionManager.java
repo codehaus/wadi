@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.jms.Destination;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.activecluster.ClusterEvent;
 import org.activecluster.Node;
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.SimplePartitionManager;
@@ -114,6 +116,16 @@ public class TestPartitionManager extends TestCase {
 			public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
 				// TODO Auto-generated method stub
 				return false;
+			}
+
+			public String getNodeName(Destination destination) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			public Immoter getImmoter(String name, Motable immotable) {
+				// TODO Auto-generated method stub
+				return null;
 			}
 			
 		};

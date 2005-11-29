@@ -38,9 +38,10 @@ import org.activecluster.ClusterListener;
 import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
-import org.codehaus.wadi.dindex.DIndexMessage;
 import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.StateManager;
@@ -58,7 +59,10 @@ import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.gridstate.messages.MoveIMToSM;
 import org.codehaus.wadi.gridstate.messages.MoveSMToIM;
+import org.codehaus.wadi.impl.AbstractChainedEmoter;
 import org.codehaus.wadi.impl.Quipu;
+import org.codehaus.wadi.impl.SimpleMotable;
+import org.codehaus.wadi.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -388,7 +392,50 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         return forwardAndExchange(sessionName, request, timeout);
     }
     
-    public ObjectMessage relocate2(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout) throws Exception {
+    class SMToIMEmoter extends AbstractChainedEmoter {
+    	protected final Log _log=LogFactory.getLog(getClass());
+    	
+    	protected final String _nodeName;
+    	protected final ObjectMessage _message;
+    	
+    	public SMToIMEmoter(String nodeName, ObjectMessage message) {
+    		_nodeName=nodeName;
+    		_message=message;
+    	}
+    	
+    	public boolean prepare(String name, Motable emotable, Motable immotable) {
+    		try {
+    			immotable.copy(emotable);
+    		} catch (Exception e) {
+    			_log.warn("oops", e);
+    			return false;
+    		}
+    		
+    		// respond...
+    		MoveIMToSM response=new MoveIMToSM(true);
+    		_dispatcher.reply(_message, response);
+    		
+    		return true;
+    	}
+    	
+    	public void commit(String name, Motable emotable) {
+    		try {
+    			emotable.destroy(); // remove copy in store
+    		} catch (Exception e) {
+    			throw new UnsupportedOperationException("NYI"); // NYI
+    		}
+    	}
+    	
+    	public void rollback(String name, Motable motable) {
+    		throw new RuntimeException("NYI");
+    	}
+    	
+    	public String getInfo() {
+    		return "immigration:"+_nodeName;
+    	}
+    }
+    
+    public Motable relocate2(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout) throws Exception {
         RelocationRequestI2P request=new RelocationRequestI2P(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
         ObjectMessage message=getPartition(sessionName).exchange(request, timeout);
         
@@ -396,11 +443,29 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         	Serializable dm=(Serializable)message.getObject();
         	// the possibilities...
         	if (dm instanceof MoveSMToIM) {
+        		MoveSMToIM req=(MoveSMToIM)dm;
         		_log.info("wow ! a message came back !!!");
         		// insert motable into contextualiser stack...
-        		// then...
-        		MoveIMToSM response=new MoveIMToSM(true);
-        		_dispatcher.reply(message, response);
+        		byte[] bytes=(byte[])req.getValue();
+        		Motable emotable=new SimpleMotable();
+        		emotable.setBodyAsByteArray(bytes);
+        		// TOTAL HACK - FIXME
+        		emotable.setLastAccessedTime(System.currentTimeMillis());
+        		if (!emotable.checkTimeframe(System.currentTimeMillis()))
+        			if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
+        		
+        		Emoter emoter=new SMToIMEmoter(_config.getNodeName(message.getJMSReplyTo()), message);
+        		Immoter immoter=_config.getImmoter(sessionName, emotable);
+        		Motable immotable=Utils.mote(emoter, immoter, emotable, sessionName);
+        		_log.info("IMMOTABLE: "+immotable);
+        		return immotable;
+//        		if (null==immotable)
+//        			return false;
+//        		else {
+//        			boolean answer=immoter.contextualise(null, null, null, sessionName, immotable, null);
+//        			return answer;
+//        		}
+        		
         	} else if (dm instanceof PMToIMEmotable) {
         		_log.info("looks like sessions didn't exist");
         	} else {

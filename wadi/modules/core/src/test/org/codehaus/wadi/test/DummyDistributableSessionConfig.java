@@ -29,6 +29,7 @@ import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
@@ -42,7 +43,14 @@ import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 public class DummyDistributableSessionConfig implements DistributableSessionConfig {
 
     protected final Streamer _streamer=new SimpleStreamer();
-    public Streamer getStreamer() {return _streamer;}
+    
+    public DummyDistributableSessionConfig() {
+    	_streamer.init(new StreamerConfig(){public ClassLoader getClassLoader() {return getClass().getClassLoader();}});
+    }
+    
+    public Streamer getStreamer() {
+    	return _streamer;
+    }
 
     public ValueHelper findHelper(Class type) {
         throw new UnsupportedOperationException();
@@ -79,7 +87,7 @@ public class DummyDistributableSessionConfig implements DistributableSessionConf
     public int getMaxInactiveInterval() {return _maxInactiveInterval;}
 
     public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {
-        throw new UnsupportedOperationException();
+        //throw new UnsupportedOperationException();
     }
 
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {
