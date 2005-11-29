@@ -67,10 +67,10 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
         	try {
         		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+id);
         		Utils.acquireUninterrupted(invocationLock);
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invovation - acquired: "+id);
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+id);
         		needsRelease=true;
         	} catch (TimeoutException e) {
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invovation - not acquired: "+id);
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - not acquired: "+id);
         		_log.error("unexpected timeout - proceding without lock", e);
         	}
 
