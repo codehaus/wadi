@@ -110,7 +110,7 @@ public class RemotePartition extends AbstractPartition {
 		Dispatcher dispatcher=_config.getDispatcher();
 		Destination from=dispatcher.getLocalDestination();
 		Destination to=_location;
-		_log.info("exchanging message ("+request+") with node: "+_config.getNodeName(to));
+		if (_log.isTraceEnabled()) _log.trace("exchanging message ("+request+") with node: "+_config.getNodeName(to));
 		return dispatcher.exchangeSend(from, to, request, timeout);
 	}
 	

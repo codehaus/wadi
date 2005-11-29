@@ -164,15 +164,9 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		// Partition may only be migrated when exclusive lock has been taken, this may only happen when all shared locks are released - this implies that no PM session locks will be in place...
 		
 		String key=request.getKey();
-		_log.info(_config.getLocalNodeName()+": RECEIVED RELOCATION REQUEST: "+key+" from "+request.getNodeName());
-		//_log.warn("foo", new Exception());
 		// lock
 		// exchange messages with StateMaster
-		_log.info("MAP="+_map);
-		_log.info("KEY="+key);
 		Destination destination=(Destination)_map.get(key);
-		_log.info("DESTINATION="+destination);
-		_log.info("STATE MASTER is: "+_config.getNodeName(destination)+" ("+destination+")");
 		// unlock
 		
 		Dispatcher _dispatcher=_config.getDispatcher();
@@ -236,7 +230,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 
 
 	public ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception {
-		_log.info("local dispatch - needs optimisation");
+		if (_log.isTraceEnabled()) _log.trace("local dispatch - needs optimisation");
 		Dispatcher dispatcher=_config.getDispatcher();
 		Destination from=dispatcher.getLocalDestination();
 		Destination to=from;
