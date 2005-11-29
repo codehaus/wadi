@@ -20,7 +20,7 @@ package org.codehaus.wadi;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * Used to provide a Lock on which to collpase requests sharing the same session id.
+ * Used to provide a Lock on which to collapse requests sharing the same session id.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

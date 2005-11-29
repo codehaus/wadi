@@ -32,6 +32,8 @@ import org.activecluster.ClusterEvent;
 import org.activecluster.ClusterListener;
 import org.activecluster.LocalNode;
 import org.activecluster.Node;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Collapser;
@@ -101,6 +103,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     protected final Immoter _immoter;
     protected final Emoter _emoter;
     protected final int _resTimeout=500; // TODO - parameterise
+    protected final Log _lockLog=LogFactory.getLog("LOCKS");
+
 
     public ClusterContextualiser(Contextualiser next, Collapser collapser, Relocater relocater) {
         super(next, new CollapsingLocker(collapser), false);
@@ -322,7 +326,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         boolean acquired=false;
         try {
             Utils.acquireUninterrupted(lock);
+    		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+name);
             acquired=true;
+    		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+name);
 
             Emoter emoter=new ImmigrationEmoter(message);
 
@@ -335,8 +341,11 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         } catch (TimeoutException e) {
             if (_log.isWarnEnabled()) _log.warn("could not acquire promotion lock for incoming session: "+name);
         } finally {
-            if (acquired)
+            if (acquired) {
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+name);
                 lock.release();
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+name);
+            }
         }
     }
 

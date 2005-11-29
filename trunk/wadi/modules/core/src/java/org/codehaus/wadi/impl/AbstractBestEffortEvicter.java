@@ -34,6 +34,8 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
 
+    protected final Log _lockLog=LogFactory.getLog("LOCKS");
+
     static class TimeToLiveComparator implements Comparator {
 
         protected final long _time;
@@ -144,24 +146,29 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         // deal with expirations...
         int expirations=0;
         {
-	  int l=toExpire.length;
-	  for (int i=0; i<l; i++) {
-	    Motable motable=(Motable)toExpire[i]; // TODO - not happy about an Evicter knowing about Motables
-	    String id=motable.getName();
-	    if (id!=null) {
-	      Sync sync=_config.getEvictionLock(id, motable);
-	      if (Utils.attemptUninterrupted(sync)) {
-		if (motable.getTimedOut(time)) {
-		  _config.expire(motable);
-		  expirations++;
-		}
-		sync.release();
-	      } else {
-		if (_log.isTraceEnabled()) _log.trace("could not acquire expiration lock: "+id);
-	      }
-	    }
-	  }
-	  toExpire=null;
+        	int l=toExpire.length;
+        	boolean traceEnabled=_lockLog.isTraceEnabled();
+        	for (int i=0; i<l; i++) {
+        		Motable motable=(Motable)toExpire[i]; // TODO - not happy about an Evicter knowing about Motables
+        		String id=motable.getName();
+        		if (id!=null) {
+        			Sync sync=_config.getEvictionLock(id, motable);
+            		if (traceEnabled) _lockLog.trace("Invocation - acquiring: "+id);
+        			if (Utils.attemptUninterrupted(sync)) {
+        				if (traceEnabled) _lockLog.trace("Invocation - acquired: "+id);
+        				if (motable.getTimedOut(time)) {
+        					_config.expire(motable);
+        					expirations++;
+        				}
+        				if (traceEnabled) _lockLog.trace("Invocation - releasing: "+id);
+        				sync.release();
+        				if (traceEnabled) _lockLog.trace("Invocation - released: "+id);
+        			} else {
+        				if (traceEnabled) _lockLog.trace("Invocation - not acquired: "+id);
+        			}
+        		}
+        	}
+        	toExpire=null;
         }
 
         // and the same again for demotions...
