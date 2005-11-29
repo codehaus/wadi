@@ -21,9 +21,9 @@ import javax.jms.ObjectMessage;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
-import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
-import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
+import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
+import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 import org.codehaus.wadi.gridstate.messages.MovePMToSM;
 
 public class DummyPartition extends AbstractPartition {
@@ -50,7 +50,7 @@ public class DummyPartition extends AbstractPartition {
         throw new UnsupportedOperationException();
     }
 
-	public void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
+	public void onMessage(ObjectMessage message, InsertIMToPM request) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -70,7 +70,7 @@ public class DummyPartition extends AbstractPartition {
 		
 	}
 
-	public void onMessage(ObjectMessage message, RelocationRequestI2P request) {
+	public void onMessage(ObjectMessage message, MoveIMToPM request) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -39,5 +39,9 @@ public class MoveSMToIM implements Serializable {
 	public Object getValue() {
 		return _value;
 	}
+	
+	public String toString() {
+		return "<MoveSMToIM:"+_key+">";
+	}
 
 }
