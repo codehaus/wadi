@@ -24,6 +24,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Context;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
@@ -52,6 +54,8 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	protected final Emoter _emoter;
 	protected final Emoter _evictionEmoter;
     protected final HttpServletRequestWrapperPool _requestPool;
+    protected final Log _lockLog=LogFactory.getLog("LOCKS");
+
 
 	public MemoryContextualiser(Contextualiser next, Evicter evicter, Map map, Streamer streamer, ContextPool pool, HttpServletRequestWrapperPool requestPool) {
 		super(next, new RWLocker(), false, evicter, map);
@@ -82,19 +86,25 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	    }
 	}
 
-	public boolean contextualiseLocally(HttpServletRequest req, HttpServletResponse res, FilterChain chain, String id, Sync motionLock, Motable motable)  throws IOException, ServletException {
+	public boolean contextualiseLocally(HttpServletRequest req, HttpServletResponse res, FilterChain chain, String id, Sync invocationLock, Motable motable)  throws IOException, ServletException {
 	    Sync lock=((Context)motable).getSharedLock();
 	    boolean acquired=false;
 	    try{
 	        try {
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("State (shared) - acquiring: "+id+ " ["+Thread.currentThread().getName()+"]");
 	            Utils.acquireUninterrupted(lock);
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("State (shared) - acquired: "+id+ " ["+Thread.currentThread().getName()+"]");
 	            acquired=true;
 	        } catch (TimeoutException e) {
 	            if (_log.isErrorEnabled()) _log.error("unexpected timeout - continuing without lock: "+id, e);
 	            // give this some more thought - TODO
 	        }
 
-	        if (motionLock!=null) motionLock.release();
+	        if (invocationLock!=null) {
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+id+ " ["+Thread.currentThread().getName()+"]");
+	        	invocationLock.release();
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+id+ " ["+Thread.currentThread().getName()+"]");
+	        }
 
 	        if (motable.getName()==null) {
 	            if (_log.isTraceEnabled()) _log.trace("context disappeared whilst we were waiting for lock: "+id);
@@ -115,7 +125,11 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
             }
 	        return true;
 	    } finally {
-	        if (acquired) lock.release();
+	        if (acquired) {
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("State (shared) - releasing: "+id+ " ["+Thread.currentThread().getName()+"]");
+	        	lock.release();
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("State (shared) - released: "+id+ " ["+Thread.currentThread().getName()+"]");
+	        }
 	    }
 	}
 
@@ -128,9 +142,11 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
         public boolean prepare(String name, Motable emotable, Motable immotable) {
             Sync lock=((Context)emotable).getExclusiveLock();
             try {
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("State (excl.) - acquiring: "+name+ " ["+Thread.currentThread().getName()+"]");
                 Utils.acquireUninterrupted(lock); // released in commit/rollback
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("State (excl.) - acquired: "+name+ " ["+Thread.currentThread().getName()+"]");
             } catch (TimeoutException e) {
-	      _log.error("unexpected timeout", e);
+            	_log.error("unexpected timeout", e);
                 return false;
             }
 
@@ -145,13 +161,17 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
         	// removes emotable from map
         	// destroys emotable
             super.commit(name, emotable);
-            ((Context)emotable).getExclusiveLock().release();
+    		if (_lockLog.isTraceEnabled()) _lockLog.trace("State (excl.) - releasing: "+name+ " ["+Thread.currentThread().getName()+"]");
+    		((Context)emotable).getExclusiveLock().release();
+    		if (_lockLog.isTraceEnabled()) _lockLog.trace("State (excl.) - released: "+name+ " ["+Thread.currentThread().getName()+"]");
         }
 
         public void rollback(String name, Motable emotable) {
         	// noop
             super.rollback(name, emotable);
+    		if (_lockLog.isTraceEnabled()) _lockLog.trace("State (excl.) - releasing: "+name+ " ["+Thread.currentThread().getName()+"]");
             ((Context)emotable).getExclusiveLock().release();
+    		if (_lockLog.isTraceEnabled()) _lockLog.trace("State (excl.) - released: "+name+ " ["+Thread.currentThread().getName()+"]");
         }
 
         public String getInfo() {

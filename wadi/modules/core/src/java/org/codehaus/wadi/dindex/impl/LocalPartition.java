@@ -47,43 +47,43 @@ import org.codehaus.wadi.gridstate.Dispatcher;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class LocalPartition extends AbstractPartition implements Serializable {
-	
+
 	protected transient Log _log=LogFactory.getLog(getClass());
 	protected transient Log _lockLog=LogFactory.getLog("LOCKS");
-	
+
 	protected Map _map=new HashMap();
 	protected transient PartitionConfig _config;
-	
+
 	public LocalPartition(int key) {
 		super(key);
 	}
-	
+
 	protected LocalPartition() {
 		super();
 		// for deserialisation...
 	}
-	
+
 	public void init(PartitionConfig config) {
 		_config=config;
 		_log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalNodeName());
 		_lockLog=LogFactory.getLog("LOCKS");
 	}
-	
+
 	public boolean isLocal() {
 		return true;
 	}
-	
+
 	public String toString() {
 		return "<LocalPartition:"+_key+"@"+(_config==null?"<unknown>":_config.getLocalNodeName())+">";
 	}
-	
+
 	public void put(String name, Destination destination) {
 		synchronized (_map) {
 			// TODO - check key was not already in use...
 			_map.put(name, destination);
 		}
 	}
-	
+
 	// we probably don't need the partition lock for this - but lets play safe to start with
 	public void onMessage(ObjectMessage message, InsertIMToPM request) {
 		Destination newDestination=null;
@@ -92,10 +92,10 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		String key=request.getKey();
 		Sync sync=null;
 		try {
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key);
+		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key+ " ["+Thread.currentThread().getName()+"]");
 			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key);
-			
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key+ " ["+Thread.currentThread().getName()+"]");
+
 			synchronized (_map) {
 				if (!_map.containsKey(key)) {
 					_map.put(key, newDestination); // remember location of actual session...
@@ -107,26 +107,26 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 			} else {
 				if (_log.isWarnEnabled()) _log.warn("insert: {"+key+" {"+_config.getNodeName(newDestination)+"} failed - key already in use");
 			}
-			
+
 			DIndexResponse response=new InsertPMToIM(success);
 			_config.getDispatcher().reply(message, response);
 		} finally {
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key); 
+		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key+" ["+Thread.currentThread().getName()+"]");
 			sync.release();
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key); 
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key+" ["+Thread.currentThread().getName()+"]");
 		}
 	}
-	
+
 	// we probably do not need to take the Partition lock whilst we do this, but, for the moment, lets do everything logically, then optimise later...
 	public void onMessage(ObjectMessage message, DeleteIMToPM request) {
 		Destination oldDestination;
 		String key=request.getKey();
 		Sync sync=null;
 		try {
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key);
+		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key+ " ["+Thread.currentThread().getName()+"]");
 			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key);
-			
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key+ " ["+Thread.currentThread().getName()+"]");
+
 			synchronized (_map) {
 				oldDestination=(Destination)_map.remove(key);
 			}
@@ -135,12 +135,12 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 			DIndexResponse response=new DeletePMToIM();
 			_config.getDispatcher().reply(message, response);
 		} finally {
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key); 
+		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key+" ["+Thread.currentThread().getName()+"]");
 			sync.release();
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key); 
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key+" ["+Thread.currentThread().getName()+"]");
 		}
 	}
-	
+
 	public void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
 		Destination newDestination=null;
 		try{newDestination=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
@@ -152,7 +152,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		DIndexResponse response=new DIndexRelocationResponse();
 		_config.getDispatcher().reply(message, response);
 	}
-	
+
 	public void onMessage(ObjectMessage message, DIndexForwardRequest request) {
 		// we have got to someone who actually knows where we want to go.
 		// strip off wrapper and deliver actual request to its final destination...
@@ -183,18 +183,18 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 
 	// called on Partition Master
 	public void onMessage(ObjectMessage message1, MoveIMToPM request) {
-		
+
 		// TODO - whilst we are in here, we should have a SHARED lock on this Partition, so it cannot be moved
 		// We should take an exclusive PM lock on the session ID, so no-one else can r/w its location whilst we are doing so.
 		// The Partitions lock should be held in the Facade, so that it can swap Partitions in and out whilst holding an exclusive lock
 		// Partition may only be migrated when exclusive lock has been taken, this may only happen when all shared locks are released - this implies that no PM session locks will be in place...
-		
+
 		String key=request.getKey();
 		// lock
 		// exchange messages with StateMaster
 		Destination destination=(Destination)_map.get(key);
 		// unlock
-		
+
 		Dispatcher _dispatcher=_config.getDispatcher();
 		// what if we are NOT the PM anymore ?
 		// get write lock on location
@@ -204,20 +204,20 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		try {
 			Destination im=message1.getJMSReplyTo();
 			agent=_config.getNodeName(im);
-			
+
 			// FINISH up here tomorrow...
 			// PMSyncs should prevent _map entry from being messed with whilst we are messing with it - lock should be exclusive
 			// should synchronise map access - or is it ConcurrentHashMap ?
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key);
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key+ " ["+Thread.currentThread().getName()+"]");
 			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key);
-			
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key+ " ["+Thread.currentThread().getName()+"]");
+
 			if (destination==null) {
 				// session does not exist - tell IM
 				_dispatcher.reply(message1,new MovePMToIM());
 			} else {
-				// session does exist - ask the SM to move it to the IM 
-				
+				// session does exist - ask the SM to move it to the IM
+
 				// exchangeSendLoop GetPMToSM to SM
 				Destination pm=_dispatcher.getLocalDestination();
 				Destination sm=destination;
@@ -228,12 +228,12 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 				} catch (Exception e) {
 					_log.error("unexpected problem", e);
 				}
-				
+
 				MovePMToSM request2=new MovePMToSM(key, im, pm, poCorrelationId);
 				ObjectMessage message2=_dispatcher.exchangeSendLoop(pm, sm, request2, _config.getInactiveTime(), 10);
 				if (message2==null)
 					_log.error("NO RESPONSE WITHIN TIMEFRAME - PANIC!");
-				
+
 				MoveSMToPM response=null; // the reply from the SM confirming successful move...
 				try {
 					response=(MoveSMToPM)message2.getObject();
@@ -248,9 +248,9 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 			_log.error("could not read src address from incoming message");
 		}
 		finally {
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key); 
+		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key+" ["+Thread.currentThread().getName()+"]");
 			sync.release();
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key); 
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key+" ["+Thread.currentThread().getName()+"]");
 		}
 	}
 

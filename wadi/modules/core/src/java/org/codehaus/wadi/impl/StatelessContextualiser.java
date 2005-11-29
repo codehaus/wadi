@@ -25,6 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
 
@@ -57,6 +59,7 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 	protected final boolean _methodFlag; //true
 	protected final Pattern _uris; //=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)", Pattern.CASE_INSENSITIVE); // TODO - CSS, ...?
 	protected final boolean _uriFlag; // false
+    protected final Log _lockLog=LogFactory.getLog("LOCKS");
 
 	/**
 	 * @param next - The next Contextualiser in the stack
@@ -81,14 +84,16 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
         }
 	};
 
-	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
+	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws IOException, ServletException {
 		if (hreq==null || isStateful(hreq)) {
 			// we cannot optimise...
-			return _next.contextualise(hreq, hres, chain, id, immoter, motionLock, exclusiveOnly);
+			return _next.contextualise(hreq, hres, chain, id, immoter, invocationLock, exclusiveOnly);
 		} else {
 			// we know that we can run the request locally...
-			if (motionLock!=null) {
-				motionLock.release();
+			if (invocationLock!=null) {
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+id+ " ["+Thread.currentThread().getName()+"]");
+        		invocationLock.release();
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+id+ " ["+Thread.currentThread().getName()+"]");
 			}
 			// wrap the request so that session is inaccessible and process here...
 			HttpServletRequestWrapper wrapper=(HttpServletRequestWrapper)_wrapper.get();
