@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.jms.Destination;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -34,7 +35,10 @@ import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.SessionPool;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
@@ -74,6 +78,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
     protected final SessionPool _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
     protected final HttpServletRequestWrapperPool _requestPool=new MyDummyHttpServletRequestWrapperPool();
     protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
+    protected final Streamer _streamer;
 	protected DIndex _dindex;
 
 	public DIndexNode(String nodeName, int numPartitions, PartitionMapper mapper, long inactiveTime) {
@@ -82,10 +87,12 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 		_numPartitions=numPartitions;
 		System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
 		_mapper=mapper;
-
+		_streamer=new SimpleStreamer();
+		_streamer.init(new StreamerConfig(){public ClassLoader getClassLoader() {return getClass().getClassLoader();}});
+		_distributableSessionPool.init(new DummyDistributableSessionConfig());
 		_entries=new HashMap();
 		Contextualiser dummy=new DummyContextualiser();
-		_contextualiser=new MemoryContextualiser(dummy, new NeverEvicter(30000,false), _entries, new SimpleStreamer(), _distributableContextPool, _requestPool);
+		_contextualiser=new MemoryContextualiser(dummy, new NeverEvicter(30000,false), _entries, _streamer, _distributableContextPool, _requestPool);
 	}
 
 	// DIndexNode API
@@ -118,6 +125,10 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 		_entries.put(key, value);
 	}
 
+	public Object get(String key) {
+		return _entries.get(key);
+	}
+	
 	// PartitionManagerConfig API
 	
 	public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
@@ -134,6 +145,14 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 	
 	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
 		return _contextualiser.contextualise(hreq, hres, chain, id, immoter, motionLock, exclusiveOnly);
+	}
+	
+	public Immoter getImmoter(String name, Motable immotable) {
+		return _contextualiser.getDemoter(name, immotable);
+	}
+	
+	public String getNodeName(Destination destination) {
+		return _dispatcher.getNodeName(destination);
 	}
 	
 	// DispatcherConfig API

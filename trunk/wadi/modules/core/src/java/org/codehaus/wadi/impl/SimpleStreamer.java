@@ -37,6 +37,10 @@ public class SimpleStreamer implements Streamer {
     
 	protected StreamerConfig _config;
 	
+	public SimpleStreamer() {
+		// empty
+	}
+	
 	public void init(StreamerConfig config) {
 		_config=config;
 	}

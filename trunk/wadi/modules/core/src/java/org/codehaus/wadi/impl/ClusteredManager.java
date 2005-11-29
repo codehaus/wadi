@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.jms.Destination;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -36,6 +37,7 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Session;
@@ -236,8 +238,17 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	}
 
 	// PartitionManagerConfig API
+	
 	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
 		return _contextualiser.contextualise(hreq, hres, chain, id, immoter, motionLock, exclusiveOnly);
+	}
+	
+	public Immoter getImmoter(String name, Motable immotable) {
+		return _contextualiser.getDemoter(name, immotable);
+	}
+	
+	public String getNodeName(Destination destination) {
+		return _dispatcher.getNodeName(destination);
 	}
 
 }
