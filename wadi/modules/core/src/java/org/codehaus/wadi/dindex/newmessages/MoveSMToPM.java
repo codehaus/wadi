@@ -35,7 +35,7 @@ public class MoveSMToPM implements Serializable {
 	}
 	
 	public String toString() {
-		return "<MovePMToSM:"+_success+">";
+		return "<MoveSMToPM:"+_success+">";
 	}
 	
 }
