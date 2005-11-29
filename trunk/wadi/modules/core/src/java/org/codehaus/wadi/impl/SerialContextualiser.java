@@ -65,12 +65,12 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
         	boolean needsRelease=false;
         	invocationLock=_collapser.getLock(id);
         	try {
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+id);
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+id+ " ["+Thread.currentThread().getName()+"]");
         		Utils.acquireUninterrupted(invocationLock);
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+id);
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+id+ " ["+Thread.currentThread().getName()+"]");
         		needsRelease=true;
         	} catch (TimeoutException e) {
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - not acquired: "+id);
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - not acquired: "+id+ " ["+Thread.currentThread().getName()+"]");
         		_log.error("unexpected timeout - proceding without lock", e);
         	}
 
@@ -95,11 +95,11 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
                 needsRelease=!found;
                 return found;
             } finally {
-                if (needsRelease) {
-            		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+id);
-                	invocationLock.release();
-            		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+id);
-                }
+            	if (needsRelease) {
+            		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+id+ " ["+Thread.currentThread().getName()+"]");
+            		invocationLock.release();
+            		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+id+ " ["+Thread.currentThread().getName()+"]");
+            	}
             }
         }
     }

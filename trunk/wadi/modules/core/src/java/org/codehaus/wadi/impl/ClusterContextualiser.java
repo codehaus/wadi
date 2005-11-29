@@ -320,33 +320,33 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     }
 
     public void onImmigration(ObjectMessage message, Motable emotable) {
-        String name=emotable.getName();
-        if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+name);
-        Sync lock=_locker.getLock(name, emotable);
-        boolean acquired=false;
-        try {
-            Utils.acquireUninterrupted(lock);
-    		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+name);
-            acquired=true;
-    		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+name);
-
-            Emoter emoter=new ImmigrationEmoter(message);
-
-            if (!emotable.checkTimeframe(System.currentTimeMillis()))
-                if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
-
-            Immoter immoter=_top.getDemoter(name, emotable);
-            Utils.mote(emoter, immoter, emotable, name);
-            notifySessionRelocation(name);
-        } catch (TimeoutException e) {
-            if (_log.isWarnEnabled()) _log.warn("could not acquire promotion lock for incoming session: "+name);
-        } finally {
-            if (acquired) {
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+name);
-                lock.release();
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+name);
-            }
-        }
+    	String name=emotable.getName();
+    	if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+name);
+    	Sync lock=_locker.getLock(name, emotable);
+    	boolean acquired=false;
+    	try {
+    		Utils.acquireUninterrupted(lock);
+    		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+name+ " ["+Thread.currentThread().getName()+"]");
+    		acquired=true;
+    		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+name+ " ["+Thread.currentThread().getName()+"]");
+    		
+    		Emoter emoter=new ImmigrationEmoter(message);
+    		
+    		if (!emotable.checkTimeframe(System.currentTimeMillis()))
+    			if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
+    		
+    		Immoter immoter=_top.getDemoter(name, emotable);
+    		Utils.mote(emoter, immoter, emotable, name);
+    		notifySessionRelocation(name);
+    	} catch (TimeoutException e) {
+    		if (_log.isWarnEnabled()) _log.warn("could not acquire promotion lock for incoming session: "+name);
+    	} finally {
+    		if (acquired) {
+    			if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+name+ " ["+Thread.currentThread().getName()+"]");
+    			lock.release();
+    			if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+name+ " ["+Thread.currentThread().getName()+"]");
+    		}
+    	}
     }
 
     public void load(Emoter emoter, Immoter immoter) {

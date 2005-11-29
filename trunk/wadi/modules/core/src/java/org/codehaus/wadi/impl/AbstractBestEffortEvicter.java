@@ -153,18 +153,18 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         		String id=motable.getName();
         		if (id!=null) {
         			Sync sync=_config.getEvictionLock(id, motable);
-            		if (traceEnabled) _lockLog.trace("Invocation - acquiring: "+id);
+        			if (traceEnabled) _lockLog.trace("Invocation - acquiring: "+id+ " ["+Thread.currentThread().getName()+"]");
         			if (Utils.attemptUninterrupted(sync)) {
-        				if (traceEnabled) _lockLog.trace("Invocation - acquired: "+id);
+        				if (traceEnabled) _lockLog.trace("Invocation - acquired: "+id+ " ["+Thread.currentThread().getName()+"]");
         				if (motable.getTimedOut(time)) {
         					_config.expire(motable);
         					expirations++;
         				}
-        				if (traceEnabled) _lockLog.trace("Invocation - releasing: "+id);
+        				if (traceEnabled) _lockLog.trace("Invocation - releasing: "+id+ " ["+Thread.currentThread().getName()+"]");
         				sync.release();
-        				if (traceEnabled) _lockLog.trace("Invocation - released: "+id);
+        				if (traceEnabled) _lockLog.trace("Invocation - released: "+id+ " ["+Thread.currentThread().getName()+"]");
         			} else {
-        				if (traceEnabled) _lockLog.trace("Invocation - not acquired: "+id);
+        				if (traceEnabled) _lockLog.trace("Invocation - not acquired: "+id+ " ["+Thread.currentThread().getName()+"]");
         			}
         		}
         	}
@@ -174,19 +174,24 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         // and the same again for demotions...
         int demotions=0;
         {
+        	boolean traceEnabled=_lockLog.isTraceEnabled();
             int l=toDemote.length;
             for (int i=0; i<l; i++) {
                 Motable motable=(Motable)toDemote[i]; // TODO - not happy about an Evicter knowing about Motables
                 String id=motable.getName();
                 Sync sync=_config.getEvictionLock(id, motable);
+    			if (traceEnabled) _lockLog.trace("Invocation - acquiring: "+id+ " ["+Thread.currentThread().getName()+"]");
                 if (Utils.attemptUninterrupted(sync)) {
+    				if (traceEnabled) _lockLog.trace("Invocation - acquired: "+id+ " ["+Thread.currentThread().getName()+"]");
                     if (test(motable, time, motable.getTimeToLive(time))) { // IDEA - could have remembered ttl
                         _config.demote(motable);
                         demotions++;
                     }
-                    sync.release();
+    				if (traceEnabled) _lockLog.trace("Invocation - releasing: "+id+ " ["+Thread.currentThread().getName()+"]");
+    				sync.release();
+    				if (traceEnabled) _lockLog.trace("Invocation - released: "+id+ " ["+Thread.currentThread().getName()+"]");
                 } else {
-                    if (_log.isTraceEnabled()) _log.trace("could not acquire demotion lock: "+id);
+    				if (traceEnabled) _lockLog.trace("Invocation - not acquired: "+id+ " ["+Thread.currentThread().getName()+"]");
                 }
             }
             toDemote=null;

@@ -92,7 +92,7 @@ public class HybridRelocater extends AbstractRelocater {
     	ObjectMessage message2=null;
 
     	boolean useGridState=false;
-    	
+
     	if (useGridState) {
     		Motable immotable=null;
     		try {
@@ -100,7 +100,7 @@ public class HybridRelocater extends AbstractRelocater {
     		} catch (Exception e) {
     			_log.error("unexpected error", e);
     		}
-    		
+
     		if (null==immotable) {
     			return false;
     		} else {
@@ -108,7 +108,7 @@ public class HybridRelocater extends AbstractRelocater {
     			return answer;
     		}
     	} else {
-    		
+
     		try {
     			message2=_config.getDIndex().relocate(sessionName, nodeName, concurrentRequestThreads, shuttingDown, _resTimeout);
     			if (message2==null || (response=(RelocationResponse)message2.getObject())==null)
@@ -116,13 +116,13 @@ public class HybridRelocater extends AbstractRelocater {
     		} catch (Exception e) {
     			_log.warn("problem arranging relocation", e);
     		}
-    		
+
     		Motable emotable=response.getMotable();
     		if (emotable!=null) {
     			// relocate session...
     			if (!emotable.checkTimeframe(System.currentTimeMillis()))
     				if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
-    			
+
     			Emoter emoter=new RelocationEmoter(response.getNodeName(), message2);
     			Motable immotable=Utils.mote(emoter, immoter, emotable, name);
     			if (null==immotable)
@@ -131,16 +131,16 @@ public class HybridRelocater extends AbstractRelocater {
     				boolean answer=immoter.contextualise(hreq, hres, chain, name, immotable, motionLock);
     				return answer;
     			}
-    			
+
     		}
-    		
+
     		InetSocketAddress address=response.getAddress();
     		if (address!=null) {
     			// relocate request...
     			try {
-    				
+
     				//FIXME - API should not be in terms of HttpProxy but in terms of RequestRelocater...
-    				
+
     				_httpProxy.proxy(address, hreq, hres);
     				_log.trace("PROXY WAS SUCCESSFUL");
     				motionLock.release();
@@ -150,7 +150,7 @@ public class HybridRelocater extends AbstractRelocater {
     				return false;
     			}
     		}
-    		
+
     		// if we are still here - session could not be found
     		if (_log.isWarnEnabled()) _log.warn("session not found: " + sessionName);
     		return false;
@@ -250,12 +250,12 @@ public class HybridRelocater extends AbstractRelocater {
         Sync invocationLock=_config.getCollapser().getLock(sessionName);
         boolean acquired=false;
         try {
-    		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+sessionName);
+	  if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+sessionName+ " ["+Thread.currentThread().getName()+"]");
             Utils.acquireUninterrupted(invocationLock);
-    		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+sessionName);
+	    if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+sessionName+ " ["+Thread.currentThread().getName()+"]");
             acquired=true;
         } catch (TimeoutException e) {
-    		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - not acquired: "+sessionName);
+	  if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - not acquired: "+sessionName+ " ["+Thread.currentThread().getName()+"]");
             if (_log.isErrorEnabled()) _log.error("exclusive access could not be guaranteed within timeframe: "+sessionName, e);
             return;
         }
@@ -268,14 +268,14 @@ public class HybridRelocater extends AbstractRelocater {
             if (found)
                 acquired=false; // someone else has released the promotion lock...
         } catch (Exception e) {
-            if (_log.isWarnEnabled()) _log.warn("problem handling relocation request: "+sessionName, e);
+        	if (_log.isWarnEnabled()) _log.warn("problem handling relocation request: "+sessionName, e);
         } finally {
-            RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
-            if (acquired) {
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+sessionName);
-            	invocationLock.release();
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+sessionName);
-            }
+        	RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
+        	if (acquired) {
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+sessionName+ " ["+Thread.currentThread().getName()+"]");
+        		invocationLock.release();
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+sessionName+ " ["+Thread.currentThread().getName()+"]");
+        	}
         }
         // N.B. - I don't think it is necessary to acquire the motionLock - consider...
         // TODO - if we see a LocationRequest for a session that we know is Dead - we should respond immediately.
