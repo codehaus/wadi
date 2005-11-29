@@ -14,22 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.messages;
+package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
+import org.codehaus.wadi.dindex.DIndexResponse;
 
-public class DIndexInsertionRequest extends AbstractDIndexRequest implements Serializable {
+public class InsertPMToIM implements DIndexResponse, Serializable {
 
-    public DIndexInsertionRequest(String name) {
-        super(name);
+	protected boolean _success;
+	
+    public InsertPMToIM(boolean success) {
+        super();
+        _success=success;
     }
-
-    // we need to pass the partition number through here as well...
-
+    
+    public boolean getSuccess() {
+    	return _success;
+    }
+    
     public String toString() {
-        return "<DIndexInsertionRequest: "+_key+">";
+        return "<InsertPMToIM:"+_success+">";
     }
-
+    
 }

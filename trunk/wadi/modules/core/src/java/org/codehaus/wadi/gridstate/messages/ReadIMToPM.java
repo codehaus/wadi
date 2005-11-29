@@ -41,5 +41,9 @@ public class ReadIMToPM implements Serializable {
 	public Destination getIM() {
 		return _im;
 	}
-
+	
+	public String toString() {
+		return "<ReadIMToPM:"+_key+">";
+	}
+	
 }

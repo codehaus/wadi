@@ -26,9 +26,9 @@ import org.codehaus.wadi.dindex.Partition;
 import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
-import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
-import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
+import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
+import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
@@ -135,8 +135,8 @@ public class PartitionFacade extends AbstractPartition {
     	return _content.exchange(request, timeout);
     }
     
-    public void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
-    	_log.info("dispatching: "+request+" on "+_content);
+    public void onMessage(ObjectMessage message, InsertIMToPM request) {
+    	if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
     	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
     	try {
@@ -182,7 +182,7 @@ public class PartitionFacade extends AbstractPartition {
     }
     
     // should superceded above method
-    public void onMessage(ObjectMessage message, RelocationRequestI2P request) {
+    public void onMessage(ObjectMessage message, MoveIMToPM request) {
     	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
     	try {

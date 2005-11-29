@@ -32,13 +32,13 @@ import org.codehaus.wadi.dindex.DIndexResponse;
 import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexDeletionResponse;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
-import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
-import org.codehaus.wadi.dindex.messages.DIndexInsertionResponse;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationResponse;
 import org.codehaus.wadi.dindex.messages.RelocationRequest;
 import org.codehaus.wadi.dindex.messages.RelocationResponse;
-import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
+import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
+import org.codehaus.wadi.dindex.newmessages.InsertPMToIM;
+import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.messages.MovePMToSM;
 import org.codehaus.wadi.gridstate.messages.MoveSMToPM;
@@ -72,7 +72,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 	}
 	
 	public String toString() {
-		return "<LocalPartition:"+_key+"@"+_config.getLocalNodeName()+">";
+		return "<LocalPartition:"+_key+"@"+(_config==null?"<unknown>":_config.getLocalNodeName())+">";
 	}
 	
 	public void put(String name, Destination destination) {
@@ -82,7 +82,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		}
 	}
 	
-	public void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
+	public void onMessage(ObjectMessage message, InsertIMToPM request) {
 		Destination newDestination=null;
 		try{newDestination=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
 		boolean success=false;
@@ -99,7 +99,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 			if (_log.isWarnEnabled()) _log.warn("insertion {"+request.getKey()+" : "+_config.getNodeName(newDestination) + "} failed - key already in use");
 		}
 		
-		DIndexResponse response=new DIndexInsertionResponse(success);
+		DIndexResponse response=new InsertPMToIM(success);
 		_config.getDispatcher().reply(message, response);
 	}
 	
@@ -156,7 +156,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 	}
 
 	// called on Partition Master
-	public void onMessage(ObjectMessage message1, RelocationRequestI2P request) {
+	public void onMessage(ObjectMessage message1, MoveIMToPM request) {
 		
 		// TODO - whilst we are in here, we should have a SHARED lock on this Partition, so it cannot be moved
 		// We should take an exclusive PM lock on the session ID, so no-one else can r/w its location whilst we are doing so.

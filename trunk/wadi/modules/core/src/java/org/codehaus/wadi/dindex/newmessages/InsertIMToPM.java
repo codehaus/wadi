@@ -14,27 +14,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.messages;
+package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.dindex.DIndexResponse;
+import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
 
-public class DIndexInsertionResponse implements DIndexResponse, Serializable {
+public class InsertIMToPM extends AbstractDIndexRequest implements Serializable {
 
-	protected boolean _success;
-	
-    public DIndexInsertionResponse(boolean success) {
-        super();
-        _success=success;
+    public InsertIMToPM(String name) {
+        super(name);
     }
-    
-    public boolean getSuccess() {
-    	return _success;
-    }
-    
+
     public String toString() {
-        return "<DIndexInsertionResponse>";
+        return "<InsertIMToPM:"+_key+">";
     }
-    
+
 }

@@ -49,11 +49,11 @@ import org.codehaus.wadi.dindex.StateManagerConfig;
 import org.codehaus.wadi.dindex.impl.SimpleStateManager.PMToIMEmotable;
 import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
-import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
-import org.codehaus.wadi.dindex.messages.DIndexInsertionResponse;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.messages.RelocationRequest;
-import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
+import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
+import org.codehaus.wadi.dindex.newmessages.InsertPMToIM;
+import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
@@ -355,10 +355,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	public boolean insert(String name, long timeout) {
 		try {
-			DIndexInsertionRequest request=new DIndexInsertionRequest(name);
+			InsertIMToPM request=new InsertIMToPM(name);
 			PartitionFacade pf=getPartition(name);
 			ObjectMessage reply=pf.exchange(request, timeout);
-			return ((DIndexInsertionResponse)reply.getObject()).getSuccess();
+			return ((InsertPMToIM)reply.getObject()).getSuccess();
 		} catch (Exception e) {
 		  _log.warn("problem inserting session key into DHT", e);
 		  return false;
@@ -436,7 +436,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
     }
     
     public Motable relocate2(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout) throws Exception {
-        RelocationRequestI2P request=new RelocationRequestI2P(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
+        MoveIMToPM request=new MoveIMToPM(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
         ObjectMessage message=getPartition(sessionName).exchange(request, timeout);
         
         try {

@@ -33,4 +33,9 @@ public class MoveIMToSM implements Serializable {
 	public boolean getSuccess() {
 		return _success;
 	}
+	
+	public String toString() {
+		return "<MoveIMToSM:"+_success+">";
+	}
+	
 }

@@ -25,9 +25,9 @@ import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.messages.DIndexDeletionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
-import org.codehaus.wadi.dindex.messages.DIndexInsertionRequest;
 import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
-import org.codehaus.wadi.dindex.newmessages.RelocationRequestI2P;
+import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
+import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
 public class RemotePartition extends AbstractPartition {
@@ -76,7 +76,7 @@ public class RemotePartition extends AbstractPartition {
 		return "<"+getClass()+":"+_key+"@"+_config.getLocalNodeName()+"->"+_config.getNodeName(_location)+">";
 	}
 
-	public void onMessage(ObjectMessage message, DIndexInsertionRequest request) {
+	public void onMessage(ObjectMessage message, InsertIMToPM request) {
 		if (_log.isTraceEnabled()) _log.trace("#"+_key+" : forwarding: " + request + " from "+_config.getLocalNodeName()+" to " + _config.getNodeName(_location));
 		if (!_config.getDispatcher().forward(message, _location))
 			_log.warn("could not forward message");
@@ -100,7 +100,7 @@ public class RemotePartition extends AbstractPartition {
 			_log.warn("could not forward message");
 	}
 	
-	public void onMessage(ObjectMessage message, RelocationRequestI2P request) {
+	public void onMessage(ObjectMessage message, MoveIMToPM request) {
 		if (_log.isWarnEnabled()) _log.warn(_config.getLocalNodeName()+": not Master of Partition["+_key+"] - forwarding message to "+_config.getNodeName(_location));
 		if (!_config.getDispatcher().forward(message, _location))
 			_log.warn("could not forward message");
