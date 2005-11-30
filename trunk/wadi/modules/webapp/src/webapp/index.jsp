@@ -33,43 +33,38 @@
     // add a new entry to session
     synchronized(session)
     {
-    session.setAttribute(""+System.currentTimeMillis(), colour);
-    }
+      session.setAttribute(""+System.currentTimeMillis(), colour);
 
-    // if user has specified a limit to session size, remove from the
-    // front to maintain this size - useful for running jmeter for long
-    // periods...
-    if (limit!=null)
-    {
-    int l=Integer.parseInt(limit);
-    TreeSet keys=new TreeSet();
+      // if user has specified a limit to session size, remove from the
+      // front to maintain this size - useful for running jmeter for long
+      // periods...
+      if (limit!=null) {
+        int l=Integer.parseInt(limit);
+          // copy keys into TreeSet to order them...
+          TreeSet keys=new TreeSet();
+          for (Enumeration e=session.getAttributeNames(); e.hasMoreElements();)
+            keys.add(e.nextElement());
 
-    synchronized (session)
-    {
-    for (Enumeration e=session.getAttributeNames(); e.hasMoreElements();)
-    keys.add(e.nextElement());
+          int sessionSize=keys.size();
+          if (sessionSize>l) {
+            for (Iterator i=keys.iterator(); sessionSize-->l && i.hasNext();)
+              session.removeAttribute((String)i.next());
+          }
+      }
     }
-
-    if (keys.size()>l)
-    {
-    int sessionSize=keys.size();
-    for (Iterator i=keys.iterator(); sessionSize-->l && i.hasNext();)
-    synchronized(session){session.removeAttribute((String)i.next());}
-    }
-    }
-      %>
+    %>
 
     <HTML>
       <frameset rows="33%,33%,34%" cols="33%,33%,34%">
 	<frame src="<%= url %>"/>
-	  <frame src="<%= url %>"/>
-	    <frame src="<%= url %>"/>
-	      <frame src="<%= url %>"/>
-		<frame src="<%= url %>"/>
-		  <frame src="<%= url %>"/>
-		    <frame src="<%= url %>"/>
-		      <frame src="<%= url %>"/>
-			<frame src="<%= url %>"/>
+	<frame src="<%= url %>"/>
+	<frame src="<%= url %>"/>
+	<frame src="<%= url %>"/>
+	<frame src="<%= url %>"/>
+	<frame src="<%= url %>"/>
+	<frame src="<%= url %>"/>
+	<frame src="<%= url %>"/>
+	<frame src="<%= url %>"/>
       </frameset>
     </HTML>
 
