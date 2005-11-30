@@ -41,7 +41,9 @@ public class MoveSMToIM implements Serializable {
 	}
 	
 	public String toString() {
-		return "<MoveSMToIM:"+_key+">";
+		byte[] bytes=(byte[])_value;
+		int l=(bytes==null?0:bytes.length);
+		return "<MoveSMToIM:"+_key+":"+l+"bytes>";
 	}
 
 }
