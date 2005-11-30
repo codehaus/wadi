@@ -439,6 +439,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         MoveIMToPM request=new MoveIMToPM(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
         ObjectMessage message=getPartition(sessionName).exchange(request, timeout);
         
+        if (message==null) {
+        	_log.error("something went wrong - what should we do?"); // TODO
+        	return null;
+        }
+        	
         try {
         	Serializable dm=(Serializable)message.getObject();
         	// the possibilities...
@@ -446,24 +451,28 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         		MoveSMToIM req=(MoveSMToIM)dm;
         		// insert motable into contextualiser stack...
         		byte[] bytes=(byte[])req.getValue();
-        		Motable emotable=new SimpleMotable();
-        		emotable.setBodyAsByteArray(bytes);
-        		// TOTAL HACK - FIXME
-        		emotable.setLastAccessedTime(System.currentTimeMillis());
-        		if (!emotable.checkTimeframe(System.currentTimeMillis()))
-        			if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
-        		
-        		Emoter emoter=new SMToIMEmoter(_config.getNodeName(message.getJMSReplyTo()), message);
-        		Immoter immoter=_config.getImmoter(sessionName, emotable);
-        		Motable immotable=Utils.mote(emoter, immoter, emotable, sessionName);
-        		return immotable;
-//        		if (null==immotable)
-//        			return false;
-//        		else {
-//        			boolean answer=immoter.contextualise(null, null, null, sessionName, immotable, null);
-//        			return answer;
-//        		}
-        		
+        		if (bytes==null) {
+        			_log.warn("failed relocation - 0 bytes arrived: "+sessionName);
+        			return null;
+        		} else {
+        			Motable emotable=new SimpleMotable();
+        			emotable.setBodyAsByteArray(bytes);
+        			// TOTAL HACK - FIXME
+        			emotable.setLastAccessedTime(System.currentTimeMillis());
+        			if (!emotable.checkTimeframe(System.currentTimeMillis()))
+        				if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
+        			
+        			Emoter emoter=new SMToIMEmoter(_config.getNodeName(message.getJMSReplyTo()), message);
+        			Immoter immoter=_config.getImmoter(sessionName, emotable);
+        			Motable immotable=Utils.mote(emoter, immoter, emotable, sessionName);
+        			return immotable;
+//      			if (null==immotable)
+//      			return false;
+//      			else {
+//      			boolean answer=immoter.contextualise(null, null, null, sessionName, immotable, null);
+//      			return answer;
+//      			}        		
+        		}
         	} else if (dm instanceof MovePMToIM) {
         		if (_log.isTraceEnabled()) _log.trace("unknown session: "+sessionName);
         		return null;

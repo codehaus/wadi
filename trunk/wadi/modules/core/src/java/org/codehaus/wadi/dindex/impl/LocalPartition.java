@@ -190,11 +190,6 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		// Partition may only be migrated when exclusive lock has been taken, this may only happen when all shared locks are released - this implies that no PM session locks will be in place...
 
 		String key=request.getKey();
-		// lock
-		// exchange messages with StateMaster
-		Destination destination=(Destination)_map.get(key);
-		// unlock
-
 		Dispatcher _dispatcher=_config.getDispatcher();
 		// what if we are NOT the PM anymore ?
 		// get write lock on location
@@ -205,12 +200,14 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 			Destination im=message1.getJMSReplyTo();
 			agent=_config.getNodeName(im);
 
-			// FINISH up here tomorrow...
 			// PMSyncs should prevent _map entry from being messed with whilst we are messing with it - lock should be exclusive
 			// should synchronise map access - or is it ConcurrentHashMap ?
 			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key+ " ["+Thread.currentThread().getName()+"]");
 			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
 			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key+ " ["+Thread.currentThread().getName()+"]");
+
+			// exchange messages with StateMaster
+			Destination destination=(Destination)_map.get(key);
 
 			if (destination==null) {
 				// session does not exist - tell IM
@@ -230,7 +227,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 				}
 
 				MovePMToSM request2=new MovePMToSM(key, im, pm, poCorrelationId);
-				ObjectMessage message2=_dispatcher.exchangeSendLoop(pm, sm, request2, _config.getInactiveTime(), 10);
+				ObjectMessage message2=_dispatcher.exchangeSend(pm, sm, request2, _config.getInactiveTime());
 				if (message2==null)
 					_log.error("NO RESPONSE WITHIN TIMEFRAME - PANIC!");
 
@@ -240,9 +237,14 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 				} catch (JMSException e) {
 					_log.error("unexpected problem", e); // should be sorted in loop
 				}
-				// alter location
-				Destination oldOwner=(Destination)_map.put(key, im); // The IM is now the SM
-				_log.debug("move: "+key+" {"+_config.getNodeName(oldOwner)+"->"+_config.getNodeName(im)+"}");
+				
+				if (response.getSuccess()) {
+					// alter location
+					Destination oldOwner=(Destination)_map.put(key, im); // The IM is now the SM
+					_log.debug("move: "+key+" {"+_config.getNodeName(oldOwner)+"->"+_config.getNodeName(im)+"}");
+				} else {
+					_log.warn("state relocation failed: "+key);
+				}
 			}
 		} catch (JMSException e) {
 			_log.error("could not read src address from incoming message");

@@ -163,7 +163,7 @@ public class SimpleStateManager implements StateManager {
         		try {
         			response=(MoveIMToSM)message2.getObject();
         			// ackonowledge transfer completed to PartitionMaster, so it may unlock resource...
-        			dispatcher.reply(_message1,new MoveSMToPM());
+        			dispatcher.reply(_message1,new MoveSMToPM(true));
         		} catch (JMSException e) {
         			_log.error("unexpected problem", e);
         		}
@@ -192,6 +192,8 @@ public class SimpleStateManager implements StateManager {
         protected final String _tgtNodeName;
         protected ObjectMessage _message;
         protected final MovePMToSM _request;
+        
+        protected boolean _found=false;
 
         public RelocationImmoter(String nodeName, ObjectMessage message, MovePMToSM request) {
             _tgtNodeName=nodeName;
@@ -210,6 +212,7 @@ public class SimpleStateManager implements StateManager {
 
         public void commit(String name, Motable immotable) {
             // do nothing
+        	_found=true;
         }
 
         public void rollback(String name, Motable immotable) {
@@ -223,6 +226,11 @@ public class SimpleStateManager implements StateManager {
         public String getInfo() {
             return "emigration:"+_tgtNodeName;
         }
+        
+        public boolean getFound() {
+        	return _found;
+        }
+        
     }
 
     //--------------------------------------------------------------------------------------
@@ -238,10 +246,22 @@ public class SimpleStateManager implements StateManager {
     		// Tricky - we need to call a Moter at this point and start removal of State to other node...
     		
     		try {
-    			Immoter promoter=new RelocationImmoter(nodeName, message1, request);
+    			RelocationImmoter promoter=new RelocationImmoter(nodeName, message1, request);
     			boolean found=_config.contextualise(null, null, null, (String)key, promoter, null, true); // if we own session, this will send the correct response...
-    			if (found)
-    				_log.error("WHAT SHOULD WE DO HERE?");
+    			if (!promoter.getFound()) {
+    				_log.warn("state not found - perhaps it has just been destroyed: "+key);
+    	        	MoveSMToIM req=new MoveSMToIM(key, null);
+    	        	// send on null state from StateMaster to InvocationMaster...
+    	        	Destination sm=_dispatcher.getLocalDestination();
+    	        	Destination im=(Destination)request.getIM();
+    	          	long timeout=_config.getInactiveTime();
+    	          	_log.info("sending 0 bytes to : "+_config.getNodeName(im));
+    	        	ObjectMessage ignore=(ObjectMessage)_dispatcher.exchangeSend(sm, im, req, timeout, request.getIMCorrelationId());
+    	        	_log.info("received: "+ignore);
+    				// StateMaster replies to PartitionMaster indicating failure...
+    	        	_log.info("reporting failure to PM");
+    				_dispatcher.reply(message1,new MoveSMToPM(false));
+    			}
     		} catch (Exception e) {
     			if (_log.isWarnEnabled()) _log.warn("problem handling relocation request: "+key, e);
     		} finally {
