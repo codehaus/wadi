@@ -183,7 +183,7 @@ public class TomcatSession extends AtomicallyReplicableSession implements Sessio
 
     // if/when WADI implements e.g. writing sessions out at the end of an event group,
     // it will be done by acquiring a exclusive lock on the session, so won't need
-    // this aproach...
+    // this approach...
 
     // doesn't need to do anything - wasted cycles
   }
@@ -207,6 +207,12 @@ public class TomcatSession extends AtomicallyReplicableSession implements Sessio
     // We don't use it and don't expect it to be called...
 
     throw new UnsupportedOperationException("WADI does not support the use of Session.expire()");
+  }
+
+  // Tomcat 5.5.10 and later
+  
+  public String getIdInternal() {
+	  return _name;
   }
 
 }
