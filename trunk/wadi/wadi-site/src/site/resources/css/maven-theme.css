@@ -53,7 +53,6 @@ h3 {
 	background-color: #ccc;
 	font-weight: bold;
 	font-size: 14px;
-	background-image: url(../images/h3.jpg);
 	background-repeat: no-repeat;
 	background-position: left bottom;
 }
@@ -124,7 +123,6 @@ dt {
 	background-color: #ccc;
 	font-weight: bold;
 	font-size: 14px;
-	background-image: url(../images/h3.jpg);
 	background-repeat: no-repeat;
 	background-position: left bottom;
 }
@@ -146,7 +144,6 @@ table {
 }
 #banner {
 	height: 93px;
-	background: url(../images/banner.jpg);
 }
 #navcolumn ul {
 	margin: 5px 0 15px -0em;
