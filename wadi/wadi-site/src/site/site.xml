@@ -15,6 +15,7 @@
          <item name="Tomcat" href="http://tomcat.apache.org"/>
          <item name="Jetty" href="http://jetty.mortbay.org/jetty/index.html"/>
       </links>
+      
       <menu name="WADI">
          <item name="About" href="./index.html"/>
          <item name="Getting Started" href="./getting-started/index.html"/>
@@ -23,9 +24,17 @@
          <item name="Wiki" href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI"/>
          <item name="How To Help" href="./help.html"/>
       </menu>
+      <menu name="Modules">
+         <item name="Core" href="wadi-core/index.html"/>
+         <item name="JGroups" href="wadi-jgroups/index.html"/>
+         <item name="Jetty 5" href="wadi-jetty5/index.html"/>
+         <item name="Jetty 6" href="wadi-jetty6/index.html"/>
+         <item name="Tomcat 5.0.x" href="wadi-tomcat50/index.html"/>
+         <item name="Tomcat 5.5" href="wadi-tomcat55/index.html"/>
+         
+      </menu>
       <menu name="Source">
          <item name="Browse the Source" href="http://cvs.wadi.codehaus.org/" />
       </menu>
-      ${reports}
    </body>
 </project>
