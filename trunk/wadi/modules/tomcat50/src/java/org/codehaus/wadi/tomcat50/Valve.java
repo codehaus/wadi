@@ -31,7 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * A Tomcat Valvewhich checks incoming proxied requests to see if they were originally from
+ * A Tomcat Valve which checks incoming proxied requests to see if they were originally from
  * a secure connection. If this is the case, it modifies the request object so that it encodes
  * this fact.
  *
