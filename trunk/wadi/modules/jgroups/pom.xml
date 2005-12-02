@@ -47,6 +47,25 @@
   <build>
     <sourceDirectory>src/java</sourceDirectory>
     <testSourceDirectory>src/test</testSourceDirectory>
+    <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>../../wadi-site/target/site/${artifactId}</outputDirectory>
+                </configuration>
+                
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-javadoc-plugin</artifactId>
+              <configuration>
+                <source>1.4</source>
+                <destDir>../../wadi-site/target/site/${artifactId}</destDir>
+              </configuration>
+          </plugin>
+            
+	</plugins>
   </build>
 
   <reporting>
@@ -54,6 +73,14 @@
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-plugin-plugin</artifactId>
+      </plugin>
+      <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-javadoc-plugin</artifactId>
+         <configuration>
+           <source>1.4</source>
+           <destDir>../../wadi-site/target/site/apidocs/modules/${artifactId}</destDir>
+         </configuration>
       </plugin>
     </plugins>
   </reporting>
