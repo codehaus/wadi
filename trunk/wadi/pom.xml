@@ -38,7 +38,7 @@
         <developer>
             <id>jim</id>
             <name>Jim Goodwill</name>
-            <email>james@virtuas.com</email>
+            <email>jgoodwill@codehaus.org</email>
             <organization>Virtuas</organization>
             <organizationUrl>http://www.virtuas.com</organizationUrl>
         </developer>
@@ -513,6 +513,10 @@
     </build>
     <reporting>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>surefire-report-maven-plugin</artifactId>
