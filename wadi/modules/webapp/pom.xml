@@ -49,14 +49,6 @@
             <artifactId>jasper-runtime</artifactId>
         </dependency>
 
-        <!--    <dependency>
-            <groupId>tomcat</groupId>
-            <artifactId>catalina</artifactId>
-            <version>5.5.9</version>
-            <scope>provided</scope>
-        </dependency>
-        -->
-
         <dependency>
             <groupId>wadi</groupId>
             <artifactId>wadi-core</artifactId>
@@ -145,6 +137,16 @@
                      <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.NeverEvicter</name>
                      <value>info</value>
                   </systemProperty>
+                  <systemProperty>
+                     <name>org.apache.commons.logging.simplelog.log.MESSAGES</name>
+                     <value>trace</value>
+                  </systemProperty>
+                  <systemProperty>
+                     <name>org.apache.commons.logging.simplelog.log.LOCKS</name>
+                     <value>trace</value>
+                  </systemProperty>
+<!--
+-->
                   <systemProperty>
                      <name>wadi.properties</name>
                      <value>${wadi.properties}</value>
