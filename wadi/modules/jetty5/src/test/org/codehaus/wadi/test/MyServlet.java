@@ -116,7 +116,7 @@ public class MyServlet implements Servlet {
         _httpAddress=httpAddress;
         PartitionManager partitionManager=new DummyPartitionManager(24);
         Dispatcher dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
-        _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _httpAddress, _httpProxy, dispatcher, partitionManager);
+        _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _httpAddress, _httpProxy, dispatcher, partitionManager, _collapser);
     }
 
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}

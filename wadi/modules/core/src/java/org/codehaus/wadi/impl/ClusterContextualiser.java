@@ -103,7 +103,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     protected final Immoter _immoter;
     protected final Emoter _emoter;
     protected final int _resTimeout=500; // TODO - parameterise
-    protected final Log _lockLog=LogFactory.getLog("LOCKS");
+    protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 
 
     public ClusterContextualiser(Contextualiser next, Collapser collapser, Relocater relocater) {
@@ -322,29 +322,29 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     public void onImmigration(ObjectMessage message, Motable emotable) {
     	String name=emotable.getName();
     	if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+name);
-    	Sync lock=_locker.getLock(name, emotable);
-    	boolean acquired=false;
+    	Sync invocationLock=_locker.getLock(name, emotable);
+    	boolean invocationLockAcquired=false;
     	try {
-    		Utils.acquireUninterrupted(lock);
-    		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+name+ " ["+Thread.currentThread().getName()+"]");
-    		acquired=true;
-    		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+name+ " ["+Thread.currentThread().getName()+"]");
-    		
+    		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+name+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
+    		Utils.acquireUninterrupted(invocationLock);
+    		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+name+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
+    		invocationLockAcquired=true;
+
     		Emoter emoter=new ImmigrationEmoter(message);
-    		
+
     		if (!emotable.checkTimeframe(System.currentTimeMillis()))
     			if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
-    		
+
     		Immoter immoter=_top.getDemoter(name, emotable);
     		Utils.mote(emoter, immoter, emotable, name);
     		notifySessionRelocation(name);
     	} catch (TimeoutException e) {
     		if (_log.isWarnEnabled()) _log.warn("could not acquire promotion lock for incoming session: "+name);
     	} finally {
-    		if (acquired) {
-    			if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+name+ " ["+Thread.currentThread().getName()+"]");
-    			lock.release();
-    			if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+name+ " ["+Thread.currentThread().getName()+"]");
+    		if (invocationLockAcquired) {
+    			if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+name+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
+    			invocationLock.release();
+    			if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+name+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
     		}
     	}
     }

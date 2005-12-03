@@ -51,11 +51,14 @@ import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.impl.AbstractMotable;
 import org.codehaus.wadi.impl.RankedRWLock;
 import org.codehaus.wadi.impl.SimpleMotable;
+import org.codehaus.wadi.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 public class SimpleStateManager implements StateManager {
 
+	protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 	protected final Dispatcher _dispatcher;
 	protected final long _inactiveTime;
     protected final int _resTimeout=500; // TODO - parameterise
@@ -63,7 +66,7 @@ public class SimpleStateManager implements StateManager {
 	protected StateManagerConfig _config;
     protected Log _log=LogFactory.getLog(getClass());
 
-	public SimpleStateManager(Dispatcher dispatcher, long inactiveTime) {
+    public SimpleStateManager(Dispatcher dispatcher, long inactiveTime) {
 		super();
 		_dispatcher=dispatcher;
 		_inactiveTime=inactiveTime;
@@ -145,7 +148,7 @@ public class SimpleStateManager implements StateManager {
         public void setBodyAsByteArray(byte[] bytes) throws Exception {
         	Motable immotable=new SimpleMotable();
         	immotable.setBodyAsByteArray(bytes);
-        	
+
         	Object key=_get.getKey();
         	Dispatcher dispatcher=_config.getDispatcher();
         	long timeout=_config.getInactiveTime();
@@ -192,8 +195,9 @@ public class SimpleStateManager implements StateManager {
         protected final String _tgtNodeName;
         protected ObjectMessage _message;
         protected final MovePMToSM _request;
-        
+
         protected boolean _found=false;
+        protected Sync _invocationLock;
 
         public RelocationImmoter(String nodeName, ObjectMessage message, MovePMToSM request) {
             _tgtNodeName=nodeName;
@@ -207,13 +211,29 @@ public class SimpleStateManager implements StateManager {
 
         public boolean prepare(String name, Motable emotable, Motable immotable) {
         	// work is done in ClusterEmotable...
+        	// take invocation lock
+        	boolean needsRelease=false;
+        	_invocationLock=_config.getInvocationLock(name);
+        	try {
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+name+ " ["+Thread.currentThread().getName()+"]"+" : "+_invocationLock);
+        		Utils.acquireUninterrupted(_invocationLock);
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+name+ " ["+Thread.currentThread().getName()+"]"+" : "+_invocationLock);
+        		needsRelease=true;
+        	} catch (TimeoutException e) {
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - not acquired: "+name+ " ["+Thread.currentThread().getName()+"]"+" : "+_invocationLock);
+        		_log.error("unexpected timeout - proceding without lock", e);
+        	}
         	return true;
         }
 
         public void commit(String name, Motable immotable) {
             // do nothing
+        	// release invocation lock
         	_found=true;
-        }
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+name+ " ["+Thread.currentThread().getName()+"]"+" : "+_invocationLock);
+			_invocationLock.release();
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+name+ " ["+Thread.currentThread().getName()+"]"+" : "+_invocationLock);
+			}
 
         public void rollback(String name, Motable immotable) {
             // this probably has to by NYI... - nasty...
@@ -226,15 +246,15 @@ public class SimpleStateManager implements StateManager {
         public String getInfo() {
             return "emigration:"+_tgtNodeName;
         }
-        
+
         public boolean getFound() {
         	return _found;
         }
-        
+
     }
 
     //--------------------------------------------------------------------------------------
-    
+
 	// called on State Master...
     public void onMessage(ObjectMessage message1, MovePMToSM request) {
         // DO NOT Dispatch onto Partition - deal with it here...
@@ -244,18 +264,19 @@ public class SimpleStateManager implements StateManager {
     		RankedRWLock.setPriority(RankedRWLock.EMIGRATION_PRIORITY);
 
     		// Tricky - we need to call a Moter at this point and start removal of State to other node...
-    		
+
     		try {
-    			RelocationImmoter promoter=new RelocationImmoter(nodeName, message1, request);
+	        	Destination im=(Destination)request.getIM();
+	        	String imName=_config.getNodeName(im);
+    			RelocationImmoter promoter=new RelocationImmoter(imName, message1, request);
     			boolean found=_config.contextualise(null, null, null, (String)key, promoter, null, true); // if we own session, this will send the correct response...
     			if (!promoter.getFound()) {
     				_log.warn("state not found - perhaps it has just been destroyed: "+key);
     	        	MoveSMToIM req=new MoveSMToIM(key, null);
     	        	// send on null state from StateMaster to InvocationMaster...
     	        	Destination sm=_dispatcher.getLocalDestination();
-    	        	Destination im=(Destination)request.getIM();
     	          	long timeout=_config.getInactiveTime();
-    	          	_log.info("sending 0 bytes to : "+_config.getNodeName(im));
+    	          	_log.info("sending 0 bytes to : "+imName);
     	        	ObjectMessage ignore=(ObjectMessage)_dispatcher.exchangeSend(sm, im, req, timeout, request.getIMCorrelationId());
     	        	_log.info("received: "+ignore);
     				// StateMaster replies to PartitionMaster indicating failure...
@@ -270,7 +291,7 @@ public class SimpleStateManager implements StateManager {
     	} finally {
     	}
     }
-    
+
     // evacuation protocol
 
     public boolean offerEmigrant(String key, Motable emotable, long timeout) {

@@ -38,6 +38,7 @@ import org.activecluster.ClusterListener;
 import org.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Context;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
@@ -85,6 +86,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	protected final long _inactiveTime;
 	protected final PartitionManager _partitionManager;
 	protected final StateManager _stateManager;
+	protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 
 	public DIndex(String nodeName, int numPartitions, long inactiveTime, Dispatcher dispatcher, Map distributedState, PartitionMapper mapper) {
 		_nodeName=nodeName;
@@ -391,59 +393,70 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         //getPartition(sessionName).onMessage(message, request);
         return forwardAndExchange(sessionName, request, timeout);
     }
-    
+
     class SMToIMEmoter extends AbstractChainedEmoter {
     	protected final Log _log=LogFactory.getLog(getClass());
-    	
+
     	protected final String _nodeName;
     	protected final ObjectMessage _message;
-    	
+
+    	protected Sync _invocationLock;
+    	protected Sync _stateLock;
+
     	public SMToIMEmoter(String nodeName, ObjectMessage message) {
     		_nodeName=nodeName;
     		_message=message;
     	}
-    	
+
     	public boolean prepare(String name, Motable emotable, Motable immotable) {
     		try {
+//    			Sync _stateLock=((Context)emotable).getExclusiveLock();
+//        		if (_lockLog.isTraceEnabled()) _lockLog.trace("State - (excl.): "+name+ " ["+Thread.currentThread().getName()+"]");
+//        		Utils.acquireUninterrupted(_stateLock);
+//        		if (_lockLog.isTraceEnabled()) _lockLog.trace("State - (excl.): "+name+ " ["+Thread.currentThread().getName()+"]");
     			immotable.copy(emotable);
     		} catch (Exception e) {
     			_log.warn("oops", e);
     			return false;
     		}
-    		
-    		// respond...
-    		MoveIMToSM response=new MoveIMToSM(true);
-    		_dispatcher.reply(_message, response);
-    		
+
     		return true;
     	}
-    	
+
     	public void commit(String name, Motable emotable) {
     		try {
+        		// respond...
+        		MoveIMToSM response=new MoveIMToSM(true);
+        		_dispatcher.reply(_message, response);
+
     			emotable.destroy(); // remove copy in store
+//    			if (_lockLog.isTraceEnabled()) _lockLog.trace("State (excl.) - releasing: "+name+ " ["+Thread.currentThread().getName()+"]");
+//    			_stateLock.release();
+//    			if (_lockLog.isTraceEnabled()) _lockLog.trace("State (excl.) - released: "+name+ " ["+Thread.currentThread().getName()+"]");
+
     		} catch (Exception e) {
     			throw new UnsupportedOperationException("NYI"); // NYI
     		}
     	}
-    	
+
     	public void rollback(String name, Motable motable) {
     		throw new RuntimeException("NYI");
     	}
-    	
+
     	public String getInfo() {
     		return "immigration:"+_nodeName;
     	}
     }
-    
+
     public Motable relocate2(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout) throws Exception {
         MoveIMToPM request=new MoveIMToPM(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
         ObjectMessage message=getPartition(sessionName).exchange(request, timeout);
-        
+
         if (message==null) {
         	_log.error("something went wrong - what should we do?"); // TODO
         	return null;
         }
-        	
+
         try {
         	Serializable dm=(Serializable)message.getObject();
         	// the possibilities...
@@ -461,7 +474,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         			emotable.setLastAccessedTime(System.currentTimeMillis());
         			if (!emotable.checkTimeframe(System.currentTimeMillis()))
         				if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
-        			
+
         			Emoter emoter=new SMToIMEmoter(_config.getNodeName(message.getJMSReplyTo()), message);
         			Immoter immoter=_config.getImmoter(sessionName, emotable);
         			Motable immotable=Utils.mote(emoter, immoter, emotable, sessionName);
@@ -471,7 +484,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 //      			else {
 //      			boolean answer=immoter.contextualise(null, null, null, sessionName, immotable, null);
 //      			return answer;
-//      			}        		
+//      			}
         		}
         	} else if (dm instanceof MovePMToIM) {
         		if (_log.isTraceEnabled()) _log.trace("unknown session: "+sessionName);
@@ -485,7 +498,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         }
         return null;
     }
-    
+
 	public ObjectMessage forwardAndExchange(String name, RelocationRequest request, long timeout) throws Exception {
 		_log.trace("wrapping request");
 		DIndexForwardRequest request2=new DIndexForwardRequest(request);
@@ -532,13 +545,17 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	}
 
 	// StateManagerConfig API
-	
+
 	public String getLocalNodeName() {
 		return _nodeName;
 	}
-	
+
 	public 	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
 		return _config.contextualise(hreq, hres, chain, id, immoter, motionLock, exclusiveOnly);
+	}
+
+	public Sync getInvocationLock(String name) {
+		return _config.getInvocationLock(name);
 	}
 
 }

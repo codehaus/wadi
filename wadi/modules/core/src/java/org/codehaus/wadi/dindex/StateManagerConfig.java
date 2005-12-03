@@ -42,5 +42,7 @@ public interface StateManagerConfig {
 	Dispatcher getDispatcher();
 	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException;
 	long getInactiveTime();
+
+	Sync getInvocationLock(String name);
 	
 }

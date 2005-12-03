@@ -130,7 +130,7 @@ public class TestCluster extends TestCase {
             _relocater=new DummyRelocater();
             _middle=new ClusterContextualiser(_bottom, _collapser, _relocater);
             _top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
-            _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), isa, proxy, _dispatcher, new DummyPartitionManager(24));
+            _manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), isa, proxy, _dispatcher, new DummyPartitionManager(24), _collapser);
         }
 
         protected boolean _running;

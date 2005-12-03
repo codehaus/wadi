@@ -57,7 +57,7 @@ public class HybridRelocater extends AbstractRelocater {
     protected final long _resTimeout;
     protected final long _ackTimeout;
     protected final boolean _sessionOrRequestPreferred; // true if relocation of session is preferred to relocation of request
-    protected final Log _lockLog=LogFactory.getLog("LOCKS");
+    protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 
     public HybridRelocater(long resTimeout, long ackTimeout, boolean sessionOrRequestPreferred) {
         _resTimeout=resTimeout;
@@ -248,14 +248,14 @@ public class HybridRelocater extends AbstractRelocater {
         if (_log.isTraceEnabled()) _log.trace("relocating "+sessionName+" from "+_nodeName+" to "+nodeName);
 
         Sync invocationLock=_config.getCollapser().getLock(sessionName);
-        boolean acquired=false;
+        boolean invocationLockAcquired=false;
         try {
-	  if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+sessionName+ " ["+Thread.currentThread().getName()+"]");
+	  if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+sessionName+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
             Utils.acquireUninterrupted(invocationLock);
-	    if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+sessionName+ " ["+Thread.currentThread().getName()+"]");
-            acquired=true;
+	    if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+sessionName+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
+            invocationLockAcquired=true;
         } catch (TimeoutException e) {
-	  if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - not acquired: "+sessionName+ " ["+Thread.currentThread().getName()+"]");
+	  if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - not acquired: "+sessionName+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
             if (_log.isErrorEnabled()) _log.error("exclusive access could not be guaranteed within timeframe: "+sessionName, e);
             return;
         }
@@ -266,15 +266,15 @@ public class HybridRelocater extends AbstractRelocater {
             RankedRWLock.setPriority(RankedRWLock.EMIGRATION_PRIORITY);
             boolean found=_contextualiser.contextualise(null,null,null,sessionName, promoter, invocationLock, true); // if we own session, this will send the correct response...
             if (found)
-                acquired=false; // someone else has released the promotion lock...
+                invocationLockAcquired=false; // someone else has released the promotion lock...
         } catch (Exception e) {
         	if (_log.isWarnEnabled()) _log.warn("problem handling relocation request: "+sessionName, e);
         } finally {
         	RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
-        	if (acquired) {
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+sessionName+ " ["+Thread.currentThread().getName()+"]");
+        	if (invocationLockAcquired) {
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+sessionName+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
         		invocationLock.release();
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+sessionName+ " ["+Thread.currentThread().getName()+"]");
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+sessionName+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
         	}
         }
         // N.B. - I don't think it is necessary to acquire the motionLock - consider...

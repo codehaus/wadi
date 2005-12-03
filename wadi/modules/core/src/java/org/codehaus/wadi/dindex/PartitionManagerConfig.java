@@ -41,5 +41,6 @@ public interface PartitionManagerConfig {
     String getNodeName(Destination destination);
     
     Immoter getImmoter(String name, Motable immotable);
+    Sync getInvocationLock(String name);
 
 }

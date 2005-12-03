@@ -137,15 +137,15 @@
                      <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.NeverEvicter</name>
                      <value>info</value>
                   </systemProperty>
-                  <systemProperty>
-                     <name>org.apache.commons.logging.simplelog.log.MESSAGES</name>
-                     <value>trace</value>
-                  </systemProperty>
-                  <systemProperty>
-                     <name>org.apache.commons.logging.simplelog.log.LOCKS</name>
-                     <value>trace</value>
-                  </systemProperty>
 <!--
+                  <systemProperty>
+                     <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi.MESSAGES</name>
+                     <value>trace</value>
+                  </systemProperty>
+                  <systemProperty>
+                     <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi.LOCKS</name>
+                     <value>trace</value>
+                  </systemProperty>
 -->
                   <systemProperty>
                      <name>wadi.properties</name>

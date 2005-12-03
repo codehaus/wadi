@@ -59,7 +59,7 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 	protected final boolean _methodFlag; //true
 	protected final Pattern _uris; //=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)", Pattern.CASE_INSENSITIVE); // TODO - CSS, ...?
 	protected final boolean _uriFlag; // false
-    protected final Log _lockLog=LogFactory.getLog("LOCKS");
+        protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 
 	/**
 	 * @param next - The next Contextualiser in the stack
@@ -91,9 +91,9 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 		} else {
 			// we know that we can run the request locally...
 			if (invocationLock!=null) {
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+id+ " ["+Thread.currentThread().getName()+"]");
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
         		invocationLock.release();
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+id+ " ["+Thread.currentThread().getName()+"]");
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
 			}
 			// wrap the request so that session is inaccessible and process here...
 			HttpServletRequestWrapper wrapper=(HttpServletRequestWrapper)_wrapper.get();

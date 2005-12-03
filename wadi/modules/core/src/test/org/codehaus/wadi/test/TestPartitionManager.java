@@ -127,6 +127,11 @@ public class TestPartitionManager extends TestCase {
 				// TODO Auto-generated method stub
 				return null;
 			}
+
+			public Sync getInvocationLock(String name) {
+				// TODO Auto-generated method stub
+				return null;
+			}
 			
 		};
 		

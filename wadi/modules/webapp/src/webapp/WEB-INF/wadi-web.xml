@@ -85,7 +85,7 @@
     id="Relocater"
     class="org.codehaus.wadi.impl.MessagingMigratingRelocater"
     >
-    <constructor-arg type="long" index="0"><value>2000</value></constructor-arg>
+    <constructor-arg type="long" index="0"><value>5000</value></constructor-arg>
     <constructor-arg type="long" index="1"><value>1000</value></constructor-arg>
   </bean>
 
@@ -93,8 +93,8 @@
     id="Relocater"
     class="org.codehaus.wadi.impl.ProxyingRelocater"
     >
-    <constructor-arg type="long" index="0"><value>2000</value></constructor-arg>
-    <constructor-arg type="long" index="1"><value>2000</value></constructor-arg>
+    <constructor-arg type="long" index="0"><value>5000</value></constructor-arg>
+    <constructor-arg type="long" index="1"><value>5000</value></constructor-arg>
   </bean>
 -->
 
@@ -102,8 +102,8 @@
     id="Relocater"
     class="org.codehaus.wadi.impl.HybridRelocater"
     >
-    <constructor-arg type="long" index="0"><value>2000</value></constructor-arg>
-    <constructor-arg type="long" index="1"><value>2000</value></constructor-arg>
+    <constructor-arg type="long" index="0"><value>5000</value></constructor-arg>
+    <constructor-arg type="long" index="1"><value>5000</value></constructor-arg>
     <constructor-arg type="boolean" index="2"><value>true</value></constructor-arg><!-- relocate session, not request, if possible -->
   </bean>
 
@@ -163,7 +163,8 @@
     id="ClusterContextualiser"
     class="org.codehaus.wadi.impl.ClusterContextualiser"
     >
-    <constructor-arg><ref bean="DatabaseContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="DummyContextualiser"/></constructor-arg>
+<!--     <constructor-arg><ref bean="DatabaseContextualiser"/></constructor-arg> -->
     <constructor-arg><ref bean="Collapser"/></constructor-arg>
     <constructor-arg><ref bean="Relocater"/></constructor-arg>
   </bean>
@@ -248,7 +249,8 @@
     id="SerialContextualiser"
     class="org.codehaus.wadi.impl.SerialContextualiser"
     >
-    <constructor-arg><ref bean="DiscContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="ClusterContextualiser"/></constructor-arg>
+<!--    <constructor-arg><ref bean="DiscContextualiser"/></constructor-arg> -->
     <constructor-arg><ref bean="Collapser"/></constructor-arg>
     <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
   </bean>
@@ -257,7 +259,7 @@
     id="MemoryEvicter"
     class="org.codehaus.wadi.impl.AbsoluteEvicter"
     >
-    <constructor-arg type="int"><value>10</value></constructor-arg>
+    <constructor-arg type="int"><value>10000000</value></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
     <constructor-arg type="int"><value>10</value></constructor-arg>
   </bean> <!-- if a session is inactive for 10 secs, it moves to disc -->
@@ -350,9 +352,9 @@
     <constructor-arg><value>${node.name}</value></constructor-arg>
     <constructor-arg><value>CLUSTER0</value></constructor-arg>
 <!--
-    <constructor-arg><value>peer://org.codehaus.wadi</value></constructor-arg>
- -->
     <constructor-arg><value>tcp://localhost:61616</value></constructor-arg>
+ -->
+    <constructor-arg><value>peer://org.codehaus.wadi</value></constructor-arg>
     <constructor-arg type="long"><value>5000</value></constructor-arg>
   </bean>
 
@@ -378,6 +380,7 @@
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
     <constructor-arg><ref bean="Dispatcher"/></constructor-arg>
     <constructor-arg><ref bean="PartitionManager"/></constructor-arg>
+    <constructor-arg><ref bean="Collapser"/></constructor-arg>
   </bean>
 
 
