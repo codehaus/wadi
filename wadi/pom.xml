@@ -205,6 +205,8 @@
         <module>modules/jetty5</module>
         <module>modules/jetty6</module>
         <module>modules/webapp</module>
+        <module>modules/testapp</module>
+        <module>modules/itest</module>
         <module>modules/assembly</module>
     </modules>
     <dependencyManagement>
