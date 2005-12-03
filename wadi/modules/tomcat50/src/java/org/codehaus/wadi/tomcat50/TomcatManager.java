@@ -113,7 +113,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 			InputStream is=getServletContext().getResourceAsStream("/WEB-INF/wadi-web.xml");
 			_wadi=(StandardManager)SpringManagerFactory.create(is, "SessionManager", new TomcatSessionFactory(), new StandardSessionWrapperFactory());
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException("Required resource: '/WEB-INF/wadi-web.xml' not found - please check the web app.", e);
 		}
 
 		_wadi.init(this);
