@@ -168,6 +168,14 @@
                 <enabled>false</enabled>
             </releases>
         </repository>
+        <repository>
+            <id>cargo snapshots</id>
+            <name>Cargo Dev Repository</name>
+	    <url>http://mini.dudney.net/maven2/cargo/snapshot</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -179,6 +187,13 @@
             <id>mortbay-repo</id>
             <name>Mortbay Repository on codehaus</name>
             <url>http://www.mortbay.org/maven2/snapshot</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>cargo repository</id>
+	    <url>http://mini.dudney.net/maven2/cargo/snapshot</url>
+            <releases>
+                  <enabled>true</enabled>
+            </releases>
         </pluginRepository>
     </pluginRepositories>
     <modules>
