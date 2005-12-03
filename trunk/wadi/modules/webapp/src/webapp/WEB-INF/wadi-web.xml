@@ -352,9 +352,9 @@
     <constructor-arg><value>${node.name}</value></constructor-arg>
     <constructor-arg><value>CLUSTER0</value></constructor-arg>
 <!--
-    <constructor-arg><value>tcp://localhost:61616</value></constructor-arg>
- -->
     <constructor-arg><value>peer://org.codehaus.wadi</value></constructor-arg>
+ -->
+    <constructor-arg><value>tcp://localhost:61616</value></constructor-arg>
     <constructor-arg type="long"><value>5000</value></constructor-arg>
   </bean>
 
