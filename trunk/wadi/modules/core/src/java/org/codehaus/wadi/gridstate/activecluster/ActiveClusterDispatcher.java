@@ -144,7 +144,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements Messa
 	public void send(Destination to, ObjectMessage message) throws Exception {
 		if (_messageLog.isTraceEnabled()) {
 			try {
-				_messageLog.trace("outgoing: "+message.getObject()+" {"+getNodeName(message.getJMSReplyTo())+"->"+getNodeName(message.getJMSDestination())+"} - "+message.getJMSCorrelationID());
+				_messageLog.trace("outgoing: "+message.getObject()+" {"+getNodeName(message.getJMSReplyTo())+"->"+getNodeName(message.getJMSDestination())+"} - "+getIncomingCorrelationId(message)+"/"+getOutgoingCorrelationId(message)+" on "+Thread.currentThread().getName());
 			} catch (JMSException e) {
 				_log.warn("problem extracting message content", e);
 			}

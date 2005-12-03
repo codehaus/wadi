@@ -34,7 +34,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
 
-    protected final Log _lockLog=LogFactory.getLog("LOCKS");
+    protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 
     static class TimeToLiveComparator implements Comparator {
 
@@ -153,18 +153,18 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         		String id=motable.getName();
         		if (id!=null) {
         			Sync sync=_config.getEvictionLock(id, motable);
-        			if (traceEnabled) _lockLog.trace("Invocation - acquiring: "+id+ " ["+Thread.currentThread().getName()+"]");
+        			if (traceEnabled) _lockLog.trace("Eviction - acquiring: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
         			if (Utils.attemptUninterrupted(sync)) {
-        				if (traceEnabled) _lockLog.trace("Invocation - acquired: "+id+ " ["+Thread.currentThread().getName()+"]");
+        				if (traceEnabled) _lockLog.trace("Eviction - acquired: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
         				if (motable.getTimedOut(time)) {
         					_config.expire(motable);
         					expirations++;
         				}
-        				if (traceEnabled) _lockLog.trace("Invocation - releasing: "+id+ " ["+Thread.currentThread().getName()+"]");
+        				if (traceEnabled) _lockLog.trace("Eviction - releasing: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
         				sync.release();
-        				if (traceEnabled) _lockLog.trace("Invocation - released: "+id+ " ["+Thread.currentThread().getName()+"]");
+        				if (traceEnabled) _lockLog.trace("Eviction - released: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
         			} else {
-        				if (traceEnabled) _lockLog.trace("Invocation - not acquired: "+id+ " ["+Thread.currentThread().getName()+"]");
+        				if (traceEnabled) _lockLog.trace("Eviction - not acquired: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
         			}
         		}
         	}
@@ -180,18 +180,18 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
                 Motable motable=(Motable)toDemote[i]; // TODO - not happy about an Evicter knowing about Motables
                 String id=motable.getName();
                 Sync sync=_config.getEvictionLock(id, motable);
-    			if (traceEnabled) _lockLog.trace("Invocation - acquiring: "+id+ " ["+Thread.currentThread().getName()+"]");
+    			if (traceEnabled) _lockLog.trace("Eviction - acquiring: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
                 if (Utils.attemptUninterrupted(sync)) {
-    				if (traceEnabled) _lockLog.trace("Invocation - acquired: "+id+ " ["+Thread.currentThread().getName()+"]");
+    				if (traceEnabled) _lockLog.trace("Eviction - acquired: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
                     if (test(motable, time, motable.getTimeToLive(time))) { // IDEA - could have remembered ttl
                         _config.demote(motable);
                         demotions++;
                     }
-    				if (traceEnabled) _lockLog.trace("Invocation - releasing: "+id+ " ["+Thread.currentThread().getName()+"]");
+    				if (traceEnabled) _lockLog.trace("Eviction - releasing: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
     				sync.release();
-    				if (traceEnabled) _lockLog.trace("Invocation - released: "+id+ " ["+Thread.currentThread().getName()+"]");
+    				if (traceEnabled) _lockLog.trace("Eviction - released: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
                 } else {
-    				if (traceEnabled) _lockLog.trace("Invocation - not acquired: "+id+ " ["+Thread.currentThread().getName()+"]");
+    				if (traceEnabled) _lockLog.trace("Eviction - not acquired: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
                 }
             }
             toDemote=null;

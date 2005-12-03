@@ -46,7 +46,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
     protected final Collapser _collapser;
     protected final Sync _dummyLock=new NullSync();
     protected final Map _map;
-    protected final Log _lockLog=LogFactory.getLog("LOCKS");
+    protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 
     public SerialContextualiser(Contextualiser next, Collapser collapser, Map map) {
         super(next);
@@ -62,15 +62,15 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
         } else {
             // the promotion begins here...
             // allocate a lock and continue...
-        	boolean needsRelease=false;
         	invocationLock=_collapser.getLock(id);
+        	boolean invocationLockAcquired=false;
         	try {
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+id+ " ["+Thread.currentThread().getName()+"]");
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
         		Utils.acquireUninterrupted(invocationLock);
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+id+ " ["+Thread.currentThread().getName()+"]");
-        		needsRelease=true;
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
+        		invocationLockAcquired=true;
         	} catch (TimeoutException e) {
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - not acquired: "+id+ " ["+Thread.currentThread().getName()+"]");
+        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - not acquired: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
         		_log.error("unexpected timeout - proceding without lock", e);
         	}
 
@@ -78,27 +78,31 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
                 // whilst we were waiting for the motionLock, the session in question may have been moved back into memory somehow.
                 // before we proceed, confirm that this has not happened.
                 Context context=(Context)_map.get(id);
-                boolean found;
+                boolean found=false;
                 if (null!=context) {
                     // oops - it HAS happened...
-                    if (_log.isWarnEnabled()) _log.warn("session has reappeared in memory whilst we were waiting to immote it...: "+id); // TODO - downgrade..
+                    if (_log.isWarnEnabled()) _log.warn("session has reappeared in memory whilst we were waiting to immote it...: "+id+ " ["+Thread.currentThread().getName()+"]"); // TODO - downgrade..
                     // overlap two locking systems until we have secured the session in memory, then run the request
                     // and release the lock.
                     // TODO - we really need to take a read lock before we release the motionLock...
                     found=immoter.contextualise(hreq, hres, chain, id, context, invocationLock);
-                } else {
+                    // although we did find the context it may have left this contextualiser before we finally acquire its lock.
+                    // be prepared to continue dowm the stack looking for it.
+                }
+
+                if (!found) {
                     // session was not promoted whilst we were waiting for motionLock. Continue down Contextualiser stack
                     // it may be below us...
                     // lock is to be released as soon as context is available to subsequent contextualisations...
                     found=_next.contextualise(hreq, hres, chain, id, immoter, invocationLock, exclusiveOnly);
                 }
-                needsRelease=!found;
+                invocationLockAcquired=!found;
                 return found;
             } finally {
-            	if (needsRelease) {
-            		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+id+ " ["+Thread.currentThread().getName()+"]");
+            	if (invocationLockAcquired) {
+            		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
             		invocationLock.release();
-            		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+id+ " ["+Thread.currentThread().getName()+"]");
+            		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
             	}
             }
         }

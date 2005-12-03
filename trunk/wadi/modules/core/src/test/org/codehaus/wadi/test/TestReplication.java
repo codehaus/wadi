@@ -148,7 +148,7 @@ public class TestReplication extends TestCase {
     String nodeName="test.1";
     PartitionManager partitionManager=new DummyPartitionManager(numPartitions);
     Dispatcher dispatcher=new ActiveClusterDispatcher(nodeName, clusterName, clusterUri, 5000L);
-    ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, httpAddress, httpProxy, dispatcher, partitionManager);
+    ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, httpAddress, httpProxy, dispatcher, partitionManager, collapser);
 //    manager.setSessionListeners(new HttpSessionListener[]{});
     //manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
     manager.init(new DummyManagerConfig());

@@ -144,7 +144,7 @@ public class TestEvicters extends TestCase {
         String nodeName="node0";
         PartitionManager partitionManager=new DummyPartitionManager(24);
         Dispatcher dispatcher=new ActiveClusterDispatcher(nodeName, _clusterName, _clusterUri, 5000L);
-        ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DummyReplicaterFactory(), httpAddress, httpProxy, dispatcher, partitionManager);
+        ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DummyReplicaterFactory(), httpAddress, httpProxy, dispatcher, partitionManager, collapser);
         manager.setMaxInactiveInterval(2);
         manager.init(new DummyManagerConfig());
         //manager.start();

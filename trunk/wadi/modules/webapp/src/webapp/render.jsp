@@ -30,6 +30,9 @@
       }
     }
 
+    if (entries.size()==0)
+      System.out.println("KEY: "+session.getId()+", ENTRIES: "+entries+" - "+Thread.currentThread().getName());
+
     int history=entries.size();
     int rows=1;
     int cols=1;

@@ -54,7 +54,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
     protected final long _inactiveTime;
 	protected final Map _map;
 	protected final PooledExecutor _executor;
-	protected final Log _messageLog = LogFactory.getLog("MESSAGES");
+	protected final Log _messageLog = LogFactory.getLog("org.codehaus.wadi.MESSAGES");
 
 	public AbstractDispatcher(String nodeName, String clusterName, long inactiveTime) {
 		_nodeName=nodeName;
@@ -399,7 +399,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
 					(body=objectMessage.getObject())!=null &&
 					(dispatcher=(InternalDispatcher)_map.get(body.getClass()))!=null
 			) {
-				if (_messageLog.isTraceEnabled()) _messageLog.trace("incoming: "+body+" {"+getNodeName(message.getJMSReplyTo())+"->"+getNodeName(message.getJMSDestination())+"} - "+getIncomingCorrelationId(objectMessage));
+				if (_messageLog.isTraceEnabled()) _messageLog.trace("incoming: "+body+" {"+getNodeName(message.getJMSReplyTo())+"->"+getNodeName(message.getJMSDestination())+"} - "+getIncomingCorrelationId(objectMessage)+"/"+getOutgoingCorrelationId(objectMessage));
 				do {
 					try {
 						synchronized (dispatcher) {

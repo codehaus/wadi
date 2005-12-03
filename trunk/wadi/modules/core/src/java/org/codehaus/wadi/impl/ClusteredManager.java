@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.activecluster.Node;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
+import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.Immoter;
@@ -61,14 +62,16 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     protected final Dispatcher _dispatcher;
     protected final PartitionManager _partitionManager;
     protected final Map _distributedState;
+    protected final Collapser _collapser;
 
-    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, InetSocketAddress httpAddress, HttpProxy httpProxy, Dispatcher dispatcher, PartitionManager partitionManager) {
+    public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, InetSocketAddress httpAddress, HttpProxy httpProxy, Dispatcher dispatcher, PartitionManager partitionManager, Collapser collapser) {
         super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, errorIfSessionNotAcquired, streamer, accessOnLoad, replicaterFactory);
     	_httpAddress=httpAddress;
     	_httpProxy=httpProxy;
     	_dispatcher=dispatcher;
     	_partitionManager=partitionManager;
     	_distributedState=new HashMap(); // TODO - make this a SynchronisedMap
+    	_collapser=collapser;
     }
 
     public String getContextPath() { // TODO - integrate with Jetty/Tomcat
@@ -251,5 +254,9 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		return _dispatcher.getNodeName(destination);
 	}
 
+	public Sync getInvocationLock(String name) {
+		return _collapser.getLock(name);
+	}
+	
 }
 

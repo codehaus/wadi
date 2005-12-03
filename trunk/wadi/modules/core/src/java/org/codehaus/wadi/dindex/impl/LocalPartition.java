@@ -49,7 +49,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public class LocalPartition extends AbstractPartition implements Serializable {
 
 	protected transient Log _log=LogFactory.getLog(getClass());
-	protected transient Log _lockLog=LogFactory.getLog("LOCKS");
+	protected transient Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 
 	protected Map _map=new HashMap();
 	protected transient PartitionConfig _config;
@@ -66,7 +66,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 	public void init(PartitionConfig config) {
 		_config=config;
 		_log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalNodeName());
-		_lockLog=LogFactory.getLog("LOCKS");
+		_lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 	}
 
 	public boolean isLocal() {
@@ -92,9 +92,9 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		String key=request.getKey();
 		Sync sync=null;
 		try {
-		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key+ " ["+Thread.currentThread().getName()+"]");
+		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
 			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key+ " ["+Thread.currentThread().getName()+"]");
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
 
 			synchronized (_map) {
 				if (!_map.containsKey(key)) {
@@ -111,9 +111,9 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 			DIndexResponse response=new InsertPMToIM(success);
 			_config.getDispatcher().reply(message, response);
 		} finally {
-		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key+" ["+Thread.currentThread().getName()+"]");
+		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
 			sync.release();
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key+" ["+Thread.currentThread().getName()+"]");
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
 		}
 	}
 
@@ -123,9 +123,9 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		String key=request.getKey();
 		Sync sync=null;
 		try {
-		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key+ " ["+Thread.currentThread().getName()+"]");
+		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
 			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key+ " ["+Thread.currentThread().getName()+"]");
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
 
 			synchronized (_map) {
 				oldDestination=(Destination)_map.remove(key);
@@ -135,9 +135,9 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 			DIndexResponse response=new DeletePMToIM();
 			_config.getDispatcher().reply(message, response);
 		} finally {
-		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key+" ["+Thread.currentThread().getName()+"]");
+		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
 			sync.release();
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key+" ["+Thread.currentThread().getName()+"]");
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
 		}
 	}
 
@@ -202,9 +202,9 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 
 			// PMSyncs should prevent _map entry from being messed with whilst we are messing with it - lock should be exclusive
 			// should synchronise map access - or is it ConcurrentHashMap ?
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key+ " ["+Thread.currentThread().getName()+"]");
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
 			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key+ " ["+Thread.currentThread().getName()+"]");
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
 
 			// exchange messages with StateMaster
 			Destination destination=(Destination)_map.get(key);
@@ -212,47 +212,55 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 			if (destination==null) {
 				// session does not exist - tell IM
 				_dispatcher.reply(message1,new MovePMToIM());
+				return;
+			}
+
+			if (destination.equals(im)) {
+				// whilst we were waiting for the partition lock, another thread migrated the session into our InvocationMaster...
+				// How can this happen - the first Thread should have been holding the InvocationLock...
+				_log.warn("IM REQUESTING RELOCATION IS ALREADY SM");
+			}
+
+
+			// session does exist - ask the SM to move it to the IM
+
+			// exchangeSendLoop GetPMToSM to SM
+			Destination pm=_dispatcher.getLocalDestination();
+			Destination sm=destination;
+			String poCorrelationId=null;
+			try {
+				poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
+				//_log.info("Process Owner Correlation ID: "+poCorrelationId);
+			} catch (Exception e) {
+				_log.error("unexpected problem", e);
+			}
+
+			MovePMToSM request2=new MovePMToSM(key, im, pm, poCorrelationId);
+			ObjectMessage message2=_dispatcher.exchangeSend(pm, sm, request2, _config.getInactiveTime());
+			if (message2==null)
+				_log.error("NO RESPONSE WITHIN TIMEFRAME - PANIC!");
+
+			MoveSMToPM response=null; // the reply from the SM confirming successful move...
+			try {
+				response=(MoveSMToPM)message2.getObject();
+			} catch (JMSException e) {
+				_log.error("unexpected problem", e); // should be sorted in loop
+			}
+
+			if (response.getSuccess()) {
+				// alter location
+				Destination oldOwner=(Destination)_map.put(key, im); // The IM is now the SM
+				_log.debug("move: "+key+" {"+_config.getNodeName(oldOwner)+"->"+_config.getNodeName(im)+"}");
 			} else {
-				// session does exist - ask the SM to move it to the IM
-
-				// exchangeSendLoop GetPMToSM to SM
-				Destination pm=_dispatcher.getLocalDestination();
-				Destination sm=destination;
-				String poCorrelationId=null;
-				try {
-					poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
-					//_log.info("Process Owner Correlation ID: "+poCorrelationId);
-				} catch (Exception e) {
-					_log.error("unexpected problem", e);
-				}
-
-				MovePMToSM request2=new MovePMToSM(key, im, pm, poCorrelationId);
-				ObjectMessage message2=_dispatcher.exchangeSend(pm, sm, request2, _config.getInactiveTime());
-				if (message2==null)
-					_log.error("NO RESPONSE WITHIN TIMEFRAME - PANIC!");
-
-				MoveSMToPM response=null; // the reply from the SM confirming successful move...
-				try {
-					response=(MoveSMToPM)message2.getObject();
-				} catch (JMSException e) {
-					_log.error("unexpected problem", e); // should be sorted in loop
-				}
-				
-				if (response.getSuccess()) {
-					// alter location
-					Destination oldOwner=(Destination)_map.put(key, im); // The IM is now the SM
-					_log.debug("move: "+key+" {"+_config.getNodeName(oldOwner)+"->"+_config.getNodeName(im)+"}");
-				} else {
-					_log.warn("state relocation failed: "+key);
-				}
+				_log.warn("state relocation failed: "+key);
 			}
 		} catch (JMSException e) {
 			_log.error("could not read src address from incoming message");
 		}
 		finally {
-		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key+" ["+Thread.currentThread().getName()+"]");
+		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
 			sync.release();
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key+" ["+Thread.currentThread().getName()+"]");
+			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
 		}
 	}
 

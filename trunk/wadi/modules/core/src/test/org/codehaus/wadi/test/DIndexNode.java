@@ -195,5 +195,10 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 			_latch1.release();
 		}
 	}
+
+	public Sync getInvocationLock(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 }
