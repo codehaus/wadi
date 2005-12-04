@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import junit.extensions.TestSetup;
 import junit.framework.Test;
 import org.apache.commons.logging.Log;
@@ -46,6 +45,30 @@ import org.codehaus.cargo.generic.DefaultContainerFactory;
 import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
 
 public class ContainerTestDecorator extends TestSetup {
+    // node names
+    private static final String WHITE = "white";
+    private static final String BROWN = "brown";
+    private static final String PURPLE = "purple";
+    private static final String ORANGE = "orange";
+    private static final String PINK = "pink";
+    private static final String YELLOW = "yellow";
+    private static final String BLUE = "blue";
+    private static final String GREEN = "green";
+    private static final String RED = "red";
+    // property names to configure nodes
+    private static final String NODE_NAME_PROP_NAME = "node.name";
+    private static final String STOP_PORT_PROP_NAME = "STOP.PORT";
+    private static final String JNDI_PORT_PROP_NAME = "jndi.port";
+    private static final String AJP_PORT_PROP_NAME = "ajp.port";
+    private static final String HTTP_PORT_PROP_NAME = "http.port";
+    // cargo property names
+    private static final String TOMCAT55_KEY_NAME = "tomcat55";
+    private static final String TOMCAT50_KEY_NAME = "tomcat50";
+    private static final String CARGO_CONTAINER_NAME_PROP_NAME = "cargoContainerName";
+    private static final String MANAGER_CLASS_NAME_PROP_NAME = "managerClassName";
+    private static final String CONTAINER_URL_PROP_NAME = "url";
+    private static final String INSTALL_DIR_PROP_NAME = "installDir";
+    private static final String CONFIG_BASE_PROP_NAME = "configBase";
     protected Log _log = LogFactory.getLog(getClass());
     // the config dir base is the path that the various containers will be
     // copied to
@@ -63,7 +86,7 @@ public class ContainerTestDecorator extends TestSetup {
     }
 
     public String getPortForNode(String node) {
-        return (String)((Map)systemProps.get(node)).get("http.port");
+        return (String)((Map)systemProps.get(node)).get(HTTP_PORT_PROP_NAME);
     }
     
     protected void setUp() throws Exception {
@@ -71,51 +94,42 @@ public class ContainerTestDecorator extends TestSetup {
         String containersProp = System.getProperty("containers");
         String containerProp = System.getProperty("container");
         String nodesProp = System.getProperty("nodes");
-        StringTokenizer nodeTokenizer = new StringTokenizer(nodesProp, ",");
-        List nodes = new ArrayList();
-        while(nodeTokenizer.hasMoreTokens()) {
-            nodes.add(nodeTokenizer.nextToken());
-        }
+        String nodes[] = nodesProp.split(",");
         if(null != containerProp) {
             // install the container
-            String containerUrl = (String)((Map)installProps.get(containerProp)).get("url");
-            String containerInstallDir = (String)((Map)installProps.get(containerProp)).get("installDir");
-            String containerConfigBase = (String)((Map)installProps.get(containerProp)).get("configBase");
-            String managerClassName = (String)((Map)installProps.get(containerProp)).get("managerClassName");
-            String cargoContainerName = (String)((Map)installProps.get(containerProp)).get("cargoContainerName");
+            String containerUrl = (String)((Map)installProps.get(containerProp)).get(CONTAINER_URL_PROP_NAME);
+            String containerInstallDir = (String)((Map)installProps.get(containerProp)).get(INSTALL_DIR_PROP_NAME);
+            String containerConfigBase = (String)((Map)installProps.get(containerProp)).get(CONFIG_BASE_PROP_NAME);
+            String managerClassName = (String)((Map)installProps.get(containerProp)).get(MANAGER_CLASS_NAME_PROP_NAME);
+            String cargoContainerName = (String)((Map)installProps.get(containerProp)).get(CARGO_CONTAINER_NAME_PROP_NAME);
             Installer installer = installContainer(containerUrl, containerInstallDir);
             copyJars(installer.getHome(), containerProp);
-            containers = new LocalContainer[nodes.size()];
+            containers = new LocalContainer[nodes.length];
             // starting one container type
-            for (int i = 0; i < nodes.size(); i++) {
-                containers[i] = startContainer((String) nodes.get(i),
+            for (int i = 0; i < nodes.length; i++) {
+                containers[i] = startContainer((String) nodes[i],
                         containerConfigBase, managerClassName,
                         cargoContainerName, installer);
             }
         } else {
-            StringTokenizer containerTokenizer = new StringTokenizer(containersProp, ",");
-            List containerNames = new ArrayList();
-            while(containerTokenizer.hasMoreTokens()) {
-                containerNames.add(containerTokenizer.nextToken());
-            }
-            if(containerNames.size() != nodes.size()) {
+            String containerNames[] = containersProp.split(",");
+            if(containerNames.length != nodes.length) {
                 throw new RuntimeException(
                         "Bad Configuration - containers list must match nodes list -"
                                 + " nodes = " + nodesProp + " containers = " + containersProp);
             }
-            containers = new LocalContainer[containerNames.size()];
+            containers = new LocalContainer[containerNames.length];
             // starting several container types
-            for(int i = 0;i < containerNames.size();i++) {
-                String containerName = (String)containerNames.get(i);
-                String containerUrl = (String)((Map)installProps.get(containerName)).get("url");
-                String containerInstallDir = (String)((Map)installProps.get(containerName)).get("installDir");
-                String containerConfigBase = (String)((Map)installProps.get(containerName)).get("configBase");
-                String managerClassName = (String)((Map)installProps.get(containerName)).get("managerClassName");
-                String cargoContainerName = (String)((Map)installProps.get(containerName)).get("cargoContainerName");
+            for(int i = 0;i < containerNames.length;i++) {
+                String containerUrl = (String)((Map)installProps.get(containerNames[i])).get(CONTAINER_URL_PROP_NAME);
+                String containerInstallDir = (String)((Map)installProps.get(containerNames[i])).get(INSTALL_DIR_PROP_NAME);
+                String containerConfigBase = (String)((Map)installProps.get(containerNames[i])).get(CONFIG_BASE_PROP_NAME);
+                String managerClassName = (String)((Map)installProps.get(containerNames[i])).get(MANAGER_CLASS_NAME_PROP_NAME);
+                String cargoContainerName = (String)((Map)installProps.get(containerNames[i])).get(CARGO_CONTAINER_NAME_PROP_NAME);
                 Installer installer = installContainer(containerUrl, containerInstallDir);
-                copyJars(installer.getHome(), containerName);
+                copyJars(installer.getHome(), containerNames[i]);
                 // starting one node on each container
-                containers[i] = startContainer((String) nodes.get(i),
+                containers[i] = startContainer((String) nodes[i],
                         containerConfigBase, managerClassName, cargoContainerName,
                         installer);
             }
@@ -161,14 +175,15 @@ public class ContainerTestDecorator extends TestSetup {
         config.addDeployable(wadi);
         Map props = (Map) systemProps.get(nodeName);
         config.setProperty(ServletPropertySet.PORT, (String) props
-                .get("http.port"));
+                .get(HTTP_PORT_PROP_NAME));
         config.setProperty(TomcatPropertySet.SHUTDOWN_PORT, (String) props
-                .get("STOP.PORT"));
+                .get(STOP_PORT_PROP_NAME));
         ContainerFactory containerFactory = new DefaultContainerFactory();
         LocalContainer container = (LocalContainer)containerFactory.createContainer(cargoContainerName, config);
         container.setSystemProperties(props);
         container.setHome(installer.getHome());
         container.setOutput(log);
+        container.setTimeout(7000);
         container.start();
         return container;
     }
@@ -188,6 +203,10 @@ public class ContainerTestDecorator extends TestSetup {
     }
 
     private void copyJars(File home, String containerName) throws IOException {
+        if (null == WADI_VERSION) {
+            throw new RuntimeException(
+                    "Bad Configuration - wadi.version must be specified");
+        }
         String rootPath = System.getProperty("user.home") + "/.m2/repository";
         String commonLibJars[] = new String[] {
                 rootPath
@@ -251,86 +270,86 @@ public class ContainerTestDecorator extends TestSetup {
     static {
         systemProps = new HashMap();
         Map map = new HashMap();
-        systemProps.put("red", map);
-        map.put("http.port", "8080");
-        map.put("ajp.port", "8009");
-        map.put("jndi.port", "1099");
-        map.put("STOP.PORT", "8040");
-        map.put("node.name", "red");
+        systemProps.put(RED, map);
+        map.put(HTTP_PORT_PROP_NAME, "8080");
+        map.put(AJP_PORT_PROP_NAME, "8009");
+        map.put(JNDI_PORT_PROP_NAME, "1099");
+        map.put(STOP_PORT_PROP_NAME, "8040");
+        map.put(NODE_NAME_PROP_NAME, RED);
         map = new HashMap();
-        systemProps.put("green", map);
-        map.put("http.port", "8081");
-        map.put("ajp.port", "8010");
-        map.put("jndi.port", "1100");
-        map.put("STOP.PORT", "8041");
-        map.put("node.name", "green");
+        systemProps.put(GREEN, map);
+        map.put(HTTP_PORT_PROP_NAME, "8081");
+        map.put(AJP_PORT_PROP_NAME, "8010");
+        map.put(JNDI_PORT_PROP_NAME, "1100");
+        map.put(STOP_PORT_PROP_NAME, "8041");
+        map.put(NODE_NAME_PROP_NAME, GREEN);
         map = new HashMap();
-        systemProps.put("blue", map);
-        map.put("http.port", "8082");
-        map.put("ajp.port", "8011");
-        map.put("jndi.port", "1101");
-        map.put("STOP.PORT", "8042");
-        map.put("node.name", "blue");
+        systemProps.put(BLUE, map);
+        map.put(HTTP_PORT_PROP_NAME, "8082");
+        map.put(AJP_PORT_PROP_NAME, "8011");
+        map.put(JNDI_PORT_PROP_NAME, "1101");
+        map.put(STOP_PORT_PROP_NAME, "8042");
+        map.put(NODE_NAME_PROP_NAME, BLUE);
         map = new HashMap();
-        systemProps.put("yellow", map);
-        map.put("http.port", "8083");
-        map.put("ajp.port", "8012");
-        map.put("jndi.port", "1102");
-        map.put("STOP.PORT", "8043");
-        map.put("node.name", "yellow");
+        systemProps.put(YELLOW, map);
+        map.put(HTTP_PORT_PROP_NAME, "8083");
+        map.put(AJP_PORT_PROP_NAME, "8012");
+        map.put(JNDI_PORT_PROP_NAME, "1102");
+        map.put(STOP_PORT_PROP_NAME, "8043");
+        map.put(NODE_NAME_PROP_NAME, YELLOW);
         map = new HashMap();
-        systemProps.put("pink", map);
-        map.put("http.port", "8084");
-        map.put("ajp.port", "8013");
-        map.put("jndi.port", "1103");
-        map.put("STOP.PORT", "8044");
-        map.put("node.name", "pink");
+        systemProps.put(PINK, map);
+        map.put(HTTP_PORT_PROP_NAME, "8084");
+        map.put(AJP_PORT_PROP_NAME, "8013");
+        map.put(JNDI_PORT_PROP_NAME, "1103");
+        map.put(STOP_PORT_PROP_NAME, "8044");
+        map.put(NODE_NAME_PROP_NAME, PINK);
         map = new HashMap();
-        systemProps.put("orange", map);
-        map.put("http.port", "8085");
-        map.put("ajp.port", "8014");
-        map.put("jndi.port", "1104");
-        map.put("STOP.PORT", "8045");
-        map.put("node.name", "orange");
+        systemProps.put(ORANGE, map);
+        map.put(HTTP_PORT_PROP_NAME, "8085");
+        map.put(AJP_PORT_PROP_NAME, "8014");
+        map.put(JNDI_PORT_PROP_NAME, "1104");
+        map.put(STOP_PORT_PROP_NAME, "8045");
+        map.put(NODE_NAME_PROP_NAME, ORANGE);
         map = new HashMap();
-        systemProps.put("purple", map);
-        map.put("http.port", "8086");
-        map.put("ajp.port", "8015");
-        map.put("jndi.port", "1105");
-        map.put("STOP.PORT", "8046");
-        map.put("node.name", "purple");
+        systemProps.put(PURPLE, map);
+        map.put(HTTP_PORT_PROP_NAME, "8086");
+        map.put(AJP_PORT_PROP_NAME, "8015");
+        map.put(JNDI_PORT_PROP_NAME, "1105");
+        map.put(STOP_PORT_PROP_NAME, "8046");
+        map.put(NODE_NAME_PROP_NAME, PURPLE);
         map = new HashMap();
-        systemProps.put("brown", map);
-        map.put("http.port", "8087");
-        map.put("ajp.port", "8016");
-        map.put("jndi.port", "1106");
-        map.put("STOP.PORT", "8047");
-        map.put("node.name", "brown");
+        systemProps.put(BROWN, map);
+        map.put(HTTP_PORT_PROP_NAME, "8087");
+        map.put(AJP_PORT_PROP_NAME, "8016");
+        map.put(JNDI_PORT_PROP_NAME, "1106");
+        map.put(STOP_PORT_PROP_NAME, "8047");
+        map.put(NODE_NAME_PROP_NAME, BROWN);
         map = new HashMap();
-        systemProps.put("white", map);
-        map.put("http.port", "8088");
-        map.put("ajp.port", "8017");
-        map.put("jndi.port", "1107");
-        map.put("STOP.PORT", "8048");
-        map.put("node.name", "white");
+        systemProps.put(WHITE, map);
+        map.put(HTTP_PORT_PROP_NAME, "8088");
+        map.put(AJP_PORT_PROP_NAME, "8017");
+        map.put(JNDI_PORT_PROP_NAME, "1107");
+        map.put(STOP_PORT_PROP_NAME, "8048");
+        map.put(NODE_NAME_PROP_NAME, WHITE);
         // install props
         installProps = new HashMap();
         map = new HashMap();
-        installProps.put("tomcat50", map);
-        map.put("configBase", CONTAINER_CONFIG_DIR_BASE + "tomcat50");
-        map.put("installDir", "target/installs");
-        map.put("url", "http://www.apache.org/dist/jakarta/tomcat-5/"
+        installProps.put(TOMCAT50_KEY_NAME, map);
+        map.put(CONFIG_BASE_PROP_NAME, CONTAINER_CONFIG_DIR_BASE + "tomcat50");
+        map.put(INSTALL_DIR_PROP_NAME, "target/installs");
+        map.put(CONTAINER_URL_PROP_NAME, "http://www.apache.org/dist/jakarta/tomcat-5/"
                 + "v5.0.30/bin/jakarta-tomcat-5.0.30.zip");
-        map.put("managerClassName", "org.codehaus.wadi.tomcat50.TomcatManager");
-        map.put("cargoContainerName", "tomcat5x");
+        map.put(MANAGER_CLASS_NAME_PROP_NAME, "org.codehaus.wadi.tomcat50.TomcatManager");
+        map.put(CARGO_CONTAINER_NAME_PROP_NAME, "tomcat5x");
         map = new HashMap();
-        installProps.put("tomcat55", map);
-        map.put("configBase", CONTAINER_CONFIG_DIR_BASE + "tomcat55");
-        map.put("installDir", "target/installs");
-        map.put("url", "http://www.apache.org/dist/tomcat/tomcat-5/"
+        installProps.put(TOMCAT55_KEY_NAME, map);
+        map.put(CONFIG_BASE_PROP_NAME, CONTAINER_CONFIG_DIR_BASE + "tomcat55_");
+        map.put(INSTALL_DIR_PROP_NAME, "target/installs");
+        map.put(CONTAINER_URL_PROP_NAME, "http://www.apache.org/dist/tomcat/tomcat-5/"
                 + "v5.5.12/bin/apache-tomcat-5.5.12.zip");
-        map.put("managerClassName", "org.codehaus.wadi.tomcat55.TomcatManager");
-        map.put("cargoContainerName", "tomcat5x");
+        map.put(MANAGER_CLASS_NAME_PROP_NAME, "org.codehaus.wadi.tomcat55.TomcatManager");
+        map.put(CARGO_CONTAINER_NAME_PROP_NAME, "tomcat5x");
     }
 
 }
