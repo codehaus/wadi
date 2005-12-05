@@ -180,12 +180,12 @@ public class IndirectStateManager implements StateManager {
 			if (message2==null)
 			  _log.error("NO RESPONSE WITHIN TIMEFRAME - PANIC!");
 
-			MoveSMToPM response=null;
-			try {
-				response=(MoveSMToPM)message2.getObject();
-			} catch (JMSException e) {
-			  _log.error("unexpected problem", e); // should be sorted in loop
-			}
+//			MoveSMToPM response=null;
+//			try {
+//				response=(MoveSMToPM)message2.getObject();
+//			} catch (JMSException e) {
+//			  _log.error("unexpected problem", e); // should be sorted in loop
+//			}
 			// alter location
 			location.setValue((Destination)get.getIM());
 
@@ -223,9 +223,9 @@ public class IndirectStateManager implements StateManager {
 			  _log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
 			} else {
 			}
-			MoveIMToSM response=null;
-			try {
-				response=(MoveIMToSM)message2.getObject();
+//			MoveIMToSM response=null;
+//			try {
+//				response=(MoveIMToSM)message2.getObject();
 				// remove association
 				synchronized (map) {
 					map.remove(key);
@@ -233,9 +233,9 @@ public class IndirectStateManager implements StateManager {
 				// send GetSMToPM to PM
 				//Destination pm=(Destination)get.getPM();
 				_dispatcher.reply(message1,new MoveSMToPM());
-			} catch (JMSException e) {
-			  _log.error("unexpected problem", e);
-			}
+//			} catch (JMSException e) {
+//			  _log.error("unexpected problem", e);
+//			}
 		} finally {
             if (_log.isTraceEnabled()) _log.trace("[" + agent + "@" + _nodeName + "(SM)] - " + key + " - releasing sync(" + sync + ")..." + " <" + Thread.currentThread().getName() + ">");
 			sync.release();

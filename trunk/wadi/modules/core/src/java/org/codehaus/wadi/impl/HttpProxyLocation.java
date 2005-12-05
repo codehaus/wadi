@@ -16,16 +16,14 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.net.InetSocketAddress;
-
 import javax.jms.Destination;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.HttpProxy;
+import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Location;
+import org.codehaus.wadi.ProxiedLocation;
 import org.codehaus.wadi.ProxyingException;
 
 /**
@@ -36,24 +34,31 @@ import org.codehaus.wadi.ProxyingException;
  */
 
 public class HttpProxyLocation extends SimpleEvictable implements Location {
+	
 	protected final static Log _log = LogFactory.getLog(HttpProxyLocation.class);
-
-	protected InetSocketAddress _location;
-	protected HttpProxy _proxy;
-
-	public HttpProxyLocation(Destination destination, InetSocketAddress location, HttpProxy proxy) {
+	
+	protected ProxiedLocation _location;
+	protected InvocationProxy _proxy;
+	
+	public HttpProxyLocation(Destination destination, ProxiedLocation location, InvocationProxy proxy) {
 		super();
 		_destination=destination;
 		_location=location;
 		_proxy=proxy;
 	}
-
-	public void proxy(HttpServletRequest hreq, HttpServletResponse hres) throws ProxyingException {
-		_proxy.proxy(_location, hreq, hres);
+	
+	public void proxy(InvocationContext invocationContext) throws ProxyingException {
+		_proxy.proxy(_location, invocationContext);
 	}
-
-	public String toString() {return "<HttpProxyLocation:"+_location+">";} // we could include proxy strategy here...
-
+	
+	public String toString() {
+		return "<HttpProxyLocation:"+_location+">"; // we could include proxy strategy here...
+	}
+	
 	protected final Destination _destination;
-	public Destination getDestination(){return _destination;}
+	
+	public Destination getDestination() {
+		return _destination;
+	}
+	
 }

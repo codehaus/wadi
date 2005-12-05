@@ -339,6 +339,13 @@
   </bean>
 
   <bean
+    id="ProxiedLocation"
+    class="org.codehaus.wadi.http.HTTPProxiedLocation"
+    >
+    <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
+  </bean>
+
+  <bean
     id="PartitionManager"
     class="org.codehaus.wadi.gridstate.impl.DummyPartitionManager"
     >
@@ -376,7 +383,7 @@
     <constructor-arg><ref bean="AttributeStreamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
     <constructor-arg><ref bean="ReplicaterFactory"/></constructor-arg>
-    <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
+    <constructor-arg><ref bean="ProxiedLocation"/></constructor-arg>
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
     <constructor-arg><ref bean="Dispatcher"/></constructor-arg>
     <constructor-arg><ref bean="PartitionManager"/></constructor-arg>
@@ -415,7 +422,7 @@
         <entry key="WADI:name=ClusterContextualiser"> <ref bean="ClusterContextualiser"/> </entry>
         <entry key="WADI:name=Router"> <ref bean="Router"/> </entry>
         <entry key="WADI:name=HttpProxy"> <ref bean="HttpProxy"/> </entry>
-        <entry key="WADI:name=HttpAddress"> <ref bean="HttpAddress"/> </entry>
+        <entry key="WADI:name=ProxiedLocation"> <ref bean="ProxiedLocation"/> </entry>
         <entry key="WADI:name=Relocater"> <ref bean="Relocater"/> </entry>
         <entry key="WADI:name=SessionIdFactory"> <ref bean="SessionIdFactory"/> </entry>
       </map>

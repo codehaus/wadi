@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 public interface Router {
     
@@ -56,7 +54,7 @@ public interface Router {
      */
     //public boolean canReroute();
     
-    boolean reroute(HttpServletRequest req, HttpServletResponse res);
+    boolean reroute(InvocationContext invocationContext);
     
     /**
      * Reroute to ourselves.

@@ -16,12 +16,12 @@
  */
 package org.codehaus.wadi.test;
 
-import org.codehaus.wadi.HttpServletRequestWrapperPool;
-import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
+import org.codehaus.wadi.PoolableInvocationWrapper;
+import org.codehaus.wadi.PoolableInvocationWrapperPool;
 
-public class MyDummyHttpServletRequestWrapperPool implements HttpServletRequestWrapperPool {
-
-    public PoolableHttpServletRequestWrapper take(){return new MyPoolableHttpServletRequestWrapper();}
-    public void put(PoolableHttpServletRequestWrapper wrapper){/* empty */}
-    
+public class MyDummyHttpServletRequestWrapperPool implements PoolableInvocationWrapperPool {
+	
+	public PoolableInvocationWrapper take(){return new MyPoolableHttpServletRequestWrapper();}
+	public void put(PoolableInvocationWrapper wrapper){/* empty */}
+	
 }

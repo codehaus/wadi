@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,19 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi;
 
-import org.codehaus.wadi.PoolableInvocationWrapper;
-import org.codehaus.wadi.PoolableInvocationWrapperPool;
+/**
+ * @version $Revision$
+ */
 
-public class DummyStatefulHttpServletRequestWrapperPool implements PoolableInvocationWrapperPool {
-	
-	public PoolableInvocationWrapper take() {
-		return new StatefulHttpServletRequestWrapper();
+public class InvocationException extends Exception {
+
+    public InvocationException() {
+    }
+    
+	public InvocationException(String message) {
+		super(message);
 	}
-	
-	public void put(PoolableInvocationWrapper wrapper) {
-		// just drop it...
+
+	public InvocationException(String message, Exception cause) {
+		super(message, cause);
 	}
-	
+    
+    public InvocationException(Throwable throwable) {
+        super(throwable);
+    }
+    
 }

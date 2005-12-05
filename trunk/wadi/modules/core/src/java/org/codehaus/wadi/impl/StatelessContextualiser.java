@@ -16,25 +16,23 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.io.IOException;
 import java.util.regex.Pattern;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.InvocationException;
+import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-// N.B.
-// Ultimately this should support pluggable and combinable 'Tests' - i.e. URIPatternTest
-// MethodPatternTest & AndTest...
+//N.B.
+//Ultimately this should support pluggable and combinable 'Tests' - i.e. URIPatternTest
+//MethodPatternTest & AndTest...
 
 /**
  * A Contextualiser that will intercept requests that can be shown to be stateless
@@ -54,13 +52,13 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public class StatelessContextualiser extends AbstractDelegatingContextualiser {
-
+	
 	protected final Pattern _methods; // =Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE); // TODO - |HEAD|PUT|DELETE ?
 	protected final boolean _methodFlag; //true
 	protected final Pattern _uris; //=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)", Pattern.CASE_INSENSITIVE); // TODO - CSS, ...?
 	protected final boolean _uriFlag; // false
-        protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
-
+	protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
+	
 	/**
 	 * @param next - The next Contextualiser in the stack
 	 * @param methods - Pattern used to match HTTP method names (null will match nothing)
@@ -75,38 +73,38 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 		_uris=uris;
 		_uriFlag=uriFlag;
 	}
-
-	protected static final HttpServletRequest _dummyRequest=new DummyHttpServletRequest();
-
+	
 	public ThreadLocal _wrapper=new ThreadLocal(){
-        protected synchronized Object initialValue() {
-            return new StatelessHttpServletRequestWrapper(_dummyRequest);
-        }
+		protected synchronized Object initialValue() {
+			return new StatelessHttpServletRequestWrapper();
+		}
 	};
-
-	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws IOException, ServletException {
+	
+	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
+		WebInvocationContext context = (WebInvocationContext) invocationContext;
+		HttpServletRequest hreq = context.getHreq();
 		if (hreq==null || isStateful(hreq)) {
 			// we cannot optimise...
-			return _next.contextualise(hreq, hres, chain, id, immoter, invocationLock, exclusiveOnly);
+			return _next.contextualise(invocationContext, id, immoter, invocationLock, exclusiveOnly);
 		} else {
 			// we know that we can run the request locally...
 			if (invocationLock!=null) {
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
-        		invocationLock.release();
-        		if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
+				if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
+				invocationLock.release();
+				if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
 			}
 			// wrap the request so that session is inaccessible and process here...
-			HttpServletRequestWrapper wrapper=(HttpServletRequestWrapper)_wrapper.get();
-			wrapper.setRequest(hreq);
+			PoolableHttpServletRequestWrapper wrapper=(PoolableHttpServletRequestWrapper)_wrapper.get();
+			wrapper.init(invocationContext, null);
 			try {
-				chain.doFilter(wrapper, hres);
+				invocationContext.invoke(wrapper);
 			} finally {
-				wrapper.setRequest(_dummyRequest);
+				wrapper.destroy();
 			}
 			return true;
 		}
 	}
-
+	
 	/**
 	 * We know request is stateful - if, either Pattern matches
 	 * stateFULL requests AND match succeeded, or Pattern matches
@@ -118,21 +116,21 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 	public boolean isStateful(HttpServletRequest hreq) {
 		// TODO - should the order of matching be configurable ?
 		boolean matched;
-
+		
 		// can we prove it is stateless ? - try first test...
 		if (_methods!=null) {
 			matched=(_methods.matcher(hreq.getMethod()).matches());
 			if (matched!=_methodFlag)
 				return false;
 		}
-
+		
 		// could still be stateful - try second test...
 		if (_uris!=null) {
 			matched=(_uris.matcher(hreq.getRequestURI()).matches());
 			if (matched!=_uriFlag)
 				return false;
 		}
-
+		
 		// we cannot eliminate the possibility that the request is stateful...
 		return true;
 	}

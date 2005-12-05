@@ -24,8 +24,8 @@ import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.ManagerConfig;
-import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.ReplicableSessionConfig;
+import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.SessionIdFactory;
@@ -44,20 +44,20 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
  * A StandardManager that knows how to Serialise HttpSessions.
  */
 public class DistributableManager extends StandardManager implements ReplicableSessionConfig, DistributableContextualiserConfig, StreamerConfig {
-
+	
 	protected final List _helpers = new ArrayList();
 	protected final SynchronizedBoolean _shuttingDown = new SynchronizedBoolean(false);
-    protected final Streamer _streamer;
+	protected final Streamer _streamer;
 	protected final boolean _accessOnLoad;
 	protected final ReplicaterFactory _replicaterFactory;
-
+	
 	public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory) {
-    	super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, map, router, errorIfSessionNotAcquired);
-    	(_streamer=streamer).init(this);
-    	_accessOnLoad=accessOnLoad;
-    	_replicaterFactory=replicaterFactory;
-    }
-
+		super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, map, router, errorIfSessionNotAcquired);
+		(_streamer=streamer).init(this);
+		_accessOnLoad=accessOnLoad;
+		_replicaterFactory=replicaterFactory;
+	}
+	
 	protected ClassLoader _classLoader;
 	
 	public void init(ManagerConfig config) {
@@ -81,45 +81,45 @@ public class DistributableManager extends StandardManager implements ReplicableS
 	 * @param helper
 	 */
 	public void registerHelper(Class type, ValueHelper helper) {
-	    _helpers.add(new HelperPair(type, helper));
+		_helpers.add(new HelperPair(type, helper));
 	}
-
+	
 	public boolean deregisterHelper(Class type) {
-	    int l=_helpers.size();
-	    for (int i=0; i<l; i++)
-	        if (type.equals(((HelperPair)_helpers.get(i))._type)) {
-	            _helpers.remove(i);
-	            return true;
-	        }
-	    return false;
+		int l=_helpers.size();
+		for (int i=0; i<l; i++)
+			if (type.equals(((HelperPair)_helpers.get(i))._type)) {
+				_helpers.remove(i);
+				return true;
+			}
+		return false;
 	}
-
+	
 	public ValueHelper findHelper(Class type) {
-	    int l=_helpers.size();
-	    for (int i=0; i<l; i++) {
-	        HelperPair p=(HelperPair)_helpers.get(i);
-	        if (p._type.isAssignableFrom(type))
-	            return p._helper;
-	    }
-	    return null;
+		int l=_helpers.size();
+		for (int i=0; i<l; i++) {
+			HelperPair p=(HelperPair)_helpers.get(i);
+			if (p._type.isAssignableFrom(type))
+				return p._helper;
+		}
+		return null;
 	}
-
+	
 	public boolean getHttpSessionAttributeListenersRegistered() {
 		return _attributeListeners.length>0;
 	}
-
+	
 	public boolean getDistributable() {
 		return true;
 	}
-
+	
 	public boolean getAccessOnLoad() {
-	    return _accessOnLoad;
+		return _accessOnLoad;
 	}
-
+	
 	public SynchronizedBoolean getShuttingDown() {
-	    return _shuttingDown;
+		return _shuttingDown;
 	}
-
+	
 	public Streamer getStreamer() {
 		return _streamer;
 	}
@@ -129,4 +129,5 @@ public class DistributableManager extends StandardManager implements ReplicableS
 	public Replicater getReplicater() {
 		return _replicaterFactory.create();
 	}
+	
 }

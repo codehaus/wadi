@@ -94,7 +94,8 @@ public class TestDIndex extends TestCase {
         _log.info("fetching: "+name);
         DIndex g=green.getDIndex();
         g.relocate2(name, "green", 1, false, responseTimeout);
-        Motable motable2=(Motable)green.get(name);
+        // Motable motable2=(Motable)
+        green.get(name);
         _log.info("fetched: "+name);
         //green.getDIndex().remove(name);
         //blue.getDIndex().put(name, name);

@@ -16,35 +16,12 @@
  */
 package org.codehaus.wadi;
 
-import java.util.Map;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionEvent;
 
-import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.gridstate.Dispatcher;
-
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
+public interface WADIHttpSession extends Session {
 	
-	String getNodeName();
-	
-	InvocationProxy getInvocationProxy();
-	
-	ProxiedLocation getProxiedLocation();
-	
-	Object getDistributedState(Object key);
-	
-	Object putDistributedState(Object key, Object value);
-	
-	Object removeDistributedState(Object key);
-	
-	void distributeState() throws Exception;
-	
-	Map getDistributedState();
-	
-	long getInactiveTime();
-	
-	int getNumPartitions();
-	
-	Dispatcher getDispatcher();
-	
-	DIndex getDIndex();
-	
+    public HttpSession getWrapper();
+    public HttpSessionEvent getHttpSessionEvent();
+    
 }

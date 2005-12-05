@@ -16,31 +16,26 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class DummyRelocater implements Relocater {
-
-    public void init(RelocaterConfig config) {
-        // empty
-    }
-
-    public void destroy() {
-        // empty
-    }
-
-    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException {
-        return true;
-    }
-
+	
+	public void init(RelocaterConfig config) {
+		// empty
+	}
+	
+	public void destroy() {
+		// empty
+	}
+	
+	public boolean relocate(InvocationContext invocationContext, String name, Immoter immoter, Sync motionLock) throws InvocationException {
+		return true;
+	}
+	
 }

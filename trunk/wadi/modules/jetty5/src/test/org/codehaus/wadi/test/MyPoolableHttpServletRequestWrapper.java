@@ -16,14 +16,18 @@
  */
 package org.codehaus.wadi.test;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.codehaus.wadi.Context;
+import org.codehaus.wadi.InvocationContext;
 import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
 
 class MyPoolableHttpServletRequestWrapper extends MyHttpServletRequest implements PoolableHttpServletRequestWrapper {
-
-    public void init(HttpServletRequest request, Context context){ /* I KNOW */}
-    public void destroy(){/* I KNOW */}
-
+	
+	public void init(InvocationContext invocationContext, Context context) {
+		/* I KNOW */
+	}
+	
+	public void destroy(){
+		/* I KNOW */
+	}
+	
 }

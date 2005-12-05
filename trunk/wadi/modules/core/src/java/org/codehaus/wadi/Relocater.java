@@ -16,13 +16,6 @@
  */
 package org.codehaus.wadi;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
@@ -40,15 +33,11 @@ public interface Relocater {
     
 	/**
 	 * Either relocate the request to the session by proxying/redirection, or the session to the request, by migration...
-	 * @param hreq
-	 * @param hres
-	 * @param chain
+     * @param invocationContext
 	 * @param name
 	 * @param immoter
 	 * @param motionLock
 	 * @return - whether, or not, the request was contextualised
-	 * @throws IOException
-	 * @throws ServletException
 	 */
-	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException;
+	public boolean relocate(InvocationContext invocationContext, String name, Immoter immoter, Sync motionLock) throws InvocationException;
 }

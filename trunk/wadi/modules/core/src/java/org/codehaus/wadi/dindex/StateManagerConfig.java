@@ -16,15 +16,11 @@
  */
 package org.codehaus.wadi.dindex;
 
-import java.io.IOException;
-
 import javax.jms.Destination;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
@@ -40,7 +36,8 @@ public interface StateManagerConfig {
 	String getNodeName(Destination destination);
 		
 	Dispatcher getDispatcher();
-	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException;
+    
+    boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
 	long getInactiveTime();
 
 	Sync getInvocationLock(String name);

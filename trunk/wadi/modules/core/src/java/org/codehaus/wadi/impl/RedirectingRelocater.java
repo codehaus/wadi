@@ -16,15 +16,10 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.RequestRelocater;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -39,12 +34,12 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public class RedirectingRelocater extends AbstractRelocater implements RequestRelocater {
-
-	public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException {
-		// TODO Auto-generated method stub
+	
+	public boolean relocate(InvocationContext invocationContext, String name, Immoter immoter, Sync motionLock) throws InvocationException {
 		return false;
 	}
-
+	
 	public void setTop(Contextualiser top){/* NYI */}
 	public Contextualiser getTop(){return null;}
+	
 }

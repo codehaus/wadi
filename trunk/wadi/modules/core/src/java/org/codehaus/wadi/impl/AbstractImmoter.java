@@ -16,16 +16,11 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -39,15 +34,15 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public abstract class AbstractImmoter implements Immoter {
 	protected static final Log _log = LogFactory.getLog(AbstractImmoter.class);
-
+	
 	public boolean prepare(String name, Motable emotable, Motable immotable) {
 		return true;
 	}
-
+	
 	public void commit(String name, Motable immotable) {
 		// do nothing
 	}
-
+	
 	public void rollback(String name, Motable immotable) {
 		try {
 			immotable.destroy();
@@ -55,10 +50,10 @@ public abstract class AbstractImmoter implements Immoter {
 			if (_log.isErrorEnabled()) _log.error("problem rolling back immotion: "+name, e);
 		}
 	}
-
+	
 	// keep the throws clause - we are defining a method signature for our subtypes
-	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) throws IOException, ServletException {
-	// most Contextualisers cannot contextualise locally...
-        return false;
+	public boolean contextualise(InvocationContext invocationContext, String id, Motable immotable, Sync motionLock) throws InvocationException {
+		// most Contextualisers cannot contextualise locally...
+		return false;
 	}
 }

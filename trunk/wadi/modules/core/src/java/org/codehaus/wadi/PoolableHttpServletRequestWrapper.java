@@ -18,9 +18,5 @@ package org.codehaus.wadi;
 
 import javax.servlet.http.HttpServletRequest;
 
-public interface PoolableHttpServletRequestWrapper extends HttpServletRequest {
-
-    void init(HttpServletRequest request, Context context);
-    void destroy();
-    
+public interface PoolableHttpServletRequestWrapper extends HttpServletRequest, PoolableInvocationWrapper {
 }

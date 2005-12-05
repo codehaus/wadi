@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi;
 
-import java.net.InetSocketAddress;
-
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
@@ -31,8 +29,8 @@ public interface RelocaterConfig extends Config {
     Contextualiser getContextualiser();
     String getNodeName();
     SynchronizedBoolean getShuttingDown();
-    HttpProxy getHttpProxy();
-    InetSocketAddress getHttpAddress();
+    InvocationProxy getInvocationProxy();
+    ProxiedLocation getProxiedLocation();
     
     DIndex getDIndex();
     void notifySessionRelocation(String name);

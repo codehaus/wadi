@@ -16,13 +16,6 @@
  */
 package org.codehaus.wadi;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
@@ -33,8 +26,8 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 
 public interface Immoter extends Moter {
-
-    Motable nextMotable(String id, Motable emotable);
-	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Motable immotable, Sync motionLock) throws IOException, ServletException;
+	
+	Motable nextMotable(String id, Motable emotable);
+	boolean contextualise(InvocationContext invocationContext, String id, Motable immotable, Sync motionLock) throws InvocationException;
 	
 }

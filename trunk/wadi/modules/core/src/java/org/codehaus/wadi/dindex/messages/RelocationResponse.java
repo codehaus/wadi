@@ -17,63 +17,64 @@
 package org.codehaus.wadi.dindex.messages;
 
 import java.io.Serializable;
-import java.net.InetSocketAddress;
 
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.OldMessage;
+import org.codehaus.wadi.ProxiedLocation;
 
 public class RelocationResponse implements OldMessage, Serializable {
-
-    protected String _sessionName;
-    protected String _nodeName;
-    protected Motable _motable;
-    protected InetSocketAddress _address;
-
-    // use when relocating session...
-    public RelocationResponse(String sessionName, String nodeName, Motable motable) {
-        _sessionName=sessionName;
-        _nodeName=nodeName;
-        _motable=motable;
-        _address=null;
-    }
-
-    // use when relocating request...
-    public RelocationResponse(String sessionName, String nodeName, InetSocketAddress address) {
-        _sessionName=sessionName;
-        _nodeName=nodeName;
-        _motable=null;
-        _address=address;
-    }
-
-    // use when session was not found...
-    public RelocationResponse(String sessionName) {
-        _sessionName=sessionName;
-        _nodeName=null;
-        _motable=null;
-        _address=null;
-    }
-
-    protected RelocationResponse() {
-        // for deserialising
-    }
-
-    public String getSessionName() {
-        return _sessionName;
-    }
-
-    public String getNodeName() {
-        return _nodeName;
-    }
-
-    public Motable getMotable() {
-        return _motable;
-    }
-    
-    public InetSocketAddress getAddress() {
-        return _address;
-    }
-
-    public String toString() {
-        return "<RelocationResponse: "+_sessionName+" -> "+_nodeName+": "+(_motable!=null?"session":_address!=null?"request":"failed")+">";
-    }
+	
+	protected String _sessionName;
+	protected String _nodeName;
+	protected Motable _motable;
+	protected ProxiedLocation _location;
+	
+	// use when relocating session...
+	public RelocationResponse(String sessionName, String nodeName, Motable motable) {
+		_sessionName=sessionName;
+		_nodeName=nodeName;
+		_motable=motable;
+		_location=null;
+	}
+	
+	// use when relocating request...
+	public RelocationResponse(String sessionName, String nodeName, ProxiedLocation location) {
+		_sessionName=sessionName;
+		_nodeName=nodeName;
+		_motable=null;
+		_location=location;
+	}
+	
+	// use when session was not found...
+	public RelocationResponse(String sessionName) {
+		_sessionName=sessionName;
+		_nodeName=null;
+		_motable=null;
+		_location=null;
+	}
+	
+	protected RelocationResponse() {
+		// for deserialising
+	}
+	
+	public String getSessionName() {
+		return _sessionName;
+	}
+	
+	public String getNodeName() {
+		return _nodeName;
+	}
+	
+	public Motable getMotable() {
+		return _motable;
+	}
+	
+	public ProxiedLocation getProxiedLocation() {
+		return _location;
+	}
+	
+	public String toString() {
+		return "<RelocationResponse: "+_sessionName+" -> "+_nodeName+": "+(_motable!=null?"session":_location!=null?"request":"failed")+">";
+	}
+	
 }

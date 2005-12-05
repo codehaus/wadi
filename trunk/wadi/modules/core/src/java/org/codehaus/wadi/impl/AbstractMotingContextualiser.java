@@ -16,17 +16,12 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Locker;
 import org.codehaus.wadi.Motable;
 
@@ -39,88 +34,88 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public abstract class AbstractMotingContextualiser extends AbstractChainedContextualiser {
-
-    protected final Locker _locker;
-
-    protected ContextualiserConfig _config;
-
-    protected final boolean _clean;
-
-    public AbstractMotingContextualiser(Contextualiser next, Locker locker, boolean clean) {
+	
+	protected final Locker _locker;
+	
+	protected ContextualiserConfig _config;
+	
+	protected final boolean _clean;
+	
+	public AbstractMotingContextualiser(Contextualiser next, Locker locker, boolean clean) {
 		super(next);
-        _locker=locker;
-        _clean=clean;
+		_locker=locker;
+		_clean=clean;
 	}
-
+	
 	/**
 	 * @return - an Emoter that facilitates removal of Motables from this Contextualiser's own store
 	 */
 	public abstract Emoter getEmoter();
-
+	
 	/**
 	 * @return - an Immoter that facilitates insertion of Motables into this Contextualiser's own store
 	 */
 	public abstract Immoter getImmoter();
-
+	
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
-	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
-	    return (handle(hreq, hres, chain, id, immoter, motionLock) ||
-	            ((!(exclusiveOnly && !_next.isExclusive())) && _next.contextualise(hreq, hres, chain, id, getPromoter(immoter), motionLock, exclusiveOnly)));
+	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+		return (handle(invocationContext, id, immoter, motionLock) ||
+				((!(exclusiveOnly && !_next.isExclusive())) && _next.contextualise(invocationContext, id, getPromoter(immoter), motionLock, exclusiveOnly)));
 	}
-
-    // TODO - I don't think that we need test isExclusive anymore - or even need this flag...
-    
-	public boolean promote(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, Motable emotable) throws IOException, ServletException {
+	
+	// TODO - I don't think that we need test isExclusive anymore - or even need this flag...
+	
+	public boolean promote(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, Motable emotable) throws InvocationException {
 		Emoter emoter=getEmoter();
 		Motable immotable=Utils.mote(emoter, immoter, emotable, id);
 		if (immotable!=null) {
-            return immoter.contextualise(hreq, hres, chain, id, immotable, motionLock);
+			return immoter.contextualise(invocationContext, id, immotable, motionLock);
 		} else {
 			return false;
 		}
 	}
-
+	
 	public Immoter getPromoter(Immoter immoter) {
 		return immoter; // just pass contexts straight through...
 	}
-
-    public Immoter getSharedDemoter() {
-        if (isExclusive())
-            return _next.getSharedDemoter();
-        else
-            return getImmoter();
-    }
-
+	
+	public Immoter getSharedDemoter() {
+		if (isExclusive())
+			return _next.getSharedDemoter();
+		else
+			return getImmoter();
+	}
+	
 	public abstract Motable get(String id);
-
-    public boolean handle(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock) throws IOException, ServletException {
-    	if (immoter!=null) {
-    		Motable emotable=get(id);
-    		return promote(hreq, hres, chain, id, immoter, motionLock, emotable); // motionLock should be released here...
-    	} else
-    		return false;
-    }
-
-    public void promoteToExclusive(Immoter immoter) {
-        if (isExclusive())
-            _next.promoteToExclusive(_next.isExclusive()?null:getImmoter());
-        else {
-            Emoter emoter=getEmoter();
-            load(emoter, immoter);
-            _next.promoteToExclusive(immoter);
-        }
-    }
-
-    public void init(ContextualiserConfig config) {
-        super.init(config);
-        _config=config;
-    }
-
-    public void destroy() {
-        _config=null;
-        super.destroy();
-    }
-
+	
+	public boolean handle(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock) throws InvocationException {
+		if (immoter!=null) {
+			Motable emotable=get(id);
+			return promote(invocationContext, id, immoter, motionLock, emotable); // motionLock should be released here...
+		} else
+			return false;
+	}
+	
+	public void promoteToExclusive(Immoter immoter) {
+		if (isExclusive())
+			_next.promoteToExclusive(_next.isExclusive()?null:getImmoter());
+		else {
+			Emoter emoter=getEmoter();
+			load(emoter, immoter);
+			_next.promoteToExclusive(immoter);
+		}
+	}
+	
+	public void init(ContextualiserConfig config) {
+		super.init(config);
+		_config=config;
+	}
+	
+	public void destroy() {
+		_config=null;
+		super.destroy();
+	}
+	
 }
