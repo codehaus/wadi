@@ -123,11 +123,11 @@ public class SoakTestClient implements Runnable {
     public SoakTestClient(PooledExecutor executor, int numConcurrentRequests, int numIterations, SynchronizedInt completer, SynchronizedInt errors, Channel httpClients) {
         _executor=executor;
         _numConcurrentRequests=numConcurrentRequests;
-        _createRequest=new Request("/wadi/jsp/create.jsp");
-        _destroyRequest=new Request("/wadi/jsp/destroy.jsp");
+        _createRequest=new Request("/wadi/create.jsp");
+        _destroyRequest=new Request("/wadi/destroy.jsp");
         _renderRequests=new Request[_numConcurrentRequests];
         for (int i=0; i<_numConcurrentRequests; i++)
-            _renderRequests[i]=new Request("/wadi/jsp/render.jsp");
+            _renderRequests[i]=new Request("/wadi/render.jsp");
         _remaining=numIterations;
         _completer=completer;
         _errors=errors;
