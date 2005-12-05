@@ -10,10 +10,11 @@
                 <p>
                     <img valign="top" src="./images/folder-open.gif" border="0" alt="" title="download"/>
                     Download                    
-                    <a href="http://dist.codehaus.org/wadi/wadi/wars/wadi-2.0-SNAPSHOT.war">
-                        WADI 2.0-SNAPSHOT.war
-                    </a>
-                    <small>(6.2Mb)</small>
+                    WADI 2.0-SNAPSHOT
+                    <a href="http://dist.codehaus.org/wadi/distributions/wadi-2.0-SNAPSHOT-bin.tar.bz2">.tar.bz2</a>,
+                    <a href="http://dist.codehaus.org/wadi/distributions/wadi-2.0-SNAPSHOT-bin.tar.gz">.tar.gz</a>,
+                    <a href="http://dist.codehaus.org/wadi/distributions/wadi-2.0-SNAPSHOT-bin.zip">.zip</a>
+                    <small>(9.0Mb)</small>
                 </p>
                 <ul>
                     <li>

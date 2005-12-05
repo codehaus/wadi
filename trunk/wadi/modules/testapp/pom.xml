@@ -10,6 +10,11 @@
     <version>2.0-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>WADI :: Test WebApp</name>
+    <scm>
+        <connection>scm:cvs:pserver:anoncvs@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi/modules/testapp</connection>
+        <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org/home/projects/wadi/scm:wadi/modules/testapp</developerConnection>
+        <url>http://cvs.wadi.codehaus.org/viewrep/wadi/wadi/modules/testapp</url>
+    </scm>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
