@@ -61,7 +61,7 @@
 		Object bg="black";
 
 		if (v.hasNext())
-		  bg=(String)v.next();
+		  bg=v.next().toString();
 
 		%>
 		<td bgcolor="<%= bg %>" width="25" height="25"/>
