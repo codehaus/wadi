@@ -123,7 +123,7 @@
     </dependencies>
     <distributionManagement>
         <site>
-            <id>wadi.website</id>
+            <id>wadi-website</id>
             <name>WADI Website</name>
             <url>scpexe://beaver.codehaus.org/home/projects/wadi/public_html/</url>
         </site>
