@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,19 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi;
 
-import org.codehaus.wadi.PoolableInvocationWrapper;
-import org.codehaus.wadi.PoolableInvocationWrapperPool;
+import java.io.Serializable;
 
-public class DummyStatefulHttpServletRequestWrapperPool implements PoolableInvocationWrapperPool {
-	
-	public PoolableInvocationWrapper take() {
-		return new StatefulHttpServletRequestWrapper();
-	}
-	
-	public void put(PoolableInvocationWrapper wrapper) {
-		// just drop it...
-	}
-	
+/**
+ * @version $Revision$
+ */
+public interface ProxiedLocation extends Serializable {
 }

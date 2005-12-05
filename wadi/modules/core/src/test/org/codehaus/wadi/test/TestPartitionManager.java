@@ -16,20 +16,19 @@
  */
 package org.codehaus.wadi.test;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.Destination;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+
+import junit.framework.TestCase;
 
 import org.activecluster.ClusterEvent;
 import org.activecluster.Node;
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
@@ -42,9 +41,7 @@ import org.codehaus.wadi.impl.SimplePartitionMapper;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
-import junit.framework.TestCase;
-
-// Put this off until later - no current need to disentangle DIndex and PartitionManager, althought it will have to be done eventually...
+//Put this off until later - no current need to disentangle DIndex and PartitionManager, althought it will have to be done eventually...
 
 public class TestPartitionManager extends TestCase {
 	
@@ -77,7 +74,7 @@ public class TestPartitionManager extends TestCase {
 		};
 		dispatcher.init(dc);
 		dispatcher.start();
-
+		
 		Map distributedState=new HashMap();
 		Callback callback=new Callback() {
 			
@@ -102,32 +99,32 @@ public class TestPartitionManager extends TestCase {
 				// TODO Auto-generated method stub
 				
 			}
-
+			
 			public Node getCoordinatorNode() {
 				// TODO Auto-generated method stub
 				return null;
 			}
-
+			
 			public long getInactiveTime() {
 				// TODO Auto-generated method stub
 				return 0;
 			}
-
-			public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
+			
+			public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 				// TODO Auto-generated method stub
 				return false;
 			}
-
+			
 			public String getNodeName(Destination destination) {
 				// TODO Auto-generated method stub
 				return null;
 			}
-
+			
 			public Immoter getImmoter(String name, Motable immotable) {
 				// TODO Auto-generated method stub
 				return null;
 			}
-
+			
 			public Sync getInvocationLock(String name) {
 				// TODO Auto-generated method stub
 				return null;

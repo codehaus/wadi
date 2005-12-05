@@ -32,9 +32,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Attributes;
 import org.codehaus.wadi.AttributesConfig;
-import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionConfig;
 import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.WADIHttpSession;
 
 /**
  * Our internal representation of any Web Session
@@ -43,85 +43,85 @@ import org.codehaus.wadi.ValuePool;
  * @version $Revision$
  */
 
-public class StandardSession extends AbstractContext implements Session, AttributesConfig {
-    
-    protected final static Log _log = LogFactory.getLog(StandardSession.class);
-    protected final SessionConfig _config;
-    protected final Attributes _attributes;
-    protected final HttpSession _wrapper;
-    protected final HttpSessionEvent _httpSessionEvent;
-    
-    public StandardSession(SessionConfig config) {
-        super();
-        _config=config;
-        _attributes=_config.getAttributesFactory().create(this);
-        _wrapper=_config.getSessionWrapperFactory().create(this);
-        _httpSessionEvent=new HttpSessionEvent(_wrapper);
-        
-        // TODO - resolve different APIs used by Factories and Pools...
-        }
-    
-    public void destroy() throws Exception {
-        super.destroy();
-        _attributes.clear();
-        // NYI - other fields...
-    }
-    
-    public byte[] getBodyAsByteArray() throws Exception {
-        throw new NotSerializableException();
-    }
-
-    public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
-        throw new NotSerializableException();
-    }
-    
-    // public access to the contents of this session should all be directed via wrapper
-    public HttpSession getWrapper() {
-    	return _wrapper;
-    }
-    
-    // cached events...
-    public HttpSessionEvent getHttpSessionEvent() {
-    	return _httpSessionEvent;
-    }
-    
-    //public String getRealId() {return null;} // TODO - lose this method...
-    
-    // useful constants...
-    protected static final String[]    _emptyStringArray =new String[0];
-    protected static final Enumeration _emptyEnumeration =Collections.enumeration(Collections.EMPTY_LIST);
-    
-    // Attributes...
-    
-    // Setters
-    
-    public Object getAttribute(String name) {
-        if (null==name)
-            throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
-        
-        return _attributes.get(name);
-    }
-    
-    public Set getAttributeNameSet() {
-        return _attributes.keySet();
-    }
-    
-    public Enumeration getAttributeNameEnumeration() {
-        return _attributes.size()==0?_emptyEnumeration:Collections.enumeration(_attributes.keySet());
-    }
-    
-    public String[] getAttributeNameStringArray() {
-        return _attributes.size()==0?_emptyStringArray:(String[])_attributes.keySet().toArray(new String[_attributes.size()]);
-    }
-    
-    protected void notifyBindingListeners(String name, Object oldValue, Object newValue) {
-        if (null!=oldValue && oldValue instanceof HttpSessionBindingListener)
-            ((HttpSessionBindingListener)oldValue).valueUnbound(new HttpSessionBindingEvent(_wrapper, name, oldValue));
-        if (newValue instanceof HttpSessionBindingListener)
-            ((HttpSessionBindingListener)newValue).valueBound(new HttpSessionBindingEvent(_wrapper, name, newValue));
+public class StandardSession extends AbstractContext implements WADIHttpSession, AttributesConfig {
+	
+	protected final static Log _log = LogFactory.getLog(StandardSession.class);
+	protected final SessionConfig _config;
+	protected final Attributes _attributes;
+	protected final HttpSession _wrapper;
+	protected final HttpSessionEvent _httpSessionEvent;
+	
+	public StandardSession(SessionConfig config) {
+		super();
+		_config=config;
+		_attributes=_config.getAttributesFactory().create(this);
+		_wrapper=_config.getSessionWrapperFactory().create(this);
+		_httpSessionEvent=new HttpSessionEvent(_wrapper);
+		
+		// TODO - resolve different APIs used by Factories and Pools...
 	}
-
-    protected void notifyAttributeListeners(String name, Object oldValue, Object newValue) {
+	
+	public void destroy() throws Exception {
+		super.destroy();
+		_attributes.clear();
+		// NYI - other fields...
+	}
+	
+	public byte[] getBodyAsByteArray() throws Exception {
+		throw new NotSerializableException();
+	}
+	
+	public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
+		throw new NotSerializableException();
+	}
+	
+	// public access to the contents of this session should all be directed via wrapper
+	public HttpSession getWrapper() {
+		return _wrapper;
+	}
+	
+	// cached events...
+	public HttpSessionEvent getHttpSessionEvent() {
+		return _httpSessionEvent;
+	}
+	
+	//public String getRealId() {return null;} // TODO - lose this method...
+	
+	// useful constants...
+	protected static final String[]    _emptyStringArray =new String[0];
+	protected static final Enumeration _emptyEnumeration =Collections.enumeration(Collections.EMPTY_LIST);
+	
+	// Attributes...
+	
+	// Setters
+	
+	public Object getAttribute(String name) {
+		if (null==name)
+			throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
+		
+		return _attributes.get(name);
+	}
+	
+	public Set getAttributeNameSet() {
+		return _attributes.keySet();
+	}
+	
+	public Enumeration getAttributeNameEnumeration() {
+		return _attributes.size()==0?_emptyEnumeration:Collections.enumeration(_attributes.keySet());
+	}
+	
+	public String[] getAttributeNameStringArray() {
+		return _attributes.size()==0?_emptyStringArray:(String[])_attributes.keySet().toArray(new String[_attributes.size()]);
+	}
+	
+	protected void notifyBindingListeners(String name, Object oldValue, Object newValue) {
+		if (null!=oldValue && oldValue instanceof HttpSessionBindingListener)
+			((HttpSessionBindingListener)oldValue).valueUnbound(new HttpSessionBindingEvent(_wrapper, name, oldValue));
+		if (newValue instanceof HttpSessionBindingListener)
+			((HttpSessionBindingListener)newValue).valueBound(new HttpSessionBindingEvent(_wrapper, name, newValue));
+	}
+	
+	protected void notifyAttributeListeners(String name, Object oldValue, Object newValue) {
 		boolean replaced=(oldValue!=null);
 		HttpSessionAttributeListener[] listeners=_config.getAttributeListeners();
 		
@@ -139,19 +139,19 @@ public class StandardSession extends AbstractContext implements Session, Attribu
 		}
 	}
 	
-    public Object setAttribute(String name, Object newValue) {
-        if (null==name)
-            throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
-
-        Object oldValue=_attributes.put(name, newValue);
-
-        notifyBindingListeners(name, oldValue, newValue);
-        notifyAttributeListeners(name, oldValue, newValue);
-
-        return oldValue;
-    }
-    
-    void notifyAttributeListeners(String name, Object oldValue) {
+	public Object setAttribute(String name, Object newValue) {
+		if (null==name)
+			throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
+		
+		Object oldValue=_attributes.put(name, newValue);
+		
+		notifyBindingListeners(name, oldValue, newValue);
+		notifyAttributeListeners(name, oldValue, newValue);
+		
+		return oldValue;
+	}
+	
+	void notifyAttributeListeners(String name, Object oldValue) {
 		if (null!=oldValue) {
 			HttpSessionAttributeListener[] listeners=_config.getAttributeListeners();
 			int l=listeners.length;
@@ -163,50 +163,50 @@ public class StandardSession extends AbstractContext implements Session, Attribu
 		}
 	}
 	
-    void notifyBindingListeners(String name, Object oldValue) {
-    	if (null!=oldValue && oldValue instanceof HttpSessionBindingListener) {
-    		((HttpSessionBindingListener)oldValue).valueUnbound(new HttpSessionBindingEvent(_wrapper, name, oldValue));
-    	}
+	void notifyBindingListeners(String name, Object oldValue) {
+		if (null!=oldValue && oldValue instanceof HttpSessionBindingListener) {
+			((HttpSessionBindingListener)oldValue).valueUnbound(new HttpSessionBindingEvent(_wrapper, name, oldValue));
+		}
 	}
 	
 	public Object removeAttribute(String name) {
-    	if (null==name)
-    		throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
-    	// we could remove the Map if num entries fell back to '0' -
-    	// but we would probably be creating more work than saving
-    	// memory..
-    	Object oldValue=_attributes.remove(name);
-    	
-    	notifyBindingListeners(name, oldValue);
-    	notifyAttributeListeners(name, oldValue);
-    	
-    	return oldValue;
-    }
-    
-    public SessionConfig getConfig() {
-    	return _config;
-    }
-    
-    // AttributesConfig
-    
-    public ValuePool getValuePool(){
-    	return _config.getValuePool();
-    }
-    
-    public void setLastAccessedTime(long newLastAccessedTime) {
-        long oldLastAccessedTime=_lastAccessedTime;
-    	super.setLastAccessedTime(newLastAccessedTime);
-    	_config.setLastAccessedTime(this, oldLastAccessedTime, newLastAccessedTime);
-    }
-    
-    public void setMaxInactiveInterval(int newMaxInactiveInterval) {
-        int oldMaxInactiveInterval=_maxInactiveInterval;
-    	super.setMaxInactiveInterval(newMaxInactiveInterval);
-        _config.setMaxInactiveInterval(this, oldMaxInactiveInterval, newMaxInactiveInterval);
-    }
-    
-    public String getId() {
-    	return _config.getRouter().augment(_name);
-    } // TODO - How can we cache this ?
-    
+		if (null==name)
+			throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
+		// we could remove the Map if num entries fell back to '0' -
+		// but we would probably be creating more work than saving
+		// memory..
+		Object oldValue=_attributes.remove(name);
+		
+		notifyBindingListeners(name, oldValue);
+		notifyAttributeListeners(name, oldValue);
+		
+		return oldValue;
+	}
+	
+	public SessionConfig getConfig() {
+		return _config;
+	}
+	
+	// AttributesConfig
+	
+	public ValuePool getValuePool(){
+		return _config.getValuePool();
+	}
+	
+	public void setLastAccessedTime(long newLastAccessedTime) {
+		long oldLastAccessedTime=_lastAccessedTime;
+		super.setLastAccessedTime(newLastAccessedTime);
+		_config.setLastAccessedTime(this, oldLastAccessedTime, newLastAccessedTime);
+	}
+	
+	public void setMaxInactiveInterval(int newMaxInactiveInterval) {
+		int oldMaxInactiveInterval=_maxInactiveInterval;
+		super.setMaxInactiveInterval(newMaxInactiveInterval);
+		_config.setMaxInactiveInterval(this, oldMaxInactiveInterval, newMaxInactiveInterval);
+	}
+	
+	public String getId() {
+		return _config.getRouter().augment(_name);
+	} // TODO - How can we cache this ?
+	
 }

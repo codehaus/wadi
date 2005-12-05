@@ -16,16 +16,11 @@
  */
 package org.codehaus.wadi.test;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.Destination;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.activecluster.Node;
 import org.activemq.store.vm.VMPersistenceAdapterFactory;
@@ -33,9 +28,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.HttpServletRequestWrapperPool;
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.StreamerConfig;
@@ -74,13 +71,13 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 	protected final PartitionMapper _mapper;
 	protected final int _numPartitions;
 	protected final Map _entries;
-    protected final DistributableSessionFactory _distributableSessionFactory=new DistributableSessionFactory();
-    protected final SessionPool _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
-    protected final HttpServletRequestWrapperPool _requestPool=new MyDummyHttpServletRequestWrapperPool();
-    protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
-    protected final Streamer _streamer;
+	protected final DistributableSessionFactory _distributableSessionFactory=new DistributableSessionFactory();
+	protected final SessionPool _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
+	protected final PoolableInvocationWrapperPool _requestPool=new MyDummyHttpServletRequestWrapperPool();
+	protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
+	protected final Streamer _streamer;
 	protected DIndex _dindex;
-
+	
 	public DIndexNode(String nodeName, int numPartitions, PartitionMapper mapper, long inactiveTime) {
 		_nodeName=nodeName;
 		_dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, inactiveTime);
@@ -94,9 +91,9 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 		Contextualiser dummy=new DummyContextualiser();
 		_contextualiser=new MemoryContextualiser(dummy, new NeverEvicter(30000,false), _entries, _streamer, _distributableContextPool, _requestPool);
 	}
-
+	
 	// DIndexNode API
-
+	
 	public void start() throws Exception {
 		_dispatcher.init(this);
 		_dindex=new DIndex(_nodeName, _numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState, _mapper);
@@ -107,24 +104,24 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 		_log.info("...Cluster started");
 		_dindex.start();
 	}
-
+	
 	public void stop() throws Exception {
 		_dindex.stop();
 	}
-
+	
 	public DIndex getDIndex() {
 		return _dindex;
 	}
-
+	
 	public ExtendedCluster getCluster() {
 		return (ExtendedCluster)_dispatcher.getCluster();
 	}
-
+	
 	public void insert(Object key, Object value, long timeout) {
 		_dindex.insert((String)key, timeout);
 		_entries.put(key, value);
 	}
-
+	
 	public Object get(String key) {
 		return _entries.get(key);
 	}
@@ -143,8 +140,8 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 		throw new UnsupportedOperationException("NYI");
 	}
 	
-	public boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException {
-		return _contextualiser.contextualise(hreq, hres, chain, id, immoter, motionLock, exclusiveOnly);
+	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+		return _contextualiser.contextualise(invocationContext, id, immoter, motionLock, exclusiveOnly);
 	}
 	
 	public Immoter getImmoter(String name, Motable immotable) {
@@ -195,7 +192,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 			_latch1.release();
 		}
 	}
-
+	
 	public Sync getInvocationLock(String name) {
 		// TODO Auto-generated method stub
 		return null;

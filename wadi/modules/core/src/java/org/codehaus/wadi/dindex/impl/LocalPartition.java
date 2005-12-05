@@ -193,12 +193,12 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		Dispatcher _dispatcher=_config.getDispatcher();
 		// what if we are NOT the PM anymore ?
 		// get write lock on location
-		String nodeName=_config.getLocalNodeName();
+		//String nodeName=_config.getLocalNodeName();
 		Sync sync=null;
-		String agent=null;
+		//String agent=null;
 		try {
 			Destination im=message1.getJMSReplyTo();
-			agent=_config.getNodeName(im);
+			//agent=_config.getNodeName(im);
 
 			// PMSyncs should prevent _map entry from being messed with whilst we are messing with it - lock should be exclusive
 			// should synchronise map access - or is it ConcurrentHashMap ?

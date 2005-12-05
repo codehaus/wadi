@@ -19,17 +19,10 @@ package org.codehaus.wadi;
 import java.util.Enumeration;
 import java.util.Set;
 
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
-
 public interface Session extends Context {
 
-    String getId();
+	String getId();
     
-    HttpSession getWrapper();
-
-    HttpSessionEvent getHttpSessionEvent();
-
     Object getAttribute(String name);
 
     Set getAttributeNameSet();

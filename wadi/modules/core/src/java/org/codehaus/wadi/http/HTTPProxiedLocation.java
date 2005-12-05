@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,19 +14,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.http;
 
-import org.codehaus.wadi.PoolableInvocationWrapper;
-import org.codehaus.wadi.PoolableInvocationWrapperPool;
+import java.net.InetSocketAddress;
 
-public class DummyStatefulHttpServletRequestWrapperPool implements PoolableInvocationWrapperPool {
+import org.codehaus.wadi.ProxiedLocation;
+
+/**
+ * @version $Revision$
+ */
+public class HTTPProxiedLocation implements ProxiedLocation {
+	private final InetSocketAddress address;
 	
-	public PoolableInvocationWrapper take() {
-		return new StatefulHttpServletRequestWrapper();
+	public HTTPProxiedLocation(InetSocketAddress address) {
+		this.address = address;
 	}
 	
-	public void put(PoolableInvocationWrapper wrapper) {
-		// just drop it...
+	public InetSocketAddress getInetSocketAddress() {
+		return address;
 	}
 	
 }

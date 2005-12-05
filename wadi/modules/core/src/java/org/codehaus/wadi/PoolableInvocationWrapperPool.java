@@ -16,35 +16,9 @@
  */
 package org.codehaus.wadi;
 
-import java.util.Map;
+public interface PoolableInvocationWrapperPool {
 
-import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.gridstate.Dispatcher;
-
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
-	
-	String getNodeName();
-	
-	InvocationProxy getInvocationProxy();
-	
-	ProxiedLocation getProxiedLocation();
-	
-	Object getDistributedState(Object key);
-	
-	Object putDistributedState(Object key, Object value);
-	
-	Object removeDistributedState(Object key);
-	
-	void distributeState() throws Exception;
-	
-	Map getDistributedState();
-	
-	long getInactiveTime();
-	
-	int getNumPartitions();
-	
-	Dispatcher getDispatcher();
-	
-	DIndex getDIndex();
-	
+    PoolableInvocationWrapper take();
+    void put(PoolableInvocationWrapper wrapper);
+    
 }

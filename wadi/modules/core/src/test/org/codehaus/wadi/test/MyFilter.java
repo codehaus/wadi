@@ -29,46 +29,56 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.codehaus.wadi.InvocationException;
+import org.codehaus.wadi.impl.WebInvocationContext;
 
 public class MyFilter implements Filter {
 	protected final Log _log;
 	protected final MyServlet _servlet;
-
+	
 	public MyFilter(String name, MyServlet servlet) {
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 		_servlet=servlet;
 	}
-
+	
 	public void init(FilterConfig config) {
-	  _log.info("Filter.init()");
+		_log.info("Filter.init()");
 	}
-
+	
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 	throws ServletException, IOException {
 		if (req instanceof HttpServletRequest) {
-		HttpServletRequest hreq=(HttpServletRequest)req;
-		HttpServletResponse hres=(HttpServletResponse)res;
-		String sessionId=hreq.getRequestedSessionId();
-            if (_log.isInfoEnabled()) _log.info("Filter.doFilter(" + ( ( sessionId == null ) ? "" : sessionId ) + ")" + ( hreq.isSecure() ? " - SECURE" : "" ));
-		boolean found=_servlet.getContextualiser().contextualise(hreq, hres, chain, sessionId, null, null, _exclusiveOnly);
-
-		// only here for testing...
-		if (!found) {
-            if (_log.isErrorEnabled()) _log.error("could not locate session: " + sessionId);
-		  hres.sendError(410, "could not locate session: "+sessionId);
-		}
-
+			HttpServletRequest hreq=(HttpServletRequest)req;
+			HttpServletResponse hres=(HttpServletResponse)res;
+			String sessionId=hreq.getRequestedSessionId();
+			if ( _log.isInfoEnabled() ) {
+				_log.info("Filter.doFilter(" + ( ( sessionId == null ) ? "" : sessionId ) + ")" + ( hreq.isSecure() ? " - SECURE" : "" ));
+			}
+			WebInvocationContext invocationContext = new WebInvocationContext(hreq, hres, chain);
+			boolean found;
+			try {
+				found = _servlet.getContextualiser().contextualise(invocationContext, sessionId, null, null, _exclusiveOnly);
+			} catch (InvocationException e) {
+				throw new ServletException(e);
+			}
+			
+			// only here for testing...
+			if (!found) {
+				if (_log.isErrorEnabled()) _log.error("could not locate session: " + sessionId);
+				hres.sendError(410, "could not locate session: "+sessionId);
+			}
+			
 		} else {
 			// not http - therefore stateless...
 			chain.doFilter(req, res);
 		}
 	}
-
+	
 	public void destroy() {
-	    // can't be bothered...
-	    }
-
+		// can't be bothered...
+	}
+	
 	protected boolean _exclusiveOnly=false;
 	public void setExclusiveOnly(boolean exclusiveOnly){_exclusiveOnly=exclusiveOnly;}
+
 }

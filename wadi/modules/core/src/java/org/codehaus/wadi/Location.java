@@ -19,23 +19,23 @@ package org.codehaus.wadi;
 import java.io.Serializable;
 
 import javax.jms.Destination;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 
 /**
  * API which encodes the Location of a Context
+ *
+ * TODO: I do not understand why we want a location to be an Evictable. Consider
+ * refactoring?
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public interface Location extends Evictable, Serializable {
 	/**
-	 * @param hreq - the request object from the webcontainer
-	 * @param hres - the response object from the webcontainer
 	 * @throws ProxyingException TODO
 	 */
-	public void proxy(HttpServletRequest hreq, HttpServletResponse hres) throws ProxyingException;
+	public void proxy(InvocationContext invocationContext) throws ProxyingException;
 
 	public Destination getDestination();
+	
 }

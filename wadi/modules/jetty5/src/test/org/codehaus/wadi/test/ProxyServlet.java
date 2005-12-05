@@ -29,8 +29,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.HttpProxy;
+import org.codehaus.wadi.InvocationProxy;
+import org.codehaus.wadi.ProxiedLocation;
+import org.codehaus.wadi.http.HTTPProxiedLocation;
 import org.codehaus.wadi.impl.StandardHttpProxy;
+import org.codehaus.wadi.impl.WebInvocationContext;
 import org.mortbay.http.SocketListener;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.ServletHttpContext;
@@ -44,36 +47,36 @@ import org.mortbay.util.InetAddrPort;
  */
 public class ProxyServlet implements Servlet {
 	protected final Log _log = LogFactory.getLog(getClass());
-
+	
 	protected ServletConfig _config;
 	protected ServletContext _context;
-
-	protected HttpProxy _proxy=new StandardHttpProxy("jsessionid");
-
+	
+	protected InvocationProxy _proxy=new StandardHttpProxy("jsessionid");
+	
 	public void init(ServletConfig config) {
 		_config = config;
 		_context = config.getServletContext();
 	}
-
+	
 	public ServletConfig getServletConfig() {
 		return _config;
 	}
-
+	
 	public void service(ServletRequest req, ServletResponse res) {
-
+		
 		HttpServletRequest hreq=(HttpServletRequest)req;
 		HttpServletResponse hres=(HttpServletResponse)res;
-
+		
 //		if (!_proxy.canProxy(hreq)) {
-//			_log.info("request not proxyable: "+hreq.getRequestURL());
-//			// so we can't do anything about it...
-//			return;
+//		_log.info("request not proxyable: "+hreq.getRequestURL());
+//		// so we can't do anything about it...
+//		return;
 //		}
-
-		InetSocketAddress location=null;
+		
+		ProxiedLocation location=null;
 		try {
-			location=new InetSocketAddress(req.getServerName(), req.getServerPort());
-			_proxy.proxy(location, hreq, hres);
+			location=new HTTPProxiedLocation(new InetSocketAddress(req.getServerName(), req.getServerPort()));
+			_proxy.proxy(location, new WebInvocationContext(hreq, hres, null));
 		} catch (Exception e) {
 			hres.setHeader("Date", null);
 			hres.setHeader("Server", null);
@@ -82,49 +85,49 @@ public class ProxyServlet implements Servlet {
 			try {
 				String message="problem proxying request to; "+location;
 				_log.warn(message, e);
-                hres.sendError(502, "Bad Gateway: "+message);
+				hres.sendError(502, "Bad Gateway: "+message);
 			} catch (IOException e2) {
-			  _log.warn("could not return error to client", e2);
-            }
+				_log.warn("could not return error to client", e2);
+			}
 		}
 	}
-
+	
 	public String getServletInfo() {
 		return "Proxy Servlet";
 	}
-
+	
 	public void destroy() {
-	    _context=null;
-	    _config=null;
+		_context=null;
+		_config=null;
 	}
-
+	
 	public static class RemoteDetailsServlet implements Servlet {
-
-	    protected final Log _log = LogFactory.getLog(getClass());
-
-	    public void init(ServletConfig config) {
-	        // nothing to do
-	    }
-
-	    public ServletConfig getServletConfig() {return null;}
-
-	    public void service(ServletRequest req, ServletResponse res) {
-	        HttpServletRequest hreq=(HttpServletRequest)req;
-            if (_log.isInfoEnabled()) {
-                _log.info("Via: "+hreq.getHeader("Via"));
-                _log.info("Max-Forwards: "+hreq.getHeader("Max-Forwards"));
-                _log.info("X-Forwarded-For: "+hreq.getHeader("X-Forwarded-For"));
-                _log.info("remote location was: "+req.getRemoteAddr()+"/"+req.getRemoteHost()+":"+req.getRemotePort());
-            }
-        }
-
-	    public String getServletInfo() {return null;}
-
-	    public void destroy() {
-	        // nothing to do
-	    }
+		
+		protected final Log _log = LogFactory.getLog(getClass());
+		
+		public void init(ServletConfig config) {
+			// nothing to do
+		}
+		
+		public ServletConfig getServletConfig() {return null;}
+		
+		public void service(ServletRequest req, ServletResponse res) {
+			HttpServletRequest hreq=(HttpServletRequest)req;
+			if (_log.isInfoEnabled()) {
+				_log.info("Via: "+hreq.getHeader("Via"));
+				_log.info("Max-Forwards: "+hreq.getHeader("Max-Forwards"));
+				_log.info("X-Forwarded-For: "+hreq.getHeader("X-Forwarded-For"));
+				_log.info("remote location was: "+req.getRemoteAddr()+"/"+req.getRemoteHost()+":"+req.getRemotePort());
+			}
+		}
+		
+		public String getServletInfo() {return null;}
+		
+		public void destroy() {
+			// nothing to do
+		}
 	}
-
+	
 	public static void main(String[] args) throws Exception {
 		{
 			Server server=new Server();
@@ -147,4 +150,5 @@ public class ProxyServlet implements Servlet {
 			server.start();
 		}
 	}
+	
 }

@@ -16,17 +16,19 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.PoolableInvocationWrapper;
-import org.codehaus.wadi.PoolableInvocationWrapperPool;
+import org.codehaus.wadi.InvocationContext;
 
-public class DummyStatefulHttpServletRequestWrapperPool implements PoolableInvocationWrapperPool {
+/**
+ * @version $Revision$
+ */
+public class WebHybridRelocater extends HybridRelocater {
 	
-	public PoolableInvocationWrapper take() {
-		return new StatefulHttpServletRequestWrapper();
+	public WebHybridRelocater(long resTimeout, long ackTimeout, boolean sessionOrRequestPreferred) {
+		super(resTimeout, ackTimeout, sessionOrRequestPreferred);
 	}
 	
-	public void put(PoolableInvocationWrapper wrapper) {
-		// just drop it...
+	protected InvocationContext newRelocationInvocationContext() {
+		return WebInvocationContext.RELOCATED_INVOCATION;
 	}
 	
 }

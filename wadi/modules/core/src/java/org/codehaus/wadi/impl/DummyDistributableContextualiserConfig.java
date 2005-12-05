@@ -22,7 +22,6 @@ import java.util.Map;
 
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
-import org.codehaus.wadi.HttpProxy;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
@@ -30,86 +29,82 @@ import org.codehaus.wadi.gridstate.ExtendedCluster;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
 public class DummyDistributableContextualiserConfig extends DummyContextualiserConfig implements DistributableContextualiserConfig {
-
-    protected final ExtendedCluster _cluster;
-
-    public DummyDistributableContextualiserConfig(ExtendedCluster cluster) {
-        super();
-        _cluster=cluster;
-    }
-
-    public ClassLoader getClassLoader() {
-    	return getClass().getClassLoader();
-    }
-
-    public ExtendedCluster getCluster() {
-        return _cluster;
-    }
-
-    public String getNodeName() {
-        return "dummy";
-    }
-
-    public HttpProxy getHttpProxy() {
-        return null;
-    }
-
-    public InetSocketAddress getHttpAddress() {
-        return null;
-    }
-
-    protected Map _state=new HashMap();
-
-    public Object getDistributedState(Object key) {
-    	return _state.get(key);
-    }
-
-    public Object putDistributedState(Object key, Object newValue) {
-    	return _state.put(key, newValue);
-    }
-
-    public Object removeDistributedState(Object key) {
-    	return _state.remove(key);
-    }
-
-    public void distributeState() {
-    }
-
-    public boolean getAccessOnLoad() {
-    	// TODO Auto-generated method stub
-    	return false;
-    }
-
-    public SynchronizedBoolean getShuttingDown() {
-    	// TODO Auto-generated method stub
-    	return null;
-    }
-
-    public Map getDistributedState() {
-    	// TODO Auto-generated method stub
-    	return null;
-    }
-
-    public long getInactiveTime() {
-    	// TODO Auto-generated method stub
-    	return 0;
-    }
-
-    public int getNumPartitions() {
-    	// TODO Auto-generated method stub
-    	return 0;
-    }
-
-    public Dispatcher getDispatcher() {
-    	return null;
-    }
-
-    public DIndex getDIndex() {
-    	return null;
-    }
-
-    public Contextualiser getContextualiser() {
-    	return null;
-    }
-
+	
+	protected final ExtendedCluster _cluster;
+	
+	public DummyDistributableContextualiserConfig(ExtendedCluster cluster) {
+		super();
+		_cluster=cluster;
+	}
+	
+	public ClassLoader getClassLoader() {
+		return getClass().getClassLoader();
+	}
+	
+	public ExtendedCluster getCluster() {
+		return _cluster;
+	}
+	
+	public String getNodeName() {
+		return "dummy";
+	}
+	
+	public InetSocketAddress getHttpAddress() {
+		return null;
+	}
+	
+	protected Map _state=new HashMap();
+	
+	public Object getDistributedState(Object key) {
+		return _state.get(key);
+	}
+	
+	public Object putDistributedState(Object key, Object newValue) {
+		return _state.put(key, newValue);
+	}
+	
+	public Object removeDistributedState(Object key) {
+		return _state.remove(key);
+	}
+	
+	public void distributeState() {
+	}
+	
+	public boolean getAccessOnLoad() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	public SynchronizedBoolean getShuttingDown() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public Map getDistributedState() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public long getInactiveTime() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	public int getNumPartitions() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	public Dispatcher getDispatcher() {
+		return null;
+	}
+	
+	public DIndex getDIndex() {
+		return null;
+	}
+	
+	public Contextualiser getContextualiser() {
+		return null;
+	}
+	
 }

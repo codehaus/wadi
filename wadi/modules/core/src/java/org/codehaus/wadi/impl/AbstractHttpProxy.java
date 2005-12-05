@@ -34,11 +34,16 @@ package org.codehaus.wadi.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.util.HashSet;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.codehaus.wadi.HttpProxy;
+import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.InvocationProxy;
+import org.codehaus.wadi.ProxiedLocation;
+import org.codehaus.wadi.ProxyingException;
+import org.codehaus.wadi.http.HTTPProxiedLocation;
 
 //HTTP/1.1 Methods:
 
@@ -81,10 +86,10 @@ import org.codehaus.wadi.HttpProxy;
  * @author <a href="mailto:gregw@mortbay.com">Greg Wilkins</a>
  * @version $Revision$
  */
-public abstract class AbstractHttpProxy implements HttpProxy {
-
+public abstract class AbstractHttpProxy implements InvocationProxy {
+	
 	public static final String _WADI_IsSecure="WADI-IsSecure";
-
+	
 	protected static final HashSet _DontProxyHeaders = new HashSet();
 	static
 	{
@@ -98,13 +103,13 @@ public abstract class AbstractHttpProxy implements HttpProxy {
 		_DontProxyHeaders.add("proxy-authenticate");
 		_DontProxyHeaders.add("upgrade");
 	}
-
+	
 	protected final String _sessionPathParamKey;
-
+	
 	public AbstractHttpProxy(String sessionPathParamKey) {
 		_sessionPathParamKey=sessionPathParamKey;
 	}
-
+	
 	public int copy(InputStream is, OutputStream os, int length) throws IOException {
 		int total=0;
 		byte[] buffer=new byte[length];
@@ -114,7 +119,7 @@ public abstract class AbstractHttpProxy implements HttpProxy {
 		}
 		return total;
 	}
-
+	
 	public String getRequestURI(HttpServletRequest hreq) {
 		String uri=hreq.getRequestURI();
 		// Jetty will return path params in this uri. Tomcat won't.
@@ -125,4 +130,22 @@ public abstract class AbstractHttpProxy implements HttpProxy {
 		}
 		return uri;
 	}
+	
+	public final void proxy(ProxiedLocation location, InvocationContext invocationContext) throws ProxyingException {
+		if (false == location instanceof HTTPProxiedLocation) {
+			throw new IllegalArgumentException(HTTPProxiedLocation.class +
+			" is expected.");
+		} else if (false == invocationContext instanceof WebInvocationContext) {
+			throw new IllegalArgumentException(WebInvocationContext.class +
+			" is expected.");
+		}
+		HTTPProxiedLocation proxiedLocation = (HTTPProxiedLocation) location;
+		InetSocketAddress address = proxiedLocation.getInetSocketAddress();
+		
+		WebInvocationContext context = (WebInvocationContext) invocationContext;
+		doProxy(address, context);
+	}
+	
+	protected abstract void doProxy(InetSocketAddress address, WebInvocationContext context) throws ProxyingException;
+	
 }

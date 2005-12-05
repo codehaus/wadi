@@ -21,41 +21,43 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
 import org.codehaus.wadi.Context;
+import org.codehaus.wadi.InvocationContext;
 import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
-import org.codehaus.wadi.Session;
-
+import org.codehaus.wadi.WADIHttpSession;
 
 public class StatefulHttpServletRequestWrapper extends HttpServletRequestWrapper implements PoolableHttpServletRequestWrapper {
-    
-    protected static final HttpServletRequest _dummy=new DummyHttpServletRequest();
+	
+	protected static final HttpServletRequest _dummy=new DummyHttpServletRequest();
 	protected HttpSession _session; // I want to maintain a Session - but it's hard to get hold of it upon creation... - do we really need it ?
-    
-	    
+	
+	
 	public StatefulHttpServletRequestWrapper() {
-	    super(_dummy);
+		super(_dummy);
 	}
-
-	public void init(HttpServletRequest request, Context context) {
-	    setRequest(request);
-	    _session=context==null?null:((Session)context).getWrapper();
+	
+	public void init(InvocationContext invocationContext, Context context) {
+		HttpServletRequest request = ((WebInvocationContext) invocationContext).getHreq();
+		setRequest(request);
+		_session=context==null?null:((WADIHttpSession)context).getWrapper();
 	}
 	
 	public void destroy() {
-	    setRequest(_dummy);
-	    _session=null;
+		setRequest(_dummy);
+		_session=null;
 	}
 	
 	// Session related method interceptions...
 	
 	public HttpSession getSession(){return getSession(true);}
-
-    public HttpSession getSession(boolean create) {
-        // TODO - I'm assuming single threaded access to request objects...
-        // so no synchronization ?
-        
-        if (null==_session)
-            return (_session=((HttpServletRequest)getRequest()).getSession(create));
-            else
-                return _session;
-    }
+	
+	public HttpSession getSession(boolean create) {
+		// TODO - I'm assuming single threaded access to request objects...
+		// so no synchronization ?
+		
+		if (null==_session)
+			return (_session=((HttpServletRequest)getRequest()).getSession(create));
+		else
+			return _session;
+	}
+	
 }

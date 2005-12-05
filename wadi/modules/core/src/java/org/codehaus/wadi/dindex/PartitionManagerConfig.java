@@ -16,17 +16,14 @@
  */
 package org.codehaus.wadi.dindex;
 
-import java.io.IOException;
 import java.util.Collection;
 
 import javax.jms.Destination;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.activecluster.Node;
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -37,7 +34,7 @@ public interface PartitionManagerConfig {
     Node getCoordinatorNode();
     long getInactiveTime();
     
-    boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException;
+    boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
     String getNodeName(Destination destination);
     
     Immoter getImmoter(String name, Motable immotable);

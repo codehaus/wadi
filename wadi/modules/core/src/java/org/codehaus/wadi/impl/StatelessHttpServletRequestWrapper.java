@@ -20,14 +20,33 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
+import org.codehaus.wadi.Context;
+import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
 
-public class StatelessHttpServletRequestWrapper extends HttpServletRequestWrapper {
-    
+public class StatelessHttpServletRequestWrapper extends HttpServletRequestWrapper implements PoolableHttpServletRequestWrapper {
+	
+	protected static final HttpServletRequest DUMMY = new DummyHttpServletRequest();
+	
+	public StatelessHttpServletRequestWrapper() {
+		super(DUMMY);
+	}
+	
 	public StatelessHttpServletRequestWrapper(HttpServletRequest request) {super(request);}
-    
+	
 	// These methods should never be called while contextualising a stateless request...
 	public HttpSession getSession(){return getSession(true);}
 	public HttpSession getSession(boolean create){throw new UnsupportedOperationException();}
-
+	
 	// TODO - consider session cookie related methods as well..
+	
+	public void init(InvocationContext invocationContext, Context context) {
+		HttpServletRequest request = ((WebInvocationContext) invocationContext).getHreq();
+		setRequest(request);
+	}
+	
+	public void destroy() {
+		setRequest(DUMMY);
+	}
+	
 }

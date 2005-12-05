@@ -16,15 +16,10 @@
  */
 package org.codehaus.wadi;
 
-import java.io.IOException;
 import java.util.Collection;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 
 /**
  * Contextualising a request is realising/processing it within the correct Context, in other words, in the presence of the required HttpSession, if any.
@@ -36,16 +31,14 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public interface Contextualiser extends Lifecycle {
-
+	
 	// I'd like to add Manager to param list, but it bloats dependency tree - can we get along without it ?
-	// FilterChain.doFilter() throws IOException, ServletException...
-	boolean contextualise(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws IOException, ServletException;
-
-    void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
-    void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
+	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
+	void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
+	void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
 
 	boolean isExclusive();
-
+	
 	/**
 	 * Return a Demoter to the first Contextualiser which would be happy to accept this Motable - in other words - would not evict() it.
 	 * @param name - uid of the Motable
@@ -53,17 +46,17 @@ public interface Contextualiser extends Lifecycle {
 	 * @return - a Demoter - a delegate capable of arranging immotion into the correct Contextualiser
 	 */
 	Immoter getDemoter(String name, Motable motable);
-    Immoter getSharedDemoter();
-
-    // perhaps these two could be collapsed...
-    void promoteToExclusive(Immoter immoter); // TODO - 'orrible name...
-    void load(Emoter emoter, Immoter immoter);
-
-    void init(ContextualiserConfig config);
-    void destroy();
-
-    void findRelevantSessionNames(int numPartitions, Collection[] resultSet);
-
-    int getLocalSessionCount();
-
+	Immoter getSharedDemoter();
+	
+	// perhaps these two could be collapsed...
+	void promoteToExclusive(Immoter immoter); // TODO - 'orrible name...
+	void load(Emoter emoter, Immoter immoter);
+	
+	void init(ContextualiserConfig config);
+	void destroy();
+	
+	void findRelevantSessionNames(int numPartitions, Collection[] resultSet);
+	
+	int getLocalSessionCount();
+	
 }

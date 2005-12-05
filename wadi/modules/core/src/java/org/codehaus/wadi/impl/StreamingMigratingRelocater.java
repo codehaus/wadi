@@ -16,63 +16,58 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.SessionRelocater;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 public class StreamingMigratingRelocater implements SessionRelocater {
-
-    public StreamingMigratingRelocater() {
-        super();
-    }
-    
-    protected RelocaterConfig _config;
-
-    public void init(RelocaterConfig config) {
-        _config=config;
-    }
-
-    public void destroy() {
-        _config=null;
-    }
-
-    public boolean relocate(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, String name, Immoter immoter, Sync motionLock) throws IOException, ServletException {
-        // check cache
-        //Server server=_config.getServer();
-
-        // repeat ...
-        
-        //boolean sessionMoves=true;
-        
-        //Location location;
-        //if (!sessionMoves && (location=(Location)locationMap.get(name))!=null) {
-            // if cache is fresh (i.e. holds a location) && lock required is 'R'
-            //   p2p to known location with last known timestamp stating 'R' lock needed
-            //   response is one of - don't know, newer location, lock-acquired
-            //   if still no success fall through to else...
-        //}
-        
-        // else - (cache is stale or 'W' lock required) 
-        //   p2n to whole cluster with last known timestamp stating r or w lock needed
-        //   responses are one of: newer location, lock-acquired
-        
-        // until either;
-        //   you receive a lock-acquired (success)
-        // or:
-        //  you cease to be told of fresher locations (fail)
-        
-        // update our location cache on each iteration...
-        
-        return false;
-    }
-
+	
+	public StreamingMigratingRelocater() {
+		super();
+	}
+	
+	protected RelocaterConfig _config;
+	
+	public void init(RelocaterConfig config) {
+		_config=config;
+	}
+	
+	public void destroy() {
+		_config=null;
+	}
+	
+	public boolean relocate(InvocationContext invocationContext, String name, Immoter immoter, Sync motionLock) throws InvocationException {
+		// check cache
+		//Server server=_config.getServer();
+		
+		// repeat ...
+		
+		//boolean sessionMoves=true;
+		
+		//Location location;
+		//if (!sessionMoves && (location=(Location)locationMap.get(name))!=null) {
+		// if cache is fresh (i.e. holds a location) && lock required is 'R'
+		//   p2p to known location with last known timestamp stating 'R' lock needed
+		//   response is one of - don't know, newer location, lock-acquired
+		//   if still no success fall through to else...
+		//}
+		
+		// else - (cache is stale or 'W' lock required) 
+		//   p2n to whole cluster with last known timestamp stating r or w lock needed
+		//   responses are one of: newer location, lock-acquired
+		
+		// until either;
+		//   you receive a lock-acquired (success)
+		// or:
+		//  you cease to be told of fresher locations (fail)
+		
+		// update our location cache on each iteration...
+		
+		return false;
+	}
+	
 }

@@ -17,17 +17,19 @@
 package org.codehaus.wadi.test;
 
 import javax.jms.Destination;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+
+import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.InvocationContext;
 import org.codehaus.wadi.Location;
+import org.codehaus.wadi.ProxyingException;
 import org.codehaus.wadi.impl.SimpleEvictable;
+import org.codehaus.wadi.impl.WebInvocationContext;
 
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
-import junit.framework.TestCase;
 
 /**
  * Start to test the complex locking in the PiggyBackLocation - difficult - I think we will just go with a Serial solution to start with...
@@ -39,21 +41,21 @@ import junit.framework.TestCase;
  */
 public class TestLocation extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
-
+	
 	/*
 	 * @see TestCase#setUp()
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
 	}
-
+	
 	/*
 	 * @see TestCase#tearDown()
 	 */
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}
-
+	
 	/**
 	 * Constructor for TestLocation.
 	 * @param name
@@ -61,63 +63,64 @@ public class TestLocation extends TestCase {
 	public TestLocation(String name) {
 		super(name);
 	}
-
+	
 	class MyMutex extends Mutex {
-	  protected int _count;
-
-	  public void acquire() throws InterruptedException {
-	    _log.info("acquiring: " + _count++);
-	    super.acquire();
-	  }
-
-	  public void release() {
-	    super.release();
-	    _log.info("releasing: " + ( --_count ));
-	  }
-
+		protected int _count;
+		
+		public void acquire() throws InterruptedException {
+			_log.info("acquiring: " + _count++);
+			super.acquire();
+		}
+		
+		public void release() {
+			super.release();
+			_log.info("releasing: " + ( --_count ));
+		}
+		
 	}
-
+	
 	class MyLocation extends SimpleEvictable implements Location {
-
-		public void proxy(HttpServletRequest hreq, HttpServletResponse hres) {
-		    // do nothing
-		    }
-
+		
+		public void proxy(InvocationContext invocationContext) throws ProxyingException {
+			// do nothing
+		}
+		
 		public Destination getDestination() {return null;}
-
+		
 	}
-
+	
 	protected Sync _mutex=new MyMutex();
 	protected Location _location=new MyLocation();
-
+	
 	class MyThread extends Thread {
 		public void run() {
 			try {
 				_mutex.acquire();
 			} catch (InterruptedException ie) {
-			  _log.warn("interruption", ie);
+				_log.warn("interruption", ie);
 			}
-
+			
 			try {
-			_location.proxy(null, null);
+				_location.proxy(new WebInvocationContext(null, null, null));
 			} catch (Exception e) {
-			  _log.warn("proxy problem", e);
+				_log.warn("proxy problem", e);
 			} finally {
-			  _mutex.release();
+				_mutex.release();
 			}
 		}
 	}
-
+	
 	public void testLocation() throws Exception {
 		int numThreads=11;
 		Thread[] threads=new Thread[numThreads];
-
+		
 		for (int i=0; i<numThreads; i++) {
 			(threads[i]=new MyThread()).start();
 		}
-
+		
 		for (int i=0; i<numThreads; i++) {
 			threads[i].join();
 		}
 	}
+	
 }
