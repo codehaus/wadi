@@ -34,7 +34,7 @@ import org.codehaus.wadi.impl.StandardManager;
 import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.jetty.HttpOnlyCookie;
 import org.mortbay.jetty.SessionManager;
-import org.mortbay.thread.AbstractLifeCycle;
+import org.mortbay.component.AbstractLifeCycle;
 
 public class JettyManager extends AbstractLifeCycle implements ManagerConfig, SessionManager {
 
