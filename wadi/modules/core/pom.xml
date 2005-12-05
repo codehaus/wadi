@@ -10,6 +10,11 @@
     <version>2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>WADI :: Core</name>
+    <scm>
+        <connection>scm:cvs:pserver:anoncvs@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi/modules/core</connection>
+        <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org/home/projects/wadi/scm:wadi/modules/core</developerConnection>
+        <url>http://cvs.wadi.codehaus.org/viewrep/wadi/wadi/modules/core</url>
+    </scm>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>

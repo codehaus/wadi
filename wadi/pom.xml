@@ -125,17 +125,19 @@
         <site>
             <id>wadi.website</id>
             <name>WADI Website</name>
-            <url>scp://beaver.codehaus.org/home/projects/wadi/public_html/</url>
+            <url>scpexe://beaver.codehaus.org/home/projects/wadi/public_html/</url>
         </site>
         <repository>
-            <id>repo1</id>
-            <name>Maven Central Repository</name>
-            <url>scp://repo1.maven.org/home/projects/maven/repository-staging/to-ibiblio/maven2</url>
+            <id>codehaus-repo</id>
+            <name>Codehaus Repository</name>
+            <url>scpexe://beaver.codehaus.org/dist</url>
+            <layout>legacy</layout>
         </repository>
         <snapshotRepository>
-            <id>snapshots</id>
-            <name>Maven Snapshot Central Repository</name>
-            <url>scp://repo1.maven.org/home/projects/maven/repository-staging/snapshots/maven2</url>
+            <id>codehaus-snapshots</id>
+            <name>Codehaus Snapshots</name>
+            <url>scpexe://beaver.codehaus.org/dist</url>
+            <layout>legacy</layout>
         </snapshotRepository>
     </distributionManagement>
     <repositories>
@@ -188,13 +190,6 @@
             <name>Mortbay Repository on codehaus</name>
             <url>http://www.mortbay.org/maven2/snapshot</url>
         </pluginRepository>
-        <pluginRepository>
-            <id>cargo repository</id>
-	    <url>http://mini.dudney.net/maven2/cargo/snapshot</url>
-            <releases>
-                  <enabled>true</enabled>
-            </releases>
-        </pluginRepository>
     </pluginRepositories>
     <modules>
         <module>modules/core</module>
@@ -208,6 +203,7 @@
         <module>modules/testapp</module>
         <module>modules/itest</module>
         <module>modules/assembly</module>
+        <module>wadi-site</module>
     </modules>
     <dependencyManagement>
         <dependencies>
@@ -485,6 +481,13 @@
 
     </dependencyManagement>
     <build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh-external</artifactId>
+                <version>1.0-alpha-6-SNAPSHOT</version>
+            </extension>
+        </extensions>
         <pluginManagement>
             <plugins>
                 <plugin>

@@ -1,94 +1,99 @@
 <project>
-  <parent>
-    <groupId>wadi</groupId>
-    <artifactId>wadi</artifactId>
+    <parent>
+        <groupId>wadi</groupId>
+        <artifactId>wadi</artifactId>
+        <version>2.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>wadi-jetty5</artifactId>
     <version>2.0-SNAPSHOT</version>
-    <relativePath>../../pom.xml</relativePath>
-  </parent>
-  <modelVersion>4.0.0</modelVersion>
-  <artifactId>wadi-jetty5</artifactId>
-  <version>2.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
-  <name>WADI :: Jetty5</name>
-  <dependencies>
+    <packaging>jar</packaging>
+    <name>WADI :: Jetty5</name>
+    <scm>
+        <connection>scm:cvs:pserver:anoncvs@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi/modules/jetty5</connection>
+        <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org/home/projects/wadi/scm:wadi/modules/jetty5</developerConnection>
+        <url>http://cvs.wadi.codehaus.org/viewrep/wadi/wadi/modules/jetty5</url>
+    </scm>
+    <dependencies>
 
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging-api</artifactId>
-    </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging-api</artifactId>
+        </dependency>
 
-    <dependency>
-      <groupId>geronimo-spec</groupId>
-      <artifactId>geronimo-spec-servlet</artifactId>
-    </dependency>
+        <dependency>
+            <groupId>geronimo-spec</groupId>
+            <artifactId>geronimo-spec-servlet</artifactId>
+        </dependency>
 
-    <dependency>
-      <groupId>wadi</groupId>
-      <artifactId>wadi-core</artifactId>
-      <scope>provided</scope>
-    </dependency>
+        <dependency>
+            <groupId>wadi</groupId>
+            <artifactId>wadi-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
-    <dependency>
-      <groupId>jetty</groupId>
-      <artifactId>org.mortbay.jetty</artifactId>
-      <version>5.1.5rc2</version>
-      <scope>provided</scope>
-    </dependency>
+        <dependency>
+            <groupId>jetty</groupId>
+            <artifactId>org.mortbay.jetty</artifactId>
+            <version>5.1.5rc2</version>
+            <scope>provided</scope>
+        </dependency>
 
-    <dependency>
-      <groupId>jetty</groupId>
-      <artifactId>org.mortbay.jmx</artifactId>
-      <version>5.1.5rc2</version>
-      <scope>provided</scope>
-    </dependency>
+        <dependency>
+            <groupId>jetty</groupId>
+            <artifactId>org.mortbay.jmx</artifactId>
+            <version>5.1.5rc2</version>
+            <scope>provided</scope>
+        </dependency>
 
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-  </dependencies>
+    </dependencies>
 
-  <build>
-    <sourceDirectory>src/java</sourceDirectory>
-    <testSourceDirectory>src/test</testSourceDirectory>
-    <plugins>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-surefire-plugin</artifactId>
-	<configuration>
-	  <excludes>
-	    <exclude implementation="java.lang.String">**/TestRelocation.java</exclude><!-- hardwired paths -->
-	  </excludes>
-	</configuration>
-      </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-site-plugin</artifactId>
-	<configuration>
-	  <outputDirectory>../../wadi-site/target/site/${artifactId}</outputDirectory>
-	</configuration>
+    <build>
+        <sourceDirectory>src/java</sourceDirectory>
+        <testSourceDirectory>src/test</testSourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude implementation="java.lang.String">**/TestRelocation.java</exclude><!-- hardwired paths -->
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>../../wadi-site/target/site/${artifactId}</outputDirectory>
+                </configuration>
 
-      </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-javadoc-plugin</artifactId>
-	<configuration>
-	  <source>1.4</source>
-	  <destDir>../../wadi-site/target/site/${artifactId}</destDir>
-	</configuration>
-      </plugin>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <source>1.4</source>
+                    <destDir>../../wadi-site/target/site/${artifactId}</destDir>
+                </configuration>
+            </plugin>
 
-    </plugins>
-  </build>
-  <reporting>
-    <plugins>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-plugin-plugin</artifactId>
-      </plugin>
-    </plugins>
+        </plugins>
+    </build>
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+            </plugin>
+        </plugins>
 
-  </reporting>
+    </reporting>
 </project>
