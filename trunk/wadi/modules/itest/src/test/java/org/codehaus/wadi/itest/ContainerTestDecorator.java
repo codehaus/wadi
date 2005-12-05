@@ -23,9 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import junit.extensions.TestSetup;
 import junit.framework.Test;
@@ -45,6 +43,7 @@ import org.codehaus.cargo.generic.DefaultContainerFactory;
 import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
 
 public class ContainerTestDecorator extends TestSetup {
+    protected Log _log = LogFactory.getLog(getClass());
     // node names
     private static final String WHITE = "white";
     private static final String BROWN = "brown";
@@ -69,15 +68,16 @@ public class ContainerTestDecorator extends TestSetup {
     private static final String CONTAINER_URL_PROP_NAME = "url";
     private static final String INSTALL_DIR_PROP_NAME = "installDir";
     private static final String CONFIG_BASE_PROP_NAME = "configBase";
-    protected Log _log = LogFactory.getLog(getClass());
     // the config dir base is the path that the various containers will be
     // copied to
     private static final String CONTAINER_CONFIG_DIR_BASE = "target/test-containers/";
     private static final String WADI_VERSION = System
             .getProperty("wadi.version");
-    // the systemProps are initialized in a static block at the end of this class
+    // the systemProps are initialized in a static block at the end of this
+    // class
     private static Map systemProps = null;
-    // the systemProps are initialized in a static block at the end of this class
+    // the systemProps are initialized in a static block at the end of this
+    // class
     private static Map installProps = null;
     private LocalContainer containers[] = null;
 
@@ -86,24 +86,23 @@ public class ContainerTestDecorator extends TestSetup {
     }
 
     public String getPortForNode(String node) {
-        return (String)((Map)systemProps.get(node)).get(HTTP_PORT_PROP_NAME);
+        return (String) ((Map) systemProps.get(node)).get(HTTP_PORT_PROP_NAME);
     }
-    
+
     protected void setUp() throws Exception {
         // parse containers to start
         String containersProp = System.getProperty("containers");
         String containerProp = System.getProperty("container");
         String nodesProp = System.getProperty("nodes");
         String nodes[] = nodesProp.split(",");
-        if(null != containerProp) {
-            // install the container
-            String containerUrl = (String)((Map)installProps.get(containerProp)).get(CONTAINER_URL_PROP_NAME);
-            String containerInstallDir = (String)((Map)installProps.get(containerProp)).get(INSTALL_DIR_PROP_NAME);
-            String containerConfigBase = (String)((Map)installProps.get(containerProp)).get(CONFIG_BASE_PROP_NAME);
-            String managerClassName = (String)((Map)installProps.get(containerProp)).get(MANAGER_CLASS_NAME_PROP_NAME);
-            String cargoContainerName = (String)((Map)installProps.get(containerProp)).get(CARGO_CONTAINER_NAME_PROP_NAME);
-            Installer installer = installContainer(containerUrl, containerInstallDir);
-            copyJars(installer.getHome(), containerProp);
+        if (null != containerProp) {
+            Installer installer = installContainer(containerProp);
+            String containerConfigBase = (String) ((Map) installProps
+                    .get(containerProp)).get(CONFIG_BASE_PROP_NAME);
+            String managerClassName = (String) ((Map) installProps
+                    .get(containerProp)).get(MANAGER_CLASS_NAME_PROP_NAME);
+            String cargoContainerName = (String) ((Map) installProps
+                    .get(containerProp)).get(CARGO_CONTAINER_NAME_PROP_NAME);
             containers = new LocalContainer[nodes.length];
             // starting one container type
             for (int i = 0; i < nodes.length; i++) {
@@ -113,27 +112,48 @@ public class ContainerTestDecorator extends TestSetup {
             }
         } else {
             String containerNames[] = containersProp.split(",");
-            if(containerNames.length != nodes.length) {
+            if (containerNames.length != nodes.length) {
                 throw new RuntimeException(
                         "Bad Configuration - containers list must match nodes list -"
-                                + " nodes = " + nodesProp + " containers = " + containersProp);
+                                + " nodes = " + nodesProp + " containers = "
+                                + containersProp);
             }
             containers = new LocalContainer[containerNames.length];
             // starting several container types
-            for(int i = 0;i < containerNames.length;i++) {
-                String containerUrl = (String)((Map)installProps.get(containerNames[i])).get(CONTAINER_URL_PROP_NAME);
-                String containerInstallDir = (String)((Map)installProps.get(containerNames[i])).get(INSTALL_DIR_PROP_NAME);
-                String containerConfigBase = (String)((Map)installProps.get(containerNames[i])).get(CONFIG_BASE_PROP_NAME);
-                String managerClassName = (String)((Map)installProps.get(containerNames[i])).get(MANAGER_CLASS_NAME_PROP_NAME);
-                String cargoContainerName = (String)((Map)installProps.get(containerNames[i])).get(CARGO_CONTAINER_NAME_PROP_NAME);
-                Installer installer = installContainer(containerUrl, containerInstallDir);
-                copyJars(installer.getHome(), containerNames[i]);
+            for (int i = 0; i < containerNames.length; i++) {
+                Installer installer = installContainer(containerNames[i]);
+                String containerConfigBase = (String) ((Map) installProps
+                        .get(containerNames[i])).get(CONFIG_BASE_PROP_NAME);
+                String managerClassName = (String) ((Map) installProps
+                        .get(containerNames[i]))
+                        .get(MANAGER_CLASS_NAME_PROP_NAME);
+                String cargoContainerName = (String) ((Map) installProps
+                        .get(containerNames[i]))
+                        .get(CARGO_CONTAINER_NAME_PROP_NAME);
                 // starting one node on each container
                 containers[i] = startContainer((String) nodes[i],
-                        containerConfigBase, managerClassName, cargoContainerName,
-                        installer);
+                        containerConfigBase, managerClassName,
+                        cargoContainerName, installer);
             }
         }
+    }
+
+    // TODO: this assumes tomcat (with the copyJars method, need to rework for jetty
+    // and jboss
+    private Installer installContainer(String containerName) throws IOException {
+        String containerUrl = (String) ((Map) installProps
+                .get(containerName)).get(CONTAINER_URL_PROP_NAME);
+        String containerInstallDir = (String) ((Map) installProps
+                .get(containerName)).get(INSTALL_DIR_PROP_NAME);
+        Installer installer = installContainer(containerUrl,
+                containerInstallDir);
+        copyJars(installer.getHome(), containerName);
+        if(containerName.equals(TOMCAT55_KEY_NAME)) {
+            String compatibilityURL = (String) ((Map) installProps
+                    .get(containerName)).get("tomcat55JDK14CompaitilityURL");
+            installTomcat55JDK14CompatibilityStuff(compatibilityURL, containerInstallDir);
+        }
+        return installer;
     }
 
     private Installer installContainer(String url, String installDir)
@@ -144,8 +164,15 @@ public class ContainerTestDecorator extends TestSetup {
         return zipInstaller;
     }
 
+    private void installTomcat55JDK14CompatibilityStuff(String url, String installDir)
+            throws IOException {
+        Installer zipInstaller = new ZipURLInstaller(new URL(url), new File(
+                installDir));
+        zipInstaller.install();
+    }
+
     protected void tearDown() throws Exception {
-        for(int i = 0;i < containers.length;i++) {
+        for (int i = 0; i < containers.length; i++) {
             containers[i].stop();
         }
     }
@@ -168,10 +195,8 @@ public class ContainerTestDecorator extends TestSetup {
         LocalConfiguration config = (LocalConfiguration) factory
                 .createConfiguration(cargoContainerName,
                         ConfigurationType.STANDALONE, configDir);
-        config
-                .setProperty(TomcatPropertySet.WEBAPP_TOKEN_VALUE,
-                        getWebappToken(wadi,
-                                managerClassName));
+        config.setProperty(TomcatPropertySet.WEBAPP_TOKEN_VALUE,
+                getWebappToken(wadi, managerClassName));
         config.addDeployable(wadi);
         Map props = (Map) systemProps.get(nodeName);
         config.setProperty(ServletPropertySet.PORT, (String) props
@@ -179,7 +204,8 @@ public class ContainerTestDecorator extends TestSetup {
         config.setProperty(TomcatPropertySet.SHUTDOWN_PORT, (String) props
                 .get(STOP_PORT_PROP_NAME));
         ContainerFactory containerFactory = new DefaultContainerFactory();
-        LocalContainer container = (LocalContainer)containerFactory.createContainer(cargoContainerName, config);
+        LocalContainer container = (LocalContainer) containerFactory
+                .createContainer(cargoContainerName, config);
         container.setSystemProperties(props);
         container.setHome(installer.getHome());
         container.setOutput(log);
@@ -211,15 +237,13 @@ public class ContainerTestDecorator extends TestSetup {
         String commonLibJars[] = new String[] {
                 rootPath
                         + "/activecluster/activecluster/WADI-1.1-SNAPSHOT/activecluster-WADI-1.1-SNAPSHOT.jar",
-                rootPath
-                        + "/activemq/activemq/WADI-3.2/activemq-WADI-3.2.jar",
+                rootPath + "/activemq/activemq/WADI-3.2/activemq-WADI-3.2.jar",
                 rootPath + "/axion/axion/1.0-M3-dev/axion-1.0-M3-dev.jar",
                 rootPath
                         + "/commons-collections/commons-collections/3.1/commons-collections-3.1.jar",
                 rootPath
                         + "/commons-primitives/commons-primitives/1.0/commons-primitives-1.0.jar",
-                rootPath
-                        + "/concurrent/concurrent/1.3.4/concurrent-1.3.4.jar",
+                rootPath + "/concurrent/concurrent/1.3.4/concurrent-1.3.4.jar",
                 rootPath
                         + "/geronimo-spec/geronimo-spec-j2ee-management/1.0-rc4/geronimo-spec-j2ee-management-1.0-rc4.jar",
                 rootPath
@@ -227,28 +251,33 @@ public class ContainerTestDecorator extends TestSetup {
                 rootPath + "/regexp/regexp/1.3/regexp-1.3.jar",
                 rootPath + "/springframework/spring/1.2.5/spring-1.2.5.jar",
                 rootPath + "/wadi/wadi-core/" + WADI_VERSION + "/wadi-core-"
-                        + WADI_VERSION + ".jar"};
+                        + WADI_VERSION + ".jar" };
         for (int i = 0; i < commonLibJars.length; i++) {
             File jarFile = new File(commonLibJars[i]);
             if (!jarFile.exists()) {
-                throw new RuntimeException("file " + jarFile.getPath() + " does not exist");
+                throw new RuntimeException("file " + jarFile.getPath()
+                        + " does not exist");
             } else {
                 // copy the jar to home/common/lib
-                File dest = new File(home.getAbsolutePath() + "/common/lib/" + jarFile.getName());
-                if(!dest.exists()) {
+                File dest = new File(home.getAbsolutePath() + "/common/lib/"
+                        + jarFile.getName());
+                if (!dest.exists()) {
                     copy(jarFile, dest);
                 }
             }
         }
-        String serverLibJar = rootPath + "/wadi/wadi-" + containerName + "/" + WADI_VERSION
-                + "/wadi-" + containerName + "-" + WADI_VERSION + ".jar";
+        String serverLibJar = rootPath + "/wadi/wadi-" + containerName + "/"
+                + WADI_VERSION + "/wadi-" + containerName + "-" + WADI_VERSION
+                + ".jar";
         File serverLibJarFile = new File(serverLibJar);
         if (!serverLibJarFile.exists()) {
-            throw new RuntimeException("file " + serverLibJarFile.getPath() + " does not exist");
+            throw new RuntimeException("file " + serverLibJarFile.getPath()
+                    + " does not exist");
         } else {
             // copy the jar to home/server/lib
-            File dest = new File(home.getAbsolutePath() + "/server/lib/" + serverLibJarFile.getName());
-            if(!dest.exists()) {
+            File dest = new File(home.getAbsolutePath() + "/server/lib/"
+                    + serverLibJarFile.getName());
+            if (!dest.exists()) {
                 copy(serverLibJarFile, dest);
             }
         }
@@ -338,18 +367,23 @@ public class ContainerTestDecorator extends TestSetup {
         installProps.put(TOMCAT50_KEY_NAME, map);
         map.put(CONFIG_BASE_PROP_NAME, CONTAINER_CONFIG_DIR_BASE + "tomcat50");
         map.put(INSTALL_DIR_PROP_NAME, "target/installs");
-        map.put(CONTAINER_URL_PROP_NAME, "http://www.apache.org/dist/jakarta/tomcat-5/"
-                + "v5.0.30/bin/jakarta-tomcat-5.0.30.zip");
-        map.put(MANAGER_CLASS_NAME_PROP_NAME, "org.codehaus.wadi.tomcat50.TomcatManager");
+        map.put(CONTAINER_URL_PROP_NAME,
+                "http://www.apache.org/dist/jakarta/tomcat-5/"
+                        + "v5.0.30/bin/jakarta-tomcat-5.0.30.zip");
+        map.put(MANAGER_CLASS_NAME_PROP_NAME,
+                "org.codehaus.wadi.tomcat50.TomcatManager");
         map.put(CARGO_CONTAINER_NAME_PROP_NAME, "tomcat5x");
         map = new HashMap();
         installProps.put(TOMCAT55_KEY_NAME, map);
-        map.put(CONFIG_BASE_PROP_NAME, CONTAINER_CONFIG_DIR_BASE + "tomcat55_");
+        map.put(CONFIG_BASE_PROP_NAME, CONTAINER_CONFIG_DIR_BASE + "tomcat55");
         map.put(INSTALL_DIR_PROP_NAME, "target/installs");
-        map.put(CONTAINER_URL_PROP_NAME, "http://www.apache.org/dist/tomcat/tomcat-5/"
-                + "v5.5.12/bin/apache-tomcat-5.5.12.zip");
-        map.put(MANAGER_CLASS_NAME_PROP_NAME, "org.codehaus.wadi.tomcat55.TomcatManager");
+        map.put(CONTAINER_URL_PROP_NAME,
+                "http://www.apache.org/dist/tomcat/tomcat-5/"
+                        + "v5.5.12/bin/apache-tomcat-5.5.12.zip");
+        map.put(MANAGER_CLASS_NAME_PROP_NAME,
+                "org.codehaus.wadi.tomcat55.TomcatManager");
         map.put(CARGO_CONTAINER_NAME_PROP_NAME, "tomcat5x");
+        map.put("tomcat55JDK14CompaitilityURL",
+                "http://apache.hoxt.com/tomcat/tomcat-5/v5.5.12/bin/apache-tomcat-5.5.12-compat.zip");        
     }
-
 }
