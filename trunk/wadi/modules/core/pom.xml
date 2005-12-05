@@ -137,19 +137,20 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <excludes>
-                        <exclude implementation="java.lang.String">**/old/**</exclude>
-                        <exclude implementation="java.lang.String">**/io/TestMotion.java</exclude>
-                        <exclude implementation="java.lang.String">**/io/TestServers.java</exclude>
-                        <exclude implementation="java.lang.String">**/sandbox/jcache/TestJCache.java</exclude>
-                        <exclude implementation="java.lang.String">**/sandbox/partition/impl/TestExchange.java</exclude>
-                        <exclude implementation="java.lang.String">**/TestEvicters.java</exclude>
-                        <exclude implementation="java.lang.String">**/TestGCache.java</exclude>
-                        <exclude implementation="java.lang.String">**/TestContextualiser.java</exclude>
-                        <exclude implementation="java.lang.String">**/TestGianni.java</exclude>
-                        <exclude implementation="java.lang.String">**/TestReplication.java</exclude>
-                        <exclude implementation="java.lang.String">**/TestDIndex.java</exclude>
                         <exclude implementation="java.lang.String">**/TestActiveCluster.java</exclude>
                         <exclude implementation="java.lang.String">**/TestCluster.java</exclude>
+                        <exclude implementation="java.lang.String">**/TestContextualiser.java</exclude>
+                        <exclude implementation="java.lang.String">**/TestDIndex.java</exclude>
+                        <exclude implementation="java.lang.String">**/TestEvicters.java</exclude>
+                        <exclude implementation="java.lang.String">**/TestGCache.java</exclude>
+                        <exclude implementation="java.lang.String">**/TestGianni.java</exclude>
+                        <exclude implementation="java.lang.String">**/TestReplication.java</exclude>
+                        <exclude implementation="java.lang.String">**/io/TestMotion.java</exclude>
+                        <exclude implementation="java.lang.String">**/io/TestServers.java</exclude>
+                        <exclude implementation="java.lang.String">**/old/**</exclude>
+                        <exclude implementation="java.lang.String">**/sandbox/jcache/TestJCache.java</exclude>
+                        <exclude implementation="java.lang.String">**/sandbox/partition/impl/TestExchange.java</exclude>
+                        <exclude implementation="java.lang.String">**/TestNodes.java</exclude><!-- hardwired paths -->
                     </excludes>
                 </configuration>
             </plugin>
@@ -160,7 +161,7 @@
                 <configuration>
                     <outputDirectory>../../wadi-site/target/site/${artifactId}</outputDirectory>
                 </configuration>
-                
+
             </plugin>
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
@@ -170,7 +171,7 @@
                 <destDir>../../wadi-site/target/site/${artifactId}</destDir>
               </configuration>
           </plugin>
-            
+
 	</plugins>
     </build>
     <reporting>
