@@ -9,6 +9,11 @@
     <version>2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WADI</name>
+    <scm>
+        <connection>scm:cvs:pserver:anoncvs@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi</connection>
+        <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org/home/projects/wadi/scm:wadi</developerConnection>
+        <url>http://cvs.wadi.codehaus.org/wadi/</url>
+    </scm>
 
     <reporting>
         <plugins>
