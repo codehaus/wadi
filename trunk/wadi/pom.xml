@@ -36,6 +36,13 @@
             <organizationUrl>http://www.mortbay.com</organizationUrl>
         </developer>
         <developer>
+            <id></id>
+            <name>Gianny Damour</name>
+            <email>gianny.damour@optusnet.com.au</email>
+            <organization></organization>
+            <organizationUrl></organizationUrl>
+        </developer>
+        <developer>
             <id>bdudney</id>
             <name>Bill Dudney</name>
             <email>bdudney@codehaus.org</email>
