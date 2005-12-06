@@ -1,85 +1,116 @@
 <?xml version="1.0"?>
 <document>
-    <properties>
-        <title>Welcome to WADI</title>
-    </properties>
-    <body>
-        <section name="WADI - Web Application Distribution Infrastructure">
-            <div id="downloadbox">
-                <h5>Get WADI</h5>
-                <p>
-                    <img valign="top" src="./images/folder-open.gif" border="0" alt="" title="download"/>
-                    Download                    
-                    WADI 2.0-SNAPSHOT
-                    <a href="http://dist.codehaus.org/wadi/distributions/wadi-2.0-SNAPSHOT-bin.tar.bz2">.tar.bz2</a>,
-                    <a href="http://dist.codehaus.org/wadi/distributions/wadi-2.0-SNAPSHOT-bin.tar.gz">.tar.gz</a>,
-                    <a href="http://dist.codehaus.org/wadi/distributions/wadi-2.0-SNAPSHOT-bin.zip">.zip</a>
-                    <small>(9.0Mb)</small>
-                </p>
-                <ul>
-                    <li>
-                        <a href="./documentation/index.html#installation">Installation Instructions</a>
-                    </li>                                          
-                    <li>
-                        <a href="./getting-started/index.html">Getting Started</a>
-                    </li>
-                    <li>
-                        <a href="./documentation/index.html">Documentation</a>
-                    </li>          
-                </ul>
-                <p>
-                    <img valign="top" src="./images/folder-open.gif" border="0" alt="" title="download"/>
-                    Download 
-                    WADI 0.9
-                    <a href="http://dist.codehaus.org/wadi/distributions/wadi-0.9.tgz">.tgz</a>,
-                    <a href="http://dist.codehaus.org/wadi/distributions/wadi-0.9.zip">.zip</a>
-                    <small>(6.2Mb)</small>
-                </p>
-                <ul>
-                    <li>
-                        <a href="./documentation/index.html">Documentation</a>
-                    </li>
-                </ul>
+  <properties>
+    <title>Welcome to WADI</title>
+  </properties>
+  <body>
+    <section name="WADI - Web Application Distribution Infrastructure">
+      <div id="downloadbox">
+	<h5>Get WADI</h5>
+	<p>
+	  <img valign="top" src="./images/folder-open.gif" border="0" alt="" title="download"/>
+	  Download
+	  WADI 2.0-SNAPSHOT
+	  <a href="http://dist.codehaus.org/wadi/distributions/wadi-2.0-SNAPSHOT-bin.tar.bz2">.tar.bz2</a>,
+	  <a href="http://dist.codehaus.org/wadi/distributions/wadi-2.0-SNAPSHOT-bin.tar.gz">.tar.gz</a>,
+	  <a href="http://dist.codehaus.org/wadi/distributions/wadi-2.0-SNAPSHOT-bin.zip">.zip</a>
+	  <small>(9.0Mb)</small>
+	</p>
+	<ul>
+	  <li>
+	    <a href="./documentation/index.html#installation">Installation Instructions</a>
+	  </li>
+	  <li>
+	    <a href="./getting-started/index.html">Getting Started</a>
+	  </li>
+	  <li>
+	    <a href="./documentation/index.html">Documentation</a>
+	  </li>
+	</ul>
+	<p>
+	  <img valign="top" src="./images/folder-open.gif" border="0" alt="" title="download"/>
+	  Download
+	  WADI 0.9
+	  <a href="http://dist.codehaus.org/wadi/distributions/wadi-0.9.tgz">.tgz</a>,
+	  <a href="http://dist.codehaus.org/wadi/distributions/wadi-0.9.zip">.zip</a>
+	  <small>(6.2Mb)</small>
+	</p>
+	<ul>
+	  <li>
+	    <a href="./documentation/index.html">Documentation</a>
+	  </li>
+	</ul>
 
-            </div>
-            <div style="clear: right; float: right">
-                <a href="http://www.apachecon.com/2005/US/index.html"><img src="http://www.apache.org/images/ac2005us_white_184x80.jpg" width="184" height="80" border="0" title="ApacheCon US 2005" /></a>
-            </div>
-            <p>
-                WADI is an acronym of 'Web Application Distribution Infrastructure'.
-            </p>
-            <p>
-                WADI's aim is to resolve many of the problems of dealing with state in the clustered J2EE Web Tier. This involves technologies such as :
-                <ul>
-                    <li>A resolution to application vs container space concurrency issues surrounding HttpSessions</li>
-                    <li>HttpSession Migration (inter-node and node-store-node)</li>
-                    <li>Pluggable HttpSession serialisation strategies - per-session, per-attribute</li>
-                    <li>HttpRequest relocation (by redirection and proxying)</li>
-                    <li>Pluggable/Stackable HttpSession persistance mechanisms (File, Database, etc.)</li>
-                    <li>A scalable, self-partitioning, self-healing clustering substrate - a distributed index/map</li>
-                    <li>NYI - Efficient in-vm replication for HA state</li>
-                    <li>NYI - pluggable replication strategies - immediate, end-of-request-group, timed</li>
-                </ul>
-            </p>
-            <p>
-                WADI currently supports the following J2EE web containers:
-                <ul>
-                    <li>Tomcat 5.0.28+, 5.5.X</li>
-                    <li>Jetty 5.1.3+, 6.X</li>
-                </ul>
-            </p>
-            <p>
-                WADI-2.0 is a complete rearchitecture and rewrite. New documentation is being entered into the <a href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI">WADI Wiki</a>. We hope to have a 2.0 release out shortly.
-            </p>
-            <p>
-                Please use the <a href="./getting-started/index.html">Getting Started Page</a> to boostrap yourself into WADI's world.
-            </p>
-            <p>
-                Please browse our <a href="./faq.html">FAQ</a> for further details.
-            </p>
-            <p>
-                If you have problems or concerns with WADI, ask on the <a href="./mail-lists.html">users mailing list</a> or join us on irc at &lt;irc://irc.codehaus.org&gt; on #wadi.
-            </p>
-        </section>
-    </body>
+      </div>
+      <div style="clear: right; float: right">
+	<a href="http://www.apachecon.com/2005/US/index.html"><img src="http://www.apache.org/images/ac2005us_white_184x80.jpg" width="184" height="80" border="0" title="ApacheCon US 2005" /></a>
+      </div>
+
+      <p/>
+
+      WADI is an acronym of 'Web Application Distribution Infrastructure'.
+
+      <p>
+
+	WADI started life as a solution to the problems surrounding
+	the distribution of state in clustered web tiers, but is
+	becoming a more generalised distributed caching service.
+
+      </p>
+      <p>
+
+	WADI's aim is to resolve many of the problems of dealing
+	with state in a cluster. This involves technologies such as
+	:
+
+	<p>
+	  WADI Core:
+	  <ul>
+	    <li>Vertically - a cache with pluggable/stackable paging and persistance mechanisms (File, Database, etc.)</li>
+	    <li>Horizontally - A scalable, highly available, self-partitioning, self-healing clustering substrate - a distributed index/map</li>
+	    <li>Pessimistic locking semantics</li>
+	    <li>Transparent State->Invocation and Invocation->State migration</li>
+	    <li>Under construction - Various replication strategies (including efficient in-vm replication) for HA state</li>
+	  </ul>
+	</p>
+
+	<p>
+	  WADI Web:
+	  <ul>
+	    <li>A resolution to application vs container space concurrency issues surrounding HttpSessions</li>
+	    <li>Pluggable HttpSession serialisation strategies - per-session, per-attribute</li>
+	    <li>HttpRequest relocation (by redirection and proxying)</li>
+	    <li>Under construction - pluggable HttpSession replication points - immediate, end-of-request-group, timed</li>
+	  </ul>
+	</p>
+
+      </p>
+
+      <p>
+	WADI currently supports the following J2EE containers and application servers:
+	<ul>
+	  <li>Tomcat 5.0.18+, 5.5.X</li>
+	  <li>Jetty 5.1.3+, 6.X</li>
+	  <li>OpenEJB (underway)</li>
+	  <li>Geronimo-1.0/Tomcat or Jetty (underway)</li>
+	  <li>JBoss-4.x/Tomcat or Jetty</li>
+	</ul>
+      </p>
+      <p>
+	WADI-2.0 is a complete rearchitecture and rewrite. New documentation is being entered into the <a href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI">WADI Wiki</a>. We hope to have a 2.0 release out shortly.
+      </p>
+      <p>
+	WADI has always maintained close ties with <a href="http://geronimo.apache.org">Apache Geronimo</a> and has recently accepted the Geronimo community's invitation to become a Geronimo subproject.
+      </p>
+      <p>
+	Please use the <a href="./getting-started/index.html">Getting Started Page</a> to boostrap yourself into WADI's world.
+      </p>
+      <p>
+	Please browse our <a href="./faq.html">FAQ</a> for further details.
+      </p>
+      <p>
+	If you have problems or concerns with WADI, ask on the <a href="./mail-lists.html">users mailing list</a> or join us on irc at &lt;irc://irc.codehaus.org&gt; on <a href="irc://irc.codehaus.org/wadi">#wadi</a>.
+      </p>
+    </section>
+  </body>
 </document>
