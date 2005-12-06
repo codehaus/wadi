@@ -77,13 +77,13 @@
             <organization>LogicBlaze</organization>
             <organizationUrl>http://www.logicblaze.com</organizationUrl>
         </developer>
-        <contributor>
+        <developer>
             <id>gregw</id>
             <name>Greg Wilkins</name>
             <email>gregw@mortbay.com</email>
             <organization>Mort Bay Consulting</organization>
             <organizationUrl>http://www.mortbay.com</organizationUrl>
-        </contributor>
+        </developer>
     </developers>
 
     <contributors>
