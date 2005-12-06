@@ -26,11 +26,13 @@
       </menu>
       <menu name="Modules">
          <item name="Core" href="wadi-core/index.html"/>
+         <item name="JBoss 4" href="wadi-jboss4/index.html"/>
          <item name="JGroups" href="wadi-jgroups/index.html"/>
          <item name="Jetty 5" href="wadi-jetty5/index.html"/>
          <item name="Jetty 6" href="wadi-jetty6/index.html"/>
          <item name="Tomcat 5.0.x" href="wadi-tomcat50/index.html"/>
          <item name="Tomcat 5.5" href="wadi-tomcat55/index.html"/>
+         <item name="Example Webapp" href="wadi-webapp/index.html"/>
          
       </menu>
       <menu name="Source">
