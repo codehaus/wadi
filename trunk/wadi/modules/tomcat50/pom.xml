@@ -37,6 +37,7 @@
             <groupId>tomcat</groupId>
             <artifactId>catalina</artifactId>
             <version>5.0.18</version>
+            <!-- <version>5.0.28</version> --> <!-- broken -->
             <scope>provided</scope>
         </dependency>
 
@@ -62,7 +63,7 @@
                 <configuration>
                     <outputDirectory>../../wadi-site/target/site/${artifactId}</outputDirectory>
                 </configuration>
-                
+
             </plugin>
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
