@@ -1,0 +1,9 @@
+<web-app xmlns="http://geronimo.apache.org/xml/ns/j2ee/web/tomcat-1.0" configId="WADI">
+
+    <context-root>/wadi</context-root>
+    <context-priority-classloader>false</context-priority-classloader>
+    <manager>WADI</manager>
+
+    <gbean name="WADI" class="org.apache.geronimo.tomcat.cluster.WADIGBean"/>
+
+</web-app>
