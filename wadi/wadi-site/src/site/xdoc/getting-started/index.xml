@@ -31,7 +31,7 @@
 	      <li><a href="./partitioning.html">partitioning</a> demo</li>
 	      <li><a href="./location.html">location</a> demo</li>
 	      <li><a href="./evacuation.html">evacuation</a> demo</li>
-	      <li><a href="./paging.html">paging</a> demo (TODO)</li>
+	      <li><a href="./paging.html">paging</a> demo</li>
 	      <li><a href="./loadbalancing.html">load balancing</a> demo (REHASH)</li>
 	      <li><a href="./jmxmonitoring.html">JMX monitoring</a> demo (REHASH)</li>
 	    </ul>
