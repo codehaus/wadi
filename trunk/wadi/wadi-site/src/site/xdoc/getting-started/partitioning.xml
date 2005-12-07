@@ -65,7 +65,7 @@
 	so you can see that <font color="red">red</font> has shared its partitions with the new member, <font color="green">green</font>.
       </p>
       <p>
-	If you shutdown <font color="green">green</font> (gently via e.g. ctl-c), you will see <font color="green">green</font> say:
+	If you shutdown <font color="green">green</font> (gently via e.g. ctl-c), you will see it say:
       </p>
       <p>
 	<code>
