@@ -1,0 +1,691 @@
+
+---------------------------------------------------------
+       Distributable J2EE Web Applications
+A Container Provider's View of the current Specification.
+---------------------------------------------------------
+
+The 'Java(tm) Servlet Specification, Version 2.4'
+(http://java.sun.com/products/servlet/download.html#specs) makes a
+number of references to 'distributable' web applications and
+httpsession 'migration'. It states that compliant deployments "...can
+ensure scalability and quality of service features like load-balancing
+and failover..." (SRV.7.7.2). In today's demanding enterprise
+environments, such features are increasingly required. This paper sets
+out to distil and understand the relevant contents of the
+specification, construct a model of the functionality that this seems
+to support, assess this functionality with regard to feasibility and
+popular requirements and finally make suggestions as to how a
+compliant implementation might be architected.
+
+Prerequisites.
+--------------
+
+A good understanding of what an HttpSession is, what it is used for
+and how it behaves will be necessary for a full understanding of this
+content. A comprehensive grasp of the requirements driving
+architectures towards clustering and of common cluster components
+(such as load-balancers) will also be highly beneficial.
+
+The Servlet Specification - distilled:
+--------------------------------------
+
+When a webapp declares itself <distributable/> it enters into a
+contract with it's container. The Servlet Specification includes a dry
+bones description of this contract which we will distil from it and
+flesh out in this paper.
+
+For a successful outcome the implementors of both Container and
+Containee need to be agreed on exactly what behaviour is expected of
+each other. For a really deep understanding of the contract they will
+need to know why it is as it is (TODO - This paper will provide such a
+view, from both sides).
+
+The Specification mandates the following behaviour for distributable
+Servlets:
+
+- SingleThreadedModel Servlets, whilst discouraged (since it is
+generally more efficient for the Servlet writer, who understands the
+problem domain, to deal with application synchronisation issues) are
+limited to a single instance pool per JVM.(SRV.2.3.3.1)
+
+- Multithreaded HttpServlets are restricted to one Servlet instance
+per JVM, thus delegating all application synchronisation issues to a
+single point where the Servlet's writer may resolve them. (SRV.2.2)
+
+- Only Servlets deployed within a webapp may be distributable. (TODO -
+Ed.: is there any other standard way to deploy a Servlet? Perhaps
+through the InkerServlet?) (SRV.3.2) TODO - WHY?
+
+- The only state to be distributed will be the HttpSession. Thus all
+state that requires distribution must be housed in an HttpSession or
+alternative distributed resource (e.g. and EJB, DB etc.). The contents
+of the ServletContext are NOT distributed.  (SRV.3.2, SRV.3.4.1,
+SRV.14.2.8)
+
+- Moving HttpSessions between process boundaries (i.e. from JVM to
+JVM, or JVM to store) is termed 'migration'.In order that the
+container should know how to migrate application-space Objects, stored
+in an HttpSession, they must be of mutually agreed type.
+
+In a J2EE (Version 1.4) environment (e.g. in a web container embedded
+in an application server), the set of supported types for HttpSession
+attributes is as follows, although web container are free to extend
+this set (J2EE.6.4): (Note that by using an extended type would impact
+your Servlet's portability).
+
+o java.io.Serializable
+o javax.ejb.EJBObject,
+o javax.ejb.EJBHome,
+o javax.ejb.EJBLocalObject
+o javax.ejb.EJBLocalHome
+o javax.transaction.UserTransaction, (TODO ??)
+o "a javax.naming.Context object for the java:comp/env context"
+
+Breaking this contract through use of an unagreed type will result in
+the container throwing an IllegalArgumentException upon its
+introduction to the HttpSession,since the container must maintain the
+migratability of this resource.(SRV.7.7.2)
+
+- How migration is actually implemented is undefined and left up to
+the container provider (SRV.7.7.2). The application is not even
+guaranteed that the container will use readObject and writeObject
+(TODO explain) methods if they are present on an attribute. The only
+guarantee given by the specification is that their "serializable
+closure" will be "preserved" (SRV.7.7.2). This is to allow the
+container provider maximum flexibility in this area.
+
+The specification describes an HttpSessionActivationListener
+interface. Attributes requiring notification before and after
+migration can implement this. The container will call their
+'willPassivate()' method just before passivation, thus giving them the
+chance to e.g. release regenerable non-Serializable
+resources. Immediately after activation the container will call their
+'didActivate()' method, giving them the chance to e.g. reacquire such
+resource. (SRV.7.7.2,SRV.10.2.1,SRV.15.1.7,SRV.15.1.8). A number of
+other such listeners are required in a compliant implementation, but
+these are not directly related to session migration.
+
+Given that our distributable webapp will be running on a web cluster
+(i.e. a set of nodes (machines or processes) between which work is
+divided by a load-balancer) the most obvious issue immediately
+presents itself:
+
+  "How do we ensure that every incoming request is processed in a JVM
+  containing the relevant HttpSession ?"
+
+There are two solutions :
+
+      Route the request to the JVM containing it's session.
+Or
+      Migrate the session to the JVM in which the request will be processed.
+
+The second of these solutions presents further problems in that modern
+browsers may throw concurrent requests at server/cluster. How would we
+resolve concurrent changes to the same HttpSession in different nodes
+efficiently.
+
+The Servlet Specification states:
+
+"All requests that are part of a session must be handled by one Java
+Virtual Machine (JVM) at a time." (SRV.7.7.2).
+
+The intention of this statement seems to be to avoid such concurrency
+issues. Implementations must therefore.
+
+either
+
+- serialise concurrent requests delivering each to any node which has
+access to the corresponding session - a possible solution, but against
+the spirit of another requirement that an HttpSession must allow
+concurrent access by multiple threads (SRV.7.7.1).
+
+or
+
+- ensure that all concurrent requests for a particular session are
+delivered to the same node. This would mean that, as soon as the last
+of an overlapping set of requests threads had terminated, the cluster
+would be free to reassess the distribution of state within it and
+perhaps choose to migrate this HttpSession into temporary store or
+directly to another node. Delivering requests for the same session to
+the same node is known variously as 'session affinity', 'sticky
+sessions', persistent sessions' etc. and the duration of the
+association between session and node is usually that of the
+intersection of session and node's lifetime. The ability to 'migrate'
+sessions, therefore, may require a certain amount of coordination
+between web containers and loadbalancers.
+
+There is a potential problem lurking here in the form of background
+threads. If a running background thread still had a reference to this
+session after it had been migrated to another node, the concurrency
+issue would resurface since two threads in different JVMs might seek
+to change the same object concurrently, in contravention of
+SRV.7.7.2. Fortunately, the specification also recommends that
+references to container-managed objects should not be given to threads
+that have been created by an application (SRV.2.3.3.3,SRV.S.17). The
+container is encouraged to generate warnings if this should
+occur. Application developers should understand that recommendations
+such as this become all the more important when working in a
+distributed environment.
+
+Finally, given that HttpSessions are the only type to be distributed
+and that they should only ever be in one JVM at one time, it should
+come as no surprise that ServletContext and HttpSession events are not
+propagated outside the JVM in which they were raised (SRV.10.7) as
+this would result in container owned objects becoming active in a JVM
+through which no relevant thread was passing.
+
+
+What does this mean ?
+---------------------
+
+Armed now with a deeper understanding of exactly what the
+specification says about distributable webapps, we can begin to
+speculate on what a compliant implementation might look like.
+
+The specification has done a reasonably good job of outlining our area
+of interest. Before implementing a container, however, there are a
+number of issues that we still need to address.
+
+
+- Catastrophic failure
+
+Looking at what this specification actually says about distributable
+webapps, it can be seen that it only seems to outline a mechanism for
+the controlled shutdown of a node and the attendant migration of it's
+sessions to [an]other node[s], or persistant storage.
+
+Whilst this in itself is useful functionality (maintenance will be one
+of the main reasons behind the occurrence of session migration), it
+does not go far enough for many enterprise-level users who require a
+solution capable of transparent recovery, without data loss, even in
+the case of a node's catastrophic failure. If a node is simply
+switched off, thus having no chance to perform a shutdown sequence,
+then volatile state will simply be lost. It is too late to call
+HttpSessionActivationListener.willPassivate() where necessary and
+serialise all user state to a safe place! Container implementors must
+ask themselves the question - 'What, within the bounds of the current
+specification, can we do to mitigate this event?'.
+
+The answer is - 'A considerable amount.'. Firstly, though, we must
+examine a number of issues surrounding the use of HttpSessions, so
+that we have a better understanding of the situation before making our
+final diagnosis.
+
+TODO - NEED TO INVESTIGATE REF/VAL ISSUE HERE AND DISCUSS WHAT & WHEN.
+
+Reference vs Value based semantics
+
+Imagine
+
+	Foo foo1=new Foo();
+	session.setAttribute("foo", foo1);
+	Foo foo2=session.getAttribute("foo");
+
+Which of these assertions (assuming that Foo.equals() is well
+implemented) would you expect to be true?
+
+	foo1==foo2;
+	foo1.equals(foo2);
+
+If you expect foo1==foo2 then you are expecting reference-based
+semantics.
+
+If you are expecting reference-based semantics you might well write
+code such as this in order to avoid unnecessary dehashes:
+
+       Point p=new Point(0,0);
+       session.setAttribute("point", p);
+       p.setX(100);
+       p.setY(100);
+
+and then expect that :
+
+      ((Point)session.getAttribute("point")).getX()==100;
+
+Using value based-semantics, out of these three (TODO) assertions,
+only the second of the equality tests would succeed.
+
+Every parameter passed to and from a value based API must be assumed
+to be copied from an original, since it may have come across the wire
+from another address space.
+
+For this reason, when you start dealing with (possibly) remote objects
+in a distributed scenario, you generally shift your semantics from
+reference to value. (c.f. Remote EJB APIs)
+
+Unfortunately, the Servlet Specification, whilst clearly mandating
+that every session attribute must be of a type that the container
+knows how to move from VM to VM omits to mention that the likely
+impact of doing this is an important shift in semantics. This is
+exacerbated by the fact that, unlike EJBs, which have been designed
+specifically for distributed use, the httpsession api does not change
+(c.f. Local/Remote) according to the semantic that is required, which
+is simply a single deployment option. This encourages developers to
+believe that they can make a webapp that has been written for Local
+use, into a fully functional distributed component, simply by adding
+the relevant tag to the web.xml. All attendant problems are delegated,
+by spec and developer, to the unfortunate container provider.
+
+- Synchronisation
+
+The Container Provider is responsible for performing necessary
+synchronisation between concurrent threads running through an
+HttpSession (SRV.7.7.1). Serialisation/Passivation of session
+attributes becomes problematic since, unless the webapp is not
+currently processing any requests for any session (Object references
+might be shared between Sessions) nor running background threads
+(which could also be accessing session Objects) there is no way for
+the Container to ensure that such threads are not writing to a session
+attribute at the same time that it is reading, since there is no
+explicit synchronisation contract between container and containee for
+session attributes. If this occurs, then the Object may be serialised
+in an inconsistant state. More about this later.
+
+- Reference vs Value semantics (at end of request flurry, can be sure all refs are no longer being messed with).
+(COMBINE SYNC and REF/VAL ISUUES SOMEHOW)
+
+- Session Backup - When
+
+o immediate
+- most accurate
+- most expensive - many writes to same attr in single request=many distributions
+- synchronisation issues (many threads may be executing in container)
+
+o request
+- less accurate
+- less expensive - many writes to same attr in single req will be collapsed
+- synchronisation issues (many threads may be executing in container)
+- background threads are problematic since they execute outside request boundaries
+
+o request group
+- less accurate
+- less expensive - many writes to same attr in many reqs will be collapsed
+- synchronisation issues - fewer although still exist.
+- background threads are problematic since they execute outside request boundaries
+
+o webapp
+- no protection against catastrophic failure, but fine for maintenance-only
+- very inexpensive
+- no synchronisation issues - all request and background threads will have stopped.
+
+o timed
+- useful overlay for e.g. request [group]/webapp policies, to insert safepoints
+- of tunable accuracy and impact
+
+
+Session Backup - At what granularity ?
+
+o whole session
+- synchronisation issues - must lock more objects (TODO)
+
+o single attribute
+- more complex
+- less contention
+
+o batched attributes
+- even more complex
+- multiple changes to same attribute may be collapsed
+
+
+- TODO - FURTHER OPTIMISATIONS:
+  lastAccessedTime
+
+- HtpSessionActivationListener
+
+- ClassLoading.
+
+
+(TODO - requests do not have transactional semantics)
+
+(TODO - if a single request reset an attribute a number of times,
+immediate xfer would be expensive, batching would also be expensive
+since each reset would involve a serialisation of which only the last
+would be useful (or can we leave this til the last moment?))
+
+What can we do?
+
+1) whatever we do it must not break spec compliance/portability (so we
+cannot e.g. extend APIs).
+
+2) insist on the no background thread rule - unless distribution is
+only done on webapp.stop()
+
+3) agree an explicit session attribute synchronisation contract -
+synchronized(Object){...} - why implicit rule is not enough.
+
+Are there any problems with this approach?
+------------------------------------------
+
+We will outline below a number of shortcomings in the current
+specification with regards to distributable webapps and proposed
+solutions. As far as an implementation is concerned, it could simply
+extend the specification in a proprietary direction, adding features
+and corresponding API extensions to provide extra
+functionality. However this breaks portability and creates vendor
+lock-in. The real challenge is to fulfil our users requirements whilst
+staying absolutely within the bounds of the specification.
+
+
+
+Why ?
+
+Inconsistency:
+
+
+Migration:
+
+The API and language used in the spec, seem to imply that the expected
+usage scenario is that a running distributable webapp will be cleanly
+shut down and it's sessions 'migrated' to another container or store.
+
+In a perfect world, this would be fine. The administrator would stop
+the webapp. The container would cease running user requests through it
+(they would all be load balanced to other nodes in the cluster), all
+concurrency issues in the webapp would cease and the single remaining
+control thread would serialise all existing sessions into a shared
+store whence they could be loaded by peer nodes if and when needed, or
+directly to one or more peers.
+
+In the real world, whilst managed shutdown is a very common issue,
+enterprise users require protection from not just intentional, but
+also unintentional service outages. The catastrophic failure of a node
+will stop a JVM instantly. All control is lost, therefore if data
+(i.e. sessions) has not already been backed up, it is lost. If this
+data was 10s of 1000s of long, complex, half-filled out purchase
+orders, then you have just lost a lot of business.
+
+Catastrophic failure, therefore, is not a scenario realistically
+addressed by the spec, but the functionality that it does mandate
+provides the container provider with just enough rope to have a go at
+hanging himself...
+
+So, how might the container provider protect a business against
+catastrophic failure ? Simply by ensuring that off-node backups of
+each session exist and are as fresh as the business requires and can
+be achieved within technical constraints.
+
+The container provider now has to make a couple of major decisions:
+
+    When to ship session content off-node ?
+
+    What data to ship ?
+
+When ?
+
+If you are going to burn expensive resources, in terms of CPU and
+bandwidth, serialising and shifting data backwards and forwards, then
+you will want to ensure that that data is captured in a meaningful
+state, otherwise you are wasting your time. So we must ask ourself an
+apparently simple question : "When is an httpsession content
+consistent?".. The most likely answer to this appears to be - "at the
+end of each request".
+
+Unfortunately the spec requires WebContainers to support multiple
+concurrent request threads. So simply waiting until the end of each
+request before snapshotting the session is an inadequate solution as
+an overlapping request may also be writing to the same
+session. (c.f. EJBs, where the container enforces a single threaded
+model, thus avoiding this issue). (TODO - confirm.)
+
+Perhaps we could break the spec and prevent concurrent requests
+(damaging performance) or only snapshot our session during 'idle-time'
+when there it has no extant requests.
+
+Unfortunately the WebContainer is far more relaxed about resource
+management than e.g. an EJB container and does not forbid the running
+of background threads by it's containees. A common pattern that takes
+advantage of this is for an initial request to kick off a longterm job
+on a background thread to which it hands a reference to it's
+session. The client then makes requests that poll the session at
+regular intervals, enquiring about the state of the outstanding task,
+until the background thread finishes it's job and writes the result
+back into the session.
+
+Thus it can be seen that deciding when it is best to snapshot your
+session is not as simple as it first appeared. In fact, it seems that
+the only consistent point in a session's lifecycle is immediately
+after any mutation that may occur i.e. calls to 'set' and 'remove'
+attributes. i.e. we must increas the granularity at which we measure
+change from 'request' to 'attribute'.
+
+(TODO - expand ?)
+
+What ?
+
+So now that we have decided when to ship data off-node we need to
+decide what to ship. The two obvious choices are:
+
+       The whole session.
+
+       A delta describing the change that has just occurred.
+
+Implementations that snapshot the session at request boundaries etc
+tend to capture the whole session as this is probably cheaper than
+figuring out the delta.
+
+Triggering distribution after each session mutation makes it simple to
+capture a delta cntaining the addition, alteration or removal of a
+single attribute. If shipping these deltas off-node immediately is too
+expensive, they may be batched and sent at request boundaries anyway.
+
+One potential weakness of sending immediate deltas is the fact that
+they rely on value based semantics as described above. Putting an
+object into a session will result in it's immediate backing
+up. Subsequent mutations of that object will not be backed up unless
+e.g. setAttribute() is again called on the session, which has backed
+up the value of the object that it was given at the time it was given
+it, not some sort of magic reference. (TODO - explain better).
+
+So, perhaps we are finally coming up with a workable design. We insist
+that developers assume value-based semantics. We don't extend the
+session API in any way. We ship deltas off node as soon as practical
+and cross our fingers...
+
+Unfortunately, the specification requires that every session object
+carries a 'LastAccessedTime' value. Which is updated every time the
+session is retrieved by an application thread for reading or
+writing. Thus any request requiring stateful interaction within the
+webapp will have the side effect of writing a change to the
+session. Taken literally these changes can be very expensive in a
+distributable scenario as a naive implementation will require each
+such change to be exported to another vm in case of catastrophic node
+failure.
+
+DISCUSS
+
+BATCHING
+IGNORING UNTIL LAST MINUTE
+GC GRANULARITY
+ETC.
+
+
+The spec has one last curve ball for us to face.
+
+HttpSessionActivationListener:
+
+If a session attribute implements the HttpSessionActivationListener
+interface, the spec requires the container to call it's
+willPassivate() method just before and it's didActivate() method just
+after 'migration'. Since we are no longer implementing straightforward
+migration from one node to another, but rather some form of multi-copy
+synchronisation protocol, it is, at first hard to see how these two
+different paradigms can be mapped to a single model that resolves the
+problem of when notification should take place.
+
+How a container provider plays this ball really depends upon the
+perceived intention of these notifications. The spec implies that they
+are there so that an attribute which contains expensive
+non-serializable resources has a chance to release and reacquire them
+at opportune moments - basically a lifecycle for such
+attributes. (TODO - confirm)
+
+The implication of this is that willPassivate() must always be called
+before the attribute is serialised (i.e. shipped off-node), however,
+this now leaves said attribute in a passivated state, unsuitable for
+continued use within the session, so before control flow is returned
+to the webapp, didActivate() must also be called to put this attribute
+back into normal service.
+
+In effect, each mutation can be seen as the mini-migration of a single
+attribute off and back onto the same node - whilst the container
+retains a copy of its serialised form to ship off-node as an emergency
+backup.
+
+Concurrency
+
+Concurrency is a major issue. It can be divided into two smaller
+problems:
+
+Concurrency between threads in different processes.
+
+Concurrency between threads in the same process.
+
+If you take the decision that your design will allow concurrent
+requests within the same session in different vms, you will need a
+strategy for ensuring that all vms have a consistent view of each
+session.
+
+This can be achieved by making the session a single remote object,
+which all nodes make use of. Since there is only one copy of the
+session there are no consistency issues, provided that it has
+sufficient synchronisation within itself. However, since the session
+is a remote object it will have value-based semantics. If you get the
+same attribute value from it twice, unless you have a caching layer,
+they will be 'equal' but not '='. If you have a caching layer you will
+then have to concern yourself with the complexities of ensuring that
+items in your cache are invalidated on time, which just brings you
+full circle back to the consistency problem. I call this solution
+'shared store'. Finally, since all interactions are with a remote
+object, this solution tends to be slow.
+
+Alternatively, your design might choose to have multiple objects (one
+in each address space) all representing the same session. As one is
+changed it notifies the others of the change, so that they can apply
+it to themselves, so that all these objects maintain a state
+consistent with each other. This is generally know as '[in-vm]
+replication'. Implementors of this design need to consider the
+following issues.
+
+1. Race conditions between concurrent changes to the same session
+occurring on different nodes. (TODO - spec avoids this issue).
+
+CONSIDER THAT WHEN SPEC SAYS 'AT THE SAME TIME' IT IS TALKING IN TERMS
+OF REQUEST LIFETIME. - I.E. AFFINITY (AT LEAST FOR OVERLAPPING REQUEST
+GROUPS) IS MANDATORY
+
+2. If upon change, you replicate more than just that change (i.e. each
+instance of a session has it's state completely replaced, rather than
+just the attribute which changed on some remote node), you will find
+that your session objects have inconsistent semantics, since sometimes
+when you get an attribute from a session it's reference will be the
+same as the last time, sometimes it won't, although your application
+may never actually change this attribute - since change to another
+attribute may have caused the entire session to have been replaced
+with a fresh copy from across the wire.
+
+This first issue can be entirely avoided through the use of 'affinity'
+or 'sticky' or 'persistent' sessions. Nomenclature depends on your
+vendor. All amount to basically the same thing. A load-balancer that
+supports this feature will ensure, preferably by tracking the presence
+of the JSESSIONID cookie and jessionid path parameter, that all
+requests pertaining to the same session will be delivered to the same
+host:port combination. Thus, we can see that there never will be
+concurrent threads contending for the same session in different
+JVMs/WebContainers since all relevant requests will be routed to the
+same one. Affinity has one further important benefit. Many webapps may
+be deployed in complex environments where a lot of transparent caching
+occurs below them. Without affinity, requests will be delivered to a
+number of different nodes, all of which will have to populate such
+caches with objects that will only be reused if another request for
+the same webapp/session is directed to them. With affinity, requests
+will always be processed on the same node, so the cache is only
+populated once and then subsequently reused. This detail will increase
+cache hits and may have a dramatic effect on performance and resource
+consumption.
+
+
+TODO - WHAT IS HAPPENING HERE ??
+
+The second issue can be resolved with standard Java(tm)
+synchronisation primitives or libraries, provided that all code
+involved is in container-space. Problems arise when webapp code calls
+container code and vice versa. This is exacerbated by the spec's
+insistence that an HttpSession should allow access by multiple
+concurrent threads and the fact that the webapp may still be holding
+and modifying references to attribute values. Ultimately the container
+provider will have to specify some contract which he expects the
+webapp to abide by. A sensible one might be that any thread mutating
+an attribute should take it's Object-level lock for the duration, so
+that behind the scenes reads, such as those involved in serialisation
+etc can synchronise on the same lock and be assured of a consistent
+view of the object. (CHECK TO SEE WHETHER default read/writeObject are
+synchronised). This however may be seen as burdensome by the webapp
+developer who may have their own locking strategy for an attribute
+type which is compromised by this contract...
+
+DISCUSS PROS AND CONS OF SHARED-STORE VS REPLICATION
+
+other items...
+
+does anything else other than session need to be distributed ?
+- security info
+- application level data (as opposed to user level)
+- etc
+
+store and replication mechanisms... - going to far.
+
+other thoughts ?
+
+reference semantics sacrificed if session is temporarily passiviated -
+although hopefully no-one (what about background thread?) is holding a
+reference to us...
+
+replication with affinity and change-by-delta best solution because it
+preserves reference-semantics as far as possible - consider...
+
+replication is faster than shared-store because 'getAttribute' is not
+a remote call. Effectively, with replication, each replicant IS a
+shared store which processes requests locally.
+
+TODO - Survey existing impls:
+
+TC
+Jetty
+JBoss
+Apache/mod_jk
+simple TC recommended 'C' lb
+mod_proxy solution
+mod_backhand
+
+additional requirements when opersting in a J2ee environment
+
+POINTERS:
+
+SRV.7 Sessions
+SRV.7.6 Last Accessed Times
+SRV.15.1.7 HttpSession
+SRV.15.1.8 HttpSessionActivationListener
+SRV.15.1.9 HttpSessionAttributeListener
+SRV.15.1.10 HttpSessionBindingEvent
+SRV.15.1.11 HttpSessionBindingListener
+SRV.15.1.13 HttpSessionEvent
+SRV.15.1.14 HttpSessionListener
+
+
+
+provide URL for latest servlet spec. <http://java.sun.com/products/servlet/download.html#specs>
+AND J2EE spec (TODO)
+
+
+
+
+
+
+TODO - Look into Geronimo impl... SRV.10.6 Listener Exceptions
+
+
+
+
+NB
+
+OBJECT IDENTITY and OutputStream
