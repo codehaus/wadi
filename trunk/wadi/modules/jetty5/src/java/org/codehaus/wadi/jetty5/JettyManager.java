@@ -29,11 +29,14 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.WADIHttpSession;
 import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
+import org.codehaus.wadi.impl.Filter;
 import org.codehaus.wadi.impl.ListenerSupport;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.impl.StandardManager;
+import org.mortbay.jetty.servlet.Dispatcher;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.SessionManager;
+import org.mortbay.jetty.servlet.WebApplicationHandler;
 
 public class JettyManager implements ManagerConfig, SessionManager {
 	
@@ -141,6 +144,10 @@ public class JettyManager implements ManagerConfig, SessionManager {
 	
 	public void start() throws Exception {
 		_wadi.start();
+		WebApplicationHandler handler=(WebApplicationHandler)_handler;
+		String name="WadiFilter";
+		handler.defineFilter(name, Filter.class.getName());;
+		handler.addFilterPathMapping("/*", name, Dispatcher.__ALL); 
 	}
 	
 	public void stop() throws InterruptedException {

@@ -19,23 +19,6 @@
   </Call>
  -->
 
-<!-- Set up the WADI Filter -->
-
-  <Call name="getWebApplicationHandler">
-
-   <Call name="defineFilter">
-    <Arg>WadiFilter</Arg>
-    <Arg>org.codehaus.wadi.impl.Filter</Arg>
-   </Call>
-
-   <Call name="addFilterPathMapping">
-    <Arg>/*</Arg>
-    <Arg>WadiFilter</Arg>
-    <Arg type="int">15</Arg> <!-- ALL dispatch types -->
-   </Call>
-
-  </Call>
-
 <!-- needed for StopGracefully (set on Server) to work -->
   <Set name="StatsOn">true</Set>
 <!-- needed for session evacuation under load -->
