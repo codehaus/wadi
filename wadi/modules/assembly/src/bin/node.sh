@@ -13,9 +13,24 @@ shift
 instance=$1
 shift
 
+if [ "$1" = "jpda" ] ; then
+  if [ -z "$JPDA_TRANSPORT" ]; then
+    JPDA_TRANSPORT="dt_socket"
+  fi
+  if [ -z "$JPDA_ADDRESS" ]; then
+    JPDA_ADDRESS="8000"
+  fi
+  if [ -z "$JPDA_OPTS" ]; then
+    JPDA_OPTS="-Xdebug -Xrunjdwp:transport=$JPDA_TRANSPORT,address=$JPDA_ADDRESS,server=y,suspend=n"
+  fi
+  shift
+fi
+
 XTERM=`eval "echo $XTERM"`
 
 JAVA_OPTS="-Xmx512m -ea $JAVA_OPTS"
+#JPDA_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
+
 
 WADI_HOME=`pwd`/..
 WADI_VERSION=`cat $WADI_HOME/VERSION.txt`
@@ -73,7 +88,7 @@ case "$container" in
 	"
 
 	classpath=`find ./start.jar lib ext -name "*.jar" | tr '\n' ':'`$classpath
-	$XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.mortbay.jetty.Server $WADI_HOME/conf/jetty5.xml
+	$XTERM $JAVA $properties -cp $classpath $JAVA_OPTS $JPDA_OPTS org.mortbay.jetty.Server $WADI_HOME/conf/jetty5.xml
 	;;
 
 	jetty6)
@@ -93,7 +108,7 @@ case "$container" in
 	"
 
 	classpath=`find ./start.jar lib ext -name "*.jar" | tr '\n' ':'`$classpath
-	$XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.mortbay.xml.XmlConfiguration $WADI_HOME/conf/jetty6.xml
+	$XTERM $JAVA $properties -cp $classpath $JAVA_OPTS $JPDA_OPTS org.mortbay.xml.XmlConfiguration $WADI_HOME/conf/jetty6.xml
 	;;
 
 	tomcat50)
@@ -122,7 +137,7 @@ case "$container" in
 	"
 
 	classpath=`find $CATALINA_HOME/. -name "*.jar" | tr '\n' ':'`$classpath
-	$XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.apache.catalina.startup.Bootstrap -config $WADI_HOME/conf/tomcat50.xml start
+	$XTERM $JAVA $properties -cp $classpath $JAVA_OPTS $JPDA_OPTS org.apache.catalina.startup.Bootstrap -config $WADI_HOME/conf/tomcat50.xml start
 	;;
 
 	tomcat55)
@@ -150,7 +165,7 @@ case "$container" in
 	"
 
 	classpath=`find $CATALINA_HOME/. -name "*.jar" | tr '\n' ':'`$classpath
-	$XTERM $JAVA $properties -cp $classpath $JAVA_OPTS org.apache.catalina.startup.Bootstrap -config $WADI_HOME/conf/tomcat55.xml start
+	$XTERM $JAVA $properties -cp $classpath $JAVA_OPTS $JPDA_OPTS org.apache.catalina.startup.Bootstrap -config $WADI_HOME/conf/tomcat55.xml start
 	;;
 
 
