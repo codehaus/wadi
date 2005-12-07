@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE project>
+
+<project>
+  <pomVersion>3</pomVersion>
+  <extend>${basedir}/../../project.xml</extend>
+
+  <!-- ===================== -->
+  <!-- Module Identification -->
+  <!-- ===================== -->
+
+  <name>WADI :: Tomcat55</name>
+  <id>wadi-tomcat55</id>
+  <description>WADI/Tomcat55 integration</description>
+  <shortDescription>WADI/Tomcat55 integration</shortDescription>
+
+  <package>org.codehaus.wadi.tomcat55</package>
+  <packageGroups>
+    <packageGroup>
+      <title>WADI/Tomcat55 integrations</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.tomcat55</packages>
+    </packageGroup>
+  </packageGroups>
+
+  <!-- ============ -->
+  <!-- Dependencies -->
+  <!-- ============ -->
+
+  <dependencies>
+
+    <!-- compile time -->
+
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>catalina</artifactId>
+      <version>5.5.9</version>
+      <url>http://jakarta.apache.org/tomcat/tomcat-5.5-doc</url>
+      <javadoc>http://jakarta.apache.org/tomcat/tomcat-5.5-doc/catalina/docs/api</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <version>${pom.currentVersion}</version>
+      <url>http://wadi.codehaus.org</url>
+    </dependency>
+
+    <!-- run time -->
+
+  </dependencies>
+
+  <build>
+    <unitTestSourceDirectory></unitTestSourceDirectory>
+    <defaultGoal>jar</defaultGoal>
+  </build>
+
+</project>

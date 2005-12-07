@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE project>
+
+<project>
+  <pomVersion>3</pomVersion>
+  <extend>${basedir}/../../project.xml</extend>
+
+  <!-- ===================== -->
+  <!-- Module Identification -->
+  <!-- ===================== -->
+
+  <name>WADI :: Tomcat50</name>
+  <id>wadi-tomcat50</id>
+  <description>WADI/Tomcat50 integration</description>
+  <shortDescription>WADI/Tomcat50 integration</shortDescription>
+
+  <package>org.codehaus.wadi.tomcat50</package>
+  <packageGroups>
+    <packageGroup>
+      <title>WADI/Tomcat50 integrations</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.tomcat50</packages>
+    </packageGroup>
+  </packageGroups>
+
+  <!-- ============ -->
+  <!-- Dependencies -->
+  <!-- ============ -->
+
+  <dependencies>
+
+    <!-- compile time -->
+
+<!--
+    <dependency>
+      <groupId>mx4j</groupId>
+      <artifactId>mx4j-remote</artifactId>
+      <version>3.0.1</version>
+      <url>http://mx4j.sourceforge.net</url>
+      <javadoc>http://mx4j.sourceforge.net/docs/api</javadoc>
+      <properties>
+	<dist.bundle>lib</dist.bundle>
+      </properties>
+    </dependency>
+-->
+
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>catalina</artifactId>
+      <version>5.0.18</version><!-- when will this be updated? -->
+      <url>http://jakarta.apache.org/tomcat/tomcat-5.0-doc</url>
+      <javadoc>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs/api</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <version>${pom.currentVersion}</version>
+      <url>http://wadi.codehaus.org</url>
+    </dependency>
+
+    <!-- run time -->
+
+  </dependencies>
+
+  <build>
+    <unitTestSourceDirectory></unitTestSourceDirectory>
+    <defaultGoal>jar</defaultGoal>
+  </build>
+
+</project>

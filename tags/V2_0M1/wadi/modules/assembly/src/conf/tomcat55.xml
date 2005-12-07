@@ -1,0 +1,76 @@
+<Server port="${STOP.PORT}" shutdown="SHUTDOWN">
+
+  <Listener className="org.apache.catalina.mbeans.ServerLifecycleListener" />
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+  <Listener className="org.apache.catalina.storeconfig.StoreConfigLifecycleListener"/>
+
+  <GlobalNamingResources>
+    <Environment
+      name="simpleValue"
+      type="java.lang.Integer"
+      value="30"
+      />
+    <Resource name="UserDatabase"
+      auth="Container"
+      type="org.apache.catalina.UserDatabase"
+      description="User database that can be updated and saved"
+      factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+      pathname="conf/tomcat-users.xml"
+      />
+  </GlobalNamingResources>
+
+  <Service
+    name="Catalina"
+    >
+
+    <Connector
+      port="${http.port}"
+      maxHttpHeaderSize="8192"
+      maxThreads="150"
+      minSpareThreads="25"
+      maxSpareThreads="75"
+      enableLookups="false"
+      redirectPort="8443"
+      acceptCount="100"
+      connectionTimeout="20000"
+      disableUploadTimeout="true"
+      />
+
+    <Connector
+      port="${ajp.port}"
+      enableLookups="false"
+      redirectPort="8443"
+      protocol="AJP/1.3"
+      />
+
+    <Engine
+      name="Catalina"
+      defaultHost="localhost"
+      >
+
+      <Realm
+	className="org.apache.catalina.realm.UserDatabaseRealm"
+	resourceName="UserDatabase"
+	/>
+
+      <Host
+	name="localhost"
+	appBase="webapps"
+	unpackWARs="true"
+	autoDeploy="true"
+	xmlValidation="false"
+	xmlNamespaceAware="false"
+	>
+
+	<Context path="/wadi" docBase="${wadi.home}/webapps/wadi-webapp-${wadi.version}.war">
+	  <!-- <Valve className="org.codehaus.wadi.impl.tomcat.Valve"/> -->
+	  <Manager className="org.codehaus.wadi.tomcat55.TomcatManager"/>
+	</Context>
+
+      </Host>
+
+    </Engine>
+
+  </Service>
+
+</Server>

@@ -1,0 +1,453 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+<!--
+  Three Beans have already been created as part of the contract between WADI and Spring:
+
+    SessionFactory, SessionWrapperFactory
+
+  This is so because these three types need to be parameterised according to within which
+  WebContainer we are running...
+-->
+
+  <bean
+    id="SessionPool"
+    class="org.codehaus.wadi.impl.SimpleSessionPool"
+    >
+    <constructor-arg><ref bean="SessionFactory"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="AttributesFactory"
+    class="org.codehaus.wadi.impl.DistributableAttributesFactory"
+    >
+  </bean>
+
+  <bean
+    id="ValueFactory"
+    class="org.codehaus.wadi.impl.DistributableValueFactory"
+    >
+  </bean>
+
+  <bean
+    id="ValuePool"
+    class="org.codehaus.wadi.impl.SimpleValuePool"
+    >
+    <constructor-arg><ref bean="ValueFactory"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="SessionIdFactory"
+    class="org.codehaus.wadi.impl.TomcatSessionIdFactory"
+    >
+  </bean>
+
+  <bean
+    id="AttributeStreamer"
+    class="org.codehaus.wadi.impl.SimpleStreamer"
+    >
+  </bean>
+
+  <!-- the Contextualiser stack...(shorthand for now) -->
+
+  <bean
+    id="MemoryMap"
+    class="EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap"
+    >
+  </bean>
+
+  <bean
+    id="DatabaseURL"
+    class="java.lang.String"
+    >
+    <constructor-arg><value>jdbc:axiondb:WADI</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="DataSource"
+    class="org.axiondb.jdbc.AxionDataSource"
+    >
+    <constructor-arg><ref bean="DatabaseURL"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="ContextPool"
+    class="org.codehaus.wadi.impl.SessionToContextPoolAdapter"
+    >
+    <constructor-arg><ref bean="SessionPool"/></constructor-arg>
+  </bean>
+
+<!--
+  <bean
+    id="Relocater"
+    class="org.codehaus.wadi.impl.MessagingMigratingRelocater"
+    >
+    <constructor-arg type="long" index="0"><value>5000</value></constructor-arg>
+    <constructor-arg type="long" index="1"><value>1000</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="Relocater"
+    class="org.codehaus.wadi.impl.ProxyingRelocater"
+    >
+    <constructor-arg type="long" index="0"><value>5000</value></constructor-arg>
+    <constructor-arg type="long" index="1"><value>5000</value></constructor-arg>
+  </bean>
+-->
+
+  <bean
+    id="Relocater"
+    class="org.codehaus.wadi.impl.HybridRelocater"
+    >
+    <constructor-arg type="long" index="0"><value>5000</value></constructor-arg>
+    <constructor-arg type="long" index="1"><value>5000</value></constructor-arg>
+    <constructor-arg type="boolean" index="2"><value>true</value></constructor-arg><!-- relocate session, not request, if possible -->
+  </bean>
+
+  <!-- the contextualiser stack -->
+
+  <bean
+    id="SessionStreamer"
+    class="org.codehaus.wadi.impl.SimpleStreamer"
+    >
+  </bean>
+
+<!--
+  <bean
+    id="Collapser"
+    class="org.codehaus.wadi.impl.DebugCollapser"
+    >
+  </bean>
+-->
+
+  <bean
+    id="Collapser"
+    class="org.codehaus.wadi.impl.HashingCollapser"
+    >
+    <constructor-arg type="int"><value>1024</value></constructor-arg>
+    <constructor-arg type="long"><value>10000</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="DummyContextualiser"
+    class="org.codehaus.wadi.impl.DummyContextualiser"
+    >
+  </bean>
+
+  <bean
+    id="DatabaseStore"
+    class="org.codehaus.wadi.impl.DatabaseStore"
+    >
+    <constructor-arg><ref bean="DatabaseURL"/></constructor-arg>
+    <constructor-arg><ref bean="DataSource"/></constructor-arg>
+    <constructor-arg><value>SESSIONS</value></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- reusingStore -->
+    <constructor-arg type="boolean"><value>true</value></constructor-arg><!-- build -->
+  </bean>
+
+  <bean
+    id="DatabaseContextualiser"
+    class="org.codehaus.wadi.impl.SharedStoreContextualiser"
+    >
+    <constructor-arg><ref bean="DummyContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="Collapser"/></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg><ref bean="DatabaseStore"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="ClusterContextualiser"
+    class="org.codehaus.wadi.impl.ClusterContextualiser"
+    >
+    <constructor-arg><ref bean="DatabaseContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="Collapser"/></constructor-arg>
+    <constructor-arg><ref bean="Relocater"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="StatelessMethods"
+    class="java.util.regex.Pattern"
+    factory-method="compile"
+    >
+    <constructor-arg><value>GET|POST</value></constructor-arg>
+    <constructor-arg type="int"><value>2</value></constructor-arg><!--  Pattern.CASE_INSENSITIVE -->
+  </bean>
+
+  <bean
+    id="StatelessURIs"
+    class="java.util.regex.Pattern"
+    factory-method="compile"
+    >
+    <constructor-arg><value>.*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)</value></constructor-arg>
+    <constructor-arg type="int"><value>2</value></constructor-arg><!--  Pattern.CASE_INSENSITIVE -->
+  </bean>
+
+  <bean
+    id="StatelessContextualiser"
+    class="org.codehaus.wadi.impl.StatelessContextualiser"
+    >
+    <constructor-arg><ref bean="ClusterContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="StatelessMethods"/></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg><ref bean="StatelessURIs"/></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="TmpDirectory"
+    class="java.io.File"
+    >
+    <constructor-arg><value>${java.io.tmpdir}</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="DiscDirectory"
+    class="java.io.File"
+    >
+    <constructor-arg><ref bean="TmpDirectory"/></constructor-arg>
+    <constructor-arg><value>sessions</value></constructor-arg>
+  </bean>
+
+<!--
+        dir.delete();
+        dir.mkdir();
+-->
+
+  <bean
+    id="DiscEvicter"
+    class="org.codehaus.wadi.impl.NeverEvicter"
+    >
+    <constructor-arg type="int"><value>20</value></constructor-arg><!-- sweep interval (millis) -->
+    <constructor-arg type="boolean"><value>true</value></constructor-arg><!-- strict ordering -->
+  </bean> <!-- sessions never pass below this point, unless the node is shutdown -->
+
+  <bean
+    id="DiscMap"
+    class="EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap"
+    >
+  </bean>
+
+  <bean
+    id="DiscContextualiser"
+    class="org.codehaus.wadi.impl.ExclusiveStoreContextualiser"
+    >
+    <constructor-arg><ref bean="StatelessContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="Collapser"/></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg><ref bean="DiscEvicter"/></constructor-arg>
+    <constructor-arg><ref bean="DiscMap"/></constructor-arg>
+    <constructor-arg><ref bean="SessionStreamer"/></constructor-arg>
+    <constructor-arg><ref bean="DiscDirectory"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="SerialContextualiser"
+    class="org.codehaus.wadi.impl.SerialContextualiser"
+    >
+    <constructor-arg><ref bean="DiscContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="Collapser"/></constructor-arg>
+    <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="MemoryEvicter"
+    class="org.codehaus.wadi.impl.AbsoluteEvicter"
+    >
+    <constructor-arg type="int"><value>10000</value></constructor-arg> <!-- sweep interval (millis) -->
+    <constructor-arg type="boolean"><value>true</value></constructor-arg> <!-- strict ordering -->
+    <constructor-arg type="int"><value>10</value></constructor-arg> <!-- inactivity interval (secs) -->
+  </bean>
+
+  <bean
+    id="RequestPool"
+    class="org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool"
+    >
+  </bean>
+
+  <bean
+    id="MemoryContextualiser"
+    class="org.codehaus.wadi.impl.MemoryContextualiser"
+    >
+    <constructor-arg><ref bean="SerialContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="MemoryEvicter"/></constructor-arg>
+    <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
+    <constructor-arg><ref bean="SessionStreamer"/></constructor-arg>
+    <constructor-arg><ref bean="ContextPool"/></constructor-arg>
+    <constructor-arg><ref bean="RequestPool"/></constructor-arg>
+  </bean>
+
+
+  <!-- the Router (load-balancer integration) -->
+
+<!--
+  <bean
+    id="Router"
+    class="org.codehaus.wadi.impl.JkRouter"
+    >
+    <constructor-arg><value>${node.name}</value></constructor-arg>
+  </bean>
+-->
+
+  <bean
+    id="Router"
+    class="org.codehaus.wadi.impl.DummyRouter"
+    >
+  </bean>
+
+  <!-- other stuff... -->
+
+  <bean
+    id="HttpProxy"
+    class="org.codehaus.wadi.impl.StandardHttpProxy"
+    >
+    <constructor-arg><value>jsessionid</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="NumPartitions"
+    class="java.lang.Integer"
+    >
+    <constructor-arg><value>72</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="ReplicaterFactory"
+    class="org.codehaus.wadi.impl.MemoryReplicaterFactory"
+    >
+    <constructor-arg><ref bean="NumPartitions"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="LocalHost"
+    class="java.net.InetAddress"
+    factory-method="getLocalHost"
+    >
+  </bean>
+
+  <bean
+    id="HttpAddress"
+    class="java.net.InetSocketAddress"
+    >
+    <constructor-arg><ref bean="LocalHost"/></constructor-arg>
+    <constructor-arg type="int"><value>${http.port}</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="ProxiedLocation"
+    class="org.codehaus.wadi.http.HTTPProxiedLocation"
+    >
+    <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="PartitionManager"
+    class="org.codehaus.wadi.gridstate.impl.DummyPartitionManager"
+    >
+    <constructor-arg><ref bean="NumPartitions"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="Dispatcher"
+    class="org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher"
+    >
+    <constructor-arg><value>${node.name}</value></constructor-arg>
+    <constructor-arg><value>CLUSTER0</value></constructor-arg>
+<!--
+    <constructor-arg><value>peer://org.codehaus.wadi</value></constructor-arg>
+ -->
+    <constructor-arg><value>tcp://localhost:61616</value></constructor-arg>
+    <constructor-arg type="long"><value>5000</value></constructor-arg>
+  </bean>
+
+  <!-- and finally - the SessionManager itself -->
+
+  <bean
+    id="SessionManager"
+    class="org.codehaus.wadi.impl.ClusteredManager"
+    >
+    <constructor-arg><ref bean="SessionPool"/></constructor-arg>
+    <constructor-arg><ref bean="AttributesFactory"/></constructor-arg>
+    <constructor-arg><ref bean="ValuePool"/></constructor-arg>
+    <constructor-arg><ref bean="SessionWrapperFactory"/></constructor-arg>
+    <constructor-arg><ref bean="SessionIdFactory"/></constructor-arg>
+    <constructor-arg><ref bean="MemoryContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
+    <constructor-arg><ref bean="Router"/></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- errorIfSessionNotAcquired -->
+    <constructor-arg><ref bean="AttributeStreamer"/></constructor-arg>
+    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg><ref bean="ReplicaterFactory"/></constructor-arg>
+    <constructor-arg><ref bean="ProxiedLocation"/></constructor-arg>
+    <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
+    <constructor-arg><ref bean="Dispatcher"/></constructor-arg>
+    <constructor-arg><ref bean="PartitionManager"/></constructor-arg>
+    <constructor-arg><ref bean="Collapser"/></constructor-arg>
+  </bean>
+
+
+<!-- JMX support -->
+
+  <!--
+  This allows introspection via e.g mc4j (http://mc4j.sourceforge.net) on a running WADI system.
+
+  If you are using Tomcat 5.0.28, you will need to remove bin/jmx.jar,
+  d/l mx4j-3.0.1 and place mx4j-tools.jar and mx4j-remote.jar into
+  server/lib/.
+
+  If you do not require JMX support, feel free to comment out this section.
+
+  For further information please view the Spring JMX integration documentation.
+  -->
+
+  <!--
+  This will create a new MBeanServer unless one already exists, in which case it will be reused.
+  -->
+  <bean id="mbeanServer" class="org.codehaus.wadi.impl.MBeanServerFactoryBean"/>
+
+  <!--
+  This will register the beans mentioned in its 'beans' map with the MBeanServer.
+  -->
+  <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
+    <property name="beans">
+      <map>
+        <entry key="WADI:name=SessionManager"> <ref bean="SessionManager"/> </entry>
+        <entry key="WADI:name=MemoryContextualiser"> <ref bean="MemoryContextualiser"/> </entry>
+        <entry key="WADI:name=DiscContextualiser"> <ref bean="DiscContextualiser"/> </entry>
+        <entry key="WADI:name=ClusterContextualiser"> <ref bean="ClusterContextualiser"/> </entry>
+        <entry key="WADI:name=Router"> <ref bean="Router"/> </entry>
+        <entry key="WADI:name=HttpProxy"> <ref bean="HttpProxy"/> </entry>
+        <entry key="WADI:name=ProxiedLocation"> <ref bean="ProxiedLocation"/> </entry>
+        <entry key="WADI:name=Relocater"> <ref bean="Relocater"/> </entry>
+        <entry key="WADI:name=SessionIdFactory"> <ref bean="SessionIdFactory"/> </entry>
+      </map>
+    </property>
+    <property name="server" ref="mbeanServer"/>
+    <property name="registrationBehavior"><value>2</value></property> <!-- REGISTRATION_REPLACE_EXISTING -->
+  </bean>
+
+  <!--
+  if you are running your own jndi registry, you may comment this out
+  (untested)
+  <bean id="registry" class="java.rmi.registry.LocateRegistry" factory-method="createRegistry">
+    <constructor-arg value="${jndi.port}"/>
+  </bean>
+  -->
+
+  <!--
+  if you are running your own jmx remote connector, you may comment this out
+  you will also need to remove the reference to 'serverConnector' in the 'exporter' bean definition.
+  (untested)
+  <bean id="serverConnector" class="org.springframework.jmx.support.ConnectorServerFactoryBean" depends-on="registry">
+    <property name="objectName" value="connector:name=rmi"/>
+    <property name="serviceUrl" value="service:jmx:rmi://localhost/jndi/rmi://localhost:${jndi.port}/wadi"/>
+    <property name="server"><ref local="mbeanServer"/></property>
+    <property name="threaded" value="true"/>
+    <property name="daemon" value="true"/>
+  </bean>
+  -->
+
+</beans>

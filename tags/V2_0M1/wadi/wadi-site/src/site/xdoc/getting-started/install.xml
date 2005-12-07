@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<document>
+  <properties>
+    <title>Getting Started with WADI</title>
+  </properties>
+  <body>
+    <section name="Getting Started: Installation">
+      <p>
+	You can put together a heterogeneous cluster of <a href="./tomcat.html">Tomcat</a>, <a href="./jetty.html">Jetty</a>,<a href="./geronimo.html">Geronimo</a> and <a href="./jboss.html">JBoss</a> instances.
+      </p>
+      <p>
+	If you are using a clustered configuration
+	<ol>
+	  <li>Download a copy of <a href="http://dist.codehaus.org/activemq/distributions">activemq-3.2.1</a> - unpack it somewhere</li>
+	  <li>Set ACTIVEMQ_HOME to this dir and export it</li>
+	  <li>Then
+	    <ul>
+	      <li>
+		Either:
+		<ol>
+		  <li>download a copy of WADI 2.0-SNAPSHOT - unpack it somewhere</li>
+		  <li>set WADI_HOME to this dir and export it</li>
+		</ol>
+	      </li>
+	      <li>
+		Or:
+		<ol>
+		  <li>check out the latest WADI src from CVS</li>
+		  <li>Build it</li>
+		  <li>set WADI_HOME to the top of this tree and export it</li>
+		</ol>
+	      </li>
+	    </ul>
+	  </li>
+	</ol>
+      </p>
+    </section>
+  </body>
+</document>

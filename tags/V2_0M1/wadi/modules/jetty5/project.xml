@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE project>
+
+<project>
+  <pomVersion>3</pomVersion>
+  <extend>${basedir}/../../project.xml</extend>
+
+  <!-- ===================== -->
+  <!-- Module Identification -->
+  <!-- ===================== -->
+
+  <name>WADI :: Jetty5</name>
+  <id>wadi-jetty5</id>
+  <description>WADI/Jetty5 integration</description>
+  <shortDescription>WADI/Jetty5 integration</shortDescription>
+
+  <package>org.codehaus.wadi.jetty5</package>
+  <packageGroups>
+    <packageGroup>
+      <title>WADI/Jetty5 integrations</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.jetty5</packages>
+    </packageGroup>
+  </packageGroups>
+
+  <!-- ============ -->
+  <!-- Dependencies -->
+  <!-- ============ -->
+
+  <dependencies>
+
+    <!-- compile time -->
+
+    <dependency>
+      <groupId>jetty</groupId>
+      <artifactId>org.mortbay.jetty</artifactId>
+      <version>5.1.5rc1</version>
+      <url>http://jetty.mortbay.org/jetty</url>
+      <javadoc>http://jetty.mortbay.org/javadoc</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>jetty</groupId>
+      <artifactId>org.mortbay.jmx</artifactId>
+      <version>5.1.5rc1</version>
+      <url>http://jetty.mortbay.org/jetty</url>
+      <javadoc>http://jetty.mortbay.org/javadoc</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <version>${pom.currentVersion}</version>
+      <url>http://wadi.codehaus.org</url>
+    </dependency>
+
+    <!-- run time -->
+
+  </dependencies>
+
+</project>

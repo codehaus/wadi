@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE project>
+
+<project>
+  <pomVersion>3</pomVersion>
+  <extend>${basedir}/../../project.xml</extend>
+
+  <!-- ===================== -->
+  <!-- Module Identification -->
+  <!-- ===================== -->
+
+  <name>WADI :: Jetty6</name>
+  <id>wadi-jetty6</id>
+  <description>WADI/Jetty6 integration</description>
+  <shortDescription>WADI/Jetty6 integration</shortDescription>
+
+  <package>org.codehaus.wadi.jetty6</package>
+  <packageGroups>
+    <packageGroup>
+      <title>WADI/Jetty6 integrations</title>
+      <packages>org.codehaus.wadi:org.codehaus.wadi.jetty6</packages>
+    </packageGroup>
+  </packageGroups>
+
+  <!-- ============ -->
+  <!-- Dependencies -->
+  <!-- ============ -->
+
+  <dependencies>
+
+    <!-- compile time -->
+
+    <dependency>
+      <groupId>jetty</groupId>
+      <artifactId>org.mortbay.jetty</artifactId>
+      <version>6.0.0alpha3</version>
+      <url>http://jetty.mortbay.org/jetty</url>
+      <javadoc>http://jetty.mortbay.org/javadoc</javadoc>
+    </dependency>
+
+    <dependency>
+      <groupId>wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <version>${pom.currentVersion}</version>
+      <url>http://wadi.codehaus.org</url>
+    </dependency>
+
+    <!-- run time -->
+
+  </dependencies>
+
+</project>
