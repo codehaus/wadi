@@ -5,7 +5,7 @@
   </properties>
   <body>
     <section name="Paging">
-      "..."
+      ""
       <p>
 	As the number and size of the sessions on a node increases,
 	the ability of the JVM to manage its heap decreases, leading

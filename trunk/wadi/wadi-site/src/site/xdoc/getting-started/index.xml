@@ -23,8 +23,8 @@
       </p>
       <p>
 	<ol>
-	  <li><a href="./install.html">install</a> the relevant software (Tomcat, Jetty, Geronimo, JBoss) (REHASH)</li>
-	  <li><a href="./start.html">start</a> the required services (TODO)</li>
+	  <li><a href="./install.html">installation guide</a> (REHASH)</li>
+	  <li><a href="./start.html">start</a> the required services (REHASH)</li>
 	  <li>
 	    walk through some demos:
 	    <ul>
@@ -32,8 +32,8 @@
 	      <li><a href="./location.html">location</a> demo</li>
 	      <li><a href="./evacuation.html">evacuation</a> demo</li>
 	      <li><a href="./paging.html">paging</a> demo</li>
-	      <li><a href="./loadbalancing.html">load balancing</a> demo (REHASH)</li>
-	      <li><a href="./jmxmonitoring.html">JMX monitoring</a> demo (REHASH)</li>
+	      <li><a href="./loadbalancing.html">load balancing</a> demo (mod_jk2) (REHASH)</li>
+	      <li><a href="./jmxmonitoring.html">JMX monitoring</a> demo (mc4j) (REHASH)</li>
 	    </ul>
 	  </li>
 	</ol>
