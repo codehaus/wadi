@@ -1,87 +1,39 @@
 <?xml version="1.0"?>
 <document>
-    <properties>
-        <title>Getting Started with WADI</title>
-    </properties>
-    <body>
-        <section name="Getting Started with WADI">
-            <p>
-                You can put together a heterogeneous cluster of <a href="./tomcat.html">Tomcat</a>, <a href="./jetty.html">Jetty</a> and <a href="./jboss.html">JBoss</a> instances.
-            </p>
-            <p>
-                If you are using a clustered configuration
-                <ol>
-                    <li>Download a copy of <a href="http://dist.codehaus.org/activemq/distributions">activemq-3.2.1</a> - unpack it somewhere</li>
-                    <li>Set ACTIVEMQ_HOME to this dir and export it</li>
-                    <li>cd $ACTIVEMQ_HOME/bin</li>
-                    <li>Start the activemq broker - e.g. 'sh ./activemq'</li>
-                    <li>Then
-                        <ul>
-                            <li>
-                                Either:
-                                <ol>
-                                    <li>download a copy of WADI 2.0-SNAPSHOT - unpack it somewhere</li>
-                                    <li>set WADI_HOME to this dir and export it</li>
-                                </ol>
-                            </li>
-                            <li>
-                                Or:
-                                <ol>
-                                    <li>check out the latest WADI src from CVS</li>
-                                    <li>Build it</li>
-                                    <li>set WADI_HOME to the top of this tree and export it</li>
-                                </ol>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                    Then run up one <font color="red">red</font> and one <font color="green">green</font> instance of either <a href="./tomcat.html">Tomcat</a>, <a href="./jetty.html">Jetty</a> and <a href="./jboss.html">JBoss</a>.
-                    Congratulations, you have started your first (2 node) WADI cluster
-                    </li>
-                    <li>Look in $WADI_HOME/conf for the set of node.&lt;colour&gt;.properties files that define the red, green and many other nodes...</li>
-                    <li>
-                        The <font color="red">red</font> node you have started listens on localhost:8080.
-                        Point your browser at <font color="red">red</font> - <a href="http://localhost:8080/wadi/session.jsp">http://localhost:8080/wadi/session.jsp</a> - this will create a session, passing back a unique key to the browser.
-                        You should see a <font color="red">red</font> page informing you of your session's creation on the <font color="red">red</font> node.
-                        On the page you should see a table with a single cell.
-                        The table represents your session.
-                        The cells represent the history of your session. One new cell is added on every visit to this page.
-                        Refresh your page twice.
-                        You should now see three red cells, numbered 1-3.
-                        Get the idea ?
-                    </li>
-                    <li>
-                        The <font color="green">red</font> node you have started listens on localhost:8081.
-                       <p/>
-                        Point your browser at <font color="green">green</font> - <a href="http://localhost:8081/wadi/session.jsp">http://localhost:8081/wadi/session.jsp</a> - this will relocate the session from <font color="red">red</font> to <font color="green">green</font> and correctly render the page in the context of its session.
-                       <p/>
-                        You should now see a <font color="green">green</font> page - because the page has been rendered on the <font color="green">green</font> node.
-                       <p/>
-                        Your session will now contain 3 <font color="red">red</font> cells, that you created on the <font color="red">red</font> node and a <font color="green">green</font> cell that you have just created.
-                       <p/>
-                        We have just emulated the failure of your load-balancer to preserve session affinity (session affinity is the ability to direct every request for the same session to the same node).
-                       <p/>
-                        Now we will see why this is so important.
-                    </li>
-                    <li>
-                        Shutdown (gently - i.e. ctl-c or some stop script) <font color="green">green</font>, currently hosting your session, this should evacuate the session to the surviving node - <font color="red">red</font>.
-                        If you have DEBUG level logging enabled you should see some output indicating that a session has immigrated from <font color="red">red</font> into <font color="green">green</font>'s memory.
-                        You should also see output showing that <font color="green">green</font>'s PartitionManager is aware of the session's new location.
-
-                    </li>
-                    <li>
-                        Point your browser at <font color="red">red</font> - <a href="http://localhost:8080/wadi/render.jsp">http://localhost:8080/wadi/render.jsp</a> - the new location of your session.
-                        You should now see your session on a <font color="red">red</font> page. Congratulations, your session just remained active beyond the lifetime of its original host node.
-                    </li>
-                </ol>
-            </p>
-            <p>
-                Note:
-                <ul>
-                    <li><a href="./loadbalancing.html">Setting up a Load Balancer</a> - which demonstrates how to set up a load-balancer over your new cluster.</li>
-                    <li><a href="./jmxmonitoring.html">Setting up JMX Monitoring</a> - which describes how to monitor the number of sessions managed by WADI and anything else available via JMX.</li>
-                </ul>
-            </p>
-        </section>
-    </body>
+  <properties>
+    <title>Getting Started with WADI</title>
+  </properties>
+  <body>
+    <section name="Getting Started: Installation">
+      <p>
+	You can put together a heterogeneous cluster of <a href="./tomcat.html">Tomcat</a>, <a href="./jetty.html">Jetty</a>,<a href="./geronimo.html">Geronimo</a> and <a href="./jboss.html">JBoss</a> instances.
+      </p>
+      <p>
+	If you are using a clustered configuration
+	<ol>
+	  <li>Download a copy of <a href="http://dist.codehaus.org/activemq/distributions">activemq-3.2.1</a> - unpack it somewhere</li>
+	  <li>Set ACTIVEMQ_HOME to this dir and export it</li>
+	  <li>Then
+	    <ul>
+	      <li>
+		Either:
+		<ol>
+		  <li>download a copy of WADI 2.0-SNAPSHOT - unpack it somewhere</li>
+		  <li>set WADI_HOME to this dir and export it</li>
+		</ol>
+	      </li>
+	      <li>
+		Or:
+		<ol>
+		  <li>check out the latest WADI src from CVS</li>
+		  <li>Build it</li>
+		  <li>set WADI_HOME to the top of this tree and export it</li>
+		</ol>
+	      </li>
+	    </ul>
+	  </li>
+	</ol>
+      </p>
+    </section>
+  </body>
 </document>
