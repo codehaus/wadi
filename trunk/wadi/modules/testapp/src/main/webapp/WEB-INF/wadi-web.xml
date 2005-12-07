@@ -163,8 +163,7 @@
     id="ClusterContextualiser"
     class="org.codehaus.wadi.impl.ClusterContextualiser"
     >
-    <constructor-arg><ref bean="DummyContextualiser"/></constructor-arg>
-<!--     <constructor-arg><ref bean="DatabaseContextualiser"/></constructor-arg> -->
+    <constructor-arg><ref bean="DatabaseContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="Collapser"/></constructor-arg>
     <constructor-arg><ref bean="Relocater"/></constructor-arg>
   </bean>
@@ -222,8 +221,8 @@
     id="DiscEvicter"
     class="org.codehaus.wadi.impl.NeverEvicter"
     >
-    <constructor-arg type="int"><value>20</value></constructor-arg>
-    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg type="int"><value>20</value></constructor-arg><!-- sweep interval (millis) -->
+    <constructor-arg type="boolean"><value>true</value></constructor-arg><!-- strict ordering -->
   </bean> <!-- sessions never pass below this point, unless the node is shutdown -->
 
   <bean
@@ -249,8 +248,7 @@
     id="SerialContextualiser"
     class="org.codehaus.wadi.impl.SerialContextualiser"
     >
-    <constructor-arg><ref bean="ClusterContextualiser"/></constructor-arg>
-<!--    <constructor-arg><ref bean="DiscContextualiser"/></constructor-arg> -->
+    <constructor-arg><ref bean="DiscContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="Collapser"/></constructor-arg>
     <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
   </bean>
@@ -259,10 +257,10 @@
     id="MemoryEvicter"
     class="org.codehaus.wadi.impl.AbsoluteEvicter"
     >
-    <constructor-arg type="int"><value>10000000</value></constructor-arg>
-    <constructor-arg type="boolean"><value>true</value></constructor-arg>
-    <constructor-arg type="int"><value>10</value></constructor-arg>
-  </bean> <!-- if a session is inactive for 10 secs, it moves to disc -->
+    <constructor-arg type="int"><value>10000</value></constructor-arg> <!-- sweep interval (millis) -->
+    <constructor-arg type="boolean"><value>true</value></constructor-arg> <!-- strict ordering -->
+    <constructor-arg type="int"><value>10</value></constructor-arg> <!-- inactivity interval (secs) -->
+  </bean>
 
   <bean
     id="RequestPool"
@@ -339,6 +337,13 @@
   </bean>
 
   <bean
+    id="ProxiedLocation"
+    class="org.codehaus.wadi.http.HTTPProxiedLocation"
+    >
+    <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
+  </bean>
+
+  <bean
     id="PartitionManager"
     class="org.codehaus.wadi.gridstate.impl.DummyPartitionManager"
     >
@@ -376,7 +381,7 @@
     <constructor-arg><ref bean="AttributeStreamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
     <constructor-arg><ref bean="ReplicaterFactory"/></constructor-arg>
-    <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
+    <constructor-arg><ref bean="ProxiedLocation"/></constructor-arg>
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
     <constructor-arg><ref bean="Dispatcher"/></constructor-arg>
     <constructor-arg><ref bean="PartitionManager"/></constructor-arg>
@@ -415,7 +420,7 @@
         <entry key="WADI:name=ClusterContextualiser"> <ref bean="ClusterContextualiser"/> </entry>
         <entry key="WADI:name=Router"> <ref bean="Router"/> </entry>
         <entry key="WADI:name=HttpProxy"> <ref bean="HttpProxy"/> </entry>
-        <entry key="WADI:name=HttpAddress"> <ref bean="HttpAddress"/> </entry>
+        <entry key="WADI:name=ProxiedLocation"> <ref bean="ProxiedLocation"/> </entry>
         <entry key="WADI:name=Relocater"> <ref bean="Relocater"/> </entry>
         <entry key="WADI:name=SessionIdFactory"> <ref bean="SessionIdFactory"/> </entry>
       </map>
