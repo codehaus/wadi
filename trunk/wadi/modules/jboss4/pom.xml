@@ -2,13 +2,12 @@
     <parent>
         <groupId>wadi</groupId>
         <artifactId>wadi</artifactId>
-        <version>2.0-SNAPSHOT</version>
+        <version>2.0M1</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>wadi-jboss4</artifactId>
-    <version>2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>WADI :: JBoss4</name>
 
