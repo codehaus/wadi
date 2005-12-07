@@ -4,7 +4,7 @@
         <title>Getting Started - Tomcat</title>
     </properties>
     <body>
-        <section name="Getting Started - Tomcat">            
+        <section name="Getting Started - Tomcat">
             <p>
                 Either:
                 <ol>
@@ -20,12 +20,12 @@
                 <ol>
                     <li>download a copy of <a href="http://sourceforge.net/project/showfiles.php?group_id=47745">mx4j-3.0.1</a> - unpack it somewhere</li>
                     <li>set MX4J_HOME to this directory and export it</li>
-                    <li>e.g. remove $TOMCAT50_HOME/bin/jmx.jar</li>
-                    <li>e.g. copy $MX4J_HOME/lib/{mx4j.jar,mx4j-remote.jar,mx4j-tools.jar} into $TOMCAT50_HOME/server/lib</li>
+                    <li>If using Tomcat-50, remove $TOMCAT50_HOME/bin/jmx.jar</li>
+                    <li>copy $MX4J_HOME/lib/{mx4j.jar,mx4j-remote.jar,mx4j-tools.jar} into $TOMCAT50_HOME/server/lib or $TOMCAT55_HOME/server/lib</li>
                 </ol>
-                
+
                 Finally, to start the node :
-                
+
                 from $WADI_HOME/bin run e.g. './node.sh tomcat50 <font color="red">red</font>' or './node.sh tomcat55 <font color="red">red</font>'
             </p>
         </section>
