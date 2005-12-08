@@ -38,7 +38,12 @@
 	  <li>Hit <a href="http://localhost/wadi/index.jsp?limit=25&amp;refresh=3">http://localhost/wadi/index.jsp?limit=25&amp;refresh=3</a></li>
 	</ol>
 
+	<p>
 	You will see a page of nine frames
+	</p>
+	<p>
+	  <img src="../images/loadbalancing.0.jpg"/>
+	</p>
 	Each frame contains a rendering of your current session
 	The background colour of the frame informs you of the node rendering the frame
 	The cells within the frame represent the session itself
