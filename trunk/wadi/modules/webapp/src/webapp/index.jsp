@@ -1,73 +1,83 @@
-    <%@ page language="java" contentType="text/html" session="true" %>
-      <%@ page import="java.util.Enumeration" %>
-      <%@ page import="java.util.TreeSet" %>
-      <%@ page import="java.util.Iterator" %>
-      <%@ page import="java.net.URL" %>
-      <%
-      String colour=System.getProperty("node.name");
+<%@ page language="java" contentType="text/html" session="true" %>
+<%@ page import="java.util.Enumeration" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.SortedMap" %>
+<%@ page import="java.util.TreeMap" %>
+<%@ page import="java.util.Iterator" %>
+<%@ page import="java.net.URL" %>
+<%@ page import="org.codehaus.wadi.webapp.Counter" %>
+<%
+  String colour=System.getProperty("node.name");
 
-      URL tmp=new URL(request.getRequestURL().toString());
-      int port=tmp.getPort();
-      String url=tmp.toString();
+  URL tmp=new URL(request.getRequestURL().toString());
+  String url=tmp.toString();
 
-      String params="";
+  String params="";
 
-      String limit=request.getParameter("limit");
-      if (limit!=null)
-      params+=(params.length()==0?"?":"&")+"limit="+limit;
+  String limit=request.getParameter("limit");
+  int l=-1;
+  if (limit!=null) {
+    l=Integer.parseInt(limit);
+    params+=(params.length()==0?"?":"&")+"limit="+limit;
+  }
 
-      String refresh=request.getParameter("refresh");
-      if (refresh!=null)
-      params+=(params.length()==0?"?":"&")+"refresh="+refresh;
+  String refresh=request.getParameter("refresh");
+  if (refresh!=null) {
+    params+=(params.length()==0?"?":"&")+"refresh="+refresh;
+  }
 
-      if (params.length()>0)
-      {
-      url+=params;
-      %>
-    <meta http-equiv="refresh" content="<%= refresh %>;url=<%= url %>"/>
-    <%
-    }
+  if (params.length()>0) {
+    url+=params;
+%>
+<meta http-equiv="refresh" content="<%= refresh %>;url=<%= url %>"/>
+<%
+}
 
-    url="./render.jsp";
+url="./session.jsp?insert=false";
 
-    // add a new entry to session
-    synchronized(session)
-    {
-      session.setAttribute(""+System.currentTimeMillis(), colour);
+// acquire session history
+Counter counter=null;
+SortedMap history=null;
 
-      // if user has specified a limit to session size, remove from the
-      // front to maintain this size - useful for running jmeter for long
-      // periods...
-      if (limit!=null) {
-        int l=Integer.parseInt(limit);
-          // copy keys into TreeSet to order them...
-          TreeSet keys=new TreeSet();
-          for (Enumeration e=session.getAttributeNames(); e.hasMoreElements();)
-            keys.add(e.nextElement());
+synchronized (session) {
+  if ((counter=(Counter)session.getAttribute("counter"))==null) {
+    session.setAttribute("counter", (counter=new Counter()));
+  }
 
-          int sessionSize=keys.size();
-          if (sessionSize>l) {
-            for (Iterator i=keys.iterator(); sessionSize-->l && i.hasNext();)
-              session.removeAttribute((String)i.next());
-          }
-      }
-    }
-    %>
+  if ((history=(SortedMap)session.getAttribute("history"))==null) {
+    session.setAttribute("history", (history=new TreeMap()));
+  }
+}
 
-    <HTML>
-      <frameset rows="33%,33%,34%" cols="33%,33%,34%">
-	<frame src="<%= url %>"/>
-	<frame src="<%= url %>"/>
-	<frame src="<%= url %>"/>
-	<frame src="<%= url %>"/>
-	<frame src="<%= url %>"/>
-	<frame src="<%= url %>"/>
-	<frame src="<%= url %>"/>
-	<frame src="<%= url %>"/>
-	<frame src="<%= url %>"/>
-      </frameset>
-    </HTML>
+synchronized (history) {
 
-    <%
-      response.setHeader("Connection", "close");
-      %>
+  // add a new history item to end of queue
+  counter.increment();
+  history.put(new Integer(counter.getValue()), colour);
+  // remove an old item from the beginning if history is getting too long
+  if (l>=0 && history.size()>l) {
+    Iterator i=history.entrySet().iterator();
+    i.next();
+    i.remove();
+  }
+}
+
+%>
+
+<HTML>
+  <frameset rows="33%,33%,34%" cols="33%,33%,34%">
+    <frame src="<%= url %>"/>
+    <frame src="<%= url %>"/>
+    <frame src="<%= url %>"/>
+    <frame src="<%= url %>"/>
+    <frame src="<%= url %>"/>
+    <frame src="<%= url %>"/>
+    <frame src="<%= url %>"/>
+    <frame src="<%= url %>"/>
+    <frame src="<%= url %>"/>
+  </frameset>
+</HTML>
+
+<%
+  response.setHeader("Connection", "close");
+%>

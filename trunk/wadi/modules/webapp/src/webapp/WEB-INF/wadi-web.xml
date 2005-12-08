@@ -257,7 +257,7 @@
     id="MemoryEvicter"
     class="org.codehaus.wadi.impl.AbsoluteEvicter"
     >
-    <constructor-arg type="int"><value>10000</value></constructor-arg> <!-- sweep interval (millis) -->
+    <constructor-arg type="int"><value>10</value></constructor-arg> <!-- sweep interval (secs) -->
     <constructor-arg type="boolean"><value>true</value></constructor-arg> <!-- strict ordering -->
     <constructor-arg type="int"><value>10</value></constructor-arg> <!-- inactivity interval (secs) -->
   </bean>
