@@ -41,6 +41,7 @@ import org.codehaus.cargo.container.tomcat.TomcatWAR;
 import org.codehaus.cargo.generic.ContainerFactory;
 import org.codehaus.cargo.generic.DefaultContainerFactory;
 import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
+import org.codehaus.wadi.itest.tomcat.ExtendedTomcatPropertySet;
 
 public class ContainerTestDecorator extends TestSetup {
   protected Log _log = LogFactory.getLog(getClass());
@@ -98,14 +99,8 @@ public class ContainerTestDecorator extends TestSetup {
     if (null != containerProp) {
       Installer installer = installContainer(containerProp);
       String containerConfigBase = System.getProperty("container.config.dir") + "/" + containerProp;
-      //String containerConfigBase = (String) ((Map) installProps
-      //    .get(containerProp)).get(CONFIG_BASE_PROP_NAME);
       String managerClassName = System.getProperty(containerProp + ".manager.class.name");
-      //String managerClassName = (String) ((Map) installProps.get(containerProp))
-      //    .get(MANAGER_CLASS_NAME_PROP_NAME);
       String cargoContainerName = System.getProperty(containerProp + ".cargo.container.name");
-      //String cargoContainerName = (String) ((Map) installProps
-      //    .get(containerProp)).get(CARGO_CONTAINER_NAME_PROP_NAME);
       containers = new LocalContainer[nodes.length];
       // starting one container type
       for (int i = 0; i < nodes.length; i++) {
@@ -124,14 +119,8 @@ public class ContainerTestDecorator extends TestSetup {
       for (int i = 0; i < containerNames.length; i++) {
         Installer installer = installContainer(containerNames[i]);
         String containerConfigBase = System.getProperty("container.config.dir") + "/" + containerNames[i];
-        //String containerConfigBase = (String) ((Map) installProps
-        //    .get(containerProp)).get(CONFIG_BASE_PROP_NAME);
         String managerClassName = System.getProperty(containerNames[i] + ".manager.class.name");
-        //String managerClassName = (String) ((Map) installProps.get(containerProp))
-        //    .get(MANAGER_CLASS_NAME_PROP_NAME);
         String cargoContainerName = System.getProperty(containerNames[i] + ".cargo.container.name");
-        //String cargoContainerName = (String) ((Map) installProps
-        //    .get(containerProp)).get(CARGO_CONTAINER_NAME_PROP_NAME);
         // starting one node on each container
         containers[i] = startContainer((String) nodes[i], containerConfigBase,
             managerClassName, cargoContainerName, installer);
@@ -145,18 +134,12 @@ public class ContainerTestDecorator extends TestSetup {
   private Installer installContainer(String containerName) throws IOException {
     if(_log.isDebugEnabled()) _log.debug(getClass().getName() + ".installContainer(" + containerName + ")");
     String containerUrl = System.getProperty(containerName + ".url");
-    //String containerUrl = (String) ((Map) installProps.get(containerName))
-    //    .get(CONTAINER_URL_PROP_NAME);
     String containerInstallDir = System.getProperty("container.install.dir");
-    //String containerInstallDir = (String) ((Map) installProps
-    //    .get(containerName)).get(INSTALL_DIR_PROP_NAME);
     Installer installer = installContainer(containerUrl, containerInstallDir);
     copyJars(installer.getHome(), containerName);
     if(_log.isDebugEnabled()) _log.debug("copy jars successful");
     if (containerName.equals(TOMCAT55_KEY_NAME)) {
       String compatibilityURL = System.getProperty("tomcat55.compatibility.url");
-      //String compatibilityURL = (String) ((Map) installProps.get(containerName))
-      //   .get("tomcat55JDK14CompaitilityURL");
       installTomcat55JDK14CompatibilityStuff(compatibilityURL,
           containerInstallDir, installer.getHome().getPath());
       if(_log.isDebugEnabled()) _log.debug("install compat success");
@@ -222,11 +205,13 @@ public class ContainerTestDecorator extends TestSetup {
     File configDir = new File(dirName + "_" + nodeName);
     File log = new File(configDir.getPath() + "/cargo.log");
     DefaultConfigurationFactory factory = new DefaultConfigurationFactory();
+    factory.registerConfiguration("tomcat5x",
+        "org.codehaus.wadi.itest.tomcat.Tomcat5xExtendedStandaloneLocalConfiguration",
+        ConfigurationType.STANDALONE);
     LocalConfiguration config = (LocalConfiguration) factory
         .createConfiguration(cargoContainerName, ConfigurationType.STANDALONE,
             configDir);
-    config.setProperty(TomcatPropertySet.WEBAPP_TOKEN_VALUE, getWebappToken(
-        wadi, managerClassName));
+    config.setProperty(ExtendedTomcatPropertySet.MANAGER_CLASS_NAME, managerClassName);
     config.addDeployable(wadi);
     Map props = (Map) systemProps.get(nodeName);
     config.setProperty(ServletPropertySet.PORT, (String) props

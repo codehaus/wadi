@@ -66,11 +66,11 @@
 	      </property>
 	      <property>
 		<name>container.install.dir</name>
-		<value>${project.x.build.directory}/installs</value>
+		<value>${basedir}/${project.x.build.directory}/installs</value>
 	      </property>
 	      <property>
 		<name>container.config.dir</name>
-		<value>${project.x.build.directory}/test-containers</value>
+		<value>${basedir}/${project.x.build.directory}/test-containers</value>
 	      </property>
 	      <property>
 		<name>tomcat50.url</name>
