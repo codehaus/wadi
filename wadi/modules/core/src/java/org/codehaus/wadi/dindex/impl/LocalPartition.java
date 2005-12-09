@@ -43,6 +43,7 @@ import org.codehaus.wadi.dindex.newmessages.MovePMToSM;
 import org.codehaus.wadi.dindex.newmessages.MoveSMToPM;
 import org.codehaus.wadi.dindex.newmessages.MovePMToIM;
 import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -111,9 +112,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 			DIndexResponse response=new InsertPMToIM(success);
 			_config.getDispatcher().reply(message, response);
 		} finally {
-		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
-			sync.release();
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+			Utils.release("Partition", key, sync);
 		}
 	}
 
@@ -135,9 +134,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 			DIndexResponse response=new DeletePMToIM();
 			_config.getDispatcher().reply(message, response);
 		} finally {
-		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
-			sync.release();
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+			Utils.release("Partition", key, sync);
 		}
 	}
 
@@ -258,9 +255,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 			_log.error("could not read src address from incoming message");
 		}
 		finally {
-		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - releasing: "+key+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
-			sync.release();
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - released: "+key+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+			Utils.release("Partition", key, sync);
 		}
 	}
 
