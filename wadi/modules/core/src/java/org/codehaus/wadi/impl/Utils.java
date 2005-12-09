@@ -49,6 +49,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 public class Utils {
 	protected static final Log _log=LogFactory.getLog(Utils.class);
+	protected static final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 
 	/**
 	 * Mote (in other words - move) the data held in a Motable from one Contextualiser to another, such
@@ -100,12 +101,56 @@ public class Utils {
 	    } while (Thread.interrupted());
 	}
 
+	public static void acquireUninterrupted(String lockType, String lockName, Sync sync) throws TimeoutException {
+		try {
+		do {
+			try {
+				if (_lockLog.isTraceEnabled()) _lockLog.trace(lockType+" - acquiring: "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+				//sync.attempt(5000);
+				sync.acquire();
+				if (_lockLog.isTraceEnabled()) _lockLog.trace(lockType+" - acquired : "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+			} catch (TimeoutException e) {
+				Thread.interrupted(); // TODO - not sure if we need to clear the interrupted flag ?
+				throw e; // a TimeoutException isa InterruptedException
+			} catch (InterruptedException e) {
+				_log.trace("unexpected interruption - ignoring", e);
+			}
+		} while (Thread.interrupted());
+		} catch (Exception e) {
+			if (_lockLog.isWarnEnabled()) _lockLog.warn(lockType+" - acquisition FAILED : "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+		}
+	}
+
+	public static void release(String lockType, String lockName, Sync sync) {
+		if (_lockLog.isTraceEnabled()) _lockLog.trace(lockType+" - releasing: "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+		sync.release();
+		if (_lockLog.isTraceEnabled()) _lockLog.trace(lockType+" - released : "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+	}
+
 	/**
 	 * If a lock is free, acquire it, ignoring any interruptions, else fail.
 	 *
 	 * @param sync - the lock
 	 * @return - whether or not the lock was acquired
 	 */
+	public static boolean attemptUninterrupted(String lockType, String lockName, Sync sync) {
+	    boolean acquired=false;
+	    do {
+	        try {
+				if (_lockLog.isTraceEnabled()) _lockLog.trace(lockType+" - acquiring: "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+	            acquired=sync.attempt(0);
+				if (_lockLog.isTraceEnabled()) _lockLog.trace(lockType+" - acquired : "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+	        } catch (InterruptedException e) {
+	        	_log.trace("unexpected interruption - ignoring", e);
+	        }
+	    } while (Thread.interrupted());
+
+	    if (!acquired)
+			if (_lockLog.isTraceEnabled()) _lockLog.trace(lockType+" - acquisition FAILED: "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+
+	    return acquired;
+	}
+
 	public static boolean attemptUninterrupted(Sync sync) {
 	    boolean acquired=false;
 	    do {
