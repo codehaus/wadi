@@ -13,7 +13,6 @@
   </context-param>
 -->
 
-<!--
   <listener>
     <listener-class>org.codehaus.wadi.test.SessionListener</listener-class>
   </listener>
