@@ -166,6 +166,12 @@
             <layout>legacy</layout>
         </repository>
         <repository>
+            <id>codehaus</id>
+            <name>Codehaus Repo</name>
+            <url>http://dist.codehaus.org</url>
+            <layout>legacy</layout>
+        </repository>
+        <repository>
             <id>jgenender</id>
             <name>Jeff Genender's  Repository on codehaus</name>
             <url>http://codehaus.org/~jgenender/maven2</url>
@@ -356,7 +362,7 @@
             <dependency>
                 <groupId>activecluster</groupId>
                 <artifactId>activecluster</artifactId>
-                <version>WADI-1.1-SNAPSHOT</version>
+                <version>1.2-20051115174934</version>
             </dependency>
 
             <dependency>
