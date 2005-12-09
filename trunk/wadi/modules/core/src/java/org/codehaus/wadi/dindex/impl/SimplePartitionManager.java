@@ -56,13 +56,13 @@ import org.codehaus.wadi.impl.Quipu;
  *
  */
 public class SimplePartitionManager implements PartitionManager, PartitionConfig {
-	
+
 	public interface Callback {void onNodeRemoved(ClusterEvent event);}
-	
+
 	protected final static String _partitionKeysKey="partitionKeys";
 	protected final static String _timeStampKey="timeStamp";
 	protected final static String _correlationIDMapKey="correlationIDMap";
-	
+
 	protected final String _nodeName;
 	protected final Log _log;
 	protected final int _numPartitions;
@@ -75,29 +75,29 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	protected final Callback _callback;
 	protected final PartitionMapper _mapper;
 	protected final LockManager _pmSyncs;
-	
+
 	public SimplePartitionManager(Dispatcher dispatcher, int numPartitions, Map distributedState, Callback callback, PartitionMapper mapper) {
 		_dispatcher=dispatcher;
 		_nodeName=_dispatcher.getNodeName();
 		_pmSyncs=new StupidLockManager(_nodeName);
 		_log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
 		_numPartitions=numPartitions;
-		
+
 		_partitions=new PartitionFacade[_numPartitions];
 		long timeStamp=System.currentTimeMillis();
 		boolean queueing=true;
 		for (int i=0; i<_numPartitions; i++)
 			_partitions[i]=new PartitionFacade(i, timeStamp, new DummyPartition(i), queueing, this);
-		
+
 		_cluster=((ActiveClusterDispatcher)_dispatcher).getCluster();
 		_distributedState=distributedState;
 		_inactiveTime=_dispatcher.getInactiveTime();
 		_callback=callback;
 		_mapper=mapper;
 	}
-	
+
 	protected PartitionManagerConfig _config;
-	
+
 	public void init(PartitionManagerConfig config) {
 		_config=config;
 		_log.trace("init");
@@ -111,15 +111,15 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		_dispatcher.register(this, "onPartitionRepopulateRequest", PartitionRepopulateRequest.class);
 		_dispatcher.register(PartitionRepopulateResponse.class, _inactiveTime);
 	}
-	
+
 	public void start() throws Exception {
 		_log.trace("starting...");
 		_log.trace("...started");
 	}
-	
+
 	public void evacuate() throws Exception {
 		_log.info("evacuating...");
-		
+
 		PartitionEvacuationRequest request=new PartitionEvacuationRequest();
 		Node localNode=_cluster.getLocalNode();
 		String correlationId=_cluster.getLocalNode().getName();
@@ -128,10 +128,10 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			if (_log.isWarnEnabled()) _log.warn("could not contact Coordinator - backing off for "+ _inactiveTime+" millis...");
 			Thread.sleep(_config.getInactiveTime());
 		}
-		
+
 		_log.info("...evacuated");
 	}
-	
+
 	public void stop() throws Exception {
 		_log.info("stopping...");
 		// detach relevant message handlers from dispatcher...
@@ -141,11 +141,11 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		_dispatcher.deregister("onPartitionRepopulateRequest", PartitionRepopulateRequest.class, 5000);
 		_log.info("...stopped");
 	}
-	
+
 	public PartitionFacade getPartition(int partition) {
 		return _partitions[partition];
 	}
-	
+
 	// a node wants to shutdown...
 	public void onPartitionEvacuationRequest(ObjectMessage om, PartitionEvacuationRequest request) {
 		Node from;
@@ -160,11 +160,11 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			_log.warn("could not read src node from message", e);
 			from=null;
 		}
-		
+
 		assert from!=null;
 		_callback.onNodeRemoved(new ClusterEvent(_cluster, from, ClusterEvent.REMOVE_NODE));
 	}
-	
+
 	// a node wants to rebuild a lost partition
 	public void onPartitionRepopulateRequest(ObjectMessage om, PartitionRepopulateRequest request) {
 		int keys[]=request.getKeys();
@@ -180,7 +180,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		if (!_dispatcher.reply(om, new PartitionRepopulateResponse(c)))
 			_log.warn("unexpected problem responding to partition repopulation request");
 	}
-	
+
 	// receive a command to transfer IndexPartitions to another node
 	// send them in a request, waiting for response
 	// send an acknowledgement to Coordinator who sent original command
@@ -190,7 +190,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			PartitionTransfer transfer=transfers[i];
 			int amount=transfer.getAmount();
 			Destination destination=transfer.getDestination();
-			
+
 			// acquire partitions for transfer...
 			LocalPartition[] acquired=null;
 			try {
@@ -204,9 +204,9 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 				}
 				acquired=(LocalPartition[])c.toArray(new LocalPartition[c.size()]);
 				assert amount==acquired.length;
-				
+
 				long timeStamp=System.currentTimeMillis();
-				
+
 				// build request...
 				if (_log.isTraceEnabled()) _log.trace("local state (before giving): " + getPartitionKeys());
 				PartitionTransferRequest request=new PartitionTransferRequest(timeStamp, acquired);
@@ -247,7 +247,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			_log.warn("could not acknowledge safe transfer to Coordinator", e);
 		}
 	}
-	
+
 	// receive a transfer of partitions
 	public synchronized void onPartitionTransferRequest(ObjectMessage om, PartitionTransferRequest request) {
 		long timeStamp=request.getTimeStamp();
@@ -285,7 +285,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			// chuck them... - TODO
 		}
 	}
-	
+
 	// TODO - duplicate code (from DIndex)
 	public Collection[] createResultSet(int numPartitions, int[] keys) {
 		Collection[] c=new Collection[numPartitions];
@@ -293,9 +293,9 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			c[keys[i]]=new ArrayList();
 		return c;
 	}
-	
+
 	// ClusterListener
-	
+
 	public void update(Node node) {
 		Map state=node.getState();
 		long timeStamp=((Long)state.get(_timeStampKey)).longValue();
@@ -308,8 +308,8 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			facade.setContentRemote(timeStamp, _dispatcher, location);
 		}
 	}
-	
-	
+
+
 	public void markExistingPartitions(Node[] nodes, boolean[] partitionIsPresent) {
 		for (int i=0; i<nodes.length; i++) {
 			Node node=nodes[i];
@@ -329,7 +329,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			}
 		}
 	}
-	
+
 	public void regenerateMissingPartitions(Node[] living, Node[] leaving) {
 		boolean[] partitionIsPresent=new boolean[_numPartitions];
 		markExistingPartitions(living, partitionIsPresent);
@@ -339,7 +339,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			if (!partitionIsPresent[i])
 				missingPartitions.add(new Integer(i));
 		}
-		
+
 		int numKeys=missingPartitions.size();
 		if (numKeys>0) {
 			assert _allowRegenerationOfMissingPartitions;
@@ -348,7 +348,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			int key=0;
 			for (Iterator i=missingPartitions.iterator(); i.hasNext(); )
 				missingKeys[key++]=((Integer)i.next()).intValue();
-			
+
 			if (_log.isWarnEnabled()) _log.warn("RECREATING PARTITIONS...: " + missingPartitions);
 			long time=System.currentTimeMillis();
 			for (int i=0; i<missingKeys.length; i++) {
@@ -365,13 +365,13 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			if (!_dispatcher.send(_dispatcher.getLocalDestination(), _dispatcher.getClusterDestination(), correlationId, new PartitionRepopulateRequest(missingKeys))) {
 				_log.error("unexpected problem repopulating lost index");
 			}
-			
+
 			// whilst we are waiting for the other nodes to get back to us, figure out which relevant sessions
 			// we are carrying ourselves...
 			Collection[] c=createResultSet(_numPartitions, missingKeys);
 			_config.findRelevantSessionNames(_numPartitions, c);
 			repopulate(_dispatcher.getLocalDestination(), c);
-			
+
 			//boolean success=false;
 			try {
 				/*success=*/rv.waitFor(_inactiveTime);
@@ -379,21 +379,21 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 				_log.warn("unexpected interruption", e);
 			}
 			Collection results=rv.getResults();
-			
+
 			for (Iterator i=results.iterator(); i.hasNext(); ) {
 				ObjectMessage message=(ObjectMessage)i.next();
 				try {
 					Destination from=message.getJMSReplyTo();
 					PartitionRepopulateResponse response=(PartitionRepopulateResponse)message.getObject();
 					Collection[] relevantKeys=response.getKeys();
-					
+
 					repopulate(from, relevantKeys);
-					
+
 				} catch (JMSException e) {
 					_log.warn("unexpected problem interrogating response", e);
 				}
 			}
-			
+
 			if (_log.isWarnEnabled()) _log.warn("...PARTITIONS REPOPULATED: " + missingPartitions);
 			// relayout dindex
 			_distributedState.put(_partitionKeysKey, newKeys);
@@ -405,11 +405,11 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			}
 		}
 	}
-	
+
 	public PartitionKeys getPartitionKeys() {
 		return new PartitionKeys(_partitions);
 	}
-	
+
 	public void repopulate(Destination location, Collection[] keys) {
 		assert location!=null;
 		for (int i=0; i<_numPartitions; i++) {
@@ -424,9 +424,9 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			}
 		}
 	}
-	
+
 	public void localise() {
-		if (_log.isTraceEnabled()) _log.trace("allocating " + _numPartitions + " partitions");
+		if (_log.isDebugEnabled()) _log.debug("allocating " + _numPartitions + " partitions");
 		long timeStamp=System.currentTimeMillis();
 		for (int i=0; i<_numPartitions; i++) {
 			PartitionFacade facade=_partitions[i];
@@ -435,7 +435,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			facade.setContent(timeStamp, partition);
 		}
 	}
-	
+
 	// TODO - duplicate code - see DIndex...
 	protected void correlateStateUpdate(Map state) {
 		Map correlationIDMap=(Map)state.get(_correlationIDMapKey);
@@ -451,7 +451,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			}
 		}
 	}
-	
+
 //	public void repopulatePartitions(Destination location, Collection[] keys) {
 //	for (int i=0; i<keys.length; i++) {
 //	Collection c=keys[i];
@@ -464,35 +464,35 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 //	}
 //	}
 //	}
-	
+
 	public int getNumPartitions() {
 		return _numPartitions;
 	}
-	
+
 	public PartitionFacade getPartition(Object key) {
 		return _partitions[_mapper.map(key)];
 	}
-	
+
 	// PartitionConfig API
-	
+
 	public Dispatcher getDispatcher() {
 		return _dispatcher;
 	}
-	
+
 	public Cluster getCluster() {
 		return _cluster;
 	}
-	
+
 	public String getNodeName(Destination destination) {
 		return _dispatcher.getNodeName(destination);
 	}
-	
+
 	public long getInactiveTime() {
 		return _inactiveTime;
 	}
 
 	// PartitionConfig API
-	
+
 	public String getLocalNodeName() {
 		return _nodeName;
 	}
