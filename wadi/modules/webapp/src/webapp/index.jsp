@@ -1,6 +1,4 @@
 <%@ page language="java" contentType="text/html" session="true" %>
-<%@ page import="java.util.Enumeration" %>
-<%@ page import="java.util.Map" %>
 <%@ page import="java.util.SortedMap" %>
 <%@ page import="java.util.TreeMap" %>
 <%@ page import="java.util.Iterator" %>
