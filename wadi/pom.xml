@@ -184,14 +184,6 @@
                 <enabled>false</enabled>
             </releases>
         </repository>
-        <repository>
-            <id>cargo snapshots</id>
-            <name>Cargo Dev Repository</name>
-	    <url>http://mini.dudney.net/maven2/cargo/snapshot</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -214,8 +206,6 @@
         <module>modules/jetty5</module>
         <module>modules/jetty6</module>
         <module>modules/webapp</module>
-        <module>modules/testapp</module>
-        <module>modules/itest</module>
         <module>modules/assembly</module>
         <module>wadi-site</module>
     </modules>
@@ -565,6 +555,18 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
+	    <!-- plugin>
+	      <groupId>org.apache.maven.plugins</groupId>
+	      <artifactId>maven-clover-plugin</artifactId>
+	      <configuration>
+		<jdk>1.4</jdk>
+		<flushPolicy>threaded</flushPolicy>
+		<flushInterval>100</flushInterval>
+		<cloverDatabase>${basedir}/target/clover/clover.db</cloverDatabase>
+		<cloverOutputDirectory>${basedir}/target/clover/out</cloverOutputDirectory>
+		<licenseFile>${basedir}/clover.license</licenseFile>
+	      </configuration>
+	    </plugin -->
         </plugins>
     </build>
     <reporting>
@@ -573,6 +575,16 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
             </plugin>
+	    <plugin>
+	      <groupId>org.apache.maven.plugins</groupId>
+	      <artifactId>maven-clover-plugin</artifactId>
+	      <configuration>
+		<jdk>1.4</jdk>
+		<flushPolicy>threaded</flushPolicy>
+		<flushInterval>100</flushInterval>
+		<licenseFile>./clover.license</licenseFile>
+	      </configuration>
+	    </plugin>
         </plugins>
     </reporting>
 
