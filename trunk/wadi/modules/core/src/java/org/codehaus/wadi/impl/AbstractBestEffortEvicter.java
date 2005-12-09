@@ -147,24 +147,17 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         int expirations=0;
         {
         	int l=toExpire.length;
-        	boolean traceEnabled=_lockLog.isTraceEnabled();
         	for (int i=0; i<l; i++) {
         		Motable motable=(Motable)toExpire[i]; // TODO - not happy about an Evicter knowing about Motables
         		String id=motable.getName();
         		if (id!=null) {
         			Sync sync=_config.getEvictionLock(id, motable);
-        			if (traceEnabled) _lockLog.trace("Eviction - acquiring: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
-        			if (Utils.attemptUninterrupted(sync)) {
-        				if (traceEnabled) _lockLog.trace("Eviction - acquired: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
+        			if (Utils.attemptUninterrupted("Eviction", id, sync)) {
         				if (motable.getTimedOut(time)) {
         					_config.expire(motable);
         					expirations++;
         				}
-        				if (traceEnabled) _lockLog.trace("Eviction - releasing: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
-        				sync.release();
-        				if (traceEnabled) _lockLog.trace("Eviction - released: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
-        			} else {
-        				if (traceEnabled) _lockLog.trace("Eviction - not acquired: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
+        				Utils.release("Eviction", id, sync);
         			}
         		}
         	}
@@ -174,24 +167,17 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         // and the same again for demotions...
         int demotions=0;
         {
-        	boolean traceEnabled=_lockLog.isTraceEnabled();
             int l=toDemote.length;
             for (int i=0; i<l; i++) {
                 Motable motable=(Motable)toDemote[i]; // TODO - not happy about an Evicter knowing about Motables
                 String id=motable.getName();
                 Sync sync=_config.getEvictionLock(id, motable);
-    			if (traceEnabled) _lockLog.trace("Eviction - acquiring: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
-                if (Utils.attemptUninterrupted(sync)) {
-    				if (traceEnabled) _lockLog.trace("Eviction - acquired: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
+			if (Utils.attemptUninterrupted("Eviction", id, sync)) {
                     if (test(motable, time, motable.getTimeToLive(time))) { // IDEA - could have remembered ttl
                         _config.demote(motable);
                         demotions++;
                     }
-    				if (traceEnabled) _lockLog.trace("Eviction - releasing: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
-    				sync.release();
-    				if (traceEnabled) _lockLog.trace("Eviction - released: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
-                } else {
-    				if (traceEnabled) _lockLog.trace("Eviction - not acquired: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
+    				Utils.release("Eviction", id, sync);
                 }
             }
             toDemote=null;

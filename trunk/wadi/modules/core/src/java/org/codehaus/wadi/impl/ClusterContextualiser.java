@@ -89,11 +89,11 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @version $Revision$
  */
 public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, ClusterListener, StateManager.ImmigrationListener {
-	
+
 	protected final static String _nodeNameKey="name";
 	protected final static String _shuttingDownKey="shuttingDown";
 	protected final static String _evacuatingKey="evacuating";
-	
+
 	protected final SynchronizedInt _evacuationPartnerCount=new SynchronizedInt(0);
 	protected final Collapser _collapser;
 	protected final Relocater _relocater;
@@ -101,8 +101,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	protected final Emoter _emoter;
 	protected final int _resTimeout=500; // TODO - parameterise
 	protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
-	
-	
+
+
 	public ClusterContextualiser(Contextualiser next, Collapser collapser, Relocater relocater) {
 		super(next, new CollapsingLocker(collapser), false);
 		_collapser=collapser;
@@ -114,7 +114,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		// so session relocation should be the basic strategy, with request relocation as a pluggable
 		// optimisation...
 	}
-	
+
 	protected SynchronizedBoolean _shuttingDown;
 	protected String _nodeName;
 	protected boolean _evacuating;
@@ -124,7 +124,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	protected ProxiedLocation _proxiedLocation;
 	protected DIndex _dindex;
 	protected Contextualiser _top;
-	
+
 	public void init(ContextualiserConfig config) {
 		super.init(config);
 		ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)config;
@@ -140,24 +140,24 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		_top=ccc.getContextualiser();
 		_relocater.init(this);
 	}
-	
+
 	public String getStartInfo() {
 		return "["+_nodeName+"]";
 	}
-	
+
 	public void destroy() {
 		_relocater.destroy();
 		// TODO - what else ?
 		super.destroy();
 	}
-	
+
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
-	
+
 	protected int getEvacuationPartnersCount() {
 		return _evacuationPartnerCount.get();
 	}
-	
+
 	protected void refreshEvacuationPartnersCount() {
 		LocalNode localNode=_cluster.getLocalNode();
 		Map nodes=_cluster.getNodes();
@@ -169,10 +169,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 					count++;
 			}
 		}
-		
+
 		_evacuationPartnerCount.set(count);
 	}
-	
+
 	public Immoter getDemoter(String name, Motable motable) {
 		if (getEvacuationPartnersCount()>0) {
 			ensureEvacuationQueue();
@@ -181,7 +181,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 			return _next.getDemoter(name, motable);
 		}
 	}
-	
+
 	public Immoter getSharedDemoter() {
 		if (getEvacuationPartnersCount()>0) {
 			ensureEvacuationQueue();
@@ -190,11 +190,11 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 			return _next.getSharedDemoter();
 		}
 	}
-	
+
 	public boolean handle(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock) throws InvocationException {
 		return _relocater.relocate(invocationContext, id, immoter, motionLock);
 	}
-	
+
 	protected void createEvacuationQueue() throws Exception {
 		_log.trace("creating evacuation queue");
 		ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)_config;
@@ -202,17 +202,17 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		_evacuating=true;
 		ccc.putDistributedState(_evacuatingKey, Boolean.TRUE);
 		ccc.distributeState();
-		
+
 		// whilst we are evacuating...
 		// 1) do not get involved in any other evacuations.
 		_log.info("ignoring further evacuation appeals");
 		// 2) withdraw from any other evacuation in which we may be involved
-		
+
 		// give time for threads that are already processing asylum applications to finish - can we join them ? -
 		// TODO - use shutdownAfterProcessingCurrentlyQueuedTasks() and a separate ThreadPool...
 		Utils.safeSleep(2000);
 	}
-	
+
 	protected void destroyEvacuationQueue() throws Exception {
 		ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)_config;
 		// leave shuttingDown=true
@@ -223,7 +223,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		// FIXME - can we destroy the queue ?
 		_log.trace("emigration queue destroyed");
 	}
-	
+
 	protected synchronized void ensureEvacuationQueue() {
 		synchronized (_shuttingDown) {
 			try {
@@ -236,7 +236,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 			}
 		}
 	}
-	
+
 	public void stop() throws Exception {
 		synchronized (_shuttingDown) {
 			if (_evacuating) { // evacuation is synchronous, so we will not get to here until all sessions are gone...
@@ -245,7 +245,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		}
 		super.stop();
 	}
-	
+
 	/**
 	 * Manage the immotion of a session into the cluster tier from another and its emigration thence to another node via the EvacuationQueue.
 	 *
@@ -254,7 +254,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	 */
 	class EmigrationImmoter implements Immoter {
 		public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}
-		
+
 		public boolean prepare(String name, Motable emotable, Motable immotable) {
 			try {
 				immotable.copy(emotable);
@@ -264,25 +264,25 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 			}
 			return _dindex.getStateManager().offerEmigrant(name, immotable, _resTimeout);
 		}
-		
+
 		public void commit(String name, Motable immotable) {
 			// TODO - cache new location of emigrating session...
 		}
-		
+
 		public void rollback(String name, Motable immotable) {
 			// TODO - errr... HOW ?
 		}
-		
+
 		public boolean contextualise(InvocationContext invocationContext, String id, Motable immotable, Sync motionLock) throws InvocationException {
 			return false;
 			// TODO - perhaps this is how a proxied contextualisation should occur ?
 		}
-		
+
 		public String getInfo() {
 			return "cluster";
 		}
 	}
-	
+
 	/**
 	 * Manage the immigration of a session from another node and and thence its emotion from the cluster layer into another.
 	 *
@@ -290,13 +290,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	 * @version $Revision$
 	 */
 	class ImmigrationEmoter extends AbstractChainedEmoter {
-		
+
 		protected final ObjectMessage _message;
-		
+
 		public ImmigrationEmoter(ObjectMessage message) {
 			_message=message;
 		}
-		
+
 		public boolean prepare(String name, Motable emotable, Motable immotable) {
 			if (super.prepare(name, emotable, immotable)) {
 				_dindex.getStateManager().acceptImmigrant(_message, _location, name, emotable);
@@ -305,35 +305,33 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 				return false;
 			}
 		}
-		
+
 		public void commit(String name, Motable emotable) {
 		}
-		
+
 		public void rollback(String name, Motable emotable) {
 			throw new RuntimeException("NYI");
 		}
-		
+
 		public String getInfo() {
 			return "cluster"; // TODO - figure out where session is going and append to info
 		}
 	}
-	
+
 	public void onImmigration(ObjectMessage message, Motable emotable) {
 		String name=emotable.getName();
 		if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+name);
 		Sync invocationLock=_locker.getLock(name, emotable);
 		boolean invocationLockAcquired=false;
 		try {
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquiring: "+name+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
-			Utils.acquireUninterrupted(invocationLock);
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - acquired: "+name+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
+			Utils.acquireUninterrupted("Invocation", name, invocationLock);
 			invocationLockAcquired=true;
-			
+
 			Emoter emoter=new ImmigrationEmoter(message);
-			
+
 			if (!emotable.checkTimeframe(System.currentTimeMillis()))
 				if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
-			
+
 			Immoter immoter=_top.getDemoter(name, emotable);
 			Utils.mote(emoter, immoter, emotable, name);
 			notifySessionRelocation(name);
@@ -341,40 +339,38 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 			if (_log.isWarnEnabled()) _log.warn("could not acquire promotion lock for incoming session: "+name);
 		} finally {
 			if (invocationLockAcquired) {
-				if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+name+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
-				invocationLock.release();
-				if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+name+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
+				Utils.release("Invocation", name, invocationLock);
 			}
 		}
 	}
-	
+
 	public void load(Emoter emoter, Immoter immoter) {
 		// currently - we don't load anything from the Cluster - we could do state-balancing here
 		// i.e. on startup, take ownership of a number of active sessions - affinity implications etc...
 	}
-	
+
 	// AbstractMotingContextualiser
-	
+
 	// ClusterListener
-	
+
 	public void onNodeAdd(ClusterEvent event) {
 		//_log.info("node joined: "+event.getNode().getState().get(_nodeNameKey));
 		refreshEvacuationPartnersCount();
 		onNodeStateChange(event);
 	}
-	
+
 	public void onNodeUpdate(ClusterEvent event) {
 		//_log.info("node updated: "+event.getNode().getState().get(_nodeNameKey));
 		refreshEvacuationPartnersCount();
 		onNodeStateChange(event);
 	}
-	
+
 	public void onNodeStateChange(ClusterEvent event) {
 		Map state=event.getNode().getState();
 		String nodeName=(String)state.get(_nodeNameKey);
-		
+
 		if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
-		
+
 		//_log.info("node state changed: "+nodeName+" : "+state);
 		Boolean tmp=(Boolean)state.get(_evacuatingKey);
 		boolean evacuating=tmp==null?false:tmp.booleanValue();
@@ -389,15 +385,15 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 			}
 		}
 	}
-	
+
 	protected void ensureEvacuationJoined(String nodeName) {
 		// TODO - all needs complete rethink
 	}
-	
+
 	protected void ensureEvacuationLeft(String nodeName) {
 		// TODO - all needs complete rethink
 	}
-	
+
 	public void onNodeRemoved(ClusterEvent event) {
 		Map state=event.getNode().getState();
 		String nodeName=(String)state.get(_nodeNameKey);
@@ -405,7 +401,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		refreshEvacuationPartnersCount();
 		ensureEvacuationLeft(nodeName);
 	}
-	
+
 	public void onNodeFailed(ClusterEvent event)  {
 		Map state=event.getNode().getState();
 		String nodeName=(String)state.get(_nodeNameKey);
@@ -413,50 +409,50 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		refreshEvacuationPartnersCount();
 		ensureEvacuationLeft(nodeName);
 	}
-	
+
 	public void onCoordinatorChanged(ClusterEvent event) {
 		if (_log.isTraceEnabled()) _log.trace("coordinator changed: " + event.getNode().getState().get(_nodeNameKey)); // we don't use this...
 	}
-	
+
 	protected int _locationMaxInactiveInterval=30;
-	
+
 	class MyLocation implements Evictable {
-		
+
 		protected long _lastAccessedTime;
 		protected String _nodeName;
-		
+
 		public MyLocation(long timestamp, String nodeName) {
 			_lastAccessedTime=timestamp;
 			_nodeName=nodeName;
 		}
-		
+
 		public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval) {
 			// ignore creationTime;
 			_lastAccessedTime=lastAccessedTime;
 			// ignore maxInactiveInterval
 		}
-		
+
 		public void destroy() throws Exception {throw new UnsupportedOperationException();}
-		
+
 		public void copy(Evictable evictable) {throw new UnsupportedOperationException();}
 		public void mote(Evictable recipient) {throw new UnsupportedOperationException();}
-		
+
 		public long getCreationTime() {return _lastAccessedTime;}
 		public long getLastAccessedTime() {return _lastAccessedTime;}
 		public void setLastAccessedTime(long lastAccessedTime) {throw new UnsupportedOperationException();}
 		public int  getMaxInactiveInterval() {return _locationMaxInactiveInterval;}
 		public void setMaxInactiveInterval(int maxInactiveInterval) {throw new UnsupportedOperationException();}
-		
+
 		public boolean isNew() {throw new UnsupportedOperationException();}
-		
+
 		public long getTimeToLive(long time) {return _lastAccessedTime+(_locationMaxInactiveInterval*1000)-time;}
 		public boolean getTimedOut(long time) {return getTimeToLive(time)<=0;}
 		public boolean checkTimeframe(long time) {throw new UnsupportedOperationException();}
-		
+
 	}
-	
+
 	// RelocaterConfig
-	
+
 	public Collapser getCollapser() {return _collapser;}
 	public Dispatcher getDispatcher() {return _dispatcher;}
 	public Location getLocation() {return _location;}
@@ -467,17 +463,17 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	public String getNodeName() {return _nodeName;}
 	public SynchronizedBoolean getShuttingDown() {return _shuttingDown;}
 	public InvocationProxy getInvocationProxy() {return ((ClusteredContextualiserConfig)_config).getInvocationProxy();}
-	
+
 	public DIndex getDIndex() {
 		return _dindex;
 	}
-	
+
 	public void notifySessionRelocation(String name) {
 		_config.notifySessionRelocation(name);
 	}
-	
+
 	public Motable get(String name) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 }

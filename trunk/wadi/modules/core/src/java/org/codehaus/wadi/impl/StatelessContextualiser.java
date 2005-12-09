@@ -52,13 +52,13 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public class StatelessContextualiser extends AbstractDelegatingContextualiser {
-	
+
 	protected final Pattern _methods; // =Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE); // TODO - |HEAD|PUT|DELETE ?
 	protected final boolean _methodFlag; //true
 	protected final Pattern _uris; //=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)", Pattern.CASE_INSENSITIVE); // TODO - CSS, ...?
 	protected final boolean _uriFlag; // false
 	protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
-	
+
 	/**
 	 * @param next - The next Contextualiser in the stack
 	 * @param methods - Pattern used to match HTTP method names (null will match nothing)
@@ -73,13 +73,13 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 		_uris=uris;
 		_uriFlag=uriFlag;
 	}
-	
+
 	public ThreadLocal _wrapper=new ThreadLocal(){
 		protected synchronized Object initialValue() {
 			return new StatelessHttpServletRequestWrapper();
 		}
 	};
-	
+
 	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
 		WebInvocationContext context = (WebInvocationContext) invocationContext;
 		HttpServletRequest hreq = context.getHreq();
@@ -89,9 +89,7 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 		} else {
 			// we know that we can run the request locally...
 			if (invocationLock!=null) {
-				if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - releasing: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
-				invocationLock.release();
-				if (_lockLog.isTraceEnabled()) _lockLog.trace("Invocation - released: "+id+ " ["+Thread.currentThread().getName()+"]"+" : "+invocationLock);
+				Utils.release("Invocation", id, invocationLock);
 			}
 			// wrap the request so that session is inaccessible and process here...
 			PoolableHttpServletRequestWrapper wrapper=(PoolableHttpServletRequestWrapper)_wrapper.get();
@@ -104,7 +102,7 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 			return true;
 		}
 	}
-	
+
 	/**
 	 * We know request is stateful - if, either Pattern matches
 	 * stateFULL requests AND match succeeded, or Pattern matches
@@ -116,21 +114,21 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 	public boolean isStateful(HttpServletRequest hreq) {
 		// TODO - should the order of matching be configurable ?
 		boolean matched;
-		
+
 		// can we prove it is stateless ? - try first test...
 		if (_methods!=null) {
 			matched=(_methods.matcher(hreq.getMethod()).matches());
 			if (matched!=_methodFlag)
 				return false;
 		}
-		
+
 		// could still be stateful - try second test...
 		if (_uris!=null) {
 			matched=(_uris.matcher(hreq.getRequestURI()).matches());
 			if (matched!=_uriFlag)
 				return false;
 		}
-		
+
 		// we cannot eliminate the possibility that the request is stateful...
 		return true;
 	}
