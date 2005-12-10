@@ -18,6 +18,7 @@
                     <li><a href="./eclipse.html">Eclipse and WADI</a></li>
                     <li>Configuring WADI and TOMCAT (Comming Soon)</li>
                     <li>Configuring WADI and Jetty (Coming Soon)</li>
+                    <li><a href="../getting-started/geronimo.html">Configuring WADI and Geronimo</a></li>
                 </ul>
             </p>
         </section>
