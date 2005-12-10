@@ -5,7 +5,36 @@
   </properties>
   <body>
     <section name="Getting Started - Geronimo">
-      TODO !
+      <subsection name="Using WADI with Jetty in Geronimo">
+      <p>To enable WADI for your webapplication, create a Geronimo web descriptor file called <pre>geronimo-web.xml</pre> with the following contents:</p>
+        <source>
+&lt;web-app xmlns="http://geronimo.apache.org/xml/ns/j2ee/web/jetty-1.0"
+    configId="YOUR-CONFIG-ID"&gt;
+
+    &lt;context-root&gt;/YOUR-CONTEXT&lt;/context-root&gt;
+    &lt;context-priority-classloader&gt;false&lt;/context-priority-classloader&gt;
+    <font color="red">&lt;session-manager&gt;org.codehaus.wadi.jetty5.JettyManager&lt;/session-manager&gt;</font>
+&lt;/web-app&gt;
+        </source>
+        <p>A full description of each element of this descriptor can be found at the <a href="http://wiki.apache.org/geronimo/Deployment">Geronimo "Deployment"</a> wiki entry.  In summary, you should replace:</p>
+        <ul>
+          <li><b>YOUR-CONFIG-ID</b>
+          <p>
+          with a unique identifier for your webapp. It is preferred that this formed by concatenating the "/" separated elements of your organization's domain name and the name of your webapp  eg  <pre>com/acme/Foo</pre> </p>
+          </li>
+
+          <li>
+          <b>YOUR-CONTEXT</b>
+          <p>
+          with the path at which you want your webapp to be available
+          </p>
+          </li>  
+        </ul>
+        <p> The line highlighted in red above is the line which will configure WADI for your webapplication, so you should include it as-is in your geronimo-web.xml file</p>
+        <p>Now, follow the instructions at <a href="http://wiki.apache.org/geronimo/Deployment">Geronimo "Deployment"</a> to deploy your WADI-enabled webapplication in Geronimo.</p>
+        
+        <p>TODO - a full list of dependencies for WEB-INF/lib or as &lt;dependency&gt; entries in geronimo-web.xml</p> 
+      </subsection>
     </section>
   </body>
 </document>
