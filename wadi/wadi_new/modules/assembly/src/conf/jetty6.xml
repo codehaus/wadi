@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd">
+
+
+<Configure id="Server" class="org.mortbay.jetty.Server">
+
+  <Set name="connectors">
+    <Array type="org.mortbay.jetty.Connector">
+
+      <!-- Use this connector for many frequently idle connections -->
+      <Item>
+	<New class="org.mortbay.jetty.nio.SelectChannelConnector">
+	  <Set name="port"><SystemProperty name="http.port" default="8080"/></Set>
+	  <Set name="maxIdleTime">15000</Set>
+	</New>
+      </Item>
+
+    </Array>
+  </Set>
+
+  <!-- =========================================================== -->
+  <!-- Set handlers                                                -->
+  <!-- =========================================================== -->
+  <Set name="handlers">
+    <Array type="org.mortbay.jetty.Handler">
+
+      <Item>
+	<New id="wadi" class="org.mortbay.jetty.webapp.WebAppContext">
+	  <Set name="contextPath">/wadi</Set>
+	  <Set name="war"><SystemProperty name="wadi.home"/>/webapps/wadi-webapp-<SystemProperty name="wadi.version"/>.war</Set>
+	  <Get name="SessionHandler">
+	    <Set name="SessionManager"><New class="org.codehaus.wadi.jetty6.JettyManager"/></Set>
+	  </Get>
+	</New>
+      </Item>
+
+      <Item>
+	<New  class="org.mortbay.jetty.handler.NotFoundHandler"/>
+      </Item>
+
+    </Array>
+  </Set>
+
+  <!-- ensure that shutdown hook is called on ctl C -->
+  <Set name="stopAtShutdown">true</Set>
+
+  <Call name="start"/>
+
+</Configure>
