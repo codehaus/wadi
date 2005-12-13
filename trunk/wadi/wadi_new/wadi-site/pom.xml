@@ -1,0 +1,37 @@
+<project>
+    <parent>
+        <groupId>wadi</groupId>
+        <artifactId>wadi</artifactId>
+        <version>2.0M1</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>wadi-site</artifactId>
+    <packaging>pom</packaging>
+    <name>WADI</name>
+    <scm>
+        <connection>scm:cvs:pserver:anoncvs@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi</connection>
+        <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org/home/projects/wadi/scm:wadi</developerConnection>
+        <url>http://cvs.wadi.codehaus.org/wadi/</url>
+    </scm>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <reportSets>
+                     <reportSet>
+                        <reports>
+                           <report>project-team</report>
+                           <report>mailing-list</report>
+                           <report>cim</report>
+                           <report>issue-tracking</report>
+                           <report>license</report>
+                           <report>scm</report>
+                        </reports>
+                     </reportSet>
+                  </reportSets>
+            </plugin>
+        </plugins>
+    </reporting>
+</project>

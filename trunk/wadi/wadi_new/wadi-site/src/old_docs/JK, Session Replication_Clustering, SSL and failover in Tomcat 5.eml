@@ -1,0 +1,711 @@
+Return-Path: <tomcat-user-return-120258-jules=coredevelopers.net@jakarta.apache.org>
+Delivered-To: jules@mortbay.com
+Received: (qmail 17720 invoked by alias); 27 Jan 2005 15:37:09 -0000
+Delivered-To: alias-cdn-jules@coredevelopers.net
+Received: (qmail 17715 invoked from network); 27 Jan 2005 15:37:09 -0000
+Received: from hermes.apache.org (HELO mail.apache.org) (209.237.227.199)
+  by jetty3.inetu.net with SMTP; 27 Jan 2005 15:37:05 -0000
+Received-SPF: pass (jetty3.inetu.net: domain of tomcat-user-return-120258-jules=coredevelopers.net@jakarta.apache.org designates 209.237.227.199 as permitted sender) receiver=jetty3.inetu.net; client_ip=209.237.227.199; envelope-from=tomcat-user-return-120258-jules=coredevelopers.net@jakarta.apache.org;
+Received: (qmail 79259 invoked by uid 500); 27 Jan 2005 15:36:50 -0000
+Mailing-List: contact tomcat-user-help@jakarta.apache.org; run by ezmlm
+Precedence: bulk
+List-Unsubscribe: <mailto:tomcat-user-unsubscribe@jakarta.apache.org>
+List-Subscribe: <mailto:tomcat-user-subscribe@jakarta.apache.org>
+List-Help: <mailto:tomcat-user-help@jakarta.apache.org>
+List-Post: <mailto:tomcat-user@jakarta.apache.org>
+List-Id: "Tomcat Users List" <tomcat-user.jakarta.apache.org>
+Reply-To: "Tomcat Users List" <tomcat-user@jakarta.apache.org>
+Delivered-To: mailing list tomcat-user@jakarta.apache.org
+Received: (qmail 79244 invoked by uid 99); 27 Jan 2005 15:36:49 -0000
+X-ASF-Spam-Status: No, hits=0.4 required=10.0
+	tests=DNS_FROM_RFC_ABUSE
+X-Spam-Check-By: apache.org
+Received-SPF: pass (hermes.apache.org: local policy)
+Received: from mpls-qmqp-04.inet.qwest.net (HELO mpls-qmqp-04.inet.qwest.net) (63.231.195.115)
+  by apache.org (qpsmtpd/0.28) with SMTP; Thu, 27 Jan 2005 07:36:47 -0800
+Received: (qmail 92486 invoked by uid 0); 27 Jan 2005 15:36:34 -0000
+Received: from mpls-pop-08.inet.qwest.net (63.231.195.8)
+  by mpls-qmqp-04.inet.qwest.net with QMQP; 27 Jan 2005 15:36:34 -0000
+Received: from vdsl-130-13-0-2.phnx.qwest.net (HELO redfish) (130.13.0.2)
+  by mpls-pop-08.inet.qwest.net with SMTP; 27 Jan 2005 15:36:33 -0000
+Date: Thu, 27 Jan 2005 08:37:25 -0700
+Message-ID: <DKELJBPNDHJEECCAEPGOIECKKAAA.rnmixon@qwest.net>
+From: "Richard Mixon (qwest)" <rnmixon@qwest.net>
+To: "Tomcat Users List" <tomcat-user@jakarta.apache.org>
+Cc: devlists@hanik.com
+Subject: RE: JK, Session Replication/Clustering, SSL and failover in Tomcat 5
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2527
+In-Reply-To: <074401c5047c$946bdd80$dd01dc0a@Corp.LaQuinta.com>
+Importance: Normal
+X-Virus-Checked: Checked
+X-Qmail-Scrubber-Version: 1.02
+X-Spam-Checker-Version: SpamAssassin 2.63 (2004-01-11) on jetty3.inetu.net
+X-Spam-Level: 
+X-Spam-Status: No, hits=-4.9 required=5.0 tests=BAYES_00 autolearn=ham 
+	version=2.63
+
+Filip,
+
+Thank you - that appears to be what I need. Unfortunately the only
+documentation I can find is at:
+  http://jakarta.apache.org/tomcat/tomcat-5.5-doc/catalina/docs/api/org/
+apache/catalina/cluster/session/JvmRouteBinderValve.html
+
+BEGIN-QUOTE
+Valve to handle Tomcat jvmRoute takeover using mod_jk module after node
+failure. After a node crashed the next request going to other cluster
+node. Now the answering from apache is slower ( make some error
+handshaking. Very bad with apache at my windows.). We rewrite now the
+cookie jsessionid information to the backup cluster node. After the next
+response all client request goes direct to the backup node. The change
+sessionid send also to all other cluster nodes. Well, now the session
+stickyness work directly to the backup node and traffic don't go back
+too restarted cluster nodes! At all cluster node you must configure the
+JvmRouteSessionIDBinderListener  with
+JvmRouteSessionIDBinderListenerLifecycle  Add this Valve to your
+clustered application or setup it to context default
+conf/enginename/hostname/context.xml.default for all host application
+
+                    <Context>
+                      <Valve
+className="org.apache.catalina.cluster.session.JvmRouteBinderValve" />
+                    </Context>
+
+
+END-QUOTE
+
+I put the valve statement in my conf/context.xml. But this does not seem
+to be enough.
+
+But where can I find information on configuring the
+"JvmRouteSessionIDBinderListener  with
+JvmRouteSessionIDBinderListenerLifecycle"?
+
+Thank you - Richard Mixon
+
+-----Original Message-----
+From: Filip Hanik - Dev [mailto:devlists@hanik.com]
+Sent: Thursday, January 27, 2005 7:29 AM
+To: Tomcat Users List
+Cc: rnmixon@qwest.net
+Subject: Re: JK, Session Replication/Clustering, SSL and failover in
+Tomcat 5
+
+
+yes, There is code that takes care of that scenario, I believe it was
+peter who coded it.
+There is a valve called JvmRouteBinderValve that peter wrote, that you
+enable for your context.
+It will rewrite the session id for, and broadbast it to the cluster.
+
+Filip
+
+----- Original Message -----
+From: "Richard Mixon (qwest)" <rnmixon@qwest.net>
+To: "Tomcat Users List" <tomcat-user@jakarta.apache.org>
+Sent: Wednesday, January 26, 2005 6:44 PM
+Subject: RE: JK, Session Replication/Clustering, SSL and failover in
+Tomcat 5
+
+
+Filip,
+
+Pen does not really help me out.
+
+My problem is JK I am pretty sure.  It is appending ".srv1" to the
+session. When srv1 is stopped, it detects this on the next request and
+routes the request to srv2. However I notice in the JK output that it
+now has ".srv2" appended to the session, which of course does not exist,
+and I get prompted to re-logon.
+
+Below is the debug output from JK showing the failover attempt.
+
+Any other suggestion?
+
+Thank you - Richard
+
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+map_uri_to_worker::jk_uri_worker_map.c (700): Attempting to map URI
+'/stars/gridAction.do' from 1 maps
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+map_uri_to_worker::jk_uri_worker_map.c (718): Attempting to map context
+URI '/stars/*'
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+map_uri_to_worker::jk_uri_worker_map.c (755): Found a context match
+loadbalancer -> /stars/
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug] jk_handler::mod_jk.c
+(1715): Into handler jakarta-servlet worker=loadbalancer r->proxyreq=0
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+wc_get_worker_for_name::jk_worker.c (92): found a worker loadbalancer
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug] init_ws_service::mod_jk.c
+(479): agsp=443 agsn=redfishsoftware.swamp.home
+hostn=redfishsoftware.swamp.home shostn=redfishsoftware.swamp.home
+cbsport=0 sport=0 claport=443
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug] service::jk_lb_worker.c
+(465): service sticky_session=1
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+get_most_suitable_worker::jk_lb_worker.c (372): total sessionid is
+EE9EF7748256B50E03C48A3F3735DE59.srv1.
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+get_most_suitable_worker::jk_lb_worker.c (383): searching worker for
+partial sessionid EE9EF7748256B50E03C48A3F3735DE59.srv1.
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (275): searching for sticky worker
+(srv1)
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (282): found candidate worker srv1
+(0) for match with sticky (srv1)
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (290): found candidate worker srv1
+(0) with previous load 100 in search with sticky (srv1)
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (343): found worker srv1 with new
+load 100 in search with sticky (srv1)
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+ajp_get_endpoint::jk_ajp_common.c (2016): time elapsed since last
+request = 76 seconds
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug] service::jk_lb_worker.c
+(482): service worker=srv1 jvm_route=srv1 rc=1
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+ajp_marshal_into_msgb::jk_ajp_common.c (551): ajp marshaling done
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+ajp_service::jk_ajp_common.c (1594): processing with 3 retries
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+ajp_connection_tcp_send_message::jk_ajp_common.c (883): sending to ajp13
+pos=4 len=611 max=8192
+[Wed Jan 26 17:15:57 2005] [6040:2256] [error]
+ajp_connection_tcp_send_message::jk_ajp_common.c (902): sendfull
+returned -3 with errno=54
+[Wed Jan 26 17:15:57 2005] [6040:2256] [error]
+ajp_send_request::jk_ajp_common.c (1158): Error sending request try
+another pooled connection
+[Wed Jan 26 17:15:57 2005] [6040:2256] [debug]
+jk_open_socket::jk_connect.c (159): try to connect socket = 700 to
+127.0.0.1:8009
+[Wed Jan 26 17:15:58 2005] [6040:2256] [debug]
+jk_open_socket::jk_connect.c (177): after connect ret = -1
+[Wed Jan 26 17:15:58 2005] [6040:2256] [info]
+jk_open_socket::jk_connect.c (183): connect() failed errno = 61
+[Wed Jan 26 17:15:58 2005] [6040:2256] [info]
+ajp_connect_to_endpoint::jk_ajp_common.c (862): Failed connecting to
+tomcat. Tomcat is probably not started or is listening on the wrong
+host/port (127.0.0.1:8009). Failed errno = 61
+[Wed Jan 26 17:15:58 2005] [6040:2256] [info]
+ajp_send_request::jk_ajp_common.c (1186): Error connecting to the Tomcat
+process.
+[Wed Jan 26 17:15:58 2005] [6040:2256] [info]
+ajp_service::jk_ajp_common.c (1665): Sending request to tomcat failed,
+recoverable operation attempt=0
+[Wed Jan 26 17:15:58 2005] [6040:2256] [debug]
+jk_open_socket::jk_connect.c (159): try to connect socket = 700 to
+127.0.0.1:8009
+[Wed Jan 26 17:15:59 2005] [6040:2256] [debug]
+jk_open_socket::jk_connect.c (177): after connect ret = -1
+[Wed Jan 26 17:15:59 2005] [6040:2256] [info]
+jk_open_socket::jk_connect.c (183): connect() failed errno = 61
+[Wed Jan 26 17:15:59 2005] [6040:2256] [info]
+ajp_connect_to_endpoint::jk_ajp_common.c (862): Failed connecting to
+tomcat. Tomcat is probably not started or is listening on the wrong
+host/port (127.0.0.1:8009). Failed errno = 61
+[Wed Jan 26 17:15:59 2005] [6040:2256] [info]
+ajp_send_request::jk_ajp_common.c (1186): Error connecting to the Tomcat
+process.
+[Wed Jan 26 17:15:59 2005] [6040:2256] [info]
+ajp_service::jk_ajp_common.c (1665): Sending request to tomcat failed,
+recoverable operation attempt=1
+[Wed Jan 26 17:15:59 2005] [6040:2256] [debug]
+jk_open_socket::jk_connect.c (159): try to connect socket = 700 to
+127.0.0.1:8009
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+jk_open_socket::jk_connect.c (177): after connect ret = -1
+[Wed Jan 26 17:16:00 2005] [6040:2256] [info]
+jk_open_socket::jk_connect.c (183): connect() failed errno = 61
+[Wed Jan 26 17:16:00 2005] [6040:2256] [info]
+ajp_connect_to_endpoint::jk_ajp_common.c (862): Failed connecting to
+tomcat. Tomcat is probably not started or is listening on the wrong
+host/port (127.0.0.1:8009). Failed errno = 61
+[Wed Jan 26 17:16:00 2005] [6040:2256] [info]
+ajp_send_request::jk_ajp_common.c (1186): Error connecting to the Tomcat
+process.
+[Wed Jan 26 17:16:00 2005] [6040:2256] [info]
+ajp_service::jk_ajp_common.c (1665): Sending request to tomcat failed,
+recoverable operation attempt=2
+[Wed Jan 26 17:16:00 2005] [6040:2256] [error]
+ajp_service::jk_ajp_common.c (1673): Error connecting to tomcat. Tomcat
+is probably not started or is listening on the wrong port. worker=srv1
+failed errno = 61
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug] ajp_done::jk_ajp_common.c
+(1955): done with connection -1 for worker srv1
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug] service::jk_lb_worker.c
+(522): recoverable error... will try to recover on other host
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_most_suitable_worker::jk_lb_worker.c (372): total sessionid is
+EE9EF7748256B50E03C48A3F3735DE59.srv1.
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_most_suitable_worker::jk_lb_worker.c (383): searching worker for
+partial sessionid EE9EF7748256B50E03C48A3F3735DE59.srv1.
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (275): searching for sticky worker
+(srv1)
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (282): found candidate worker srv1
+(0) for match with sticky (srv1)
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (290): found candidate worker srv1
+(0) with previous load 100 in search with sticky (srv1)
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (300): worker candidate srv1 (0) is
+in error state - will not yet recover (0 < 60)
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (350): found no sticky (srv1) worker
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_most_suitable_worker::jk_lb_worker.c (403): found domain unknown in
+route srv1
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (275): searching for sticky domain
+worker (unknown)
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (282): found candidate worker srv1
+(0) for match with sticky domain (unknown)
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (290): found candidate worker srv1
+(0) with previous load 100 in search with sticky domain (unknown)
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (300): worker candidate srv1 (0) is
+in error state - will not yet recover (0 < 60)
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (282): found candidate worker srv2
+(1) for match with sticky domain (unknown)
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (290): found candidate worker srv2
+(1) with previous load 100 in search with sticky domain (unknown)
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (314): new maximal worker srv2 (1)
+with previous load 200 in search with sticky domain (unknown)
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+get_suitable_worker::jk_lb_worker.c (343): found worker srv2 with new
+load 100 in search with sticky domain (unknown)
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_get_endpoint::jk_ajp_common.c (2016): time elapsed since last
+request = 29 seconds
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug] service::jk_lb_worker.c
+(482): service worker=srv2 jvm_route=srv2 rc=1
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_marshal_into_msgb::jk_ajp_common.c (551): ajp marshaling done
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_service::jk_ajp_common.c (1594): processing with 3 retries
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_send_message::jk_ajp_common.c (883): sending to ajp13
+pos=4 len=611 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_send_request::jk_ajp_common.c (1199): request body to send 64587 -
+request body to resend 0
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_send_message::jk_ajp_common.c (883): sending to ajp13
+pos=4 len=8192 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_get_message::jk_ajp_common.c (1007): received from
+ajp13 pos=0 len=3 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_send_message::jk_ajp_common.c (883): sending to ajp13
+pos=4 len=8192 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_get_message::jk_ajp_common.c (1007): received from
+ajp13 pos=0 len=3 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_send_message::jk_ajp_common.c (883): sending to ajp13
+pos=4 len=8192 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_get_message::jk_ajp_common.c (1007): received from
+ajp13 pos=0 len=3 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_send_message::jk_ajp_common.c (883): sending to ajp13
+pos=4 len=8192 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_get_message::jk_ajp_common.c (1007): received from
+ajp13 pos=0 len=3 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_send_message::jk_ajp_common.c (883): sending to ajp13
+pos=4 len=8192 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_get_message::jk_ajp_common.c (1007): received from
+ajp13 pos=0 len=3 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_send_message::jk_ajp_common.c (883): sending to ajp13
+pos=4 len=8192 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_get_message::jk_ajp_common.c (1007): received from
+ajp13 pos=0 len=3 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_send_message::jk_ajp_common.c (883): sending to ajp13
+pos=4 len=8192 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_get_message::jk_ajp_common.c (1007): received from
+ajp13 pos=0 len=3 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_send_message::jk_ajp_common.c (883): sending to ajp13
+pos=4 len=7291 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_get_message::jk_ajp_common.c (1007): received from
+ajp13 pos=0 len=141 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_unmarshal_response::jk_ajp_common.c (606): status = 200
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_unmarshal_response::jk_ajp_common.c (613): Number of headers is = 2
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_unmarshal_response::jk_ajp_common.c (669): Header[0] [Set-Cookie] =
+[JSESSIONID=9FF5A5ED4466F1EE906856287DF2EF8F.srv2; Path=/stars; Secure]
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_unmarshal_response::jk_ajp_common.c (669): Header[1] [Content-Type]
+= [text/html;charset=ISO-8859-1]
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_get_message::jk_ajp_common.c (1007): received from
+ajp13 pos=0 len=25 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug] ws_write::mod_jk.c (376):
+writing 21 (21) out of 21
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_get_message::jk_ajp_common.c (1007): received from
+ajp13 pos=0 len=6585 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug] ws_write::mod_jk.c (376):
+writing 4096 (4096) out of 6581
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug] ws_write::mod_jk.c (376):
+writing 2485 (2485) out of 2485
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_get_message::jk_ajp_common.c (1007): received from
+ajp13 pos=0 len=161 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug] ws_write::mod_jk.c (376):
+writing 157 (157) out of 157
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_get_message::jk_ajp_common.c (1007): received from
+ajp13 pos=0 len=5887 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug] ws_write::mod_jk.c (376):
+writing 4096 (4096) out of 5883
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug] ws_write::mod_jk.c (376):
+writing 1787 (1787) out of 1787
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug]
+ajp_connection_tcp_get_message::jk_ajp_common.c (1007): received from
+ajp13 pos=0 len=2 max=8192
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug] ajp_done::jk_ajp_common.c
+(1942): recycling connection cache slot=0
+[Wed Jan 26 17:16:00 2005] [6040:2256] [debug] jk_handler::mod_jk.c
+(1860): Service finished with status=200 for worker=loadbalancer
+[Wed Jan 26 17:16:00 2005] [6040:4016] [debug]
+map_uri_to_worker::jk_uri_worker_map.c (700): Attempting to map URI
+'/styles/messages.css' from 1 maps
+[Wed Jan 26 17:16:00 2005] [6040:4016] [debug]
+map_uri_to_worker::jk_uri_worker_map.c (718): Attempting to map context
+URI '/stars/*'
+[Wed Jan 26 17:16:00 2005] [6040:4016] [debug]
+map_uri_to_worker::jk_uri_worker_map.c (700): Attempting to map URI
+'/styles/messages.css' from 1 maps
+[Wed Jan 26 17:16:00 2005] [6040:4016] [debug]
+map_uri_to_worker::jk_uri_worker_map.c (718): Attempting to map context
+URI '/stars/*'
+
+
+
+
+-----Original Message-----
+From: Filip Hanik - Dev [mailto:devlists@hanik.com]
+Sent: Wednesday, January 26, 2005 4:10 PM
+To: Tomcat Users List
+Subject: Re: JK, Session Replication/Clustering, SSL and failover in
+Tomcat 5
+
+
+try with a regular tcp loadbalancer like pen (http://siag.nu/) first,
+otherwise you are debugging a whole stack at once.
+
+so use pen, and your two tomcats, try failover and go from there.
+also, enable debugging for your logging, and a lot more will be spit out
+in the logs
+
+Filip
+
+----- Original Message -----
+From: "Richard Mixon (qwest)" <rnmixon@qwest.net>
+To: <tomcat-user@jakarta.apache.org>
+Sent: Wednesday, January 26, 2005 4:37 PM
+Subject: JK, Session Replication/Clustering, SSL and failover in Tomcat
+5
+
+
+I am trying to get JK 1.2.8 (within Apache 2.0.52 SSL build) to fail
+over to my remaining Tomcat 5.5.7 instance when the first instance is
+brought down (e.g. for maintenance or due to an actual failure).
+
+The application uses container managed authentication (CMA) and
+obviously sessions.
+
+I have two questions/problems. Thanks so much for any ideas/help you can
+provide.
+
+1) If I set sticky_session=True then the loadbalancer worker distributes
+requests among the two workers just fine. If I shut down one Tomcat
+instance, it redirects me to the second - but I am prompted to login
+again. This makes me think that session replication is not occurring.
+How can I check that session replication is happening (is there a log
+settings)?
+
+I thought it must be at first as I was getting the following in my
+tomcat logs:
+
+>From srv1:
+
+INFO main org.apache.coyote.http11.Http11Protocol - Initializing Coyote
+HTTP/1.1 on http-8080
+ INFO main org.apache.catalina.startup.Catalina - Initialization
+processed in 875 ms
+ INFO main org.apache.catalina.core.StandardService - Starting service
+Catalina
+ INFO main org.apache.catalina.core.StandardEngine - Starting Servlet
+Engine: Apache Tomcat/5.5.7
+ INFO main org.apache.catalina.core.StandardHost - XML validation
+disabled
+ INFO main org.apache.catalina.cluster.tcp.SimpleTcpCluster - Cluster is
+about to start
+ INFO main org.apache.catalina.cluster.mcast.McastService - Sleeping for
+2000 secs to establish cluster membership
+ INFO main org.apache.catalina.cluster.deploy.FarmWarDeployer - Cluster
+FarmWarDeployer started.
+ INFO main org.apache.coyote.http11.Http11Protocol - Starting Coyote
+HTTP/1.1 on http-8080
+ INFO main org.apache.jk.common.ChannelSocket - JK2: ajp13 listening on
+/0.0.0.0:8009
+ INFO main org.apache.jk.server.JkMain - Jk running ID=0 time=0/31
+config=null
+ INFO main org.apache.catalina.storeconfig.StoreLoader - Find registry
+server-registry.xml at classpath resource
+ INFO main org.apache.catalina.startup.Catalina - Server startup in 6016
+ms
+ INFO Cluster-MembershipReceiver
+org.apache.catalina.cluster.tcp.SimpleTcpCluster - Replication member
+added:org.apache.catalina.cluster.mcast.McastMember[tcp://192.168.1.140:
+4002,192.168.1.140,4002, alive=16]
+
+>From srv2:
+
+INFO main org.apache.coyote.http11.Http11Protocol - Initializing Coyote
+HTTP/1.1 on http-9080
+ INFO main org.apache.catalina.startup.Catalina - Initialization
+processed in 1250 ms
+ INFO main org.apache.catalina.core.StandardService - Starting service
+Catalina
+ INFO main org.apache.catalina.core.StandardEngine - Starting Servlet
+Engine: Apache Tomcat/5.5.7
+ INFO main org.apache.catalina.core.StandardHost - XML validation
+disabled
+ INFO main org.apache.catalina.cluster.tcp.SimpleTcpCluster - Cluster is
+about to start
+ INFO main org.apache.catalina.cluster.mcast.McastService - Sleeping for
+2000 secs to establish cluster membership
+ INFO Cluster-MembershipReceiver
+org.apache.catalina.cluster.tcp.SimpleTcpCluster - Replication member
+added:org.apache.catalina.cluster.mcast.McastMember[tcp://192.168.1.140:
+4001,192.168.1.140,4001, alive=5578]
+ INFO main org.apache.catalina.cluster.deploy.FarmWarDeployer - Cluster
+FarmWarDeployer started.
+ INFO main org.apache.coyote.http11.Http11Protocol - Starting Coyote
+HTTP/1.1 on http-9080
+ INFO main org.apache.jk.common.ChannelSocket - JK2: ajp13 listening on
+/0.0.0.0:9009
+ INFO main org.apache.jk.server.JkMain - Jk running ID=0 time=0/31
+config=null
+ INFO main org.apache.catalina.storeconfig.StoreLoader - Find registry
+server-registry.xml at classpath resource
+ INFO main org.apache.catalina.startup.Catalina - Server startup in 6313
+ms
+
+
+2) If I set sticky_session=False I am unable to login, failing with an
+HTTP Status 408. Here's the sequence:
+  a) Issue a request to a protected resource that will trigger
+form-based authentication (CMA). JK worker loadbalancer sends this
+request to the first worker, "srv1".
+  b) After I fill in the authentication/login form I press submit. Now
+JK worker loadbalancer send this request to worker "srv2" and I end up
+with this error respons: HTTP Status 408 - The time allowed for the
+login process has been exceeded...
+
+Here are my configuration files (or pieces):
+
+FILE: piece form httpd.conf
+<IfModule mod_jk.c>
+
+    JkWorkersFile conf/workers.properties
+
+    JkLogStampFormat "[%a %b %d %H:%M:%S %Y] "
+    JkLogFile logs/mod_jk.log
+
+    # Log level to be used by mod_jk: debug, info, warn error or trace
+    JkLogLevel debug
+
+    JkOptions +ForwardKeySize +ForwardURICompat -ForwardDirectories
+    JkExtractSSL on
+    JkHTTPSIndicator HTTPS
+    JkSESSIONIndicator SSL_SESSION_ID
+    JkCIPHERIndicator SSL_CIPHER
+    JkCERTSIndicator SSL_CLIENT_CERT
+
+</IfModule>
+
+FILE: workers.properties
+# workers.properties -
+#
+workers.tomcat_home=c:/jakarta-tomcat-5.5.7
+workers.java_home=C:/jdk1.5.0_01
+ps=/
+
+#
+# Define one worker for each tomcat instance, plus one
+# to handle the load balancing.
+#
+worker.list=loadbalancer
+
+worker.srv1.port=8009
+worker.srv1.host=localhost
+worker.srv1.type=ajp13
+worker.srv1.lbfactor=100
+worker.srv1.sticky_session=False
+worker.srv1.local_worker=0
+
+worker.srv2.port=9009
+worker.srv2.host=localhost
+worker.srv2.type=ajp13
+worker.srv2.lbfactor=100
+worker.srv2.sticky_session=False
+worker.srv2.local_worker=0
+
+worker.loadbalancer.type=lb
+worker.loadbalancer.sticky_session=False
+worker.loadbalancer.balanced_workers=srv1,srv2
+worker.loadbalancer.local_worker_only=1
+
+FILE: piece from server.xml on "srv1"
+(note: I do not want automated deployment so I watchEnabled="false", I
+do not want farm deployment to occur)
+
+        <Cluster
+className="org.apache.catalina.cluster.tcp.SimpleTcpCluster"
+                 managerClassName="org.apache.catalina.cluster.session.D
+eltaManager"
+                 expireSessionsOnShutdown="true"
+                 useDirtyFlag="true"
+                 notifyListenersOnReplication="true">
+
+            <Membership
+                className="org.apache.catalina.cluster.mcast.McastServic
+e"
+                mcastAddr="228.0.0.4"
+                mcastPort="45564"
+                mcastFrequency="500"
+                mcastDropTime="3000"/>
+
+            <Receiver
+                className="org.apache.catalina.cluster.tcp.ReplicationLi
+stener"
+                tcpListenAddress="auto"
+                tcpListenPort="4001"
+                tcpSelectorTimeout="100"
+                tcpThreadCount="6"/>
+
+            <Sender
+                className="org.apache.catalina.cluster.tcp.ReplicationTr
+ansmitter"
+                replicationMode="pooled"
+                ackTimeout="15000"/>
+
+            <Valve
+className="org.apache.catalina.cluster.tcp.ReplicationValve"
+                   filter=".*\.gif;.*\.js;.*\.jpg;.*\.png;.*\.htm;.*\.ht
+ml;.*\.css;.*\.txt;"/>
+
+            <Deployer
+className="org.apache.catalina.cluster.deploy.FarmWarDeployer"
+                      tempDir="c:/jakarta-tomcat-5.5.7/temp"
+                      deployDir="c:/jakarta-tomcat-5.5.7/webapps"
+                      watchDir="c:/jakarta-tomcat-5.5.7-deployer/build/w
+ebapp"
+                      watchEnabled="false"/>
+        </Cluster>
+
+FILE: piece from server.xml on "srv2"
+        <Cluster
+className="org.apache.catalina.cluster.tcp.SimpleTcpCluster"
+                 managerClassName="org.apache.catalina.cluster.session.D
+eltaManager"
+                 expireSessionsOnShutdown="true"
+                 useDirtyFlag="true"
+                 notifyListenersOnReplication="true">
+
+            <Membership
+                className="org.apache.catalina.cluster.mcast.McastServic
+e"
+                mcastAddr="228.0.0.4"
+                mcastPort="45564"
+                mcastFrequency="500"
+                mcastDropTime="3000"/>
+
+            <Receiver
+                className="org.apache.catalina.cluster.tcp.ReplicationLi
+stener"
+                tcpListenAddress="auto"
+                tcpListenPort="4002"
+                tcpSelectorTimeout="100"
+                tcpThreadCount="6"/>
+
+            <Sender
+                className="org.apache.catalina.cluster.tcp.ReplicationTr
+ansmitter"
+                replicationMode="pooled"
+                ackTimeout="15000"/>
+
+            <Valve
+className="org.apache.catalina.cluster.tcp.ReplicationValve"
+                   filter=".*\.gif;.*\.js;.*\.jpg;.*\.png;.*\.htm;.*\.ht
+ml;.*\.css;.*\.txt;"/>
+
+            <Deployer
+className="org.apache.catalina.cluster.deploy.FarmWarDeployer"
+                      tempDir="c:/jakarta-tomcat-5.5.7b/temp"
+                      deployDir="c:/jakarta-tomcat-5.5.7b/webapps"
+                      watchDir="c:/jakarta-tomcat-5.5.7-deployer/build/w
+ebapp"
+                      watchEnabled="false"/>
+        </Cluster>
+
+Thanks again - Richard
+
+
+---------------------------------------------------------------------
+To unsubscribe, e-mail: tomcat-user-unsubscribe@jakarta.apache.org
+For additional commands, e-mail: tomcat-user-help@jakarta.apache.org
+
+---------------------------------------------------------------------
+To unsubscribe, e-mail: tomcat-user-unsubscribe@jakarta.apache.org
+For additional commands, e-mail: tomcat-user-help@jakarta.apache.org
+
+
+
+
+---------------------------------------------------------------------
+To unsubscribe, e-mail: tomcat-user-unsubscribe@jakarta.apache.org
+For additional commands, e-mail: tomcat-user-help@jakarta.apache.org
+
+---------------------------------------------------------------------
+To unsubscribe, e-mail: tomcat-user-unsubscribe@jakarta.apache.org
+For additional commands, e-mail: tomcat-user-help@jakarta.apache.org
+
+
+
+
+---------------------------------------------------------------------
+To unsubscribe, e-mail: tomcat-user-unsubscribe@jakarta.apache.org
+For additional commands, e-mail: tomcat-user-help@jakarta.apache.org

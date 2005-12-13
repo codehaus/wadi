@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<document>
+  <properties>
+    <title>Getting Started: Evacuation</title>
+  </properties>
+  <body>
+    <section name="Evacuation">
+      "Run for your lives!"
+      <p>
+	The most common reason for a node to leave a cluster is
+	shutdown for scheduled for maintenance. With the increasing
+	frequency of software updates, this is becoming more and more
+	common and with the increasing number of nodes in your
+	cluster, more and more complex and error prone.
+      </p>
+      <p>
+	Every time a node leaves a cluster, the sessions that it is
+	carrying will become unavailable, unless they can be evacuated
+	to surviving nodes, as it leaves.
+      </p>
+      Let's take a look at WADI doing this.
+      <p>
+	We start a <font color="red">red</font> and <font color="green">green</font> node.
+      </p>
+      <p>
+	When everything has settled down, create a session on <font color="red">red</font> with e.g. :<a href="http://localhost:8080/wadi/session.jsp">http://localhost:8080/wadi/session.jsp</a>.
+      </p>
+      <p>
+	Shutdown <font color="red">red</font> gently (i.e. ctl-c).
+      </p>
+      <p>
+	<font color="red">red</font> will say something like this :
+      </p>
+      <p>
+	<code>
+	  2005/12/07 21:24:55:568 GMT [DEBUG] Utils - -motion: 9B8858BA311C365632247E66387415BA : memory -> cluster (65 millis)
+	</code>
+      </p>
+      <p>
+	<font color="green">green</font> should say e.g. :
+      </p>
+      <p>
+	<code>
+	  Utils - -motion: 9B8858BA311C365632247E66387415BA : cluster -> memory (20 millis)
+	</code>
+      </p>
+      <p>
+	and the Partition Master (in this case <font color="green">green</font>, because it is the only surviving node):
+      </p>
+      <p>
+	<code>
+	  LocalPartition#67@green - -relocation {9B8858BA311C365632247E66387415BA : red -> green}
+	</code>
+      </p>
+      <p>
+	Note that Partitions are evacuated first and then Sessions
+	are evacuated to their respective Partitions. This ensures
+	that the sessions are left in the most efficient place that
+	they can be and are scattered evenly around the surviving
+	nodes.
+      </p>
+      <p>
+	In this way, WADI maintains the availability of sessions beyond the lifetime of their container.
+      </p>
+    </section>
+      <p>
+      Try creating more than one session on a node in a larger cluster
+      and then shutting it down - you may need to restart your
+      browser, use more than one browser, or a tool like Jakarta
+      JMeter. You should see sessions evacuating from this node to
+      different nodes all across the cluster.
+      </p>
+  </body>
+</document>
