@@ -4,7 +4,7 @@
     <title>Welcome to WADI</title>
   </properties>
   <body>
-    <section name="WADI - Web Application Distribution Infrastructure">
+    <section name="WADI - WADI Application Distribution Infrastructure">
       <div id="downloadbox">
 	<h5>Get WADI</h5>
 	<p>
@@ -48,7 +48,7 @@
 
       <p/>
 
-      WADI is an acronym of 'Web Application Distribution Infrastructure'.
+      WADI is an acronym of 'WADI Application Distribution Infrastructure'.
 
       <p>
 
