@@ -6,25 +6,50 @@
   <body>
     <section name="Getting Started with WADI">
       <p>
-	To familiarise yourself with WADI, you will need to follow the following steps:
+	To familiarise yourself with WADI, we provide a number of
+	simple demonstrations that you may walk through.
       </p>
       <p>
-	If you are impatient, forget about running the s/w and go
-	straight to the demos. You should be able to glean quite a lot
-	from just reading through them.
+	If you are pressed for time, forget about the installation
+	step and running the s/w. Just go straight to the demos. You
+	should be able to glean quite a lot from just reading through
+	them.
       </p>
       <p>
-	NOTE - say something about this release being a 'technology
-	preview' and how to treat it gently...
+	WADI-2.0M1 is a technology preview release. We are not yet
+	production ready. In order to get best results from the
+	software, certain temporary guidelines are suggested.
+	<ul>
+	  <li>
+	    leave a reasonable pause (e.g. 5 seconds) between starting
+	    and stopping nodes.
+	  </li>
+	  <li>
+	    do not 'kill -9' a node.
+	  </li>
+	</ul>
+	These guidelines are to help to you avoid stumbling on issues
+	in the current release of which we are aware. They will be
+	relaxed as soon as these issues are resolved.
       </p>
       <p>
-	NOTE - say something about setting up the browser - cookies
-	required (Konqueror may not work - and why)
+	The demonstration web application relies on the tying of the
+	web session to the browser via a cookie. Please ensure that
+	you have cookies enabled in your browser.
+      </p>
+      <p>
+	NOTE: Some browsers (Konqueror), include the server port in a
+	cookie's domain. This makes them unsuitable for this
+	demonstration, since you will be making requests through more
+	than one port on the same host, whilst requiring that the same
+	cookie is used for all requests. This issue does not affect
+	the load-balancing demonstration, since all requests are made
+	through a single port - the one on which the load-balancer is
+	listening.
       </p>
       <p>
 	<ol>
 	  <li><a href="./install.html">installation guide</a> (REHASH)</li>
-	  <li><a href="./start.html">start</a> the required services (REHASH)</li>
 	  <li>
 	    walk through some demos:
 	    <ul>

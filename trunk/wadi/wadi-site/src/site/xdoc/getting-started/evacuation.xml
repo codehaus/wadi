@@ -8,15 +8,15 @@
       "Run for your lives!"
       <p>
 	The most common reason for a node to leave a cluster is
-	shutdown for scheduled for maintenance. With the increasing
+	shutdown for scheduled maintenance. With the increasing
 	frequency of software updates, this is becoming more and more
-	common and with the increasing number of nodes in your
-	cluster, more and more complex and error prone.
+	common and with the gorwing number of nodes in your cluster,
+	more and more complex and error prone.
       </p>
       <p>
 	Every time a node leaves a cluster, the sessions that it is
 	carrying will become unavailable, unless they can be evacuated
-	to surviving nodes, as it leaves.
+	to surviving nodes.
       </p>
       Let's take a look at WADI doing this.
       <p>

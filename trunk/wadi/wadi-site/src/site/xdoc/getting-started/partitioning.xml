@@ -9,11 +9,9 @@
       <p>
 	Partitioning is a strategy commonly used to aid in
 	scalability. You divide a large problem into smaller pieces
-	that are independant of each other. Because they are
-	demonstrably independant of each other, these problems may be
-	e.g. solved concurrently with no contention on any shared
-	resource and therefore no requirement to be running in the
-	same JVM.
+	that are demonstrably independant of each other. Because they
+	are independant of each other, these problems may be solved
+	concurrently with no contention on any shared resource.
       </p>
       <p>
 	Many existing clustering solutions require that a cluster is
@@ -30,7 +28,7 @@
       </p>
       We can watch this happening in a very simple WADI demo.
       <p>
-	We start a <font color="red">red</font> node. As it comes on line WADI outputs e.g. the following:
+	We start a <font color="red">red</font> node. As it comes online WADI outputs e.g. the following:
       </p>
       <p>
 	<code>
