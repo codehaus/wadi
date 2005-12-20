@@ -143,11 +143,6 @@
 	moved to the <font color="green">green</font> node.
       </p>
       <p>
-	NOTE - some browsers partition cookies by host and some by
-	host:port - Konqueror seems to do the latter - breaking this
-	demo... - what about Internet Explorer ?
-      </p>
-      <p>
 	Just to be sure, refresh the page a couple of times.
       </p>
       <p>

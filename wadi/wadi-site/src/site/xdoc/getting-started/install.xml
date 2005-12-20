@@ -6,34 +6,75 @@
   <body>
     <section name="Getting Started: Installation">
       <p>
-	You can put together a heterogeneous cluster of <a href="./tomcat.html">Tomcat</a>, <a href="./jetty.html">Jetty</a>,<a href="./geronimo.html">Geronimo</a> and <a href="./jboss.html">JBoss</a> instances.
+	To install WADI:
+	<ul>
+	  <li>
+	    Either:
+	    <ol>
+	      <li>download a copy of WADI 2.0M1</li>
+	      <li>unpack it somewhere</li>
+	      <li>set WADI_HOME to this dir and export it</li>
+	    </ol>
+	  </li>
+	  <li>
+	    Or:
+	    <ol>
+	      <li>check out the latest WADI src from CVS</li>
+	      <li>Build it</li>
+	      <li>set WADI_HOME to the top of this tree and export it</li>
+	    </ol>
+	  </li>
+	</ul>
+      </p>
+
+      <p>
+	WADI nodes use a machine generated unique id to distinguish
+	each other. For the purposes of logging and monitoring, WADI
+	expects each node to also be given a more user-friendly id
+	(ideally unique). This second id - the node's name - is used
+	to label its configuration. The WADI demonstration uses
+	colours (<font color="red">red</font>, <font
+	color="green">green</font>, <font color="blue">blue</font>,
+	...) as node names. Configurations corresponding to these
+	names may be found in $WADI_HOME/conf.
       </p>
       <p>
-	If you are using a clustered configuration
-	<ol>
-	  <li>Download a copy of <a href="http://dist.codehaus.org/activemq/distributions">activemq-3.2.1</a> - unpack it somewhere</li>
-	  <li>Set ACTIVEMQ_HOME to this dir and export it</li>
-	  <li>Then
-	    <ul>
-	      <li>
-		Either:
-		<ol>
-		  <li>download a copy of WADI 2.0-SNAPSHOT - unpack it somewhere</li>
-		  <li>set WADI_HOME to this dir and export it</li>
-		</ol>
-	      </li>
-	      <li>
-		Or:
-		<ol>
-		  <li>check out the latest WADI src from CVS</li>
-		  <li>Build it</li>
-		  <li>set WADI_HOME to the top of this tree and export it</li>
-		</ol>
-	      </li>
-	    </ul>
-	  </li>
-	</ol>
+	WADI integrates with a number of different web containers. To
+	walk through the 'Getting Started' documentation, you will
+	need at least one of the following installed and available to
+	WADI. Choosing more than one container will allow you to test
+	WADI's ability to cluster a mixed set of containers.
+
+	<ul>
+	  <li>Installing <a href="./tomcat.html">Tomcat 5.0.x, 5.5.x</a></li>
+	  <li>Installing <a href="./jetty.html">Jetty 5, 6</a></li>
+	  <li>Installing <a href="./geronimo.html">Geronimo-1.0</a></li>
+	  <li>Installing <a href="./jboss.html">JBoss-4.x</a></li>
+	</ul>
       </p>
+
+      <p>
+	WADI nodes speak to each other via asynchronous messages over
+	ActiveMQ. ActiveMQ may be configured with a variety of
+	protocol stacks. Ultimately, WADI will use ActiveMQ's peer://
+	protocol. This allows peers in a cluster to message each other
+	directly. Currently, due to a couple of issues in the peer://
+	stack, the demonstration needs to be run on the tcp://
+	stack. This necessitates the running of a standalone message
+	broker to which all nodes connect and via which all messages
+	are exchanged. This is an obvious single point of failure and
+	will be removed as soon as the issues with peer:// have been
+	resolved. We are working on this as a priority.
+
+	<ul>
+	  <li>Download a copy of <a href="http://dist.codehaus.org/activemq/distributions">activemq-3.2.1</a></li>
+	  <li>Unpack it somewhere</li>
+	  <li>Set ACTIVEMQ_HOME to this dir and export it</li>
+	  <li>To start up the ActiveMQ broker: cd $ACTIVEMQ_HOME/bin; sh activemq.sh</li>
+	  <li>To shut down the ActiveMQ broker: Ctl-c it</li>
+	</ul>
+      </p>
+
     </section>
   </body>
 </document>
