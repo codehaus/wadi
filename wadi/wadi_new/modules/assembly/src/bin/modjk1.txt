@@ -1,3 +1,0 @@
-
-Mod_Jk[1] is an Apache httpd module. See ../conf/workers.properties.
-
