@@ -174,6 +174,10 @@ case "$container" in
 	    echo "Please set GERONIMO_JETTY_HOME"
 	    exit 1
 	fi
+
+	# deploy webapp
+	cp -f $WADI_HOME/webapps/wadi-webapp-*.war $GERONIMO_JETTY_HOME/deploy
+
 	cd $GERONIMO_JETTY_HOME/bin
 	export JAVA_OPTS=$properties
 	$XTERM ./geronimo.sh run
