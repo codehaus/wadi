@@ -179,6 +179,37 @@ case "$container" in
 	$XTERM ./geronimo.sh run
 	;;
 
+	jboss4-tomcat)
+	if [ -z "JBOSS4_TOMCAT_HOME" ]
+	then
+	    echo "Please set JBOSS4_TOMCAT_HOME"
+	    exit 1
+	fi
+
+	pushd $WADI_HOME/lib
+	# install log integration
+	cp -f wadi-jboss4-*.jar $JBOSS4_TOMCAT_HOME/server/default/lib
+	# deploy dep libs
+	dir=/tmp/wadi-tmp-$$
+	mkdir $dir
+	cp *.jar $dir
+	rm $dir/wadi-jboss4-*.jar
+	mkdir $dir/META-INF
+	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <!DOCTYPE server> <server> </server>" > $dir/META-INF/jboss-service.xml
+	cd $dir
+	jar cvf $JBOSS4_TOMCAT_HOME/server/default/deploy/wadi.sar .
+	popd
+
+	# deploy webapp
+	cp -f $WADI_HOME/webapps/wadi-webapp-*.war $JBOSS4_TOMCAT_HOME/server/default/deploy/wadi.war
+
+	## we need to enable wadi logging somehow... - TODO
+
+	cd $JBOSS4_TOMCAT_HOME/bin
+	export JAVA_OPTS=$properties
+	$XTERM ./run.sh
+	;;
+
 	*)
 	echo "bad container name: $container"
 	;;
