@@ -169,7 +169,6 @@ case "$container" in
 	;;
 
 	geronimo-jetty)
-	export GERONIMO_JETTY_HOME=/home/jules/cvs/geronimo-1.0.0
 	if [ -z "GERONIMO_JETTY_HOME" ]
 	then
 	    echo "Please set GERONIMO_JETTY_HOME"
