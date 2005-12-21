@@ -10,7 +10,7 @@
 	The most common reason for a node to leave a cluster is
 	shutdown for scheduled maintenance. With the increasing
 	frequency of software updates, this is becoming more and more
-	common and with the gorwing number of nodes in your cluster,
+	common and with the growing number of nodes in your cluster,
 	more and more complex and error prone.
       </p>
       <p>
