@@ -168,6 +168,17 @@ case "$container" in
 	$XTERM $JAVA $properties -cp $classpath $JAVA_OPTS $JPDA_OPTS org.apache.catalina.startup.Bootstrap -config $WADI_HOME/conf/tomcat55.xml start
 	;;
 
+	geronimo-jetty)
+	export GERONIMO_JETTY_HOME=/home/jules/cvs/geronimo-1.0.0
+	if [ -z "GERONIMO_JETTY_HOME" ]
+	then
+	    echo "Please set GERONIMO_JETTY_HOME"
+	    exit 1
+	fi
+	cd $GERONIMO_JETTY_HOME/assemblies/j2ee-jetty-server/target/geronimo-*/bin
+	export JAVA_OPTS=$properties
+	$XTERM ./geronimo.sh run
+	;;
 
 	*)
 	echo "bad container name: $container"
