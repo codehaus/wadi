@@ -178,6 +178,13 @@ case "$container" in
 	# deploy webapp
 	cp -f $WADI_HOME/webapps/wadi-webapp-*.war $GERONIMO_JETTY_HOME/deploy
 
+	## add logging config
+	file=$GERONIMO_JETTY_HOME/var/log/server-log4j.properties
+	grep -vi wadi $file > $file.wadi
+	echo "## WADI Logging config" >> $file.wadi
+	echo "log4j.category.org.codehaus.wadi.Logger=DEBUG" >> $file.wadi
+	mv $file.wadi $file
+
 	cd $GERONIMO_JETTY_HOME/bin
 	export JAVA_OPTS=$properties
 	$XTERM ./geronimo.sh run
@@ -207,6 +214,7 @@ case "$container" in
 	cd $dir
 	jar cvf $JBOSS4_TOMCAT_HOME/server/default/deploy/wadi.sar .
 	popd
+	rm -fr $dir
 
 	# deploy webapp
 	cp -f $WADI_HOME/webapps/wadi-webapp-*.war $JBOSS4_TOMCAT_HOME/server/default/deploy/wadi.war
