@@ -1,35 +1,60 @@
 <?xml version="1.0"?>
 <document>
-    <properties>
-        <title>Setting up JMX Monitoring - MC4J</title>
-    </properties>
-    <body>
-        <section name="Setting up JMX Monitoring - MC4J">            
-            <p>
-                 <ol>
-                     <li>cd $WADI_HOME/bin</li>
-                     <li>./node.sh $container <font color="red">red</font></li>
-                     <li>download, install and start <a href="http://mc4j.org/confluence/display/MC4J/Home?">mc4j-1.2beta9+</a></li>
-                     <li>Management->Create Server Connection...</li>
-                     <li>select a 'Server Connection Type' of 'JSR160'</li>
-                     <li>choose a name e.g. "WADI (<font color="red">red</font>)"</li>
-                     <li>replace the default 'Server URL' with a url for <font color="red">red</font> - service:jmx:rmi://localhost/jndi/rmi://localhost:1099/wadi (output as node starts)</li>
-                     <li>Next</li>
-                     <li>Finish</li>
-                 </ol>
-                
-                You should see a popup appear telling you that a number of MBeans are being loaded, and an e.g. "WADI (<font color="red">red</font>)" node appearing in the MC4J Connections panel.
-                
-                <ol>
-                    <li>WADI (<font color="red">red</font>) -> MBeans -> WADI(n) -> name=MemoryContextualiser -> Attributes -> LocalSessionCount</li>
-                    <li>right click over LocalSessionCount attribute and select "Graph..."</li>
-                    <li>restart your browser (or throw out cookie from last test) and point it at <font color="red">red</font> - <a href="http://localhost:8080/wadi/create.jsp">http://localhost:8080/wadi/create.jsp</a></li>
-                </ol>                
-                
-                You should see the graph increase by one on the y-axis.
-                
-                Congratulations - you are now graphing the number of active sessions on your <font color="red">red</font> node.
-            </p>
-        </section>
-    </body>
+  <properties>
+    <title>Setting up JMX Monitoring - MC4J</title>
+  </properties>
+  <body>
+    <section name="Setting up JMX Monitoring - MC4J">
+      <p>
+	<ol>
+	  <li>cd $WADI_HOME/bin</li>
+	  <li>./node.sh $container <font color="red">red</font></li>
+	  <li>download, install and start <a href="http://mc4j.org/confluence/display/MC4J/Home?">mc4j-1.2beta9+</a></li>
+	  <li>Management->Create Server Connection...</li>
+	  <li>select a 'Server Connection Type' of 'JSR160'</li>
+	  <li>choose a name e.g. "WADI (<font color="red">red</font>)"</li>
+	  <li>replace the default 'Server URL' with a url for <font color="red">red</font> - service:jmx:rmi://localhost/jndi/rmi://localhost:1099/wadi (output as node starts)</li>
+	  <li>Next</li>
+	  <li>Finish</li>
+	</ol>
+
+	<p>
+	  You should see a popup appear telling you that a number of
+	  MBeans are being loaded, and an e.g. "WADI (<font
+	  color="red">red</font>)" node appearing in the MC4J
+	  Connections panel.
+	</p>
+
+	<p>
+	  <img src="../images/mc4j.0.jpg"/>
+	</p>
+
+	<ol>
+	  <li>
+	    <p>
+	    WADI (<font color="red">red</font>) -> MBeans -> WADI(n) -> name=MemoryContextualiser -> Attributes -> LocalSessionCount
+	    </p>
+	    <p>
+	      <img src="../images/mc4j.1.jpg"/>
+	    </p>
+	  </li>
+	  <li>
+	    right click over LocalSessionCount attribute and select "Graph..."
+	  </li>
+	  <li>
+	    <p>
+	    restart your browser (or throw out cookie from last test) and point it at <font color="red">red</font> - <a href="http://localhost:8080/wadi/index.jsp">http://localhost:8080/wadi/index.jsp</a>
+	    </p>
+	    <p>
+	      <img src="../images/mc4j.2.jpg"/>
+	    </p>
+	  </li>
+	</ol>
+
+	You should see the graph increase by one on the y-axis.
+
+	Congratulations - you are now graphing the number of active sessions on your <font color="red">red</font> node.
+      </p>
+    </section>
+  </body>
 </document>
