@@ -190,6 +190,10 @@ case "$container" in
 	    exit 1
 	fi
 
+	properties="\
+	$properties\
+	-Dorg.apache.commons.logging.Log=org.codehaus.wadi.jboss4.JBossLog\
+	"
 	pushd $WADI_HOME/lib
 	# install log integration
 	cp -f wadi-jboss4-*.jar $JBOSS4_TOMCAT_HOME/server/default/lib
