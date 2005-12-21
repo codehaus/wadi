@@ -174,7 +174,7 @@ case "$container" in
 	    echo "Please set GERONIMO_JETTY_HOME"
 	    exit 1
 	fi
-	cd $GERONIMO_JETTY_HOME/assemblies/j2ee-jetty-server/target/geronimo-*/bin
+	cd $GERONIMO_JETTY_HOME/bin
 	export JAVA_OPTS=$properties
 	$XTERM ./geronimo.sh run
 	;;
