@@ -23,10 +23,14 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.gridstate.PartitionMapper;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class FixedWidthSessionIdFactory implements SessionIdFactory, PartitionMapper {
 
     protected final Log _log=LogFactory.getLog(getClass().getName());
-    
+
 	public String create() {
 		int width=_keyLength;
 		char[] buffer=new char[width];

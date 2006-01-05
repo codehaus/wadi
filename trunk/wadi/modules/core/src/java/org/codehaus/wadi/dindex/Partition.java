@@ -25,6 +25,10 @@ import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface Partition extends PMPartition, SMPartition {
 
 	void onMessage(ObjectMessage message, InsertIMToPM request);

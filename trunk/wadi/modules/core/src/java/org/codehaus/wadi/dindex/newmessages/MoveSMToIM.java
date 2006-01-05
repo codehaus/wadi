@@ -18,6 +18,10 @@ package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class MoveSMToIM implements Serializable {
 
 	protected Object _key; // do we really need the key - TODO
@@ -39,7 +43,7 @@ public class MoveSMToIM implements Serializable {
 	public Object getValue() {
 		return _value;
 	}
-	
+
 	public String toString() {
 		byte[] bytes=(byte[])_value;
 		int l=(bytes==null?0:bytes.length);

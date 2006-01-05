@@ -32,6 +32,10 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Store;
 import org.codehaus.wadi.StoreMotable;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DatabaseStore implements Store, DatabaseMotableConfig {
 
 	protected final Log _log=LogFactory.getLog(getClass());

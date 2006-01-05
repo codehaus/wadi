@@ -36,6 +36,7 @@ import org.codehaus.wadi.sandbox.cluster.TopologyStrategy;
 // originally based on James' ClusterDemo from activecluster...
 
 /**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public class

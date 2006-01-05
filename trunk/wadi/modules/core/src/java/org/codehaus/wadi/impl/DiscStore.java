@@ -27,6 +27,10 @@ import org.codehaus.wadi.Store;
 import org.codehaus.wadi.StoreMotable;
 import org.codehaus.wadi.Streamer;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DiscStore implements Store, DiscMotableConfig {
 
     protected final Log _log=LogFactory.getLog(getClass());

@@ -70,9 +70,6 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
 
 	/**
 	 * An Immoter that deals in terms of StoreMotables
-	 *
-	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
-	 * @version $Revision$
 	 */
 	public class ExclusiveStoreImmoter extends AbstractMappedImmoter {
 

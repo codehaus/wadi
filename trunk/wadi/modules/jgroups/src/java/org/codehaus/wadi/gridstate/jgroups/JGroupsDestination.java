@@ -22,10 +22,14 @@ import javax.jms.Destination;
 
 import org.jgroups.Address;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class JGroupsDestination implements Destination, Serializable {
 
 	protected final Address _address;
-	
+
 	public JGroupsDestination(Address address) {
 		_address=address;
 	}
@@ -33,8 +37,8 @@ public class JGroupsDestination implements Destination, Serializable {
 	public Address getAddress() {
 		return _address;
 	}
-	
+
 	// TODO - custom Serialisation - consider ensuring Object Identity between different incoming instances of this class
 	// it would save [de]allocation but impact concurrency....
-	
+
 }

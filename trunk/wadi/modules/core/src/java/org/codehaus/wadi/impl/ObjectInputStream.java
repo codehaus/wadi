@@ -26,6 +26,10 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class ObjectInputStream extends java.io.ObjectInputStream {
 
 	protected final ClassLoader _classLoader;

@@ -18,10 +18,14 @@ package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.gridstate.PartitionMapper;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class SimplePartitionMapper implements PartitionMapper {
 
 	protected final int _numPartitions;
-	
+
 	public SimplePartitionMapper(int numPartitions) {
 		super();
 		_numPartitions=numPartitions;

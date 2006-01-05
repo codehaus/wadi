@@ -26,6 +26,10 @@ import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MovePMToSM;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DummyPartition extends AbstractPartition {
 
     public DummyPartition(int key) {
@@ -52,32 +56,32 @@ public class DummyPartition extends AbstractPartition {
 
 	public void onMessage(ObjectMessage message, InsertIMToPM request) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void onMessage(ObjectMessage message, DeleteIMToPM request) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void onMessage(ObjectMessage message, DIndexForwardRequest request) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void onMessage(ObjectMessage message, MoveIMToPM request) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void onMessage(ObjectMessage message, MovePMToSM request) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception {

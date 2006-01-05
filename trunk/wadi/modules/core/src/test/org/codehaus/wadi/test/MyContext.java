@@ -24,6 +24,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.AbstractContext;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class MyContext extends AbstractContext {
 	protected static Log _log = LogFactory.getLog(MyContext.class);
 

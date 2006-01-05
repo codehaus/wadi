@@ -36,6 +36,10 @@ import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class PartitionFacade extends AbstractPartition {
 
 
@@ -99,7 +103,7 @@ public class PartitionFacade extends AbstractPartition {
     			_timeStamp=timeStamp;
     			_content=content;
     		}
-    		
+
     	} catch (InterruptedException e) {
     		_log.warn("unexpected problem", e);
     	} finally {
@@ -134,7 +138,7 @@ public class PartitionFacade extends AbstractPartition {
     public ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception {
     	return _content.exchange(request, timeout);
     }
-    
+
     public void onMessage(ObjectMessage message, InsertIMToPM request) {
     	if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
     	Sync sync=_lock.readLock(); // SHARED
@@ -148,9 +152,9 @@ public class PartitionFacade extends AbstractPartition {
     	} finally {
     		if (acquired)
     			sync.release();
-    	}		
+    	}
     }
-    
+
     public void onMessage(ObjectMessage message, DeleteIMToPM request) {
     	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
@@ -163,9 +167,9 @@ public class PartitionFacade extends AbstractPartition {
     	} finally {
     		if (acquired)
     			sync.release();
-    	}		
+    	}
     }
-    
+
     public void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
     	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
@@ -178,9 +182,9 @@ public class PartitionFacade extends AbstractPartition {
     	} finally {
     		if (acquired)
     			sync.release();
-    	}		
+    	}
     }
-    
+
     // should superceded above method
     public void onMessage(ObjectMessage message, MoveIMToPM request) {
     	Sync sync=_lock.readLock(); // SHARED
@@ -194,9 +198,9 @@ public class PartitionFacade extends AbstractPartition {
     	} finally {
     		if (acquired)
     			sync.release();
-    	}		
+    	}
     }
-    
+
     public void onMessage(ObjectMessage message, DIndexForwardRequest request) {
     	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
@@ -209,7 +213,7 @@ public class PartitionFacade extends AbstractPartition {
     	} finally {
     		if (acquired)
     			sync.release();
-    	}		
+    	}
     }
 
 }

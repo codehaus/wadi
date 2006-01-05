@@ -36,6 +36,10 @@ import org.activecluster.impl.StateServiceStub;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class CustomClusterFactory extends DefaultClusterFactory {
 
   protected static final Log log=LogFactory.getLog(CustomClusterFactory.class);

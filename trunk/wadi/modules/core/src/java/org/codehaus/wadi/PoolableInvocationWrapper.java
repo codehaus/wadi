@@ -16,9 +16,13 @@
  */
 package org.codehaus.wadi;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface PoolableInvocationWrapper {
 
     void init(InvocationContext invocationContext, Context context);
     void destroy();
-    
+
 }

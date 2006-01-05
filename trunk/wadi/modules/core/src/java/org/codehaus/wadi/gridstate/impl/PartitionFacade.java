@@ -25,6 +25,10 @@ import org.codehaus.wadi.gridstate.Partition;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class PartitionFacade implements Partition {
 
 	protected final Partition _partition;
@@ -54,11 +58,11 @@ public class PartitionFacade implements Partition {
 	}
 
 	// PMPartition API
-	
+
 	public boolean isLocal() {
 		return _partition.isLocal();
 	}
-	
+
 	public int getKey() {
 		throw new UnsupportedOperationException("NYI");
 	}

@@ -19,9 +19,13 @@ package org.codehaus.wadi.test;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class MyDummyHttpServletRequestWrapperPool implements PoolableInvocationWrapperPool {
-	
+
 	public PoolableInvocationWrapper take(){return new MyPoolableHttpServletRequestWrapper();}
 	public void put(PoolableInvocationWrapper wrapper){/* empty */}
-	
+
 }

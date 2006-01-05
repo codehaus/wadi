@@ -21,12 +21,16 @@ import java.util.Map;
 import org.codehaus.wadi.gridstate.impl.PartitionFacade;
 
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface StateManagerConfig {
 
 	public Map getMap();
 	public LockManager getPMSyncs();
 	public LockManager getSMSyncs();
-	
+
 	public PartitionFacade getPartition(Object key);
 
 }

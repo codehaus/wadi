@@ -26,20 +26,24 @@ import org.codehaus.wadi.gridstate.Dispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface StateManagerConfig {
 
 	PartitionFacade getPartition(int key);
 	PartitionFacade getPartition(Object key);
 	int getNumPartitions();
-	
+
 	String getLocalNodeName();
 	String getNodeName(Destination destination);
-		
+
 	Dispatcher getDispatcher();
-    
+
     boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
 	long getInactiveTime();
 
 	Sync getInvocationLock(String name);
-	
+
 }

@@ -19,14 +19,18 @@ package org.codehaus.wadi.impl;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class AbstractRelocater implements Relocater {
 
     protected RelocaterConfig _config;
-    
+
     public void init(RelocaterConfig config) {
         _config=config;
     }
-    
+
     public void destroy() {
         _config=null;
     }

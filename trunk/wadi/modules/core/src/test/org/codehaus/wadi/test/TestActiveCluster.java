@@ -33,6 +33,10 @@ import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 import org.codehaus.wadi.impl.Utils;
 
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TestActiveCluster extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
 

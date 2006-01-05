@@ -20,14 +20,18 @@ import org.codehaus.wadi.Context;
 import org.codehaus.wadi.InvocationContext;
 import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 class MyPoolableHttpServletRequestWrapper extends MyHttpServletRequest implements PoolableHttpServletRequestWrapper {
-	
+
 	public void init(InvocationContext invocationContext, Context context) {
 		/* I KNOW */
 	}
-	
+
 	public void destroy(){
 		/* I KNOW */
 	}
-	
+
 }

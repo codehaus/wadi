@@ -25,6 +25,10 @@ import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionManagerConfig;
 import org.codehaus.wadi.gridstate.PartitionMapper;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class StaticPartitionManager implements PartitionManager {
 
 	protected final Dispatcher _dispatcher;

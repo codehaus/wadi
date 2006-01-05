@@ -43,6 +43,10 @@ import org.codehaus.wadi.Streamer;
 // refactor and merge as much as possible with LocalDiscCacheInnards
 //----------------------------------------
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 class
   SharedDBCacheInnards
   extends AbstractCacheInnards

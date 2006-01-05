@@ -23,52 +23,56 @@ import org.codehaus.wadi.InvocationContext;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.RouterConfig;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DummyRouter implements Router {
-	
+
 	protected RouterConfig _config;
-	
+
 	public void init(RouterConfig config) {
 		_config=config;
 	}
-	
+
 	public void destroy() {
 		_config=null;
 	}
-	
+
 	public String strip(String session) {
 		return session;
 	}
-	
+
 	public String augment(String session) {
 		return session;
 	}
-	
+
 	public String getInfo() {
 		return "";
 	}
-	
+
 	public boolean canReroute() {
 		return false;
 	}
-	
+
 	public boolean reroute(InvocationContext invocationContext) {
 		return false;
 	}
-	
+
 	public boolean rerouteCookie(HttpServletRequest req, HttpServletResponse res, String id) {
 		return false;
 	}
-	
+
 	public boolean rerouteCookie(HttpServletRequest req, HttpServletResponse res, String id, String route) {
 		return false;
 	}
-	
+
 	public boolean rerouteURL() {
 		return false;
 	}
-	
+
 	public boolean rerouteURL(String target) {
 		return false;
 	}
-	
+
 }

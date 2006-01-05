@@ -28,6 +28,10 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.sandbox.io.Pipe;
 import org.codehaus.wadi.sandbox.io.PipeConfig;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class SocketClientPipe extends AbstractPipe {
 
     public static class DummyPipeConfig implements PipeConfig {

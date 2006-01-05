@@ -49,6 +49,10 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
 import junit.framework.TestCase;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TestServers extends TestCase {
 
     protected Log _log = LogFactory.getLog(getClass());

@@ -16,6 +16,10 @@
  */
 package org.codehaus.wadi;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface PMPartition {
 
     boolean isLocal();

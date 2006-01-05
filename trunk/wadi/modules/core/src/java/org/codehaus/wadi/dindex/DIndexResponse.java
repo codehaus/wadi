@@ -16,8 +16,12 @@
  */
 package org.codehaus.wadi.dindex;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface DIndexResponse extends DIndexMessage {
-    
+
     // just a marker i/f - at the moment
-    
+
 }

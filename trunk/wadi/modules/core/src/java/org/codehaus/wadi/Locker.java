@@ -18,8 +18,12 @@ package org.codehaus.wadi;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface Locker {
 
     Sync getLock(String id, Motable motable);
-    
+
 }

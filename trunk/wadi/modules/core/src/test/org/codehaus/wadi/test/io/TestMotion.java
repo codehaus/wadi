@@ -83,48 +83,52 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TestMotion extends TestCase {
-	
+
 	protected final Log _log=LogFactory.getLog(getClass());
-	
+
 	protected final ThreadFactory _threadFactory=new ThreadFactory();
-	
+
 	interface Location2 {/* empty */}
-	
+
 	public static class InetSocketAddressLocation implements Location2 {
-		
+
 		protected final InetSocketAddress _address;
-		
+
 		public InetSocketAddressLocation(InetSocketAddress address) {
 			_address=address;
 		}
-		
+
 		public InetSocketAddress getAddress() {return _address;}
 	}
-	
+
 	public static class DestinationLocation implements Location2 {
-		
+
 		protected final Destination _destination;
-		
+
 		public DestinationLocation(Destination destination) {
 			_destination=destination;
 		}
-		
+
 		public Destination getDestination() {return _destination;}
 	}
-	
-	
+
+
 	public static class MyServerConfig implements ServerConfig {
-		
+
 		protected static ConnectionFactory _cfactory=Utils.getConnectionFactory();
 		protected static CustomClusterFactory _factory=new CustomClusterFactory(_cfactory);
-		
+
 		protected final Log _log=LogFactory.getLog(getClass());
 		protected final String _nodeName;
 		protected final Contextualiser _contextualiser;
-		
+
 		protected ExtendedCluster _cluster=null;
-		
+
 		public MyServerConfig(String nodeName, Contextualiser contextualiser) {
 			_nodeName=nodeName;
 			_contextualiser=contextualiser;
@@ -134,29 +138,29 @@ public class TestMotion extends TestCase {
 				_log.error("unexpected problem", e);
 			}
 		}
-		
+
 		public ExtendedCluster getCluster() {
 			return _cluster;
 		}
-		
+
 		public Contextualiser getContextualiser() {
 			return _contextualiser;
 		}
-		
+
 		public String getNodeName() {
 			return _nodeName;
 		}
-		
+
 	}
-	
+
 	public static class Node {
-		
+
 		protected final Map _clients=new HashMap();
 		protected final PooledExecutor _executor;
 		protected final Server _server;
-		
+
 		protected int _counter=0;
-		
+
 		public Node(Location2 location, ThreadFactory factory, ServerConfig config) {
 			_executor=new PooledExecutor(new BoundedBuffer(10), 100);
 			_executor.setThreadFactory(factory);
@@ -166,11 +170,11 @@ public class TestMotion extends TestCase {
 			_server=new ClusterServer(_executor, 5000, false);
 			_server.init(config);
 		}
-		
+
 		public void start() throws Exception {
 			_server.start();
 		}
-		
+
 		public void stop() throws Exception {
 //			synchronized (_clients) {
 //			for (Iterator i=_clients.entrySet().iterator(); i.hasNext(); ) {
@@ -183,7 +187,7 @@ public class TestMotion extends TestCase {
 //			}
 			_server.stop();
 		}
-		
+
 		public Pipe getClient(Location2 location) throws IOException {
 //			synchronized (_clients) {
 //			Pipe client=(Pipe)_clients.get(location);
@@ -197,12 +201,12 @@ public class TestMotion extends TestCase {
 			return ((ClusterServer)_server).makeClientPipe("foo-"+_counter++, ((DestinationLocation)location).getDestination());
 		}
 	}
-	
+
 	protected final DistributableSessionFactory _distributableSessionFactory=new DistributableSessionFactory();
 	protected final SessionPool _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
 	protected final PoolableInvocationWrapperPool _requestPool=new MyDummyHttpServletRequestWrapperPool();
 	protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
-	
+
 	protected final Location2 _localLocation;
 	protected final Map _localMap=new HashMap();
 	protected final MemoryContextualiser _localContextualiser=new MemoryContextualiser(new DummyContextualiser(), new NeverEvicter(60, true), _localMap, new SimpleStreamer(), _distributableContextPool, _requestPool);
@@ -211,7 +215,7 @@ public class TestMotion extends TestCase {
 	protected final Map _remoteMap=new HashMap();
 	protected final MemoryContextualiser _remoteContextualiser=new MemoryContextualiser(new DummyContextualiser(), new NeverEvicter(60, true), _remoteMap, new SimpleStreamer(), _distributableContextPool, _requestPool);
 	protected final ServerConfig _remoteConfig=new MyServerConfig("remote", _remoteContextualiser);
-	
+
 	public TestMotion(String name) throws Exception {
 		super(name);
 		_distributableSessionPool.init(new DummyDistributableSessionConfig());
@@ -220,10 +224,10 @@ public class TestMotion extends TestCase {
 		//_local=new InetSocketAddressLocation(new InetSocketAddress(InetAddress.getLocalHost(), 8888));
 		//_remote=new InetSocketAddressLocation(new InetSocketAddress(InetAddress.getLocalHost(), 8889));
 	}
-	
+
 	protected Node _us;
 	protected Node _them;
-	
+
 	protected void setUp() throws Exception {
 		super.setUp();
 		(_us=new Node(_localLocation, _threadFactory, _localConfig)).start();
@@ -231,7 +235,7 @@ public class TestMotion extends TestCase {
 		_localConfig.getCluster().start();
 		_remoteConfig.getCluster().start();
 	}
-	
+
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		_them.stop();
@@ -241,17 +245,17 @@ public class TestMotion extends TestCase {
 		_localMap.clear();
 		_remoteMap.clear();
 	}
-	
+
 	public static class SingleRoundTripServerPeer extends Peer {
-		
+
 		protected static final Log _log=LogFactory.getLog(SingleRoundTripServerPeer.class);
-		
+
 		public boolean run(PeerConfig config) throws IOException {
 			if (_log.isInfoEnabled()) {
 				_log.info("server - starting");
 				_log.info("server - creating output stream");
 			}
-			
+
 			ObjectOutputStream oos=config.getObjectOutputStream();
 			_log.info("server - writing response");
 			oos.writeBoolean(true); // ack
@@ -262,17 +266,17 @@ public class TestMotion extends TestCase {
 			return true;
 		}
 	}
-	
+
 	public static class SingleRoundTripClientPeer extends Peer {
-		
+
 		protected static final Log _log=LogFactory.getLog(SingleRoundTripClientPeer.class);
-		
+
 		public boolean run(PeerConfig config) throws IOException {
 			if (_log.isInfoEnabled()) {
 				_log.info("client - starting");
 				_log.info("client - creating output stream");
 			}
-			
+
 			ObjectOutputStream oos=config.getObjectOutputStream();
 			_log.info("client - writing server");
 			oos.writeObject(new SingleRoundTripServerPeer());
@@ -288,9 +292,9 @@ public class TestMotion extends TestCase {
 			return result;
 		}
 	}
-	
+
 	public void testRoundTripping() throws Exception {
-		
+
 		_log.info("START");
 		Pipe us2them=_us.getClient(_remoteLocation);
 		try {
@@ -303,7 +307,7 @@ public class TestMotion extends TestCase {
 		}
 		_log.info("FINISH");
 		_log.info("START");
-		
+
 		Pipe them2us=_them.getClient(_localLocation);
 		try {
 			_log.info("them -> us (1st trip)");
@@ -315,11 +319,11 @@ public class TestMotion extends TestCase {
 		}
 		_log.info("FINISH");
 	}
-	
+
 	public static class EmotionServerPeer extends Peer implements Serializable {
-		
+
 		protected static final Log _log=LogFactory.getLog(EmotionServerPeer.class);
-		
+
 		public boolean run(PeerConfig config) throws IOException, ClassNotFoundException {
 			long startTime=System.currentTimeMillis();
 			ObjectInputStream ois=config.getObjectInputStream();
@@ -340,21 +344,21 @@ public class TestMotion extends TestCase {
 			return true;
 		}
 	}
-	
+
 	public static class EmotionClientPeer extends Peer {
-		
+
 		protected static final Log _log=LogFactory.getLog(EmotionClientPeer.class);
-		
+
 		protected final String _name;
 		protected final Emoter _emoter;
 		protected final Motable _emotable;
-		
+
 		public EmotionClientPeer(String name, Emoter emoter, Motable emotable) {
 			_name=name;
 			_emoter=emoter;
 			_emotable=emotable;
 		}
-		
+
 		public boolean run(PeerConfig config) throws Exception {
 			long startTime=System.currentTimeMillis();
 			Motable motable=new SimpleMotable();
@@ -391,9 +395,9 @@ public class TestMotion extends TestCase {
 			return ok;
 		}
 	}
-	
+
 	public static class DummyRelocaterConfig implements RelocaterConfig {
-		
+
 		public Collapser getCollapser() {return null;}
 		public Dispatcher getDispatcher() {return null;}
 		public Location getLocation() {return null;}
@@ -406,11 +410,11 @@ public class TestMotion extends TestCase {
 		public ProxiedLocation getProxiedLocation() {return null;}
 		public DIndex getDIndex() {return null;}
 		public void notifySessionRelocation(String name) {};
-		
+
 	}
-	
+
 	public void testEmotion() throws Exception {
-		
+
 		Emoter emoter=new EtherEmoter();
 		DistributableSessionConfig config=new DummyDistributableSessionConfig();
 		DistributableSessionFactory factory=new DistributableSessionFactory();
@@ -421,7 +425,7 @@ public class TestMotion extends TestCase {
 		DistributableSession s1=(DistributableSession)factory.create(config);
 		String name1="bar";
 		s1.init(time, time, 30*60, name1);
-		
+
 		_log.info("START");
 		Pipe us2them=_us.getClient(_remoteLocation);
 		try {
@@ -439,7 +443,7 @@ public class TestMotion extends TestCase {
 			us2them.close();
 		}
 		_log.info("FINISH");
-		
+
 		SessionRelocater relocater=new StreamingMigratingRelocater();
 		relocater.init(new DummyRelocaterConfig());
 		Sync motionLock=new NullSync();
@@ -448,7 +452,7 @@ public class TestMotion extends TestCase {
 		HttpServletResponse res=null;
 		FilterChain chain=null;
 		Immoter immoter=_localContextualiser.getImmoter();
-		
+
 		boolean ok=false;
 		assertTrue(_localMap.size()==0);
 		assertTrue(_remoteMap.size()==2);
@@ -465,5 +469,5 @@ public class TestMotion extends TestCase {
 		assertTrue(_localMap.containsKey(name1));
 		assertTrue(!_remoteMap.containsKey(name1));
 	}
-	
+
 }

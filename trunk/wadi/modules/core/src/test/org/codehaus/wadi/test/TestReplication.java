@@ -80,33 +80,37 @@ import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.WebInvocationContext;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TestReplication extends TestCase {
-	
+
 	protected Log _log = LogFactory.getLog(getClass());
-	
+
 	public TestReplication(String arg0) {
 		super(arg0);
 	}
-	
+
 	protected void setUp() throws Exception {
 		super.setUp();
 	}
-	
+
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}
-	
+
 	public void testReplication() throws Exception {
-		
+
 		int sweepInterval=1000*60*60*24; // 1 eviction/day
 		boolean strictOrdering=true;
 		Streamer streamer=new SimpleStreamer();
 		Collapser collapser=new HashingCollapser(100, 1000);
-		
+
 		// Terminator
 		Contextualiser terminator=new DummyContextualiser();
 		Streamer sessionStreamer=new SimpleStreamer();
-		
+
 		// DB
 		String url="jdbc:axiondb:WADI";
 		DataSource ds=new AxionDataSource(url);
@@ -114,28 +118,28 @@ public class TestReplication extends TestCase {
 		DatabaseStore store=new DatabaseStore(url, ds, storeTable, false, true, true);
 		boolean clean=true;
 		Contextualiser db=new SharedStoreContextualiser(terminator, collapser, clean, store);
-		
+
 		// Cluster
 		Contextualiser cluster=new ClusterContextualiser(db, collapser, new DummyRelocater());
-		
+
 		// Disc
 		Evicter devicter=new NeverEvicter(sweepInterval, strictOrdering);
 		Map dmap=new HashMap();
 		File dir=Utils.createTempDirectory("wadi", ".test", new File("/tmp"));
 		Contextualiser spool=new ExclusiveStoreContextualiser(cluster, collapser, false, devicter, dmap, sessionStreamer, dir);
-		
+
 		Map mmap=new HashMap();
-		
+
 		Contextualiser serial=new SerialContextualiser(spool, collapser, mmap);
-		
+
 		SessionPool sessionPool=new SimpleSessionPool(new AtomicallyReplicableSessionFactory());
-		
+
 		// Memory
 		Evicter mevicter=new AlwaysEvicter(sweepInterval, strictOrdering);
 		ContextPool contextPool=new SessionToContextPoolAdapter(sessionPool);
 		PoolableInvocationWrapperPool requestPool=new DummyStatefulHttpServletRequestWrapperPool();
 		AbstractExclusiveContextualiser memory=new MemoryContextualiser(serial, mevicter, mmap, streamer, contextPool, requestPool);
-		
+
 		// Manager
 		int numPartitions=72;
 		AttributesFactory attributesFactory=new DistributableAttributesFactory();
@@ -155,11 +159,11 @@ public class TestReplication extends TestCase {
 //		manager.setSessionListeners(new HttpSessionListener[]{});
 		//manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
 		manager.init(new DummyManagerConfig());
-		
+
 		manager.start();
 		//mevicter.stop(); // we'll run it by hand...
 		//devicter.stop();
-		
+
 		_log.info("CREATING SESSION");
 		AbstractReplicableSession session=(AbstractReplicableSession)manager.create();
 		String foo="bar";
@@ -167,7 +171,7 @@ public class TestReplication extends TestCase {
 		String name=session.getId();
 		assertTrue(mmap.size()==1);
 		assertTrue(dmap.size()==0);
-		
+
 		_log.info("TOUCHING SESSION");
 		long lat=session.getLastAccessedTime();
 		memory.contextualise(new WebInvocationContext(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }), name, null, null, false);
@@ -175,22 +179,22 @@ public class TestReplication extends TestCase {
 		session=(AbstractReplicableSession)mmap.get(name);
 		assertTrue(mmap.size()==1);
 		assertTrue(dmap.size()==0);
-		
+
 		_log.info("DEMOTING SESSION to short-term SPOOL");
 		mevicter.evict();
 		assertTrue(mmap.size()==0);
 		assertTrue(dmap.size()==1);
-		
+
 //		_log.info("DEMOTING SESSION to long-term STORE");
 //		manager.stop();
 //		assertTrue(mmap.size()==0);
 //		assertTrue(dmap.size()==0);
-//		
+//
 //		_log.info("PROMOTING SESSION to short-term SPOOL");
 //		manager.start();
 //		assertTrue(mmap.size()==0);
 //		assertTrue(dmap.size()==1);
-//		
+//
 		_log.info("PROMOTING SESSION to Memory");
 		memory.contextualise(new WebInvocationContext(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }), name, null, null, false);
 		session=(AbstractReplicableSession)mmap.get(name);
@@ -198,15 +202,15 @@ public class TestReplication extends TestCase {
 		assertTrue(session.getAttribute("foo").equals(foo));
 		assertTrue(mmap.size()==1);
 		assertTrue(dmap.size()==0);
-		
+
 		_log.info("DESTROYING SESSION");
 		manager.destroy(session);
 		assertTrue(mmap.size()==0);
 		assertTrue(dmap.size()==0);
-		
+
 		manager.stop();
-		
+
 		dir.delete();
 	}
-	
+
 }

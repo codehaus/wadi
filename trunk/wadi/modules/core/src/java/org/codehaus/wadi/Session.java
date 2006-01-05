@@ -19,10 +19,14 @@ package org.codehaus.wadi;
 import java.util.Enumeration;
 import java.util.Set;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface Session extends Context {
 
 	String getId();
-    
+
     Object getAttribute(String name);
 
     Set getAttributeNameSet();

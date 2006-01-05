@@ -18,6 +18,10 @@ package org.codehaus.wadi.test;
 
 import junit.framework.TestCase;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TestNodes extends TestCase {
 
     public TestNodes(String name) {
@@ -42,7 +46,7 @@ public class TestNodes extends TestCase {
     // ask for session at other
     // confirm that request was proxied
     // confirm that cookie has been rerouted
-    
+
     // we can't use this test until we have a mod_jk enabled wadi-web.xml that can be swapped in somehow...
 //    public void dont_testCookieRerouting() throws Exception {
 //        assertTrue(true);
@@ -104,7 +108,7 @@ public class TestNodes extends TestCase {
 ////        Thread.sleep(2000);
 ////        System.out.println("");
 //    }
-    
+
     public void testNothing() {
     	// empty
     }

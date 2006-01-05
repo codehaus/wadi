@@ -71,6 +71,10 @@ import org.codehaus.wadi.impl.StatelessContextualiser;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class MyServlet implements Servlet {
 	protected ServletConfig _config;
 	protected final Log _log;
@@ -98,8 +102,8 @@ public class MyServlet implements Servlet {
 	protected final InvocationProxy _httpProxy;
 	protected final ProxiedLocation _proxiedLocation;
 	protected final StandardManager _manager;
-	
-	
+
+
 	public MyServlet(String nodeName, String clusterName, ContextPool contextPool, Relocater relocater, InvocationProxy httpProxy, InetSocketAddress httpAddress) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+nodeName);
 		_clusterName=clusterName;
@@ -120,46 +124,46 @@ public class MyServlet implements Servlet {
 		Dispatcher dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
 		_manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _proxiedLocation, _httpProxy, dispatcher, partitionManager, _collapser);
 	}
-	
+
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}
-	
+
 	public void init(ServletConfig config) {
 		_config = config;
 		_log.info("Servlet.init()");
 		try {
 			_manager.init(new ManagerConfig() {
-				
+
 				public ServletContext getServletContext() {
 					return null;
 				}
-				
+
 				public void callback(StandardManager manager) {
 					// do nothing - should install Listeners...
 				}
-				
+
 			});
 			_manager.start();
 		} catch (Exception e) {
 			_log.warn(e);
 		}
 	}
-	
+
 	public ServletConfig getServletConfig() {
 		return _config;
 	}
-	
+
 	public void service(ServletRequest req, ServletResponse res) {
 		String sessionId=((HttpServletRequest)req).getRequestedSessionId();
 		if (_log.isInfoEnabled()) _log.info("Servlet.service("+((sessionId==null)?"":sessionId)+")");
-		
+
 		if (_test!=null)
 			_test.test(req, res);
 	}
-	
+
 	public String getServletInfo() {
 		return "Test Servlet";
 	}
-	
+
 	public void destroy() {
 		try {
 			_manager.stop();
@@ -168,15 +172,15 @@ public class MyServlet implements Servlet {
 			_log.warn("unexpected problem", e);
 		}
 	}
-	
+
 	interface Test {
 		void test(ServletRequest req, ServletResponse res);
 	}
-	
+
 	protected Test _test;
 	public void setTest(Test test){_test=test;}
-	
+
 	public Map getClusterMap(){return _clusterMap;}
 	public Map getMemoryMap(){return _memoryMap;}
-	
+
 }

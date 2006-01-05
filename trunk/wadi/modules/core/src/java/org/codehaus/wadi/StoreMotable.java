@@ -16,10 +16,14 @@
  */
 package org.codehaus.wadi;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface StoreMotable extends Motable {
 
     void init(StoreMotableConfig config); // used when we are going to store something...
-  
+
     void init(StoreMotableConfig config, String name) throws Exception; // used when we are going to load something...
- 
+
 }

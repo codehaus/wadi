@@ -24,6 +24,10 @@ import org.codehaus.wadi.sandbox.io.impl.ByteBufferInputStream;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import junit.framework.TestCase;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TestByteBufferStreams extends TestCase {
 
     public TestByteBufferStreams(String name) {
@@ -39,15 +43,15 @@ public class TestByteBufferStreams extends TestCase {
     }
 
     public void testByteBufferInputStream() throws Exception {
-        
-        
+
+
         int capacity=256; //8092; // must be divisible by 4 !
         // create a byte array
         byte[] bytesIn=new byte[capacity];
         // initialise it with testable values
         for (int i=0; i<capacity; i++)
             bytesIn[i]=(byte)(i%256);
-        
+
         // create input and output queues
         LinkedQueue inputQueue=new LinkedQueue();
         LinkedQueue outputQueue=new LinkedQueue();
@@ -55,7 +59,7 @@ public class TestByteBufferStreams extends TestCase {
         ByteBufferInputStream is=new ByteBufferInputStream(inputQueue, outputQueue, 30*1000);
 
         // try exhausting a single ByteBuffer
-        
+
         // allocate a ByteBuffer
         ByteBuffer buffer=ByteBuffer.allocateDirect(capacity);
         // copy byte array into ByteBuffer
@@ -77,9 +81,9 @@ public class TestByteBufferStreams extends TestCase {
         assertTrue(inputQueue.isEmpty()); // no input left
         assertTrue(outputQueue.take()!=null); // 1 buffer in output
         assertTrue(outputQueue.isEmpty());
-        
+
         // OK - now lets see if rollover works OK...
-        
+
         int rolloverCapacity=capacity/4;
         for (int i=0; i<4; i++) {
             buffer=ByteBuffer.allocateDirect(rolloverCapacity);
@@ -94,14 +98,14 @@ public class TestByteBufferStreams extends TestCase {
             while((bytesRead+=is.read(bytesOut))<capacity);
             assertTrue(bytesRead==capacity);
             assertTrue(Arrays.equals(bytesIn, bytesOut));
-        }        
+        }
         assertTrue(inputQueue.isEmpty()); // no input left
         assertTrue(outputQueue.take()!=null); // 4 buffers in output
         assertTrue(outputQueue.take()!=null); // 3 buffers in output
         assertTrue(outputQueue.take()!=null); // 2 buffers in output
         assertTrue(outputQueue.take()!=null); // 1 buffer in output
         assertTrue(outputQueue.isEmpty());
-        
+
         // test closing a stream...
 
         buffer=ByteBuffer.allocateDirect(rolloverCapacity);
@@ -109,7 +113,7 @@ public class TestByteBufferStreams extends TestCase {
         buffer.flip();
         is.put(buffer);
         is.commit();
-        
+
         // read it all out and check it for validity
         {
             byte[] bytesOut=new byte[capacity];
@@ -120,20 +124,20 @@ public class TestByteBufferStreams extends TestCase {
             assertTrue(bytesRead==rolloverCapacity);
             for (int i=0; i<rolloverCapacity; i++)
                 assertTrue(bytesIn[i]==bytesOut[i]);
-        }        
-        
+        }
+
         // check the state of the queues...
         assertTrue(!inputQueue.isEmpty()); // just end of queue marker left
         assertTrue(inputQueue.take()!=null);
         assertTrue(inputQueue.isEmpty()); // no input left
         assertTrue(outputQueue.take()!=null); // 1 buffer in output
         assertTrue(outputQueue.isEmpty());
-        
+
     }
-    
+
 //  public void testWrite() throws Exception {
 //  assertTrue(true);
-//  
+//
 //  int size=1024;
 //  byte[] bytes=new byte[size];
 //  for (int i=0; i<size; i++)
@@ -142,13 +146,13 @@ public class TestByteBufferStreams extends TestCase {
 //  FileOutputStream fos=new FileOutputStream(file);
 //  fos.write(bytes);
 //  fos.close();
-//  
+//
 //  _log.info("File: "+file);
-//  
+//
 //  assertTrue(file.length()==size);
 //  FileInputStream fis= new FileInputStream(file);
 //  FileChannel fc=fis.getChannel();
 //  MappedByteBuffer mbb=fc.map(FileChannel.MapMode.READ_ONLY, 0, file.length());
 //  }
-    
+
 }

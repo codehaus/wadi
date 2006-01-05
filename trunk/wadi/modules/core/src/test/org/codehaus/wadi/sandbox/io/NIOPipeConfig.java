@@ -18,8 +18,12 @@ package org.codehaus.wadi.sandbox.io;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface NIOPipeConfig extends PipeConfig {
 
     Sync getLock();
-    
+
 }

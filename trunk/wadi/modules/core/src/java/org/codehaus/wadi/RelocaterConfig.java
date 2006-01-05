@@ -21,6 +21,10 @@ import org.codehaus.wadi.gridstate.Dispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface RelocaterConfig extends Config {
 
     Collapser getCollapser();
@@ -31,8 +35,8 @@ public interface RelocaterConfig extends Config {
     SynchronizedBoolean getShuttingDown();
     InvocationProxy getInvocationProxy();
     ProxiedLocation getProxiedLocation();
-    
+
     DIndex getDIndex();
     void notifySessionRelocation(String name);
-    
+
 }

@@ -22,10 +22,14 @@ import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionManagerConfig;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DummyPartitionManager implements PartitionManager {
 
 	protected final int _numPartitions;
-	
+
 	public DummyPartitionManager(int numPartitions) {
 		super();
 		_numPartitions=numPartitions;
@@ -38,7 +42,7 @@ public class DummyPartitionManager implements PartitionManager {
 	public void start() {
 		// empty
 	}
-	
+
 	public void stop() {
 		// empty
 	}
@@ -56,9 +60,9 @@ public class DummyPartitionManager implements PartitionManager {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	// PartitionConfig
-	
+
 	public Dispatcher getDispatcher() {
 		return null;
 	}
@@ -69,7 +73,7 @@ public class DummyPartitionManager implements PartitionManager {
 
 	public void evacuate() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

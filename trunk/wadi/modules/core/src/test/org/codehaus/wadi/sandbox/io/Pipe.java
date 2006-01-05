@@ -20,6 +20,10 @@ import java.io.IOException;
 
 import org.codehaus.wadi.sandbox.io.impl.Peer;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface Pipe extends Runnable, StreamConnection {
 
     void run(); // reads peer from input, and runs it...

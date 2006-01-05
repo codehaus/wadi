@@ -25,39 +25,43 @@ import org.codehaus.wadi.InvocationContext;
 import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
 import org.codehaus.wadi.WADIHttpSession;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class StatefulHttpServletRequestWrapper extends HttpServletRequestWrapper implements PoolableHttpServletRequestWrapper {
-	
+
 	protected static final HttpServletRequest _dummy=new DummyHttpServletRequest();
 	protected HttpSession _session; // I want to maintain a Session - but it's hard to get hold of it upon creation... - do we really need it ?
-	
-	
+
+
 	public StatefulHttpServletRequestWrapper() {
 		super(_dummy);
 	}
-	
+
 	public void init(InvocationContext invocationContext, Context context) {
 		HttpServletRequest request = ((WebInvocationContext) invocationContext).getHreq();
 		setRequest(request);
 		_session=context==null?null:((WADIHttpSession)context).getWrapper();
 	}
-	
+
 	public void destroy() {
 		setRequest(_dummy);
 		_session=null;
 	}
-	
+
 	// Session related method interceptions...
-	
+
 	public HttpSession getSession(){return getSession(true);}
-	
+
 	public HttpSession getSession(boolean create) {
 		// TODO - I'm assuming single threaded access to request objects...
 		// so no synchronization ?
-		
+
 		if (null==_session)
 			return (_session=((HttpServletRequest)getRequest()).getSession(create));
 		else
 			return _session;
 	}
-	
+
 }

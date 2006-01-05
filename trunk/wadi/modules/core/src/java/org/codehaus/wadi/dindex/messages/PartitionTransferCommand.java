@@ -21,6 +21,10 @@ import java.io.Serializable;
 import org.codehaus.wadi.OldMessage;
 import org.codehaus.wadi.dindex.impl.PartitionTransfer;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class PartitionTransferCommand implements OldMessage, Serializable {
 
     protected PartitionTransfer[] _transfers;

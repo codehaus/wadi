@@ -20,18 +20,22 @@ import java.io.Serializable;
 
 import javax.jms.Destination;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class PartitionTransfer implements Serializable {
 
     public Destination _destination;
     public String _name; // TODO - only here for debugging...
     public int _amount;
-    
+
     public PartitionTransfer(Destination destination, String name, int amount) {
         _destination=destination;
         _name=name;
         _amount=amount;
     }
-    
+
     protected PartitionTransfer() {
         // for deserialisation...
     }
@@ -39,13 +43,13 @@ public class PartitionTransfer implements Serializable {
     public Destination getDestination() {
         return _destination;
     }
-    
+
     public int getAmount() {
         return _amount;
     }
-    
+
     public String toString() {
         return "<transfer: "+_amount+"->"+_name+">";
     }
-    
+
 }

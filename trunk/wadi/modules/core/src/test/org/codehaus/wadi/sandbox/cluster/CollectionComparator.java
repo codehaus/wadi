@@ -20,6 +20,10 @@ package org.codehaus.wadi.sandbox.cluster;
 import java.util.Collection;
 import java.util.Iterator;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   CollectionComparator
   implements java.util.Comparator

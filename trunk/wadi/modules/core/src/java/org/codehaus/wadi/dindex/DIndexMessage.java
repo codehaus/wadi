@@ -20,8 +20,12 @@ import java.io.Serializable;
 
 import org.codehaus.wadi.OldMessage;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface DIndexMessage extends OldMessage, Serializable {
-    
+
     // just a marker i/f - at the moment
-    
+
 }

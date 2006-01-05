@@ -23,10 +23,14 @@ import org.codehaus.wadi.sandbox.io.PipeConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class ServerClusterPipe extends AbstractClusterPipe {
 
     protected final String _theirCorrelationId;
-    
+
     public ServerClusterPipe(PipeConfig config, long timeout, Cluster cluster, Destination us, String ourId, Destination them, String theirId, Channel inputQueue) {
         super(config, timeout, cluster, us, ourId, them, inputQueue);
         _theirCorrelationId=theirId;

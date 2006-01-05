@@ -40,6 +40,10 @@ import org.codehaus.wadi.Streamer;
 
 //----------------------------------------
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   LocalDiscCacheInnards
   extends AbstractCacheInnards

@@ -30,6 +30,10 @@ import org.codehaus.wadi.sandbox.cluster.Cell;
 import org.codehaus.wadi.sandbox.cluster.Peer;
 import org.codehaus.wadi.sandbox.cluster.RingTopologyStrategy;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   TestTopologies
   extends TestCase

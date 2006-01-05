@@ -21,6 +21,10 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Locker;
 import org.codehaus.wadi.Motable;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class AbstractSharedContextualiser extends AbstractMotingContextualiser {
 
     public AbstractSharedContextualiser(Contextualiser next, Locker locker, boolean clean) {
@@ -34,7 +38,7 @@ public abstract class AbstractSharedContextualiser extends AbstractMotingContext
     public boolean isExclusive() {
         return false;
     }
-    
+
     public int getLocalSessionCount() {
     	return 0;
     }

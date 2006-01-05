@@ -31,6 +31,10 @@ import org.codehaus.wadi.sandbox.io.PeerConfig;
 import org.codehaus.wadi.sandbox.io.Pipe;
 import org.codehaus.wadi.sandbox.io.PipeConfig;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class AbstractPipe implements Pipe, PeerConfig  {
 
     protected static final Log _log=LogFactory.getLog(AbstractPipe.class);

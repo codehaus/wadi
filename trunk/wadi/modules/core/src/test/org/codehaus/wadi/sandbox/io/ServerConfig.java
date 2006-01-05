@@ -20,10 +20,14 @@ import org.codehaus.wadi.Config;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface ServerConfig extends Config {
 
         ExtendedCluster getCluster();
         Contextualiser getContextualiser();
         String getNodeName();
-    
+
 }

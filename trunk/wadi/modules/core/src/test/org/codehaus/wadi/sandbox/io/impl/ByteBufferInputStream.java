@@ -29,10 +29,14 @@ import EDU.oswego.cs.dl.util.concurrent.Puttable;
 
 // two threads will be using this object - a producer (the server) and a consumer (the stream's reader).
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class ByteBufferInputStream extends AbstractAsyncInputStream implements Puttable {
-    
+
     protected final Puttable _outputQueue; // and then placed onto here...
-    
+
     public ByteBufferInputStream(Channel inputQueue, Puttable outputQueue, long timeout) {
         super(inputQueue, timeout);
         _outputQueue=outputQueue;
@@ -43,26 +47,26 @@ public class ByteBufferInputStream extends AbstractAsyncInputStream implements P
     protected void setBuffer(Object object) {
         _buffer=(ByteBuffer)object;
     }
-    
+
     protected Object getBuffer() {
         return _buffer;
     }
-    
+
     protected int readByte() {
         return (int)_buffer.get()&0xFF; // convert byte to unsigned int - otherwise 255==-1 i.e. EOF etc..
     }
-    
+
     protected void readBytes(byte b[], int off, int len) {
         _buffer.get(b, off, len);
     }
-    
+
     protected long getRemaining() {
         return _buffer.remaining();
     }
-    
+
     public void recycle(Object object) {
         ((ByteBuffer)object).clear();
-        Utils.safePut(object, _outputQueue);  
+        Utils.safePut(object, _outputQueue);
     }
-    
+
 }

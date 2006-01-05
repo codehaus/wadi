@@ -38,30 +38,34 @@ import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.SessionManager;
 import org.mortbay.jetty.servlet.WebApplicationHandler;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class JettyManager implements ManagerConfig, SessionManager {
-	
+
 	protected final Log _log = LogFactory.getLog(getClass());
-	
+
 	protected final ListenerSupport _listeners=new ListenerSupport();
-	
+
 	protected StandardManager _wadi;
 	protected ServletHandler _handler;
 	protected boolean _secureCookies=false;
 	protected boolean _httpOnly=true;
 	protected boolean _useRequestedId=false;
-	
+
 	// org.codehaus.wadi.ManagerConfig
-	
+
 	public ServletContext getServletContext() {
 		return _handler.getServletContext();
 	}
-	
+
 	public void callback(StandardManager manager) {
 		_listeners.installListeners(manager);
 	}
-	
+
 	// org.mortbay.jetty.servlet.SessionManager
-	
+
 	public void initialize(ServletHandler handler) {
 		_handler=handler;
 		try {
@@ -72,12 +76,12 @@ public class JettyManager implements ManagerConfig, SessionManager {
 		}
 		_wadi.init(this);
 	}
-	
+
 	public HttpSession getHttpSession(String id) {
 		//throw new UnsupportedOperationException();
 		return null; // FIXME - this will be the container trying to 'refresh' a session...
 	}
-	
+
 	public HttpSession newHttpSession(HttpServletRequest request) {
 		org.codehaus.wadi.Session session = _wadi.create();
 		if (false == session instanceof WADIHttpSession) {
@@ -86,31 +90,31 @@ public class JettyManager implements ManagerConfig, SessionManager {
 		WADIHttpSession httpSession = (WADIHttpSession) session;
 		return httpSession.getWrapper();
 	}
-	
+
 	public boolean getSecureCookies() {
 		return _secureCookies;
 	}
-	
+
 	public boolean getHttpOnly() {
 		return _httpOnly;
 	}
-	
+
 	public int getMaxInactiveInterval() {
 		return _wadi.getMaxInactiveInterval();
 	}
-	
+
 	public void setMaxInactiveInterval(int seconds) {
 		_wadi.setMaxInactiveInterval(seconds);
 	}
-	
+
 	public void addEventListener(EventListener listener) throws IllegalArgumentException {
 		_listeners.addEventListener(listener);
 	}
-	
+
 	public void removeEventListener(EventListener listener) {
 		_listeners.removeEventListener(listener);
 	}
-	
+
 	public Cookie
 	getSessionCookie(javax.servlet.http.HttpSession session,boolean requestIsSecure)
 	{
@@ -126,30 +130,30 @@ public class JettyManager implements ManagerConfig, SessionManager {
 				path=getUseRequestedId()?"/":_handler.getHttpContext().getContextPath();
 			if (path==null || path.length()==0)
 				path="/";
-			
+
 			if (domain!=null)
 				cookie.setDomain(domain);
 			if (maxAge!=null)
 				cookie.setMaxAge(Integer.parseInt(maxAge));
 			else
 				cookie.setMaxAge(-1);
-			
+
 			cookie.setSecure(requestIsSecure && getSecureCookies());
 			cookie.setPath(path);
-			
+
 			return cookie;
 		}
 		return null;
 	}
-	
+
 	public void start() throws Exception {
 		_wadi.start();
 		WebApplicationHandler handler=(WebApplicationHandler)_handler;
 		String name="WadiFilter";
 		handler.defineFilter(name, Filter.class.getName());;
-		handler.addFilterPathMapping("/*", name, Dispatcher.__ALL); 
+		handler.addFilterPathMapping("/*", name, Dispatcher.__ALL);
 	}
-	
+
 	public void stop() throws InterruptedException {
 		try {
 			_wadi.stop();
@@ -157,15 +161,15 @@ public class JettyManager implements ManagerConfig, SessionManager {
 			_log.warn("unexpected problem shutting down", e);
 		}
 	}
-	
+
 	public boolean isStarted() {
 		return _wadi.isStarted();
 	}
-	
+
 	// org.codehaus.wadi.jetty5.JettyManager
-	
+
 	protected boolean getUseRequestedId() {
 		return _useRequestedId;
 	}
-	
+
 }

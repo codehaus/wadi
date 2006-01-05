@@ -22,6 +22,10 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Evictable;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class AbstractChainedContextualiser extends AbstractContextualiser {
 
   protected final Contextualiser _next;

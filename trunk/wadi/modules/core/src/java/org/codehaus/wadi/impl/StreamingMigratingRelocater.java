@@ -24,30 +24,34 @@ import org.codehaus.wadi.SessionRelocater;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class StreamingMigratingRelocater implements SessionRelocater {
-	
+
 	public StreamingMigratingRelocater() {
 		super();
 	}
-	
+
 	protected RelocaterConfig _config;
-	
+
 	public void init(RelocaterConfig config) {
 		_config=config;
 	}
-	
+
 	public void destroy() {
 		_config=null;
 	}
-	
+
 	public boolean relocate(InvocationContext invocationContext, String name, Immoter immoter, Sync motionLock) throws InvocationException {
 		// check cache
 		//Server server=_config.getServer();
-		
+
 		// repeat ...
-		
+
 		//boolean sessionMoves=true;
-		
+
 		//Location location;
 		//if (!sessionMoves && (location=(Location)locationMap.get(name))!=null) {
 		// if cache is fresh (i.e. holds a location) && lock required is 'R'
@@ -55,19 +59,19 @@ public class StreamingMigratingRelocater implements SessionRelocater {
 		//   response is one of - don't know, newer location, lock-acquired
 		//   if still no success fall through to else...
 		//}
-		
-		// else - (cache is stale or 'W' lock required) 
+
+		// else - (cache is stale or 'W' lock required)
 		//   p2n to whole cluster with last known timestamp stating r or w lock needed
 		//   responses are one of: newer location, lock-acquired
-		
+
 		// until either;
 		//   you receive a lock-acquired (success)
 		// or:
 		//  you cease to be told of fresher locations (fail)
-		
+
 		// update our location cache on each iteration...
-		
+
 		return false;
 	}
-	
+
 }

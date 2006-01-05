@@ -23,6 +23,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Replicater;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DatabaseReplicater implements Replicater {
 
 	protected final Log _log = LogFactory.getLog(getClass());

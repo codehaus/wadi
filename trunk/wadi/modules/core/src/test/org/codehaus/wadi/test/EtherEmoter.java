@@ -19,8 +19,12 @@ package org.codehaus.wadi.test;
 import org.codehaus.wadi.impl.AbstractChainedEmoter;
 
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class EtherEmoter extends AbstractChainedEmoter {
-	
+
 	public String getInfo(){return "ether";}
-	
+
 }

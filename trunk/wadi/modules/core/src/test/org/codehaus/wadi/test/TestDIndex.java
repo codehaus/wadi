@@ -26,6 +26,10 @@ import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
 
 import junit.framework.TestCase;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TestDIndex extends TestCase {
 
     protected final Log _log=LogFactory.getLog(getClass().getName());
@@ -59,10 +63,10 @@ public class TestDIndex extends TestCase {
         }
 
     }
-    
+
     protected long heartbeatTimeout=5*1000;
     protected long responseTimeout=30*60*1000;
- 
+
 
     public void testDindex() throws Exception {
         assertTrue(true);

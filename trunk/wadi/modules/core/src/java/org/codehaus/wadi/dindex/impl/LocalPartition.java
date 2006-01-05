@@ -47,6 +47,10 @@ import org.codehaus.wadi.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class LocalPartition extends AbstractPartition implements Serializable {
 
 	protected transient Log _log=LogFactory.getLog(getClass());

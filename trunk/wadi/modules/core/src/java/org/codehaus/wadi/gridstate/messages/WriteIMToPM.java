@@ -20,6 +20,10 @@ import java.io.Serializable;
 
 import javax.jms.Destination;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class WriteIMToPM implements Serializable {
 
 	protected Object _key;

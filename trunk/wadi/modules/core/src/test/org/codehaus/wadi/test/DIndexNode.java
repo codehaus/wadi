@@ -55,10 +55,14 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
-	
+
 	protected final Log _log=LogFactory.getLog(getClass());
-	
+
 	//protected final String _clusterUri="peer://org.codehaus.wadi";
 	//protected final String _clusterUri="tcp://localhost:61616";
 	//protected final String _clusterUri="tcp://smilodon:61616";
@@ -77,7 +81,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 	protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
 	protected final Streamer _streamer;
 	protected DIndex _dindex;
-	
+
 	public DIndexNode(String nodeName, int numPartitions, PartitionMapper mapper, long inactiveTime) {
 		_nodeName=nodeName;
 		_dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, inactiveTime);
@@ -91,9 +95,9 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 		Contextualiser dummy=new DummyContextualiser();
 		_contextualiser=new MemoryContextualiser(dummy, new NeverEvicter(30000,false), _entries, _streamer, _distributableContextPool, _requestPool);
 	}
-	
+
 	// DIndexNode API
-	
+
 	public void start() throws Exception {
 		_dispatcher.init(this);
 		_dindex=new DIndex(_nodeName, _numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState, _mapper);
@@ -104,71 +108,71 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 		_log.info("...Cluster started");
 		_dindex.start();
 	}
-	
+
 	public void stop() throws Exception {
 		_dindex.stop();
 	}
-	
+
 	public DIndex getDIndex() {
 		return _dindex;
 	}
-	
+
 	public ExtendedCluster getCluster() {
 		return (ExtendedCluster)_dispatcher.getCluster();
 	}
-	
+
 	public void insert(Object key, Object value, long timeout) {
 		_dindex.insert((String)key, timeout);
 		_entries.put(key, value);
 	}
-	
+
 	public Object get(String key) {
 		return _entries.get(key);
 	}
-	
+
 	// PartitionManagerConfig API
-	
+
 	public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
 		_log.warn("findRelevantSessionNames() - NYI");
 	}
-	
+
 	public Node getCoordinatorNode() {
 		throw new UnsupportedOperationException("NYI");
 	}
-	
+
 	public long getInactiveTime() {
 		throw new UnsupportedOperationException("NYI");
 	}
-	
+
 	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 		return _contextualiser.contextualise(invocationContext, id, immoter, motionLock, exclusiveOnly);
 	}
-	
+
 	public Immoter getImmoter(String name, Motable immotable) {
 		return _contextualiser.getDemoter(name, immotable);
 	}
-	
+
 	public String getNodeName(Destination destination) {
 		return _dispatcher.getNodeName(destination);
 	}
-	
+
 	// DispatcherConfig API
-	
+
 	public String getContextPath() {
 		return "/";
 	}
-	
+
 	//-----------------------------------------------------------
-	
+
 	protected static Latch _latch0=new Latch();
 	protected static Latch _latch1=new Latch();
-	
+
 	protected static Object _exitSync = new Object();
-	
+
 	public static void main(String[] args) throws Exception {
 		String nodeName=args[0];
 		int numPartitions=Integer.parseInt(args[1]);
-		
+
 		try {
 			Runtime.getRuntime().addShutdownHook(new Thread() {
 				public void run() {
@@ -181,21 +185,21 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 					}
 				}
 			});
-			
+
 			DIndexNode node=new DIndexNode(nodeName, numPartitions, new SimplePartitionMapper(numPartitions), 5000L);
 			node.start();
-			
+
 			_latch0.acquire();
-			
+
 			node.stop();
 		} finally {
 			_latch1.release();
 		}
 	}
-	
+
 	public Sync getInvocationLock(String name) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 }

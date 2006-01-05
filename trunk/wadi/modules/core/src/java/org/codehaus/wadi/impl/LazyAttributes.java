@@ -30,6 +30,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.AttributesConfig;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class LazyAttributes extends DistributableAttributes {
 
     public LazyAttributes(AttributesConfig config, Map map) {

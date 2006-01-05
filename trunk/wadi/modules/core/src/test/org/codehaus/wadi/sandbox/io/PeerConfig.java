@@ -24,6 +24,10 @@ import java.nio.channels.WritableByteChannel;
 import org.codehaus.wadi.Config;
 import org.codehaus.wadi.Contextualiser;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface PeerConfig extends Config/*, StreamConnection*/, WritableByteChannel {
 
     public void close() throws IOException; // inherited from WriteableByteChannel - but overloaded to mean close whole Connection...
@@ -33,5 +37,5 @@ public interface PeerConfig extends Config/*, StreamConnection*/, WritableByteCh
     //OutputStream getOutputStream() throws IOException;
     ObjectInputStream getObjectInputStream() throws IOException;
     ObjectOutputStream getObjectOutputStream() throws IOException;
-    
+
 }

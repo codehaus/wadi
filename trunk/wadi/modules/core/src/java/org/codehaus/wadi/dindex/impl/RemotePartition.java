@@ -30,29 +30,33 @@ import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class RemotePartition extends AbstractPartition {
-	
+
 	protected transient Log _log;
-	
+
 	protected final PartitionConfig _config;
-	
+
 	protected Destination _location;
-	
+
 	public RemotePartition(int key, PartitionConfig config, Destination location) {
 		super(key);
 		_config=config;
 		_location=location;
 		_log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalNodeName());
 	}
-	
+
 	public boolean isLocal() {
 		return false;
 	}
-	
+
 	public Destination getDestination() {
 		return _location;
 	}
-	
+
 	public void setLocation(Destination location) {
 		if (_location==null) {
 			if (location==null) {
@@ -71,7 +75,7 @@ public class RemotePartition extends AbstractPartition {
 			}
 		}
 	}
-	
+
 	public String toString() {
 		return "<"+getClass()+":"+_key+"@"+_config.getLocalNodeName()+"->"+_config.getNodeName(_location)+">";
 	}
@@ -99,7 +103,7 @@ public class RemotePartition extends AbstractPartition {
 		if (!_config.getDispatcher().forward(message, _location))
 			_log.warn("could not forward message");
 	}
-	
+
 	public void onMessage(ObjectMessage message, MoveIMToPM request) {
 		if (_log.isWarnEnabled()) _log.warn(_config.getLocalNodeName()+": not Master of Partition["+_key+"] - forwarding message to "+_config.getNodeName(_location));
 		if (!_config.getDispatcher().forward(message, _location))
@@ -113,5 +117,5 @@ public class RemotePartition extends AbstractPartition {
 		if (_log.isTraceEnabled()) _log.trace("exchanging message ("+request+") with node: "+_config.getNodeName(to)+" on "+Thread.currentThread().getName());
 		return dispatcher.exchangeSend(from, to, request, timeout);
 	}
-	
+
 }

@@ -27,6 +27,10 @@ import org.codehaus.wadi.sandbox.io.ServerConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class AbstractServer implements Server, PipeConfig {
 
     protected final Log _log=LogFactory.getLog(getClass());

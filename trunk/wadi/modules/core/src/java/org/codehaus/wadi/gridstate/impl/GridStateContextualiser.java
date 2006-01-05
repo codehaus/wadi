@@ -23,6 +23,10 @@ import org.codehaus.wadi.Locker;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.impl.AbstractSharedContextualiser;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class GridStateContextualiser extends AbstractSharedContextualiser {
 
 	public GridStateContextualiser(Contextualiser next, Locker locker) {

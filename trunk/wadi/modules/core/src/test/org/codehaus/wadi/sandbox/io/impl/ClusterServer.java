@@ -35,6 +35,10 @@ import org.codehaus.wadi.sandbox.io.ServerConfig;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class ClusterServer extends AbstractServer implements PipeConfig, MessageListener {
 
     protected final boolean _excludeSelf;

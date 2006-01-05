@@ -21,6 +21,10 @@ package org.codehaus.wadi.sandbox.jcache;
 import javax.cache.CacheLoader;
 import javax.cache.EvictionStrategy;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface
   CacheInnards
   extends CacheLoader, EvictionStrategy

@@ -20,6 +20,10 @@ import java.io.Serializable;
 
 import org.codehaus.wadi.dindex.Partition;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class AbstractPartition implements Partition, Serializable {
 
     protected int _key;

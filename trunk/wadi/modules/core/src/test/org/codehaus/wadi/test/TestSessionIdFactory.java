@@ -24,6 +24,10 @@ import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 
 import junit.framework.TestCase;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TestSessionIdFactory extends TestCase {
 
     public TestSessionIdFactory(String name) {

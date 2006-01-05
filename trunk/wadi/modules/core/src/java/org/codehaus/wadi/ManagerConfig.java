@@ -20,6 +20,10 @@ import javax.servlet.ServletContext;
 
 import org.codehaus.wadi.impl.StandardManager;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface ManagerConfig {
 
 	ServletContext getServletContext();

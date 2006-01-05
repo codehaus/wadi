@@ -21,6 +21,10 @@ import org.codehaus.wadi.ReplicableSessionConfig;
 import org.codehaus.wadi.Replicater;
 
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class AtomicallyReplicableSession extends AbstractReplicableSession {
 
 	interface Semantics {
@@ -28,9 +32,9 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
 		boolean setAttributeDirties();
 		boolean getAttributeDirties();
 		boolean removeAttributeDirties();
-		
+
 	}
-	
+
 	class ByReferenceSemantics implements Semantics {
 
 		public boolean setAttributeDirties() {return true;}
@@ -38,25 +42,25 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
 		public boolean removeAttributeDirties() {return true;}
 
 	}
-	
+
 	class ByValueSemantics implements Semantics {
-		
+
 		public boolean setAttributeDirties() {return true;}
 		public boolean getAttributeDirties() {return false;}
 		public boolean removeAttributeDirties() {return true;}
 
 	}
-	
+
 	protected transient boolean _dirty;
 	protected transient Semantics _semantics=new ByReferenceSemantics(); // move into config if successful
 	protected transient Replicater _replicater;
-	
+
 	public AtomicallyReplicableSession(ReplicableSessionConfig config) {
 		super(config);
 		_dirty=false;
 		_replicater=((ReplicableSessionConfig)_config).getReplicater(); // take ownership of the Replicater - it may carry per-Session state
 	}
-	
+
     public void readEnded() {
     	// N.B. this is called from our RWLock inside an implicit exclusive lock, so we should not need to worry about synchronisation...
     	if (_dirty) {
@@ -64,13 +68,13 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
     		_dirty=false;
     	}
     }
-    
+
     // TODO - abstract use of _dirty flag into an AtomicDirtier...
-    
+
     // could be done with aspects or method chaining - lets try method chaining, it's simpler...
-    
+
     // other session mutators...
-    
+
 	// if MII changes - dirties the session metadata - might this be distributed separately ?
     // we could probably distribute this as a delta, since there are no object reference issues...
     // it would be crazy to send the whole session to update this...
@@ -89,13 +93,13 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
     	_dirty=_semantics.setAttributeDirties();
     	return tmp;
     }
-    
+
     public Object removeAttribute(String name) {
     	Object tmp=super.removeAttribute(name);
     	_dirty=(tmp!=null) && _semantics.removeAttributeDirties(); // was anything actually removed ?
     	return tmp;
     }
-    
+
     // this will sometimes dirty the session, since we are giving away a ref to something inside the session
     // which may then be modified without our knowledge... - strictly speaking, if we are using ByReference semantics, this dirties.
     // If we are using ByValue semantics, it does not.

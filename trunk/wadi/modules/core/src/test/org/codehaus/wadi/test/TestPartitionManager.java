@@ -43,103 +43,107 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 //Put this off until later - no current need to disentangle DIndex and PartitionManager, althought it will have to be done eventually...
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TestPartitionManager extends TestCase {
-	
+
 	public static void main(String[] args) {
 	}
-	
+
 	public TestPartitionManager(String arg0) {
 		super(arg0);
 	}
-	
+
 	protected void setUp() throws Exception {
 		super.setUp();
 	}
-	
+
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}
-	
+
 	protected PartitionManager create(String nodeName) throws Exception {
 		String clusterName="WADI";
 		String clusterUri="vm://localhost";
 		long inactiveTime=5000L;
 		Dispatcher dispatcher=new ActiveClusterDispatcher(nodeName, clusterName, clusterUri, inactiveTime);
 		DispatcherConfig dc=new DispatcherConfig() {
-			
+
 			public String getContextPath() {
 				return "/";
 			}
-			
+
 		};
 		dispatcher.init(dc);
 		dispatcher.start();
-		
+
 		Map distributedState=new HashMap();
 		Callback callback=new Callback() {
-			
+
 			public void onNodeRemoved(ClusterEvent event) {
 				// TODO Auto-generated method stub
-				
+
 			}
 		};
-		
+
 		int numPartitions=2;
 		return new SimplePartitionManager(dispatcher, numPartitions, distributedState, callback, new SimplePartitionMapper(numPartitions));
-	}	
-	
+	}
+
 	public void testPartitionManager() throws Exception {
-		
+
 		PartitionManager pm1=create("red");
 		PartitionManager pm2=create("green");
-		
+
 		PartitionManagerConfig pmc=new PartitionManagerConfig() {
-			
+
 			public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			public Node getCoordinatorNode() {
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 			public long getInactiveTime() {
 				// TODO Auto-generated method stub
 				return 0;
 			}
-			
+
 			public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 				// TODO Auto-generated method stub
 				return false;
 			}
-			
+
 			public String getNodeName(Destination destination) {
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 			public Immoter getImmoter(String name, Motable immotable) {
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 			public Sync getInvocationLock(String name) {
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 		};
-		
+
 		pm1.init(pmc);
 		pm2.init(pmc);
 		pm1.start();
 		pm2.start();
-		
+
 		Thread.sleep(10*1000);
-		
+
 		assertTrue(true);
 	}
-	
+
 }

@@ -19,20 +19,24 @@ package org.codehaus.wadi;
 import java.io.File;
 import java.nio.ByteBuffer;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface DiscMotableConfig extends StoreMotableConfig {
-    
+
     File getDirectory();
     String getSuffix();
-    
+
     ByteBuffer take(int size);
     void put(ByteBuffer buffer);
 
     boolean getReusingStore();
-    
+
 //    void insert(File dir, Motable motable, Object body) throws Exception;
 //    void delete(File dir, Motable motable); // TODO - why no Exception ?
 //    void update(File dir, Motable motable, Object body) throws Exception;
 //	long loadHeader(File dir, Motable motable); // TODO - why no Exception ?
 //	Object loadBody(File dir, Motable motable) throws Exception;
-    
+
 }

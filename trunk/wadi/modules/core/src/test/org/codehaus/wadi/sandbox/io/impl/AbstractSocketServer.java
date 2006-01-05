@@ -23,6 +23,10 @@ import org.codehaus.wadi.sandbox.io.Pipe;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class AbstractSocketServer extends AbstractServer {
 
     protected final SynchronizedInt _numPipes=new SynchronizedInt(0);

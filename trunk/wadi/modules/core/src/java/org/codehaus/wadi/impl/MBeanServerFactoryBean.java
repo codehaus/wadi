@@ -23,6 +23,10 @@ import javax.management.MBeanServerFactory;
 
 // only create a new MBeanServer if one does not already exist...
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class MBeanServerFactoryBean extends org.springframework.jmx.support.MBeanServerFactoryBean {
 
 	protected MBeanServer _server;

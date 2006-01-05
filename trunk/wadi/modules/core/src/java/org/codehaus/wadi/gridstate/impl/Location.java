@@ -24,6 +24,10 @@ import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class Location implements Serializable {
 
 	protected transient ReadWriteLock _lock;

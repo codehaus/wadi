@@ -40,14 +40,18 @@ import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DummyDistributableSessionConfig implements DistributableSessionConfig {
 
     protected final Streamer _streamer=new SimpleStreamer();
-    
+
     public DummyDistributableSessionConfig() {
     	_streamer.init(new StreamerConfig(){public ClassLoader getClassLoader() {return getClass().getClassLoader();}});
     }
-    
+
     public Streamer getStreamer() {
     	return _streamer;
     }
@@ -76,7 +80,7 @@ public class DummyDistributableSessionConfig implements DistributableSessionConf
     public void destroy(Session session) {
         throw new UnsupportedOperationException();
     }
-    
+
     protected final SessionWrapperFactory _sessionWrapperFactory=new StandardSessionWrapperFactory();
     public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperFactory;}
 

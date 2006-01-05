@@ -25,6 +25,10 @@ import org.apache.commons.logging.LogFactory;
 
 import junit.framework.TestCase;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TestExchange extends TestCase {
 
 	protected final Log _log = LogFactory.getLog(getClass());

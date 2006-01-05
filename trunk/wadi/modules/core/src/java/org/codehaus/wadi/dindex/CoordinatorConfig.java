@@ -23,6 +23,10 @@ import org.activecluster.Cluster;
 import org.activecluster.Node;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface CoordinatorConfig {
 
     int getNumPartitions();

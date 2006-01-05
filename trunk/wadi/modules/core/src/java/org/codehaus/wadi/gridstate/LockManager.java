@@ -18,6 +18,10 @@ package org.codehaus.wadi.gridstate;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface LockManager {
 
 	Sync acquire(Object key);

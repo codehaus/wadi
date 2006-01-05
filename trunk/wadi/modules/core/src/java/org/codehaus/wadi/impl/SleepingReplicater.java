@@ -18,6 +18,10 @@ package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Replicater;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class SleepingReplicater implements Replicater {
 
 	protected final long _delay;

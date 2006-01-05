@@ -24,11 +24,15 @@ import org.codehaus.wadi.AttributesConfig;
 import org.codehaus.wadi.Value;
 import org.codehaus.wadi.ValueConfig;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class StandardAttributes implements Attributes, ValueConfig {
 
     protected final Map _map;
     protected final AttributesConfig _config;
-    
+
     public StandardAttributes(AttributesConfig config, Map map) {
         super();
         _map=map; // could be inherited ?

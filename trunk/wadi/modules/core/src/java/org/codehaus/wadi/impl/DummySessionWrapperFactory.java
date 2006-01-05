@@ -21,6 +21,10 @@ import javax.servlet.http.HttpSession;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionWrapperFactory;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DummySessionWrapperFactory implements SessionWrapperFactory {
 
     public HttpSession create(Session session) {return new SessionWrapper(session);}

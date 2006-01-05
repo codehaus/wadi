@@ -24,6 +24,10 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.SessionPool;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DummyContextualiserConfig implements ContextualiserConfig {
 
     public DummyContextualiserConfig() {
@@ -60,10 +64,10 @@ public class DummyContextualiserConfig implements ContextualiserConfig {
         // TODO Auto-generated method stub
         return null;
     }
-    
+
     public void notifySessionInsertion(String name) {
     }
-    
+
     public void notifySessionDeletion(String name) {
     }
 

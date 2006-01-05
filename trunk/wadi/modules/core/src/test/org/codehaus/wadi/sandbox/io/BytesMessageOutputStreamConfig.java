@@ -21,6 +21,10 @@ import javax.jms.JMSException;
 
 import org.codehaus.wadi.Config;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface BytesMessageOutputStreamConfig extends Config {
 
     void send(BytesMessage message) throws JMSException;

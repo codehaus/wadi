@@ -64,6 +64,10 @@ import org.codehaus.wadi.impl.Utils;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartitionManager.Callback, StateManagerConfig {
 
 	protected final static String _nodeNameKey="nodeName";

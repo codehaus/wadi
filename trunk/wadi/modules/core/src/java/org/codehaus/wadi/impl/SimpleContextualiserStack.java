@@ -52,48 +52,52 @@ import org.codehaus.wadi.Streamer;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class SimpleContextualiserStack implements Contextualiser {
-	
+
 	protected final Log _log = LogFactory.getLog(getClass());
-	
+
 	protected final Streamer _streamer;
 	protected final Collapser _collapser;
-	
+
 	protected final DummyContextualiser _dummy;
-	
+
 	protected final DataSource _databaseDataSource;
 	protected final String _databaseTable;
 	protected Evicter _databaseEvicter;
 	protected final SharedStoreContextualiser _database;
-	
+
 	protected final Relocater _clusterRelocater;
 	protected final ClusterContextualiser _cluster;
-	
+
 	protected final Pattern _statelessMethods;
 	protected final boolean _statelessMethodFlag;
 	protected final Pattern _statelessURIs;
 	protected final boolean _statelessURIFlag;
 	protected final StatelessContextualiser _stateless;
-	
+
 	protected final File _discDirectory;
 	protected final Evicter _discEvicter;
 	protected final Map _discMap;
 	protected final ExclusiveStoreContextualiser _disc;
-	
+
 	protected final SerialContextualiser _serial;
-	
+
 	protected final ContextPool _memoryPool;
 	protected final PoolableInvocationWrapperPool _requestPool;
 	protected final Evicter _memoryEvicter;
 	protected final Map _memoryMap;
 	protected final MemoryContextualiser _memory;
-	
+
 	public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource, Relocater relocater) throws Exception {
 		super();
 		_streamer=new SimpleStreamer();
 		_collapser=new DebugCollapser();
 		//_collapser=new HashingCollapser(1000, 6000);
-		
+
 		_dummy=new DummyContextualiser();
 		_databaseDataSource=dataSource;
 		_databaseTable="WADI";
@@ -103,13 +107,13 @@ public class SimpleContextualiserStack implements Contextualiser {
 		System.out.println("LOCALHOST: "+localhost);
 		_clusterRelocater=relocater;
 		_cluster=new ClusterContextualiser(_database, _collapser, _clusterRelocater);
-		
+
 		_statelessMethods=Pattern.compile("GET|POST", Pattern.CASE_INSENSITIVE);
 		_statelessMethodFlag=true;
 		_statelessURIs=Pattern.compile(".*\\.(JPG|JPEG|GIF|PNG|ICO|HTML|HTM)(|;jsessionid=.*)", Pattern.CASE_INSENSITIVE);
 		_statelessURIFlag=false;
 		_stateless=new StatelessContextualiser(_cluster, _statelessMethods, _statelessMethodFlag, _statelessURIs, _statelessURIFlag);
-		
+
 		File dir=new File(new File(System.getProperty("java.io.tmpdir")), "sessions");
 		dir.delete();
 		dir.mkdir();
@@ -118,67 +122,67 @@ public class SimpleContextualiserStack implements Contextualiser {
 		_discEvicter=new NeverEvicter(20, true); // sessions never pass below this point, unless the node is shutdown
 		_discMap=new ConcurrentHashMap();
 		_disc=new ExclusiveStoreContextualiser(_stateless, _collapser, true, _discEvicter, _discMap, _streamer, _discDirectory);
-		
-		
+
+
 		_memoryPool=pool;
 		_memoryEvicter=new AbsoluteEvicter(10, true, 10); // if a session is inactive for 10 secs, it moves to disc
 		_memoryMap=sessionMap;
 		_serial=new SerialContextualiser(_disc, _collapser, _memoryMap);
 		_requestPool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - use a ThreadLocal based Pool
 		_memory=new MemoryContextualiser(_serial, _memoryEvicter, _memoryMap, _streamer, _memoryPool, _requestPool);
-		
+
 		// ready to rock !
 	}
-	
+
 	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 		return _memory.contextualise(invocationContext, id, immoter, motionLock, exclusiveOnly);
 	}
-	
+
 	public Evicter getEvicter() {
 		return _memory.getEvicter();
 	}
-	
+
 	public boolean isExclusive() {
 		return _memory.isExclusive();
 	}
-	
+
 	public Immoter getDemoter(String name, Motable motable) {
 		return _memory.getDemoter(name, motable);
 	}
-	
+
 	public Immoter getSharedDemoter() {
 		return _memory.getSharedDemoter();
 	}
-	
+
 	public void init(ContextualiserConfig config) {
 		_memory.init(config);
 	}
-	
+
 	public void start() throws Exception {
 		_memory.start();
 	}
-	
+
 	public void stop() throws Exception {
 		_memory.stop();
 	}
-	
+
 	public void destroy() {
 		_memory.destroy();
 	}
-	
+
 	public void promoteToExclusive(Immoter immoter){_memory.promoteToExclusive(immoter);}
 	public void load(Emoter emoter, Immoter immoter) {_memory.load(emoter, immoter);}
-	
+
 	public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){_memory.setLastAccessedTime(evictable, oldTime, newTime);}
 	public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_memory.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
-	
+
 	public Contextualiser getTop() {return _memory;}
-	
+
 	public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
 		_log.info("findRelevantSessionNames");
 		_memory.findRelevantSessionNames(numPartitions, resultSet);
 	}
-	
+
 	public int getLocalSessionCount() {
 		return _memory.getLocalSessionCount();
 	}

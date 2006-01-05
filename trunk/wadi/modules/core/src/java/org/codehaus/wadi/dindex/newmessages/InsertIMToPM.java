@@ -20,6 +20,10 @@ import java.io.Serializable;
 
 import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class InsertIMToPM extends AbstractDIndexRequest implements Serializable {
 
     public InsertIMToPM(String name) {

@@ -38,6 +38,10 @@ import javax.servlet.http.HttpSessionBindingEvent;
 // raised from this point. We will also probably have to collapse the BindingNotification aspect into the Value class
 // so that we can keep taks on which attributes are listeners and which are not.
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class LazyHttpSessionBindingEvent extends HttpSessionBindingEvent {
 
     public LazyHttpSessionBindingEvent(HttpSession session, String name) {
@@ -47,7 +51,7 @@ public class LazyHttpSessionBindingEvent extends HttpSessionBindingEvent {
     public LazyHttpSessionBindingEvent(HttpSession session, String name, Object value) {
         super(session, name, value);
     }
-    
+
     public Object getValue() {
         LazyValue value=(LazyValue)super.getValue();
         return value==null?null:value.getValue();

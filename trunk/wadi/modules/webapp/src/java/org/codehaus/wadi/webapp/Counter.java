@@ -18,18 +18,22 @@ package org.codehaus.wadi.webapp;
 
 import java.io.Serializable;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class Counter implements Serializable {
-	
+
 	protected int _counter;
-	
+
 	public Counter() {
 		_counter=0;
 	}
-	
+
 	public void increment() {
 		_counter++;
 	}
-	
+
 	public String toString() {
 		return ""+_counter;
 	}
@@ -37,5 +41,5 @@ public class Counter implements Serializable {
 	public int getValue() {
 		return _counter;
 	}
-	
+
 }

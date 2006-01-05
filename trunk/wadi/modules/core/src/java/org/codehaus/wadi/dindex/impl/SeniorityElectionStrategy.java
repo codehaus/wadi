@@ -22,8 +22,12 @@ import org.activecluster.Cluster;
 import org.activecluster.Node;
 import org.activecluster.election.ElectionStrategy;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class SeniorityElectionStrategy implements ElectionStrategy {
-    
+
     public Node doElection(Cluster cluster) {
         Node oldest=cluster.getLocalNode();
         long earliest=getBirthTime(oldest);
@@ -35,12 +39,12 @@ public class SeniorityElectionStrategy implements ElectionStrategy {
                 oldest=candidate;
             }
         }
-        
+
         return oldest;
     }
-    
+
     protected long getBirthTime(Node node) {
         return ((Long)node.getState().get("birthTime")).longValue(); // TODO - unify state keys somewhere
     }
-    
+
 }

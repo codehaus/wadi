@@ -36,6 +36,10 @@ import org.activecluster.LocalNode;
 import org.activecluster.election.ElectionStrategy;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DummyCluster implements ExtendedCluster {
 
     public DummyCluster() {

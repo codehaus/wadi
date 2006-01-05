@@ -20,6 +20,10 @@ import org.codehaus.wadi.sandbox.io.Pipe;
 import org.codehaus.wadi.sandbox.io.Server;
 import org.codehaus.wadi.sandbox.io.ServerConfig;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DummyServer implements Server {
 
     public DummyServer() {
@@ -30,7 +34,7 @@ public class DummyServer implements Server {
     public void init(ServerConfig config) {
         // do nothing
     }
-    
+
     public void start() throws Exception {
         // TODO Auto-generated method stub
 
