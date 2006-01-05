@@ -19,14 +19,18 @@ package org.codehaus.wadi.gridstate.jgroups;
 import java.io.Serializable;
 import java.util.Map;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class JGroupsStateUpdate implements Serializable {
 
 	protected final Map _state;
-	
+
 	public JGroupsStateUpdate(Map state) {
 		_state=state;
 	}
-	
+
 	public Map getState() {
 		return _state;
 	}

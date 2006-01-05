@@ -18,6 +18,10 @@ package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class MoveIMToSM implements Serializable {
 
 	protected boolean _success;
@@ -33,9 +37,9 @@ public class MoveIMToSM implements Serializable {
 	public boolean getSuccess() {
 		return _success;
 	}
-	
+
 	public String toString() {
 		return "<MoveIMToSM:"+_success+">";
 	}
-	
+
 }

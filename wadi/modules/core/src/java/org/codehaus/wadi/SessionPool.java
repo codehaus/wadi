@@ -16,11 +16,15 @@
  */
 package org.codehaus.wadi;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface SessionPool {
-    
+
     void init(SessionConfig config);
     void destroy();
-    
+
     Session take();
     void put(Session session);
 

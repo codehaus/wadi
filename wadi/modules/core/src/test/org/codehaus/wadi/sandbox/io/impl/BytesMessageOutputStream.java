@@ -27,6 +27,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.io.BytesMessageOutputStreamConfig;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class BytesMessageOutputStream extends OutputStream {
 
     protected final static Log _log=LogFactory.getLog(BytesMessageOutputStream.class);

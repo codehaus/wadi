@@ -30,6 +30,10 @@ import org.codehaus.wadi.impl.Utils;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class LocalPartition implements Partition {
 
 	protected static final Log _log=LogFactory.getLog(LocalPartition.class);
@@ -69,11 +73,11 @@ public class LocalPartition implements Partition {
 	}
 
 	// PMPartition API
-	
+
 	public boolean isLocal() {
 		return true;
 	}
-	
+
 	public int getKey() {
 		throw new UnsupportedOperationException("NYI");
 	}

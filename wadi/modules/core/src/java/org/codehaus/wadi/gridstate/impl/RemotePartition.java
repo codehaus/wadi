@@ -27,6 +27,10 @@ import org.codehaus.wadi.gridstate.Partition;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class RemotePartition implements Partition {
 
 	protected final Log _log=LogFactory.getLog(getClass().getName());
@@ -60,11 +64,11 @@ public class RemotePartition implements Partition {
 
 
 	// PMPartition API
-	
+
 	public boolean isLocal() {
 		return false;
 	}
-	
+
 	public int getKey() {
 		throw new UnsupportedOperationException("NYI");
 	}

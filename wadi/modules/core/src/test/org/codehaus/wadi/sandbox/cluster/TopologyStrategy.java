@@ -19,6 +19,10 @@ package org.codehaus.wadi.sandbox.cluster;
 
 import org.activecluster.ClusterListener;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface
   TopologyStrategy
   extends ClusterListener

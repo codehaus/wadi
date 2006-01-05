@@ -20,11 +20,15 @@ import org.codehaus.wadi.Context;
 import org.codehaus.wadi.ContextPool;
 
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class MyContextPool implements ContextPool {
     public void put(Context context) {
         // we are not going to bother to pool :-)
     }
-    
+
     public Context take() {
         return new MyContext();
     }

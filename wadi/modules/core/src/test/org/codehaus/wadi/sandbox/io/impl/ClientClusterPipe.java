@@ -24,26 +24,30 @@ import org.codehaus.wadi.sandbox.io.PipeConfig;
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class ClientClusterPipe extends AbstractClusterPipe {
 
     protected final SynchronizedInt _count=new SynchronizedInt(0);
     protected final String _theirCorrelationId;
-    
+
     public ClientClusterPipe(PipeConfig config, long timeout, Cluster cluster, Destination us, Destination them, String correlationId, Channel inputQueue) {
         super(config, timeout, cluster, us, correlationId+"-client", them, inputQueue);
         _theirCorrelationId=correlationId+"-server";
     }
-    
+
     protected String _theirCorrelationIdWithSuffix;
-    
+
     public synchronized boolean run(Peer peer) throws Exception {
         int i=_count.increment();
         _theirCorrelationIdWithSuffix=_theirCorrelationId+"-"+i;
         return super.run(peer);
     }
-    
+
     public String getTheirCorrelationId() {
         return _theirCorrelationIdWithSuffix;
     }
-    
+
 }

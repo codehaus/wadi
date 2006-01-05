@@ -22,10 +22,14 @@ import org.codehaus.wadi.Attributes;
 import org.codehaus.wadi.AttributesConfig;
 import org.codehaus.wadi.AttributesFactory;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DistributableAttributesFactory implements AttributesFactory {
-    
+
     public Attributes create(AttributesConfig config) {
         return new DistributableAttributes(config, new HashMap());
     }
-    
+
 }

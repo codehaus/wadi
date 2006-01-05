@@ -42,6 +42,10 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 // TODO - needs tidying up..
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class IndirectStateManager implements StateManager {
 
 	protected final Log _log = LogFactory.getLog(getClass());

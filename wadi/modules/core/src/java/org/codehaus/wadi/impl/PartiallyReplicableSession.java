@@ -22,6 +22,10 @@ import org.codehaus.wadi.ReplicableSessionConfig;
 
 // I think this approach is only possible under the assumption of ByValue Semantics.
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class PartiallyReplicableSession extends AbstractReplicableSession {
 
 	public PartiallyReplicableSession(ReplicableSessionConfig config) {

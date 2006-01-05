@@ -72,49 +72,53 @@ import org.codehaus.wadi.impl.Utils;
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TestEvicters extends TestCase {
-	
+
 	protected final String _clusterUri=Utils.getClusterUri();
 	protected final String _clusterName="WADI.TEST";
-	
+
 	public TestEvicters(String name) {
 		super(name);
 	}
-	
+
 	protected void setUp() throws Exception {
 		super.setUp();
 	}
-	
+
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}
-	
+
 	public static class MyEvicterConfig implements EvicterConfig {
-		
+
 		protected final Timer _timer=new Timer();
 		public Timer getTimer() {return _timer;}
-		
+
 		protected final Map _map=new HashMap();
 		public Map getMap() {return _map;}
-		
+
 		protected final Sync _sync=new NullSync();
 		public Sync getEvictionLock(String id, Motable motable) {return _sync;}
-		
+
 		protected final Emoter _emoter=new EtherEmoter();
 		public Emoter getEvictionEmoter() {return _emoter;}
-		
+
 		protected final int _maxInactiveInterval=4;
 		public int getMaxInactiveInterval() {return _maxInactiveInterval;}
-		
+
 		protected int _demotions;
 		public int getDemotions() {return _demotions;}
 		public void demote(Motable motable) {_demotions++;}
-		
+
 		protected int _expirations;
 		public int getExpirations() {return _expirations;}
 		public void expire(Motable motable) {_expirations++; _map.remove(motable.getName());}
 	}
-	
+
 	public void testExpiryFromStorage() throws Exception {
 		// Contextualiser
 		Contextualiser next=new DummyContextualiser();
@@ -151,7 +155,7 @@ public class TestEvicters extends TestCase {
 		//manager.start();
 		//mevicter.stop(); // we'll run it by hand...
 		//devicter.stop();
-		
+
 		manager.create();
 		assertTrue(mmap.size()==1);
 		assertTrue(dmap.size()==0);
@@ -164,7 +168,7 @@ public class TestEvicters extends TestCase {
 		assertTrue(mmap.size()==0);
 		assertTrue(dmap.size()==0);
 		manager.stop();
-		
+
 		// rename/use IdGenerator and StreamingStrategy...
 		dir.delete();
 	}

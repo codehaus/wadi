@@ -18,6 +18,10 @@ package org.codehaus.wadi.gridstate;
 
 import org.codehaus.wadi.gridstate.impl.PartitionFacade;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface PartitionManager extends PartitionConfig {
 
 	void init(PartitionManagerConfig config);

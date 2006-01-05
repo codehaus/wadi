@@ -21,26 +21,30 @@ import org.codehaus.wadi.SessionConfig;
 import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.SessionPool;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class SimpleSessionPool implements SessionPool {
 
     protected final SessionFactory _factory;
     protected SessionConfig _config;
-    
+
     public SimpleSessionPool(SessionFactory factory) {
         super();
         _factory=factory;
     }
-    
+
     public void init(SessionConfig config) {
         assert _config==null : "already initialised";
         _config=config;
     }
-    
+
     public void destroy() {
         assert _config!=null : "not yet initialised";
         _config=null;
     }
-    
+
     public Session take() {
         return _factory.create(_config);
     }

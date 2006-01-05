@@ -29,10 +29,14 @@ import org.activecluster.LocalNode;
 import org.activecluster.impl.DefaultCluster;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class CustomCluster extends DefaultCluster implements ExtendedCluster {
-    
+
     Connection _connection;
-    
+
     public CustomCluster(final LocalNode localNode, Topic dataTopic, Topic destination, Connection connection, Session session, MessageProducer producer, Timer timer, long inactiveTime) throws JMSException {
     	super(localNode, dataTopic, destination, connection, session, producer, timer, inactiveTime);
         _connection=connection; // remember it here, we cannot fetch it from super because it is private :-(
@@ -41,6 +45,6 @@ public class CustomCluster extends DefaultCluster implements ExtendedCluster {
     public Destination createQueue(String name) throws JMSException {
     	return getSession().createQueue(name);
     }
-    
+
     public Connection getConnection() {return _connection;}
 }

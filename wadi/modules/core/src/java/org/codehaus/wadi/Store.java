@@ -16,12 +16,16 @@
  */
 package org.codehaus.wadi;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface Store extends StoreMotableConfig {
-    
+
     interface Putter {
         void put(String name, Motable motable);
     }
-    
+
     void clean();
     String getStartInfo();
     String getDescription();

@@ -21,18 +21,22 @@ import javax.jms.ObjectMessage;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface StateManager {
-	
+
 	void init(StateManagerConfig config);
 	void start() throws Exception;
 	void stop() throws Exception;
-	
+
 	interface ImmigrationListener { void onImmigration(ObjectMessage message, Motable immigrant); }
-	
+
 	boolean offerEmigrant(String key, Motable emotable, long timeout);
 	void acceptImmigrant(ObjectMessage message, Location location, String name, Motable immotable);
-	
+
 	void setImmigrationListener(ImmigrationListener listener);
 	void unsetImmigrationListener(ImmigrationListener listener);
-	
+
 }

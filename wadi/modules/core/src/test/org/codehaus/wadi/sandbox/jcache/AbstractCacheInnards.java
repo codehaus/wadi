@@ -50,6 +50,10 @@ import org.codehaus.wadi.Streamer;
 
 //----------------------------------------
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class
   AbstractCacheInnards
   implements CacheInnards

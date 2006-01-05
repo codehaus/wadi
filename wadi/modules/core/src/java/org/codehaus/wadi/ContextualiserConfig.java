@@ -18,6 +18,10 @@ package org.codehaus.wadi;
 
 import java.util.Timer;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface ContextualiserConfig extends Config {
 
     int getMaxInactiveInterval();
@@ -26,9 +30,9 @@ public interface ContextualiserConfig extends Config {
     Timer getTimer();
     SessionPool getSessionPool();
     Router getRouter();
-    
+
     void notifySessionInsertion(String name);
     void notifySessionDeletion(String name);
     void notifySessionRelocation(String name);
-    
+
 }

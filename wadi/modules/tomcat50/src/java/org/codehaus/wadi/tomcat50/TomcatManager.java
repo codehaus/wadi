@@ -48,6 +48,10 @@ import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.Filter;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 {
 	protected static final Log _log = LogFactory.getLog(TomcatManager.class);
@@ -262,7 +266,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 		if (_log.isWarnEnabled()) _log.warn("findSession("+id+") called - currently unsupported");
 		return null;
 	}
-	
+
 	public Session[] findSessions() {
 		throw new UnsupportedOperationException();
 	}

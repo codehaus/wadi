@@ -16,9 +16,13 @@
  */
 package org.codehaus.wadi.gridstate;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface DispatcherConfig {
 
 	String getContextPath();
-	
-	
+
+
 }

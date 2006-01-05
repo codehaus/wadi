@@ -30,6 +30,10 @@ import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
 
 import junit.framework.TestCase;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TestGCache extends TestCase {
 
     protected final Log _log=LogFactory.getLog(getClass().getName());

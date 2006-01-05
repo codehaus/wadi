@@ -21,30 +21,34 @@ import java.util.Map;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
-	
+
 	String getNodeName();
-	
+
 	InvocationProxy getInvocationProxy();
-	
+
 	ProxiedLocation getProxiedLocation();
-	
+
 	Object getDistributedState(Object key);
-	
+
 	Object putDistributedState(Object key, Object value);
-	
+
 	Object removeDistributedState(Object key);
-	
+
 	void distributeState() throws Exception;
-	
+
 	Map getDistributedState();
-	
+
 	long getInactiveTime();
-	
+
 	int getNumPartitions();
-	
+
 	Dispatcher getDispatcher();
-	
+
 	DIndex getDIndex();
-	
+
 }

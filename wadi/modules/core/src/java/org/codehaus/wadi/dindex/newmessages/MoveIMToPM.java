@@ -21,19 +21,23 @@ import java.io.Serializable;
 import org.codehaus.wadi.OldMessage;
 import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class MoveIMToPM extends AbstractDIndexRequest implements OldMessage, Serializable {
 
     private String _nodeName;
     private int _numConcurrentInvocations;
     private boolean _shuttingDown;
-    
+
     public MoveIMToPM(String sessionName, String nodeName, int numConcurrentInvocations, boolean shuttingDown) {
         super(sessionName);
         _nodeName=nodeName;
         _numConcurrentInvocations=numConcurrentInvocations;
         _shuttingDown=shuttingDown;
     }
-    
+
     protected MoveIMToPM() {
         // used when deserialising
     }
@@ -41,11 +45,11 @@ public class MoveIMToPM extends AbstractDIndexRequest implements OldMessage, Ser
     public String getNodeName() {
     	return _nodeName;
     }
-    
+
     public int getNumConcurrentInvocations() {
     	return _numConcurrentInvocations;
     }
-    
+
     public boolean getShuttingDown() {
         return _shuttingDown;
     }
@@ -53,5 +57,5 @@ public class MoveIMToPM extends AbstractDIndexRequest implements OldMessage, Ser
     public String toString() {
         return "<MoveIMToPM:"+_key+"->"+_nodeName+">";
     }
-    
+
 }

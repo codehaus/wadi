@@ -31,6 +31,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.DistributableValueConfig;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class LazyValue extends DistributableValue {
     protected static final Log _log = LogFactory.getLog(LazyValue.class);
 

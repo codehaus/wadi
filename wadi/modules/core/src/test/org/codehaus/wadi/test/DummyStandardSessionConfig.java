@@ -36,42 +36,46 @@ import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 class DummyStandardSessionConfig implements SessionConfig {
-    
+
     protected final EvicterConfig _config;
     public DummyStandardSessionConfig(EvicterConfig config) {_config=config;}
-    
+
     protected final ValuePool _valuePool=new SimpleValuePool(new DistributableValueFactory());
     public ValuePool getValuePool() {return _valuePool;}
-    
+
     protected final AttributesFactory _attributesFactory=new DistributableAttributesFactory();
     public AttributesFactory getAttributesFactory() {return _attributesFactory;}
-    
+
     public HttpSessionListener[] getSessionListeners() {return new HttpSessionListener[0];}
     public HttpSessionAttributeListener[] getAttributeListeners() {return new HttpSessionAttributeListener[0];}
-    
+
     public ServletContext getServletContext() {return null;}
-    
+
     public void destroy(Session session) {_config.expire(session);}
-    
+
     protected final SessionWrapperFactory _sessionWrapperfactory=new StandardSessionWrapperFactory();
     public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperfactory;}
-    
+
     protected SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
     public SessionIdFactory getSessionIdFactory() {return _sessionIdFactory;}
-    
+
     protected final int _maxInactiveInterval=2;
     public int getMaxInactiveInterval() {return _maxInactiveInterval;}
-    
+
     public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {
         throw new UnsupportedOperationException();
     }
-    
+
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {
         throw new UnsupportedOperationException();
     }
-    
+
     protected final Router _router=new DummyRouter();
     public Router getRouter() {return _router;}
-    
+
 }

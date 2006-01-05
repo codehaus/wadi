@@ -31,6 +31,10 @@ import org.jgroups.MessageListener;
 import org.jgroups.View;
 import org.jgroups.blocks.RpcDispatcher;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class JGroupsCluster implements Cluster {
 
 	protected final Log _log = LogFactory.getLog(getClass());

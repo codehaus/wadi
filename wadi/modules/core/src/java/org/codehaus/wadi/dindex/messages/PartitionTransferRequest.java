@@ -21,6 +21,10 @@ import java.io.Serializable;
 import org.codehaus.wadi.OldMessage;
 import org.codehaus.wadi.dindex.impl.LocalPartition;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class PartitionTransferRequest implements OldMessage, Serializable {
 
 	protected long _timeStamp;

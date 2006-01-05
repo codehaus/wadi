@@ -19,12 +19,11 @@ package org.codehaus.wadi;
 /**
  * @version $Revision$
  */
-
 public class InvocationException extends Exception {
 
     public InvocationException() {
     }
-    
+
 	public InvocationException(String message) {
 		super(message);
 	}
@@ -32,9 +31,9 @@ public class InvocationException extends Exception {
 	public InvocationException(String message, Exception cause) {
 		super(message, cause);
 	}
-    
+
     public InvocationException(Throwable throwable) {
         super(throwable);
     }
-    
+
 }

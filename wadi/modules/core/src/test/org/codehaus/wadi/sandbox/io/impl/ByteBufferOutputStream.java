@@ -24,13 +24,17 @@ import java.nio.channels.SocketChannel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class ByteBufferOutputStream extends OutputStream {
 
     protected final static Log _log=LogFactory.getLog(ByteBufferOutputStream.class);
-    
+
     protected final SocketChannel _channel;
     protected final ByteBuffer _buffer;
-    
+
     public ByteBufferOutputStream(SocketChannel channel, int bufferSize) {
         super();
         _channel=channel;
@@ -38,23 +42,23 @@ public class ByteBufferOutputStream extends OutputStream {
     }
 
     // impl
-    
+
     protected void send() throws IOException {
         _buffer.flip();
         while (_buffer.hasRemaining())
             _channel.write(_buffer);
         _buffer.clear();
     }
-    
+
     // OutputStream
-    
+
     public void write(int b) throws IOException {
         //_log.info("writing: "+(char)b);
         _buffer.put((byte)b);
         if (!_buffer.hasRemaining())
             send();
     }
-    
+
     public void write(byte b[], int off, int len) throws IOException {
         //_log.info("writing: "+len+" bytes");
         int written=0;
@@ -62,24 +66,24 @@ public class ByteBufferOutputStream extends OutputStream {
             int tranche=Math.min(_buffer.remaining(), len);
             _buffer.put(b, off+written, tranche);
             written+=tranche;
-            
+
             if (!_buffer.hasRemaining())
                 send();
         }
     }
-    
+
     public void flush() throws IOException {
         super.flush();
         send();
     }
-    
+
     public void close() throws IOException {
         super.close();
         send();
     }
-    
+
     // ByteBufferOutputStream
-    
+
     public void write(ByteBuffer buffer, int offset, int length) throws IOException {
         _channel.write(null, offset, length);
     }

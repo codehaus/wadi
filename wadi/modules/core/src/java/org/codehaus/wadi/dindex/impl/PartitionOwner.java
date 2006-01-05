@@ -18,12 +18,16 @@ package org.codehaus.wadi.dindex.impl;
 
 import org.activecluster.Node;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class PartitionOwner {
-    
+
     protected Node _node;
     protected int _deviation;
     protected boolean _leaving;
-    
+
     public PartitionOwner(Node node, int deviation, boolean leaving) {
         _node=node;
         _deviation=deviation;

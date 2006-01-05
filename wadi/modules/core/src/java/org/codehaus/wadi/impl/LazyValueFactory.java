@@ -21,6 +21,10 @@ import org.codehaus.wadi.Value;
 import org.codehaus.wadi.ValueConfig;
 import org.codehaus.wadi.ValueFactory;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class LazyValueFactory implements ValueFactory {
 
     public LazyValueFactory() {

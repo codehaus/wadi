@@ -22,14 +22,18 @@ import org.activecluster.Cluster;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.LockManager;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface PartitionConfig {
 
     Dispatcher getDispatcher();
     Cluster getCluster();
     String getNodeName(Destination destination);
     long getInactiveTime();
-    
+
     String getLocalNodeName();
     LockManager getPMSyncs();
-    
+
 }

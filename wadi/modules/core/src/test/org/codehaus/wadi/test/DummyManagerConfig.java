@@ -21,6 +21,10 @@ import javax.servlet.ServletContext;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.impl.StandardManager;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DummyManagerConfig implements ManagerConfig {
 
 	public ServletContext getServletContext() {

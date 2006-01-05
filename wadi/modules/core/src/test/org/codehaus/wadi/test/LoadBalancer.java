@@ -23,6 +23,10 @@ import javax.servlet.http.HttpServletResponse;
 
 // How WADI sees the load-balancer tier... - a ContextFactory
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 interface
   LoadBalancer
 {

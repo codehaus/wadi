@@ -16,6 +16,10 @@
  */
 package org.codehaus.wadi.impl;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class SleepingReplicaterFactory extends StatelessReplicaterFactory {
 
 	public SleepingReplicaterFactory(long delay) {

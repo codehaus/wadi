@@ -18,12 +18,16 @@ package org.codehaus.wadi.impl;
 
 import java.nio.ByteBuffer;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DirectByteBufferCache {
 
     public ByteBuffer take(int size) {
         return ByteBuffer.allocateDirect(size);
     }
-    
+
     public void put(ByteBuffer buffer) {
         // do nothing yet...
     }

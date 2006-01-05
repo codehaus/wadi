@@ -18,6 +18,10 @@ package org.codehaus.wadi.gridstate;
 
 import javax.jms.Destination;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface StateManager {
 
 	void init(StateManagerConfig config);

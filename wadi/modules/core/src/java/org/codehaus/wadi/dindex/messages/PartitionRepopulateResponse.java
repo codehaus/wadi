@@ -21,6 +21,10 @@ import java.util.Collection;
 
 import org.codehaus.wadi.OldMessage;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class PartitionRepopulateResponse implements OldMessage, Serializable {
 
     protected Collection[] _keys;

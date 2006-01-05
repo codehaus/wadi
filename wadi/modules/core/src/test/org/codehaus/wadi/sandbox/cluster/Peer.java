@@ -21,6 +21,10 @@ import javax.jms.Destination;
 
 import org.activecluster.Node;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   Peer
   implements Comparable

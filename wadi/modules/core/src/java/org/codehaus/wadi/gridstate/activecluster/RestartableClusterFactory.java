@@ -23,10 +23,14 @@ import org.activecluster.Cluster;
 import org.activecluster.ClusterException;
 import org.activecluster.ClusterFactory;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class RestartableClusterFactory implements ClusterFactory {
 
     protected final ClusterFactory _factory;
-    
+
     public RestartableClusterFactory(ClusterFactory factory) {
         super();
         _factory=factory;

@@ -32,50 +32,54 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.StoreMotable;
 import org.codehaus.wadi.StoreMotableConfig;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DiscMotable extends AbstractMotable implements StoreMotable {
-    
+
     protected static final Log _log=LogFactory.getLog(DiscMotable.class);
-    
+
     protected DiscMotableConfig _config;
     protected File _file;
     protected int _bodyLength;
     protected long _offset;
-    
+
     public void init(StoreMotableConfig config) { // used when we are going to store something...
         _config=(DiscMotableConfig)config;
     }
-    
+
     public void init(StoreMotableConfig config, String name) throws Exception { // used when we are going to load something...
         _config=(DiscMotableConfig)config;
         _name=name;
         _offset=loadHeader();
         assert(name.equals(_name));
     }
-    
+
     public byte[] getBodyAsByteArray() throws Exception {
         ensureFile();
         // we already know the body length...
         return (byte[])loadBody(false);
     }
-    
+
     public void setBodyAsByteArray(byte[] body) throws Exception {
         ensureFile();
         _bodyLength=body.length;
         store(false, body);
     }
-    
+
     public ByteBuffer getBodyAsByteBuffer() throws Exception {
         ensureFile();
         // we already know the body length...
         return (ByteBuffer)loadBody(true);
     }
-    
+
     public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {
         ensureFile();
         _bodyLength=body.capacity(); // FIXME - this will work until we start reusing different sized ByteBuffers
         store(true, body);
     }
-    
+
     // normal destruction - should remove corresponding row from db...
     public void destroy() throws Exception {
         super.destroy();
@@ -84,7 +88,7 @@ public class DiscMotable extends AbstractMotable implements StoreMotable {
             if (_log.isTraceEnabled()) _log.trace("removed (exclusive disc): "+_file+": "+_bodyLength+" bytes");
         }
     }
-    
+
     // destruction as our data is transferred to another storage medium.
     // if this is the same medium as we are using for replication, we do not want to remove this copy, as it saves making a fresh replicant...
     public void destroy(Motable recipient) throws Exception {
@@ -97,7 +101,7 @@ public class DiscMotable extends AbstractMotable implements StoreMotable {
             }
     	}
     }
-    
+
     protected void ensureFile() {
         if (_file==null)
             _file=new File(_config.getDirectory(), _name+_config.getSuffix());
@@ -115,10 +119,10 @@ public class DiscMotable extends AbstractMotable implements StoreMotable {
             _maxInactiveInterval=ois.readInt();
             _name=(String)ois.readObject();
             _bodyLength=ois.readInt();
-            
+
             if (!checkTimeframe(System.currentTimeMillis()))
                 if (_log.isWarnEnabled()) _log.warn("loaded (exclusive disc) from the future!: "+_name);
-            
+
             return fis.getChannel().position();
         } catch (Exception e) {
             if (_log.isErrorEnabled()) _log.warn("load (exclusive disc) failed: "+_file, e);
@@ -129,18 +133,18 @@ public class DiscMotable extends AbstractMotable implements StoreMotable {
                 try {
                     ois.close();
                 } catch (IOException e) {
-                    if (_log.isWarnEnabled()) _log.warn("load (exclusive disc) problem: "+_file, e); 
+                    if (_log.isWarnEnabled()) _log.warn("load (exclusive disc) problem: "+_file, e);
                 }
         }
     }
-    
+
     public Object loadBody(boolean useNIO) throws Exception {
         ensureFile();
         FileInputStream fis=null;
         try {
             Object body;
             fis=new FileInputStream(_file);
-            
+
             FileChannel channel=fis.getChannel();
             channel.position(_offset);
             if (useNIO) {
@@ -169,7 +173,7 @@ public class DiscMotable extends AbstractMotable implements StoreMotable {
             }
         }
     }
-    
+
     protected void store(boolean useNIO, Object body) throws Exception {
         ensureFile();
         ObjectOutputStream oos=null;
@@ -177,7 +181,7 @@ public class DiscMotable extends AbstractMotable implements StoreMotable {
         try {
             fos=new FileOutputStream(_file);
             oos=new ObjectOutputStream(fos);
-            
+
             oos.writeLong(_creationTime);
             oos.writeLong(_lastAccessedTime);
             oos.writeInt(_maxInactiveInterval);

@@ -18,6 +18,10 @@ package org.codehaus.wadi.gridstate.messages;
 
 import java.io.Serializable;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class WritePMToIM implements Serializable {
 
 	protected boolean _success;

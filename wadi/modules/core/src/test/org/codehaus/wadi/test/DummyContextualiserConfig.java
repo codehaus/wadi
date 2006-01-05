@@ -29,6 +29,10 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.impl.AbstractMotingContextualiser;
 import org.codehaus.wadi.impl.DummyRouter;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 class DummyContextualiserConfig implements ContextualiserConfig {
 
     protected final Contextualiser _top;
@@ -36,27 +40,27 @@ class DummyContextualiserConfig implements ContextualiserConfig {
     protected final Timer _timer=new Timer();
     protected final SessionPool _sessionPool;
     protected final SessionConfig _sessionConfig=new DummyDistributableSessionConfig();
-    
+
     public DummyContextualiserConfig(Contextualiser top, Map map, SessionPool sessionPool) {
         _top=top;
         _map=map;
         _sessionPool=sessionPool;
         _sessionPool.init(_sessionConfig);
         }
-    
+
     public int getMaxInactiveInterval() {return 30*60*60;}
     public void expire(Motable motable) {_map.remove(motable.getName());}
     public Immoter getEvictionImmoter() {return ((AbstractMotingContextualiser)_top).getImmoter();} // HACK - FIXME
     public Timer getTimer() {return _timer;}
 
     public SessionPool getSessionPool(){return _sessionPool;}
-    
+
     protected final Router _router=new DummyRouter();
     public Router getRouter() {return _router;}
-    
+
     public void notifySessionInsertion(String name) {
     }
-    
+
     public void notifySessionDeletion(String name) {
     }
 

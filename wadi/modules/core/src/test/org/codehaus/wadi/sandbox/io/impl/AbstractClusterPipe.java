@@ -31,6 +31,10 @@ import org.codehaus.wadi.sandbox.io.PipeConfig;
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class AbstractClusterPipe extends AbstractPipe implements Puttable, BytesMessageOutputStreamConfig {
 
     protected final Cluster _cluster;
@@ -40,7 +44,7 @@ public abstract class AbstractClusterPipe extends AbstractPipe implements Puttab
     protected final BytesMessageInputStream _inputStream;
     protected final BytesMessageOutputStream _outputStream;
     protected final String _ourCorrelationId;
-    
+
     public AbstractClusterPipe(PipeConfig config, long timeout, Cluster cluster, Destination us, String ourId, Destination them, Channel inputQueue) {
         super(config, timeout);
         _cluster=cluster;
@@ -53,20 +57,20 @@ public abstract class AbstractClusterPipe extends AbstractPipe implements Puttab
     }
 
     public abstract String getTheirCorrelationId();
-    
+
     String getCorrelationId() {
         return _ourCorrelationId;
     }
-    
+
     // Connection
-    
+
     public void close() throws IOException {
         _inputStream.commit();
         super.close();
     }
 
     // StreamConnection
-    
+
     public InputStream getInputStream() {
         return _inputStream;
     }
@@ -76,7 +80,7 @@ public abstract class AbstractClusterPipe extends AbstractPipe implements Puttab
     }
 
     // Puttable - byte[] only please :-)
-    
+
     public void put(Object item) throws InterruptedException {
         _inputStream.put(item);
     }
@@ -84,16 +88,16 @@ public abstract class AbstractClusterPipe extends AbstractPipe implements Puttab
     public boolean offer(Object item, long msecs) throws InterruptedException {
         return _inputStream.offer(item, msecs);
     }
-    
+
     // ByteArrayOutputStreamConfig
-    
+
     public void send(BytesMessage bytesMessage) throws JMSException {
         bytesMessage.setJMSCorrelationID(getTheirCorrelationId());
         bytesMessage.setJMSReplyTo(_us);
         //_log.info("sending message: "+(_isServer?"[server->client]":"[client->server]"));
         _cluster.send(_them, bytesMessage);
     }
-    
+
     public BytesMessage createBytesMessage() throws JMSException {
         return _cluster.createBytesMessage();
     }

@@ -20,6 +20,10 @@ import java.io.Serializable;
 
 import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DIndexRelocationRequest extends AbstractDIndexRequest implements Serializable {
 
     public DIndexRelocationRequest(String name) {
@@ -29,5 +33,5 @@ public class DIndexRelocationRequest extends AbstractDIndexRequest implements Se
     public String toString() {
         return "<DIndexRelocationRequest: "+_key+">";
     }
-    
+
 }

@@ -16,6 +16,10 @@
  */
 package org.codehaus.wadi.sandbox.partition;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface Cluster {
 
 	void start() throws Exception;

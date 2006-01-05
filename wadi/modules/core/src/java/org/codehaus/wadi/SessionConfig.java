@@ -21,23 +21,27 @@ import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface SessionConfig extends Config {
-    
+
     ValuePool getValuePool();
     AttributesFactory getAttributesFactory();
     HttpSessionListener[] getSessionListeners();
     HttpSessionAttributeListener[] getAttributeListeners();
     ServletContext getServletContext();
-    
+
     void destroy(Session session);
     SessionWrapperFactory getSessionWrapperFactory();
     SessionIdFactory getSessionIdFactory();
-    
+
     int getMaxInactiveInterval();
-    
+
     void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
     void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
-    
+
     Router getRouter();
-    
+
 }

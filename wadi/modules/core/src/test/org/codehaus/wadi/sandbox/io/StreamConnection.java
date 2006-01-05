@@ -20,9 +20,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface StreamConnection {
 
     InputStream getInputStream() throws IOException;
     OutputStream getOutputStream() throws IOException;
-    
+
 }

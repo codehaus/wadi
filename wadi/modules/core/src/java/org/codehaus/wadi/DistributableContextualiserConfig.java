@@ -18,10 +18,14 @@ package org.codehaus.wadi;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface DistributableContextualiserConfig extends ContextualiserConfig {
 
     boolean getAccessOnLoad();
     SynchronizedBoolean getShuttingDown();
     Contextualiser getContextualiser();
-    
+
 }

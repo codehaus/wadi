@@ -248,9 +248,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 	/**
 	 * Manage the immotion of a session into the cluster tier from another and its emigration thence to another node via the EvacuationQueue.
-	 *
-	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
-	 * @version $Revision$
 	 */
 	class EmigrationImmoter implements Immoter {
 		public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}

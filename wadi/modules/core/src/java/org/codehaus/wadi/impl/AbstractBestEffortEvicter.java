@@ -32,6 +32,10 @@ import org.codehaus.wadi.Motable;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
 
     protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");

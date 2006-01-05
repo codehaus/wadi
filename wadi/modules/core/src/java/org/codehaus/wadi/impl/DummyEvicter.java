@@ -18,11 +18,15 @@ package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Evictable;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DummyEvicter extends AbstractEvicter {
 
     public void evict() {/* do nothing */}
     public boolean test(Evictable evictable, long time, long ttl) {return false;}
-    
+
     public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {/* do nothing */}
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval,int newInterval) {/* do nothing */}
     public void insert(Evictable evictable) {/* do nothing */}

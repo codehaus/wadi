@@ -32,19 +32,23 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.impl.WebInvocationContext;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class MyFilter implements Filter {
 	protected final Log _log;
 	protected final MyServlet _servlet;
-	
+
 	public MyFilter(String name, MyServlet servlet) {
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
 		_servlet=servlet;
 	}
-	
+
 	public void init(FilterConfig config) {
 		_log.info("Filter.init()");
 	}
-	
+
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 	throws ServletException, IOException {
 		if (req instanceof HttpServletRequest) {
@@ -61,23 +65,23 @@ public class MyFilter implements Filter {
 			} catch (InvocationException e) {
 				throw new ServletException(e);
 			}
-			
+
 			// only here for testing...
 			if (!found) {
 				if (_log.isErrorEnabled()) _log.error("could not locate session: " + sessionId);
 				hres.sendError(410, "could not locate session: "+sessionId);
 			}
-			
+
 		} else {
 			// not http - therefore stateless...
 			chain.doFilter(req, res);
 		}
 	}
-	
+
 	public void destroy() {
 		// can't be bothered...
 	}
-	
+
 	protected boolean _exclusiveOnly=false;
 	public void setExclusiveOnly(boolean exclusiveOnly){_exclusiveOnly=exclusiveOnly;}
 

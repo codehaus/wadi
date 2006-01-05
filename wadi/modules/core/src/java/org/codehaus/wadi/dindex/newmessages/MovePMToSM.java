@@ -20,42 +20,46 @@ import java.io.Serializable;
 
 import javax.jms.Destination;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class MovePMToSM implements Serializable {
-	
+
 	protected Object _key;
 	protected Destination _im;
 	protected Destination _pm;
 	protected String _imCorrelationId;
-	
+
 	public MovePMToSM(Object key, Destination im, Destination pm, String imCorrelationId) {
 		_key=key;
 		_im=im;
 		_pm=im;
 		_imCorrelationId=imCorrelationId;
 	}
-	
+
 	protected MovePMToSM() {
 		// for deserialisation...
 	}
-	
+
 	public Object getKey() {
 		return _key;
 	}
-	
+
 	public Destination getIM() {
 		return _im;
 	}
-	
+
 	public Destination getPM() {
 		return _pm;
 	}
-	
+
 	public String getIMCorrelationId() {
 		return _imCorrelationId;
 	}
-	
+
 	public String toString() {
 		return "<MovePMToSM:"+_key+">";
 	}
-	
+
 }

@@ -18,8 +18,12 @@ package org.codehaus.wadi;
 
 import javax.servlet.http.HttpSession;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface SessionWrapperFactory {
 
     HttpSession create(Session session);
-    
+
 }

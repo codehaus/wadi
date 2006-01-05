@@ -25,6 +25,10 @@ import java.util.TreeMap;
 import org.activecluster.Cluster;
 import org.activecluster.ClusterFactory;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   RingTopologyStrategy
   extends Abstract2TopologyStrategy

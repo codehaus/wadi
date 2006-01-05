@@ -22,13 +22,17 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.OldMessage;
 import org.codehaus.wadi.ProxiedLocation;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class RelocationResponse implements OldMessage, Serializable {
-	
+
 	protected String _sessionName;
 	protected String _nodeName;
 	protected Motable _motable;
 	protected ProxiedLocation _location;
-	
+
 	// use when relocating session...
 	public RelocationResponse(String sessionName, String nodeName, Motable motable) {
 		_sessionName=sessionName;
@@ -36,7 +40,7 @@ public class RelocationResponse implements OldMessage, Serializable {
 		_motable=motable;
 		_location=null;
 	}
-	
+
 	// use when relocating request...
 	public RelocationResponse(String sessionName, String nodeName, ProxiedLocation location) {
 		_sessionName=sessionName;
@@ -44,7 +48,7 @@ public class RelocationResponse implements OldMessage, Serializable {
 		_motable=null;
 		_location=location;
 	}
-	
+
 	// use when session was not found...
 	public RelocationResponse(String sessionName) {
 		_sessionName=sessionName;
@@ -52,29 +56,29 @@ public class RelocationResponse implements OldMessage, Serializable {
 		_motable=null;
 		_location=null;
 	}
-	
+
 	protected RelocationResponse() {
 		// for deserialising
 	}
-	
+
 	public String getSessionName() {
 		return _sessionName;
 	}
-	
+
 	public String getNodeName() {
 		return _nodeName;
 	}
-	
+
 	public Motable getMotable() {
 		return _motable;
 	}
-	
+
 	public ProxiedLocation getProxiedLocation() {
 		return _location;
 	}
-	
+
 	public String toString() {
 		return "<RelocationResponse: "+_sessionName+" -> "+_nodeName+": "+(_motable!=null?"session":_location!=null?"request":"failed")+">";
 	}
-	
+
 }

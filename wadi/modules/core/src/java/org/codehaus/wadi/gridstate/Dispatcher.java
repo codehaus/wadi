@@ -27,6 +27,10 @@ import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface Dispatcher {
 
     interface InternalDispatcher {
@@ -82,18 +86,18 @@ public interface Dispatcher {
 	// TODO - rather than owning this, we should be given a pointer to it at init()
 	// time, and this accessor should be removed...
 	PooledExecutor getExecutor();
-	
+
 	Destination getLocalDestination();
 	Destination getClusterDestination();
 
 	Map getDistributedState();
 	void setDistributedState(Map state) throws Exception;
-	
+
 	void start() throws Exception;
 	void stop() throws Exception;
-	
+
 	String getNodeName(Destination destination);
-	
+
     String getIncomingCorrelationId(ObjectMessage message) throws Exception;
     void setIncomingCorrelationId(ObjectMessage message, String correlationId) throws Exception;
     String getOutgoingCorrelationId(ObjectMessage message) throws Exception;
@@ -104,9 +108,9 @@ public interface Dispatcher {
 	String getNodeName();
 	long getInactiveTime();
 	int getNumNodes();
-	
+
 	// yeugh - AC i/f is creeping in here - temporary...
-	
+
 	void setClusterListener(ClusterListener listener);
-		
+
 }

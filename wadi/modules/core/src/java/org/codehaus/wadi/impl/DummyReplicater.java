@@ -19,16 +19,20 @@ package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Replicater;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DummyReplicater implements Replicater {
 
 	public boolean getReusingStore() {
 		return false;
 	}
-	
+
 	public void create(Object tmp) {
     	// empty
     }
-    
+
     public void update(Object tmp) { //TODO
     	// empty
 	}

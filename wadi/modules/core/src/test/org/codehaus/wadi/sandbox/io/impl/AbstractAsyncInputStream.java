@@ -28,6 +28,10 @@ import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class AbstractAsyncInputStream extends InputStream implements Puttable {
 
     protected static final Object _endOfQueue=new Object();

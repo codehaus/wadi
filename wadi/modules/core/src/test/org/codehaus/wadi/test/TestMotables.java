@@ -31,6 +31,10 @@ import org.codehaus.wadi.impl.SimpleStreamer;
 
 import junit.framework.TestCase;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TestMotables extends TestCase {
 
     public TestMotables(String name) {
@@ -44,7 +48,7 @@ public class TestMotables extends TestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
-    
+
     public void testDatabaseMotables() throws Exception {
         DataSource ds=new AxionDataSource("jdbc:axiondb:testdb");
         String table="SESSIONS";
@@ -56,48 +60,48 @@ public class TestMotables extends TestCase {
 
     public void testDatabaseMotables(Store store) throws Exception {
     }
-    
+
     public void testDiscMotables() throws Exception {
         testDiscMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), false, false));
         testDiscMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), true, false));
     }
- 
+
     public void testDiscMotables(Store store) throws Exception {
         assertTrue(true);
-        
+
         Motable sm0=new SimpleMotable();
         long creationTime=System.currentTimeMillis();
         long lastAccessedTime=creationTime+1;
         int maxInactiveInterval=30*60;
         String name="foo";
         byte[] bytes=new byte[]{'a','b','c','d','e','f'};
-        
+
         sm0.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
         sm0.setBodyAsByteArray(bytes);
-        
+
         File file=new File(new File("/tmp"), name+".ser");
         file.delete();
         assertTrue(!file.exists());
-        
+
         StoreMotable edm0=store.create();
         edm0.init(store);
         assertTrue(!file.exists());
         edm0.copy(sm0); // should create file
         assertTrue(file.exists());
         edm0=null;
-        
+
         StoreMotable edm1=store.create();
         edm1.init(store, name); // should load file
         assertTrue(file.exists());
-       
+
         Motable sm1=new SimpleMotable();
         sm1.copy(edm1);
         assertTrue(file.exists());
-        
+
         edm1.destroy(); // should remove file
         assertTrue(!file.exists());
-        
+
         assertTrue(sm0.equals(sm1));
     }
-    
+
 }

@@ -23,6 +23,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class AbstractContextualiser implements Contextualiser {
   protected final Log _log = LogFactory.getLog(getClass());
 

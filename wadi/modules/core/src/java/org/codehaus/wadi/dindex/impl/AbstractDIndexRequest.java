@@ -20,6 +20,10 @@ import java.io.Serializable;
 
 import org.codehaus.wadi.dindex.DIndexRequest;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class AbstractDIndexRequest implements DIndexRequest, Serializable {
 
     protected String _key;

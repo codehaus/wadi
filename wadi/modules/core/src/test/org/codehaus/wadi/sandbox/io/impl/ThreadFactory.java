@@ -16,6 +16,10 @@
  */
 package org.codehaus.wadi.sandbox.io.impl;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class ThreadFactory implements EDU.oswego.cs.dl.util.concurrent.ThreadFactory {
 
     protected int _count;

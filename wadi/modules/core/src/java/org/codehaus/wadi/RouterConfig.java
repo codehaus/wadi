@@ -18,6 +18,10 @@ package org.codehaus.wadi;
 
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface RouterConfig extends Config {
 
     String getSessionCookieName();

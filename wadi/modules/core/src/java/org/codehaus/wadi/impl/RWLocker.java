@@ -22,6 +22,10 @@ import org.codehaus.wadi.Motable;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class RWLocker implements Locker {
 
     public RWLocker() {

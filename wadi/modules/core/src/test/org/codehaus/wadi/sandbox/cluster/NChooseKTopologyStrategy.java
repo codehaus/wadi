@@ -29,6 +29,10 @@ import org.activecluster.ClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   NChooseKTopologyStrategy
   extends Abstract2TopologyStrategy

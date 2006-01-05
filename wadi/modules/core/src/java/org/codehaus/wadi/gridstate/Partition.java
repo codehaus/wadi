@@ -25,6 +25,10 @@ import org.codehaus.wadi.gridstate.impl.Location;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface Partition extends PMPartition {
 
 	void init(PartitionConfig config);

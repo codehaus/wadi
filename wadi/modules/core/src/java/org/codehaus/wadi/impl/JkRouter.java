@@ -26,27 +26,31 @@ import org.codehaus.wadi.InvocationContext;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.RouterConfig;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class JkRouter implements Router {
-	
+
 	protected final Log _log=LogFactory.getLog(getClass());
 	protected final String _info;
 	protected final String _suffix;
-	
+
 	public JkRouter(String info) {
 		_info=info;
 		_suffix="."+_info;
 	}
-	
+
 	protected RouterConfig _config;
-	
+
 	public void init(RouterConfig config) {
 		_config=config;
 	}
-	
+
 	public void destroy() {
 		_config=null;
 	}
-	
+
 	public String strip(String session) {
 		int i=session.lastIndexOf(".");
 		if (i<0)
@@ -54,15 +58,15 @@ public class JkRouter implements Router {
 		else
 			return session.substring(0, i);
 	}
-	
+
 	public String augment(String id) {
 		return augment(id, _suffix);
 	}
-	
+
 	public String augment(String id, String target) {
 		assert id!=null;
 		assert target.startsWith(".");
-		
+
 		int i=id.lastIndexOf(".");
 		if (i<0) // id has no routing info
 			return id+target;
@@ -71,46 +75,46 @@ public class JkRouter implements Router {
 				return id; // it's our routing info - leave it
 			else
 				return id.substring(0, i)+target; // it's someone else's - replace it
-		
+
 	}
-	
+
 	public String getInfo() {
 		return _info;
 	}
-	
+
 	public boolean canReroute() {
 		return true;
 	}
-	
+
 	public boolean reroute(InvocationContext invocationContext) {
 		WebInvocationContext context = (WebInvocationContext) invocationContext;
 		HttpServletRequest req = context.getHreq();
 		HttpServletResponse res = context.getHres();
 		String id=req.getRequestedSessionId();
-		
+
 		if (id.endsWith(_suffix))
 			return false;
-		
+
 		if (req.isRequestedSessionIdFromCookie())
 			return rerouteCookie(req, res, id);
 		else
 			return false;
 	}
-	
+
 	public boolean rerouteCookie(HttpServletRequest req, HttpServletResponse res, String id) {
 		return rerouteCookie(req, res, id, _suffix);
 	}
-	
+
 	public boolean rerouteCookie(HttpServletRequest req, HttpServletResponse res, String id, String target) {
 		assert target.startsWith(".");
-		
+
 		String oldId=id;
 		String newId=augment(id);
-		
+
 		if (_log.isInfoEnabled()) _log.info("rerouting cookie: " + oldId + " -> " + newId);
-		
+
 		Cookie[] cookies=req.getCookies();
-		
+
 		// TODO - what about case sensitivity on value ?
 		for (int i=0;i<cookies.length;i++)
 		{
@@ -119,32 +123,32 @@ public class JkRouter implements Router {
 			{
 				// name, path and domain must match those on client side,
 				// for cookie to be updated in browser...
-				
+
 				String cookiePath=_config.getSessionCookiePath(req);
 				if (cookiePath!=null)
 					cookie.setPath(cookiePath);
-				
+
 				String cookieDomain=_config.getSessionCookieDomain();
 				if (cookieDomain!=null)
 					cookie.setDomain(cookieDomain);
-				
+
 				cookie.setValue(newId); // the session id with redirected routing info
-				
+
 				res.addCookie(cookie);
 			}
 		}
-		
+
 		return false;
 	}
-	
+
 	public boolean rerouteURL() {
 		return rerouteURL(_suffix);
 	}
-	
+
 	public boolean rerouteURL(String target) {
 		assert target.startsWith(".");
 		// TODO Auto-generated method stub
 		return false;
 	}
-	
+
 }

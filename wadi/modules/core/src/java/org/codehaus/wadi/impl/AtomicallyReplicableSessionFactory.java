@@ -21,6 +21,10 @@ import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionConfig;
 import org.codehaus.wadi.SessionFactory;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class AtomicallyReplicableSessionFactory implements SessionFactory {
 
     public Session create(SessionConfig config) {

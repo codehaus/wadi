@@ -25,6 +25,10 @@ import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
 
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class BytesMessageInputStream extends AbstractAsyncInputStream implements Puttable {
 
     public BytesMessageInputStream(Channel inputQueue, long timeout) {

@@ -107,6 +107,10 @@ import ri.cache.BasicCache;
 
 //----------------------------------------
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class
   TestJCache
   extends TestCase

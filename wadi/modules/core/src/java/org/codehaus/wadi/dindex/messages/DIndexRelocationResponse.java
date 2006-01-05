@@ -20,6 +20,10 @@ import java.io.Serializable;
 
 import org.codehaus.wadi.dindex.DIndexResponse;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DIndexRelocationResponse implements DIndexResponse, Serializable {
 
     public DIndexRelocationResponse() {
@@ -30,5 +34,5 @@ public class DIndexRelocationResponse implements DIndexResponse, Serializable {
     public String toString() {
         return "<DIndexRelocationResponse>";
     }
- 
+
 }

@@ -44,6 +44,10 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 // Do not put Connections onto Queue until the have input
 // When a Connection's Peer finishes, it loses its Thread, but is not clos()-ed
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class NIOServer extends AbstractSocketServer implements NIOPipeConfig {
 
     protected final SynchronizedBoolean _accepting=new SynchronizedBoolean(false);

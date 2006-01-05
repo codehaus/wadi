@@ -16,6 +16,10 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface Server {
 
     void init(ServerConfig config);
@@ -23,9 +27,9 @@ public interface Server {
     void stop() throws Exception;
     void waitForExistingPipes();
     void stopAcceptingPipes();
-    
+
     // Connection container...
-    
+
     void run(Pipe pipe);
-    
+
 }

@@ -30,6 +30,10 @@ import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class SpringManagerFactory {
 
     protected final static Log _log = LogFactory.getLog(SpringManagerFactory.class);
@@ -62,9 +66,9 @@ public class SpringManagerFactory {
                 cfg.setLocation(props);
         else
             _log.info("properties file "+wadiPropsName+" does not exist");
-        
+
         _log.info("java.io.tmpdir="+System.getProperty("java.io.tmpdir"));
-        
+
     	new XmlBeanDefinitionReader(dlbf).loadBeanDefinitions(new InputStreamResource(descriptor));
     	cfg.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
     	cfg.postProcessBeanFactory(dlbf);

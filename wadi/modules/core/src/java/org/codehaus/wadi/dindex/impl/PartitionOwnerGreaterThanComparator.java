@@ -19,6 +19,10 @@ package org.codehaus.wadi.dindex.impl;
 import java.util.Comparator;
 
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class PartitionOwnerGreaterThanComparator implements Comparator {
 
     public int compare(Object o2, Object o1) {
@@ -30,7 +34,7 @@ public class PartitionOwnerGreaterThanComparator implements Comparator {
         else
             return p1._node.getName().compareTo(p2._node.getName());
     }
-    
+
     public boolean equals(Object obj) {
         return obj==this || obj.getClass()==getClass();
     }

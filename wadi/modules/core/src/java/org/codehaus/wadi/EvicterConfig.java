@@ -21,10 +21,14 @@ import java.util.Timer;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface EvicterConfig extends Config {
 
     Timer getTimer();
-    
+
     // BestEffortEvicters
     Map getMap();
     Sync getEvictionLock(String id, Motable motable);
@@ -34,5 +38,5 @@ public interface EvicterConfig extends Config {
 
     // StrictEvicters
     int getMaxInactiveInterval();
-    
+
 }

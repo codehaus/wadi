@@ -23,6 +23,10 @@ import javax.jms.JMSException;
 
 import org.activecluster.LocalNode;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DummyLocalNode implements LocalNode {
 
     public DummyLocalNode() {

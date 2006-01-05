@@ -21,6 +21,10 @@ import java.util.ArrayList;
 
 import org.codehaus.wadi.dindex.Partition;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class PartitionKeys implements Serializable {
 
     protected int[] _keys;

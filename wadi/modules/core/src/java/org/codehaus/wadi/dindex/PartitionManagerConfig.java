@@ -28,15 +28,19 @@ import org.codehaus.wadi.Motable;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface PartitionManagerConfig {
 
     void findRelevantSessionNames(int numPartitions, Collection[] resultSet);
     Node getCoordinatorNode();
     long getInactiveTime();
-    
+
     boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
     String getNodeName(Destination destination);
-    
+
     Immoter getImmoter(String name, Motable immotable);
     Sync getInvocationLock(String name);
 

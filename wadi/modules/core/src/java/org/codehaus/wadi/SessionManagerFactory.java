@@ -19,8 +19,12 @@ package org.codehaus.wadi;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface SessionManagerFactory {
-	
+
 	public abstract Object create(
 			SessionPool sessionPool,
 			AttributesFactory attributesFactory,
@@ -39,5 +43,5 @@ public interface SessionManagerFactory {
 			InetSocketAddress httpAddress,
 			int numPartitions
 			) throws Exception;
-	
+
 }

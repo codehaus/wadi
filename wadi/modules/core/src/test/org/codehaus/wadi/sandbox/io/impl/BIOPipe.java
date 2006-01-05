@@ -26,6 +26,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.io.PipeConfig;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class BIOPipe extends AbstractPipe {
 
     protected static final Log _log=LogFactory.getLog(BIOPipe.class);

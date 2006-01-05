@@ -21,6 +21,7 @@ import java.io.Serializable;
 /**
  * defines the API used for relocating requests to other nodes..
  *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public interface InvocationProxy extends Serializable {

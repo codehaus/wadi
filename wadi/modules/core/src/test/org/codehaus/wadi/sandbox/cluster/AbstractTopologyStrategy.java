@@ -42,6 +42,10 @@ import org.apache.commons.logging.LogFactory;
 
 // and more...
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public abstract class
   AbstractTopologyStrategy
   implements TopologyStrategy

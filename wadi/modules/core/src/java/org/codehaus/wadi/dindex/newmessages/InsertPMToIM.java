@@ -20,21 +20,25 @@ import java.io.Serializable;
 
 import org.codehaus.wadi.dindex.DIndexResponse;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class InsertPMToIM implements DIndexResponse, Serializable {
 
 	protected boolean _success;
-	
+
     public InsertPMToIM(boolean success) {
         super();
         _success=success;
     }
-    
+
     public boolean getSuccess() {
     	return _success;
     }
-    
+
     public String toString() {
         return "<InsertPMToIM:"+_success+">";
     }
-    
+
 }

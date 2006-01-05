@@ -31,15 +31,19 @@ import EDU.oswego.cs.dl.util.concurrent.Puttable;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class NIOPipe extends AbstractPipe implements Puttable {
-    
+
     protected final static Log _log=LogFactory.getLog(NIOPipe.class);
-    
+
     protected final SocketChannel _channel;
     protected final SelectionKey _key;
     protected final Channel _inputQueue;
     protected final Puttable _outputQueue;
- 
+
     public NIOPipe(NIOPipeConfig config, long timeout, SocketChannel channel, SelectionKey key, Channel inputQueue, Puttable outputQueue, int bufferSize) {
         super(config, timeout);
         _channel=channel;
@@ -52,16 +56,16 @@ public class NIOPipe extends AbstractPipe implements Puttable {
         _outputStream=new ByteBufferOutputStream(_channel, bufferSize);
         }
 
-    protected final SynchronizedBoolean _running=new SynchronizedBoolean(false); 
+    protected final SynchronizedBoolean _running=new SynchronizedBoolean(false);
     public boolean getRunning() {return _running.get();}
     public void setRunning(boolean running) {_running.set(running);}
-    
+
     protected ByteBufferInputStream _inputStream;
     public InputStream getInputStream() {return _inputStream;}
 
     protected OutputStream _outputStream;
     public OutputStream getOutputStream() {return _outputStream;}
-    
+
     public void close() throws IOException {
         super.close();
         Sync lock=((NIOPipeConfig)_config).getLock();
@@ -72,7 +76,7 @@ public class NIOPipe extends AbstractPipe implements Puttable {
                 // ignore
             }
         } while (Thread.interrupted());
-        
+
         try {
             //_log.info("cancelling: "+_key);
             _channel.socket().shutdownOutput();
@@ -91,7 +95,7 @@ public class NIOPipe extends AbstractPipe implements Puttable {
     }
 
     // Puttable - ByteBuffers only please :-)
-    
+
     public void put(Object item) throws InterruptedException {
         _inputStream.put(item);
     }

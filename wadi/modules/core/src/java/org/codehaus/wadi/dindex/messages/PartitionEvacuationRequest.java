@@ -20,6 +20,10 @@ import java.io.Serializable;
 
 import org.codehaus.wadi.OldMessage;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class PartitionEvacuationRequest implements OldMessage, Serializable {
 
     public PartitionEvacuationRequest() {

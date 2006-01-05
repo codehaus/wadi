@@ -35,6 +35,10 @@ import org.mortbay.jetty.servlet.WebApplicationContext;
 import org.mortbay.jetty.servlet.WebApplicationHandler;
 
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class JettyNode implements Node {
 
 	public static class SwitchableListener extends SocketListener {

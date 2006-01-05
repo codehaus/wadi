@@ -19,14 +19,18 @@ package org.codehaus.wadi.impl;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DummyStatefulHttpServletRequestWrapperPool implements PoolableInvocationWrapperPool {
-	
+
 	public PoolableInvocationWrapper take() {
 		return new StatefulHttpServletRequestWrapper();
 	}
-	
+
 	public void put(PoolableInvocationWrapper wrapper) {
 		// just drop it...
 	}
-	
+
 }

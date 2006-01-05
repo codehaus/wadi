@@ -20,6 +20,10 @@ package org.codehaus.wadi.impl;
  * A DatabaseReplicater holds no per Session state, so all Sessions may use the same Replicater
  *
  */
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DatabaseReplicaterFactory extends StatelessReplicaterFactory {
 
 	public DatabaseReplicaterFactory(DatabaseStore store, boolean reusingStore) {

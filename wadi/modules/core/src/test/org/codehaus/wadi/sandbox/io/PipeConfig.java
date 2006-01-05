@@ -19,11 +19,15 @@ package org.codehaus.wadi.sandbox.io;
 import org.codehaus.wadi.Config;
 import org.codehaus.wadi.Contextualiser;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public interface PipeConfig extends Config {
 
     void notifyIdle(Pipe pipe); // called by Connection on becoming idle...
     void notifyClosed(Pipe pipe); // called by Connection on being closed...
-    
+
     Contextualiser getContextualiser();
     String getNodeId();
 

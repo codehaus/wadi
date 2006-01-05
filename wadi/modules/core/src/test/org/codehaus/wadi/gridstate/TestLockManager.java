@@ -25,6 +25,10 @@ import org.codehaus.wadi.gridstate.impl.StupidLockManager;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import junit.framework.TestCase;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TestLockManager extends TestCase {
 
     protected final Log _log=LogFactory.getLog(getClass());

@@ -24,18 +24,22 @@ import org.codehaus.wadi.RelocaterConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class DummyRelocater implements Relocater {
-	
+
 	public void init(RelocaterConfig config) {
 		// empty
 	}
-	
+
 	public void destroy() {
 		// empty
 	}
-	
+
 	public boolean relocate(InvocationContext invocationContext, String name, Immoter immoter, Sync motionLock) throws InvocationException {
 		return true;
 	}
-	
+
 }

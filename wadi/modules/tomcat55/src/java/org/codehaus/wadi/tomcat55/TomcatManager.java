@@ -47,6 +47,10 @@ import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 {
   protected static final Log _log = LogFactory.getLog(TomcatManager.class);
@@ -113,19 +117,19 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 	  } catch (Exception e) {
 		  throw new RuntimeException("Required resource: '/WEB-INF/wadi-web.xml' not found - please check the web app.", e);
 	  }
-	  
+
 	  _wadi.init(this);
 	  try {
 		  _wadi.start();
-		  
+
 		  if (_container==null) {
 			  _log.warn("container not set - fn-ality will be limited");
 		  } else {
 			  Context context=((Context)_container);
-			  
+
 			  // install Valve
 			  ((StandardContext)context).addValve(new Valve(Pattern.compile("127\\.0\\.0\\.1|192\\.168\\.0\\.\\d{1,3}")));
-			  
+
 			  // install filter
 			  String filterName="WadiFilter";
 			  FilterDef fd=new FilterDef();
@@ -136,13 +140,13 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 			  fm.setFilterName(filterName);
 			  fm.setURLPattern("/*");
 			  context.addFilterMap(fm);
-			  
+
 			  //				// is this a distributable webapp ?
 			  //				boolean distributable=context.getDistributable();
 			  //				if (distributable && !_distributable)
 			  //				setDistributable(distributable);
 		  }
-		  
+
 	  } catch (Exception e) {
 		  throw new LifecycleException(e);
 	  }

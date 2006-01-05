@@ -39,6 +39,10 @@ import org.codehaus.wadi.Dirtier;
 // TODO - consider mode where rep is shifted from byte->Object->byte for the duration of any change
 // this would be useful for testing that apps were distributable
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class WholeAttributes implements Attributes {
 	protected static final Log _log = LogFactory.getLog(WholeAttributes.class);
 
