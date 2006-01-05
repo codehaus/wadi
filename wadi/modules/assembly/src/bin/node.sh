@@ -40,10 +40,6 @@ JAVA=$JAVA_HOME/bin/java
 echo "JAVA_HOME=$JAVA_HOME"
 echo "WADI_HOME=$WADI_HOME"
 echo "WADI_VERSION=$WADI_VERSION"
-echo "JETTY5_HOME=$JETTY5_HOME"
-echo "JETTY6_HOME=$JETTY6_HOME"
-echo "TOMCAT50_HOME=$TOMCAT50_HOME"
-echo "TOMCAT55_HOME=$TOMCAT55_HOME"
 $JAVA -fullversion
 
 properties=`sed -e '/#.*/d' -e 's/${wadi.home}/$WADI_HOME/g' -e 's/\(.*\)/-D\1/g' $WADI_HOME/conf/node.$instance.properties | tr '\n' ' '`
@@ -79,6 +75,8 @@ case "$container" in
 	    exit 1
 	fi
 
+	echo "JETTY5_HOME=$JETTY5_HOME"
+
 	JETTY_BASE=$INSTANCE
 	cd $JETTY5_HOME
 
@@ -99,6 +97,8 @@ case "$container" in
 	    exit 1
 	fi
 
+	echo "JETTY6_HOME=$JETTY6_HOME"
+
 	JETTY_BASE=$INSTANCE
 	cd $JETTY6_HOME
 
@@ -117,6 +117,8 @@ case "$container" in
 	    echo "Please set TOMCAT50_HOME"
 	    exit 1
 	fi
+
+	echo "TOMCAT50_HOME=$TOMCAT50_HOME"
 
 	CATALINA_HOME=$TOMCAT50_HOME
 	CATALINA_BASE=$INSTANCE
@@ -146,6 +148,9 @@ case "$container" in
 	    echo "Please set TOMCAT55_HOME"
 	    exit 1
 	fi
+
+	echo "TOMCAT55_HOME=$TOMCAT55_HOME"
+
 	CATALINA_HOME=$TOMCAT55_HOME
 	CATALINA_BASE=$INSTANCE
 	cd $CATALINA_HOME/bin
@@ -175,6 +180,8 @@ case "$container" in
 	    exit 1
 	fi
 
+	echo "GERONIMO_JETTY_HOME=$GERONIMO_JETTY_HOME"
+
 	# deploy webapp
 	cp -f $WADI_HOME/webapps/wadi-webapp-*.war $GERONIMO_JETTY_HOME/deploy
 
@@ -186,7 +193,31 @@ case "$container" in
 	mv $file.wadi $file
 
 	cd $GERONIMO_JETTY_HOME/bin
-	export JAVA_OPTS=$properties
+	export JAVA_OPTS="$properties $JPDA_OPTS"
+	$XTERM ./geronimo.sh run
+	;;
+
+	geronimo-tomcat)
+	if [ -z "GERONIMO_TOMCAT_HOME" ]
+	then
+	    echo "Please set GERONIMO_TOMCAT_HOME"
+	    exit 1
+	fi
+
+	echo "GERONIMO_TOMCAT_HOME=$GERONIMO_TOMCAT_HOME"
+
+	# deploy webapp
+	cp -f $WADI_HOME/webapps/wadi-webapp-*.war $GERONIMO_TOMCAT_HOME/deploy
+
+	## add logging config
+	file=$GERONIMO_TOMCAT_HOME/var/log/server-log4j.properties
+	grep -vi wadi $file > $file.wadi
+	echo "## WADI Logging config" >> $file.wadi
+	echo "log4j.category.org.codehaus.wadi.Logger=DEBUG" >> $file.wadi
+	mv $file.wadi $file
+
+	cd $GERONIMO_TOMCAT_HOME/bin
+	export JAVA_OPTS="$properties $JPDA_OPTS"
 	$XTERM ./geronimo.sh run
 	;;
 
@@ -196,6 +227,8 @@ case "$container" in
 	    echo "Please set JBOSS4_TOMCAT_HOME"
 	    exit 1
 	fi
+
+	echo "JBOSS4_TOMCAT_HOME=$JBOSS4_TOMCAT_HOME"
 
 	properties="\
 	$properties\
@@ -222,7 +255,7 @@ case "$container" in
 	## we need to enable wadi logging somehow... - TODO
 
 	cd $JBOSS4_TOMCAT_HOME/bin
-	export JAVA_OPTS=$properties
+	export JAVA_OPTS="$properties $JPDA_OPTS"
 	$XTERM ./run.sh
 	;;
 
