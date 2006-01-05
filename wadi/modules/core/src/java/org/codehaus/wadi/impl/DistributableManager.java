@@ -40,7 +40,7 @@ import org.codehaus.wadi.impl.ClusteredManager.HelperPair;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
 /**
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * A StandardManager that knows how to Serialise HttpSessions.
  */
 public class DistributableManager extends StandardManager implements ReplicableSessionConfig, DistributableContextualiserConfig, StreamerConfig {

@@ -30,7 +30,7 @@ import org.codehaus.wadi.sandbox.wcache.RequestProcessor;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  * A Map of content in local memory. Exclusive access to the map is assumed.
  */

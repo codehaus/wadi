@@ -25,7 +25,7 @@ package org.codehaus.wadi.sandbox.jcache;
 import javax.cache.CacheEntry;
 
 /**
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates

@@ -32,7 +32,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 /**
  * Creates, reuses and destroys, on-the-fly, a lock for a given Key.
  *
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  */
 public class SmartLockManager implements LockManager {

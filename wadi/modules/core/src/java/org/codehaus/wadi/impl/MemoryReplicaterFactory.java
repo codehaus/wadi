@@ -23,7 +23,7 @@ import org.codehaus.wadi.ReplicaterFactory;
  * MemoryReplicaters hold per Session state (the location of their replication partners), so we need to create a new
  * MemoryReplicater for each session.
  *
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  */
 public class MemoryReplicaterFactory implements ReplicaterFactory {

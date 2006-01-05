@@ -34,7 +34,7 @@ import org.codehaus.wadi.sandbox.wcache.RequestProcessor;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  * Promotion from this cache will result in the loading of content from local disc
  * Demotion to this cache will result in the storing of content onto local disc.

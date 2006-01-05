@@ -30,7 +30,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 /**
  * Creates and reuses, on-the-fly, a lock for a given Key, but will never destroy the lock - temporary solution...
  *
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  */
 public class StupidLockManager implements LockManager {
