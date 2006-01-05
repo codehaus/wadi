@@ -52,7 +52,7 @@ import org.codehaus.wadi.impl.Quipu;
 /**
  * A Simple PartitionManager.
  *
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  */
 public class SimplePartitionManager implements PartitionManager, PartitionConfig {

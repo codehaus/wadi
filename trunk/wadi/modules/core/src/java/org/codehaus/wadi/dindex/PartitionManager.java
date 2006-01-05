@@ -27,7 +27,7 @@ import org.codehaus.wadi.dindex.impl.PartitionKeys;
  *
  * A lot of work needed here...
  *
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  */
 public interface PartitionManager {

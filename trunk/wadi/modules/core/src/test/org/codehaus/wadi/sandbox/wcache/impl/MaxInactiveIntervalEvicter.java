@@ -28,7 +28,7 @@ import org.codehaus.wadi.sandbox.wcache.RequestProcessor;
 import org.codehaus.wadi.sandbox.wcache.Cache.Evicter;
 
 /**
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  * Choose to evict given entry if it has remained inactive for more than a than a given Max-Inactive-Interval
  */

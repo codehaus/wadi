@@ -46,7 +46,7 @@ import org.codehaus.wadi.sandbox.wcache.impl.NeverEvicter;
 import junit.framework.TestCase;
 
 /**
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates

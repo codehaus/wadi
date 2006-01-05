@@ -26,7 +26,7 @@ import org.codehaus.wadi.sandbox.wcache.Cache;
 import org.codehaus.wadi.sandbox.wcache.RequestProcessor;
 
 /**
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  * Promotion from this tier should result in content being loaded from JDBC
  * Demotion to this tier should result in content being store via JDBC

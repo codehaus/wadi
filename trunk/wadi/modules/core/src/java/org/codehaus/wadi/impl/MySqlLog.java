@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * MySql Logging -> Commons Logging bridge.
  * 
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
   */
 public class MySqlLog implements com.mysql.jdbc.log.Log {
 	

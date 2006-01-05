@@ -51,7 +51,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * GCache is a JCache compatible interface onto DIndex - WADI's own distributed index, which fulfills
  * WADI's requirements for this lookup...
  *
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  */
 public class GCache implements Cache, DispatcherConfig, StateManagerConfig, PartitionManagerConfig {

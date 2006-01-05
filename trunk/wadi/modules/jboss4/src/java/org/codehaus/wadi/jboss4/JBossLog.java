@@ -32,7 +32,7 @@ import org.jboss.logging.Logger;
  *
  * and you should see lots of TRACE statements when WADI runs (slowly)
  *
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  */
 public class JBossLog implements Log {
 

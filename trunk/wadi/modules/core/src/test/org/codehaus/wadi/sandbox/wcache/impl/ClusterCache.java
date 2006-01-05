@@ -28,7 +28,7 @@ import org.codehaus.wadi.sandbox.wcache.RequestProcessor;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  * Promotion from this cache may result in some for of lazy remote reference.
  * Demotion to this cache should result in a migration off-node.

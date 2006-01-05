@@ -26,7 +26,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * If the Object is null, the LockManager can either allocate its own lock (which will hang around for as long as it is used),
  * or just return null.
  *
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  */
 public class HybridLockManager extends SmartLockManager {

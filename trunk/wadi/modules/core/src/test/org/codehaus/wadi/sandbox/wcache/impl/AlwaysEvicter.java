@@ -26,7 +26,7 @@ import org.codehaus.wadi.sandbox.wcache.RequestProcessor;
 import org.codehaus.wadi.sandbox.wcache.Cache.Evicter;
 
 /**
- * @author jules
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  * Always choose to evict given entry
  */
