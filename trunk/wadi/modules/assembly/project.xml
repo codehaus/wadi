@@ -112,22 +112,6 @@
       </properties>
     </dependency>
 
-    <!-- for axion -->
-    <dependency>
-      <groupId>commons-primitives</groupId>
-      <artifactId>commons-primitives</artifactId>
-      <version>1.0</version>
-      <properties>
-        <dist.bundle>lib</dist.bundle>
-      </properties>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-collections</groupId>
-      <artifactId>commons-collections</artifactId>
-      <version>3.1</version>
-    </dependency>
-
     <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-jms</artifactId>

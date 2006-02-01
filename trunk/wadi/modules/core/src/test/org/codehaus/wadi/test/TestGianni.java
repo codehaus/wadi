@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.test;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +29,8 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.derby.jdbc.EmbeddedDataSource;
+import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
@@ -63,6 +66,7 @@ import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
+import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.WebInvocationContext;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
@@ -99,15 +103,24 @@ public class TestGianni extends TestCase {
 		// Terminator
 		Contextualiser terminator=new DummyContextualiser();
 
-		// DB
-		//String url="jdbc:axiondb:WADI";
-		//DataSource ds=new AxionDataSource(url);
-		MysqlDataSource msds=new MysqlDataSource();
-		String url="jdbc:mysql://localhost:3306/WADI";
-		msds.setUrl(url+"?user=root");
-		msds.setLoggerClassName(MySqlLog.class.getName());
-		msds.setProfileSQL(true);
-		DataSource ds=msds;
+		// Axion
+    //String url="jdbc:axiondb:WADI";
+    //DataSource ds=new AxionDataSource(url);
+    // Derby
+    String url="jdbc:derby:WADI;create=true";
+    EmbeddedDataSource eds=new EmbeddedDataSource();
+    eds.setDatabaseName("${wadi.home}/tmp/${node.name}/db");
+    eds.setCreateDatabase("true");
+    eds.setConnectionAttributes("derby.language.logStatementText=true;traceFile=derby-trace.out;traceLevel=255");
+    DataSource ds=eds;
+  
+    // MySQL
+		//MysqlDataSource msds=new MysqlDataSource();
+		//String url="jdbc:mysql://localhost:3306/WADI";
+		//msds.setUrl(url+"?user=root");
+		//msds.setLoggerClassName(MySqlLog.class.getName());
+		//msds.setProfileSQL(true);
+		//DataSource ds=msds;
 		String storeTable="SESSIONS";
 		DatabaseStore store=new DatabaseStore(url, ds, storeTable, false, true, true);
 
@@ -202,15 +215,29 @@ public class TestGianni extends TestCase {
 		// Terminator
 		Contextualiser terminator=new DummyContextualiser();
 
-		// DB
-		//String url="jdbc:axiondb:WADI";
-		//DataSource ds=new AxionDataSource(url);
-		MysqlDataSource msds=new MysqlDataSource();
-		String url="jdbc:mysql://localhost:3306/WADI";
-		msds.setUrl(url+"?user=root");
-		msds.setLoggerClassName(MySqlLog.class.getName());
-		msds.setProfileSQL(true);
-		DataSource ds=msds;
+    // Axion
+    String url="jdbc:axiondb:WADI";
+    AxionDataSource ads=new AxionDataSource(url);
+    DataSource ds=ads;
+    
+    
+    // Derby
+//    File dir=Utils.createTempDirectory("derby-", "-test", new File("/tmp"));
+//    dir.delete();
+//		String url="jdbc:derby:WADI";
+//    EmbeddedDataSource eds=new EmbeddedDataSource();
+//    eds.setDatabaseName(dir.getCanonicalPath());
+//    eds.setCreateDatabase("create");
+//    DataSource ds=eds;
+  
+    // MySQL
+//    MysqlDataSource msds=new MysqlDataSource();
+//    String url="jdbc:mysql://localhost:3306/WADI";
+//    msds.setUrl(url+"?user=root");
+//    msds.setLoggerClassName(MySqlLog.class.getName());
+//    msds.setProfileSQL(true);
+//    DataSource ds=msds;
+    
 		String storeTable="SESSIONS";
 		DatabaseStore store=new DatabaseStore(url, ds, storeTable, false, true, true);
 

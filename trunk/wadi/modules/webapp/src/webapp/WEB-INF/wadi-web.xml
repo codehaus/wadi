@@ -51,19 +51,19 @@
     >
   </bean>
 
-  <!-- the Contextualiser stack...(shorthand for now) -->
-
   <bean
     id="MemoryMap"
     class="EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap"
     >
   </bean>
 
+<!-- Embedded Axion DS -->
+<!--
   <bean
     id="DatabaseURL"
     class="java.lang.String"
     >
-    <constructor-arg><value>jdbc:axiondb:WADI</value></constructor-arg>
+    <constructor-arg><value>jdbc:axiondb:testdb</value></constructor-arg>
   </bean>
 
   <bean
@@ -71,6 +71,84 @@
     class="org.axiondb.jdbc.AxionDataSource"
     >
     <constructor-arg><ref bean="DatabaseURL"/></constructor-arg>
+  </bean>
+-->
+
+<!-- Basic MySQL DS -->
+<!--
+  <bean
+    id="DatabaseURL"
+    class="java.lang.String"
+    >
+    <constructor-arg><value>jdbc:mysql://localhost:3306/WADI?user=root</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="DataSource"
+    class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource"
+    >
+    <property name="url"><ref bean="DatabaseURL"/></property>
+    <property name="profileSQL"><value>false</value></property>
+  </bean>
+-->
+
+<!-- Pooled MySQL DS -->
+<!--
+  <bean
+    id="DatabaseURL"
+    class="java.lang.String"
+    >
+    <constructor-arg><value>jdbc:mysql://localhost/WADI?socket=/tmp/mysql.sock</value></constructor-arg>
+  </bean>
+
+  <bean id="DataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <property name="driverClassName"><value>com.mysql.jdbc.Driver</value></property>
+    <property name="url"><ref bean="DatabaseURL"/></property>
+    <property name="username"><value>root</value></property>
+    <property name="initialSize"><value>60</value></property>
+    <property name="maxActive"><value>60</value>
+    </property><property name="maxIdle"><value>60</value></property>
+  </bean>
+-->
+
+<!-- Embedded Derby DS -->
+<!--
+  <bean
+    id="DatabaseURL"
+    class="java.lang.String"
+    >
+    <constructor-arg><value>jdbc:derby:WADI</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="DataSource"
+    class="org.apache.derby.jdbc.EmbeddedDataSource"
+    >
+    <property name="databaseName"><value>${wadi.home}/tmp/${node.name}/db</value></property>
+    <property name="createDatabase"><value>create</value></property>
+    <property name="connectionAttributes"><value>derby.language.logStatementText=true;traceFile=derby-trace.out;traceLevel=255</value></property>
+  </bean>
+-->
+
+<!-- External Derby DS -->
+<!--
+-->
+  <bean
+    id="DatabaseURL"
+    class="java.lang.String"
+    >
+    <constructor-arg><value>jdbc:derby://localhost:1527/WADI</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="DataSource"
+    class="org.apache.derby.jdbc.ClientDataSource"
+    >
+    <property name="serverName"><value>localhost</value></property>
+    <property name="portNumber"><value>1527</value></property>
+    <property name="databaseName"><value>WADI</value></property>
+    <property name="user"><value>me</value></property>
+    <property name="password"><value>mine</value></property>
   </bean>
 
   <bean
@@ -144,7 +222,7 @@
     <constructor-arg><ref bean="DatabaseURL"/></constructor-arg>
     <constructor-arg><ref bean="DataSource"/></constructor-arg>
     <constructor-arg><value>SESSIONS</value></constructor-arg>
-    <constructor-arg type="boolean"><value>false</value></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- useNIO: NYI -->
     <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- reusingStore -->
     <constructor-arg type="boolean"><value>true</value></constructor-arg><!-- build -->
   </bean>
@@ -155,7 +233,7 @@
     >
     <constructor-arg><ref bean="DummyContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="Collapser"/></constructor-arg>
-    <constructor-arg type="boolean"><value>true</value></constructor-arg>
+    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- clean? -->
     <constructor-arg><ref bean="DatabaseStore"/></constructor-arg>
   </bean>
 

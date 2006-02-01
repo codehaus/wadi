@@ -27,11 +27,6 @@
         </dependency>
 
         <dependency>
-            <groupId>axion</groupId>
-            <artifactId>axion</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>concurrent</groupId>
             <artifactId>concurrent</artifactId>
         </dependency>
@@ -45,27 +40,6 @@
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging-api</artifactId>
             <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-dbcp</groupId>
-            <artifactId>commons-dbcp</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-pool</groupId>
-            <artifactId>commons-pool</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-primitives</groupId>
-            <artifactId>commons-primitives</artifactId>
         </dependency>
 
         <dependency>
@@ -99,7 +73,27 @@
             <artifactId>mx4j-remote</artifactId>
         </dependency>
 
-        <dependency>
+    <dependency><!-- runtime lib for connection pooling -->
+      <groupId>commons-dbcp</groupId>
+      <artifactId>commons-dbcp</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>axion</groupId>
+      <artifactId>axion</artifactId>
+    </dependency>
+
+    <dependency><!-- derby db server side -->
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derby</artifactId>
+    </dependency>
+
+    <dependency><!-- derby db client side -->
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derbyclient</artifactId>
+    </dependency>
+
+        <dependency><!-- mysql db client side -->
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
