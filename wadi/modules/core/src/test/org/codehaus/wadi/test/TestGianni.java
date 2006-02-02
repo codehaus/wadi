@@ -30,7 +30,7 @@ import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.derby.jdbc.EmbeddedDataSource;
-import org.axiondb.jdbc.AxionDataSource;
+//import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
@@ -55,7 +55,7 @@ import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.impl.GiannisContextualiser;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
-import org.codehaus.wadi.impl.MySqlLog;
+//import org.codehaus.wadi.impl.MySqlLog;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.AbstractReplicableSession;
 import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
@@ -69,7 +69,7 @@ import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.WebInvocationContext;
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+//import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 
 import junit.framework.TestCase;
 
@@ -106,6 +106,7 @@ public class TestGianni extends TestCase {
 		// Axion
     //String url="jdbc:axiondb:WADI";
     //DataSource ds=new AxionDataSource(url);
+    
     // Derby
     String url="jdbc:derby:WADI;create=true";
     EmbeddedDataSource eds=new EmbeddedDataSource();
@@ -216,26 +217,26 @@ public class TestGianni extends TestCase {
 		Contextualiser terminator=new DummyContextualiser();
 
     // Axion
-    String url="jdbc:axiondb:WADI";
-    AxionDataSource ads=new AxionDataSource(url);
-    DataSource ds=ads;
+//    String url="jdbc:axiondb:WADI";
+//    AxionDataSource ads=new AxionDataSource(url);
+//    DataSource ds=ads;
     
     
     // Derby
-//    File dir=Utils.createTempDirectory("derby-", "-test", new File("/tmp"));
-//    dir.delete();
-//		String url="jdbc:derby:WADI";
-//    EmbeddedDataSource eds=new EmbeddedDataSource();
-//    eds.setDatabaseName(dir.getCanonicalPath());
-//    eds.setCreateDatabase("create");
-//    DataSource ds=eds;
+    File dir=Utils.createTempDirectory("derby-", "-test", new File("/tmp"));
+    dir.delete();
+		String url="jdbc:derby:WADI";
+    EmbeddedDataSource eds=new EmbeddedDataSource();
+    eds.setDatabaseName(dir.getCanonicalPath());
+    eds.setCreateDatabase("create");
+    DataSource ds=eds;
   
     // MySQL
 //    MysqlDataSource msds=new MysqlDataSource();
 //    String url="jdbc:mysql://localhost:3306/WADI";
 //    msds.setUrl(url+"?user=root");
 //    msds.setLoggerClassName(MySqlLog.class.getName());
-//    msds.setProfileSQL(true);
+//    msds.setProfileSQL(false);
 //    DataSource ds=msds;
     
 		String storeTable="SESSIONS";
