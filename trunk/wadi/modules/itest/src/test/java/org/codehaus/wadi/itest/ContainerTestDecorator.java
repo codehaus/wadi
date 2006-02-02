@@ -63,15 +63,15 @@ public class ContainerTestDecorator extends TestSetup {
   private static final String HTTP_PORT_PROP_NAME = "http.port";
   // cargo property names
   private static final String TOMCAT55_KEY_NAME = "tomcat55";
-  private static final String TOMCAT50_KEY_NAME = "tomcat50";
-  private static final String CARGO_CONTAINER_NAME_PROP_NAME = "cargoContainerName";
-  private static final String MANAGER_CLASS_NAME_PROP_NAME = "managerClassName";
-  private static final String CONTAINER_URL_PROP_NAME = "url";
-  private static final String INSTALL_DIR_PROP_NAME = "installDir";
-  private static final String CONFIG_BASE_PROP_NAME = "configBase";
-  // the config dir base is the path that the various containers will be
-  // copied to
-  private static final String CONTAINER_CONFIG_DIR_BASE = "target/test-containers/";
+//  private static final String TOMCAT50_KEY_NAME = "tomcat50";
+//  private static final String CARGO_CONTAINER_NAME_PROP_NAME = "cargoContainerName";
+//  private static final String MANAGER_CLASS_NAME_PROP_NAME = "managerClassName";
+//  private static final String CONTAINER_URL_PROP_NAME = "url";
+//  private static final String INSTALL_DIR_PROP_NAME = "installDir";
+//  private static final String CONFIG_BASE_PROP_NAME = "configBase";
+//  // the config dir base is the path that the various containers will be
+//  // copied to
+//  private static final String CONTAINER_CONFIG_DIR_BASE = "target/test-containers/";
   private static final String WADI_VERSION = System.getProperty("wadi.version");
   // the systemProps are initialized in a static block at the end of this
   // class
@@ -236,19 +236,19 @@ public class ContainerTestDecorator extends TestSetup {
     return container;
   }
 
-  private String getWebappToken(WAR deployable, String managerClassName) {
-    StringBuffer contextTokenValue = new StringBuffer();
-    contextTokenValue.append("\t<Context path=\"");
-    contextTokenValue.append("/" + deployable.getContext());
-    contextTokenValue.append("\" docBase=\"");
-    // Tomcat requires an absolute path for the "docBase" attribute.
-    contextTokenValue.append(deployable.getFile().getAbsolutePath());
-    contextTokenValue.append("\">\n");
-    contextTokenValue.append("\t\t<Manager className=\"" + managerClassName
-        + "\"/>\n");
-    contextTokenValue.append("\t</Context>\n");
-    return contextTokenValue.toString();
-  }
+//  private String getWebappToken(WAR deployable, String managerClassName) {
+//    StringBuffer contextTokenValue = new StringBuffer();
+//    contextTokenValue.append("\t<Context path=\"");
+//    contextTokenValue.append("/" + deployable.getContext());
+//    contextTokenValue.append("\" docBase=\"");
+//    // Tomcat requires an absolute path for the "docBase" attribute.
+//    contextTokenValue.append(deployable.getFile().getAbsolutePath());
+//    contextTokenValue.append("\">\n");
+//    contextTokenValue.append("\t\t<Manager className=\"" + managerClassName
+//        + "\"/>\n");
+//    contextTokenValue.append("\t</Context>\n");
+//    return contextTokenValue.toString();
+//  }
 
   private void copyJars(File home, String containerName) throws IOException {
     if (null == WADI_VERSION) {
