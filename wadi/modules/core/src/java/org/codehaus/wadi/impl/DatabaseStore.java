@@ -30,8 +30,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.axiondb.jdbc.AxionConnection;
-import org.axiondb.types.ByteArrayBlob;
 import org.codehaus.wadi.DatabaseMotableConfig;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Store;
@@ -42,7 +40,7 @@ import org.codehaus.wadi.StoreMotable;
  * @version $Revision$
  */
 public class DatabaseStore implements Store, DatabaseMotableConfig {
-
+  
   protected final Log _log=LogFactory.getLog(getClass());
   protected final String _label;
   protected final DataSource _dataSource;
@@ -50,7 +48,9 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
   protected final boolean _useNIO;
   protected final boolean _reusingStore;
   protected final boolean _build;
-
+  protected final boolean _hasBigInt;
+  protected final long _blobOffset;
+  
   public DatabaseStore(String label, DataSource dataSource, String table, boolean useNIO, boolean reusingStore, boolean build) {
     _label=label;
     _dataSource=dataSource;
@@ -58,41 +58,44 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
     _useNIO=useNIO;
     _reusingStore=reusingStore;
     _build=build;
-
+    boolean usingAxion=_dataSource.getClass().getName().startsWith("org.axiondb.");
+    _hasBigInt=!usingAxion; // axion-1.0-M3-dev does not have the type 'BIGINT' use 'LONG' instead
+    _blobOffset=usingAxion?0:1; // axion-1.0-M3-dev copies from blobs starting at 0 instead of 1
+    
     if (_build) {
       try {
-	init();
+        init();
       } catch (SQLException e) {
-	_log.warn("unexpected exception", e);
+        _log.warn("unexpected exception", e);
       }
     }
   }
-
+  
   public String getLabel() {
     return _label;
   }
-
+  
   public DataSource getDataSource() {
     return _dataSource;
   }
-
+  
   public Connection getConnection() throws SQLException {
     return _dataSource.getConnection();
   }
-
+  
   public String getTable() {
     return _table;
   }
-
+  
   public boolean getReusingStore() {
     return _reusingStore;
   }
-
+  
   // Store
-
+  
   public void init() throws SQLException {
     Connection c=_dataSource.getConnection();
-    String bigInt=(c instanceof AxionConnection)?"long":"bigint"; // Axion release does not yet support BIGINT type...
+    String bigInt=_hasBigInt?"bigint":"long"; // Axion release does not yet support BIGINT type...
     Statement s=c.createStatement();
     try {
       // should now work for MySQL, Axion and Derby...
@@ -105,7 +108,7 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
     s.close();
     c.close();
   }
-
+  
   public void destroy() throws SQLException {
     Connection c=_dataSource.getConnection();
     Statement s=c.createStatement();
@@ -119,7 +122,7 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
     s.close();
     c.close();
   }
-
+  
   public void clean() {
     Connection connection=null;
     Statement s=null;
@@ -132,20 +135,20 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
       if (_log.isErrorEnabled()) _log.error("remove (database) failed", e);
     } finally {
       try {
-	if (s!=null)
-	  s.close();
+        if (s!=null)
+          s.close();
       } catch (SQLException e) {
-	_log.warn("problem closing database statement", e);
+        _log.warn("problem closing database statement", e);
       }
       try {
-	if (connection!=null)
-	  connection.close();
+        if (connection!=null)
+          connection.close();
       } catch (SQLException e) {
-	_log.warn("problem closing database connection", e);
+        _log.warn("problem closing database connection", e);
       }
     }
   }
-
+  
   public void load(Putter putter, boolean accessOnLoad) {
     long time=System.currentTimeMillis();
     Statement s=null;
@@ -157,56 +160,56 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
       ResultSet rs=s.executeQuery("SELECT Name, CreationTime, LastAccessedTime, MaxInactiveInterval FROM "+_table);
       String name=null;
       while (rs.next()) {
-	try {
-	  int i=1;
-	  DatabaseMotable motable=new DatabaseMotable();
-	  name=(String)rs.getObject(i++);
-	  long creationTime=rs.getLong(i++);
-	  long lastAccessedTime=rs.getLong(i++);
-	  lastAccessedTime=accessOnLoad?time:lastAccessedTime;
-	  int maxInactiveInterval=rs.getInt(i++);
-	  motable.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
-	  motable.init(this);
-	  if (motable.getTimedOut(time)) {
-	    if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getName());
-	    // we should expire it immediately, rather than promoting it...
-	    // perhaps we could be even cleverer ?
-	  }
-	  putter.put(name, motable);
-	  count++;
-	} catch (Exception e) {
-	  if (_log.isErrorEnabled()) _log.error("load (shared database) failed: "+name, e);
-	}
+        try {
+          int i=1;
+          DatabaseMotable motable=new DatabaseMotable();
+          name=(String)rs.getObject(i++);
+          long creationTime=rs.getLong(i++);
+          long lastAccessedTime=rs.getLong(i++);
+          lastAccessedTime=accessOnLoad?time:lastAccessedTime;
+          int maxInactiveInterval=rs.getInt(i++);
+          motable.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
+          motable.init(this);
+          if (motable.getTimedOut(time)) {
+            if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getName());
+            // we should expire it immediately, rather than promoting it...
+            // perhaps we could be even cleverer ?
+          }
+          putter.put(name, motable);
+          count++;
+        } catch (Exception e) {
+          if (_log.isErrorEnabled()) _log.error("load (shared database) failed: "+name, e);
+        }
       }
       if (_log.isInfoEnabled()) _log.info("loaded sessions: " + count);
     } catch (SQLException e) {
       _log.warn("list (shared database) failed", e);
     } finally {
       if (s!=null)
-	try {
-	  s.close();
-	} catch (SQLException e) {
-	  if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
-	}
+        try {
+          s.close();
+        } catch (SQLException e) {
+          if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
+        }
     }
-
+    
     if (!_reusingStore) {
       try {
-	s=connection.createStatement();
-	s.executeUpdate("DELETE FROM "+_table);
+        s=connection.createStatement();
+        s.executeUpdate("DELETE FROM "+_table);
       } catch (SQLException e) {
-	_log.warn("removal (shared database) failed", e);
+        _log.warn("removal (shared database) failed", e);
       } finally {
-	if (s!=null)
-	  try {
-	    s.close();
-	  } catch (SQLException e) {
-	    if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
-	  }
+        if (s!=null)
+          try {
+            s.close();
+          } catch (SQLException e) {
+            if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
+          }
       }
     }
   }
-
+  
   public void loadHeader(Connection connection, Motable motable) {
     String name=motable.getName();
     Statement s=null;
@@ -215,29 +218,29 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
       ResultSet rs=s.executeQuery("SELECT CreationTime, LastAccessedTime, MaxInactiveInterval FROM "+_table+" WHERE Name='"+name+"'");
       int i=1;
       if (rs.next()) {
-	long creationTime=rs.getLong(i++);
-	long lastAccessedTime=rs.getLong(i++);
-	int maxInactiveInterval=rs.getInt(i++);
-
-	motable.init(creationTime, lastAccessedTime, maxInactiveInterval);
-
-	if (!motable.checkTimeframe(System.currentTimeMillis()))
-	  if (_log.isWarnEnabled()) _log.warn("loaded (database ["+_table+"]) from the future!: "+name);
-
-	if (_log.isTraceEnabled()) _log.trace("loaded (database ["+_table+"]): "+name);
+        long creationTime=rs.getLong(i++);
+        long lastAccessedTime=rs.getLong(i++);
+        int maxInactiveInterval=rs.getInt(i++);
+        
+        motable.init(creationTime, lastAccessedTime, maxInactiveInterval);
+        
+        if (!motable.checkTimeframe(System.currentTimeMillis()))
+          if (_log.isWarnEnabled()) _log.warn("loaded (database ["+_table+"]) from the future!: "+name);
+        
+        if (_log.isTraceEnabled()) _log.trace("loaded (database ["+_table+"]): "+name);
       }
     } catch (SQLException e) {
       if (_log.isWarnEnabled()) _log.warn("load (database ["+_table+"]) failed: "+name, e);
     } finally {
       if (s!=null)
-	try {
-	  s.close();
-	} catch (SQLException e) {
-	  if (_log.isWarnEnabled()) _log.warn("load (database ["+_table+"]) problem: "+name, e);
-	}
+        try {
+          s.close();
+        } catch (SQLException e) {
+          if (_log.isWarnEnabled()) _log.warn("load (database ["+_table+"]) problem: "+name, e);
+        }
     }
   }
-
+  
   public Object loadBody(Connection connection, Motable motable) throws Exception {
     String name=motable.getName();
     Statement s=null;
@@ -247,31 +250,31 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
       ResultSet rs=s.executeQuery("SELECT Body FROM "+_table+" WHERE Name='"+name+"'");
       int i=1;
       if (rs.next()) {
-	if (_useNIO) {
-	  // hmm...
-	  throw new UnsupportedOperationException("NYI");
-	} else {
-	  Blob blob=rs.getBlob(i++);
-          body=blob.getBytes((blob instanceof ByteArrayBlob)?0L:1L, (int)blob.length()); // TODO - axion starts copying from '0', not '1' - needs fixing...
-	}
-	if (_log.isTraceEnabled()) _log.trace("loaded (database): "+_label+"/"+_table+"/"+name+": "+((byte[])body).length+" bytes");
-	return body;
+        if (_useNIO) {
+          // hmm...
+          throw new UnsupportedOperationException("NYI");
+        } else {
+          Blob blob=rs.getBlob(i++);
+          body=blob.getBytes(_blobOffset, (int)blob.length()); // TODO - axion starts copying from '0', not '1' - needs fixing...
+        }
+        if (_log.isTraceEnabled()) _log.trace("loaded (database): "+_label+"/"+_table+"/"+name+": "+((byte[])body).length+" bytes");
+        return body;
       } else {
-	return null;
+        return null;
       }
     } catch (SQLException e) {
       if (_log.isWarnEnabled()) _log.warn("load (database ["+_table+"]) failed: "+name, e);
       throw e;
     } finally {
       if (s!=null)
-	try {
-	  s.close();
-	} catch (SQLException e) {
-	  if (_log.isWarnEnabled()) _log.warn("load (database ["+_table+"]) problem: "+name, e);
-	}
+        try {
+          s.close();
+        } catch (SQLException e) {
+          if (_log.isWarnEnabled()) _log.warn("load (database ["+_table+"]) problem: "+name, e);
+        }
     }
   }
-
+  
   public void update(Connection connection, Motable motable) throws Exception {
     PreparedStatement ps=null;
     String name=motable.getName();
@@ -283,10 +286,10 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
       ps.setLong(i++, motable.getLastAccessedTime());
       ps.setInt(i++, motable.getMaxInactiveInterval());
       if (_useNIO) {
-	i++; // hmm...
-	throw new UnsupportedOperationException("NYI");
+        i++; // hmm...
+        throw new UnsupportedOperationException("NYI");
       } else {
-	ps.setBinaryStream(i++, is, body.length);
+        ps.setBinaryStream(i++, is, body.length);
       }
       ps.setString(i++, name);
       ps.executeUpdate();
@@ -296,10 +299,10 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
       throw e;
     } finally {
       if (ps!=null)
-	ps.close();
+        ps.close();
     }
   }
-
+  
   public void insert(Connection connection, Motable motable, Object body) throws Exception {
     PreparedStatement ps=null;
     String name=motable.getName();
@@ -311,10 +314,10 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
       ps.setLong(i++, motable.getLastAccessedTime());
       ps.setInt(i++, motable.getMaxInactiveInterval());
       if (_useNIO) {
-	i++; // hmm...
-	throw new UnsupportedOperationException("NYI");
+        i++; // hmm...
+        throw new UnsupportedOperationException("NYI");
       } else {
-	ps.setObject(i++, body);
+        ps.setObject(i++, body);
       }
       ps.executeUpdate();
       if (_log.isTraceEnabled()) _log.trace("stored (database): "+_label+"/"+_table+"/"+name+": "+((byte[])body).length+" bytes");
@@ -323,10 +326,10 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
       throw e;
     } finally {
       if (ps!=null)
-	ps.close();
+        ps.close();
     }
   }
-
+  
   public void delete(Connection connection, Motable motable) {
     Statement s=null;
     try {
@@ -337,30 +340,30 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
       if (_log.isErrorEnabled()) _log.error("remove (database ["+_table+"]) failed: "+motable, e);
     } finally {
       try {
-	if (s!=null)
-	  s.close();
+        if (s!=null)
+          s.close();
       } catch (SQLException e) {
-	_log.warn("problem closing database connection", e);
+        _log.warn("problem closing database connection", e);
       }
     }
   }
-
+  
   public String getStartInfo() {
     return _dataSource.toString();
   }
-
+  
   public String getDescription() {
     return "["+_label+"/"+_table+"]";
   }
-
+  
   public StoreMotable create() {
     return new DatabaseMotable();
   }
-
+  
   // DatabaseMotableConfig
-
+  
   public boolean getUseNIO() {
     return _useNIO;
   }
-
+  
 }
