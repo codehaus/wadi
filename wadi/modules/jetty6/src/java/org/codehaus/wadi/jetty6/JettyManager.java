@@ -18,6 +18,7 @@ package org.codehaus.wadi.jetty6;
 
 import java.io.InputStream;
 import java.util.EventListener;
+//import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
@@ -33,7 +34,9 @@ import org.codehaus.wadi.impl.ListenerSupport;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.impl.StandardManager;
 import org.mortbay.jetty.handler.ContextHandler;
+//import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.HttpOnlyCookie;
+//import org.mortbay.jetty.Server;
 import org.mortbay.jetty.SessionManager;
 import org.mortbay.component.AbstractLifeCycle;
 
@@ -74,6 +77,25 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 			throw new RuntimeException(e);
 		}
 
+    // Handlers are scoped across every Context on the Server - is this what we want ?
+    
+//    // install a Handler at front of stack...
+//    // needs a HandlerConfig API...
+//    // should be done at Server start up time...
+//    Server server=_context.getContextHandler().getServer();
+//    Handler[] oldHandlers=server.getAllHandlers();
+//    int oldHandlersLen=oldHandlers==null?0:oldHandlers.length;
+//    if (oldHandlersLen==0 || !(oldHandlers[0] instanceof JettyHandler)) {
+//      // insert our Handler at front of list
+//      Handler[] newHandlers=new Handler[oldHandlers.length+1];
+//      Pattern trustedIPs=Pattern.compile("127\\.0\\.0\\.1|192\\.168\\.0\\.\\d{1,3}"); // TODO - parameterise
+//      int j=0;
+//      newHandlers[j++]=new JettyHandler(trustedIPs);
+//      for (int i=0; i<oldHandlers.length; i++,j++)
+//        newHandlers[j]=oldHandlers[i];
+//      server.setHandlers(newHandlers);
+//    }
+    
 		_wadi.setMaxInactiveInterval(_maxInactiveInterval);
 		_wadi.init(this);
 		_wadi.start();
