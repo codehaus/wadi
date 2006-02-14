@@ -57,9 +57,10 @@ public class Valve extends ValveBase {
 	public void invoke(Request request, Response response, ValveContext context) throws IOException, ServletException {
 		if (request instanceof HttpRequest) {
 			HttpServletRequest hreq=(HttpServletRequest) request;
+      //if (_log.isInfoEnabled()) _log.info("WADI Valve Called");
 			// request must have been :
 			//  proxied by WADI
-			String val=hreq.getHeader("Via");
+      String val=hreq.getHeader("Via");
 			if (val!=null && val.endsWith("\"WADI\"")) { // TODO - should we ignore case ?
 				String ip=hreq.getRemoteAddr();
 				//  from a trusted IP...

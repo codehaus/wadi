@@ -127,7 +127,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 		  } else {
 			  Context context=((Context)_container);
 
-			  // install Valve
+			  // install Valve - TODO - appends it to Pipeline - Arrgh !
 			  ((StandardContext)context).addValve(new Valve(Pattern.compile("127\\.0\\.0\\.1|192\\.168\\.0\\.\\d{1,3}")));
 
 			  // install filter

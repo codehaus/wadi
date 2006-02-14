@@ -129,8 +129,8 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
 			} else {
 				Context context=((Context)_container);
 
-				// install Valve
-				((StandardContext)context).addValve(new Valve(Pattern.compile("127\\.0\\.0\\.1|192\\.168\\.0\\.\\d{1,3}")));
+				// install Valve - per-app - the right way to do this... - but this will APPEND it to the PipeLine - Aargh ! - TODO
+				((StandardContext)context).addValve(new Valve(Pattern.compile("127\\.0\\.0\\.1|192\\.168\\.0\\.\\d{1,3}"))); // TODO - parameterise via ValveConfig API
 
 				// install filter
 				String filterName="WadiFilter";
