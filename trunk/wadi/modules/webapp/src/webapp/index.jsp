@@ -1,7 +1,5 @@
 <%@ page language="java" contentType="text/html" session="true" %>
-<%@ page import="java.util.SortedMap" %>
-<%@ page import="java.util.TreeMap" %>
-<%@ page import="java.util.Iterator" %>
+<%@ page import="java.util.LinkedList" %>
 <%@ page import="java.net.URL" %>
 <%@ page import="org.codehaus.wadi.webapp.Counter" %>
 <%
@@ -35,15 +33,15 @@ url="./session.jsp?insert=false";
 
 // acquire session history
 Counter counter=null;
-SortedMap history=null;
+LinkedList history=null;
 
 synchronized (session) {
   if ((counter=(Counter)session.getAttribute("counter"))==null) {
     session.setAttribute("counter", (counter=new Counter()));
   }
 
-  if ((history=(SortedMap)session.getAttribute("history"))==null) {
-    session.setAttribute("history", (history=new TreeMap()));
+  if ((history=(LinkedList)session.getAttribute("history"))==null) {
+    session.setAttribute("history", (history=new LinkedList()));
   }
 }
 
@@ -51,12 +49,10 @@ synchronized (history) {
 
   // add a new history item to end of queue
   counter.increment();
-  history.put(new Integer(counter.getValue()), colour);
+  history.addLast(new Object[]{new Integer(counter.getValue()), colour});
   // remove an old item from the beginning if history is getting too long
   if (l>=0 && history.size()>l) {
-    Iterator i=history.entrySet().iterator();
-    i.next();
-    i.remove();
+    history.removeFirst();
   }
 }
 
