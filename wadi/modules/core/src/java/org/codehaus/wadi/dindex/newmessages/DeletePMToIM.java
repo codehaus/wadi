@@ -27,13 +27,16 @@ import org.codehaus.wadi.dindex.DIndexResponse;
  * @version $Revision$
  */
 public class DeletePMToIM implements DIndexResponse, Serializable {
-
-    public DeletePMToIM() {
-        super(); // TODO - should not need key
-    }
-
-    public String toString() {
-    	return "<DeletePMToIM>";
-    }
-    
+  
+  boolean _success;
+  
+  public DeletePMToIM(boolean success) {
+    super();
+    _success=success;
+  }
+  
+  public String toString() {
+    return "<DeletePMToIM>";
+  }
+  
 }

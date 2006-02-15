@@ -43,9 +43,6 @@ import org.codehaus.wadi.dindex.newmessages.MovePMToSM;
 import org.codehaus.wadi.dindex.newmessages.MoveSMToPM;
 import org.codehaus.wadi.dindex.newmessages.MovePMToIM;
 import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.impl.Utils;
-
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -54,7 +51,6 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public class LocalPartition extends AbstractPartition implements Serializable {
 
 	protected transient Log _log=LogFactory.getLog(getClass());
-	protected transient Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 
 	protected Map _map=new HashMap();
 	protected transient PartitionConfig _config;
@@ -71,7 +67,6 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 	public void init(PartitionConfig config) {
 		_config=config;
 		_log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalNodeName());
-		_lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 	}
 
 	public boolean isLocal() {
@@ -89,60 +84,143 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 		}
 	}
 
-	// we probably don't need the partition lock for this - but lets play safe to start with
-	public void onMessage(ObjectMessage message, InsertIMToPM request) {
-		Destination newDestination=null;
-		try{newDestination=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
-		boolean success=false;
-		String key=request.getKey();
-		Sync sync=null;
-		try {
-		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
-			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
+  // a Locus provides two things :
+  // - a sync point for the session destination which is not the destination itself
+  // - a container for the session destination, reducing access to id:destination table
+  static class Locus implements Serializable {
+    
+    protected Destination _destination;
+    
+    public Locus(Destination destination) {
+      _destination=destination;
+    }
+    
+    public Destination getDestination() {
+      return _destination;
+    }
+    
+    public void setDestination(Destination destination) {
+      _destination=destination;
+    }
+    
+  }
+  
+  public void onMessage(ObjectMessage message, InsertIMToPM request) {
+    Destination newDestination=null;
+    try{newDestination=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
+    boolean success=false;
+    String key=request.getKey();
+    
+    // optimised for expected case - id not already in use...
+    Locus newLocus=new Locus(newDestination);
+    synchronized (_map) {
+      Locus oldLocus=(Locus)_map.put(key, newLocus); // remember location of new session
+      if (oldLocus==null) {
+        // id was not already in use - expected outcome
+        success=true;
+      } else {
+        // id was already in use - unexpected outcome - put it back and forget new location
+        _map.put(key, oldLocus);
+      }
+    }
+    
+    // log outside sync block...
+    if (success) {
+      if (_log.isDebugEnabled()) _log.debug("insert: "+key+" {"+_config.getNodeName(newDestination)+"}");
+    } else {
+      if (_log.isWarnEnabled()) _log.warn("insert: "+key+" {"+_config.getNodeName(newDestination)+"} failed - key already in use");
+    }
+    
+    DIndexResponse response=new InsertPMToIM(success);
+    _config.getDispatcher().reply(message, response);
+  }
 
-			synchronized (_map) {
-				if (!_map.containsKey(key)) {
-					_map.put(key, newDestination); // remember location of actual session...
-					success=true;
-				}
-			}
-			if (success) {
-				if (_log.isDebugEnabled()) _log.debug("insert: "+key+" {"+_config.getNodeName(newDestination)+"}");
-			} else {
-				if (_log.isWarnEnabled()) _log.warn("insert: {"+key+" {"+_config.getNodeName(newDestination)+"} failed - key already in use");
-			}
+  public void onMessage(ObjectMessage message, DeleteIMToPM request) {
+    String key=request.getKey();
+    Locus locus=null;
+    boolean success=false;
+    
+    synchronized (_map) {
+      locus=(Locus)_map.remove(key);
+    }
+    
+    if (locus!=null) {
+      Destination oldDestination=locus.getDestination();
+      if (_log.isDebugEnabled()) _log.debug("delete: "+key+" {"+_config.getNodeName(oldDestination)+"}");
+      success=true;
+    } else {
+      if (_log.isWarnEnabled()) _log.warn("delete: "+key+" failed - key not present");
+    }
+    
+    DIndexResponse response=new DeletePMToIM(success);
+    _config.getDispatcher().reply(message, response);
+  }
 
-			DIndexResponse response=new InsertPMToIM(success);
-			_config.getDispatcher().reply(message, response);
-		} finally {
-			Utils.release("Partition", key, sync);
-		}
-	}
+  // called on Partition Master
+  public void onMessage(ObjectMessage message, MoveIMToPM request) {
+    
+    // TODO - whilst we are in here, we should have a SHARED lock on this Partition, so it cannot be moved
+    // The Partitions lock should be held in the Facade, so that it can swap Partitions in and out whilst holding an exclusive lock
+    // Partition may only be migrated when exclusive lock has been taken, this may only happen when all shared locks are released - this implies that no PM session locks will be in place...
+    
+    String key=request.getKey();
+    Dispatcher _dispatcher=_config.getDispatcher();
+    try {
+      
+      Locus locus=null;
+      synchronized (_map) { // although we are not changing the structure of the map - others may be doing so...
+        locus=(Locus)_map.get(key);
+      }
+      
+      if (locus==null) {
+        // session does not exist - tell IM
+        _dispatcher.reply(message,new MovePMToIM());
+        return;
+      } else {
+        synchronized (locus) { // ensures that no-one else tries to relocate session whilst we are doing so...
+          
+          Destination im=message.getJMSReplyTo();
+          Destination sm=locus.getDestination();
+          
+          if (sm.equals(im)) {
+            // session does exist - but is already located at the IM
+            // whilst we were waiting for the partition lock, another thread must have migrated the session to the IM...
+            // How can this happen - the first Thread should have been holding the InvocationLock...
+            _log.warn("session already at required location: "+key+" {"+_config.getNodeName(im)+"} - should not happen");
+            // FIXME - need to reply to IM with something
+            // I think we need a further two messages here :
+            // MovePMToIM - holds lock in Partition whilst informing IM that it already has session
+            // MoveIMToPM2 - IM acquires local state-lock and then acks to PM so that it can release distributed lock in partition
+          } else {
+            // session does exist - we need to ask SM to move it to IM
+            Destination pm=_dispatcher.getLocalDestination();
+            String imCorrelationId=_dispatcher.getOutgoingCorrelationId(message);
+            MovePMToSM request2=new MovePMToSM(key, im, pm, imCorrelationId);
+            ObjectMessage tmp=_dispatcher.exchangeSend(pm, sm, request2, _config.getInactiveTime());
+            
+            if (tmp==null) {
+              _log.error("move: "+key+" {"+_config.getNodeName(sm)+"->"+_config.getNodeName(im)+"}");
+              // FIXME - error condition - what should we do ?
+              // we should check whether SM is still alive and send it another message... - CONSIDER
+            } else {
+              MoveSMToPM response=(MoveSMToPM)tmp.getObject();
+              if (response.getSuccess()) {
+                // alter location
+                locus.setDestination(im);
+                if (_log.isDebugEnabled()) _log.debug("move: "+key+" {"+_config.getNodeName(sm)+"->"+_config.getNodeName(im)+"}");
+              } else {
+                if (_log.isWarnEnabled()) _log.warn("move: "+key+" {"+_config.getNodeName(sm)+"->"+_config.getNodeName(im)+"} - failed - no response from "+_config.getNodeName(sm));
+              } 
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      _log.error("UNEXPECTED PROBLEM RELOCATING STATE: "+key);
+    }
+  }
 
-	// we probably do not need to take the Partition lock whilst we do this, but, for the moment, lets do everything logically, then optimise later...
-	public void onMessage(ObjectMessage message, DeleteIMToPM request) {
-		Destination oldDestination;
-		String key=request.getKey();
-		Sync sync=null;
-		try {
-		  if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
-			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
-
-			synchronized (_map) {
-				oldDestination=(Destination)_map.remove(key);
-			}
-			if (oldDestination==null) throw new IllegalStateException("session "+key+" is not known in this partition");
-			if (_log.isDebugEnabled()) _log.debug("delete: "+key+" {"+_config.getNodeName(oldDestination)+"}");
-			DIndexResponse response=new DeletePMToIM();
-			_config.getDispatcher().reply(message, response);
-		} finally {
-			Utils.release("Partition", key, sync);
-		}
-	}
-
-	public void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
+  public void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
 		Destination newDestination=null;
 		try{newDestination=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
 		Destination oldDestination=null;
@@ -181,89 +259,6 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 				_log.warn("could not forward message");
 		}
 	}
-
-	// called on Partition Master
-	public void onMessage(ObjectMessage message1, MoveIMToPM request) {
-
-		// TODO - whilst we are in here, we should have a SHARED lock on this Partition, so it cannot be moved
-		// We should take an exclusive PM lock on the session ID, so no-one else can r/w its location whilst we are doing so.
-		// The Partitions lock should be held in the Facade, so that it can swap Partitions in and out whilst holding an exclusive lock
-		// Partition may only be migrated when exclusive lock has been taken, this may only happen when all shared locks are released - this implies that no PM session locks will be in place...
-
-		String key=request.getKey();
-		Dispatcher _dispatcher=_config.getDispatcher();
-		// what if we are NOT the PM anymore ?
-		// get write lock on location
-		//String nodeName=_config.getLocalNodeName();
-		Sync sync=null;
-		//String agent=null;
-		try {
-			Destination im=message1.getJMSReplyTo();
-			//agent=_config.getNodeName(im);
-
-			// PMSyncs should prevent _map entry from being messed with whilst we are messing with it - lock should be exclusive
-			// should synchronise map access - or is it ConcurrentHashMap ?
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquiring: "+key+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
-			sync=_config.getPMSyncs().acquire(key); // TODO - PMSyncs are actually WLocks on a given sessions location (partition entry) - itegrate
-			if (_lockLog.isTraceEnabled()) _lockLog.trace("Partition - acquired: "+key+ " ["+Thread.currentThread().getName()+"]"+" : "+sync);
-
-			// exchange messages with StateMaster
-			Destination destination=(Destination)_map.get(key);
-
-			if (destination==null) {
-				// session does not exist - tell IM
-				_dispatcher.reply(message1,new MovePMToIM());
-				return;
-			}
-
-			if (destination.equals(im)) {
-				// whilst we were waiting for the partition lock, another thread migrated the session into our InvocationMaster...
-				// How can this happen - the first Thread should have been holding the InvocationLock...
-				_log.warn("IM REQUESTING RELOCATION IS ALREADY SM");
-			}
-
-
-			// session does exist - ask the SM to move it to the IM
-
-			// exchangeSendLoop GetPMToSM to SM
-			Destination pm=_dispatcher.getLocalDestination();
-			Destination sm=destination;
-			String poCorrelationId=null;
-			try {
-				poCorrelationId=_dispatcher.getOutgoingCorrelationId(message1);
-				//_log.info("Process Owner Correlation ID: "+poCorrelationId);
-			} catch (Exception e) {
-				_log.error("unexpected problem", e);
-			}
-
-			MovePMToSM request2=new MovePMToSM(key, im, pm, poCorrelationId);
-			ObjectMessage message2=_dispatcher.exchangeSend(pm, sm, request2, _config.getInactiveTime());
-			if (message2==null)
-				_log.error("NO RESPONSE WITHIN TIMEFRAME - PANIC!");
-
-			MoveSMToPM response=null; // the reply from the SM confirming successful move...
-			try {
-				response=(MoveSMToPM)message2.getObject();
-			} catch (JMSException e) {
-				_log.error("unexpected problem", e); // should be sorted in loop
-			}
-
-			if (response.getSuccess()) {
-				// alter location
-				Destination oldOwner=(Destination)_map.put(key, im); // The IM is now the SM
-				_log.debug("move: "+key+" {"+_config.getNodeName(oldOwner)+"->"+_config.getNodeName(im)+"}");
-			} else {
-				_log.warn("state relocation failed: "+key);
-			}
-		} catch (JMSException e) {
-			_log.error("could not read src address from incoming message");
-		}
-		finally {
-			Utils.release("Partition", key, sync);
-		}
-	}
-
-
 
 	public ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception {
 		if (_log.isTraceEnabled()) _log.trace("local dispatch - needs optimisation");
