@@ -74,7 +74,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
 				boolean found=false;
 				if (null!=context) {
 					// oops - it HAS happened...
-					if (_log.isWarnEnabled()) _log.warn("session has reappeared in memory whilst we were waiting to immote it...: "+id+ " ["+Thread.currentThread().getName()+"]"); // TODO - downgrade..
+					if (_log.isTraceEnabled()) _log.trace("session has reappeared in memory whilst we were waiting to immote it...: "+id+ " ["+Thread.currentThread().getName()+"]");
 					// overlap two locking systems until we have secured the session in memory, then run the request
 					// and release the lock.
 					// TODO - we really need to take a read lock before we release the motionLock...
