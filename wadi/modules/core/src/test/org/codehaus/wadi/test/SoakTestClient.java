@@ -59,20 +59,21 @@ public class SoakTestClient implements Runnable {
 				Cookie[] cookies=_state.getCookies();
 				if (cookies!=null && cookies.length>0)
 					before=cookies[0].getValue();
-				_request.setPath(_path);
-				int status=httpClient.executeMethod(_hostConfiguration, _request, _state);
-				InputStream is=_request.getResponseBodyAsStream();
+        GetMethod request=new GetMethod();
+				request.setPath(_path);
+				int status=httpClient.executeMethod(_hostConfiguration, request, _state);
+				InputStream is=request.getResponseBodyAsStream();
 				while (is.read(_buffer)>0); // read complete body of response and chuck...
 				if (status!=200) {
-					if (_log.isErrorEnabled()) _log.error("bad status: " + status + " : " + _request.getStatusText());
+					if (_log.isErrorEnabled()) _log.error("bad status: " + status + " : " + request.getStatusText());
 					_errors.increment();
 				}
 				String after=_state.getCookies()[0].getValue();
 				checkSession(before, after);
-				_request.releaseConnection();
+				request.releaseConnection();
 				Thread.interrupted(); // looks like something in commons-httpclient leaves this flag set - the Channel barfs if so...
 				_httpClients.put(httpClient); // don't put it back if anything goes wrong...
-				_request.recycle();
+				request.recycle();
 			} catch (Exception e) {
 				_log.error("problem executing http request", e);
 				_errors.increment();
@@ -109,7 +110,7 @@ public class SoakTestClient implements Runnable {
 
 	protected final static Log _log = LogFactory.getLog(SoakTestClient.class);
 	protected final static String _host="smilodon";
-	protected final static int _port=80;
+	protected final static int _port=90;
 	protected final static HostConfiguration _hostConfiguration=new HostConfiguration();
 
 	protected final PooledExecutor _executor;
@@ -127,11 +128,11 @@ public class SoakTestClient implements Runnable {
 	public SoakTestClient(PooledExecutor executor, int numConcurrentRequests, int numIterations, SynchronizedInt completer, SynchronizedInt errors, Channel httpClients) {
 		_executor=executor;
 		_numConcurrentRequests=numConcurrentRequests;
-		_createRequest=new Request("/wadi/create.jsp");
+		_createRequest=new Request("/wadi/session.jsp");
 		_destroyRequest=new Request("/wadi/destroy.jsp");
 		_renderRequests=new Request[_numConcurrentRequests];
 		for (int i=0; i<_numConcurrentRequests; i++)
-			_renderRequests[i]=new Request("/wadi/render.jsp");
+			_renderRequests[i]=new Request("/wadi/session.jsp?limit=25");
 		_remaining=numIterations;
 		_completer=completer;
 		_errors=errors;
@@ -170,26 +171,34 @@ public class SoakTestClient implements Runnable {
 
 			int numClients=Integer.parseInt(args[0]);
 			if (_log.isInfoEnabled()) _log.info("number of clients: " + numClients);
-			int requestsPerClient=Integer.parseInt(args[1]);
-			if (_log.isInfoEnabled()) _log.info("number of concurrent requests per client: " + requestsPerClient);
-			int numThreads=Integer.parseInt(args[2]);
-			if (_log.isInfoEnabled()) _log.info("number of concurrent threads: " + numThreads);
-			int numIterations=Integer.parseInt(args[3]);
-			if (_log.isInfoEnabled()) _log.info("number of iterations to perform: " + numIterations);
+			int numConnection=Integer.parseInt(args[1]);
+			if (_log.isInfoEnabled()) _log.info("number of connections per client: " + numConnection);
+      int numIterations=Integer.parseInt(args[2]);
+      if (_log.isInfoEnabled()) _log.info("number of iterations per connection: " + numIterations);
+      int basePort=8080;//Integer.parseInt(args[3]);
+      if (_log.isInfoEnabled()) _log.info("basePort: " + basePort);
+      int numPorts=8; //Integer.parseInt(args[4]);
+      if (_log.isInfoEnabled()) _log.info("number of ports: " + numPorts);
+
+      int[] ports=new int[numPorts];
+      for (int i=0; i>numPorts; i++)
+        ports[i]=basePort+numPorts;
+      
+      int totalConnections=numClients*numConnection;
 
 			Channel httpClients=new LinkedQueue(); // a Pool of HttpClients - otherwise we run out of fds...
-			for (int i=0; i<numThreads; i++)
-				httpClients.put(new HttpClient());
+			for (int i=0; i<totalConnections; i++)
+				httpClients.put(new HttpClient(/*new MultiThreadedHttpConnectionManager()*/));
 
-			PooledExecutor executor=new PooledExecutor(numThreads);
+			PooledExecutor executor=new PooledExecutor(totalConnections);
 			WaitableInt completer=new WaitableInt(0);
 			SynchronizedInt errors=new SynchronizedInt(0);
 			SoakTestClient[] clients=new SoakTestClient[numClients];
 
 			for (int i=0; i<numClients; i++)
-				(clients[i]=new SoakTestClient(executor, requestsPerClient, numIterations, completer, errors, httpClients)).start();
+				(clients[i]=new SoakTestClient(executor, numConnection, numIterations, completer, errors, httpClients)).start();
 			// wait for work to be done....
-			int totalNumRequests=numClients*(requestsPerClient*numIterations+2); // create, render*n, destroy
+			int totalNumRequests=numClients*(numConnection*numIterations+2); // create, render*n, destroy
 			if (_log.isInfoEnabled()) _log.info("waiting for " + totalNumRequests + " requests to be completed...");
 			completer.whenEqual(totalNumRequests, null);
 			executor.shutdownNow();
