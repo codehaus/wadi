@@ -29,9 +29,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.DIndexResponse;
-import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
-import org.codehaus.wadi.dindex.messages.RelocationRequest;
-import org.codehaus.wadi.dindex.messages.RelocationResponse;
 import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
 import org.codehaus.wadi.dindex.newmessages.DeletePMToIM;
 import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
@@ -249,34 +246,6 @@ public class LocalPartition extends AbstractPartition implements Serializable {
     if (_log.isDebugEnabled()) _log.debug("evacuate {"+request.getKey()+" : "+_config.getNodeName(oldDestination)+" -> "+_config.getNodeName(newDestination)+"}");
 		DIndexResponse response=new EvacuatePMToIM(success);
 		_config.getDispatcher().reply(message, response);
-	}
-
-	public void onMessage(ObjectMessage message, DIndexForwardRequest request) {
-		// we have got to someone who actually knows where we want to go.
-		// strip off wrapper and deliver actual request to its final destination...
-		String name=request.getKey();
-		Destination destination=null;
-		synchronized (_map) {
-			destination=(Destination)_map.get(name);
-		}
-		if (destination==null) { // session could not be located...
-			DIndexRequest r=request.getRequest();
-			if (r instanceof RelocationRequest) {
-				assert message!=null;
-				assert name!=null;
-				assert _config!=null;
-				_config.getDispatcher().reply(message, new RelocationResponse(name));
-			} else {
-				if (_log.isWarnEnabled()) _log.warn("unexpected nested request structure - ignoring: " + r);
-			}
-		} else { // session succesfully located...
-			assert destination!=null;
-			assert request!=null;
-			assert _config!=null;
-			if (_log.isTraceEnabled()) _log.trace("directing: " + request + " -> " + _config.getNodeName(destination));
-			if (!_config.getDispatcher().forward(message, destination, request.getRequest()))
-				_log.warn("could not forward message");
-		}
 	}
 
 	public ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception {

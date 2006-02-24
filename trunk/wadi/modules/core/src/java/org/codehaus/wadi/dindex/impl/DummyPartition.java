@@ -19,7 +19,6 @@ package org.codehaus.wadi.dindex.impl;
 import javax.jms.ObjectMessage;
 
 import org.codehaus.wadi.dindex.DIndexRequest;
-import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
 import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
@@ -65,11 +64,6 @@ public class DummyPartition extends AbstractPartition {
 	}
 
 	public void onMessage(ObjectMessage message, EvacuateIMToPM request) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void onMessage(ObjectMessage message, DIndexForwardRequest request) {
 		// TODO Auto-generated method stub
 
 	}

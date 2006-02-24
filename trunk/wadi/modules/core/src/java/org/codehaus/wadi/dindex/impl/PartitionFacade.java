@@ -24,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.Partition;
 import org.codehaus.wadi.dindex.PartitionConfig;
-import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
 import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
@@ -187,21 +186,6 @@ public class PartitionFacade extends AbstractPartition {
 
     // should superceded above method
     public void onMessage(ObjectMessage message, MoveIMToPM request) {
-    	Sync sync=_lock.readLock(); // SHARED
-    	boolean acquired=false;
-    	try {
-    		sync.acquire();
-    		acquired=true;
-    		_content.onMessage(message, request);
-    	} catch (InterruptedException e) {
-    		_log.warn("unexpected problem", e);
-    	} finally {
-    		if (acquired)
-    			sync.release();
-    	}
-    }
-
-    public void onMessage(ObjectMessage message, DIndexForwardRequest request) {
     	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
     	try {
