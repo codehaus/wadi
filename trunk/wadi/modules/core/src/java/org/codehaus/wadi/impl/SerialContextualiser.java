@@ -49,53 +49,51 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
 		_collapser=collapser;
 		_map=map;
 	}
-
+	
 	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
-		if (invocationLock!=null) {
-			// someone is already doing a promotion from further up the
-			// stack - do nothing other than delegate...
-			return _next.contextualise(invocationContext, id, immoter, invocationLock, exclusiveOnly);
-		} else {
-			// the promotion begins here...
-			// allocate a lock and continue...
-			invocationLock=_collapser.getLock(id);
-			boolean invocationLockAcquired=false;
-			try {
-				Utils.acquireUninterrupted("Invocation", id, invocationLock);
-				invocationLockAcquired=true;
-			} catch (TimeoutException e) {
-				_log.error("unexpected timeout - proceding without lock", e);
-			}
-
-			try {
-				// whilst we were waiting for the motionLock, the session in question may have been moved back into memory somehow.
-				// before we proceed, confirm that this has not happened.
-				Context context=(Context)_map.get(id);
-				boolean found=false;
-				if (null!=context) {
-					// oops - it HAS happened...
-					if (_log.isTraceEnabled()) _log.trace("session has reappeared in memory whilst we were waiting to immote it...: "+id+ " ["+Thread.currentThread().getName()+"]");
-					// overlap two locking systems until we have secured the session in memory, then run the request
-					// and release the lock.
-					// TODO - we really need to take a read lock before we release the motionLock...
-					found=immoter.contextualise(invocationContext, id, context, invocationLock);
-					// although we did find the context it may have left this contextualiser before we finally acquire its lock.
-					// be prepared to continue dowm the stack looking for it.
-				}
-
-				if (!found) {
-					// session was not promoted whilst we were waiting for motionLock. Continue down Contextualiser stack
-					// it may be below us...
-					// lock is to be released as soon as context is available to subsequent contextualisations...
-					found=_next.contextualise(invocationContext, id, immoter, invocationLock, exclusiveOnly);
-				}
-				invocationLockAcquired=!found;
-				return found;
-			} finally {
-				if (invocationLockAcquired) {
-					Utils.release("Invocation", id, invocationLock);
-				}
-			}
-		}
+	  boolean release=false;
+	  
+	  try {
+	    if (invocationLock!=null) {
+	      release=true;
+	    } else {
+	      // the promotion begins here...
+	      // allocate a lock and continue...
+	      invocationLock=_collapser.getLock(id);
+	      
+	      Utils.acquireUninterrupted("Invocation(SerialContextualiser)", id, invocationLock);
+	      release=true;
+	      
+	      // whilst we were waiting for the motionLock, the session in question may have been moved back into memory somehow.
+	      // before we proceed, confirm that this has not happened.
+	      Context context=(Context)_map.get(id);
+	      if (null!=context) {
+	        // oops - it HAS happened...
+	        if (_log.isTraceEnabled()) _log.trace("session has reappeared in memory whilst we were waiting to immote it...: "+id+ " ["+Thread.currentThread().getName()+"]");
+	        // overlap two locking systems until we have secured the session in memory, then run the request
+	        // and release the lock.
+	        
+	        if (immoter.contextualise(invocationContext, id, context, invocationLock)) {
+	          release=false;
+	          return true;
+	        }
+	      }
+	    }
+	    
+	    // session was not promoted whilst we were waiting for motionLock. Continue down Contextualiser stack
+	    // it may be below us...
+	    // lock is to be released as soon as context is available to subsequent contextualisations...
+	    boolean found=_next.contextualise(invocationContext, id, immoter, invocationLock, exclusiveOnly);
+	    release=!found;
+	    return found;
+	  } catch (TimeoutException e) {
+	    _log.error("could not acquire session within timeframe: "+id);
+	    return false;
+	  } finally {
+	    if (release) {
+	      Utils.release("Invocation", id, invocationLock);
+	    }
+	  }
 	}
+	
 }

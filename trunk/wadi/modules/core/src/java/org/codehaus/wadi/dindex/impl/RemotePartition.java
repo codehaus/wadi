@@ -24,8 +24,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
-import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
+import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 import org.codehaus.wadi.gridstate.Dispatcher;
@@ -92,7 +92,7 @@ public class RemotePartition extends AbstractPartition {
 			_log.warn("could not forward message");
 	}
 
-	public void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
+	public void onMessage(ObjectMessage message, EvacuateIMToPM request) {
 		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getNodeName(_location));
 		if (!_config.getDispatcher().forward(message, _location))
 			_log.warn("could not forward message");

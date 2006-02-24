@@ -88,7 +88,7 @@ public class HybridRelocater extends AbstractRelocater {
 		RelocationResponse response=null;
 		ObjectMessage message2=null;
 
-		boolean useGridState=false;
+		boolean useGridState=true;
 
 		if (useGridState) {
 			Motable immotable=null;
@@ -246,7 +246,7 @@ public class HybridRelocater extends AbstractRelocater {
 		Sync invocationLock=_config.getCollapser().getLock(sessionName);
 		boolean invocationLockAcquired=false;
 		try {
-			Utils.acquireUninterrupted("Invocation", sessionName, invocationLock);
+			Utils.acquireUninterrupted("Invocation(BybridRelocator)", sessionName, invocationLock);
 			invocationLockAcquired=true;
 		} catch (TimeoutException e) {
 			if (_log.isErrorEnabled()) _log.error("exclusive access could not be guaranteed within timeframe: "+sessionName, e);

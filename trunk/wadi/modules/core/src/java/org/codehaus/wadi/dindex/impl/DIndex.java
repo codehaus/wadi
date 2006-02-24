@@ -44,9 +44,9 @@ import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.StateManagerConfig;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
-import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.messages.RelocationRequest;
 import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
+import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertPMToIM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
@@ -377,7 +377,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	public void relocate(String name) {
 		try {
-			DIndexRelocationRequest request=new DIndexRelocationRequest(name);
+			EvacuateIMToPM request=new EvacuateIMToPM(name);
 			getPartition(name).exchange(request, _inactiveTime);
 		} catch (Exception e) {
 			_log.info("oops...", e);

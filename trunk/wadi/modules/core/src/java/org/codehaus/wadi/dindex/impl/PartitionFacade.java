@@ -25,8 +25,8 @@ import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.Partition;
 import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
-import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
+import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 import org.codehaus.wadi.gridstate.Dispatcher;
@@ -170,7 +170,7 @@ public class PartitionFacade extends AbstractPartition {
     	}
     }
 
-    public void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
+    public void onMessage(ObjectMessage message, EvacuateIMToPM request) {
     	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
     	try {
