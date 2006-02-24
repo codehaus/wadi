@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.messages;
+package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
@@ -24,14 +24,14 @@ import org.codehaus.wadi.dindex.impl.AbstractDIndexRequest;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DIndexRelocationRequest extends AbstractDIndexRequest implements Serializable {
-
-    public DIndexRelocationRequest(String name) {
-        super(name);
-    }
-
-    public String toString() {
-        return "<DIndexRelocationRequest: "+_key+">";
-    }
-
+public class EvacuateIMToPM extends AbstractDIndexRequest implements Serializable {
+  
+  public EvacuateIMToPM(String name) {
+    super(name);
+  }
+  
+  public String toString() {
+    return "<EvacuateIMToPM: "+_key+">";
+  }
+  
 }

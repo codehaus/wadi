@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.dindex.messages;
+package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
@@ -24,15 +24,17 @@ import org.codehaus.wadi.dindex.DIndexResponse;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DIndexRelocationResponse implements DIndexResponse, Serializable {
-
-    public DIndexRelocationResponse() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
-
-    public String toString() {
-        return "<DIndexRelocationResponse>";
-    }
-
+public class EvacuatePMToIM implements DIndexResponse, Serializable {
+  
+  protected boolean _success;
+  
+  public EvacuatePMToIM(boolean success) {
+    super();
+    _success=success;
+  }
+  
+  public String toString() {
+    return "<EvacuatePMToIM: "+_success+">";
+  }
+  
 }

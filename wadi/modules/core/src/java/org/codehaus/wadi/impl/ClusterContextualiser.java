@@ -321,7 +321,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		Sync invocationLock=_locker.getLock(name, emotable);
 		boolean invocationLockAcquired=false;
 		try {
-			Utils.acquireUninterrupted("Invocation", name, invocationLock);
+			Utils.acquireUninterrupted("Invocation(ClusterContextualiser)", name, invocationLock);
 			invocationLockAcquired=true;
 
 			Emoter emoter=new ImmigrationEmoter(message);

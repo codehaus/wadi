@@ -20,8 +20,8 @@ import javax.jms.ObjectMessage;
 
 import org.codehaus.wadi.PMPartition;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
-import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
 import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
+import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 
@@ -33,7 +33,7 @@ public interface Partition extends PMPartition, SMPartition {
 
 	void onMessage(ObjectMessage message, InsertIMToPM request);
 	void onMessage(ObjectMessage message, DeleteIMToPM request);
-	void onMessage(ObjectMessage message, DIndexRelocationRequest request);
+	void onMessage(ObjectMessage message, EvacuateIMToPM request);
 	void onMessage(ObjectMessage message, DIndexForwardRequest request);
 	void onMessage(ObjectMessage message, MoveIMToPM request);
 

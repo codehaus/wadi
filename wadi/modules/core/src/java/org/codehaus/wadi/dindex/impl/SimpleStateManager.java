@@ -32,10 +32,10 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.StateManagerConfig;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
-import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
-import org.codehaus.wadi.dindex.messages.DIndexRelocationResponse;
 import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
 import org.codehaus.wadi.dindex.newmessages.DeletePMToIM;
+import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
+import org.codehaus.wadi.dindex.newmessages.EvacuatePMToIM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertPMToIM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
@@ -78,8 +78,8 @@ public class SimpleStateManager implements StateManager {
 		_dispatcher.register(InsertPMToIM.class, _inactiveTime);
 		_dispatcher.register(this, "onDIndexDeletionRequest", DeleteIMToPM.class);
 		_dispatcher.register(DeletePMToIM.class, _inactiveTime);
-		_dispatcher.register(this, "onDIndexRelocationRequest", DIndexRelocationRequest.class);
-		_dispatcher.register(DIndexRelocationResponse.class, _inactiveTime);
+		_dispatcher.register(this, "onDIndexRelocationRequest", EvacuateIMToPM.class);
+		_dispatcher.register(EvacuatePMToIM.class, _inactiveTime);
 		_dispatcher.register(this, "onDIndexForwardRequest", DIndexForwardRequest.class);
 
 		// GridState - Relocate - 5 messages - IM->PM->SM->IM->SM->PM
@@ -100,7 +100,7 @@ public class SimpleStateManager implements StateManager {
 	public void stop() throws Exception {
 		_dispatcher.deregister("onDIndexInsertionRequest", InsertIMToPM.class, 5000);
 		_dispatcher.deregister("onDIndexDeletionRequest", DeleteIMToPM.class, 5000);
-		_dispatcher.deregister("onDIndexRelocationRequest", DIndexRelocationRequest.class, 5000);
+		_dispatcher.deregister("onDIndexRelocationRequest", EvacuateIMToPM.class, 5000);
 		_dispatcher.deregister("onDIndexForwardRequest", DIndexForwardRequest.class, 5000);
 	}
 
@@ -117,7 +117,7 @@ public class SimpleStateManager implements StateManager {
 		_config.getPartition(request.getKey()).onMessage(om, request);
 	}
 
-	public void onDIndexRelocationRequest(ObjectMessage om, DIndexRelocationRequest request) {
+	public void onDIndexRelocationRequest(ObjectMessage om, EvacuateIMToPM request) {
 		_config.getPartition(request.getKey()).onMessage(om, request);
 	}
 
@@ -212,13 +212,17 @@ public class SimpleStateManager implements StateManager {
 			// work is done in ClusterEmotable...
 			// take invocation lock
 			//boolean needsRelease=false;
+      
+      // used to take an invocation lock whlist running, but, if we were already promoting a session from e.g. disc, this would cause a deadlock...
+      // do we need to take a lock to prevet anyone else trying to load a session as we emmmigrate it - I don't think so...
+      
 			_invocationLock=_config.getInvocationLock(name);
-			try {
-				Utils.acquireUninterrupted("Invocation", name, _invocationLock);
-				//needsRelease=true;
-			} catch (TimeoutException e) {
-				_log.error("unexpected timeout - proceding without lock", e);
-			}
+//			try {
+//				Utils.acquireUninterrupted("Invocation", name, _invocationLock);
+//				//needsRelease=true;
+//			} catch (TimeoutException e) {
+//				_log.error("unexpected timeout - proceding without lock", e);
+//			}
 			return true;
 		}
 
@@ -226,7 +230,7 @@ public class SimpleStateManager implements StateManager {
 			// do nothing
 			// release invocation lock
 			_found=true;
-			Utils.release("Invocation", name, _invocationLock);
+//			Utils.release("Invocation", name, _invocationLock);
 		}
 
 		public void rollback(String name, Motable immotable) {
@@ -264,7 +268,16 @@ public class SimpleStateManager implements StateManager {
 				String imName=_config.getNodeName(im);
 				RelocationImmoter promoter=new RelocationImmoter(imName, message1, request);
 				//boolean found=
-				_config.contextualise(null, (String)key, promoter, null, true); // if we own session, this will send the correct response...
+
+        // acquire invocation lock here... - we need it - not sure why...
+        Sync invocationLock=_config.getInvocationLock((String)key);
+        try {
+          Utils.acquireUninterrupted("Invocation", (String)key, invocationLock);
+        } catch (TimeoutException e) {
+          _log.error("unexpected timeout - proceding without lock", e);
+        }
+
+				_config.contextualise(null, (String)key, promoter, invocationLock, true); // if we own session, this will send the correct response...
 				if (!promoter.getFound()) {
 					_log.warn("state not found - perhaps it has just been destroyed: "+key);
 					MoveSMToIM req=new MoveSMToIM(key, null);

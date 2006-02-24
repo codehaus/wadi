@@ -30,12 +30,12 @@ import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.DIndexRequest;
 import org.codehaus.wadi.dindex.DIndexResponse;
 import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
-import org.codehaus.wadi.dindex.messages.DIndexRelocationRequest;
-import org.codehaus.wadi.dindex.messages.DIndexRelocationResponse;
 import org.codehaus.wadi.dindex.messages.RelocationRequest;
 import org.codehaus.wadi.dindex.messages.RelocationResponse;
 import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
 import org.codehaus.wadi.dindex.newmessages.DeletePMToIM;
+import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
+import org.codehaus.wadi.dindex.newmessages.EvacuatePMToIM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertPMToIM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
@@ -220,15 +220,34 @@ public class LocalPartition extends AbstractPartition implements Serializable {
     }
   }
 
-  public void onMessage(ObjectMessage message, DIndexRelocationRequest request) {
+  public void onMessage(ObjectMessage message, EvacuateIMToPM request) {
 		Destination newDestination=null;
 		try{newDestination=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
-		Destination oldDestination=null;
+    String key=request.getKey();
+    boolean success=false;
+    
+    Locus locus=null;
 		synchronized (_map) {
-			oldDestination=(Destination)_map.put(request.getKey(), newDestination);
+			locus=(Locus)_map.get(key);
 		}
-		if (_log.isDebugEnabled()) _log.debug("relocation {"+request.getKey()+" : "+_config.getNodeName(oldDestination)+" -> "+_config.getNodeName(newDestination)+"}");
-		DIndexResponse response=new DIndexRelocationResponse();
+    
+    Destination oldDestination=null;
+    if (locus==null) {
+      if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getNodeName(newDestination)+"} failed - key not in use");
+    } else {
+      synchronized (locus) {
+        oldDestination=locus.getDestination();
+        if (oldDestination.equals(newDestination)) {
+          if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getNodeName(newDestination)+"} failed - evacuee is already there !");
+        } else {
+          locus.setDestination(newDestination);
+          success=true;
+        }
+      }
+    }
+
+    if (_log.isDebugEnabled()) _log.debug("evacuate {"+request.getKey()+" : "+_config.getNodeName(oldDestination)+" -> "+_config.getNodeName(newDestination)+"}");
+		DIndexResponse response=new EvacuatePMToIM(success);
 		_config.getDispatcher().reply(message, response);
 	}
 
