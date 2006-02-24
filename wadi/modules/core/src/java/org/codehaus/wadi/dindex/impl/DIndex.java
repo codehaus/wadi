@@ -43,8 +43,6 @@ import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.StateManagerConfig;
-import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
-import org.codehaus.wadi.dindex.messages.RelocationRequest;
 import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
 import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
@@ -384,15 +382,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		}
 	}
 
-	public ObjectMessage relocate(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout) throws Exception {
-		ObjectMessage message=_dispatcher.createObjectMessage();
-		message.setJMSReplyTo(_dispatcher.getLocalDestination());
-		RelocationRequest request=new RelocationRequest(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
-		message.setObject(request);
-		//getPartition(sessionName).onMessage(message, request);
-		return forwardAndExchange(sessionName, request, timeout);
-	}
-
 	class SMToIMEmoter extends AbstractChainedEmoter {
 		protected final Log _log=LogFactory.getLog(getClass());
 
@@ -447,7 +436,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		}
 	}
 
-	public Motable relocate2(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout) throws Exception {
+	public Motable relocate(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout) throws Exception {
 		MoveIMToPM request=new MoveIMToPM(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
 		ObjectMessage message=getPartition(sessionName).exchange(request, timeout);
 
@@ -496,12 +485,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 			_log.warn("could not extract message body", e);
 		}
 		return null;
-	}
-
-	public ObjectMessage forwardAndExchange(String name, RelocationRequest request, long timeout) throws Exception {
-		_log.trace("wrapping request");
-		DIndexForwardRequest request2=new DIndexForwardRequest(request);
-		return getPartition(name).exchange(request2, timeout);
 	}
 
 	public PartitionFacade getPartition(Object key) {

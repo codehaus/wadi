@@ -31,7 +31,6 @@ import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.StateManagerConfig;
-import org.codehaus.wadi.dindex.messages.DIndexForwardRequest;
 import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
 import org.codehaus.wadi.dindex.newmessages.DeletePMToIM;
 import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
@@ -80,7 +79,6 @@ public class SimpleStateManager implements StateManager {
 		_dispatcher.register(DeletePMToIM.class, _inactiveTime);
 		_dispatcher.register(this, "onDIndexRelocationRequest", EvacuateIMToPM.class);
 		_dispatcher.register(EvacuatePMToIM.class, _inactiveTime);
-		_dispatcher.register(this, "onDIndexForwardRequest", DIndexForwardRequest.class);
 
 		// GridState - Relocate - 5 messages - IM->PM->SM->IM->SM->PM
 		_dispatcher.register(this, "onMessage", MoveIMToPM.class);
@@ -101,7 +99,6 @@ public class SimpleStateManager implements StateManager {
 		_dispatcher.deregister("onDIndexInsertionRequest", InsertIMToPM.class, 5000);
 		_dispatcher.deregister("onDIndexDeletionRequest", DeleteIMToPM.class, 5000);
 		_dispatcher.deregister("onDIndexRelocationRequest", EvacuateIMToPM.class, 5000);
-		_dispatcher.deregister("onDIndexForwardRequest", DIndexForwardRequest.class, 5000);
 	}
 
 
@@ -110,10 +107,6 @@ public class SimpleStateManager implements StateManager {
 	}
 
 	public void onDIndexDeletionRequest(ObjectMessage om, DeleteIMToPM request) {
-		_config.getPartition(request.getKey()).onMessage(om, request);
-	}
-
-	public void onDIndexForwardRequest(ObjectMessage om, DIndexForwardRequest request) {
 		_config.getPartition(request.getKey()).onMessage(om, request);
 	}
 
