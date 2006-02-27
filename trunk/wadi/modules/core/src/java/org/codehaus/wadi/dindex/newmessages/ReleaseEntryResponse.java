@@ -51,7 +51,7 @@ public class ReleaseEntryResponse implements OldMessage, Serializable {
 	}
 	
 	public String toString() {
-		return "<EmigrationResponse: "+_name+">";
+		return "<ReleaseEntryResponse: "+_name+">";
 	}
 	
 }
