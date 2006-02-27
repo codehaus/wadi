@@ -21,6 +21,8 @@ import java.io.Serializable;
 import org.codehaus.wadi.OldMessage;
 
 /**
+ * Sent from a cluster member to the Coordinator acknowledging receipt and confirming successful carrying out of a PartitionTransferCommand.
+ * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */

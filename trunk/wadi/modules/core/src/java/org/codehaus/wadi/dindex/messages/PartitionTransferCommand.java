@@ -22,32 +22,33 @@ import org.codehaus.wadi.OldMessage;
 import org.codehaus.wadi.dindex.impl.PartitionTransfer;
 
 /**
+ * Sent from Coordinator to a cluster member, ordering it to transfer ownership of a number of Partitions to another member.
+ * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public class PartitionTransferCommand implements OldMessage, Serializable {
 
-    protected PartitionTransfer[] _transfers;
+  protected PartitionTransfer[] _transfers;
 
-    public PartitionTransferCommand(PartitionTransfer[] transfers) {
-        _transfers=transfers;
-    }
+  public PartitionTransferCommand(PartitionTransfer[] transfers) {
+    _transfers=transfers;
+  }
 
-    protected PartitionTransferCommand() {
-        // for deserialisation...
-    }
+  protected PartitionTransferCommand() {
+    // for deserialisation...
+  }
 
-    public PartitionTransfer[] getTransfers() {
-        return _transfers;
-    }
+  public PartitionTransfer[] getTransfers() {
+    return _transfers;
+  }
 
-
-    public String toString() {
-    	StringBuffer buffer=new StringBuffer("<PartitionTransferCommand: ");
-    	for (int i=0; i<_transfers.length; i++)
-    		buffer.append((i==0?"":",")+_transfers[i]);
-    	buffer.append(">");
-        return buffer.toString();
-    }
+  public String toString() {
+    StringBuffer buffer=new StringBuffer("<PartitionTransferCommand: ");
+    for (int i=0; i<_transfers.length; i++)
+      buffer.append((i==0?"":",")+_transfers[i]);
+    buffer.append(">");
+    return buffer.toString();
+  }
 
 }

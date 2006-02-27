@@ -21,6 +21,8 @@ import java.io.Serializable;
 import org.codehaus.wadi.OldMessage;
 
 /**
+ * Response from Coordinator to source of a PartitionEvacuationRequest, indicating that evacuation is complete.
+ * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
