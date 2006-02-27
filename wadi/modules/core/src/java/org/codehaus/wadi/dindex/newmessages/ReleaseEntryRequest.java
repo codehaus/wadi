@@ -48,7 +48,7 @@ public class ReleaseEntryRequest implements OldMessage, Serializable {
 	}
 	
 	public String toString() {
-		return "<EmigrationRequest: "+_motable.getName()+">";
+		return "<ReleaseEntryRequest: "+_motable.getName()+">";
 	}
 	
 }
