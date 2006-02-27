@@ -21,6 +21,8 @@ import java.io.Serializable;
 import org.codehaus.wadi.OldMessage;
 
 /**
+ * Sent to the Coordinator, requesting that it rearrange Partition ownership, excluding the Requestor.
+ * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */

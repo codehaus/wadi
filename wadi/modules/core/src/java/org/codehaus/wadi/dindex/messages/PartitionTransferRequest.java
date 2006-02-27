@@ -22,6 +22,8 @@ import org.codehaus.wadi.OldMessage;
 import org.codehaus.wadi.dindex.impl.LocalPartition;
 
 /**
+ * Sent from one peer to another, requesting that it take over ownership of a number of Partitions (enclosed).
+ * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
