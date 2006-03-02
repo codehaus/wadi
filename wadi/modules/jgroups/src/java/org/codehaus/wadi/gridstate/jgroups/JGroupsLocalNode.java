@@ -28,20 +28,15 @@ public class JGroupsLocalNode implements LocalNode {
   protected final JGroupsDestination _destination;
   protected Map _state;
   
-  public JGroupsLocalNode(JGroupsCluster cluster, JGroupsDestination destination) {
+  public JGroupsLocalNode(JGroupsCluster cluster, JGroupsDestination destination, Map state) {
     super();
     _cluster=cluster;
     _destination=destination;
-  }
-
-  public void setState(Map state) throws JMSException {
     _state=state;
-    ObjectMessage message=new JGroupsObjectMessage();
-    message.setJMSReplyTo(_destination);
-    message.setObject(new JGroupsStateUpdate(state));
-    _cluster.send(_cluster.getDestination(), message); // broadcast
   }
 
+  // 'Node' api
+  
   public Map getState() {
     return _state;
   }
@@ -51,7 +46,7 @@ public class JGroupsLocalNode implements LocalNode {
   }
 
   public String getName() {
-    throw new UnsupportedOperationException("NYI");
+    return (String)_state.get("nodeName"); // FIXME - duplicates code in Dispatcher...
   }
 
   public boolean isCoordinator() {
@@ -60,6 +55,17 @@ public class JGroupsLocalNode implements LocalNode {
 
   public Object getZone() {
     throw new UnsupportedOperationException("NYI");
+  }
+
+  // 'JGroupsLocalNode' api
+
+  public void setState(Map state) throws JMSException {
+    _state=state;
+    ObjectMessage message=new JGroupsObjectMessage();
+    message.setJMSReplyTo(_destination);
+    message.setObject(new JGroupsStateUpdate(state));
+    if (_cluster.getNumNodes()>0) // i.e. cluster is started...
+      _cluster.send(_cluster.getDestination(), message); // broadcast
   }
 
 }
