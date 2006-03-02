@@ -22,6 +22,7 @@ import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.ObjectMessage;
 
+import org.activecluster.Cluster;
 import org.activecluster.ClusterListener;
 import org.codehaus.wadi.impl.Quipu;
 
@@ -89,6 +90,7 @@ public interface Dispatcher {
 
 	Destination getLocalDestination();
 	Destination getClusterDestination();
+  Cluster getCluster();
 
 	Map getDistributedState();
 	void setDistributedState(Map state) throws Exception;

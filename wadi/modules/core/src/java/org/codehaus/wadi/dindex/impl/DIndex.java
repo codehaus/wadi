@@ -53,7 +53,6 @@ import org.codehaus.wadi.dindex.newmessages.MovePMToIM;
 import org.codehaus.wadi.dindex.newmessages.MoveSMToIM;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionMapper;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.AbstractChainedEmoter;
 import org.codehaus.wadi.impl.Quipu;
 import org.codehaus.wadi.impl.SimpleMotable;
@@ -91,7 +90,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		_log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
 		_inactiveTime=inactiveTime;
 		_dispatcher=dispatcher;
-		_cluster=((ActiveClusterDispatcher)_dispatcher).getCluster();
+		_cluster=_dispatcher.getCluster();
 		_distributedState=distributedState;
 		_partitionManager=new SimplePartitionManager(_dispatcher, numPartitions, _distributedState, this, mapper);
 		_stateManager= new SimpleStateManager(_dispatcher, _inactiveTime);
@@ -435,6 +434,17 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 			return "immigration:"+_nodeName;
 		}
 	}
+  
+  public boolean fetchSession(Object key) {
+    boolean success=false;
+    try {
+      Motable motable=relocate((String)key, getLocalNodeName(), 0, false, 5000L);
+      success=true;
+    } catch (Exception e) {
+      _log.error("unexpected problem", e);
+    }
+    return success;
+  }
 
 	public Motable relocate(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout) throws Exception {
 		MoveIMToPM request=new MoveIMToPM(sessionName, nodeName, concurrentRequestThreads, shuttingDown);

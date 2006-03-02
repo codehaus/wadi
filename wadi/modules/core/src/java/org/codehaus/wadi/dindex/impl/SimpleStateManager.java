@@ -43,6 +43,7 @@ import org.codehaus.wadi.dindex.newmessages.MovePMToIM;
 import org.codehaus.wadi.dindex.newmessages.MovePMToSM;
 import org.codehaus.wadi.dindex.newmessages.MoveSMToIM;
 import org.codehaus.wadi.dindex.newmessages.MoveSMToPM;
+import org.codehaus.wadi.dindex.newmessages.PutSMToIM;
 import org.codehaus.wadi.dindex.newmessages.ReleaseEntryRequest;
 import org.codehaus.wadi.dindex.newmessages.ReleaseEntryResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
@@ -79,6 +80,7 @@ public class SimpleStateManager implements StateManager {
 		_dispatcher.register(DeletePMToIM.class, _inactiveTime);
 		_dispatcher.register(this, "onDIndexRelocationRequest", EvacuateIMToPM.class);
 		_dispatcher.register(EvacuatePMToIM.class, _inactiveTime);
+    _dispatcher.register(this, "onPutSMToIM", PutSMToIM.class);
 
 		// GridState - Relocate - 5 messages - IM->PM->SM->IM->SM->PM
 		_dispatcher.register(this, "onMessage", MoveIMToPM.class);
@@ -298,22 +300,49 @@ public class SimpleStateManager implements StateManager {
 	public boolean offerEmigrant(String key, Motable emotable, long timeout) {
 		Destination to=((RemotePartition)_config.getPartition(key).getContent()).getDestination(); // TODO - HACK - temporary
 		Destination from=_dispatcher.getLocalDestination();
-		ReleaseEntryRequest request=new ReleaseEntryRequest(emotable);
-		ObjectMessage message=_dispatcher.exchangeSend(from, to, request, timeout);
-		ReleaseEntryResponse ack=null;
-		try {
-			ack=message==null?null:(ReleaseEntryResponse)message.getObject();
-		} catch (JMSException e) {
-			_log.error("could not unpack response", e);
-		}
+    
+    // this code on the way in...
+//    {
+//      PutSMToIM put=new PutSMToIM(key);
+//      _dispatcher.send(from, to, null, put);
+//      try{Thread.sleep(1000L);} catch (InterruptedException e){};
+//      
+////      ReleaseEntryResponse ack=null;
+////      try {
+////        ack=message==null?null:(ReleaseEntryResponse)message.getObject();
+////      } catch (JMSException e) {
+////        _log.error("could not unpack response", e);
+////      }
+////
+////      if (ack==null) {
+////        if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+timeout+" millis): "+key);
+////        return false;
+////      } else {
+////        if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+timeout+" millis): "+key);
+////        return true;
+////      }
+//      return true;
+//    }
+    // this code on the way out...
+		{
+		  ReleaseEntryRequest request=new ReleaseEntryRequest(emotable);
+		  ObjectMessage message=_dispatcher.exchangeSend(from, to, request, timeout);
+		  ReleaseEntryResponse ack=null;
+		  try {
+		    ack=message==null?null:(ReleaseEntryResponse)message.getObject();
+		  } catch (JMSException e) {
+		    _log.error("could not unpack response", e);
+		  }
 
-		if (ack==null) {
-			if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+timeout+" millis): "+key);
-			return false;
-		} else {
-			if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+timeout+" millis): "+key);
-			return true;
+		  if (ack==null) {
+		    if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+timeout+" millis): "+key);
+		    return false;
+		  } else {
+		    if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+timeout+" millis): "+key);
+		    return true;
+		  }
 		}
+    
 	}
 
 	public void acceptImmigrant(ObjectMessage message, Location location, String name, Motable motable) {
@@ -325,7 +354,7 @@ public class SimpleStateManager implements StateManager {
 	protected ImmigrationListener _listener;
 
 	public void setImmigrationListener(ImmigrationListener listener) {
-		_dispatcher.register(this, "onEmigrationRequest", ReleaseEntryRequest.class);
+    _dispatcher.register(this, "onEmigrationRequest", ReleaseEntryRequest.class);
 		_dispatcher.register(ReleaseEntryResponse.class, _resTimeout);
 		_listener=listener;
 	}
@@ -343,4 +372,8 @@ public class SimpleStateManager implements StateManager {
 		_listener.onImmigration(message, request.getMotable());
 	}
 
+  public void onPutSMToIM(ObjectMessage message, PutSMToIM request) {
+    _config.fetchSession(request.getKey());
+  }
+  
 }
