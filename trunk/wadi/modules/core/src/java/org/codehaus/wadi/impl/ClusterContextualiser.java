@@ -46,7 +46,6 @@ import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
@@ -118,7 +117,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	protected SynchronizedBoolean _shuttingDown;
 	protected String _nodeName;
 	protected boolean _evacuating;
-	protected ActiveClusterDispatcher _dispatcher;
+	protected Dispatcher _dispatcher;
 	protected Cluster _cluster;
 	protected HttpProxyLocation _location;
 	protected ProxiedLocation _proxiedLocation;
@@ -130,8 +129,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)config;
 		_shuttingDown=ccc.getShuttingDown();
 		_nodeName=ccc.getNodeName();
-		_dispatcher=(ActiveClusterDispatcher)ccc.getDispatcher();
-		_cluster=((ActiveClusterDispatcher)_dispatcher).getCluster();
+		_dispatcher=ccc.getDispatcher();
+		_cluster=_dispatcher.getCluster();
 		_proxiedLocation = ccc.getProxiedLocation();
 		_location=new HttpProxyLocation(_dispatcher.getLocalDestination(), _proxiedLocation, ccc.getInvocationProxy());
 		_dindex=ccc.getDIndex();

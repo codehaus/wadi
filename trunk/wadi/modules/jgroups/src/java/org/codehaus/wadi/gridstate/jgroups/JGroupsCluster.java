@@ -17,6 +17,8 @@
 package org.codehaus.wadi.gridstate.jgroups;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.jms.BytesMessage;
@@ -34,6 +36,9 @@ import org.activecluster.Cluster;
 import org.activecluster.ClusterListener;
 import org.activecluster.LocalNode;
 import org.activecluster.election.ElectionStrategy;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jgroups.Channel;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -41,14 +46,22 @@ import org.activecluster.election.ElectionStrategy;
  */
 public class JGroupsCluster implements Cluster {
 
+  protected final Log _log = LogFactory.getLog(getClass());
+  protected final List _clusterListeners=new ArrayList();
+  protected final JGroupsTopic _clusterTopic=new JGroupsTopic("CLUSTER", null);
+
+  protected ElectionStrategy _electionStrategy;
+  protected LocalNode _localNode;
+  protected Channel _channel;
+
 	public JGroupsCluster() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
+  // 'Cluster' api
+  
 	public Topic getDestination() {
-		throw new UnsupportedOperationException("NYI");
-		//return null;
+	  return _clusterTopic;
 	}
 
 	public Map getNodes() {
@@ -57,24 +70,33 @@ public class JGroupsCluster implements Cluster {
 	}
 
 	public void addClusterListener(ClusterListener listener) {
-		throw new UnsupportedOperationException("NYI");
+	  synchronized (_clusterListeners) {
+	    _clusterListeners.add(listener);
+	  }
 	}
-
+	
 	public void removeClusterListener(ClusterListener listener) {
-		throw new UnsupportedOperationException("NYI");
+	  synchronized (_clusterListeners) {
+	    _clusterListeners.remove(listener);
+	  }
 	}
 
 	public LocalNode getLocalNode() {
-		throw new UnsupportedOperationException("NYI");
-		//return null;
+	  return _localNode;
 	}
 
 	public void setElectionStrategy(ElectionStrategy strategy) {
-		throw new UnsupportedOperationException("NYI");
+		_electionStrategy=strategy;
 	}
 
 	public void send(Destination destination, Message message) throws JMSException {
-		throw new UnsupportedOperationException("NYI");
+	  try {
+	    _channel.send(null, ((JGroupsDestination)destination).getAddress(), (JGroupsObjectMessage)message); // broadcast
+	  } catch (Exception e) {
+	    JMSException jmse=new JMSException("unexpected JGroups problem");
+	    jmse.setLinkedException(e);
+	    throw jmse;
+	  }
 	}
 
 	public MessageConsumer createConsumer(Destination destination) throws JMSException {
@@ -145,4 +167,11 @@ public class JGroupsCluster implements Cluster {
 		throw new UnsupportedOperationException("NYI");
 	}
 
+  // 'JGroupsCluster' api
+  
+  public void init(Channel channel) throws Exception {
+    _channel=channel;
+    _localNode=new JGroupsLocalNode(this, new JGroupsDestination(_channel.getLocalAddress()));
+  }
+  
 }

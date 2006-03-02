@@ -295,5 +295,11 @@ public class Utils {
     	dir.mkdir();
     	return dir;
     }
+    
+    public static String basename(Class clazz) {
+      String name=clazz.getName();
+      int i=name.lastIndexOf('.');
+      return name.substring(i+1);
+    }
 
 }

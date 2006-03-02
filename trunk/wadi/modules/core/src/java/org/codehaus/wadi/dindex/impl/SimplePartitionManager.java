@@ -45,7 +45,6 @@ import org.codehaus.wadi.dindex.messages.PartitionTransferResponse;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.LockManager;
 import org.codehaus.wadi.gridstate.PartitionMapper;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.gridstate.impl.StupidLockManager;
 import org.codehaus.wadi.impl.Quipu;
 
@@ -89,7 +88,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		for (int i=0; i<_numPartitions; i++)
 			_partitions[i]=new PartitionFacade(i, timeStamp, new DummyPartition(i), queueing, this);
 
-		_cluster=((ActiveClusterDispatcher)_dispatcher).getCluster();
+		_cluster=_dispatcher.getCluster();
 		_distributedState=distributedState;
 		_inactiveTime=_dispatcher.getInactiveTime();
 		_callback=callback;

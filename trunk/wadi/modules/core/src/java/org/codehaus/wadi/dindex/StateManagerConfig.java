@@ -32,18 +32,20 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public interface StateManagerConfig {
 
-	PartitionFacade getPartition(int key);
-	PartitionFacade getPartition(Object key);
-	int getNumPartitions();
+  PartitionFacade getPartition(int key);
+  PartitionFacade getPartition(Object key);
+  int getNumPartitions();
 
-	String getLocalNodeName();
-	String getNodeName(Destination destination);
+  String getLocalNodeName();
+  String getNodeName(Destination destination);
 
-	Dispatcher getDispatcher();
+  Dispatcher getDispatcher();
 
-    boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
-	long getInactiveTime();
+  boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
+  long getInactiveTime();
 
-	Sync getInvocationLock(String name);
+  Sync getInvocationLock(String name);
+  
+  boolean fetchSession(Object key);
 
 }
