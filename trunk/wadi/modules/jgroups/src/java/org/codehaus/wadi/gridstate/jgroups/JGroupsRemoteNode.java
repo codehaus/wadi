@@ -22,22 +22,17 @@ import org.activecluster.Node;
 
 public class JGroupsRemoteNode implements Node {
   
+  protected final JGroupsCluster _cluster;
   protected final JGroupsDestination _destination;
-  
   protected Map _state;
   
-  public JGroupsRemoteNode(JGroupsDestination destination, Map state) {
+  public JGroupsRemoteNode(JGroupsCluster cluster, JGroupsDestination destination, Map state) {
     super();
+    _cluster=cluster;
     _destination=destination;
     _state=state;
   }
 
-  // 'JGroupsRemoteNode' api
-  
-  public void setState(Map state) {
-    _state=state;
-  }
-  
   // 'Node' api
   
   public Destination getDestination() {
@@ -58,6 +53,12 @@ public class JGroupsRemoteNode implements Node {
 
   public Object getZone() {
     throw new UnsupportedOperationException("NYI");
+  }
+
+  // 'JGroupsRemoteNode' api
+  
+  public void setState(Map state) {
+    _state=state;
   }
 
 }

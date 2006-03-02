@@ -31,31 +31,15 @@ import org.jgroups.Address;
  */
 public class JGroupsObjectMessage implements ObjectMessage, Serializable {
 
-	protected Address _replyTo;
-	protected Address _destination;
+	protected transient Address _replyTo;
+	protected transient Address _destination;
 	protected String _outgoingCorrelationId;
 	protected String _incomingCorrelationId;
 	protected Serializable _letter;
 
-	// JGroupObjectMessage API
+  protected transient JGroupsCluster _cluster;
 
-	public String getIncomingCorrelationId() {
-		return _incomingCorrelationId;
-	}
-
-	public void setIncomingCorrelationId(String correlationId) {
-		_incomingCorrelationId=correlationId;
-	}
-
-	public String getOutgoingCorrelationId() {
-		return _outgoingCorrelationId;
-	}
-
-	public void setOutgoingCorrelationId(String correlationId) {
-		_outgoingCorrelationId=correlationId;
-	}
-
-	// ObjectMessage API - implemented
+  // ObjectMessage API - implemented
 
 	public Serializable getObject() throws JMSException {
 		return _letter;
@@ -66,7 +50,7 @@ public class JGroupsObjectMessage implements ObjectMessage, Serializable {
 	}
 
 	public Destination getJMSReplyTo() throws JMSException {
-		return new JGroupsDestination(_replyTo);
+		return _cluster.getDestination(_replyTo);
 	}
 
 	public void setJMSReplyTo(Destination destination) throws JMSException {
@@ -74,7 +58,7 @@ public class JGroupsObjectMessage implements ObjectMessage, Serializable {
 	}
 
 	public Destination getJMSDestination() throws JMSException {
-		return new JGroupsDestination(_destination);
+		return _cluster.getDestination(_destination);
 	}
 
 
@@ -268,5 +252,27 @@ public class JGroupsObjectMessage implements ObjectMessage, Serializable {
 	public void clearBody() throws JMSException {
 		throw new UnsupportedOperationException("NYI");
 	}
+  
+  // JGroupObjectMessage API
+
+  public String getIncomingCorrelationId() {
+    return _incomingCorrelationId;
+  }
+
+  public void setIncomingCorrelationId(String correlationId) {
+    _incomingCorrelationId=correlationId;
+  }
+
+  public String getOutgoingCorrelationId() {
+    return _outgoingCorrelationId;
+  }
+
+  public void setOutgoingCorrelationId(String correlationId) {
+    _outgoingCorrelationId=correlationId;
+  }
+  
+  public void setCluster(JGroupsCluster cluster) {
+    _cluster=cluster;
+  }
 
 }

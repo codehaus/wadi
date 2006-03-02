@@ -25,7 +25,7 @@ public class JGroupsTopic extends JGroupsDestination implements Topic {
   protected final String _name;
   
   public JGroupsTopic(String name, Address address) {
-    super(address);
+    super(address); // null Node
     _name=name;
   }
 

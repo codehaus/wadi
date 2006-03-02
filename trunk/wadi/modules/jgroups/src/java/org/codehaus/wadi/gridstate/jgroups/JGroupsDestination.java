@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import javax.jms.Destination;
 
+import org.activecluster.Node;
 import org.jgroups.Address;
 
 /**
@@ -29,16 +30,22 @@ import org.jgroups.Address;
 public class JGroupsDestination implements Destination, Serializable {
 
 	protected final Address _address;
+  protected Node _node; // backptr - initialsed later...
 
 	public JGroupsDestination(Address address) {
 		_address=address;
 	}
 
+  public void init(Node node) {
+    _node=node;
+  }
+  
 	public Address getAddress() {
 		return _address;
 	}
-
-	// TODO - custom Serialisation - consider ensuring Object Identity between different incoming instances of this class
-	// it would save [de]allocation but impact concurrency....
+  
+  public Node getNode() {
+    return _node;
+  }
 
 }
