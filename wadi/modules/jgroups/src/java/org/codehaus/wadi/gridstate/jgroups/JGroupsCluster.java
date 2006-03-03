@@ -45,34 +45,42 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.Channel;
+import org.jgroups.ChannelException;
+import org.jgroups.JChannel;
 import org.jgroups.MembershipListener;
 import org.jgroups.MergeView;
+import org.jgroups.MessageListener;
 import org.jgroups.View;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class JGroupsCluster implements Cluster, MembershipListener {
+public class JGroupsCluster implements Cluster, MembershipListener, MessageListener {
 
   protected final Log _log = LogFactory.getLog(getClass());
+  protected final String _clusterName;
+  protected final Channel _channel;
   protected final List _clusterListeners=new ArrayList();
   protected final Map _addressToDestination=new HashMap();
   protected final Map _destinationToNode=new HashMap(); // we don't need this, but i/f does - yeugh !
+  protected final boolean _excludeSelf=true;
 
   protected ElectionStrategy _electionStrategy;
   protected ClusterListener _listener;
+  protected JGroupsDispatcher _dispatcher;
   protected JGroupsLocalNode _localNode;
   protected Address _localAddress;
   protected JGroupsDestination _localDestination;
   protected JGroupsTopic _clusterTopic;
-  protected Channel _channel;
 
-	public JGroupsCluster() {
+	public JGroupsCluster(String clusterName) throws ChannelException {
 		super();
+    _clusterName=clusterName;
+    _channel=new JChannel("state_transfer.xml"); // uses an xml stack config file from JGroups distro
 	}
 
-  // 'Cluster' api
+  // ActiveCluster 'Cluster' API
   
 	public Topic getDestination() {
 	  return _clusterTopic;
@@ -114,73 +122,59 @@ public class JGroupsCluster implements Cluster, MembershipListener {
 
 	public MessageConsumer createConsumer(Destination destination) throws JMSException {
 		throw new UnsupportedOperationException("NYI");
-		//return null;
 	}
 
 	public MessageConsumer createConsumer(Destination destination, String selector) throws JMSException {
 		throw new UnsupportedOperationException("NYI");
-		//return null;
 	}
 
 	public MessageConsumer createConsumer(Destination destination, String selector, boolean noLocal) throws JMSException {
 		throw new UnsupportedOperationException("NYI");
-		//return null;
 	}
 
 	public Message createMessage() throws JMSException {
 		throw new UnsupportedOperationException("NYI");
-		//return null;
 	}
 
 	public BytesMessage createBytesMessage() throws JMSException {
 		throw new UnsupportedOperationException("NYI");
-		//return null;
 	}
 
 	public MapMessage createMapMessage() throws JMSException {
 		throw new UnsupportedOperationException("NYI");
-		//return null;
 	}
 
 	public ObjectMessage createObjectMessage() throws JMSException {
 		throw new UnsupportedOperationException("NYI");
-		//return null;
 	}
 
 	public ObjectMessage createObjectMessage(Serializable object) throws JMSException {
 		throw new UnsupportedOperationException("NYI");
-		//return null;
 	}
 
 	public StreamMessage createStreamMessage() throws JMSException {
 		throw new UnsupportedOperationException("NYI");
-		//return null;
 	}
 
 	public TextMessage createTextMessage() throws JMSException {
 		throw new UnsupportedOperationException("NYI");
-		//return null;
 	}
 
 	public TextMessage createTextMessage(String text) throws JMSException {
 		throw new UnsupportedOperationException("NYI");
-		//return null;
 	}
 
 	public boolean waitForClusterToComplete(int expectedCount, long timeout) throws InterruptedException {
 		throw new UnsupportedOperationException("NYI");
-		//return false;
 	}
 
 	public void start() throws JMSException {
-		throw new UnsupportedOperationException("NYI");
 	}
 
 	public void stop() throws JMSException {
-		throw new UnsupportedOperationException("NYI");
 	}
 
-  // MembershipListener API
+  // JGroups MembershipListener API
   
   public void viewAccepted(View newView) {
     if (_log.isTraceEnabled()) _log.trace("handling JGroups viewAccepted("+newView+")...");
@@ -258,10 +252,44 @@ public class JGroupsCluster implements Cluster, MembershipListener {
     
   }
   
-  // 'JGroupsCluster' api
+  //-----------------------------------------------------------------------------------------------
+  // JGroups MessageListener API
   
-  public void init(Channel channel) throws Exception {
-    _channel=channel;
+  public void receive(org.jgroups.Message msg) {
+    Address src=msg.getSrc();
+    Address dest=msg.getDest();
+    if (_excludeSelf && dest.isMulticastAddress() && src==_localAddress) {
+      _log.debug("ignoring message from self: "+msg);
+    } else {
+      JGroupsObjectMessage jom=(JGroupsObjectMessage)msg.getObject();
+      jom.setCluster(this);
+      try {
+        _log.info("JOM arriving: "+jom.getObject());
+        _log.info("FROM: "+src);
+        jom.setJMSReplyTo(getDestination(src));
+        _log.info("TO: "+dest);
+        jom.setJMSDestination(getDestination(dest));
+      } catch (JMSException e) {
+        _log.warn("unexpected JGroups problem", e);
+      }
+      _dispatcher.onMessage(jom);
+    }
+  }
+  
+  public byte[] getState() {
+    _log.info("GET STATE CALLED");
+    return null;
+  }
+  
+  public void setState(byte[] state) {
+    _log.info("SET STATE CALLED: "+state);
+  }
+  
+  // WADI 'JGroupsCluster' API
+  
+  public void init(JGroupsDispatcher dispatcher) throws Exception {
+    _dispatcher=dispatcher;
+    _channel.connect(_clusterName);
     _clusterTopic=new JGroupsTopic("CLUSTER", null); // null address means broadcast to all members
     _clusterTopic.init(null); // no corresponding Node
     _localAddress=_channel.getLocalAddress();
@@ -272,8 +300,12 @@ public class JGroupsCluster implements Cluster, MembershipListener {
     _addressToDestination.put(_localAddress, _localDestination);
     // _destinationToNode.put(_localDestination, _localNode); // getNodes() should NOT contain LocalNode...
 
+    long timeout=5000L;
+    if (!_channel.getState(null, timeout))
+      _log.info("cluster state is null - this must be the first node");
+
     // publish our distributed state
-    _localNode.setState(_localNode.getState());
+    //_localNode.setState(_localNode.getState());
     
 //    // have a look around...
 //    View view=_channel.getView();
@@ -288,6 +320,16 @@ public class JGroupsCluster implements Cluster, MembershipListener {
 //    }
     
     // hhmm... - I guess when we send out update message, anyone who does not know us should send one back ?
+  }
+  
+  public Channel getChannel() {
+    return _channel;
+  }
+  
+  public int getNumNodes() {
+    synchronized (_destinationToNode) {
+      return _destinationToNode.size();
+    }
   }
   
   public Address getLocalAddress() {
@@ -321,12 +363,9 @@ public class JGroupsCluster implements Cluster, MembershipListener {
     return destination;
   }
   
-  public int getNumNodes() {
-    synchronized (_destinationToNode) {
-      return _destinationToNode.size();
-    }
-  }
+ // Dispatcher API
   
+
   public void setClusterListener(ClusterListener listener) {
     _listener=listener;
   }

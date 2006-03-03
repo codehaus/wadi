@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import javax.jms.Destination;
-import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.activecluster.Cluster;
@@ -30,9 +29,7 @@ import org.activecluster.Node;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.impl.AbstractDispatcher;
 import org.jgroups.Address;
-import org.jgroups.JChannel;
-import org.jgroups.Message;
-import org.jgroups.MessageListener;
+import org.jgroups.ChannelException;
 import org.jgroups.blocks.MessageDispatcher;
 
 /**
@@ -41,7 +38,7 @@ import org.jgroups.blocks.MessageDispatcher;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class JGroupsDispatcher extends AbstractDispatcher implements MessageListener {
+public class JGroupsDispatcher extends AbstractDispatcher {
   
   protected final boolean _excludeSelf=true;
   
@@ -49,64 +46,30 @@ public class JGroupsDispatcher extends AbstractDispatcher implements MessageList
   protected Address _localAddress;
   protected MessageDispatcher _dispatcher;
   
-  public JGroupsDispatcher(String nodeName, String clusterName, long inactiveTime) {
+  public JGroupsDispatcher(String nodeName, String clusterName, long inactiveTime) throws ChannelException {
     super(nodeName, clusterName, inactiveTime);
-    _cluster=new JGroupsCluster();
+    _cluster=new JGroupsCluster(clusterName);
     register(_cluster, "onMessage", JGroupsStateUpdate.class);
   }
   
   //-----------------------------------------------------------------------------------------------
-  // MessageListener API
-  
-  public void receive(Message msg) {
-    Address src=msg.getSrc();
-    Address dest=msg.getDest();
-    if (_excludeSelf && dest.isMulticastAddress() && src==_cluster.getLocalAddress()) {
-      _log.debug("ignoring message from self: "+msg);
-    } else {
-      JGroupsObjectMessage jom=(JGroupsObjectMessage)msg.getObject();
-      jom.setCluster(_cluster);
-      try {
-        _log.info("JOM arriving: "+jom.getObject());
-        _log.info("FROM: "+src);
-        jom.setJMSReplyTo(_cluster.getDestination(src));
-        _log.info("TO: "+dest);
-        jom.setJMSDestination(_cluster.getDestination(dest));
-      } catch (JMSException e) {
-        _log.warn("unexpected JGroups problem", e);
-      }
-      onMessage(jom);
-    }
-  }
-  
-  public byte[] getState() {
-    return null;
-    // not used
-  }
-  
-  public void setState(byte[] state) {
-    // not used
-  }
+  // WADI Dispatcher API
   
   public void init(DispatcherConfig config) throws Exception {
     super.init(config);
-    JChannel channel=new JChannel();
-    _dispatcher=new MessageDispatcher(channel, this, _cluster, null);
-    //channel.setOpt(Channel.GET_STATE_EVENTS, Boolean.TRUE);
-    channel.connect(_clusterName);
-    _cluster.init(channel);
+    _dispatcher=new MessageDispatcher(_cluster.getChannel(), _cluster, _cluster, null);
+    _cluster.init(this);
     _localAddress=_cluster.getLocalAddress();
   }
   
-  //-----------------------------------------------------------------------------------------------
-  // Dispatcher API
-  
   public void start() throws Exception {
+    _cluster.start();
     _dispatcher.start();
   }
   
   public void stop() throws Exception {
     _dispatcher.stop();
+    _cluster.stop();
   }
   
   public int getNumNodes() {
