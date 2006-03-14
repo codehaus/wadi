@@ -16,21 +16,23 @@
  */
 package org.codehaus.wadi.gridstate.jgroups;
 
+import java.util.Collections;
 import java.util.Map;
 import javax.jms.Destination;
 import org.activecluster.Node;
+import org.codehaus.wadi.impl.Utils;
 
 public class JGroupsRemoteNode implements Node {
   
   protected final JGroupsCluster _cluster;
   protected final JGroupsDestination _destination;
-  protected Map _state;
+  protected Map _clusterState;
   
   public JGroupsRemoteNode(JGroupsCluster cluster, JGroupsDestination destination, Map state) {
     super();
     _cluster=cluster;
     _destination=destination;
-    _state=state;
+    _clusterState=state;
   }
 
   // 'Node' api
@@ -40,11 +42,17 @@ public class JGroupsRemoteNode implements Node {
   }
 
   public Map getState() {
-    return _state;
+    synchronized (_clusterState) {
+      return (Map)_clusterState.get(_destination.getAddress());
+    }
   }
 
   public String getName() {
-    throw new UnsupportedOperationException("NYI");
+    Map state=getState();
+    state=(state==null?Collections.EMPTY_MAP:state);
+    String name=(String)state.get("nodeName");
+    name=(name==null?"<unknown>":name);
+    return name; // FIXME - duplicates code in Dispatcher...
   }
 
   public boolean isCoordinator() {
@@ -58,7 +66,16 @@ public class JGroupsRemoteNode implements Node {
   // 'JGroupsRemoteNode' api
   
   public void setState(Map state) {
-    _state=state;
+    synchronized (_clusterState) {
+      _clusterState.put(_destination.getAddress(), state);
+    }
+  }
+  
+  protected static final String _prefix="<"+Utils.basename(JGroupsRemoteNode.class)+": ";
+  protected static final String _suffix=">";
+  
+  public String toString() {
+    return _prefix+getName()+_suffix;
   }
 
 }

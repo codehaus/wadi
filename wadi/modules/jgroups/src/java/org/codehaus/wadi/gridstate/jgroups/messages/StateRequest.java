@@ -14,26 +14,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate.jgroups;
+package org.codehaus.wadi.gridstate.jgroups.messages;
 
 import java.io.Serializable;
-import java.util.Map;
+import org.codehaus.wadi.impl.Utils;
 
-/**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
-public class JGroupsStateUpdate implements Serializable {
-
-	protected final Map _state;
-
-	public JGroupsStateUpdate(Map state) {
-		_state=state;
-	}
-
-	public Map getState() {
-		return _state;
-	}
-
-	// TODO - custom serilaliser
+public class StateRequest implements Serializable {
+  
+  protected static final String _string="<"+Utils.basename(StateRequest.class)+">";
+  
+  public StateRequest() {
+    super();
+  }
+  
+  public String toString() {
+    return _string;
+  }
+    
 }

@@ -43,6 +43,12 @@ import org.activecluster.Node;
 import org.activecluster.election.ElectionStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.gridstate.jgroups.messages.StateRequest;
+import org.codehaus.wadi.gridstate.jgroups.messages.StateResponse;
+import org.codehaus.wadi.gridstate.jgroups.messages.StateUpdate;
+import org.codehaus.wadi.impl.SimpleStreamer;
+import org.codehaus.wadi.impl.Utils;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.ChannelException;
@@ -51,25 +57,29 @@ import org.jgroups.MembershipListener;
 import org.jgroups.MergeView;
 import org.jgroups.MessageListener;
 import org.jgroups.View;
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public class JGroupsCluster implements Cluster, MembershipListener, MessageListener {
-
-  protected final Log _log = LogFactory.getLog(getClass());
+  protected final Log _messageLog = LogFactory.getLog("org.codehaus.wadi.MESSAGES");
+  protected final Log _log=LogFactory.getLog(getClass());
   protected final String _clusterName;
   protected final Channel _channel;
   protected final List _clusterListeners=new ArrayList();
   protected final Map _addressToDestination=new HashMap();
   protected final Map _destinationToNode=new HashMap(); // we don't need this, but i/f does - yeugh !
   protected final boolean _excludeSelf=true;
+  protected final Map _clusterState=new HashMap(); // a Map (Cluster) of Maps (Nodes) associating a Key (Address) with a Value (State)
+  protected final JGroupsLocalNode _localNode;
+  protected final Latch _latch1=new Latch();
+  //protected final Latch _latch2=new Latch();
 
   protected ElectionStrategy _electionStrategy;
   protected ClusterListener _listener;
   protected JGroupsDispatcher _dispatcher;
-  protected JGroupsLocalNode _localNode;
   protected Address _localAddress;
   protected JGroupsDestination _localDestination;
   protected JGroupsTopic _clusterTopic;
@@ -78,6 +88,8 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 		super();
     _clusterName=clusterName;
     _channel=new JChannel("state_transfer.xml"); // uses an xml stack config file from JGroups distro
+    //_channel=new JChannel("default_stack.xml"); // uses an xml stack config file from JGroups distro
+    _localNode=new JGroupsLocalNode(this, _clusterState);
 	}
 
   // ActiveCluster 'Cluster' API
@@ -110,10 +122,20 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 		_electionStrategy=strategy;
 	}
 
+  protected String getName(Destination detination) {
+    return ((JGroupsDestination)detination).getNode().getName();
+  }
+  
 	public void send(Destination destination, Message message) throws JMSException {
+    JGroupsObjectMessage msg=(JGroupsObjectMessage)message;
 	  try {
-	    _channel.send(((JGroupsDestination)destination).getAddress(), _localAddress, (JGroupsObjectMessage)message);
+      msg.setCluster(this);
+      msg.setJMSDestination(destination);
+      if (_messageLog.isTraceEnabled()) _messageLog.trace("outgoing: "+msg.getObject()+" {"+getName(message.getJMSReplyTo())+"->"+getName(message.getJMSDestination())+"} - "+msg.getIncomingCorrelationId()+"/"+msg.getOutgoingCorrelationId());
+      msg.setCluster(null);
+	    _channel.send(((JGroupsDestination)destination).getAddress(), _localAddress, msg);
 	  } catch (Exception e) {
+      _log.warn("unexpected JGroups problem", e);
 	    JMSException jmse=new JMSException("unexpected JGroups problem");
 	    jmse.setLinkedException(e);
 	    throw jmse;
@@ -169,6 +191,50 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 	}
 
 	public void start() throws JMSException {
+	  try {
+	      //_channel.setOpt(Channel.LOCAL, Boolean.FALSE); // exclude ourselves from our own broadcasts...
+	      _channel.connect(_clusterName);
+	      _log.info("connected to channel");
+	      _clusterTopic=new JGroupsTopic("CLUSTER", null); // null address means broadcast to all members
+	      _clusterTopic.init(null); // no corresponding Node
+	      _localAddress=_channel.getLocalAddress();
+	      _clusterState.put(_localAddress, new HashMap()); // initialise our distributed state
+	      _log.info("LOCAL ADDRESS: "+_localAddress);
+	      _localDestination=new JGroupsDestination(_localAddress);
+	      _localDestination.init(_localNode);
+        _localNode.setDestination(_localDestination);
+	      _addressToDestination.put(_localAddress, _localDestination);
+	      _latch1.release(); // allow new view to be accepted
+        //_latch2.acquire(); // wait for view acceptance to finish
+	    // _destinationToNode.put(_localDestination, _localNode); // getNodes() should NOT contain LocalNode...
+	    
+	    // publish our distributed state
+	    //_localNode.setState(_localNode.getState());
+//	    JGroupsObjectMessage message=new JGroupsObjectMessage();
+//	    Map state=(Map)_clusterState.get(_localAddress);
+//	    _log.info("BROADCASTING LOCAl STATE: "+state);
+//	    message.setObject(new JGroupsStateUpdate(state));
+//	    _channel.send(null, _localAddress, message);
+	  } catch (Exception e) {
+	    JMSException jmse=new JMSException("unexpected JGroups problem");
+	    jmse.setLinkedException(e);
+	    throw jmse;
+	  }
+	  
+//	  // have a look around...
+//	  View view=_channel.getView();
+//	  viewAccepted(view); // build our rep
+//	  Vector members=view.getMembers();
+//	  for (int i=0; i<members.size(); i++) {
+//	  Address address=(Address)members[i];
+//	  // simulate a join...
+//	  JGroupsObjectMessage message=new JGroupsObjectMessage();
+//	  message.setJMSReplyTo(getDestination(address));
+//	  onMessage()
+//	  }
+	  
+	  // hhmm... - I guess when we send out update message, anyone who does not know us should send one back ?
+    try{Thread.sleep(10*1000);}catch(Exception e){};
 	}
 
 	public void stop() throws JMSException {
@@ -177,6 +243,15 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   // JGroups MembershipListener API
   
   public void viewAccepted(View newView) {
+    
+    // we don't want to overtake the thread that is initialising this object...
+    try {
+      //_latch2.acquire();
+      _latch1.acquire();
+    } catch (InterruptedException e) {
+      // hmmm...
+    }
+    
     if (_log.isTraceEnabled()) _log.trace("handling JGroups viewAccepted("+newView+")...");
     
     // this is meant to happen if a network split is healed and two
@@ -189,7 +264,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
       Vector newMembers=newView.getMembers();
       
       // manage leavers
-      for (Iterator i=_addressToDestination.entrySet().iterator(); i.hasNext(); ){
+      for (Iterator i=_addressToDestination.entrySet().iterator(); i.hasNext(); ) {
         Map.Entry entry=(Map.Entry)i.next();
         Address address=(Address)entry.getKey();
         JGroupsDestination destination=(JGroupsDestination)entry.getValue();
@@ -205,6 +280,11 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
             _destinationToNode.remove(destination);
           }
 
+          // garbage collect this nodes share of cluster state...
+          synchronized (_clusterState) {
+            _clusterState.remove(address);
+          }
+
           try {
             // elect coordinator
             if (_electionStrategy!=null)
@@ -218,24 +298,67 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
       // notify joiners
       for (int i=0; i<newMembers.size(); i++) {
         Address address=(Address)newMembers.get(i);
+        _log.info("JOINER: "+address);
         if (!_addressToDestination.containsKey(address)) {
           // insert node
           JGroupsDestination destination=new JGroupsDestination(address);
-          JGroupsRemoteNode node=new JGroupsRemoteNode(this, destination, null);
+          JGroupsRemoteNode node=new JGroupsRemoteNode(this, destination, _clusterState);
           destination.init(node);
           _addressToDestination.put(address, destination);
-//          synchronized (_destinationToNode) {
-//          _destinationToNode.put(destination, node);
-//          }
-//          // notify listener
-//          if (_listener!=null)
-//            _listener.onNodeAdd(new ClusterEvent(this, node ,ClusterEvent.ADD_NODE));
+
+          synchronized (_destinationToNode) {
+            _destinationToNode.put(destination, node);
+          }
+          
+          // notify listener...
+          if (destination!=_localDestination)
+            new Thread(new JoinerThread(node, destination, address)).start();
         }
       }
     }
     
     if (_log.isInfoEnabled()) _log.info("JGroups View: " + newView.getMembers());
     
+  }
+  
+  class JoinerThread implements Runnable {
+    
+    Node _node;
+    Destination _destination;
+    Address _address;
+    
+    JoinerThread(Node node, Destination destination, Address address) {
+      _node=node;
+      _destination=destination;
+      _address=address;
+    }
+    
+    public void run() {
+      // now we need a quick round trip to fetch the distributed data for this node - yeugh !
+      try {
+        JGroupsObjectMessage tmp=(JGroupsObjectMessage)_dispatcher.exchangeSend(_localDestination, _destination, new StateRequest(), 5000);
+        Map state=((StateResponse)tmp.getObject()).getState();
+        _clusterState.put(_address, state);
+      } catch (Exception e) {
+        _log.warn("problem retrieving remote state for fresh joiner...", e);
+        return;
+      }
+      
+      // notify listener
+      if (_listener!=null)
+        _listener.onNodeAdd(new ClusterEvent(JGroupsCluster.this, _node, ClusterEvent.ADD_NODE));
+      
+      // elect coordinator
+      if (_electionStrategy!=null && _destinationToNode.size()>0) {
+        try {
+          Node coordinator=_electionStrategy.doElection(JGroupsCluster.this);
+          _listener.onCoordinatorChanged(new ClusterEvent(JGroupsCluster.this, coordinator, ClusterEvent.ELECTED_COORDINATOR));
+        } catch (JMSException e) {
+          _log.error("unexpected problem whilst running coordinator election", e);
+        }
+      }
+      //_latch2.release();
+    }
   }
   
   public void suspect(Address suspected_mbr) {
@@ -256,70 +379,61 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   // JGroups MessageListener API
   
   public void receive(org.jgroups.Message msg) {
-    Address src=msg.getSrc();
-    Address dest=msg.getDest();
-    if (_excludeSelf && dest.isMulticastAddress() && src==_localAddress) {
-      _log.debug("ignoring message from self: "+msg);
-    } else {
-      JGroupsObjectMessage jom=(JGroupsObjectMessage)msg.getObject();
-      jom.setCluster(this);
-      try {
-        _log.info("JOM arriving: "+jom.getObject());
-        _log.info("FROM: "+src);
-        jom.setJMSReplyTo(getDestination(src));
-        _log.info("TO: "+dest);
-        jom.setJMSDestination(getDestination(dest));
-      } catch (JMSException e) {
-        _log.warn("unexpected JGroups problem", e);
+    synchronized (_channel) {
+      Address src=msg.getSrc();
+      Address dest=msg.getDest();
+      if (_excludeSelf && dest.isMulticastAddress() && src==_localAddress) {
+        _log.debug("ignoring message from self: "+msg);
+      } else {
+        Object o=msg.getObject();
+        
+        JGroupsObjectMessage message=(JGroupsObjectMessage)o;
+        message.setCluster(this);
+        try {
+          message.setJMSReplyTo(getDestination(src));
+          message.setJMSDestination(getDestination(dest));
+        } catch (JMSException e) {
+          _log.warn("unexpected JGroups problem", e);
+        }
+        _dispatcher.onMessage(message);
       }
-      _dispatcher.onMessage(jom);
     }
   }
   
+  Streamer _streamer=new SimpleStreamer();
+  
   public byte[] getState() {
-    _log.info("GET STATE CALLED");
-    return null;
+    _log.info("GET STATE CALLED - sending: "+_clusterState);
+    try {
+      byte[] tmp=Utils.objectToByteArray(_clusterState, _streamer);
+      return tmp; 
+    } catch (Exception e) {
+      _log.error("problem preparing cluster state for transfer", e);
+      return new byte[0];
+    }
   }
   
   public void setState(byte[] state) {
-    _log.info("SET STATE CALLED: "+state);
+    if (state==null) {
+      _log.info("SET STATE CALLED - received: null - we must be the first node");
+      return;
+    }
+    
+    try {
+      Map nodes=(Map)Utils.byteArrayToObject(state, _streamer);
+      _log.info("SET STATE CALLED - receiving: "+nodes);
+      _clusterState.putAll(nodes); // copies in new values for node state
+    } catch (Exception e) {
+      _log.error("problem accepting cluster state transfer", e);
+    }
   }
   
   // WADI 'JGroupsCluster' API
   
   public void init(JGroupsDispatcher dispatcher) throws Exception {
     _dispatcher=dispatcher;
-    _channel.connect(_clusterName);
-    _clusterTopic=new JGroupsTopic("CLUSTER", null); // null address means broadcast to all members
-    _clusterTopic.init(null); // no corresponding Node
-    _localAddress=_channel.getLocalAddress();
-    _log.info("LOCAL ADDRESS: "+_localAddress);
-    _localDestination=new JGroupsDestination(_localAddress);
-    _localNode=new JGroupsLocalNode(this, _localDestination, null);
-    _localDestination.init(_localNode);
-    _addressToDestination.put(_localAddress, _localDestination);
-    // _destinationToNode.put(_localDestination, _localNode); // getNodes() should NOT contain LocalNode...
-
-    long timeout=5000L;
-    if (!_channel.getState(null, timeout))
-      _log.info("cluster state is null - this must be the first node");
-
-    // publish our distributed state
-    //_localNode.setState(_localNode.getState());
-    
-//    // have a look around...
-//    View view=_channel.getView();
-//    viewAccepted(view); // build our rep
-//    Vector members=view.getMembers();
-//    for (int i=0; i<members.size(); i++) {
-//      Address address=(Address)members[i];
-//      // simulate a join...
-//      JGroupsObjectMessage message=new JGroupsObjectMessage();
-//      message.setJMSReplyTo(getDestination(address));
-//      onMessage()
-//    }
-    
-    // hhmm... - I guess when we send out update message, anyone who does not know us should send one back ?
+    _dispatcher.register(this, "onMessage", StateRequest.class);
+    _dispatcher.register(StateResponse.class, 5000);
   }
   
   public Channel getChannel() {
@@ -370,7 +484,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
     _listener=listener;
   }
   
-  public void onMessage(ObjectMessage message, JGroupsStateUpdate update) throws Exception {
+  public void onMessage(ObjectMessage message, StateUpdate update) throws Exception {
     JGroupsDestination destination=(JGroupsDestination)message.getJMSReplyTo();
     if (_log.isTraceEnabled()) _log.trace("STATE UPDATE: " + update + " from: " + /*getNodeName(*/destination/*)*/);
     Node node=destination.getNode();
@@ -379,21 +493,13 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
       ((JGroupsRemoteNode)node).setState(state);
     else
       _log.warn("state update from non-remote node: "+node);
-
-    // from viewAccepted()
-    synchronized (_destinationToNode) {
-      if (_destinationToNode.put(destination, node)==null) {
-        // first time we have seen this node - send it our own state
-        //.....
-      }
-    }
-    // notify listener
-    if (_listener!=null)
-      _listener.onNodeAdd(new ClusterEvent(this, node, ClusterEvent.ADD_NODE));
-    
-    // elect coordinator
-    if (_electionStrategy!=null)
-      _electionStrategy.doElection(this);
   }
-  
+
+  public void onMessage(ObjectMessage message, StateRequest request) throws Exception {
+    JGroupsDestination destination=(JGroupsDestination)message.getJMSReplyTo();
+    if (_log.isTraceEnabled()) _log.trace("StateRequest from: "+/*getNodeName(*/destination/*)*/);
+    Map state=_localNode.getState();
+    _dispatcher.reply(message, new StateResponse(state));
+  }
+
 }

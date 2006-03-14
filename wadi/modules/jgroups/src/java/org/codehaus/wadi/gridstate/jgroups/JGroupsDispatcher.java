@@ -28,6 +28,7 @@ import org.activecluster.LocalNode;
 import org.activecluster.Node;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.impl.AbstractDispatcher;
+import org.codehaus.wadi.gridstate.jgroups.messages.StateUpdate;
 import org.jgroups.Address;
 import org.jgroups.ChannelException;
 import org.jgroups.blocks.MessageDispatcher;
@@ -49,7 +50,7 @@ public class JGroupsDispatcher extends AbstractDispatcher {
   public JGroupsDispatcher(String nodeName, String clusterName, long inactiveTime) throws ChannelException {
     super(nodeName, clusterName, inactiveTime);
     _cluster=new JGroupsCluster(clusterName);
-    register(_cluster, "onMessage", JGroupsStateUpdate.class);
+    register(_cluster, "onMessage", StateUpdate.class);
   }
   
   //-----------------------------------------------------------------------------------------------
@@ -59,11 +60,11 @@ public class JGroupsDispatcher extends AbstractDispatcher {
     super.init(config);
     _dispatcher=new MessageDispatcher(_cluster.getChannel(), _cluster, _cluster, null);
     _cluster.init(this);
-    _localAddress=_cluster.getLocalAddress();
   }
   
   public void start() throws Exception {
     _cluster.start();
+    _localAddress=_cluster.getLocalAddress();
     _dispatcher.start();
   }
   

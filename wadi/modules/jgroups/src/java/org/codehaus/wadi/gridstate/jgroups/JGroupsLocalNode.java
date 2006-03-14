@@ -21,32 +21,51 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import org.activecluster.LocalNode;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.gridstate.jgroups.messages.StateUpdate;
+import org.codehaus.wadi.impl.Utils;
 
 public class JGroupsLocalNode implements LocalNode {
   
+  protected final Log _log=LogFactory.getLog(getClass());
   protected final JGroupsCluster _cluster;
-  protected final JGroupsDestination _destination;
-  protected Map _state;
+  protected JGroupsDestination _destination;
+  protected Map _clusterState;
+  protected Map _localState;
   
-  public JGroupsLocalNode(JGroupsCluster cluster, JGroupsDestination destination, Map state) {
+  public JGroupsLocalNode(JGroupsCluster cluster, Map state) {
     super();
     _cluster=cluster;
-    _destination=destination;
-    _state=state;
+    _clusterState=state;
   }
 
   // 'Node' api
   
   public Map getState() {
-    return _state;
+    if (_destination==null) {
+      return _localState;
+    } else
+      synchronized (_clusterState) {
+        return (Map)_clusterState.get(_destination.getAddress());
+      }
   }
 
   public Destination getDestination() {
     return _destination;
   }
 
+  public void setDestination(JGroupsDestination destination) {
+    _destination=destination;
+    synchronized (_clusterState) {
+      _clusterState.put(_destination.getAddress(), _localState);
+      _localState=null;
+    }
+    
+  }
+  
   public String getName() {
-    return (String)_state.get("nodeName"); // FIXME - duplicates code in Dispatcher...
+    return (String)getState().get("nodeName"); // FIXME - duplicates code in Dispatcher...
   }
 
   public boolean isCoordinator() {
@@ -60,12 +79,38 @@ public class JGroupsLocalNode implements LocalNode {
   // 'JGroupsLocalNode' api
 
   public void setState(Map state) throws JMSException {
-    _state=state;
-    ObjectMessage message=new JGroupsObjectMessage();
-    message.setJMSReplyTo(_destination);
-    message.setObject(new JGroupsStateUpdate(state));
-    if (_cluster.getNumNodes()>0) // i.e. cluster is started...
-      _cluster.send(_cluster.getDestination(), message); // broadcast
+    
+    if (_destination==null) {
+      // we have not yet been initialised...
+      _localState=state;
+    } else {
+      _localState=null;
+      Object tmp;
+      synchronized (_clusterState) {
+        
+        if (_destination==null) {
+          _log.warn("attempting to setState() without a Destination");
+          return;
+        }
+        
+        tmp=_clusterState.put(_destination.getAddress(), state);
+      }
+      
+      if (tmp!=null) {
+        ObjectMessage message=new JGroupsObjectMessage();
+        message.setJMSReplyTo(_destination);
+        message.setObject(new StateUpdate(state));
+        _cluster.send(_cluster.getDestination(), message); // broadcast
+      }
+    }
+    
+  }
+
+  protected static final String _prefix="<"+Utils.basename(JGroupsLocalNode.class)+": ";
+  protected static final String _suffix=">";
+  
+  public String toString() {
+    return _prefix+getName()+_suffix;
   }
 
 }
