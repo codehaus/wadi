@@ -23,6 +23,7 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
+import org.codehaus.wadi.impl.Utils;
 import org.jgroups.Address;
 
 /**
@@ -275,4 +276,11 @@ public class JGroupsObjectMessage implements ObjectMessage, Serializable {
     _cluster=cluster;
   }
 
+  protected static String _prefix="<"+Utils.basename(JGroupsObjectMessage.class)+": ";
+  protected static String _suffix=">";
+
+  public String toString() {
+    return _prefix+_letter+_suffix;
+  }
+  
 }

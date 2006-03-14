@@ -14,47 +14,34 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate.jgroups;
+package org.codehaus.wadi.gridstate.jgroups.messages;
 
 import java.io.Serializable;
-
-import javax.jms.Destination;
-
-import org.activecluster.Node;
+import java.util.Map;
 import org.codehaus.wadi.impl.Utils;
-import org.jgroups.Address;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class JGroupsDestination implements Destination, Serializable {
+public class StateUpdate implements Serializable {
 
-	protected Address _address;
-  protected transient Node _node; // backptr - initialsed later...
-
-	public JGroupsDestination(Address address) {
-		_address=address;
-	}
-
-  public void init(Node node) {
-    _node=node;
-  }
-  
-	public Address getAddress() {
-		return _address;
-	}
-  
-  public Node getNode() {
-    return _node;
-  }
-
-  protected static final String _prefix="<"+Utils.basename(JGroupsDestination.class)+": ";
+  protected static final String _prefix="<"+Utils.basename(StateUpdate.class)+": ";
   protected static final String _suffix=">";
   
-  public String toString() {
-    String name=(_node==null?"cluster":_node.getName());
-    return _prefix+name+_suffix;
-  }
+	protected final Map _state;
+
+	public StateUpdate(Map state) {
+		_state=state;
+	}
+
+	public Map getState() {
+		return _state;
+	}
+
+	// TODO - custom serialiser
   
+  public String toString() {
+    return _prefix+_state+_suffix; 
+  }
 }
