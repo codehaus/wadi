@@ -48,6 +48,10 @@ public class JGroupsDestination implements Destination, Serializable {
   public Node getNode() {
     return _node;
   }
+  
+  public String getName() {
+    return _node==null?"unknown":_node.getName();
+  }
 
   protected static final String _prefix="<"+Utils.basename(JGroupsDestination.class)+": ";
   protected static final String _suffix=">";
