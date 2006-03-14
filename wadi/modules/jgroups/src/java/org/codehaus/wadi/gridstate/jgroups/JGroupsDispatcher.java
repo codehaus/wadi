@@ -90,18 +90,7 @@ public class JGroupsDispatcher extends AbstractDispatcher {
   }
   
   public String getNodeName(Destination destination) {
-    Address address=((JGroupsDestination)destination).getAddress();
-    Node node=getNode(address);
-    
-    if (node==null) {
-      return "<cluster>";
-    }
-          
-    Map state=node.getState();
-    if (state==null)
-      return "<unknown>";
-    else
-      return (String)state.get("nodeName"); // TODO - use a static String
+    return ((JGroupsDestination)destination).getName();
   }
   
   public Destination getLocalDestination() {
