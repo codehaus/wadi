@@ -252,6 +252,7 @@
     <module>modules/tomcat50</module>
     <module>modules/tomcat55</module>
     <module>modules/axis2</module>
+    <module>modules/openejb</module>
     <module>modules/jboss4</module>
     <module>modules/webapp</module>
     <module>modules/assembly</module>
