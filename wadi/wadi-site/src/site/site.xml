@@ -28,8 +28,8 @@
       </menu>
 
       <menu name="Modules">
-         <item name="JGroups 2.8+" href="wadi-jgroups/index.html"/>
          <item name="Core" href="wadi-core/index.html"/>
+         <item name="JGroups 2.8+" href="wadi-jgroups/index.html"/>
          <item name="Jetty 5.x" href="wadi-jetty5/index.html"/>
          <item name="Jetty 6.x" href="wadi-jetty6/index.html"/>
          <item name="Tomcat 5.0.x" href="wadi-tomcat50/index.html"/>
