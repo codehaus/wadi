@@ -4,7 +4,7 @@
     <groupId>wadi</groupId>
     <artifactId>wadi</artifactId>
     <relativePath>../../pom.xml</relativePath>
-    <version>2.0M2</version>
+    <version>2.0M2-SNAPSHOT</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
@@ -21,10 +21,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-    <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-j2ee-management</artifactId>
     </dependency>
@@ -35,10 +31,6 @@
     <dependency>
       <groupId>jcache</groupId>
       <artifactId>jcache</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging-api</artifactId>
     </dependency>
     <dependency>
       <groupId>axion</groupId><!-- used by some tests -->
@@ -96,12 +88,6 @@
     <dependency>
       <groupId>regexp</groupId>
       <artifactId>regexp</artifactId>
-    </dependency>
-    <!-- these should not be here... -->
-    <dependency>
-      <groupId>jgroups</groupId>
-      <artifactId>jgroups-all</artifactId>
-      <version>2.2.9.1</version>
     </dependency>
   </dependencies>
 
