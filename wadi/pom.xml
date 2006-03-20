@@ -59,6 +59,7 @@
       <organizationUrl>http://www.virtuas.com</organizationUrl>
       <roles>
 	<role>AMQ4</role>
+	<role>Cargo</role>
       </roles>
       <timezone>-7</timezone>
     </developer>
@@ -90,7 +91,7 @@
       <name>Gianni Scenini</name>
       <email>gianni.scenini@gmail.com</email>
       <organization>Quativa</organization>
-      <!--<organizationUrl>http://www.quativa.com</organizationUrl>-->
+      <organizationUrl>http://www.quativa.com</organizationUrl>
       <roles>
 	<role>Grid</role>
 	<role>P2P</role>
