@@ -8,36 +8,22 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>wadi-tomcat55</artifactId>
+  <artifactId>wadi-axis2</artifactId>
   <packaging>jar</packaging>
-  <name>WADI :: Tomcat55</name>
-  <description>WADI/Tomcat-5.5.x Integration - An HttpSession Manager for Tomcat-5.5.x</description>
+  <name>WADI :: Axis2</name>
+  <description>WADI/Axis-2.x Integration - A Session Manager for Axis-2.x</description>
 
   <scm>
-    <connection>scm:cvs:pserver:anoncvs@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi/modules/tomcat55</connection>
-    <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org/home/projects/wadi/scm:wadi/modules/tomcat55</developerConnection>
-    <url>http://cvs.wadi.codehaus.org/viewrep/wadi/wadi/modules/tomcat55</url>
+    <connection>scm:cvs:pserver:anoncvs@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi/modules/axis2</connection>
+    <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org/home/projects/wadi/scm:wadi/modules/axis2</developerConnection>
+    <url>http://cvs.wadi.codehaus.org/viewrep/wadi/wadi/modules/axis2</url>
   </scm>
 
   <dependencies>
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>geronimo-spec</groupId>
-      <artifactId>geronimo-spec-servlet</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>wadi</groupId>
-      <artifactId>wadi-core</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>tomcat</groupId>
-      <artifactId>catalina</artifactId>
-      <version>5.5.12</version>
-      <scope>provided</scope>
+      <groupId>axis2</groupId>
+      <artifactId>axis2</artifactId>
+      <version>0.9</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -60,10 +46,12 @@
   <reporting>
     <outputDirectory>../../wadi-site/target/site/${artifactId}</outputDirectory>
     <plugins>
+<!--
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-clover-plugin</artifactId>
       </plugin>
+-->
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-javadoc-plugin</artifactId>
