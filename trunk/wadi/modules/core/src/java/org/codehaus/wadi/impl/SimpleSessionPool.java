@@ -36,12 +36,12 @@ public class SimpleSessionPool implements SessionPool {
     }
 
     public void init(SessionConfig config) {
-        assert _config==null : "already initialised";
+      assert (_config==null);
         _config=config;
     }
 
     public void destroy() {
-        assert _config!=null : "not yet initialised";
+      assert (_config!=null);
         _config=null;
     }
 

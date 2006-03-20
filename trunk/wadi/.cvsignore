@@ -2,6 +2,8 @@
 .generated.lst
 ActiveMQ
 build.ajproperties
+jmeter.log
+jmeter.log
 logs
 target
 tmp

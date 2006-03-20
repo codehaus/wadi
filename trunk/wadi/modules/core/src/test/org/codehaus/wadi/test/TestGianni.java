@@ -50,6 +50,7 @@ import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableManager;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
+import org.codehaus.wadi.impl.DummyManagerConfig;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.impl.GiannisContextualiser;
@@ -106,7 +107,7 @@ public class TestGianni extends TestCase {
 		// Axion
     //String url="jdbc:axiondb:WADI";
     //DataSource ds=new AxionDataSource(url);
-    
+
     // Derby
     String url="jdbc:derby:WADI;create=true";
     EmbeddedDataSource eds=new EmbeddedDataSource();
@@ -114,7 +115,7 @@ public class TestGianni extends TestCase {
     eds.setCreateDatabase("true");
     eds.setConnectionAttributes("derby.language.logStatementText=true;traceFile=derby-trace.out;traceLevel=255");
     DataSource ds=eds;
-  
+
     // MySQL
 		//MysqlDataSource msds=new MysqlDataSource();
 		//String url="jdbc:mysql://localhost:3306/WADI";
@@ -220,8 +221,8 @@ public class TestGianni extends TestCase {
 //    String url="jdbc:axiondb:WADI";
 //    AxionDataSource ads=new AxionDataSource(url);
 //    DataSource ds=ads;
-    
-    
+
+
     // Derby
     File dir=Utils.createTempDirectory("derby-", "-test", new File("/tmp"));
     dir.delete();
@@ -230,7 +231,7 @@ public class TestGianni extends TestCase {
     eds.setDatabaseName(dir.getCanonicalPath());
     eds.setCreateDatabase("create");
     DataSource ds=eds;
-  
+
     // MySQL
 //    MysqlDataSource msds=new MysqlDataSource();
 //    String url="jdbc:mysql://localhost:3306/WADI";
@@ -238,7 +239,7 @@ public class TestGianni extends TestCase {
 //    msds.setLoggerClassName(MySqlLog.class.getName());
 //    msds.setProfileSQL(false);
 //    DataSource ds=msds;
-    
+
 		String storeTable="SESSIONS";
 		DatabaseStore store=new DatabaseStore(url, ds, storeTable, false, true, true);
 

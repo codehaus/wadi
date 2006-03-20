@@ -64,8 +64,8 @@ public class JkRouter implements Router {
 	}
 
 	public String augment(String id, String target) {
-		assert id!=null;
-		assert target.startsWith(".");
+	  assert (id!=null);
+	  assert (target.startsWith("."));
 
 		int i=id.lastIndexOf(".");
 		if (i<0) // id has no routing info
@@ -106,7 +106,7 @@ public class JkRouter implements Router {
 	}
 
 	public boolean rerouteCookie(HttpServletRequest req, HttpServletResponse res, String id, String target) {
-		assert target.startsWith(".");
+	  assert (target.startsWith("."));
 
 		String oldId=id;
 		String newId=augment(id);
@@ -146,7 +146,7 @@ public class JkRouter implements Router {
 	}
 
 	public boolean rerouteURL(String target) {
-		assert target.startsWith(".");
+	  assert (target.startsWith("."));
 		// TODO Auto-generated method stub
 		return false;
 	}

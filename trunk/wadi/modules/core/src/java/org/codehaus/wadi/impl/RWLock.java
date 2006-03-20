@@ -97,8 +97,8 @@ public class RWLock implements ReadWriteLock {
   */
 
 
-  protected synchronized void cancelledWaitingReader() { --waitingReaders_; assert waitingReaders_>-1;}
-  protected synchronized void cancelledWaitingWriter(Lock l) { --waitingWriters_; l._count--; assert waitingWriters_>-1;}
+  protected synchronized void cancelledWaitingReader() { --waitingReaders_; assert (waitingReaders_>-1);}
+  protected synchronized void cancelledWaitingWriter(Lock l) { --waitingWriters_; l._count--; assert (waitingWriters_>-1);}
 
 
   protected boolean allowReader() {
@@ -151,7 +151,7 @@ public class RWLock implements ReadWriteLock {
     if (pass)
     {
       --waitingReaders_;
-      assert waitingReaders_>-1;
+      assert (waitingReaders_>-1);
     }
 
     return pass;
@@ -162,7 +162,7 @@ public class RWLock implements ReadWriteLock {
     if (pass)
     {
       --waitingWriters_;
-      assert waitingWriters_>-1;
+      assert (waitingWriters_>-1);
       l._count--;
     }
     return pass;
@@ -186,7 +186,7 @@ public class RWLock implements ReadWriteLock {
     {
       if (_log.isTraceEnabled())
 	_log.trace("activeReaders_="+activeReaders_);
-      assert activeReaders_>-1;
+      assert (activeReaders_>-1);
       return null;
     }
   }
@@ -477,7 +477,7 @@ public class RWLock implements ReadWriteLock {
       // cease being the active writer
       activeWriter_=null;
       // become an active reader
-      assert activeReaders_==0;	// we were writing so there should be no active readers...
+      assert (activeReaders_==0);	// we were writing so there should be no active readers...
       activeReaders_++;
       // wake waiting readers
       if (waitingReaders_>0)

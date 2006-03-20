@@ -1,8 +1,7 @@
 #!/bin/sh -x
 
 numClients=1
-concReqPerClient=1
-threads=1
+concReqPerClient=1000
 iters=100
 
 cd ..
@@ -22,7 +21,7 @@ lib/concurrent-1.3.4.jar:\
 lib/commons-logging-api-1.0.4.jar:\
 lib/commons-httpclient-2.0.2.jar:\
  \
-org.codehaus.wadi.test.SoakTestClient $numClients $concReqPerClient $threads $iters
+org.codehaus.wadi.test.SoakTestClient $numClients $concReqPerClient $iters
 
 ##/usr/local/java/commons-httpclient-3.0-rc2/commons-httpclient-3.0-rc2.jar\
 

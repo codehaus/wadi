@@ -76,7 +76,7 @@ public class RedistributionPlan {
             ++p._deviation;
         }
 
-        assert remainingPartitions==0;
+        assert (remainingPartitions==0);
     }
 
     protected void decide(Node node, int numPartitions, int numPartitionsPerNode, Collection producers, Collection consumers) {

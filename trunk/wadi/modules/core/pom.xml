@@ -9,6 +9,7 @@
   <artifactId>wadi-core</artifactId>
   <packaging>jar</packaging>
   <name>WADI :: Core</name>
+  <description>WADI Core functionality</description>
   <scm>
     <connection>scm:cvs:pserver:anoncvs@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi/modules/core</connection>
     <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org/home/projects/wadi/scm:wadi/modules/core</developerConnection>
@@ -128,6 +129,7 @@
 	<artifactId>maven-surefire-plugin</artifactId>
 	<configuration>
 	  <excludes>
+	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- stop surefire from trying to run nested classes... -->
 	    <exclude implementation="java.lang.String">**/TestActiveCluster.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestCluster.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestContextualiser.java</exclude>

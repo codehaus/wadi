@@ -160,7 +160,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			from=null;
 		}
 
-		assert from!=null;
+		assert (from!=null);
 		_callback.onNodeRemoved(new ClusterEvent(_cluster, from, ClusterEvent.REMOVE_NODE));
 	}
 
@@ -202,7 +202,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 					}
 				}
 				acquired=(LocalPartition[])c.toArray(new LocalPartition[c.size()]);
-				assert amount==acquired.length;
+				assert (amount==acquired.length);
 
 				long timeStamp=System.currentTimeMillis();
 
@@ -341,7 +341,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 
 		int numKeys=missingPartitions.size();
 		if (numKeys>0) {
-			assert _allowRegenerationOfMissingPartitions;
+		  assert (_allowRegenerationOfMissingPartitions);
 			// convert to int[]
 			int[] missingKeys=new int[numKeys];
 			int key=0;
@@ -410,7 +410,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	}
 
 	public void repopulate(Destination location, Collection[] keys) {
-		assert location!=null;
+	  assert (location!=null);
 		for (int i=0; i<_numPartitions; i++) {
 			Collection c=keys[i];
 			if (c!=null) {

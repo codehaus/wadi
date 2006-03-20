@@ -52,6 +52,7 @@ mkdir -p $INSTANCE/sessions
 
 properties="\
 -Dcycle.me=true \
+-Djava.net.preferIPv4Stack=true \
 $properties \
 -Dwadi.home=$WADI_HOME \
 -Dwadi.version=$WADI_VERSION \
