@@ -62,13 +62,14 @@
       <scope>provided</scope>
     </dependency>
 
+
   </dependencies>
 
   <pluginRepositories>
     <!-- Jetty6 Plugin -->
     <pluginRepository>
       <id>jetty6-snapshots</id>
-      <name>Mortbay Repository on Codehaus</name>
+      <name>Mortbay Repository</name>
       <url>http://www.mortbay.org/maven2/snapshot</url>
     </pluginRepository>
     <!-- JSPC Plugin -->
@@ -147,6 +148,16 @@
 	    <artifactId>mx4j-remote</artifactId>
 	    <version>3.0.1</version>
 	  </dependency>
+    <dependency>
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derby</artifactId>
+      <version>10.1.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derbyclient</artifactId>
+      <version>10.1.1.0</version>
+    </dependency>
 	</dependencies>
 	<configuration>
 	  <scanIntervalSeconds>10</scanIntervalSeconds>
@@ -159,7 +170,7 @@
 	    </connector>
 	  </connectors>
 	  <systemProperties>
-	    <systemProperty implementation="org.mortbay.jetty.plugin.SystemProperty">
+	    <systemProperty>
 	      <name>java.io.tmpdir</name>
 	      <value>${basedir}/target</value>
 	    </systemProperty>
