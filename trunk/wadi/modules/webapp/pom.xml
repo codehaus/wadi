@@ -100,13 +100,13 @@
 	    <inputWebXml>${basedir}/src/webapp/WEB-INF/web.xml</inputWebXml>
 	  </configuration>
 	</plugin>
-	<!--
+	<!-- use 'mvn  -Dnode=<id> jetty6:run' to run the webapp with WADI in Jetty6 -->
 	<plugin>
-	<groupId>org.mortbay.jetty</groupId>
-	<artifactId>maven-jetty6-plugin</artifactId>
-	<version>6.0-SNAPSHOT</version>
-      </plugin>
-	-->
+	  <groupId>org.mortbay.jetty</groupId>
+	  <artifactId>maven-jetty6-plugin</artifactId>
+	  <!-- <version>6.0-SNAPSHOT</version> -->
+	  <version>6.0.0beta10</version>
+	</plugin>
       </plugins>
     </pluginManagement>
 
