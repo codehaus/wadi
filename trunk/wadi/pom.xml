@@ -40,7 +40,7 @@
       <timezone>+1</timezone>
     </developer>
     <developer>
-      <id></id>
+      <id>gdamour</id>
       <name>Gianny Damour</name>
       <email>gianny.damour@optusnet.com.au</email>
       <organization></organization>
@@ -63,7 +63,7 @@
       <timezone>-7</timezone>
     </developer>
     <developer>
-      <id>jeff</id>
+      <id>jgenender</id>
       <name>Jeff Genender</name>
       <email>jgenender@codehaus.org</email>
       <organization>Virtuas</organization>
@@ -86,7 +86,7 @@
       <timezone>+0</timezone>
     </developer>
     <developer>
-      <id>gianni</id>
+      <id>gscenini</id>
       <name>Gianni Scenini</name>
       <email>gianni.scenini@gmail.com</email>
       <organization>Quativa</organization>
@@ -98,7 +98,7 @@
       <timezone>+1</timezone>
     </developer>
     <developer>
-      <id>bruce</id>
+      <id>bsnyder</id>
       <name>Bruce Snyder</name>
       <email>bsnyder@codehaus.org</email>
       <organization>LogicBlaze</organization>
