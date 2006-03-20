@@ -49,6 +49,7 @@ import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
+import org.codehaus.wadi.impl.DummyManagerConfig;
 import org.codehaus.wadi.impl.DummyRelocater;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
@@ -67,15 +68,14 @@ import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.test.DummyManagerConfig;
 import org.codehaus.wadi.gridstate.jgroups.JGroupsDispatcher;
 
-public class TestStack {
+public class MyStack {
 
     protected ClusteredManager _manager;
     protected AbstractExclusiveContextualiser _memory;
-    
-    public TestStack(String nodeName, String url, DataSource dataSource) throws Exception {
+
+    public MyStack(String nodeName, String url, DataSource dataSource) throws Exception {
       int sweepInterval=1000*60*60*24; // 1 eviction/day
       boolean strictOrdering=true;
       Streamer streamer=new SimpleStreamer();
@@ -133,7 +133,7 @@ public class TestStack {
       //manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
       _manager.init(new DummyManagerConfig());
     }
-    
+
     public void start() throws Exception {
       _manager.start();
     }
@@ -145,9 +145,9 @@ public class TestStack {
     public AbstractExclusiveContextualiser getTop() {
       return _memory;
     }
-    
+
     public ClusteredManager getManager() {
       return _manager;
     }
-    
+
   }

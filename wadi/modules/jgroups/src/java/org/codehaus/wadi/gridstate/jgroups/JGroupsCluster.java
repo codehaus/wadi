@@ -78,6 +78,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   protected final Map _clusterState=new HashMap(); // a Map (Cluster) of Maps (Nodes) associating a Key (Address) with a Value (State)
   protected final JGroupsLocalNode _localNode;
   protected final Latch _latch=new Latch();
+  protected final Latch _latch2=new Latch();
   
   protected ElectionStrategy _electionStrategy;
   protected ClusterListener _listener;
@@ -203,13 +204,13 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
       _addressToDestination.put(_localAddress, _localDestination);
       _latch.release(); // allow new view to be accepted
     } catch (Exception e) {
+      _log.warn("unexpected JGroups problem", e);
       JMSException jmse=new JMSException("unexpected JGroups problem");
       jmse.setLinkedException(e);
       throw jmse;
     }
     
-    // we need a better solution to this sleep - effectvely, wait for all ViewAccepted threads to join...
-    try{Thread.sleep(10*1000);}catch(Exception e){};
+    try{_latch2.acquire();}catch(Exception e){};
   }
   
   public void stop() throws JMSException {
@@ -270,24 +271,8 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
       }
       
       // notify joiners
-      for (int i=0; i<newMembers.size(); i++) {
-        Address address=(Address)newMembers.get(i);
-        if (!_addressToDestination.containsKey(address)) {
-          // insert node
-          JGroupsDestination destination=new JGroupsDestination(address);
-          JGroupsRemoteNode node=new JGroupsRemoteNode(this, destination, _clusterState);
-          destination.init(node);
-          _addressToDestination.put(address, destination);
-          
-          synchronized (_destinationToNode) {
-            _destinationToNode.put(destination, node);
-          }
-          
-          // notify listener...
-          if (destination!=_localDestination)
-            new Thread(new JoinerThread(node, destination, address)).start();
-        }
-      }
+      new Thread(new JoinerThread(newMembers)).start();
+
     }
     
     if (_log.isInfoEnabled()) _log.info("JGroups View: " + newView.getMembers());
@@ -296,40 +281,55 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   
   class JoinerThread implements Runnable {
     
-    Node _node;
-    Destination _destination;
-    Address _address;
+    Vector newMembers;
     
-    JoinerThread(Node node, Destination destination, Address address) {
-      _node=node;
-      _destination=destination;
-      _address=address;
+    JoinerThread(Vector newMembers) {
+      this.newMembers=newMembers;
     }
     
     public void run() {
       // now we need a quick round trip to fetch the distributed data for this node - yeugh !
-      try {
-        JGroupsObjectMessage tmp=(JGroupsObjectMessage)_dispatcher.exchangeSend(_localDestination, _destination, new StateRequest(), 5000);
-        Map state=((StateResponse)tmp.getObject()).getState();
-        _clusterState.put(_address, state);
-      } catch (Exception e) {
-        _log.warn("problem retrieving remote state for fresh joiner...", e);
-        return;
-      }
-      
-      // notify listener
-      if (_listener!=null)
-        _listener.onNodeAdd(new ClusterEvent(JGroupsCluster.this, _node, ClusterEvent.ADD_NODE));
-      
-      // elect coordinator
-      if (_electionStrategy!=null && _destinationToNode.size()>0) {
-        try {
-          Node coordinator=_electionStrategy.doElection(JGroupsCluster.this);
-          _listener.onCoordinatorChanged(new ClusterEvent(JGroupsCluster.this, coordinator, ClusterEvent.ELECTED_COORDINATOR));
-        } catch (JMSException e) {
-          _log.error("unexpected problem whilst running coordinator election", e);
+      for (int i=0; i<newMembers.size(); i++) {
+        Address address=(Address)newMembers.get(i);
+        if (!_addressToDestination.containsKey(address)) {
+          // insert node
+          JGroupsDestination destination=new JGroupsDestination(address);
+          JGroupsRemoteNode node=new JGroupsRemoteNode(JGroupsCluster.this, destination, _clusterState);
+          destination.init(node);
+          _addressToDestination.put(address, destination);
+          
+          synchronized (_destinationToNode) {
+            _destinationToNode.put(destination, node);
+          }
+          
+          // notify listener...
+          if (destination!=_localDestination) {
+            try {
+              JGroupsObjectMessage tmp=(JGroupsObjectMessage)_dispatcher.exchangeSend(_localDestination, destination, new StateRequest(), 5000);
+              Map state=((StateResponse)tmp.getObject()).getState();
+              _clusterState.put(address, state);
+            } catch (Exception e) {
+              _log.warn("problem retrieving remote state for fresh joiner...", e);
+              return;
+            }
+            
+            // notify listener
+            if (_listener!=null)
+              _listener.onNodeAdd(new ClusterEvent(JGroupsCluster.this, node, ClusterEvent.ADD_NODE));
+            
+            // elect coordinator
+            if (_electionStrategy!=null && _destinationToNode.size()>0) {
+              try {
+                Node coordinator=_electionStrategy.doElection(JGroupsCluster.this);
+                _listener.onCoordinatorChanged(new ClusterEvent(JGroupsCluster.this, coordinator, ClusterEvent.ELECTED_COORDINATOR));
+              } catch (JMSException e) {
+                _log.error("unexpected problem whilst running coordinator election", e);
+              }
+            }
+          }
         }
       }
+      _latch2.release();
     }
   }
   
@@ -361,8 +361,13 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
         
         JGroupsObjectMessage message=(JGroupsObjectMessage)o;
         message.setCluster(this);
+        Destination replyTo=getDestination(src);
+        if (replyTo==null) {
+          _log.warn("yikes"); // TODO - we need to map Address to a Destination NOW !
+          _addressToDestination.put(src, replyTo=new JGroupsDestination(src));
+        }
         try {
-          message.setJMSReplyTo(getDestination(src));
+          message.setJMSReplyTo(replyTo);
           message.setJMSDestination(getDestination(dest));
         } catch (JMSException e) {
           _log.warn("unexpected JGroups problem", e);

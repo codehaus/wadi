@@ -152,7 +152,7 @@ public class FixedWidthSessionIdFactory implements SessionIdFactory, PartitionMa
       int partition=Math.abs(r.nextInt())%numPartitions;
       String key=factory.create(partition);
       System.out.println(key+" - "+partition);
-      assert partition==factory.getPartition(key);
+      assert (partition==factory.getPartition(key));
     }
   }
 

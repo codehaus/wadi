@@ -3,5 +3,6 @@
 .settings
 .wtpmodules
 ActiveMQ
-target
 activemq-data
+derby.log
+target

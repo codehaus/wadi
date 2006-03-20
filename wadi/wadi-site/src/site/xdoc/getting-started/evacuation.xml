@@ -49,7 +49,7 @@
       </p>
       <p>
 	<code>
-	  LocalPartition#67@green - -relocation {9B8858BA311C365632247E66387415BA : red -> green}
+	  LocalPartition#67@green - -evacuate {9B8858BA311C365632247E66387415BA : red -> green}
 	</code>
       </p>
       <p>

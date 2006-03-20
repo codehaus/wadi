@@ -1,178 +1,223 @@
 <project>
-    <parent>
-        <groupId>wadi</groupId>
-        <artifactId>wadi</artifactId>
-        <version>2.0M1</version>
-        <relativePath>../../pom.xml</relativePath>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <artifactId>wadi-webapp</artifactId>
-    <packaging>war</packaging>
-    <name>WADI :: WebApp</name>
-    <scm>
-        <connection>scm:cvs:pserver:anoncvs@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi/modules/webapp</connection>
-        <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org/home/projects/wadi/scm:wadi/modules/webapp</developerConnection>
-        <url>http://cvs.wadi.codehaus.org/viewrep/wadi/wadi/modules/webapp</url>
-    </scm>
-    <dependencies>
-        <dependency>
-            <groupId>ant</groupId>
-            <artifactId>ant</artifactId>
-        </dependency>
+  <parent>
+    <groupId>wadi</groupId>
+    <artifactId>wadi</artifactId>
+    <version>2.0M1</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>wadi-webapp</artifactId>
+  <packaging>war</packaging>
+  <name>WADI :: WebApp</name>
+  <description>WADI's functionality demonstrated via a simple web application</description>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
+  <scm>
+    <connection>scm:cvs:pserver:anoncvs@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi/modules/webapp</connection>
+    <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org/home/projects/wadi/scm:wadi/modules/webapp</developerConnection>
+    <url>http://cvs.wadi.codehaus.org/viewrep/wadi/wadi/modules/webapp</url>
+  </scm>
 
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging-api</artifactId>
-        </dependency>
+  <dependencies>
+    <dependency>
+      <groupId>ant</groupId>
+      <artifactId>ant</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>commons-el</groupId>
-            <artifactId>commons-el</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>geronimo-spec</groupId>
-            <artifactId>geronimo-spec-jsp</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging-api</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>geronimo-spec</groupId>
-            <artifactId>geronimo-spec-servlet</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>commons-el</groupId>
+      <artifactId>commons-el</artifactId>
+    </dependency>
 
-        <!-- run time -->
+    <dependency>
+      <groupId>geronimo-spec</groupId>
+      <artifactId>geronimo-spec-jsp</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>tomcat</groupId>
-            <artifactId>jasper-runtime</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>geronimo-spec</groupId>
+      <artifactId>geronimo-spec-servlet</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>wadi</groupId>
-            <artifactId>wadi-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
+    <!-- run time -->
 
-    </dependencies>
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>jasper-runtime</artifactId>
+    </dependency>
 
-    <build>
-        <sourceDirectory>src/java</sourceDirectory>
-        <testSourceDirectory>src/test</testSourceDirectory>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jspc-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <warSourceDirectory>src/webapp</warSourceDirectory>
-                    <webXml>${basedir}/target/jspweb.xml</webXml>
-                </configuration>
-            </plugin>
-            <plugin>
-              <groupId>org.mortbay.jetty</groupId>
-              <artifactId>maven-jetty6-plugin</artifactId>
-             <dependencies>
-               <dependency>
-                   <groupId>wadi</groupId>
-                   <artifactId>wadi-jetty6</artifactId>
-                   <version>${project.version}</version>
-               </dependency>
-               <dependency>
-                   <groupId>wadi</groupId>
-                   <artifactId>wadi-core</artifactId>
-                   <version>${project.version}</version>
-               </dependency>
-              <dependency>
-                  <groupId>regexp</groupId>
-                  <artifactId>regexp</artifactId>
-                   <version>1.3</version>
-              </dependency>
-              <dependency>
-                  <groupId>mx4j</groupId>
-                  <artifactId>mx4j-remote</artifactId>
-                   <version>3.0.1</version>
-              </dependency>
-             </dependencies>
-              <configuration>
-                <scanIntervalSeconds>10</scanIntervalSeconds>
-                <webAppSourceDirectory>src/webapp</webAppSourceDirectory>
-                <contextPath>/wadi</contextPath>
-                <connectors>
-                  <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-                    <port>${http.port}</port>
-                    <maxIdleTime>60000</maxIdleTime>
-                  </connector>
-                </connectors>
-                <systemProperties>
-                  <systemProperty implementation="org.mortbay.jetty.plugin.SystemProperty">
-                    <name>java.io.tmpdir</name>
-                    <value>${basedir}/target</value>
-                  </systemProperty>
-                  <systemProperty>
-                    <name>wadi.home</name>
-                    <value>${basedir}</value>
-                  </systemProperty>
-                  <systemProperty>
-                     <name>org.apache.commons.logging.Log</name>
-                     <value>org.apache.commons.logging.impl.SimpleLog</value>
-                  </systemProperty>
-                  <systemProperty>
-                     <name>org.apache.commons.logging.simplelog.showdatetime</name>
-                     <value>true</value>
-                  </systemProperty>
-                  <systemProperty>
-                     <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi</name>
-                     <value>debug</value>
-                  </systemProperty>
-                  <systemProperty>
-                     <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.AbsoluteEvicter</name>
-                     <value>info</value>
-                  </systemProperty>
-                  <systemProperty>
-                     <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.NeverEvicter</name>
-                     <value>info</value>
-                  </systemProperty>
-<!--
-                  <systemProperty>
-                     <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi.MESSAGES</name>
-                     <value>trace</value>
-                  </systemProperty>
-                  <systemProperty>
-                     <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi.LOCKS</name>
-                     <value>trace</value>
-                  </systemProperty>
--->
-                  <systemProperty>
-                     <name>wadi.properties</name>
-                     <value>${wadi.properties}</value>
-                  </systemProperty>
-	          <systemProperty>
-	            <name>node.name</name>
-	            <value>${node.name}</value>
-	          </systemProperty>
-                </systemProperties>
-              </configuration>
-            </plugin>
-            <plugin>
+    <dependency>
+      <groupId>wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+  </dependencies>
+
+  <pluginRepositories>
+    <!-- Jetty6 Plugin -->
+    <pluginRepository>
+      <id>jetty6-snapshots</id>
+      <name>Mortbay Repository on Codehaus</name>
+      <url>http://www.mortbay.org/maven2/snapshot</url>
+    </pluginRepository>
+    <!-- JSPC Plugin -->
+    <pluginRepository>
+      <id>wadi-stuff</id>
+      <name>WADI specific repo</name>
+      <url>http://codehaus.org/~jgenender/maven2</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+	<plugin>
+	  <groupId>org.codehaus.mojo</groupId>
+	  <artifactId>jspc-maven-plugin</artifactId>
+	  <version>1.2</version>
+	  <executions>
+	    <execution>
+	      <id>jspc</id>
+	      <phase>generate-sources</phase>
+	      <goals>
+		<goal>compile</goal>
+	      </goals>
+	    </execution>
+	  </executions>
+	  <configuration>
+	    <warSourceDirectory>${basedir}/src/webapp</warSourceDirectory>
+	    <inputWebXml>${basedir}/src/webapp/WEB-INF/web.xml</inputWebXml>
+	  </configuration>
+	</plugin>
+	<!--
+	<plugin>
+	<groupId>org.mortbay.jetty</groupId>
+	<artifactId>maven-jetty6-plugin</artifactId>
+	<version>6.0-SNAPSHOT</version>
+      </plugin>
+	-->
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-war-plugin</artifactId>
+	<configuration>
+	  <warSourceDirectory>src/webapp</warSourceDirectory>
+	  <webXml>${basedir}/target/jspweb.xml</webXml>
+	</configuration>
+      </plugin>
+      <plugin>
+	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>jspc-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+	<groupId>org.mortbay.jetty</groupId>
+	<artifactId>maven-jetty6-plugin</artifactId>
+	<dependencies>
+	  <dependency>
+	    <groupId>wadi</groupId>
+	    <artifactId>wadi-jetty6</artifactId>
+	    <version>${project.version}</version>
+	  </dependency>
+	  <dependency>
+	    <groupId>wadi</groupId>
+	    <artifactId>wadi-core</artifactId>
+	    <version>${project.version}</version>
+	  </dependency>
+	  <dependency>
+	    <groupId>regexp</groupId>
+	    <artifactId>regexp</artifactId>
+	    <version>1.3</version>
+	  </dependency>
+	  <dependency>
+	    <groupId>mx4j</groupId>
+	    <artifactId>mx4j-remote</artifactId>
+	    <version>3.0.1</version>
+	  </dependency>
+	</dependencies>
+	<configuration>
+	  <scanIntervalSeconds>10</scanIntervalSeconds>
+	  <webAppSourceDirectory>src/webapp</webAppSourceDirectory>
+	  <contextPath>/wadi</contextPath>
+	  <connectors>
+	    <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+	      <port>${http.port}</port>
+	      <maxIdleTime>60000</maxIdleTime>
+	    </connector>
+	  </connectors>
+	  <systemProperties>
+	    <systemProperty implementation="org.mortbay.jetty.plugin.SystemProperty">
+	      <name>java.io.tmpdir</name>
+	      <value>${basedir}/target</value>
+	    </systemProperty>
+	    <systemProperty>
+	      <name>wadi.home</name>
+	      <value>${basedir}</value>
+	    </systemProperty>
+	    <systemProperty>
+	      <name>org.apache.commons.logging.Log</name>
+	      <value>org.apache.commons.logging.impl.SimpleLog</value>
+	    </systemProperty>
+	    <systemProperty>
+	      <name>org.apache.commons.logging.simplelog.showdatetime</name>
+	      <value>true</value>
+	    </systemProperty>
+	    <systemProperty>
+	      <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi</name>
+	      <value>debug</value>
+	    </systemProperty>
+	    <systemProperty>
+	      <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.AbsoluteEvicter</name>
+	      <value>info</value>
+	    </systemProperty>
+	    <systemProperty>
+	      <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.NeverEvicter</name>
+	      <value>info</value>
+	    </systemProperty>
+	    <!--
+	    <systemProperty>
+	    <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi.MESSAGES</name>
+	    <value>trace</value>
+	  </systemProperty>
+	    <systemProperty>
+	    <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi.LOCKS</name>
+	    <value>trace</value>
+	  </systemProperty>
+	    -->
+	    <systemProperty>
+	      <name>wadi.properties</name>
+	      <value>${wadi.properties}</value>
+	    </systemProperty>
+	    <systemProperty>
+	      <name>node.name</name>
+	      <value>${node.name}</value>
+	    </systemProperty>
+	  </systemProperties>
+	</configuration>
+      </plugin>
+      <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-surefire-plugin</artifactId>
-	</plugin>
-            <plugin>
+      </plugin>
+      <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-site-plugin</artifactId>
 	<configuration>
 	  <outputDirectory>../../wadi-site/target/site/${artifactId}</outputDirectory>
 	</configuration>
-
       </plugin>
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
@@ -182,21 +227,25 @@
 	  <destDir>../../wadi-site/target/site/${artifactId}</destDir>
 	</configuration>
       </plugin>
-        </plugins>
-    </build>
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <source>1.4</source>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>surefire-report-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </reporting>
+    </plugins>
+
+    <sourceDirectory>src/java</sourceDirectory>
+    <testSourceDirectory>src/test</testSourceDirectory>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-javadoc-plugin</artifactId>
+	<configuration>
+	  <source>1.4</source>
+	</configuration>
+      </plugin>
+      <plugin>
+	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>surefire-report-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>

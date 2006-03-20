@@ -81,6 +81,7 @@ import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
+import org.codehaus.wadi.impl.DummyManagerConfig;
 import org.codehaus.wadi.impl.DummyDistributableContextualiserConfig;
 import org.codehaus.wadi.impl.DummyEvicter;
 import org.codehaus.wadi.impl.DummyHttpServletRequest;
@@ -125,13 +126,13 @@ public class TestContextualiser extends TestCase {
 	protected DatabaseStore _store=new DatabaseStore("jdbc:axiondb:testdb", _ds, _table, false, false, false);
 	protected final String _clusterUri=Utils.getClusterUri();
 	protected final String _clusterName="WADI.TEST";
-	
+
 	protected final HttpServletRequest _request=new DummyHttpServletRequest();
 	protected final PoolableInvocationWrapperPool _requestPool=new MyDummyHttpServletRequestWrapperPool();
-	
+
 	protected final InvocationProxy _httpProxy=new StandardHttpProxy("jsessionid");
 	protected ProxiedLocation _location;
-	
+
 	/*
 	 * @see TestCase#setUp()
 	 */
@@ -143,7 +144,7 @@ public class TestContextualiser extends TestCase {
 		_store.init();
 		_dir.mkdir();
 	}
-	
+
 	/*
 	 * @see TestCase#tearDown()
 	 */
@@ -153,7 +154,7 @@ public class TestContextualiser extends TestCase {
 		super.tearDown();
 		_log.info("...stopped");
 	}
-	
+
 	/**
 	 * Constructor for TestContextualiser.
 	 * @param arg0
@@ -161,32 +162,32 @@ public class TestContextualiser extends TestCase {
 	public TestContextualiser(String arg0) {
 		super(arg0);
 	}
-	
+
 	// test how interning works - we will use locking of keys to ensure that concurrent loading of same session does not occur...
-	
+
 	public void testIntern() {
 		String s1="foo"; // automatically interned
-		
+
 		String s2=s1.intern();
 		assertTrue(s2==s1);
-		
+
 		String s3=s1.intern();
 		assertTrue(s3==s2);
-		
+
 		String s4="fo"+"o"; // automatically interned
 		assertTrue(s4==s3);
-		
+
 		String s5=new StringBuffer("fo").append("o").toString(); // NOT interned
 		assertTrue(s5!=s4);
 		s5=s5.intern();
 		assertTrue(s5==s4); // now it is
-		
+
 		String s6="-foo-".substring(1, 4); // NOT interned
 		assertTrue(s6!=s5);
-		
+
 		// etc...
 	}
-	
+
 	class MyFilterChain
 	implements FilterChain
 	{
@@ -195,10 +196,10 @@ public class TestContextualiser extends TestCase {
 			_log.info("invoking FilterChain...");
 		}
 	}
-	
+
 	protected final Evicter _dummyEvicter=new DummyEvicter();
 	protected final String _nodeName="node0";
-	
+
 	public void testExclusivePromotion() throws Exception {
 		Map d2=new HashMap();
 		ExclusiveStoreContextualiser disc2=new ExclusiveStoreContextualiser(_dummyContextualiser, _collapser, true, _dummyEvicter, d2, _streamer, _dir);
@@ -211,7 +212,7 @@ public class TestContextualiser extends TestCase {
 		Dispatcher dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
 		StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, partitionManager, _collapser);
 		manager.init(new DummyManagerConfig());
-		
+
 		{
 			// place a "baz" item onto second local disc
 			String id="baz";
@@ -243,7 +244,7 @@ public class TestContextualiser extends TestCase {
 			assertTrue(m.containsKey(id));
 			assertTrue(m.size()==1);
 		}
-		
+
 		// ensure that all 3 sessions are promoted to memory...
 		FilterChain fc=new MyFilterChain();
 		memory.contextualise(new WebInvocationContext(_request,null,fc),"foo", null, null, false);
@@ -252,27 +253,27 @@ public class TestContextualiser extends TestCase {
 		assertTrue(d2.size()==0);
 		assertTrue(d1.size()==0);
 		assertTrue(m.size()==3);
-		
+
 		// check their content...
 		Session baz=(Session)m.get("baz");
 		assertTrue(baz!=null);
 		assertTrue("baz".equals(baz.getName()));
 		assertTrue(baz.getCreationTime()==3);
 		assertTrue(baz.getMaxInactiveInterval()==6);
-		
+
 		Session bar=(Session)m.get("bar");
 		assertTrue(bar!=null);
 		assertTrue("bar".equals(bar.getName()));
 		assertTrue(bar.getCreationTime()==2);
 		assertTrue(bar.getMaxInactiveInterval()==4);
-		
+
 		Session foo=(Session)m.get("foo");
 		assertTrue(foo!=null);
 		assertTrue("foo".equals(foo.getName()));
 		assertTrue(foo.getCreationTime()==1);
 		assertTrue(foo.getMaxInactiveInterval()==2);
 	}
-	
+
 	public void testSharedPromotion() throws Exception {
 		SharedStoreContextualiser db=new SharedStoreContextualiser(_dummyContextualiser, _collapser, true, _store);
 		Map m=new HashMap();
@@ -282,7 +283,7 @@ public class TestContextualiser extends TestCase {
 		Dispatcher dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
 		StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, partitionManager, _collapser);
 		manager.init(new DummyManagerConfig());
-		
+
 		{
 			// place a "foo" item into shared database
 			String id="foo";
@@ -292,17 +293,17 @@ public class TestContextualiser extends TestCase {
 			Emoter emoter=new EtherEmoter();
 			Utils.mote(emoter, immoter, emotable, id);
 		}
-		
+
 		FilterChain fc=new MyFilterChain();
-		
+
 		memory.contextualise(new WebInvocationContext(null,null,fc),"foo", null, null, false);
 		assertTrue(m.size()==0); // this should not go to the db...
-		
+
 		manager.start(); // this should promote all shared sessions into exclusively owned space (i.e. memory)
-		
+
 		memory.contextualise(new WebInvocationContext(null,null,fc),"foo", null, null, false);
 		assertTrue(m.size()==1); // foo should be here now...
-		
+
 		// check it's content
 		Session foo=(Session)m.get("foo");
 		assertTrue(foo!=null);
@@ -310,18 +311,18 @@ public class TestContextualiser extends TestCase {
 		assertTrue(foo.getCreationTime()==2);
 		assertTrue(foo.getMaxInactiveInterval()==4);
 	}
-	
+
 	class MyPromotingContextualiser extends AbstractContextualiser {
 		int _counter=0;
 		MyContext _context;
-		
+
 		public MyPromotingContextualiser(String context) {
 			_context=new MyContext(context, context);
 		}
-		
+
 		public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 			_counter++;
-			
+
 			Motable emotable=_context;
 			Emoter emoter=new EtherEmoter();
 			Motable immotable=Utils.mote(emoter, immoter, emotable, id);
@@ -331,36 +332,36 @@ public class TestContextualiser extends TestCase {
 				return false;
 			}
 		}
-		
+
 		public Evicter getEvicter(){return null;}
-		
+
 		public boolean isExclusive(){return false;}
-		
+
 		public Immoter getDemoter(String name, Motable motable) {
 			return null;
 		}
-		
+
 		public Immoter getSharedDemoter(){throw new UnsupportedOperationException();}
-		
+
 		public void promoteToExclusive(Immoter immoter){/* empty */}
 		public void load(Emoter emoter, Immoter immoter) {/* empty */}
-		
+
 		public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){/* empty */}
 		public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
-		
+
 		public int getLocalSessionCount() {
 			return 0;
 		}
 	}
-	
+
 	class MyActiveContextualiser extends AbstractContextualiser {
 		int _counter=0;
 		MyContext _context;
-		
+
 		public MyActiveContextualiser(String context) {
 			_context=new MyContext(context, context);
 		}
-		
+
 		public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 			_counter++;
 			Context context=_context;
@@ -378,40 +379,40 @@ public class TestContextualiser extends TestCase {
 				throw new InvocationException("problem processing request for: "+id, e);
 			}
 		}
-		
+
 		public Evicter getEvicter(){return null;}
-		
+
 		public boolean isExclusive(){return false;}
-		
+
 		public Immoter getDemoter(String name, Motable motable) {
 			return null;
 		}
-		
+
 		public Immoter getSharedDemoter(){throw new UnsupportedOperationException();}
-		
+
 		public void promoteToExclusive(Immoter immoter){/* empty */}
 		public void load(Emoter emoter, Immoter immoter) {/* empty */}
-		
+
 		public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){/* empty */}
 		public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
-		
-		
+
+
 		public int getLocalSessionCount() {
 			return 0;
 		}
 	}
-	
+
 	class MyRunnable implements Runnable {
 		Contextualiser _contextualiser;
 		FilterChain    _chain;
 		String         _id;
-		
+
 		MyRunnable(Contextualiser contextualiser, FilterChain chain, String id) {
 			_contextualiser=contextualiser;
 			_chain=chain;
 			_id=id;
 		}
-		
+
 		public void run() {
 			try {
 				_contextualiser.contextualise(new WebInvocationContext(null, null, _chain), _id, null, null, false);
@@ -421,32 +422,32 @@ public class TestContextualiser extends TestCase {
 			}
 		}
 	}
-	
+
 	public void testPromotion(Contextualiser c, int n) throws Exception {
 		Contextualiser mc=new MemoryContextualiser(c, new DummyEvicter(), new HashMap(), new GZIPStreamer(), new MyContextPool(), _requestPool);
 		FilterChain fc=new MyFilterChain();
-		
+
 		for (int i=0; i<n; i++)
 			mc.contextualise(new WebInvocationContext(null,null,fc),"baz", null, new NullSync(), false);
 	}
-	
+
 	public void testPromotion() throws Exception {
 		int n=10;
 		MyPromotingContextualiser mpc=new MyPromotingContextualiser("baz");
 		testPromotion(mpc, n);
 		assertTrue(mpc._counter==1);
-		
+
 		MyActiveContextualiser mac=new MyActiveContextualiser("baz");
 		testPromotion(mac, n);
 		assertTrue(mac._counter==n);
 	}
-	
+
 	public void testCollapsing(Contextualiser c, int n) throws Exception {
 		Map map=new HashMap();
 		Contextualiser sc=new SerialContextualiser(c, new HashingCollapser(1, 1000), map);
 		Contextualiser mc=new MemoryContextualiser(sc, new DummyEvicter(), map, new GZIPStreamer(), new MyContextPool(), _requestPool);
 		FilterChain fc=new MyFilterChain();
-		
+
 		Runnable r=new MyRunnable(mc, fc, "baz");
 		Thread[] threads=new Thread[n];
 		for (int i=0; i<n; i++)
@@ -454,18 +455,18 @@ public class TestContextualiser extends TestCase {
 		for (int i=0; i<n; i++)
 			threads[i].join();
 	}
-	
+
 	public void testCollapsing() throws Exception {
 		int n=10;
 		MyPromotingContextualiser mpc=new MyPromotingContextualiser("baz");
 		testCollapsing(mpc, n);
 		assertTrue(mpc._counter==1);
-		
+
 		MyActiveContextualiser mxc=new MyActiveContextualiser("baz");
 		testCollapsing(mxc, n);
 		assertTrue(mxc._counter==n);
 	}
-	
+
 	// reusable components...
 	// shared
 	protected final Streamer _streamer=new SimpleStreamer();
@@ -476,19 +477,19 @@ public class TestContextualiser extends TestCase {
 	protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
 	protected final boolean _accessOnLoad=true;
 	protected final Router _router=new DummyRouter();
-	
+
 	// standard
 	protected final SessionPool _standardSessionPool=new SimpleSessionPool(new StandardSessionFactory());
 	protected final ContextPool _standardContextPool=new SessionToContextPoolAdapter(_standardSessionPool);
 	protected final AttributesFactory _standardAttributesFactory=new StandardAttributesFactory();
 	protected final ValuePool _standardValuePool=new SimpleValuePool(new StandardValueFactory());
-	
+
 	// distributable
 	protected final SessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory());
 	protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
 	protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
 	protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
-	
+
 	public void testExpiry() throws Exception {
 		Map m=new HashMap();
 		Evicter memoryEvicter=new NeverEvicter(30, true);
@@ -504,7 +505,7 @@ public class TestContextualiser extends TestCase {
 		memoryEvicter.evict();
 		assertTrue(m.size()==0); // no longer in memory - expired
 	}
-	
+
 	public void testDemotionAndExpiry() throws Exception {
 		Map d=new HashMap();
 		Evicter discEvicter=new NeverEvicter(30, true);
@@ -517,32 +518,32 @@ public class TestContextualiser extends TestCase {
 		Dispatcher dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
 		StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, partitionManager, _collapser);
 		manager.init(new DummyManagerConfig());
-		
+
 		Session session=manager.create();
 		session.setMaxInactiveInterval(2);// times out 2 seconds from now...
-		
+
 		assertTrue(m.size()==1); // in memory
 		assertTrue(d.size()==0); // not on disc
-		
+
 		memoryEvicter.evict();
 		assertTrue(m.size()==1); // still in memory
 		assertTrue(d.size()==0); // still not on disc
-		
+
 		Thread.sleep(1000);
 		memoryEvicter.evict();
 		assertTrue(m.size()==0); // no longer in memory
 		assertTrue(d.size()==1); // now on disc
-		
+
 		discEvicter.evict();
 		assertTrue(m.size()==0); // no longer in memory
 		assertTrue(d.size()==1); // still on disc
-		
+
 		Thread.sleep(1000);
 		discEvicter.evict();
 		assertTrue(m.size()==0); // no longer in memory
 		assertTrue(d.size()==0); // no longer on disc - expired
 	}
-	
+
 	public void testDemotionAndPromotion() throws Exception {
 		Map d=new HashMap();
 		Evicter discEvicter=new NeverEvicter(30, true);
@@ -555,30 +556,30 @@ public class TestContextualiser extends TestCase {
 		Dispatcher dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
 		StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, partitionManager, _collapser);
 		manager.init(new DummyManagerConfig());
-		
+
 		Session session=manager.create();
 		String id=session.getName();
 		session.setMaxInactiveInterval(2);// times out 2 seconds from now...
-		
+
 		Thread.sleep(1000);
 		memoryEvicter.evict();
 		assertTrue(m.size()==0); // no longer in memory
 		assertTrue(d.size()==1); // now on disc
-		
+
 		memory.contextualise(new WebInvocationContext(null,null,new MyFilterChain()),id, null, null, false);
 		assertTrue(m.size()==1); // promoted back into memory
 		assertTrue(d.size()==0); // no longer on disc
 	}
-	
+
 	static class MyLocation extends SimpleEvictable implements Location, Serializable {
-		
+
 		public void proxy(InvocationContext invocationContext) throws ProxyingException {
 			System.out.println("PROXYING");
 		}
-		
+
 		public Destination getDestination(){return null;}
 	}
-	
+
 	public void testCluster() throws Exception {
 		ConnectionFactory connectionFactory = Utils.getConnectionFactory();
 		((ActiveMQConnectionFactory)connectionFactory).setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter()));
@@ -586,12 +587,12 @@ public class TestContextualiser extends TestCase {
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
 		CustomCluster cluster0              = (CustomCluster)clusterFactory.createCluster(clusterName);
 		CustomCluster cluster1              = (CustomCluster)clusterFactory.createCluster(clusterName);
-		
+
 		cluster0.start();
 		cluster1.start();
 		//-------------------
 		// do the test
-		
+
 		//Location location0=new MyLocation();
 		//Map c0=new HashMap();
 		Relocater relocater0=new WebHybridRelocater(5000L, 5000L, true);
@@ -601,7 +602,7 @@ public class TestContextualiser extends TestCase {
 		m0.put("foo", new MyContext("foo", "1"));
 		Contextualiser memory0=new MemoryContextualiser(clstr0, new NeverEvicter(30000, true), m0, new GZIPStreamer(), new MyContextPool(), _requestPool);
 		memory0.init(new DummyDistributableContextualiserConfig(cluster0));
-		
+
 		//Location location1=new MyLocation();
 		//Map c1=new HashMap();
 		Relocater relocater1=new WebHybridRelocater(5000L, 5000L, true);
@@ -611,11 +612,11 @@ public class TestContextualiser extends TestCase {
 		m1.put("bar", new MyContext("bar", "2"));
 		Contextualiser memory1=new MemoryContextualiser(clstr1, new NeverEvicter(30000, true), m1, new GZIPStreamer(), new MyContextPool(), _requestPool);
 		memory1.init(new DummyDistributableContextualiserConfig(cluster1));
-		
+
 		Thread.sleep(2000); // activecluster needs a little time to sort itself out...
 		_log.info("STARTING NOW!");
 		FilterChain fc=new MyFilterChain();
-		
+
 		assertTrue(!m0.containsKey("bar"));
 		assertTrue(!m1.containsKey("foo"));
 		// not sure what these were testing - if Context not available, these will return false...
@@ -625,7 +626,7 @@ public class TestContextualiser extends TestCase {
 //		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null, false));
 		assertTrue(!memory0.contextualise(new WebInvocationContext(null,null,fc),"baz", null, null, false));
 		assertTrue(!memory1.contextualise(new WebInvocationContext(null,null,fc),"baz", null, null, false));
-		
+
 		Thread.sleep(2000);
 		_log.info("STOPPING NOW!");
 		// ------------------
@@ -636,5 +637,5 @@ public class TestContextualiser extends TestCase {
 		clusterFactory=null;
 		connectionFactory=null;
 	}
-	
+
 }

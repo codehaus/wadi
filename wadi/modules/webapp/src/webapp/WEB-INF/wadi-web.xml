@@ -428,6 +428,17 @@
     <constructor-arg><ref bean="NumPartitions"/></constructor-arg>
   </bean>
 
+<!--
+  <bean
+    id="Dispatcher"
+    class="org.codehaus.wadi.gridstate.jgroups.JGroupsDispatcher"
+    >
+    <constructor-arg><value>${node.name}</value></constructor-arg>
+    <constructor-arg><value>CLUSTER0</value></constructor-arg>
+    <constructor-arg type="long"><value>5000</value></constructor-arg>
+  </bean>
+-->
+
   <bean
     id="Dispatcher"
     class="org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher"

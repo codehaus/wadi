@@ -23,11 +23,11 @@ import org.axiondb.jdbc.AxionDataSource;
 import junit.framework.TestCase;
 
 public class TestEvacuation extends TestCase {
-  
+
   protected Log _log = LogFactory.getLog(getClass());
   protected String _url="jdbc:axiondb:WADI";
   protected DataSource _ds=new AxionDataSource(_url);
-  
+
   public TestEvacuation(String arg0) {
     super(arg0);
   }
@@ -39,27 +39,27 @@ public class TestEvacuation extends TestCase {
   protected void tearDown() throws Exception {
     super.tearDown();
   }
-  
+
   public void testEvacuation() throws Exception {
     assertTrue(true);
-    
-    TestStack stack1=new TestStack("red", _url, _ds);
+
+    MyStack stack1=new MyStack("red", _url, _ds);
     _log.info("RED STARTING...");
     stack1.start();
     _log.info("...RED STARTED");
-    TestStack stack2=new TestStack("green", _url, _ds);
+    MyStack stack2=new MyStack("green", _url, _ds);
     _log.info("GREEN STARTING...");
     stack2.start();
     _log.info("...GREEN STARTED");
-    
+
     String id=stack1.getManager().create().getId();
-    
+
     _log.info("RED STOPPING...");
     stack1.stop();
     _log.info("...RED STOPPED");
 
 //    stack2.getManager().destroy(id);
-    
+
     _log.info("GREEN STOPPING...");
     stack2.stop();
     _log.info("...GREEN STOPPED");

@@ -52,12 +52,12 @@ public class TestLockManager extends TestCase {
 		super.tearDown();
 	}
 
-	class TestThread implements Runnable {
+	class MyThread implements Runnable {
 
 		protected final Object _key;
 		protected final LockManager _manager;
 
-		TestThread(String key, LockManager manager) {
+		MyThread(String key, LockManager manager) {
 			_key=key;
 			_manager=manager;
 		}
@@ -79,7 +79,7 @@ public class TestLockManager extends TestCase {
 	  _log.info("starting: " + lm);
 		String key="abc";
 		for (int i=0; i<_numThreads; i++)
-			(_threads[i]=new Thread(new TestThread(key, lm), "TestThread-"+i)).start();
+			(_threads[i]=new Thread(new MyThread(key, lm), "MyThread-"+i)).start();
 		for (int i=0; i<_numThreads; i++) {
 			_threads[i].join();
 			_threads[i]=null;

@@ -42,9 +42,11 @@
 	</ul>
 
       </div>
+<!--
       <div style="clear: right; float: right">
 	<a href="http://www.apachecon.com/2005/US/index.html"><img src="http://www.apache.org/images/ac2005us_white_184x80.jpg" width="184" height="80" border="0" title="ApacheCon US 2005" /></a>
       </div>
+-->
 
       <p/>
 
@@ -54,7 +56,7 @@
 
 	WADI started life as a solution to the problems surrounding
 	the distribution of state in clustered web tiers, but is
-	becoming a more generalised distributed caching service.
+	becoming a more generalised distributed space service.
 
       </p>
       <p>
@@ -66,7 +68,7 @@
 	<p>
 	  WADI Core:
 	  <ul>
-	    <li>Vertically - a cache with pluggable/stackable paging and persistance mechanisms (File, Database, etc.)</li>
+	    <li>Vertically - a distributed 'space' with pluggable/stackable paging and persistance mechanisms (File, Database, etc.)</li>
 	    <li>Horizontally - A scalable, highly available, self-partitioning, self-healing clustering substrate - a distributed index/map</li>
 	    <li>Pessimistic locking semantics</li>
 	    <li>Transparent State->Invocation and Invocation->State migration</li>
@@ -89,10 +91,11 @@
       <p>
 	WADI currently supports the following J2EE containers and application servers:
 	<ul>
-	  <li>Tomcat 5.0.18+, 5.5.X</li>
-	  <li>Jetty 5.1.3+, 6.X</li>
+	  <li>Tomcat 5.0.18+, 5.5.x</li>
+	  <li>Jetty 5.1.3+, 6.x</li>
 	  <li>OpenEJB (underway)</li>
-	  <li>Geronimo-1.0/Tomcat or Jetty (underway)</li>
+	  <li>Axis2 (underway)</li>
+	  <li>Geronimo-1.0.x/Tomcat or Jetty (underway)</li>
 	  <li>JBoss-4.x/Tomcat or Jetty</li>
 	</ul>
       </p>
@@ -100,7 +103,7 @@
 	WADI-2.0 is a complete rearchitecture and rewrite. New documentation is being entered into the <a href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI">WADI Wiki</a>. We hope to have a 2.0 release out shortly.
       </p>
       <p>
-	WADI has always maintained close ties with <a href="http://geronimo.apache.org">Apache Geronimo</a> and has recently accepted the Geronimo community's invitation to become a Geronimo subproject.
+	WADI has always maintained close ties with <a href="http://geronimo.apache.org">Apache Geronimo</a> - many of the WADI team are deeply involved in Geronimo development..
       </p>
       <p>
 	Please use the <a href="./getting-started/index.html">Getting Started Page</a> to boostrap yourself into WADI's world.

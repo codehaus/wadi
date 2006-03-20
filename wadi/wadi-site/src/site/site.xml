@@ -9,13 +9,15 @@
       <src>/images/codehaus-small.png</src>
       <href>http://www.codehaus.org</href>
    </bannerRight>
+
    <body>
+
       <links>
          <item name="Geronimo" href="http://geronimo.apache.org"/>
          <item name="Tomcat" href="http://tomcat.apache.org"/>
          <item name="Jetty" href="http://jetty.mortbay.org/jetty/index.html"/>
       </links>
-      
+
       <menu name="WADI">
          <item name="About" href="./index.html"/>
          <item name="Getting Started" href="./getting-started/index.html"/>
@@ -24,20 +26,24 @@
          <item name="Wiki" href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI"/>
          <item name="How To Help" href="./help.html"/>
       </menu>
+
       <menu name="Modules">
+         <item name="JGroups 2.8+" href="wadi-jgroups/index.html"/>
          <item name="Core" href="wadi-core/index.html"/>
-         <item name="JBoss 4" href="wadi-jboss4/index.html"/>
-         <item name="JGroups" href="wadi-jgroups/index.html"/>
-         <item name="Jetty 5" href="wadi-jetty5/index.html"/>
-         <item name="Jetty 6" href="wadi-jetty6/index.html"/>
+         <item name="Jetty 5.x" href="wadi-jetty5/index.html"/>
+         <item name="Jetty 6.x" href="wadi-jetty6/index.html"/>
          <item name="Tomcat 5.0.x" href="wadi-tomcat50/index.html"/>
-         <item name="Tomcat 5.5" href="wadi-tomcat55/index.html"/>
+         <item name="Tomcat 5.5.x" href="wadi-tomcat55/index.html"/>
+         <item name="JBoss 4.x" href="wadi-jboss4/index.html"/>
          <item name="Example Webapp" href="wadi-webapp/index.html"/>
-         
       </menu>
+
       <menu name="Source">
          <item name="Browse the Source" href="http://cvs.wadi.codehaus.org/" />
+         <item name="Our Library" href="http://docs.codehaus.org/display/WADI/Library" />
       </menu>
+
       ${reports}
+
    </body>
 </project>

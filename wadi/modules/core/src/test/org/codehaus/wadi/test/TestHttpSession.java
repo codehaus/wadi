@@ -54,6 +54,7 @@ import org.codehaus.wadi.WADIHttpSession;
 import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DummyContextualiser;
+import org.codehaus.wadi.impl.DummyManagerConfig;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.SimpleSessionPool;
