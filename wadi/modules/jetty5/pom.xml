@@ -1,4 +1,5 @@
 <project>
+
   <parent>
     <groupId>wadi</groupId>
     <artifactId>wadi</artifactId>
@@ -19,49 +20,41 @@
   </scm>
 
   <dependencies>
-
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging-api</artifactId>
     </dependency>
-
     <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-servlet</artifactId>
     </dependency>
-
     <dependency>
       <groupId>wadi</groupId>
       <artifactId>wadi-core</artifactId>
       <scope>provided</scope>
     </dependency>
-
     <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jetty</artifactId>
       <version>5.1.9</version>
       <scope>provided</scope>
     </dependency>
-
     <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jmx</artifactId>
       <version>5.1.9</version>
       <scope>provided</scope>
     </dependency>
-
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
 
   <build>
     <sourceDirectory>src/java</sourceDirectory>
     <testSourceDirectory>src/test</testSourceDirectory>
-
     <plugins>
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
@@ -69,38 +62,26 @@
 	<configuration>
 	  <excludes>
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- stop surefire from trying to run nested classes... -->
-	    <exclude implementation="java.lang.String">**/TestRelocation.java</exclude><!-- hardwired paths -->
 	    <exclude implementation="java.lang.String">**/Test*.java</exclude><!-- tmp -->
+	    <exclude implementation="java.lang.String">**/TestRelocation.java</exclude><!-- hardwired paths -->
 	  </excludes>
 	</configuration>
       </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-site-plugin</artifactId>
-	<configuration>
-	  <outputDirectory>../../wadi-site/target/site/${artifactId}</outputDirectory>
-	</configuration>
-      </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-javadoc-plugin</artifactId>
-	<configuration>
-	  <source>1.4</source>
-	  <destDir>../../wadi-site/target/site/${artifactId}</destDir>
-	</configuration>
-      </plugin>
     </plugins>
-
   </build>
 
   <reporting>
+    <outputDirectory>../../wadi-site/target/site/${artifactId}</outputDirectory>
     <plugins>
+<!--
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-clover-plugin</artifactId>
+      </plugin>
+-->
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-javadoc-plugin</artifactId>
-	<configuration>
-	  <source>1.4</source>
-	</configuration>
       </plugin>
       <plugin>
 	<groupId>org.codehaus.mojo</groupId>

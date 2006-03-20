@@ -1,10 +1,12 @@
 <project>
+
   <parent>
     <groupId>wadi</groupId>
     <artifactId>wadi</artifactId>
     <version>2.0M1</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
+
   <modelVersion>4.0.0</modelVersion>
   <artifactId>wadi-webapp</artifactId>
   <packaging>war</packaging>
@@ -22,47 +24,37 @@
       <groupId>ant</groupId>
       <artifactId>ant</artifactId>
     </dependency>
-
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging-api</artifactId>
     </dependency>
-
     <dependency>
       <groupId>commons-el</groupId>
       <artifactId>commons-el</artifactId>
     </dependency>
-
     <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-jsp</artifactId>
     </dependency>
-
     <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-servlet</artifactId>
     </dependency>
-
     <!-- run time -->
-
     <dependency>
       <groupId>tomcat</groupId>
       <artifactId>jasper-runtime</artifactId>
     </dependency>
-
     <dependency>
       <groupId>wadi</groupId>
       <artifactId>wadi-core</artifactId>
       <scope>provided</scope>
     </dependency>
-
-
   </dependencies>
 
   <pluginRepositories>
@@ -81,6 +73,8 @@
   </pluginRepositories>
 
   <build>
+    <sourceDirectory>src/java</sourceDirectory>
+    <testSourceDirectory>src/test</testSourceDirectory>
     <pluginManagement>
       <plugins>
 	<plugin>
@@ -110,7 +104,6 @@
 	</plugin>
       </plugins>
     </pluginManagement>
-
     <plugins>
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
@@ -148,16 +141,16 @@
 	    <artifactId>mx4j-remote</artifactId>
 	    <version>3.0.1</version>
 	  </dependency>
-    <dependency>
-      <groupId>org.apache.derby</groupId>
-      <artifactId>derby</artifactId>
-      <version>10.1.1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.derby</groupId>
-      <artifactId>derbyclient</artifactId>
-      <version>10.1.1.0</version>
-    </dependency>
+	  <dependency>
+	    <groupId>org.apache.derby</groupId>
+	    <artifactId>derby</artifactId>
+	    <version>10.1.1.0</version>
+	  </dependency>
+	  <dependency>
+	    <groupId>org.apache.derby</groupId>
+	    <artifactId>derbyclient</artifactId>
+	    <version>10.1.1.0</version>
+	  </dependency>
 	</dependencies>
 	<configuration>
 	  <scanIntervalSeconds>10</scanIntervalSeconds>
@@ -223,35 +216,21 @@
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-surefire-plugin</artifactId>
       </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-site-plugin</artifactId>
-	<configuration>
-	  <outputDirectory>../../wadi-site/target/site/${artifactId}</outputDirectory>
-	</configuration>
-      </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-javadoc-plugin</artifactId>
-	<configuration>
-	  <source>1.4</source>
-	  <destDir>../../wadi-site/target/site/${artifactId}</destDir>
-	</configuration>
-      </plugin>
     </plugins>
-
-    <sourceDirectory>src/java</sourceDirectory>
-    <testSourceDirectory>src/test</testSourceDirectory>
   </build>
 
   <reporting>
+    <outputDirectory>../../wadi-site/target/site/${artifactId}</outputDirectory>
     <plugins>
+<!--
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-clover-plugin</artifactId>
+      </plugin>
+-->
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-javadoc-plugin</artifactId>
-	<configuration>
-	  <source>1.4</source>
-	</configuration>
       </plugin>
       <plugin>
 	<groupId>org.codehaus.mojo</groupId>
@@ -259,4 +238,5 @@
       </plugin>
     </plugins>
   </reporting>
+
 </project>
