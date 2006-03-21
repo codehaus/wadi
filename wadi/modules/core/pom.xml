@@ -107,11 +107,11 @@
 	    <!-- stop surefire from trying to run nested classes... -->
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude>
 	    <!-- need tcp broker -->
+	    <exclude implementation="java.lang.String">**/TestReplication.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestCluster.java</exclude>
 	    <!-- very slow and not much use -->
 	    <exclude implementation="java.lang.String">**/TestActiveCluster.java</exclude>
 	    <!-- broken -->
-	    <exclude implementation="java.lang.String">**/TestReplication.java</exclude>
 	    <exclude implementation="java.lang.String">**/io/TestMotion.java</exclude>
 	    <!-- old -->
 	    <exclude implementation="java.lang.String">**/old/**</exclude>
