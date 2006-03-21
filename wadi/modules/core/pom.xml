@@ -111,7 +111,6 @@
 	    <!-- very slow and not much use -->
 	    <exclude implementation="java.lang.String">**/TestActiveCluster.java</exclude>
 	    <!-- broken -->
-	    <exclude implementation="java.lang.String">**/TestEvicters.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestReplication.java</exclude>
 	    <exclude implementation="java.lang.String">**/io/TestMotion.java</exclude>
 	    <!-- old -->
@@ -119,10 +118,6 @@
 	    <exclude implementation="java.lang.String">**/sandbox/jcache/TestJCache.java</exclude>
 	    <exclude implementation="java.lang.String">**/sandbox/partition/impl/TestExchange.java</exclude>
 	  </excludes>
-<!--	  <includes>
-	    <include implementation="java.lang.String">**/TestContextualiser.java</include>
-	  </includes>
--->
 	</configuration>
       </plugin>
     </plugins>

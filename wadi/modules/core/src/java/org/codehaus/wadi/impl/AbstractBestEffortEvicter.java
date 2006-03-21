@@ -104,92 +104,94 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
 
     public void evict() {
       _log.trace("sweep started");
-
-        RankedRWLock.setPriority(RankedRWLock.EVICTION_PRIORITY); // TODO - shouldn't really be here, but...
-
-        // get candidates
-        long time=System.currentTimeMillis();
-        Map candidates=_config.getMap();
-
-        // perform a cheap first pass, remembering those candidates
-        // which look as if they should be expired/demoted...
-        List toExpireList=new ArrayList();
-        List toDemoteList=new ArrayList();
-        for (Iterator i=candidates.values().iterator(); i.hasNext(); ) { // TODO - Map MUST support snapshot iteration - investigate
-            // no locking on this pass...
-            Evictable e=(Evictable)i.next();
-            long ttl=e.getTimeToLive(time);
-            if (ttl<0) // if ttl==0, we do NOT expire - this avoids any problems with sessions that are being recycled...
-                toExpireList.add(e);
-            else if (test(e, time, ttl))
-                toDemoteList.add(e);
+      
+      RankedRWLock.setPriority(RankedRWLock.EVICTION_PRIORITY); // TODO - shouldn't really be here, but...
+      
+      // get candidates
+      long time=System.currentTimeMillis();
+      Map candidates=_config.getMap();
+      
+      // perform a cheap first pass, remembering those candidates
+      // which look as if they should be expired/demoted...
+      List toExpireList=new ArrayList();
+      List toDemoteList=new ArrayList();
+      for (Iterator i=candidates.values().iterator(); i.hasNext(); ) { // TODO - Map MUST support snapshot iteration - investigate
+        // no locking on this pass...
+        Evictable e=(Evictable)i.next();
+        long ttl=e.getTimeToLive(time);
+        if (ttl<0) {
+          // if ttl==0, we do NOT expire - this avoids any problems with sessions that are being recycled...
+          toExpireList.add(e);
+        } else if (test(e, time, ttl)) {
+          toDemoteList.add(e);
         }
-
-        Object[] toExpire=toExpireList.toArray();
-        toExpireList=null;
-        Object[] toDemote=toDemoteList.toArray();
-        toDemoteList=null;
-
-        // if strict ordering is required we sort the candidate lists
-        // before the next stage.
-        if (_strictOrdering) {
-            Comparator comparator=getComparator(time);
-            Arrays.sort(toDemote, comparator);
-            Arrays.sort(toDemote, comparator);
-            comparator=null;
-        }
-
-        // perform a more expensive second pass, retesting each of the
-        // remembered candidates within a lock. If the test proves positive
-        // they will be expired/demoted within this same lock. Thus a session
-        // will never be expired/demoted, whilst there is a request pertinent
-        // to it within the container, as these two events are mutually exclusive.
-        // If we cannot acquire the lock immediately, we assume that a request has
-        // taken it during the intervening period, and ignore this candidate.
-
-        // deal with expirations...
-        int expirations=0;
-        {
-        	int l=toExpire.length;
-        	for (int i=0; i<l; i++) {
-        		Motable motable=(Motable)toExpire[i]; // TODO - not happy about an Evicter knowing about Motables
-        		String id=motable.getName();
-        		if (id!=null) {
-        			Sync sync=_config.getEvictionLock(id, motable);
-        			if (Utils.attemptUninterrupted("Eviction", id, sync)) {
-        				if (motable.getTimedOut(time)) {
-        					_config.expire(motable);
-        					expirations++;
-        				}
-        				Utils.release("Eviction", id, sync);
-        			}
-        		}
-        	}
-        	toExpire=null;
-        }
-
-        // and the same again for demotions...
-        int demotions=0;
-        {
-            int l=toDemote.length;
-            for (int i=0; i<l; i++) {
-                Motable motable=(Motable)toDemote[i]; // TODO - not happy about an Evicter knowing about Motables
-                String id=motable.getName();
-                Sync sync=_config.getEvictionLock(id, motable);
-			if (Utils.attemptUninterrupted("Eviction", id, sync)) {
-                    if (test(motable, time, motable.getTimeToLive(time))) { // IDEA - could have remembered ttl
-                        _config.demote(motable);
-                        demotions++;
-                    }
-    				Utils.release("Eviction", id, sync);
-                }
+      }
+      
+      Object[] toExpire=toExpireList.toArray();
+      toExpireList=null;
+      Object[] toDemote=toDemoteList.toArray();
+      toDemoteList=null;
+      
+      // if strict ordering is required we sort the candidate lists
+      // before the next stage.
+      if (_strictOrdering) {
+        Comparator comparator=getComparator(time);
+        Arrays.sort(toExpire, comparator);
+        Arrays.sort(toDemote, comparator);
+        comparator=null;
+      }
+      
+      // perform a more expensive second pass, retesting each of the
+      // remembered candidates within a lock. If the test proves positive
+      // they will be expired/demoted within this same lock. Thus a session
+      // will never be expired/demoted, whilst there is a request pertinent
+      // to it within the container, as these two events are mutually exclusive.
+      // If we cannot acquire the lock immediately, we assume that a request has
+      // taken it during the intervening period, and ignore this candidate.
+      
+      // deal with expirations...
+      int expirations=0;
+      {
+        int l=toExpire.length;
+        for (int i=0; i<l; i++) {
+          Motable motable=(Motable)toExpire[i]; // TODO - not happy about an Evicter knowing about Motables
+          String id=motable.getName();
+          if (id!=null) {
+            Sync sync=_config.getEvictionLock(id, motable);
+            if (Utils.attemptUninterrupted("Eviction", id, sync)) {
+              if (motable.getTimedOut(time)) {
+                _config.expire(motable);
+                expirations++;
+              }
+              Utils.release("Eviction", id, sync);
             }
-            toDemote=null;
+          }
         }
-
-        RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY); // TODO - shouldn't really be here, but...
-
-        if (_log.isDebugEnabled()) _log.debug("sweep completed ("+(System.currentTimeMillis()-time)+" millis) - expirations:"+expirations+", demotions:"+demotions);
+        toExpire=null;
+      }
+      
+      // and the same again for demotions...
+      int demotions=0;
+      {
+        int l=toDemote.length;
+        for (int i=0; i<l; i++) {
+          Motable motable=(Motable)toDemote[i]; // TODO - not happy about an Evicter knowing about Motables
+          String id=motable.getName();
+          Sync sync=_config.getEvictionLock(id, motable);
+          if (Utils.attemptUninterrupted("Eviction", id, sync)) {
+            if (test(motable, time, motable.getTimeToLive(time))) { // IDEA - could have remembered ttl
+              _config.demote(motable);
+              demotions++;
+            }
+            Utils.release("Eviction", id, sync);
+          }
+        }
+        toDemote=null;
+      }
+      
+      RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY); // TODO - shouldn't really be here, but...
+      
+      if (_log.isDebugEnabled()) _log.debug("sweep completed ("+(System.currentTimeMillis()-time)+" millis) - expirations:"+expirations+", demotions:"+demotions);
     }
 
     // BestEffort Evicters pay no attention to these notifications - to do so would be very expensive.

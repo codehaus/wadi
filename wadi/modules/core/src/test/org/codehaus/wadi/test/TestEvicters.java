@@ -79,7 +79,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class TestEvicters extends TestCase {
 
-	protected final String _clusterUri=Utils.getClusterUri();
+	protected final String _clusterUri="peer://org.codehaus.wadi";
 	protected final String _clusterName="WADI.TEST";
 
 	public TestEvicters(String name) {
@@ -153,9 +153,9 @@ public class TestEvicters extends TestCase {
 		ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DummyReplicaterFactory(), location, proxy, dispatcher, partitionManager, collapser);
 		manager.setMaxInactiveInterval(2);
 		manager.init(new DummyManagerConfig());
-		//manager.start();
-		//mevicter.stop(); // we'll run it by hand...
-		//devicter.stop();
+		manager.start();
+		mevicter.stop(); // we'll run it by hand...
+		devicter.stop();
 
 		manager.create();
 		assertTrue(mmap.size()==1);
