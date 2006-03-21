@@ -21,10 +21,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>ant</groupId>
-      <artifactId>ant</artifactId>
-    </dependency>
-    <dependency>
       <groupId>commons-el</groupId>
       <artifactId>commons-el</artifactId>
     </dependency>
@@ -36,10 +32,10 @@
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-servlet</artifactId>
     </dependency>
-    <!-- run time -->
     <dependency>
       <groupId>tomcat</groupId>
       <artifactId>jasper-runtime</artifactId>
+      <version>${tomcat55.version}</version>
     </dependency>
     <dependency>
       <groupId>wadi</groupId>

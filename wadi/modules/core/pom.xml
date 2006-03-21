@@ -70,10 +70,6 @@
       <artifactId>activecluster</artifactId>
     </dependency>
     <dependency>
-      <groupId>jboss</groupId>
-      <artifactId>jboss-common</artifactId>
-    </dependency>
-    <dependency>
       <groupId>mx4j</groupId>
       <artifactId>mx4j</artifactId>
     </dependency>
