@@ -18,6 +18,7 @@ package org.codehaus.wadi.test;
 
 import org.codehaus.wadi.Context;
 import org.codehaus.wadi.ContextPool;
+import org.codehaus.wadi.impl.MyContext;
 
 
 /**

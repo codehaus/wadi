@@ -21,6 +21,10 @@
 
   <dependencies>
     <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging-api</artifactId>
+    </dependency>
+    <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-j2ee-management</artifactId>
     </dependency>
@@ -100,23 +104,25 @@
 	<artifactId>maven-surefire-plugin</artifactId>
 	<configuration>
 	  <excludes>
-	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- stop surefire from trying to run nested classes... -->
-	    <exclude implementation="java.lang.String">**/TestActiveCluster.java</exclude>
+	    <!-- stop surefire from trying to run nested classes... -->
+	    <exclude implementation="java.lang.String">**/*$*.java</exclude>
+	    <!-- need tcp broker -->
 	    <exclude implementation="java.lang.String">**/TestCluster.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestContextualiser.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestDIndex.java</exclude>
+	    <!-- very slow and not much use -->
+	    <exclude implementation="java.lang.String">**/TestActiveCluster.java</exclude>
+	    <!-- broken -->
 	    <exclude implementation="java.lang.String">**/TestEvicters.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestGCache.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestGianni.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestReplication.java</exclude>
 	    <exclude implementation="java.lang.String">**/io/TestMotion.java</exclude>
-	    <exclude implementation="java.lang.String">**/io/TestServers.java</exclude>
+	    <!-- old -->
 	    <exclude implementation="java.lang.String">**/old/**</exclude>
 	    <exclude implementation="java.lang.String">**/sandbox/jcache/TestJCache.java</exclude>
 	    <exclude implementation="java.lang.String">**/sandbox/partition/impl/TestExchange.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestNodes.java</exclude><!-- hardwired paths -->
-	    <exclude implementation="java.lang.String">**/TestJetty.java</exclude><!-- failed for Jeff: investigate -->
 	  </excludes>
+<!--	  <includes>
+	    <include implementation="java.lang.String">**/TestContextualiser.java</include>
+	  </includes>
+-->
 	</configuration>
       </plugin>
     </plugins>

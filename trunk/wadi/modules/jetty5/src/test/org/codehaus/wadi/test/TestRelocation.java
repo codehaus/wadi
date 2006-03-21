@@ -42,6 +42,7 @@ import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.impl.AbstractRelocater;
 import org.codehaus.wadi.impl.CommonsHttpProxy;
+import org.codehaus.wadi.impl.MyContext;
 import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.WebHybridRelocater;
 
