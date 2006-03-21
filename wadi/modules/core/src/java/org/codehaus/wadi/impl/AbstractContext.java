@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
@@ -33,28 +32,28 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 
 public abstract class AbstractContext extends AbstractMotable implements Context {
-
-    protected static Log _log = LogFactory.getLog(AbstractContext.class);
-
-    protected final RankedRWLock _lock=new RankedRWLock(); // TODO - initially - we will pool the lock with the session - risky :-)
-	public Sync getSharedLock(){return _lock.readLock();}
-	public Sync getExclusiveLock(){return _lock.writeLock();}
-
-	// Motable
-	public byte[] getBodyAsByteArray() throws Exception {
-        return Utils.getContent(this, new SimpleStreamer());
-	}
-
-	public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
-		Utils.setContent(this, bytes, new SimpleStreamer());
-	}
-    
-    public ByteBuffer getBodyAsByteBuffer() throws Exception {
-    	throw new UnsupportedOperationException();
-    }
-    
-    public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {
-    	throw new UnsupportedOperationException();
-    }
-
+  
+  protected static Log _log = LogFactory.getLog(AbstractContext.class);
+  
+  protected final RankedRWLock _lock=new RankedRWLock(); // TODO - initially - we will pool the lock with the session - risky :-)
+  public Sync getSharedLock(){return _lock.readLock();}
+  public Sync getExclusiveLock(){return _lock.writeLock();}
+  
+  // Motable
+  public byte[] getBodyAsByteArray() throws Exception {
+    return Utils.getContent(this, new SimpleStreamer());
+  }
+  
+//public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
+//Utils.setContent(this, bytes, new SimpleStreamer());
+//}
+  
+  public ByteBuffer getBodyAsByteBuffer() throws Exception {
+    throw new UnsupportedOperationException();
+  }
+  
+  public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {
+    throw new UnsupportedOperationException();
+  }
+  
 }
