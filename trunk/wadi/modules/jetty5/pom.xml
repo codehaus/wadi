@@ -32,13 +32,13 @@
     <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jetty</artifactId>
-      <version>5.1.9</version>
+      <version>${jetty5.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jmx</artifactId>
-      <version>5.1.9</version>
+      <version>${jetty5.version}</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

@@ -260,24 +260,24 @@
     <module>wadi-site</module>
   </modules>
 
+  <properties>
+    <jetty5.version>5.1.9</jetty5.version>
+    <jetty6.version>6.0.0beta10</jetty6.version>
+    <!-- <jetty6.version>6.0-SNAPSHOT</jetty6.version> -->
+    <tomcat50.version>5.0.18</tomcat50.version>
+    <!-- <tomcat50.version>5.0.28</tomcat50.version> --> <!-- broken -->
+    <tomcat55.version>5.5.12</tomcat55.version>
+    <jboss4.version>4.0.2</jboss4.version>
+    <mx4j.version>3.0.1</mx4j.version>
+    <derby.version>10.1.1.0</derby.version>
+  </properties>
+
   <dependencyManagement>
     <dependencies>
-      <dependency>
-	<groupId>junit</groupId>
-	<artifactId>junit</artifactId>
-	<version>3.8.1</version>
-	<scope>test</scope>
-      </dependency>
       <dependency>
 	<groupId>commons-logging</groupId>
 	<artifactId>commons-logging-api</artifactId>
 	<version>1.0.4</version>
-	<scope>provided</scope>
-      </dependency>
-      <dependency>
-	<groupId>ant</groupId>
-	<artifactId>ant</artifactId>
-	<version>1.6.5</version>
 	<scope>provided</scope>
       </dependency>
       <dependency>
@@ -298,12 +298,12 @@
       <dependency>
 	<groupId>org.apache.derby</groupId>
 	<artifactId>derby</artifactId>
-	<version>10.1.1.0</version>
+	<version>${derby.version}</version>
       </dependency>
       <dependency>
 	<groupId>org.apache.derby</groupId>
 	<artifactId>derbyclient</artifactId>
-	<version>10.1.1.0</version>
+	<version>${derby.version}</version>
       </dependency>
       <dependency>
 	<groupId>axion</groupId><!-- used by some tests -->
@@ -382,20 +382,14 @@
 	<version>1.2-20051115174934</version>
       </dependency>
       <dependency>
-	<groupId>jboss</groupId>
-	<artifactId>jboss-common</artifactId>
-	<version>4.0.2</version>
-	<scope>provided</scope>
-      </dependency>
-      <dependency>
 	<groupId>mx4j</groupId>
 	<artifactId>mx4j</artifactId>
-	<version>3.0.1</version>
+	<version>${mx4j.version}</version>
       </dependency>
       <dependency>
 	<groupId>mx4j</groupId>
 	<artifactId>mx4j-remote</artifactId>
-	<version>3.0.1</version>
+	<version>${mx4j.version}</version>
       </dependency>
       <dependency>
 	<groupId>mysql</groupId>
@@ -445,18 +439,6 @@
 	    <artifactId>spring-remoting</artifactId>
 	  </exclusion>
 	</exclusions>
-      </dependency>
-      <dependency>
-	<groupId>tomcat</groupId>
-	<artifactId>jasper-compiler</artifactId>
-	<version>5.5.12</version>
-	<scope>provided</scope>
-      </dependency>
-      <dependency>
-	<groupId>tomcat</groupId>
-	<artifactId>jasper-runtime</artifactId>
-	<version>5.5.12</version>
-	<scope>provided</scope>
       </dependency>
       <dependency>
 	<groupId>xerces</groupId>
