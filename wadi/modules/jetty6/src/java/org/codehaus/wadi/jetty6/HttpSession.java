@@ -27,7 +27,7 @@ import org.mortbay.jetty.SessionManager;
  * @version $Revision$
  */
 
-public class HttpSession extends SessionWrapper implements SessionManager.Session {
+public class HttpSession extends SessionWrapper {
 
     HttpSession(Session session) {super(session);}
     

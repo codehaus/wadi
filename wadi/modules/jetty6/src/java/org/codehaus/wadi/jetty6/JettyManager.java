@@ -34,8 +34,10 @@ import org.codehaus.wadi.impl.ListenerSupport;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.impl.StandardManager;
 import org.mortbay.jetty.handler.ContextHandler;
+import org.mortbay.jetty.servlet.SessionHandler;
 //import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.HttpOnlyCookie;
+import org.mortbay.jetty.SessionIdManager;
 //import org.mortbay.jetty.Server;
 import org.mortbay.jetty.SessionManager;
 import org.mortbay.component.AbstractLifeCycle;
@@ -78,7 +80,7 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 		}
 
     // Handlers are scoped across every Context on the Server - is this what we want ?
-    
+
 //    // install a Handler at front of stack...
 //    // needs a HandlerConfig API...
 //    // should be done at Server start up time...
@@ -95,7 +97,7 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 //        newHandlers[j]=oldHandlers[i];
 //      server.setHandlers(newHandlers);
 //    }
-    
+
 		_wadi.setMaxInactiveInterval(_maxInactiveInterval);
 		_wadi.init(this);
 		_wadi.start();
@@ -111,7 +113,21 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 
 	// org.mortbay.jetty.SessionManager
 
-	public HttpSession getHttpSession(String id) {
+
+  public void setSessionHandler(SessionHandler handler) {
+    // TODO Auto-generated method stub
+    _log.warn("setSessionHandler() - what should we do ?: "+handler);
+  }
+
+  public boolean isValid(HttpSession session) {
+    return ((org.codehaus.wadi.jetty6.HttpSession)session).isValid();
+  }
+
+  public void access(HttpSession session) {
+    ((org.codehaus.wadi.jetty6.HttpSession)session).access();
+  }
+  
+  public HttpSession getHttpSession(String id) {
 		//throw new UnsupportedOperationException();
 		return null; // FIXME - this will be the container trying to 'refresh' a session...
 	}
@@ -190,13 +206,13 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 		return null;
 	}
 
-	protected MetaManager _metaManager;
+	protected SessionIdManager _metaManager;
 
-	public MetaManager getMetaManager() {
+	public SessionIdManager getMetaManager() {
 		return _metaManager;
 	}
 
-	public void setMetaManager(MetaManager metaManager) {
+	public void setMetaManager(SessionIdManager metaManager) {
 		_metaManager=metaManager;
 	}
 
@@ -210,5 +226,6 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 	public void clearEventListeners() {
 		_log.warn("NYI");
 	}
+
 
 }
