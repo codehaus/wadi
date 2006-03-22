@@ -154,6 +154,7 @@ public class SimpleStateManager implements StateManager {
 			ObjectMessage message2=(ObjectMessage)dispatcher.exchangeSend(sm, im, request, timeout, _get.getIMCorrelationId());
 			// should receive response from IM confirming safe receipt...
 			if (message2==null) {
+                // TODO throw exception
 				_log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
 			} else {
 //				MoveIMToSM response=null;

@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,18 +13,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.replication.storage.remoting;
+
+import org.codehaus.wadi.replication.storage.ReplicaStorage;
+
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * 
  * @version $Revision$
  */
-public interface Replicater {
-	void create(Object tmp);
-	void update(Object tmp);
-	void destroy(Object tmp);
+class DestroyRequest extends AbstractOneWayStorageRequest {
+    private static final long serialVersionUID = 958339326828657038L;
 
-	void acquireFromOtherReplicater(Object tmp);
-    
-    boolean getReusingStore();
+    public DestroyRequest(Object key) {
+        super(key);
+    }
+
+    public void execute(ReplicaStorage storage) {
+        storage.mergeDestroy(key);
+    }
 }

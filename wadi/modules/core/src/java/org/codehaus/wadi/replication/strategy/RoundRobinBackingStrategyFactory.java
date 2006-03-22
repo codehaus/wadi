@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,18 +13,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.replication.strategy;
+
+
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * 
  * @version $Revision$
  */
-public interface Replicater {
-	void create(Object tmp);
-	void update(Object tmp);
-	void destroy(Object tmp);
-
-	void acquireFromOtherReplicater(Object tmp);
+public class RoundRobinBackingStrategyFactory implements BackingStrategyFactory {
+    private final int nbReplica;
     
-    boolean getReusingStore();
+    public RoundRobinBackingStrategyFactory(int nbReplica) {
+        if (nbReplica < 1) {
+            throw new IllegalArgumentException("nbReplica must be greater than 0");
+        }
+        this.nbReplica = nbReplica;
+    }
+
+    public BackingStrategy factory() {
+        return new RoundRobinBackingStrategy(nbReplica);
+    }
 }

@@ -140,5 +140,12 @@ public class JGroupsDispatcher extends AbstractDispatcher {
   public void setClusterListener(ClusterListener listener) {
     _cluster.setClusterListener(listener);
   }
-  
+
+  public Destination getDestination(String name) {
+      throw new UnsupportedOperationException();
+  }
+
+  public String getLocalNodeName() {
+      throw new UnsupportedOperationException();
+  }
 }

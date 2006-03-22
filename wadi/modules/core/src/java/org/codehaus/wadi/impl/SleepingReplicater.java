@@ -35,27 +35,26 @@ public class SleepingReplicater implements Replicater {
 	}
 
 	public void create(Object tmp) {
-		try {
-			Thread.sleep(_delay);
-		} catch (InterruptedException e) {
-			// do nothing
-		}
+		sleep();
 	}
 
 	public void update(Object tmp) {
-		try {
-			Thread.sleep(_delay);
-		} catch (InterruptedException e) {
-			// do nothing
-		}
+        sleep();
 	}
 
 	public void destroy(Object tmp) {
-		try {
-			Thread.sleep(_delay);
-		} catch (InterruptedException e) {
-			// do nothing
-		}
+        sleep();
 	}
 
+    public void acquireFromOtherReplicater(Object tmp) {
+        sleep();
+    }
+    
+    private void sleep() {
+        try {
+            Thread.sleep(_delay);
+        } catch (InterruptedException e) {
+            // do nothing
+        }
+    }
 }
