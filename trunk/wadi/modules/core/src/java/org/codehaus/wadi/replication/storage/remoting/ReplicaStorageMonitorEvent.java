@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,18 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.replication.storage.remoting;
+
+import org.codehaus.wadi.replication.common.ComponentEventType;
+import org.codehaus.wadi.replication.common.NodeInfo;
+import org.codehaus.wadi.replication.common.ReplicationComponentEvent;
+
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * 
  * @version $Revision$
  */
-public interface Replicater {
-	void create(Object tmp);
-	void update(Object tmp);
-	void destroy(Object tmp);
+public class ReplicaStorageMonitorEvent extends ReplicationComponentEvent {
+    private static final long serialVersionUID = 9021191456729374585L;
 
-	void acquireFromOtherReplicater(Object tmp);
-    
-    boolean getReusingStore();
+    public ReplicaStorageMonitorEvent(ComponentEventType type, NodeInfo hostingNode) {
+        super(type, hostingNode);
+    }
 }

@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,18 +13,29 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.replication.storage;
+
+import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.replication.common.NodeInfo;
+import org.codehaus.wadi.replication.common.ReplicaInfo;
+
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * 
  * @version $Revision$
  */
-public interface Replicater {
-	void create(Object tmp);
-	void update(Object tmp);
-	void destroy(Object tmp);
-
-	void acquireFromOtherReplicater(Object tmp);
+public interface ReplicaStorage extends Lifecycle {
+    void mergeCreate(Object key, ReplicaInfo replicaInfo);
     
-    boolean getReusingStore();
+    void mergeUpdate(Object key, ReplicaInfo replicaInfo);
+    
+    void mergeDestroy(Object key);
+    
+    ReplicaInfo retrieveReplicaInfo(Object key);
+
+    boolean storeReplicaInfo(Object key);
+
+    void purge();
+    
+    NodeInfo getHostingNode();
 }

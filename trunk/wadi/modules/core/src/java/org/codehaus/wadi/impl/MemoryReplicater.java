@@ -56,6 +56,10 @@ public class MemoryReplicater implements Replicater {
 		// send messages (sync) to remove replicants on partners
 	}
 
+    public void acquireFromOtherReplicater(Object tmp) {
+        
+    }
+    
 	public boolean getReusingStore() {
 		return false;
 	}

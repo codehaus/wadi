@@ -31,7 +31,8 @@ import junit.framework.TestCase;
  * @version $Revision$
  */
 public class TestDIndex extends TestCase {
-
+    private static final int MAX_POLL_STABLE_STATE = 10;
+    
     protected final Log _log=LogFactory.getLog(getClass().getName());
 
     public TestDIndex(String name) {
@@ -75,17 +76,22 @@ public class TestDIndex extends TestCase {
         DIndexNode green=new DIndexNode("green", _numPartitions, _factory, heartbeatTimeout);
         DIndexNode blue=new DIndexNode("blue", _numPartitions, _factory, heartbeatTimeout);
 
-
         red.start();
         green.start();
         blue.start();
-
+        
+        int nbLoop = 0;
         while(red.getCluster().getNodes().size()<2 ||
         	  green.getCluster().getNodes().size()<2 ||
         	  blue.getCluster().getNodes().size()<2 ||
         	  green.getDIndex().getPartitionManager().getPartitionKeys().size()==0 ||
-        	  blue.getDIndex().getPartitionManager().getPartitionKeys().size()==0)
-        	Thread.sleep(1000);
+        	  blue.getDIndex().getPartitionManager().getPartitionKeys().size()==0) {
+            Thread.sleep(1000);
+            if (nbLoop++ == MAX_POLL_STABLE_STATE) {
+                stopNode(red, green, blue);
+                fail("Cannot attain expected cluster state.");
+            }
+        }
 
         _log.info("partitions distributed");
 
@@ -105,11 +111,16 @@ public class TestDIndex extends TestCase {
         //blue.getDIndex().put(name, name);
 
         Thread.sleep(10*1000);
-        blue.stop();
-        green.stop();
-        red.stop();
+        stopNode(red, green, blue);
         Thread.sleep(6000);
         _log.info("0 nodes running");
     }
 
+    private void stopNode(DIndexNode red, DIndexNode green, DIndexNode blue) throws Exception {
+        blue.stop();
+        green.stop();
+        red.stop();
+    }
+
+    
 }

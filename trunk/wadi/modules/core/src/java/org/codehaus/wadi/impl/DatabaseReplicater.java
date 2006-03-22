@@ -105,5 +105,7 @@ public class DatabaseReplicater implements Replicater {
 		}
 	}
 
+    public void acquireFromOtherReplicater(Object tmp) {
+    }
 }
 

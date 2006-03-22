@@ -41,4 +41,8 @@ public class DummyReplicater implements Replicater {
     	// empty
 	}
 
+    public void acquireFromOtherReplicater(Object tmp) {
+        // empty
+        
+    }
 }

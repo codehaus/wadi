@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,18 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.replication.storage.remoting;
+
+import org.codehaus.wadi.replication.common.NodeInfo;
+import org.codehaus.wadi.replication.storage.ReplicaStorage;
+
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * 
  * @version $Revision$
  */
-public interface Replicater {
-	void create(Object tmp);
-	void update(Object tmp);
-	void destroy(Object tmp);
+public interface ReplicaStorageAdvertiser {
+    void advertiseJoin(ReplicaStorage storage, NodeInfo nodeInfo);
 
-	void acquireFromOtherReplicater(Object tmp);
+    void advertiseJoin(ReplicaStorage storage);
     
-    boolean getReusingStore();
+    void advertiseLeave(ReplicaStorage storage);
 }

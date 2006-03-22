@@ -50,26 +50,31 @@ public abstract class AbstractReplicableSession extends DistributableSession imp
 
     	Replicater replicater=((ReplicableSessionConfig)_config).getReplicater();
 
-    	if (!replicater.getReusingStore())
-    		replicater.create(this);
+    	if (!replicater.getReusingStore()) {
+            replicater.create(this);
+        }
     }
     
 
     public void copy(Motable motable) throws Exception {
-    	Replicater replicater=((ReplicableSessionConfig)_config).getReplicater();
+        super.copy(motable);
 
-    	if (!replicater.getReusingStore())
-    		replicater.create(this);
-    	
-    	super.copy(motable);
+        Replicater replicater=((ReplicableSessionConfig)_config).getReplicater();
+        
+    	if (!replicater.getReusingStore()) {
+            replicater.create(this);
+        } else {
+            replicater.acquireFromOtherReplicater(this);
+        }
 	}
 
     public void mote(Motable recipient) throws Exception {
     	Replicater replicater=((ReplicableSessionConfig)_config).getReplicater();
     	if (replicater.getReusingStore()) {
     		recipient.init(_creationTime, _lastAccessedTime, _maxInactiveInterval, _name); // only copy metadata
-    	} else
-    		recipient.copy(this); // copy metadata and data
+    	} else {
+            recipient.copy(this); // copy metadata and data
+        }
     	
     	destroy(recipient); // this is a transfer, so use special case destructor...
     }
@@ -89,10 +94,11 @@ public abstract class AbstractReplicableSession extends DistributableSession imp
     public void destroy(Motable recipient) throws Exception {
     	Replicater replicater=((ReplicableSessionConfig)_config).getReplicater();
 
-    	super.destroy();
+    	if (!replicater.getReusingStore()) {
+            replicater.destroy(this);
+        }
 
-    	if (!replicater.getReusingStore())
-    		replicater.destroy(this);
+        super.destroy();
     }
 
     // lastAccessedTime NOT replicated - assume that, just as the node died, requests

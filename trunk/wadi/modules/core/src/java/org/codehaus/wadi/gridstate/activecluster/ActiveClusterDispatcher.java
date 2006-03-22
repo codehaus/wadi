@@ -17,6 +17,7 @@
 package org.codehaus.wadi.gridstate.activecluster;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -114,6 +115,9 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 	
 	public void start() throws Exception {
 		_cluster.start();
+        Map distributedState = getDistributedState();
+        distributedState.put("nodeName", _nodeName);
+        setDistributedState(distributedState);
 	}
 	
 	public void stop() throws Exception {
@@ -151,6 +155,12 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 		_cluster.send(to, message);
 	}
 	
+    public String getLocalNodeName() {
+        Destination localDestination = getLocalDestination();
+        String nodeName = getNodeName(localDestination);
+        return nodeName;
+    }
+    
 	public Destination getLocalDestination() {
 		return _cluster.getLocalNode().getDestination();
 	}
@@ -166,7 +176,25 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 	public void setDistributedState(Map state) throws Exception {
 		_cluster.getLocalNode().setState(state);
 	}
-	
+
+    public Destination getDestination(String nodeName) {
+        if (getLocalNodeName().equals(nodeName)) {
+            return getLocalDestination();
+        }
+        
+        Map destToNode = _cluster.getNodes();
+        for (Iterator iter = destToNode.entrySet().iterator(); iter.hasNext();) {
+            Map.Entry entry = (Map.Entry) iter.next();
+            Destination destination = (Destination) entry.getKey();
+            String name = getNodeName(destination);
+            if (name.equals(nodeName)) {
+                return destination;
+            }
+        }
+
+        throw new IllegalArgumentException("Node " + nodeName + " is undefined.");
+    }
+
 	public String getNodeName(Destination destination) {
 		Node localNode=_cluster.getLocalNode();
 		Destination localDestination=localNode.getDestination();

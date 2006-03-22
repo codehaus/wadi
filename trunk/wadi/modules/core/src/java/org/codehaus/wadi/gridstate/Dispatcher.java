@@ -115,4 +115,9 @@ public interface Dispatcher {
 
 	void setClusterListener(ClusterListener listener);
 
+    Destination getDestination(String name);
+
+    String getLocalNodeName();
+
+    void send(Destination destination, Serializable request) throws Exception;
 }

@@ -14,18 +14,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.test;
+
+import javax.servlet.ServletContext;
+
+import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.impl.StandardManager;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Replicater {
-	void create(Object tmp);
-	void update(Object tmp);
-	void destroy(Object tmp);
+public class DummyManagerConfig implements ManagerConfig {
 
-	void acquireFromOtherReplicater(Object tmp);
-    
-    boolean getReusingStore();
+	public ServletContext getServletContext() {
+		return null;
+	}
+
+	public void callback(StandardManager manager) {
+	// do nothing - should install Listeners
+	}
+
 }

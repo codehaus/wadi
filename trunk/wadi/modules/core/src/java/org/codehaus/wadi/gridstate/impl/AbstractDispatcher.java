@@ -379,7 +379,10 @@ public abstract class AbstractDispatcher implements Dispatcher, MessageListener 
 		}
 		return response;
 	}
-	
+
+    public ObjectMessage exchangeSend(Destination to, Object body, long timeout) {
+        return exchangeSend(getLocalDestination(), to, (Serializable) body, timeout);
+    }
 	
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.impl.Dispatcher#exchangeSend(javax.jms.Destination, javax.jms.Destination, java.io.Serializable, long)
@@ -398,8 +401,9 @@ public abstract class AbstractDispatcher implements Dispatcher, MessageListener 
 					message instanceof ObjectMessage &&
 					(objectMessage=(ObjectMessage)message)!=null &&
 					(body=objectMessage.getObject())!=null &&
-					(dispatcher=(InternalDispatcher)_map.get(body.getClass()))!=null
+					(dispatcher=retrieveDispatcher(body.getClass()))!=null
 			) {
+                
 				if (_messageLog.isTraceEnabled()) _messageLog.trace("incoming: "+body+" {"+getNodeName(message.getJMSReplyTo())+"->"+getNodeName(message.getJMSDestination())+"} - "+getIncomingCorrelationId(objectMessage)+"/"+getOutgoingCorrelationId(objectMessage));
 				do {
 					try {
@@ -419,6 +423,26 @@ public abstract class AbstractDispatcher implements Dispatcher, MessageListener 
 		}
 	}
 	
+    private InternalDispatcher retrieveDispatcher(Class clazz) {
+        InternalDispatcher dispatcher = (InternalDispatcher) _map.get(clazz);
+        if (null == dispatcher) {
+            Class[] interfaces = clazz.getInterfaces();
+            for (int i = 0; i < interfaces.length; i++) {
+                dispatcher = retrieveDispatcher(interfaces[i]);
+                if (null != dispatcher) {
+                    break;
+                }
+            }
+            if (null == dispatcher) {
+                Class superclass = clazz.getSuperclass();
+                if (null != superclass) {
+                    dispatcher = retrieveDispatcher(superclass);
+                }
+            }
+        }
+        return dispatcher;
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.impl.Dispatcher#reply(javax.jms.ObjectMessage, java.io.Serializable)
 	 */
@@ -440,7 +464,16 @@ public abstract class AbstractDispatcher implements Dispatcher, MessageListener 
 			return false;
 		}
 	}
-	
+
+    public void send(Destination to, Serializable body) throws Exception {
+        try {
+            ObjectMessage om = createObjectMessage();
+            om.setObject(body);
+            send(to, om);
+        } catch (Exception e) {
+            if (_log.isErrorEnabled()) _log.error("problem sending " + body, e);
+        }
+    }
 	
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.impl.Dispatcher#send(javax.jms.Destination, javax.jms.Destination, java.lang.String, java.io.Serializable)
