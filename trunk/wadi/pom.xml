@@ -178,9 +178,9 @@
   </issueManagement>
 
   <scm>
-    <connection>scm:cvs:pserver:anoncvs@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi</connection>
-    <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org/home/projects/wadi/scm:wadi</developerConnection>
-    <url>http://cvs.wadi.codehaus.org/wadi/</url>
+    <connection>https://svn.codehaus.org/wadi/trunk/wadi</connection>
+    <developerConnection>svn+ssh://svn.codehaus.org/home/projects/wadi/scm/trunk/wadi</developerConnection>
+    <url>http://svn.wadi.codehaus.org/wadi/</url>
   </scm>
 
   <dependencies>
