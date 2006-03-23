@@ -32,6 +32,17 @@
 
   <developers>
     <developer>
+      <id>rajith</id>
+      <name>Rajith Attapattu</name>
+      <email>rajith@codehaus.org</email>
+      <organization>RedHat</organization>
+      <organizationUrl>http://www.redhat.com/</organizationUrl>
+      <roles>
+	<role>Axis</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
       <id>janb</id>
       <name>Jan Bartel</name>
       <email>janb@mortbay.com</email>
@@ -71,7 +82,6 @@
       <organization>Quativa</organization>
       <organizationUrl>http://www.quativa.com</organizationUrl>
       <roles>
-	<role>Grid</role>
 	<role>P2P</role>
       </roles>
       <timezone>+1</timezone>
@@ -159,16 +169,6 @@
 	<role>AC</role>
 	<role>AMQ</role>
       </roles>
-    </contributor>
-    <contributor>
-      <name>Rajith Attapattu</name>
-      <email></email>
-      <organization>RedHat</organization>
-      <organizationUrl>http://www.redhat.com/</organizationUrl>
-      <roles>
-	<role>Axis</role>
-      </roles>
-      <timezone>-5</timezone>
     </contributor>
   </contributors>
 
