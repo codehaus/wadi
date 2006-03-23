@@ -14,27 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.axis2;
 
-import javax.servlet.Filter;
-import javax.servlet.Servlet;
+import junit.framework.TestCase;
 
-import org.codehaus.wadi.Securable;
+public class TestAxis2 extends TestCase {
 
+  public TestAxis2(String arg0) {
+    super(arg0);
+  }
 
-/**
- * TODO - JavaDoc this type
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
+  protected void setUp() throws Exception {
+    super.setUp();
+  }
 
-public interface Node extends Securable {
-	Filter getFilter();
-
-	Servlet getServlet();
-
-	void start() throws Exception;
-
-	void stop() throws Exception;
+  protected void tearDown() throws Exception {
+    super.tearDown();
+  }
+  
+  public void testAxis2() throws Exception {
+    // lets start with a simple 2 stack test here...
+    assertTrue(true);
+  }
+  
 }
