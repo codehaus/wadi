@@ -1,4 +1,4 @@
-package wadi;
+package org.codehaus.wadi.p2p;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
