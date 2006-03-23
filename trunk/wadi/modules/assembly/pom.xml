@@ -13,8 +13,8 @@
   <name>WADI :: Assembly</name>
 
   <scm>
-    <connection>svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/assembly</connection>
-    <developerConnection>svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/assembly</developerConnection>
+    <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/assembly</connection>
+    <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/assembly</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/modules/assembly</url>
   </scm>
 

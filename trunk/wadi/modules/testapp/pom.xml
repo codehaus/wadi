@@ -13,8 +13,8 @@
   <name>WADI :: Test WebApp</name>
 
   <scm>
-    <connection>svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/testapp</connection>
-    <developerConnection>svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/testapp</developerConnection>
+    <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/testapp</connection>
+    <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/testapp</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/modules/testapp</url>
   </scm>
 

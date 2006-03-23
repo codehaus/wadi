@@ -14,8 +14,8 @@
   <description>WADI/JGroups Integration - A WADI backend implemented over JGroups</description>
 
   <scm>
-    <connection>svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/jgroups</connection>
-    <developerConnection>svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/jgroups</developerConnection>
+    <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/jgroups</connection>
+    <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/jgroups</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/modules/jgroups</url>
   </scm>
 
