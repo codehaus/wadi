@@ -14,36 +14,43 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.tomcat50;
 
 import java.io.IOException;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
+import javax.servlet.Servlet;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 /**
- * A Class that can be instantiated to a Filter that will wrap-n-delegate to
- * another Filter instance.
+ * A Class that will instantiate to a Servlet that will wrap-n-delegate to
+ * another Servlet instance.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell </a>
  * @version $Revision$
  */
 
-public class FilterInstance implements Filter {
+public class ServletInstance implements Servlet {
 
-	protected FilterConfig _config;
-	protected Filter _instance;
+	protected ServletConfig _config;
+	protected Servlet _instance;
 
-	public void init(FilterConfig config) {
+	public void init(ServletConfig config) {
 		_config=config;
 	}
 
-	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws ServletException, IOException {
-		_instance.doFilter(req, res, chain);
+	public ServletConfig getServletConfig() {
+		return _instance.getServletConfig();
+	}
+
+	public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+		_instance.service(req, res);
+	}
+
+	public String getServletInfo() {
+		return _instance.getServletInfo();
 	}
 
 	public void destroy() {
@@ -53,13 +60,12 @@ public class FilterInstance implements Filter {
 		}
 	}
 
-	public void setInstance(Filter instance) throws ServletException {
+	public void setInstance(Servlet instance) throws ServletException {
 		_instance=instance;
 		_instance.init(_config);
 	}
 
-	public Filter getInstance() {
+	public Servlet getInstance() {
 		return _instance;
 	}
 }
-
