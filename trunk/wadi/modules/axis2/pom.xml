@@ -14,9 +14,9 @@
   <description>WADI/Axis-2.x Integration - A Session Manager for Axis-2.x</description>
 
   <scm>
-    <connection>scm:cvs:pserver:anoncvs@cvs.wadi.codehaus.org:/home/projects/wadi/scm:wadi/modules/axis2</connection>
-    <developerConnection>scm:cvs:ext:${maven.username}@cvs.wadi.codehaus.org/home/projects/wadi/scm:wadi/modules/axis2</developerConnection>
-    <url>http://cvs.wadi.codehaus.org/viewrep/wadi/wadi/modules/axis2</url>
+    <connection>svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/axis2</connection>
+    <developerConnection>svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/axis2</developerConnection>
+    <url>http://svn.wadi.codehaus.org/wadi/modules/axis2</url>
   </scm>
 
   <dependencies>

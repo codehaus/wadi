@@ -32,7 +32,6 @@ import org.codehaus.wadi.replication.manager.basic.BasicReplicationManagerFactor
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
 import org.codehaus.wadi.replication.storage.basic.BasicReplicaStorageFactory;
-import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategy;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 
 public class SampleEndToEnd extends TestCase {

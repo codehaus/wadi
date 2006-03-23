@@ -122,7 +122,7 @@ public class MyStack {
       ProxiedLocation location = new HTTPProxiedLocation(new InetSocketAddress("localhost", 8080));
       InvocationProxy proxy=new StandardHttpProxy("jsessionid");
       //String clusterUri="peer://wadi";
-      String clusterUri="tcp://localhost:61616";
+      //String clusterUri="tcp://localhost:61616";
       //String clusterUri="vm://localhost";
       String clusterName="TEST";
       PartitionManager partitionManager=new DummyPartitionManager(numPartitions);

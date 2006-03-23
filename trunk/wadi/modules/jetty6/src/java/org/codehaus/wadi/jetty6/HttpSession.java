@@ -18,7 +18,6 @@ package org.codehaus.wadi.jetty6;
 
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.impl.SessionWrapper;
-import org.mortbay.jetty.SessionManager;
 
 /**
  * A SessionWrapper that integrates correctly with Jetty.
