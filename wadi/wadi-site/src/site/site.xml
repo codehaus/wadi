@@ -24,6 +24,8 @@
          <item name="Documentation" href="./documentation/index.html"/>
          <item name="FAQ" href="./faq.html"/>
          <item name="Wiki" href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI"/>
+         <item name="Maven 2.0.x" href="http://docs.codehaus.org/display/WADI/Maven+2.0.x"/>
+         <item name="Eclipse 3.2.x" href="http://docs.codehaus.org/display/WADI/Eclipse-3.2.x"/>
          <item name="How To Help" href="./help.html"/>
       </menu>
 
