@@ -14,8 +14,8 @@
   <description>WADI/Jetty-5.x Integration - An HttpSession Manager for Jetty-5.x</description>
 
   <scm>
-    <connection>svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/jetty5</connection>
-    <developerConnection>svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/jetty5</developerConnection>
+    <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/jetty5</connection>
+    <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/jetty5</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/modules/jetty5</url>
   </scm>
 

@@ -26,6 +26,7 @@
          <item name="Wiki" href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI"/>
          <item name="Maven 2.0.x" href="http://docs.codehaus.org/display/WADI/Maven+2.0.x"/>
          <item name="Eclipse 3.2.x" href="http://docs.codehaus.org/display/WADI/Eclipse-3.2.x"/>
+         <item name="Our Library" href="http://docs.codehaus.org/display/WADI/Library" />
          <item name="How To Help" href="./help.html"/>
       </menu>
 
@@ -45,7 +46,6 @@
 
       <menu name="Source">
          <item name="Browse the Source" href="http://cvs.wadi.codehaus.org/" />
-         <item name="Our Library" href="http://docs.codehaus.org/display/WADI/Library" />
       </menu>
 
       ${reports}

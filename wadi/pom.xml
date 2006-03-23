@@ -178,8 +178,8 @@
   </issueManagement>
 
   <scm>
-    <connection>svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi</connection>
-    <developerConnection>svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi</developerConnection>
+    <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi</connection>
+    <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/</url>
   </scm>
 

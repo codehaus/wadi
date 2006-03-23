@@ -15,8 +15,8 @@
   <url>http://wadi.codehaus.org</url>
 
   <scm>
-    <connection>svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/itest</connection>
-    <developerConnection>svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/itest</developerConnection>
+    <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/itest</connection>
+    <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/itest</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/modules/itest</url>
   </scm>
 

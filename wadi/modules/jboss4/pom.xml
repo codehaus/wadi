@@ -14,8 +14,8 @@
   <description>WADI/JBoss4 Integration - Utility classes</description>
 
   <scm>
-    <connection>svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/jboss4</connection>
-    <developerConnection>svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/jboss4</developerConnection>
+    <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/jboss4</connection>
+    <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/jboss4</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/modules/jboss4</url>
   </scm>
 

@@ -14,8 +14,8 @@
   <description>WADI/OpenEJB Integration - A StatefulSession Manager for OpenEJB</description>
 
   <scm>
-    <connection>svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/openejb</connection>
-    <developerConnection>svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/openejb</developerConnection>
+    <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/openejb</connection>
+    <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/openejb</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/modules/openejb</url>
   </scm>
 
