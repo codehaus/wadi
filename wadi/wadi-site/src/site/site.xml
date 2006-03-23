@@ -29,6 +29,7 @@
 
       <menu name="Modules">
          <item name="Core" href="wadi-core/index.html"/>
+         <item name="P2P" href="wadi-p2p/index.html"/>
          <item name="JGroups 2.8+" href="wadi-jgroups/index.html"/>
          <item name="Jetty 5.x" href="wadi-jetty5/index.html"/>
          <item name="Jetty 6.x" href="wadi-jetty6/index.html"/>
