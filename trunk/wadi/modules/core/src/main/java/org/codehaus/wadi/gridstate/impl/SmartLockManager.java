@@ -38,7 +38,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public class SmartLockManager implements LockManager {
 
 	/**
-	 * Like a ManagedConnection in a JCA ConnectionPool... - but simpler :-)
+	 * Like a ManagedConnection in a JCA ConnectionPool - but simpler :-)
 	 *
 	 */
 	class ManagedSync implements Sync {

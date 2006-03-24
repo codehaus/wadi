@@ -20,8 +20,8 @@ import java.io.Serializable;
 import org.codehaus.wadi.impl.Utils;
 
 /**
- * Sent to initiate a Take from a remote node - i.e. a Put to that node.
- * Used for session evacuation.
+ * Sent to initiate a Take from a remote node - for example: a Put to
+ * that node.  Used for session evacuation.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -29,23 +29,23 @@ import org.codehaus.wadi.impl.Utils;
 public class PutSMToIM implements Serializable {
 
   protected Object _key;
-  
+
   public PutSMToIM(Object key) {
     super();
     _key=key;
   }
-  
+
   public PutSMToIM() {
     // for use when demarshalling...
   }
-  
+
   public Object getKey() {
     return _key;
   }
-  
+
   public String toString() {
     return "<"+Utils.basename(PutSMToIM.class)+": "+_key+">";
   }
-  
+
 
 }
