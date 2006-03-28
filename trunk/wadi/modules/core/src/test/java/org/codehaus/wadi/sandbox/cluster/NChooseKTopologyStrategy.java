@@ -24,8 +24,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.activecluster.Cluster;
-import org.activecluster.ClusterFactory;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.ClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

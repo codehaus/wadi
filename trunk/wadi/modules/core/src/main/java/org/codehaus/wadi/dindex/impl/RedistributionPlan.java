@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.activecluster.Node;
+import org.apache.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

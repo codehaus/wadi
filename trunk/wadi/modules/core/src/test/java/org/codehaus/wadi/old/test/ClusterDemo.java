@@ -22,11 +22,11 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
-import org.activecluster.Cluster;
-import org.activecluster.ClusterException;
-import org.activecluster.ClusterFactory;
-import org.activecluster.impl.DefaultClusterFactory;
-import org.activemq.ActiveMQConnectionFactory;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.ClusterException;
+import org.apache.activecluster.ClusterFactory;
+import org.apache.activecluster.impl.DefaultClusterFactory;
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.Utils;
@@ -79,7 +79,6 @@ public class
   {
     _cluster.stop();
     _topology.stop();
-    _connFactory.stop();
   }
 
   //----------------------------------------

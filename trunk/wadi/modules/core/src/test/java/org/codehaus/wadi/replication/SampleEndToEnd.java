@@ -15,13 +15,8 @@
  */
 package org.codehaus.wadi.replication;
 
-import javax.jms.JMSException;
-
 import junit.framework.TestCase;
 
-import org.activemq.broker.BrokerContainer;
-import org.activemq.broker.impl.BrokerContainerImpl;
-import org.activemq.store.vm.VMPersistenceAdapter;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
@@ -38,7 +33,7 @@ public class SampleEndToEnd extends TestCase {
     private static final String CLUSTER_NAME = "OPENEJB_CLUSTER";
     private static final String CLUSTER_URI = "vm://clusterName?marshal=false&broker.persistent=false";
     private static final int TEMPO = 200;
-    
+
     private NodeInfo nodeInfo1;
     private Dispatcher dispatcher1;
     private ReplicationManager manager1;
@@ -67,12 +62,12 @@ public class SampleEndToEnd extends TestCase {
         String key = "key1";
         String value = "value1";
         manager1.create(key, value);
-        
+
         Thread.sleep(TEMPO);
-        
+
         assertNotDefinedByStorage(key, replicaStorage1);
         assertDefineByStorage(key, replicaStorage2, new ReplicaInfo(nodeInfo1, new NodeInfo[] {nodeInfo2}, null));
-        
+
         dispatcher3.start();
         replicaStorage3.start();
 
@@ -81,7 +76,7 @@ public class SampleEndToEnd extends TestCase {
         assertNotDefinedByStorage(key, replicaStorage1);
         assertDefineByStorage(key, replicaStorage2, new ReplicaInfo(nodeInfo1, new NodeInfo[] {nodeInfo2, nodeInfo3}, null));
         assertDefineByStorage(key, replicaStorage3, new ReplicaInfo(nodeInfo1, new NodeInfo[] {nodeInfo2, nodeInfo3}, null));
-        
+
         manager2.acquirePrimary(key);
 
         Thread.sleep(TEMPO);
@@ -93,22 +88,22 @@ public class SampleEndToEnd extends TestCase {
         manager1.acquirePrimary(key);
 
         Thread.sleep(TEMPO);
-        
+
         assertNotDefinedByStorage(key, replicaStorage1);
         assertDefineByStorage(key, replicaStorage2, new ReplicaInfo(nodeInfo1, new NodeInfo[] {nodeInfo2, nodeInfo3}, null));
         assertDefineByStorage(key, replicaStorage3, new ReplicaInfo(nodeInfo1, new NodeInfo[] {nodeInfo2, nodeInfo3}, null));
 
         dispatcher3.start();
         replicaStorage3.stop();
-        
+
         Thread.sleep(TEMPO);
-        
+
         assertNotDefinedByStorage(key, replicaStorage1);
         assertDefineByStorage(key, replicaStorage2, new ReplicaInfo(nodeInfo1, new NodeInfo[] {nodeInfo2}, null));
         assertNotDefinedByStorage(key, replicaStorage3);
 
         replicaStorage2.stop();
-        
+
         Thread.sleep(TEMPO);
 
         assertNotDefinedByStorage(key, replicaStorage1);
@@ -116,7 +111,7 @@ public class SampleEndToEnd extends TestCase {
         assertNotDefinedByStorage(key, replicaStorage3);
 
         replicaStorage3.start();
-        
+
         Thread.sleep(TEMPO);
 
         assertNotDefinedByStorage(key, replicaStorage1);
@@ -124,7 +119,7 @@ public class SampleEndToEnd extends TestCase {
         assertDefineByStorage(key, replicaStorage3, new ReplicaInfo(nodeInfo1, new NodeInfo[] {nodeInfo3}, null));
 
         replicaStorage2.start();
-        
+
         Thread.sleep(TEMPO);
 
         assertNotDefinedByStorage(key, replicaStorage1);
@@ -135,14 +130,14 @@ public class SampleEndToEnd extends TestCase {
     private void assertNotDefinedByStorage(String key, ReplicaStorage storage) {
         assertFalse(storage.storeReplicaInfo(key));
     }
-    
+
     private void assertDefineByStorage(String key, ReplicaStorage storage, ReplicaInfo expected) {
         assertTrue(storage.storeReplicaInfo(key));
-        
+
         ReplicaInfo replicaInfo = storage.retrieveReplicaInfo(key);
-        
+
         assertEquals(expected.getPrimary(), replicaInfo.getPrimary());
-        
+
         NodeInfo[] actualSecondaries = replicaInfo.getSecondaries();
         NodeInfo[] expectedSecondaries = expected.getSecondaries();
         assertEquals(expectedSecondaries.length, actualSecondaries.length);
@@ -150,16 +145,16 @@ public class SampleEndToEnd extends TestCase {
             assertEquals(expectedSecondaries[i], actualSecondaries[i]);
         }
     }
-    
+
     protected void setUp() throws Exception {
-        setUpBroker();
+        //setUpBroker();
 
         BasicReplicationManagerFactory managerFactory = new BasicReplicationManagerFactory();
         ReplicaStorageFactory storageFactory = new BasicReplicaStorageFactory();
 
         nodeInfo1 = new NodeInfo("node1");
         dispatcher1 = buildDispatcher(nodeInfo1);
-        manager1 = managerFactory.factory(dispatcher1, 
+        manager1 = managerFactory.factory(dispatcher1,
                 nodeInfo1,
                 storageFactory,
                 new RoundRobinBackingStrategyFactory(2));
@@ -167,7 +162,7 @@ public class SampleEndToEnd extends TestCase {
 
         nodeInfo2 = new NodeInfo("node2");
         dispatcher2 = buildDispatcher(nodeInfo2);
-        manager2 = managerFactory.factory(dispatcher2, 
+        manager2 = managerFactory.factory(dispatcher2,
                 nodeInfo2,
                 storageFactory,
                 new RoundRobinBackingStrategyFactory(2));
@@ -177,13 +172,13 @@ public class SampleEndToEnd extends TestCase {
         dispatcher3 = buildDispatcher(nodeInfo3);
         replicaStorage3 = storageFactory.factory(dispatcher3, nodeInfo3);
     }
-    
-    private void setUpBroker() throws JMSException {
-        BrokerContainer broker = new BrokerContainerImpl(CLUSTER_NAME);
-        broker.addConnector(CLUSTER_URI);
-        broker.setPersistenceAdapter(new VMPersistenceAdapter());
-        broker.start();
-    }
+
+//    private void setUpBroker() throws JMSException {
+//        BrokerContainer broker = new BrokerContainerImpl(CLUSTER_NAME);
+//        broker.addConnector(CLUSTER_URI);
+//        broker.setPersistenceAdapter(new VMPersistenceAdapter());
+//        broker.start();
+//    }
 
     private Dispatcher buildDispatcher(NodeInfo nodeInfo) throws Exception {
         Dispatcher dispatcher =

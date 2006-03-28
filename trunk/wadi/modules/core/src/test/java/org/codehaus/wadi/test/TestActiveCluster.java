@@ -23,10 +23,10 @@ import javax.jms.JMSException;
 
 import junit.framework.TestCase;
 
-import org.activecluster.Cluster;
-import org.activecluster.ClusterEvent;
-import org.activecluster.ClusterListener;
-import org.activemq.ActiveMQConnectionFactory;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.ClusterEvent;
+import org.apache.activecluster.ClusterListener;
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;

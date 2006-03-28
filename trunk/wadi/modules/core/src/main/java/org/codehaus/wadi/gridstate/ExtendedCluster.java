@@ -17,6 +17,7 @@
 package org.codehaus.wadi.gridstate;
 
 import javax.jms.Connection;
+import org.apache.activecluster.Cluster;
 
 /**
  * An ActiveCluster Cluster that exposes an API for the dynamic creation of Queues.
@@ -24,8 +25,8 @@ import javax.jms.Connection;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ExtendedCluster extends org.activecluster.Cluster /*, Lifecycle */ {
+public interface ExtendedCluster extends Cluster /*, Lifecycle */ {
 
     Connection getConnection();
-    
+
 }

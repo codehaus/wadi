@@ -20,13 +20,21 @@
 
   <dependencies>
     <dependency>
-      <groupId>activecluster</groupId>
+      <groupId>incubator-activemq</groupId>
       <artifactId>activecluster</artifactId>
+      <version>${activemq.version}</version>
     </dependency>
+    <dependency>
+      <groupId>incubator-activemq</groupId>
+      <artifactId>activemq-core</artifactId>
+	<version>${activemq.version}</version>
+    </dependency>
+<!--
     <dependency>
       <groupId>activemq</groupId>
       <artifactId>activemq</artifactId>
     </dependency>
+-->
     <dependency>
       <groupId>concurrent</groupId>
       <artifactId>concurrent</artifactId>

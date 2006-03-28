@@ -25,7 +25,7 @@ import java.net.InetSocketAddress;
 
 import javax.jms.Destination;
 
-import org.activecluster.ClusterFactory;
+import org.apache.activecluster.ClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;

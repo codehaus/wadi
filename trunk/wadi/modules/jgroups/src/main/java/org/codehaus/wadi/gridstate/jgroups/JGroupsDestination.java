@@ -20,7 +20,7 @@ import java.io.Serializable;
 
 import javax.jms.Destination;
 
-import org.activecluster.Node;
+import org.apache.activecluster.Node;
 import org.codehaus.wadi.impl.Utils;
 import org.jgroups.Address;
 
@@ -40,25 +40,25 @@ public class JGroupsDestination implements Destination, Serializable {
   public void init(Node node) {
     _node=node;
   }
-  
+
 	public Address getAddress() {
 		return _address;
 	}
-  
+
   public Node getNode() {
     return _node;
   }
-  
+
   public String getName() {
     return _node==null?"unknown":_node.getName();
   }
 
   protected static final String _prefix="<"+Utils.basename(JGroupsDestination.class)+": ";
   protected static final String _suffix=">";
-  
+
   public String toString() {
     String name=(_node==null?"cluster":_node.getName());
     return _prefix+name+_suffix;
   }
-  
+
 }

@@ -22,8 +22,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.activecluster.Cluster;
-import org.activecluster.ClusterFactory;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.ClusterFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

@@ -33,10 +33,7 @@ import javax.sql.DataSource;
 
 import junit.framework.TestCase;
 
-import org.activecluster.ClusterFactory;
-import org.activemq.ActiveMQConnectionFactory;
-import org.activemq.broker.impl.BrokerContainerFactoryImpl;
-import org.activemq.store.vm.VMPersistenceAdapter;
+import org.apache.activecluster.ClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
@@ -583,7 +580,8 @@ public class TestContextualiser extends TestCase {
 
 	public void donottestCluster() throws Exception {
 		ConnectionFactory connectionFactory = Utils.getConnectionFactory();
-		((ActiveMQConnectionFactory)connectionFactory).setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter()));
+		//((ActiveMQConnectionFactory)connectionFactory).setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter()));
+		// TODO - figure out how to turn off persistance.
 		ClusterFactory clusterFactory       = new CustomClusterFactory(connectionFactory);
 		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
 		CustomCluster cluster0              = (CustomCluster)clusterFactory.createCluster(clusterName);

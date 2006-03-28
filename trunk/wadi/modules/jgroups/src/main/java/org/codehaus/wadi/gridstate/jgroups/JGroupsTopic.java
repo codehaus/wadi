@@ -20,31 +20,31 @@ import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Topic;
-import org.activecluster.LocalNode;
-import org.activecluster.Node;
+import org.apache.activecluster.LocalNode;
+import org.apache.activecluster.Node;
 import org.jgroups.Address;
 
 public class JGroupsTopic extends JGroupsDestination implements Topic {
-  
+
   protected final String _name;
-    
+
   public JGroupsTopic(String name, Address address) {
     super(address); // null Node
     _name=name;
     _node=new ClusterNode();
   }
-  
+
   public void init(Node node) {
   }
-  
+
   public String getTopicName() throws JMSException {
     return _name;
   }
-  
+
   class ClusterNode implements LocalNode {
-    
+
     // 'Node' api
-    
+
     public Map getState() {
       throw new UnsupportedOperationException("NYI");
     }
@@ -60,7 +60,7 @@ public class JGroupsTopic extends JGroupsDestination implements Topic {
     public void setDestination(JGroupsDestination destination) {
       throw new UnsupportedOperationException("NYI");
     }
-    
+
     public String getName() {
       return "cluster";
     }
@@ -73,5 +73,5 @@ public class JGroupsTopic extends JGroupsDestination implements Topic {
       throw new UnsupportedOperationException("NYI");
     }
   }
-  
+
 }

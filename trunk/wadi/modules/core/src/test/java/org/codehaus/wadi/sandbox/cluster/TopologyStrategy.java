@@ -17,7 +17,7 @@
 
 package org.codehaus.wadi.sandbox.cluster;
 
-import org.activecluster.ClusterListener;
+import org.apache.activecluster.ClusterListener;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

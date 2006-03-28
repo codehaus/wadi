@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.dindex;
 
-import org.activecluster.Node;
+import org.apache.activecluster.Node;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
 import org.codehaus.wadi.dindex.impl.PartitionKeys;
 

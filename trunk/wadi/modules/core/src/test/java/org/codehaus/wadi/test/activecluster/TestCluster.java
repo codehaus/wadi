@@ -27,8 +27,8 @@ import javax.sql.DataSource;
 
 import junit.framework.TestCase;
 
-import org.activecluster.ClusterException;
-import org.activecluster.ClusterFactory;
+import org.apache.activecluster.ClusterException;
+import org.apache.activecluster.ClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
@@ -92,7 +92,7 @@ import org.codehaus.wadi.test.EtherEmoter;
 
 public class TestCluster extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
-	
+
 	protected final Streamer _streamer=new SimpleStreamer();
 	protected final Contextualiser _dummyContextualiser=new DummyContextualiser();
 	protected final Collapser _collapser=new HashingCollapser(10, 2000);
@@ -100,10 +100,10 @@ public class TestCluster extends TestCase {
 	protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
 	protected final boolean _accessOnLoad=true;
 	protected final Router _router=new DummyRouter();
-	
-	
+
+
 	class MyNode {
-		
+
 		protected final String _clusterUri=Utils.getClusterUri();
 		protected final String _clusterName;
 		protected final String _nodeName;
@@ -120,7 +120,7 @@ public class TestCluster extends TestCase {
 		protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
 		protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
 		protected final ClusteredManager _manager;
-		
+
 		public MyNode(String nodeName, ClusterFactory factory, String clusterName, DatabaseStore store) throws JMSException, ClusterException {
 			_bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, store);
 			_clusterName=clusterName;
@@ -134,27 +134,27 @@ public class TestCluster extends TestCase {
 			_top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
 			_manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), proxiedLocation, proxy, _dispatcher, new DummyPartitionManager(24), _collapser);
 		}
-		
+
 		protected boolean _running;
-		
+
 		public synchronized void start() throws Exception {
 			if (!_running) {
 				_manager.init(new ManagerConfig() {
-					
+
 					public ServletContext getServletContext() {
 						return null;
 					}
-					
+
 					public void callback(StandardManager manager) {
 						// do nothing - should install Listeners
 					}
-					
+
 				});
 				_manager.start();
 				_running=true;
 			}
 		}
-		
+
 		public synchronized void stop() throws Exception {
 			if (_running) {
 				_manager.stop();
@@ -163,66 +163,66 @@ public class TestCluster extends TestCase {
 				_running=false;
 			}
 		}
-		
+
 		public Map getClusterContextualiserMap() {return _cmap;}
 		public ExtendedCluster getCluster(){return (ExtendedCluster)((ActiveClusterDispatcher)_dispatcher).getCluster();}
 		public ClusterContextualiser getClusterContextualiser() {return _middle;}
-		
+
 		public Map getMemoryContextualiserMap() {return _mmap;}
 		public MemoryContextualiser getMemoryContextualiser(){return _top;}
 	}
-	
+
 	protected final ConnectionFactory _connectionFactory=Utils.getConnectionFactory();
 	protected final ClusterFactory _clusterFactory=new RestartableClusterFactory(new CustomClusterFactory(_connectionFactory));
 	protected final String _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
 	protected final DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");
 	protected final String _table="WADISESSIONS";
 	protected final DatabaseStore _store=new DatabaseStore("test", _ds, _table, false, false, false);
-	
+
 	protected boolean _preserveDB;
-	
+
 	protected MyNode _node0;
 	protected MyNode _node1;
 	protected MyNode _node2;
-	
+
 	/**
 	 * Constructor for TestCluster.
 	 * @param name
 	 */
 	public TestCluster(String name) throws Exception {
 		super(name);
-		
+
 		String preserveDB=System.getProperty("preserve.db");
 		if (preserveDB!=null && preserveDB.equals("true"))
 			_preserveDB=true;
-		
+
 		_log.info("TEST CTOR!");
 	}
-	
+
 	/*
 	 * @see TestCase#setUp()
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		
+
 		if (!_preserveDB)
 			_store.init();
-		
+
 		(_node0=new MyNode("node0", _clusterFactory, _clusterName, _store)).start();
 		(_node1=new MyNode("node1", _clusterFactory, _clusterName, _store)).start();
 		(_node2=new MyNode("node2", _clusterFactory, _clusterName, _store)).start();
-		
+
 		//_node0.getCluster().waitForClusterToComplete(3, 6000);
 		//_node1.getCluster().waitForClusterToComplete(3, 6000);
 		_node2.getCluster().waitForClusterToComplete(3, 6000);
 	}
-	
+
 	/*
 	 * @see TestCase#tearDown()
 	 */
 	protected void tearDown() throws Exception {
 		Thread.sleep(1000);
-		
+
 		super.tearDown();
 		_node2.stop();
 		Thread.sleep(6000);
@@ -230,19 +230,19 @@ public class TestCluster extends TestCase {
 //		Thread.sleep(6000);
 		_node0.stop();
 //		Thread.sleep(10000);
-		
+
 		if (!_preserveDB)
 			_store.destroy();
 	}
-	
+
 	public void testEvacuation() throws Exception {
 		Map m0=_node0.getMemoryContextualiserMap();
 		Map m1=_node1.getMemoryContextualiserMap();
 		Map m2=_node2.getMemoryContextualiserMap();
-		
+
 		// populate node0
 		Contextualiser c0=_node0.getMemoryContextualiser();
-		
+
 		int numContexts=3;
 		for (int i=0; i<numContexts; i++) {
 			String name="session-"+i;
@@ -254,14 +254,14 @@ public class TestCluster extends TestCase {
 			Utils.mote(emoter, immoter, emotable, name);
 		}
 		assertTrue(m0.size()==numContexts); // all sessions are on node0
-		
+
 		// shutdown node0
 		// sessions should be evacuated to remaining two nodes...
 		if (_log.isInfoEnabled()) _log.info("NODES: " + _node0.getCluster().getNodes().size());
 		_node0.stop();
 		Thread.sleep(6000); // time for other nodes to notice...
 		if (_log.isInfoEnabled()) _log.info("NODES: " + _node1.getCluster().getNodes().size());
-		
+
 		// where are all the sessions now ?
 		// the sum of nodes 1 and 2 should total n Contexts
 		{
@@ -274,7 +274,7 @@ public class TestCluster extends TestCase {
 			// TODO - hmmmm...
 			assertTrue(_node0.getClusterContextualiserMap().size()==numContexts); // node0 remembers where everything was sent...
 		}
-		
+
 		// shutdown node1
 		// sessions should all be evacuated to node2
 		if (_log.isInfoEnabled()) _log.info("NODES: " + _node1.getCluster().getNodes().size());
@@ -292,7 +292,7 @@ public class TestCluster extends TestCase {
 			// TODO - hmmmm...
 			//assertTrue(_node0.getClusterContextualiserMap().size()==numContexts); // node0 remembers where everything was sent...
 		}
-		
+
 		// shutdown node2
 		if (_log.isInfoEnabled()) _log.info("NODES: " + _node2.getCluster().getNodes().size());
 		_node2.stop();
@@ -308,22 +308,22 @@ public class TestCluster extends TestCase {
 			assertTrue(s2==0);
 			//assertTrue(_node0.getClusterContextualiserMap().size()==numContexts); // node0 remembers where everything was sent...
 		}
-		
+
 		// TODO - figure out what should happen to location caches, implement and test it.
-		
+
 		// restart nodes - first one up should reload saved contexts...
-		
+
 		assertTrue(m0.size()==0);
 		_node0.start();
 		assertTrue(m0.size()==numContexts);
-		
+
 		assertTrue(m1.size()==0);
 		_node1.start();
 		assertTrue(m1.size()==0);
-		
+
 		assertTrue(m2.size()==0);
 		_node2.start();
 		assertTrue(m2.size()==0);
-		
+
 	}
 }

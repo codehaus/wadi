@@ -28,11 +28,11 @@ import javax.jms.ObjectMessage;
 
 import junit.framework.TestCase;
 
-import org.activecluster.Cluster;
-import org.activecluster.ClusterEvent;
-import org.activecluster.ClusterListener;
-import org.activecluster.impl.DefaultClusterFactory;
-import org.activemq.ActiveMQConnectionFactory;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.ClusterEvent;
+import org.apache.activecluster.ClusterListener;
+import org.apache.activecluster.impl.DefaultClusterFactory;
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.impl.Utils;
