@@ -441,7 +441,7 @@
 
   <bean
     id="Dispatcher"
-    class="org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher"
+    class="org.codehaus.wadi.activecluster.ActiveClusterDispatcher"
     >
     <constructor-arg><value>${node.name}</value></constructor-arg>
     <constructor-arg><value>CLUSTER0</value></constructor-arg>

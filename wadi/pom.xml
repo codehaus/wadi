@@ -453,7 +453,17 @@
       </dependency>
       <dependency>
 	<groupId>wadi</groupId>
+	<artifactId>wadi-activecluster</artifactId>
+	<version>${project.version}</version>
+      </dependency>
+      <dependency>
+	<groupId>wadi</groupId>
 	<artifactId>wadi-jgroups</artifactId>
+	<version>${project.version}</version>
+      </dependency>
+      <dependency>
+	<groupId>wadi</groupId>
+	<artifactId>wadi-p2p</artifactId>
 	<version>${project.version}</version>
       </dependency>
       <dependency>

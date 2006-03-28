@@ -26,15 +26,9 @@
     </dependency>
     <dependency>
       <groupId>incubator-activemq</groupId>
-      <artifactId>activemq-core</artifactId>
+      <artifactId>activemq</artifactId>
 	<version>${activemq.version}</version>
     </dependency>
-<!--
-    <dependency>
-      <groupId>activemq</groupId>
-      <artifactId>activemq</artifactId>
-    </dependency>
--->
     <dependency>
       <groupId>concurrent</groupId>
       <artifactId>concurrent</artifactId>
@@ -103,7 +97,15 @@
     </dependency>
     <dependency>
       <groupId>wadi</groupId>
+      <artifactId>wadi-activecluster</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>wadi</groupId>
       <artifactId>wadi-jgroups</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>wadi</groupId>
+      <artifactId>wadi-p2p</artifactId>
     </dependency>
     <dependency>
       <groupId>wadi</groupId>
