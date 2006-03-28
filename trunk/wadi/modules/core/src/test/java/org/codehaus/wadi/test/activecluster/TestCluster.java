@@ -30,6 +30,7 @@ import junit.framework.TestCase;
 import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterException;
 import org.apache.activecluster.ClusterFactory;
+import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
@@ -53,7 +54,6 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
-import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 import org.codehaus.wadi.gridstate.activecluster.RestartableClusterFactory;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.http.HTTPProxiedLocation;
@@ -173,7 +173,7 @@ public class TestCluster extends TestCase {
 	}
 
 	protected final ConnectionFactory _connectionFactory=Utils.getConnectionFactory();
-	protected final ClusterFactory _clusterFactory=new RestartableClusterFactory(new CustomClusterFactory(_connectionFactory));
+	protected final ClusterFactory _clusterFactory=new RestartableClusterFactory(new DefaultClusterFactory(_connectionFactory));
 	protected final String _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
 	protected final DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");
 	protected final String _table="WADISESSIONS";

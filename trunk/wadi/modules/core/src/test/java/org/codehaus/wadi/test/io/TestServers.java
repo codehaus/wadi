@@ -27,10 +27,10 @@ import javax.jms.Destination;
 
 import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterFactory;
+import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 import org.codehaus.wadi.gridstate.activecluster.RestartableClusterFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.sandbox.io.PeerConfig;
@@ -70,7 +70,7 @@ public class TestServers extends TestCase {
     protected NIOServer _nioServer;
     protected PipeFactory _nioPipeFactory=new PipeFactory() {public Pipe create() throws IOException {return new SocketClientPipe(_nioAddress, 5*1000);}};
     protected javax.jms.ConnectionFactory _connectionFactory=Utils.getConnectionFactory();
-    protected ClusterFactory _clusterFactory=new RestartableClusterFactory(new CustomClusterFactory(_connectionFactory));
+    protected ClusterFactory _clusterFactory=new RestartableClusterFactory(new DefaultClusterFactory(_connectionFactory));
     protected String _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
     protected Cluster _cluster;
     protected ClusterServer _clusterServer;
