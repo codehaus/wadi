@@ -26,10 +26,10 @@ import junit.framework.TestCase;
 import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterEvent;
 import org.apache.activecluster.ClusterListener;
+import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 import org.codehaus.wadi.impl.Utils;
 
 
@@ -155,7 +155,7 @@ public class TestActiveCluster extends TestCase {
     public void testClusterCompletion(String protocol) throws Exception {
 
         ActiveMQConnectionFactory connectionFactory=Utils.getConnectionFactory();
-        CustomClusterFactory clusterFactory=new CustomClusterFactory(connectionFactory);
+        DefaultClusterFactory clusterFactory=new DefaultClusterFactory(connectionFactory);
         String clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
         Cluster cluster0=clusterFactory.createCluster(clusterName);
         configureCluster(cluster0, "cluster0");

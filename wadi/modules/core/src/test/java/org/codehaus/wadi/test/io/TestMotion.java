@@ -34,6 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 import junit.framework.TestCase;
 
 import org.apache.activecluster.Cluster;
+import org.apache.activecluster.ClusterFactory;
+import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Collapser;
@@ -52,7 +54,6 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionRelocater;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
@@ -120,7 +121,7 @@ public class TestMotion extends TestCase {
 	public static class MyServerConfig implements ServerConfig {
 
 		protected static ConnectionFactory _cfactory=Utils.getConnectionFactory();
-		protected static CustomClusterFactory _factory=new CustomClusterFactory(_cfactory);
+		protected static ClusterFactory _factory=new DefaultClusterFactory(_cfactory);
 
 		protected final Log _log=LogFactory.getLog(getClass());
 		protected final String _nodeName;

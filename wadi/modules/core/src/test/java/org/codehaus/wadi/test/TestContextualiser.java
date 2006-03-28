@@ -33,7 +33,9 @@ import javax.sql.DataSource;
 
 import junit.framework.TestCase;
 
+import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterFactory;
+import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
@@ -65,8 +67,6 @@ import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
-import org.codehaus.wadi.gridstate.activecluster.CustomCluster;
-import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.http.HTTPProxiedLocation;
 import org.codehaus.wadi.impl.AbsoluteEvicter;
@@ -582,10 +582,10 @@ public class TestContextualiser extends TestCase {
 		ConnectionFactory connectionFactory = Utils.getConnectionFactory();
 		//((ActiveMQConnectionFactory)connectionFactory).setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter()));
 		// TODO - figure out how to turn off persistance.
-		ClusterFactory clusterFactory       = new CustomClusterFactory(connectionFactory);
-		String clusterName                  = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
-		CustomCluster cluster0              = (CustomCluster)clusterFactory.createCluster(clusterName);
-		CustomCluster cluster1              = (CustomCluster)clusterFactory.createCluster(clusterName);
+		ClusterFactory clusterFactory = new DefaultClusterFactory(connectionFactory);
+		String clusterName            = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
+		Cluster cluster0              = clusterFactory.createCluster(clusterName);
+		Cluster cluster1              = clusterFactory.createCluster(clusterName);
 
 		cluster0.start();
 		cluster1.start();

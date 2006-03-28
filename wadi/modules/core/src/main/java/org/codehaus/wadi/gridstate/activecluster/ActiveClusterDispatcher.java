@@ -28,6 +28,7 @@ import javax.jms.ObjectMessage;
 import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterListener;
 import org.apache.activecluster.Node;
+import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.impl.DIndex;
@@ -80,14 +81,14 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 	// AbstractDispatcher overrides
 
 	protected ActiveMQConnectionFactory _connectionFactory;
-	public CustomClusterFactory _clusterFactory;
+	public DefaultClusterFactory _clusterFactory;
 
 	public void init(DispatcherConfig config) throws Exception {
 		super.init(config);
 		try {
 			_connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
 			//System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // do we need this ? - TODO - update
-			_clusterFactory=new CustomClusterFactory(_connectionFactory);
+			_clusterFactory=new DefaultClusterFactory(_connectionFactory);
 			_clusterFactory.setInactiveTime(_inactiveTime);
 			_cluster=_clusterFactory.createCluster(_clusterName);
 		} catch (Exception e) {
