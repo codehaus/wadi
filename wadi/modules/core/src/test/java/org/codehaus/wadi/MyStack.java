@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.test;
+package org.codehaus.wadi;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -37,7 +37,6 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionManager;
-//import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.http.HTTPProxiedLocation;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
@@ -68,14 +67,13 @@ import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.gridstate.jgroups.JGroupsDispatcher;
 
 public class MyStack {
 
     protected ClusteredManager _manager;
     protected AbstractExclusiveContextualiser _memory;
 
-    public MyStack(String nodeName, String url, DataSource dataSource) throws Exception {
+    public MyStack(String url, DataSource dataSource, Dispatcher dispatcher) throws Exception {
       int sweepInterval=1000*60*60*24; // 1 eviction/day
       boolean strictOrdering=true;
       Streamer streamer=new SimpleStreamer();
@@ -124,10 +122,8 @@ public class MyStack {
       //String clusterUri="peer://wadi";
       //String clusterUri="tcp://localhost:61616";
       //String clusterUri="vm://localhost";
-      String clusterName="TEST";
       PartitionManager partitionManager=new DummyPartitionManager(numPartitions);
       //Dispatcher dispatcher=new ActiveClusterDispatcher(nodeName, clusterName, clusterUri, 5000L);
-      Dispatcher dispatcher=new JGroupsDispatcher(nodeName, clusterName, 5000L);
       _manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, _memory, _memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy, dispatcher, partitionManager, collapser);
 //    manager.setSessionListeners(new HttpSessionListener[]{});
       //manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
