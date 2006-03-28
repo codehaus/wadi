@@ -52,9 +52,8 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.gridstate.activecluster.RestartableClusterFactory;
+import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.http.HTTPProxiedLocation;
 import org.codehaus.wadi.impl.ClusterContextualiser;
@@ -90,7 +89,8 @@ import org.codehaus.wadi.test.EtherEmoter;
  * @version $Revision$
  */
 
-public class TestCluster extends TestCase {
+public abstract class AbstractTestCluster extends TestCase {
+	
 	protected Log _log = LogFactory.getLog(getClass());
 
 	protected final Streamer _streamer=new SimpleStreamer();
@@ -101,7 +101,8 @@ public class TestCluster extends TestCase {
 	protected final boolean _accessOnLoad=true;
 	protected final Router _router=new DummyRouter();
 
-
+	protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
+	
 	class MyNode {
 
 		protected final String _clusterUri=Utils.getClusterUri();
@@ -121,11 +122,11 @@ public class TestCluster extends TestCase {
 		protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
 		protected final ClusteredManager _manager;
 
-		public MyNode(String nodeName, ClusterFactory factory, String clusterName, DatabaseStore store) throws JMSException, ClusterException {
+		public MyNode(String nodeName, ClusterFactory factory, String clusterName, DatabaseStore store) throws Exception {
 			_bottom=new SharedStoreContextualiser(_dummyContextualiser, _collapser, false, store);
 			_clusterName=clusterName;
 			_nodeName=nodeName;
-			_dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
+			_dispatcher=createDispatcher(_clusterName, _nodeName, 5000L);
 			ProxiedLocation proxiedLocation= new HTTPProxiedLocation(new InetSocketAddress("localhost", 8080));
 			InvocationProxy proxy=new StandardHttpProxy("jsessionid");
 			//_relocater=new SwitchableRelocationStrategy();
@@ -189,7 +190,7 @@ public class TestCluster extends TestCase {
 	 * Constructor for TestCluster.
 	 * @param name
 	 */
-	public TestCluster(String name) throws Exception {
+	public AbstractTestCluster(String name) throws Exception {
 		super(name);
 
 		String preserveDB=System.getProperty("preserve.db");

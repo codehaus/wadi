@@ -14,31 +14,30 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate;
+package org.codehaus.wadi.test;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.gridstate.StateManager;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.gridstate.impl.GCache;
 import org.codehaus.wadi.gridstate.impl.IndirectStateManager;
 import org.codehaus.wadi.gridstate.impl.StaticPartitionManager;
-import org.codehaus.wadi.gridstate.jgroups.JGroupsDispatcher;
 import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
 
 import junit.framework.TestCase;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1550 $
  */
-public class TestGCache extends TestCase {
+public abstract class AbstractTestGCache extends TestCase {
 
     protected final Log _log=LogFactory.getLog(getClass().getName());
 
-    public TestGCache(String name) {
+    public AbstractTestGCache(String name) {
         super(name);
     }
 
@@ -115,20 +114,22 @@ public class TestGCache extends TestCase {
 	protected final String _clusterUri="vm://localhost";
 	protected final String _clusterName="WADI";
 
-	class JGroupsDispatcherFactory implements DispatcherFactory {
+//	class JGroupsDispatcherFactory implements DispatcherFactory {
+//
+//    	public Dispatcher create(String nodeName, String clusterName, long timeout) throws Exception {
+//    		return new JGroupsDispatcher(nodeName, clusterName, timeout);
+//    	}
+//    }
+//
+//    class ActiveClusterDispatcherFactory implements DispatcherFactory {
+//
+//    	public Dispatcher create(String nodeName, String clusterName, long timeout) throws Exception {
+//    		return new ActiveClusterDispatcher(nodeName, clusterName, _clusterUri, timeout);
+//    	}
+//    }
 
-    	public Dispatcher create(String nodeName, String clusterName, long timeout) throws Exception {
-    		return new JGroupsDispatcher(nodeName, clusterName, timeout);
-    	}
-    }
-
-    class ActiveClusterDispatcherFactory implements DispatcherFactory {
-
-    	public Dispatcher create(String nodeName, String clusterName, long timeout) throws Exception {
-    		return new ActiveClusterDispatcher(nodeName, clusterName, _clusterUri, timeout);
-    	}
-    }
-
+    protected abstract DispatcherFactory createDispatcherFactory();
+    
 //    public void testFunctionality() throws Exception {
 //    	//testGCache(new JGroupsIndirectStateManagerFactory(), 1);
 //    	testFunctionality(new ActiveClusterIndirectStateManagerFactory(60*1000), 1);
@@ -140,8 +141,7 @@ public class TestGCache extends TestCase {
 //    }
 
     public void testSoak() throws Exception {
-    	testSoak(new JGroupsDispatcherFactory());
-    	testSoak(new ActiveClusterDispatcherFactory());
+    	testSoak(createDispatcherFactory());
     }
 
     public void testFunctionality(DispatcherFactory factory) throws Exception {

@@ -47,7 +47,6 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionManager;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.http.HTTPProxiedLocation;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
@@ -83,13 +82,13 @@ import org.codehaus.wadi.impl.WebInvocationContext;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1553 $
  */
-public class TestReplication extends TestCase {
+public abstract class AbstractTestReplication extends TestCase {
 
 	protected Log _log = LogFactory.getLog(getClass());
 
-	public TestReplication(String arg0) {
+	public AbstractTestReplication(String arg0) {
 		super(arg0);
 	}
 
@@ -101,6 +100,8 @@ public class TestReplication extends TestCase {
 		super.tearDown();
 	}
 
+	protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
+	
 	public void testReplication() throws Exception {
 
 		int sweepInterval=1000*60*60*24; // 1 eviction/day
@@ -155,7 +156,7 @@ public class TestReplication extends TestCase {
 		String clusterName="TEST";
 		String nodeName="test.1";
 		PartitionManager partitionManager=new DummyPartitionManager(numPartitions);
-		Dispatcher dispatcher=new ActiveClusterDispatcher(nodeName, clusterName, clusterUri, 5000L);
+		Dispatcher dispatcher=createDispatcher(clusterName, nodeName, 5000L);
 		ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy, dispatcher, partitionManager, collapser);
 //		manager.setSessionListeners(new HttpSessionListener[]{});
 		//manager.setAttributelisteners(new HttpSessionAttributeListener[]{});

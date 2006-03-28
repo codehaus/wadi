@@ -66,7 +66,6 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionManager;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.http.HTTPProxiedLocation;
 import org.codehaus.wadi.impl.AbsoluteEvicter;
@@ -115,9 +114,9 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * Test various Contualisers, evicters etc...
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1566 $
  */
-public class TestContextualiser extends TestCase {
+public abstract class AbstractTestContextualiser extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
 	protected DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");	// db springs into existance in-vm beneath us
 	protected String _table="MyTable";
@@ -157,7 +156,7 @@ public class TestContextualiser extends TestCase {
 	 * Constructor for TestContextualiser.
 	 * @param arg0
 	 */
-	public TestContextualiser(String arg0) {
+	public AbstractTestContextualiser(String arg0) {
 		super(arg0);
 	}
 
@@ -198,6 +197,8 @@ public class TestContextualiser extends TestCase {
 	protected final Evicter _dummyEvicter=new DummyEvicter();
 	protected final String _nodeName="node0";
 
+	protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout);
+	
 	public void donottestExclusivePromotion() throws Exception {
 		Map d2=new HashMap();
 		ExclusiveStoreContextualiser disc2=new ExclusiveStoreContextualiser(_dummyContextualiser, _collapser, true, _dummyEvicter, d2, _streamer, _dir);
@@ -207,7 +208,7 @@ public class TestContextualiser extends TestCase {
 		Contextualiser serial=new SerialContextualiser(disc1, _collapser, m);
 		Contextualiser memory=new MemoryContextualiser(serial, _dummyEvicter, m, _streamer, _distributableContextPool, _requestPool);
 		PartitionManager partitionManager=new DummyPartitionManager(24);
-		Dispatcher dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
+		Dispatcher dispatcher=createDispatcher(_clusterName, _nodeName, 5000L);
 		StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, partitionManager, _collapser);
 		manager.init(new DummyManagerConfig());
 
@@ -278,7 +279,7 @@ public class TestContextualiser extends TestCase {
 		Contextualiser serial=new SerialContextualiser(db, _collapser, m);
 		Contextualiser memory=new MemoryContextualiser(serial, _dummyEvicter, m, _streamer, _distributableContextPool, _requestPool);
 		PartitionManager partitionManager=new DummyPartitionManager(24);
-		Dispatcher dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
+		Dispatcher dispatcher=createDispatcher(_clusterName, _nodeName, 5000L);
 		StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, partitionManager, _collapser);
 		manager.init(new DummyManagerConfig());
 
@@ -513,7 +514,7 @@ public class TestContextualiser extends TestCase {
 		Evicter memoryEvicter=new AbsoluteEvicter(30, true, 1);
 		Contextualiser memory=new MemoryContextualiser(serial, memoryEvicter, m, _streamer, _distributableContextPool, _requestPool);
 		PartitionManager partitionManager=new DummyPartitionManager(24);
-		Dispatcher dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
+		Dispatcher dispatcher=createDispatcher(_clusterName, _nodeName, 5000L);
 		StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, partitionManager, _collapser);
 		manager.init(new DummyManagerConfig());
 
@@ -551,7 +552,7 @@ public class TestContextualiser extends TestCase {
 		Evicter memoryEvicter=new AbsoluteEvicter(30, true, 1);
 		Contextualiser memory=new MemoryContextualiser(serial, memoryEvicter, m, _streamer, _distributableContextPool, _requestPool);
 		PartitionManager partitionManager=new DummyPartitionManager(24);
-		Dispatcher dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
+		Dispatcher dispatcher=createDispatcher(_clusterName, _nodeName, 5000L);
 		StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, partitionManager, _collapser);
 		manager.init(new DummyManagerConfig());
 

@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
+import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
 
@@ -28,14 +29,14 @@ import junit.framework.TestCase;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1553 $
  */
-public class TestDIndex extends TestCase {
+public abstract class AbstractTestDIndex extends TestCase {
     private static final int MAX_POLL_STABLE_STATE = 10;
     
     protected final Log _log=LogFactory.getLog(getClass().getName());
 
-    public TestDIndex(String name) {
+    public AbstractTestDIndex(String name) {
         super(name);
     }
 
@@ -68,13 +69,14 @@ public class TestDIndex extends TestCase {
     protected long heartbeatTimeout=5*1000;
     protected long responseTimeout=30*60*1000;
 
+    protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
 
     public void testDindex() throws Exception {
         assertTrue(true);
 
-        DIndexNode red=new DIndexNode("red", _numPartitions, _factory, heartbeatTimeout);
-        DIndexNode green=new DIndexNode("green", _numPartitions, _factory, heartbeatTimeout);
-        DIndexNode blue=new DIndexNode("blue", _numPartitions, _factory, heartbeatTimeout);
+        DIndexNode red=new DIndexNode("red", _numPartitions, _factory, heartbeatTimeout, createDispatcher("TEST", "red", 5000L));
+        DIndexNode green=new DIndexNode("green", _numPartitions, _factory, heartbeatTimeout, createDispatcher("TEST", "green", 5000L));
+        DIndexNode blue=new DIndexNode("blue", _numPartitions, _factory, heartbeatTimeout, createDispatcher("TEST", "blue", 5000L));
 
         red.start();
         green.start();

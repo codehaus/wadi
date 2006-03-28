@@ -46,7 +46,6 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionManager;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.http.HTTPProxiedLocation;
 import org.codehaus.wadi.impl.ClusterContextualiser;
@@ -104,7 +103,7 @@ public class MyServlet implements Servlet {
 	protected final StandardManager _manager;
 
 
-	public MyServlet(String nodeName, String clusterName, ContextPool contextPool, Relocater relocater, InvocationProxy httpProxy, InetSocketAddress httpAddress) throws Exception {
+	public MyServlet(String nodeName, String clusterName, ContextPool contextPool, Relocater relocater, InvocationProxy httpProxy, InetSocketAddress httpAddress, Dispatcher dispatcher) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+nodeName);
 		_clusterName=clusterName;
 		_nodeName=nodeName;
@@ -121,7 +120,6 @@ public class MyServlet implements Servlet {
 		_proxiedLocation=new HTTPProxiedLocation(httpAddress);
 		_httpProxy=httpProxy;
 		PartitionManager partitionManager=new DummyPartitionManager(24);
-		Dispatcher dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, 5000L);
 		_manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _proxiedLocation, _httpProxy, dispatcher, partitionManager, _collapser);
 	}
 
