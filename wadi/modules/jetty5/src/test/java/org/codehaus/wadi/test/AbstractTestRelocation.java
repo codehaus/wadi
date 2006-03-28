@@ -58,7 +58,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 
-public class TestRelocation extends TestCase {
+public abstract class AbstractTestRelocation extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
 	
 	protected final String _clusterName="WADI.TEST";
@@ -99,6 +99,7 @@ public class TestRelocation extends TestCase {
 		public Contextualiser getTop(){return _top;}
 	}
 	
+	protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
 	/*
 	 * @see TestCase#setUp()
 	 */
@@ -111,7 +112,7 @@ public class TestRelocation extends TestCase {
 		InetSocketAddress httpAddress0=new InetSocketAddress("localhost", 8080);
 		InvocationProxy httpProxy0=new StandardHttpProxy("jsessionid");
 		_relocater0=new SwitchableRelocater();
-		_servlet0=new MyServlet("0", _clusterName, new MyContextPool(), _relocater0, httpProxy0, httpAddress0);
+		_servlet0=new MyServlet("0", _clusterName, new MyContextPool(), _relocater0, httpProxy0, httpAddress0, createDispatcher(_clusterName, "0", 5000L));
 		_filter0=new MyFilter("0", _servlet0);
 		// TODO - I'd like to use a TomcatNode - but using 5.0.18 it fails TestRelocation - investigate...
 		(_node0=new JettyNode("0", "localhost", 8080, "/test", "/home/jules/workspace/wadi/webapps/test", _filter0, _servlet0)).start();
@@ -119,7 +120,7 @@ public class TestRelocation extends TestCase {
 		InetSocketAddress httpAddress1=new InetSocketAddress("localhost", 8081);
 		InvocationProxy httpProxy1=new CommonsHttpProxy("jsessionid");
 		_relocater1=new SwitchableRelocater();
-		_servlet1=new MyServlet("1", _clusterName, new MyContextPool(), _relocater1, httpProxy1, httpAddress1);
+		_servlet1=new MyServlet("1", _clusterName, new MyContextPool(), _relocater1, httpProxy1, httpAddress1, createDispatcher(_clusterName, "1", 5000L));
 		_filter1=new MyFilter("1", _servlet1);
 		(_node1=new JettyNode("1", "localhost", 8081, "/test", "/home/jules/workspace/wadi/webapps/test", _filter1, _servlet1)).start();
 		Thread.sleep(2000); // activecluster needs a little time to sort itself out...
@@ -142,7 +143,7 @@ public class TestRelocation extends TestCase {
 	 * Constructor for TestMigration.
 	 * @param name
 	 */
-	public TestRelocation(String name) {
+	public AbstractTestRelocation(String name) {
 		super(name);
 	}
 	

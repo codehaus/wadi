@@ -38,9 +38,9 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
+import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.PartitionMapper;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
@@ -62,12 +62,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 
 	protected final Log _log=LogFactory.getLog(getClass());
 
-	//protected final String _clusterUri="peer://org.codehaus.wadi";
-	//protected final String _clusterUri="tcp://localhost:61616";
-	//protected final String _clusterUri="tcp://smilodon:61616";
-	protected final String _clusterUri="vm://localhost";
-	protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
-	protected final ActiveClusterDispatcher _dispatcher;
+	protected final Dispatcher _dispatcher;
 	protected final Map _distributedState=new ConcurrentHashMap();
 	protected final Contextualiser _contextualiser;
 	protected final String _nodeName;
@@ -81,9 +76,9 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 	protected final Streamer _streamer;
 	protected DIndex _dindex;
 
-	public DIndexNode(String nodeName, int numPartitions, PartitionMapper mapper, long inactiveTime) {
+	public DIndexNode(String nodeName, int numPartitions, PartitionMapper mapper, long inactiveTime, Dispatcher dispatcher) {
 		_nodeName=nodeName;
-		_dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, inactiveTime);
+		_dispatcher=dispatcher;
 		_numPartitions=numPartitions;
 		//System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
 		// TODO - figure out how to tun off persistance
@@ -169,33 +164,33 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 
 	protected static Object _exitSync = new Object();
 
-	public static void main(String[] args) throws Exception {
-		String nodeName=args[0];
-		int numPartitions=Integer.parseInt(args[1]);
-
-		try {
-			Runtime.getRuntime().addShutdownHook(new Thread() {
-				public void run() {
-					System.err.println("SHUTDOWN");
-					_latch0.release();
-					try {
-						_latch1.acquire();
-					} catch (InterruptedException e) {
-						Thread.interrupted();
-					}
-				}
-			});
-
-			DIndexNode node=new DIndexNode(nodeName, numPartitions, new SimplePartitionMapper(numPartitions), 5000L);
-			node.start();
-
-			_latch0.acquire();
-
-			node.stop();
-		} finally {
-			_latch1.release();
-		}
-	}
+//	public static void main(String[] args) throws Exception {
+//		String nodeName=args[0];
+//		int numPartitions=Integer.parseInt(args[1]);
+//
+//		try {
+//			Runtime.getRuntime().addShutdownHook(new Thread() {
+//				public void run() {
+//					System.err.println("SHUTDOWN");
+//					_latch0.release();
+//					try {
+//						_latch1.acquire();
+//					} catch (InterruptedException e) {
+//						Thread.interrupted();
+//					}
+//				}
+//			});
+//
+//			DIndexNode node=new DIndexNode(nodeName, numPartitions, new SimplePartitionMapper(numPartitions), 5000L);
+//			node.start();
+//
+//			_latch0.acquire();
+//
+//			node.stop();
+//		} finally {
+//			_latch1.release();
+//		}
+//	}
 
 	public Sync getInvocationLock(String name) {
 		// TODO Auto-generated method stub

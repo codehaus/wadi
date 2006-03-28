@@ -36,7 +36,6 @@ import org.codehaus.wadi.dindex.impl.SimplePartitionManager;
 import org.codehaus.wadi.dindex.impl.SimplePartitionManager.Callback;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.SimplePartitionMapper;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -45,14 +44,14 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1563 $
  */
-public class TestPartitionManager extends TestCase {
+public abstract class AbstractTestPartitionManager extends TestCase {
 
 	public static void main(String[] args) {
 	}
 
-	public TestPartitionManager(String arg0) {
+	public AbstractTestPartitionManager(String arg0) {
 		super(arg0);
 	}
 
@@ -64,11 +63,12 @@ public class TestPartitionManager extends TestCase {
 		super.tearDown();
 	}
 
+	protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
+	
 	protected PartitionManager create(String nodeName) throws Exception {
 		String clusterName="WADI";
-		String clusterUri="vm://localhost";
 		long inactiveTime=5000L;
-		Dispatcher dispatcher=new ActiveClusterDispatcher(nodeName, clusterName, clusterUri, inactiveTime);
+		Dispatcher dispatcher=createDispatcher(clusterName, nodeName, inactiveTime);
 		DispatcherConfig dc=new DispatcherConfig() {
 
 			public String getContextPath() {

@@ -19,7 +19,6 @@ import junit.framework.TestCase;
 
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
@@ -29,7 +28,7 @@ import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
 import org.codehaus.wadi.replication.storage.basic.BasicReplicaStorageFactory;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 
-public class SampleEndToEnd extends TestCase {
+public abstract class SampleEndToEnd extends TestCase {
     private static final String CLUSTER_NAME = "OPENEJB_CLUSTER";
     private static final String CLUSTER_URI = "vm://clusterName?marshal=false&broker.persistent=false";
     private static final int TEMPO = 200;
@@ -180,9 +179,10 @@ public class SampleEndToEnd extends TestCase {
 //        broker.start();
 //    }
 
+    protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
+    
     private Dispatcher buildDispatcher(NodeInfo nodeInfo) throws Exception {
-        Dispatcher dispatcher =
-            new ActiveClusterDispatcher(nodeInfo.getName(), CLUSTER_NAME, CLUSTER_URI, 5000L);
+        Dispatcher dispatcher =createDispatcher(CLUSTER_NAME, nodeInfo.getName(), 5000L);
         dispatcher.init(new DispatcherConfig() {
             public String getContextPath() {
                 return null;

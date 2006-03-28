@@ -1,4 +1,4 @@
-package org.codehaus.wadi;
+package org.codehaus.wadi.test;
 
 import javax.sql.DataSource;
 

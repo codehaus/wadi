@@ -43,7 +43,6 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionManager;
-import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.http.HTTPProxiedLocation;
 import org.codehaus.wadi.impl.AbsoluteEvicter;
@@ -74,14 +73,14 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1553 $
  */
-public class TestEvicters extends TestCase {
+public abstract class AbstractTestEvicters extends TestCase {
 
 	protected final String _clusterUri="peer://org.codehaus.wadi";
 	protected final String _clusterName="WADI.TEST";
 
-	public TestEvicters(String name) {
+	public AbstractTestEvicters(String name) {
 		super(name);
 	}
 
@@ -119,6 +118,8 @@ public class TestEvicters extends TestCase {
 		public void expire(Motable motable) {_expirations++; _map.remove(motable.getName());}
 	}
 
+	protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
+	
 	public void testExpiryFromStorage() throws Exception {
 		// Contextualiser
 		Contextualiser next=new DummyContextualiser();
@@ -148,7 +149,7 @@ public class TestEvicters extends TestCase {
 		ProxiedLocation location= new HTTPProxiedLocation(new InetSocketAddress(InetAddress.getLocalHost(), 8888));
 		String nodeName="node0";
 		PartitionManager partitionManager=new DummyPartitionManager(24);
-		Dispatcher dispatcher=new ActiveClusterDispatcher(nodeName, _clusterName, _clusterUri, 5000L);
+		Dispatcher dispatcher=createDispatcher(_clusterName, nodeName, 5000L);
 		ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DummyReplicaterFactory(), location, proxy, dispatcher, partitionManager, collapser);
 		manager.setMaxInactiveInterval(2);
 		manager.init(new DummyManagerConfig());
