@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import javax.jms.BytesMessage;
-import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
@@ -30,13 +29,13 @@ import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
+import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterFactory;
 import org.apache.activecluster.ClusterListener;
 import org.apache.activecluster.LocalNode;
 import org.apache.activecluster.election.ElectionStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.gridstate.ExtendedCluster;
 
 /**
  * An ActiveCluster Cluster that can be re-start()-ed after a stop().
@@ -44,7 +43,7 @@ import org.codehaus.wadi.gridstate.ExtendedCluster;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class RestartableCluster implements ExtendedCluster {
+public class RestartableCluster implements Cluster {
 
     protected static final Log _log=LogFactory.getLog(RestartableCluster.class);
 
@@ -52,7 +51,7 @@ public class RestartableCluster implements ExtendedCluster {
     protected final Destination _groupDestination;
     protected final String _topic;
 
-    protected ExtendedCluster _cluster;
+    protected Cluster _cluster;
 
     public RestartableCluster(ClusterFactory factory, Destination groupDestination) {
         super();
@@ -150,9 +149,9 @@ public class RestartableCluster implements ExtendedCluster {
     protected void createCluster() {
         try {
             if (_groupDestination!=null)
-                _cluster=(ExtendedCluster)_factory.createCluster(_groupDestination);
+                _cluster=_factory.createCluster(_groupDestination);
             else
-                _cluster=(ExtendedCluster)_factory.createCluster(_topic);
+                _cluster=_factory.createCluster(_topic);
         } catch (Exception e) {
 	  _log.error("could not start Cluster", e);
         }
@@ -173,18 +172,12 @@ public class RestartableCluster implements ExtendedCluster {
         _cluster=null;
     }
 
-    // ExtendedCluster
-
-    public Connection getConnection() {
-        return _cluster.getConnection();
-    }
-
     public void setElectionStrategy(ElectionStrategy strategy) {
        _cluster.setElectionStrategy(strategy);
     }
 
 	public Destination createDestination(String name) throws JMSException {
-		throw new UnsupportedOperationException();
+		return _cluster.createDestination(name);
 	}
 
 }

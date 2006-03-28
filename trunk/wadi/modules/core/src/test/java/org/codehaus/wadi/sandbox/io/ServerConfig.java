@@ -16,9 +16,9 @@
  */
 package org.codehaus.wadi.sandbox.io;
 
+import org.apache.activecluster.Cluster;
 import org.codehaus.wadi.Config;
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.gridstate.ExtendedCluster;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -26,7 +26,7 @@ import org.codehaus.wadi.gridstate.ExtendedCluster;
  */
 public interface ServerConfig extends Config {
 
-        ExtendedCluster getCluster();
+        Cluster getCluster();
         Contextualiser getContextualiser();
         String getNodeName();
 

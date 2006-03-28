@@ -52,7 +52,6 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionRelocater;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.ExtendedCluster;
 import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
@@ -127,19 +126,19 @@ public class TestMotion extends TestCase {
 		protected final String _nodeName;
 		protected final Contextualiser _contextualiser;
 
-		protected ExtendedCluster _cluster=null;
+		protected Cluster _cluster=null;
 
 		public MyServerConfig(String nodeName, Contextualiser contextualiser) {
 			_nodeName=nodeName;
 			_contextualiser=contextualiser;
 			try {
-				_cluster=(ExtendedCluster)_factory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
+				_cluster=_factory.createCluster("ORG.CODEHAUS.WADI.TEST.CLUSTER");
 			} catch (Exception e) {
 				_log.error("unexpected problem", e);
 			}
 		}
 
-		public ExtendedCluster getCluster() {
+		public Cluster getCluster() {
 			return _cluster;
 		}
 

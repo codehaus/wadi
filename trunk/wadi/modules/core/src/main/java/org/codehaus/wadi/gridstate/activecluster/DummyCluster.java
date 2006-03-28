@@ -31,16 +31,16 @@ import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
+import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterListener;
 import org.apache.activecluster.LocalNode;
 import org.apache.activecluster.election.ElectionStrategy;
-import org.codehaus.wadi.gridstate.ExtendedCluster;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DummyCluster implements ExtendedCluster {
+public class DummyCluster implements Cluster {
 
     public DummyCluster() {
         super();

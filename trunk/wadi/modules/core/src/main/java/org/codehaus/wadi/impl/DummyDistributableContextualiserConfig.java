@@ -20,11 +20,11 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.activecluster.Cluster;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.ExtendedCluster;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
@@ -34,9 +34,9 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
  */
 public class DummyDistributableContextualiserConfig extends DummyContextualiserConfig implements DistributableContextualiserConfig {
 
-	protected final ExtendedCluster _cluster;
+	protected final Cluster _cluster;
 
-	public DummyDistributableContextualiserConfig(ExtendedCluster cluster) {
+	public DummyDistributableContextualiserConfig(Cluster cluster) {
 		super();
 		_cluster=cluster;
 	}
@@ -45,7 +45,7 @@ public class DummyDistributableContextualiserConfig extends DummyContextualiserC
 		return getClass().getClassLoader();
 	}
 
-	public ExtendedCluster getCluster() {
+	public Cluster getCluster() {
 		return _cluster;
 	}
 
