@@ -121,6 +121,10 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 			context.setAttribute(StandardManager.class.getName(), this); // TODO - security risk ?
 		}
 		_started=true;
+		
+		String version=getClass().getPackage().getImplementationVersion(); // maven2 puts version into MANIFEST.MF
+		version=(version==null?System.getProperty("wadi.version"):version); // using Eclipse, I add it as a property
+		_log.info("WADI-"+version+" successfully installed");
 	}
 	
 	public void aboutToStop() throws Exception {
