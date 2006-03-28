@@ -25,6 +25,7 @@ import junit.framework.TestCase;
 
 import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterEvent;
+import org.apache.activecluster.ClusterFactory;
 import org.apache.activecluster.ClusterListener;
 import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -155,7 +156,7 @@ public class TestActiveCluster extends TestCase {
     public void testClusterCompletion(String protocol) throws Exception {
 
         ActiveMQConnectionFactory connectionFactory=Utils.getConnectionFactory();
-        DefaultClusterFactory clusterFactory=new DefaultClusterFactory(connectionFactory);
+        ClusterFactory clusterFactory=new DefaultClusterFactory(connectionFactory);
         String clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
         Cluster cluster0=clusterFactory.createCluster(clusterName);
         configureCluster(cluster0, "cluster0");
