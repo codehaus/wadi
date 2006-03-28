@@ -50,7 +50,7 @@ public class TestDistributedOwnership extends TestCase {
 
 	protected Log _log = LogFactory.getLog(TestCluster.class);
 	protected ActiveMQConnectionFactory _connectionFactory;
-	protected DefaultClusterFactory _clusterFactory;
+	protected ClusterFactory _clusterFactory;
 
 	class Node extends Thread {
 		protected String _name;

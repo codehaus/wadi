@@ -26,6 +26,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.ObjectMessage;
 
 import org.apache.activecluster.Cluster;
+import org.apache.activecluster.ClusterFactory;
 import org.apache.activecluster.ClusterListener;
 import org.apache.activecluster.Node;
 import org.apache.activecluster.impl.DefaultClusterFactory;
@@ -81,15 +82,15 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 	// AbstractDispatcher overrides
 
 	protected ActiveMQConnectionFactory _connectionFactory;
-	public DefaultClusterFactory _clusterFactory;
+	public ClusterFactory _clusterFactory;
 
 	public void init(DispatcherConfig config) throws Exception {
 		super.init(config);
 		try {
 			_connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
-			//System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // do we need this ? - TODO - update
-			_clusterFactory=new DefaultClusterFactory(_connectionFactory);
-			_clusterFactory.setInactiveTime(_inactiveTime);
+			DefaultClusterFactory tmp=new DefaultClusterFactory(_connectionFactory);
+			tmp.setInactiveTime(_inactiveTime);
+			_clusterFactory=tmp;
 			_cluster=_clusterFactory.createCluster(_clusterName);
 		} catch (Exception e) {
 			_log.error("problem starting Cluster", e);
@@ -117,9 +118,9 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 	public void stop() throws Exception {
 		// shut down activemq cleanly - what happens if we are running more than one distributable webapp ?
 		// there must be an easier way - :-(
-		
+
 		// TODO - sort this out
-		
+
 //		ActiveMQConnection connection=(ActiveMQConnection)((ExtendedCluster)_cluster).getConnection();
 //		TransportChannel channel=(connection==null?null:connection.getTransportChannel());
 //		BrokerConnector connector=(channel==null?null:channel.getEmbeddedBrokerConnector());

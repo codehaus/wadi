@@ -30,6 +30,7 @@ import junit.framework.TestCase;
 
 import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterEvent;
+import org.apache.activecluster.ClusterFactory;
 import org.apache.activecluster.ClusterListener;
 import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -57,7 +58,7 @@ public class
 
   protected ActiveMQConnectionFactory _connectionFactory;
   protected Connection                _connection;
-  protected DefaultClusterFactory     _clusterFactory;
+  protected ClusterFactory            _clusterFactory;
   protected Cluster                   _cluster0;
   protected Cluster                   _cluster1;
 
