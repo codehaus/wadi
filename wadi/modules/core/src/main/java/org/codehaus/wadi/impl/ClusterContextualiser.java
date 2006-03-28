@@ -21,11 +21,11 @@ import java.util.Map;
 
 import javax.jms.ObjectMessage;
 
-import org.activecluster.Cluster;
-import org.activecluster.ClusterEvent;
-import org.activecluster.ClusterListener;
-import org.activecluster.LocalNode;
-import org.activecluster.Node;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.ClusterEvent;
+import org.apache.activecluster.ClusterListener;
+import org.apache.activecluster.LocalNode;
+import org.apache.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;

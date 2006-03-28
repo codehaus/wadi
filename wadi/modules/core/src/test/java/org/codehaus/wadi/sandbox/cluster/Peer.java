@@ -19,7 +19,7 @@ package org.codehaus.wadi.sandbox.cluster;
 
 import javax.jms.Destination;
 
-import org.activecluster.Node;
+import org.apache.activecluster.Node;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

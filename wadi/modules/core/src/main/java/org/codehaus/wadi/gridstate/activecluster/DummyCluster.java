@@ -23,17 +23,17 @@ import java.util.Map;
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
 
-import org.activecluster.ClusterListener;
-import org.activecluster.LocalNode;
-import org.activecluster.election.ElectionStrategy;
+import org.apache.activecluster.ClusterListener;
+import org.apache.activecluster.LocalNode;
+import org.apache.activecluster.election.ElectionStrategy;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
 
 /**
@@ -52,7 +52,7 @@ public class DummyCluster implements ExtendedCluster {
         return null;
     }
 
-    public Topic getDestination() {
+    public Destination getDestination() {
         // TODO Auto-generated method stub
         return null;
     }
@@ -154,4 +154,8 @@ public class DummyCluster implements ExtendedCluster {
     public Connection getConnection() { return null; }
 
     public void setElectionStrategy(ElectionStrategy strategy) {}
+
+	public Destination createDestination(String name) throws JMSException {
+		throw new UnsupportedOperationException();
+	}
 }

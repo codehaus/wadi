@@ -25,9 +25,9 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
-import org.activecluster.Cluster;
-import org.activecluster.ClusterEvent;
-import org.activecluster.Node;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.ClusterEvent;
+import org.apache.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.Partition;

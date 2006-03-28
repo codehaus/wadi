@@ -22,8 +22,7 @@ import java.util.Map;
 
 import javax.jms.Destination;
 
-import org.activecluster.Node;
-import org.activemq.store.vm.VMPersistenceAdapterFactory;
+import org.apache.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ContextPool;
@@ -86,7 +85,8 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 		_nodeName=nodeName;
 		_dispatcher=new ActiveClusterDispatcher(_nodeName, _clusterName, _clusterUri, inactiveTime);
 		_numPartitions=numPartitions;
-		System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
+		//System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
+		// TODO - figure out how to tun off persistance
 		_mapper=mapper;
 		_streamer=new SimpleStreamer();
 		_streamer.init(new StreamerConfig(){public ClassLoader getClassLoader() {return getClass().getClassLoader();}});

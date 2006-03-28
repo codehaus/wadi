@@ -23,8 +23,8 @@ import java.util.Map;
 
 import javax.jms.Destination;
 
-import org.activecluster.Cluster;
-import org.activecluster.Node;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.CoordinatorConfig;

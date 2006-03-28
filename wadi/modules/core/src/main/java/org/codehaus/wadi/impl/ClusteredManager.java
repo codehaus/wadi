@@ -24,7 +24,7 @@ import java.util.Map;
 
 import javax.jms.Destination;
 
-import org.activecluster.Node;
+import org.apache.activecluster.Node;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Collapser;

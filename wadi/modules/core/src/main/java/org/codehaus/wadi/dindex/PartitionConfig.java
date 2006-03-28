@@ -18,7 +18,7 @@ package org.codehaus.wadi.dindex;
 
 import javax.jms.Destination;
 
-import org.activecluster.Cluster;
+import org.apache.activecluster.Cluster;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
 /**

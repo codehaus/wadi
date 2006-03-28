@@ -16,12 +16,12 @@
  */
 package org.codehaus.wadi.gridstate.activecluster;
 
+import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Topic;
 
-import org.activecluster.Cluster;
-import org.activecluster.ClusterException;
-import org.activecluster.ClusterFactory;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.ClusterFactory;
+import org.apache.activecluster.DestinationMarshaller;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -36,12 +36,28 @@ public class RestartableClusterFactory implements ClusterFactory {
         _factory=factory;
     }
 
-    public Cluster createCluster(Topic groupDestination) throws ClusterException, JMSException {
+    public Cluster createCluster(Destination groupDestination) throws JMSException {
         return new RestartableCluster(_factory, groupDestination);
     }
 
-    public Cluster createCluster(String topic) throws ClusterException, JMSException {
+    public Cluster createCluster(String topic) throws JMSException {
         return new RestartableCluster(_factory, topic);
     }
+
+	public Cluster createCluster(String localName, String destinationName) throws JMSException {
+		throw new UnsupportedOperationException();
+	}
+
+	public Cluster createCluster(String localName, String destinationName, DestinationMarshaller marshaller) throws JMSException {
+		throw new UnsupportedOperationException();
+	}
+
+	public Cluster createCluster(String localName, Destination destination) throws JMSException {
+		throw new UnsupportedOperationException();
+	}
+
+	public Cluster createCluster(String localName, Destination destination, DestinationMarshaller marshaller) throws JMSException {
+		throw new UnsupportedOperationException();
+	}
 
 }

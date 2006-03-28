@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
-import org.activecluster.Node;
+import org.apache.activecluster.Node;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

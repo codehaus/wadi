@@ -23,22 +23,22 @@ import java.util.Set;
 
 import javax.jms.ObjectMessage;
 
-import org.activecluster.ClusterEvent;
-import org.activecluster.ClusterListener;
+import org.apache.activecluster.ClusterEvent;
+import org.apache.activecluster.ClusterListener;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.replication.common.ComponentEventType;
 import org.codehaus.wadi.replication.common.NodeInfo;
 
 
 /**
- * 
+ *
  * @version $Revision$
  */
 public class BasicReplicaStorageMonitor implements ReplicaStorageMonitor, ClusterListener {
     private final Set storageNodes;
     private final Set listeners;
     private final Dispatcher dispatcher;
-    
+
     public BasicReplicaStorageMonitor(Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
 
@@ -91,7 +91,7 @@ public class BasicReplicaStorageMonitor implements ReplicaStorageMonitor, Cluste
         }
         fireEvent(event);
     }
-    
+
     public void addReplicaStorageListener(ReplicaStorageListener listener) {
         synchronized (listeners) {
             synchronized (storageNodes) {
@@ -111,7 +111,7 @@ public class BasicReplicaStorageMonitor implements ReplicaStorageMonitor, Cluste
             }
         }
     }
-    
+
     public void onNodeAdd(ClusterEvent event) {
     }
 

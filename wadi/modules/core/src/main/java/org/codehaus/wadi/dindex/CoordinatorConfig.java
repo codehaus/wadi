@@ -19,8 +19,8 @@ package org.codehaus.wadi.dindex;
 import java.util.Collection;
 import java.util.Map;
 
-import org.activecluster.Cluster;
-import org.activecluster.Node;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.Node;
 import org.codehaus.wadi.gridstate.Dispatcher;
 
 /**

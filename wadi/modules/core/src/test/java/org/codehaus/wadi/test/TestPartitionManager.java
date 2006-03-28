@@ -24,8 +24,8 @@ import javax.jms.Destination;
 
 import junit.framework.TestCase;
 
-import org.activecluster.ClusterEvent;
-import org.activecluster.Node;
+import org.apache.activecluster.ClusterEvent;
+import org.apache.activecluster.Node;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.InvocationContext;
 import org.codehaus.wadi.InvocationException;

@@ -20,20 +20,20 @@ import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
-import org.activecluster.LocalNode;
+import org.apache.activecluster.LocalNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.jgroups.messages.StateUpdate;
 import org.codehaus.wadi.impl.Utils;
 
 public class JGroupsLocalNode implements LocalNode {
-  
+
   protected final Log _log=LogFactory.getLog(getClass());
   protected final JGroupsCluster _cluster;
   protected JGroupsDestination _destination;
   protected Map _clusterState;
   protected Map _localState;
-  
+
   public JGroupsLocalNode(JGroupsCluster cluster, Map state) {
     super();
     _cluster=cluster;
@@ -41,7 +41,7 @@ public class JGroupsLocalNode implements LocalNode {
   }
 
   // 'Node' api
-  
+
   public Map getState() {
     if (_destination==null) {
       return _localState;
@@ -61,9 +61,9 @@ public class JGroupsLocalNode implements LocalNode {
       _clusterState.put(_destination.getAddress(), _localState);
       _localState=null;
     }
-    
+
   }
-  
+
   public String getName() {
     return (String)getState().get("nodeName"); // FIXME - duplicates code in Dispatcher...
   }
@@ -79,7 +79,7 @@ public class JGroupsLocalNode implements LocalNode {
   // 'JGroupsLocalNode' api
 
   public void setState(Map state) throws JMSException {
-    
+
     if (_destination==null) {
       // we have not yet been initialised...
       _localState=state;
@@ -87,15 +87,15 @@ public class JGroupsLocalNode implements LocalNode {
       _localState=null;
       Object tmp;
       synchronized (_clusterState) {
-        
+
         if (_destination==null) {
           _log.warn("attempting to setState() without a Destination");
           return;
         }
-        
+
         tmp=_clusterState.put(_destination.getAddress(), state);
       }
-      
+
       if (tmp!=null) {
         ObjectMessage message=new JGroupsObjectMessage();
         message.setJMSReplyTo(_destination);
@@ -103,12 +103,12 @@ public class JGroupsLocalNode implements LocalNode {
         _cluster.send(_cluster.getDestination(), message); // broadcast
       }
     }
-    
+
   }
 
   protected static final String _prefix="<"+Utils.basename(JGroupsLocalNode.class)+": ";
   protected static final String _suffix=">";
-  
+
   public String toString() {
     return _prefix+getName()+_suffix;
   }

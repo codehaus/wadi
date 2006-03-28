@@ -20,7 +20,7 @@ import java.util.Collection;
 
 import javax.jms.Destination;
 
-import org.activecluster.Node;
+import org.apache.activecluster.Node;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.InvocationContext;
 import org.codehaus.wadi.InvocationException;

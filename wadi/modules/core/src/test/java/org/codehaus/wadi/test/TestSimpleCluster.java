@@ -22,9 +22,9 @@ import javax.jms.ObjectMessage;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.activecluster.Cluster;
-import org.activecluster.impl.DefaultClusterFactory;
-import org.activemq.ActiveMQConnectionFactory;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.impl.DefaultClusterFactory;
+import org.apache.activemq.ActiveMQConnectionFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

@@ -18,7 +18,7 @@ package org.codehaus.wadi.impl;
 
 import java.util.Map;
 
-import org.activecluster.Node;
+import org.apache.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Replicater;
@@ -57,9 +57,9 @@ public class MemoryReplicater implements Replicater {
 	}
 
     public void acquireFromOtherReplicater(Object tmp) {
-        
+
     }
-    
+
 	public boolean getReusingStore() {
 		return false;
 	}

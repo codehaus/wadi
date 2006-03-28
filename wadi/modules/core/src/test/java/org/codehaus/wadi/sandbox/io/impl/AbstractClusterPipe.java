@@ -24,7 +24,7 @@ import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 
-import org.activecluster.Cluster;
+import org.apache.activecluster.Cluster;
 import org.codehaus.wadi.sandbox.io.BytesMessageOutputStreamConfig;
 import org.codehaus.wadi.sandbox.io.PipeConfig;
 

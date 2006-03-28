@@ -21,7 +21,7 @@ import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 
-import org.activecluster.LocalNode;
+import org.apache.activecluster.LocalNode;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

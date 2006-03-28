@@ -21,13 +21,13 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
-import org.activecluster.ClusterEvent;
-import org.activecluster.ClusterFactory;
-import org.activecluster.ClusterListener;
-import org.activecluster.Node;
-import org.activecluster.impl.DefaultClusterFactory;
-import org.activemq.ActiveMQConnectionFactory;
-//import org.activemq.store.vm.VMPersistenceAdapterFactory;
+import org.apache.activecluster.ClusterEvent;
+import org.apache.activecluster.ClusterFactory;
+import org.apache.activecluster.ClusterListener;
+import org.apache.activecluster.Node;
+import org.apache.activecluster.impl.DefaultClusterFactory;
+import org.apache.activemq.ActiveMQConnectionFactory;
+//import org.apache.activemq.store.vm.VMPersistenceAdapterFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.sandbox.partition.Cluster;
@@ -45,7 +45,7 @@ public class ACCluster implements Cluster {
     protected final String _clusterName="ORG.CODEHAUS.WADI.TEST";
     protected final ActiveMQConnectionFactory _connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
     protected final ClusterFactory _clusterFactory=new DefaultClusterFactory(_connectionFactory);
-	protected final org.activecluster.Cluster _cluster;
+	protected final org.apache.activecluster.Cluster _cluster;
 	protected final long _timeout=30*1000L;
 
 	public ACCluster(String nodeName) throws Exception {

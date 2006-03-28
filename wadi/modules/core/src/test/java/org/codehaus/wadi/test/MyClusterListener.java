@@ -16,8 +16,8 @@
  */
 package org.codehaus.wadi.test;
 
-import org.activecluster.ClusterEvent;
-import org.activecluster.ClusterListener;
+import org.apache.activecluster.ClusterEvent;
+import org.apache.activecluster.ClusterListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

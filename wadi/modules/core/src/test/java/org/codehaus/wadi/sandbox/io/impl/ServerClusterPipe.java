@@ -18,7 +18,7 @@ package org.codehaus.wadi.sandbox.io.impl;
 
 import javax.jms.Destination;
 
-import org.activecluster.Cluster;
+import org.apache.activecluster.Cluster;
 import org.codehaus.wadi.sandbox.io.PipeConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;

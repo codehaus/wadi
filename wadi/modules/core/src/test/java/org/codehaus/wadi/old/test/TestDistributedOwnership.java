@@ -27,13 +27,13 @@ import javax.jms.JMSException;
 
 import junit.framework.TestCase;
 
-import org.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.activecluster.Cluster;
-import org.activecluster.ClusterException;
-import org.activecluster.ClusterFactory;
-import org.activecluster.impl.DefaultClusterFactory;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.ClusterException;
+import org.apache.activecluster.ClusterFactory;
+import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.codehaus.wadi.impl.Utils;
 
 /**

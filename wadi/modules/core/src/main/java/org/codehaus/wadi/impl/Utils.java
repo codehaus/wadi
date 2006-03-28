@@ -23,10 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.activemq.ActiveMQConnectionFactory;
-import org.activemq.broker.impl.BrokerContainerFactoryImpl;
-import org.activemq.store.vm.VMPersistenceAdapter;
-import org.activemq.store.vm.VMPersistenceAdapterFactory;
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Emoter;
@@ -241,8 +238,9 @@ public class Utils {
         // ActiveMQConnectionFactory cf=new ActiveMQConnectionFactory("tcp://localhost:61616");
         // _connectionFactory=new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");
         // _connectionFactory=new ActiveMQConnectionFactory("jgroups:default");
-        cf.setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter())); // peer protocol seems to ignore this...
-        System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
+        //cf.setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter())); // peer protocol seems to ignore this...
+        //System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
+        // TODO - figure out how to disable persistance...
         return cf;
     }
 
@@ -295,7 +293,7 @@ public class Utils {
     	dir.mkdir();
     	return dir;
     }
-    
+
     public static String basename(Class clazz) {
       String name=clazz.getName();
       int i=name.lastIndexOf('.');

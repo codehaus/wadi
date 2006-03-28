@@ -27,12 +27,13 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.Topic;
 
-import org.activecluster.Cluster;
-import org.activecluster.impl.DefaultCluster;
-import org.activecluster.impl.DefaultClusterFactory;
-import org.activecluster.impl.ReplicatedLocalNode;
-import org.activecluster.impl.StateService;
-import org.activecluster.impl.StateServiceStub;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.DestinationMarshaller;
+import org.apache.activecluster.impl.DefaultCluster;
+import org.apache.activecluster.impl.DefaultClusterFactory;
+import org.apache.activecluster.impl.ReplicatedLocalNode;
+import org.apache.activecluster.impl.StateService;
+import org.apache.activecluster.impl.StateServiceStub;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -49,47 +50,21 @@ public class CustomClusterFactory extends DefaultClusterFactory {
     System.setProperty("activemq.broker.disable-clean-shutdown", "true");
   }
 
-  protected Cluster createCluster(Connection connection, Session session, Topic groupDestination) throws JMSException {
-    Topic dataTopic = session.createTopic(getDataTopicPrefix() + groupDestination.getTopicName());
-
-      if ( log.isInfoEnabled() ) {
-
-          log.info("Creating cluster group producer on topic: " + groupDestination);
-      }
-
-    MessageProducer producer = createProducer(session, null);
-    producer.setDeliveryMode(getDeliveryMode());
-
-      if ( log.isInfoEnabled() ) {
-
-          log.info("Creating cluster data producer on topic: " + dataTopic);
-      }
-
-    MessageProducer keepAliveProducer = session.createProducer(dataTopic);
-    keepAliveProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-    StateService serviceStub = new StateServiceStub(session, keepAliveProducer);
-
-    Destination localInbox = null;
-    if (isUseQueueForInbox()) {
-      localInbox = session.createTemporaryQueue();
-    }
-    else {
-      localInbox = session.createTemporaryTopic();
-    }
-    ReplicatedLocalNode localNode = new ReplicatedLocalNode(localInbox, serviceStub);
-    Timer timer = new Timer();
-    DefaultCluster answer = new CustomCluster(localNode, dataTopic, groupDestination, connection, session, producer, timer, getInactiveTime());
-
-//     connection.setExceptionListener(new ExceptionListener() {
-
-//         // could we check the exception's cause and step up the level if it is
-//         // not harmless ?... - TODO
-//         public void onException(JMSException e) {
-//             log.trace("JMS Exception:", e);
-//         }
-
-//     });
-
-    return answer;
+  protected Cluster createCluster(Connection connection,Session session,String name,Destination groupDestination,DestinationMarshaller marshaller) throws JMSException{
+	  String dataDestination = getDataTopicPrefix()+ marshaller.getDestinationName(groupDestination);
+	  log.info("Creating cluster group producer on topic: "+groupDestination);
+	  MessageProducer producer=createProducer(session,null);
+	  producer.setDeliveryMode(getDeliveryMode());
+	  log.info("Creating cluster data producer on data destination: "+dataDestination);
+	  Topic dataTopic=session.createTopic(dataDestination);
+	  MessageProducer keepAliveProducer=session.createProducer(dataTopic);
+	  keepAliveProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	  StateService serviceStub=new StateServiceStub(session,keepAliveProducer,marshaller);
+	  Destination localInboxDestination=session.createTopic(dataDestination+"."+name);
+	  ReplicatedLocalNode localNode=new ReplicatedLocalNode(name,localInboxDestination,serviceStub);
+	  Timer timer=new Timer();
+	  DefaultCluster answer=new CustomCluster(localNode,dataTopic,groupDestination,marshaller,connection,session,producer,timer,getInactiveTime());
+	  return answer;
   }
+  
 }

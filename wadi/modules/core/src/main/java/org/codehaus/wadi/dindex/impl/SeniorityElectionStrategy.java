@@ -18,9 +18,9 @@ package org.codehaus.wadi.dindex.impl;
 
 import java.util.Iterator;
 
-import org.activecluster.Cluster;
-import org.activecluster.Node;
-import org.activecluster.election.ElectionStrategy;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.Node;
+import org.apache.activecluster.election.ElectionStrategy;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

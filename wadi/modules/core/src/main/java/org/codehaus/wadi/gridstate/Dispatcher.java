@@ -22,8 +22,8 @@ import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.ObjectMessage;
 
-import org.activecluster.Cluster;
-import org.activecluster.ClusterListener;
+import org.apache.activecluster.Cluster;
+import org.apache.activecluster.ClusterListener;
 import org.codehaus.wadi.impl.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;

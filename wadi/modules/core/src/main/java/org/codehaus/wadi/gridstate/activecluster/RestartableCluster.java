@@ -29,12 +29,11 @@ import javax.jms.MessageConsumer;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
 
-import org.activecluster.ClusterFactory;
-import org.activecluster.ClusterListener;
-import org.activecluster.LocalNode;
-import org.activecluster.election.ElectionStrategy;
+import org.apache.activecluster.ClusterFactory;
+import org.apache.activecluster.ClusterListener;
+import org.apache.activecluster.LocalNode;
+import org.apache.activecluster.election.ElectionStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.ExtendedCluster;
@@ -50,12 +49,12 @@ public class RestartableCluster implements ExtendedCluster {
     protected static final Log _log=LogFactory.getLog(RestartableCluster.class);
 
     protected final ClusterFactory _factory;
-    protected final Topic _groupDestination;
+    protected final Destination _groupDestination;
     protected final String _topic;
 
     protected ExtendedCluster _cluster;
 
-    public RestartableCluster(ClusterFactory factory, Topic groupDestination) {
+    public RestartableCluster(ClusterFactory factory, Destination groupDestination) {
         super();
         _factory=factory;
         _groupDestination=groupDestination;
@@ -73,7 +72,7 @@ public class RestartableCluster implements ExtendedCluster {
 
     // ActiveCluster Cluster
 
-    public Topic getDestination() {
+    public Destination getDestination() {
         return _cluster.getDestination();
     }
 
@@ -183,5 +182,9 @@ public class RestartableCluster implements ExtendedCluster {
     public void setElectionStrategy(ElectionStrategy strategy) {
        _cluster.setElectionStrategy(strategy);
     }
+
+	public Destination createDestination(String name) throws JMSException {
+		throw new UnsupportedOperationException();
+	}
 
 }

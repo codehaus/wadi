@@ -19,15 +19,15 @@ package org.codehaus.wadi.gridstate.jgroups;
 import java.util.Collections;
 import java.util.Map;
 import javax.jms.Destination;
-import org.activecluster.Node;
+import org.apache.activecluster.Node;
 import org.codehaus.wadi.impl.Utils;
 
 public class JGroupsRemoteNode implements Node {
-  
+
   protected final JGroupsCluster _cluster;
   protected final JGroupsDestination _destination;
   protected Map _clusterState;
-  
+
   public JGroupsRemoteNode(JGroupsCluster cluster, JGroupsDestination destination, Map state) {
     super();
     _cluster=cluster;
@@ -36,7 +36,7 @@ public class JGroupsRemoteNode implements Node {
   }
 
   // 'Node' api
-  
+
   public Destination getDestination() {
     return _destination;
   }
@@ -64,16 +64,16 @@ public class JGroupsRemoteNode implements Node {
   }
 
   // 'JGroupsRemoteNode' api
-  
+
   public void setState(Map state) {
     synchronized (_clusterState) {
       _clusterState.put(_destination.getAddress(), state);
     }
   }
-  
+
   protected static final String _prefix="<"+Utils.basename(JGroupsRemoteNode.class)+": ";
   protected static final String _suffix=">";
-  
+
   public String toString() {
     return _prefix+getName()+_suffix;
   }
