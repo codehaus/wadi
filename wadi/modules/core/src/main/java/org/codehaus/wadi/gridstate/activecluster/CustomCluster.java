@@ -25,16 +25,16 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.Topic;
 
+import org.apache.activecluster.Cluster;
 import org.apache.activecluster.DestinationMarshaller;
 import org.apache.activecluster.LocalNode;
 import org.apache.activecluster.impl.DefaultCluster;
-import org.codehaus.wadi.gridstate.ExtendedCluster;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class CustomCluster extends DefaultCluster implements ExtendedCluster {
+public class CustomCluster extends DefaultCluster implements Cluster {
 
     Connection _connection;
 
@@ -47,5 +47,4 @@ public class CustomCluster extends DefaultCluster implements ExtendedCluster {
     	return getSession().createQueue(name);
     }
 
-    public Connection getConnection() {return _connection;}
 }

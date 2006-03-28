@@ -27,6 +27,7 @@ import javax.sql.DataSource;
 
 import junit.framework.TestCase;
 
+import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterException;
 import org.apache.activecluster.ClusterFactory;
 import org.apache.commons.logging.Log;
@@ -51,7 +52,6 @@ import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.ExtendedCluster;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.gridstate.activecluster.CustomClusterFactory;
 import org.codehaus.wadi.gridstate.activecluster.RestartableClusterFactory;
@@ -165,7 +165,7 @@ public class TestCluster extends TestCase {
 		}
 
 		public Map getClusterContextualiserMap() {return _cmap;}
-		public ExtendedCluster getCluster(){return (ExtendedCluster)((ActiveClusterDispatcher)_dispatcher).getCluster();}
+		public Cluster getCluster(){return _dispatcher.getCluster();}
 		public ClusterContextualiser getClusterContextualiser() {return _middle;}
 
 		public Map getMemoryContextualiserMap() {return _mmap;}

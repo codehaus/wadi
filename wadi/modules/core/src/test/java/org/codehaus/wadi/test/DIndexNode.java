@@ -22,6 +22,7 @@ import java.util.Map;
 
 import javax.jms.Destination;
 
+import org.apache.activecluster.Cluster;
 import org.apache.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,7 +39,6 @@ import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
-import org.codehaus.wadi.gridstate.ExtendedCluster;
 import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.gridstate.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
@@ -117,8 +117,8 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 		return _dindex;
 	}
 
-	public ExtendedCluster getCluster() {
-		return (ExtendedCluster)_dispatcher.getCluster();
+	public Cluster getCluster() {
+		return _dispatcher.getCluster();
 	}
 
 	public void insert(Object key, Object value, long timeout) {

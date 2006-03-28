@@ -32,7 +32,6 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
-import org.codehaus.wadi.gridstate.ExtendedCluster;
 import org.codehaus.wadi.gridstate.impl.AbstractDispatcher;
 
 /**
@@ -90,7 +89,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 			//System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // do we need this ? - TODO - update
 			_clusterFactory=new CustomClusterFactory(_connectionFactory);
 			_clusterFactory.setInactiveTime(_inactiveTime);
-			_cluster=(ExtendedCluster)_clusterFactory.createCluster(_clusterName);
+			_cluster=_clusterFactory.createCluster(_clusterName);
 		} catch (Exception e) {
 			_log.error("problem starting Cluster", e);
 		}

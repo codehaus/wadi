@@ -26,7 +26,7 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 
-import org.codehaus.wadi.gridstate.ExtendedCluster;
+import org.apache.activecluster.Cluster;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.sandbox.io.Pipe;
 import org.codehaus.wadi.sandbox.io.PipeConfig;
@@ -50,7 +50,7 @@ public class ClusterServer extends AbstractServer implements PipeConfig, Message
         _pipes=new HashMap();
     }
 
-    protected ExtendedCluster _cluster;
+    protected Cluster _cluster;
     protected MessageConsumer _nodeConsumer;
     protected MessageConsumer _clusterConsumer;
 
