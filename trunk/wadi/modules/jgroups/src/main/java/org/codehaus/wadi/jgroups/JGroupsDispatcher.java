@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate.jgroups;
+package org.codehaus.wadi.jgroups;
 
 import java.util.Collection;
 import java.util.Map;
@@ -28,7 +28,7 @@ import org.apache.activecluster.LocalNode;
 import org.apache.activecluster.Node;
 import org.codehaus.wadi.gridstate.DispatcherConfig;
 import org.codehaus.wadi.gridstate.impl.AbstractDispatcher;
-import org.codehaus.wadi.gridstate.jgroups.messages.StateUpdate;
+import org.codehaus.wadi.jgroups.messages.StateUpdate;
 import org.jgroups.Address;
 import org.jgroups.ChannelException;
 import org.jgroups.blocks.MessageDispatcher;
