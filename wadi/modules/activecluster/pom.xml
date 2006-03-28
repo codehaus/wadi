@@ -1,0 +1,78 @@
+<project>
+
+  <parent>
+    <groupId>wadi</groupId>
+    <artifactId>wadi</artifactId>
+    <version>2.0M2-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>wadi-activecluster</artifactId>
+  <packaging>jar</packaging>
+  <name>WADI :: ActiveCluster</name>
+  <description>WADI/ActiveCluster Integration - A WADI backend implemented over ActiveCluster</description>
+
+  <scm>
+    <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/activecluster</connection>
+    <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/activecluster</developerConnection>
+    <url>http://svn.wadi.codehaus.org/wadi/modules/activecluster</url>
+  </scm>
+
+  <dependencies>
+    <dependency>
+      <groupId>geronimo-spec</groupId>
+      <artifactId>geronimo-spec-jms</artifactId>
+      <version>1.1-rc4</version>
+    </dependency>
+    <dependency>
+      <groupId>geronimo-spec</groupId>
+      <artifactId>geronimo-spec-servlet</artifactId>
+      <version>2.4-rc4</version>
+    </dependency>
+    <dependency>
+      <groupId>incubator-activemq</groupId>
+      <artifactId>activecluster</artifactId>
+      <version>${activemq.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-surefire-plugin</artifactId>
+	<configuration>
+	  <excludes>
+	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- stop surefire from trying to run nested classes... -->
+	  </excludes>
+	</configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <outputDirectory>../../wadi-site/target/site/${artifactId}</outputDirectory>
+    <plugins>
+      <!--
+      <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-clover-plugin</artifactId>
+    </plugin>
+      -->
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+      <plugin>
+	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>surefire-report-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
+
+</project>
