@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate.jgroups;
+package org.codehaus.wadi.jgroups;
 
 import java.util.Map;
 import javax.jms.Destination;
@@ -23,8 +23,8 @@ import javax.jms.ObjectMessage;
 import org.apache.activecluster.LocalNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.gridstate.jgroups.messages.StateUpdate;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.jgroups.messages.StateUpdate;
 
 public class JGroupsLocalNode implements LocalNode {
 

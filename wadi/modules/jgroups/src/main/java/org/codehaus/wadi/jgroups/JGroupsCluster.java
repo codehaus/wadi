@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate.jgroups;
+package org.codehaus.wadi.jgroups;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -43,11 +43,11 @@ import org.apache.activecluster.election.ElectionStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.gridstate.jgroups.messages.StateRequest;
-import org.codehaus.wadi.gridstate.jgroups.messages.StateResponse;
-import org.codehaus.wadi.gridstate.jgroups.messages.StateUpdate;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.jgroups.messages.StateRequest;
+import org.codehaus.wadi.jgroups.messages.StateResponse;
+import org.codehaus.wadi.jgroups.messages.StateUpdate;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.ChannelException;

@@ -17,7 +17,6 @@
 package org.codehaus.wadi.jgroups;
 
 import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.jgroups.JGroupsDispatcher;
 import org.codehaus.wadi.test.AbstractTestEvacuation;
 
 public class TestEvacuation extends AbstractTestEvacuation {

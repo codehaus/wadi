@@ -14,21 +14,29 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate.jgroups.messages;
+package org.codehaus.wadi.jgroups.messages;
 
 import java.io.Serializable;
+import java.util.Map;
 import org.codehaus.wadi.impl.Utils;
 
-public class StateRequest implements Serializable {
+public class StateResponse implements Serializable {
   
-  protected static final String _string="<"+Utils.basename(StateRequest.class)+">";
+  protected static final String _prefix="<"+Utils.basename(StateResponse.class)+": ";
+  protected static final String _suffix=">";
   
-  public StateRequest() {
+  protected Map _state;
+  
+  public StateResponse(Map state) {
     super();
+    _state=state;
+  }
+  
+  public Map getState() {
+    return _state;
   }
   
   public String toString() {
-    return _string;
+    return _prefix+_state+_suffix;
   }
-    
 }
