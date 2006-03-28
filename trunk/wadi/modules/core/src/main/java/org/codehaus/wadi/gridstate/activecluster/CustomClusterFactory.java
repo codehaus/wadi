@@ -47,7 +47,6 @@ public class CustomClusterFactory extends DefaultClusterFactory {
 
   public CustomClusterFactory(ConnectionFactory connectionFactory) {
     super(connectionFactory);
-    System.setProperty("activemq.broker.disable-clean-shutdown", "true");
   }
 
   protected Cluster createCluster(Connection connection,Session session,String name,Destination groupDestination,DestinationMarshaller marshaller) throws JMSException{
@@ -66,5 +65,5 @@ public class CustomClusterFactory extends DefaultClusterFactory {
 	  DefaultCluster answer=new CustomCluster(localNode,dataTopic,groupDestination,marshaller,connection,session,producer,timer,getInactiveTime());
 	  return answer;
   }
-  
+
 }
