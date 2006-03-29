@@ -213,6 +213,13 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   }
 
   public void stop() throws JMSException {
+	  _channel.disconnect();
+	  _log.info("disconnected from channel");
+	  _clusterTopic=null;
+	  _localDestination=null;
+	  _localAddress=null;
+	  _clusterState.clear();
+	  _addressToDestination.clear();
   }
 
   // JGroups MembershipListener API
@@ -249,7 +256,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
             _listener.onNodeFailed(new ClusterEvent(this, destination.getNode() ,ClusterEvent.FAILED_NODE));
           }
           // remove node
-          _addressToDestination.remove(address);
+          i.remove();
           synchronized (_destinationToNode) {
             _destinationToNode.remove(destination);
           }

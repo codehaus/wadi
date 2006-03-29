@@ -48,7 +48,7 @@ public class JGroupsDispatcher extends AbstractDispatcher {
   protected MessageDispatcher _dispatcher;
 
   public JGroupsDispatcher(String nodeName, String clusterName, long inactiveTime) throws ChannelException {
-    super(nodeName, clusterName, inactiveTime);
+    super(clusterName, nodeName, inactiveTime);
     _cluster=new JGroupsCluster(clusterName);
     register(_cluster, "onMessage", StateUpdate.class);
   }

@@ -1,15 +1,29 @@
 package org.codehaus.wadi.test;
 
+import java.io.IOException;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
+import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.InvocationException;
+import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.impl.DummyHttpServletRequest;
+import org.codehaus.wadi.impl.WebInvocationContext;
 
 import junit.framework.TestCase;
 
-public abstract class AbstractTestEvacuation extends TestCase {
+public class AbstractTestEvacuation extends TestCase {
 	
 	protected Log _log = LogFactory.getLog(getClass());
 	protected String _url = "jdbc:axiondb:WADI";
@@ -27,28 +41,67 @@ public abstract class AbstractTestEvacuation extends TestCase {
 		super.tearDown();
 	}
 	
-	protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
-	
-	public void testEvacuation() throws Exception {
+	public void testEvacuation(Dispatcher red, Dispatcher green) throws Exception {
 		assertTrue(true);
-		String clusterName="TEST";
 		
-		MyStack stack1=new MyStack(_url, _ds, createDispatcher(clusterName, "red", 5000L));
+		MyStack stack1=new MyStack(_url, _ds, red);
 		_log.info("RED STARTING...");
 		stack1.start();
 		_log.info("...RED STARTED");
-		MyStack stack2=new MyStack(_url, _ds, createDispatcher(clusterName, "green", 5000L));
+		MyStack stack2=new MyStack(_url, _ds, green);
 		_log.info("GREEN STARTING...");
 		stack2.start();
 		_log.info("...GREEN STARTED");
 		
+		_log.info("WAITING FOR RED TO SEE GREEN...");
+		while (red.getNumNodes()<1) {
+			Thread.sleep(500);
+			_log.info("waiting: "+red.getNumNodes());
+		}
+		_log.info("...DONE");
+		
+		_log.info("WAITING FOR GREEN TO SEE RED...");
+		while (green.getNumNodes()<1) {
+			Thread.sleep(500);
+			_log.info("waiting: "+green.getNumNodes());
+		}
+		_log.info("...DONE");
+		
+		
+		_log.info("CREATING SESSION...");
 		String id=stack1.getManager().create().getId();
+		_log.info("...DONE");
+		
+		assertTrue(id!=null);
 		
 		_log.info("RED STOPPING...");
 		stack1.stop();
 		_log.info("...RED STOPPED");
 		
-		//    stack2.getManager().destroy(id);
+		boolean success=false;
+		try {
+			FilterChain fc=new FilterChain() {
+				public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
+					HttpSession session=((HttpServletRequest)req).getSession();
+					assertTrue(session!=null);
+					_log.info("ACQUIRED SESSION: "+session.getId());
+				}
+			};
+			
+			InvocationContext invocation=new WebInvocationContext(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
+			stack2.getManager().contextualise(invocation, id, null, null, true);
+			success=true;
+		} catch (NullPointerException e) {
+		}
+		
+		assertTrue(success);
+
+		_log.info("sleeping...");
+		while (green.getNumNodes()>0) {
+			Thread.sleep(500);
+			_log.info("waiting: "+green.getNumNodes());
+		}
+		_log.info("...waking");
 		
 		_log.info("GREEN STOPPING...");
 		stack2.stop();

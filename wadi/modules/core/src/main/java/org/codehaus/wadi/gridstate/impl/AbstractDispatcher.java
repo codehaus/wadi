@@ -57,7 +57,7 @@ public abstract class AbstractDispatcher implements Dispatcher, MessageListener 
 	protected final PooledExecutor _executor;
 	protected final Log _messageLog = LogFactory.getLog("org.codehaus.wadi.MESSAGES");
 	
-	public AbstractDispatcher(String nodeName, String clusterName, long inactiveTime) {
+	public AbstractDispatcher(String clusterName, String nodeName, long inactiveTime) {
 		_nodeName=nodeName;
 		_clusterName=clusterName;
 		_inactiveTime=inactiveTime;
