@@ -46,7 +46,6 @@ import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
-import org.codehaus.wadi.impl.SimplePartitionMapper;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 
