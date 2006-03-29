@@ -13,27 +13,38 @@
    <body>
 
       <links>
-         <item name="Geronimo" href="http://geronimo.apache.org"/>
-         <item name="Tomcat" href="http://tomcat.apache.org"/>
+         <item name="ActiveMQ" href="http://activemq.org"/>
+         <item name="ActiveCluster" href="http://activecluster.codehaus.org"/>
+         <item name="JGroups" href="http://www.jgroups.org"/>
+         <item name="Tribes" href="http://svn.apache.org/viewcvs.cgi/tomcat/container/tc5.5.x/modules/groupcom"/>
          <item name="Jetty" href="http://jetty.mortbay.org/jetty/index.html"/>
+         <item name="Tomcat" href="http://tomcat.apache.org"/>
+         <item name="Axis" href="http://ws.apache.org/axis2"/>
+         <item name="OpenEJB" href="http://www.openejb.org"/>
+         <item name="JBoss" href="http://sourceforge.net/projects/jboss"/>
+         <item name="Geronimo" href="http://geronimo.apache.org"/>
       </links>
 
-      <menu name="WADI">
-         <item name="About" href="./index.html"/>
+      <menu name="Users">
+         <item name="Home" href="./index.html"/>
          <item name="Getting Started" href="./getting-started/index.html"/>
          <item name="Documentation" href="./documentation/index.html"/>
          <item name="FAQ" href="./faq.html"/>
          <item name="Wiki" href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI"/>
+         <item name="How To Help" href="./help.html"/>
+      </menu>
+
+      <menu name="Developers">
          <item name="Maven 2.0.x" href="http://docs.codehaus.org/display/WADI/Maven+2.0.x"/>
          <item name="Eclipse 3.2.x" href="http://docs.codehaus.org/display/WADI/Eclipse-3.2.x"/>
          <item name="Our Library" href="http://docs.codehaus.org/display/WADI/Library" />
-         <item name="How To Help" href="./help.html"/>
       </menu>
 
       <menu name="Modules">
          <item name="Core" href="wadi-core/index.html"/>
-         <item name="P2P" href="wadi-p2p/index.html"/>
+         <item name="ActiveCluster 4.0M4+" href="wadi-activecluster/index.html"/>
          <item name="JGroups 2.8+" href="wadi-jgroups/index.html"/>
+         <item name="Tribes" href="wadi-p2p/index.html"/>
          <item name="Jetty 5.x" href="wadi-jetty5/index.html"/>
          <item name="Jetty 6.x" href="wadi-jetty6/index.html"/>
          <item name="Tomcat 5.0.x" href="wadi-tomcat50/index.html"/>
@@ -45,7 +56,10 @@
       </menu>
 
       <menu name="Source">
-         <item name="Browse the Source" href="http://cvs.wadi.codehaus.org/" />
+         <item name="FishEye" href="http://cvs.wadi.codehaus.org" />
+         <item name="SVN snapshot (zip)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=zip/wadi/wadi.zip"/>
+         <item name="SVN snapshot (tgz)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tgz/wadi/wadi.tgz"/>
+         <item name="SVN snapshot (tbz2)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tbz2/wadi/wadi.tbz2"/>
       </menu>
 
       ${reports}
