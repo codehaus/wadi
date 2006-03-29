@@ -16,17 +16,17 @@
  */
 package org.codehaus.wadi.jgroups;
 
-import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.test.AbstractTestEvacuation;
-
 public class TestEvacuation extends AbstractTestEvacuation {
 
   public TestEvacuation(String arg0) {
     super(arg0);
   }
 
-  public Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {
-	  return new JGroupsDispatcher(nodeName, clusterName, timeout);
+  public void testEvacuation() throws Exception {
+	  String clusterName="TEST";
+	  long timeout=5000;
+	  testEvacuation(new JGroupsDispatcher("red", clusterName, timeout), new JGroupsDispatcher("green", clusterName, timeout));
   }
   
 }

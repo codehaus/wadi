@@ -53,8 +53,8 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 
 	protected final String _clusterUri;
 
-	public ActiveClusterDispatcher(String nodeName, String clusterName, String clusterUri, long inactiveTime) {
-		super(nodeName, clusterName, inactiveTime);
+	public ActiveClusterDispatcher(String clusterName, String nodeName, String clusterUri, long inactiveTime) {
+		super(clusterName, nodeName, inactiveTime);
 		_clusterUri=clusterUri;
 		_log=LogFactory.getLog(getClass()+"#"+_nodeName);
 	}
