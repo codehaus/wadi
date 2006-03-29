@@ -21,14 +21,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
 import junit.framework.TestCase;
 
 import org.apache.activecluster.Cluster;
-import org.apache.activecluster.ClusterException;
 import org.apache.activecluster.ClusterFactory;
 import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.commons.logging.Log;
