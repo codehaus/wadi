@@ -23,7 +23,7 @@
     <dependency>
       <groupId>axis2</groupId>
       <artifactId>axis2</artifactId>
-      <version>0.9</version>
+      <version>WADI</version>
     </dependency>
     <dependency>
       <groupId>wadi</groupId>

@@ -250,12 +250,14 @@
 	<enabled>false</enabled>
       </releases>
     </repository>
+<!--
     <repository>
       <id>apache</id>
       <name>Apache Maven Repository</name>
       <url>http://cvs.apache.org/repository</url>
       <layout>legacy</layout>
     </repository>
+-->
   </repositories>
 
   <modules>
