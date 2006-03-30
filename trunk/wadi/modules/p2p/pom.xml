@@ -8,15 +8,15 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>wadi-p2p</artifactId>
+  <artifactId>wadi-tribes</artifactId>
   <packaging>jar</packaging>
-  <name>WADI :: P2P</name>
-  <description>WADI P2P Layer</description>
+  <name>WADI :: Tribes</name>
+  <description>WADI Tribes Integration</description>
 
   <scm>
-    <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/p2p</connection>
-    <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/p2p</developerConnection>
-    <url>http://svn.wadi.codehaus.org/wadi/modules/p2p</url>
+    <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/tribes</connection>
+    <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/tribes</developerConnection>
+    <url>http://svn.wadi.codehaus.org/wadi/modules/tribes</url>
   </scm>
 
   <dependencies>
