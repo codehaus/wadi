@@ -542,7 +542,7 @@
 	<artifactId>maven-clover-plugin</artifactId>
 	<configuration>
 	  <jdk>1.4</jdk>
-	  <licenseFile>./clover.license</licenseFile>
+	  <licenseFile>./etc/clover.license</licenseFile>
 	</configuration>
       </plugin>
       <plugin>
