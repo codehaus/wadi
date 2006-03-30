@@ -272,7 +272,7 @@
     <module>modules/core</module>
     <module>modules/activecluster</module>
     <module>modules/jgroups</module>
-    <module>modules/p2p</module>
+    <module>modules/tribes</module>
     <module>modules/jetty5</module>
     <module>modules/jetty6</module>
     <module>modules/tomcat50</module>
@@ -473,7 +473,7 @@
       </dependency>
       <dependency>
 	<groupId>wadi</groupId>
-	<artifactId>wadi-p2p</artifactId>
+	<artifactId>wadi-tribes</artifactId>
 	<version>${project.version}</version>
       </dependency>
       <dependency>
