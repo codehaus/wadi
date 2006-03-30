@@ -44,7 +44,7 @@
          <item name="Core" href="wadi-core/index.html"/>
          <item name="ActiveCluster 4.0M4+" href="wadi-activecluster/index.html"/>
          <item name="JGroups 2.8+" href="wadi-jgroups/index.html"/>
-         <item name="Tribes" href="wadi-p2p/index.html"/>
+         <item name="Tribes" href="wadi-tribes/index.html"/>
          <item name="Jetty 5.x" href="wadi-jetty5/index.html"/>
          <item name="Jetty 6.x" href="wadi-jetty6/index.html"/>
          <item name="Tomcat 5.0.x" href="wadi-tomcat50/index.html"/>
