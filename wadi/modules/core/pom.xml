@@ -107,7 +107,8 @@
 	  <excludes>
 	    <!-- stop surefire from trying to run nested classes... -->
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude>
-           <!-- NullPtrs everywhere ! -->
+	    <exclude implementation="java.lang.String">**/*.java</exclude>
+	    <!-- NullPtrs everywhere ! -->
 	    <exclude implementation="java.lang.String">**/TestContextualiser.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestEvicters.java</exclude>
 	    <exclude implementation="java.lang.String">**/io/TestServers.java</exclude>

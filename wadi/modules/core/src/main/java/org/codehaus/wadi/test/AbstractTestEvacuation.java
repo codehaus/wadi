@@ -54,14 +54,14 @@ public class AbstractTestEvacuation extends TestCase {
 		_log.info("...GREEN STARTED");
 		
 		_log.info("WAITING FOR RED TO SEE GREEN...");
-		while (red.getNumNodes()<1) {
+		while (red.getNumNodes()<2) {
 			Thread.sleep(500);
 			_log.info("waiting: "+red.getNumNodes());
 		}
 		_log.info("...DONE");
 		
 		_log.info("WAITING FOR GREEN TO SEE RED...");
-		while (green.getNumNodes()<1) {
+		while (green.getNumNodes()<2) {
 			Thread.sleep(500);
 			_log.info("waiting: "+green.getNumNodes());
 		}
@@ -73,6 +73,8 @@ public class AbstractTestEvacuation extends TestCase {
 		_log.info("...DONE");
 		
 		assertTrue(id!=null);
+		
+		Thread.sleep(5000);// prevents us stopping whilst a Partition transfer is ongoing....
 		
 		_log.info("RED STOPPING...");
 		stack1.stop();
@@ -96,12 +98,12 @@ public class AbstractTestEvacuation extends TestCase {
 		
 		assertTrue(success);
 
-		_log.info("sleeping...");
-		while (green.getNumNodes()>0) {
+		_log.info("WAITING FOR GREEN TO UNSEE RED...");
+		while (green.getNumNodes()>1) {
 			Thread.sleep(500);
 			_log.info("waiting: "+green.getNumNodes());
 		}
-		_log.info("...waking");
+		_log.info("...DONE");
 		
 		_log.info("GREEN STOPPING...");
 		stack2.stop();

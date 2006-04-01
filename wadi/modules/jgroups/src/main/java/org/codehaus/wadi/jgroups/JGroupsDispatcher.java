@@ -90,7 +90,13 @@ public class JGroupsDispatcher extends AbstractDispatcher {
   }
 
   public String getNodeName(Destination destination) {
-    return ((JGroupsDestination)destination).getName();
+	JGroupsDestination d=(JGroupsDestination)destination;
+	if (d.getNode()==null && d!=_cluster.getDestination()) {
+		// the Destination may have come in over the wire and not have been initialised...
+		_log.warn("UNINITIALISED DESTINATION - from over wire");
+		d.init(getNode(d.getAddress()));
+	}
+    return d.getName();
   }
 
   public Destination getLocalDestination() {

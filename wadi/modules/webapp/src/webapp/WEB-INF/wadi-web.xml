@@ -431,7 +431,7 @@
 <!--
   <bean
     id="Dispatcher"
-    class="org.codehaus.wadi.gridstate.jgroups.JGroupsDispatcher"
+    class="org.codehaus.wadi.jgroups.JGroupsDispatcher"
     >
     <constructor-arg><value>${node.name}</value></constructor-arg>
     <constructor-arg><value>CLUSTER0</value></constructor-arg>

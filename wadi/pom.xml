@@ -550,11 +550,23 @@
 	<artifactId>maven-surefire-plugin</artifactId>
 	<configuration>
 	  <systemProperties>
-	    <forkMode>pertest</forkMode>
+	    <!-- <forkMode>pertest</forkMode> -->
 	    <argLine>-enableassertions -Xmx1024m</argLine>
 	    <property>
 	      <name>org.apache.commons.logging.Log</name>
 	      <value>org.apache.commons.logging.impl.SimpleLog</value>
+	    </property>
+	    <property>
+	      <name>org.apache.commons.logging.simplelog.showdatetime</name>
+	      <value>true</value>
+	    </property>
+	    <property>
+	      <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi</name>
+	      <value>debug</value>
+	    </property>
+	    <property>
+	      <name>java.net.preferIPv4Stack</name><!-- keep jgroups happy -->
+	      <value>true</value>
 	    </property>
 	  </systemProperties>
 	</configuration>
@@ -564,12 +576,27 @@
 
   <reporting>
     <plugins>
-<!--
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-clover-plugin</artifactId>
+	<configuration>
+	  <aggregate>true</aggregate>
+	  <reactorProjects>wadi-core wadi-activecluster</reactorProjects>
+	  <waitForFlush>true</waitForFlush>
+	</configuration>
+      </plugin>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+      <plugin>
+	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>surefire-report-maven-plugin</artifactId>
+      </plugin>
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-project-info-reports-plugin</artifactId>
       </plugin>
--->
     </plugins>
   </reporting>
 
