@@ -121,9 +121,10 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 
 		PartitionEvacuationRequest request=new PartitionEvacuationRequest();
 		Node localNode=_cluster.getLocalNode();
+		Node coordNode=_config.getCoordinatorNode();
 		String correlationId=_cluster.getLocalNode().getName();
-		if (_log.isTraceEnabled()) _log.trace("evacuating partitions...: "+_dispatcher.getNodeName(localNode.getDestination())+" -> "+_config.getCoordinatorNode().getState().get("nodeName"));
-		while (_dispatcher.exchangeSend(localNode.getDestination(), _config.getCoordinatorNode().getDestination(), correlationId, request, _inactiveTime)==null) {
+		if (_log.isTraceEnabled()) _log.trace("evacuating partitions...: "+_dispatcher.getNodeName(localNode.getDestination())+" -> "+coordNode.getState().get("nodeName"));
+		while (_dispatcher.exchangeSend(localNode.getDestination(), coordNode.getDestination(), correlationId, request, _inactiveTime)==null) {
 			if (_log.isWarnEnabled()) _log.warn("could not contact Coordinator - backing off for "+ _inactiveTime+" millis...");
 			Thread.sleep(_config.getInactiveTime());
 		}

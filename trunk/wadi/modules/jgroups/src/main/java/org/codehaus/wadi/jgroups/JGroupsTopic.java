@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.jgroups;
 
+import java.io.ObjectStreamException;
 import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -41,6 +42,11 @@ public class JGroupsTopic extends JGroupsDestination implements Topic {
     return _name;
   }
 
+	protected Object readResolve() throws ObjectStreamException {
+		return _cluster.getDestination();
+	}
+	
+	
   class ClusterNode implements LocalNode {
 
     // 'Node' api
