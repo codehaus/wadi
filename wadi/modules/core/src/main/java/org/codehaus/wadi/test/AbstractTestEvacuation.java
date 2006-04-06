@@ -42,8 +42,6 @@ public class AbstractTestEvacuation extends TestCase {
 	}
 	
 	public void testEvacuation(Dispatcher red, Dispatcher green) throws Exception {
-		assertTrue(true);
-		
 		MyStack stack1=new MyStack(_url, _ds, red);
 		_log.info("RED STARTING...");
 		stack1.start();
@@ -66,7 +64,6 @@ public class AbstractTestEvacuation extends TestCase {
 			_log.info("waiting: "+green.getNumNodes());
 		}
 		_log.info("...DONE");
-		
 		
 		_log.info("CREATING SESSION...");
 		String id=stack1.getManager().create().getId();
@@ -91,7 +88,7 @@ public class AbstractTestEvacuation extends TestCase {
 			};
 			
 			InvocationContext invocation=new WebInvocationContext(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
-			stack2.getManager().contextualise(invocation, id, null, null, true);
+			assertTrue(stack2.getManager().contextualise(invocation, id, null, null, true));
 			success=true;
 		} catch (NullPointerException e) {
 		}
