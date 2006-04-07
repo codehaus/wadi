@@ -2,7 +2,7 @@ To build the site do the following:
 
 1.) cd to the top level wadi/ dir.
 2.) mvn site javadoc:javadoc -Dmaven.test.failure.ignore=true (takes a while)
-3.) cd to wadi-site
+3.) cd to site
 4.) mvn site -Dmaven.test.failure.ignore=true
-5.) open wadi/wadi-site/target/site/index.html
+5.) open wadi/modules/site/target/site/index.html
 
