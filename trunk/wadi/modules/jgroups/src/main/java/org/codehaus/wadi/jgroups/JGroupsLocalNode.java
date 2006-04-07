@@ -87,12 +87,6 @@ public class JGroupsLocalNode implements LocalNode {
       _localState=null;
       Object tmp;
       synchronized (_clusterState) {
-
-        if (_destination==null) {
-          _log.warn("attempting to setState() without a Destination");
-          return;
-        }
-
         tmp=_clusterState.put(_destination.getAddress(), state);
       }
 

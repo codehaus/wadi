@@ -43,7 +43,8 @@ public class JGroupsTopic extends JGroupsDestination implements Topic {
   }
 
 	protected Object readResolve() throws ObjectStreamException {
-		return _cluster.getDestination();
+		JGroupsCluster cluster=(JGroupsCluster)JGroupsCluster._cluster.get();
+		return cluster.getDestination();
 	}
 	
 	

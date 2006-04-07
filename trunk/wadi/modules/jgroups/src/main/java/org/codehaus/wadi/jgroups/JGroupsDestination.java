@@ -94,38 +94,29 @@ public class JGroupsDestination implements Destination, Serializable {
 	
 	// temp hack until I figure out how best to do this...
 	
-	public static Map _addressToDestination=new ConcurrentHashMap();
-	public static JGroupsCluster _cluster;
-	public static Map _clusterState;
-	
-	public static void setCluster(JGroupsCluster cluster) {
-		_cluster=cluster;
-	}
 	
 	public static JGroupsDestination get(Address address) {
+		JGroupsCluster cluster=(JGroupsCluster)JGroupsCluster._cluster.get();
+		return get(cluster, address);
+	}
+	
+	public static JGroupsDestination get(JGroupsCluster cluster, Address address) {
+		
 		if (address==null)
-			return (JGroupsDestination)_cluster.getDestination();
+			return (JGroupsDestination)cluster.getDestination();
 		
 		// TODO - optimise locking here later
 		JGroupsDestination destination;
-		synchronized (_addressToDestination) {
-			destination=(JGroupsDestination)_addressToDestination.get(address);
+		synchronized (cluster._addressToDestination) {
+			destination=(JGroupsDestination)cluster._addressToDestination.get(address);
 			if (destination==null) {
 				destination=new JGroupsDestination(address);
-				Node node=new JGroupsRemoteNode(_cluster, destination, _cluster.getClusterState());
+				Node node=new JGroupsRemoteNode(cluster, destination, cluster.getClusterState());
 				destination.init(node);
-				_addressToDestination.put(address, destination);
+				cluster._addressToDestination.put(address, destination);
 			}
 		}
 		return destination;
-	}
-	
-	public static void put(Address address, Destination destination) {
-		_addressToDestination.put(address, destination);
-	}
-	
-	public static void remove(Address address) {
-		_addressToDestination.remove(address);
 	}
 	
 }

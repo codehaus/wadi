@@ -279,6 +279,7 @@ public abstract class AbstractDispatcher implements Dispatcher, MessageListener 
 		
 		public void run() {
 			try {
+				hook();
 				_dispatcher.dispatch(_objectMessage, _serializable);
 				synchronized (_dispatcher) {
 					_dispatcher.decCount();
@@ -615,6 +616,9 @@ public abstract class AbstractDispatcher implements Dispatcher, MessageListener 
 	
 	public long getInactiveTime() {
 		return _inactiveTime;
+	}
+	
+	protected void hook() {
 	}
 	
 }
