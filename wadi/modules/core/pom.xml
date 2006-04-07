@@ -105,24 +105,20 @@
 	<artifactId>maven-surefire-plugin</artifactId>
 	<configuration>
 	  <excludes>
-	    <!-- stop surefire from trying to run nested classes... -->
-	    <exclude implementation="java.lang.String">**/*$*.java</exclude>
-	    <exclude implementation="java.lang.String">**/*.java</exclude>
-	    <!-- NullPtrs everywhere ! -->
-	    <exclude implementation="java.lang.String">**/TestContextualiser.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestEvicters.java</exclude>
-	    <exclude implementation="java.lang.String">**/io/TestServers.java</exclude>
-	    <!-- need tcp broker -->
-	    <exclude implementation="java.lang.String">**/TestReplication.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestCluster.java</exclude>
-	    <!-- very slow and not much use -->
-	    <exclude implementation="java.lang.String">**/TestActiveCluster.java</exclude>
-	    <!-- broken -->
-	    <exclude implementation="java.lang.String">**/io/TestMotion.java</exclude>
-	    <!-- old -->
-	    <exclude implementation="java.lang.String">**/old/**</exclude>
-	    <exclude implementation="java.lang.String">**/sandbox/jcache/TestJCache.java</exclude>
-	    <exclude implementation="java.lang.String">**/sandbox/partition/impl/TestExchange.java</exclude>
+
+	    <exclude implementation="java.lang.String">**/*$*.java</exclude> <!-- stop surefire from trying to run nested classes -->
+
+	    <exclude implementation="java.lang.String">**/sandbox/partition/impl/TestExchange.java</exclude> <!-- Failure -->
+	    <exclude implementation="java.lang.String">**/sandbox/jcache/TestJCache.java</exclude> <!-- NullPointerException -->
+	    <exclude implementation="java.lang.String">**/test/io/TestMotion.java</exclude> <!-- NullPointerException -->
+	    <exclude implementation="java.lang.String">**/test/io/TestServers.java</exclude> <!-- OutOfMemoryError -->
+	    <exclude implementation="java.lang.String">**/old/test/TestConcurrency.java</exclude> <!-- Exception -->
+	    <exclude implementation="java.lang.String">**/old/test/TestDistributedOwnership.java</exclude> <!-- OutOfMemoryError -->
+	    <exclude implementation="java.lang.String">**/old/test/TestUnicastClient.java</exclude> <!-- NoSuchMethodException -->
+	    <exclude implementation="java.lang.String">**/old/test/TestMulticastServer.java</exclude> <!-- NoSuchMethodException -->
+	    <exclude implementation="java.lang.String">**/test/TestActiveCluster.java</exclude> <!-- causes build to hang -->
+	    <exclude implementation="java.lang.String">**/test/TestGianni.java</exclude> <!-- leaves evicter running -->
+
 	  </excludes>
 	</configuration>
       </plugin>
