@@ -443,8 +443,8 @@
     id="Dispatcher"
     class="org.codehaus.wadi.activecluster.ActiveClusterDispatcher"
     >
-    <constructor-arg><value>${node.name}</value></constructor-arg>
     <constructor-arg><value>CLUSTER0</value></constructor-arg>
+    <constructor-arg><value>${node.name}</value></constructor-arg>
 <!--
     <constructor-arg><value>peer://org.codehaus.wadi</value></constructor-arg>
  -->
