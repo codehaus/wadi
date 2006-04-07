@@ -93,8 +93,8 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   public JGroupsCluster(String clusterName) throws ChannelException {
     super();
     _clusterName=clusterName;
-    _channel=new JChannel("state_transfer.xml"); // uses an xml stack config file from JGroups distro
-    //_channel=new JChannel("default_stack.xml"); // uses an xml stack config file from JGroups distro
+    //_channel=new JChannel("state_transfer.xml"); // uses an xml stack config file from JGroups distro
+    _channel=new JChannel("default.xml"); // uses an xml stack config file from JGroups distro
     _localNode=new JGroupsLocalNode(this, _clusterState);
     _cluster.set(this); // set ThreadLocal
   }
@@ -277,7 +277,12 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 
     }
 
-    if (_log.isInfoEnabled()) _log.info("JGroups View: " + newView.getMembers());
+    if (_log.isInfoEnabled()) {
+    	List members=new ArrayList();
+    	for (Iterator i=newView.getMembers().iterator(); i.hasNext(); )
+    		members.add(_addressToDestination.get(i.next()));
+    	_log.info("JGroups View: " + members);
+    }
 
   }
 
