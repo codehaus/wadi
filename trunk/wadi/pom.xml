@@ -282,7 +282,7 @@
     <module>modules/jboss4</module>
     <module>modules/webapp</module>
     <module>modules/assembly</module>
-    <module>wadi-site</module>
+    <module>modules/site</module>
   </modules>
 
   <properties>
@@ -579,11 +579,13 @@
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-clover-plugin</artifactId>
+<!--
 	<configuration>
 	  <aggregate>true</aggregate>
 	  <reactorProjects>wadi-core wadi-activecluster</reactorProjects>
 	  <waitForFlush>true</waitForFlush>
 	</configuration>
+-->
       </plugin>
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>

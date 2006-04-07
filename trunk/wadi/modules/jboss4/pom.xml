@@ -41,7 +41,7 @@
   </build>
 
   <reporting>
-    <outputDirectory>../../wadi-site/target/site/${artifactId}</outputDirectory>
+    <outputDirectory>../site/target/site/${artifactId}</outputDirectory>
     <plugins>
 <!--
       <plugin>
