@@ -578,25 +578,6 @@
     <plugins>
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-clover-plugin</artifactId>
-<!--
-	<configuration>
-	  <aggregate>true</aggregate>
-	  <reactorProjects>wadi-core wadi-activecluster</reactorProjects>
-	  <waitForFlush>true</waitForFlush>
-	</configuration>
--->
-      </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-javadoc-plugin</artifactId>
-      </plugin>
-      <plugin>
-	<groupId>org.codehaus.mojo</groupId>
-	<artifactId>surefire-report-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-project-info-reports-plugin</artifactId>
       </plugin>
     </plugins>
