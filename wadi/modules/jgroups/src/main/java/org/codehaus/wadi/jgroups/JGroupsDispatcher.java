@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.jgroups;
 
+import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -118,9 +120,9 @@ public class JGroupsDispatcher extends AbstractDispatcher {
   public synchronized void setDistributedState(Map state) throws Exception {
     // this seems to be the only test that ActiveCluster does, so there is no point in us doing any more...
     LocalNode localNode=_cluster.getLocalNode();
-    if (localNode.getState()!=state) {
+    //if (localNode.getState()!=state) {
       localNode.setState(state);
-    }
+   // }
   }
 
   public String getIncomingCorrelationId(ObjectMessage message) throws Exception {
@@ -154,4 +156,10 @@ public class JGroupsDispatcher extends AbstractDispatcher {
   public String getLocalNodeName() {
       throw new UnsupportedOperationException();
   }
+
+  protected void hook() {
+	  JGroupsCluster._cluster.set(_cluster);
+	  super.hook();
+  }
+  
 }
