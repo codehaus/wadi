@@ -1,7 +1,7 @@
 <project>
 
   <parent>
-    <groupId>wadi</groupId>
+    <groupId>org.codehaus.wadi</groupId>
     <artifactId>wadi</artifactId>
     <version>2.0M2-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
@@ -92,49 +92,47 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>wadi</groupId>
+      <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>wadi</groupId>
+      <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-activecluster</artifactId>
     </dependency>
     <dependency>
-      <groupId>wadi</groupId>
+      <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-jgroups</artifactId>
     </dependency>
     <dependency>
-      <groupId>wadi</groupId>
+      <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-tribes</artifactId>
     </dependency>
     <dependency>
-      <groupId>wadi</groupId>
+      <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-jetty5</artifactId>
     </dependency>
     <dependency>
-      <groupId>wadi</groupId>
+      <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-jetty6</artifactId>
     </dependency>
     <dependency>
-      <groupId>wadi</groupId>
+      <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-tomcat50</artifactId>
     </dependency>
     <dependency>
-      <groupId>wadi</groupId>
+      <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-tomcat55</artifactId>
     </dependency>
-<!--
     <dependency>
-      <groupId>wadi</groupId>
+      <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-axis2</artifactId>
     </dependency>
--->
     <dependency>
-      <groupId>wadi</groupId>
+      <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-jboss4</artifactId>
     </dependency>
     <dependency>
-      <groupId>wadi</groupId>
+      <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-webapp</artifactId>
       <type>war</type>
     </dependency>

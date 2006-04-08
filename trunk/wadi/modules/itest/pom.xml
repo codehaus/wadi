@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <parent>
-    <groupId>wadi</groupId>
+    <groupId>org.codehaus.wadi</groupId>
     <artifactId>wadi</artifactId>
     <version>2.0M2-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>wadi</groupId>
+  <groupId>org.codehaus.wadi</groupId>
   <artifactId>wadi-itest</artifactId>
   <packaging>jar</packaging>
   <name>WADI :: Integration Test Module</name>
@@ -40,7 +40,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>wadi</groupId>
+      <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-test-webapp</artifactId>
       <version>2.0-SNAPSHOT</version>
       <type>war</type>
