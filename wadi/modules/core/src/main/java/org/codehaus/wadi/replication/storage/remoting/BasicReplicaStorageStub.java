@@ -28,6 +28,7 @@ import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.replication.common.NodeInfo;
@@ -54,13 +55,13 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
 
     public void mergeCreate(Object key, ReplicaInfo replicaInfo) {
         replicaInfo = transformForStorage(replicaInfo);
-        CreateRequest command = new CreateRequest(key, replicaInfo);
+        ReplicaStorageRequest command = newCreateRequest(key, replicaInfo);
         sendCommand(command);
     }
 
     public void mergeUpdate(Object key, ReplicaInfo replicaInfo) {
         replicaInfo = transformForStorage(replicaInfo);
-        UpdateRequest command = new UpdateRequest(key, replicaInfo);
+        ReplicaStorageRequest command = newUpdateRequest(key, replicaInfo);
         sendCommand(command);
     }
 
@@ -87,16 +88,20 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
         return info;
     }
 
-    public void purge() {
-        throw new UnsupportedOperationException();
-    }
-    
     public NodeInfo getHostingNode() {
         throw new UnsupportedOperationException();
     }
 
     public boolean storeReplicaInfo(Object key) {
         throw new UnsupportedOperationException();
+    }
+
+    protected ReplicaStorageRequest newCreateRequest(Object key, ReplicaInfo replicaInfo) {
+        return new CreateRequest(key, replicaInfo);
+    }
+
+    protected ReplicaStorageRequest newUpdateRequest(Object key, ReplicaInfo replicaInfo) {
+        return new UpdateRequest(key, replicaInfo);
     }
 
     protected ObjectMessage sendCommand(ReplicaStorageRequest command) {
@@ -129,10 +134,6 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
         return message;
     }
     
-    protected ReplicaStorageRequest transformCommand(ReplicaStorageRequest command) {
-        return command;
-    }
-    
     protected ReplicaInfo transformForStorage(ReplicaInfo replicaInfo) {
         Object payload = replicaInfo.getReplica();
         if (null != payload) {
@@ -162,6 +163,11 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
         byte[] serializedPayload = (byte[]) payload;
         try {
             Streamer streamer = new SimpleStreamer();
+            streamer.init(new StreamerConfig() {
+                public ClassLoader getClassLoader() {
+                    return Thread.currentThread().getContextClassLoader();
+                }
+            });
             ByteArrayInputStream memIn = new ByteArrayInputStream(serializedPayload);
             ObjectInput is = streamer.getInputStream(memIn);
             payload = is.readObject();

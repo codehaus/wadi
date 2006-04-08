@@ -28,7 +28,7 @@ import org.codehaus.wadi.replication.storage.ReplicaStorageStubFactory;
  * @version $Revision$
  */
 public class BasicReplicaStorageStubFactory implements ReplicaStorageStubFactory {
-    private final Dispatcher dispatcher;
+    protected final Dispatcher dispatcher;
     
     public BasicReplicaStorageStubFactory(Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
@@ -40,12 +40,16 @@ public class BasicReplicaStorageStubFactory implements ReplicaStorageStubFactory
             NodeInfo nodeInfo = nodes[i];
             destinations[i] = dispatcher.getDestination(nodeInfo.getName());
         }
-        return new BasicReplicaStorageStub(dispatcher, destinations);
+        return newStub(destinations);
     }
 
     public ReplicaStorage buildStub() {
         Destination destinations[] =
             new Destination[] {dispatcher.getClusterDestination()};
+        return newStub(destinations);
+    }
+    
+    protected ReplicaStorage newStub(Destination[] destinations) {
         return new BasicReplicaStorageStub(dispatcher, destinations);
     }
 }

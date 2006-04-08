@@ -17,11 +17,9 @@ package org.codehaus.wadi.replication.manager.basic;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
@@ -208,35 +206,16 @@ public class BasicReplicationManager implements ReplicationManager {
     }
     
     private void updateReplicaStorages(Object key, ReplicaInfo replicaInfo, NodeInfo[] oldSecondaries, NodeInfo[] newSecondaries) {
-        Set destroySecondariesSet = new HashSet();
-        for (int i = 0; i < oldSecondaries.length; i++) {
-            destroySecondariesSet.add(oldSecondaries[i]);
+        StorageCommandBuilder commandBuilder = new StorageCommandBuilder(
+                key,
+                replicaInfo,
+                oldSecondaries);
+        
+        StorageCommand[] commands = commandBuilder.build();
+        for (int i = 0; i < commands.length; i++) {
+            StorageCommand command = commands[i];
+            command.execute(storageStubFactory);
         }
-        
-        Set createSecondariesSet = new HashSet();
-        Set updateSecondariesSet = new HashSet();
-        for (int i = 0; i < newSecondaries.length; i++) {
-            NodeInfo secondary = newSecondaries[i];
-            boolean exist = destroySecondariesSet.remove(secondary);
-            if (exist) {
-                updateSecondariesSet.add(secondary);
-            } else {
-                createSecondariesSet.add(secondary);
-            }
-        }
-        
-        NodeInfo createSecondaries[] = (NodeInfo[]) createSecondariesSet.toArray(new NodeInfo[0]);
-        NodeInfo updateSecondaries[] = (NodeInfo[]) updateSecondariesSet.toArray(new NodeInfo[0]);
-        NodeInfo destroySecondaries[] = (NodeInfo[]) destroySecondariesSet.toArray(new NodeInfo[0]);
-        
-        ReplicaStorage storage = newReplicaStorageStub(createSecondaries);
-        storage.mergeCreate(key, replicaInfo);
-        
-        storage = newReplicaStorageStub(updateSecondaries);
-        storage.mergeUpdate(key, new ReplicaInfo(primary, newSecondaries, null));
-        
-        storage = newReplicaStorageStub(destroySecondaries);
-        storage.mergeDestroy(key);
     }
     
     private class FilteringStorageListener implements ReplicaStorageListener {

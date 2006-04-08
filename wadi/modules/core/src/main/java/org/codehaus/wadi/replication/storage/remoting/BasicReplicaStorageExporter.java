@@ -46,7 +46,6 @@ public class BasicReplicaStorageExporter implements ReplicaStorageExporter {
     public void export(ReplicaStorage storage) throws Exception {
         this.storage = storage;
         
-        storage.purge();
         dispatcher.register(this, "onCommand", ReplicaStorageRequest.class);
         adviser.advertiseJoin(storage);
         
@@ -60,7 +59,6 @@ public class BasicReplicaStorageExporter implements ReplicaStorageExporter {
 
         adviser.advertiseLeave(storage);
         dispatcher.deregister("onCommand", ReplicaStorageRequest.class, 1000);
-        storage.purge();
     }
     
     public void onCommand(ObjectMessage message, ReplicaStorageRequest command) {
