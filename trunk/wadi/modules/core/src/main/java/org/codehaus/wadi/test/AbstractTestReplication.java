@@ -100,9 +100,7 @@ public abstract class AbstractTestReplication extends TestCase {
 		super.tearDown();
 	}
 
-	protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
-	
-	public void testReplication() throws Exception {
+	public void testReplication(Dispatcher dispatcher) throws Exception {
 
 		int sweepInterval=1000*60*60*24; // 1 eviction/day
 		boolean strictOrdering=true;
@@ -151,12 +149,7 @@ public abstract class AbstractTestReplication extends TestCase {
 		ReplicaterFactory replicaterfactory=new MemoryReplicaterFactory(numPartitions);
 		ProxiedLocation location = new HTTPProxiedLocation(new InetSocketAddress("localhost", 8080));
 		InvocationProxy proxy=new StandardHttpProxy("jsessionid");
-		//String clusterUri="peer://wadi";
-		String clusterUri="peer://org.codehaus.wadi";
-		String clusterName="TEST";
-		String nodeName="test.1";
 		PartitionManager partitionManager=new DummyPartitionManager(numPartitions);
-		Dispatcher dispatcher=createDispatcher(clusterName, nodeName, 5000L);
 		ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy, dispatcher, partitionManager, collapser);
 //		manager.setSessionListeners(new HttpSessionListener[]{});
 		//manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
