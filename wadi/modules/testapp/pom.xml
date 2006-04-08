@@ -1,7 +1,7 @@
 <project>
 
   <parent>
-    <groupId>wadi</groupId>
+    <groupId>org.codehaus.wadi</groupId>
     <artifactId>wadi</artifactId>
     <version>2.0M2-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
@@ -28,7 +28,7 @@
       <artifactId>geronimo-spec-servlet</artifactId>
     </dependency>
     <dependency>
-      <groupId>wadi</groupId>
+      <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-core</artifactId>
       <scope>provided</scope>
     </dependency>
