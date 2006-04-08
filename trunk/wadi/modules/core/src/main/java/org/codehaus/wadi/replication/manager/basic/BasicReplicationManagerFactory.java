@@ -23,6 +23,7 @@ import org.codehaus.wadi.replication.manager.remoting.BasicReplicationManagerExp
 import org.codehaus.wadi.replication.manager.remoting.BasicReplicationManagerStubFactory;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
+import org.codehaus.wadi.replication.storage.ReplicaStorageStubFactory;
 import org.codehaus.wadi.replication.storage.remoting.BasicReplicaStorageMonitor;
 import org.codehaus.wadi.replication.storage.remoting.BasicReplicaStorageStubFactory;
 import org.codehaus.wadi.replication.strategy.BackingStrategy;
@@ -44,11 +45,15 @@ public class BasicReplicationManagerFactory implements ReplicationManagerFactory
         return new BasicReplicationManager(
                 backingStrategy,
                 new BasicReplicationManagerStubFactory(dispatcher),
-                new BasicReplicaStorageStubFactory(dispatcher),
+                newReplicaStorageStubFactory(dispatcher),
                 new BasicReplicaStorageMonitor(dispatcher),
                 storage,
                 new BasicReplicationManagerExporter(dispatcher), 
                 nodeInfo);
+    }
+
+    protected ReplicaStorageStubFactory newReplicaStorageStubFactory(Dispatcher dispatcher) {
+        return new BasicReplicaStorageStubFactory(dispatcher);
     }
 
 }

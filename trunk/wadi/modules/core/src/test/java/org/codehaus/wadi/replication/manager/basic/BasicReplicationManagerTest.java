@@ -337,10 +337,6 @@ public class BasicReplicationManagerTest extends TestCase {
             throw new UnsupportedOperationException();
         }
 
-        public void purge() {
-            throw new UnsupportedOperationException();
-        }
-
         public NodeInfo getHostingNode() {
             throw new UnsupportedOperationException();
         }

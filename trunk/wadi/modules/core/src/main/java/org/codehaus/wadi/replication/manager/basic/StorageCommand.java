@@ -13,27 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.replication.storage;
+package org.codehaus.wadi.replication.manager.basic;
 
-import org.codehaus.wadi.Lifecycle;
-import org.codehaus.wadi.replication.common.NodeInfo;
-import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.replication.storage.ReplicaStorageStubFactory;
 
-
-/**
- * 
- * @version $Revision$
- */
-public interface ReplicaStorage extends Lifecycle {
-    void mergeCreate(Object key, ReplicaInfo replicaInfo);
-    
-    void mergeUpdate(Object key, ReplicaInfo replicaInfo);
-    
-    void mergeDestroy(Object key);
-    
-    ReplicaInfo retrieveReplicaInfo(Object key);
-
-    boolean storeReplicaInfo(Object key);
-
-    NodeInfo getHostingNode();
+interface StorageCommand {
+    void execute(ReplicaStorageStubFactory storageStubFactory);
 }

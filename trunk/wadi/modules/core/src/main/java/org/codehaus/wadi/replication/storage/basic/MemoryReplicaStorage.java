@@ -46,6 +46,7 @@ public class MemoryReplicaStorage implements ReplicaStorage {
 
     public void stop() throws Exception {
         storageExporter.unexport(this);
+        keyToReplica.clear();
     }
     
     public void mergeCreate(Object key, ReplicaInfo replicaInfo) {
@@ -86,12 +87,6 @@ public class MemoryReplicaStorage implements ReplicaStorage {
     public boolean storeReplicaInfo(Object key) {
         synchronized (keyToReplica) {
             return keyToReplica.containsKey(key);
-        }
-    }
-    
-    public void purge() {
-        synchronized (keyToReplica) {
-            keyToReplica.clear();
         }
     }
     

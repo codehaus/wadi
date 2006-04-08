@@ -62,16 +62,6 @@ public class MemoryReplicaStorageTest extends TestCase {
         assertFalse(storage.storeReplicaInfo(key));
     }
 
-    public void testPurge() {
-        Object key = new Object();
-        Object replica = new Object();
-        ReplicaInfo replicaInfo = new ReplicaInfo(node1, new NodeInfo[] {node2}, replica);
-        storage.mergeCreate(storage, replicaInfo);
-
-        storage.purge();
-        assertFalse(storage.storeReplicaInfo(key));
-    }
-    
     protected void setUp() throws Exception {
         storage = new MemoryReplicaStorage(null, new NodeInfo("node"));
         node1 = new NodeInfo("node1");
