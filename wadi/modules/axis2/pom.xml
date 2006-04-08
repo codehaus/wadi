@@ -21,6 +21,36 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.apache.ws.policy</groupId>
+      <artifactId>policy</artifactId>
+      <version>WADI</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ws.commons.schema</groupId>
+      <artifactId>XmlSchema</artifactId>
+      <version>WADI</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.axiom</groupId>
+      <artifactId>axiom</artifactId>
+      <version>WADI</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.axiom</groupId>
+      <artifactId>axiom-api</artifactId>
+      <version>WADI</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.axiom</groupId>
+      <artifactId>axiom-dom</artifactId>
+      <version>WADI</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.axiom</groupId>
+      <artifactId>axiom-impl</artifactId>
+      <version>WADI</version>
+    </dependency>
+    <dependency>
       <groupId>axis2</groupId>
       <artifactId>axis2</artifactId>
       <version>WADI</version>
