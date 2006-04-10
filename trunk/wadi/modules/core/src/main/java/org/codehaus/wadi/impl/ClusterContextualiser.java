@@ -182,10 +182,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	}
 
 	public Immoter getSharedDemoter() {
-		if (getEvacuationPartnersCount()>0) {
+		// how many partitions are we responsible for ?
+		if (_dindex.getPartitionManager().getPartitionKeys().size()==0) { // TODO - involves an unecessary allocation
+			// evacuate sessions to their respective partition masters...
 			ensureEvacuationQueue();
 			return getImmoter();
 		} else {
+			// we must be the last node, push the sessions downwards into shared store...
 			return _next.getSharedDemoter();
 		}
 	}
@@ -470,6 +473,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 	public Motable get(String name) {
 		throw new UnsupportedOperationException();
+	}
+	
+	protected static final String _prefix="<"+Utils.basename(ClusterContextualiser.class)+": ";
+	protected static final String _suffix=">";
+
+	public String toString() {
+		return _prefix+_cluster+_suffix;
 	}
 
 }

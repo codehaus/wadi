@@ -197,6 +197,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   public void start() throws JMSException {
     try {
       //_channel.setOpt(Channel.LOCAL, Boolean.FALSE); // exclude ourselves from our own broadcasts... - BUT also from Unicasts :-(
+    	//_channel.open();
       _channel.connect(_clusterName);
       _log.info("connected to channel");
       _clusterTopic=new JGroupsTopic("CLUSTER", null); // null address means broadcast to all members
@@ -219,10 +220,13 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 
   public void stop() throws JMSException {
 	  _channel.disconnect();
+	  _channel.close();
 	  _log.info("disconnected from channel");
-	  _clusterTopic=null;
-	  _localDestination=null;
-	  _localAddress=null;
+	  // TODO
+	  // hmmm... sometimes we get messages hitting the Dispatcher even after we have closed the channel - we need to wait for them somehow...
+	  //_clusterTopic=null;
+	  //_localDestination=null;
+	  //_localAddress=null;
 	  _clusterState.clear();
   }
 

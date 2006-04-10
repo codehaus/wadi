@@ -54,8 +54,7 @@
 	<configuration>
 	  <excludes>
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- stop surefire from trying to run nested classes... -->
-	    <exclude implementation="java.lang.String">**/TestEvacuation.java</exclude>
-	    <exclude implementation="java.lang.String">**/gridstate/TestGCache.java</exclude>
+	    <exclude implementation="java.lang.String">**/gridstate/TestGCache.java</exclude> <!-- TODO -->
 	  </excludes>
 	</configuration>
       </plugin>
@@ -65,12 +64,10 @@
   <reporting>
     <outputDirectory>../site/target/site/${artifactId}</outputDirectory>
     <plugins>
-      <!--
       <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-clover-plugin</artifactId>
-    </plugin>
-      -->
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-clover-plugin</artifactId>
+      </plugin>
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-javadoc-plugin</artifactId>
