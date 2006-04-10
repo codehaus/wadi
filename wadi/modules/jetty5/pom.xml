@@ -74,13 +74,11 @@
 	<configuration>
 	  <source>${jse.version}</source>
 	  <links>
-	    <link>http://java.sun.com/j2se/${jse.version}/docs/api/</link>
-	    <link>http://java.sun.com/j2ee/${jee.version}/docs/api/</link>
-	    <link>http://jakarta.apache.org/commons/logging/apidocs/</link>
-	    <link>http://wadi.codehaus.org/wadi-core/apidocs/</link>
-	    <link>http://jetty.mortbay.org/javadoc/</link>
-	    <link></link>
-	    <link></link>
+	    <link>http://java.sun.com/j2se/${jse.version}/docs/api</link>
+	    <link>http://java.sun.com/j2ee/${jee.version}/docs/api</link>
+	    <link>http://jakarta.apache.org/commons/logging/apidocs</link>
+	    <link>http://wadi.codehaus.org/wadi-core/apidocs</link>
+	    <link>http://jetty.mortbay.org/javadoc</link>
 	  </links>
 	</configuration>
       </plugin>
