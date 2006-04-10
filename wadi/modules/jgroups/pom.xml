@@ -77,11 +77,11 @@
 	  <source>${jse.version}</source>
 	  <links>
 	    <!-- missing apis: activecluster -->
-	    <link>http://java.sun.com/j2se/${jse.version}/docs/api/</link>
-	    <link>http://java.sun.com/j2ee/${jee.version}/docs/api/</link>
-	    <link>http://jakarta.apache.org/commons/logging/apidocs/</link>
-	    <link>http://wadi.codehaus.org/wadi-core/apidocs/</link>
-	    <link>http://www.jgroups.org/javagroupsnew/docs/javadoc/</link>
+	    <link>http://java.sun.com/j2se/${jse.version}/docs/api</link>
+	    <link>http://java.sun.com/j2ee/${jee.version}/docs/api</link>
+	    <link>http://jakarta.apache.org/commons/logging/apidocs</link>
+	    <link>http://wadi.codehaus.org/wadi-core/apidocs</link>
+	    <link>http://www.jgroups.org/javagroupsnew/docs/javadoc</link>
 	  </links>
 	</configuration>
       </plugin>
