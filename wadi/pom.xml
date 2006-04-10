@@ -268,6 +268,19 @@
 -->
   </repositories>
 
+  <pluginRepositories>
+<!--
+    <pluginRepository>
+      <id>maven-snapshot-repository</id>
+      <name>Maven Snapshot Repository</name>
+      <url>http://cvs.apache.org/maven-snapshot-repository</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </pluginRepository>
+-->
+  </pluginRepositories>
+
   <modules>
     <module>modules/core</module>
     <module>modules/activecluster</module>
@@ -286,6 +299,8 @@
   </modules>
 
   <properties>
+    <jse.version>1.4</jse.version>
+    <jee.version>1.4</jee.version>
     <jetty5.version>5.1.9</jetty5.version>
     <jetty6.version>6.0.0beta12</jetty6.version>
     <!-- <jetty6.version>6.0-SNAPSHOT</jetty6.version> -->
@@ -580,6 +595,39 @@
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-project-info-reports-plugin</artifactId>
       </plugin>
+      <!-- try to get javadoc aggregation working -->
+<!--
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-javadoc-plugin</artifactId>
+	<version>2.0-20060330.003327-1</version>
+	<configuration>
+	  <aggregate>true</aggregate>
+	  <source>${jse.version}</source>
+	  <links>
+	    <link>http://java.sun.com/j2se/${jse.version}/docs/api</link>
+	    <link>http://java.sun.com/j2ee/${jee.version}/docs/api</link>
+	    <link>http://jakarta.apache.org/commons/logging/apidocs</link>
+	    <link>http://www.junit.org/junit/javadoc/3.8.1</link>
+	    <link>http://jakarta.apache.org/commons/logging/apidocs</link>
+
+	    <link>http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent</link>
+
+	    <link>http://jakarta.apache.org/commons/httpclient/apidocs</link>
+	    <link>http://geronimo.apache.org/specs/servlet/apidocs</link>
+	    <link>http://geronimo.apache.org/specs/jms/apidocs</link>
+	    <link>http://mx4j.sourceforge.net/docs/api</link>
+	    <link>http://activemq.codehaus.org/maven/apidocs</link>
+	    <link>http://activecluster.codehaus.org/maven/apidocs</link>
+
+	    <link>http://jetty.mortbay.org/javadoc</link>
+
+	    <link>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/catalina/docs</link>
+	    <link>http://dev.eclipse.org/viewcvs/indextech.cgi/~checkout~/aspectj-home/doc/api</link>
+	  </links>
+	</configuration>
+      </plugin>
+      -->
     </plugins>
   </reporting>
 
