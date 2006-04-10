@@ -66,6 +66,36 @@
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-surefire-plugin</artifactId>
+	<configuration>
+	  <systemProperties>
+	    <!-- <forkMode>pertest</forkMode> -->
+	    <argLine>-enableassertions -Xmx1024m</argLine>
+	    <property>
+	      <name>axis2.xml</name>
+	      <value></value>
+	    </property>
+	    <property>
+	      <name>axis2.repo</name>
+	      <value>${basedir}</value>
+	    </property>
+	    <property>
+	      <name>org.apache.commons.logging.Log</name>
+	      <value>org.apache.commons.logging.impl.SimpleLog</value>
+	    </property>
+	    <property>
+	      <name>org.apache.commons.logging.simplelog.showdatetime</name>
+	      <value>true</value>
+	    </property>
+	    <property>
+	      <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi</name>
+	      <value>debug</value>
+	    </property>
+	    <property>
+	      <name>java.net.preferIPv4Stack</name><!-- keep jgroups happy -->
+	      <value>true</value>
+	    </property>
+	  </systemProperties>
+	</configuration>
       </plugin>
     </plugins>
   </build>
