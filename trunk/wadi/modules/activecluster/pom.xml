@@ -49,6 +49,7 @@
 	<configuration>
 	  <excludes>
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- stop surefire from trying to run nested classes... -->
+	    <exclude implementation="java.lang.String">**/TestRelocation.java</exclude> <!-- Exceptions -->
 	    <exclude implementation="java.lang.String">**/TestReplication.java</exclude> <!-- overruns, needs investigation -->
 	  </excludes>
 	</configuration>
@@ -66,6 +67,15 @@
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-javadoc-plugin</artifactId>
+	<configuration>
+	  <links>
+	    <!-- missing apis: activecluster -->
+	    <link>http://java.sun.com/j2se/${jse.version}/docs/api/</link>
+	    <link>http://java.sun.com/j2ee/${jee.version}/docs/api/</link>
+	    <link>http://jakarta.apache.org/commons/logging/apidocs/</link>
+	    <link>http://wadi.codehaus.org/wadi-core/apidocs/</link>
+	  </links>
+	</configuration>
       </plugin>
       <plugin>
 	<groupId>org.codehaus.mojo</groupId>
