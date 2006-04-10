@@ -219,7 +219,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	public void onNodeRemoved(ClusterEvent event) {
 		Node node=event.getNode();
-		if (_log.isDebugEnabled()) _log.debug("node left: "+getNodeName(node));
+		if (_log.isDebugEnabled()) _log.debug("node leaving: "+getNodeName(node));
 		_leavers.add(node.getDestination());
 		if (_coordinator!=null)
 			_coordinator.queueRebalancing();
