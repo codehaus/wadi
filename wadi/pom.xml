@@ -202,7 +202,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -301,6 +301,7 @@
   <properties>
     <jse.version>1.4</jse.version>
     <jee.version>1.4</jee.version>
+    <junit.version>3.8.1</junit.version>
     <jetty5.version>5.1.9</jetty5.version>
     <jetty6.version>6.0.0beta12</jetty6.version>
     <!-- <jetty6.version>6.0-SNAPSHOT</jetty6.version> -->
@@ -608,7 +609,7 @@
 	    <link>http://java.sun.com/j2se/${jse.version}/docs/api</link>
 	    <link>http://java.sun.com/j2ee/${jee.version}/docs/api</link>
 	    <link>http://jakarta.apache.org/commons/logging/apidocs</link>
-	    <link>http://www.junit.org/junit/javadoc/3.8.1</link>
+	    <link>http://www.junit.org/junit/javadoc/${junit.version}</link>
 	    <link>http://jakarta.apache.org/commons/logging/apidocs</link>
 
 	    <link>http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent</link>
