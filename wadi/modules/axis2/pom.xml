@@ -21,6 +21,12 @@
 
   <dependencies>
     <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <!-- <scope>test</scope> -->
+    </dependency>
+    <dependency>
       <groupId>org.apache.ws.policy</groupId>
       <artifactId>policy</artifactId>
       <version>WADI</version>
@@ -88,12 +94,14 @@
 
   <build>
     <plugins>
+      <!--
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-surefire-plugin</artifactId>
 	<configuration>
+	  <excludes>
+	  </excludes>
 	  <systemProperties>
-	    <!-- <forkMode>pertest</forkMode> -->
 	    <argLine>-enableassertions -Xmx1024m</argLine>
 	    <property>
 	      <name>axis2.xml</name>
@@ -115,13 +123,10 @@
 	      <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi</name>
 	      <value>debug</value>
 	    </property>
-	    <property>
-	      <name>java.net.preferIPv4Stack</name><!-- keep jgroups happy -->
-	      <value>true</value>
-	    </property>
 	  </systemProperties>
 	</configuration>
       </plugin>
+      -->
     </plugins>
   </build>
 
