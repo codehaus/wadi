@@ -19,6 +19,15 @@
     <url>http://svn.wadi.codehaus.org/wadi/modules/axis2</url>
   </scm>
 
+  <repositories>
+    <repository><!-- TODO: seems to be needed for woodstox -->
+      <id>maven1-ibiblio</id>
+      <name>Maven 1 Repository at Ibiblio</name>
+      <url>http://ibiblio.org/maven</url>
+      <layout>legacy</layout>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
