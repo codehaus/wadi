@@ -37,7 +37,9 @@
       <menu name="Developers">
          <item name="Maven 2.0.x" href="http://docs.codehaus.org/display/WADI/Maven+2.0.x"/>
          <item name="Eclipse 3.2.x" href="http://docs.codehaus.org/display/WADI/Eclipse-3.2.x"/>
-         <item name="Our Library" href="http://docs.codehaus.org/display/WADI/Library" />
+         <item name="Library" href="http://docs.codehaus.org/display/WADI/Library"/>
+         <item name="Maven2 Releases" href="http://repository.codehaus.org"/>
+         <item name="Maven2 SnapShots" href="http://snapshot.repository.codehaus.org"/>
       </menu>
 
       <menu name="Modules">
@@ -56,7 +58,7 @@
       </menu>
 
       <menu name="Source">
-         <item name="FishEye" href="http://cvs.wadi.codehaus.org" />
+         <item name="FishEye" href="http://cvs.wadi.codehaus.org"/>
          <item name="SVN snapshot (zip)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=zip/wadi/wadi.zip"/>
          <item name="SVN snapshot (tgz)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tgz/wadi/wadi.tgz"/>
          <item name="SVN snapshot (tbz2)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tbz2/wadi/wadi.tbz2"/>
