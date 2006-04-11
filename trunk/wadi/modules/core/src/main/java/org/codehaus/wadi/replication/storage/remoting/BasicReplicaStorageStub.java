@@ -72,7 +72,7 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
 
     public ReplicaInfo retrieveReplicaInfo(Object key) {
         RetrieveReplicaInfoRequest command = new RetrieveReplicaInfoRequest(key);
-        ObjectMessage message = sendCommand(command);
+        ObjectMessage message = sendCommand(command, new MinimumReceivedMessageCallback(1));
         if (null == message) {
             return null;
         }
@@ -105,33 +105,49 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
     }
 
     protected ObjectMessage sendCommand(ReplicaStorageRequest command) {
+        return sendCommand(command, null);
+    }    
+    
+    protected ObjectMessage sendCommand(ReplicaStorageRequest command, TwoWayMessageCallback callback) {
         ObjectMessage message = null;
-
         if (command.isOneWay()) {
-            for (int i = 0; i < destinations.length; i++) {
-                Destination destination = destinations[i];
-                try {
-                    dispatcher.send(destination, command);
-                } catch (Exception e) {
-                    log.warn("Error when sending command " + command  + 
-                            " to destination " + destination, e);
-                }
-            }
+            sendOneWay(command);
         } else {
-            for (int i = 0; i < destinations.length && null == message; i++) {
-                Destination destination = destinations[i];
-                try {
-                    Destination from = dispatcher.getLocalDestination();
-                    long replyTimeout = command.getTwoWayTimeout();
-                    message = dispatcher.exchangeSend(from, destination, command, replyTimeout);
-                } catch (Exception e) {
-                    log.warn("Error when sending command " + command  + 
-                            " to destination " + destination, e);
-                }
+            if (null == callback) {
+                callback = new MinimumReceivedMessageCallback(destinations.length);
+            }
+            message = sendTwoWay(command, callback);
+        }
+        return message;
+    }
+
+    protected ObjectMessage sendTwoWay(ReplicaStorageRequest command, TwoWayMessageCallback callback) {
+        ObjectMessage message = null;
+        for (int i = 0; i < destinations.length && !callback.testStopSend(); i++) {
+            Destination destination = destinations[i];
+            try {
+                Destination from = dispatcher.getLocalDestination();
+                long replyTimeout = command.getTwoWayTimeout();
+                message = dispatcher.exchangeSend(from, destination, command, replyTimeout);
+                callback.receivedMessage(message);
+            } catch (Exception e) {
+                log.warn("Error when sending command " + command  + 
+                        " to destination " + destination, e);
             }
         }
-        
         return message;
+    }
+
+    protected void sendOneWay(ReplicaStorageRequest command) {
+        for (int i = 0; i < destinations.length; i++) {
+            Destination destination = destinations[i];
+            try {
+                dispatcher.send(destination, command);
+            } catch (Exception e) {
+                log.warn("Error when sending command " + command  + 
+                        " to destination " + destination, e);
+            }
+        }
     }
     
     protected ReplicaInfo transformForStorage(ReplicaInfo replicaInfo) {

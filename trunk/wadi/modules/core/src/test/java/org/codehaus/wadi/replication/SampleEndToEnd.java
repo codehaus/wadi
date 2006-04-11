@@ -30,7 +30,6 @@ import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 
 public abstract class SampleEndToEnd extends TestCase {
     private static final String CLUSTER_NAME = "OPENEJB_CLUSTER";
-    private static final String CLUSTER_URI = "vm://clusterName?marshal=false&broker.persistent=false";
     private static final int TEMPO = 200;
 
     private NodeInfo nodeInfo1;
@@ -146,8 +145,6 @@ public abstract class SampleEndToEnd extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        //setUpBroker();
-
         BasicReplicationManagerFactory managerFactory = new BasicReplicationManagerFactory();
         ReplicaStorageFactory storageFactory = new BasicReplicaStorageFactory();
 
@@ -171,13 +168,6 @@ public abstract class SampleEndToEnd extends TestCase {
         dispatcher3 = buildDispatcher(nodeInfo3);
         replicaStorage3 = storageFactory.factory(dispatcher3, nodeInfo3);
     }
-
-//    private void setUpBroker() throws JMSException {
-//        BrokerContainer broker = new BrokerContainerImpl(CLUSTER_NAME);
-//        broker.addConnector(CLUSTER_URI);
-//        broker.setPersistenceAdapter(new VMPersistenceAdapter());
-//        broker.start();
-//    }
 
     protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
     
