@@ -11,14 +11,14 @@
    </bannerRight>
    <body>
       <links>
-         <item name="Geronimo" href="http://geronimo.apache.org"/>
-         <item name="Tomcat" href="http://tomcat.apache.org"/>
-         <item name="Jetty" href="http://jetty.mortbay.org/jetty/index.html"/>
+         <item name="Tribes" href="http://svn.apache.org/viewcvs.cgi/tomcat/container/tc5.5.x/modules/groupcom"/>
       </links>
-      
+
       <menu name="WADI">
-         <item name="Wadi" href="../index.html"/>
+         <item name="WADI" href="../index.html"/>
       </menu>
+
       ${reports}
+
    </body>
 </project>
