@@ -255,13 +255,13 @@
       <name>Maven 2 Repository at Ibiblio</name>
       <url>http://ibiblio.org/maven2</url>
     </repository>
-<!--
     <repository>
       <id>maven1-ibiblio</id>
       <name>Maven 1 Repository at Ibiblio</name>
       <url>http://ibiblio.org/maven</url>
       <layout>legacy</layout>
     </repository>
+<!--
     <repository>
       <id>codehaus</id>
       <name>Codehaus Repo</name>
