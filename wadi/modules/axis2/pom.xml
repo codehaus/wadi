@@ -59,6 +59,31 @@
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>woodstox</groupId>
+      <artifactId>wstx</artifactId>
+      <version>asl-2.9.2</version>
+    </dependency>
+    <dependency>
+      <groupId>stax</groupId>
+      <artifactId>stax-api</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>axis</groupId>
+      <artifactId>axis-wsdl4j</artifactId>
+      <version>1.2</version>
+   </dependency>
+   <dependency>
+      <groupId>annogen</groupId>
+      <artifactId>annogen</artifactId>
+      <version>0.1.0</version>
+   </dependency>
+   <dependency>
+     <groupId>commons-httpclient</groupId>
+     <artifactId>commons-httpclient</artifactId>
+     <version>3.0</version>
+   </dependency>
   </dependencies>
 
   <build>
@@ -72,11 +97,11 @@
 	    <argLine>-enableassertions -Xmx1024m</argLine>
 	    <property>
 	      <name>axis2.xml</name>
-	      <value></value>
+	      <value>${basedir}/resources/axis2.xml</value>
 	    </property>
 	    <property>
 	      <name>axis2.repo</name>
-	      <value>${basedir}</value>
+	      <value>${basedir}/resources</value>
 	    </property>
 	    <property>
 	      <name>org.apache.commons.logging.Log</name>
