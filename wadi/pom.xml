@@ -209,29 +209,28 @@
 
   <distributionManagement>
     <site>
-      <id>wadi-website</id>
+      <id>wadi-website-dir</id>
       <name>WADI Website</name>
-      <url>scpexe://beaver.codehaus.org/home/projects/wadi/public_html/</url>
+      <url>scpexe://beaver.codehaus.org/home/projects/wadi/doesnt_work/</url>
     </site>
     <repository>
-      <id>codehaus-repo</id>
+      <id>wadi-release-dir</id>
       <name>Codehaus Repository</name>
-      <url>scpexe://beaver.codehaus.org/dist</url>
+      <url>scpexe://wadi.codehaus.org:/home/projects/wadi/dist</url>
       <layout>legacy</layout>
     </repository>
     <snapshotRepository>
-      <id>codehaus-snapshots</id>
+      <id>wadi-snapshot-repository</id>
       <name>Codehaus Snapshots</name>
-      <url>scpexe://beaver.codehaus.org/dist</url>
-      <layout>legacy</layout>
+      <url>scpexe://wadi.codehaus.org:/home/projects/wadi/dist/maven2</url>
     </snapshotRepository>
   </distributionManagement>
 
   <repositories>
     <repository>
-      <id>wadi-stuff</id>
-      <name>WADI specific repo</name>
-      <url>http://codehaus.org/~jules/maven2</url>
+      <id>wadi-dependencies</id>
+      <name>WADI Dependencies Repository at the Haus</name>
+      <url>http://dist.codehaus.org/wadi/dependencies/maven2</url>
     </repository>
     <repository>
       <id>maven2-ibiblio</id>
