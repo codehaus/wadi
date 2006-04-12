@@ -12,13 +12,13 @@ echo "system is `uname -a`"
 echo "shell is $SHELL"
 echo "user is `id`"
 type java
-java -fullversion
+ java -fullversion 2>&1
 type mvn
 mvn -version
 echo "cwd is `pwd`"
 echo
-mvn  -Duser.home=. clean:clean && \
-mvn  -Duser.home=. package
+mvn -Duser.home=. clean:clean && \
+mvn -Duser.home=. package
 echo
 echo "***** BeetleJuice build completed *****"
 
