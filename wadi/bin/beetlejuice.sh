@@ -7,9 +7,9 @@ then
     ## we are being run by Beetlejuice...
     export JAVA_HOME=/usr/local/java-1.4
     export M2_HOME=/usr/local/maven-2.0
+    export M2_HOME=/usr/local/maven-2.0.3-SNAPSHOT
     export PATH=$JAVA_HOME/bin:$M2_HOME/bin:$PATH
     export PROPS="-Duser.home=."
-    ls /usr/local/
 else
     ## we are being run by hand...
     ## JAVA_HOME and PATH should already be correctly initialised...
