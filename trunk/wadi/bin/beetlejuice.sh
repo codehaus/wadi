@@ -21,7 +21,7 @@ echo "system is `uname -a`"
 echo "shell is $SHELL"
 echo "user is `id`"
 type java
- java -fullversion 2>&1
+ java -fullversion 2>&1 | cat
 type mvn
 mvn -version
 echo "cwd is `pwd`"
