@@ -17,8 +17,8 @@ type mvn
 mvn -version
 echo "cwd is `pwd`"
 echo
-mvn clean:clean && \
-mvn package
+mvn  -Duser.home=. clean:clean && \
+mvn  -Duser.home=. package
 echo
 echo "***** BeetleJuice build completed *****"
 
