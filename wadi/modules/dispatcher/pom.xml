@@ -48,10 +48,6 @@
     <plugins>
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-clover-plugin</artifactId>
-      </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-javadoc-plugin</artifactId>
 	<configuration>
 	  <source>${jse.version}</source>
