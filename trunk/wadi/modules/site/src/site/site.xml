@@ -38,6 +38,7 @@
          <item name="Maven 2.0.x" href="http://docs.codehaus.org/display/WADI/Maven+2.0.x"/>
          <item name="Eclipse 3.2.x" href="http://docs.codehaus.org/display/WADI/Eclipse-3.2.x"/>
          <item name="Library" href="http://docs.codehaus.org/display/WADI/Library"/>
+         <item name="BeetleJuice" href="http://ci.codehaus.org/beetlejuice/viewProjectSummary.action?projectName=WADI"/>
          <item name="Maven2 Releases" href="http://repository.codehaus.org"/>
          <item name="Maven2 SnapShots" href="http://snapshot.repository.codehaus.org"/>
       </menu>
