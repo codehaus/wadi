@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 ## an integration script for the BeetleJuice ci system.
 
@@ -21,7 +21,7 @@ echo "system is `uname -a`"
 echo "shell is $SHELL"
 echo "user is `id`"
 type java
- java -fullversion 2>&1 | cat
+java -fullversion 2>&1 | cat
 type mvn
 mvn -version
 echo "cwd is `pwd`"
