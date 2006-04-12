@@ -1,10 +1,11 @@
-package org.codehaus.wadi.jgroups;
+package org.codehaus.wadi.test.relocation;
 
-import org.codehaus.wadi.test.AbstractTestRelocation;
+import org.codehaus.wadi.jgroups.JGroupsDispatcher;
 
-public class TestRelocation extends AbstractTestRelocation {
+
+public class TestJGRelocation extends AbstractTestRelocation {
 	
-	public TestRelocation(String arg0) {
+	public TestJGRelocation(String arg0) {
 		super(arg0);
 	}
 	

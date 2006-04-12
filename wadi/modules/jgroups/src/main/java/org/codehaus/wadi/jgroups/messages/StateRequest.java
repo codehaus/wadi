@@ -17,7 +17,8 @@
 package org.codehaus.wadi.jgroups.messages;
 
 import java.io.Serializable;
-import org.codehaus.wadi.impl.Utils;
+
+import org.codehaus.wadi.jgroups.Utils;
 
 public class StateRequest implements Serializable {
   

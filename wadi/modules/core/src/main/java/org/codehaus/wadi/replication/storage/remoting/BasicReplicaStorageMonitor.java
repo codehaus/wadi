@@ -25,7 +25,7 @@ import javax.jms.ObjectMessage;
 
 import org.apache.activecluster.ClusterEvent;
 import org.apache.activecluster.ClusterListener;
-import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.replication.common.ComponentEventType;
 import org.codehaus.wadi.replication.common.NodeInfo;
 

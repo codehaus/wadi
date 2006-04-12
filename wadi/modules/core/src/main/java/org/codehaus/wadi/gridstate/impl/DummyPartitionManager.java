@@ -18,9 +18,9 @@ package org.codehaus.wadi.gridstate.impl;
 
 import javax.jms.Destination;
 
-import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionManagerConfig;
+import org.codehaus.wadi.group.Dispatcher;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

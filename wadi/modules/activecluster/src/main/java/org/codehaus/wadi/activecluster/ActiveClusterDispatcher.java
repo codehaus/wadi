@@ -32,9 +32,8 @@ import org.apache.activecluster.Node;
 import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.gridstate.DispatcherConfig;
-import org.codehaus.wadi.gridstate.impl.AbstractDispatcher;
+import org.codehaus.wadi.group.DispatcherConfig;
+import org.codehaus.wadi.group.impl.AbstractDispatcher;
 
 /**
  * A Dispatcher for ActiveCluster
@@ -200,7 +199,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 		}
 
 		if (destination.equals(localDestination))
-			return DIndex.getNodeName(localNode);
+			return getNodeName(localNode);
 
 		Destination clusterDestination=_cluster.getDestination();
 		if (destination.equals(clusterDestination))
@@ -208,7 +207,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 
 		Node node=null;
 		if ((node=(Node)_cluster.getNodes().get(destination))!=null)
-			return DIndex.getNodeName(node);
+			return getNodeName(node);
 
 		return "<unknown>";
 	}

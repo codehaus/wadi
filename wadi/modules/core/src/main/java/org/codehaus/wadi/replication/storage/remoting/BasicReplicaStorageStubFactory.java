@@ -17,7 +17,7 @@ package org.codehaus.wadi.replication.storage.remoting;
 
 import javax.jms.Destination;
 
-import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.ReplicaStorageStubFactory;

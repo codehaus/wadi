@@ -1,10 +1,10 @@
-package org.codehaus.wadi.activecluster;
+package org.codehaus.wadi.test.relocation;
 
-import org.codehaus.wadi.test.AbstractTestRelocation;
+import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
 
-public class TestRelocation extends AbstractTestRelocation {
+public class TestACRelocation extends AbstractTestRelocation {
 
-	public TestRelocation(String arg0) {
+	public TestACRelocation(String arg0) {
 		super(arg0);
 	}
 	

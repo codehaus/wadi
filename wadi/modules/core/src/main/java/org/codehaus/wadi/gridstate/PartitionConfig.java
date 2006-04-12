@@ -18,6 +18,8 @@ package org.codehaus.wadi.gridstate;
 
 import javax.jms.Destination;
 
+import org.codehaus.wadi.group.Dispatcher;
+
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

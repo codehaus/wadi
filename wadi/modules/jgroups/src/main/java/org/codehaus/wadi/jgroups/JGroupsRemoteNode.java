@@ -18,9 +18,10 @@ package org.codehaus.wadi.jgroups;
 
 import java.util.Collections;
 import java.util.Map;
+
 import javax.jms.Destination;
+
 import org.apache.activecluster.Node;
-import org.codehaus.wadi.impl.Utils;
 
 public class JGroupsRemoteNode implements Node {
 

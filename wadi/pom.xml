@@ -276,6 +276,7 @@
   </pluginRepositories>
 
   <modules>
+    <module>modules/dispatcher</module>
     <module>modules/core</module>
     <module>modules/activecluster</module>
     <module>modules/jgroups</module>
@@ -306,6 +307,7 @@
     <mx4j.version>3.0.1</mx4j.version>
     <derby.version>10.1.1.0</derby.version>
     <activemq.version>4.0-M4</activemq.version>
+    <wadi.version>2.0M2-SNAPSHOT</wadi.version>
   </properties>
 
   <dependencyManagement>

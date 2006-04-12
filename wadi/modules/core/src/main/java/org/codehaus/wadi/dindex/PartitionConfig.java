@@ -19,7 +19,7 @@ package org.codehaus.wadi.dindex;
 import javax.jms.Destination;
 
 import org.apache.activecluster.Cluster;
-import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.group.Dispatcher;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

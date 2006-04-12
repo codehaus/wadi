@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi.jgroups;
 
-import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -28,8 +26,8 @@ import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterListener;
 import org.apache.activecluster.LocalNode;
 import org.apache.activecluster.Node;
-import org.codehaus.wadi.gridstate.DispatcherConfig;
-import org.codehaus.wadi.gridstate.impl.AbstractDispatcher;
+import org.codehaus.wadi.group.DispatcherConfig;
+import org.codehaus.wadi.group.impl.AbstractDispatcher;
 import org.codehaus.wadi.jgroups.messages.StateUpdate;
 import org.jgroups.Address;
 import org.jgroups.ChannelException;

@@ -23,7 +23,6 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
-import org.codehaus.wadi.impl.Utils;
 import org.jgroups.Address;
 
 /**

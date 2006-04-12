@@ -1,4 +1,4 @@
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.test.evacuation;
 
 import java.io.IOException;
 
@@ -7,21 +7,20 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
+
+import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.InvocationContext;
-import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.PoolableInvocationWrapper;
-import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.impl.DummyHttpServletRequest;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.WebInvocationContext;
-
-import junit.framework.TestCase;
+import org.codehaus.wadi.test.MyHttpServletRequest;
+import org.codehaus.wadi.test.MyHttpServletResponse;
+import org.codehaus.wadi.test.MyStack;
 
 public class AbstractTestEvacuation extends TestCase {
 	

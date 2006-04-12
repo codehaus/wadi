@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
-import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.replication.storage.ReplicaStorageStubFactory;
 import org.codehaus.wadi.replication.storage.remoting.SyncReplicaStorageStubFactory;
 
