@@ -50,6 +50,7 @@
       </menu>
 
       <menu name="Modules">
+         <item name="Dispatcher" href="wadi-dispatcher/index.html"/>
          <item name="Core" href="wadi-core/index.html"/>
          <item name="ActiveCluster 4.0M4+" href="wadi-activecluster/index.html"/>
          <item name="JGroups 2.8+" href="wadi-jgroups/index.html"/>
