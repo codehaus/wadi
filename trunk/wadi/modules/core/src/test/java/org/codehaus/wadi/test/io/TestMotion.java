@@ -53,7 +53,7 @@ import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionRelocater;
 import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;

@@ -18,13 +18,13 @@ package org.codehaus.wadi.test;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.gridstate.StateManager;
 import org.codehaus.wadi.gridstate.impl.GCache;
 import org.codehaus.wadi.gridstate.impl.IndirectStateManager;
 import org.codehaus.wadi.gridstate.impl.StaticPartitionManager;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
 
 import junit.framework.TestCase;

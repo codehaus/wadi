@@ -18,7 +18,8 @@ package org.codehaus.wadi.jgroups.messages;
 
 import java.io.Serializable;
 import java.util.Map;
-import org.codehaus.wadi.impl.Utils;
+
+import org.codehaus.wadi.jgroups.Utils;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

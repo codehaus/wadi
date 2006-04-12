@@ -34,8 +34,8 @@ import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.SimplePartitionManager;
 import org.codehaus.wadi.dindex.impl.SimplePartitionManager.Callback;
-import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.DispatcherConfig;
+import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.impl.SimplePartitionMapper;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;

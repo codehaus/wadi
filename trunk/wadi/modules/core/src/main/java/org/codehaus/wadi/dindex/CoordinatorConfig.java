@@ -21,7 +21,7 @@ import java.util.Map;
 
 import org.apache.activecluster.Cluster;
 import org.apache.activecluster.Node;
-import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.group.Dispatcher;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

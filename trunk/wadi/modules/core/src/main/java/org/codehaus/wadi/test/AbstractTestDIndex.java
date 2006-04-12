@@ -21,7 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
-import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.FixedWidthSessionIdFactory;
 

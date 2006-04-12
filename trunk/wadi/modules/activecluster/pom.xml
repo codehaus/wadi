@@ -3,8 +3,8 @@
   <parent>
     <groupId>org.codehaus.wadi</groupId>
     <artifactId>wadi</artifactId>
-    <version>2.0M2-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
+    <version>2.0M2-SNAPSHOT</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
@@ -21,6 +21,12 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-dispatcher</artifactId>
+      <version>${wadi.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-jms</artifactId>
       <version>1.1-rc4</version>
@@ -36,8 +42,9 @@
       <version>${activemq.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-core</artifactId>
+      <groupId>incubator-activemq</groupId>
+      <artifactId>activemq</artifactId>
+      <version>${activemq.version}</version>
     </dependency>
   </dependencies>
 
@@ -49,8 +56,6 @@
 	<configuration>
 	  <excludes>
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- stop surefire from trying to run nested classes... -->
-	    <exclude implementation="java.lang.String">**/TestRelocation.java</exclude> <!-- Exceptions -->
-	    <exclude implementation="java.lang.String">**/TestReplication.java</exclude> <!-- overruns, needs investigation -->
 	  </excludes>
 	</configuration>
       </plugin>

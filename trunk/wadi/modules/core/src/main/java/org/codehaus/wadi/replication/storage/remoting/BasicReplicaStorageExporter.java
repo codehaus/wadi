@@ -19,7 +19,7 @@ import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.replication.common.ComponentEventType;
 import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.message.ResultInfo;

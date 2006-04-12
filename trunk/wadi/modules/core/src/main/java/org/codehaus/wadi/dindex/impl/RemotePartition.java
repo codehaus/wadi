@@ -27,7 +27,7 @@ import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
 import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
-import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.group.Dispatcher;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

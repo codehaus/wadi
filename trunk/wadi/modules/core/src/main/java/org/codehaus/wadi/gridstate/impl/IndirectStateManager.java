@@ -31,12 +31,12 @@ import org.codehaus.wadi.dindex.newmessages.MovePMToSM;
 import org.codehaus.wadi.dindex.newmessages.MoveSMToIM;
 import org.codehaus.wadi.dindex.newmessages.MoveSMToPM;
 import org.codehaus.wadi.dindex.newmessages.MovePMToIM;
-import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.StateManager;
 import org.codehaus.wadi.gridstate.StateManagerConfig;
 import org.codehaus.wadi.gridstate.messages.ReadIMToPM;
 import org.codehaus.wadi.gridstate.messages.WriteIMToPM;
 import org.codehaus.wadi.gridstate.messages.WritePMToIM;
+import org.codehaus.wadi.group.Dispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 

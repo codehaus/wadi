@@ -42,9 +42,6 @@ import org.apache.activecluster.Node;
 import org.apache.activecluster.election.ElectionStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.impl.SimpleStreamer;
-import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.jgroups.messages.StateRequest;
 import org.codehaus.wadi.jgroups.messages.StateResponse;
 import org.codehaus.wadi.jgroups.messages.StateUpdate;
@@ -391,13 +388,10 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
     }
   }
 
-  Streamer _streamer=new SimpleStreamer();
-
   public byte[] getState() {
     _log.info("GET STATE CALLED - sending: "+_clusterState);
     try {
-      byte[] tmp=Utils.objectToByteArray(_clusterState, _streamer);
-      return tmp;
+      return Utils.objectToByteArray(_clusterState);
     } catch (Exception e) {
       _log.error("problem preparing cluster state for transfer", e);
       return new byte[0];
@@ -411,7 +405,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
     }
 
     try {
-      Map nodes=(Map)Utils.byteArrayToObject(state, _streamer);
+      Map nodes=(Map)Utils.byteArrayToObject(state);
       _log.info("SET STATE CALLED - receiving: "+nodes);
       _clusterState.putAll(nodes); // copies in new values for node state
     } catch (Exception e) {
@@ -492,7 +486,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   }
   
 	
-	protected static final String _prefix="<"+Utils.basename(JGroupsCluster.class)+": ";
+	protected static final String _prefix="<"+JGroupsCluster.class.getPackage().getName()+": ";
 	protected static final String _suffix=">";
 	
 	public String toString() {

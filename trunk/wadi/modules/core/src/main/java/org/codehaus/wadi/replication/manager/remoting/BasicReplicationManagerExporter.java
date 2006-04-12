@@ -17,7 +17,7 @@ package org.codehaus.wadi.replication.manager.remoting;
 
 import javax.jms.ObjectMessage;
 
-import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.message.AbstractTwoWayMessage;
 import org.codehaus.wadi.replication.message.ResultInfo;

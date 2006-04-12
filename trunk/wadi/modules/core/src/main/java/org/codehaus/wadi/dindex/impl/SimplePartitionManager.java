@@ -42,11 +42,11 @@ import org.codehaus.wadi.dindex.messages.PartitionTransferAcknowledgement;
 import org.codehaus.wadi.dindex.messages.PartitionTransferCommand;
 import org.codehaus.wadi.dindex.messages.PartitionTransferRequest;
 import org.codehaus.wadi.dindex.messages.PartitionTransferResponse;
-import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.LockManager;
 import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.gridstate.impl.StupidLockManager;
-import org.codehaus.wadi.impl.Quipu;
+import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Quipu;
 
 /**
  * A Simple PartitionManager.

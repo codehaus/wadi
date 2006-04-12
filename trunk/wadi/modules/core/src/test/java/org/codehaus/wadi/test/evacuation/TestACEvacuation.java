@@ -14,13 +14,14 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package org.codehaus.wadi.activecluster;
+package org.codehaus.wadi.test.evacuation;
 
-import org.codehaus.wadi.test.AbstractTestEvacuation;
+import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
 
-public class TestEvacuation extends AbstractTestEvacuation {
+
+public class TestACEvacuation extends AbstractTestEvacuation {
 	
-	public TestEvacuation(String arg0) {
+	public TestACEvacuation(String arg0) {
 		super(arg0);
 	}
 	

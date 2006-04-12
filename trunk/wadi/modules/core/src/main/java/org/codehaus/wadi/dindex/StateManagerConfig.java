@@ -22,7 +22,7 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.InvocationContext;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
-import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.group.Dispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 

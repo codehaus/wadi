@@ -23,9 +23,9 @@ import javax.jms.ObjectMessage;
 
 import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterListener;
-import org.codehaus.wadi.gridstate.Dispatcher;
-import org.codehaus.wadi.gridstate.DispatcherConfig;
-import org.codehaus.wadi.impl.Quipu;
+import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.DispatcherConfig;
+import org.codehaus.wadi.group.Quipu;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 

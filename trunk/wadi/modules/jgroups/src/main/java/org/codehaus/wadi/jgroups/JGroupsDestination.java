@@ -18,15 +18,11 @@ package org.codehaus.wadi.jgroups;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.util.Map;
 
 import javax.jms.Destination;
 
 import org.apache.activecluster.Node;
-import org.codehaus.wadi.impl.Utils;
 import org.jgroups.Address;
-
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -57,7 +53,7 @@ public class JGroupsDestination implements Destination, Serializable {
 		return _node==null?"unknown":_node.getName();
 	}
 	
-	protected static final String _prefix="<"+Utils.basename(JGroupsDestination.class)+": ";
+	protected static final String _prefix="<"+JGroupsDestination.class.getPackage().getName()+": ";
 	protected static final String _suffix=">";
 	
 	public String toString() {

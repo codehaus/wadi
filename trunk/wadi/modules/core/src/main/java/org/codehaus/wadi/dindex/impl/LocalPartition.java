@@ -39,7 +39,7 @@ import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MovePMToSM;
 import org.codehaus.wadi.dindex.newmessages.MoveSMToPM;
 import org.codehaus.wadi.dindex.newmessages.MovePMToIM;
-import org.codehaus.wadi.gridstate.Dispatcher;
+import org.codehaus.wadi.group.Dispatcher;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

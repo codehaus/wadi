@@ -51,10 +51,10 @@ import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToSM;
 import org.codehaus.wadi.dindex.newmessages.MovePMToIM;
 import org.codehaus.wadi.dindex.newmessages.MoveSMToIM;
-import org.codehaus.wadi.gridstate.Dispatcher;
 import org.codehaus.wadi.gridstate.PartitionMapper;
+import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.impl.AbstractChainedEmoter;
-import org.codehaus.wadi.impl.Quipu;
 import org.codehaus.wadi.impl.SimpleMotable;
 import org.codehaus.wadi.impl.Utils;
 
