@@ -32,15 +32,21 @@
          <item name="FAQ" href="./faq.html"/>
          <item name="Wiki" href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI"/>
          <item name="How To Help" href="./help.html"/>
+         <item name="Distributions" href="http://dist.codehaus.org/wadi/distributions/"/>
+         <item name="Release Repo" href="http://repository.codehaus.org/org/codehaus/wadi"/>
+         <item name="SnapShot Repo" href="http://snapshot.repository.codehaus.org/org/codehaus/wadi"/>
       </menu>
 
       <menu name="Developers">
          <item name="Maven 2.0.x" href="http://docs.codehaus.org/display/WADI/Maven+2.0.x"/>
          <item name="Eclipse 3.2.x" href="http://docs.codehaus.org/display/WADI/Eclipse-3.2.x"/>
          <item name="Library" href="http://docs.codehaus.org/display/WADI/Library"/>
-         <item name="BeetleJuice" href="http://ci.codehaus.org/beetlejuice/viewProjectSummary.action?projectName=WADI"/>
-         <item name="Maven2 Releases" href="http://repository.codehaus.org"/>
-         <item name="Maven2 SnapShots" href="http://snapshot.repository.codehaus.org"/>
+         <item name="Jira" href="http://jira.codehaus.org/browse/WADI"/>
+         <item name="Beetlejuice" href="http://ci.codehaus.org/beetlejuice/viewProjectSummary.action?projectName=WADI"/>
+         <item name="FishEye" href="http://cvs.wadi.codehaus.org/viewrep/wadi/trunk/wadi"/>
+         <item name="SRC snapshot (zip)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=zip/wadi/wadi.zip"/>
+         <item name="SRC snapshot (tgz)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tgz/wadi/wadi.tgz"/>
+         <item name="SRC snapshot (tbz2)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tbz2/wadi/wadi.tbz2"/>
       </menu>
 
       <menu name="Modules">
@@ -56,13 +62,6 @@
          <item name="OpenEJB" href="wadi-openejb/index.html"/>
          <item name="JBoss 4.x" href="wadi-jboss4/index.html"/>
          <item name="Example Webapp" href="wadi-webapp/index.html"/>
-      </menu>
-
-      <menu name="Source">
-         <item name="FishEye" href="http://cvs.wadi.codehaus.org"/>
-         <item name="SVN snapshot (zip)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=zip/wadi/wadi.zip"/>
-         <item name="SVN snapshot (tgz)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tgz/wadi/wadi.tgz"/>
-         <item name="SVN snapshot (tbz2)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tbz2/wadi/wadi.tbz2"/>
       </menu>
 
       ${reports}

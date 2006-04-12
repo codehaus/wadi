@@ -9,6 +9,8 @@
 
   <!-- not yet read by Beetlejuice... -->
   <ciManagement>
+    <system>Beetlejuice</system>
+    <url>http://ci.codehaus.org/beetlejuice/viewProjectSummary.action?projectName=WADI</url>
     <notifiers>
       <notifier>
         <type>mail</type>
