@@ -1,12 +1,12 @@
-<project name="Mojo">
+<project name="wadi-axis2">
   <bannerLeft>
     <name>WADI</name>
-    <src>/images/wadi.png</src>
+    <src>../images/wadi.png</src>
     <href>http://wadi.codehaus.org</href>
   </bannerLeft>
   <bannerRight>
     <name>Codehaus</name>
-    <src>/images/codehaus-small.png</src>
+    <src>../images/codehaus-small.png</src>
     <href>http://www.codehaus.org</href>
   </bannerRight>
   <body>

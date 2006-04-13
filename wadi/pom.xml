@@ -233,7 +233,7 @@
     <site>
       <id>wadi-website-dir</id>
       <name>WADI Website</name>
-      <url>scpexe://codehaus.org/home/projects/wadi/doesnt_work/</url>
+      <url>scpexe://codehaus.org/home/projects/wadi/public_html/test</url>
     </site>
     <repository>
       <id>wadi-release-repository</id>
@@ -290,7 +290,6 @@
     <module>modules/jboss4</module>
     <module>modules/webapp</module>
     <module>modules/assembly</module>
-    <module>modules/site</module>
   </modules>
 
   <properties>
@@ -554,6 +553,7 @@
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-clover-plugin</artifactId>
+	<version>2.0</version>
 	<configuration>
 	  <jdk>${jse.version}</jdk>
 	  <licenseFile>./etc/clover.license</licenseFile>
@@ -596,31 +596,40 @@
       </plugin>
       <plugin>
 	<artifactId>maven-clover-plugin</artifactId>
+	<version>2.0</version>
       </plugin>
       <!--
       I thought that we might be able to aggregate javadoc for all
       modules,but because different modules consume multiple versions
       of the same classes, I don't think we will be able to...
       -->
-      <!--
       <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-javadoc-plugin</artifactId>
-      <version>2.0-SNAPSHOT</version>
-      <configuration>
-      <aggregate>false</aggregate>
-      <source>${jse.version}</source>
-    </configuration>
-    </plugin>
-      -->
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-javadoc-plugin</artifactId>
+	<!--<version>2.0-SNAPSHOT</version>-->
+	<configuration>
+	  <aggregate>false</aggregate>
+	  <source>${jse.version}</source>
+	  <links>
+	    <link>http://java.sun.com/j2se/${jse.version}/docs/api</link>
+	    <link>http://java.sun.com/j2ee/${jee.version}/docs/api</link>
+	    <link>http://jakarta.apache.org/commons/logging/apidocs</link>
+	    <link>http://wadi.codehaus.org/wadi-core/apidocs</link>
+	    <!-- activecluster: not online -->
+	    <link>http://www.jgroups.org/javagroupsnew/docs/javadoc</link>
+	    <!-- axis2: not online -->
+	    <link>http://www.openejb.org/apidocs</link>
+	  </links>
+	</configuration>
+      </plugin>
 
       <!-- plugins that I am playing with -->
       <!-- these work -->
-      <!--
       <plugin>
-      <groupId>org.codehaus.mojo</groupId>
-      <artifactId>jxr-maven-plugin</artifactId>
-    </plugin>
+	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>jxr-maven-plugin</artifactId>
+      </plugin>
+      <!--
       <plugin>
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>taglist-maven-plugin</artifactId>
