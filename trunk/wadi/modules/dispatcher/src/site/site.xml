@@ -1,4 +1,4 @@
-<project name="tomcat-50">
+<project name="wadi-dispatcher">
    <bannerLeft>
       <name>WADI</name>
       <src>../images/wadi.png</src>
@@ -10,10 +10,6 @@
       <href>http://www.codehaus.org</href>
    </bannerRight>
    <body>
-      <links>
-         <item name="Tomcat 5.0.x" href="http://tomcat.apache.org/tomcat-5.0-doc"/>
-      </links>
-
       <menu name="WADI">
          <item name="WADI" href="../index.html"/>
       </menu>

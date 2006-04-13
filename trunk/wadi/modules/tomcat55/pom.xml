@@ -47,14 +47,8 @@
   </build>
 
   <reporting>
-    <outputDirectory>../site/target/site/${artifactId}</outputDirectory>
     <plugins>
-<!--
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-clover-plugin</artifactId>
-      </plugin>
--->
+      <!-- can't share classpath with Tomcat50, so need this -->
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-javadoc-plugin</artifactId>
@@ -68,10 +62,6 @@
 	    <link>http://tomcat.apache.org/tomcat-5.5-doc/catalina/docs/api</link>
 	  </links>
 	</configuration>
-      </plugin>
-      <plugin>
-	<groupId>org.codehaus.mojo</groupId>
-	<artifactId>surefire-report-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </reporting>
