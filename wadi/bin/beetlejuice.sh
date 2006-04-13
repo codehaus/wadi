@@ -33,7 +33,7 @@ rm -fr ./testresults
 
 ## execute build, recording status
 mvn $PROPS clean:clean && \
-mvn $PROPS package
+mvn $PROPS install
 status=$?
 
 ## gather all test results together for BJ

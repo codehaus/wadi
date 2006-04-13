@@ -28,24 +28,24 @@ a:active, a:hover {
   color:#990000;
 }
 #legend li.externalLink {
-  background: url(../images/external.png) left top no-repeat;
+  background: url(../../images/external.png) left top no-repeat;
   padding-left: 18px;
 }
 a.externalLink, a.externalLink:link, a.externalLink:visited, a.externalLink:active, a.externalLink:hover {
-  background: url(../images/external.png) right center no-repeat;
+  background: url(../../images/external.png) right center no-repeat;
   padding-right: 18px;
 }
 #legend li.newWindow {
-  background: url(../images/newwindow.png) left top no-repeat;
+  background: url(../../images/newwindow.png) left top no-repeat;
   padding-left: 18px;
 }
 a.newWindow, a.newWindow:link, a.newWindow:visited, a.newWindow:active, a.newWindow:hover {
-  background: url(../images/newwindow.png) right center no-repeat;
+  background: url(../../images/newwindow.png) right center no-repeat;
   padding-right: 18px;
 }
 h2 {
 	font-size: 17px;
-	color: #333333;  
+	color: #333333;
 }
 h3 {
 	padding: 4px 4px 4px 24px;
@@ -63,7 +63,7 @@ p {
 }
 #breadcrumbs {
 	height: 13px;
-	background-image: url(../images/breadcrumbs.jpg);
+	background-image: url(../../images/breadcrumbs.jpg);
 	padding: 5px 10px 14px 20px;
 }
 * html #breadcrumbs {
@@ -89,7 +89,7 @@ p {
 	padding-top: 2px;
 	padding-left: 9px;
 	color: #49635a;
-	background-image: url(../images/h5.jpg);
+	background-image: url(../../images/h5.jpg);
 	background-repeat: no-repeat;
 	background-position: left bottom;
 }
@@ -170,6 +170,6 @@ table {
 #footer {
   padding: 10px;
   margin: 20px 0px 20px 0px;
-  border-top: solid #ccc 1px; 
+  border-top: solid #ccc 1px;
   color: #333333;
 }
