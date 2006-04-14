@@ -21,45 +21,26 @@ import junit.framework.TestCase;
 import org.apache.activecluster.Cluster;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jgroups.Address;
-import org.jgroups.Channel;
-import org.jgroups.JChannel;
 
-// can't use Utils...
+//can't use Utils...
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1567 $
  */
 public class TestJGroups extends TestCase {
-
-  protected Log _log = LogFactory.getLog(getClass());
-
-  public void dnonottestWADI() throws Exception {
-	  String clusterName="TEST";
-	  Cluster c0=new JGroupsCluster(clusterName);
-	  Cluster c1=new JGroupsCluster(clusterName);
-	  c0.start();
-	  c1.start();
-	  c1.stop();
-	  c0.stop();
-  }
-
-  public void testJGroups() throws Exception {
-	  String channelName="TEST";
-	  // ctor
-	  Channel c0=new JChannel("default.xml");
-	  Channel c1=new JChannel("default.xml");
-	  // start
-	  c0.connect(channelName);
-	  Address a0=c0.getLocalAddress();
-	  c1.connect(channelName);
-	  Address a1=c0.getLocalAddress();
-	  // stop
-	  c1.disconnect();
-	  c1.close();
-	  c0.disconnect();
-	  c0.close();
-  }
-
+	
+	protected Log _log = LogFactory.getLog(getClass());
+	
+	// early version of JGroupsCluster would sometimes hang on startup... - test
+	public void testWADI() throws Exception {
+		String clusterName="org.codehaus.wadi.cluster-"+Math.random();
+		Cluster c0=new JGroupsCluster(clusterName);
+		Cluster c1=new JGroupsCluster(clusterName);
+		c0.start();
+		c1.start();
+		c1.stop();
+		c0.stop();
+	}
+	
 }
