@@ -392,28 +392,11 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   }
 
   public byte[] getState() {
-    _log.info("GET STATE CALLED - sending: "+_clusterState);
-    try {
-      return Utils.objectToByteArray(_clusterState);
-    } catch (Exception e) {
-      _log.error("problem preparing cluster state for transfer", e);
-      return new byte[0];
-    }
+	  throw new UnsupportedOperationException("we do not use JGroups' state exchange protocol");
   }
 
   public void setState(byte[] state) {
-    if (state==null) {
-      _log.info("SET STATE CALLED - received: null - we must be the first node");
-      return;
-    }
-
-    try {
-      Map nodes=(Map)Utils.byteArrayToObject(state);
-      _log.info("SET STATE CALLED - receiving: "+nodes);
-      _clusterState.putAll(nodes); // copies in new values for node state
-    } catch (Exception e) {
-      _log.error("problem accepting cluster state transfer", e);
-    }
+	  throw new UnsupportedOperationException("we do not use JGroups' state exchange protocol");
   }
 
   // WADI 'JGroupsCluster' API
