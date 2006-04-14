@@ -7,28 +7,6 @@
   <packaging>pom</packaging>
   <name>WADI</name>
 
-  <!-- not yet read by Beetlejuice... -->
-  <ciManagement>
-    <system>Beetlejuice</system>
-    <url>http://ci.codehaus.org/beetlejuice/viewProjectSummary.action?projectName=WADI</url>
-    <notifiers>
-      <notifier>
-        <type>mail</type>
-        <configuration>
-          <address>dev@wadi.codehaus.org</address>
-        </configuration>
-      </notifier>
-      <notifier>
-        <type>irc</type>
-        <configuration>
-          <host>irc.codehaus.org</host>
-          <port>6667</port>
-          <channel>#wadi</channel>
-        </configuration>
-      </notifier>
-    </notifiers>
-  </ciManagement>
-
   <mailingLists>
     <mailingList>
       <name>Development List</name>
@@ -202,11 +180,6 @@
     </contributor>
   </contributors>
 
-  <issueManagement>
-    <system>jira</system>
-    <url>http://jira.codehaus.org/browse/WADI</url>
-  </issueManagement>
-
   <licenses>
     <license>
       <name>Apache License Version 2.0</name>
@@ -220,25 +193,43 @@
     <url>http://svn.wadi.codehaus.org/wadi/</url>
   </scm>
 
-  <dependencies><!-- TODO: what is this doing here ? -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+  <issueManagement>
+    <system>jira</system>
+    <url>http://jira.codehaus.org/browse/WADI</url>
+  </issueManagement>
+
+  <!-- not yet read by Beetlejuice... -->
+  <ciManagement>
+    <system>Beetlejuice</system>
+    <url>http://ci.codehaus.org/beetlejuice/viewProjectSummary.action?projectName=WADI</url>
+    <notifiers>
+      <notifier>
+        <type>mail</type>
+        <configuration>
+          <address>dev@wadi.codehaus.org</address>
+        </configuration>
+      </notifier>
+      <notifier>
+        <type>irc</type>
+        <configuration>
+          <host>irc.codehaus.org</host>
+          <port>6667</port>
+          <channel>#wadi</channel>
+        </configuration>
+      </notifier>
+    </notifiers>
+  </ciManagement>
 
   <distributionManagement>
     <site>
       <id>wadi-website-dir</id>
       <name>WADI Website</name>
-      <url>scpexe://codehaus.org/home/projects/wadi/public_html/stage</url>
+      <url>scpexe://codehaus.org/home/projects/wadi/public_html</url>
     </site>
     <repository>
       <id>wadi-release-repository</id>
       <name>WADI Release Repository</name>
-      <url>scpexe://codehaus.org:/home/projects/wadi/repository-snapshot</url>
+      <url>scpexe://codehaus.org:/home/projects/wadi/repository</url>
     </repository>
     <snapshotRepository>
       <id>wadi-snapshot-repository</id>
@@ -246,50 +237,6 @@
       <url>scpexe://codehaus.org:/home/projects/wadi/repository-snapshot</url>
     </snapshotRepository>
   </distributionManagement>
-
-  <repositories>
-    <repository>
-      <id>wadi-dependencies</id>
-      <name>WADI Dependencies Repository at the Haus</name>
-      <url>http://dist.codehaus.org/wadi/dependencies/maven2</url><!-- TODO: should be moved over to WadiReleaseRepository -->
-    </repository>
-    <repository>
-      <id>maven2-ibiblio</id>
-      <name>Maven 2 Repository at Ibiblio</name>
-      <url>http://ibiblio.org/maven2</url>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <!-- for jdepend,  -->
-    <pluginRepository>
-      <id>maven-plugin-snapshots</id>
-      <url>http://snapshots.maven.codehaus.org/maven2/</url>
-      <snapshots>
-	<enabled>true</enabled>
-      </snapshots>
-      <releases>
-	<enabled>false</enabled>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
-
-  <modules>
-    <module>modules/dispatcher</module>
-    <module>modules/core</module>
-    <module>modules/activecluster</module>
-    <module>modules/jgroups</module>
-    <module>modules/tribes</module>
-    <module>modules/jetty5</module>
-    <module>modules/jetty6</module>
-    <module>modules/tomcat50</module>
-    <module>modules/tomcat55</module>
-    <module>modules/axis2</module>
-    <module>modules/openejb</module>
-    <module>modules/jboss4</module>
-    <module>modules/webapp</module>
-    <module>modules/assembly</module>
-  </modules>
 
   <properties>
     <jse.version>1.4</jse.version>
@@ -308,8 +255,43 @@
     <wadi.version>2.0M2-SNAPSHOT</wadi.version>
   </properties>
 
+  <modules>
+    <module>modules/dispatcher</module>
+    <module>modules/core</module>
+    <module>modules/activecluster</module>
+    <module>modules/jgroups</module>
+    <module>modules/tribes</module>
+    <module>modules/jetty5</module>
+    <module>modules/jetty6</module>
+    <module>modules/tomcat50</module>
+    <module>modules/tomcat55</module>
+    <module>modules/axis2</module>
+    <module>modules/openejb</module>
+    <module>modules/jboss4</module>
+    <module>modules/webapp</module>
+    <module>modules/assembly</module>
+  </modules>
+
+  <repositories>
+    <repository>
+      <id>wadi-dependencies</id>
+      <name>WADI Dependencies Repository at the Haus</name>
+      <url>http://dist.codehaus.org/wadi/dependencies/maven2</url><!-- TODO: should be moved over to WadiReleaseRepository -->
+    </repository>
+    <repository>
+      <id>maven2-ibiblio</id>
+      <name>Maven 2 Repository at Ibiblio</name>
+      <url>http://ibiblio.org/maven2</url>
+    </repository>
+  </repositories>
+
   <dependencyManagement>
     <dependencies>
+      <dependency>
+	<groupId>junit</groupId>
+	<artifactId>junit</artifactId>
+	<version>${junit.version}</version>
+      </dependency>
       <dependency>
 	<groupId>commons-logging</groupId>
 	<artifactId>commons-logging-api</artifactId>
@@ -532,6 +514,29 @@
     </dependencies>
   </dependencyManagement>
 
+  <!-- dependencies common to all modules -->
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <pluginRepositories>
+    <!-- for jdepend,  -->
+    <pluginRepository>
+      <id>maven-plugin-snapshots</id>
+      <url>http://snapshots.maven.codehaus.org/maven2/</url>
+      <snapshots>
+	<enabled>true</enabled>
+      </snapshots>
+      <releases>
+	<enabled>false</enabled>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
+
   <build>
     <extensions>
       <extension>
@@ -626,9 +631,6 @@
 	  </links>
 	</configuration>
       </plugin>
-
-      <!-- plugins that I am playing with -->
-      <!-- these work -->
       <plugin>
 	<groupId>org.codehaus.mojo</groupId>
 	<artifactId>jxr-maven-plugin</artifactId>
@@ -648,10 +650,9 @@
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-pmd-plugin</artifactId>
       </plugin>
-      <!-- this one needs: maven-plugin-snapshots -->
       <plugin>
 	<groupId>org.codehaus.mojo</groupId>
-	<artifactId>jdepend-maven-plugin</artifactId>
+	<artifactId>jdepend-maven-plugin</artifactId> <!-- needs: maven-plugin-snapshots -->
 	<version>2.0-beta-1-SNAPSHOT</version>
       </plugin>
       <!-- these are broken -->
