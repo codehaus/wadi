@@ -233,7 +233,7 @@
     </repository>
     <snapshotRepository>
       <id>wadi-snapshot-repository</id>
-      <name>WADI SnapShot Repository</name>
+      <name>WADI Snapshot Repository</name>
       <url>scpexe://codehaus.org:/home/projects/wadi/repository-snapshot</url>
     </snapshotRepository>
   </distributionManagement>
