@@ -10,6 +10,7 @@ then
     export M2_HOME=/usr/local/maven-2.0.3-SNAPSHOT
     export PATH=$JAVA_HOME/bin:$M2_HOME/bin:$PATH
     export PROPS="-Duser.home=."
+    export HOME=/home/nobody
 else
     ## we are being run by hand...
     ## JAVA_HOME and PATH should already be correctly initialised...
@@ -33,7 +34,8 @@ rm -fr ./testresults
 
 ## execute build, recording status
 mvn $PROPS clean:clean && \
-mvn $PROPS install
+mvn $PROPS install && \
+mvn $PROPS deploy:deploy
 status=$?
 
 ## gather all test results together for BJ
