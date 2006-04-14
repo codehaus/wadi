@@ -77,7 +77,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   protected final Map _clusterState=new HashMap(); // a Map (Cluster) of Maps (Nodes) associating a Key (Address) with a Value (State)
   protected final JGroupsLocalNode _localNode;
   protected final Latch _latch=new Latch();
-  protected final Latch _latch2=new Latch();
+  protected final Latch _initLatch=new Latch();
   public final Map _addressToDestination=new ConcurrentHashMap();
 
   protected ElectionStrategy _electionStrategy;
@@ -194,7 +194,6 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   public void start() throws JMSException {
     try {
       //_channel.setOpt(Channel.LOCAL, Boolean.FALSE); // exclude ourselves from our own broadcasts... - BUT also from Unicasts :-(
-    	//_channel.open();
       _channel.connect(_clusterName);
       _log.info("connected to channel");
       _clusterTopic=new JGroupsTopic("CLUSTER", null); // null address means broadcast to all members
@@ -212,7 +211,8 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
       throw jmse;
     }
 
-    try{_latch2.acquire();}catch(Exception e){};
+    // we don't really want anyone else running until we have initialised properly... - how ?
+    _initLatch.release();
   }
 
   public void stop() throws JMSException {
@@ -230,7 +230,8 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   // JGroups MembershipListener API
 
   public void viewAccepted(View newView) {
-
+	  // must not run until we are initialised...
+	  try {_initLatch.acquire();} catch (Exception e) {_log.error("problem syncing Cluster initialisation", e);}
     // we don't want to overtake the thread that is initialising this object...
     try {
       _latch.acquire();
@@ -329,7 +330,6 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 				  }
 			  }
 		  }
-		  _latch2.release();
 	  }
   }
   
@@ -348,6 +348,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   }
 
   public void suspect(Address suspected_mbr) {
+	  try {_initLatch.acquire();} catch (Exception e) {_log.error("problem syncing Cluster initialisation", e);}
     if (_log.isTraceEnabled()) _log.trace("handling suspect("+suspected_mbr+")...");
     if (_log.isWarnEnabled()) _log.warn("cluster suspects member may have been lost: " + suspected_mbr);
     _log.trace("...suspect() handled");
@@ -365,7 +366,9 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   // JGroups MessageListener API
 
   public void receive(org.jgroups.Message msg) {
-    synchronized (_channel) {
+  	  // TODO: this may be a little contentious - think of a better way...
+	  try {_initLatch.acquire();} catch (Exception e) {_log.error("problem syncing Cluster initialisation", e);}
+	  synchronized (_channel) {
       Address src=msg.getSrc();
       Address dest=msg.getDest();
       if (_excludeSelf && (dest==null || dest.isMulticastAddress()) && src==_localAddress) {
