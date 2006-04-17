@@ -13,39 +13,183 @@
   <name>WADI :: Core</name>
   <description>WADI Core functionality</description>
 
-  <scm>
+  <scm><!-- TODO: remove -->
     <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/core</connection>
     <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/core</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/modules/core</url>
   </scm>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+	<groupId>geronimo-spec</groupId>
+	<artifactId>geronimo-spec-j2ee-management</artifactId>
+	<version>1.0-rc4</version>
+	<scope>provided</scope>
+      </dependency>
+      <dependency>
+	<groupId>jcache</groupId>
+	<artifactId>jcache</artifactId>
+	<version>1.0-dev-2</version>
+      </dependency>
+      <dependency>
+	<groupId>org.apache.derby</groupId>
+	<artifactId>derby</artifactId>
+	<version>${derby.version}</version>
+      </dependency>
+      <dependency>
+	<groupId>org.apache.derby</groupId>
+	<artifactId>derbyclient</artifactId>
+	<version>${derby.version}</version>
+      </dependency>
+      <dependency>
+	<groupId>axion</groupId><!-- used by some tests -->
+	<artifactId>axion</artifactId>
+	<version>1.0-M3-dev</version>
+      </dependency>
+      <dependency>
+	<groupId>commons-primitives</groupId><!-- needed by axion -->
+	<artifactId>commons-primitives</artifactId>
+	<version>1.0</version>
+      </dependency>
+      <!-- run time -->
+      <dependency>
+	<groupId>commons-httpclient</groupId>
+	<artifactId>commons-httpclient</artifactId>
+	<version>2.0.2</version>
+	<exclusions>
+	  <exclusion>
+	    <groupId>commons-logging</groupId>
+	    <artifactId>commons-logging</artifactId>
+	  </exclusion>
+	</exclusions>
+      </dependency>
+      <dependency>
+	<groupId>commons-el</groupId>
+	<artifactId>commons-el</artifactId>
+	<version>1.0</version>
+      </dependency>
+      <dependency>
+	<groupId>commons-pool</groupId>
+	<artifactId>commons-pool</artifactId>
+	<version>1.2</version>
+      </dependency>
+      <dependency>
+	<groupId>commons-dbcp</groupId>
+	<artifactId>commons-dbcp</artifactId>
+	<version>1.2.1</version>
+	<exclusions>
+	  <exclusion>
+	    <groupId>jdbc</groupId>
+	    <artifactId>jdbc</artifactId>
+	  </exclusion>
+	  <exclusion>
+	    <groupId>xml-apis</groupId>
+	    <artifactId>xml-apis</artifactId>
+	  </exclusion>
+	  <exclusion>
+	    <groupId>xerces</groupId>
+	    <artifactId>xerces</artifactId>
+	  </exclusion>
+	</exclusions>
+      </dependency>
+      <dependency>
+	<groupId>backport-util-concurrent</groupId>
+	<artifactId>backport-util-concurrent</artifactId>
+	<version>2.0_01_pd</version>
+      </dependency>
+      <dependency>
+	<groupId>mx4j</groupId>
+	<artifactId>mx4j</artifactId>
+	<version>${mx4j.version}</version>
+      </dependency>
+      <dependency>
+	<groupId>mx4j</groupId>
+	<artifactId>mx4j-remote</artifactId>
+	<version>${mx4j.version}</version>
+      </dependency>
+      <dependency>
+	<groupId>mysql</groupId>
+	<artifactId>mysql-connector-java</artifactId>
+	<version>3.1.11-bin</version>
+      </dependency>
+      <dependency>
+	<groupId>regexp</groupId>
+	<artifactId>regexp</artifactId>
+	<version>1.3</version>
+      </dependency>
+      <dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring</artifactId>
+	<version>1.2.5</version>
+	<exclusions>
+	  <exclusion>
+	    <groupId>org.springframework</groupId>
+	    <artifactId>spring-support</artifactId>
+	  </exclusion>
+	  <exclusion>
+	    <groupId>org.springframework</groupId>
+	    <artifactId>spring-core</artifactId>
+	  </exclusion>
+	  <exclusion>
+	    <groupId>org.springframework</groupId>
+	    <artifactId>spring-orm</artifactId>
+	  </exclusion>
+	  <exclusion>
+	    <groupId>org.springframework</groupId>
+	    <artifactId>spring-hibernate</artifactId>
+	  </exclusion>
+	  <exclusion>
+	    <groupId>org.springframework</groupId>
+	    <artifactId>spring-remoting</artifactId>
+	  </exclusion>
+	</exclusions>
+      </dependency>
+      <dependency>
+	<groupId>xerces</groupId>
+	<artifactId>xerces</artifactId>
+	<version>2.4.0</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
-    <dependency>
-      <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-dispatcher</artifactId>
-      <version>${wadi.version}</version>
+    <dependency><!-- alter inherited scoping: review later -->
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
+      <groupId>geronimo-spec</groupId>
+      <artifactId>geronimo-spec-jms</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-dispatcher</artifactId>
+    </dependency>
+
+    <!-- backends for testing -->
+    <dependency>
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-activecluster</artifactId>
-      <version>${wadi.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-jgroups</artifactId>
-      <version>${wadi.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-tribes</artifactId>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-j2ee-management</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>geronimo-spec</groupId>
-      <artifactId>geronimo-spec-jms</artifactId>
     </dependency>
     <dependency>
       <groupId>jcache</groupId>
@@ -105,11 +249,6 @@
     <dependency>
       <groupId>regexp</groupId>
       <artifactId>regexp</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
     </dependency>
   </dependencies>
 

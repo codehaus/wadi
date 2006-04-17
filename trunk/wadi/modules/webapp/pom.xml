@@ -13,11 +13,27 @@
   <name>WADI :: WebApp</name>
   <description>WADI's functionality demonstrated via a simple web application</description>
 
-  <scm>
+  <scm><!-- TODO: remove -->
     <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/webapp</connection>
     <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/webapp</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/modules/webapp</url>
   </scm>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+	<groupId>commons-el</groupId>
+	<artifactId>commons-el</artifactId>
+	<version>1.0</version>
+      </dependency>
+      <dependency>
+	<groupId>geronimo-spec</groupId>
+	<artifactId>geronimo-spec-jsp</artifactId>
+	<version>2.0-rc4</version>
+	<scope>provided</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>

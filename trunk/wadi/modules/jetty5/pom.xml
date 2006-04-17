@@ -3,8 +3,8 @@
   <parent>
     <groupId>org.codehaus.wadi</groupId>
     <artifactId>wadi</artifactId>
-    <version>2.0M2-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
+    <version>2.0M2-SNAPSHOT</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
@@ -13,7 +13,7 @@
   <name>WADI :: Jetty5</name>
   <description>WADI/Jetty-5.x Integration - An HttpSession Manager for Jetty-5.x</description>
 
-  <scm>
+  <scm><!-- TODO: remove -->
     <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/jetty5</connection>
     <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/jetty5</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/modules/jetty5</url>
@@ -24,11 +24,12 @@
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-servlet</artifactId>
     </dependency>
+    <!-- commons-httpclient? -->
     <dependency>
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-core</artifactId>
-      <scope>provided</scope>
     </dependency>
+
     <dependency>
       <groupId>jetty</groupId>
       <artifactId>org.mortbay.jetty</artifactId>
@@ -43,6 +44,7 @@
     </dependency>
   </dependencies>
 
+  <!-- we have a few tests that need excluding -->
   <build>
     <plugins>
       <plugin>
@@ -61,7 +63,6 @@
 
   <reporting>
     <plugins>
-      <!-- can't share classpath with Jetty6, so need this -->
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-javadoc-plugin</artifactId>
@@ -71,8 +72,9 @@
 	    <link>http://java.sun.com/j2se/${jse.version}/docs/api</link>
 	    <link>http://java.sun.com/j2ee/${jee.version}/docs/api</link>
 	    <link>http://jakarta.apache.org/commons/logging/apidocs</link>
-	    <link>http://wadi.codehaus.org/wadi-core/apidocs</link>
+	    <!-- TODO: commons-httpclient -->
 	    <link>http://jetty.mortbay.org/javadoc</link>
+	    <link>http://wadi.codehaus.org/wadi-core/apidocs</link>
 	  </links>
 	</configuration>
       </plugin>

@@ -13,7 +13,7 @@
   <name>WADI :: JBoss4</name>
   <description>WADI/JBoss4 Integration - Utility classes</description>
 
-  <scm>
+  <scm><!-- TDOD: remove -->
     <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/jboss4</connection>
     <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/jboss4</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/modules/jboss4</url>
@@ -21,23 +21,10 @@
 
   <dependencies>
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging-api</artifactId>
-    </dependency>
-    <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-common</artifactId>
       <version>${jboss4.version}</version>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-surefire-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>
