@@ -13,7 +13,7 @@
   <name>WADI :: OpenEJB</name>
   <description>WADI/OpenEJB Integration - A StatefulSession Manager for OpenEJB</description>
 
-  <scm>
+  <scm><!-- TODO: remove -->
     <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/openejb</connection>
     <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/openejb</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/modules/openejb</url>
@@ -25,14 +25,5 @@
       <artifactId>wadi-core</artifactId>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-surefire-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>

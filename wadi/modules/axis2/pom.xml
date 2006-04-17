@@ -13,7 +13,7 @@
   <name>WADI :: Axis2</name>
   <description>WADI/Axis-2.x Integration - A Session Manager for Axis-2.x</description>
 
-  <scm>
+  <scm><!-- TODO: remove -->
     <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/axis2</connection>
     <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/axis2</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/modules/axis2</url>
@@ -29,12 +29,6 @@
   </repositories>
 
   <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-      <!-- <scope>test</scope> -->
-    </dependency>
     <dependency>
       <groupId>org.apache.ws.policy</groupId>
       <artifactId>policy</artifactId>
@@ -71,10 +65,6 @@
       <version>WADI</version>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-core</artifactId>
-    </dependency>
-    <dependency>
       <groupId>woodstox</groupId>
       <artifactId>wstx</artifactId>
       <version>asl-2.9.2</version>
@@ -98,6 +88,10 @@
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
       <version>3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-core</artifactId>
     </dependency>
   </dependencies>
 

@@ -13,7 +13,7 @@
   <name>WADI :: Dispatcher</name>
   <description>WADI Dispatcher</description>
 
-  <scm>
+  <scm><!-- TODO: remove -->
     <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi/modules/dispatcher</connection>
     <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi/modules/dispatcher</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/modules/dispatcher</url>
@@ -21,25 +21,18 @@
 
   <dependencies>
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>geronimo-spec</groupId>
-      <artifactId>geronimo-spec-jms</artifactId>
-    </dependency>
-    <dependency>
       <groupId>concurrent</groupId>
       <artifactId>concurrent</artifactId>
     </dependency>
     <dependency>
-      <groupId>incubator-activemq</groupId>
-      <artifactId>activecluster</artifactId>
-      <version>${activemq.version}</version>
+      <groupId>geronimo-spec</groupId>
+      <artifactId>geronimo-spec-jms</artifactId>
+      <version>${geronimo-spec-jms.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>geronimo-spec</groupId>
-      <artifactId>geronimo-spec-servlet</artifactId>
+      <groupId>incubator-activemq</groupId>
+      <artifactId>activecluster</artifactId>
     </dependency>
   </dependencies>
 
