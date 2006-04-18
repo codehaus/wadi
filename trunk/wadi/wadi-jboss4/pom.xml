@@ -18,6 +18,16 @@
       <groupId>jboss</groupId>
       <artifactId>jboss-common</artifactId>
       <version>${jboss4.version}</version>
+	<exclusions>
+	  <exclusion>
+	    <groupId>slide</groupId>
+	    <artifactId>webdavlib</artifactId>
+	  </exclusion>
+	  <exclusion>
+	    <groupId>xerces</groupId>
+	    <artifactId>xercesImpl</artifactId>
+	  </exclusion>
+	</exclusions>
     </dependency>
   </dependencies>
 

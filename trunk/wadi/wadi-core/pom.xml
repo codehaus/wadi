@@ -40,6 +40,12 @@
 	<groupId>axion</groupId><!-- used by some tests -->
 	<artifactId>axion</artifactId>
 	<version>1.0-M3-dev</version>
+	<exclusions>
+	  <exclusion>
+	    <groupId>javacc</groupId>
+	    <artifactId>javacc</artifactId>
+	  </exclusion>
+	</exclusions>
       </dependency>
       <dependency>
 	<groupId>commons-primitives</groupId><!-- needed by axion -->
@@ -67,6 +73,12 @@
 	<groupId>commons-pool</groupId>
 	<artifactId>commons-pool</artifactId>
 	<version>1.2</version>
+	<exclusions>
+	  <exclusion>
+	    <groupId>xml-apis</groupId>
+	    <artifactId>xml-apis</artifactId>
+	  </exclusion>
+	</exclusions>
       </dependency>
       <dependency>
 	<groupId>commons-dbcp</groupId>
