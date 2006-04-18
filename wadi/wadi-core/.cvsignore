@@ -1,8 +1,0 @@
-.classpath
-.project
-.settings
-.wtpmodules
-ActiveMQ
-activemq-data
-derby.log
-target
