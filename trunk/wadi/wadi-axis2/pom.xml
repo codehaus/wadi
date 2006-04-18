@@ -25,6 +25,11 @@
   <dependencies>
     <!-- from public repos -->
     <dependency>
+      <groupId>backport-util-concurrent</groupId>
+      <artifactId>backport-util-concurrent</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>woodstox</groupId>
       <artifactId>wstx</artifactId>
       <version>asl-2.9.2</version>
