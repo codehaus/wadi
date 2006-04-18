@@ -1,0 +1,78 @@
+<project>
+
+  <parent>
+    <groupId>org.codehaus.wadi</groupId>
+    <artifactId>wadi</artifactId>
+    <relativePath>../pom.xml</relativePath>
+    <version>2.0M2-SNAPSHOT</version>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>wadi-jetty5</artifactId>
+  <packaging>jar</packaging>
+  <name>WADI :: Jetty5</name>
+  <description>WADI/Jetty-5.x Integration - An HttpSession Manager for Jetty-5.x</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>geronimo-spec</groupId>
+      <artifactId>geronimo-spec-servlet</artifactId>
+    </dependency>
+    <!-- commons-httpclient? -->
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>jetty</groupId>
+      <artifactId>org.mortbay.jetty</artifactId>
+      <version>${jetty5.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>jetty</groupId>
+      <artifactId>org.mortbay.jmx</artifactId>
+      <version>${jetty5.version}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <!-- we have a few tests that need excluding -->
+  <build>
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-surefire-plugin</artifactId>
+	<configuration>
+	  <excludes>
+	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- stop surefire from trying to run nested classes... -->
+	    <exclude implementation="java.lang.String">**/Test*.java</exclude><!-- tmp -->
+	    <exclude implementation="java.lang.String">**/TestRelocation.java</exclude><!-- hardwired paths -->
+	  </excludes>
+	</configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-javadoc-plugin</artifactId>
+	<configuration>
+	  <source>${jse.version}</source>
+	  <links>
+	    <link>http://java.sun.com/j2se/${jse.version}/docs/api</link>
+	    <link>http://java.sun.com/j2ee/${jee.version}/docs/api</link>
+	    <link>http://jakarta.apache.org/commons/logging/apidocs</link>
+	    <!-- TODO: commons-httpclient -->
+	    <link>http://jetty.mortbay.org/javadoc</link>
+	    <link>http://wadi.codehaus.org/wadi-core/apidocs</link>
+	  </links>
+	</configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+
+</project>

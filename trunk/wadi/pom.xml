@@ -190,7 +190,7 @@
   <scm>
     <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi</connection>
     <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi</developerConnection>
-    <url>http://svn.wadi.codehaus.org/wadi/</url>
+    <url>http://svn.wadi.codehaus.org/wadi/trunk/wadi</url>
   </scm>
 
   <issueManagement>
@@ -224,7 +224,7 @@
     <site>
       <id>wadi-website-dir</id>
       <name>WADI Website</name>
-      <url>scpexe://codehaus.org/home/projects/wadi/public_html</url>
+      <url>scpexe://codehaus.org/home/projects/wadi/public_html/stage</url>
     </site>
     <repository>
       <id>wadi-release-repository</id>
@@ -257,21 +257,21 @@
     <geronimo-spec-jms.version>1.1-rc4</geronimo-spec-jms.version>
   </properties>
 
-  <modules><!-- TODO: move all modules up and prepend name with 'wadi' -->
-    <module>modules/dispatcher</module>
-    <module>modules/core</module>
-    <module>modules/activecluster</module>
-    <module>modules/jgroups</module>
-    <module>modules/tribes</module>
-    <module>modules/jetty5</module>
-    <module>modules/jetty6</module>
-    <module>modules/tomcat50</module>
-    <module>modules/tomcat55</module>
-    <module>modules/axis2</module>
-    <module>modules/openejb</module>
-    <module>modules/jboss4</module>
-    <module>modules/webapp</module>
-    <module>modules/assembly</module>
+  <modules>
+    <module>wadi-dispatcher</module>
+    <module>wadi-core</module>
+    <module>wadi-activecluster</module>
+    <module>wadi-jgroups</module>
+    <module>wadi-tribes</module>
+    <module>wadi-jetty5</module>
+    <module>wadi-jetty6</module>
+    <module>wadi-tomcat50</module>
+    <module>wadi-tomcat55</module>
+    <module>wadi-axis2</module>
+    <module>wadi-openejb</module>
+    <module>wadi-jboss4</module>
+    <module>wadi-webapp</module>
+    <module>wadi-assembly</module>
   </modules>
 
   <!-- repositories for all modules -->
