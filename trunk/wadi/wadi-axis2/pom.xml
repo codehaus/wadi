@@ -23,41 +23,7 @@
   </repositories>
 
   <dependencies>
-    <dependency>
-      <groupId>org.apache.ws.policy</groupId>
-      <artifactId>policy</artifactId>
-      <version>WADI</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.ws.commons.schema</groupId>
-      <artifactId>XmlSchema</artifactId>
-      <version>WADI</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.axiom</groupId>
-      <artifactId>axiom</artifactId>
-      <version>WADI</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.axiom</groupId>
-      <artifactId>axiom-api</artifactId>
-      <version>WADI</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.axiom</groupId>
-      <artifactId>axiom-dom</artifactId>
-      <version>WADI</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.axiom</groupId>
-      <artifactId>axiom-impl</artifactId>
-      <version>WADI</version>
-    </dependency>
-    <dependency>
-      <groupId>axis2</groupId>
-      <artifactId>axis2</artifactId>
-      <version>WADI</version>
-    </dependency>
+    <!-- from public repos -->
     <dependency>
       <groupId>woodstox</groupId>
       <artifactId>wstx</artifactId>
@@ -83,9 +49,45 @@
       <artifactId>commons-httpclient</artifactId>
       <version>3.0</version>
     </dependency>
+    <!-- fron the WADI repo, temporarily -->
+    <dependency>
+      <groupId>org.apache.ws.policy</groupId>
+      <artifactId>policy</artifactId>
+      <version>WADI-02</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ws.commons.schema</groupId>
+      <artifactId>XmlSchema</artifactId>
+      <version>WADI-02</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.axiom</groupId>
+      <artifactId>axiom-api</artifactId>
+      <version>WADI-02</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.axiom</groupId>
+      <artifactId>axiom-dom</artifactId>
+      <version>WADI-02</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.axiom</groupId>
+      <artifactId>axiom-impl</artifactId>
+      <version>WADI-02</version>
+    </dependency>
+    <dependency>
+      <groupId>axis2</groupId>
+      <artifactId>axis2</artifactId>
+      <version>WADI-02</version>
+    </dependency>
+    <dependency>
+      <groupId>axis2</groupId>
+      <artifactId>axis2-wsdl</artifactId>
+      <version>WADI-02</version>
+    </dependency>
     <dependency>
       <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-core</artifactId>
+      <artifactId>wadi-dispatcher</artifactId>
     </dependency>
   </dependencies>
 
@@ -101,10 +103,6 @@
 	  </excludes>
 	  <systemProperties>
 	    <argLine>-enableassertions -Xmx1024m</argLine>
-	    <property>
-	      <name>axis2.xml</name>
-	      <value>${basedir}/resources/axis2.xml</value>
-	    </property>
 	    <property>
 	      <name>axis2.repo</name>
 	      <value>${basedir}/resources</value>
