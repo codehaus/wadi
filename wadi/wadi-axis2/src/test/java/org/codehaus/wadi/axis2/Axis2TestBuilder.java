@@ -8,8 +8,6 @@ import java.util.Vector;
 
 import javax.xml.namespace.QName;
 
-import junit.framework.TestCase;
-
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMException;
@@ -59,7 +57,7 @@ public class Axis2TestBuilder{
 			SimpleHTTPServer receiver = new SimpleHTTPServer(
 			ConfigurationContextFactory.createConfigurationContextFromFileSystem(
 			        repo, axis2File), port, null);
-			Runtime.getRuntime().addShutdownHook(new ShutdownThread(receiver));
+			//Runtime.getRuntime().addShutdownHook(new ShutdownThread(receiver));
 			receiver.start();
 			axis2InstanceHolder.add(receiver);
 		} catch (Exception e) {
@@ -76,7 +74,7 @@ public class Axis2TestBuilder{
 		for(Iterator it = axis2InstanceHolder.iterator(); it.hasNext(); ){
 			SimpleHTTPServer server = (SimpleHTTPServer)it.next();
 			server.stop();
-			axis2InstanceHolder.remove(server);
+			it.remove();
 		}			
 	}	
 
@@ -95,7 +93,7 @@ public class Axis2TestBuilder{
 		return envelope;
 	}
 
-	protected String retriveAuthStatus(SOAPEnvelope reply) {
+	protected String retrieveAuthStatus(SOAPEnvelope reply) {
 		if (reply != null) {
 			OMElement resultOM = reply.getBody().getFirstChildWithName(
 					new QName("STATUS_MESSAGE"));
@@ -104,7 +102,7 @@ public class Axis2TestBuilder{
 			return null;
 	}
 	
-	protected String retriveSessionId(Map params) {
+	protected String retrieveSessionId(Map params) {
 		QName sessionIdHeader = new QName(Constants.AXIS2_NAMESPACE_URI,"sessionId");
 		if (params != null) {
 			OMElement resultOM = (OMElement)params.get(sessionIdHeader);
@@ -121,7 +119,7 @@ public class Axis2TestBuilder{
         return envelope;
     }
     
-    protected String retriveBalance(SOAPEnvelope reply) {
+    protected String retrieveBalance(SOAPEnvelope reply) {
     	if (reply != null) {
             try {
 				OMElement resultOM = reply.getBody().getFirstChildWithName(new QName("BALANCE"));
@@ -133,58 +131,51 @@ public class Axis2TestBuilder{
             return null;
     }
     
-	protected SOAPEnvelope send(String url, Map eprParams, SOAPEnvelope env)
-			throws AxisFault {
-		EndpointReference targetEPR = new EndpointReference(url);
-		targetEPR.setName("TO");
-		targetEPR.setReferenceParameters(eprParams);
-
-		MessageContext reply = null;
-		try {
-			ServiceClient serviceClient = new ServiceClient();
-			options.setTo(targetEPR);
-			options.setAction("ANY-URI");
-			options.setManageSession(true);
-			serviceClient.setOptions(options);
-
-			MessageContext requetMessageContext = new MessageContext();
-			requetMessageContext.setEnvelope(env);
-
-			OperationClient opClient = serviceClient
-					.createClient(ServiceClient.ANON_OUT_IN_OP);
-			requetMessageContext.setTo(targetEPR);
-			opClient.addMessageContext(requetMessageContext);
-			opClient.setOptions(options);
-
-			opClient.execute(true);
-
-			reply = opClient
-					.getMessageContext(WSDLConstants.MESSAGE_LABEL_IN_VALUE);
-
-			eprParams.putAll(reply.getReplyTo().getAllReferenceParameters());
-		} catch (Exception e) {
-			// I have to swollow the annoying deployment exceptions when axis2
-			// is trying to load .svn file as a module :)
-			System.out.println("[Axis2]" + e.getMessage());
-		}
-
-		return reply.getEnvelope();
-	}
-	
-	static class ShutdownThread extends Thread {
-        private SimpleHTTPServer server = null;
-
-        public ShutdownThread(SimpleHTTPServer server) {
-            super();
-            this.server = server;
-        }
-
-        public void run() {
-            System.out.println("[SimpleHTTPServer] Shutting down");
-            server.stop();
-            System.out.println("[SimpleHTTPServer] Shutdown complete");
-        }
+    protected SOAPEnvelope send(String url, Map eprParams, SOAPEnvelope env) throws AxisFault {
+    	EndpointReference targetEPR = new EndpointReference(url);
+    	targetEPR.setName("TO");
+    	targetEPR.setReferenceParameters(eprParams);
+    	
+    	MessageContext reply = null;
+    	
+    	ServiceClient serviceClient = new ServiceClient();
+    	options.setTo(targetEPR);
+    	options.setAction("ANY-URI");
+    	options.setManageSession(true);
+    	serviceClient.setOptions(options);
+    	
+    	MessageContext requestMessageContext = new MessageContext();
+    	requestMessageContext.setEnvelope(env);
+    	
+    	OperationClient opClient = serviceClient.createClient(ServiceClient.ANON_OUT_IN_OP);
+    	requestMessageContext.setTo(targetEPR);
+    	opClient.addMessageContext(requestMessageContext);
+    	opClient.setOptions(options);
+    	
+    	opClient.execute(true);
+    	
+    	reply = opClient.getMessageContext(WSDLConstants.MESSAGE_LABEL_IN_VALUE);
+    	
+    	EndpointReference replyTo=reply.getReplyTo();
+    	eprParams.putAll(replyTo.getAllReferenceParameters());
+    	
+    	return reply.getEnvelope();
     }
+	
+//	static class ShutdownThread extends Thread {
+//        private SimpleHTTPServer server = null;
+//
+//        public ShutdownThread(SimpleHTTPServer server) {
+//            super();
+//            this.server = server;
+//        }
+//
+//        public void run() {
+//            System.out.println("[SimpleHTTPServer] Shutting down");
+//            server.stop();
+//            System.out.println("[SimpleHTTPServer] Shutdown complete");
+//        }
+//    }
 
 
 }
