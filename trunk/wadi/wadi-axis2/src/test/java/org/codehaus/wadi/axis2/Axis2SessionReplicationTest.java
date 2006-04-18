@@ -52,11 +52,11 @@ public class Axis2SessionReplicationTest extends TestCase{
 
 		SOAPEnvelope reply = testBuilder.send(testBuilder.authServiceUrl, eprParams, request);
 		
-		String response = testBuilder.retriveAuthStatus(reply);
+		String response = testBuilder.retrieveAuthStatus(reply);
 				
 		assertTrue("Session creation was unsuccessful",response.startsWith("Success"));
 		
-		String sessionId = testBuilder.retriveSessionId(eprParams);
+		String sessionId = testBuilder.retrieveSessionId(eprParams);
 		assertNotNull("Session id is null",sessionId);
 		
 		// sleep for a minute
@@ -66,7 +66,7 @@ public class Axis2SessionReplicationTest extends TestCase{
 		// it should return 10,000 as the users balance
 		SOAPEnvelope balRequest = testBuilder.getBalanceRequest();
 		SOAPEnvelope balReply = testBuilder.send(testBuilder.accountServiceUrl, eprParams, balRequest);
-		String	balance = testBuilder.retriveBalance(balReply);
+		String	balance = testBuilder.retrieveBalance(balReply);
 		
 		assertEquals("Session wasn't replicated properly",balance,"10,000");
 	}	
