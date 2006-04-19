@@ -107,7 +107,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		_dispatcher.setClusterListener(this);
 		_distributedState.put(_nodeNameKey, _nodeName);
 		_distributedState.put(_correlationIDMapKey, new HashMap());
-		_distributedState.put(_birthTimeKey, new Long(System.currentTimeMillis()));
+		_distributedState.put(_birthTimeKey, new Long(_config.getBirthTime()));
 		PartitionKeys keys=_partitionManager.getPartitionKeys();
 		_distributedState.put(_partitionKeysKey, keys);
 		_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));

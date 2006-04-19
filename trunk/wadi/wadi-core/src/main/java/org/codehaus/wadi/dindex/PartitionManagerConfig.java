@@ -44,4 +44,5 @@ public interface PartitionManagerConfig {
     Immoter getImmoter(String name, Motable immotable);
     Sync getInvocationLock(String name);
 
+    long getBirthTime();
 }

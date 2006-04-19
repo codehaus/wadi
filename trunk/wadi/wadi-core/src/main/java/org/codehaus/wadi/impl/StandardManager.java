@@ -58,9 +58,9 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
  */
 
 public class StandardManager implements Lifecycle, SessionConfig, ContextualiserConfig, RouterConfig {
-	
+
 	protected final Log _log = LogFactory.getLog(getClass());
-	
+
 	protected final SessionPool _sessionPool;
 	protected final AttributesFactory _attributesFactory;
 	protected final ValuePool _valuePool;
@@ -72,10 +72,11 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 	protected final Router _router;
 	protected final boolean _errorIfSessionNotAcquired;
 	protected final SynchronizedBoolean _acceptingSessions=new SynchronizedBoolean(true);
-	
+	protected final long _birthTime=System.currentTimeMillis();
+
 	protected HttpSessionListener[] _sessionListeners;
 	protected HttpSessionAttributeListener[] _attributeListeners;
-	
+
 	public StandardManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean errorIfSessionNotAcquired) {
 		_sessionPool=sessionPool;
 		_attributesFactory=attributesFactory;
@@ -88,30 +89,30 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 		_router=router;
 		_errorIfSessionNotAcquired=errorIfSessionNotAcquired;
 	}
-	
+
 	protected ManagerConfig _config;
-	
+
 	public void init(ManagerConfig config) {
 		if (_sessionListeners==null)
 			_sessionListeners=new HttpSessionListener[]{};
 		if (_attributeListeners==null)
 			_attributeListeners=new HttpSessionAttributeListener[]{};
-		
+
 		_config=config;
 		_sessionPool.init(this);
 		_contextualiser.init(this);
 		_router.init(this);
 	}
-	
+
 	protected boolean _started;
-	
+
 	public boolean isStarted() {
 		return _started;
 	}
-	
+
 	public void start() throws Exception {
 		_log.info("starting");
-		
+
 		_contextualiser.promoteToExclusive(null);
 		_contextualiser.start();
 		ServletContext context=getServletContext();
@@ -121,16 +122,16 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 			context.setAttribute(StandardManager.class.getName(), this); // TODO - security risk ?
 		}
 		_started=true;
-		
+
 		String version=getClass().getPackage().getImplementationVersion(); // maven2 puts version into MANIFEST.MF
 		version=(version==null?System.getProperty("wadi.version"):version); // using Eclipse, I add it as a property
 		_log.info("WADI-"+version+" successfully installed");
 	}
-	
+
 	public void aboutToStop() throws Exception {
 		// do nothing
 	}
-	
+
 	public void stop() throws Exception {
 		_started=false;
 		_acceptingSessions.set(false);
@@ -139,7 +140,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 		_contextualiser.stop();
 		_log.info("stopped"); // although this sometimes does not appear, it IS called...
 	}
-	
+
 	protected void notifySessionCreation(Session session) {
 		WADIHttpSession httpSession = ensureTypeAndCast(session);
 		int l=_sessionListeners.length;
@@ -147,7 +148,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 		for (int i=0; i<l; i++)
 			_sessionListeners[i].sessionCreated(hse);
 	}
-	
+
 	protected void notifySessionDestruction(Session session) {
 		WADIHttpSession httpSession = ensureTypeAndCast(session);
 		int l=_sessionListeners.length;
@@ -155,7 +156,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 		for (int i=0; i<l; i++)
 			_sessionListeners[i].sessionDestroyed(hse); // actually - about-to-be-destroyed - hasn't happened yet - see SRV.15.1.14.1
 	}
-	
+
 	private WADIHttpSession ensureTypeAndCast(Session session) {
 		if (false == session instanceof WADIHttpSession) {
 			throw new IllegalArgumentException(WADIHttpSession.class +
@@ -164,23 +165,23 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 		WADIHttpSession httpSession = (WADIHttpSession) session;
 		return httpSession;
 	}
-	
+
 	public void destroy() {
 		_router.destroy();
 		_contextualiser.destroy();
 		_sessionPool.destroy();
 	}
-	
+
 	protected boolean validateSessionName(String name) {
 		return true;
 	}
-	
+
 	public Session create() {
 		String name=null;
 		do {
 			name=_sessionIdFactory.create(); // TODO - API on this class is wrong...
 		} while (!validateSessionName(name));
-		
+
 		Session session=_sessionPool.take();
 		long time=System.currentTimeMillis();
 		session.init(time, time, _maxInactiveInterval, name);
@@ -192,7 +193,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 		if (_log.isDebugEnabled()) _log.debug("creation: "+name);
 		return session;
 	}
-	
+
 	public void destroy(Session session) {
 		for (Iterator i=new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) // ALLOC ?
 			session.removeAttribute((String)i.next()); // TODO - very inefficient
@@ -210,103 +211,110 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 		_sessionPool.put(session);
 		if (_log.isDebugEnabled()) _log.debug("destruction: "+name);
 	}
-	
+
 	//----------------------------------------
 	// Listeners
-	
+
 	public HttpSessionListener[] getSessionListeners() {
 		return _sessionListeners;
 	}
-	
+
 	public void setSessionListeners(HttpSessionListener[] sessionListeners) {
 		_sessionListeners=sessionListeners;
 	}
-	
+
 	public HttpSessionAttributeListener[] getAttributeListeners() {
 		return _attributeListeners;
 	}
-	
+
 	public void setAttributelisteners(HttpSessionAttributeListener[] attributeListeners) {
 		_attributeListeners=attributeListeners;
 	}
-	
+
 	// Context stuff
 	public ServletContext getServletContext() {return _config.getServletContext();}
-	
+
 	public AttributesFactory getAttributesFactory() {return _attributesFactory;}
 	public ValuePool getValuePool() {return _valuePool;}
-	
+
 	public StandardManager getManager(){return this;}
-	
+
 	// this should really be abstract, but is useful for testing - TODO
-	
+
 	public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperFactory;}
-	
+
 	public SessionIdFactory getSessionIdFactory() {return _sessionIdFactory;}
-	
+
 	protected int _maxInactiveInterval=30*60; // 30 mins
 	public int getMaxInactiveInterval(){return _maxInactiveInterval;}
 	public void setMaxInactiveInterval(int interval){_maxInactiveInterval=interval;}
-	
+
 	// integrate with Filter instance
 	protected Filter _filter;
-	
+
 	public void setFilter(Filter filter) {
 		_filter=filter;
 		_config.callback(this);
 	}
-	
+
 	public boolean getDistributable(){return false;}
-	
+
 	public Contextualiser getContextualiser() {return _contextualiser;}
-	
+
 	public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {_contextualiser.setLastAccessedTime(evictable, oldTime, newTime);}
 	public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_contextualiser.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
-	
+
 	public void expire(Motable motable) {
 		destroy((Session)motable);
 	}
-	
+
 	public Immoter getEvictionImmoter() {
 		return ((AbstractExclusiveContextualiser)_contextualiser).getImmoter();
 	} // HACK - FIXME
-	
+
 	public Timer getTimer() {return _timer;}
-	
+
 	public SessionPool getSessionPool() {return _sessionPool;}
-	
+
 	public Router getRouter() {return _router;}
-	
-	// Container integration... - override if a particular Container can do better... 
-	
+
+	// Container integration... - override if a particular Container can do better...
+
 	public int getHttpPort(){return Integer.parseInt(System.getProperty("http.port"));} // TODO - temporary hack...
-	
+
 	public String getSessionCookieName()  {return "JSESSIONID";}
-	
+
 	public String getSessionCookiePath(HttpServletRequest req){return req.getContextPath();}
-	
+
 	public String getSessionCookieDomain(){return null;}
-	
+
 	public String getSessionUrlParamName(){return "jsessionid";}
-	
+
 	public boolean getErrorIfSessionNotAcquired() {return _errorIfSessionNotAcquired;}
-	
+
 	protected SynchronizedInt _errorCounter=new SynchronizedInt(0);
-	
+
 	public void incrementErrorCounter() {_errorCounter.increment();}
-	
+
 	public int getErrorCount() {return _errorCounter.get();}
-	
+
 	public SynchronizedBoolean getAcceptingSessions() {return _acceptingSessions;}
-	
+
 	public void notifySessionInsertion(String name) {
 	}
-	
+
 	public void notifySessionDeletion(String name) {
 	}
-	
+
 	// called on new host...
 	public void notifySessionRelocation(String name) {
 	}
-	
+
+	public long getBirthTime() {
+		return _birthTime;
+	}
+
+	public long getUpTime() {
+		return System.currentTimeMillis()-_birthTime;
+	}
 }

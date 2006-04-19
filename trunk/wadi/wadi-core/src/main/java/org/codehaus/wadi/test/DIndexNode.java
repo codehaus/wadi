@@ -74,6 +74,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 	protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
 	protected final Streamer _streamer;
 	protected DIndex _dindex;
+	protected final long _birthTime=System.currentTimeMillis();
 
 	public DIndexNode(String nodeName, int numPartitions, PartitionMapper mapper, long inactiveTime, Dispatcher dispatcher) {
 		_nodeName=nodeName;
@@ -194,6 +195,10 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 	public Sync getInvocationLock(String name) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public long getBirthTime() {
+		return _birthTime;
 	}
 
 }

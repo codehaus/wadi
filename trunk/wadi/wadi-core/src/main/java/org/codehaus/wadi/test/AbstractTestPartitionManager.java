@@ -99,6 +99,8 @@ public abstract class AbstractTestPartitionManager extends TestCase {
 
 		PartitionManagerConfig pmc=new PartitionManagerConfig() {
 
+			protected long _birthTime=System.currentTimeMillis();
+			
 			public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
 				// TODO Auto-generated method stub
 
@@ -134,6 +136,10 @@ public abstract class AbstractTestPartitionManager extends TestCase {
 				return null;
 			}
 
+			public long getBirthTime() {
+				return _birthTime;
+			}
+			
 		};
 
 		pm1.init(pmc);
