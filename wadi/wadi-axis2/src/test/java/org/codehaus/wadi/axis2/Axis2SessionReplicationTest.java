@@ -3,9 +3,12 @@ package org.codehaus.wadi.axis2;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.namespace.QName;
+
 import junit.framework.TestCase;
 
 import org.apache.axiom.soap.SOAPEnvelope;
+import org.apache.axis2.Constants;
 
 public class Axis2SessionReplicationTest extends TestCase{
 	
@@ -29,15 +32,12 @@ public class Axis2SessionReplicationTest extends TestCase{
 		super.setUp();
 		
 		repo = System.getProperty("axis2.repo");
-				
-		//repo = "/opt/workspace/wadi/wadi/modules/axis2/resources";
+			
 		axis2File = repo + "/server/axis2.xml";
 		
 		// setup two axis2 instances
 		testBuilder.startUpAxis2Instance(repo,axis2File,port1);
 		testBuilder.startUpAxis2Instance(repo,axis2File,port2);
-		
-		System.setProperty("axis2.repo",repo);
 		System.setProperty("axis2.xml",repo + "/client/axis2.xml");
 	}
 	
@@ -49,26 +49,29 @@ public class Axis2SessionReplicationTest extends TestCase{
 		Map eprParams = new HashMap();
 
 		SOAPEnvelope request = testBuilder.getLoginRequest("12345", "911");
-
 		SOAPEnvelope reply = testBuilder.send(testBuilder.authServiceUrl, eprParams, request);
 		
-		String response = testBuilder.retrieveAuthStatus(reply);
-				
+		String response = testBuilder.retriveAuthStatus(reply);
 		assertTrue("Session creation was unsuccessful",response.startsWith("Success"));
 		
-		String sessionId = testBuilder.retrieveSessionId(eprParams);
+		String sessionId = testBuilder.retriveSessionId(eprParams);
 		assertNotNull("Session id is null",sessionId);
 		
 		// sleep for a minute
 		Thread.sleep(replication_interval);
 		
+		//removing the serviceGrpId
+		// a proper axis2 version should be able to ignore this
+		QName serviceGroupIdHeader = new QName(Constants.AXIS2_NAMESPACE_URI,"ServiceGroupId");
+		eprParams.remove(serviceGroupIdHeader);
+		
 		// now do a balance querry with second axis2 instance
 		// it should return 10,000 as the users balance
 		SOAPEnvelope balRequest = testBuilder.getBalanceRequest();
 		SOAPEnvelope balReply = testBuilder.send(testBuilder.accountServiceUrl, eprParams, balRequest);
-		String	balance = testBuilder.retrieveBalance(balReply);
+		String	balance = testBuilder.retriveBalance(balReply);
 		
-		assertEquals("Session wasn't replicated properly",balance,"10,000");
+		assertEquals("Session wasn't replicated properly","10,000",balance);
 	}	
 	
 	public static void main(String[] args){
@@ -76,6 +79,7 @@ public class Axis2SessionReplicationTest extends TestCase{
 		try {
 			t.setUp();
 			t.testSessionReplication();
+			t.tearDown();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
