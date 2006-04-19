@@ -51,31 +51,22 @@ public class Axis2TestBuilder{
 		options.setUseSeparateListener(false);
 	}
 	
-	protected void startUpAxis2Instance(String repo, String axis2File, int port){
-		try {
-			System.out.println("5555555555555555555555555555555555555555555555555555555555555555555555555555555555555555");
-			SimpleHTTPServer receiver = new SimpleHTTPServer(
-			ConfigurationContextFactory.createConfigurationContextFromFileSystem(
-			        repo, axis2File), port, null);
-			//Runtime.getRuntime().addShutdownHook(new ShutdownThread(receiver));
-			receiver.start();
-			axis2InstanceHolder.add(receiver);
-		} catch (Exception e) {
-			
-			System.out.println("********************************************************************************************");
-			//  I have to swollow the annoying deployment exceptions when axis2
-			// is trying to load .svn file as a module :)
-			System.out.println("[Axis2]" + e.getMessage());
-		}
-		System.out.println("8888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888");
+	protected void startUpAxis2Instance(String repo, String axis2File, int port) throws Exception{
+		SimpleHTTPServer receiver = new SimpleHTTPServer(
+		ConfigurationContextFactory.createConfigurationContextFromFileSystem(
+		        repo, axis2File), port, null);
+		Runtime.getRuntime().addShutdownHook(new ShutdownThread(receiver));
+		receiver.start();
+		axis2InstanceHolder.add(receiver);
 	}
 	
 	protected void stopAxis2Instances() throws Exception {
 		for(Iterator it = axis2InstanceHolder.iterator(); it.hasNext(); ){
 			SimpleHTTPServer server = (SimpleHTTPServer)it.next();
 			server.stop();
-			it.remove();
-		}			
+			//axis2InstanceHolder.remove(server);
+		}
+		axis2InstanceHolder.removeAllElements();
 	}	
 
 	protected SOAPEnvelope getLoginRequest(String acctnum, String passwd) {
@@ -93,7 +84,7 @@ public class Axis2TestBuilder{
 		return envelope;
 	}
 
-	protected String retrieveAuthStatus(SOAPEnvelope reply) {
+	protected String retriveAuthStatus(SOAPEnvelope reply) {
 		if (reply != null) {
 			OMElement resultOM = reply.getBody().getFirstChildWithName(
 					new QName("STATUS_MESSAGE"));
@@ -102,7 +93,7 @@ public class Axis2TestBuilder{
 			return null;
 	}
 	
-	protected String retrieveSessionId(Map params) {
+	protected String retriveSessionId(Map params) {
 		QName sessionIdHeader = new QName(Constants.AXIS2_NAMESPACE_URI,"sessionId");
 		if (params != null) {
 			OMElement resultOM = (OMElement)params.get(sessionIdHeader);
@@ -119,11 +110,15 @@ public class Axis2TestBuilder{
         return envelope;
     }
     
-    protected String retrieveBalance(SOAPEnvelope reply) {
+    protected String retriveBalance(SOAPEnvelope reply) {
     	if (reply != null) {
             try {
 				OMElement resultOM = reply.getBody().getFirstChildWithName(new QName("BALANCE"));
-				return resultOM.getText();
+				if (resultOM == null){
+					return null;
+				}else{
+					return resultOM.getText();
+				}
 			} catch (OMException e) {
 				return null;
 			}
@@ -131,51 +126,50 @@ public class Axis2TestBuilder{
             return null;
     }
     
-    protected SOAPEnvelope send(String url, Map eprParams, SOAPEnvelope env) throws AxisFault {
-    	EndpointReference targetEPR = new EndpointReference(url);
-    	targetEPR.setName("TO");
-    	targetEPR.setReferenceParameters(eprParams);
-    	
-    	MessageContext reply = null;
-    	
-    	ServiceClient serviceClient = new ServiceClient();
-    	options.setTo(targetEPR);
-    	options.setAction("ANY-URI");
-    	options.setManageSession(true);
-    	serviceClient.setOptions(options);
-    	
-    	MessageContext requestMessageContext = new MessageContext();
-    	requestMessageContext.setEnvelope(env);
-    	
-    	OperationClient opClient = serviceClient.createClient(ServiceClient.ANON_OUT_IN_OP);
-    	requestMessageContext.setTo(targetEPR);
-    	opClient.addMessageContext(requestMessageContext);
-    	opClient.setOptions(options);
-    	
-    	opClient.execute(true);
-    	
-    	reply = opClient.getMessageContext(WSDLConstants.MESSAGE_LABEL_IN_VALUE);
-    	
-    	EndpointReference replyTo=reply.getReplyTo();
-    	eprParams.putAll(replyTo.getAllReferenceParameters());
-    	
-    	return reply.getEnvelope();
-    }
+	protected SOAPEnvelope send(String url, Map eprParams, SOAPEnvelope env)
+			throws AxisFault {
+		EndpointReference targetEPR = new EndpointReference(url);
+		targetEPR.setName("TO");
+		targetEPR.setReferenceParameters(eprParams);
+
+		ServiceClient serviceClient = new ServiceClient();
+		options.setTo(targetEPR);
+		options.setAction("ANY-URI");
+		serviceClient.setOptions(options);
+
+		serviceClient.engageModule(new QName("addressing"));
+		
+		MessageContext requetMessageContext = new MessageContext();
+		requetMessageContext.setEnvelope(env);
+				
+		OperationClient opClient = serviceClient
+				.createClient(ServiceClient.ANON_OUT_IN_OP);
+		requetMessageContext.setTo(targetEPR);
+		opClient.addMessageContext(requetMessageContext);
+		opClient.setOptions(options);
+
+		opClient.execute(true);
+
+		MessageContext reply = opClient
+				.getMessageContext(WSDLConstants.MESSAGE_LABEL_IN_VALUE);
+
+		eprParams.putAll(reply.getReplyTo().getAllReferenceParameters());
+
+		return reply.getEnvelope();
+	}
 	
-//	static class ShutdownThread extends Thread {
-//        private SimpleHTTPServer server = null;
-//
-//        public ShutdownThread(SimpleHTTPServer server) {
-//            super();
-//            this.server = server;
-//        }
-//
-//        public void run() {
-//            System.out.println("[SimpleHTTPServer] Shutting down");
-//            server.stop();
-//            System.out.println("[SimpleHTTPServer] Shutdown complete");
-//        }
-//    }
+	static class ShutdownThread extends Thread {
+        private SimpleHTTPServer server = null;
+
+        public ShutdownThread(SimpleHTTPServer server) {
+            super();
+            this.server = server;
+        }
+
+        public void run() {
+            server.stop();
+        }
+    }
 
 
 }

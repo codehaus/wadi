@@ -25,13 +25,14 @@ public class Axis2SessionCreationTest extends TestCase{
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
+		
 		// setup a single axis2 instance
 		repo = System.getProperty("axis2.repo");
+		
 		axis2File = repo + "/server/axis2.xml";
 		
 		testBuilder.startUpAxis2Instance(repo,axis2File,port);
 		
-		System.setProperty("axis2.repo",repo);
 		System.setProperty("axis2.xml",repo + "/client/axis2.xml");
 	}
 	
@@ -41,20 +42,28 @@ public class Axis2SessionCreationTest extends TestCase{
 	
 	public void testSessionCreation() throws Exception {
 		Map eprParams = new HashMap();
-
+		
 		SOAPEnvelope request = testBuilder.getLoginRequest("12345", "911");
-
 		SOAPEnvelope reply = testBuilder.send(testBuilder.authServiceUrl, eprParams, request);
 
-		String response = testBuilder.retrieveAuthStatus(reply);
-				
+		String response = testBuilder.retriveAuthStatus(reply);
 		assertTrue("Session creation was unsuccessful",response.startsWith("Success"));
 		
-		String sessionId = testBuilder.retrieveAuthStatus(reply);
+		String sessionId = testBuilder.retriveSessionId(eprParams);
 		assertNotNull("Session id is null",sessionId);
 		
 		// you can write a test case to verfiy the format of session id as well
-		
+	}
+	
+	public static void main(String[] args){
+		Axis2SessionCreationTest t = new Axis2SessionCreationTest();
+		try {
+			t.setUp();
+			t.testSessionCreation();
+			t.tearDown();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 }
