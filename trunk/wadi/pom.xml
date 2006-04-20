@@ -6,6 +6,7 @@
   <version>2.0M2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>WADI</name>
+  <url>http://wadi.codehaus.org</url>
 
   <mailingLists>
     <mailingList>
