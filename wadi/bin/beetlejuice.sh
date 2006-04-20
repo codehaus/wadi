@@ -33,7 +33,7 @@ echo
 rm -fr ./testresults
 
 ## execute build, recording status
-mvn $PROPS clean:clean && \
+mvn $PROPS clean:clean eclipse:eclipse && \
 mvn $PROPS install site && \
 mvn $PROPS -f pom.clover.xml clover:aggregate clover:clover
 status=$?
