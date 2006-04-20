@@ -407,8 +407,12 @@
   </dependencies>
 
   <pluginRepositories>
-    <!-- for jdepend,  -->
-    <pluginRepository>
+    <pluginRepository><!-- our own repo for custom deps -->
+      <id>wadi-dependencies</id>
+      <name>WADI Dependencies Repository at the Haus</name>
+      <url>http://dist.codehaus.org/wadi/dependencies/maven2</url><!-- TODO: should be moved over to WadiReleaseRepository -->
+    </pluginRepository>
+    <pluginRepository> <!-- for jdepend,  -->
       <id>maven-plugin-snapshots</id>
       <url>http://snapshots.maven.codehaus.org/maven2/</url>
       <snapshots>
