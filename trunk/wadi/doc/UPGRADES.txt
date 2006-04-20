@@ -1,4 +1,0 @@
-
-tomcat-5.5 - Manager interface haslost methods mentioning DefaultContext and the DefaultContext class...
-
-jetty-6 - SessionManager has changed package and added an initialise() method

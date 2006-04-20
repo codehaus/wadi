@@ -1,6 +1,1 @@
 
-
-It ooks as if tomcat/HttpSessionImpls are getting facades of the wrong
-type... it's getting a shared one instead of a tomcat one:-(
-
-
