@@ -141,14 +141,14 @@ public class SimpleStateManager implements StateManager {
 
 		public void setBodyAsByteArray(byte[] bytes) throws Exception {
 			Motable immotable=new SimpleMotable();
+			immotable.init(_creationTime, _lastAccessedTime, _maxInactiveInterval, _name);
 			immotable.setBodyAsByteArray(bytes);
 
-			Object key=_get.getKey();
 			Dispatcher dispatcher=_config.getDispatcher();
 			long timeout=_config.getInactiveTime();
 			Destination sm=dispatcher.getLocalDestination();
 			Destination im=(Destination)_get.getIM();
-			MoveSMToIM request=new MoveSMToIM(key, bytes);
+			MoveSMToIM request=new MoveSMToIM(immotable);
 			// send on state from StateMaster to InvocationMaster...
 			if (_log.isTraceEnabled()) _log.trace("exchanging MoveSMToIM between: "+_config.getNodeName(sm)+"->"+_config.getNodeName(im));
 			ObjectMessage message2=(ObjectMessage)dispatcher.exchangeSend(sm, im, request, timeout, _get.getIMCorrelationId());
@@ -157,14 +157,15 @@ public class SimpleStateManager implements StateManager {
                 // TODO throw exception
 				_log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
 			} else {
-//				MoveIMToSM response=null;
-//				try {
-//					response=(MoveIMToSM)message2.getObject();
-//					// acknowledge transfer completed to PartitionMaster, so it may unlock resource...
+				MoveIMToSM response=null;
+				try {
+					response=(MoveIMToSM)message2.getObject();
+					assert(response!=null && response.getSuccess()); // FIXME - we should keep trying til we get an answer or give up...
+					// acknowledge transfer completed to PartitionMaster, so it may unlock resource...
 					dispatcher.reply(_message1,new MoveSMToPM(true));
-//				} catch (JMSException e) {
-//					_log.error("unexpected problem", e);
-//				}
+				} catch (JMSException e) {
+					_log.error("unexpected problem", e);
+				}
 			}
 		}
 
@@ -265,18 +266,18 @@ public class SimpleStateManager implements StateManager {
 				RelocationImmoter promoter=new RelocationImmoter(imName, message1, request);
 				//boolean found=
 
-        // acquire invocation lock here... - we need it - not sure why...
-        Sync invocationLock=_config.getInvocationLock((String)key);
-        try {
-          Utils.acquireUninterrupted("Invocation", (String)key, invocationLock);
-        } catch (TimeoutException e) {
-          _log.error("unexpected timeout - proceding without lock", e);
-        }
+				// acquire invocation lock here... - we need it - not sure why...
+				Sync invocationLock=_config.getInvocationLock((String)key);
+				try {
+					Utils.acquireUninterrupted("Invocation", (String)key, invocationLock);
+				} catch (TimeoutException e) {
+					_log.error("unexpected timeout - proceding without lock", e);
+				}
 
 				_config.contextualise(null, (String)key, promoter, invocationLock, true); // if we own session, this will send the correct response...
 				if (!promoter.getFound()) {
 					_log.warn("state not found - perhaps it has just been destroyed: "+key);
-					MoveSMToIM req=new MoveSMToIM(key, null);
+					MoveSMToIM req=new MoveSMToIM(null);
 					// send on null state from StateMaster to InvocationMaster...
 					Destination sm=_dispatcher.getLocalDestination();
 					long timeout=_config.getInactiveTime();
@@ -374,7 +375,8 @@ public class SimpleStateManager implements StateManager {
 	}
 
   public void onPutSMToIM(ObjectMessage message, PutSMToIM request) {
-    _config.fetchSession(request.getKey());
+	  throw new UnsupportedOperationException("NYI");
+    //_config.fetchSession(request.getKey());
   }
   
 }

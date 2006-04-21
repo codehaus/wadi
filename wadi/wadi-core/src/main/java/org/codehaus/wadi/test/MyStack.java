@@ -49,7 +49,6 @@ import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyManagerConfig;
-import org.codehaus.wadi.impl.DummyRelocater;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.impl.ExclusiveStoreContextualiser;
@@ -67,6 +66,7 @@ import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.impl.WebHybridRelocater;
 
 public class MyStack {
 
@@ -90,7 +90,7 @@ public class MyStack {
       Contextualiser db=new SharedStoreContextualiser(terminator, collapser, clean, store);
 
       // Cluster
-      Contextualiser cluster=new ClusterContextualiser(db, collapser, new DummyRelocater());
+      Contextualiser cluster=new ClusterContextualiser(db, collapser, new WebHybridRelocater(5000, 5000, true));
 
       // Disc
       Evicter devicter=new NeverEvicter(sweepInterval, strictOrdering);
