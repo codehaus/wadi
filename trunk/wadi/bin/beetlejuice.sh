@@ -5,11 +5,10 @@
 if [ "$SHELL" = /sbin/nologin ]
 then
     ## we are being run by Beetlejuice...
-    export JAVA_HOME=/usr/local/java-1.4
-    export M2_HOME=/usr/local/maven-2.0
-    export M2_HOME=/usr/local/maven-2.0.3-SNAPSHOT
     echo "available maven versions:"
     ls -ld /usr/local/maven*
+    export JAVA_HOME=/usr/local/java-1.4
+    export M2_HOME=/usr/local/maven-2.0.4
     echo
     export PATH=$JAVA_HOME/bin:$M2_HOME/bin:$PATH
     export PROPS="-Duser.home=."
