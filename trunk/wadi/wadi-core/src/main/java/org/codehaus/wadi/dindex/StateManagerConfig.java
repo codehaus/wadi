@@ -45,7 +45,5 @@ public interface StateManagerConfig {
   long getInactiveTime();
 
   Sync getInvocationLock(String name);
-  
-  boolean fetchSession(Object key);
 
 }

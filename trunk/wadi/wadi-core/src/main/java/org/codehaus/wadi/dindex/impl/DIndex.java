@@ -55,7 +55,6 @@ import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.impl.AbstractChainedEmoter;
-import org.codehaus.wadi.impl.SimpleMotable;
 import org.codehaus.wadi.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
@@ -435,18 +434,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		}
 	}
 
-  public boolean fetchSession(Object key) {
-    boolean success=false;
-    try {
-      Motable motable=relocate((String)key, getLocalNodeName(), 0, false, 5000L);
-      success=true;
-    } catch (Exception e) {
-      _log.error("unexpected problem", e);
-    }
-    return success;
-  }
-
-	public Motable relocate(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout) throws Exception {
+	public Motable relocate(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout, Immoter immoter) throws Exception {
 		MoveIMToPM request=new MoveIMToPM(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
 		ObjectMessage message=getPartition(sessionName).exchange(request, timeout);
 
@@ -461,20 +449,14 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 			if (dm instanceof MoveSMToIM) {
 				MoveSMToIM req=(MoveSMToIM)dm;
 				// insert motable into contextualiser stack...
-				byte[] bytes=(byte[])req.getValue();
-				if (bytes==null) {
+				Motable emotable=req.getMotable();
+				if (emotable==null) {
 					_log.warn("failed relocation - 0 bytes arrived: "+sessionName);
 					return null;
 				} else {
-					Motable emotable=new SimpleMotable();
-					emotable.setBodyAsByteArray(bytes);
-					// TOTAL HACK - FIXME
-					emotable.setLastAccessedTime(System.currentTimeMillis());
 					if (!emotable.checkTimeframe(System.currentTimeMillis()))
 						if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
-
 					Emoter emoter=new SMToIMEmoter(_config.getNodeName(message.getJMSReplyTo()), message);
-					Immoter immoter=_config.getImmoter(sessionName, emotable);
 					Motable immotable=Utils.mote(emoter, immoter, emotable, sessionName);
 					return immotable;
 //					if (null==immotable)

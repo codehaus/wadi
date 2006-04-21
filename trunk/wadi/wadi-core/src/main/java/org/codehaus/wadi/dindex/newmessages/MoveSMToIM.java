@@ -18,36 +18,30 @@ package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
+import org.codehaus.wadi.Motable;
+
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public class MoveSMToIM implements Serializable {
 
-	protected Object _key; // do we really need the key - TODO
-	protected Object _value; // should be strictly typed to byte[] - TODO
+	protected Motable _motable;
 
-	public MoveSMToIM(Object key, Object value) {
-		_key=key;
-		_value=value;
+	public MoveSMToIM(Motable motable) {
+		_motable=motable;
 	}
 
 	protected MoveSMToIM() {
 		// for deserialisation...
 	}
 
-	public Object getKey() {
-		return _key;
-	}
-
-	public Object getValue() {
-		return _value;
+	public Motable getMotable() {
+		return _motable;
 	}
 
 	public String toString() {
-		byte[] bytes=(byte[])_value;
-		int l=(bytes==null?0:bytes.length);
-		return "<MoveSMToIM:"+_key+":"+l+"bytes>";
+		return "<MoveSMToIM:"+_motable+">";
 	}
 
 }
