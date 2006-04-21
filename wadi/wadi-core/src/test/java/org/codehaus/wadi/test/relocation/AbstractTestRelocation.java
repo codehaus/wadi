@@ -70,24 +70,19 @@ public class AbstractTestRelocation extends TestCase {
 		
 		assertTrue(id!=null);
 		
-		boolean success=false;
-		try {
-			FilterChain fc=new FilterChain() {
-				public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
-					HttpSession session=((HttpServletRequest)req).getSession();
-					assertTrue(session!=null);
-					_log.info("ACQUIRED SESSION: "+session.getId());
-				}
-			};
-			
-			InvocationContext invocation=new WebInvocationContext(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
-			_log.info("RELOCATING SESSION...");
-			assertTrue(green.getManager().contextualise(invocation, id, null, null, false));
-			_log.info("...DONE");
-			success=true;
-		} catch (NullPointerException e) {
-		}
-		
+		FilterChain fc=new FilterChain() {
+			public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
+				HttpSession session=((HttpServletRequest)req).getSession();
+				assertTrue(session!=null);
+				_log.info("ACQUIRED SESSION: "+session.getId());
+			}
+		};
+
+		InvocationContext invocation=new WebInvocationContext(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
+		_log.info("RELOCATING SESSION...");
+		boolean success=green.getManager().contextualise(invocation, id, null, null, false);
+		_log.info("...DONE");
+
 		assertTrue(success);
 
 		Thread.sleep(5000);// prevents us stopping whilst a Partition transfer is ongoing....
