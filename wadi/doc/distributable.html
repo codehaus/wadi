@@ -247,17 +247,8 @@
 
     <p/>
 
-      We shall take "container-managed objects" to include any object
-      that has been placed into an httpsession. By virtue of this
-      placement, its lifecycle is now the responsibility of the
-      encompassing session and ultimately therefore of the
-      container. This is a useful constraint, since the
-      container-provider may now prove that, provided that there are
-      no request threads active for a session within the container,
-      entirely thread-safe access may be made not only to an
-      httpsession but also to its attributes, although their locking
-      scheme, being application space components, is completely
-      unknown to the container-provider.
+      This concept of "container-managed objects" needs more careful
+      discussion and we shall look at it more closely later.
 
     <h3>
       HttpSession Events
@@ -316,233 +307,78 @@
       within the bounds of the current specification, can we do to
       mitigate this event?'.
 
-    <h3>
-      Session Backup - When
-    </h3>
+    <p/>
+
+      Before moving into more detailed discussion about session
+      migration we need to discuss the synchronisation of session
+      attributes and to introduce the concepts of 'Reference vs. Value
+      Based Semantics' and 'Object Identity'.
+
+      <h3>
+      Session Attribute Synchronisation
+      </h3>
 
     <p/>
 
-      The answer to the concern of lost data is to frequently ship
-      backup copies off-node, so that in the case of its catastrophic
-      failure, we have a fallback position. The freshness of our
-      backup data depends directly on the frequency of this
-      process. This frequency is bounded by resource concerns and the
-      contract between container and containee, as discussed above.
+      We have shown that there are many times at which a container may
+      wish to take a backup copy, via serialisation, of a session or
+      session attribute. In a multi-threaded environment the container
+      needs to be able to ensure a consistent view of the object that
+      it is backing up. i.e. the object must remain unchanged
+      throughout the process of serialisation, otherwise the backup
+      copy can not be guaranteed valid.
 
     <p/>
-      Let us examine some of the possibilities:
 
-    <ul>
-      <li>
-	Immediate - As soon as a change is made to a session, it is
-	backed up.
-	<ul>
-	  <li>
-	    Most Accurate - This policy constrains our window of
-	    data-loss as much as is reasonably possible.
-	  </li>
-	  <li>
-	    Most Expensive - This accuracy has a cost. Every write to
-	    a session object will result in expensive back up code
-	    being triggered.
-	  </li>
-	  <li>
-	    Synchronisation Issues/Ref vs Val semantics - TODO
-	  </li>
-	</ul>
-      </li>
-      <li>
-	Request - All changes to a session are backed up at the end of
-	each relevant request.
-	<ul>
-	  <li>
-	    Less Accurate - This is less accurate than the 'Immediate'
-	    policy described above, since a failure halfway through a
-	    request thread would result in the loss of all changes
-	    that it had made to it's session.
-	  </li>
-	  <li>
-	    Less Expensive - Since backups are only done at the end of
-	    each request, they will be fewer than 'Immediate' mode,
-	    resulting in much less expense.
-	  </li>
-	  <li>
-	    Inconsistency - Assuming that the session is somehow in a
-	    'consistent' state at the end of each request is
-	    misguided, since multiple requests may overlap. Although,
-	    it may be, with the benefit of knowledge of the
-	    application at one's disposal, that this problem can be
-	    safely discounted.
-	  </li>
-	  <li>
-	    Synchronisation Issues/Ref vs Val semantics - TODO - This
-	    policy suffers from the same issues, in this respect as
-	    'Immediate'.
-	  </li>
-	</ul>
-      </li>
-      <li>
-	Request Group - All changes to a session are backed up as soon
-	as all associated active requests have been processed.
-	<ul>
-	  <li>
-	    Less Accurate - This policy will be less accurate still,
-	    if requests for the same session overlap within the
-	    container.
-	  </li>
-	  <li>
-	    Less Expensive - For the above reason this will lead to it
-	    being still less expensive.
-	  </li>
-	  <li>
-	    Consistency - This policy guarantees that what it backs up
-	    is a consistent view of the session's contents. No request
-	    is only half processed.
-	  </li>
-	  <li>
-	    Thread-Safe - The real win for this policy is that, with
-	    no contract between containee and container, other than
-	    that described in the Servlet Specification, the container
-	    may access session attributes for backup, in the knowledge
-	    that no other application code is concurrently modifying
-	    them.
-	  </li>
-	</ul>
-      </li>
-      <li>
-	WebApplication - Backup occurs in line with web application
-	lifecycle. i.e. Not until the web application is
-	<code>stop()</code>-ed by it's container.
-	<ul>
-	  <li>
-	    This policy gives no protection against catastrophic
-	    failure, but is fine for maintenance-only scenarios.
-	  </li>
-	  <li>
-	    There is no associated runtime overhead.
-	  </li>
-	  <li>
-	    There are no consistency or synchronisation issues. All
-	    request and background threads will have terminated before
-	    the session is backed up.
-	  </li>
-	</ul>
-      </li>
-      <li>
-	Timed - 'dirty' sessions are backed up at regular intervals,
-	orthogonal to the lifecycles of requests, web applications
-	etc...
-	<ul>
-	  <li>
-	    This might conceivably be useful to overlay on top of
-	    e.g. the 'Request' policy if your request threads took a
-	    long time to run, or the 'RequestGroup' policy if you
-	    expected long periods without backing up because of many
-	    overlapping requests for he same session.
-	  </li>
-	  <li>
-	    A backup policy that worked in the manner would be of
-	    conveniently tunable accuracy and impact.
-	  </li>
-	  <li>
-	    However such a policy would suffer from all the
-	    consistency and synchronisation issues common to
-	    'Immediate' and 'Request' approaches.
-	  </li>
-	</ul>
-      </li>
-    </ul>
+      If we classify session attributes as "container-managed
+      objects", then we can see that the specification 'recommends'
+      their references not being given to any application thread
+      running beyond the scope of a request. This means that, provided
+      that no request threads for this session are running in the
+      container, we can be assured of thread-safe access to it's
+      attributes and thus a consistent snapshot of the session's
+      state.
 
     <p/>
-      REFACTORING HAS GOT TO HERE...
+
+      If we classify sessions but not session attributes as
+      "container-managed objects", then this assumption breaks down.
+
     <p/>
+
+      Even given this asumption, backing up of sessions when a
+      relevant request or background thread is running (e.g. 'When'
+      policies 'Immediate' and 'Request') become problematic. This is
+      unfortunate, because inability to implement these policies
+      impacts on the guarantees that the container can make and thus
+      the quality of service that it can offer.
+
+    <p/>
+
+      These issues are not isolated to the management of HttpSessions,
+      they are present throughout distributed software
+      architectures. Aside from an explicit synchronisation protocol a
+      common and practical solution is to alter the semantics of object equality.
+
+    <p/>
+
+      Because the design of HttpSessions did not originally encompass their distributability
+
+      - explicit session attribute synchronisation protocol between
+      application and container code.
+
+      - shift from reference to value based semantics
+
+      Object Identity is also an issue.
+
+
+
 
     <h3>
-      Session Backup - At what granularity ?
+      Reference vs Value Based Semantics - TODO - needs refactoring.
     </h3>
 
-    <ul>
-      <li>
-	whole session
-	<ul>
-	  <li>
-	    synchronisation issues - must lock more objects (TODO)
-	  </li>
-	</ul>
-      </li>
-      <li>
-	single attribute
-	<ul>
-	  <li>
-	    more complex
-	  </li>
-	  <li>
-	    less contention
-	  </li>
-	  <li>
-	    Object Identity issues - TODO - same object in different attributes not preserved ?
-	  </li>
-	</ul>
-      </li>
-      <li>
-	batched attributes
-	<ul>
-	  <li>
-	    even more complex
-	  </li>
-	  <li>
-	    multiple changes to same attribute may be collapsed
-	  </li>
-	  <li>
-	    Object Identity  - as above - TODO
-	  </li>
-	</ul>
-      </li>
-    </ul>
-
-    <p/>
-
-      (TODO - requests do not have transactional semantics)
-
-    <p/>
-
-      (TODO - if a single request reset an attribute a number of times,
-      immediate xfer would be expensive, batching would also be expensive
-      since each reset would involve a serialisation of which only the last
-      would be useful (or can we leave this til the last moment?))
-
-    <p/>
-
-      What can we do?
-
-    <ul>
-      <li>
-	whatever we do it must not break spec compliance/portability (so we
-	cannot e.g. extend APIs).
-      </li>
-
-      <li>
-	insist on the no background thread rule - unless distribution
-	is only done on webapp.stop()
-      </li>
-      <li>
-	agree an explicit session attribute synchronisation contract -
-	<code>synchronized(Object){...}</code> - why implicit rule is
-	not enough.
-      </li>
-
-    <h3>
-      Reference vs Value Based Semantics
-    </h3>
-
-    <p/>
-
-      It is useful to introduce the distinction between reference and
-      value based semantics at this point.
-
-    <p/>
-
-      Given the following Servlet code snippet:
+    Given the following Servlet code snippet:
 
     <pre>
     Foo foo1=new Foo();
@@ -649,221 +485,247 @@
     <h3>
       Object Identity, Object Streams and Synchronisation
     </h3>
-    TODO - I guess Object Identity can only be preserved within a
-    single Object tree ? so attribute-based distribution will not
-    recognise the same object shared between different attributes
-
-    How can we guarantee, unless we know that no other threads are
-    running, the synchronisation of values as we stream them out of
-    the container ?
-
-<!--
-    Are there any problems with this approach?
 
     <p/>
 
-      We will outline below a number of shortcomings in the current
-      specification with regards to distributable webapps and proposed
-      solutions. As far as an implementation is concerned, it could
-      simply extend the specification in a proprietary direction,
-      adding features and corresponding API extensions to provide
-      extra functionality. However this breaks portability and creates
-      vendor lock-in. The real challenge is to fulfil our users
-      requirements whilst staying absolutely within the bounds of the
-      specification.
-
-    <p/>
-      Why ?
-    <p/>
-      Inconsistency:
-    <p/>
-      Migration:
-    <p/>
-
-      The API and language used in the spec, seem to imply that the
-      expected usage scenario is that a running distributable webapp
-      will be cleanly shut down and it's sessions 'migrated' to
-      another container or store.
+      TODO - I guess Object Identity can only be preserved within a
+      single Object tree ? so attribute-based distribution will not
+      recognise the same object shared between different attributes
 
     <p/>
 
-      In a perfect world, this would be fine. The administrator would
-      stop the webapp. The container would cease running user requests
-      through it (they would all be load balanced to other nodes in
-      the cluster), all concurrency issues in the webapp would cease
-      and the single remaining control thread would serialise all
-      existing sessions into a shared store whence they could be
-      loaded by peer nodes if and when needed, or directly to one or
-      more peers.
-
-    <p/>
-
-      In the real world, whilst managed shutdown is a very common
-      issue, enterprise users require protection from not just
-      intentional, but also unintentional service outages. The
-      catastrophic failure of a node will stop a JVM instantly. All
-      control is lost, therefore if data (i.e. sessions) has not
-      already been backed up, it is lost. If this data was 10s of
-      1000s of long, complex, half-filled out purchase orders, then
-      you have just lost a lot of business.
-
-    <p/>
-
-      Catastrophic failure, therefore, is not a scenario realistically
-      addressed by the spec, but the functionality that it does
-      mandate provides the container provider with just enough rope to
-      have a go at hanging himself...
-
-    <p/>
-
-      So, how might the container provider protect a business against
-      catastrophic failure ? Simply by ensuring that off-node backups
-      of each session exist and are as fresh as the business requires
-      and can be achieved within technical constraints.
-
-    <p/>
-
-      The container provider now has to make a couple of major decisions:
-
-    <ul>
-      <li>
-	When to ship session content off-node ?
-      </li>
-      <li>
-	What data to ship ?
-      </li>
-    </ul>
+      How can we guarantee, unless we know that no other threads are
+      running, the synchronisation of values as we stream them out of
+      the container ?
 
     <h3>
-      When ?
+      Session Backup - When
     </h3>
 
     <p/>
 
-      If you are going to burn expensive resources, in terms of CPU
-      and bandwidth, serialising and shifting data backwards and
-      forwards, then you will want to ensure that that data is
-      captured in a meaningful state, otherwise you are wasting your
-      time. So we must ask ourself an apparently simple question :
-      "When is an httpsession content consistent?".. The most likely
-      answer to this appears to be - "at the end of each request".
+      The answer to the concern of lost data is to frequently ship
+      backup copies off-node, so that in the case of its catastrophic
+      failure, we have a fallback position. The freshness of our
+      backup data depends directly on the frequency of this
+      process. This frequency is bounded by resource concerns and the
+      contract between container and containee, as discussed above.
 
     <p/>
-
-      Unfortunately the spec requires WebContainers to support
-      multiple concurrent request threads. So simply waiting until the
-      end of each request before snapshotting the session is an
-      inadequate solution as an overlapping request may also be
-      writing to the same session. (c.f. EJBs, where the container
-      enforces a single threaded model, thus avoiding this
-      issue). (TODO - confirm.)
-
-    <p/>
-
-      Perhaps we could break the spec and prevent concurrent requests
-      (damaging performance) or only snapshot our session during
-      'idle-time' when there it has no extant requests.
-
-    <p/>
-
-      Unfortunately the WebContainer is far more relaxed about
-      resource management than e.g. an EJB container and does not
-      forbid the running of background threads by it's containees. A
-      common pattern that takes advantage of this is for an initial
-      request to kick off a longterm job on a background thread to
-      which it hands a reference to it's session. The client then
-      makes requests that poll the session at regular intervals,
-      enquiring about the state of the outstanding task, until the
-      background thread finishes it's job and writes the result back
-      into the session.
-
-    <p/>
-
-      Thus it can be seen that deciding when it is best to snapshot
-      your session is not as simple as it first appeared. In fact, it
-      seems that the only consistent point in a session's lifecycle is
-      immediately after any mutation that may occur i.e. calls to
-      'set' and 'remove' attributes. i.e. we must increas the
-      granularity at which we measure change from 'request' to
-      'attribute'.
-
-    <p/>
-      (TODO - expand ?)
-    <p/>
-
-    <h3>
-      What ?
-    </h3>
-    <p/>
-
-      So now that we have decided when to ship data off-node we need
-      to decide what to ship. The two obvious choices are:
+      Let us examine some of the possibilities:
 
     <ul>
       <li>
-	The whole session.
+	Immediate - As soon as a change is made to a session, it is
+	backed up.
+	<ul>
+	  <li>
+	    Most Accurate - This policy constrains our window of
+	    data-loss as much as is reasonably possible.
+	  </li>
+	  <li>
+	    Most Expensive - This accuracy has a cost. Every write to
+	    a session object will result in expensive back up code
+	    being triggered.
+	  </li>
+	  <li>
+	    TODO - Without some agreement on value-based semantics or
+	    attribute synchronisation, the container cannot guarantee
+	    thread-safety as it serialises its backup.
+	  </li>
+	</ul>
       </li>
-
       <li>
-	A delta describing the change that has just occurred.
+	Request - All changes to a session are backed up at the end of
+	each relevant request.
+	<ul>
+	  <li>
+	    Less Accurate - This is less accurate than the 'Immediate'
+	    policy described above, since a failure halfway through a
+	    request thread would result in the loss of all changes
+	    that it had made to it's session.
+	  </li>
+	  <li>
+	    Less Expensive - Since backups are only done at the end of
+	    each request, they will be fewer than 'Immediate' mode,
+	    resulting in much less expense.
+	  </li>
+	  <li>
+	    Inconsistency - Assuming that the session is somehow in a
+	    'consistent' state at the end of each request is
+	    misguided, since multiple requests may overlap. Although,
+	    it may be, with the benefit of knowledge of the
+	    application at one's disposal, that this problem can be
+	    safely discounted.
+	  </li>
+	  <li>
+	    Since there may be more application threads than just this
+	    request running in the container, this policy suffers the
+	    same synchronisation/semantic issues as 'Immediate',
+	    although to a lesser extent.
+	  </li>
+	</ul>
+      </li>
+      <li>
+	Request Group - All changes to a session are backed up as soon
+	as all associated active requests have been processed.
+	<ul>
+	  <li>
+	    Less Accurate - This policy will be less accurate still,
+	    if requests for the same session overlap within the
+	    container.
+	  </li>
+	  <li>
+	    Less Expensive - For the above reason this will lead to it
+	    being still less expensive.
+	  </li>
+	  <li>
+	    Consistency - This policy guarantees that what it backs up
+	    is a consistent view of the session's contents. No request
+	    is only half processed.
+	  </li>
+	  <li>
+	    Thread-Safe - The real win for this policy is that, with
+	    no contract between containee and container regarding
+	    attribute synchronisation/semantics, other than that
+	    described in the Servlet Specification, the container may
+	    access session attributes for backup, in the knowledge
+	    that no other application code is concurrently modifying
+	    them.
+	  </li>
+	</ul>
+      </li>
+      <li>
+	WebApplication - Backup occurs in line with web application
+	lifecycle. i.e. Not until the web application is
+	<code>stop()</code>-ed by it's container.
+	<ul>
+	  <li>
+	    This policy gives no protection against catastrophic
+	    failure, but is fine for maintenance-only scenarios.
+	  </li>
+	  <li>
+	    There is no associated runtime overhead.
+	  </li>
+	  <li>
+	    As with the 'Request Group' policy, there are no
+	    consistency or synchronisation issues. All request and
+	    background threads will have terminated before the session
+	    is backed up.
+	  </li>
+	</ul>
+      </li>
+      <li>
+	Timed - 'dirty' sessions are backed up at regular intervals,
+	orthogonal to the lifecycles of requests, web applications
+	etc...
+	<ul>
+	  <li>
+	    This might conceivably be useful to overlay on top of
+	    e.g. the 'Request' policy if your request threads took a
+	    long time to run, or the 'RequestGroup' policy if you
+	    expected long periods without backing up because of many
+	    overlapping requests for he same session.
+	  </li>
+	  <li>
+	    A backup policy that worked in the manner would be of
+	    conveniently tunable accuracy and impact.
+	  </li>
+	  <li>
+	    However such a policy would suffer from all the
+	    synchronisation and semantic issues common to 'Immediate'
+	    and 'Request' approaches.
+	  </li>
+	</ul>
       </li>
     </ul>
 
     <p/>
-
-      Implementations that snapshot the session at request boundaries
-      etc tend to capture the whole session as this is probably
-      cheaper than figuring out the delta.
+      TODO - NEEDS CONCLUDING
+    <p/>
+    <h3>
+      Session Backup - What ?
+    </h3>
 
     <p/>
 
-      Triggering distribution after each session mutation makes it
-      simple to capture a delta cntaining the addition, alteration or
-      removal of a single attribute. If shipping these deltas off-node
-      immediately is too expensive, they may be batched and sent at
-      request boundaries anyway.
+      Once we have decided when to backup, we must think about what to
+      backup. Candidates include the following:
 
-    <p/>
+    <ul>
+      <li>
+	Session - We backup the whole session every time it changes.
+	<ul>
+	  <li>
+	    Simple - This is the simple, brute-force solution.
+	  </li>
+	  <li>
+	    Expensive - This will be an expensive approach if there
+	    are e.g. many attributes in your session and you regularly
+	    touch one of them.
+	  </li>
+	  <li>
+	    Robust - Even if a backup message went astray, perhaps due
+	    to a failure in your transport, the next change to the
+	    session would bring the off-node backup fully up to date.
+	  </li>
+	  <li>
+	    Object identity may be maintained across the scope of the
+	    whole session. If the same object appears multiple times
+	    in your session, then this may be an important feature and
+	    worth the price.
+	</ul>
+      </li>
+      <li>
+	Delta - Every time some change occurs to the session,
+	encapsulate this change in an object and back that up. Deltas
+	may be batched until the 'When' policy flushes this onto the
+	distribution layer.
+	<ul>
+	  <li>
+	    This is a more complex solution, requiring infrastructure
+	    capable of detecting changes and classes to encapsulate
+	    these.
+	  </li>
+	  <li>
+	    This will be a more lightweight solution in the case of
+	    sessions with many attributes and few changes but the
+	    additional complexity might outweigh this benefit in the
+	    case of a very small session.
+	  </li>
+	  <li>
+	    This solution depends more upon the reliability of the
+	    transport used to distribute the backups, since if one is
+	    lost, the backup may become invalid. To be guaranteed
+	    valid, it must contain the complete set of changes that
+	    have occurred to the session, correctly ordered (TODO:
+	    excepting some optimisation which we will discuss later).
+	  </li>
+	  <li>
+	    Object identity may only be scoped within the delta. If
+	    the same object appears multiple time in the same session,
+	    both inside and outside the delta, object identity will
+	    not be preserved and reference-based semantics will break
+	    down.
+	  </li>
+	</ul>
+      </li>
+      <li>
+	All Sessions - This, of course can only be done if you select
+	'WebApp' as your 'When' policy.
+	<ul>
+	  <li>
+	    A major win in this strategy is that Object Identity may
+	    be scoped across all sessions. i.e. if you have common
+	    objects referenced by many different sessions,
+	    reference-based semantics will hold for them, since all
+	    sessions will be serialised together in a single
+	    synchronised block.
+	  </li>
+	</ul>
+      </li>
+    </ul>
 
-      One potential weakness of sending immediate deltas is the fact
-      that they rely on value based semantics as described
-      above. Putting an object into a session will result in it's
-      immediate backing up. Subsequent mutations of that object will
-      not be backed up unless e.g. setAttribute() is again called on
-      the session, which has backed up the value of the object that it
-      was given at the time it was given it, not some sort of magic
-      reference. (TODO - explain better).
-
-    <p/>
-
-      So, perhaps we are finally coming up with a workable design. We
-      insist that developers assume value-based semantics. We don't
-      extend the session API in any way. We ship deltas off node as
-      soon as practical and cross our fingers...
-
--->
-    <p/>
-
-      Unfortunately, the specification requires that every session
-      object carries a 'LastAccessedTime' value. Which is updated
-      every time the session is retrieved by an application thread for
-      reading or writing. Thus any request requiring stateful
-      interaction within the webapp will have the side effect of
-      writing a change to the session. Taken literally these changes
-      can be very expensive in a distributable scenario as a naive
-      implementation will require each such change to be exported to
-      another vm in case of catastrophic node failure.
-
-    <p/>
-      DISCUSS
-
-    <p/>
-      GC GRANULARITY
-      ETC.
-    <p/>
-
-
-      The spec has one last curve ball for us to face.
     <p/>
 
     <h3>
@@ -872,237 +734,202 @@
 
     <p/>
 
-      If a session attribute implements the
-      HttpSessionActivationListener interface, the spec requires the
-      container to call it's willPassivate() method just before and
-      it's didActivate() method just after 'migration'. Since we are
-      no longer implementing straightforward migration from one node
-      to another, but rather some form of multi-copy synchronisation
-      protocol, it is, at first hard to see how these two different
-      paradigms can be mapped to a single model that resolves the
-      problem of when notification should take place.
+      The Servlet Specification has one final curve ball to throw at
+      the Container Provider here. We have already seen how
+      <code>HttpSessionActivationListener</code>s are notified around
+      passivation/activation. Assuming that they require this in order
+      to prepare themselves for serialisation, or recover from
+      deserialisation it is likely that when the container calls their
+      <code>willPassivate()</code> method, that they will move to a
+      new state that, whilst valid for serialisation, is invalid for
+      normal runtime operation. They might e.g. release a resource
+      that would be too expensive or awkward to passivate, knowing
+      that they can reacquire a replacement upon re-activation.
 
     <p/>
 
-      How a container provider plays this ball really depends upon the
-      perceived intention of these notifications. The spec implies
-      that they are there so that an attribute which contains
-      expensive non-serializable resources has a chance to release and
-      reacquire them at opportune moments - basically a lifecycle for
-      such attributes. (TODO - confirm)
+      Imagine now that rather than simply migrate a session from one
+      node to another, we are simply taking a backup of it at the end
+      of a request group, a guard point against the node's
+      catastrophic failure. If we simply call
+      <code>willPassivate()</code> and then serialise a copy into our
+      backup store, we will have the backup that we required, but will
+      have left the attribute in a state which may mean it is invalid
+      for normal operations
 
     <p/>
 
-      The implication of this is that willPassivate() must always be
-      called before the attribute is serialised (i.e. shipped
-      off-node), however, this now leaves said attribute in a
-      passivated state, unsuitable for continued use within the
-      session, so before control flow is returned to the webapp,
-      didActivate() must also be called to put this attribute back
-      into normal service.
+      The solution is to call <code>didActivate()</code> immediately
+      after taking the copy, thus restoring the attribute to its
+      previous valid state. In effect the backup procedure may be
+      thought of as a mini-migration off a node and then straight back
+      onto it again, leaving a spare copy off-node.
 
     <p/>
 
-      In effect, each mutation can be seen as the mini-migration of a
-      single attribute off and back onto the same node - whilst the
-      container retains a copy of its serialised form to ship off-node
-      as an emergency backup.
+      This has interesting ramifications for the whole 'Session'
+      backup policy which may end up doing this to many attributes
+      which have not actually been added or altered since the last
+      backup was taken. If this involves an expensive release and
+      reacquisiton of resources, the impact may be substantial. The
+      'Delta' policy will not suffer from this inefficiency, since it
+      will only concern itself with attributes that have changed.
 
     <h3>
-      Concurrency
+      Optimisations
     </h3>
 
     <p/>
 
-      Concurrency is a major issue. It can be divided into two smaller
-      problems:
-
-    <p/>
-
-      Concurrency between threads in different processes.
-
-    <p/>
-
-      Concurrency between threads in the same process.
-
-    <p/>
-
-      If you take the decision that your design will allow concurrent
-      requests within the same session in different vms, you will need a
-      strategy for ensuring that all vms have a consistent view of each
-      session.
-
-    <p/>
-
-      This can be achieved by making the session a single remote object,
-      which all nodes make use of. Since there is only one copy of the
-      session there are no consistency issues, provided that it has
-      sufficient synchronisation within itself. However, since the session
-      is a remote object it will have value-based semantics. If you get the
-      same attribute value from it twice, unless you have a caching layer,
-      they will be 'equal' but not '='. If you have a caching layer you will
-      then have to concern yourself with the complexities of ensuring that
-      items in your cache are invalidated on time, which just brings you
-      full circle back to the consistency problem. I call this solution
-      'shared store'. Finally, since all interactions are with a remote
-      object, this solution tends to be slow.
-
-    <p/>
-
-      Alternatively, your design might choose to have multiple objects (one
-      in each address space) all representing the same session. As one is
-      changed it notifies the others of the change, so that they can apply
-      it to themselves, so that all these objects maintain a state
-      consistent with each other. This is generally know as '[in-vm]
-      replication'. Implementors of this design need to consider the
-      following issues.
-
-    <p/>
-
-      1. Race conditions between concurrent changes to the same session
-      occurring on different nodes. (TODO - spec avoids this issue).
-
-    <p/>
-
-      CONSIDER THAT WHEN SPEC SAYS 'AT THE SAME TIME' IT IS TALKING IN TERMS
-      OF REQUEST LIFETIME. - I.E. AFFINITY (AT LEAST FOR OVERLAPPING REQUEST
-      GROUPS) IS MANDATORY
-
-    <p/>
-
-      2. If upon change, you replicate more than just that change (i.e. each
-      instance of a session has it's state completely replaced, rather than
-      just the attribute which changed on some remote node), you will find
-      that your session objects have inconsistent semantics, since sometimes
-      when you get an attribute from a session it's reference will be the
-      same as the last time, sometimes it won't, although your application
-      may never actually change this attribute - since change to another
-      attribute may have caused the entire session to have been replaced
-      with a fresh copy from across the wire.
-
-    <p/>
-
-      This first issue can be entirely avoided through the use of 'affinity'
-      or 'sticky' or 'persistent' sessions. Nomenclature depends on your
-      vendor. All amount to basically the same thing. A load-balancer that
-      supports this feature will ensure, preferably by tracking the presence
-      of the JSESSIONID cookie and jessionid path parameter, that all
-      requests pertaining to the same session will be delivered to the same
-      host:port combination. Thus, we can see that there never will be
-      concurrent threads contending for the same session in different
-      JVMs/WebContainers since all relevant requests will be routed to the
-    same one. Affinity has one further important benefit. Many webapps may
-    be deployed in complex environments where a lot of transparent caching
-    occurs below them. Without affinity, requests will be delivered to a
-    number of different nodes, all of which will have to populate such
-    caches with objects that will only be reused if another request for
-    the same webapp/session is directed to them. With affinity, requests
-    will always be processed on the same node, so the cache is only
-    populated once and then subsequently reused. This detail will increase
-    cache hits and may have a dramatic effect on performance and resource
-    consumption.
-
-    <p/>
-
-      TODO - WHAT IS HAPPENING HERE ??
-
-    <p/>
-
-      The second issue can be resolved with standard Java(tm)
-      synchronisation primitives or libraries, provided that all code
-      involved is in container-space. Problems arise when webapp code calls
-      container code and vice versa. This is exacerbated by the spec's
-      insistence that an HttpSession should allow access by multiple
-      concurrent threads and the fact that the webapp may still be holding
-      and modifying references to attribute values. Ultimately the container
-      provider will have to specify some contract which he expects the
-      webapp to abide by. A sensible one might be that any thread mutating
-      an attribute should take it's Object-level lock for the duration, so
-      that behind the scenes reads, such as those involved in serialisation
-      etc can synchronise on the same lock and be assured of a consistent
-      view of the object. (CHECK TO SEE WHETHER default read/writeObject are
-    synchronised). This however may be seen as burdensome by the webapp
-    developer who may have their own locking strategy for an attribute
-    type which is compromised by this contract...
-
-    <p/>
-
-      DISCUSS PROS AND CONS OF SHARED-STORE VS REPLICATION
-
-    <p/>
-
-      other items...
-
-    <p/>
-
-      does anything else other than session need to be distributed ?
-
-    <p/>
-
-      - security info
-
-    <p/>
-
-      - application level data (as opposed to user level)
-
-    <p/>
-
-      - etc
-
-    <p/>
-
-      store and replication mechanisms... - going to far.
-
-    <p/>
-
-      other thoughts ?
-
-    <p/>
-
-      reference semantics sacrificed if session is temporarily passiviated -
-      although hopefully no-one (what about background thread?) is holding a
-      reference to us...
-
-    <p/>
-
-      replication with affinity and change-by-delta best solution because it
-      preserves reference-semantics as far as possible - consider...
-
-    <p/>
-
-      replication is faster than shared-store because 'getAttribute' is not
-      a remote call. Effectively, with replication, each replicant IS a
-      shared store which processes requests locally.
-
-    <h2>
-      TODO - Survey existing impls:
-    </h2>
+      TODO - These need to be discussed here so that we can draw upon
+      them when discussing different impls.
 
     <ul>
       <li>
-	TC 4.x and 5.x
+	lastAccessedTime - don't distribute, ignore until last minute
+	?  <p/> If a node dies.all sessions upon it must be considered
+	just touched, since a request thread for them may have caused
+	the crash. Time of node death should be noted and associated
+	with these sessions. upon rehydration this is the lastAcessed
+	value that they should adopt.
+
+	<p/>
+
+	  TODO - perhaps move this into previous section - a naive
+	  impl may..., but: maybe not - think about it...
+
+	  Unfortunately, the specification requires that every session
+	  object carries a 'LastAccessedTime' value. Which is updated
+	  every time the session is retrieved by an application thread
+	  for reading or writing. Thus any request requiring stateful
+	  interaction within the webapp will have the side effect of
+	  writing a change to the session. Taken literally these
+	  changes can be very expensive in a distributable scenario as
+	  a naive implementation will require each such change to be
+	  exported to another vm in case of catastrophic node failure.
+      </li>
+
+      <li>
+	Batching of deltas - compression of e.g. rem(X);set(X) or
+	se(X);set(X) etc..
       </li>
       <li>
-	Jetty
-      </li>
-      <li>
-	JBoss
-      </li>
-      <li>
-	Apache/mod_jk
-      </li>
-      <li>
-	simple TC recommended 'C' lb
-      </li>
-      <li>
-	mod_proxy solution
-      </li>
-      <li>
-	mod_backhand
+
+	TODO - lowering contention on session table...
+
+	DefaultServlet is stateless (session will never be fetched) so
+	can be excluded from the equation. This means that requests for
+	images etc can be excluded from concurrent request groups,
+	reducing them substantially. A smart lb would know about this
+	and could relax affinity as well (although a caching tier might
+	be serving this content before you hit the lb - this tier also
+	needs coordination with web-container teir so it can be
+	selectively flushed upon webapp redeployment).
       </li>
     </ul>
 
-    TODO additional requirements when operating in a J2ee environment
+    <h3>
+      Conclusions
+    </h3>
+
+    <p/>
+
+      In conclusion, we have been able to show that, whilst the spec
+      does not explicitly cater for recovery from catastrophic
+      failure, it does provide the Container Provider with enough
+      structure to be able to implement various solutions to this
+      problem. Unfortunately, because of its implicit reference-based
+      semantics and failure to impose a mandatory protocol for the
+      synchronisation of distributable session attributes it does not
+      go quite far enough to allow such implementations suffient room
+      to manoeuvre that they can deliver optimium results.
+
+    <p/>
+
+      Given the current state of the specification, therefore, the
+      solution space is an area of trade-off and compromise between
+      not only accuracy and economy as might well be expected but also
+      the semantics of reference, value and identity, which are really
+      areas that should not be open to interpretation. Any application
+      developer involving themselves in this would therefore be well
+      advised to aqcuaint themselves fully with these concepts so as
+      to be prepared for the unexpected side-effects that they are
+      likely to cause.
+
+      <p/>
+
+      No single set of the above policies is likely to implement the
+      desired "silver bullet", however, with a solid understanding of
+      the issues involved and the route that various implementations
+      take through this maze, the application architect has a much
+      improved chance of a successful outcome.
+
+      <p/>
+
+      With this in mind, we may now survey existing implementations in
+      the open source arena, with particular respect to the solutions
+      that they have chosen to overcome the problems that we have
+      identified.
+
+    <h2>
+      Current Open Source Implementations
+    </h2>
+
+    <h3>
+      <a href="www.sf.net/projects/jetty">Jetty</a>
+    </h3>
+
+    The Jetty distribution contains a pluggable distributable session
+    manager, written by the author, which relies on value-based
+    semantics to implement an immediate, by default, delta-based
+    replication strategy over JGroups (TODO - link), although other
+    distribution policies, notably by CMP EJB and JBoss(tm) clustering
+    (see below) are alos available.
+
+    With mod_jk and session affinity, via a pluggable session id
+    generator, backups may be done asynchronously, or if deployment
+    happens under a dumb load-balancer, backups may be taken
+    synchronously to ensure the consistency of the session no matter
+    where in the cluster a request lands.
+
+    <h3>
+      Tomcat 4.x - Filip Hanik
+    </h3>
+
+    <h3>
+      Tomcat 5.x - ???
+    </h3>
+
+    <h3>
+      <a href="www.sf.net/projects/jboss">JBoss(tm)</a>
+    </h3>
+
+    JBoss(tm) contains a ClusteredHttpSession service (TODO - check
+    name) which backs onto the JBoss clustering layer which is
+    implemented through replication using JGroups (TODO -
+    link). Replication is done on according to whole 'Session'
+    policy. The regularity of the backing up depends on the Web
+    Container making use of the service.
+
+    <p/>
+
+    The Jetty integration provides a pluggable 'Store' component which
+    allows it to make use of this medium. Backups are taken
+    immediately any change is made to a session. Jetty's other
+    distribution policies may also be used.
+
+    <p/>
+
+    The Tomcat integration relies on this service for it's
+    transport. (TODO - finish). CONFIRM.
+
+    <h3>
+      Apache Geronimo (TODO - URL)
+    </h3>
+
+    The Geronimo implementation is currently being undertaken by the
+    author of this paper, and therefore takes into account all points
+    raised herein.
 
     <h2>
       Further Reading:
@@ -1138,57 +965,22 @@
       </li>
     </ul>
 
+
+    TODO - more readings needed.
+
     <ul>
       <li>
-	TODO: provide URL for latest servlet spec. <http://java.sun.com/products/servlet/download.html#specs>
-      </li>
-      <li>
-	TODO: AND J2EE spec
+	TODO: URL FOR J2EE spec
       </li>
     </ul>
 
 
     <h3>
-      Optimisations
-    </h3>
-
-    <ul>
-      <li>
-	DefaultServlet is stateless (session will never be fetched) so
-	can be excluded from the equation. This means that requests for
-	images etc can be excluded from concurrent request groups,
-	reducing them substantially. A smart lb would know about this
-	and could relax affinity as well (although a caching tier might
-	be serving this content before you hit the lb - this tier also
-	needs coordination with web-container teir so it can be
-	selectively flushed upon webapp redeployment).
-      </li>
-
-      <li>
-	lastAccessedTime - don't distribute, ignore until last
-	minute ?  <p/> If a node dies.all sessions upon it must be
-	  considered just touched, since a request thread for them may
-	  have caused the crash. Time of node death should be noted
-	  and associated with these sessions. upon rehydration this is
-	  the lastAcessed value that they should adopt.
-      </li>
-
-      <li>
-	Batching of deltas
-      </li>
-
-    </ul>
-
-    <h3>
-      Further Issues
+      Further Isues
     </h3>
     <ul>
       <li>
-	HtpSessionActivationListener - TODO - WHAT ?
-      </li>
-
-      <li>
-	ClassLoading
+	ClassLoading - ?? where does this impact ?
       </li>
     </ul>
 
@@ -1196,15 +988,39 @@
       Further Notes
     </h3>
     TODO - Look into Geronimo impl... SRV.10.6 Listener Exceptions
-    TODO - can all my SRV refs be links ?
 
     TODO - we can use a SecurityManager to prevent background threads
     being created. We can prevent access from such a thread to a
     container managed object, but we can't prevent such a reference
-    being hld by such a thread...
+    being held by such a thread...
 
-    NB
+    <p/>
 
+      does anything else other than session need to be distributed ?
+
+      <li>security info</li>
+      <li>application level data (as opposed to user level)</li>
+      <li>etc</li>
+
+    <p/>
+
+      TODO - replication is faster than shared-store because
+      'getAttribute' is not a remote call. Effectively, with
+      replication, each replicant IS a shared store which processes
+      requests locally.
+
+    <p/>
+
+      have we mentioned that migration is bad because cache hits go
+      down ?
+
+    <p/>
+
+      Q for Niall - if Object Identity table is scoped within a single
+      ObjectOutputStream, then howcome contention on this table is
+      meant to be a VM-wide problem ? Since the table only appears to
+      scope the lifecycle of a single instance of this stream, how
+      could it make sense for it to be a longlived global construct?
   </body>
 </html>
 
