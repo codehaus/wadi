@@ -276,7 +276,6 @@
 	    <exclude implementation="java.lang.String">**/test/TestGianni.java</exclude> <!-- leaves evicter running -->
 	    <exclude implementation="java.lang.String">**/test/relocation/TestACRelocation.java</exclude> <!-- Exceptions -->
 	    <exclude implementation="java.lang.String">**/test/relocation/TestJGRelocation.java</exclude> <!-- TODO -->
-	    <exclude implementation="java.lang.String">**/test/replication/TestACReplication.java</exclude> <!-- overruns, needs investigation -->
 	  </excludes>
 	</configuration>
       </plugin>
