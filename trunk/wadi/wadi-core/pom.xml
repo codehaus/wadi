@@ -277,7 +277,6 @@
 	    <exclude implementation="java.lang.String">**/test/relocation/TestACRelocation.java</exclude> <!-- Exceptions -->
 	    <exclude implementation="java.lang.String">**/test/relocation/TestJGRelocation.java</exclude> <!-- TODO -->
 	    <exclude implementation="java.lang.String">**/test/replication/TestACReplication.java</exclude> <!-- overruns, needs investigation -->
-	    <exclude implementation="java.lang.String">**/test/evacuation/TestJGEvacuation.java</exclude> <!-- Unreliable -->
 	  </excludes>
 	</configuration>
       </plugin>
