@@ -458,7 +458,7 @@
 	  <excludes>
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- stop surefire from trying to run nested classes... -->
 	  </excludes>
-	  <forkMode>pertest</forkMode>
+	  <!-- <forkMode>pertest</forkMode> -->
 	  <argLine>-enableassertions -Xmx1024m</argLine>
 	  <systemProperties>
 	    <property>
