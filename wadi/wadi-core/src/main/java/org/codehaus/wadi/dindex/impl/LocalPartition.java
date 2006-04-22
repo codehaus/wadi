@@ -238,12 +238,12 @@ public class LocalPartition extends AbstractPartition implements Serializable {
           if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getNodeName(newDestination)+"} failed - evacuee is already there !");
         } else {
           locus.setDestination(newDestination);
+	  if (_log.isDebugEnabled()) _log.debug("evacuate {"+request.getKey()+" : "+_config.getNodeName(oldDestination)+" -> "+_config.getNodeName(newDestination)+"}");
           success=true;
         }
       }
     }
 
-    if (_log.isDebugEnabled()) _log.debug("evacuate {"+request.getKey()+" : "+_config.getNodeName(oldDestination)+" -> "+_config.getNodeName(newDestination)+"}");
     DIndexResponse response=new EvacuatePMToIM(success);
     _config.getDispatcher().reply(message, response);
   }

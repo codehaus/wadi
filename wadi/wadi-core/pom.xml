@@ -275,7 +275,6 @@
 	    <exclude implementation="java.lang.String">**/test/TestActiveCluster.java</exclude> <!-- causes build to hang -->
 	    <exclude implementation="java.lang.String">**/test/TestGianni.java</exclude> <!-- leaves evicter running -->
 
-	    <exclude implementation="java.lang.String">**/test/evacuation/TestJGEvacuation.java</exclude> <!-- Jams -->
 	    <exclude implementation="java.lang.String">**/test/relocation/TestJGRelocation.java</exclude> <!-- Unreliable -->
 	  </excludes>
 	</configuration>
