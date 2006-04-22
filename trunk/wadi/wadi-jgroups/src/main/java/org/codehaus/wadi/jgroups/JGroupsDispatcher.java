@@ -91,6 +91,8 @@ public class JGroupsDispatcher extends AbstractDispatcher {
 
   public String getNodeName(Destination destination) {
 	JGroupsDestination d=(JGroupsDestination)destination;
+	assert(d!=null);
+	assert(_cluster!=null);
 	if (d.getNode()==null && d!=_cluster.getDestination()) {
 		// the Destination may have come in over the wire and not have been initialised...
 		_log.warn("UNINITIALISED DESTINATION - from over wire");
@@ -159,5 +161,5 @@ public class JGroupsDispatcher extends AbstractDispatcher {
 	  JGroupsCluster._cluster.set(_cluster);
 	  super.hook();
   }
-  
+
 }
