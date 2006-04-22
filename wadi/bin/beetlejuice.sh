@@ -19,6 +19,15 @@ else
     PROPS=
 fi
 
+ls -ld .
+if [ -w . ]
+then
+    echo "filesystem is writeable - continuing"
+else
+    echo "ERROR: filesystem is not writeable - quitting"
+    exit
+fi
+
 echo "***** Starting BeetleJuice build *****"
 echo
 echo "system is `uname -a`"
