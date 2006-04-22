@@ -276,6 +276,7 @@
 	    <exclude implementation="java.lang.String">**/test/TestGianni.java</exclude> <!-- leaves evicter running -->
 
 	    <exclude implementation="java.lang.String">**/test/relocation/TestJGRelocation.java</exclude> <!-- Unreliable -->
+	    <exclude implementation="java.lang.String">**/test/evacuation/TestJGEvacuation.java</exclude> <!-- Unreliable -->
 	  </excludes>
 	</configuration>
       </plugin>
