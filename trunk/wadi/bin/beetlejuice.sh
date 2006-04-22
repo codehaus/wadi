@@ -29,10 +29,12 @@ java -fullversion 2>&1 | cat
 type mvn
 mvn -version
 echo "cwd is `pwd`"
+echo "disk space:"
+df -h .
 echo
 
 ## cleanup
-rm -fr ./testresults
+rm -fr ./activemq-data ./testresults
 
 ## execute build, recording status
 mvn $PROPS clean:clean eclipse:eclipse && \
