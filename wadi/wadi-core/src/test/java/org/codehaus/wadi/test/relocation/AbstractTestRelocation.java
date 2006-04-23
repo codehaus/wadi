@@ -23,11 +23,11 @@ import org.codehaus.wadi.test.MyHttpServletResponse;
 import org.codehaus.wadi.test.MyStack;
 
 public class AbstractTestRelocation extends TestCase {
-	
+
 	protected Log _log = LogFactory.getLog(getClass());
 	protected String _url = "jdbc:axiondb:WADI";
 	protected DataSource _ds = new AxionDataSource(_url);
-	
+
 	public AbstractTestRelocation(String arg0) {
 		super(arg0);
 	}
@@ -49,27 +49,29 @@ public class AbstractTestRelocation extends TestCase {
 		_log.info("GREEN STARTING...");
 		green.start();
 		_log.info("...GREEN STARTED");
-		
+
 		_log.info("WAITING FOR RED TO SEE GREEN...");
 		while (redD.getNumNodes()<2) {
 			Thread.sleep(500);
 			_log.info("waiting: "+redD.getNumNodes());
 		}
 		_log.info("...DONE");
-		
+
 		_log.info("WAITING FOR GREEN TO SEE RED...");
 		while (greenD.getNumNodes()<2) {
 			Thread.sleep(500);
 			_log.info("waiting: "+greenD.getNumNodes());
 		}
 		_log.info("...DONE");
-		
+
 		_log.info("CREATING SESSION...");
 		String id=red.getManager().create().getId();
 		_log.info("...DONE");
-		
+
 		assertTrue(id!=null);
-		
+
+		//Thread.sleep(5000);// FIXME: prevents us relocating whilst a Partition transfer is ongoing....
+
 		FilterChain fc=new FilterChain() {
 			public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
 				HttpSession session=((HttpServletRequest)req).getSession();
@@ -85,19 +87,17 @@ public class AbstractTestRelocation extends TestCase {
 
 		assertTrue(success);
 
-		Thread.sleep(5000);// prevents us stopping whilst a Partition transfer is ongoing....
-
 		_log.info("RED STOPPING...");
 		red.stop(); // causes exception
 		_log.info("...RED STOPPED");
-		
+
 		_log.info("WAITING FOR GREEN TO UNSEE RED...");
 		while (greenD.getNumNodes()>1) {
 			Thread.sleep(500);
 			_log.info("waiting: "+greenD.getNumNodes());
 		}
 		_log.info("...DONE");
-		
+
 		_log.info("GREEN STOPPING...");
 		green.stop();
 		_log.info("...GREEN STOPPED");
