@@ -13,15 +13,6 @@
   <name>WADI :: Axis2</name>
   <description>WADI/Axis-2.x Integration - A Session Manager for Axis-2.x</description>
 
-  <repositories>
-    <repository><!-- TODO: seems to be needed for woodstox -->
-      <id>maven1-ibiblio</id>
-      <name>Maven 1 Repository at Ibiblio</name>
-      <url>http://ibiblio.org/maven</url>
-      <layout>legacy</layout>
-    </repository>
-  </repositories>
-
   <dependencies>
     <!-- from public repos -->
     <dependency>
@@ -31,8 +22,8 @@
     </dependency>
     <dependency>
       <groupId>woodstox</groupId>
-      <artifactId>wstx</artifactId>
-      <version>asl-2.9.2</version>
+      <artifactId>wstx-asl</artifactId>
+      <version>2.9.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -117,10 +108,10 @@
           <!-- stop surefire from trying to run nested classes. -->
 	  <excludes>
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude>
-	    <exclude implementation="java.lang.String">**/*.java</exclude>
+	    <exclude implementation="java.lang.String">**/Axis2SessionReplicationTest.java</exclude>
 	  </excludes>
-	  <systemProperties>
 	    <argLine>-enableassertions -Xmx1024m</argLine>
+	  <systemProperties>
 	    <property>
 	      <name>axis2.repo</name>
 	      <value>${basedir}/resources</value>
