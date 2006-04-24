@@ -274,9 +274,6 @@
 	    <exclude implementation="java.lang.String">**/old/test/TestMulticastServer.java</exclude> <!-- NoSuchMethodException -->
 	    <exclude implementation="java.lang.String">**/test/TestActiveCluster.java</exclude> <!-- causes build to hang -->
 	    <exclude implementation="java.lang.String">**/test/TestGianni.java</exclude> <!-- leaves evicter running -->
-
-	    <exclude implementation="java.lang.String">**/test/relocation/TestJGRelocation.java</exclude> <!-- Unreliable -->
-	    <exclude implementation="java.lang.String">**/test/evacuation/TestJGEvacuation.java</exclude> <!-- Unreliable -->
 	  </excludes>
 	</configuration>
       </plugin>

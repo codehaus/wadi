@@ -54,12 +54,23 @@ public class PartitionFacade extends AbstractPartition {
         super(key);
         _config=config;
         _timeStamp=timeStamp;
-        _content=content;
         _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalNodeName());
+        if (content instanceof UnknownPartition) {
+        	try {
+        		_lock.writeLock().acquire();
+        	} catch (InterruptedException e) {
+        		_log.error("lock acquisition interrupted - NYI", e);
+        		throw new UnsupportedOperationException(e.getMessage());
+        	}
+        }
+        _content=content;
         if (_log.isTraceEnabled()) _log.trace("initialising location to: "+_content);
     }
 
     public boolean isLocal() { // locking ?
+    	if (_content instanceof UnknownPartition)
+    		return false;
+    	
         Sync sync=_lock.writeLock(); // EXCLUSIVE
         boolean acquired=false;
         try {
@@ -92,50 +103,66 @@ public class PartitionFacade extends AbstractPartition {
     }
 
     public void setContent(long timeStamp, Partition content) {
-    	Sync sync=_lock.writeLock(); // EXCLUSIVE
-    	boolean acquired=false;
-    	try {
-    		sync.acquire();
-    		acquired=true;
-    		if (timeStamp>_timeStamp) {
-    			if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+content);
-    			_timeStamp=timeStamp;
-    			_content=content;
-    		}
+    	// TODO - do something here
+    		Sync sync=_lock.writeLock(); // EXCLUSIVE
+    		boolean acquired=false;
+    		try {
+    			if (!(_content instanceof UnknownPartition))
+    				sync.acquire();
+    			acquired=true;
+    			if (timeStamp>_timeStamp) {
+    				if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+content);
+    				_timeStamp=timeStamp;
+    				_content=content;
+    			}
 
-    	} catch (InterruptedException e) {
-    		_log.warn("unexpected problem", e);
-    	} finally {
-    		if (acquired)
-    			sync.release();
+    		} catch (InterruptedException e) {
+    			_log.warn("unexpected problem", e);
+    		} finally {
+    			if (acquired && !(_content instanceof UnknownPartition))
+    				sync.release();
+    		}
     	}
-    }
 
     public void setContentRemote(long timeStamp, Dispatcher dispatcher, Destination location) {
     	Sync sync=_lock.writeLock(); // EXCLUSIVE
     	boolean acquired=false;
     	try {
-    		sync.acquire();
+    		if (!(_content instanceof UnknownPartition))
+    			sync.acquire();
     		acquired=true;
     		if (timeStamp>_timeStamp) {
     			_timeStamp=timeStamp;
     			if (_content instanceof RemotePartition) {
     				((RemotePartition)_content).setLocation(location);
     			} else {
-    				if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+location);
+    				if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+_config.getNodeName(location));
     				_content=new RemotePartition(_key, _config, location);
     			}
     		}
     	} catch (InterruptedException e) {
     		_log.warn("unexpected problem", e);
     	} finally {
-    		if (acquired)
+    		if (acquired && !(_content instanceof UnknownPartition))
     			sync.release();
     	}
     }
 
     public ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception {
-    	return _content.exchange(request, timeout);
+    	if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
+    	Sync sync=_lock.readLock(); // SHARED
+    	boolean acquired=false;
+    	try {
+    		sync.acquire();
+    		acquired=true;
+        	return _content.exchange(request, timeout);
+    	} catch (InterruptedException e) {
+    		_log.warn("unexpected problem", e);
+    		return null;
+    	} finally {
+    		if (acquired)
+    			sync.release();
+    	}	
     }
 
     public void onMessage(ObjectMessage message, InsertIMToPM request) {

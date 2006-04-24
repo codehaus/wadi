@@ -48,6 +48,8 @@ import org.codehaus.wadi.gridstate.impl.StupidLockManager;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Quipu;
 
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 /**
  * A Simple PartitionManager.
  *
@@ -86,7 +88,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		long timeStamp=System.currentTimeMillis();
 		boolean queueing=true;
 		for (int i=0; i<_numPartitions; i++)
-			_partitions[i]=new PartitionFacade(i, timeStamp, new DummyPartition(i), queueing, this);
+			_partitions[i]=new PartitionFacade(i, timeStamp, new UnknownPartition(i), queueing, this);
 
 		_cluster=_dispatcher.getCluster();
 		_distributedState=distributedState;
@@ -116,6 +118,15 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		_log.trace("...started");
 	}
 
+	public void waitUntilUseable() throws InterruptedException {
+		// wait until we are sure that all partitions Useable...
+		for (int i=0; i<_partitions.length; i++) {
+			Sync sync=_partitions[i]._lock.readLock();
+			sync.acquire();
+			sync.release();
+		}
+	}
+	
 	public void evacuate() throws Exception {
 		_log.info("evacuating...");
 
