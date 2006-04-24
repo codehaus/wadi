@@ -55,7 +55,6 @@ public class Axis2TestBuilder{
 		SimpleHTTPServer receiver = new SimpleHTTPServer(
 		ConfigurationContextFactory.createConfigurationContextFromFileSystem(
 		        repo, axis2File), port, null);
-		Runtime.getRuntime().addShutdownHook(new ShutdownThread(receiver));
 		receiver.start();
 		axis2InstanceHolder.add(receiver);
 	}
@@ -64,7 +63,6 @@ public class Axis2TestBuilder{
 		for(Iterator it = axis2InstanceHolder.iterator(); it.hasNext(); ){
 			SimpleHTTPServer server = (SimpleHTTPServer)it.next();
 			server.stop();
-			//axis2InstanceHolder.remove(server);
 		}
 		axis2InstanceHolder.removeAllElements();
 	}	
@@ -84,7 +82,7 @@ public class Axis2TestBuilder{
 		return envelope;
 	}
 
-	protected String retriveAuthStatus(SOAPEnvelope reply) {
+	protected String retrieveAuthStatus(SOAPEnvelope reply) {
 		if (reply != null) {
 			OMElement resultOM = reply.getBody().getFirstChildWithName(
 					new QName("STATUS_MESSAGE"));
@@ -93,7 +91,7 @@ public class Axis2TestBuilder{
 			return null;
 	}
 	
-	protected String retriveSessionId(Map params) {
+	protected String retrieveSessionId(Map params) {
 		QName sessionIdHeader = new QName(Constants.AXIS2_NAMESPACE_URI,"sessionId");
 		if (params != null) {
 			OMElement resultOM = (OMElement)params.get(sessionIdHeader);
@@ -110,7 +108,7 @@ public class Axis2TestBuilder{
         return envelope;
     }
     
-    protected String retriveBalance(SOAPEnvelope reply) {
+    protected String retrieveBalance(SOAPEnvelope reply) {
     	if (reply != null) {
             try {
 				OMElement resultOM = reply.getBody().getFirstChildWithName(new QName("BALANCE"));
@@ -157,19 +155,5 @@ public class Axis2TestBuilder{
 
 		return reply.getEnvelope();
 	}
-	
-	static class ShutdownThread extends Thread {
-        private SimpleHTTPServer server = null;
-
-        public ShutdownThread(SimpleHTTPServer server) {
-            super();
-            this.server = server;
-        }
-
-        public void run() {
-            server.stop();
-        }
-    }
-
 
 }
