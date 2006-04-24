@@ -24,10 +24,12 @@ import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.RehydrationException;
 import org.codehaus.wadi.ReplicableSessionConfig;
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Router;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
@@ -123,11 +125,21 @@ public class DistributableManager extends StandardManager implements ReplicableS
 	public Streamer getStreamer() {
 		return _streamer;
 	}
-	
+
+    public Session rehydrate(String key, byte[] body) throws RehydrationException {
+        notifySessionRelocation(key);
+
+        Session session = _sessionPool.take();
+        long time = System.currentTimeMillis();
+        session.rehydrate(time, time, _maxInactiveInterval, key, body);
+        _map.put(key, session);
+
+        return session;
+    }
+
 	// ReplicableSessionConfig
 	
 	public Replicater getReplicater() {
-		return _replicaterFactory.create();
+		return _replicaterFactory.create(this);
 	}
-	
 }

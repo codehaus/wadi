@@ -13,15 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.replication.storage;
+package org.codehaus.wadi.replication.integration;
 
+import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.group.Dispatcher;
-
 
 /**
  * 
- * @version $Revision$
+ * @version $Revision: 1603 $
  */
-public interface ReplicaStorageFactory {
-    ReplicaStorage factory(Dispatcher dispatcher);
+public class TestACReplicationContextualiser extends AbstractReplicationContextualiserTest {
+
+    protected Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {
+        return new ActiveClusterDispatcher(clusterName, 
+                nodeName, 
+                "vm://localhost", 
+                timeout);
+    }
 }

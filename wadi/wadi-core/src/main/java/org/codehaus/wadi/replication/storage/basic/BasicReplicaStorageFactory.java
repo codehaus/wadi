@@ -28,9 +28,9 @@ import org.codehaus.wadi.replication.storage.remoting.BasicReplicaStorageExporte
  */
 public class BasicReplicaStorageFactory implements ReplicaStorageFactory {
     
-    public ReplicaStorage factory(Dispatcher dispatcher, NodeInfo nodeInfo) {
+    public ReplicaStorage factory(Dispatcher dispatcher) {
         return new MemoryReplicaStorage(
                 new BasicReplicaStorageExporter(dispatcher),
-                nodeInfo);
+                new NodeInfo(dispatcher.getNodeName()));
     }
 }

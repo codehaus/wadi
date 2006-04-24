@@ -13,15 +13,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.replication.storage;
-
-import org.codehaus.wadi.group.Dispatcher;
-
+package org.codehaus.wadi;
 
 /**
  * 
- * @version $Revision$
+ * @version $Revision: 1603 $
  */
-public interface ReplicaStorageFactory {
-    ReplicaStorage factory(Dispatcher dispatcher);
+public class RehydrationException extends Exception {
+
+    public RehydrationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public RehydrationException(Throwable cause) {
+        super(cause);
+    }
 }

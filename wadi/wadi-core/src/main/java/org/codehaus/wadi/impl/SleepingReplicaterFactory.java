@@ -25,5 +25,4 @@ public class SleepingReplicaterFactory extends StatelessReplicaterFactory {
 	public SleepingReplicaterFactory(long delay) {
 		super(new SleepingReplicater(delay));
 	}
-
 }

@@ -63,7 +63,7 @@ public class BasicReplicaStorageMonitor implements ReplicaStorageMonitor, Cluste
 
     public void stop() {
         // TODO refactor WADI to get ride of this timeout.
-        dispatcher.deregister("onReplicaStorageEvent", ReplicaStorageEvent.class, 1000);
+        dispatcher.deregister("onReplicaStorageEvent", ReplicaStorageEvent.class, 2);
         // TODO Enhance WADI to support unregistration of ClusterListener.
 
         storageNodes.clear();

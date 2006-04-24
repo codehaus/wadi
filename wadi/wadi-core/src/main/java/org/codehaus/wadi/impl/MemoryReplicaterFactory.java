@@ -27,15 +27,13 @@ import org.codehaus.wadi.ReplicaterFactory;
  *
  */
 public class MemoryReplicaterFactory implements ReplicaterFactory {
-
-	protected int _numReplicants;
+	private final int _numReplicants;
 
 	public MemoryReplicaterFactory(int numReplicants) {
-		_numReplicants=numReplicants;
+		_numReplicants = numReplicants;
 	}
 
-	public Replicater create() {
+    public Replicater create(DistributableManager manager) {
 		return new MemoryReplicater(_numReplicants);
 	}
-
 }

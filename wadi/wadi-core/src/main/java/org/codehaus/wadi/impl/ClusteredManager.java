@@ -229,7 +229,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		return _dindex.insert(name, getInactiveTime());
 	}
 
-
 	// DIndexConfig
 
 	public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {

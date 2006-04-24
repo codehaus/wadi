@@ -29,5 +29,4 @@ public class DatabaseReplicaterFactory extends StatelessReplicaterFactory {
 	public DatabaseReplicaterFactory(DatabaseStore store, boolean reusingStore) {
 		super(new DatabaseReplicater(store, reusingStore));
 	}
-
 }

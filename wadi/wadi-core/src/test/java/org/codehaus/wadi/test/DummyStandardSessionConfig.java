@@ -40,7 +40,7 @@ import org.codehaus.wadi.impl.TomcatSessionIdFactory;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-class DummyStandardSessionConfig implements SessionConfig {
+public class DummyStandardSessionConfig implements SessionConfig {
 
     protected final EvicterConfig _config;
     public DummyStandardSessionConfig(EvicterConfig config) {_config=config;}

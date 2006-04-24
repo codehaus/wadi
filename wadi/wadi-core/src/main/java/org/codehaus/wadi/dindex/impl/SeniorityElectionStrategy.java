@@ -44,6 +44,11 @@ public class SeniorityElectionStrategy implements ElectionStrategy {
     }
 
     protected long getBirthTime(Node node) {
+        Long birthTimeAsLong = (Long) node.getState().get("birthTime");
+        if (null == birthTimeAsLong) {
+            return Long.MAX_VALUE;
+        }
+        
         return ((Long)node.getState().get("birthTime")).longValue(); // TODO - unify state keys somewhere
     }
 

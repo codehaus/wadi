@@ -134,6 +134,10 @@ public class BasicReplicationManager implements ReplicationManager {
         ReplicationManager service = managerStubFactory.buildStub();
         ReplicaInfo replicaInfo = service.releasePrimary(key);
         
+        if (null == replicaInfo) {
+            return null;
+        }
+        
         replicaInfo = reOrganizeSecondaries(key, replicaInfo);
 
         return replicaInfo.getReplica();

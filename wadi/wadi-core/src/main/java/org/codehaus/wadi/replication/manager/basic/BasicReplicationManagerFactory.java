@@ -36,11 +36,12 @@ import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
 public class BasicReplicationManagerFactory implements ReplicationManagerFactory {
 
     public ReplicationManager factory(Dispatcher dispatcher, 
-            NodeInfo nodeInfo,
             ReplicaStorageFactory replicaStoragefactory,
             BackingStrategyFactory backingStrategyFactory) {
+        NodeInfo nodeInfo = new NodeInfo(dispatcher.getNodeName());
+        
         BackingStrategy backingStrategy = backingStrategyFactory.factory();
-        ReplicaStorage storage = replicaStoragefactory.factory(dispatcher, nodeInfo);
+        ReplicaStorage storage = replicaStoragefactory.factory(dispatcher);
         
         return new BasicReplicationManager(
                 backingStrategy,

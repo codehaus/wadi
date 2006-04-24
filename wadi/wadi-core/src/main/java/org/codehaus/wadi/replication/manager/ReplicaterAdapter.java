@@ -17,7 +17,6 @@ package org.codehaus.wadi.replication.manager;
 
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.Session;
-import org.codehaus.wadi.replication.ReplicationException;
 
 /**
  * 
@@ -32,20 +31,12 @@ public class ReplicaterAdapter implements Replicater {
 
     public void create(Object tmp) {
         Session session = castAndEnsureType(tmp);
-        try {
-            replicationManager.create(session.getName(), session.getBodyAsByteArray());
-        } catch (Exception e) {
-            throw new ReplicationException(e);
-        }
+        replicationManager.create(session.getName(), session);
     }
 
     public void update(Object tmp) {
         Session session = castAndEnsureType(tmp);
-        try {
-            replicationManager.update(session.getName(), session.getBodyAsByteArray());
-        } catch (Exception e) {
-            throw new ReplicationException(e);
-        }
+        replicationManager.update(session.getName(), session);
     }
 
     public void destroy(Object tmp) {

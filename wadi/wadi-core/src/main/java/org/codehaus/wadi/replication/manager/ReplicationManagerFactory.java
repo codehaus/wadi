@@ -16,7 +16,6 @@
 package org.codehaus.wadi.replication.manager;
 
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
 import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
 
@@ -28,7 +27,6 @@ import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
 public interface ReplicationManagerFactory {
     ReplicationManager factory(
             Dispatcher dispatcher, 
-            NodeInfo nodeInfo,
             ReplicaStorageFactory replicaStoragefactory,
             BackingStrategyFactory backingStrategyFactory);
 }

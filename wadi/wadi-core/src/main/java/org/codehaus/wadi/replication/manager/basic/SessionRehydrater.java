@@ -13,15 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.replication.storage;
+package org.codehaus.wadi.replication.manager.basic;
 
-import org.codehaus.wadi.group.Dispatcher;
-
+import org.codehaus.wadi.RehydrationException;
+import org.codehaus.wadi.Session;
 
 /**
  * 
- * @version $Revision$
+ * @version $Revision: 1603 $
  */
-public interface ReplicaStorageFactory {
-    ReplicaStorage factory(Dispatcher dispatcher);
+public interface SessionRehydrater {
+    Session rehydrate(String key, byte[] body) throws RehydrationException;
 }

@@ -15,21 +15,30 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
-import org.codehaus.wadi.replication.common.NodeInfo;
-import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.RehydrationException;
+import org.codehaus.wadi.Session;
+import org.codehaus.wadi.impl.DistributableManager;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
-abstract class AbstractStorageCommand implements StorageCommand {
-    protected final NodeInfo[] targets;
-    protected final Object key;
-    protected final ReplicaInfo replicaInfo;
+public class DistributableManagerRehydrater implements SessionRehydrater {
+    private DistributableManager manager;
+
+    public DistributableManagerRehydrater() {
+    }
+
+    public DistributableManagerRehydrater(DistributableManager manager) {
+        this.manager = manager;
+    }
     
-    public AbstractStorageCommand(NodeInfo[] targets, Object key, ReplicaInfo replicaInfo) {
-        this.targets = targets;
-        this.key = key;
-        this.replicaInfo = replicaInfo;
+    public Session rehydrate(String key, byte[] body) throws RehydrationException {
+        return manager.rehydrate(key, body);
+    }
+
+    // TODO - fix this dependency.
+    public void setManager(DistributableManager manager) {
+        this.manager = manager;
     }
 }
