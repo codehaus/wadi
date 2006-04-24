@@ -275,6 +275,11 @@
 	    <exclude implementation="java.lang.String">**/test/TestActiveCluster.java</exclude> <!-- causes build to hang -->
 	    <exclude implementation="java.lang.String">**/test/TestGianni.java</exclude> <!-- leaves evicter running -->
 	    <exclude implementation="java.lang.String">**/TestACReplicationContextualiser.java</exclude> <!--  works from Eclipse, thought -->
+	    <exclude implementation="java.lang.String">**/TestSimpleCluster.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestACRelocation.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestACReplication.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestACEvacuation.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestACReplicationManager.java</exclude> <!--  works from Eclipse, thought -->
 	  </excludes>
 	</configuration>
       </plugin>
