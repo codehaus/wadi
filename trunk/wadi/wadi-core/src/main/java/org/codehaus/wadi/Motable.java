@@ -18,6 +18,7 @@ package org.codehaus.wadi;
 
 import java.nio.ByteBuffer;
 
+
 /**
  * Lit. 'able to be moved' - an Object the can be [promoted and] demoted.
  * An Evictable with an ID and a payload.
@@ -28,6 +29,8 @@ import java.nio.ByteBuffer;
 public interface Motable extends Evictable {
     
     void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name);
+
+    void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body) throws RehydrationException;
 
     void copy(Motable motable) throws Exception;
 	

@@ -309,7 +309,13 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 
 	public void update(Node node) {
 		Map state=node.getState();
-		long timeStamp=((Long)state.get(_timeStampKey)).longValue();
+        
+        Long timeStampAsLong = (Long) state.get(_timeStampKey);
+        if (null == timeStampAsLong) {
+            return;
+        }
+        
+		long timeStamp= timeStampAsLong.longValue();
 		PartitionKeys keys=(PartitionKeys)state.get(_partitionKeysKey);
 		Destination location=node.getDestination();
 		int[] k=keys._keys;

@@ -24,15 +24,13 @@ import org.codehaus.wadi.ReplicaterFactory;
  * @version $Revision$
  */
 public class StatelessReplicaterFactory implements ReplicaterFactory {
-
-	protected Replicater _replicater;
+	private final Replicater _replicater;
 
 	public StatelessReplicaterFactory(Replicater replicater) {
-		_replicater=replicater;
+		_replicater = replicater;
 	}
 
-	public Replicater create() {
+    public Replicater create(DistributableManager manager) {
 		return _replicater;
 	}
-
 }

@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.replication;
+package org.codehaus.wadi.replication.integration;
 
 import junit.framework.TestCase;
 
@@ -28,8 +28,8 @@ import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
 import org.codehaus.wadi.replication.storage.basic.BasicReplicaStorageFactory;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 
-public abstract class SampleEndToEnd extends TestCase {
-    private static final String CLUSTER_NAME = "OPENEJB_CLUSTER";
+public abstract class AbstractReplicationManagerTest extends TestCase {
+    private static final String CLUSTER_NAME = "CLUSTER";
     private static final int TEMPO = 200;
 
     private NodeInfo nodeInfo1;
@@ -151,28 +151,26 @@ public abstract class SampleEndToEnd extends TestCase {
         nodeInfo1 = new NodeInfo("node1");
         dispatcher1 = buildDispatcher(nodeInfo1);
         manager1 = managerFactory.factory(dispatcher1,
-                nodeInfo1,
                 storageFactory,
                 new RoundRobinBackingStrategyFactory(2));
-        replicaStorage1 = storageFactory.factory(dispatcher1, nodeInfo1);
+        replicaStorage1 = storageFactory.factory(dispatcher1);
 
         nodeInfo2 = new NodeInfo("node2");
         dispatcher2 = buildDispatcher(nodeInfo2);
         manager2 = managerFactory.factory(dispatcher2,
-                nodeInfo2,
                 storageFactory,
                 new RoundRobinBackingStrategyFactory(2));
-        replicaStorage2 = storageFactory.factory(dispatcher2, nodeInfo2);
+        replicaStorage2 = storageFactory.factory(dispatcher2);
 
         nodeInfo3 = new NodeInfo("node3");
         dispatcher3 = buildDispatcher(nodeInfo3);
-        replicaStorage3 = storageFactory.factory(dispatcher3, nodeInfo3);
+        replicaStorage3 = storageFactory.factory(dispatcher3);
     }
 
     protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
     
     private Dispatcher buildDispatcher(NodeInfo nodeInfo) throws Exception {
-        Dispatcher dispatcher =createDispatcher(CLUSTER_NAME, nodeInfo.getName(), 5000L);
+        Dispatcher dispatcher = createDispatcher(CLUSTER_NAME, nodeInfo.getName(), 5000L);
         dispatcher.init(new DispatcherConfig() {
             public String getContextPath() {
                 return null;

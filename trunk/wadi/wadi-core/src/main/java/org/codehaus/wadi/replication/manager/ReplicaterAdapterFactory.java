@@ -17,6 +17,9 @@ package org.codehaus.wadi.replication.manager;
 
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.ReplicaterFactory;
+import org.codehaus.wadi.impl.DistributableManager;
+import org.codehaus.wadi.replication.manager.basic.DistributableManagerRehydrater;
+import org.codehaus.wadi.replication.manager.basic.SessionReplicationManager;
 
 /**
  * 
@@ -29,7 +32,11 @@ public class ReplicaterAdapterFactory implements ReplicaterFactory {
         this.replicationManager = replicationManager;
     }
 
-    public Replicater create() {
-        return new ReplicaterAdapter(replicationManager);
+    public Replicater create(DistributableManager manager) {
+        DistributableManagerRehydrater sessionRehydrater =
+            new DistributableManagerRehydrater(manager);
+        ReplicationManager sessionRepManager = 
+            new SessionReplicationManager(replicationManager, sessionRehydrater);
+        return new ReplicaterAdapter(sessionRepManager);
     }
 }

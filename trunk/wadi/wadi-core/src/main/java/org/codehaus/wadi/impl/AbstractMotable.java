@@ -24,6 +24,7 @@ import java.io.Serializable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.RehydrationException;
 
 /**
  * Implement all of Motable except for the Bytes field. This is the field most likely to have different representations.
@@ -43,6 +44,10 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
         _name=name;
     }
 
+    public void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body) throws RehydrationException {
+        throw new UnsupportedOperationException();
+    }
+    
     public void destroy() throws Exception {
         _name=null;
         super.destroy();

@@ -20,7 +20,6 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RWLockListener;
 import org.codehaus.wadi.ReplicableSessionConfig;
 import org.codehaus.wadi.Replicater;
-import org.codehaus.wadi.impl.DistributableSession;
 
 /**
  * A DistributableSession enhanced with functionality associated with replication - the frequent 'backing-up' of its content to provide against catastrophic failure.
@@ -44,7 +43,7 @@ public abstract class AbstractReplicableSession extends DistributableSession imp
     	Replicater replicater=((ReplicableSessionConfig)_config).getReplicater();
     	replicater.create(this);
     }
-    
+
     public void init2(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name) {
     	super.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
 

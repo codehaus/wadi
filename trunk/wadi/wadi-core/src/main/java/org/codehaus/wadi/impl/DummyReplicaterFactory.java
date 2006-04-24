@@ -25,5 +25,4 @@ public class DummyReplicaterFactory extends StatelessReplicaterFactory {
 	public DummyReplicaterFactory() {
 		super(new DummyReplicater());
 	}
-
 }
