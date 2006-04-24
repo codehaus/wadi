@@ -29,13 +29,13 @@ import org.codehaus.wadi.dindex.newmessages.MovePMToSM;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DummyPartition extends AbstractPartition {
+public class UnknownPartition extends AbstractPartition {
 
-  public DummyPartition(int key) {
+  public UnknownPartition(int key) {
     super(key);
   }
 
-  protected DummyPartition() {
+  protected UnknownPartition() {
     super();
     // for deserialisation...
     throw new UnsupportedOperationException();
@@ -77,4 +77,8 @@ public class DummyPartition extends AbstractPartition {
     throw new UnsupportedOperationException();
   }
 
+  public boolean getUseable() {
+	  return false;
+  }
+  
 }

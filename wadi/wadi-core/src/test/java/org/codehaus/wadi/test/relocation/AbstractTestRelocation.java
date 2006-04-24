@@ -70,8 +70,6 @@ public class AbstractTestRelocation extends TestCase {
 
 		assertTrue(id!=null);
 
-		//Thread.sleep(5000);// FIXME: prevents us relocating whilst a Partition transfer is ongoing....
-
 		FilterChain fc=new FilterChain() {
 			public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
 				HttpSession session=((HttpServletRequest)req).getSession();

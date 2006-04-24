@@ -139,6 +139,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 		// whether we are the coordinator or not...
 
+		_partitionManager.waitUntilUseable();
+		
 		_log.info("...started");
 	}
 
