@@ -46,10 +46,10 @@ public class Axis2SessionCreationTest extends TestCase{
 		SOAPEnvelope request = testBuilder.getLoginRequest("12345", "911");
 		SOAPEnvelope reply = testBuilder.send(testBuilder.authServiceUrl, eprParams, request);
 
-		String response = testBuilder.retriveAuthStatus(reply);
+		String response = testBuilder.retrieveAuthStatus(reply);
 		assertTrue("Session creation was unsuccessful",response.startsWith("Success"));
 		
-		String sessionId = testBuilder.retriveSessionId(eprParams);
+		String sessionId = testBuilder.retrieveSessionId(eprParams);
 		assertNotNull("Session id is null",sessionId);
 		
 		// you can write a test case to verfiy the format of session id as well
