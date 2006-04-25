@@ -1,71 +1,78 @@
 <project name="Mojo">
-   <bannerLeft>
-      <name>WADI</name>
-      <src>/images/wadi.png</src>
-      <href>http://wadi.codehaus.org</href>
-   </bannerLeft>
-   <bannerRight>
-      <name>Codehaus</name>
-      <src>/images/codehaus-small.png</src>
-      <href>http://www.codehaus.org</href>
-   </bannerRight>
+  <bannerLeft>
+    <name>WADI</name>
+    <src>/images/wadi.png</src>
+    <href>http://wadi.codehaus.org</href>
+  </bannerLeft>
+  <bannerRight>
+    <name>Codehaus</name>
+    <src>/images/codehaus-small.png</src>
+    <href>http://www.codehaus.org</href>
+  </bannerRight>
 
-   <body>
+  <body>
 
-      <links>
-         <item name="ActiveMQ" href="http://activemq.org"/>
-         <item name="ActiveCluster" href="http://activecluster.codehaus.org"/>
-         <item name="JGroups" href="http://www.jgroups.org"/>
-         <item name="Tribes" href="http://svn.apache.org/viewcvs.cgi/tomcat/container/tc5.5.x/modules/groupcom"/>
-         <item name="Jetty" href="http://jetty.mortbay.org/jetty/index.html"/>
-         <item name="Tomcat" href="http://tomcat.apache.org"/>
-         <item name="Axis" href="http://ws.apache.org/axis2"/>
-         <item name="OpenEJB" href="http://www.openejb.org"/>
-         <item name="JBoss" href="http://sourceforge.net/projects/jboss"/>
-         <item name="Geronimo" href="http://geronimo.apache.org"/>
-      </links>
+    <links>
+      <item name="ActiveMQ" href="http://activemq.org"/>
+      <item name="ActiveCluster" href="http://activecluster.codehaus.org"/>
+      <item name="JGroups" href="http://www.jgroups.org"/>
+      <item name="Tribes" href="http://svn.apache.org/viewcvs.cgi/tomcat/container/tc5.5.x/modules/groupcom"/>
+      <item name="Jetty" href="http://jetty.mortbay.org/jetty/index.html"/>
+      <item name="Tomcat" href="http://tomcat.apache.org"/>
+      <item name="Axis" href="http://ws.apache.org/axis2"/>
+      <item name="OpenEJB" href="http://www.openejb.org"/>
+      <item name="JBoss" href="http://sourceforge.net/projects/jboss"/>
+      <item name="Geronimo" href="http://geronimo.apache.org"/>
+    </links>
 
-      <menu name="Users">
-         <item name="Home" href="./index.html"/>
-         <item name="Getting Started" href="./getting-started/index.html"/>
-         <item name="Documentation" href="./documentation/index.html"/>
-         <item name="FAQ" href="./faq.html"/>
-         <item name="Wiki" href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI"/>
-         <item name="How To Help" href="./help.html"/>
-         <item name="Distributions" href="http://dist.codehaus.org/wadi/distributions/"/>
-         <item name="Release Repo" href="http://repository.codehaus.org/org/codehaus/wadi"/>
-         <item name="SnapShot Repo" href="http://snapshot.repository.codehaus.org/org/codehaus/wadi"/>
-      </menu>
+    <menu name="Users">
+      <item name="Home" href="./index.html"/>
+      <item name="Getting Started" href="./getting-started/index.html"/>
+      <item name="Documentation" href="./documentation/index.html"/>
+      <item name="FAQ" href="./faq.html"/>
+      <item name="Wiki" href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI"/>
+      <item name="List" href="mailto:user@wadi.codehaus.org"/>
+      <item name="#WADI" href="irc://irc.codehaus.org/wadi"/>
+      <item name="How To Help" href="./help.html"/>
+      <item name="Distributions" href="http://dist.codehaus.org/wadi/distributions/"/>
+      <item name="Release Repo" href="http://repository.codehaus.org/org/codehaus/wadi"/>
+      <item name="SnapShot Repo" href="http://snapshot.repository.codehaus.org/org/codehaus/wadi"/>
+    </menu>
 
-      <menu name="Developers">
-         <item name="Maven 2.0.x" href="http://docs.codehaus.org/display/WADI/Maven+2.0.x"/>
-         <item name="Eclipse 3.2.x" href="http://docs.codehaus.org/display/WADI/Eclipse-3.2.x"/>
-         <item name="Library" href="http://docs.codehaus.org/display/WADI/Library"/>
-         <item name="Jira" href="http://jira.codehaus.org/browse/WADI"/>
-         <item name="Beetlejuice" href="http://ci.codehaus.org/beetlejuice/viewProjectSummary.action?projectName=WADI"/>
-         <item name="FishEye" href="http://cvs.wadi.codehaus.org/viewrep/wadi/trunk/wadi"/>
-         <item name="SRC snapshot (zip)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=zip/wadi/wadi.zip"/>
-         <item name="SRC snapshot (tgz)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tgz/wadi/wadi.tgz"/>
-         <item name="SRC snapshot (tbz2)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tbz2/wadi/wadi.tbz2"/>
-      </menu>
+    <menu name="Developers">
+      <item name="Maven 2.0.3+" href="http://docs.codehaus.org/display/WADI/Maven+2.0.x"/>
+      <item name="Eclipse 3.2.x" href="http://docs.codehaus.org/display/WADI/Eclipse-3.2.x"/>
+      <item name="Conventions" href="http://docs.codehaus.org/display/WADI/Conventions"/>
+      <item name="Clock" href="http://www.timeanddate.com/worldclock/custom.html?cities=70,75,340,136,181,240,250"/>
+      <item name="Gmane" href="http://docs.codehaus.org/display/WADI/Gmane"/>
+      <item name="Library" href="http://docs.codehaus.org/display/WADI/Library"/>
+      <item name="List" href="mailto:dev@wadi.codehaus.org"/>
+      <item name="#WADI" href="irc://irc.codehaus.org/wadi"/>
+      <item name="Jira" href="http://jira.codehaus.org/browse/WADI"/>
+      <item name="Beetlejuice" href="http://ci.codehaus.org/beetlejuice/viewProjectSummary.action?projectName=WADI"/>
+      <item name="FishEye" href="http://cvs.wadi.codehaus.org/viewrep/wadi/trunk/wadi"/>
+      <item name="SRC snapshot (zip)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=zip/wadi/wadi.zip"/>
+      <item name="SRC snapshot (tgz)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tgz/wadi/wadi.tgz"/>
+      <item name="SRC snapshot (tbz2)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tbz2/wadi/wadi.tbz2"/>
+    </menu>
 
-      <menu name="Modules">
-         <item name="Dispatcher" href="wadi-dispatcher/index.html"/>
-         <item name="Core" href="wadi-core/index.html"/>
-         <item name="ActiveCluster 4.0M4+" href="wadi-activecluster/index.html"/>
-         <item name="JGroups 2.8+" href="wadi-jgroups/index.html"/>
-         <item name="Tribes" href="wadi-tribes/index.html"/>
-         <item name="Jetty 5.x" href="wadi-jetty5/index.html"/>
-         <item name="Jetty 6.x" href="wadi-jetty6/index.html"/>
-         <item name="Tomcat 5.0.x" href="wadi-tomcat50/index.html"/>
-         <item name="Tomcat 5.5.x" href="wadi-tomcat55/index.html"/>
-         <item name="Axis 2.x" href="wadi-axis2/index.html"/>
-         <item name="OpenEJB" href="wadi-openejb/index.html"/>
-         <item name="JBoss 4.x" href="wadi-jboss4/index.html"/>
-         <item name="Example Webapp" href="wadi-webapp/index.html"/>
-      </menu>
+    <menu name="Modules">
+      <item name="Dispatcher" href="wadi-dispatcher/index.html"/>
+      <item name="Core" href="wadi-core/index.html"/>
+      <item name="ActiveCluster 4.0M4+" href="wadi-activecluster/index.html"/>
+      <item name="JGroups 2.8+" href="wadi-jgroups/index.html"/>
+      <item name="Tribes" href="wadi-tribes/index.html"/>
+      <item name="Jetty 5.x" href="wadi-jetty5/index.html"/>
+      <item name="Jetty 6.x" href="wadi-jetty6/index.html"/>
+      <item name="Tomcat 5.0.x" href="wadi-tomcat50/index.html"/>
+      <item name="Tomcat 5.5.x" href="wadi-tomcat55/index.html"/>
+      <item name="Axis 2.x" href="wadi-axis2/index.html"/>
+      <item name="OpenEJB" href="wadi-openejb/index.html"/>
+      <item name="JBoss 4.x" href="wadi-jboss4/index.html"/>
+      <item name="Example Webapp" href="wadi-webapp/index.html"/>
+    </menu>
 
-      ${reports}
+    ${reports}
 
-   </body>
+  </body>
 </project>
