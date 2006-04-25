@@ -77,6 +77,15 @@
       <timezone>+0</timezone>
     </developer>
     <developer>
+      <id>fhanik</id>
+      <name>Filip Hanik</name>
+      <email>filip@hanik.com</email>
+      <roles>
+	<role>Tribes</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
       <id>gscenini</id>
       <name>Gianni Scenini</name>
       <email>gianni.scenini@gmail.com</email>
@@ -142,14 +151,6 @@
   </developers>
 
   <contributors>
-    <contributor>
-      <name>Filip Hanik</name>
-      <email></email>
-      <timezone></timezone>
-      <roles>
-	<role>Tribes</role>
-      </roles>
-    </contributor>
     <contributor>
       <name>Simone Bordet</name>
       <email></email>
