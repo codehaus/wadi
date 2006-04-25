@@ -9,7 +9,7 @@
 ## are then removed before main site is built...
 
 mvn clean:clean && mvn install site && \
-mvn -f pom.clover.xml clover:aggregate clover:clover && \
+mvn clover:aggregate clover:clover && \
 mvn site:deploy
 status=$?
 ##mvn site:stage -DstagingDirectory=target/stage
