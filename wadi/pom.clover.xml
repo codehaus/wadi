@@ -1,0 +1,63 @@
+<project>
+
+  <parent>
+    <groupId>org.codehaus.wadi</groupId>
+    <artifactId>wadi</artifactId>
+    <relativePath>./pom.xml</relativePath>
+    <version>2.0M2-SNAPSHOT</version>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>wadi-clover</artifactId>
+  <packaging>pom</packaging>
+  <name>WADI :: Clover</name>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>wadi-dependencies</id>
+      <name>WADI Dependencies Repository at the Haus</name>
+      <url>http://dist.codehaus.org/wadi/dependencies/maven2</url><!-- TODO: should be moved over to WadiReleaseRepository -->
+  </pluginRepository>
+  </pluginRepositories>
+
+  <modules>
+    <module>wadi-dispatcher</module>
+    <module>wadi-core</module>
+    <module>wadi-activecluster</module>
+    <module>wadi-jgroups</module>
+    <module>wadi-tribes</module>
+    <module>wadi-jetty5</module>
+    <module>wadi-jetty6</module>
+    <module>wadi-tomcat50</module>
+    <module>wadi-tomcat55</module>
+    <module>wadi-axis2</module>
+    <module>wadi-openejb</module>
+    <module>wadi-jboss4</module>
+    <module>wadi-webapp</module>
+    <module>wadi-assembly</module>
+  </modules>
+
+  <build>
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-clover-plugin</artifactId>
+	<version>2.2-SNAPSHOT</version>
+	<configuration>
+	  <jdk>${jse.version}</jdk>
+	  <licenseLocation>./etc/clover.license</licenseLocation>
+	</configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+	<artifactId>maven-clover-plugin</artifactId>
+	<version>2.2-SNAPSHOT</version>
+      </plugin>
+    </plugins>
+  </reporting>
+
+</project>
