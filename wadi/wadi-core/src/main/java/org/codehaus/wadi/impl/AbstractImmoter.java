@@ -19,7 +19,7 @@ package org.codehaus.wadi.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 
@@ -52,7 +52,7 @@ public abstract class AbstractImmoter implements Immoter {
 	}
 	
 	// keep the throws clause - we are defining a method signature for our subtypes
-	public boolean contextualise(InvocationContext invocationContext, String id, Motable immotable, Sync motionLock) throws InvocationException {
+	public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock) throws InvocationException {
 		// most Contextualisers cannot contextualise locally...
 		return false;
 	}

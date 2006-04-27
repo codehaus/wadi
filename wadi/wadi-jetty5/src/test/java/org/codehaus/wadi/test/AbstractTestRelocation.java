@@ -34,7 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Location;
@@ -84,14 +84,14 @@ public abstract class AbstractTestRelocation extends TestCase {
 		}
 		
 		// Relocater
-		public boolean relocate(InvocationContext invocationContext, String name, Immoter immoter, Sync motionLock) throws InvocationException {
-			return _delegate.relocate(invocationContext, name, immoter, motionLock);
+		public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException {
+			return _delegate.relocate(invocation, name, immoter, motionLock);
 		}
 		
 	}
 	
 	class DummyRelocater extends AbstractRelocater {
-		public boolean relocate(InvocationContext invocationContext, String name, Immoter immoter, Sync motionLock) throws InvocationException {
+		public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException {
 			return false;
 		}
 		protected Contextualiser _top;

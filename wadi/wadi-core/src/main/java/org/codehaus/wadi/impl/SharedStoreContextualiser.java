@@ -22,7 +22,7 @@ import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Store;
@@ -127,7 +127,7 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 	/**
 	 * Shared Contextualisers do nothing at runtime. They exist only to load data at startup and store it at shutdown.
 	 */
-	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 		return false;
 	}
 

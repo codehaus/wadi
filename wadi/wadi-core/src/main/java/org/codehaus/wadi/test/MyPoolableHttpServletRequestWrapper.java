@@ -17,7 +17,7 @@
 package org.codehaus.wadi.test;
 
 import org.codehaus.wadi.Context;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
 
 /**
@@ -26,7 +26,7 @@ import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
  */
 class MyPoolableHttpServletRequestWrapper extends MyHttpServletRequest implements PoolableHttpServletRequestWrapper {
 
-	public void init(InvocationContext invocationContext, Context context){ /* I KNOW */}
+	public void init(Invocation invocation, Context context){ /* I KNOW */}
 	public void destroy(){/* I KNOW */}
 
 }

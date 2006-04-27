@@ -27,7 +27,7 @@ import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapper;
@@ -69,19 +69,19 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	public boolean isExclusive(){return true;}
 
 	// TODO - sometime figure out how to make this a wrapper around AbstractMappedContextualiser.handle() instead of a replacement...
-	public boolean handle(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock) throws InvocationException {
+	public boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock) throws InvocationException {
 		Motable emotable=get(id);
 		if (emotable==null)
 			return false; // we cannot proceed without the session...
 
 		if (immoter!=null) {
-			return promote(invocationContext, id, immoter, motionLock, emotable); // motionLock will be released here...
+			return promote(invocation, id, immoter, motionLock, emotable); // motionLock will be released here...
 		} else {
-			return contextualiseLocally(invocationContext, id, motionLock, emotable);
+			return contextualiseLocally(invocation, id, motionLock, emotable);
 		}
 	}
 
-	public boolean contextualiseLocally(InvocationContext invocationContext, String id, Sync invocationLock, Motable motable)  throws InvocationException {
+	public boolean contextualiseLocally(Invocation invocation, String id, Sync invocationLock, Motable motable)  throws InvocationException {
 		Sync stateLock=((Context)motable).getSharedLock();
 		boolean stateLockAcquired=false;
 		try {
@@ -104,18 +104,18 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 
 
 			motable.setLastAccessedTime(System.currentTimeMillis());
-			if (false == invocationContext.isProxiedInvocation()) {
+			if (false == invocation.isProxiedInvocation()) {
 				// part of the proxying proedure runs a null req...
 				// restick clients whose session is here, but whose routing info points elsewhere...
-				_config.getRouter().reroute(invocationContext); // TODO - hmm... still thinking
+				_config.getRouter().reroute(invocation); // TODO - hmm... still thinking
 				// take wrapper from pool...
 				PoolableInvocationWrapper wrapper = _requestPool.take();
-				wrapper.init(invocationContext, (Context)motable);
-				invocationContext.invoke(wrapper);
+				wrapper.init(invocation, (Context)motable);
+				invocation.invoke(wrapper);
 				wrapper.destroy();
 				_requestPool.put(wrapper);
 			} else {
-				invocationContext.invoke();
+				invocation.invoke();
 			}
 			return true;
 		} finally {
@@ -177,8 +177,8 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 			return _pool.take();
 		}
 
-		public boolean contextualise(InvocationContext invocationContext, String id, Motable immotable, Sync motionLock) throws InvocationException {
-			return contextualiseLocally(invocationContext, id, motionLock, immotable);
+		public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock) throws InvocationException {
+			return contextualiseLocally(invocation, id, motionLock, immotable);
 		}
 
 		public String getInfo() {

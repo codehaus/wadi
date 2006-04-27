@@ -223,14 +223,15 @@
               4.) Use your own MySessionManager for your custom needs
             -->
 
+	   <!--
 	   <delegate class="org.apache.axis2.session.persistance.TransientSessionManager"/>
+           -->
 
 	   <!-- (not supported yet)
 	   <delegate class="org.apache.axis2.session.persistance.PersistantSessionManager"/>
            -->
-	   <!-- (not supported yet)
-	   <delegate class="org.apache.axis2.clustering.wadi.WADISessionManager"/>
-           -->
+
+	   <delegate class="org.codehaus.wadi.axis2.Axis2Manager"/>
        </sessionManager>
     </sessionManagerFactory> 
 </axisconfig>

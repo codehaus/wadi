@@ -22,11 +22,10 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.ProxyingException;
 import org.codehaus.wadi.impl.SimpleEvictable;
-import org.codehaus.wadi.impl.WebInvocationContext;
 
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -81,7 +80,7 @@ public class TestLocation extends TestCase {
 	
 	class MyLocation extends SimpleEvictable implements Location {
 		
-		public void proxy(InvocationContext invocationContext) throws ProxyingException {
+		public void proxy(Invocation invocation) throws ProxyingException {
 			// do nothing
 		}
 		
@@ -101,7 +100,7 @@ public class TestLocation extends TestCase {
 			}
 			
 			try {
-				_location.proxy(new WebInvocationContext(null, null, null));
+				_location.proxy(new TestInvocation(null, null, null));
 			} catch (Exception e) {
 				_log.warn("proxy problem", e);
 			} finally {

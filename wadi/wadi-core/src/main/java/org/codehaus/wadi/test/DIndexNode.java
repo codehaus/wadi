@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
@@ -139,8 +139,8 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 		throw new UnsupportedOperationException("NYI");
 	}
 
-	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
-		return _contextualiser.contextualise(invocationContext, id, immoter, motionLock, exclusiveOnly);
+	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+		return _contextualiser.contextualise(invocation, id, immoter, motionLock, exclusiveOnly);
 	}
 
 	public Immoter getImmoter(String name, Motable immotable) {

@@ -27,7 +27,7 @@ import junit.framework.TestCase;
 import org.apache.activecluster.ClusterEvent;
 import org.apache.activecluster.Node;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.dindex.PartitionManager;
@@ -116,7 +116,7 @@ public abstract class AbstractTestPartitionManager extends TestCase {
 				return 0;
 			}
 
-			public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+			public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 				// TODO Auto-generated method stub
 				return false;
 			}

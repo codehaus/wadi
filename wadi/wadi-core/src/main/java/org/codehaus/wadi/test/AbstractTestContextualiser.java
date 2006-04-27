@@ -48,7 +48,7 @@ import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Location;
@@ -105,7 +105,7 @@ import org.codehaus.wadi.impl.StandardValueFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.WebHybridRelocater;
-import org.codehaus.wadi.impl.WebInvocationContext;
+import org.codehaus.wadi.web.WebInvocation;
 
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -246,9 +246,13 @@ public abstract class AbstractTestContextualiser extends TestCase {
 
 		// ensure that all 3 sessions are promoted to memory...
 		FilterChain fc=new MyFilterChain();
-		memory.contextualise(new WebInvocationContext(_request,null,fc),"foo", null, null, false);
-		memory.contextualise(new WebInvocationContext(null,null,fc),"bar", null, null, false);
-		memory.contextualise(new WebInvocationContext(null,null,fc),"baz", null, null, false);
+        WebInvocation invocation=new WebInvocation();
+        invocation.init(_request,null,fc);
+		memory.contextualise(invocation,"foo", null, null, false);
+        invocation.init(null,null,fc);
+		memory.contextualise(invocation,"bar", null, null, false);
+        invocation.init(null,null,fc);
+		memory.contextualise(invocation,"baz", null, null, false);
 		assertTrue(d2.size()==0);
 		assertTrue(d1.size()==0);
 		assertTrue(m.size()==3);
@@ -294,13 +298,14 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		}
 
 		FilterChain fc=new MyFilterChain();
-
-		memory.contextualise(new WebInvocationContext(null,null,fc),"foo", null, null, false);
+		WebInvocation invocation=new WebInvocation();
+        invocation.init(null,null,fc);
+		memory.contextualise(invocation,"foo", null, null, false);
 		assertTrue(m.size()==0); // this should not go to the db...
 
 		manager.start(); // this should promote all shared sessions into exclusively owned space (i.e. memory)
-
-		memory.contextualise(new WebInvocationContext(null,null,fc),"foo", null, null, false);
+        invocation.init(null,null,fc);
+		memory.contextualise(invocation,"foo", null, null, false);
 		assertTrue(m.size()==1); // foo should be here now...
 
 		// check it's content
@@ -319,14 +324,14 @@ public abstract class AbstractTestContextualiser extends TestCase {
 			_context=new MyContext(context, context);
 		}
 
-		public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+		public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 			_counter++;
 
 			Motable emotable=_context;
 			Emoter emoter=new EtherEmoter();
 			Motable immotable=Utils.mote(emoter, immoter, emotable, id);
 			if (immotable!=null) {
-				return immoter.contextualise(invocationContext, id, immotable, motionLock);
+				return immoter.contextualise(invocation, id, immotable, motionLock);
 			} else {
 				return false;
 			}
@@ -361,7 +366,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 			_context=new MyContext(context, context);
 		}
 
-		public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+		public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 			_counter++;
 			Context context=_context;
 			Sync shared=context.getSharedLock();
@@ -371,7 +376,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 				if ( _log.isInfoEnabled() ) {
 					_log.info("running locally: " + id);
 				}
-				invocationContext.invoke();
+				invocation.invoke();
 				shared.release();
 				return true;
 			} catch (InterruptedException e) {
@@ -414,7 +419,9 @@ public abstract class AbstractTestContextualiser extends TestCase {
 
 		public void run() {
 			try {
-				_contextualiser.contextualise(new WebInvocationContext(null, null, _chain), _id, null, null, false);
+                WebInvocation invocation=new WebInvocation();
+                invocation.init(null, null, _chain);
+				_contextualiser.contextualise(invocation, _id, null, null, false);
 			} catch (Exception e) {
 				_log.error("unexpected problem", e);
 				assertTrue(false);
@@ -426,8 +433,11 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		Contextualiser mc=new MemoryContextualiser(c, new DummyEvicter(), new HashMap(), new GZIPStreamer(), new MyContextPool(), _requestPool);
 		FilterChain fc=new MyFilterChain();
 
-		for (int i=0; i<n; i++)
-			mc.contextualise(new WebInvocationContext(null,null,fc),"baz", null, new NullSync(), false);
+        WebInvocation invocation=new WebInvocation();
+		for (int i=0; i<n; i++) {
+            invocation.init(null,null,fc);
+			mc.contextualise(invocation,"baz", null, new NullSync(), false);
+        }
 	}
 
 	public void testPromotion() throws Exception {
@@ -565,14 +575,16 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		assertTrue(m.size()==0); // no longer in memory
 		assertTrue(d.size()==1); // now on disc
 
-		memory.contextualise(new WebInvocationContext(null,null,new MyFilterChain()),id, null, null, false);
+        WebInvocation invocation=new WebInvocation();
+        invocation.init(null,null,new MyFilterChain());
+		memory.contextualise(invocation,id, null, null, false);
 		assertTrue(m.size()==1); // promoted back into memory
 		assertTrue(d.size()==0); // no longer on disc
 	}
 
 	static class MyLocation extends SimpleEvictable implements Location, Serializable {
 
-		public void proxy(InvocationContext invocationContext) throws ProxyingException {
+		public void proxy(Invocation invocation) throws ProxyingException {
 			System.out.println("PROXYING");
 		}
 
@@ -624,8 +636,11 @@ public abstract class AbstractTestContextualiser extends TestCase {
 //		assertTrue(memory0.contextualise(null,null,fc,"bar", null, null, false));
 //		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null, false));
 //		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null, false));
-		assertTrue(!memory0.contextualise(new WebInvocationContext(null,null,fc),"baz", null, null, false));
-		assertTrue(!memory1.contextualise(new WebInvocationContext(null,null,fc),"baz", null, null, false));
+        WebInvocation invocation=new WebInvocation();
+        invocation.init(null,null,fc);
+		assertTrue(!memory0.contextualise(invocation,"baz", null, null, false));
+        invocation.init(null,null,fc);
+		assertTrue(!memory1.contextualise(invocation,"baz", null, null, false));
 
 		Thread.sleep(2000);
 		_log.info("STOPPING NOW!");

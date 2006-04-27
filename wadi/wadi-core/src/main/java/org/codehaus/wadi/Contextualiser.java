@@ -33,7 +33,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public interface Contextualiser extends Lifecycle {
 	
 	// I'd like to add Manager to param list, but it bloats dependency tree - can we get along without it ?
-	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
+	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
 	void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
 	void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
 

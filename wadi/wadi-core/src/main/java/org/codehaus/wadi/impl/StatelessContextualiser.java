@@ -24,9 +24,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
+import org.codehaus.wadi.web.WebInvocation;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -80,12 +81,12 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 		}
 	};
 
-	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
-		WebInvocationContext context = (WebInvocationContext) invocationContext;
+	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
+		WebInvocation context = (WebInvocation) invocation;
 		HttpServletRequest hreq = context.getHreq();
 		if (hreq==null || isStateful(hreq)) {
 			// we cannot optimise...
-			return _next.contextualise(invocationContext, id, immoter, invocationLock, exclusiveOnly);
+			return _next.contextualise(invocation, id, immoter, invocationLock, exclusiveOnly);
 		} else {
 			// we know that we can run the request locally...
 			if (invocationLock!=null) {
@@ -93,9 +94,9 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 			}
 			// wrap the request so that session is inaccessible and process here...
 			PoolableHttpServletRequestWrapper wrapper=(PoolableHttpServletRequestWrapper)_wrapper.get();
-			wrapper.init(invocationContext, null);
+			wrapper.init(invocation, null);
 			try {
-				invocationContext.invoke(wrapper);
+				invocation.invoke(wrapper);
 			} finally {
 				wrapper.destroy();
 			}

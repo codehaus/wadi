@@ -15,9 +15,9 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.impl.WebInvocationContext;
+import org.codehaus.wadi.test.TestInvocation;
 import org.codehaus.wadi.test.MyHttpServletRequest;
 import org.codehaus.wadi.test.MyHttpServletResponse;
 import org.codehaus.wadi.test.MyStack;
@@ -84,7 +84,7 @@ public class AbstractTestEvacuation extends TestCase {
 			}
 		};
 
-		InvocationContext invocation=new WebInvocationContext(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
+		Invocation invocation=new TestInvocation(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
 		boolean success=green.getManager().contextualise(invocation, id, null, null, true);
 
 		assertTrue(success);

@@ -20,7 +20,7 @@ import javax.jms.Destination;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.ProxiedLocation;
@@ -47,8 +47,8 @@ public class HttpProxyLocation extends SimpleEvictable implements Location {
 		_proxy=proxy;
 	}
 	
-	public void proxy(InvocationContext invocationContext) throws ProxyingException {
-		_proxy.proxy(_location, invocationContext);
+	public void proxy(Invocation invocation) throws ProxyingException {
+		_proxy.proxy(_location, invocation);
 	}
 	
 	public String toString() {

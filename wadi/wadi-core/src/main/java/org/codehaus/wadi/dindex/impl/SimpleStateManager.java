@@ -25,7 +25,7 @@ import javax.jms.ObjectMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
@@ -234,7 +234,7 @@ public class SimpleStateManager implements StateManager {
 			// this probably has to by NYI... - nasty...
 		}
 
-		public boolean contextualise(InvocationContext invocationContext, String id, Motable immotable, Sync motionLock) throws InvocationException {
+		public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock) throws InvocationException {
 			return false;
 		}
 

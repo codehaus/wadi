@@ -18,7 +18,7 @@ package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.RequestRelocater;
 
@@ -35,7 +35,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class RedirectingRelocater extends AbstractRelocater implements RequestRelocater {
 	
-	public boolean relocate(InvocationContext invocationContext, String name, Immoter immoter, Sync motionLock) throws InvocationException {
+	public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException {
 		return false;
 	}
 	

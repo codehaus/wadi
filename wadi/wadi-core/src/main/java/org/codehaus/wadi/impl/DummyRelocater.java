@@ -17,7 +17,7 @@
 package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
@@ -38,7 +38,7 @@ public class DummyRelocater implements Relocater {
 		// empty
 	}
 
-	public boolean relocate(InvocationContext invocationContext, String name, Immoter immoter, Sync motionLock) throws InvocationException {
+	public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException {
 		return true;
 	}
 

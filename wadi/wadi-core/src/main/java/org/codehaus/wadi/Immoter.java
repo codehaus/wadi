@@ -28,6 +28,6 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public interface Immoter extends Moter {
 	
 	Motable nextMotable(String id, Motable emotable);
-	boolean contextualise(InvocationContext invocationContext, String id, Motable immotable, Sync motionLock) throws InvocationException;
+	boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock) throws InvocationException;
 	
 }

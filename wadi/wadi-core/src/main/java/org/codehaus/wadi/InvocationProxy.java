@@ -30,6 +30,6 @@ public interface InvocationProxy extends Serializable {
 	 * @param location - host and port to which to proxy req/res
 	 * @throws ProxyingException TODO
 	 */
-	public void proxy(ProxiedLocation location, InvocationContext invocationContext) throws ProxyingException;
+	public void proxy(ProxiedLocation location, Invocation invocation) throws ProxyingException;
 
 }

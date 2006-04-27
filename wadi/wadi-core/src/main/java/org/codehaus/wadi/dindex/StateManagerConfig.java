@@ -19,7 +19,7 @@ package org.codehaus.wadi.dindex;
 import javax.jms.Destination;
 
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
 import org.codehaus.wadi.group.Dispatcher;
@@ -41,7 +41,7 @@ public interface StateManagerConfig {
 
   Dispatcher getDispatcher();
 
-  boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
+  boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
   long getInactiveTime();
 
   Sync getInvocationLock(String name);

@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,13 +16,25 @@
  */
 package org.codehaus.wadi;
 
+
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface PoolableInvocationWrapper {
+public interface Invocation {
 
-    void init(Invocation invocation, Context context);
-    void destroy();
+    // new
+    
+    void clear();
+    String getKey();
+    void sendError(int code, String message) throws Exception; // a little web specific ?
+    boolean getRelocatable();
+    
+    // old
+    
+	void invoke(PoolableInvocationWrapper wrapper) throws InvocationException;
+	
+	void invoke() throws InvocationException;
+	
+	boolean isProxiedInvocation();
 
 }

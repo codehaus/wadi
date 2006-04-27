@@ -65,6 +65,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.IrrecoverableException;
 import org.codehaus.wadi.ProxyingException;
+import org.codehaus.wadi.web.WebInvocation;
 
 //This does not seem as performant as the StandardHttpProxy - it also seems to be able to crash Firefox reproducibly !
 //commons-httpclient does not [seem to] allow us to pass Cookie headers straight through. So, we have
@@ -106,7 +107,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 	 * @see javax.servlet.Servlet#service(javax.servlet.ServletRequest,
 	 *      javax.servlet.ServletResponse)
 	 */
-	protected void doProxy(InetSocketAddress location, WebInvocationContext context) throws ProxyingException {
+	protected void doProxy(InetSocketAddress location, WebInvocation context) throws ProxyingException {
 		HttpServletRequest hreq = context.getHreq();
 		HttpServletResponse hres = context.getHres();
 		

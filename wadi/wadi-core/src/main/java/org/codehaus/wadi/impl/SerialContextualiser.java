@@ -24,7 +24,7 @@ import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Context;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
@@ -50,7 +50,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
 		_map=map;
 	}
 	
-	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
+	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
 	  boolean release=false;
 	  
 	  try {
@@ -73,7 +73,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
 	        // overlap two locking systems until we have secured the session in memory, then run the request
 	        // and release the lock.
 	        
-	        if (immoter.contextualise(invocationContext, id, context, invocationLock)) {
+	        if (immoter.contextualise(invocation, id, context, invocationLock)) {
 	          release=false;
 	          return true;
 	        }
@@ -83,7 +83,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
 	    // session was not promoted whilst we were waiting for motionLock. Continue down Contextualiser stack
 	    // it may be below us...
 	    // lock is to be released as soon as context is available to subsequent contextualisations...
-	    boolean found=_next.contextualise(invocationContext, id, immoter, invocationLock, exclusiveOnly);
+	    boolean found=_next.contextualise(invocation, id, immoter, invocationLock, exclusiveOnly);
 	    release=!found;
 	    return found;
 	  } catch (TimeoutException e) {

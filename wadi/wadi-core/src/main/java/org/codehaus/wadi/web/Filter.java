@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.web;
 
 import java.io.IOException;
 
@@ -29,11 +29,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.Router;
+import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
+import org.codehaus.wadi.impl.StandardManager;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
@@ -85,31 +87,31 @@ public class Filter implements javax.servlet.Filter {
 		_manager=null;
 	}
 
-	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-		if (request instanceof HttpServletRequest)
-			doFilter((HttpServletRequest)request, (HttpServletResponse)response, chain);
-		else // this one is not HTTP - therefore it is and will remain, stateless - not for us...
-			chain.doFilter(request, response);
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+		if (request instanceof HttpServletRequest) {
+            WebInvocation invocation=WebInvocation.getThreadLocalInstance();
+            invocation.init((HttpServletRequest)request, (HttpServletResponse)response, filterChain);
+			around(invocation);
+        } else // this one is not HTTP - therefore it is and will remain, stateless - not for us...
+			filterChain.doFilter(request, response);
 	}
 
-	public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-		String sessionId=request.getRequestedSessionId();
+	public void around(Invocation invocation) throws IOException, ServletException {
+        String sessionId=invocation.getKey();
 		if (_log.isTraceEnabled()) _log.trace("potentially stateful request: "+sessionId);
-
-		InvocationContext invocationContext = new WebInvocationContext(request, response, chain);
 
 		try {
 			if (sessionId==null) {
-				processSessionlessRequest(invocationContext);
+				processSessionlessRequest(invocation);
 			} else {
 				// already associated with a session...
 				String name=_router.strip(sessionId); // strip off any routing info...
-				if (!_contextualiser.contextualise(invocationContext, name, null, null, false)) {
+				if (!_contextualiser.contextualise(invocation, name, null, null, false)) {
 					if (_log.isErrorEnabled()) _log.error("could not acquire session: " + name);
 					if (_errorIfSessionNotAcquired) // send the client a 503...
-						response.sendError(503, "session "+name+" is not known"); // TODO - should we allow custom error page ?
+						invocation.sendError(503, "session "+name+" is not known");
 					else // process request without session - it may create a new one...
-						processSessionlessRequest(invocationContext);
+						processSessionlessRequest(invocation);
 				}
 			}
 		} catch (InvocationException e) {
@@ -121,10 +123,12 @@ public class Filter implements javax.servlet.Filter {
 			} else {
 				throw new ServletException(e);
 			}
-		}
+		} catch (Exception e) {
+		    _log.error("this should never happen", e);
+        }
 	}
 
-	public void processSessionlessRequest(InvocationContext invocationContext) throws InvocationException {
+	public void processSessionlessRequest(Invocation invocation) throws InvocationException {
 		// are we accepting sessions ? - otherwise proxy to another node...
 		// sync point - expensive, but will only hit sessionless requests...
 		if (!_acceptingSessions.get()) {
@@ -135,8 +139,8 @@ public class Filter implements javax.servlet.Filter {
 
 		// no session yet - but may initiate one...
 		PoolableInvocationWrapper wrapper=_pool.take();
-		wrapper.init(invocationContext, null);
-		invocationContext.invoke(wrapper);
+		wrapper.init(invocation, null);
+		invocation.invoke(wrapper);
 		wrapper.destroy();
 		_pool.put(wrapper);
 	}

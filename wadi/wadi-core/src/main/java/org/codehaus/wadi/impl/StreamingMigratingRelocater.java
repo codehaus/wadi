@@ -17,7 +17,7 @@
 package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.SessionRelocater;
@@ -44,7 +44,7 @@ public class StreamingMigratingRelocater implements SessionRelocater {
 		_config=null;
 	}
 
-	public boolean relocate(InvocationContext invocationContext, String name, Immoter immoter, Sync motionLock) throws InvocationException {
+	public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException {
 		// check cache
 		//Server server=_config.getServer();
 

@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2003-2006 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,15 +14,32 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.web;
+
+import javax.servlet.FilterChain;
+import org.codehaus.wadi.Chain;
+import org.codehaus.wadi.Invocation;
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
-public interface PoolableInvocationWrapper {
+ * A WebChain encapsulates control flow for the web tier.
+ * 
+ * @author jules
+ * @version $Revision: 1430 $
+*/
+public class WebChain implements Chain {
 
-    void init(Invocation invocation, Context context);
-    void destroy();
-
+    protected FilterChain _chain;
+    
+    public void init(FilterChain chain) {
+        _chain=chain;
+    }
+    
+    public void clear() {
+        _chain=null;
+    }
+    
+    public void next(Invocation invocation) {
+        
+    }
+    
 }

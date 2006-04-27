@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.impl.WebInvocationContext;
+import org.codehaus.wadi.web.WebInvocation;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -58,10 +58,11 @@ public class MyFilter implements Filter {
 			if ( _log.isInfoEnabled() ) {
 				_log.info("Filter.doFilter(" + ( ( sessionId == null ) ? "" : sessionId ) + ")" + ( hreq.isSecure() ? " - SECURE" : "" ));
 			}
-			WebInvocationContext invocationContext = new WebInvocationContext(hreq, hres, chain);
+			WebInvocation invocation=WebInvocation.getThreadLocalInstance();
+            invocation.init(hreq, hres, chain);
 			boolean found;
 			try {
-				found = _servlet.getContextualiser().contextualise(invocationContext, sessionId, null, null, _exclusiveOnly);
+				found = _servlet.getContextualiser().contextualise(invocation, sessionId, null, null, _exclusiveOnly);
 			} catch (InvocationException e) {
 				throw new ServletException(e);
 			}
