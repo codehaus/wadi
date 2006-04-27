@@ -97,21 +97,21 @@ public class Filter implements javax.servlet.Filter {
 	}
 
 	public void around(Invocation invocation) throws IOException, ServletException {
-        String sessionId=invocation.getKey();
-		if (_log.isTraceEnabled()) _log.trace("potentially stateful request: "+sessionId);
+        String key=invocation.getKey();
+		if (_log.isTraceEnabled()) _log.trace("potentially stateful request: "+key);
 
 		try {
-			if (sessionId==null) {
-				processSessionlessRequest(invocation);
+			if (key==null) {
+				processStateless(invocation);
 			} else {
 				// already associated with a session...
-				String name=_router.strip(sessionId); // strip off any routing info...
+				String name=_router.strip(key); // strip off any routing info...
 				if (!_contextualiser.contextualise(invocation, name, null, null, false)) {
 					if (_log.isErrorEnabled()) _log.error("could not acquire session: " + name);
 					if (_errorIfSessionNotAcquired) // send the client a 503...
 						invocation.sendError(503, "session "+name+" is not known");
 					else // process request without session - it may create a new one...
-						processSessionlessRequest(invocation);
+						processStateless(invocation);
 				}
 			}
 		} catch (InvocationException e) {
@@ -128,7 +128,7 @@ public class Filter implements javax.servlet.Filter {
         }
 	}
 
-	public void processSessionlessRequest(Invocation invocation) throws InvocationException {
+	public void processStateless(Invocation invocation) throws InvocationException {
 		// are we accepting sessions ? - otherwise proxy to another node...
 		// sync point - expensive, but will only hit sessionless requests...
 		if (!_acceptingSessions.get()) {

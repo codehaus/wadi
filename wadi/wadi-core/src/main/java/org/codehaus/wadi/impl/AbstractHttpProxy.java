@@ -43,7 +43,7 @@ import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.ProxiedLocation;
 import org.codehaus.wadi.ProxyingException;
-import org.codehaus.wadi.http.HTTPProxiedLocation;
+import org.codehaus.wadi.web.HTTPProxiedLocation;
 import org.codehaus.wadi.web.WebInvocation;
 
 //HTTP/1.1 Methods:

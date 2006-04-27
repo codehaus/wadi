@@ -416,7 +416,7 @@
 
   <bean
     id="ProxiedLocation"
-    class="org.codehaus.wadi.http.HTTPProxiedLocation"
+    class="org.codehaus.wadi.web.HTTPProxiedLocation"
     >
     <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
   </bean>
