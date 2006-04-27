@@ -38,7 +38,6 @@ import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.http.HTTPProxiedLocation;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AlwaysEvicter;
 import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
@@ -67,6 +66,7 @@ import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.WebHybridRelocater;
+import org.codehaus.wadi.web.HTTPProxiedLocation;
 
 public class MyStack {
 

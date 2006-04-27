@@ -36,7 +36,6 @@ import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.http.HTTPProxiedLocation;
 import org.codehaus.wadi.impl.AlwaysEvicter;
 import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.impl.ClusteredManager;
@@ -64,6 +63,7 @@ import org.codehaus.wadi.replication.manager.basic.SessionReplicationManager;
 import org.codehaus.wadi.replication.storage.basic.BasicReplicaStorageFactory;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 import org.codehaus.wadi.test.TestInvocation;
+import org.codehaus.wadi.web.HTTPProxiedLocation;
 
 /**
  * 

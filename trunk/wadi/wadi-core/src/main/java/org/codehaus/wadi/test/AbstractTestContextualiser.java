@@ -67,7 +67,6 @@ import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.http.HTTPProxiedLocation;
 import org.codehaus.wadi.impl.AbsoluteEvicter;
 import org.codehaus.wadi.impl.AbstractContextualiser;
 import org.codehaus.wadi.impl.ClusterContextualiser;
@@ -105,6 +104,7 @@ import org.codehaus.wadi.impl.StandardValueFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.WebHybridRelocater;
+import org.codehaus.wadi.web.HTTPProxiedLocation;
 import org.codehaus.wadi.web.WebInvocation;
 
 import EDU.oswego.cs.dl.util.concurrent.NullSync;

@@ -53,7 +53,6 @@ import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.gridstate.activecluster.RestartableClusterFactory;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.http.HTTPProxiedLocation;
 import org.codehaus.wadi.impl.ClusterContextualiser;
 import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
@@ -79,6 +78,7 @@ import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.test.EtherEmoter;
+import org.codehaus.wadi.web.HTTPProxiedLocation;
 
 /**
  * Test the shutdown of a Contextualiser stack as live sessions are distributed to other nodes in the cluster
