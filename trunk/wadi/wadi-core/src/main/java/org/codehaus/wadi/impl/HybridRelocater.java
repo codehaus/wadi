@@ -20,7 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Motable;
@@ -66,7 +66,7 @@ public class HybridRelocater extends AbstractRelocater {
 		_proxy=_config.getInvocationProxy();
 	}
 
-	public boolean relocate(InvocationContext invocationContext, String name, Immoter immoter, Sync motionLock) throws InvocationException {
+	public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException {
 	  String sessionName=name;
 	  String nodeName=_config.getNodeName();
 	  boolean shuttingDown=_shuttingDown.get();
@@ -82,7 +82,7 @@ public class HybridRelocater extends AbstractRelocater {
 	  if (null==immotable) {
 	    return false;
 	  } else {
-	    boolean answer=immoter.contextualise(invocationContext, name, immotable, motionLock);
+	    boolean answer=immoter.contextualise(invocation, name, immotable, motionLock);
 	    return answer;
 	  }
 	}

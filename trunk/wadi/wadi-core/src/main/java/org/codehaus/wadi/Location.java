@@ -34,7 +34,7 @@ public interface Location extends Evictable, Serializable {
 	/**
 	 * @throws ProxyingException TODO
 	 */
-	public void proxy(InvocationContext invocationContext) throws ProxyingException;
+	public void proxy(Invocation invocation) throws ProxyingException;
 
 	public Destination getDestination();
 	

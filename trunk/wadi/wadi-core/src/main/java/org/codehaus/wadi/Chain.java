@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 Core Developers Network Ltd.
+ * Copyright 2003-2006 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,16 +16,9 @@
  */
 package org.codehaus.wadi;
 
-
-/**
- * @version $Revision$
- */
-public interface InvocationContext {
-
-	public void invoke(PoolableInvocationWrapper wrapper) throws InvocationException;
-	
-	public void invoke() throws InvocationException;
-	
-	public boolean isProxiedInvocation();
+public interface Chain {
+    
+    void clear();
+    void next(Invocation invocation);
 
 }

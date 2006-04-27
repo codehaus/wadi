@@ -35,7 +35,7 @@ import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Location;
@@ -193,8 +193,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		}
 	}
 
-	public boolean handle(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock) throws InvocationException {
-		return _relocater.relocate(invocationContext, id, immoter, motionLock);
+	public boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock) throws InvocationException {
+		return _relocater.relocate(invocation, id, immoter, motionLock);
 	}
 
 	protected void createEvacuationQueue() throws Exception {
@@ -272,7 +272,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 			// TODO - errr... HOW ?
 		}
 
-		public boolean contextualise(InvocationContext invocationContext, String id, Motable immotable, Sync motionLock) throws InvocationException {
+		public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock) throws InvocationException {
 			return false;
 			// TODO - perhaps this is how a proxied contextualisation should occur ?
 		}

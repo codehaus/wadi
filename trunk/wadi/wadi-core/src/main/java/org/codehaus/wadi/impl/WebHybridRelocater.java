@@ -16,7 +16,8 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
+import org.codehaus.wadi.web.WebInvocation;
 
 /**
  * @version $Revision$
@@ -27,8 +28,8 @@ public class WebHybridRelocater extends HybridRelocater {
 		super(resTimeout, ackTimeout, sessionOrRequestPreferred);
 	}
 	
-	protected InvocationContext newRelocationInvocationContext() {
-		return WebInvocationContext.RELOCATED_INVOCATION;
+	protected Invocation newRelocationinvocation() {
+		return WebInvocation.RELOCATED_INVOCATION;
 	}
 	
 }

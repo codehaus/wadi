@@ -21,8 +21,9 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
 import org.codehaus.wadi.Context;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
+import org.codehaus.wadi.web.WebInvocation;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -44,8 +45,8 @@ public class StatelessHttpServletRequestWrapper extends HttpServletRequestWrappe
 
 	// TODO - consider session cookie related methods as well..
 
-	public void init(InvocationContext invocationContext, Context context) {
-		HttpServletRequest request = ((WebInvocationContext) invocationContext).getHreq();
+	public void init(Invocation invocation, Context context) {
+		HttpServletRequest request = ((WebInvocation) invocation).getHreq();
 		setRequest(request);
 	}
 

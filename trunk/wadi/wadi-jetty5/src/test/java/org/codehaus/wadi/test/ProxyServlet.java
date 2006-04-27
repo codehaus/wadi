@@ -33,7 +33,7 @@ import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.ProxiedLocation;
 import org.codehaus.wadi.http.HTTPProxiedLocation;
 import org.codehaus.wadi.impl.StandardHttpProxy;
-import org.codehaus.wadi.impl.WebInvocationContext;
+import org.codehaus.wadi.web.WebInvocation;
 import org.mortbay.http.SocketListener;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.ServletHttpContext;
@@ -76,7 +76,9 @@ public class ProxyServlet implements Servlet {
 		ProxiedLocation location=null;
 		try {
 			location=new HTTPProxiedLocation(new InetSocketAddress(req.getServerName(), req.getServerPort()));
-			_proxy.proxy(location, new WebInvocationContext(hreq, hres, null));
+			WebInvocation invocation=new WebInvocation();
+			invocation.init(hreq, hres, null);
+			_proxy.proxy(location, invocation);
 		} catch (Exception e) {
 			hres.setHeader("Date", null);
 			hres.setHeader("Server", null);

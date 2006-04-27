@@ -20,7 +20,7 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Locker;
 import org.codehaus.wadi.Motable;
@@ -60,18 +60,18 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
-	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
-		return (handle(invocationContext, id, immoter, motionLock) ||
-				((!(exclusiveOnly && !_next.isExclusive())) && _next.contextualise(invocationContext, id, getPromoter(immoter), motionLock, exclusiveOnly)));
+	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+		return (handle(invocation, id, immoter, motionLock) ||
+				((!(exclusiveOnly && !_next.isExclusive())) && _next.contextualise(invocation, id, getPromoter(immoter), motionLock, exclusiveOnly)));
 	}
 	
 	// TODO - I don't think that we need test isExclusive anymore - or even need this flag...
 	
-	public boolean promote(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, Motable emotable) throws InvocationException {
+	public boolean promote(Invocation invocation, String id, Immoter immoter, Sync motionLock, Motable emotable) throws InvocationException {
 		Emoter emoter=getEmoter();
 		Motable immotable=Utils.mote(emoter, immoter, emotable, id);
 		if (immotable!=null) {
-			return immoter.contextualise(invocationContext, id, immotable, motionLock);
+			return immoter.contextualise(invocation, id, immotable, motionLock);
 		} else {
 			return false;
 		}
@@ -90,10 +90,10 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
 	
 	public abstract Motable get(String id);
 	
-	public boolean handle(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock) throws InvocationException {
+	public boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock) throws InvocationException {
 		if (immoter!=null) {
 			Motable emotable=get(id);
-			return promote(invocationContext, id, immoter, motionLock, emotable); // motionLock should be released here...
+			return promote(invocation, id, immoter, motionLock, emotable); // motionLock should be released here...
 		} else
 			return false;
 	}

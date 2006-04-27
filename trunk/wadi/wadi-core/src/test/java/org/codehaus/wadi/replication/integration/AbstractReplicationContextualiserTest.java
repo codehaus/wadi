@@ -55,7 +55,6 @@ import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
-import org.codehaus.wadi.impl.WebInvocationContext;
 import org.codehaus.wadi.replication.contextualizer.ReplicaAwareContextualiser;
 import org.codehaus.wadi.replication.manager.ReplicaterAdapterFactory;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
@@ -64,6 +63,7 @@ import org.codehaus.wadi.replication.manager.basic.DistributableManagerRehydrate
 import org.codehaus.wadi.replication.manager.basic.SessionReplicationManager;
 import org.codehaus.wadi.replication.storage.basic.BasicReplicaStorageFactory;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
+import org.codehaus.wadi.test.TestInvocation;
 
 /**
  * 
@@ -110,7 +110,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
 
     private void promoteNode2(String sessionId) throws InvocationException {
         nodeInfo2.clusteredManager.contextualise(
-                new WebInvocationContext(null, null,
+                new TestInvocation(null, null,
                     new FilterChain() { 
                         public void doFilter(ServletRequest req, ServletResponse res){} 
                     }), 

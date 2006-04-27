@@ -30,7 +30,7 @@ import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.ManagerConfig;
@@ -249,8 +249,8 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	}
 
 	// PartitionManagerConfig API
-	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
-		return _contextualiser.contextualise(invocationContext, id, immoter, motionLock, exclusiveOnly);
+	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+		return _contextualiser.contextualise(invocation, id, immoter, motionLock, exclusiveOnly);
 	}
 
 	public Immoter getImmoter(String name, Motable immotable) {

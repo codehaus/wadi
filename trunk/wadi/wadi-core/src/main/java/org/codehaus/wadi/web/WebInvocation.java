@@ -14,39 +14,68 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.web;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 
 /**
- * @version $Revision$
+ * @version $Revision: 1430 $
  */
-public class WebInvocationContext implements InvocationContext {
-	public static final WebInvocationContext RELOCATED_INVOCATION = new WebInvocationContext(null, null, null);
+public class WebInvocation implements Invocation {
+    
+    protected static ThreadLocal _threadLocalInstance=new ThreadLocal() {protected Object initialValue() {return new WebInvocation();}};
+    
+    public static WebInvocation getThreadLocalInstance() {
+        return (WebInvocation)_threadLocalInstance.get();
+    }
+    
+	public static final WebInvocation RELOCATED_INVOCATION = new WebInvocation();
 	
-	private final HttpServletRequest hreq;
-	private final HttpServletResponse hres;
-	private final FilterChain chain;
-	private final boolean proxiedInvocation;
-	
-	public WebInvocationContext(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain) {
-		this.hreq = hreq;
-		this.hres = hres;
-		this.chain = chain;
-		if (null == hreq) {
-			proxiedInvocation = true;
-		} else {
-			proxiedInvocation = false;
-		}
-	}
-	
+	private HttpServletRequest hreq;
+	private HttpServletResponse hres;
+	private FilterChain chain;
+	private boolean proxiedInvocation=true;
+    
+    public WebInvocation() {
+    }
+    
+    public void init(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain) {
+        this.hreq=hreq;
+        this.hres=hres;
+        this.chain=chain;
+        this.proxiedInvocation=(null==hreq);
+    }
+    
+    // Invocation
+    
+    public void clear() {
+        hreq=null;
+        hres=null;
+        chain=null;
+        proxiedInvocation=true;
+    }
+    
+	public String getKey() {
+	    return hreq.getRequestedSessionId();   
+    }
+    
+    public void sendError(int code, String message) throws Exception {
+        hres.sendError(code, message); // TODO - should we allow custom error page ?
+    }
+    
+    public boolean getRelocatable() {
+        return true;
+    }
+    
+    // old
+    
 	public FilterChain getChain() {
 		return chain;
 	}

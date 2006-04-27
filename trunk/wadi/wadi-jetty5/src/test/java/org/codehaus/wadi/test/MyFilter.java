@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.impl.WebInvocationContext;
+import org.codehaus.wadi.web.WebInvocation;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -60,7 +60,9 @@ public class MyFilter implements Filter {
 			}
 			boolean found;
 			try {
-				found = _servlet.getContextualiser().contextualise(new WebInvocationContext(hreq, hres, chain), sessionId, null, null, _exclusiveOnly);
+				WebInvocation invocation=new WebInvocation();
+				invocation.init(hreq, hres, chain);
+				found = _servlet.getContextualiser().contextualise(invocation, sessionId, null, null, _exclusiveOnly);
 			} catch (InvocationException e) {
 				throw new ServletException(e);
 			}

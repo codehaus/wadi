@@ -30,10 +30,12 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.AttributesFactory;
+import org.codehaus.wadi.Chain;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.Motable;
@@ -46,6 +48,7 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.WADIHttpSession;
+import org.codehaus.wadi.web.Filter;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
@@ -317,4 +320,19 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 	public long getUpTime() {
 		return System.currentTimeMillis()-_birthTime;
 	}
+
+	// Deal with incoming/outgoing invocations... - possibly taking over flow control
+    
+    public void enter(Invocation invocation) {
+        // move stuff from filter into here...
+    }
+
+    public void enter(Invocation invocation, Chain chain) {
+        // move stuff from filter into here...
+    }
+    
+    public void leave(Invocation invocation) {
+        // move stuff from filter into here...
+    }
+    
 }

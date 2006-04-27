@@ -33,11 +33,11 @@ public interface Relocater {
     
 	/**
 	 * Either relocate the request to the session by proxying/redirection, or the session to the request, by migration...
-     * @param invocationContext
+     * @param invocation
 	 * @param name
 	 * @param immoter
 	 * @param motionLock
 	 * @return - whether, or not, the request was contextualised
 	 */
-	public boolean relocate(InvocationContext invocationContext, String name, Immoter immoter, Sync motionLock) throws InvocationException;
+	public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException;
 }

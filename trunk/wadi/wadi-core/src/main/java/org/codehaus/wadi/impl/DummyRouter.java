@@ -19,7 +19,7 @@ package org.codehaus.wadi.impl;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.RouterConfig;
 
@@ -55,7 +55,7 @@ public class DummyRouter implements Router {
 		return false;
 	}
 
-	public boolean reroute(InvocationContext invocationContext) {
+	public boolean reroute(Invocation invocation) {
 		return false;
 	}
 

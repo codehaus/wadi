@@ -58,7 +58,7 @@ public interface Router {
      */
     //public boolean canReroute();
 
-    boolean reroute(InvocationContext invocationContext);
+    boolean reroute(Invocation invocation);
 
     /**
      * Reroute to ourselves.

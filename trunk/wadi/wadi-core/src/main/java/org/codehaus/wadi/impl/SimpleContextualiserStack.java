@@ -42,7 +42,7 @@ import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
@@ -134,8 +134,8 @@ public class SimpleContextualiserStack implements Contextualiser {
 		// ready to rock !
 	}
 
-	public boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
-		return _memory.contextualise(invocationContext, id, immoter, motionLock, exclusiveOnly);
+	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+		return _memory.contextualise(invocation, id, immoter, motionLock, exclusiveOnly);
 	}
 
 	public Evicter getEvicter() {

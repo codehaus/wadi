@@ -129,6 +129,7 @@
           <!-- stop surefire from trying to run nested classes. -->
 	  <excludes>
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude>
+	    <exclude implementation="java.lang.String">**/Axis2SessionCreationTest.java</exclude>
 	    <exclude implementation="java.lang.String">**/Axis2SessionReplicationTest.java</exclude>
 	  </excludes>
 	    <argLine>-enableassertions -Xmx1024m</argLine>

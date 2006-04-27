@@ -52,6 +52,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.IrrecoverableException;
 import org.codehaus.wadi.ProxyingException;
 import org.codehaus.wadi.RecoverableException;
+import org.codehaus.wadi.web.WebInvocation;
 
 // My choice of proxy - still suboptimal - servlet spec imposes a very clumsy API
 // for copying the headers out of the HttpServletRequest (a proprietary solution
@@ -75,7 +76,7 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		super(sessionPathParamKey);
 	}
 	
-	protected void doProxy(InetSocketAddress location, WebInvocationContext context) throws ProxyingException {
+	protected void doProxy(InetSocketAddress location, WebInvocation context) throws ProxyingException {
 		HttpServletRequest req = context.getHreq();
 		HttpServletResponse res = context.getHres();
 		

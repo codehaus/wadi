@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2003-2006 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,15 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.test;
 
-/**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
-public interface PoolableInvocationWrapper {
+import javax.servlet.FilterChain;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.codehaus.wadi.web.WebInvocation;
 
-    void init(Invocation invocation, Context context);
-    void destroy();
-
+public class TestInvocation extends WebInvocation {
+    
+    public TestInvocation(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain) {
+        init(hreq, hres, chain);
+    }
+    
 }

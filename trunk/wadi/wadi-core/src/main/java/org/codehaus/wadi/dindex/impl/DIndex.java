@@ -35,7 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
@@ -526,8 +526,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		return _nodeName;
 	}
 
-	public 	boolean contextualise(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
-		return _config.contextualise(invocationContext, id, immoter, motionLock, exclusiveOnly);
+	public 	boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+		return _config.contextualise(invocation, id, immoter, motionLock, exclusiveOnly);
 	}
 
 	public Sync getInvocationLock(String name) {

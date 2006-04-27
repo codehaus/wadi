@@ -22,9 +22,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.RouterConfig;
+import org.codehaus.wadi.web.WebInvocation;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -86,8 +87,8 @@ public class JkRouter implements Router {
 		return true;
 	}
 
-	public boolean reroute(InvocationContext invocationContext) {
-		WebInvocationContext context = (WebInvocationContext) invocationContext;
+	public boolean reroute(Invocation invocation) {
+		WebInvocation context = (WebInvocation) invocation;
 		HttpServletRequest req = context.getHreq();
 		HttpServletResponse res = context.getHres();
 		String id=req.getRequestedSessionId();

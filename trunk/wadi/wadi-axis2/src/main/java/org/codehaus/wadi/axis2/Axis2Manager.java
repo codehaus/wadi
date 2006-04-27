@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright 2003-2006 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.axis2;
 
 import java.io.FileInputStream;
@@ -17,10 +33,6 @@ import org.codehaus.wadi.impl.StandardManager;
 
 // REQUIREMENTS:
 // Lifecycle - start/stop
-
-// ISSUES:
-// activate/passivateSession - not needed
-
 
 public class Axis2Manager implements SessionManager, ManagerConfig {
     
@@ -88,12 +100,22 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
         _log.info("activateSession("+key+") - ignoring");
     }
 
+    // called as an Axis2 invocation enters the container...
+    
     public void activateSession(String key) {
-        _log.info("activateSession("+key+") - ignoring");
+        Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
+        invocation.init(key);
+        _log.info("enter("+key+")");
+        _wadi.enter(invocation);
     }
 
+    // called as an Axis2 invocation leaves the container...
+    
     public void passivateSession(String key) {
-        _log.info("passivateSession("+key+") - ignoring");
+        Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
+        _wadi.leave(invocation);
+        _log.info("leave("+key+")");
+        invocation.clear();
     }
 
     // CheckInterval

@@ -21,9 +21,10 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
 import org.codehaus.wadi.Context;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
 import org.codehaus.wadi.WADIHttpSession;
+import org.codehaus.wadi.web.WebInvocation;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -39,8 +40,8 @@ public class StatefulHttpServletRequestWrapper extends HttpServletRequestWrapper
 		super(_dummy);
 	}
 
-	public void init(InvocationContext invocationContext, Context context) {
-		HttpServletRequest request = ((WebInvocationContext) invocationContext).getHreq();
+	public void init(Invocation invocation, Context context) {
+		HttpServletRequest request = ((WebInvocation) invocation).getHreq();
 		setRequest(request);
 		_session=context==null?null:((WADIHttpSession)context).getWrapper();
 	}

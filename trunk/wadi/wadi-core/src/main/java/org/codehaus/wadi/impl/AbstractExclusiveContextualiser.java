@@ -27,7 +27,7 @@ import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.EvicterConfig;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.InvocationContext;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Locker;
 import org.codehaus.wadi.Motable;
@@ -60,13 +60,13 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 	public Motable get(String id) {return (Motable)_map.get(id);}
 	
 	// TODO - sometime figure out how to make this a wrapper around AbstractChainedContextualiser.handle() instead of a replacement...
-	public boolean handle(InvocationContext invocationContext, String id, Immoter immoter, Sync motionLock) throws InvocationException {
+	public boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock) throws InvocationException {
 		Motable emotable=get(id);
 		if (emotable==null)
 			return false; // we cannot proceed without the session...
 		
 		if (immoter!=null) {
-			return promote(invocationContext, id, immoter, motionLock, emotable); // motionLock will be released here...
+			return promote(invocation, id, immoter, motionLock, emotable); // motionLock will be released here...
 		} else {
 			return false;
 		}
