@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.web;
 
+import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -66,8 +67,12 @@ public class WebInvocation implements Invocation {
 	    return hreq.getRequestedSessionId();   
     }
     
-    public void sendError(int code, String message) throws Exception {
-        hres.sendError(code, message); // TODO - should we allow custom error page ?
+    public void sendError(int code, String message) throws InvocationException {
+        try {
+            hres.sendError(code, message); // TODO - should we allow custom error page ?
+        } catch (IOException e) {
+            throw new InvocationException("could not return error to client - "+code+" : "+message, e);
+        }
     }
     
     public boolean getRelocatable() {

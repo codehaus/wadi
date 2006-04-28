@@ -26,7 +26,7 @@ public interface Invocation {
     
     void clear();
     String getKey();
-    void sendError(int code, String message) throws Exception; // a little web specific ?
+    void sendError(int code, String message) throws InvocationException; // a little web specific ?
     boolean getRelocatable();
     
     // old
