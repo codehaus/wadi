@@ -21,8 +21,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.PoolableInvocationWrapper;
+import org.codehaus.wadi.impl.StandardManager;
+import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 
-public class Axis2Invocation implements Invocation {
+public class Axis2Invocation implements Invocation, Runnable {
     
     protected final static Log _log=LogFactory.getLog(Invocation.class);
     protected final static ThreadLocal _threadLocalInstance=new ThreadLocal() {protected Object initialValue() {return new Axis2Invocation();}};
@@ -31,14 +33,65 @@ public class Axis2Invocation implements Invocation {
         return (Axis2Invocation)_threadLocalInstance.get();
     }
     
+    protected StandardManager _wadi;
     protected String _key;
+    protected Axis2Session _session;
     
-    public void init(String key) {
+    protected Rendezvous _rendezvous=new Rendezvous(2);
+    
+    public void init(StandardManager wadi, String key) {
+        _wadi=wadi;
         _key=key;
     }
+
+    public void setKey(String key) {
+        _key=key;
+    }
+
+    public void setSession(Axis2Session session) {
+        _session=session;
+    }
     
+    public Axis2Session getSession() {
+        return _session;
+    }
+
+    public Rendezvous getRendezvous() {
+        return _rendezvous;
+    }
+    
+    // Runnable
+        
+    public void run() {
+        // descend contextualiser stack
+        // rendezvous with Invocation thread (see invoke())
+        // wait for Invocation thread to run through to Axis2Manager.passivateSession()'
+        // rendezvous with it again
+        // ascend the contextualiser stack
+        try {
+            _wadi.around(this);
+        } catch (InvocationException e) {
+            _log.error(e); // FIXME - should be passed back to main thread...
+        }
+        
+        // arriving here :
+        // rendezvous with Invocation thread again, allowing it to continue out of container
+        try {
+            _log.info(Thread.currentThread().getName()+": Helper thread entering RV[3]");
+            _rendezvous.rendezvous(null);
+            _log.info(Thread.currentThread().getName()+": Helper thread leaving RV[3]");
+        } catch (InterruptedException e) {
+            _log.error(e);
+        }
+        // finish up...
+    }
+
+    // Invocation
+
     public void clear() {
+        _wadi=null;
         _key=null;
+        _rendezvous.restart();
     }
     
     public String getKey() {
@@ -53,17 +106,34 @@ public class Axis2Invocation implements Invocation {
         return false;
     }
     
-    // Invocation
-    
     public void invoke(PoolableInvocationWrapper wrapper) throws InvocationException {
         throw new UnsupportedOperationException("NYI");
     }
 
     public void invoke() throws InvocationException {
-        throw new UnsupportedOperationException("NYI");
-    }
+        Rendezvous rv=_rendezvous;
+        // we have just descended the contextualiser stack
+        // rendezvous with Invocation thread so that it may continue into the Container
+        try {
+            _log.info(Thread.currentThread().getName()+": Helper thread entering RV[1]");
+            rv.rendezvous(null);
+            _log.info(Thread.currentThread().getName()+": Helper thread leaving RV[1]");
+        } catch (InterruptedException e) {
+            _log.error(e);
+        }
+        // wait, whilst the Invocation thread traverses the container
+        // and hits the other side...
+        try {
+            _log.info(Thread.currentThread().getName()+": Helper thread entering RV[2]");
+            rv.rendezvous(null);
+            _log.info(Thread.currentThread().getName()+": Helper thread leaving RV[2]");
+        } catch (InterruptedException e) {
+            _log.error(e);
+        }
+        // continue up the other side of the contextualiser stack...
+    }   
 
     public boolean isProxiedInvocation() {
-        throw new UnsupportedOperationException("NYI");
+        return false;
     }
 }

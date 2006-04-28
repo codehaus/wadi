@@ -323,17 +323,8 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 		return System.currentTimeMillis()-_birthTime;
 	}
 
-	// Deal with incoming/outgoing invocations... - possibly taking over flow control
+	// Deal with incoming/outgoing invocations... - taking over flow control
     
-    public void enter(Invocation invocation) {
-        // move stuff from filter into here...
-    }
-
-    public void leave(Invocation invocation) {
-        // move stuff from filter into here...
-    }
-    
-
     public void around(Invocation invocation) throws InvocationException {
         String key=invocation.getKey();
         if (_log.isTraceEnabled()) _log.trace("potentially stateful request: "+key);
@@ -356,10 +347,10 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
     protected PoolableInvocationWrapperPool _pool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - init from _manager
 
     public void processStateless(Invocation invocation) throws InvocationException {
-        // are we accepting sessions ? - otherwise proxy to another node...
+        // are we accepting sessions ? - otherwise relocate to another node...
         // sync point - expensive, but will only hit sessionless requests...
         if (!_acceptingSessions.get()) {
-            // think about what to do here... proxy or error page ?
+            // think about what to do here... relocate invoacation or error page ?
             _log.warn("sessionless request has arived during shutdown - permitting");
             // TODO
         }
