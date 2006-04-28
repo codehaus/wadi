@@ -22,13 +22,14 @@ import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.impl.StandardManager;
+import org.codehaus.wadi.impl.StatefulHttpServletRequestWrapper;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 
 public class Axis2Invocation implements Invocation, Runnable {
     
     protected final static Log _log=LogFactory.getLog(Invocation.class);
     protected final static ThreadLocal _threadLocalInstance=new ThreadLocal() {protected Object initialValue() {return new Axis2Invocation();}};
-
+    
     public static Axis2Invocation getThreadLocalInstance() {
         return (Axis2Invocation)_threadLocalInstance.get();
     }
@@ -43,11 +44,11 @@ public class Axis2Invocation implements Invocation, Runnable {
         _wadi=wadi;
         _key=key;
     }
-
+    
     public void setKey(String key) {
         _key=key;
     }
-
+    
     public void setSession(Axis2Session session) {
         _session=session;
     }
@@ -55,13 +56,13 @@ public class Axis2Invocation implements Invocation, Runnable {
     public Axis2Session getSession() {
         return _session;
     }
-
+    
     public Rendezvous getRendezvous() {
         return _rendezvous;
     }
     
     // Runnable
-        
+    
     public void run() {
         // descend contextualiser stack
         // rendezvous with Invocation thread (see invoke())
@@ -77,17 +78,17 @@ public class Axis2Invocation implements Invocation, Runnable {
         // arriving here :
         // rendezvous with Invocation thread again, allowing it to continue out of container
         try {
-            _log.info(Thread.currentThread().getName()+": Helper thread entering RV[3]");
+            _log.trace(Thread.currentThread().getName()+": Helper thread entering RV[3]");
             _rendezvous.rendezvous(null);
-            _log.info(Thread.currentThread().getName()+": Helper thread leaving RV[3]");
+            _log.trace(Thread.currentThread().getName()+": Helper thread leaving RV[3]");
         } catch (InterruptedException e) {
             _log.error(e);
         }
         // finish up...
     }
-
+    
     // Invocation
-
+    
     public void clear() {
         _wadi=null;
         _key=null;
@@ -106,34 +107,41 @@ public class Axis2Invocation implements Invocation, Runnable {
         return false;
     }
     
+    // we'll just reuse the way that this is done for webcontainers - but, rather than actually wrap our non-existant
+    // request with this wrapper, we'll just take the session from it and make that available for the duration of the
+    // invocation....
     public void invoke(PoolableInvocationWrapper wrapper) throws InvocationException {
-        throw new UnsupportedOperationException("NYI");
+        StatefulHttpServletRequestWrapper w=(StatefulHttpServletRequestWrapper)wrapper; // hacky
+        _session=(Axis2Session)w.getSession();
+        invoke();
+        _session=null;
     }
-
+    
     public void invoke() throws InvocationException {
         Rendezvous rv=_rendezvous;
         // we have just descended the contextualiser stack
         // rendezvous with Invocation thread so that it may continue into the Container
         try {
-            _log.info(Thread.currentThread().getName()+": Helper thread entering RV[1]");
+            _log.trace(Thread.currentThread().getName()+": Helper thread entering RV[1]");
             rv.rendezvous(null);
-            _log.info(Thread.currentThread().getName()+": Helper thread leaving RV[1]");
+            _log.trace(Thread.currentThread().getName()+": Helper thread leaving RV[1]");
         } catch (InterruptedException e) {
             _log.error(e);
         }
         // wait, whilst the Invocation thread traverses the container
         // and hits the other side...
         try {
-            _log.info(Thread.currentThread().getName()+": Helper thread entering RV[2]");
+            _log.trace(Thread.currentThread().getName()+": Helper thread entering RV[2]");
             rv.rendezvous(null);
-            _log.info(Thread.currentThread().getName()+": Helper thread leaving RV[2]");
+            _log.trace(Thread.currentThread().getName()+": Helper thread leaving RV[2]");
         } catch (InterruptedException e) {
             _log.error(e);
         }
         // continue up the other side of the contextualiser stack...
     }   
-
+    
     public boolean isProxiedInvocation() {
         return false;
     }
+    
 }

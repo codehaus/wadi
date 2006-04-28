@@ -33,9 +33,6 @@ import org.codehaus.wadi.impl.StandardManager;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 
-// REQUIREMENTS:
-// Lifecycle - start/stop
-
 public class Axis2Manager implements SessionManager, ManagerConfig {
     
     protected final Log _log=LogFactory.getLog(getClass());
@@ -45,14 +42,15 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
     // integrated
     protected int _maxInactiveInterval; // integrated
     protected StandardManager _wadi;
-
+    
     // still to integrate
-    protected SessionIdFactory _idFactory; // can we integrate this somehow ?
-    protected long _checkInterval; // needs integration with Evicter ?
-    protected int _maxActiveSessions; // needs integration with Evicter ?
+    protected SessionIdFactory _idFactory; // can we integrate this somehow ? - wrap up in our own API and pass through to Spring via sysprop
+    protected long _checkInterval; // needs integration with Evicter ? - pass through to Spring via sysprop
+    protected int _maxActiveSessions; // needs integration with Evicter ? - pass through to Spring via sysprop
     
     
     public void start() throws Exception {
+        _log.debug("starting...");
         try {
             // we should probably acquire this through some backptr from the container...
             String path=System.getProperty("axis2.repo")+"/server/wadi-axis2.xml";
@@ -61,43 +59,46 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
+        
         _wadi.setMaxInactiveInterval(_maxInactiveInterval);
         _wadi.init(this);
         _wadi.start();
+        _log.debug("...started");
     }
-        
+    
     public void stop() throws Exception {
+        _log.debug("stopping...");
         _wadi.stop();   
+        _log.debug("...stopped");
     }
-
+    
     public Axis2Manager() throws Exception {
         start();
     }
     
     // WADI ManagerConfig
-
+    
     public ServletContext getServletContext() {
-        return null; // Not relevant to Axis2
+        return null; // Not relevant to Axis2 - this should not be on the Manager interface
     }
-
+    
     public void callback(StandardManager arg0) {
-        _log.info("callback called");
+        _log.debug("callback()");
     }
     
     // Axis2 SessionManager
-
+    
     // Session lifecycle
     
     public Session findSession(String key) {
+        _log.debug("find("+key+")");
         Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
         assert(key.equals(invocation.getKey()));
-        // retrieve session from Invocation...
-        // hmmm what do we do here ?
-        throw new UnsupportedOperationException("NYI");
+        return invocation.getSession();
     }
-
+    
     public Session createSession() {
+        _log.debug("create()");
         Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
         org.codehaus.wadi.Session session=_wadi.create();
         invocation.setKey(session.getId());
@@ -105,27 +106,31 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
         WADIHttpSession httpSession = (WADIHttpSession)session;
         return (Axis2Session)httpSession.getWrapper();
     }
-
-    public void release(Session key) {
-        _log.info("activateSession("+key+") - ignoring");
+    
+    // Rajith might want to consider moving his invalidate method onto the Session itself...
+    public void release(Session session) {
+        _log.debug("invalidate("+session.getId()+")");
         Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
-        assert(key.equals(invocation.getKey()));
-        // assume that session must have beem retrieved at least once...
-        invocation.getSession().invalidate();
+        // assume that session must have beem retrieved at least once... 
+        // and confirm that it is the correct one for this Thread/Invocation
+        assert(session==invocation.getSession());
+        invocation.setSession(null);
+        session.invalidate();
     }
-
+    
+    // Enter/Leave (Activate/Passivate):
     // this is nasty - we need to hold up current thread whilst we descend to bottom of Contextualiser stack,
     // then when Invocation.invoke() is called, we need to run the current Thread through the container. As it
     // leaves the container, we need to hold it up again as we ascend the Contextualiser stack, then wake it up
     // and allow it to pass out of the Container - yikes ! And if anything in WADI is counting on Thread identity
     // being the same throughout the whole Invocation, we may hit trouble... - alternatively, we can refactor a lot of WADI...
-
+    
     // called as an Axis2 invocation enters the container...
     
     public void activateSession(String key) {
         Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
         invocation.init(_wadi, key);
-        _log.info("enter("+key+")");
+        _log.debug("enter("+key+")");
         
         // start Helper thread ...
         try {
@@ -133,38 +138,38 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
         } catch (InterruptedException e) {
             _log.error(e); // FIXME
         }
-        // ... and wait on rendezvous...
+        // ... and wait for it to descend contextualiser stack...
         try {
-            _log.info(Thread.currentThread().getName()+": Invocation thread entering RV[1]");
+            _log.trace(Thread.currentThread().getName()+": Invocation thread entering RV[1]");
             invocation.getRendezvous().rendezvous(null);
-            _log.info(Thread.currentThread().getName()+": Invocation thread leaving RV[1]");
+            _log.trace(Thread.currentThread().getName()+": Invocation thread leaving RV[1]");
         } catch (InterruptedException e) {
             _log.error(e);
         }
         // ...when Helper thread hits bottom of contextualiser stack,
         // we wake up and continue journey into container...
     }
-
+    
     // called as an Axis2 invocation leaves the container...
     
     public void passivateSession(String key) {
         Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
-        _log.info("leave("+key+")");
+        _log.debug("leave("+key+")");
         Rendezvous rv=invocation.getRendezvous();
         // Invocation thread has just traversed the container
         // rendezvous with Helper thread so that it may start to ascend contextualiser stack
         try {
-            _log.info(Thread.currentThread().getName()+": Invocation thread entering RV[2]");
+            _log.trace(Thread.currentThread().getName()+": Invocation thread entering RV[2]");
             rv.rendezvous(null);
-            _log.info(Thread.currentThread().getName()+": Invocation thread leaving RV[2]");
+            _log.trace(Thread.currentThread().getName()+": Invocation thread leaving RV[2]");
         } catch (InterruptedException e) {
             _log.error(e);
         }
         // Rendezvous with it again at the top of the contextualiser stack...
         try {
-            _log.info(Thread.currentThread().getName()+": Invocation thread entering RV[3]");
+            _log.trace(Thread.currentThread().getName()+": Invocation thread entering RV[3]");
             rv.rendezvous(null);
-            _log.info(Thread.currentThread().getName()+": Invocation thread leaving RV[3]");
+            _log.trace(Thread.currentThread().getName()+": Invocation thread leaving RV[3]");
         } catch (InterruptedException e) {
             _log.error(e);
         }
@@ -173,37 +178,37 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
         invocation.clear();
         // then continue on out of the container...
     }
-
+    
     // CheckInterval
     
     public long getCheckInterval() {
         return _checkInterval;
     }
-
+    
     public void setCheckInterval(int checkInterval) {
         _checkInterval=checkInterval;
     }
-
+    
     // DefaultMaxInactiveInterval
     
     public int getDefaultMaxInactiveInterval() {
         return _maxInactiveInterval;
     }
-
+    
     public void setDefaultMaxInactiveInterval(int maxInactiveInterval) {
         _maxInactiveInterval=maxInactiveInterval;
     }
-
+    
     // MaxActiveSessions
     
     public int getMaxActiveSessions() {
         return _maxActiveSessions;
     }
-
+    
     public void setMaxActiveSessions(int maxActiveSessions) {
         _maxActiveSessions=maxActiveSessions;
     }
-
+    
     // SessionIdFactory
     
     public SessionIdFactory getSessionIdFactory() {
@@ -213,15 +218,21 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
     public void setSessionIdFactory(SessionIdFactory idFactory) {
         _idFactory=idFactory;
     }
-
+    
     // Sessions
     
+    /*
+     * @deprecated
+     */
     public Hashtable getSessions() {
         throw new UnsupportedOperationException("NYI");
     }
-
+    
+    /*
+     * @deprecated
+     */
     public void setSessions(Hashtable arg0) {
         throw new UnsupportedOperationException("NYI");
     }
-
+    
 }
