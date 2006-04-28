@@ -78,7 +78,7 @@ import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.test.EtherEmoter;
-import org.codehaus.wadi.web.HTTPProxiedLocation;
+import org.codehaus.wadi.web.WebProxiedLocation;
 
 /**
  * Test the shutdown of a Contextualiser stack as live sessions are distributed to other nodes in the cluster
@@ -125,7 +125,7 @@ public abstract class AbstractTestCluster extends TestCase {
 			_clusterName=clusterName;
 			_nodeName=nodeName;
 			_dispatcher=createDispatcher(_clusterName, _nodeName, 5000L);
-			ProxiedLocation proxiedLocation= new HTTPProxiedLocation(new InetSocketAddress("localhost", 8080));
+			ProxiedLocation proxiedLocation= new WebProxiedLocation(new InetSocketAddress("localhost", 8080));
 			InvocationProxy proxy=new StandardHttpProxy("jsessionid");
 			//_relocater=new SwitchableRelocationStrategy();
 			_relocater=new DummyRelocater();

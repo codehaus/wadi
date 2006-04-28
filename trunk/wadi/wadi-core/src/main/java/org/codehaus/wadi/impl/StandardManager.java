@@ -30,15 +30,17 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.AttributesFactory;
-import org.codehaus.wadi.Chain;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
+import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.PoolableInvocationWrapper;
+import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.RouterConfig;
 import org.codehaus.wadi.Session;
@@ -327,12 +329,47 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
         // move stuff from filter into here...
     }
 
-    public void enter(Invocation invocation, Chain chain) {
-        // move stuff from filter into here...
-    }
-    
     public void leave(Invocation invocation) {
         // move stuff from filter into here...
     }
     
+
+    public void around(Invocation invocation) throws Exception {
+        String key=invocation.getKey();
+        if (_log.isTraceEnabled()) _log.trace("potentially stateful request: "+key);
+        
+        if (key==null) {
+            processStateless(invocation);
+        } else {
+            // already associated with a session...
+            String name=_router.strip(key); // strip off any routing info...
+            if (!_contextualiser.contextualise(invocation, name, null, null, false)) {
+                if (_log.isErrorEnabled()) _log.error("could not acquire session: " + name);
+                if (_errorIfSessionNotAcquired) // send the client a 503...
+                    invocation.sendError(503, "session "+name+" is not known");
+                else // process request without session - it may create a new one...
+                    processStateless(invocation);
+            }
+        }
+    }
+
+    protected PoolableInvocationWrapperPool _pool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - init from _manager
+
+    public void processStateless(Invocation invocation) throws InvocationException {
+        // are we accepting sessions ? - otherwise proxy to another node...
+        // sync point - expensive, but will only hit sessionless requests...
+        if (!_acceptingSessions.get()) {
+            // think about what to do here... proxy or error page ?
+            _log.warn("sessionless request has arived during shutdown - permitting");
+            // TODO
+        }
+
+        // no session yet - but may initiate one...
+        PoolableInvocationWrapper wrapper=_pool.take();
+        wrapper.init(invocation, null);
+        invocation.invoke(wrapper);
+        wrapper.destroy();
+        _pool.put(wrapper);
+    }
+
 }

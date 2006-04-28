@@ -23,10 +23,10 @@ import org.codehaus.wadi.ProxiedLocation;
 /**
  * @version $Revision$
  */
-public class HTTPProxiedLocation implements ProxiedLocation {
+public class WebProxiedLocation implements ProxiedLocation {
 	private final InetSocketAddress address;
 	
-	public HTTPProxiedLocation(InetSocketAddress address) {
+	public WebProxiedLocation(InetSocketAddress address) {
 		this.address = address;
 	}
 	

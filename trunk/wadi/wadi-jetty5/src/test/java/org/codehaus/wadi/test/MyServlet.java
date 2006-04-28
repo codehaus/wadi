@@ -68,7 +68,7 @@ import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.StatelessContextualiser;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.web.HTTPProxiedLocation;
+import org.codehaus.wadi.web.WebProxiedLocation;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -117,7 +117,7 @@ public class MyServlet implements Servlet {
 		_memoryMap=new HashMap();
 		_serialContextualiser=new SerialContextualiser(_statelessContextualiser, _collapser, _memoryMap);
 		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamer(), contextPool, new MyDummyHttpServletRequestWrapperPool());
-		_proxiedLocation=new HTTPProxiedLocation(httpAddress);
+		_proxiedLocation=new WebProxiedLocation(httpAddress);
 		_httpProxy=httpProxy;
 		PartitionManager partitionManager=new DummyPartitionManager(24);
 		_manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _proxiedLocation, _httpProxy, dispatcher, partitionManager, _collapser);

@@ -66,7 +66,7 @@ import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
-import org.codehaus.wadi.web.HTTPProxiedLocation;
+import org.codehaus.wadi.web.WebProxiedLocation;
 
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -146,7 +146,7 @@ public abstract class AbstractTestEvicters extends TestCase {
 		SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
 		SessionIdFactory idFactory=new TomcatSessionIdFactory();
 		InvocationProxy proxy=new StandardHttpProxy("jsessionid");
-		ProxiedLocation location= new HTTPProxiedLocation(new InetSocketAddress(InetAddress.getLocalHost(), 8888));
+		ProxiedLocation location= new WebProxiedLocation(new InetSocketAddress(InetAddress.getLocalHost(), 8888));
 		String nodeName="node0";
 		PartitionManager partitionManager=new DummyPartitionManager(24);
 		Dispatcher dispatcher=createDispatcher(_clusterName, nodeName, 5000L);

@@ -104,7 +104,7 @@ import org.codehaus.wadi.impl.StandardValueFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.WebHybridRelocater;
-import org.codehaus.wadi.web.HTTPProxiedLocation;
+import org.codehaus.wadi.web.WebProxiedLocation;
 import org.codehaus.wadi.web.WebInvocation;
 
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
@@ -136,7 +136,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		_log.info("starting ...");
-		_location=new HTTPProxiedLocation(
+		_location=new WebProxiedLocation(
 				new InetSocketAddress(InetAddress.getLocalHost(), 8888));
 		_store.init();
 		_dir.mkdir();

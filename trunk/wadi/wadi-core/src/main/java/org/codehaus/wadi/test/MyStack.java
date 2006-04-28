@@ -66,7 +66,7 @@ import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.WebHybridRelocater;
-import org.codehaus.wadi.web.HTTPProxiedLocation;
+import org.codehaus.wadi.web.WebProxiedLocation;
 
 public class MyStack {
 
@@ -117,7 +117,7 @@ public class MyStack {
       SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
       SessionIdFactory idFactory=new TomcatSessionIdFactory();
       ReplicaterFactory replicaterfactory=new MemoryReplicaterFactory(numPartitions);
-      ProxiedLocation location = new HTTPProxiedLocation(new InetSocketAddress("localhost", 8080));
+      ProxiedLocation location = new WebProxiedLocation(new InetSocketAddress("localhost", 8080));
       InvocationProxy proxy=new StandardHttpProxy("jsessionid");
       //String clusterUri="peer://wadi";
       //String clusterUri="tcp://localhost:61616";
