@@ -334,7 +334,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
     }
     
 
-    public void around(Invocation invocation) throws Exception {
+    public void around(Invocation invocation) throws InvocationException {
         String key=invocation.getKey();
         if (_log.isTraceEnabled()) _log.trace("potentially stateful request: "+key);
         

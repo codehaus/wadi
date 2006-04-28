@@ -72,13 +72,6 @@ public class Filter implements javax.servlet.Filter {
                 } else {
                     throw new ServletException(e);
                 }
-            } catch (IOException e) {
-                throw e;   
-            } catch (ServletException e) {
-                throw e;
-            } catch (Exception e) {
-                _log.error("unexpected exception", e);
-                throw new ServletException(e);
             }
         } else // this is not HTTP - therefore it is stateless - not for us...
             filterChain.doFilter(request, response);
