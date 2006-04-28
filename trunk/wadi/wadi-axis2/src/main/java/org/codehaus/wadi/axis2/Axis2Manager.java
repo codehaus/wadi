@@ -30,6 +30,8 @@ import org.codehaus.wadi.WADIHttpSession;
 import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.impl.StandardManager;
+import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 
 // REQUIREMENTS:
 // Lifecycle - start/stop
@@ -38,7 +40,8 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
     
     protected final Log _log=LogFactory.getLog(getClass());
     protected final Axis2SessionWrapperFactory _wrapperFactory=new Axis2SessionWrapperFactory();
-
+    protected final PooledExecutor _pool=new PooledExecutor();
+    
     // integrated
     protected int _maxInactiveInterval; // integrated
     protected StandardManager _wadi;
@@ -86,36 +89,89 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
 
     // Session lifecycle
     
-    public Session findSession(String arg0) {
+    public Session findSession(String key) {
+        Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
+        assert(key.equals(invocation.getKey()));
+        // retrieve session from Invocation...
+        // hmmm what do we do here ?
         throw new UnsupportedOperationException("NYI");
     }
 
     public Session createSession() {
-        org.codehaus.wadi.Session session = _wadi.create();
+        Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
+        org.codehaus.wadi.Session session=_wadi.create();
+        invocation.setKey(session.getId());
+        invocation.setSession((Axis2Session)session);
         WADIHttpSession httpSession = (WADIHttpSession)session;
         return (Axis2Session)httpSession.getWrapper();
     }
 
     public void release(Session key) {
         _log.info("activateSession("+key+") - ignoring");
+        Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
+        assert(key.equals(invocation.getKey()));
+        // assume that session must have beem retrieved at least once...
+        invocation.getSession().invalidate();
     }
+
+    // this is nasty - we need to hold up current thread whilst we descend to bottom of Contextualiser stack,
+    // then when Invocation.invoke() is called, we need to run the current Thread through the container. As it
+    // leaves the container, we need to hold it up again as we ascend the Contextualiser stack, then wake it up
+    // and allow it to pass out of the Container - yikes ! And if anything in WADI is counting on Thread identity
+    // being the same throughout the whole Invocation, we may hit trouble... - alternatively, we can refactor a lot of WADI...
 
     // called as an Axis2 invocation enters the container...
     
     public void activateSession(String key) {
         Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
-        invocation.init(key);
+        invocation.init(_wadi, key);
         _log.info("enter("+key+")");
-        _wadi.enter(invocation);
+        
+        // start Helper thread ...
+        try {
+            _pool.execute(invocation);
+        } catch (InterruptedException e) {
+            _log.error(e); // FIXME
+        }
+        // ... and wait on rendezvous...
+        try {
+            _log.info(Thread.currentThread().getName()+": Invocation thread entering RV[1]");
+            invocation.getRendezvous().rendezvous(null);
+            _log.info(Thread.currentThread().getName()+": Invocation thread leaving RV[1]");
+        } catch (InterruptedException e) {
+            _log.error(e);
+        }
+        // ...when Helper thread hits bottom of contextualiser stack,
+        // we wake up and continue journey into container...
     }
 
     // called as an Axis2 invocation leaves the container...
     
     public void passivateSession(String key) {
         Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
-        _wadi.leave(invocation);
         _log.info("leave("+key+")");
+        Rendezvous rv=invocation.getRendezvous();
+        // Invocation thread has just traversed the container
+        // rendezvous with Helper thread so that it may start to ascend contextualiser stack
+        try {
+            _log.info(Thread.currentThread().getName()+": Invocation thread entering RV[2]");
+            rv.rendezvous(null);
+            _log.info(Thread.currentThread().getName()+": Invocation thread leaving RV[2]");
+        } catch (InterruptedException e) {
+            _log.error(e);
+        }
+        // Rendezvous with it again at the top of the contextualiser stack...
+        try {
+            _log.info(Thread.currentThread().getName()+": Invocation thread entering RV[3]");
+            rv.rendezvous(null);
+            _log.info(Thread.currentThread().getName()+": Invocation thread leaving RV[3]");
+        } catch (InterruptedException e) {
+            _log.error(e);
+        }
+        
+        // tidy up:
         invocation.clear();
+        // then continue on out of the container...
     }
 
     // CheckInterval
