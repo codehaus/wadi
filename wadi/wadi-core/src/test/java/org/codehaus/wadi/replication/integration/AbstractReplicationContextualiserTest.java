@@ -63,7 +63,7 @@ import org.codehaus.wadi.replication.manager.basic.SessionReplicationManager;
 import org.codehaus.wadi.replication.storage.basic.BasicReplicaStorageFactory;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 import org.codehaus.wadi.test.TestInvocation;
-import org.codehaus.wadi.web.HTTPProxiedLocation;
+import org.codehaus.wadi.web.WebProxiedLocation;
 
 /**
  * 
@@ -174,7 +174,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
                 streamer,
                 true,
                 new ReplicaterAdapterFactory(replicationManager),
-                new HTTPProxiedLocation(new InetSocketAddress("localhost", 8080)),
+                new WebProxiedLocation(new InetSocketAddress("localhost", 8080)),
                 new StandardHttpProxy("jsessionid"),
                 dispatcher,
                 new DummyPartitionManager(72),

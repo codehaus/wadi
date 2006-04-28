@@ -78,7 +78,7 @@ import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.test.TestInvocation;
-import org.codehaus.wadi.web.HTTPProxiedLocation;
+import org.codehaus.wadi.web.WebProxiedLocation;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -147,7 +147,7 @@ public abstract class AbstractTestReplication extends TestCase {
 		SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
 		SessionIdFactory idFactory=new TomcatSessionIdFactory();
 		ReplicaterFactory replicaterfactory=new MemoryReplicaterFactory(numPartitions);
-		ProxiedLocation location = new HTTPProxiedLocation(new InetSocketAddress("localhost", 8080));
+		ProxiedLocation location = new WebProxiedLocation(new InetSocketAddress("localhost", 8080));
 		InvocationProxy proxy=new StandardHttpProxy("jsessionid");
 		PartitionManager partitionManager=new DummyPartitionManager(numPartitions);
 		ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy, dispatcher, partitionManager, collapser);
