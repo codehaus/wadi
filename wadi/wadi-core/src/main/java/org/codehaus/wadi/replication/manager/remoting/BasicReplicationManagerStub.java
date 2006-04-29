@@ -71,8 +71,10 @@ public class BasicReplicationManagerStub implements ReplicationManager {
         ReplicaInfo info = null;
         try {
             Message message = dispatcher.exchangeSend(from, to, command, ReleasePrimaryRequest.DEFAULT_TWO_WAY_TIMEOUT);
-            ReleasePrimaryResult result = (ReleasePrimaryResult) message.getPayload();
-            info = (ReplicaInfo) result.getPayload();
+            if (null != message) {
+                ReleasePrimaryResult result = (ReleasePrimaryResult) message.getPayload();
+                info = (ReplicaInfo) result.getPayload();
+            }
         } catch (MessageExchangeException e) {
         }
         
