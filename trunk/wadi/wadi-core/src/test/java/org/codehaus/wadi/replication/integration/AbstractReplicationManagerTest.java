@@ -16,13 +16,13 @@
 package org.codehaus.wadi.replication.integration;
 
 import junit.framework.TestCase;
-
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.manager.basic.BasicReplicationManagerFactory;
+import org.codehaus.wadi.replication.manager.basic.SyncReplicationManagerFactory;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
 import org.codehaus.wadi.replication.storage.basic.BasicReplicaStorageFactory;
@@ -30,7 +30,7 @@ import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 
 public abstract class AbstractReplicationManagerTest extends TestCase {
     private static final String CLUSTER_NAME = "CLUSTER";
-    private static final int TEMPO = 200;
+    private static final int TEMPO = 1000;
 
     private NodeInfo nodeInfo1;
     private Dispatcher dispatcher1;
@@ -145,7 +145,7 @@ public abstract class AbstractReplicationManagerTest extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        BasicReplicationManagerFactory managerFactory = new BasicReplicationManagerFactory();
+        BasicReplicationManagerFactory managerFactory = new SyncReplicationManagerFactory();
         ReplicaStorageFactory storageFactory = new BasicReplicaStorageFactory();
 
         nodeInfo1 = new NodeInfo("node1");
