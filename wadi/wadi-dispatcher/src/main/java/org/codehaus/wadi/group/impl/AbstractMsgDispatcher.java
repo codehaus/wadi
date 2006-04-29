@@ -28,8 +28,6 @@ abstract class AbstractMsgDispatcher implements ServiceEndpoint {
     protected final Dispatcher _dispatcher;
     private final Class _type;
 
-    private int _count;
-
     public AbstractMsgDispatcher(Dispatcher dispatcher, Class type) {
         _dispatcher = dispatcher;
         _type = type;
@@ -41,18 +39,6 @@ abstract class AbstractMsgDispatcher implements ServiceEndpoint {
             return false;
         }
         return canAcceptClass(payload.getClass());
-    }
-
-    public void incCount() {
-        _count++;
-    }
-
-    public void decCount() {
-        _count--;
-    }
-
-    public synchronized int getCount() {
-        return _count;
     }
 
     public void dispose(int nbAttemp, long delayMillis) {
