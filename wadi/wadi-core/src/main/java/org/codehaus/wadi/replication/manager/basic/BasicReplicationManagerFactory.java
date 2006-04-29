@@ -38,7 +38,7 @@ public class BasicReplicationManagerFactory implements ReplicationManagerFactory
     public ReplicationManager factory(Dispatcher dispatcher, 
             ReplicaStorageFactory replicaStoragefactory,
             BackingStrategyFactory backingStrategyFactory) {
-        NodeInfo nodeInfo = new NodeInfo(dispatcher.getNodeName());
+        NodeInfo nodeInfo = new NodeInfo(dispatcher.getPeerName());
         
         BackingStrategy backingStrategy = backingStrategyFactory.factory();
         ReplicaStorage storage = replicaStoragefactory.factory(dispatcher);

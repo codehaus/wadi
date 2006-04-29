@@ -20,19 +20,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-
-import javax.jms.Destination;
-
-import org.apache.activecluster.Cluster;
-import org.apache.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.CoordinatorConfig;
 import org.codehaus.wadi.dindex.messages.PartitionEvacuationResponse;
 import org.codehaus.wadi.dindex.messages.PartitionTransferCommand;
+import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
-
 import EDU.oswego.cs.dl.util.concurrent.Slot;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
@@ -53,7 +51,7 @@ public class Coordinator implements Runnable {
 	protected final CoordinatorConfig _config;
 	protected final Cluster _cluster;
 	protected final Dispatcher _dispatcher;
-	protected final Node _localNode;
+	protected final Peer _localNode;
 	protected final int _numItems;
 	protected final long _inactiveTime;
 
@@ -61,13 +59,13 @@ public class Coordinator implements Runnable {
 		_config=config;
 		_cluster=_config.getCluster();
 		_dispatcher=_config.getDispatcher();
-		_localNode=_cluster.getLocalNode();
+		_localNode=_dispatcher.getLocalPeer();
 		_numItems=_config.getNumPartitions();
 		_inactiveTime=_config.getInactiveTime();
 	}
 
 	protected Thread _thread;
-	protected Node[] _remoteNodes;
+	protected Peer[] _remoteNodes;
 
 
 	public synchronized void start() throws Exception {
@@ -111,19 +109,19 @@ public class Coordinator implements Runnable {
 		int failures=0;
 		try {
 
-			Map nodeMap=_cluster.getNodes();
+			Map nodeMap=_cluster.getPeers();
 
 			Collection stayingNodes=nodeMap.values();
 			synchronized (stayingNodes) {stayingNodes=new ArrayList(stayingNodes);} // snapshot
-			stayingNodes.add(_cluster.getLocalNode());
+			stayingNodes.add(_dispatcher.getLocalPeer());
 
 			Collection l=_config.getLeavers();
 			synchronized (l) {l=new ArrayList(l);} // snapshot
 
 			Collection leavingNodes=new ArrayList();
 			for (Iterator i=l.iterator(); i.hasNext(); ) {
-				Destination d=(Destination)i.next();
-				Node leaver=getNode(d);
+				Address d=(Address)i.next();
+				Peer leaver=getPeer(d);
 				if (leaver!=null) {
 					leavingNodes.add(leaver);
 					stayingNodes.remove(leaver);
@@ -138,13 +136,13 @@ public class Coordinator implements Runnable {
 			printNodes(leavingNodes);
 			_log.trace("--------");
 
-			Node [] leaving=(Node[])leavingNodes.toArray(new Node[leavingNodes.size()]);
+			Peer [] leaving=(Peer[])leavingNodes.toArray(new Peer[leavingNodes.size()]);
 
 			if (stayingNodes.size()==0) {
 				_log.warn("we are the last node - no need to rebalance cluster");
 			} else {
 
-				Node [] living=(Node[])stayingNodes.toArray(new Node[stayingNodes.size()]);
+				Peer [] living=(Peer[])stayingNodes.toArray(new Peer[stayingNodes.size()]);
 
 				_config.regenerateMissingPartitions(living, leaving);
 
@@ -190,15 +188,22 @@ public class Coordinator implements Runnable {
 			// send EvacuationResponses to each leaving node... - hmmm....
 			Collection left=_config.getLeft();
 			for (int i=0; i<leaving.length; i++) {
-				Node node=leaving[i];
-				if (_log.isTraceEnabled()) _log.trace("sending evacuation response to: "+_dispatcher.getNodeName(node.getDestination()));
-				if (!left.contains(node.getDestination())) {
+				Peer node=leaving[i];
+				if (_log.isTraceEnabled()) _log.trace("sending evacuation response to: "+_dispatcher.getPeerName(node.getAddress()));
+				if (!left.contains(node.getAddress())) {
 					PartitionEvacuationResponse response=new PartitionEvacuationResponse();
-					if (!_dispatcher.reply(_cluster.getLocalNode().getDestination(), node.getDestination(), node.getName(), response)) {
-						if (_log.isErrorEnabled()) _log.error("problem sending EvacuationResponse to "+DIndex.getNodeName(node));
-						failures++;
-					}
-					left.add(node.getDestination());
+                    try {
+                        _dispatcher.reply(_dispatcher.getLocalPeer().getAddress(), 
+                                        node.getAddress(), 
+                                        node.getName(), 
+                                        response);
+                    } catch (MessageExchangeException e) {
+                        if (_log.isErrorEnabled()) {
+                            _log.error("problem sending EvacuationResponse to "+DIndex.getNodeName(node));
+                        }
+                        failures++;
+                    }
+					left.add(node.getAddress());
 				}
 			}
 
@@ -229,23 +234,30 @@ public class Coordinator implements Runnable {
 						break;
 					}
 					if (producer._deviation>=consumer._deviation) {
-						transfers.add(new PartitionTransfer(consumer._node.getDestination(), DIndex.getNodeName(consumer._node), consumer._deviation));
+						transfers.add(new PartitionTransfer(consumer._node.getAddress(), DIndex.getNodeName(consumer._node), consumer._deviation));
 						producer._deviation-=consumer._deviation;
 						consumer._deviation=0;
 						consumer=null;
 					} else {
-						transfers.add(new PartitionTransfer(consumer._node.getDestination(), DIndex.getNodeName(consumer._node), producer._deviation));
+						transfers.add(new PartitionTransfer(consumer._node.getAddress(), DIndex.getNodeName(consumer._node), producer._deviation));
 						consumer._deviation-=producer._deviation;
 						producer._deviation=0;
 					}
 			}
 
-			PartitionTransferCommand command=new PartitionTransferCommand((PartitionTransfer[])transfers.toArray(new PartitionTransfer[transfers.size()]));
-			quipu.increment();
-			if (_log.isTraceEnabled()) _log.trace("sending plan to: "+_dispatcher.getNodeName(producer._node.getDestination()));
-			if (!_dispatcher.send(_cluster.getLocalNode().getDestination(), producer._node.getDestination(), correlationId, command)) {
-				_log.error("problem sending transfer command");
-			}
+            if (0 < transfers.size()) {
+                PartitionTransferCommand command = new PartitionTransferCommand((PartitionTransfer[])transfers.toArray(new PartitionTransfer[transfers.size()]));
+                quipu.increment();
+                if (_log.isTraceEnabled()) {
+                    _log.trace("sending plan to: "+_dispatcher.getPeerName(producer._node.getAddress()));
+                }
+                try {
+                    _dispatcher.send(_dispatcher.getLocalPeer().getAddress(), producer._node.getAddress(), correlationId, command);
+                } catch (MessageExchangeException e) {
+                    _log.error("problem sending transfer command", e);
+                }
+            }
+            
 		}
 		quipu.decrement(); // remove safety margin
 	}
@@ -253,11 +265,11 @@ public class Coordinator implements Runnable {
 	protected int printNodes(Collection nodes) {
 		int total=0;
 		for (Iterator i=nodes.iterator(); i.hasNext(); )
-			total+=printNode((Node)i.next());
+			total+=printNode((Peer)i.next());
 		return total;
 	}
 
-	protected void printNodes(Node[] living, Node[] leaving) {
+	protected void printNodes(Peer[] living, Peer[] leaving) {
 		int total=0;
 		for (int i=0; i<living.length; i++)
 			total+=printNode(living[i]);
@@ -266,9 +278,9 @@ public class Coordinator implements Runnable {
 		if (_log.isTraceEnabled()) _log.trace("TOTAL: " + total);
 	}
 
-	protected int printNode(Node node) {
-		if (node!=_cluster.getLocalNode())
-			node=(Node)_cluster.getNodes().get(node.getDestination());
+	protected int printNode(Peer node) {
+		if (node!=_dispatcher.getLocalPeer())
+			node=(Peer)_cluster.getPeers().get(node.getAddress());
 		if (node==null) {
 			if (_log.isTraceEnabled()) _log.trace(DIndex.getNodeName(node) + " : <unknown>");
 			return 0;
@@ -280,13 +292,13 @@ public class Coordinator implements Runnable {
 		}
 	}
 
-	protected Node getNode(Destination destination) {
-		Node localNode=_cluster.getLocalNode();
-		Destination localDestination=localNode.getDestination();
-		if (destination.equals(localDestination))
-			return localNode;
+	protected Peer getPeer(Address address) {
+		Peer localPeer=_dispatcher.getLocalPeer();
+		Address localAddress=localPeer.getAddress();
+		if (address.equals(localAddress))
+			return localPeer;
 		else
-			return (Node)_cluster.getNodes().get(destination);
+			return (Peer)_cluster.getPeers().get(address);
 	}
 
 }

@@ -20,10 +20,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.PartitionConfig;
@@ -39,7 +35,10 @@ import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MovePMToSM;
 import org.codehaus.wadi.dindex.newmessages.MoveSMToPM;
 import org.codehaus.wadi.dindex.newmessages.MovePMToIM;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.MessageExchangeException;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -63,7 +62,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 
   public void init(PartitionConfig config) {
     _config=config;
-    _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalNodeName());
+    _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalPeerName());
   }
 
   public boolean isLocal() {
@@ -71,13 +70,13 @@ public class LocalPartition extends AbstractPartition implements Serializable {
   }
 
   public String toString() {
-    return "<LocalPartition:"+_key+"@"+(_config==null?"<unknown>":_config.getLocalNodeName())+">";
+    return "<LocalPartition:"+_key+"@"+(_config==null?"<unknown>":_config.getLocalPeerName())+">";
   }
 
-   public void put(String name, Destination destination) {
+   public void put(String name, Address address) {
      synchronized (_map) {
        // TODO - check key was not already in use...
-       _map.put(name, new Locus(destination));
+       _map.put(name, new Locus(address));
      }
    }
 
@@ -86,30 +85,29 @@ public class LocalPartition extends AbstractPartition implements Serializable {
   // - a container for the session destination, reducing access to id:destination table
   static class Locus implements Serializable {
 
-    protected Destination _destination;
+    protected Address _address;
 
-    public Locus(Destination destination) {
-      _destination=destination;
+    public Locus(Address address) {
+      _address=address;
     }
 
-    public Destination getDestination() {
-      return _destination;
+    public Address getAddress() {
+      return _address;
     }
 
-    public void setDestination(Destination destination) {
-      _destination=destination;
+    public void setAddress(Address address) {
+      _address=address;
     }
 
   }
 
-  public void onMessage(ObjectMessage message, InsertIMToPM request) {
-    Destination newDestination=null;
-    try{newDestination=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
+  public void onMessage(Message message, InsertIMToPM request) {
+    Address newAddress=message.getReplyTo();
     boolean success=false;
     String key=request.getKey();
 
     // optimised for expected case - id not already in use...
-    Locus newLocus=new Locus(newDestination);
+    Locus newLocus=new Locus(newAddress);
     synchronized (_map) {
       Locus oldLocus=(Locus)_map.put(key, newLocus); // remember location of new session
       if (oldLocus==null) {
@@ -123,16 +121,20 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 
     // log outside sync block...
     if (success) {
-      if (_log.isDebugEnabled()) _log.debug("insert: "+key+" {"+_config.getNodeName(newDestination)+"}");
+      if (_log.isDebugEnabled()) _log.debug("insert: "+key+" {"+_config.getPeerName(newAddress)+"}");
     } else {
-      if (_log.isWarnEnabled()) _log.warn("insert: "+key+" {"+_config.getNodeName(newDestination)+"} failed - key already in use");
+      if (_log.isWarnEnabled()) _log.warn("insert: "+key+" {"+_config.getPeerName(newAddress)+"} failed - key already in use");
     }
 
     DIndexResponse response=new InsertPMToIM(success);
-    _config.getDispatcher().reply(message, response);
+    try {
+        _config.getDispatcher().reply(message, response);
+    } catch (MessageExchangeException e) {
+        _log.warn("See exception", e);
+    }
   }
 
-  public void onMessage(ObjectMessage message, DeleteIMToPM request) {
+  public void onMessage(Message message, DeleteIMToPM request) {
     String key=request.getKey();
     Locus locus=null;
     boolean success=false;
@@ -142,19 +144,23 @@ public class LocalPartition extends AbstractPartition implements Serializable {
     }
 
     if (locus!=null) {
-      Destination oldDestination=locus.getDestination();
-      if (_log.isDebugEnabled()) _log.debug("delete: "+key+" {"+_config.getNodeName(oldDestination)+"}");
+      Address oldAddress=locus.getAddress();
+      if (_log.isDebugEnabled()) _log.debug("delete: "+key+" {"+_config.getPeerName(oldAddress)+"}");
       success=true;
     } else {
       if (_log.isWarnEnabled()) _log.warn("delete: "+key+" failed - key not present");
     }
 
     DIndexResponse response=new DeletePMToIM(success);
-    _config.getDispatcher().reply(message, response);
+    try {
+        _config.getDispatcher().reply(message, response);
+    } catch (MessageExchangeException e) {
+        _log.warn("See exception", e);
+    }
   }
 
   // called on Partition Master
-  public void onMessage(ObjectMessage message, MoveIMToPM request) {
+  public void onMessage(Message message, MoveIMToPM request) {
 
     // TODO - whilst we are in here, we should have a SHARED lock on this Partition, so it cannot be moved
     // The Partitions lock should be held in the Facade, so that it can swap Partitions in and out whilst holding an exclusive lock
@@ -176,37 +182,37 @@ public class LocalPartition extends AbstractPartition implements Serializable {
       } else {
         synchronized (locus) { // ensures that no-one else tries to relocate session whilst we are doing so...
 
-          Destination im=message.getJMSReplyTo();
-          Destination sm=locus.getDestination();
+          Address im=message.getReplyTo();
+          Address sm=locus.getAddress();
 
           if (sm.equals(im)) {
             // session does exist - but is already located at the IM
             // whilst we were waiting for the partition lock, another thread must have migrated the session to the IM...
             // How can this happen - the first Thread should have been holding the InvocationLock...
-            _log.warn("session already at required location: "+key+" {"+_config.getNodeName(im)+"} - should not happen");
+            _log.warn("session already at required location: "+key+" {"+_config.getPeerName(im)+"} - should not happen");
             // FIXME - need to reply to IM with something
             // I think we need a further two messages here :
             // MovePMToIM - holds lock in Partition whilst informing IM that it already has session
             // MoveIMToPM2 - IM acquires local state-lock and then acks to PM so that it can release distributed lock in partition
           } else {
             // session does exist - we need to ask SM to move it to IM
-            Destination pm=_dispatcher.getLocalDestination();
-            String imCorrelationId=_dispatcher.getOutgoingCorrelationId(message);
+            Address pm=_dispatcher.getLocalAddress();
+            String imCorrelationId=message.getOutgoingCorrelationId();
             MovePMToSM request2=new MovePMToSM(key, im, pm, imCorrelationId);
-            ObjectMessage tmp=_dispatcher.exchangeSend(pm, sm, request2, _config.getInactiveTime());
+            Message tmp=_dispatcher.exchangeSend(pm, sm, request2, _config.getInactiveTime());
 
             if (tmp==null) {
-              _log.error("move: "+key+" {"+_config.getNodeName(sm)+"->"+_config.getNodeName(im)+"}");
+              _log.error("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"}");
               // FIXME - error condition - what should we do ?
               // we should check whether SM is still alive and send it another message... - CONSIDER
             } else {
-              MoveSMToPM response=(MoveSMToPM)tmp.getObject();
+              MoveSMToPM response=(MoveSMToPM)tmp.getPayload();
               if (response.getSuccess()) {
                 // alter location
-                locus.setDestination(im);
-                if (_log.isDebugEnabled()) _log.debug("move: "+key+" {"+_config.getNodeName(sm)+"->"+_config.getNodeName(im)+"}");
+                locus.setAddress(im);
+                if (_log.isDebugEnabled()) _log.debug("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"}");
               } else {
-                if (_log.isWarnEnabled()) _log.warn("move: "+key+" {"+_config.getNodeName(sm)+"->"+_config.getNodeName(im)+"} - failed - no response from "+_config.getNodeName(sm));
+                if (_log.isWarnEnabled()) _log.warn("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"} - failed - no response from "+_config.getPeerName(sm));
               }
             }
           }
@@ -217,9 +223,8 @@ public class LocalPartition extends AbstractPartition implements Serializable {
     }
   }
 
-  public void onMessage(ObjectMessage message, EvacuateIMToPM request) {
-    Destination newDestination=null;
-    try{newDestination=message.getJMSReplyTo();} catch (JMSException e) {_log.error("unexpected problem", e);}
+  public void onMessage(Message message, EvacuateIMToPM request) {
+    Address newAddress=message.getReplyTo();
     String key=request.getKey();
     boolean success=false;
 
@@ -228,31 +233,35 @@ public class LocalPartition extends AbstractPartition implements Serializable {
       locus=(Locus)_map.get(key);
     }
 
-    Destination oldDestination=null;
+    Address oldAddress=null;
     if (locus==null) {
-      if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getNodeName(newDestination)+"} failed - key not in use");
+      if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getPeerName(newAddress)+"} failed - key not in use");
     } else {
       synchronized (locus) {
-        oldDestination=locus.getDestination();
-        if (oldDestination.equals(newDestination)) {
-          if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getNodeName(newDestination)+"} failed - evacuee is already there !");
+        oldAddress=locus.getAddress();
+        if (oldAddress.equals(newAddress)) {
+          if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getPeerName(newAddress)+"} failed - evacuee is already there !");
         } else {
-          locus.setDestination(newDestination);
-	  if (_log.isDebugEnabled()) _log.debug("evacuate {"+request.getKey()+" : "+_config.getNodeName(oldDestination)+" -> "+_config.getNodeName(newDestination)+"}");
+          locus.setAddress(newAddress);
+	  if (_log.isDebugEnabled()) _log.debug("evacuate {"+request.getKey()+" : "+_config.getPeerName(oldAddress)+" -> "+_config.getPeerName(newAddress)+"}");
           success=true;
         }
       }
     }
 
     DIndexResponse response=new EvacuatePMToIM(success);
-    _config.getDispatcher().reply(message, response);
+    try {
+        _config.getDispatcher().reply(message, response);
+    } catch (MessageExchangeException e) {
+        _log.warn("See exception", e);
+    }
   }
 
-  public ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception {
+  public Message exchange(DIndexRequest request, long timeout) throws Exception {
     if (_log.isTraceEnabled()) _log.trace("local dispatch - needs optimisation");
     Dispatcher dispatcher=_config.getDispatcher();
-    Destination from=dispatcher.getLocalDestination();
-    Destination to=from;
+    Address from=dispatcher.getLocalAddress();
+    Address to=from;
     return dispatcher.exchangeSend(from, to, request, timeout);
   }
 

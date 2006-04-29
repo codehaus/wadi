@@ -16,9 +16,9 @@
  */
 package org.codehaus.wadi.dindex;
 
-import javax.jms.Destination;
 
-import org.apache.activecluster.Cluster;
+import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
 
 /**
@@ -26,12 +26,13 @@ import org.codehaus.wadi.group.Dispatcher;
  * @version $Revision$
  */
 public interface PartitionConfig {
-
     Dispatcher getDispatcher();
+
     Cluster getCluster();
-    String getNodeName(Destination destination);
+    
+    String getPeerName(Address address);
+    
     long getInactiveTime();
 
-    String getLocalNodeName();
-
+    String getLocalPeerName();
 }

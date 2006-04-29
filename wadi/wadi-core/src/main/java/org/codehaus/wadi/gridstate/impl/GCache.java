@@ -27,7 +27,6 @@ import javax.cache.CacheEntry;
 import javax.cache.CacheException;
 import javax.cache.CacheListener;
 import javax.cache.CacheStatistics;
-import javax.jms.Destination;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,6 +36,7 @@ import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionManagerConfig;
 import org.codehaus.wadi.gridstate.StateManager;
 import org.codehaus.wadi.gridstate.StateManagerConfig;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
 
@@ -359,8 +359,8 @@ public class GCache implements Cache, DispatcherConfig, StateManagerConfig, Part
 
 	// PartitionManagerConfig
 
-	public Destination getLocalDestination() {
-		return _dispatcher.getLocalDestination();
+	public Address getLocalAddress() {
+		return _dispatcher.getLocalAddress();
 	}
 
 	// LifeCycle

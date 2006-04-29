@@ -24,6 +24,7 @@ import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MovePMToSM;
+import org.codehaus.wadi.group.Message;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -53,19 +54,19 @@ public class UnknownPartition extends AbstractPartition {
     throw new UnsupportedOperationException();
   }
 
-  public void onMessage(ObjectMessage message, InsertIMToPM request) {
+  public void onMessage(Message message, InsertIMToPM request) {
     throw new UnsupportedOperationException();
   }
 
-  public void onMessage(ObjectMessage message, DeleteIMToPM request) {
+  public void onMessage(Message message, DeleteIMToPM request) {
     throw new UnsupportedOperationException();
   }
 
-  public void onMessage(ObjectMessage message, EvacuateIMToPM request) {
+  public void onMessage(Message message, EvacuateIMToPM request) {
     throw new UnsupportedOperationException();
   }
 
-  public void onMessage(ObjectMessage message, MoveIMToPM request) {
+  public void onMessage(Message message, MoveIMToPM request) {
     throw new UnsupportedOperationException();
   }
 
@@ -73,7 +74,7 @@ public class UnknownPartition extends AbstractPartition {
     throw new UnsupportedOperationException();
   }
 
-  public ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception {
+  public Message exchange(DIndexRequest request, long timeout) throws Exception {
     throw new UnsupportedOperationException();
   }
 

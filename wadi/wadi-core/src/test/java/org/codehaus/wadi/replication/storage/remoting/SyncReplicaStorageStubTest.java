@@ -19,10 +19,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
-
+import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.ServiceEndpoint;
+import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 
@@ -34,30 +34,29 @@ import junit.framework.TestCase;
  */
 public class SyncReplicaStorageStubTest extends TestCase {
 
-    private Destination destination1;
-    private Destination destination2;
-    private Destination destination3;
+    private Address destination1;
+    private Address destination2;
+    private Address destination3;
     private BasicReplicaStorageStub stub;
     private BaseMockDispatcher baseMockDispatcher;
     private ReplicaInfo info;
-    private Destination[] destinations;
+    private Address[] destinations;
 
     public void testMergeCreate() {
-        final Destination[] actualDestinations = new Destination[destinations.length];
+        final Address[] actualDestinations = new Address[destinations.length];
         final Serializable[] requests = new Serializable[destinations.length];
         baseMockDispatcher = new BaseMockDispatcher() {
             int idx = 0;
-            public Destination getLocalDestination() {
+            public Address getLocalAddress() {
                 return destination1;
             }
-            public void register(Class type, long timeout) {
-                assertSame(ReplicaStorageResult.class, type);
+            public void register(ServiceEndpoint internalDispatcher) {
             }
-            public ObjectMessage exchangeSend(Destination from, Destination to, Serializable request, long timeout) {
+            public Message exchangeSend(Address from, Address to, Serializable request, long timeout) {
                 assertSame(destination1, from);
                 actualDestinations[idx] = to;
                 requests[idx++] = request;
-                return new BaseMockObjectMessage();
+                return new BaseMockMessage();
             }
         };
         
@@ -74,21 +73,20 @@ public class SyncReplicaStorageStubTest extends TestCase {
     }
 
     public void testMergeUpdate() {
-        final Destination[] actualDestinations = new Destination[destinations.length];
+        final Address[] actualDestinations = new Address[destinations.length];
         final Serializable[] requests = new Serializable[destinations.length];
         baseMockDispatcher = new BaseMockDispatcher() {
             int idx = 0;
-            public Destination getLocalDestination() {
+            public Address getLocalAddress() {
                 return destination1;
             }
-            public void register(Class type, long timeout) {
-                assertSame(ReplicaStorageResult.class, type);
+            public void register(ServiceEndpoint internalDispatcher) {
             }
-            public ObjectMessage exchangeSend(Destination from, Destination to, Serializable request, long timeout) {
+            public Message exchangeSend(Address from, Address to, Serializable request, long timeout) {
                 assertSame(destination1, from);
                 actualDestinations[idx] = to;
                 requests[idx++] = request;
-                return new BaseMockObjectMessage();
+                return new BaseMockMessage();
             }
         };
         
@@ -106,15 +104,14 @@ public class SyncReplicaStorageStubTest extends TestCase {
     }
 
     public void testMergeDestroy() {
-        final Destination[] actualDestinations = new Destination[destinations.length];
+        final Address[] actualDestinations = new Address[destinations.length];
         final Serializable[] requests = new Serializable[destinations.length];
         baseMockDispatcher = new BaseMockDispatcher() {
             int idx = 0;
-            public void register(Class type, long timeout) {
-                assertSame(ReplicaStorageResult.class, type);
+            public void register(ServiceEndpoint internalDispatcher) {
             }
-            public void send(Destination destination, Serializable request) throws Exception {
-                actualDestinations[idx] = destination;
+            public void send(Address Address, Serializable request) throws MessageExchangeException {
+                actualDestinations[idx] = Address;
                 requests[idx++] = request;
             }
         };
@@ -134,22 +131,21 @@ public class SyncReplicaStorageStubTest extends TestCase {
 
     public void testRetrieveReplicaInfo() {
         final String payload = "payload";
-        final Destination[] actualDestinations = new Destination[1];
+        final Address[] actualDestinations = new Address[1];
         final Serializable[] requests = new Serializable[1];
         baseMockDispatcher = new BaseMockDispatcher() {
             int idx = 0;
-            public Destination getLocalDestination() {
+            public Address getLocalAddress() {
                 return destination1;
             }
-            public void register(Class type, long timeout) {
-                assertSame(ReplicaStorageResult.class, type);
+            public void register(ServiceEndpoint internalDispatcher) {
             }
-            public ObjectMessage exchangeSend(Destination from, Destination to, Serializable request, long timeout) {
+            public Message exchangeSend(Address from, Address to, Serializable request, long timeout) {
                 assertSame(destination1, from);
                 actualDestinations[idx] = to;
                 requests[idx++] = request;
-                return new BaseMockObjectMessage() {
-                    public Serializable getObject() throws JMSException {
+                return new BaseMockMessage() {
+                    public Serializable getPayload() {
                         ByteArrayOutputStream memOut = new ByteArrayOutputStream();
                         try {
                             ObjectOutputStream os = new ObjectOutputStream(
@@ -169,7 +165,7 @@ public class SyncReplicaStorageStubTest extends TestCase {
         
         stub = new SyncReplicaStorageStub(
                         baseMockDispatcher,
-                        new Destination[] {destination2, destination1});
+                        new Address[] {destination2, destination1});
 
         Object key = new Object();
         ReplicaInfo retrievedReplicaInfo = stub.retrieveReplicaInfo(key);
@@ -180,10 +176,10 @@ public class SyncReplicaStorageStubTest extends TestCase {
     }
     
     protected void setUp() throws Exception {
-        destination1 = new BaseMockDestination();
-        destination2 = new BaseMockDestination();
+        destination1 = new BaseMockAddress();
+        destination2 = new BaseMockAddress();
         info = new ReplicaInfo((NodeInfo) null, null, null);
-        destinations = new Destination[] {destination2, destination3};
+        destinations = new Address[] {destination2, destination3};
     }
 
 }

@@ -15,37 +15,43 @@
  */
 package org.codehaus.wadi.replication.manager.remoting;
 
-import javax.jms.ObjectMessage;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
-import org.codehaus.wadi.replication.message.AbstractTwoWayMessage;
 import org.codehaus.wadi.replication.message.ResultInfo;
 
 /**
  * 
  * @version $Revision$
  */
-public class BasicReplicationManagerExporter implements ReplicationManagerExporter {
+public class BasicReplicationManagerExporter implements ReplicationManagerExporter, BasicReplicationManagerExporterMessageListener {
+    private static final Log log = LogFactory.getLog(BasicReplicationManagerExporter.class);
+    
     private final Dispatcher dispatcher;
+    private final ServiceEndpointBuilder endpointBuilder;
     private volatile ReplicationManager manager;
-
+    
     public BasicReplicationManagerExporter(Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
+        
+        endpointBuilder = new ServiceEndpointBuilder();
     }
     
     public void export(ReplicationManager manager) throws Exception {
         this.manager = manager;
-        dispatcher.register(this, "onRequest", ReplicationManagerRequest.class);
+        endpointBuilder.addSEI(dispatcher, BasicReplicationManagerExporterMessageListener.class, this);
     }
     
     public void unexport(ReplicationManager manager) throws Exception {
-        // TODO signature seems to be wrong.
-        dispatcher.deregister("onRequest", ReplicationManagerRequest.class, (int) AbstractTwoWayMessage.DEFAULT_TWO_WAY_TIMEOUT);
+        endpointBuilder.dispose(10, 500);
         this.manager = null;
     }
     
-    public void onRequest(ObjectMessage message, ReplicationManagerRequest command) {
+    public void onRequest(Message message, ReplicationManagerRequest command) {
         if (null == manager) {
             throw new IllegalStateException("ReplicationManager has been unexported.");
         }
@@ -55,7 +61,11 @@ public class BasicReplicationManagerExporter implements ReplicationManagerExport
         } else {
             ResultInfo resultInfo = command.executeWithResult(manager);
             if (resultInfo.isReplyWithResult()) {
-                dispatcher.reply(message, new ReleasePrimaryResult(resultInfo.getResult()));
+                try {
+                    dispatcher.reply(message, new ReleasePrimaryResult(resultInfo.getResult()));
+                } catch (MessageExchangeException e) {
+                    log.error("See exception", e);
+                }
             }
         }
     }

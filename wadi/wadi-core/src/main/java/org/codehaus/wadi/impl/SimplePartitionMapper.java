@@ -35,5 +35,4 @@ public class SimplePartitionMapper implements PartitionMapper {
 	public int map(Object key) {
 		return Math.abs(key.hashCode()%_numPartitions);
 	}
-
 }

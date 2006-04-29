@@ -16,10 +16,10 @@
  */
 package org.codehaus.wadi.gridstate.impl;
 
-import javax.jms.Destination;
 
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionManagerConfig;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 
 /**
@@ -67,7 +67,7 @@ public class DummyPartitionManager implements PartitionManager {
 		return null;
 	}
 
-	public Destination getLocalDestination() {
+	public Address getLocalAddress() {
 		return null;
 	}
 

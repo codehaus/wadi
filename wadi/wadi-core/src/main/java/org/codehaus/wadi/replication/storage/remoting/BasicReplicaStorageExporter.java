@@ -15,11 +15,13 @@
  */
 package org.codehaus.wadi.replication.storage.remoting;
 
-import javax.jms.ObjectMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.replication.common.ComponentEventType;
 import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.message.ResultInfo;
@@ -30,38 +32,38 @@ import org.codehaus.wadi.replication.storage.ReplicaStorage;
  * 
  * @version $Revision$
  */
-public class BasicReplicaStorageExporter implements ReplicaStorageExporter {
+public class BasicReplicaStorageExporter implements ReplicaStorageExporter, BasicReplicaStorageExporterMessageListener {
     private static final Log log = LogFactory.getLog(BasicReplicaStorageExporter.class); 
     
     private final Dispatcher dispatcher;
     private final BasicReplicaStorageAdvertiser adviser;
     private volatile ReplicaStorage storage;
 
+    private final ServiceEndpointBuilder endpointBuilder;
+
     public BasicReplicaStorageExporter(Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
         
         adviser = new BasicReplicaStorageAdvertiser(dispatcher);
+        
+        endpointBuilder = new ServiceEndpointBuilder();
     }
     
     public void export(ReplicaStorage storage) throws Exception {
         this.storage = storage;
         
-        dispatcher.register(this, "onCommand", ReplicaStorageRequest.class);
+        endpointBuilder.addSEI(dispatcher, BasicReplicaStorageExporterMessageListener.class, this);
         adviser.advertiseJoin(storage);
-        
-        dispatcher.register(this, "onMonitorEvent", ReplicaStorageMonitorEvent.class);
     }
     
     public void unexport(ReplicaStorage storage) throws Exception {
         this.storage = null;
 
-        dispatcher.deregister("onMonitorEvent", ReplicaStorageMonitorEvent.class, 1000);
-
+        endpointBuilder.dispose(10, 500);
         adviser.advertiseLeave(storage);
-        dispatcher.deregister("onCommand", ReplicaStorageRequest.class, 1000);
     }
     
-    public void onCommand(ObjectMessage message, ReplicaStorageRequest command) {
+    public void onCommand(Message message, ReplicaStorageRequest command) {
         if (null == storage) {
             // TODO do not die silently.
             log.warn("Request " + command + " received and storage not set.");
@@ -73,12 +75,16 @@ public class BasicReplicaStorageExporter implements ReplicaStorageExporter {
         } else {
             ResultInfo resultInfo = command.executeWithResult(storage);
             if (resultInfo.isReplyWithResult()) {
-                dispatcher.reply(message, new ReplicaStorageResult(resultInfo.getResult()));
+                try {
+                    dispatcher.reply(message, new ReplicaStorageResult(resultInfo.getResult()));
+                } catch (MessageExchangeException e) {
+                    log.error("See exception", e);
+                }
             }
         }
     }
 
-    public void onMonitorEvent(ObjectMessage message, ReplicaStorageMonitorEvent event) {
+    public void onMonitorEvent(Message message, ReplicaStorageMonitorEvent event) {
         if (null == storage) {
             // TODO do not die silently.
             log.warn("Event " + event + " received and storage not set.");

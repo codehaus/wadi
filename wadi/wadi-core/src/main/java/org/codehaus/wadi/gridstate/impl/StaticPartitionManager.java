@@ -16,13 +16,13 @@
  */
 package org.codehaus.wadi.gridstate.impl;
 
-import javax.jms.Destination;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionManagerConfig;
 import org.codehaus.wadi.gridstate.PartitionMapper;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 
 /**
@@ -72,7 +72,7 @@ public class StaticPartitionManager implements PartitionManager {
     			GCache cache=caches[j];
     			if (cache!=master) {
     				// if node is not PartitionMaster - make partition remote, pointing to PartitionMaster
-    				PartitionFacade partition=new PartitionFacade(new RemotePartition(master.getLocalDestination()));
+    				PartitionFacade partition=new PartitionFacade(new RemotePartition(master.getLocalAddress()));
     				partition.init(cache.getPartitionConfig());
     				cache.getPartitions()[i]=partition;
     			} else {
@@ -99,8 +99,8 @@ public class StaticPartitionManager implements PartitionManager {
 		return _dispatcher;
 	}
 
-	public Destination getLocalDestination() {
-		return _dispatcher.getLocalDestination();
+	public Address getLocalAddress() {
+		return _dispatcher.getLocalAddress();
 	}
 
 	public void evacuate() {

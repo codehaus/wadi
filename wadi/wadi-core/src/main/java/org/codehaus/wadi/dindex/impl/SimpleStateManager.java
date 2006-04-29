@@ -17,11 +17,6 @@
 package org.codehaus.wadi.dindex.impl;
 
 import java.nio.ByteBuffer;
-
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Immoter;
@@ -46,50 +41,55 @@ import org.codehaus.wadi.dindex.newmessages.MoveSMToPM;
 import org.codehaus.wadi.dindex.newmessages.PutSMToIM;
 import org.codehaus.wadi.dindex.newmessages.ReleaseEntryRequest;
 import org.codehaus.wadi.dindex.newmessages.ReleaseEntryResponse;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.impl.AbstractMotable;
 import org.codehaus.wadi.impl.RankedRWLock;
 import org.codehaus.wadi.impl.SimpleMotable;
 import org.codehaus.wadi.impl.Utils;
-
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
-public class SimpleStateManager implements StateManager {
+public class SimpleStateManager implements StateManager, StateManagerMessageListener {
 
 	protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 	protected final Dispatcher _dispatcher;
 	protected final long _inactiveTime;
 	protected final int _resTimeout=500; // TODO - parameterise
+    private final ServiceEndpointBuilder _endpointBuilder;
 
 	protected StateManagerConfig _config;
 	protected Log _log=LogFactory.getLog(getClass());
+    protected ImmigrationListener _listener;
 
 	public SimpleStateManager(Dispatcher dispatcher, long inactiveTime) {
 		super();
 		_dispatcher=dispatcher;
 		_inactiveTime=inactiveTime;
+        
+        _endpointBuilder = new ServiceEndpointBuilder();
 	}
 
 	public void init(StateManagerConfig config) {
 		_config=config;
-		_log=LogFactory.getLog(getClass().getName()+"#"+_config.getLocalNodeName());
-		_dispatcher.register(this, "onDIndexInsertionRequest", InsertIMToPM.class);
-		_dispatcher.register(InsertPMToIM.class, _inactiveTime);
-		_dispatcher.register(this, "onDIndexDeletionRequest", DeleteIMToPM.class);
-		_dispatcher.register(DeletePMToIM.class, _inactiveTime);
-		_dispatcher.register(this, "onDIndexRelocationRequest", EvacuateIMToPM.class);
-		_dispatcher.register(EvacuatePMToIM.class, _inactiveTime);
-    _dispatcher.register(this, "onPutSMToIM", PutSMToIM.class);
+		_log=LogFactory.getLog(getClass().getName()+"#"+_config.getLocalPeerName());
 
-		// GridState - Relocate - 5 messages - IM->PM->SM->IM->SM->PM
-		_dispatcher.register(this, "onMessage", MoveIMToPM.class);
-		_dispatcher.register(this, "onMessage", MovePMToSM.class);
-		_dispatcher.register(MoveSMToIM.class, _inactiveTime);
-		_dispatcher.register(MoveIMToSM.class, _inactiveTime);
-		_dispatcher.register(MoveSMToPM.class, _inactiveTime);
+        _endpointBuilder.addSEI(_dispatcher, StateManagerMessageListener.class, this);
+        _endpointBuilder.addCallback(_dispatcher, InsertPMToIM.class);
+        _endpointBuilder.addCallback(_dispatcher, DeletePMToIM.class);
+        _endpointBuilder.addCallback(_dispatcher, EvacuatePMToIM.class);
+
+        // GridState - Relocate - 5 messages - IM->PM->SM->IM->SM->PM
+        _endpointBuilder.addCallback(_dispatcher, MoveSMToIM.class);
+        _endpointBuilder.addCallback(_dispatcher, MoveIMToSM.class);
+        _endpointBuilder.addCallback(_dispatcher, MoveSMToPM.class);
 		// or possibly - IM->PM->IM (failure)
-		_dispatcher.register(MovePMToIM.class, _inactiveTime);
+        _endpointBuilder.addCallback(_dispatcher, MovePMToIM.class);
+        
+        _endpointBuilder.addCallback(_dispatcher, ReleaseEntryResponse.class);
 	}
 
 	public void start() throws Exception {
@@ -98,25 +98,22 @@ public class SimpleStateManager implements StateManager {
 	}
 
 	public void stop() throws Exception {
-		_dispatcher.deregister("onDIndexInsertionRequest", InsertIMToPM.class, 5000);
-		_dispatcher.deregister("onDIndexDeletionRequest", DeleteIMToPM.class, 5000);
-		_dispatcher.deregister("onDIndexRelocationRequest", EvacuateIMToPM.class, 5000);
+        _endpointBuilder.dispose(10, 500);
 	}
 
-
-	public void onDIndexInsertionRequest(ObjectMessage om, InsertIMToPM request) {
+	public void onDIndexInsertionRequest(Message om, InsertIMToPM request) {
 		_config.getPartition(request.getKey()).onMessage(om, request);
 	}
 
-	public void onDIndexDeletionRequest(ObjectMessage om, DeleteIMToPM request) {
+	public void onDIndexDeletionRequest(Message om, DeleteIMToPM request) {
 		_config.getPartition(request.getKey()).onMessage(om, request);
 	}
 
-	public void onDIndexRelocationRequest(ObjectMessage om, EvacuateIMToPM request) {
+	public void onDIndexRelocationRequest(Message om, EvacuateIMToPM request) {
 		_config.getPartition(request.getKey()).onMessage(om, request);
 	}
 
-	public void onMessage(ObjectMessage message, MoveIMToPM request) {
+	public void onMessage(Message message, MoveIMToPM request) {
 		_config.getPartition(request.getKey()).onMessage(message, request);
 	}
 
@@ -126,10 +123,10 @@ public class SimpleStateManager implements StateManager {
 
 		protected final String _name;
 		protected final String _tgtNodeName;
-		protected ObjectMessage _message1;
+		protected Message _message1;
 		protected final MovePMToSM _get;
 
-		public PMToIMEmotable(String name, String nodeName, ObjectMessage message1, MovePMToSM get) {
+		public PMToIMEmotable(String name, String nodeName, Message message1, MovePMToSM get) {
 			_name=name;
 			_tgtNodeName=nodeName;
 			_message1=message1;
@@ -146,26 +143,21 @@ public class SimpleStateManager implements StateManager {
 
 			Dispatcher dispatcher=_config.getDispatcher();
 			long timeout=_config.getInactiveTime();
-			Destination sm=dispatcher.getLocalDestination();
-			Destination im=(Destination)_get.getIM();
+			Address sm=dispatcher.getLocalAddress();
+			Address im=(Address)_get.getIM();
 			MoveSMToIM request=new MoveSMToIM(immotable);
 			// send on state from StateMaster to InvocationMaster...
-			if (_log.isTraceEnabled()) _log.trace("exchanging MoveSMToIM between: "+_config.getNodeName(sm)+"->"+_config.getNodeName(im));
-			ObjectMessage message2=(ObjectMessage)dispatcher.exchangeSend(sm, im, request, timeout, _get.getIMCorrelationId());
+			if (_log.isTraceEnabled()) _log.trace("exchanging MoveSMToIM between: "+_config.getPeerName(sm)+"->"+_config.getPeerName(im));
+			Message message2=(Message)dispatcher.exchangeSend(sm, im, request, timeout, _get.getIMCorrelationId());
 			// should receive response from IM confirming safe receipt...
 			if (message2==null) {
                 // TODO throw exception
 				_log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
 			} else {
-				MoveIMToSM response=null;
-				try {
-					response=(MoveIMToSM)message2.getObject();
-					assert(response!=null && response.getSuccess()); // FIXME - we should keep trying til we get an answer or give up...
-					// acknowledge transfer completed to PartitionMaster, so it may unlock resource...
-					dispatcher.reply(_message1,new MoveSMToPM(true));
-				} catch (JMSException e) {
-					_log.error("unexpected problem", e);
-				}
+				MoveIMToSM response=(MoveIMToSM)message2.getPayload();
+                assert(response!=null && response.getSuccess()); // FIXME - we should keep trying til we get an answer or give up...
+                // acknowledge transfer completed to PartitionMaster, so it may unlock resource...
+                dispatcher.reply(_message1,new MoveSMToPM(true));
 			}
 		}
 
@@ -189,13 +181,13 @@ public class SimpleStateManager implements StateManager {
 		protected final Log _log=LogFactory.getLog(getClass());
 
 		protected final String _tgtNodeName;
-		protected ObjectMessage _message;
+		protected Message _message;
 		protected final MovePMToSM _request;
 
 		protected boolean _found=false;
 		protected Sync _invocationLock;
 
-		public RelocationImmoter(String nodeName, ObjectMessage message, MovePMToSM request) {
+		public RelocationImmoter(String nodeName, Message message, MovePMToSM request) {
 			_tgtNodeName=nodeName;
 			_message=message;
 			_request=request;
@@ -251,7 +243,7 @@ public class SimpleStateManager implements StateManager {
 	//--------------------------------------------------------------------------------------
 
 	// called on State Master...
-	public void onMessage(ObjectMessage message1, MovePMToSM request) {
+	public void onMessage(Message message1, MovePMToSM request) {
 		// DO NOT Dispatch onto Partition - deal with it here...
 		Object key=request.getKey();
 		//String nodeName=_config.getLocalNodeName();
@@ -261,8 +253,8 @@ public class SimpleStateManager implements StateManager {
 			// Tricky - we need to call a Moter at this point and start removal of State to other node...
 
 			try {
-				Destination im=(Destination)request.getIM();
-				String imName=_config.getNodeName(im);
+				Address im=(Address)request.getIM();
+				String imName=_config.getPeerName(im);
 				RelocationImmoter promoter=new RelocationImmoter(imName, message1, request);
 				//boolean found=
 
@@ -279,10 +271,10 @@ public class SimpleStateManager implements StateManager {
 					_log.warn("state not found - perhaps it has just been destroyed: "+key);
 					MoveSMToIM req=new MoveSMToIM(null);
 					// send on null state from StateMaster to InvocationMaster...
-					Destination sm=_dispatcher.getLocalDestination();
+					Address sm=_dispatcher.getLocalAddress();
 					long timeout=_config.getInactiveTime();
 					_log.info("sending 0 bytes to : "+imName);
-					ObjectMessage ignore=(ObjectMessage)_dispatcher.exchangeSend(sm, im, req, timeout, request.getIMCorrelationId());
+					Message ignore=(Message)_dispatcher.exchangeSend(sm, im, req, timeout, request.getIMCorrelationId());
 					_log.info("received: "+ignore);
 					// StateMaster replies to PartitionMaster indicating failure...
 					_log.info("reporting failure to PM");
@@ -300,8 +292,8 @@ public class SimpleStateManager implements StateManager {
 	// evacuation protocol
 
 	public boolean offerEmigrant(String key, Motable emotable, long timeout) {
-		Destination to=((RemotePartition)_config.getPartition(key).getContent()).getDestination(); // TODO - HACK - temporary
-		Destination from=_dispatcher.getLocalDestination();
+		Address to=((RemotePartition)_config.getPartition(key).getContent()).getAddress(); // TODO - HACK - temporary
+		Address from=_dispatcher.getLocalAddress();
     
     // this code on the way in...
 //    {
@@ -328,36 +320,28 @@ public class SimpleStateManager implements StateManager {
     // this code on the way out...
 		{
 		  ReleaseEntryRequest request=new ReleaseEntryRequest(emotable);
-		  ObjectMessage message=_dispatcher.exchangeSend(from, to, request, timeout);
-		  ReleaseEntryResponse ack=null;
-		  try {
-		    ack=message==null?null:(ReleaseEntryResponse)message.getObject();
-		  } catch (JMSException e) {
-		    _log.error("could not unpack response", e);
-		  }
-
-		  if (ack==null) {
-		    if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+timeout+" millis): "+key);
-		    return false;
-		  } else {
-		    if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+timeout+" millis): "+key);
-		    return true;
-		  }
-		}
-    
-	}
-
-	public void acceptImmigrant(ObjectMessage message, Location location, String name, Motable motable) {
-		if (!_dispatcher.reply(message, new ReleaseEntryResponse(name, location))) {
-			if (_log.isErrorEnabled()) _log.error("could not acknowledge safe receipt: "+name);
+          try {
+            _dispatcher.exchangeSend(from, to, request, timeout);
+            if (_log.isTraceEnabled()) {
+                _log.trace("received acknowledgement within timeframe ("+timeout+" millis): "+key);
+            }
+            return true;
+          } catch (MessageExchangeException e) {
+            _log.error("no acknowledgement within timeframe ("+timeout+" millis): "+key, e);
+            return false;
+          }
 		}
 	}
 
-	protected ImmigrationListener _listener;
+	public void acceptImmigrant(Message message, Location location, String name, Motable motable) {
+        try {
+            _dispatcher.reply(message, new ReleaseEntryResponse(name, location));
+        } catch (MessageExchangeException e) {
+            _log.error("could not acknowledge safe receipt: "+name);
+        }
+	}
 
 	public void setImmigrationListener(ImmigrationListener listener) {
-    _dispatcher.register(this, "onEmigrationRequest", ReleaseEntryRequest.class);
-		_dispatcher.register(ReleaseEntryResponse.class, _resTimeout);
 		_listener=listener;
 	}
 
@@ -370,13 +354,16 @@ public class SimpleStateManager implements StateManager {
 		}
 	}
 
-	public void onEmigrationRequest(ObjectMessage message, ReleaseEntryRequest request) {
+	public void onEmigrationRequest(Message message, ReleaseEntryRequest request) {
+        if (null == _listener) {
+            return;
+        }
 		_listener.onImmigration(message, request.getMotable());
 	}
 
-  public void onPutSMToIM(ObjectMessage message, PutSMToIM request) {
+    public void onPutSMToIM(Message message, PutSMToIM request) {
 	  throw new UnsupportedOperationException("NYI");
-    //_config.fetchSession(request.getKey());
-  }
+        //_config.fetchSession(request.getKey());
+    }
   
 }

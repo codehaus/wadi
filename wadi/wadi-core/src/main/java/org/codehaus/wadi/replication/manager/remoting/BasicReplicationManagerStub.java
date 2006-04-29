@@ -15,13 +15,13 @@
  */
 package org.codehaus.wadi.replication.manager.remoting;
 
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
@@ -42,8 +42,10 @@ public class BasicReplicationManagerStub implements ReplicationManager {
             ReplicaStorageStubFactory storageStubFactory) {
         this.dispatcher = dispatcher;
         this.storageStubFactory = storageStubFactory;
-        
-        dispatcher.register(ReleasePrimaryResult.class, ReleasePrimaryRequest.DEFAULT_TWO_WAY_TIMEOUT);
+
+        // TODO - we need to dispose.
+        ServiceEndpointBuilder endpointBuilder = new ServiceEndpointBuilder();
+        endpointBuilder.addCallback(dispatcher, ReleasePrimaryResult.class);
     }
     
     public void create(Object key, Object tmp) {
@@ -64,18 +66,14 @@ public class BasicReplicationManagerStub implements ReplicationManager {
 
     public ReplicaInfo releasePrimary(Object key) {
         ReleasePrimaryRequest command = new ReleasePrimaryRequest(key);
-        Destination from = dispatcher.getLocalDestination();
-        Destination to = dispatcher.getClusterDestination();
-        ObjectMessage message = dispatcher.exchangeSend(from, to, command, ReleasePrimaryRequest.DEFAULT_TWO_WAY_TIMEOUT);
+        Address from = dispatcher.getLocalAddress();
+        Address to = dispatcher.getClusterAddress();
         ReplicaInfo info = null;
-        if (null != message) {
-            ReleasePrimaryResult result = null;
-            try {
-                result = (ReleasePrimaryResult) message.getObject();
-            } catch (JMSException e) {
-                log.warn(e);
-            }
+        try {
+            Message message = dispatcher.exchangeSend(from, to, command, ReleasePrimaryRequest.DEFAULT_TWO_WAY_TIMEOUT);
+            ReleasePrimaryResult result = (ReleasePrimaryResult) message.getPayload();
             info = (ReplicaInfo) result.getPayload();
+        } catch (MessageExchangeException e) {
         }
         
         if (null == info) {

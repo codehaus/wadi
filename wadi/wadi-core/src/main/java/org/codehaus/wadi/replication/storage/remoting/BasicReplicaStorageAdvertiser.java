@@ -15,10 +15,9 @@
  */
 package org.codehaus.wadi.replication.storage.remoting;
 
-import javax.jms.Destination;
-import javax.jms.ObjectMessage;
-
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.replication.common.ComponentEventType;
 import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
@@ -36,7 +35,7 @@ class BasicReplicaStorageAdvertiser implements ReplicaStorageAdvertiser {
     }
 
     public void advertiseJoin(ReplicaStorage storage, NodeInfo nodeInfo) {
-        Destination target = dispatcher.getDestination(nodeInfo.getName());
+        Address target = dispatcher.getAddress(nodeInfo.getName());
         sendToDestination(ComponentEventType.JOIN, storage.getHostingNode(), target);
     }
 
@@ -49,13 +48,13 @@ class BasicReplicaStorageAdvertiser implements ReplicaStorageAdvertiser {
     }
 
     private void sendToCluster(ComponentEventType type, ReplicaStorage storage) {
-        sendToDestination(type, storage.getHostingNode(), dispatcher.getClusterDestination());
+        sendToDestination(type, storage.getHostingNode(), dispatcher.getClusterAddress());
     }
 
-    private void sendToDestination(ComponentEventType type, NodeInfo nodeInfo, Destination target) {
+    private void sendToDestination(ComponentEventType type, NodeInfo nodeInfo, Address target) {
         try {
-            ObjectMessage message = dispatcher.createObjectMessage();
-            message.setObject(new ReplicaStorageEvent(type, nodeInfo));
+            Message message = dispatcher.createMessage();
+            message.setPayload(new ReplicaStorageEvent(type, nodeInfo));
             dispatcher.send(target, message);
         } catch (Exception e) {
             throw (IllegalStateException) new IllegalStateException().initCause(e);

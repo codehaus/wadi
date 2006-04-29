@@ -22,15 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
-
-import org.apache.activecluster.Cluster;
-import org.apache.activecluster.ClusterEvent;
-import org.apache.activecluster.ClusterListener;
-import org.apache.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Emoter;
@@ -52,11 +43,16 @@ import org.codehaus.wadi.dindex.newmessages.MoveIMToSM;
 import org.codehaus.wadi.dindex.newmessages.MovePMToIM;
 import org.codehaus.wadi.dindex.newmessages.MoveSMToIM;
 import org.codehaus.wadi.gridstate.PartitionMapper;
+import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.Cluster;
+import org.codehaus.wadi.group.ClusterEvent;
+import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.impl.AbstractChainedEmoter;
 import org.codehaus.wadi.impl.Utils;
-
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -95,7 +91,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		_stateManager= new SimpleStateManager(_dispatcher, _inactiveTime);
 	}
 
-	protected Node _coordinatorNode;
+	protected Peer _coordinatorNode;
 	protected Coordinator _coordinator;
 	protected PartitionManagerConfig _config;
 
@@ -103,7 +99,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		_log.info("init-ing...");
 		_config=config;
 		_cluster.setElectionStrategy(new SeniorityElectionStrategy());
-		_dispatcher.setClusterListener(this);
+        _cluster.addClusterListener(this);
 		_distributedState.put(_nodeNameKey, _nodeName);
 		_distributedState.put(_correlationIDMapKey, new HashMap());
 		_distributedState.put(_birthTimeKey, new Long(_config.getBirthTime()));
@@ -133,7 +129,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 			if (_log.isInfoEnabled()) _log.info("local state: " + k);
 			_dispatcher.setDistributedState(_distributedState);
 			if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _dispatcher.getDistributedState());
-			onCoordinatorChanged(new ClusterEvent(_cluster, _cluster.getLocalNode(), ClusterEvent.ELECTED_COORDINATOR));
+			onCoordinatorChanged(new ClusterEvent(_cluster, _dispatcher.getLocalPeer(), ClusterEvent.COORDINATOR_ELECTED));
 			_coordinator.queueRebalancing();
 		}
 
@@ -181,8 +177,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		return keys.getKeys()[Math.abs((int)(Math.random()*keys.size()))];
 	}
 
-	public void onNodeUpdate(ClusterEvent event) {
-		Node node=event.getNode();
+	public void onPeerUpdated(ClusterEvent event) {
+		Peer node=event.getPeer();
 		if (_log.isTraceEnabled()) _log.trace("onNodeUpdate: " + getNodeName(node) + ": " + node.getState());
 
 		_partitionManager.update(node);
@@ -193,7 +189,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	protected void correlateStateUpdate(Map state) {
 		Map correlationIDMap=(Map)state.get(_correlationIDMapKey);
-		Destination local=_dispatcher.getLocalDestination();
+		Address local=_dispatcher.getLocalAddress();
 		String correlationID=(String)correlationIDMap.get(local);
 		if (correlationID!=null) {
 			Quipu rv=(Quipu)_dispatcher.getRendezVousMap().get(correlationID);
@@ -206,35 +202,39 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		}
 	}
 
-	public void onNodeAdd(ClusterEvent event) {
-		Node node=event.getNode();
+	public void onPeerAdded(ClusterEvent event) {
+		Peer node=event.getPeer();
 
 		if (_log.isDebugEnabled()) _log.debug("node joined: "+getNodeName(node));
 
-		if (_cluster.getLocalNode()==_coordinatorNode) {
+		if (_dispatcher.getLocalPeer().equals(_coordinatorNode)) {
 			_coordinator.queueRebalancing();
 		}
 
 		_partitionManager.update(node);
 	}
 
-	public void onNodeRemoved(ClusterEvent event) {
-		Node node=event.getNode();
+	public void onPeerRemoved(ClusterEvent event) {
+		Peer node=event.getPeer();
 		if (_log.isDebugEnabled()) _log.debug("node leaving: "+getNodeName(node));
-		_leavers.add(node.getDestination());
+		_leavers.add(node.getAddress());
 		if (_coordinator!=null)
 			_coordinator.queueRebalancing();
 	}
 
 
 	public boolean amCoordinator() {
-		return _coordinatorNode.getDestination().equals(_dispatcher.getLocalDestination());
+        if (null == _coordinatorNode) {
+            return false;
+        }
+        
+		return _coordinatorNode.getAddress().equals(_dispatcher.getLocalAddress());
 	}
 
-	public void onNodeFailed(ClusterEvent event) {
-		Node node=event.getNode();
+	public void onPeerFailed(ClusterEvent event) {
+		Peer node=event.getPeer();
 		if (_log.isDebugEnabled()) _log.info("node failed: "+getNodeName(node));
-		if (_leavers.remove(node.getDestination())) {
+		if (_leavers.remove(node.getAddress())) {
 			// we have already been explicitly informed of this node's wish to leave...
 			_left.remove(node);
 			if (_log.isTraceEnabled()) _log.trace("onNodeFailed:" + getNodeName(node) + "- already evacuated - ignoring");
@@ -252,14 +252,16 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	public void onCoordinatorChanged(ClusterEvent event) {
 		synchronized (_coordinatorLock) {
-			if (_log.isDebugEnabled()) _log.debug("coordinator elected: " + getNodeName(event.getNode()));
-			Node newCoordinator=event.getNode();
-			if (newCoordinator!=_coordinatorNode) {
-				if (_coordinatorNode==_cluster.getLocalNode())
-					onDismissal(event);
-				_coordinatorNode=newCoordinator;
-				if (_coordinatorNode==_cluster.getLocalNode())
-					onElection(event);
+			if (_log.isDebugEnabled()) _log.debug("coordinator elected: " + getNodeName(event.getPeer()));
+			Peer newCoordinator=event.getPeer();
+			if (false == newCoordinator.equals(_coordinatorNode)) {
+				if (null != _coordinatorNode && _coordinatorNode.equals(_dispatcher.getLocalPeer())) {
+                    onDismissal(event);
+                }
+				_coordinatorNode = newCoordinator;
+				if (_coordinatorNode.equals(_dispatcher.getLocalPeer())) {
+                    onElection(event);
+                }
 			}
 
 			_coordinatorLatch.release(); // we are still waiting in start() to find out if we are the Coordinator...
@@ -294,17 +296,17 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	}
 
 
-	public static String getNodeName(Node node) {
+	public static String getNodeName(Peer node) {
 		return node==null?"<unknown>":(String)node.getState().get(_nodeNameKey);
 	}
 
 	public boolean isCoordinator() {
 		synchronized (_coordinatorLock) {
-			return _cluster.getLocalNode()==_coordinatorNode;
+			return _dispatcher.getLocalPeer()==_coordinatorNode;
 		}
 	}
 
-	public Node getCoordinator() {
+	public Peer getCoordinator() {
 		synchronized (_coordinatorLock) {
 			return _coordinatorNode;
 		}
@@ -314,12 +316,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		return _partitionManager.getNumPartitions();
 	}
 
-	public Node getLocalNode() {
-		return _cluster.getLocalNode();
+	public Peer getLocalNode() {
+		return _dispatcher.getLocalPeer();
 	}
 
 	public Collection getRemoteNodes() {
-		return _cluster.getNodes().values();
+		return _cluster.getPeers().values();
 	}
 
 	public Map getRendezVousMap() {
@@ -337,9 +339,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		return _left;
 	}
 
-	protected int printNode(Node node) {
-		if (node!=_cluster.getLocalNode())
-			node=(Node)_cluster.getNodes().get(node.getDestination());
+	protected int printNode(Peer node) {
+		if (node!=_dispatcher.getLocalPeer())
+			node=(Peer)_cluster.getPeers().get(node.getAddress());
 		if (node==null) {
 			if (_log.isInfoEnabled()) _log.info(DIndex.getNodeName(node) + " : <unknown> - {?...}");
 			return 0;
@@ -356,8 +358,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		try {
 			InsertIMToPM request=new InsertIMToPM(name);
 			PartitionFacade pf=getPartition(name);
-			ObjectMessage reply=pf.exchange(request, timeout);
-			return ((InsertPMToIM)reply.getObject()).getSuccess();
+			Message reply=pf.exchange(request, timeout);
+			return ((InsertPMToIM)reply.getPayload()).getSuccess();
 		} catch (Exception e) {
 			_log.warn("problem inserting session key into DHT", e);
 			return false;
@@ -386,12 +388,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		protected final Log _log=LogFactory.getLog(getClass());
 
 		protected final String _nodeName;
-		protected final ObjectMessage _message;
+		protected final Message _message;
 
 		protected Sync _invocationLock;
 		protected Sync _stateLock;
 
-		public SMToIMEmoter(String nodeName, ObjectMessage message) {
+		public SMToIMEmoter(String nodeName, Message message) {
 			_nodeName=nodeName;
 			_message=message;
 		}
@@ -438,56 +440,51 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	public Motable relocate(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout, Immoter immoter) throws Exception {
 		MoveIMToPM request=new MoveIMToPM(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
-		ObjectMessage message=getPartition(sessionName).exchange(request, timeout);
+		Message message=getPartition(sessionName).exchange(request, timeout);
 
 		if (message==null) {
 			_log.error("something went wrong - what should we do?"); // TODO
 			return null;
 		}
 
-		try {
-			Serializable dm=(Serializable)message.getObject();
-			// the possibilities...
-			if (dm instanceof MoveSMToIM) {
-				MoveSMToIM req=(MoveSMToIM)dm;
-				// insert motable into contextualiser stack...
-				Motable emotable=req.getMotable();
-				if (emotable==null) {
-					_log.warn("failed relocation - 0 bytes arrived: "+sessionName);
-					return null;
-				} else {
-					if (!emotable.checkTimeframe(System.currentTimeMillis()))
-						if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
-					Emoter emoter=new SMToIMEmoter(_config.getNodeName(message.getJMSReplyTo()), message);
-					Motable immotable=Utils.mote(emoter, immoter, emotable, sessionName);
-					return immotable;
-//					if (null==immotable)
-//					return false;
-//					else {
-//					boolean answer=immoter.contextualise(null, null, null, sessionName, immotable, null);
-//					return answer;
-//					}
-				}
-			} else if (dm instanceof MovePMToIM) {
-				if (_log.isTraceEnabled()) _log.trace("unknown session: "+sessionName);
-				return null;
-			} else {
-				_log.warn("unexpected response returned - what should I do? : "+dm);
-				return null;
-			}
-		} catch (JMSException e) {
-			_log.warn("could not extract message body", e);
-		}
-		return null;
+        Serializable dm=(Serializable)message.getPayload();
+        // the possibilities...
+        if (dm instanceof MoveSMToIM) {
+            MoveSMToIM req=(MoveSMToIM)dm;
+            // insert motable into contextualiser stack...
+            Motable emotable=req.getMotable();
+            if (emotable==null) {
+                _log.warn("failed relocation - 0 bytes arrived: "+sessionName);
+                return null;
+            } else {
+                if (!emotable.checkTimeframe(System.currentTimeMillis()))
+                    if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
+                Emoter emoter=new SMToIMEmoter(_config.getPeerName(message.getReplyTo()), message);
+                Motable immotable=Utils.mote(emoter, immoter, emotable, sessionName);
+                return immotable;
+//              if (null==immotable)
+//              return false;
+//              else {
+//              boolean answer=immoter.contextualise(null, null, null, sessionName, immotable, null);
+//              return answer;
+//              }
+            }
+        } else if (dm instanceof MovePMToIM) {
+            if (_log.isTraceEnabled()) _log.trace("unknown session: "+sessionName);
+            return null;
+        } else {
+            _log.warn("unexpected response returned - what should I do? : "+dm);
+            return null;
+        }
 	}
 
 	public PartitionFacade getPartition(Object key) {
 		return _partitionManager.getPartition(key);
 	}
 
-	public String getNodeName(Destination destination) {
-		Node local=_cluster.getLocalNode();
-		Node node=destination.equals(local.getDestination())?local:(Node)_cluster.getNodes().get(destination);
+	public String getPeerName(Address address) {
+		Peer local=_dispatcher.getLocalPeer();
+		Peer node=address.equals(local.getAddress())?local:(Peer)_cluster.getPeers().get(address);
 		return getNodeName(node);
 	}
 
@@ -495,11 +492,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		return _inactiveTime;
 	}
 
-	public void regenerateMissingPartitions(Node[] living, Node[] leaving) {
+	public void regenerateMissingPartitions(Peer[] living, Peer[] leaving) {
 		_partitionManager.regenerateMissingPartitions(living, leaving);
 	}
 
-	public static PartitionKeys getPartitionKeys(Node node) {
+	public static PartitionKeys getPartitionKeys(Peer node) {
 		return ((PartitionKeys)node.getState().get(_partitionKeysKey));
 	}
 
@@ -522,7 +519,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	// StateManagerConfig API
 
-	public String getLocalNodeName() {
+	public String getLocalPeerName() {
 		return _nodeName;
 	}
 

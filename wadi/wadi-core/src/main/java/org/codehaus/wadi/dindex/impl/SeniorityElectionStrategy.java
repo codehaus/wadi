@@ -17,10 +17,9 @@
 package org.codehaus.wadi.dindex.impl;
 
 import java.util.Iterator;
-
-import org.apache.activecluster.Cluster;
-import org.apache.activecluster.Node;
-import org.apache.activecluster.election.ElectionStrategy;
+import org.codehaus.wadi.group.Cluster;
+import org.codehaus.wadi.group.ElectionStrategy;
+import org.codehaus.wadi.group.Peer;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -28,22 +27,22 @@ import org.apache.activecluster.election.ElectionStrategy;
  */
 public class SeniorityElectionStrategy implements ElectionStrategy {
 
-    public Node doElection(Cluster cluster) {
-        Node oldest=cluster.getLocalNode();
-        long earliest=getBirthTime(oldest);
-        for (Iterator i=cluster.getNodes().values().iterator(); i.hasNext();) {
-            Node candidate=(Node)i.next();
-            long birthTime=getBirthTime(candidate);
-            if (birthTime<earliest) {
-                earliest=birthTime;
-                oldest=candidate;
+    public Peer doElection(Cluster cluster) {
+        Peer oldest = cluster.getLocalPeer();
+        long earliest = getBirthTime(oldest);
+        for (Iterator i = cluster.getPeers().values().iterator(); i.hasNext();) {
+            Peer candidate = (Peer) i.next();
+            long birthTime = getBirthTime(candidate);
+            if (birthTime < earliest) {
+                earliest = birthTime;
+                oldest = candidate;
             }
         }
 
         return oldest;
     }
 
-    protected long getBirthTime(Node node) {
+    protected long getBirthTime(Peer node) {
         Long birthTimeAsLong = (Long) node.getState().get("birthTime");
         if (null == birthTimeAsLong) {
             return Long.MAX_VALUE;
@@ -51,5 +50,4 @@ public class SeniorityElectionStrategy implements ElectionStrategy {
         
         return ((Long)node.getState().get("birthTime")).longValue(); // TODO - unify state keys somewhere
     }
-
 }

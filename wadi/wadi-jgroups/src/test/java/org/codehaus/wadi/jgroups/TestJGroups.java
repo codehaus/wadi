@@ -18,9 +18,9 @@ package org.codehaus.wadi.jgroups;
 
 import junit.framework.TestCase;
 
-import org.apache.activecluster.Cluster;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.group.Cluster;
 
 //can't use Utils...
 

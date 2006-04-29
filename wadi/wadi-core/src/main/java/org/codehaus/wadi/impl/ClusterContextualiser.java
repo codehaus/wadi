@@ -21,11 +21,6 @@ import java.util.Map;
 
 import javax.jms.ObjectMessage;
 
-import org.apache.activecluster.Cluster;
-import org.apache.activecluster.ClusterEvent;
-import org.apache.activecluster.ClusterListener;
-import org.apache.activecluster.LocalNode;
-import org.apache.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
@@ -45,7 +40,12 @@ import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.dindex.StateManager;
 import org.codehaus.wadi.dindex.impl.DIndex;
+import org.codehaus.wadi.group.Cluster;
+import org.codehaus.wadi.group.ClusterEvent;
+import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Peer;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
@@ -132,7 +132,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		_dispatcher=ccc.getDispatcher();
 		_cluster=_dispatcher.getCluster();
 		_proxiedLocation = ccc.getProxiedLocation();
-		_location=new HttpProxyLocation(_dispatcher.getLocalDestination(), _proxiedLocation, ccc.getInvocationProxy());
+		_location=new HttpProxyLocation(_dispatcher.getLocalAddress(), _proxiedLocation, ccc.getInvocationProxy());
 		_dindex=ccc.getDIndex();
 		_cluster.addClusterListener(this);
 		_dindex.getStateManager().setImmigrationListener(this);
@@ -158,12 +158,12 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	}
 
 	protected void refreshEvacuationPartnersCount() {
-		LocalNode localNode=_cluster.getLocalNode();
-		Map nodes=_cluster.getNodes();
+		Peer localNode = _dispatcher.getLocalPeer();
+		Map nodes=_cluster.getPeers();
 		int count=0;
 		synchronized (nodes) { // does James modify this Map or replace it ?
 			for (Iterator i=nodes.values().iterator(); i.hasNext();) {
-				Node node=(Node)i.next();
+				Peer node=(Peer)i.next();
 				if (node!=localNode && !node.getState().containsKey(_shuttingDownKey))
 					count++;
 			}
@@ -290,9 +290,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	 */
 	class ImmigrationEmoter extends AbstractChainedEmoter {
 
-		protected final ObjectMessage _message;
+		protected final Message _message;
 
-		public ImmigrationEmoter(ObjectMessage message) {
+		public ImmigrationEmoter(Message message) {
 			_message=message;
 		}
 
@@ -317,7 +317,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		}
 	}
 
-	public void onImmigration(ObjectMessage message, Motable emotable) {
+	public void onImmigration(Message message, Motable emotable) {
 		String name=emotable.getName();
 		if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+name);
 		Sync invocationLock=_locker.getLock(name, emotable);
@@ -352,20 +352,20 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 	// ClusterListener
 
-	public void onNodeAdd(ClusterEvent event) {
+	public void onPeerAdded(ClusterEvent event) {
 		//_log.info("node joined: "+event.getNode().getState().get(_nodeNameKey));
 		refreshEvacuationPartnersCount();
 		onNodeStateChange(event);
 	}
 
-	public void onNodeUpdate(ClusterEvent event) {
+	public void onPeerUpdated(ClusterEvent event) {
 		//_log.info("node updated: "+event.getNode().getState().get(_nodeNameKey));
 		refreshEvacuationPartnersCount();
 		onNodeStateChange(event);
 	}
 
 	public void onNodeStateChange(ClusterEvent event) {
-		Map state=event.getNode().getState();
+		Map state=event.getPeer().getState();
 		String nodeName=(String)state.get(_nodeNameKey);
 
 		if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
@@ -393,16 +393,16 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		// TODO - all needs complete rethink
 	}
 
-	public void onNodeRemoved(ClusterEvent event) {
-		Map state=event.getNode().getState();
+	public void onPeerRemoved(ClusterEvent event) {
+		Map state=event.getPeer().getState();
 		String nodeName=(String)state.get(_nodeNameKey);
 		if (_log.isInfoEnabled()) _log.info("node left: " + nodeName);
 		refreshEvacuationPartnersCount();
 		ensureEvacuationLeft(nodeName);
 	}
 
-	public void onNodeFailed(ClusterEvent event)  {
-		Map state=event.getNode().getState();
+	public void onPeerFailed(ClusterEvent event)  {
+		Map state=event.getPeer().getState();
 		String nodeName=(String)state.get(_nodeNameKey);
 		if (_log.isInfoEnabled()) _log.info("node failed: " + nodeName);
 		refreshEvacuationPartnersCount();
@@ -410,7 +410,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	}
 
 	public void onCoordinatorChanged(ClusterEvent event) {
-		if (_log.isTraceEnabled()) _log.trace("coordinator changed: " + event.getNode().getState().get(_nodeNameKey)); // we don't use this...
+		if (_log.isTraceEnabled()) _log.trace("coordinator changed: " + event.getPeer().getState().get(_nodeNameKey)); // we don't use this...
 	}
 
 	protected int _locationMaxInactiveInterval=30;

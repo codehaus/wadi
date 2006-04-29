@@ -16,9 +16,6 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
-import javax.jms.Destination;
-import javax.jms.ObjectMessage;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.DIndexRequest;
@@ -28,7 +25,9 @@ import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
 import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Message;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
@@ -54,7 +53,7 @@ public class PartitionFacade extends AbstractPartition {
         super(key);
         _config=config;
         _timeStamp=timeStamp;
-        _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalNodeName());
+        _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalPeerName());
         if (content instanceof UnknownPartition) {
         	try {
         		_lock.writeLock().acquire();
@@ -124,7 +123,7 @@ public class PartitionFacade extends AbstractPartition {
     		}
     	}
 
-    public void setContentRemote(long timeStamp, Dispatcher dispatcher, Destination location) {
+    public void setContentRemote(long timeStamp, Dispatcher dispatcher, Address location) {
     	Sync sync=_lock.writeLock(); // EXCLUSIVE
     	boolean acquired=false;
     	try {
@@ -134,9 +133,9 @@ public class PartitionFacade extends AbstractPartition {
     		if (timeStamp>_timeStamp) {
     			_timeStamp=timeStamp;
     			if (_content instanceof RemotePartition) {
-    				((RemotePartition)_content).setLocation(location);
+    				((RemotePartition)_content).setAddress(location);
     			} else {
-    				if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+_config.getNodeName(location));
+    				if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+_config.getPeerName(location));
     				_content=new RemotePartition(_key, _config, location);
     			}
     		}
@@ -148,7 +147,7 @@ public class PartitionFacade extends AbstractPartition {
     	}
     }
 
-    public ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception {
+    public Message exchange(DIndexRequest request, long timeout) throws Exception {
     	if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
     	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
@@ -165,7 +164,7 @@ public class PartitionFacade extends AbstractPartition {
     	}	
     }
 
-    public void onMessage(ObjectMessage message, InsertIMToPM request) {
+    public void onMessage(Message message, InsertIMToPM request) {
     	if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
     	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
@@ -181,7 +180,7 @@ public class PartitionFacade extends AbstractPartition {
     	}
     }
 
-    public void onMessage(ObjectMessage message, DeleteIMToPM request) {
+    public void onMessage(Message message, DeleteIMToPM request) {
     	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
     	try {
@@ -196,7 +195,7 @@ public class PartitionFacade extends AbstractPartition {
     	}
     }
 
-    public void onMessage(ObjectMessage message, EvacuateIMToPM request) {
+    public void onMessage(Message message, EvacuateIMToPM request) {
     	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
     	try {
@@ -212,7 +211,7 @@ public class PartitionFacade extends AbstractPartition {
     }
 
     // should superceded above method
-    public void onMessage(ObjectMessage message, MoveIMToPM request) {
+    public void onMessage(Message message, MoveIMToPM request) {
     	Sync sync=_lock.readLock(); // SHARED
     	boolean acquired=false;
     	try {

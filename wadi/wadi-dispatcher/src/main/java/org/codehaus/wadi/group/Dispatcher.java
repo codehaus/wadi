@@ -19,104 +19,76 @@ package org.codehaus.wadi.group;
 import java.io.Serializable;
 import java.util.Map;
 
-import javax.jms.Destination;
-import javax.jms.ObjectMessage;
-
-import org.apache.activecluster.Cluster;
-import org.apache.activecluster.ClusterListener;
-
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1563 $
  */
-public interface Dispatcher {
-
-    interface InternalDispatcher {
-        void dispatch(ObjectMessage om, Serializable obj) throws Exception;
-        void incCount();
-        void decCount();
-        int getCount();
-    }
-
-
+public interface Dispatcher extends MessageListener {
     void init(DispatcherConfig config) throws Exception;
 
-	InternalDispatcher register(Object target, String methodName, Class type);
+    void register(ServiceEndpoint internalDispatcher);
 
-	InternalDispatcher newRegister(Object target, String methodName, Class type);
+    void unregister(ServiceEndpoint internalDispatcher, int nbAttemp, long delayMillis);
 
-	boolean deregister(String methodName, Class type, int timeout);
+    void send(Address to, Message message) throws MessageExchangeException;
 
-	boolean newDeregister(String methodName, Class type, int timeout);
+    void send(Address destination, Serializable request) throws MessageExchangeException;
 
-	void register(Class type, long timeout);
+	void send(Address from, Address to, String outgoingCorrelationId, Serializable body) throws MessageExchangeException;
 
-	boolean send(Destination from, Destination to, String outgoingCorrelationId, Serializable body);
+	Message exchangeSend(Address from, Address to, Serializable body, long timeout) throws MessageExchangeException;
 
-	ObjectMessage exchangeSend(Destination from, Destination to, Serializable body, long timeout);
+	Message exchangeSend(Address from, Address to, Serializable body, long timeout, String targetCorrelationId) throws MessageExchangeException;
 
-	ObjectMessage exchangeSend(Destination from, Destination to, Serializable body, long timeout, String targetCorrelationId);
+	Message exchangeSend(Address from, Address to, String outgoingCorrelationId, Serializable body, long timeout) throws MessageExchangeException;
 
-	ObjectMessage exchangeSendLoop(Destination from, Destination to, Serializable body, long timeout, int iterations);
+	void reply(Address from, Address to, String incomingCorrelationId, Serializable body) throws MessageExchangeException;
 
-	ObjectMessage exchangeSend(Destination from, Destination to, String outgoingCorrelationId, Serializable body, long timeout);
+	void reply(Message message, Serializable body) throws MessageExchangeException;
 
-	boolean reply(Destination from, Destination to, String incomingCorrelationId, Serializable body);
+	void forward(Message message, Address destination) throws MessageExchangeException;
 
-	boolean reply(ObjectMessage message, Serializable body);
-
-	ObjectMessage exchangeReply(ObjectMessage message, Serializable body, long timeout);
-
-	ObjectMessage exchangeReplyLoop(ObjectMessage message, Serializable body, long timeout);
-
-	boolean forward(ObjectMessage message, Destination destination);
-
-	boolean forward(ObjectMessage message, Destination destination, Serializable body);
-
-	Map getRendezVousMap();
+	void forward(Message message, Address destination, Serializable body) throws MessageExchangeException;
 
 	String nextCorrelationId();
 
-	Quipu setRendezVous(String correlationId, int numLlamas);
+    Map getRendezVousMap();
 
-	ObjectMessage attemptRendezVous(String correlationId, Quipu rv, long timeout);
+    Quipu setRendezVous(String correlationId, int numLlamas);
+
+	Message attemptRendezVous(String correlationId, Quipu rv, long timeout);
 
 	// TODO - rather than owning this, we should be given a pointer to it at init()
 	// time, and this accessor should be removed...
 	PooledExecutor getExecutor();
 
-	Destination getLocalDestination();
-	Destination getClusterDestination();
-  Cluster getCluster();
+    LocalPeer getLocalPeer();
+
+    Address getLocalAddress();
+    
+    Cluster getCluster();
+
+    Address getClusterAddress();
 
 	Map getDistributedState();
-	void setDistributedState(Map state) throws Exception;
+    
+	void setDistributedState(Map state) throws MessageExchangeException;
 
-	void start() throws Exception;
-	void stop() throws Exception;
+	void start() throws MessageExchangeException;
 
-	String getNodeName(Destination destination);
+    void stop() throws MessageExchangeException;
 
-    String getIncomingCorrelationId(ObjectMessage message) throws Exception;
-    void setIncomingCorrelationId(ObjectMessage message, String correlationId) throws Exception;
-    String getOutgoingCorrelationId(ObjectMessage message) throws Exception;
-    void setOutgoingCorrelationId(ObjectMessage message, String correlationId) throws Exception;
-	void send(Destination to, ObjectMessage message) throws Exception;
-	ObjectMessage createObjectMessage() throws Exception;
+	String getPeerName(Address address);
 
-	String getNodeName();
-	long getInactiveTime();
-	int getNumNodes();
+	Message createMessage();
 
-	// yeugh - AC i/f is creeping in here - temporary...
+	String getPeerName();
+	
+    long getInactiveTime();
 
-	void setClusterListener(ClusterListener listener);
+    int getNumNodes();
 
-    Destination getDestination(String name);
-
-    String getLocalNodeName();
-
-    void send(Destination destination, Serializable request) throws Exception;
+    Address getAddress(String name);
 }

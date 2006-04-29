@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -66,6 +65,7 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.AbsoluteEvicter;
 import org.codehaus.wadi.impl.AbstractContextualiser;
@@ -588,7 +588,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 			System.out.println("PROXYING");
 		}
 
-		public Destination getDestination(){return null;}
+		public Address getAddress(){return null;}
 	}
 
 	public void donottestCluster() throws Exception {

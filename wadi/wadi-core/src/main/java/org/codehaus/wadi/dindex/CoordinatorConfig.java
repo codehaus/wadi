@@ -19,9 +19,9 @@ package org.codehaus.wadi.dindex;
 import java.util.Collection;
 import java.util.Map;
 
-import org.apache.activecluster.Cluster;
-import org.apache.activecluster.Node;
+import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Peer;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -31,7 +31,7 @@ public interface CoordinatorConfig {
 
     int getNumPartitions();
 
-    Node getLocalNode();
+    Peer getLocalNode();
     Collection getRemoteNodes();
     Cluster getCluster();
     Dispatcher getDispatcher();
@@ -42,6 +42,6 @@ public interface CoordinatorConfig {
     Collection getLeft();
 
     long getInactiveTime();
-    void regenerateMissingPartitions(Node[] living, Node[] leaving);
+    void regenerateMissingPartitions(Peer[] living, Peer[] leaving);
 
 }

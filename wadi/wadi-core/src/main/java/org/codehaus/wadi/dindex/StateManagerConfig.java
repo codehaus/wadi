@@ -16,14 +16,13 @@
  */
 package org.codehaus.wadi.dindex;
 
-import javax.jms.Destination;
 
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
-
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
@@ -31,19 +30,21 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public interface StateManagerConfig {
-
   PartitionFacade getPartition(int key);
+
   PartitionFacade getPartition(Object key);
+  
   int getNumPartitions();
 
-  String getLocalNodeName();
-  String getNodeName(Destination destination);
+  String getLocalPeerName();
+  
+  String getPeerName(Address address);
 
   Dispatcher getDispatcher();
 
   boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
+  
   long getInactiveTime();
 
   Sync getInvocationLock(String name);
-
 }

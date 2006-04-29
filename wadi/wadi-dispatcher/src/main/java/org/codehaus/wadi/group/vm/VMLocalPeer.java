@@ -13,13 +13,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.replication.storage.remoting;
+package org.codehaus.wadi.group.vm;
 
-import javax.jms.Destination;
+import java.util.Map;
+import org.codehaus.wadi.group.LocalPeer;
+import org.codehaus.wadi.group.MessageExchangeException;
+
 
 /**
  * 
- * @version $Revision: 1538 $
+ * @version $Revision: 1603 $
  */
-public class BaseMockDestination implements Destination {
+public class VMLocalPeer extends VMPeer implements LocalPeer {
+
+    public VMLocalPeer(String name) {
+        super(name);
+    }
+    
+    public void setState(Map newState) throws MessageExchangeException {
+        synchronized (state) {
+            state.clear();
+            state.putAll(newState);
+        }
+    }
+    
+    public String toString() {
+        return "Local Node :" + name;
+    }
 }

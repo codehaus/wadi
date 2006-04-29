@@ -19,17 +19,18 @@ package org.codehaus.wadi.jgroups;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.jms.Destination;
 
-import org.apache.activecluster.Node;
+import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.Peer;
 
-public class JGroupsRemoteNode implements Node {
 
-  protected final JGroupsCluster _cluster;
-  protected final JGroupsDestination _destination;
+public class JGroupsRemoteNode implements Peer {
+
+  protected final JGroupsClusterMessageListener _cluster;
+  protected final JGroupsAddress _destination;
   protected Map _clusterState;
 
-  public JGroupsRemoteNode(JGroupsCluster cluster, JGroupsDestination destination, Map state) {
+  public JGroupsRemoteNode(JGroupsClusterMessageListener cluster, JGroupsAddress destination, Map state) {
     super();
     _cluster=cluster;
     _destination=destination;
@@ -38,7 +39,7 @@ public class JGroupsRemoteNode implements Node {
 
   // 'Node' api
 
-  public Destination getDestination() {
+  public Address getAddress() {
     return _destination;
   }
 

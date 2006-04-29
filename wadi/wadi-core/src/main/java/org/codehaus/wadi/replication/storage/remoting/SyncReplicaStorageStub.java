@@ -15,8 +15,8 @@
  */
 package org.codehaus.wadi.replication.storage.remoting;
 
-import javax.jms.Destination;
 
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 
@@ -27,8 +27,8 @@ import org.codehaus.wadi.replication.common.ReplicaInfo;
  */
 public class SyncReplicaStorageStub extends BasicReplicaStorageStub {
     
-    public SyncReplicaStorageStub(Dispatcher dispatcher, Destination[] destinations) {
-        super(dispatcher, destinations);
+    public SyncReplicaStorageStub(Dispatcher dispatcher, Address[] addresses) {
+        super(dispatcher, addresses);
     }
 
     protected ReplicaStorageRequest newCreateRequest(Object key, ReplicaInfo replicaInfo) {
