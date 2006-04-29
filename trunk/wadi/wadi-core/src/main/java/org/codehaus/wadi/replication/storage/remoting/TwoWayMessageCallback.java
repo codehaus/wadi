@@ -15,14 +15,14 @@
  */
 package org.codehaus.wadi.replication.storage.remoting;
 
-import javax.jms.ObjectMessage;
+import org.codehaus.wadi.group.Message;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
 interface TwoWayMessageCallback {
-    void receivedMessage(ObjectMessage message);
+    void receivedMessage(Message message);
     
     boolean testStopSend();
 }

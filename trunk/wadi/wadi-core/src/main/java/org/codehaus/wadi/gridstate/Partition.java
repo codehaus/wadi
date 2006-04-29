@@ -18,10 +18,10 @@ package org.codehaus.wadi.gridstate;
 
 import java.util.Map;
 
-import javax.jms.Destination;
 
 import org.codehaus.wadi.PMPartition;
 import org.codehaus.wadi.gridstate.impl.Location;
+import org.codehaus.wadi.group.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
@@ -30,16 +30,16 @@ import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
  * @version $Revision$
  */
 public interface Partition extends PMPartition {
-
 	void init(PartitionConfig config);
 
 	// Serializable executeSync(Object process);
 	// void executeASync(Object process);
 
-	Destination getDestination();
+	Address getAddress();
 
 	Location getLocation(Object key);
-	ReadWriteLock getLock();
-	Map getMap();
 
+    ReadWriteLock getLock();
+
+    Map getMap();
 }

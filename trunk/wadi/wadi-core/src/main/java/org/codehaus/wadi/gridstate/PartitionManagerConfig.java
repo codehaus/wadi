@@ -16,14 +16,12 @@
  */
 package org.codehaus.wadi.gridstate;
 
-import javax.jms.Destination;
+import org.codehaus.wadi.group.Address;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public interface PartitionManagerConfig {
-
-	Destination getLocalDestination();
-
+	Address getLocalAddress();
 }

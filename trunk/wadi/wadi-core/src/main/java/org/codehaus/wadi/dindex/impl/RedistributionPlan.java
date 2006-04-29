@@ -22,9 +22,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.apache.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.group.Peer;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -36,11 +36,11 @@ public class RedistributionPlan {
     protected final List _producers = new ArrayList();
     protected final List _consumers = new ArrayList();
 
-    public RedistributionPlan(Node[] living, Node[] leaving, int totalNumPartitions) {
+    public RedistributionPlan(Peer[] living, Peer[] leaving, int totalNumPartitions) {
         int numPartitionsPerNode=totalNumPartitions/living.length;
 
         for (int i=0; i<leaving.length; i++) {
-            Node node=leaving[i];
+            Peer node=leaving[i];
             int numPartitions=DIndex.getPartitionKeys(node).size();
 //            _log.info("LEAVING: "+numPartitions);
             if (numPartitions>0)
@@ -48,7 +48,7 @@ public class RedistributionPlan {
         }
 
         for (int i=0; i<living.length; i++) {
-            Node node=living[i];
+            Peer node=living[i];
             int numPartitions=DIndex.getPartitionKeys(node).size();
 //            _log.info("LIVING: "+numPartitions);
             decide(node, numPartitions, numPartitionsPerNode, _producers, _consumers);
@@ -79,7 +79,7 @@ public class RedistributionPlan {
         assert (remainingPartitions==0);
     }
 
-    protected void decide(Node node, int numPartitions, int numPartitionsPerNode, Collection producers, Collection consumers) {
+    protected void decide(Peer node, int numPartitions, int numPartitionsPerNode, Collection producers, Collection consumers) {
         int deviation=numPartitions-numPartitionsPerNode;
 //        _log.info("DEVIATION: "+deviation);
         if (deviation>0) {

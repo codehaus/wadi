@@ -17,21 +17,19 @@
 package org.codehaus.wadi.jgroups;
 
 import java.util.Map;
-
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
-
-import org.apache.activecluster.LocalNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.LocalPeer;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.jgroups.messages.StateUpdate;
 
-public class JGroupsLocalNode implements LocalNode {
+public class JGroupsLocalNode implements LocalPeer {
 
   protected final Log _log=LogFactory.getLog(getClass());
   protected final JGroupsCluster _cluster;
-  protected JGroupsDestination _destination;
+  protected JGroupsAddress _destination;
   protected Map _clusterState;
   protected Map _localState;
 
@@ -52,11 +50,11 @@ public class JGroupsLocalNode implements LocalNode {
       }
   }
 
-  public Destination getDestination() {
+  public Address getAddress() {
     return _destination;
   }
 
-  public void setDestination(JGroupsDestination destination) {
+  public void setDestination(JGroupsAddress destination) {
     _destination=destination;
     synchronized (_clusterState) {
       _clusterState.put(_destination.getAddress(), _localState);
@@ -79,8 +77,7 @@ public class JGroupsLocalNode implements LocalNode {
 
   // 'JGroupsLocalNode' api
 
-  public void setState(Map state) throws JMSException {
-
+  public void setState(Map state) throws MessageExchangeException {
     if (_destination==null) {
       // we have not yet been initialised...
       _localState=state;
@@ -92,13 +89,12 @@ public class JGroupsLocalNode implements LocalNode {
       }
 
       if (tmp!=null) {
-        ObjectMessage message=new JGroupsObjectMessage();
-        message.setJMSReplyTo(_destination);
-        message.setObject(new StateUpdate(state));
-        _cluster.send(_cluster.getDestination(), message); // broadcast
+        Message message=new JGroupsMessage();
+        message.setReplyTo(_destination);
+        message.setPayload(new StateUpdate(state));
+        _cluster.send(_cluster.getAddress(), message);
       }
     }
-
   }
 
   protected static final String _prefix="<"+Utils.basename(JGroupsLocalNode.class)+": ";

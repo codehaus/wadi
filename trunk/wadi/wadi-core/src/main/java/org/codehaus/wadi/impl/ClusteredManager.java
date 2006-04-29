@@ -22,9 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.jms.Destination;
 
-import org.apache.activecluster.Node;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Collapser;
@@ -49,8 +47,10 @@ import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionMapper;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
+import org.codehaus.wadi.group.Peer;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -87,7 +87,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		// must be done before super.init() so that ContextualiserConfig contains a Cluster
 		try {
 			_dispatcher.init(this);
-			String nodeName=_dispatcher.getNodeName();
+			String nodeName=_dispatcher.getPeerName();
 			int numPartitions=_partitionManager.getNumPartitions();
 			_distributedState.put("name", nodeName);
 			_distributedState.put("http", _location);
@@ -164,7 +164,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	// DistributableContextualiserConfig
 
 	public String getNodeName() {
-		return _dispatcher.getNodeName();
+		return _dispatcher.getPeerName();
 	}
 
 	public Object getDistributedState(Object key) {
@@ -244,7 +244,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		return _location;
 	}
 
-	public Node getCoordinatorNode() {
+	public Peer getCoordinatorNode() {
 		return _dindex.getCoordinator();
 	}
 
@@ -257,13 +257,16 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		return _contextualiser.getDemoter(name, immotable);
 	}
 
-	public String getNodeName(Destination destination) {
-		return _dispatcher.getNodeName(destination);
+	public String getPeerName(Address address) {
+		return _dispatcher.getPeerName(address);
 	}
 
 	public Sync getInvocationLock(String name) {
 		return _collapser.getLock(name);
 	}
 
+    public Peer getCoordinator() {
+        return _dindex.getCoordinator();
+    }
 }
 

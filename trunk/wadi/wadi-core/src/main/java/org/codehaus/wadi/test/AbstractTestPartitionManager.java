@@ -19,13 +19,7 @@ package org.codehaus.wadi.test;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.jms.Destination;
-
 import junit.framework.TestCase;
-
-import org.apache.activecluster.ClusterEvent;
-import org.apache.activecluster.Node;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
@@ -34,10 +28,12 @@ import org.codehaus.wadi.dindex.PartitionManager;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.SimplePartitionManager;
 import org.codehaus.wadi.dindex.impl.SimplePartitionManager.Callback;
+import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.impl.SimplePartitionMapper;
-
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 //Put this off until later - no current need to disentangle DIndex and PartitionManager, althought it will have to be done eventually...
@@ -82,7 +78,7 @@ public abstract class AbstractTestPartitionManager extends TestCase {
 		Map distributedState=new HashMap();
 		Callback callback=new Callback() {
 
-			public void onNodeRemoved(ClusterEvent event) {
+			public void onPeerRemoved(ClusterEvent event) {
 				// TODO Auto-generated method stub
 
 			}
@@ -106,10 +102,10 @@ public abstract class AbstractTestPartitionManager extends TestCase {
 
 			}
 
-			public Node getCoordinatorNode() {
-				// TODO Auto-generated method stub
-				return null;
-			}
+            public Peer getCoordinator() {
+                // TODO Auto-generated method stub
+                return null;
+            }
 
 			public long getInactiveTime() {
 				// TODO Auto-generated method stub
@@ -121,7 +117,7 @@ public abstract class AbstractTestPartitionManager extends TestCase {
 				return false;
 			}
 
-			public String getNodeName(Destination destination) {
+			public String getPeerName(Address address) {
 				// TODO Auto-generated method stub
 				return null;
 			}

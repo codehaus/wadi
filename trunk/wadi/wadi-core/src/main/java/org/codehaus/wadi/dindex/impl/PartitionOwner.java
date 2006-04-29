@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
-import org.apache.activecluster.Node;
+import org.codehaus.wadi.group.Peer;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -24,11 +24,11 @@ import org.apache.activecluster.Node;
  */
 public class PartitionOwner {
 
-    protected Node _node;
+    protected Peer _node;
     protected int _deviation;
     protected boolean _leaving;
 
-    public PartitionOwner(Node node, int deviation, boolean leaving) {
+    public PartitionOwner(Peer node, int deviation, boolean leaving) {
         _node=node;
         _deviation=deviation;
         _leaving=leaving;

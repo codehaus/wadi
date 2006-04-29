@@ -18,7 +18,7 @@ package org.codehaus.wadi.dindex.newmessages;
 
 import java.io.Serializable;
 
-import javax.jms.Destination;
+import org.codehaus.wadi.group.Address;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -27,11 +27,11 @@ import javax.jms.Destination;
 public class MovePMToSM implements Serializable {
 
 	protected Object _key;
-	protected Destination _im;
-	protected Destination _pm;
+	protected Address _im;
+	protected Address _pm;
 	protected String _imCorrelationId;
 
-	public MovePMToSM(Object key, Destination im, Destination pm, String imCorrelationId) {
+	public MovePMToSM(Object key, Address im, Address pm, String imCorrelationId) {
 		_key=key;
 		_im=im;
 		_pm=im;
@@ -46,11 +46,11 @@ public class MovePMToSM implements Serializable {
 		return _key;
 	}
 
-	public Destination getIM() {
+	public Address getIM() {
 		return _im;
 	}
 
-	public Destination getPM() {
+	public Address getPM() {
 		return _pm;
 	}
 

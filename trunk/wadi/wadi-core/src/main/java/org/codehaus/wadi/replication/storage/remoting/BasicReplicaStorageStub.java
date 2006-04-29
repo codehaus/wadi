@@ -20,16 +20,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.StreamerConfig;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
@@ -44,13 +42,15 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
     private static final Log log = LogFactory.getLog(BasicReplicaStorageStub.class);
     
     private final Dispatcher dispatcher;
-    private final Destination[] destinations;
+    private final Address[] destinations;
     
-    public BasicReplicaStorageStub(Dispatcher dispatcher, Destination[] destinations) {
+    public BasicReplicaStorageStub(Dispatcher dispatcher, Address[] destinations) {
         this.dispatcher = dispatcher;
         this.destinations = destinations;
 
-        dispatcher.register(ReplicaStorageResult.class, 1000);
+        // TODO - need to dispose...
+        ServiceEndpointBuilder endpointBuilder = new ServiceEndpointBuilder();
+        endpointBuilder.addCallback(dispatcher, ReplicaStorageResult.class);
     }
 
     public void mergeCreate(Object key, ReplicaInfo replicaInfo) {
@@ -72,17 +72,12 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
 
     public ReplicaInfo retrieveReplicaInfo(Object key) {
         RetrieveReplicaInfoRequest command = new RetrieveReplicaInfoRequest(key);
-        ObjectMessage message = sendCommand(command, new MinimumReceivedMessageCallback(1));
+        Message message = sendCommand(command, new MinimumReceivedMessageCallback(1));
         if (null == message) {
             return null;
         }
         
-        ReplicaStorageResult result = null;
-        try {
-            result = (ReplicaStorageResult) message.getObject();
-        } catch (JMSException e) {
-            log.error(e);
-        }
+        ReplicaStorageResult result = (ReplicaStorageResult) message.getPayload();
         ReplicaInfo info = (ReplicaInfo) result.getPayload();
         info = transformFromStorage(info);
         return info;
@@ -104,12 +99,12 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
         return new UpdateRequest(key, replicaInfo);
     }
 
-    protected ObjectMessage sendCommand(ReplicaStorageRequest command) {
+    protected Message sendCommand(ReplicaStorageRequest command) {
         return sendCommand(command, null);
     }    
     
-    protected ObjectMessage sendCommand(ReplicaStorageRequest command, TwoWayMessageCallback callback) {
-        ObjectMessage message = null;
+    protected Message sendCommand(ReplicaStorageRequest command, TwoWayMessageCallback callback) {
+        Message message = null;
         if (command.isOneWay()) {
             sendOneWay(command);
         } else {
@@ -121,18 +116,18 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
         return message;
     }
 
-    protected ObjectMessage sendTwoWay(ReplicaStorageRequest command, TwoWayMessageCallback callback) {
-        ObjectMessage message = null;
+    protected Message sendTwoWay(ReplicaStorageRequest command, TwoWayMessageCallback callback) {
+        Message message = null;
         for (int i = 0; i < destinations.length && !callback.testStopSend(); i++) {
-            Destination destination = destinations[i];
+            Address Address = destinations[i];
             try {
-                Destination from = dispatcher.getLocalDestination();
+                Address from = dispatcher.getLocalAddress();
                 long replyTimeout = command.getTwoWayTimeout();
-                message = dispatcher.exchangeSend(from, destination, command, replyTimeout);
+                message = dispatcher.exchangeSend(from, Address, command, replyTimeout);
                 callback.receivedMessage(message);
             } catch (Exception e) {
                 log.warn("Error when sending command " + command  + 
-                        " to destination " + destination, e);
+                        " to Address " + Address, e);
             }
         }
         return message;
@@ -140,12 +135,12 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
 
     protected void sendOneWay(ReplicaStorageRequest command) {
         for (int i = 0; i < destinations.length; i++) {
-            Destination destination = destinations[i];
+            Address Address = destinations[i];
             try {
-                dispatcher.send(destination, command);
+                dispatcher.send(Address, command);
             } catch (Exception e) {
                 log.warn("Error when sending command " + command  + 
-                        " to destination " + destination, e);
+                        " to Address " + Address, e);
             }
         }
     }

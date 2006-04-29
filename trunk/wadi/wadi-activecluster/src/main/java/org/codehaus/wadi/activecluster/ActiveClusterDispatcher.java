@@ -19,20 +19,21 @@ package org.codehaus.wadi.activecluster;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
-import javax.jms.ObjectMessage;
-
-import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterFactory;
-import org.apache.activecluster.ClusterListener;
+import org.apache.activecluster.LocalNode;
 import org.apache.activecluster.Node;
 import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.Cluster;
+import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.DispatcherConfig;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
 
 /**
@@ -42,26 +43,27 @@ import org.codehaus.wadi.group.impl.AbstractDispatcher;
  * @version $Revision$
  */
 public class ActiveClusterDispatcher extends AbstractDispatcher {
-
-	protected static String _incomingCorrelationIdKey="incomingCorrelationId";
-	protected static String _outgoingCorrelationIdKey="outgoingCorrelationId";
-
-	protected Cluster _cluster;
+	protected org.apache.activecluster.Cluster _cluster;
 	protected MessageConsumer _clusterConsumer;
 	protected MessageConsumer _nodeConsumer;
 
 	protected final String _clusterUri;
+    private final WADIMessageListener _messageListener;
 
+    private Cluster _wadiCluster;
+    protected org.codehaus.wadi.group.LocalPeer _localNode;
+    
 	public ActiveClusterDispatcher(String clusterName, String nodeName, String clusterUri, long inactiveTime) {
 		super(clusterName, nodeName, inactiveTime);
 		_clusterUri=clusterUri;
 		_log=LogFactory.getLog(getClass()+"#"+_nodeName);
+        
+        _messageListener = new WADIMessageListener(this);
 	}
 
 	// 5 calls
-
 	public Cluster getCluster() {
-		return _cluster;
+		return _wadiCluster;
 	}
 
 	// soon to be obsolete...
@@ -69,7 +71,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 	public MessageConsumer addDestination(Destination destination) throws JMSException {
 		boolean excludeSelf=true;
 		MessageConsumer consumer=_cluster.createConsumer(destination, null, excludeSelf);
-		consumer.setMessageListener(this);
+		consumer.setMessageListener(_messageListener);
 		return consumer;
 	}
 
@@ -98,23 +100,30 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 		boolean excludeSelf;
 		excludeSelf=false;
 		_clusterConsumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
-		_clusterConsumer.setMessageListener(this);
+		_clusterConsumer.setMessageListener(_messageListener);
 		excludeSelf=false;
 		_nodeConsumer=_cluster.createConsumer(_cluster.getLocalNode().getDestination(), null, excludeSelf);
-		_nodeConsumer.setMessageListener(this);
+		_nodeConsumer.setMessageListener(_messageListener);
+
+        _wadiCluster = new ACClusterAdapter(_cluster);
+        _localNode = new ACLocalNodeAdapter(_cluster.getLocalNode());
 	}
 
 	//-----------------------------------------------------------------------------------------------
 	// Dispatcher API
 
-	public void start() throws Exception {
-		_cluster.start();
+	public void start() throws MessageExchangeException {
+		try {
+            _cluster.start();
+        } catch (JMSException e) {
+            throw new MessageExchangeException(e);
+        }
         Map distributedState = getDistributedState();
         distributedState.put("nodeName", _nodeName);
         setDistributedState(distributedState);
 	}
 
-	public void stop() throws Exception {
+	public void stop() throws MessageExchangeException {
 		// shut down activemq cleanly - what happens if we are running more than one distributable webapp ?
 		// there must be an easier way - :-(
 
@@ -127,71 +136,88 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 //		if (container!=null)
 //			container.stop(); // for peer://
 
-		_cluster.stop();
-		Thread.sleep(5*1000);
+		try {
+            _cluster.stop();
+            Thread.sleep(5*1000);
+        } catch (JMSException e) {
+            throw new MessageExchangeException(e);
+        } catch (InterruptedException e) {
+            throw new MessageExchangeException(e);
+        }
 	}
 
 	public int getNumNodes() {
 		return _cluster.getNodes().size()+1; // TODO - really inefficient... - allocates a Map
 	}
 
-	public ObjectMessage createObjectMessage() throws Exception {
-		return _cluster.createObjectMessage();
+	public Message createMessage() {
+		try {
+            return new ACObjectMessageAdapter(_cluster.createObjectMessage());
+        } catch (JMSException e) {
+            throw new RuntimeJMSException(e);
+        }
 	}
 
-	public void send(Destination to, ObjectMessage message) throws Exception {
+	public void send(Address to, Message message) throws MessageExchangeException {
 		if (_messageLog.isTraceEnabled()) {
-			try {
-				_messageLog.trace("outgoing: "+message.getObject()+" {"+getNodeName(message.getJMSReplyTo())+"->"+getNodeName(message.getJMSDestination())+"} - "+getIncomingCorrelationId(message)+"/"+getOutgoingCorrelationId(message)+" on "+Thread.currentThread().getName());
-			} catch (JMSException e) {
-				_log.warn("problem extracting message content", e);
-			}
+            _messageLog.trace("outgoing: "+message.getPayload()+" {"+getInternalPeerName(message.getReplyTo())+"->"+getInternalPeerName(message.getAddress())+"} - "+message.getIncomingCorrelationId()+"/"+message.getOutgoingCorrelationId()+" on "+Thread.currentThread().getName());
 		}
-		_cluster.send(to, message);
+		try {
+            _cluster.send(ACDestinationAdapter.unwrap(to), ACObjectMessageAdapter.unwrap(message));
+        } catch (JMSException e) {
+            throw new MessageExchangeException(e);
+        }
 	}
 
-    public String getLocalNodeName() {
-        Destination localDestination = getLocalDestination();
-        String nodeName = getNodeName(localDestination);
-        return nodeName;
-    }
-
-	public Destination getLocalDestination() {
-		return _cluster.getLocalNode().getDestination();
+	public Address getLocalAddress() {
+		return _localNode.getAddress();
 	}
 
-	public Destination getClusterDestination() {
-		return _cluster.getDestination();
+	public Address getClusterAddress() {
+		return _wadiCluster.getAddress();
 	}
 
 	public Map getDistributedState() {
 		return _cluster.getLocalNode().getState();
 	}
 
-	public void setDistributedState(Map state) throws Exception {
-		_cluster.getLocalNode().setState(state);
+	public void setDistributedState(Map state) throws MessageExchangeException {
+		try {
+            _cluster.getLocalNode().setState(state);
+        } catch (JMSException e) {
+            throw new MessageExchangeException(e);
+        }
 	}
 
-    public Destination getDestination(String nodeName) {
-        if (getLocalNodeName().equals(nodeName)) {
-            return getLocalDestination();
+    public Address getAddress(String nodeName) {
+        if (getLocalPeer().getName().equals(nodeName)) {
+            return _localNode.getAddress();
         }
 
         Map destToNode = _cluster.getNodes();
         for (Iterator iter = destToNode.entrySet().iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
             Destination destination = (Destination) entry.getKey();
-            String name = getNodeName(destination);
+            String name = getInternalPeerName(destination);
             if (name.equals(nodeName)) {
-                return destination;
+                return new ACDestinationAdapter(destination);
             }
         }
 
         throw new IllegalArgumentException("Node " + nodeName + " is undefined.");
     }
 
-	public String getNodeName(Destination destination) {
-		Node localNode=_cluster.getLocalNode();
+    public String getPeerName(Address address) {
+        return getInternalPeerName(ACDestinationAdapter.unwrap(address));
+    }
+
+    private String getInternalPeerName(Address address) {
+        Destination destination = ACDestinationAdapter.unwrap(address);
+        return getInternalPeerName(destination);
+    }
+    
+	private String getInternalPeerName(Destination destination) {
+		LocalNode localNode = _cluster.getLocalNode();
 		Destination localDestination=localNode.getDestination();
 
 		if (destination==null) {
@@ -212,30 +238,19 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 		return "<unknown>";
 	}
 
-	public String getIncomingCorrelationId(ObjectMessage message) throws Exception {
-		return message.getStringProperty(_incomingCorrelationIdKey);
-	}
-
-	public void setIncomingCorrelationId(ObjectMessage message, String id) throws JMSException {
-		message.setStringProperty(_incomingCorrelationIdKey, id);
-	}
-
-	public String getOutgoingCorrelationId(ObjectMessage message) throws JMSException {
-		return message.getStringProperty(_outgoingCorrelationIdKey);
-	}
-
-	public void setOutgoingCorrelationId(ObjectMessage message, String id) throws JMSException {
-		message.setStringProperty(_outgoingCorrelationIdKey, id);
-	}
-
 	public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
 		throw new UnsupportedOperationException("NYI");
 	}
 
-	// temporary
-
 	public void setClusterListener(ClusterListener listener) {
-		_cluster.addClusterListener(listener);
+		_cluster.addClusterListener(new WADIClusterListenerAdapter(listener, _wadiCluster));
 	}
 
+    public org.codehaus.wadi.group.LocalPeer getLocalPeer() {
+        return _localNode;
+    }
+    
+    private String getNodeName(Node node) {
+        return node==null?"<unknown>":(String)node.getState().get(_nodeNameKey);
+    }
 }

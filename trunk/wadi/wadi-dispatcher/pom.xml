@@ -18,14 +18,6 @@
       <groupId>concurrent</groupId>
       <artifactId>concurrent</artifactId>
     </dependency>
-    <dependency>
-      <groupId>geronimo-spec</groupId>
-      <artifactId>geronimo-spec-jms</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>incubator-activemq</groupId>
-      <artifactId>activecluster</artifactId>
-    </dependency>
   </dependencies>
 
 </project>

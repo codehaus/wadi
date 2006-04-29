@@ -17,68 +17,23 @@
 package org.codehaus.wadi.jgroups;
 
 import java.io.ObjectStreamException;
-import java.util.Map;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Topic;
-import org.apache.activecluster.LocalNode;
-import org.apache.activecluster.Node;
+import org.codehaus.wadi.group.Peer;
 import org.jgroups.Address;
 
-public class JGroupsTopic extends JGroupsDestination implements Topic {
+public class JGroupsTopic extends JGroupsAddress {
 
   protected final String _name;
 
   public JGroupsTopic(String name, Address address) {
     super(address); // null Node
     _name=name;
-    _node=new ClusterNode();
   }
 
-  public void init(Node node) {
-  }
-
-  public String getTopicName() throws JMSException {
-    return _name;
+  public void init(Peer node) {
   }
 
 	protected Object readResolve() throws ObjectStreamException {
 		JGroupsCluster cluster=(JGroupsCluster)JGroupsCluster._cluster.get();
-		return cluster.getDestination();
+		return cluster.getAddress();
 	}
-	
-	
-  class ClusterNode implements LocalNode {
-
-    // 'Node' api
-
-    public Map getState() {
-      throw new UnsupportedOperationException("NYI");
-    }
-
-    public void setState(Map state) {
-      throw new UnsupportedOperationException("NYI");
-    }
-
-    public Destination getDestination() {
-      throw new UnsupportedOperationException("NYI");
-    }
-
-    public void setDestination(JGroupsDestination destination) {
-      throw new UnsupportedOperationException("NYI");
-    }
-
-    public String getName() {
-      return "cluster";
-    }
-
-    public boolean isCoordinator() {
-      throw new UnsupportedOperationException("NYI");
-    }
-
-    public Object getZone() {
-      throw new UnsupportedOperationException("NYI");
-    }
-  }
-
 }

@@ -15,8 +15,7 @@
  */
 package org.codehaus.wadi.replication.storage.remoting;
 
-import javax.jms.Destination;
-
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
@@ -35,21 +34,21 @@ public class BasicReplicaStorageStubFactory implements ReplicaStorageStubFactory
     }
 
     public ReplicaStorage buildStub(NodeInfo[] nodes) {
-        Destination destinations[] = new Destination[nodes.length];
+        Address destinations[] = new Address[nodes.length];
         for (int i = 0; i < destinations.length; i++) {
             NodeInfo nodeInfo = nodes[i];
-            destinations[i] = dispatcher.getDestination(nodeInfo.getName());
+            destinations[i] = dispatcher.getAddress(nodeInfo.getName());
         }
         return newStub(destinations);
     }
 
     public ReplicaStorage buildStub() {
-        Destination destinations[] =
-            new Destination[] {dispatcher.getClusterDestination()};
+        Address destinations[] =
+            new Address[] {dispatcher.getClusterAddress()};
         return newStub(destinations);
     }
     
-    protected ReplicaStorage newStub(Destination[] destinations) {
+    protected ReplicaStorage newStub(Address[] destinations) {
         return new BasicReplicaStorageStub(dispatcher, destinations);
     }
 }

@@ -16,25 +16,25 @@
  */
 package org.codehaus.wadi.dindex;
 
-import javax.jms.ObjectMessage;
-
 import org.codehaus.wadi.PMPartition;
 import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
 import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
+import org.codehaus.wadi.group.Message;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public interface Partition extends PMPartition, SMPartition {
+	void onMessage(Message message, InsertIMToPM request);
 
-	void onMessage(ObjectMessage message, InsertIMToPM request);
-	void onMessage(ObjectMessage message, DeleteIMToPM request);
-	void onMessage(ObjectMessage message, EvacuateIMToPM request);
-	void onMessage(ObjectMessage message, MoveIMToPM request);
+    void onMessage(Message message, DeleteIMToPM request);
+	
+    void onMessage(Message message, EvacuateIMToPM request);
+	
+    void onMessage(Message message, MoveIMToPM request);
 
-	ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception;
-
+	Message exchange(DIndexRequest request, long timeout) throws Exception;
 }

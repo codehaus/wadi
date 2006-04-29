@@ -20,10 +20,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.jms.Destination;
 
-import org.apache.activecluster.Cluster;
-import org.apache.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ContextPool;
@@ -39,8 +36,10 @@ import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.gridstate.PartitionMapper;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
@@ -112,10 +111,6 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 		return _dindex;
 	}
 
-	public Cluster getCluster() {
-		return _dispatcher.getCluster();
-	}
-
 	public void insert(Object key, Object value, long timeout) {
 		_dindex.insert((String)key, timeout);
 		_entries.put(key, value);
@@ -131,10 +126,6 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 		_log.warn("findRelevantSessionNames() - NYI");
 	}
 
-	public Node getCoordinatorNode() {
-		throw new UnsupportedOperationException("NYI");
-	}
-
 	public long getInactiveTime() {
 		throw new UnsupportedOperationException("NYI");
 	}
@@ -147,8 +138,8 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 		return _contextualiser.getDemoter(name, immotable);
 	}
 
-	public String getNodeName(Destination destination) {
-		return _dispatcher.getNodeName(destination);
+	public String getPeerName(Address address) {
+		return _dispatcher.getPeerName(address);
 	}
 
 	// DispatcherConfig API
@@ -201,4 +192,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 		return _birthTime;
 	}
 
+    public Peer getCoordinator() {
+        throw new UnsupportedOperationException();
+    }
 }

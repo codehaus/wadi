@@ -18,12 +18,12 @@ package org.codehaus.wadi.gridstate.impl;
 
 import java.util.Map;
 
-import javax.jms.Destination;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.PartitionConfig;
 import org.codehaus.wadi.gridstate.Partition;
+import org.codehaus.wadi.group.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
@@ -34,10 +34,10 @@ import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 public class RemotePartition implements Partition {
 
 	protected final Log _log=LogFactory.getLog(getClass().getName());
-	protected final Destination _destination;
+	protected final Address _address;
 
-	public RemotePartition(Destination destination) {
-		_destination=destination;
+	public RemotePartition(Address address) {
+		_address=address;
 	}
 
 	protected PartitionConfig _config;
@@ -46,8 +46,8 @@ public class RemotePartition implements Partition {
 		_config=config;
 	}
 
-	public Destination getDestination() {
-		return _destination;
+	public Address getAddress() {
+		return _address;
 	}
 
 	public Location getLocation(Object key) {

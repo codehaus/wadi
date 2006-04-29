@@ -19,12 +19,12 @@ package org.codehaus.wadi.gridstate.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.jms.Destination;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.gridstate.PartitionConfig;
 import org.codehaus.wadi.gridstate.Partition;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
@@ -51,8 +51,8 @@ public class LocalPartition implements Partition {
 		_config=config;
 	}
 
-	public Destination getDestination() {
-		return _config.getLocalDestination();
+	public Address getAddress() {
+		return _config.getLocalAddress();
 	}
 
 	public Location getLocation(Object key) {

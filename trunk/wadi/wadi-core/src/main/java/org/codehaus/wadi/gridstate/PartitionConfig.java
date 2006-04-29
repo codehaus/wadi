@@ -16,8 +16,8 @@
  */
 package org.codehaus.wadi.gridstate;
 
-import javax.jms.Destination;
 
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 
 
@@ -26,8 +26,7 @@ import org.codehaus.wadi.group.Dispatcher;
  * @version $Revision$
  */
 public interface PartitionConfig {
+	Address getLocalAddress();
 
-	Destination getLocalDestination();
-	Dispatcher getDispatcher();
-
+    Dispatcher getDispatcher();
 }

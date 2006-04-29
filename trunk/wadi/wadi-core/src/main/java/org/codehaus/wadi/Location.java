@@ -18,7 +18,7 @@ package org.codehaus.wadi;
 
 import java.io.Serializable;
 
-import javax.jms.Destination;
+import org.codehaus.wadi.group.Address;
 
 
 /**
@@ -36,6 +36,5 @@ public interface Location extends Evictable, Serializable {
 	 */
 	public void proxy(Invocation invocation) throws ProxyingException;
 
-	public Destination getDestination();
-	
+	public Address getAddress();
 }

@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.impl;
 
-import javax.jms.Destination;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,6 +24,7 @@ import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.ProxiedLocation;
 import org.codehaus.wadi.ProxyingException;
+import org.codehaus.wadi.group.Address;
 
 /**
  * A Location that includes a hostname/ip-address and HTTP port
@@ -40,9 +40,9 @@ public class HttpProxyLocation extends SimpleEvictable implements Location {
 	protected ProxiedLocation _location;
 	protected InvocationProxy _proxy;
 	
-	public HttpProxyLocation(Destination destination, ProxiedLocation location, InvocationProxy proxy) {
+	public HttpProxyLocation(Address address, ProxiedLocation location, InvocationProxy proxy) {
 		super();
-		_destination=destination;
+		_address=address;
 		_location=location;
 		_proxy=proxy;
 	}
@@ -55,10 +55,10 @@ public class HttpProxyLocation extends SimpleEvictable implements Location {
 		return "<HttpProxyLocation:"+_location+">"; // we could include proxy strategy here...
 	}
 	
-	protected final Destination _destination;
+	protected final Address _address;
 	
-	public Destination getDestination() {
-		return _destination;
+	public Address getAddress() {
+		return _address;
 	}
 	
 }

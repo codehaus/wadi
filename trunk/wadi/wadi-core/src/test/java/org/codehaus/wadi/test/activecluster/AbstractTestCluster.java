@@ -26,7 +26,6 @@ import javax.sql.DataSource;
 
 import junit.framework.TestCase;
 
-import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterFactory;
 import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.commons.logging.Log;
@@ -52,11 +51,12 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.gridstate.activecluster.RestartableClusterFactory;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
+import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.ClusterContextualiser;
+import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
-import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
@@ -256,10 +256,10 @@ public abstract class AbstractTestCluster extends TestCase {
 
 		// shutdown node0
 		// sessions should be evacuated to remaining two nodes...
-		if (_log.isInfoEnabled()) _log.info("NODES: " + _node0.getCluster().getNodes().size());
+		if (_log.isInfoEnabled()) _log.info("NODES: " + _node0.getCluster().getPeers().size());
 		_node0.stop();
 		Thread.sleep(6000); // time for other nodes to notice...
-		if (_log.isInfoEnabled()) _log.info("NODES: " + _node1.getCluster().getNodes().size());
+		if (_log.isInfoEnabled()) _log.info("NODES: " + _node1.getCluster().getPeers().size());
 
 		// where are all the sessions now ?
 		// the sum of nodes 1 and 2 should total n Contexts
@@ -276,10 +276,10 @@ public abstract class AbstractTestCluster extends TestCase {
 
 		// shutdown node1
 		// sessions should all be evacuated to node2
-		if (_log.isInfoEnabled()) _log.info("NODES: " + _node1.getCluster().getNodes().size());
+		if (_log.isInfoEnabled()) _log.info("NODES: " + _node1.getCluster().getPeers().size());
 		_node1.stop();
 		Thread.sleep(6000); // time for other nodes to notice...
-		if (_log.isInfoEnabled()) _log.info("NODES: " + _node2.getCluster().getNodes().size());
+		if (_log.isInfoEnabled()) _log.info("NODES: " + _node2.getCluster().getPeers().size());
 		{
 			int s0=m0.size();
 			int s1=m1.size();
@@ -293,7 +293,7 @@ public abstract class AbstractTestCluster extends TestCase {
 		}
 
 		// shutdown node2
-		if (_log.isInfoEnabled()) _log.info("NODES: " + _node2.getCluster().getNodes().size());
+		if (_log.isInfoEnabled()) _log.info("NODES: " + _node2.getCluster().getPeers().size());
 		_node2.stop();
 		Thread.sleep(6000); // time for other nodes to notice...
 		_log.info("NODES: should be 0");

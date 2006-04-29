@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.test;
 
-import javax.jms.Destination;
 
 import junit.framework.TestCase;
 
@@ -25,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.ProxyingException;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.impl.SimpleEvictable;
 
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
@@ -84,7 +84,7 @@ public class TestLocation extends TestCase {
 			// do nothing
 		}
 		
-		public Destination getDestination() {return null;}
+		public Address getAddress() {return null;}
 		
 	}
 	

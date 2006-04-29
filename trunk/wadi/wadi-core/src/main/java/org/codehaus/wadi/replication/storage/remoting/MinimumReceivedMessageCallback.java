@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.replication.storage.remoting;
 
-import javax.jms.ObjectMessage;
+import org.codehaus.wadi.group.Message;
 
 /**
  * 
@@ -30,7 +30,7 @@ class MinimumReceivedMessageCallback implements TwoWayMessageCallback {
         this.minimumReceived = minimumReceived;
     }
 
-    public void receivedMessage(ObjectMessage message) {
+    public void receivedMessage(Message message) {
         if (null != message) {
             received++;
         }

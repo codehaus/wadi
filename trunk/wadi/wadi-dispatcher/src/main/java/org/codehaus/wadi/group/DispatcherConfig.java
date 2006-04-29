@@ -21,8 +21,5 @@ package org.codehaus.wadi.group;
  * @version $Revision: 1497 $
  */
 public interface DispatcherConfig {
-
 	String getContextPath();
-
-
 }

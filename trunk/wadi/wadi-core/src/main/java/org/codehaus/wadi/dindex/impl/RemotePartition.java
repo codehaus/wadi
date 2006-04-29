@@ -16,9 +16,6 @@
  */
 package org.codehaus.wadi.dindex.impl;
 
-import javax.jms.Destination;
-import javax.jms.ObjectMessage;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.dindex.DIndexRequest;
@@ -27,7 +24,10 @@ import org.codehaus.wadi.dindex.newmessages.DeleteIMToPM;
 import org.codehaus.wadi.dindex.newmessages.EvacuateIMToPM;
 import org.codehaus.wadi.dindex.newmessages.InsertIMToPM;
 import org.codehaus.wadi.dindex.newmessages.MoveIMToPM;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.MessageExchangeException;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -39,76 +39,83 @@ public class RemotePartition extends AbstractPartition {
 
 	protected final PartitionConfig _config;
 
-	protected Destination _location;
+	protected Address _location;
 
-	public RemotePartition(int key, PartitionConfig config, Destination location) {
+	public RemotePartition(int key, PartitionConfig config, Address address) {
 		super(key);
 		_config=config;
-		_location=location;
-		_log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalNodeName());
+		_location=address;
+		_log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalPeerName());
 	}
 
 	public boolean isLocal() {
 		return false;
 	}
 
-	public Destination getDestination() {
+	public Address getAddress() {
 		return _location;
 	}
 
-	public void setLocation(Destination location) {
+	public void setAddress(Address address) {
 		if (_location==null) {
-			if (location==null) {
+			if (address==null) {
 				// _location is already null
 			} else {
 				// they cannot be equal - update
-				if (_log.isTraceEnabled()) _log.trace("[" + _key + "] updating location from: " + _config.getNodeName(_location) + " to: " + _config.getNodeName(location));
-				_location=location;
+				if (_log.isTraceEnabled()) _log.trace("[" + _key + "] updating location from: " + _config.getPeerName(_location) + " to: " + _config.getPeerName(address));
+				_location=address;
 			}
 		} else {
-			if (_location.equals(location)) {
+			if (_location.equals(address)) {
 				// no need to update
 			} else {
-				if (_log.isTraceEnabled()) _log.trace("[" + _key + "] updating location from: " + _config.getNodeName(_location) + " to: " + _config.getNodeName(location));
-				_location=location;
+				if (_log.isTraceEnabled()) _log.trace("[" + _key + "] updating location from: " + _config.getPeerName(_location) + " to: " + _config.getPeerName(address));
+				_location=address;
 			}
 		}
 	}
 
 	public String toString() {
-		return "<"+getClass()+":"+_key+"@"+_config.getLocalNodeName()+"->"+_config.getNodeName(_location)+">";
+		return "<"+getClass()+":"+_key+"@"+_config.getLocalPeerName()+"->"+_config.getPeerName(_location)+">";
 	}
 
-	public void onMessage(ObjectMessage message, InsertIMToPM request) {
-		if (_log.isTraceEnabled()) _log.trace("#"+_key+" : forwarding: " + request + " from "+_config.getLocalNodeName()+" to " + _config.getNodeName(_location));
-		if (!_config.getDispatcher().forward(message, _location))
-			_log.warn("could not forward message");
+	public void onMessage(Message message, InsertIMToPM request) {
+		if (_log.isTraceEnabled()) _log.trace("#"+_key+" : forwarding: " + request + " from "+_config.getLocalPeerName()+" to " + _config.getPeerName(_location));
+
+        forward(message);
 	}
 
-	public void onMessage(ObjectMessage message, DeleteIMToPM request) {
-		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getNodeName(_location));
-		if (!_config.getDispatcher().forward(message, _location))
-			_log.warn("could not forward message");
+	public void onMessage(Message message, DeleteIMToPM request) {
+		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getPeerName(_location));
+
+        forward(message);
 	}
 
-	public void onMessage(ObjectMessage message, EvacuateIMToPM request) {
-		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getNodeName(_location));
-		if (!_config.getDispatcher().forward(message, _location))
-			_log.warn("could not forward message");
+	public void onMessage(Message message, EvacuateIMToPM request) {
+		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getPeerName(_location));
+
+        forward(message);
 	}
 
-	public void onMessage(ObjectMessage message, MoveIMToPM request) {
-		if (_log.isWarnEnabled()) _log.warn(_config.getLocalNodeName()+": not Master of Partition["+_key+"] - forwarding message to "+_config.getNodeName(_location));
-		if (!_config.getDispatcher().forward(message, _location))
-			_log.warn("could not forward message");
+	public void onMessage(Message message, MoveIMToPM request) {
+		if (_log.isWarnEnabled()) _log.warn(_config.getLocalPeerName()+": not Master of Partition["+_key+"] - forwarding message to "+_config.getPeerName(_location));
+        
+        forward(message);
 	}
 
-	public ObjectMessage exchange(DIndexRequest request, long timeout) throws Exception {
+	public Message exchange(DIndexRequest request, long timeout) throws Exception {
 		Dispatcher dispatcher=_config.getDispatcher();
-		Destination from=dispatcher.getLocalDestination();
-		Destination to=_location;
-		if (_log.isTraceEnabled()) _log.trace("exchanging message ("+request+") with node: "+_config.getNodeName(to)+" on "+Thread.currentThread().getName());
+		Address from=dispatcher.getLocalAddress();
+		Address to=_location;
+		if (_log.isTraceEnabled()) _log.trace("exchanging message ("+request+") with node: "+_config.getPeerName(to)+" on "+Thread.currentThread().getName());
 		return dispatcher.exchangeSend(from, to, request, timeout);
 	}
-
+    
+    private void forward(Message message) {
+        try {
+            _config.getDispatcher().forward(message, _location);
+        } catch (MessageExchangeException e) {
+            _log.warn("could not forward message", e);
+        }
+    }
 }

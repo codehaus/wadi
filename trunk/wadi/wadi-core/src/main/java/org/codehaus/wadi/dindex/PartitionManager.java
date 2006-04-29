@@ -16,9 +16,9 @@
  */
 package org.codehaus.wadi.dindex;
 
-import org.apache.activecluster.Node;
 import org.codehaus.wadi.dindex.impl.PartitionFacade;
 import org.codehaus.wadi.dindex.impl.PartitionKeys;
+import org.codehaus.wadi.group.Peer;
 
 /**
  * A PartitionManager is responsible for unambiguously renegotiating Partition ownership every time
@@ -42,8 +42,8 @@ public interface PartitionManager {
 	void evacuate() throws Exception;
 	void stop() throws Exception;
 
-	void update(Node node);
-	void regenerateMissingPartitions(Node[] living, Node[] leaving);
+	void update(Peer node);
+	void regenerateMissingPartitions(Peer[] living, Peer[] leaving);
 	void localise();
 	
 	void waitUntilUseable() throws InterruptedException;

@@ -28,11 +28,11 @@ public class MinimumReceivedMessageCallbackTest extends TestCase {
     public void testTestStopSend() {
         MinimumReceivedMessageCallback callback = new MinimumReceivedMessageCallback(3);
         assertFalse(callback.testStopSend());
-        callback.receivedMessage(new BaseMockObjectMessage());
+        callback.receivedMessage(new BaseMockMessage());
         assertFalse(callback.testStopSend());
-        callback.receivedMessage(new BaseMockObjectMessage());
+        callback.receivedMessage(new BaseMockMessage());
         assertFalse(callback.testStopSend());
-        callback.receivedMessage(new BaseMockObjectMessage());
+        callback.receivedMessage(new BaseMockMessage());
         assertTrue(callback.testStopSend());
     }
 }

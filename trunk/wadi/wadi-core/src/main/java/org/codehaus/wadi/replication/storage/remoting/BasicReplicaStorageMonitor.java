@@ -20,12 +20,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
-import javax.jms.ObjectMessage;
-
-import org.apache.activecluster.ClusterEvent;
-import org.apache.activecluster.ClusterListener;
+import org.codehaus.wadi.group.ClusterEvent;
+import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.replication.common.ComponentEventType;
 import org.codehaus.wadi.replication.common.NodeInfo;
 
@@ -34,27 +33,30 @@ import org.codehaus.wadi.replication.common.NodeInfo;
  *
  * @version $Revision$
  */
-public class BasicReplicaStorageMonitor implements ReplicaStorageMonitor, ClusterListener {
+public class BasicReplicaStorageMonitor implements ReplicaStorageMonitor, ClusterListener, BasicReplicaStorageMonitorMessageListener {
     private final Set storageNodes;
     private final Set listeners;
     private final Dispatcher dispatcher;
+    private final ServiceEndpointBuilder endpointBuilder;
 
     public BasicReplicaStorageMonitor(Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
 
         storageNodes = new HashSet();
         listeners = new HashSet();
+        
+        endpointBuilder = new ServiceEndpointBuilder();
     }
 
     public void start() {
-        dispatcher.register(this, "onReplicaStorageEvent", ReplicaStorageEvent.class);
-        dispatcher.setClusterListener(this);
+        endpointBuilder.addSEI(dispatcher, BasicReplicaStorageMonitorMessageListener.class, this);
+        dispatcher.getCluster().addClusterListener(this);
 
-        String localNodeName = dispatcher.getLocalNodeName();
+        String localNodeName = dispatcher.getLocalPeer().getName();
         NodeInfo localNode = new NodeInfo(localNodeName);
         ReplicaStorageMonitorEvent event = new ReplicaStorageMonitorEvent(ComponentEventType.JOIN, localNode);
         try {
-            dispatcher.send(dispatcher.getClusterDestination(), event);
+            dispatcher.send(dispatcher.getClusterAddress(), event);
         } catch (Exception e) {
             // TODO
             throw new RuntimeException(e);
@@ -62,14 +64,14 @@ public class BasicReplicaStorageMonitor implements ReplicaStorageMonitor, Cluste
     }
 
     public void stop() {
-        // TODO refactor WADI to get ride of this timeout.
-        dispatcher.deregister("onReplicaStorageEvent", ReplicaStorageEvent.class, 2);
+        endpointBuilder.dispose(10, 500);
+
         // TODO Enhance WADI to support unregistration of ClusterListener.
 
         storageNodes.clear();
     }
 
-    public void onReplicaStorageEvent(ObjectMessage message, ReplicaStorageEvent event) {
+    public void onReplicaStorageEvent(Message message, ReplicaStorageEvent event) {
         ComponentEventType type = event.getType();
         NodeInfo hostingNode = event.getHostingNode();
         synchronized (storageNodes) {
@@ -112,17 +114,17 @@ public class BasicReplicaStorageMonitor implements ReplicaStorageMonitor, Cluste
         }
     }
 
-    public void onNodeAdd(ClusterEvent event) {
+    public void onPeerAdded(ClusterEvent event) {
     }
 
-    public void onNodeUpdate(ClusterEvent event) {
+    public void onPeerUpdated(ClusterEvent event) {
     }
 
-    public void onNodeRemoved(ClusterEvent event) {
+    public void onPeerRemoved(ClusterEvent event) {
         fireLeaveEvent(event);
     }
 
-    public void onNodeFailed(ClusterEvent event) {
+    public void onPeerFailed(ClusterEvent event) {
         fireLeaveEvent(event);
     }
 
@@ -149,7 +151,7 @@ public class BasicReplicaStorageMonitor implements ReplicaStorageMonitor, Cluste
     }
 
     private void fireLeaveEvent(ClusterEvent event) {
-        NodeInfo nodeInfo = new NodeInfo(event.getNode().getName());
+        NodeInfo nodeInfo = new NodeInfo(event.getPeer().getName());
         synchronized (storageNodes) {
             boolean found = storageNodes.remove(nodeInfo);
             if (false == found) {

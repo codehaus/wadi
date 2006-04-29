@@ -17,16 +17,16 @@ package org.codehaus.wadi.replication.storage.remoting;
 
 import java.io.Serializable;
 import java.util.Map;
-
-import javax.jms.Destination;
-import javax.jms.ObjectMessage;
-
-import org.apache.activecluster.Cluster;
-import org.apache.activecluster.ClusterListener;
+import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.Cluster;
+import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
+import org.codehaus.wadi.group.ServiceEndpoint;
+import org.codehaus.wadi.group.LocalPeer;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Quipu;
-
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
 /**
@@ -39,67 +39,35 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public InternalDispatcher register(Object target, String methodName, Class type) {
+    public void send(Address from, Address to, String outgoingCorrelationId, Serializable body) {
         throw new UnsupportedOperationException();
     }
 
-    public InternalDispatcher newRegister(Object target, String methodName, Class type) {
+    public Message exchangeSend(Address from, Address to, Serializable body, long timeout) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean deregister(String methodName, Class type, int timeout) {
+    public Message exchangeSend(Address from, Address to, Serializable body, long timeout, String targetCorrelationId) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean newDeregister(String methodName, Class type, int timeout) {
+    public Message exchangeSend(Address from, Address to, String outgoingCorrelationId, Serializable body, long timeout) {
         throw new UnsupportedOperationException();
     }
 
-    public void register(Class type, long timeout) {
+    public void reply(Address from, Address to, String incomingCorrelationId, Serializable body) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean send(Destination from, Destination to, String outgoingCorrelationId, Serializable body) {
+    public void reply(Message message, Serializable body) {
         throw new UnsupportedOperationException();
     }
 
-    public ObjectMessage exchangeSend(Destination from, Destination to, Serializable body, long timeout) {
+    public void forward(Message message, Address destination) {
         throw new UnsupportedOperationException();
     }
 
-    public ObjectMessage exchangeSend(Destination from, Destination to, Serializable body, long timeout, String targetCorrelationId) {
-        throw new UnsupportedOperationException();
-    }
-
-    public ObjectMessage exchangeSendLoop(Destination from, Destination to, Serializable body, long timeout, int iterations) {
-        throw new UnsupportedOperationException();
-    }
-
-    public ObjectMessage exchangeSend(Destination from, Destination to, String outgoingCorrelationId, Serializable body, long timeout) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean reply(Destination from, Destination to, String incomingCorrelationId, Serializable body) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean reply(ObjectMessage message, Serializable body) {
-        throw new UnsupportedOperationException();
-    }
-
-    public ObjectMessage exchangeReply(ObjectMessage message, Serializable body, long timeout) {
-        throw new UnsupportedOperationException();
-    }
-
-    public ObjectMessage exchangeReplyLoop(ObjectMessage message, Serializable body, long timeout) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean forward(ObjectMessage message, Destination destination) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean forward(ObjectMessage message, Destination destination, Serializable body) {
+    public void forward(Message message, Address destination, Serializable body) {
         throw new UnsupportedOperationException();
     }
 
@@ -115,7 +83,7 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public ObjectMessage attemptRendezVous(String correlationId, Quipu rv, long timeout) {
+    public Message attemptRendezVous(String correlationId, Quipu rv, long timeout) {
         throw new UnsupportedOperationException();
     }
 
@@ -123,11 +91,11 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public Destination getLocalDestination() {
+    public Address getLocalAddress() {
         throw new UnsupportedOperationException();
     }
 
-    public Destination getClusterDestination() {
+    public Address getClusterAddress() {
         throw new UnsupportedOperationException();
     }
 
@@ -139,47 +107,47 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public void setDistributedState(Map state) throws Exception {
+    public void setDistributedState(Map state) throws MessageExchangeException {
         throw new UnsupportedOperationException();
     }
 
-    public void start() throws Exception {
+    public void start() throws MessageExchangeException {
         throw new UnsupportedOperationException();
     }
 
-    public void stop() throws Exception {
+    public void stop() throws MessageExchangeException {
         throw new UnsupportedOperationException();
     }
 
-    public String getNodeName(Destination destination) {
+    public String getPeerName(Address address) {
         throw new UnsupportedOperationException();
     }
 
-    public String getIncomingCorrelationId(ObjectMessage message) throws Exception {
+    public String getIncomingCorrelationId(Message message) throws Exception {
         throw new UnsupportedOperationException();
     }
 
-    public void setIncomingCorrelationId(ObjectMessage message, String correlationId) throws Exception {
+    public void setIncomingCorrelationId(Message message, String correlationId) throws Exception {
         throw new UnsupportedOperationException();
     }
 
-    public String getOutgoingCorrelationId(ObjectMessage message) throws Exception {
+    public String getOutgoingCorrelationId(Message message) throws Exception {
         throw new UnsupportedOperationException();
     }
 
-    public void setOutgoingCorrelationId(ObjectMessage message, String correlationId) throws Exception {
+    public void setOutgoingCorrelationId(Message message, String correlationId) throws Exception {
         throw new UnsupportedOperationException();
     }
 
-    public void send(Destination to, ObjectMessage message) throws Exception {
+    public void send(Address to, Message message) throws MessageExchangeException {
         throw new UnsupportedOperationException();
     }
 
-    public ObjectMessage createObjectMessage() throws Exception {
+    public Message createMessage() {
         throw new UnsupportedOperationException();
     }
 
-    public String getNodeName() {
+    public String getPeerName() {
         throw new UnsupportedOperationException();
     }
 
@@ -195,15 +163,27 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public Destination getDestination(String name) {
+    public Address getAddress(String name) {
         throw new UnsupportedOperationException();
     }
 
-    public String getLocalNodeName() {
+    public void send(Address destination, Serializable request) throws MessageExchangeException {
         throw new UnsupportedOperationException();
     }
 
-    public void send(Destination destination, Serializable request) throws Exception {
+    public LocalPeer getLocalPeer() {
+        throw new UnsupportedOperationException();
+    }
+
+    public void onMessage(Message arg0) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void register(ServiceEndpoint internalDispatcher) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void unregister(ServiceEndpoint internalDispatcher, int nbAttemp, long delayMillis) {
         throw new UnsupportedOperationException();
     }
 }

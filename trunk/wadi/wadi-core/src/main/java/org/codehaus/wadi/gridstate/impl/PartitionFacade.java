@@ -18,10 +18,10 @@ package org.codehaus.wadi.gridstate.impl;
 
 import java.util.Map;
 
-import javax.jms.Destination;
 
 import org.codehaus.wadi.gridstate.PartitionConfig;
 import org.codehaus.wadi.gridstate.Partition;
+import org.codehaus.wadi.group.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 
@@ -41,8 +41,8 @@ public class PartitionFacade implements Partition {
 		_partition.init(config);
 	}
 
-	public Destination getDestination() {
-		return _partition.getDestination();
+	public Address getAddress() {
+		return _partition.getAddress();
 	}
 
 	public Location getLocation(Object key) {
