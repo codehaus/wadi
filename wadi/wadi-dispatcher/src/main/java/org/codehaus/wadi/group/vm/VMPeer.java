@@ -15,6 +15,7 @@
  */
 package org.codehaus.wadi.group.vm;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import org.codehaus.wadi.group.Address;
@@ -25,7 +26,7 @@ import org.codehaus.wadi.group.Peer;
  * 
  * @version $Revision: 1603 $
  */
-public class VMPeer implements Peer {
+public class VMPeer implements Peer, Serializable {
     protected final Map state = new HashMap();
     protected final String name;
     private final Address address;
@@ -45,6 +46,15 @@ public class VMPeer implements Peer {
 
     public String getName() {
         return name;
+    }
+    
+    public boolean equals(Object obj) {
+        if (false == obj instanceof VMPeer) {
+            return false;
+        }
+        
+        VMPeer other = (VMPeer) obj;
+        return name.equals(other.name);
     }
     
     public String toString() {

@@ -40,6 +40,7 @@ public class VMCluster implements Cluster {
     private final ClusterListenerSupport listenerSupport;
     private ElectionStrategy electionStrategy;
     private MessageRecorder messageRecorder;
+    private MessageTransformer messageTransformer;
     private Peer coordinator;
     
     public VMCluster(String name) {
@@ -47,8 +48,21 @@ public class VMCluster implements Cluster {
 
         address = new VMClusterAddress(this);
         listenerSupport = new ClusterListenerSupport(this);
+        messageTransformer = new SerializeMessageTransformer();
     }
-    
+
+    public VMCluster(String name, boolean serializeMessages) {
+        this.name = name;
+
+        address = new VMClusterAddress(this);
+        listenerSupport = new ClusterListenerSupport(this);
+        if (serializeMessages) {
+            messageTransformer = new SerializeMessageTransformer();
+        } else {
+            messageTransformer = new NoOpMessageTransformer();
+        }
+    }
+
     String getName() {
         return name;
     }
@@ -82,6 +96,8 @@ public class VMCluster implements Cluster {
             messageRecorder.record(to, message);
         }
       
+        message = messageTransformer.transform(message);
+        
         if (to.equals(address)) {
             sendToClusterDestination(message);
         } else {

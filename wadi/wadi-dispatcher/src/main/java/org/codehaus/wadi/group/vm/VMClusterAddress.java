@@ -22,18 +22,18 @@ import org.codehaus.wadi.group.Address;
  * @version $Revision: 1603 $
  */
 public class VMClusterAddress implements Address {
-    private final VMCluster vmCluster;
+    private final String clusterName;
 
     public VMClusterAddress(VMCluster vmCluster) {
-        this.vmCluster = vmCluster;
+        this.clusterName = vmCluster.getName();
     }
 
     public String getClusterName() {
-        return vmCluster.getName();
+        return clusterName;
     }
 
     public int hashCode() {
-        return vmCluster.hashCode();
+        return clusterName.hashCode();
     }
     
     public boolean equals(Object obj) {
@@ -42,10 +42,10 @@ public class VMClusterAddress implements Address {
         }
         
         VMClusterAddress other = (VMClusterAddress) obj;
-        return other.vmCluster == vmCluster;
+        return clusterName.equals(other.clusterName);
     }
     
     public String toString() {
-        return "Cluster Destination :" + vmCluster.getName();
+        return "Cluster Destination :" + clusterName;
     }
 }

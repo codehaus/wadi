@@ -32,6 +32,15 @@ public class VMAddress implements Address {
         return node.getName();
     }
 
+    public boolean equals(Object obj) {
+        if (false == obj instanceof VMAddress) {
+            return false;
+        }
+        
+        VMAddress other = (VMAddress) obj;
+        return node.equals(other.node);
+    }
+    
     public String toString() {
         return "Address [" + node.getName() + "]";
     }

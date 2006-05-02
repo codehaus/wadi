@@ -29,6 +29,17 @@ public class VMMessage implements Message {
     private Address address;
     private String incomingCorrelationId;
     private String outgoingCorrelationId;
+
+    public VMMessage() {
+    }
+
+    public VMMessage(VMMessage prototype) {
+        this.payload = prototype.payload;
+        this.replyTo = prototype.replyTo;
+        this.address = prototype.address;
+        this.incomingCorrelationId = prototype.incomingCorrelationId;
+        this.outgoingCorrelationId = prototype.outgoingCorrelationId;
+    }
     
     public String getIncomingCorrelationId() {
         return incomingCorrelationId;
