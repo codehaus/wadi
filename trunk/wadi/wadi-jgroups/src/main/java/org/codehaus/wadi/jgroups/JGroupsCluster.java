@@ -72,7 +72,6 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   public final Map _addressToDestination=new ConcurrentHashMap();
 
   protected ElectionStrategy _electionStrategy;
-  protected ClusterListener _listener;
   protected JGroupsDispatcher _dispatcher;
   protected Address _localAddress;
   protected JGroupsAddress _localDestination;
@@ -199,8 +198,10 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   		  runCoordinatorElection();
 
   		  // notify listener
-          if (_listener!=null && destination!=_localDestination) {
-            _listener.onPeerFailed(new ClusterEvent(this, node ,ClusterEvent.PEER_FAILED));
+          if (_clusterListeners.size()>0 && destination!=_localDestination) {
+              ClusterEvent event=new ClusterEvent(this, node ,ClusterEvent.PEER_FAILED);
+              for (int j=0; j<_clusterListeners.size(); j++)
+                  ((ClusterListener)_clusterListeners.get(j)).onPeerFailed(event);
           }
           // remove node
           _addressToDestination.remove(destination.getAddress());
@@ -260,8 +261,11 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 					  }
 					  
 					  // notify listener
-					  if (_listener!=null)
-						  _listener.onPeerAdded(new ClusterEvent(JGroupsCluster.this, destination.getNode(), ClusterEvent.PEER_ADDED));
+					  if (_clusterListeners.size()>0) {
+                          ClusterEvent event=new ClusterEvent(JGroupsCluster.this, destination.getNode(), ClusterEvent.PEER_ADDED);
+                          for (int j=0; j<_clusterListeners.size(); j++)
+						  ((ClusterListener)_clusterListeners.get(j)).onPeerAdded(event);
+                      }
 					  
 					  // elect coordinator
 					  runCoordinatorElection();
@@ -272,12 +276,14 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   }
   
   protected void runCoordinatorElection() {
-	  if (_electionStrategy!=null) {
+	  if (_clusterListeners.size()>0 && _electionStrategy!=null) {
 		  Peer coordinator=_localPeer;
 		  if (_destinationToNode.size()>0) {
               coordinator=_electionStrategy.doElection(JGroupsCluster.this);
 		  }
-		  _listener.onCoordinatorChanged(new ClusterEvent(JGroupsCluster.this, coordinator, ClusterEvent.COORDINATOR_ELECTED));
+          ClusterEvent event=new ClusterEvent(JGroupsCluster.this, coordinator, ClusterEvent.COORDINATOR_ELECTED);
+          for (int i=0; i<_clusterListeners.size(); i++)
+		  ((ClusterListener)_clusterListeners.get(i)).onCoordinatorChanged(event);
 	  }
   }
 
@@ -374,17 +380,17 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 
   // Dispatcher API
 
-  public void setClusterListener(ClusterListener listener) {
-    _listener=listener;
-  }
-
   public void onMessage(Message message, StateUpdate update) throws Exception {
     JGroupsAddress destination=(JGroupsAddress)message.getReplyTo();
     Peer node=destination.getNode();
     Map state=update.getState();
     if (node instanceof JGroupsRemoteNode) {
       ((JGroupsRemoteNode)node).setState(state);
-      _listener.onPeerUpdated(new ClusterEvent(this, node, ClusterEvent.PEER_UPDATED));
+      if (_clusterListeners.size()>0) {
+          ClusterEvent event=new ClusterEvent(this, node, ClusterEvent.PEER_UPDATED);
+          for (int i=0; i<_clusterListeners.size(); i++)
+              ((ClusterListener)_clusterListeners.get(i)).onPeerUpdated(event);
+      }
     } else {
       _log.warn("state update from non-remote node: "+node);
     }
