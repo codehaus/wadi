@@ -48,6 +48,6 @@ public class NodeInfo implements Serializable {
     }
     
     public String toString() {
-        return "NodeInfo " + name;
+        return name;
     }
 }

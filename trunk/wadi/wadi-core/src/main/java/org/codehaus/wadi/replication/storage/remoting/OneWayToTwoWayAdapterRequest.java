@@ -37,4 +37,8 @@ class OneWayToTwoWayAdapterRequest extends AbstractTwoWayStorageRequest implemen
         request.execute(storage);
         return new ResultInfo(null, true);
     }
+    
+    public String toString() {
+        return "Two-way adapter for " + request;
+    }
 }

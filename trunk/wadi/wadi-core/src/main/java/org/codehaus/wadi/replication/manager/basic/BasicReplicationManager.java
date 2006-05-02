@@ -174,6 +174,10 @@ public class BasicReplicationManager implements ReplicationManager {
             return keyToReplicaInfo.containsKey(key);
         }
     }
+
+    public ReplicaStorage getStorage() {
+        return storage;
+    }
     
     private void reOrganizeSecondaries() {
         Map tmpKeyToReplicaInfo;

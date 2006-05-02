@@ -41,6 +41,6 @@ public class ReplicationComponentEvent implements Serializable {
     }
 
     public String toString() {
-        return "ReplicationComponentEvent: " + type + "; " + hostingNode;
+        return type + "; " + hostingNode;
     }
 }

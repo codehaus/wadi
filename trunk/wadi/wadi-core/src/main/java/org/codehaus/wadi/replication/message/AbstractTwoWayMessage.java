@@ -21,9 +21,9 @@ package org.codehaus.wadi.replication.message;
  * @version $Revision$
  */
 public abstract class AbstractTwoWayMessage implements ReplicationRequestMessage {
-    public static final long DEFAULT_TWO_WAY_TIMEOUT = 1000;
+    public static final long DEFAULT_TWO_WAY_TIMEOUT = 2000;
     
-    public final long getTwoWayTimeout() {
+    public long getTwoWayTimeout() {
         return DEFAULT_TWO_WAY_TIMEOUT;
     }
     

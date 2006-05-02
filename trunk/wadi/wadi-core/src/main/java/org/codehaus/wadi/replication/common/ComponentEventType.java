@@ -43,7 +43,7 @@ public class ComponentEventType implements Serializable {
     }
     
     public String toString() {
-        return "ComponentEventType " + name;
+        return name;
     }
     
     protected Object readResolve() throws ObjectStreamException {
