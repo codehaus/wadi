@@ -30,4 +30,8 @@ class ReplicaStorageEvent extends ReplicationComponentEvent {
     public ReplicaStorageEvent(ComponentEventType type, NodeInfo hostingNode) {
         super(type, hostingNode);
     }
+    
+    public String toString() {
+        return "ReplicaStorageEvent: " + super.toString();
+    }
 }
