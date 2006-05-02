@@ -37,14 +37,23 @@ public class VMLocalClusterListener implements ClusterListener {
     }
 
     public void onPeerAdded(ClusterEvent event) {
+        if (event.getPeer().equals(node)) {
+            return;
+        }
         delegate.onPeerAdded(event);
     }
 
     public void onPeerFailed(ClusterEvent event) {
+        if (event.getPeer().equals(node)) {
+            return;
+        }
         delegate.onPeerFailed(event);
     }
 
     public void onPeerRemoved(ClusterEvent event) {
+        if (event.getPeer().equals(node)) {
+            return;
+        }
         delegate.onPeerRemoved(event);
     }
 
