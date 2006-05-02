@@ -159,7 +159,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 	protected void refreshEvacuationPartnersCount() {
 		Peer localNode = _dispatcher.getLocalPeer();
-		Map nodes=_cluster.getPeers();
+		Map nodes=_cluster.getRemotePeers();
 		int count=0;
 		synchronized (nodes) { // does James modify this Map or replace it ?
 			for (Iterator i=nodes.values().iterator(); i.hasNext();) {

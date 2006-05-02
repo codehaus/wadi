@@ -80,8 +80,10 @@ public class VMLocalCluster implements Cluster {
         delegate.removeClusterListener(new VMLocalClusterListener(listener, node));
     }
 
-    public Map getPeers() {
-        return delegate.getPeers();
+    public Map getRemotePeers() {
+        Map peers=delegate.getRemotePeers();
+        peers.remove(node.getName());
+        return peers;
     }
 
     public void setElectionStrategy(ElectionStrategy electionStrategy) {

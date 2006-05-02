@@ -30,7 +30,7 @@ public class SeniorityElectionStrategy implements ElectionStrategy {
     public Peer doElection(Cluster cluster) {
         Peer oldest = cluster.getLocalPeer();
         long earliest = getBirthTime(oldest);
-        for (Iterator i = cluster.getPeers().values().iterator(); i.hasNext();) {
+        for (Iterator i = cluster.getRemotePeers().values().iterator(); i.hasNext();) {
             Peer candidate = (Peer) i.next();
             long birthTime = getBirthTime(candidate);
             if (birthTime < earliest) {

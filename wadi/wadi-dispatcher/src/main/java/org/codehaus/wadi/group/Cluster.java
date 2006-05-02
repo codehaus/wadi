@@ -25,7 +25,7 @@ import java.util.Map;
 public interface Cluster {
     void setElectionStrategy(ElectionStrategy strategy);
 
-    Map getPeers();
+    Map getRemotePeers();
 
     LocalPeer getLocalPeer();
     

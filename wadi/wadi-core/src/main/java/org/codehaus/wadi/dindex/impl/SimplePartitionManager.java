@@ -162,7 +162,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         if (address.equals(local.getAddress())) {
             from=local;
         } else {
-            from=(Peer)_cluster.getPeers().get(address);
+            from=(Peer)_cluster.getRemotePeers().get(address);
         }
 
 		assert (from!=null);

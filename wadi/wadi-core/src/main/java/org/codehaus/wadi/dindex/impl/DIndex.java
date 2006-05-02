@@ -321,7 +321,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	}
 
 	public Collection getRemoteNodes() {
-		return _cluster.getPeers().values();
+		return _cluster.getRemotePeers().values();
 	}
 
 	public Map getRendezVousMap() {
@@ -341,7 +341,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	protected int printNode(Peer node) {
 		if (node!=_dispatcher.getLocalPeer())
-			node=(Peer)_cluster.getPeers().get(node.getAddress());
+			node=(Peer)_cluster.getRemotePeers().get(node.getAddress());
 		if (node==null) {
 			if (_log.isInfoEnabled()) _log.info(DIndex.getNodeName(node) + " : <unknown> - {?...}");
 			return 0;
@@ -484,7 +484,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	public String getPeerName(Address address) {
 		Peer local=_dispatcher.getLocalPeer();
-		Peer node=address.equals(local.getAddress())?local:(Peer)_cluster.getPeers().get(address);
+		Peer node=address.equals(local.getAddress())?local:(Peer)_cluster.getRemotePeers().get(address);
 		return getNodeName(node);
 	}
 

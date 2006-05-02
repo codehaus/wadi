@@ -52,7 +52,7 @@ class ACClusterAdapter implements Cluster {
         adaptee.setElectionStrategy(new WADIElectionStrategyAdapter(strategy, this));
     }
 
-    public Map getPeers() {
+    public Map getRemotePeers() {
         Map nodes = adaptee.getNodes();
         for (Iterator iter = nodes.entrySet().iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
