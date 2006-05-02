@@ -137,10 +137,6 @@ public class JGroupsDispatcher extends AbstractDispatcher {
     throw new UnsupportedOperationException("NYI");
   }
 
-  public void setClusterListener(ClusterListener listener) {
-    _cluster.setClusterListener(listener);
-  }
-
   public org.codehaus.wadi.group.Address getAddress(String name) {
       throw new UnsupportedOperationException();
   }
