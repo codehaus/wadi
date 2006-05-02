@@ -124,7 +124,7 @@ public class VMCluster implements Cluster {
         return address;
     }
 
-    public Map getPeers() {
+    public Map getRemotePeers() {
         Map snapshotMap = snapshotDispatcherMap();
 
         for (Iterator iter = snapshotMap.entrySet().iterator(); iter.hasNext();) {

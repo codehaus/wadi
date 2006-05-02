@@ -87,7 +87,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   }
 
   // ActiveCluster 'Cluster' API
-  public Map getPeers() {
+  public Map getRemotePeers() {
     return _destinationToNode;
   }
 

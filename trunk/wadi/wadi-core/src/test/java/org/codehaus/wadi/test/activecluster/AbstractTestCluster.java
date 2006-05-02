@@ -256,10 +256,10 @@ public abstract class AbstractTestCluster extends TestCase {
 
 		// shutdown node0
 		// sessions should be evacuated to remaining two nodes...
-		if (_log.isInfoEnabled()) _log.info("NODES: " + _node0.getCluster().getPeers().size());
+		if (_log.isInfoEnabled()) _log.info("NODES: " + _node0.getCluster().getRemotePeers().size());
 		_node0.stop();
 		Thread.sleep(6000); // time for other nodes to notice...
-		if (_log.isInfoEnabled()) _log.info("NODES: " + _node1.getCluster().getPeers().size());
+		if (_log.isInfoEnabled()) _log.info("NODES: " + _node1.getCluster().getRemotePeers().size());
 
 		// where are all the sessions now ?
 		// the sum of nodes 1 and 2 should total n Contexts
@@ -276,10 +276,10 @@ public abstract class AbstractTestCluster extends TestCase {
 
 		// shutdown node1
 		// sessions should all be evacuated to node2
-		if (_log.isInfoEnabled()) _log.info("NODES: " + _node1.getCluster().getPeers().size());
+		if (_log.isInfoEnabled()) _log.info("NODES: " + _node1.getCluster().getRemotePeers().size());
 		_node1.stop();
 		Thread.sleep(6000); // time for other nodes to notice...
-		if (_log.isInfoEnabled()) _log.info("NODES: " + _node2.getCluster().getPeers().size());
+		if (_log.isInfoEnabled()) _log.info("NODES: " + _node2.getCluster().getRemotePeers().size());
 		{
 			int s0=m0.size();
 			int s1=m1.size();
@@ -293,7 +293,7 @@ public abstract class AbstractTestCluster extends TestCase {
 		}
 
 		// shutdown node2
-		if (_log.isInfoEnabled()) _log.info("NODES: " + _node2.getCluster().getPeers().size());
+		if (_log.isInfoEnabled()) _log.info("NODES: " + _node2.getCluster().getRemotePeers().size());
 		_node2.stop();
 		Thread.sleep(6000); // time for other nodes to notice...
 		_log.info("NODES: should be 0");

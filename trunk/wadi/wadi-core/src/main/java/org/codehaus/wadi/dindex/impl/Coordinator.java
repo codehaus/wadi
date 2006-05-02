@@ -109,7 +109,7 @@ public class Coordinator implements Runnable {
 		int failures=0;
 		try {
 
-			Map nodeMap=_cluster.getPeers();
+			Map nodeMap=_cluster.getRemotePeers();
 
 			Collection stayingNodes=nodeMap.values();
 			synchronized (stayingNodes) {stayingNodes=new ArrayList(stayingNodes);} // snapshot
@@ -280,7 +280,7 @@ public class Coordinator implements Runnable {
 
 	protected int printNode(Peer node) {
 		if (node!=_dispatcher.getLocalPeer())
-			node=(Peer)_cluster.getPeers().get(node.getAddress());
+			node=(Peer)_cluster.getRemotePeers().get(node.getAddress());
 		if (node==null) {
 			if (_log.isTraceEnabled()) _log.trace(DIndex.getNodeName(node) + " : <unknown>");
 			return 0;
@@ -298,7 +298,7 @@ public class Coordinator implements Runnable {
 		if (address.equals(localAddress))
 			return localPeer;
 		else
-			return (Peer)_cluster.getPeers().get(address);
+			return (Peer)_cluster.getRemotePeers().get(address);
 	}
 
 }
