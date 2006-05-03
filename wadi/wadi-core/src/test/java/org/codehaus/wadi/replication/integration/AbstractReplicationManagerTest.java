@@ -115,8 +115,8 @@ public abstract class AbstractReplicationManagerTest extends TestCase {
         assertNotDefinedByStorage(key, replicaStorage2);
         assertDefineByStorage(key, replicaStorage3, new ReplicaInfo(nodeInfo1, new NodeInfo[] {nodeInfo3}, null));
 
-        replicaStorage2.start();
-
+//        replicaStorage2.start();
+//
 //        Thread.sleep(TEMPO * 4);
 //
 //        assertNotDefinedByStorage(key, replicaStorage1);
