@@ -16,11 +16,8 @@
 package org.codehaus.wadi.group.vm;
 
 import java.util.Map;
-
-
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
-import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
@@ -86,22 +83,6 @@ public class VMDispatcher extends AbstractDispatcher {
             ". Was:" + address.getClass().getName());
     }
 
-    public String getIncomingCorrelationId(Message message) throws Exception {
-        return message.getIncomingCorrelationId();
-    }
-
-    public void setIncomingCorrelationId(Message message, String correlationId) throws Exception {
-        message.setIncomingCorrelationId(correlationId);
-    }
-
-    public String getOutgoingCorrelationId(Message message) throws Exception {
-        return message.getOutgoingCorrelationId();
-    }
-
-    public void setOutgoingCorrelationId(Message message, String correlationId) throws Exception {
-        message.setOutgoingCorrelationId(correlationId);
-    }
-
     public void send(Address to, Message message) throws MessageExchangeException {
         cluster.send(to, message);
     }
@@ -112,10 +93,6 @@ public class VMDispatcher extends AbstractDispatcher {
 
     public int getNumNodes() {
         return cluster.getNumNodes();
-    }
-
-    public void setClusterListener(ClusterListener listener) {
-        cluster.addClusterListener(listener);
     }
 
     public Address getAddress(String name) {

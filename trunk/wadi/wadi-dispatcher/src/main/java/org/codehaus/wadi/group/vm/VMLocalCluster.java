@@ -34,6 +34,7 @@ public class VMLocalCluster implements Cluster {
     private final VMCluster delegate;
     private final LocalPeer node;
     private ElectionStrategy electionStrategy;
+    private boolean running;
 
     public VMLocalCluster(VMCluster delegate, LocalPeer node) {
         this.delegate = delegate;
@@ -45,11 +46,13 @@ public class VMLocalCluster implements Cluster {
     }
 
     void registerDispatcher(VMDispatcher dispatcher) {
+        running = true;
         delegate.registerDispatcher(dispatcher);
     }
 
     void unregisterDispatcher(VMDispatcher dispatcher) {
         delegate.unregisterDispatcher(dispatcher);
+        running = false;
     }
 
     void send(Address to, Message message) throws MessageExchangeException {
@@ -73,11 +76,11 @@ public class VMLocalCluster implements Cluster {
     }
 
     public void addClusterListener(ClusterListener listener) {
-        delegate.addClusterListener(new VMLocalClusterListener(listener, node));
+        delegate.addClusterListener(new VMLocalClusterListener(this, listener, node));
     }
 
     public void removeClusterListener(ClusterListener listener) {
-        delegate.removeClusterListener(new VMLocalClusterListener(listener, node));
+        delegate.removeClusterListener(new VMLocalClusterListener(this, listener, node));
     }
 
     public Map getRemotePeers() {
@@ -91,11 +94,11 @@ public class VMLocalCluster implements Cluster {
     }
 
     public void start() throws ClusterException {
-        delegate.start();
+        throw new UnsupportedOperationException(); 
     }
 
     public void stop() throws ClusterException {
-        delegate.stop();
+        throw new UnsupportedOperationException(); 
     }
 
     public boolean waitForClusterToComplete(int i, long timeout) throws InterruptedException {
@@ -114,5 +117,9 @@ public class VMLocalCluster implements Cluster {
                 delegate.setCoordinator(newElected);
             }
         }
+    }
+
+    boolean isRunning() {
+        return running;
     }
 }

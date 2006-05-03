@@ -73,7 +73,7 @@ public class VMCluster implements Cluster {
             nodeNameToDispatcher.put(nodeName, dispatcher);
         }
         
-        listenerSupport.notifyAdd(dispatcher.getLocalPeer());
+        listenerSupport.notifyAdded(dispatcher.getLocalPeer());
         doElection(dispatcher.getCluster());
     }
 
@@ -127,7 +127,7 @@ public class VMCluster implements Cluster {
     
     void setDistributedState(VMLocalPeer localNode, Map state) throws MessageExchangeException {
         localNode.setState(state);
-        listenerSupport.notifyUpdate(localNode);
+        listenerSupport.notifyUpdated(localNode);
     }
 
 
@@ -156,11 +156,11 @@ public class VMCluster implements Cluster {
     }
 
     public void addClusterListener(ClusterListener listener) {
-        listenerSupport.addClusterListener(listener);
+        listenerSupport.addClusterListener((VMLocalClusterListener) listener);
     }
 
     public void removeClusterListener(ClusterListener listener) {
-        listenerSupport.removeClusterListener(listener);
+        listenerSupport.removeClusterListener((VMLocalClusterListener) listener);
     }
 
     public boolean waitForClusterToComplete(int i, long timeout) throws InterruptedException {
