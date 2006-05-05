@@ -94,11 +94,11 @@ public class VMLocalCluster implements Cluster {
     }
 
     public void start() throws ClusterException {
-        throw new UnsupportedOperationException(); 
+        //throw new UnsupportedOperationException(); 
     }
 
     public void stop() throws ClusterException {
-        throw new UnsupportedOperationException(); 
+        //throw new UnsupportedOperationException(); 
     }
 
     public boolean waitForClusterToComplete(int i, long timeout) throws InterruptedException {

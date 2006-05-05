@@ -64,7 +64,8 @@ public class JGroupsLocalNode implements LocalPeer {
   }
 
   public String getName() {
-    return (String)getState().get("nodeName"); // FIXME - duplicates code in Dispatcher...
+      Map state=getState();
+      return (state==null)?"<unknown>":(String)state.get("nodeName");
   }
 
   public boolean isCoordinator() {
