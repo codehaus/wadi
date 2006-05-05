@@ -36,6 +36,22 @@
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>geronimo-spec</groupId>
+      <artifactId>geronimo-spec-servlet</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>incubator-activemq</groupId>
@@ -52,6 +68,8 @@
 	<configuration>
 	  <excludes>
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude> <!-- stop surefire from trying to run nested classes -->
+	    <exclude implementation="java.lang.String">**/TestACReplicationManager.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestACReplicationContextualiser.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestGroup.java</exclude>
 	  </excludes>
 	</configuration>

@@ -172,23 +172,6 @@
       <artifactId>wadi-dispatcher</artifactId>
     </dependency>
 
-    <!-- backends for testing -->
-    <dependency>
-      <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-activecluster</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-jgroups</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-tribes</artifactId>
-      <scope>test</scope>
-    </dependency>
-
     <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-j2ee-management</artifactId>
@@ -278,8 +261,22 @@
 	    <exclude implementation="java.lang.String">**/TestSimpleCluster.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestAC*.java</exclude>
 	    <exclude implementation="java.lang.String">**/*JG*.java</exclude>
+
+	    <exclude implementation="java.lang.String">**/TestInVMReplicationManager.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestInVMEvacuation.java</exclude>
 	  </excludes>
 	</configuration>
+      </plugin>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-jar-plugin</artifactId>
+	<executions>
+	  <execution>
+	    <goals>
+	      <goal>test-jar</goal>
+	    </goals>
+	  </execution>
+	</executions>
       </plugin>
     </plugins>
   </build>

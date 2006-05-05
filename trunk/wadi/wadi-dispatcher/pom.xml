@@ -29,7 +29,6 @@
 	  <excludes>
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude> <!-- stop surefire from trying to run nested classes -->
 	    <exclude implementation="java.lang.String">**/TestGroup.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestInVMReplicationManager.java</exclude>
 	  </excludes>
 	</configuration>
       </plugin>

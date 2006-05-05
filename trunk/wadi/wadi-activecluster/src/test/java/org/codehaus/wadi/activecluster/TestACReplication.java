@@ -14,9 +14,10 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package org.codehaus.wadi.test.replication;
+package org.codehaus.wadi.activecluster;
 
 import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
+import org.codehaus.wadi.test.replication.AbstractTestReplication;
 
 
 public class TestACReplication extends AbstractTestReplication {
