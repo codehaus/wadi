@@ -22,6 +22,7 @@ import java.io.InputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -50,11 +51,11 @@ public class SpringManagerFactory {
         _sessionWrapperFactory=sessionWrapperFactory;
     }
 
-    public StandardManager create() throws FileNotFoundException {
+    public Manager create() throws FileNotFoundException {
         return create(_descriptor, _beanName, _sessionFactory, _sessionWrapperFactory);
     }
 
-    public static StandardManager create(InputStream descriptor, String beanName, SessionFactory sessionFactory, SessionWrapperFactory sessionWrapperFactory) throws FileNotFoundException {
+    public static Manager create(InputStream descriptor, String beanName, SessionFactory sessionFactory, SessionWrapperFactory sessionWrapperFactory) throws FileNotFoundException {
     	DefaultListableBeanFactory dlbf=new DefaultListableBeanFactory();
         String wadiPropsName = System.getProperty("wadi.properties");
         FileSystemResource props = null;
@@ -79,7 +80,7 @@ public class SpringManagerFactory {
     	//dlbf.getBean("exporter");
     	//dlbf.getBean("serverConnector");
     	dlbf.preInstantiateSingletons();
-    	StandardManager manager=(StandardManager)dlbf.getBean(beanName);
+    	Manager manager=(Manager)dlbf.getBean(beanName);
 
     	if (manager==null)
     		if (_log.isErrorEnabled()) _log.error("could not find WADI Manager bean: "+beanName);

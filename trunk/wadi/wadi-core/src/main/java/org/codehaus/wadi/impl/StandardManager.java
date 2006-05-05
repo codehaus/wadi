@@ -37,6 +37,7 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapper;
@@ -62,7 +63,7 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
  * @version $Revision$
  */
 
-public class StandardManager implements Lifecycle, SessionConfig, ContextualiserConfig, RouterConfig {
+public class StandardManager implements Lifecycle, SessionConfig, ContextualiserConfig, RouterConfig, Manager {
 
 	protected final Log _log = LogFactory.getLog(getClass());
 
@@ -124,7 +125,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 		if (context==null) {
 			_log.warn("null ServletContext");
 		} else {
-			context.setAttribute(StandardManager.class.getName(), this); // TODO - security risk ?
+			context.setAttribute(Manager.class.getName(), this); // TODO - security risk ?
 		}
 		_started=true;
 
@@ -242,7 +243,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 	public AttributesFactory getAttributesFactory() {return _attributesFactory;}
 	public ValuePool getValuePool() {return _valuePool;}
 
-	public StandardManager getManager(){return this;}
+	public Manager getManager(){return this;}
 
 	// this should really be abstract, but is useful for testing - TODO
 

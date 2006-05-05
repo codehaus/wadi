@@ -33,7 +33,6 @@ import org.apache.catalina.Context;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.deploy.FilterDef;
@@ -41,6 +40,7 @@ import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.impl.StandardManager;
@@ -51,11 +51,11 @@ import org.codehaus.wadi.web.Filter;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class TomcatManager implements ManagerConfig, Lifecycle, Manager
+public class TomcatManager implements ManagerConfig, Lifecycle, org.apache.catalina.Manager
 {
   protected static final Log _log = LogFactory.getLog(TomcatManager.class);
 
-  protected StandardManager _wadi;
+  protected Manager _wadi;
   protected Container _container;
   protected boolean _distributable;
   protected int _sessionCounter; // push back into WADI - TODO
@@ -70,7 +70,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
     return ((Context)_container).getServletContext();
   }
 
-  public void callback(StandardManager manager) {
+  public void callback(org.codehaus.wadi.Manager manager) {
     // install Listeners ...
     Context context=((Context)_container);
 
@@ -81,7 +81,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
       if (listener instanceof HttpSessionListener)
 	sll.add((HttpSessionListener)listener);
     }
-    manager.setSessionListeners((HttpSessionListener[])sll.toArray(new HttpSessionListener[sll.size()]));
+    ((StandardManager)manager).setSessionListeners((HttpSessionListener[])sll.toArray(new HttpSessionListener[sll.size()]));
 
     Object[] attributeListeners=context.getApplicationEventListeners();
     List all=new ArrayList();
@@ -90,7 +90,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, Manager
       if (listener instanceof HttpSessionAttributeListener)
 	all.add((HttpSessionAttributeListener)listener);
     }
-    manager.setAttributelisteners((HttpSessionAttributeListener[])all.toArray(new HttpSessionAttributeListener[all.size()]));
+    ((StandardManager)manager).setAttributelisteners((HttpSessionAttributeListener[])all.toArray(new HttpSessionAttributeListener[all.size()]));
   }
 
   // org.apache.catalina.Lifecycle

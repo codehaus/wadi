@@ -35,6 +35,7 @@ import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.InvocationProxy;
+import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.ProxiedLocation;
 import org.codehaus.wadi.Relocater;
@@ -135,7 +136,7 @@ public class MyServlet implements Servlet {
 					return null;
 				}
 
-				public void callback(StandardManager manager) {
+				public void callback(Manager manager) {
 					// do nothing - should install Listeners...
 				}
 

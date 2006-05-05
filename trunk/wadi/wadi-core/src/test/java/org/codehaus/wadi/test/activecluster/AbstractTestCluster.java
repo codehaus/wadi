@@ -39,6 +39,7 @@ import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.InvocationProxy;
+import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.ProxiedLocation;
@@ -73,7 +74,6 @@ import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardHttpProxy;
-import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
@@ -144,7 +144,7 @@ public abstract class AbstractTestCluster extends TestCase {
 						return null;
 					}
 
-					public void callback(StandardManager manager) {
+					public void callback(Manager manager) {
 						// do nothing - should install Listeners
 					}
 

@@ -26,6 +26,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.WADIHttpSession;
 import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
@@ -60,8 +61,8 @@ public class JettyManager implements ManagerConfig, SessionManager {
 		return _handler.getServletContext();
 	}
 
-	public void callback(StandardManager manager) {
-		_listeners.installListeners(manager);
+	public void callback(Manager manager) {
+		_listeners.installListeners((StandardManager)manager);
 	}
 
 	// org.mortbay.jetty.servlet.SessionManager
