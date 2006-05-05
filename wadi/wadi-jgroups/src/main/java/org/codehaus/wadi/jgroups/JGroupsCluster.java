@@ -127,7 +127,12 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   }
 
   public boolean waitForClusterToComplete(int expectedCount, long timeout) throws InterruptedException {
-    throw new UnsupportedOperationException("NYI");
+    long expired=0;
+    while ((getRemotePeers().size())!=expectedCount && expired<timeout) {
+        Thread.sleep(1000);
+        expired+=1000;
+    }
+    return (getRemotePeers().size())==expectedCount;
   }
 
   public void start() throws ClusterException {
@@ -222,19 +227,17 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
     	List members=new ArrayList();
     	for (Iterator i=newView.getMembers().iterator(); i.hasNext(); )
     		members.add(_addressToDestination.get(i.next()));
-    	_log.info("JGroups View: " + members);
     }
-
   }
 
   class JoinerThread implements Runnable {
-	  
+
 	  Vector newMembers;
-	  
+
 	  JoinerThread(Vector newMembers) {
 		  this.newMembers=newMembers;
 	  }
-	  
+
 	  public void run() {
 		  // now we need a quick round trip to fetch the distributed data for this node - yeugh !
 		  for (int i=0; i<newMembers.size(); i++) {
@@ -242,7 +245,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 			  JGroupsAddress destination=JGroupsAddress.get(JGroupsCluster.this, address);
 			  if (destination!=_localDestination) {
 				  if (_clusterState.get(address)==null) {
-					  
+
 					  //fetch state
 					  try {
 						  JGroupsMessage tmp=(JGroupsMessage)_dispatcher.exchangeSend(_localDestination, destination, new StateRequest(), 5000);
@@ -254,19 +257,19 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 						  _log.warn("problem retrieving remote state for fresh joiner...", e);
 						  return;
 					  }
-					  
+
 					  // insert node
 					  synchronized (_destinationToNode) {
 						  _destinationToNode.put(destination, destination.getNode());
 					  }
-					  
+
 					  // notify listener
 					  if (_clusterListeners.size()>0) {
                           ClusterEvent event=new ClusterEvent(JGroupsCluster.this, destination.getNode(), ClusterEvent.PEER_ADDED);
                           for (int j=0; j<_clusterListeners.size(); j++)
 						  ((ClusterListener)_clusterListeners.get(j)).onPeerAdded(event);
                       }
-					  
+
 					  // elect coordinator
 					  runCoordinatorElection();
 				  }
@@ -274,7 +277,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 		  }
 	  }
   }
-  
+
   protected void runCoordinatorElection() {
 	  if (_clusterListeners.size()>0 && _electionStrategy!=null) {
 		  Peer coordinator=_localPeer;
@@ -339,7 +342,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 
   public void init(JGroupsDispatcher dispatcher) throws Exception {
     _dispatcher=dispatcher;
-    
+
     ServiceEndpointBuilder endpointBuilder = new ServiceEndpointBuilder();
     endpointBuilder.addSEI(_dispatcher, JGroupsClusterMessageListener.class, this);
     endpointBuilder.addCallback(_dispatcher, StateResponse.class);
@@ -374,7 +377,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 		  destination=_clusterTopic;
 	  else
 		  destination=JGroupsAddress.get(this, address);
-	  
+
 	  return destination;
   }
 
@@ -404,11 +407,11 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   public Map getClusterState() {
 	  return _clusterState;
   }
-  
-	
+
+
 	protected static final String _prefix="<"+JGroupsCluster.class.getPackage().getName()+": ";
 	protected static final String _suffix=">";
-	
+
 	public String toString() {
 		return _prefix+_localPeer.getName()+"@"+_clusterName+_suffix;
 	}

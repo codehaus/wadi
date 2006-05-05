@@ -30,6 +30,12 @@
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-dispatcher</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-dispatcher</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
 
     <!-- Tribes? -->
   </dependencies>

@@ -34,6 +34,19 @@ import org.codehaus.wadi.group.Peer;
  * @version $Revision: 1603 $
  */
 public class VMCluster implements Cluster {
+    
+    protected static Map clusters=new HashMap();
+    
+    public static VMCluster ensureCluster(String clusterName) {
+        synchronized (clusters) {
+            VMCluster cluster=(VMCluster)clusters.get(clusterName);
+            if (cluster==null) {
+                clusters.put(clusterName, cluster=new VMCluster(clusterName));
+            }
+            return cluster;
+        }
+    }
+    
     private final String name;
     private final Address address;
     private final Map nodeNameToDispatcher = new HashMap();

@@ -316,6 +316,12 @@
 	<artifactId>wadi-dispatcher</artifactId>
 	<version>${project.version}</version>
       </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-dispatcher</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+    </dependency>
       <dependency>
 	<groupId>geronimo-spec</groupId>
 	<artifactId>geronimo-spec-servlet</artifactId>

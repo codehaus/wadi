@@ -20,4 +20,31 @@
     </dependency>
   </dependencies>
 
+  <build>
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-surefire-plugin</artifactId>
+	<configuration>
+	  <excludes>
+	    <exclude implementation="java.lang.String">**/*$*.java</exclude> <!-- stop surefire from trying to run nested classes -->
+	    <exclude implementation="java.lang.String">**/TestGroup.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestInVMReplicationManager.java</exclude>
+	  </excludes>
+	</configuration>
+      </plugin>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-jar-plugin</artifactId>
+	<executions>
+	  <execution>
+	    <goals>
+	      <goal>test-jar</goal>
+	    </goals>
+	  </execution>
+	</executions>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>
