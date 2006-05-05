@@ -247,21 +247,9 @@
 
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude> <!-- stop surefire from trying to run nested classes -->
 
-	    <exclude implementation="java.lang.String">**/old/test/TestCluster.java</exclude> <!-- seems to overflow end of compilation -->
-	    <exclude implementation="java.lang.String">**/sandbox/partition/impl/TestExchange.java</exclude> <!-- Failure -->
-	    <exclude implementation="java.lang.String">**/sandbox/jcache/TestJCache.java</exclude> <!-- NullPointerException -->
-	    <exclude implementation="java.lang.String">**/test/io/TestMotion.java</exclude> <!-- NullPointerException -->
-	    <exclude implementation="java.lang.String">**/test/io/TestServers.java</exclude> <!-- OutOfMemoryError -->
-	    <exclude implementation="java.lang.String">**/old/test/TestConcurrency.java</exclude> <!-- Exception -->
-	    <exclude implementation="java.lang.String">**/old/test/TestDistributedOwnership.java</exclude> <!-- OutOfMemoryError -->
-	    <exclude implementation="java.lang.String">**/old/test/TestUnicastClient.java</exclude> <!-- NoSuchMethodException -->
-	    <exclude implementation="java.lang.String">**/old/test/TestMulticastServer.java</exclude> <!-- NoSuchMethodException -->
-	    <exclude implementation="java.lang.String">**/test/TestActiveCluster.java</exclude> <!-- causes build to hang -->
-	    <exclude implementation="java.lang.String">**/test/TestGianni.java</exclude> <!-- leaves evicter running -->
+	    <exclude implementation="java.lang.String">**/TestActiveCluster.java</exclude> <!-- causes build to hang -->
+	    <exclude implementation="java.lang.String">**/TestGianni.java</exclude> <!-- leaves evicter running -->
 	    <exclude implementation="java.lang.String">**/TestSimpleCluster.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestAC*.java</exclude>
-	    <exclude implementation="java.lang.String">**/*JG*.java</exclude>
-
 	    <exclude implementation="java.lang.String">**/TestInVMReplicationManager.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestInVMEvacuation.java</exclude>
 	  </excludes>
