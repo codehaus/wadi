@@ -17,7 +17,6 @@
 package org.codehaus.wadi.jgroups;
 
 import java.io.ObjectStreamException;
-import java.io.Serializable;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Peer;
 

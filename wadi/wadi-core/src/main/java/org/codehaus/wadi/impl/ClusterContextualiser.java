@@ -19,8 +19,6 @@ package org.codehaus.wadi.impl;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.jms.ObjectMessage;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;

@@ -19,7 +19,6 @@ package org.codehaus.wadi.replication.storage.remoting;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import javax.jms.JMSException;
 import junit.framework.TestCase;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Message;

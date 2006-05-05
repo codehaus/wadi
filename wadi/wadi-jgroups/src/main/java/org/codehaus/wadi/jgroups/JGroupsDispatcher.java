@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Map;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
-import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
