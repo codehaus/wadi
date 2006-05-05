@@ -25,11 +25,11 @@ import org.apache.axis2.session.SessionIdFactory;
 import org.apache.axis2.session.SessionManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.WADIHttpSession;
 import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.impl.SpringManagerFactory;
-import org.codehaus.wadi.impl.StandardManager;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 
@@ -41,7 +41,7 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
     
     // integrated
     protected int _maxInactiveInterval; // integrated
-    protected StandardManager _wadi;
+    protected Manager _wadi;
     
     // still to integrate
     protected SessionIdFactory _idFactory; // can we integrate this somehow ? - wrap up in our own API and pass through to Spring via sysprop
@@ -55,7 +55,7 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
             // we should probably acquire this through some backptr from the container...
             String path=System.getProperty("axis2.repo")+"/server/wadi-axis2.xml";
             InputStream descriptor=new FileInputStream(path);
-            _wadi=(StandardManager)SpringManagerFactory.create(descriptor, "SessionManager", new AtomicallyReplicableSessionFactory(), new Axis2SessionWrapperFactory());
+            _wadi=(Manager)SpringManagerFactory.create(descriptor, "SessionManager", new AtomicallyReplicableSessionFactory(), new Axis2SessionWrapperFactory());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -82,7 +82,7 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
         return null; // Not relevant to Axis2 - this should not be on the Manager interface
     }
     
-    public void callback(StandardManager arg0) {
+    public void callback(Manager arg0) {
         _log.debug("callback()");
     }
     

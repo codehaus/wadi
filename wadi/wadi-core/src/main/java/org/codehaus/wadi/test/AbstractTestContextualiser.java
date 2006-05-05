@@ -51,6 +51,7 @@ import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Location;
+import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.ProxiedLocation;
@@ -209,7 +210,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		Contextualiser memory=new MemoryContextualiser(serial, _dummyEvicter, m, _streamer, _distributableContextPool, _requestPool);
 		PartitionManager partitionManager=new DummyPartitionManager(24);
 		Dispatcher dispatcher=createDispatcher(_clusterName, _nodeName, 5000L);
-		StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, partitionManager, _collapser);
+		Manager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, partitionManager, _collapser);
 		manager.init(new DummyManagerConfig());
 
 		{
@@ -503,7 +504,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		Map m=new HashMap();
 		Evicter memoryEvicter=new NeverEvicter(30, true);
 		MemoryContextualiser memory=new MemoryContextualiser(_dummyContextualiser, memoryEvicter, m, _streamer, _standardContextPool, _requestPool);
-		StandardManager manager=new StandardManager(_standardSessionPool, _standardAttributesFactory, _standardValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true);
+		Manager manager=new StandardManager(_standardSessionPool, _standardAttributesFactory, _standardValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true);
 		manager.init(new DummyManagerConfig());
 		Session session=manager.create();
 		session.setMaxInactiveInterval(1);
@@ -525,7 +526,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		Contextualiser memory=new MemoryContextualiser(serial, memoryEvicter, m, _streamer, _distributableContextPool, _requestPool);
 		PartitionManager partitionManager=new DummyPartitionManager(24);
 		Dispatcher dispatcher=createDispatcher(_clusterName, _nodeName, 5000L);
-		StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, partitionManager, _collapser);
+		Manager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, partitionManager, _collapser);
 		manager.init(new DummyManagerConfig());
 
 		Session session=manager.create();
@@ -563,7 +564,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		Contextualiser memory=new MemoryContextualiser(serial, memoryEvicter, m, _streamer, _distributableContextPool, _requestPool);
 		PartitionManager partitionManager=new DummyPartitionManager(24);
 		Dispatcher dispatcher=createDispatcher(_clusterName, _nodeName, 5000L);
-		StandardManager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, partitionManager, _collapser);
+		Manager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, partitionManager, _collapser);
 		manager.init(new DummyManagerConfig());
 
 		Session session=manager.create();

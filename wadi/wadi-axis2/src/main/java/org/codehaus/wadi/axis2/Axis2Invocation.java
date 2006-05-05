@@ -20,8 +20,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
+import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.PoolableInvocationWrapper;
-import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.StatefulHttpServletRequestWrapper;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 
@@ -34,13 +34,13 @@ public class Axis2Invocation implements Invocation, Runnable {
         return (Axis2Invocation)_threadLocalInstance.get();
     }
     
-    protected StandardManager _wadi;
+    protected Manager _wadi;
     protected String _key;
     protected Axis2Session _session;
     
     protected Rendezvous _rendezvous=new Rendezvous(2);
     
-    public void init(StandardManager wadi, String key) {
+    public void init(Manager wadi, String key) {
         _wadi=wadi;
         _key=key;
     }
