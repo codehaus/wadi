@@ -13,10 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.replication.integration;
+package org.codehaus.wadi.activecluster;
 
 import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.replication.integration.AbstractReplicationManagerTest;
 
 public class TestACReplicationManager extends AbstractReplicationManagerTest {
 
