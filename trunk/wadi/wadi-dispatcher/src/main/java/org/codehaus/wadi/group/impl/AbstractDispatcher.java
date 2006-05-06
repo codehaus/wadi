@@ -17,7 +17,6 @@
 package org.codehaus.wadi.group.impl;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,8 +31,6 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
-//TODO - has grown and grown - could do with pruning/refactoring...
-
 /**
  * The portable aspects of a Dispatcher implementation
  *
@@ -46,7 +43,6 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	protected final String _nodeName;
 	protected final String _clusterName;
 	protected final long _inactiveTime;
-	protected final Map _map;
 	protected final ThreadPool _executor;
 	protected final Log _messageLog = LogFactory.getLog("org.codehaus.wadi.MESSAGES");
     protected Log _log = LogFactory.getLog(getClass());
@@ -59,7 +55,6 @@ public abstract class AbstractDispatcher implements Dispatcher {
         _nodeName=nodeName;
         _clusterName=clusterName;
         _inactiveTime=inactiveTime;
-        _map=new HashMap();
         _executor = executor;
         
         inboundMessageDispatcher = new BasicMessageDispatcherManager(this, _executor);
