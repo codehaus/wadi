@@ -47,10 +47,6 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
     public BasicReplicaStorageStub(Dispatcher dispatcher, Address[] destinations) {
         this.dispatcher = dispatcher;
         this.destinations = destinations;
-
-        // TODO - need to dispose...
-        ServiceEndpointBuilder endpointBuilder = new ServiceEndpointBuilder();
-        endpointBuilder.addCallback(dispatcher, ReplicaStorageResult.class);
     }
 
     public void mergeCreate(Object key, ReplicaInfo replicaInfo) {

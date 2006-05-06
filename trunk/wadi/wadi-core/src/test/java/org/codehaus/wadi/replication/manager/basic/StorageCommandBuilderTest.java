@@ -76,6 +76,12 @@ public class StorageCommandBuilderTest extends TestCase {
         private NodeInfo[] expectedNodes;
         private ReplicaStorage storage;
         
+        public void start() {
+        }
+        
+        public void stop() {
+        }
+        
         public ReplicaStorage buildStub() {
             throw new AssertionError();
         }
