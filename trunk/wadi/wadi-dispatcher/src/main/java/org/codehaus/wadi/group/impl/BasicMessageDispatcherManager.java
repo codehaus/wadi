@@ -24,7 +24,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.ServiceEndpoint;
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -36,9 +35,9 @@ class BasicMessageDispatcherManager implements MessageDispatcherManager {
     private final AbstractDispatcher _dispatcher;
     private final Log _log = LogFactory.getLog(getClass());
     private final IdentityHashMap _msgDispatchers = new IdentityHashMap();
-    private final PooledExecutor _executor;
+    private final ThreadPool _executor;
 	
-	public BasicMessageDispatcherManager(AbstractDispatcher dispatcher, PooledExecutor executor) {
+	public BasicMessageDispatcherManager(AbstractDispatcher dispatcher, ThreadPool executor) {
         _dispatcher = dispatcher;
         _executor = executor;
 	}
