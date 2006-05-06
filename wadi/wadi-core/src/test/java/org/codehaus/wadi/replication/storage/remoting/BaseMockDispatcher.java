@@ -87,10 +87,6 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public PooledExecutor getExecutor() {
-        throw new UnsupportedOperationException();
-    }
-
     public Address getLocalAddress() {
         throw new UnsupportedOperationException();
     }

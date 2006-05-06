@@ -18,18 +18,16 @@ package org.codehaus.wadi.group.impl;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.Message;
-import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Quipu;
+import org.codehaus.wadi.group.ServiceEndpoint;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
@@ -51,7 +49,6 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	protected final String _clusterName;
 	protected final long _inactiveTime;
 	protected final Map _map;
-    protected final Set _msgsDispatchers = new HashSet();
 	protected final PooledExecutor _executor;
 	protected final Log _messageLog = LogFactory.getLog("org.codehaus.wadi.MESSAGES");
     protected Log _log = LogFactory.getLog(getClass());
@@ -66,15 +63,15 @@ public abstract class AbstractDispatcher implements Dispatcher {
 		_inactiveTime=inactiveTime;
 		_map=new HashMap();
 
-        _executor=new PooledExecutor(); // parameterise
-		//_executor.setMinimumPoolSize(200);
-		//_executor.runWhenBlocked();
+        // TODO - parameterise
+        _executor=new PooledExecutor(); 
+		_executor.setMinimumPoolSize(10);
+		_executor.runWhenBlocked();
 		_executor.setThreadFactory(new ThreadFactory() {
-			protected int _count;
+			private int _count;
 			
 			public synchronized Thread newThread(Runnable runnable) {
-				//_log.info("CREATING THREAD: "+_count);
-				return new Thread(runnable, "WADI Dispatcher ("+(_count++)+")");
+				return new Thread(runnable, "WADI " + _nodeName + " Dispatcher ["+(_count++)+"]");
 			}
 		});
         
@@ -151,12 +148,6 @@ public abstract class AbstractDispatcher implements Dispatcher {
 				_rvMap.remove(correlationId);
 		}
 		return response;
-	}
-	
-	// TODO - rather than owning this, we should be given a pointer to it at init()
-	// time, and this accessor should be removed...
-	public PooledExecutor getExecutor() {
-		return _executor;
 	}
 	
     public Message exchangeSend(Address to, Object body, long timeout) throws MessageExchangeException {

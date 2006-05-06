@@ -19,8 +19,6 @@ package org.codehaus.wadi.group;
 import java.io.Serializable;
 import java.util.Map;
 
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
-
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1563 $
@@ -59,10 +57,6 @@ public interface Dispatcher extends MessageListener {
     Quipu setRendezVous(String correlationId, int numLlamas);
 
 	Message attemptRendezVous(String correlationId, Quipu rv, long timeout);
-
-	// TODO - rather than owning this, we should be given a pointer to it at init()
-	// time, and this accessor should be removed...
-	PooledExecutor getExecutor();
 
     LocalPeer getLocalPeer();
 
