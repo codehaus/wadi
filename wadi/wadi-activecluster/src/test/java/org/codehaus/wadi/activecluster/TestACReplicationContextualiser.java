@@ -31,4 +31,8 @@ public class TestACReplicationContextualiser extends AbstractReplicationContextu
                 "vm://localhost", 
                 timeout);
     }
+
+    protected void failNode(String arg0) {
+        throw new UnsupportedOperationException();
+    }
 }
