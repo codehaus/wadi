@@ -67,6 +67,7 @@ public class BasicReplicationManager implements ReplicationManager {
     }
 
     public void start() throws Exception {
+        storageStubFactory.start();
         storageListener = new FilteringStorageListener(primary, backingStrategy);
         storageMonitor.addReplicaStorageListener(storageListener);
         storageMonitor.start();
@@ -80,6 +81,7 @@ public class BasicReplicationManager implements ReplicationManager {
         storageMonitor.stop();
         storageMonitor.removeReplicaStorageListener(storageListener);
         keyToReplicaInfo.clear();
+        storageStubFactory.stop();
     }
     
     public void create(Object key, Object tmp) {

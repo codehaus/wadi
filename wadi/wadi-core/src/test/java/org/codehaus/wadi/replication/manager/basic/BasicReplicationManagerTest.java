@@ -294,6 +294,12 @@ public class BasicReplicationManagerTest extends TestCase {
         private List resultBuildStubWithNodesList;
         private int index = 0;
         
+        public void start() {
+        }
+        
+        public void stop() {
+        }
+        
         public ReplicaStorage buildStub() {
             throw new UnsupportedOperationException();
         }

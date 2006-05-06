@@ -99,7 +99,7 @@ public abstract class AbstractReplicationManagerTest extends TestCase {
         assertDefineByStorage(key, replicaStorage2, new ReplicaInfo(nodeInfo1, new NodeInfo[] {nodeInfo2}, null));
         assertNotDefinedByStorage(key, replicaStorage3);
 
-        replicaStorage2.stop();
+        manager2.stop();
 
         Thread.sleep(TEMPO);
 
@@ -115,13 +115,15 @@ public abstract class AbstractReplicationManagerTest extends TestCase {
         assertNotDefinedByStorage(key, replicaStorage2);
         assertDefineByStorage(key, replicaStorage3, new ReplicaInfo(nodeInfo1, new NodeInfo[] {nodeInfo3}, null));
 
-//        replicaStorage2.start();
-//
-//        Thread.sleep(TEMPO * 4);
-//
-//        assertNotDefinedByStorage(key, replicaStorage1);
-//        assertDefineByStorage(key, replicaStorage2, new ReplicaInfo(nodeInfo1, new NodeInfo[] {nodeInfo3, nodeInfo2}, null));
-//        assertDefineByStorage(key, replicaStorage3, new ReplicaInfo(nodeInfo1, new NodeInfo[] {nodeInfo3, nodeInfo2}, null));
+        manager2.start();
+
+        Thread.sleep(TEMPO);
+
+        assertNotDefinedByStorage(key, replicaStorage1);
+        assertDefineByStorage(key, replicaStorage2, new ReplicaInfo(nodeInfo1, new NodeInfo[] {nodeInfo3, nodeInfo2}, null));
+        assertDefineByStorage(key, replicaStorage3, new ReplicaInfo(nodeInfo1, new NodeInfo[] {nodeInfo3, nodeInfo2}, null));
+        
+        manager1.stop();
     }
 
     private void assertNotDefinedByStorage(String key, ReplicaStorage storage) {

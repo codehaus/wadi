@@ -26,6 +26,10 @@ import org.codehaus.wadi.group.vm.VMDispatcher;
 public class TestInVMReplicationContextualiser extends AbstractReplicationContextualiserTest {
     private VMCluster cluster;
 
+    protected void failNode(String nodeName) {
+        cluster.failNode(nodeName);
+    }
+    
     protected Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {
         if (null == cluster) {
             cluster = new VMCluster(clusterName);

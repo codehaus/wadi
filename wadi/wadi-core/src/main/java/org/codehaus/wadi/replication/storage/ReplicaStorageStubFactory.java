@@ -26,4 +26,8 @@ public interface ReplicaStorageStubFactory {
     ReplicaStorage buildStub();
 
     ReplicaStorage buildStub(NodeInfo nodes[]);
+
+    void start();
+
+    void stop();
 }

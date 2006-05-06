@@ -17,6 +17,7 @@ package org.codehaus.wadi.replication.storage.remoting;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.ReplicaStorageStubFactory;
@@ -28,11 +29,22 @@ import org.codehaus.wadi.replication.storage.ReplicaStorageStubFactory;
  */
 public class BasicReplicaStorageStubFactory implements ReplicaStorageStubFactory {
     protected final Dispatcher dispatcher;
+    private ServiceEndpointBuilder endpointBuilder;
     
     public BasicReplicaStorageStubFactory(Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
+
+        endpointBuilder = new ServiceEndpointBuilder();
     }
 
+    public void start() {
+        endpointBuilder.addCallback(dispatcher, ReplicaStorageResult.class);
+    }
+    
+    public void stop() {
+        endpointBuilder.dispose(10, 500);
+    }
+    
     public ReplicaStorage buildStub(NodeInfo[] nodes) {
         Address destinations[] = new Address[nodes.length];
         for (int i = 0; i < destinations.length; i++) {

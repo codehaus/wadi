@@ -18,13 +18,10 @@ package org.codehaus.wadi.replication.integration;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.servlet.FilterChain;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-
 import junit.framework.TestCase;
-
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
@@ -38,6 +35,7 @@ import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.AlwaysEvicter;
 import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
+import org.codehaus.wadi.impl.ClusterContextualiser;
 import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
@@ -46,6 +44,7 @@ import org.codehaus.wadi.impl.DummyManagerConfig;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.impl.HashingCollapser;
+import org.codehaus.wadi.impl.HybridRelocater;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SimpleSessionPool;
@@ -97,8 +96,10 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         session.setAttribute(attrName, attrValue);
         ((RWLockListener) session).readEnded();
 		String sessionId = session.getId();
+
+        failNode(nodeInfo1.clusteredManager.getNodeName());
         
-        promoteNode2(sessionId);
+        promoteNode(nodeInfo2, sessionId);
         
         Session node2Session = (Session) nodeInfo2.mmap.get(sessionId);
         assertNotNull(node2Session);
@@ -106,10 +107,17 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         assertEquals(attrValue, actualAttrValue);
         
         assertNull(nodeInfo1.mmap.get(attrName));
+        
+        nodeInfo1 = setUpNode("node1");
+        nodeInfo1.start();
+
+        promoteNode(nodeInfo1, sessionId);
+        
+        assertNull(nodeInfo2.mmap.get(attrName));
     }
 
-    private void promoteNode2(String sessionId) throws InvocationException {
-        nodeInfo2.clusteredManager.contextualise(
+    private void promoteNode(NodeInfo nodeInfo, String sessionId) throws InvocationException {
+        nodeInfo.clusteredManager.contextualise(
                 new TestInvocation(null, null,
                     new FilterChain() { 
                         public void doFilter(ServletRequest req, ServletResponse res){} 
@@ -135,6 +143,8 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         }
     }
 
+    protected abstract void failNode(String nodeName);
+
     protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
 
     private NodeInfo setUpNode(String nodeName) throws Exception {
@@ -159,6 +169,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
 
         Contextualiser contextualiser = new DummyContextualiser();
         contextualiser = new ReplicaAwareContextualiser(contextualiser, sessionRepManager);
+        contextualiser = new ClusterContextualiser(contextualiser, new HashingCollapser(100, 1000), new HybridRelocater(1000, 1000, true));
         contextualiser = new MemoryContextualiser(contextualiser, mevicter, mmap, streamer, contextPool, requestPool);
 
         ClusteredManager manager = new ClusteredManager(
