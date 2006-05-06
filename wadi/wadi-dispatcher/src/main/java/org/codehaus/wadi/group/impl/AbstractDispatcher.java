@@ -49,33 +49,26 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	protected final String _clusterName;
 	protected final long _inactiveTime;
 	protected final Map _map;
-	protected final PooledExecutor _executor;
+	protected final ThreadPool _executor;
 	protected final Log _messageLog = LogFactory.getLog("org.codehaus.wadi.MESSAGES");
     protected Log _log = LogFactory.getLog(getClass());
     protected DispatcherConfig _config;
     protected final Map _rvMap = new ConcurrentHashMap();
 
     private final MessageDispatcherManager inboundMessageDispatcher; 
-    
-	public AbstractDispatcher(String clusterName, String nodeName, long inactiveTime) {
-		_nodeName=nodeName;
-		_clusterName=clusterName;
-		_inactiveTime=inactiveTime;
-		_map=new HashMap();
 
-        // TODO - parameterise
-        _executor=new PooledExecutor(); 
-		_executor.setMinimumPoolSize(10);
-		_executor.runWhenBlocked();
-		_executor.setThreadFactory(new ThreadFactory() {
-			private int _count;
-			
-			public synchronized Thread newThread(Runnable runnable) {
-				return new Thread(runnable, "WADI " + _nodeName + " Dispatcher ["+(_count++)+"]");
-			}
-		});
+    public AbstractDispatcher(String clusterName, String nodeName, long inactiveTime, ThreadPool executor) {
+        _nodeName=nodeName;
+        _clusterName=clusterName;
+        _inactiveTime=inactiveTime;
+        _map=new HashMap();
+        _executor = executor;
         
         inboundMessageDispatcher = new BasicMessageDispatcherManager(this, _executor);
+    }
+
+	public AbstractDispatcher(String clusterName, String nodeName, long inactiveTime) {
+        this(clusterName, nodeName, inactiveTime, new PooledExecutorAdapter(10));
 	}
 	
 	public void init(DispatcherConfig config) throws Exception {
