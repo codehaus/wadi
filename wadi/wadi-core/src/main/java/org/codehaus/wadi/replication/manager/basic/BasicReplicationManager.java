@@ -46,7 +46,7 @@ public class BasicReplicationManager implements ReplicationManager {
     private final ReplicationManagerExporter managerExporter;
     private final NodeInfo primary;
     
-    private FilteringStorageListener storageListener;
+    private final FilteringStorageListener storageListener;
     
     public BasicReplicationManager(BackingStrategy backingStrategy,
             ReplicationManagerStubFactory managerStubFactory,
@@ -63,12 +63,12 @@ public class BasicReplicationManager implements ReplicationManager {
         this.managerExporter = managerExporter;
         this.primary = primary;
         
+        storageListener = new FilteringStorageListener(primary, backingStrategy);
         keyToReplicaInfo = new HashMap();
     }
 
     public void start() throws Exception {
         storageStubFactory.start();
-        storageListener = new FilteringStorageListener(primary, backingStrategy);
         storageMonitor.addReplicaStorageListener(storageListener);
         storageMonitor.start();
         storage.start();
@@ -111,8 +111,6 @@ public class BasicReplicationManager implements ReplicationManager {
             replicaInfo = new ReplicaInfo(replicaInfo, tmp);
             keyToReplicaInfo.put(key, replicaInfo);
         }
-        // TODO lock on a replicaInfo to ensure that mergeUpdate are properly
-        // ordered.
         
         ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
         storage.mergeUpdate(key, new ReplicaInfo(null, null, tmp));
@@ -207,7 +205,7 @@ public class BasicReplicationManager implements ReplicationManager {
             keyToReplicaInfo.put(key, replicaInfo);
         }
 
-        updateReplicaStorages(key, replicaInfo, oldSecondaries, newSecondaries);
+        updateReplicaStorages(key, replicaInfo, oldSecondaries);
         return replicaInfo;
     }
 
@@ -215,7 +213,7 @@ public class BasicReplicationManager implements ReplicationManager {
         return storageStubFactory.buildStub(nodes);
     }
     
-    private void updateReplicaStorages(Object key, ReplicaInfo replicaInfo, NodeInfo[] oldSecondaries, NodeInfo[] newSecondaries) {
+    private void updateReplicaStorages(Object key, ReplicaInfo replicaInfo, NodeInfo[] oldSecondaries) {
         StorageCommandBuilder commandBuilder = new StorageCommandBuilder(
                 key,
                 replicaInfo,
