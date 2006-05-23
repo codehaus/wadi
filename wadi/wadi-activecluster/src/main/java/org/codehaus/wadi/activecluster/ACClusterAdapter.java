@@ -15,9 +15,11 @@
  */
 package org.codehaus.wadi.activecluster;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.jms.Destination;
 import javax.jms.JMSException;
 
 import org.apache.activecluster.Node;
@@ -54,12 +56,16 @@ class ACClusterAdapter implements Cluster {
 
     public Map getRemotePeers() {
         Map nodes = adaptee.getNodes();
+        Map remotePeers=new HashMap(nodes.size());
         for (Iterator iter = nodes.entrySet().iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
+            Destination destination=(Destination) entry.getKey();
+            ACDestinationAdapter address=ACDestinationAdapter.wrap(destination);
             Node node = (Node) entry.getValue();
-            entry.setValue(new ACNodeAdapter(node));
+            ACNodeAdapter remotePeer=new ACNodeAdapter(node); // TODO - when we merge Address and Peer, this is going to pose a problem..
+            remotePeers.put(address, remotePeer);
         }
-        return nodes;
+        return remotePeers;
     }
 
     public void addClusterListener(ClusterListener listener) {
