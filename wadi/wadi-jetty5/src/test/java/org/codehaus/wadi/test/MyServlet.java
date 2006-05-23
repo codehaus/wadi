@@ -68,7 +68,6 @@ import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.StatelessContextualiser;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
-import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.web.WebProxiedLocation;
 
 /**
