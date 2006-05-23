@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2003-2006 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,25 +17,36 @@
 package org.codehaus.wadi;
 
 
-
-/**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1760 $
- */
 public interface Manager {
     void init(ManagerConfig config);
-
-    Session create();
-
-    void around(Invocation invocation) throws InvocationException;
 
     void start() throws Exception;
 
     void stop() throws Exception;
 
+    void destroy();
+
+    Session create();
+
+    void destroy(Session session);
+
+    Manager getManager();
+
+    SessionWrapperFactory getSessionWrapperFactory();
+
+    SessionIdFactory getSessionIdFactory();
+
     int getMaxInactiveInterval();
 
     void setMaxInactiveInterval(int interval);
 
-    SessionIdFactory getSessionIdFactory();
+    void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
+
+    void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
+
+    SessionPool getSessionPool();
+
+    boolean getErrorIfSessionNotAcquired();
+
+    void around(Invocation invocation) throws InvocationException;
 }
