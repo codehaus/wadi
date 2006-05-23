@@ -15,8 +15,12 @@
  */
 package org.codehaus.wadi.activecluster;
 
+import java.io.ObjectStreamException;
+import java.util.HashMap;
+import java.util.Map;
 import javax.jms.Destination;
 import org.codehaus.wadi.group.Address;
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 /**
  * 
@@ -37,9 +41,28 @@ class ACDestinationAdapter implements Address {
         return ((ACDestinationAdapter) address).adaptee;
     }
     
+
+    protected static final Map _destinationToAddress=new HashMap(); // shouldn't be static, but stored on the Cluster somehow...
+    
+    static ACDestinationAdapter wrap(Destination adaptee) {
+        // TODO - may cause contention - consider how to reduce this...
+        synchronized (_destinationToAddress) {
+            ACDestinationAdapter address=(ACDestinationAdapter)_destinationToAddress.get(adaptee);
+            if (address==null) {
+                _destinationToAddress.put(adaptee, address=new ACDestinationAdapter(adaptee));
+            }
+            return address;
+        }
+    }
+    
     private final Destination adaptee;
     
-    public ACDestinationAdapter(Destination adaptee) {
+    protected Object readResolve() throws ObjectStreamException {
+        // somehow always return same instance...
+        return wrap(adaptee);
+    }
+    
+    protected ACDestinationAdapter(Destination adaptee) {
         this.adaptee = adaptee;
     }
 

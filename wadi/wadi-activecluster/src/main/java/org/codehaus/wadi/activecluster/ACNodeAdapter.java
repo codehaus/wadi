@@ -30,7 +30,7 @@ class ACNodeAdapter implements Peer {
     public ACNodeAdapter(org.apache.activecluster.Node acNode) {
         this.adaptee = acNode;
         
-        address = new ACDestinationAdapter(adaptee.getDestination());
+        address = ACDestinationAdapter.wrap(adaptee.getDestination());
     }
 
     public Map getState() {

@@ -200,7 +200,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
             Destination destination = (Destination) entry.getKey();
             String name = getInternalPeerName(destination);
             if (name.equals(nodeName)) {
-                return new ACDestinationAdapter(destination);
+                return ACDestinationAdapter.wrap(destination);
             }
         }
 

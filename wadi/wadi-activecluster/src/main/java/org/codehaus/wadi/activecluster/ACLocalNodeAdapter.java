@@ -34,7 +34,7 @@ class ACLocalNodeAdapter implements LocalPeer {
     public ACLocalNodeAdapter(org.apache.activecluster.LocalNode adaptee) {
         this.adaptee = adaptee;
         
-        address = new ACDestinationAdapter(adaptee.getDestination());
+        address = ACDestinationAdapter.wrap(adaptee.getDestination());
     }
 
     public Map getState() {

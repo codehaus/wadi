@@ -137,10 +137,9 @@ public class TestGroup extends TestCase {
         public void dispatch(Message om) throws Exception {
             Address content=(Address)om.getPayload();
             Address target=(Address)om.getAddress();
-            // these tests will soon be done with '==' instead of 'equals()'...
-            assertTrue(_local.equals(content));
-            assertTrue(_local.equals(target));
-            assertTrue(content.equals(target));
+            assertTrue(_local==content);
+            assertTrue(_local==target);
+            assertTrue(content==target);
             _latch.release();
         }
         
@@ -158,10 +157,9 @@ public class TestGroup extends TestCase {
         public void dispatch(Message om) throws Exception {
             Address content=(Address)om.getPayload();
             Address target=(Address)om.getAddress();
-            // these tests will soon be done with '==' instead of 'equals()'...
-            assertTrue(_local.equals(content));
-            assertTrue(_local.equals(target));
-            assertTrue(content.equals(target));
+            assertTrue(_local==content);
+            assertTrue(_local==target);
+            assertTrue(content==target);
             
             // reply - round tripping payload...
             _dispatcher.reply(om, content);
@@ -207,7 +205,7 @@ public class TestGroup extends TestCase {
         Address target=peer2.getAddress();
         Message reply=dispatcher0.exchangeSend(target, target, 500000); // red sends green its own address and green sends it back
         Address payload=(Address)reply.getPayload();
-        assertTrue(target.equals(payload));
+        assertTrue(target==payload);
         dispatcher1.unregister(sync, 10, 500); // what are these params for ?
         dispatcher0.unregister(rv, 10, 5000); // what are these params for ?
         

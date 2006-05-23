@@ -95,7 +95,7 @@ class ACObjectMessageAdapter implements Message {
                 return null;
             }
             
-            return new ACDestinationAdapter(replyTo);
+            return ACDestinationAdapter.wrap(replyTo);
         } catch (JMSException e) {
             throw new RuntimeJMSException(e);
         }
@@ -111,7 +111,7 @@ class ACObjectMessageAdapter implements Message {
 
     public Address getAddress() {
         try {
-            return new ACDestinationAdapter(adaptee.getJMSDestination());
+            return ACDestinationAdapter.wrap(adaptee.getJMSDestination());
         } catch (JMSException e) {
             throw new RuntimeJMSException(e);
         }
