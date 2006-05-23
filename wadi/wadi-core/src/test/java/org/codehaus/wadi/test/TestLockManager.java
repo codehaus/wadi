@@ -33,8 +33,8 @@ public class TestLockManager extends TestCase {
 
     protected final Log _log=LogFactory.getLog(getClass());
 
-	protected final int _numThreads=1000;
-	protected final int _numIterations=100;
+	protected final int _numThreads=100;
+	protected final int _numIterations=20;
 	protected final Thread[] _threads=new Thread[_numThreads];
 
 	public static void main(String[] args) {
