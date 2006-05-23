@@ -101,8 +101,8 @@ public class VMLocalCluster implements Cluster {
         //throw new UnsupportedOperationException(); 
     }
 
-    public boolean waitForClusterToComplete(int i, long timeout) throws InterruptedException {
-        return delegate.waitForClusterToComplete(i, timeout);
+    public boolean waitOnMembershipCount(int membershipCount, long timeout) throws InterruptedException {
+        return delegate.waitOnMembershipCount(membershipCount, timeout);
     }
     
     public LocalPeer getLocalPeer() {

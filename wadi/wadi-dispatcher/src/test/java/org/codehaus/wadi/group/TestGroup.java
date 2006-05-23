@@ -1,10 +1,3 @@
-package org.codehaus.wadi.group;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.group.Cluster;
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.vm.VMDispatcher;
-import junit.framework.TestCase;
 /**
  *
  * Copyright 2003-2006 Core Developers Network Ltd.
@@ -21,6 +14,15 @@ import junit.framework.TestCase;
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package org.codehaus.wadi.group;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.group.Cluster;
+import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.vm.VMDispatcher;
+import junit.framework.TestCase;
+
 public class TestGroup extends TestCase {
 
     protected static Log _log = LogFactory.getLog(TestGroup.class);
@@ -81,7 +83,7 @@ public class TestGroup extends TestCase {
 
     }
 
-    public void testStuff() throws Exception {
+    public void testMembership() throws Exception {
         String clusterName="org.codehaus.wadi.cluster.TEST-"+System.currentTimeMillis();
 
         DispatcherConfig config=new DummyDispatcherConfig();
@@ -101,17 +103,22 @@ public class TestGroup extends TestCase {
         cluster1.addClusterListener(listener1);
 
         cluster0.start();
-        assertTrue(cluster0.waitForClusterToComplete(0, 10000));
+        assertTrue(cluster0.waitOnMembershipCount(1, 10000));
 
         cluster1.start();
-        assertTrue(cluster0.waitForClusterToComplete(1, 10000));
-        assertTrue(cluster1.waitForClusterToComplete(1, 10000));
+        assertTrue(cluster0.waitOnMembershipCount(2, 10000));
+        assertTrue(cluster1.waitOnMembershipCount(2, 10000));
 
         assertTrue(listener0._numPeers==1);
+        assertTrue(cluster0.getRemotePeers().size()==1);
         assertTrue(listener1._numPeers==1);
+        assertTrue(cluster1.getRemotePeers().size()==1);
 
         cluster1.stop();
-        assertTrue(cluster0.waitForClusterToComplete(0, 10000));
+        assertTrue(cluster0.waitOnMembershipCount(1, 10000));
+
+        assertTrue(listener0._numPeers==0);
+        assertTrue(cluster0.getRemotePeers().size()==0);
 
         cluster0.stop();
     }

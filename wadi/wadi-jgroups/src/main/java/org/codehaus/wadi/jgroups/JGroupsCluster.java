@@ -126,13 +126,15 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
     }
   }
 
-  public boolean waitForClusterToComplete(int expectedCount, long timeout) throws InterruptedException {
-    long expired=0;
-    while ((getRemotePeers().size())!=expectedCount && expired<timeout) {
-        Thread.sleep(1000);
-        expired+=1000;
-    }
-    return (getRemotePeers().size())==expectedCount;
+  public boolean waitOnMembershipCount(int membershipCount, long timeout) throws InterruptedException {
+      assert (membershipCount>0);
+      membershipCount--; // remove ourselves from the equation...
+      long expired=0;
+      while ((getRemotePeers().size())!=membershipCount && expired<timeout) {
+          Thread.sleep(1000);
+          expired+=1000;
+      }
+      return (getRemotePeers().size())==membershipCount;
   }
 
   public void start() throws ClusterException {
