@@ -40,7 +40,7 @@ class ACClusterAdapter implements Cluster {
     public ACClusterAdapter(org.apache.activecluster.Cluster adaptee) {
         this.adaptee = adaptee;
         
-        address = new ACDestinationAdapter(adaptee.getDestination());
+        address = ACDestinationAdapter.wrap(adaptee.getDestination());
         localPeer = new ACLocalNodeAdapter(adaptee.getLocalNode());
     }
 
