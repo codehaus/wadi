@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Emoter;
@@ -226,22 +225,6 @@ public class Utils {
 	  _log.error("unexpected problem whilst marshalling", e);
             return null;
         }
-    }
-
-    public static String getClusterUri() {
-        return "peer://org.codehaus.wadi";
-    }
-
-    // this should really be passed in the top somewhere - but the tests need access too...
-    public static ActiveMQConnectionFactory getConnectionFactory() {
-        ActiveMQConnectionFactory cf=new ActiveMQConnectionFactory(getClusterUri());
-        // ActiveMQConnectionFactory cf=new ActiveMQConnectionFactory("tcp://localhost:61616");
-        // _connectionFactory=new ActiveMQConnectionFactory("multicast://224.1.2.3:5123");
-        // _connectionFactory=new ActiveMQConnectionFactory("jgroups:default");
-        //cf.setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter())); // peer protocol seems to ignore this...
-        //System.setProperty("activemq.persistenceAdapterFactory", VMPersistenceAdapterFactory.class.getName()); // peer protocol sees this
-        // TODO - figure out how to disable persistance...
-        return cf;
     }
 
     public static void safePut(Object item, Puttable puttable) {

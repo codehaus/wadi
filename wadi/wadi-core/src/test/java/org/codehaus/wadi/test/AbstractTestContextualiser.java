@@ -35,6 +35,7 @@ import junit.framework.TestCase;
 import org.apache.activecluster.Cluster;
 import org.apache.activecluster.ClusterFactory;
 import org.apache.activecluster.impl.DefaultClusterFactory;
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
@@ -78,7 +79,6 @@ import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyManagerConfig;
-import org.codehaus.wadi.impl.DummyDistributableContextualiserConfig;
 import org.codehaus.wadi.impl.DummyEvicter;
 import org.codehaus.wadi.impl.DummyHttpServletRequest;
 import org.codehaus.wadi.impl.DummyReplicaterFactory;
@@ -105,6 +105,7 @@ import org.codehaus.wadi.impl.StandardValueFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.WebHybridRelocater;
+import org.codehaus.wadi.test.activecluster.DummyDistributableContextualiserConfig;
 import org.codehaus.wadi.web.WebProxiedLocation;
 import org.codehaus.wadi.web.WebInvocation;
 
@@ -592,8 +593,13 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		public Address getAddress(){return null;}
 	}
 
-	public void donottestCluster() throws Exception {
-		ConnectionFactory connectionFactory = Utils.getConnectionFactory();
+    public static ActiveMQConnectionFactory getConnectionFactory() {
+        ActiveMQConnectionFactory cf=new ActiveMQConnectionFactory("peer://org.codehaus.wadi");
+        return cf;
+    }
+    
+    public void donottestCluster() throws Exception {
+		ConnectionFactory connectionFactory = getConnectionFactory();
 		//((ActiveMQConnectionFactory)connectionFactory).setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter()));
 		// TODO - figure out how to turn off persistance.
 		ClusterFactory clusterFactory = new DefaultClusterFactory(connectionFactory);

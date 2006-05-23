@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.test.activecluster;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -25,6 +25,7 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.impl.DummyContextualiserConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 

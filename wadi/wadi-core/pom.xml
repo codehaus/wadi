@@ -186,16 +186,6 @@
       <artifactId>concurrent</artifactId>
     </dependency>
     <dependency>
-      <groupId>incubator-activemq</groupId>
-      <artifactId>activecluster</artifactId>
-      <version>${activemq.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>incubator-activemq</groupId>
-      <artifactId>activemq</artifactId>
-      <version>${activemq.version}</version>
-    </dependency>
-    <dependency>
       <groupId>backport-util-concurrent</groupId>
       <artifactId>backport-util-concurrent</artifactId>
     </dependency>
@@ -218,6 +208,19 @@
     <dependency>
       <groupId>regexp</groupId>
       <artifactId>regexp</artifactId>
+    </dependency>
+    <!-- test -->
+    <dependency>
+      <groupId>incubator-activemq</groupId>
+      <artifactId>activecluster</artifactId>
+      <version>${activemq.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>incubator-activemq</groupId>
+      <artifactId>activemq</artifactId>
+      <version>${activemq.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
