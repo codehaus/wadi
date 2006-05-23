@@ -35,10 +35,6 @@ public class PartitionTransferCommand implements OldMessage, Serializable {
     _transfers=transfers;
   }
 
-  protected PartitionTransferCommand() {
-    // for deserialisation...
-  }
-
   public PartitionTransfer[] getTransfers() {
     return _transfers;
   }

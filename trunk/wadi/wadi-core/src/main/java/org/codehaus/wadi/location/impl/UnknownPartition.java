@@ -36,12 +36,6 @@ public class UnknownPartition extends AbstractPartition {
     super(key);
   }
 
-  protected UnknownPartition() {
-    super();
-    // for deserialisation...
-    throw new UnsupportedOperationException();
-  }
-
   public boolean isLocal() {
     return false;
   }
@@ -81,5 +75,5 @@ public class UnknownPartition extends AbstractPartition {
   public boolean getUseable() {
 	  return false;
   }
-  
+
 }

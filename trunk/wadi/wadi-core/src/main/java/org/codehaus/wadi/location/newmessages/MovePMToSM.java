@@ -38,10 +38,6 @@ public class MovePMToSM implements Serializable {
 		_imCorrelationId=imCorrelationId;
 	}
 
-	protected MovePMToSM() {
-		// for deserialisation...
-	}
-
 	public Object getKey() {
 		return _key;
 	}

@@ -38,17 +38,13 @@ public class ReleaseEntryRequest implements OldMessage, Serializable {
 		super();
 		_motable=motable;
 	}
-	
-	public ReleaseEntryRequest() {
-		// for use when demarshalling...
-	}
-	
+
 	public Motable getMotable() {
 		return _motable;
 	}
-	
+
 	public String toString() {
 		return "<ReleaseEntryRequest: "+_motable.getName()+">";
 	}
-	
+
 }

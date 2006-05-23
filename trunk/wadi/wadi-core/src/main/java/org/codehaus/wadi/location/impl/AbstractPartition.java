@@ -32,10 +32,6 @@ public abstract class AbstractPartition implements Partition, Serializable {
         _key=key;
     }
 
-    protected AbstractPartition() {
-        // for deserialisation...
-    }
-
     public int getKey() {
         return _key;
     }

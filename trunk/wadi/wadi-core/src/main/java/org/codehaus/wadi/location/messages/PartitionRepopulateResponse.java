@@ -34,10 +34,6 @@ public class PartitionRepopulateResponse implements OldMessage, Serializable {
         _keys=keys;
     }
 
-    protected PartitionRepopulateResponse() {
-        // for deserialisation
-    }
-
     public Collection[] getKeys() {
         return _keys;
     }

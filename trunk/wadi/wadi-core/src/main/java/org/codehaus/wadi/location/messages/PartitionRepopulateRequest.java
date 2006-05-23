@@ -33,10 +33,6 @@ public class PartitionRepopulateRequest implements OldMessage, Serializable {
         _keys=keys;
     }
 
-    protected PartitionRepopulateRequest() {
-        // for deserialisation...
-    }
-
     public int[] getKeys() {
         return _keys;
     }

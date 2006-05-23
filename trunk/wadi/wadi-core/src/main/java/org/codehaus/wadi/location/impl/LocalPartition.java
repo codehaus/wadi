@@ -55,11 +55,6 @@ public class LocalPartition extends AbstractPartition implements Serializable {
     super(key);
   }
 
-  protected LocalPartition() {
-    super();
-    // for deserialisation...
-  }
-
   public void init(PartitionConfig config) {
     _config=config;
     _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalPeerName());
