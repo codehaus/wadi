@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.group;
 
+import java.util.Map;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -79,7 +80,7 @@ public abstract class AbstractTestGroup extends TestCase {
 
     }
 
-    public void donottestMembership() throws Exception {
+    public void testMembership() throws Exception {
         String clusterName="org.codehaus.wadi.cluster.TEST-"+System.currentTimeMillis();
 
         DispatcherConfig config=new DummyDispatcherConfig();
@@ -108,7 +109,14 @@ public abstract class AbstractTestGroup extends TestCase {
         assertEquals(1, cluster0.getRemotePeers().size());
         assertEquals(1, listener1._numPeers);
         assertEquals(1, cluster1.getRemotePeers().size());
-
+        
+        Map peers0=cluster0.getRemotePeers();
+        Peer remotePeer0=(Peer)peers0.values().iterator().next();
+        assertTrue(peers0.get(remotePeer0.getAddress())==remotePeer0); // RemotePeer is an Address:Peer map
+        Map peers1=cluster1.getRemotePeers();
+        Peer remotePeer1=(Peer)peers1.values().iterator().next();
+        assertTrue(peers1.get(remotePeer1.getAddress())==remotePeer1); // RemotePeer is an Address:Peer map
+        
         cluster1.stop();
         assertTrue(cluster0.waitOnMembershipCount(1, 10000));
 
