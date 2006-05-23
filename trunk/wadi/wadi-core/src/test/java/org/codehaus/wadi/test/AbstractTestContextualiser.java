@@ -65,6 +65,7 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.activecluster.DummyDistributableContextualiserConfig;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.group.Address;
@@ -105,7 +106,6 @@ import org.codehaus.wadi.impl.StandardValueFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.WebHybridRelocater;
-import org.codehaus.wadi.test.activecluster.DummyDistributableContextualiserConfig;
 import org.codehaus.wadi.web.WebProxiedLocation;
 import org.codehaus.wadi.web.WebInvocation;
 

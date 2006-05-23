@@ -1,4 +1,4 @@
-package org.codehaus.wadi.test.relocation;
+package org.codehaus.wadi.evacuation;
 
 import java.io.IOException;
 
@@ -22,25 +22,25 @@ import org.codehaus.wadi.test.MyHttpServletRequest;
 import org.codehaus.wadi.test.MyHttpServletResponse;
 import org.codehaus.wadi.test.MyStack;
 
-public class AbstractTestRelocation extends TestCase {
-
+public class AbstractTestEvacuation extends TestCase {
+	
 	protected Log _log = LogFactory.getLog(getClass());
 	protected String _url = "jdbc:axiondb:WADI";
 	protected DataSource _ds = new AxionDataSource(_url);
-
-	public AbstractTestRelocation(String arg0) {
+	
+	public AbstractTestEvacuation(String arg0) {
 		super(arg0);
 	}
-
+	
 	protected void setUp() throws Exception {
 		super.setUp();
 	}
-
+	
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}
-
-	public void testSessionRelocation(Dispatcher redD, Dispatcher greenD) throws Exception {
+	
+	public void testEvacuation(Dispatcher redD, Dispatcher greenD) throws Exception {
 		MyStack red=new MyStack(_url, _ds, redD);
 		_log.info("RED STARTING...");
 		red.start();
@@ -49,26 +49,32 @@ public class AbstractTestRelocation extends TestCase {
 		_log.info("GREEN STARTING...");
 		green.start();
 		_log.info("...GREEN STARTED");
-
+		
 		_log.info("WAITING FOR RED TO SEE GREEN...");
 		while (redD.getNumNodes()<2) {
 			Thread.sleep(500);
 			_log.info("waiting: "+redD.getNumNodes());
 		}
 		_log.info("...DONE");
-
+		
 		_log.info("WAITING FOR GREEN TO SEE RED...");
 		while (greenD.getNumNodes()<2) {
 			Thread.sleep(500);
 			_log.info("waiting: "+greenD.getNumNodes());
 		}
 		_log.info("...DONE");
-
+		
 		_log.info("CREATING SESSION...");
 		String id=red.getManager().create().getId();
 		_log.info("...DONE");
-
+		
 		assertTrue(id!=null);
+		
+		Thread.sleep(5000);// FIXME: prevents us stopping whilst a Partition transfer is ongoing....
+		
+		_log.info("RED STOPPING...");
+		red.stop();
+		_log.info("...RED STOPPED");
 
 		FilterChain fc=new FilterChain() {
 			public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
@@ -79,15 +85,9 @@ public class AbstractTestRelocation extends TestCase {
 		};
 
 		Invocation invocation=new MockInvocation(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
-		_log.info("RELOCATING SESSION...");
-		boolean success=green.getManager().contextualise(invocation, id, null, null, false);
-		_log.info("...DONE");
+		boolean success=green.getManager().contextualise(invocation, id, null, null, true);
 
 		assertTrue(success);
-
-		_log.info("RED STOPPING...");
-		red.stop(); // causes exception
-		_log.info("...RED STOPPED");
 
 		_log.info("WAITING FOR GREEN TO UNSEE RED...");
 		while (greenD.getNumNodes()>1) {
@@ -95,9 +95,10 @@ public class AbstractTestRelocation extends TestCase {
 			_log.info("waiting: "+greenD.getNumNodes());
 		}
 		_log.info("...DONE");
-
+		
 		_log.info("GREEN STOPPING...");
 		green.stop();
 		_log.info("...GREEN STOPPED");
 	}
+	
 }
