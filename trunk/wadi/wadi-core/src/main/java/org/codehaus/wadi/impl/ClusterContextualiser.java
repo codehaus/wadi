@@ -364,12 +364,15 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 	public void onNodeStateChange(ClusterEvent event) {
 		Map state=event.getPeer().getState();
-		String nodeName=(String)state.get(_nodeNameKey);
+        
+        // TODO - tmp hack to avoid NPE here, whilst I rethink this... (Jules)
+		String nodeName=(state==null)?"<unknown>":(String)state.get(_nodeNameKey);
 
 		if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
 
 		//_log.info("node state changed: "+nodeName+" : "+state);
-		Boolean tmp=(Boolean)state.get(_evacuatingKey);
+        // TODO - tmp hack to avoid NPE here, whilst I rethink this... (Jules)
+		Boolean tmp=(state==null)?null:(Boolean)state.get(_evacuatingKey);
 		boolean evacuating=tmp==null?false:tmp.booleanValue();
 		if (!evacuating) {
 			ensureEvacuationLeft(nodeName);
