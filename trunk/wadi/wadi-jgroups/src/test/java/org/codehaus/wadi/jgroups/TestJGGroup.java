@@ -19,9 +19,9 @@ package org.codehaus.wadi.jgroups;
 import org.codehaus.wadi.group.AbstractTestGroup;
 import org.codehaus.wadi.group.Dispatcher;
 
-public class TestGroup extends AbstractTestGroup {
+public class TestJGGroup extends AbstractTestGroup {
     
-    public TestGroup(String name) {
+    public TestJGGroup(String name) {
         super(name);
     }
     
