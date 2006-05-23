@@ -20,8 +20,8 @@ import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.SessionIdFactory;
-import org.codehaus.wadi.gridstate.PartitionMapper;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
