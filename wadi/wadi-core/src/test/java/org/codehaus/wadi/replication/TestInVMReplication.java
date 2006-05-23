@@ -14,25 +14,23 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package org.codehaus.wadi.test.evacuation;
+package org.codehaus.wadi.replication;
 
 import org.codehaus.wadi.group.vm.SysOutMessageRecorder;
 import org.codehaus.wadi.group.vm.VMCluster;
 import org.codehaus.wadi.group.vm.VMDispatcher;
 
 
-public class TestInVMEvacuation extends AbstractTestEvacuation {
-	
-	public TestInVMEvacuation(String arg0) {
-		super(arg0);
-	}
-	
-	public void testEvacuation() throws Exception {
+public class TestInVMReplication extends AbstractTestReplication {
+
+    public TestInVMReplication(String arg0) {
+        super(arg0);
+    }
+
+    public void testReplication() throws Exception {
         VMCluster cluster = new VMCluster("TEST");
         cluster.setMessageRecorder(new SysOutMessageRecorder());
-		long timeout=5000;
-		testEvacuation(new VMDispatcher(cluster, "red", timeout), new VMDispatcher(cluster, "green", timeout));
-	}
-	
+        testReplication(new VMDispatcher(cluster, "test.1", 5000));
+    }
 }
 

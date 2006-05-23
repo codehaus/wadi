@@ -17,7 +17,7 @@
 package org.codehaus.wadi.jgroups;
 
 import org.codehaus.wadi.jgroups.JGroupsDispatcher;
-import org.codehaus.wadi.test.evacuation.AbstractTestEvacuation;
+import org.codehaus.wadi.evacuation.AbstractTestEvacuation;
 
 public class TestJGEvacuation extends AbstractTestEvacuation {
 

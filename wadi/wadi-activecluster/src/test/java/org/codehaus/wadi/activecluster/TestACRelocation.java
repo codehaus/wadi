@@ -16,7 +16,7 @@
 package org.codehaus.wadi.activecluster;
 
 import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
-import org.codehaus.wadi.test.relocation.AbstractTestRelocation;
+import org.codehaus.wadi.relocation.AbstractTestRelocation;
 
 /**
  * 

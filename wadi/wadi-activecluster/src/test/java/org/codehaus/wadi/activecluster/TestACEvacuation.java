@@ -17,7 +17,7 @@
 package org.codehaus.wadi.activecluster;
 
 import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
-import org.codehaus.wadi.test.evacuation.AbstractTestEvacuation;
+import org.codehaus.wadi.evacuation.AbstractTestEvacuation;
 
 
 public class TestACEvacuation extends AbstractTestEvacuation {

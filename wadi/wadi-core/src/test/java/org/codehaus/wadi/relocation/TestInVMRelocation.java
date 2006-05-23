@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.test.relocation;
+package org.codehaus.wadi.relocation;
 
 import org.codehaus.wadi.group.vm.SysOutMessageRecorder;
 import org.codehaus.wadi.group.vm.VMCluster;

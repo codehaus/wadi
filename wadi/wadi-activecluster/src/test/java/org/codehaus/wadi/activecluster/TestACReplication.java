@@ -17,7 +17,7 @@
 package org.codehaus.wadi.activecluster;
 
 import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
-import org.codehaus.wadi.test.replication.AbstractTestReplication;
+import org.codehaus.wadi.replication.AbstractTestReplication;
 
 
 public class TestACReplication extends AbstractTestReplication {

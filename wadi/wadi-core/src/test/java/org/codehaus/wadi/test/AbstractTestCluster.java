@@ -51,6 +51,7 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.activecluster.RestartableClusterFactory;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
@@ -77,7 +78,6 @@ import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.test.activecluster.RestartableClusterFactory;
 import org.codehaus.wadi.web.WebProxiedLocation;
 
 /**
