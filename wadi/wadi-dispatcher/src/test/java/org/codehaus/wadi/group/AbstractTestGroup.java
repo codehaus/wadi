@@ -98,10 +98,10 @@ public abstract class AbstractTestGroup extends TestCase {
         MyClusterListener listener1=new MyClusterListener();
         cluster1.addClusterListener(listener1);
 
-        cluster0.start();
+        dispatcher0.start();
         assertTrue(cluster0.waitOnMembershipCount(1, 10000));
 
-        cluster1.start();
+        dispatcher1.start();
         assertTrue(cluster0.waitOnMembershipCount(2, 10000));
         assertTrue(cluster1.waitOnMembershipCount(2, 10000));
 
@@ -117,13 +117,13 @@ public abstract class AbstractTestGroup extends TestCase {
         Peer remotePeer1=(Peer)peers1.values().iterator().next();
         assertTrue(peers1.get(remotePeer1.getAddress())==remotePeer1); // RemotePeer is an Address:Peer map
         
-        cluster1.stop();
+        dispatcher1.stop();
         assertTrue(cluster0.waitOnMembershipCount(1, 10000));
 
         assertEquals(0, listener0._numPeers);
         assertEquals(0, cluster0.getRemotePeers().size());
 
-        cluster0.stop();
+        dispatcher0.stop();
     }
 
     class AsyncServiceEndpoint extends AbstractMsgDispatcher {
