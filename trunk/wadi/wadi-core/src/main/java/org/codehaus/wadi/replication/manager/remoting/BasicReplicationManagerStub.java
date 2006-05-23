@@ -66,10 +66,11 @@ public class BasicReplicationManagerStub implements ReplicationManager {
 
     public ReplicaInfo releasePrimary(Object key) {
         ReleasePrimaryRequest command = new ReleasePrimaryRequest(key);
-        Address target = dispatcher.getClusterAddress();
+        Address from = dispatcher.getLocalAddress();
+        Address to = dispatcher.getClusterAddress();
         ReplicaInfo info = null;
         try {
-            Message message = dispatcher.exchangeSend(target, command, ReleasePrimaryRequest.DEFAULT_TWO_WAY_TIMEOUT);
+            Message message = dispatcher.exchangeSend(from, to, command, ReleasePrimaryRequest.DEFAULT_TWO_WAY_TIMEOUT);
             if (null != message) {
                 ReleasePrimaryResult result = (ReleasePrimaryResult) message.getPayload();
                 info = (ReplicaInfo) result.getPayload();

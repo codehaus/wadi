@@ -115,14 +115,15 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
     protected Message sendTwoWay(ReplicaStorageRequest command, TwoWayMessageCallback callback) {
         Message message = null;
         for (int i = 0; i < destinations.length && !callback.testStopSend(); i++) {
-            Address target = destinations[i];
+            Address Address = destinations[i];
             try {
+                Address from = dispatcher.getLocalAddress();
                 long replyTimeout = command.getTwoWayTimeout();
-                message = dispatcher.exchangeSend(target, command, replyTimeout);
+                message = dispatcher.exchangeSend(from, Address, command, replyTimeout);
                 callback.receivedMessage(message);
             } catch (Exception e) {
                 log.warn("Error when sending command " + command  + 
-                        " to Address " + target, e);
+                        " to Address " + Address, e);
             }
         }
         return message;
