@@ -142,9 +142,9 @@
 
   <bean id="DataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
     <property name="driverClassName"><value>org.apache.derby.jdbc.ClientDriver</value></property>
-    <property name="initialSize"><value>1</value></property>
-    <property name="maxActive"><value>1</value></property>
-    <property name="maxIdle"><value>1</value></property>
+    <property name="initialSize"><value>2</value></property>
+    <property name="maxActive"><value>2</value></property>
+    <property name="maxIdle"><value>2</value></property>
     <property name="url"><ref bean="DatabaseURL"/></property>
     <property name="username"><value>me</value></property>
     <property name="password"><value>mine</value></property>
@@ -427,27 +427,12 @@
     <constructor-arg><ref bean="NumPartitions"/></constructor-arg>
   </bean>
 
-<!--
   <bean
     id="Dispatcher"
     class="org.codehaus.wadi.jgroups.JGroupsDispatcher"
     >
     <constructor-arg><value>${node.name}</value></constructor-arg>
     <constructor-arg><value>CLUSTER0</value></constructor-arg>
-    <constructor-arg type="long"><value>5000</value></constructor-arg>
-  </bean>
--->
-
-  <bean
-    id="Dispatcher"
-    class="org.codehaus.wadi.activecluster.ActiveClusterDispatcher"
-    >
-    <constructor-arg><value>CLUSTER0</value></constructor-arg>
-    <constructor-arg><value>${node.name}</value></constructor-arg>
-<!--
-    <constructor-arg><value>peer://org.codehaus.wadi</value></constructor-arg>
- -->
-    <constructor-arg><value>tcp://localhost:61616</value></constructor-arg>
     <constructor-arg type="long"><value>5000</value></constructor-arg>
   </bean>
 
