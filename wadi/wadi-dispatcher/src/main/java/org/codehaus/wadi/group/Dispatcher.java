@@ -32,11 +32,27 @@ public interface Dispatcher extends MessageListener {
 
     void send(Address to, Message message) throws MessageExchangeException;
 
-    void send(Address destination, Serializable request) throws MessageExchangeException;
+    /**
+     * send a Serializable pojo to an Address - async - no reply expected
+     * 
+     * @param target The Address to which we are sending the Message
+     * @param pojo The Object that we want to send inside it
+     * @throws MessageExchangeException
+     */
+    void send(Address target, Serializable pojo) throws MessageExchangeException;
 
 	void send(Address from, Address to, String outgoingCorrelationId, Serializable body) throws MessageExchangeException;
 
-	Message exchangeSend(Address from, Address to, Serializable body, long timeout) throws MessageExchangeException;
+	/**
+     * send a Serializable 'pojo' to 'target' Address - sync - and wait for a reply, but not necessarily from the 'target' Address.
+     * 
+	 * @param target The address to which we are sending the Message
+	 * @param pojo The object that we want to send inside it
+	 * @param timeout The length of time that we are willing to wait for a reply
+	 * @return a response in the form of a Message
+	 * @throws MessageExchangeException
+	 */
+	Message exchangeSend(Address target, Serializable pojo, long timeout) throws MessageExchangeException;
 
 	Message exchangeSend(Address from, Address to, Serializable body, long timeout, String targetCorrelationId) throws MessageExchangeException;
 

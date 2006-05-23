@@ -292,8 +292,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 	// evacuation protocol
 
 	public boolean offerEmigrant(String key, Motable emotable, long timeout) {
-		Address to=((RemotePartition)_config.getPartition(key).getContent()).getAddress(); // TODO - HACK - temporary
-		Address from=_dispatcher.getLocalAddress();
+		Address target=((RemotePartition)_config.getPartition(key).getContent()).getAddress(); // TODO - HACK - temporary
     
     // this code on the way in...
 //    {
@@ -319,9 +318,9 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 //    }
     // this code on the way out...
 		{
-		  ReleaseEntryRequest request=new ReleaseEntryRequest(emotable);
+		  ReleaseEntryRequest pojo=new ReleaseEntryRequest(emotable);
           try {
-            _dispatcher.exchangeSend(from, to, request, timeout);
+            _dispatcher.exchangeSend(target, pojo, timeout);
             if (_log.isTraceEnabled()) {
                 _log.trace("received acknowledgement within timeframe ("+timeout+" millis): "+key);
             }

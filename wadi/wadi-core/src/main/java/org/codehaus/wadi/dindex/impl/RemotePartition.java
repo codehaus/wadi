@@ -105,10 +105,9 @@ public class RemotePartition extends AbstractPartition {
 
 	public Message exchange(DIndexRequest request, long timeout) throws Exception {
 		Dispatcher dispatcher=_config.getDispatcher();
-		Address from=dispatcher.getLocalAddress();
-		Address to=_location;
-		if (_log.isTraceEnabled()) _log.trace("exchanging message ("+request+") with node: "+_config.getPeerName(to)+" on "+Thread.currentThread().getName());
-		return dispatcher.exchangeSend(from, to, request, timeout);
+		Address target=_location;
+		if (_log.isTraceEnabled()) _log.trace("exchanging message ("+request+") with node: "+_config.getPeerName(target)+" on "+Thread.currentThread().getName());
+		return dispatcher.exchangeSend(target, request, timeout);
 	}
     
     private void forward(Message message) {
