@@ -136,12 +136,12 @@ public abstract class AbstractDispatcher implements Dispatcher {
 		return response;
 	}
 	
-    public Message exchangeSend(Address to, Object body, long timeout) throws MessageExchangeException {
-        return exchangeSend(getLocalAddress(), to, (Serializable) body, timeout);
+    public Message exchangeSend(Address target, Object pojo, long timeout) throws MessageExchangeException {
+        return exchangeSend(target, (Serializable)pojo, timeout);
     }
 	
-	public Message exchangeSend(Address from, Address to, Serializable body, long timeout) throws MessageExchangeException {
-		return exchangeSend(from, to, body, timeout, null);
+	public Message exchangeSend(Address to, Serializable body, long timeout) throws MessageExchangeException {
+		return exchangeSend(getLocalAddress(), to, body, timeout, null);
 	}
 	
 	public void reply(Message message, Serializable body) throws MessageExchangeException {

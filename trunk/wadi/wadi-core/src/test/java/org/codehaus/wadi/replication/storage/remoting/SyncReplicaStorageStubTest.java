@@ -52,8 +52,7 @@ public class SyncReplicaStorageStubTest extends TestCase {
             }
             public void register(ServiceEndpoint internalDispatcher) {
             }
-            public Message exchangeSend(Address from, Address to, Serializable request, long timeout) {
-                assertSame(destination1, from);
+            public Message exchangeSend(Address to, Serializable request, long timeout) {
                 actualDestinations[idx] = to;
                 requests[idx++] = request;
                 return new BaseMockMessage();
@@ -82,8 +81,7 @@ public class SyncReplicaStorageStubTest extends TestCase {
             }
             public void register(ServiceEndpoint internalDispatcher) {
             }
-            public Message exchangeSend(Address from, Address to, Serializable request, long timeout) {
-                assertSame(destination1, from);
+            public Message exchangeSend(Address to, Serializable request, long timeout) {
                 actualDestinations[idx] = to;
                 requests[idx++] = request;
                 return new BaseMockMessage();
@@ -140,8 +138,7 @@ public class SyncReplicaStorageStubTest extends TestCase {
             }
             public void register(ServiceEndpoint internalDispatcher) {
             }
-            public Message exchangeSend(Address from, Address to, Serializable request, long timeout) {
-                assertSame(destination1, from);
+            public Message exchangeSend(Address to, Serializable request, long timeout) {
                 actualDestinations[idx] = to;
                 requests[idx++] = request;
                 return new BaseMockMessage() {

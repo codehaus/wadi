@@ -244,13 +244,13 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 		  // now we need a quick round trip to fetch the distributed data for this node - yeugh !
 		  for (int i=0; i<newMembers.size(); i++) {
 			  Address address=(Address)newMembers.get(i);
-			  JGroupsAddress destination=JGroupsAddress.get(JGroupsCluster.this, address);
-			  if (destination!=_localDestination) {
+			  JGroupsAddress target=JGroupsAddress.get(JGroupsCluster.this, address);
+			  if (target!=_localDestination) {
 				  if (_clusterState.get(address)==null) {
 
 					  //fetch state
 					  try {
-						  JGroupsMessage tmp=(JGroupsMessage)_dispatcher.exchangeSend(_localDestination, destination, new StateRequest(), 5000);
+						  JGroupsMessage tmp=(JGroupsMessage)_dispatcher.exchangeSend(target, new StateRequest(), 5000);
 						  Map state=((StateResponse)tmp.getPayload()).getState();
 						  synchronized (_clusterState) {
 							  _clusterState.put(address, state);
@@ -262,12 +262,12 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 
 					  // insert node
 					  synchronized (_destinationToNode) {
-						  _destinationToNode.put(destination, destination.getNode());
+						  _destinationToNode.put(target, target.getNode());
 					  }
 
 					  // notify listener
 					  if (_clusterListeners.size()>0) {
-                          ClusterEvent event=new ClusterEvent(JGroupsCluster.this, destination.getNode(), ClusterEvent.PEER_ADDED);
+                          ClusterEvent event=new ClusterEvent(JGroupsCluster.this, target.getNode(), ClusterEvent.PEER_ADDED);
                           for (int j=0; j<_clusterListeners.size(); j++)
 						  ((ClusterListener)_clusterListeners.get(j)).onPeerAdded(event);
                       }
