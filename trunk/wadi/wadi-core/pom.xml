@@ -244,11 +244,8 @@
 	<artifactId>maven-surefire-plugin</artifactId>
 	<configuration>
 	  <excludes>
-
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude> <!-- stop surefire from trying to run nested classes -->
-
 	    <exclude implementation="java.lang.String">**/TestGianni.java</exclude> <!-- leaves evicter running -->
-	    <exclude implementation="java.lang.String">**/TestSimpleCluster.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestInVMReplicationManager.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestInVMEvacuation.java</exclude>
 	  </excludes>
