@@ -18,6 +18,7 @@ package org.codehaus.wadi.gridstate;
 
 import java.util.Map;
 
+import org.codehaus.wadi.LockManager;
 import org.codehaus.wadi.gridstate.impl.PartitionFacade;
 
 

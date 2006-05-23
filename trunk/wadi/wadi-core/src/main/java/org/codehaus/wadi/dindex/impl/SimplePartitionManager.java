@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.LockManager;
 import org.codehaus.wadi.dindex.Partition;
 import org.codehaus.wadi.dindex.PartitionConfig;
 import org.codehaus.wadi.dindex.PartitionManager;
@@ -34,9 +35,7 @@ import org.codehaus.wadi.dindex.messages.PartitionTransferAcknowledgement;
 import org.codehaus.wadi.dindex.messages.PartitionTransferCommand;
 import org.codehaus.wadi.dindex.messages.PartitionTransferRequest;
 import org.codehaus.wadi.dindex.messages.PartitionTransferResponse;
-import org.codehaus.wadi.gridstate.LockManager;
 import org.codehaus.wadi.gridstate.PartitionMapper;
-import org.codehaus.wadi.gridstate.impl.StupidLockManager;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterEvent;
@@ -46,6 +45,7 @@ import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
+import org.codehaus.wadi.impl.StupidLockManager;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
