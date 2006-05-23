@@ -196,7 +196,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		for (int i=0; i<transfers.length; i++) {
 			PartitionTransfer transfer=transfers[i];
 			int amount=transfer.getAmount();
-			Address Address=transfer.getAddress();
+			Address target=transfer.getAddress();
 
 			// acquire partitions for transfer...
 			LocalPartition[] acquired=null;
@@ -218,15 +218,15 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 				if (_log.isTraceEnabled()) _log.trace("local state (before giving): " + getPartitionKeys());
 				PartitionTransferRequest request=new PartitionTransferRequest(timeStamp, acquired);
 				// send it...
-				Message om3=_dispatcher.exchangeSend(_dispatcher.getLocalAddress(), Address, request, _inactiveTime);
+				Message om3=_dispatcher.exchangeSend(target, request, _inactiveTime);
 				// process response...
 				if (om3!=null && ((PartitionTransferResponse)om3.getPayload()).getSuccess()) {
 					for (int j=0; j<acquired.length; j++) {
 						PartitionFacade facade=null;
 						facade=_partitions[acquired[j].getKey()];
-						facade.setContentRemote(timeStamp, _dispatcher, Address); // TODO - should we use a more recent ts ?
+						facade.setContentRemote(timeStamp, _dispatcher, target); // TODO - should we use a more recent ts ?
 					}
-					if (_log.isDebugEnabled()) _log.debug("released "+acquired.length+" partition[s] to "+_dispatcher.getPeerName(Address));
+					if (_log.isDebugEnabled()) _log.debug("released "+acquired.length+" partition[s] to "+_dispatcher.getPeerName(target));
 				} else {
 					_log.warn("transfer unsuccessful");
 				}

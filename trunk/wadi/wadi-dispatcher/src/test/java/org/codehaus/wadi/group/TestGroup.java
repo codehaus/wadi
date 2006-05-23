@@ -204,11 +204,10 @@ public class TestGroup extends TestCase {
         ServiceEndpoint sync=new SyncServiceEndpoint(dispatcher1, Address.class, cluster1.getLocalPeer().getAddress());
         dispatcher1.register(sync);
         Peer peer2=(Peer)cluster0.getRemotePeers().values().iterator().next();
-        Address localAddress=cluster0.getLocalPeer().getAddress();
-        Address remoteAddress=peer2.getAddress();
-        Message reply=dispatcher0.exchangeSend(localAddress, remoteAddress, remoteAddress, 500000); // red sends green its own address and green sends it back
+        Address target=peer2.getAddress();
+        Message reply=dispatcher0.exchangeSend(target, target, 500000); // red sends green its own address and green sends it back
         Address payload=(Address)reply.getPayload();
-        assertTrue(remoteAddress.equals(payload));
+        assertTrue(target.equals(payload));
         dispatcher1.unregister(sync, 10, 500); // what are these params for ?
         dispatcher0.unregister(rv, 10, 5000); // what are these params for ?
         
