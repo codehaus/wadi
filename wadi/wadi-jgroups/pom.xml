@@ -60,19 +60,4 @@
     </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-surefire-plugin</artifactId>
-	<configuration>
-	  <excludes>
-	    <exclude implementation="java.lang.String">**/*$*.java</exclude> <!-- stop surefire from trying to run nested classes -->
-	    <exclude implementation="java.lang.String">**/TestJGEvacuation.java</exclude> <!--  still seems to get stuck sometimes on startup -->
-	  </excludes>
-	</configuration>
-      </plugin>
-    </plugins>
-  </build>
-
 </project>
