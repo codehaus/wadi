@@ -14,41 +14,37 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.location;
 
-import java.util.Map;
 
+import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.Invocation;
+import org.codehaus.wadi.InvocationException;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.location.impl.DIndex;
+import org.codehaus.wadi.location.impl.PartitionFacade;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
+public interface StateManagerConfig {
+  PartitionFacade getPartition(int key);
 
-	String getNodeName();
+  PartitionFacade getPartition(Object key);
+  
+  int getNumPartitions();
 
-	InvocationProxy getInvocationProxy();
+  String getLocalPeerName();
+  
+  String getPeerName(Address address);
 
-	ProxiedLocation getProxiedLocation();
+  Dispatcher getDispatcher();
 
-	Object getDistributedState(Object key);
+  boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
+  
+  long getInactiveTime();
 
-	Object putDistributedState(Object key, Object value);
-
-	Object removeDistributedState(Object key);
-
-	void distributeState() throws Exception;
-
-	Map getDistributedState();
-
-	long getInactiveTime();
-
-	int getNumPartitions();
-
-	Dispatcher getDispatcher();
-
-	DIndex getDIndex();
-
+  Sync getInvocationLock(String name);
 }

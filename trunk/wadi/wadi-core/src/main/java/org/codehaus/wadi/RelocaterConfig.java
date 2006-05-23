@@ -16,8 +16,8 @@
  */
 package org.codehaus.wadi;
 
-import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.location.impl.DIndex;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 

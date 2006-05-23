@@ -35,13 +35,13 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.ProxiedLocation;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
-import org.codehaus.wadi.dindex.StateManager;
-import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.location.StateManager;
+import org.codehaus.wadi.location.impl.DIndex;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;

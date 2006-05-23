@@ -14,41 +14,35 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.location.messages;
 
-import java.util.Map;
+import java.io.Serializable;
 
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.location.impl.DIndex;
+import org.codehaus.wadi.OldMessage;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
+public class PartitionRepopulateRequest implements OldMessage, Serializable {
 
-	String getNodeName();
+    protected int[] _keys;
 
-	InvocationProxy getInvocationProxy();
+    public PartitionRepopulateRequest(int[] keys) {
+        super();
+        _keys=keys;
+    }
 
-	ProxiedLocation getProxiedLocation();
+    protected PartitionRepopulateRequest() {
+        // for deserialisation...
+    }
 
-	Object getDistributedState(Object key);
+    public int[] getKeys() {
+        return _keys;
+    }
 
-	Object putDistributedState(Object key, Object value);
 
-	Object removeDistributedState(Object key);
-
-	void distributeState() throws Exception;
-
-	Map getDistributedState();
-
-	long getInactiveTime();
-
-	int getNumPartitions();
-
-	Dispatcher getDispatcher();
-
-	DIndex getDIndex();
-
+    public String toString() {
+        return "<PartitionRepopulateRequest"+_keys+">";
+    }
 }

@@ -14,41 +14,29 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.location.impl;
 
-import java.util.Map;
+import java.util.Comparator;
 
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.location.impl.DIndex;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
+public class PartitionOwnerGreaterThanComparator implements Comparator {
 
-	String getNodeName();
+    public int compare(Object o2, Object o1) {
+        PartitionOwner p1=(PartitionOwner)o1;
+        PartitionOwner p2=(PartitionOwner)o2;
+        int tmp=p1._deviation-p2._deviation;
+        if (tmp!=0)
+            return tmp;
+        else
+            return p1._node.getName().compareTo(p2._node.getName());
+    }
 
-	InvocationProxy getInvocationProxy();
-
-	ProxiedLocation getProxiedLocation();
-
-	Object getDistributedState(Object key);
-
-	Object putDistributedState(Object key, Object value);
-
-	Object removeDistributedState(Object key);
-
-	void distributeState() throws Exception;
-
-	Map getDistributedState();
-
-	long getInactiveTime();
-
-	int getNumPartitions();
-
-	Dispatcher getDispatcher();
-
-	DIndex getDIndex();
+    public boolean equals(Object obj) {
+        return obj==this || obj.getClass()==getClass();
+    }
 
 }

@@ -14,41 +14,30 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.location.impl;
 
-import java.util.Map;
+import java.io.Serializable;
 
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.location.impl.DIndex;
+import org.codehaus.wadi.location.Partition;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
+public abstract class AbstractPartition implements Partition, Serializable {
 
-	String getNodeName();
+    protected int _key;
 
-	InvocationProxy getInvocationProxy();
+    public AbstractPartition(int key) {
+        _key=key;
+    }
 
-	ProxiedLocation getProxiedLocation();
+    protected AbstractPartition() {
+        // for deserialisation...
+    }
 
-	Object getDistributedState(Object key);
-
-	Object putDistributedState(Object key, Object value);
-
-	Object removeDistributedState(Object key);
-
-	void distributeState() throws Exception;
-
-	Map getDistributedState();
-
-	long getInactiveTime();
-
-	int getNumPartitions();
-
-	Dispatcher getDispatcher();
-
-	DIndex getDIndex();
+    public int getKey() {
+        return _key;
+    }
 
 }

@@ -23,9 +23,9 @@ import java.util.Map;
 import org.apache.activecluster.Cluster;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
-import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.DummyContextualiserConfig;
+import org.codehaus.wadi.location.impl.DIndex;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 

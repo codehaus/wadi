@@ -14,41 +14,34 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.location;
 
+import java.util.Collection;
 import java.util.Map;
 
+import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.location.impl.DIndex;
+import org.codehaus.wadi.group.Peer;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
+public interface CoordinatorConfig {
 
-	String getNodeName();
+    int getNumPartitions();
 
-	InvocationProxy getInvocationProxy();
+    Peer getLocalNode();
+    Collection getRemoteNodes();
+    Cluster getCluster();
+    Dispatcher getDispatcher();
 
-	ProxiedLocation getProxiedLocation();
+    Map getRendezVousMap();
 
-	Object getDistributedState(Object key);
+    Collection getLeavers();
+    Collection getLeft();
 
-	Object putDistributedState(Object key, Object value);
-
-	Object removeDistributedState(Object key);
-
-	void distributeState() throws Exception;
-
-	Map getDistributedState();
-
-	long getInactiveTime();
-
-	int getNumPartitions();
-
-	Dispatcher getDispatcher();
-
-	DIndex getDIndex();
+    long getInactiveTime();
+    void regenerateMissingPartitions(Peer[] living, Peer[] leaving);
 
 }

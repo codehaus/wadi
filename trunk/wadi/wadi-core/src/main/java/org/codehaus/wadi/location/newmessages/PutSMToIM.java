@@ -14,41 +14,38 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.location.newmessages;
 
-import java.util.Map;
-
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.location.impl.DIndex;
+import java.io.Serializable;
+import org.codehaus.wadi.impl.Utils;
 
 /**
+ * Sent to initiate a Take from a remote node - for example: a Put to
+ * that node.  Used for session evacuation.
+ *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
+public class PutSMToIM implements Serializable {
 
-	String getNodeName();
+  protected Object _key;
 
-	InvocationProxy getInvocationProxy();
+  public PutSMToIM(Object key) {
+    super();
+    _key=key;
+  }
 
-	ProxiedLocation getProxiedLocation();
+  public PutSMToIM() {
+    // for use when demarshalling...
+  }
 
-	Object getDistributedState(Object key);
+  public Object getKey() {
+    return _key;
+  }
 
-	Object putDistributedState(Object key, Object value);
+  public String toString() {
+    return "<"+Utils.basename(PutSMToIM.class)+": "+_key+">";
+  }
 
-	Object removeDistributedState(Object key);
-
-	void distributeState() throws Exception;
-
-	Map getDistributedState();
-
-	long getInactiveTime();
-
-	int getNumPartitions();
-
-	Dispatcher getDispatcher();
-
-	DIndex getDIndex();
 
 }

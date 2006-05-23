@@ -14,41 +14,29 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.location;
 
-import java.util.Map;
 
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.location.impl.DIndex;
+import org.codehaus.wadi.Location;
+import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.group.Message;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
+public interface StateManager {
 
-	String getNodeName();
+	void init(StateManagerConfig config);
+	void start() throws Exception;
+	void stop() throws Exception;
 
-	InvocationProxy getInvocationProxy();
+	interface ImmigrationListener { void onImmigration(Message message, Motable immigrant); }
 
-	ProxiedLocation getProxiedLocation();
+	boolean offerEmigrant(String key, Motable emotable, long timeout);
+	void acceptImmigrant(Message message, Location location, String name, Motable immotable);
 
-	Object getDistributedState(Object key);
-
-	Object putDistributedState(Object key, Object value);
-
-	Object removeDistributedState(Object key);
-
-	void distributeState() throws Exception;
-
-	Map getDistributedState();
-
-	long getInactiveTime();
-
-	int getNumPartitions();
-
-	Dispatcher getDispatcher();
-
-	DIndex getDIndex();
+	void setImmigrationListener(ImmigrationListener listener);
+	void unsetImmigrationListener(ImmigrationListener listener);
 
 }
