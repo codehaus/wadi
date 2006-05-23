@@ -34,8 +34,6 @@ import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.StreamerConfig;
-import org.codehaus.wadi.dindex.PartitionManagerConfig;
-import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
@@ -47,6 +45,8 @@ import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
+import org.codehaus.wadi.location.PartitionManagerConfig;
+import org.codehaus.wadi.location.impl.DIndex;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;

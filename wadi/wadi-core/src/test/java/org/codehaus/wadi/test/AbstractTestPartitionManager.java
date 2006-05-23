@@ -24,16 +24,16 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.dindex.PartitionManager;
-import org.codehaus.wadi.dindex.PartitionManagerConfig;
-import org.codehaus.wadi.dindex.impl.SimplePartitionManager;
-import org.codehaus.wadi.dindex.impl.SimplePartitionManager.Callback;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.impl.SimplePartitionMapper;
+import org.codehaus.wadi.location.PartitionManager;
+import org.codehaus.wadi.location.PartitionManagerConfig;
+import org.codehaus.wadi.location.impl.SimplePartitionManager;
+import org.codehaus.wadi.location.impl.SimplePartitionManager.Callback;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 //Put this off until later - no current need to disentangle DIndex and PartitionManager, althought it will have to be done eventually...

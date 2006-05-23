@@ -14,41 +14,42 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.location.impl;
 
-import java.util.Map;
+import java.io.Serializable;
 
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.location.impl.DIndex;
+import org.codehaus.wadi.group.Address;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
+public class PartitionTransfer implements Serializable {
 
-	String getNodeName();
+    public Address _address;
+    public String _name; // TODO - only here for debugging...
+    public int _amount;
 
-	InvocationProxy getInvocationProxy();
+    public PartitionTransfer(Address address, String name, int amount) {
+        _address=address;
+        _name=name;
+        _amount=amount;
+    }
 
-	ProxiedLocation getProxiedLocation();
+    protected PartitionTransfer() {
+        // for deserialisation...
+    }
 
-	Object getDistributedState(Object key);
+    public Address getAddress() {
+        return _address;
+    }
 
-	Object putDistributedState(Object key, Object value);
+    public int getAmount() {
+        return _amount;
+    }
 
-	Object removeDistributedState(Object key);
-
-	void distributeState() throws Exception;
-
-	Map getDistributedState();
-
-	long getInactiveTime();
-
-	int getNumPartitions();
-
-	Dispatcher getDispatcher();
-
-	DIndex getDIndex();
+    public String toString() {
+        return "<transfer: "+_amount+"->"+_name+">";
+    }
 
 }

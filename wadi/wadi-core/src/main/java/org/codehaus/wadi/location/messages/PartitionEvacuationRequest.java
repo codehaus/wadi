@@ -14,41 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.location.messages;
 
-import java.util.Map;
+import java.io.Serializable;
 
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.location.impl.DIndex;
+import org.codehaus.wadi.OldMessage;
 
 /**
+ * Sent to the Coordinator, requesting that it rearrange Partition ownership, excluding the Requestor.
+ * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
+public class PartitionEvacuationRequest implements OldMessage, Serializable {
 
-	String getNodeName();
+    public PartitionEvacuationRequest() {
+        super();
+    }
 
-	InvocationProxy getInvocationProxy();
 
-	ProxiedLocation getProxiedLocation();
-
-	Object getDistributedState(Object key);
-
-	Object putDistributedState(Object key, Object value);
-
-	Object removeDistributedState(Object key);
-
-	void distributeState() throws Exception;
-
-	Map getDistributedState();
-
-	long getInactiveTime();
-
-	int getNumPartitions();
-
-	Dispatcher getDispatcher();
-
-	DIndex getDIndex();
+    public String toString() {
+        return "<PartitionEvacuationRequest>";
+    }
 
 }

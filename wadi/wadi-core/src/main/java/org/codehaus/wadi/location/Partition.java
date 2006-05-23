@@ -14,41 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.location;
 
-import java.util.Map;
-
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.location.impl.DIndex;
+import org.codehaus.wadi.PMPartition;
+import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.location.newmessages.DeleteIMToPM;
+import org.codehaus.wadi.location.newmessages.EvacuateIMToPM;
+import org.codehaus.wadi.location.newmessages.InsertIMToPM;
+import org.codehaus.wadi.location.newmessages.MoveIMToPM;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
+public interface Partition extends PMPartition, SMPartition {
+	void onMessage(Message message, InsertIMToPM request);
 
-	String getNodeName();
+    void onMessage(Message message, DeleteIMToPM request);
+	
+    void onMessage(Message message, EvacuateIMToPM request);
+	
+    void onMessage(Message message, MoveIMToPM request);
 
-	InvocationProxy getInvocationProxy();
-
-	ProxiedLocation getProxiedLocation();
-
-	Object getDistributedState(Object key);
-
-	Object putDistributedState(Object key, Object value);
-
-	Object removeDistributedState(Object key);
-
-	void distributeState() throws Exception;
-
-	Map getDistributedState();
-
-	long getInactiveTime();
-
-	int getNumPartitions();
-
-	Dispatcher getDispatcher();
-
-	DIndex getDIndex();
-
+	Message exchange(DIndexRequest request, long timeout) throws Exception;
 }

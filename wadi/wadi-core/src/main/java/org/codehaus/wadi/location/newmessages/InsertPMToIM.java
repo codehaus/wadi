@@ -14,41 +14,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.location.newmessages;
 
-import java.util.Map;
+import java.io.Serializable;
 
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.location.impl.DIndex;
+import org.codehaus.wadi.location.DIndexResponse;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
+public class InsertPMToIM implements DIndexResponse, Serializable {
 
-	String getNodeName();
+	protected boolean _success;
 
-	InvocationProxy getInvocationProxy();
+    public InsertPMToIM(boolean success) {
+        super();
+        _success=success;
+    }
 
-	ProxiedLocation getProxiedLocation();
+    public boolean getSuccess() {
+    	return _success;
+    }
 
-	Object getDistributedState(Object key);
-
-	Object putDistributedState(Object key, Object value);
-
-	Object removeDistributedState(Object key);
-
-	void distributeState() throws Exception;
-
-	Map getDistributedState();
-
-	long getInactiveTime();
-
-	int getNumPartitions();
-
-	Dispatcher getDispatcher();
-
-	DIndex getDIndex();
+    public String toString() {
+        return "<InsertPMToIM:"+_success+">";
+    }
 
 }

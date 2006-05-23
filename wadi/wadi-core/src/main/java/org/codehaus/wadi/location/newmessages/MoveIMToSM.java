@@ -14,41 +14,32 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.location.newmessages;
 
-import java.util.Map;
-
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.location.impl.DIndex;
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
+public class MoveIMToSM implements Serializable {
 
-	String getNodeName();
+	protected boolean _success;
 
-	InvocationProxy getInvocationProxy();
+	public MoveIMToSM(boolean success) {
+		_success=success;
+	}
 
-	ProxiedLocation getProxiedLocation();
+	public MoveIMToSM() {
+		this(true);
+	}
 
-	Object getDistributedState(Object key);
+	public boolean getSuccess() {
+		return _success;
+	}
 
-	Object putDistributedState(Object key, Object value);
-
-	Object removeDistributedState(Object key);
-
-	void distributeState() throws Exception;
-
-	Map getDistributedState();
-
-	long getInactiveTime();
-
-	int getNumPartitions();
-
-	Dispatcher getDispatcher();
-
-	DIndex getDIndex();
+	public String toString() {
+		return "<MoveIMToSM:"+_success+">";
+	}
 
 }

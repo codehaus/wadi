@@ -44,12 +44,12 @@ import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.dindex.PartitionManagerConfig;
-import org.codehaus.wadi.dindex.impl.DIndex;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.location.PartitionManagerConfig;
+import org.codehaus.wadi.location.impl.DIndex;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 

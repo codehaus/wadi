@@ -14,41 +14,41 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.location.newmessages;
 
-import java.util.Map;
+import java.io.Serializable;
 
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.location.impl.DIndex;
+import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.OldMessage;
 
 /**
+ * A request for the emigration of the enclosed session - The response
+ * should be a ReleaseEntryResponse object sent whence this request arrived.
+ *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
-
-	String getNodeName();
-
-	InvocationProxy getInvocationProxy();
-
-	ProxiedLocation getProxiedLocation();
-
-	Object getDistributedState(Object key);
-
-	Object putDistributedState(Object key, Object value);
-
-	Object removeDistributedState(Object key);
-
-	void distributeState() throws Exception;
-
-	Map getDistributedState();
-
-	long getInactiveTime();
-
-	int getNumPartitions();
-
-	Dispatcher getDispatcher();
-
-	DIndex getDIndex();
-
+public class ReleaseEntryRequest implements OldMessage, Serializable {
+	protected Motable _motable;
+	
+	/**
+	 *
+	 */
+	public ReleaseEntryRequest(Motable motable) {
+		super();
+		_motable=motable;
+	}
+	
+	public ReleaseEntryRequest() {
+		// for use when demarshalling...
+	}
+	
+	public Motable getMotable() {
+		return _motable;
+	}
+	
+	public String toString() {
+		return "<ReleaseEntryRequest: "+_motable.getName()+">";
+	}
+	
 }
