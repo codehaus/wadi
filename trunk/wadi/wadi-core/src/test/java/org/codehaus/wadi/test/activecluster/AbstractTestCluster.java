@@ -213,7 +213,7 @@ public abstract class AbstractTestCluster extends TestCase {
 
 		//_node0.getCluster().waitForClusterToComplete(3, 6000);
 		//_node1.getCluster().waitForClusterToComplete(3, 6000);
-		_node2.getCluster().waitForClusterToComplete(3, 6000);
+		_node2.getCluster().waitOnMembershipCount(4, 6000);
 	}
 
 	/*

@@ -176,8 +176,15 @@ public class VMCluster implements Cluster {
         listenerSupport.removeClusterListener((VMLocalClusterListener) listener);
     }
 
-    public boolean waitForClusterToComplete(int i, long timeout) throws InterruptedException {
-        return true;
+    public boolean waitOnMembershipCount(int membershipCount, long timeout) throws InterruptedException {
+        assert (membershipCount>0);
+        membershipCount--; // remove ourselves from the equation...
+        long expired=0;
+        while ((getRemotePeers().size())!=membershipCount && expired<timeout) {
+            Thread.sleep(1000);
+            expired+=1000;
+        }
+        return (getRemotePeers().size())==membershipCount;
     }
 
     public LocalPeer getLocalPeer() {

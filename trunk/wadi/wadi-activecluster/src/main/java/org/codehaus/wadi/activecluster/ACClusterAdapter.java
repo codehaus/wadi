@@ -74,10 +74,18 @@ class ACClusterAdapter implements Cluster {
         return localPeer;
     }
     
-    public boolean waitForClusterToComplete(int i, long timeout) throws InterruptedException {
-        return adaptee.waitForClusterToComplete(i, timeout);
-    }
 
+    public boolean waitOnMembershipCount(int membershipCount, long timeout) throws InterruptedException {
+        assert (membershipCount>0);
+        membershipCount--; // remove ourselves from the equation...
+        long expired=0;
+        while ((getRemotePeers().size())!=membershipCount && expired<timeout) {
+            Thread.sleep(1000);
+            expired+=1000;
+        }
+        return (getRemotePeers().size())==membershipCount;
+      }
+    
     public void start() throws ClusterException {
         try {
             adaptee.start();

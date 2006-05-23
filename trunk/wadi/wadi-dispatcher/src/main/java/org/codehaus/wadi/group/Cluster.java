@@ -39,5 +39,11 @@ public interface Cluster {
 
     void stop() throws ClusterException;
 
-    boolean waitForClusterToComplete(int i, long timeout) throws InterruptedException;
+    /**
+     * @param membershipCount - when membership reaches this number or we timeout this method will return
+     * @param timeout - the number of milliseconds to wait for membership to hit membershipCount
+     * @return whether or not expected membershipCount was hit within given time
+     * @throws InterruptedException
+     */
+    boolean waitOnMembershipCount(int membershipCount, long timeout) throws InterruptedException;
 }
