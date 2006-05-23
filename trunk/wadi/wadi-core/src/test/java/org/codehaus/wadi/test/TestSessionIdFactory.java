@@ -45,7 +45,7 @@ public class TestSessionIdFactory extends TestCase {
   public void testIdFactory() throws Exception {
       SessionIdFactory factory=new TomcatSessionIdFactory();
       Set ids=new TreeSet();
-      int numIds=100000;
+      int numIds=100;
       for (int i=0; i<numIds; i++)
           ids.add(factory.create());
       assertTrue(ids.size()==numIds);

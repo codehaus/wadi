@@ -514,7 +514,7 @@
 	    </property>
 	    <property>
 	      <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi</name>
-	      <value>debug</value>
+	      <value>trace</value>
 	    </property>
 	    <property>
 	      <name>java.net.preferIPv4Stack</name><!-- keep jgroups happy -->
