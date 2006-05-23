@@ -26,7 +26,7 @@ import org.codehaus.wadi.group.Quipu;
  * 
  * @version $Revision: 1603 $
  */
-class RendezVousMsgDispatcher extends AbstractMsgDispatcher {
+public class RendezVousMsgDispatcher extends AbstractMsgDispatcher {
     private static final Log log = LogFactory.getLog(RendezVousMsgDispatcher.class);
     
     public RendezVousMsgDispatcher(Dispatcher dispatcher, Class type) {

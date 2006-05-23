@@ -21,8 +21,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.impl.AbstractMsgDispatcher;
+import org.codehaus.wadi.group.impl.RendezVousMsgDispatcher;
 import org.codehaus.wadi.group.vm.VMDispatcher;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
+import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 import junit.framework.TestCase;
 
 public class TestGroup extends TestCase {
@@ -147,6 +149,28 @@ public class TestGroup extends TestCase {
         
     }
     
+    class SyncServiceEndpoint extends AbstractMsgDispatcher {
+        
+        protected final Address _local;
+        
+        SyncServiceEndpoint(Dispatcher dispatcher, Class type, Address local) {
+            super(dispatcher, type);
+            _local=local;
+        }
+        
+        public void dispatch(Message om) throws Exception {
+            Address content=(Address)om.getPayload();
+            Address target=(Address)om.getAddress();
+            // these tests will soon be done with '==' instead of 'equals()'...
+            assertTrue(_local.equals(content));
+            assertTrue(_local.equals(target));
+            assertTrue(content.equals(target));
+            
+            // reply - round tripping payload...
+            _dispatcher.reply(om, content);
+        }
+        
+    }
     public void testDispatcher() throws Exception {
         String clusterName="org.codehaus.wadi.cluster.TEST-"+System.currentTimeMillis();
 
@@ -170,12 +194,26 @@ public class TestGroup extends TestCase {
 
         // async - send a message (content=green's Address) red->green - confirm equality of local, target and content Addresses
         Latch latch=new Latch();
-        dispatcher1.register(new AsyncServiceEndpoint(dispatcher1, Address.class, cluster1.getLocalPeer().getAddress(), latch));
+        ServiceEndpoint async=new AsyncServiceEndpoint(dispatcher1, Address.class, cluster1.getLocalPeer().getAddress(), latch);
+        dispatcher1.register(async);
         Peer peer=(Peer)cluster0.getRemotePeers().values().iterator().next();
-        dispatcher0.send(peer.getAddress(), cluster1.getLocalPeer().getAddress()); // red sends green its address
+        dispatcher0.send(peer.getAddress(), peer.getAddress()); // red sends green its own address
         latch.acquire();
+        dispatcher1.unregister(async, 10, 500); // what are these params for ?
         
         // sync - send a message red->green and reply green->red
+        ServiceEndpoint rv=new RendezVousMsgDispatcher(dispatcher0, Address.class);
+        dispatcher0.register(rv);
+        ServiceEndpoint sync=new SyncServiceEndpoint(dispatcher1, Address.class, cluster1.getLocalPeer().getAddress());
+        dispatcher1.register(sync);
+        Peer peer2=(Peer)cluster0.getRemotePeers().values().iterator().next();
+        Address localAddress=cluster0.getLocalPeer().getAddress();
+        Address remoteAddress=peer2.getAddress();
+        Message reply=dispatcher0.exchangeSend(localAddress, remoteAddress, remoteAddress, 500000); // red sends green its own address and green sends it back
+        Address payload=(Address)reply.getPayload();
+        assertTrue(remoteAddress.equals(payload));
+        dispatcher1.unregister(sync, 10, 500); // what are these params for ?
+        dispatcher0.unregister(rv, 10, 5000); // what are these params for ?
         
         // etc...
         
