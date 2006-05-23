@@ -14,10 +14,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate.impl;
+package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.impl.SmartLockManager;
-import org.codehaus.wadi.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
