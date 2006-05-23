@@ -140,14 +140,13 @@
     <constructor-arg><value>jdbc:derby://localhost:1527/WADI</value></constructor-arg>
   </bean>
 
-  <bean
-    id="DataSource"
-    class="org.apache.derby.jdbc.ClientDataSource"
-    >
-    <property name="serverName"><value>localhost</value></property>
-    <property name="portNumber"><value>1527</value></property>
-    <property name="databaseName"><value>WADI</value></property>
-    <property name="user"><value>me</value></property>
+  <bean id="DataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <property name="driverClassName"><value>org.apache.derby.jdbc.ClientDriver</value></property>
+    <property name="initialSize"><value>1</value></property>
+    <property name="maxActive"><value>1</value></property>
+    <property name="maxIdle"><value>1</value></property>
+    <property name="url"><ref bean="DatabaseURL"/></property>
+    <property name="username"><value>me</value></property>
     <property name="password"><value>mine</value></property>
   </bean>
 
