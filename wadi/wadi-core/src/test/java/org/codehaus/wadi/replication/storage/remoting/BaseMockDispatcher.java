@@ -43,7 +43,7 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public Message exchangeSend(Address to, Serializable body, long timeout) {
+    public Message exchangeSend(Address from, Address to, Serializable body, long timeout) {
         throw new UnsupportedOperationException();
     }
 

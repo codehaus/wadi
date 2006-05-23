@@ -199,7 +199,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
             Address pm=_dispatcher.getLocalAddress();
             String imCorrelationId=message.getOutgoingCorrelationId();
             MovePMToSM request2=new MovePMToSM(key, im, pm, imCorrelationId);
-            Message tmp=_dispatcher.exchangeSend(sm, request2, _config.getInactiveTime());
+            Message tmp=_dispatcher.exchangeSend(pm, sm, request2, _config.getInactiveTime());
 
             if (tmp==null) {
               _log.error("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"}");
@@ -260,8 +260,9 @@ public class LocalPartition extends AbstractPartition implements Serializable {
   public Message exchange(DIndexRequest request, long timeout) throws Exception {
     if (_log.isTraceEnabled()) _log.trace("local dispatch - needs optimisation");
     Dispatcher dispatcher=_config.getDispatcher();
-    Address target=dispatcher.getLocalAddress();
-    return dispatcher.exchangeSend(target, request, timeout);
+    Address from=dispatcher.getLocalAddress();
+    Address to=from;
+    return dispatcher.exchangeSend(from, to, request, timeout);
   }
 
 }
