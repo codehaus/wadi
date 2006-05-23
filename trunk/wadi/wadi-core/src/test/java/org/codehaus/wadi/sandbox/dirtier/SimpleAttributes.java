@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox.dirtier;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
@@ -25,6 +25,8 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSessionEvent;
 
+import org.codehaus.wadi.Attributes;
+import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.Utils;
 

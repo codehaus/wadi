@@ -14,9 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox.dirtier;
 
-import org.codehaus.wadi.Dirtier;
+import org.codehaus.wadi.sandbox.dirtier.Dirtier;
 
 /**
  * TODO - JavaDoc this type
@@ -25,22 +25,9 @@ import org.codehaus.wadi.Dirtier;
  * @version $Revision$
  */
 
-public class WholeAttributesFactory implements AttributesFactory {
+public class WriteDirtier implements Dirtier {
 
-    protected final Dirtier _dirtier;
-    protected final Streamer _streamer;
-    protected final boolean _evictObjectRepASAP;
-    protected final boolean _evictByteRepASAP;
-    
-    public WholeAttributesFactory(Dirtier dirtier, Streamer streamer, boolean evictObjectRepASAP, boolean evictByteRepASAP) {
-        _dirtier=dirtier;
-        _streamer=streamer;
-        _evictObjectRepASAP=evictObjectRepASAP;
-        _evictByteRepASAP=evictByteRepASAP;
-    }
-
-    public Attributes create(AttributesConfig config) {
-        return new WholeAttributes(_dirtier, _streamer, _evictObjectRepASAP, _evictByteRepASAP); // FIXME
-    }
+    public boolean readAccess() {return false;}
+    public boolean writeAccess() {return true;}
 
 }

@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox.dirtier;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,7 +34,9 @@ import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Dirtier;
+import org.codehaus.wadi.Attributes;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.sandbox.dirtier.Dirtier;
 
 // TODO - consider mode where rep is shifted from byte->Object->byte for the duration of any change
 // this would be useful for testing that apps were distributable

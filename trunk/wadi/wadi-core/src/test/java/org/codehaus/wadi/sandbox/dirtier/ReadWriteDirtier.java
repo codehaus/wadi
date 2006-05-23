@@ -14,9 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.sandbox.dirtier;
 
-import org.codehaus.wadi.Dirtier;
+import org.codehaus.wadi.sandbox.dirtier.Dirtier;
 
 /**
  * TODO - JavaDoc this type
@@ -25,9 +25,9 @@ import org.codehaus.wadi.Dirtier;
  * @version $Revision$
  */
 
-public class WriteDirtier implements Dirtier {
-
-    public boolean readAccess() {return false;}
+public class ReadWriteDirtier implements Dirtier {
+    
+    public boolean readAccess() {return true;}
     public boolean writeAccess() {return true;}
-
+    
 }
