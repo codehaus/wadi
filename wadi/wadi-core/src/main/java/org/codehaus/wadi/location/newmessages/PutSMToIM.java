@@ -35,10 +35,6 @@ public class PutSMToIM implements Serializable {
     _key=key;
   }
 
-  public PutSMToIM() {
-    // for use when demarshalling...
-  }
-
   public Object getKey() {
     return _key;
   }

@@ -41,10 +41,6 @@ public class PartitionKeys implements Serializable {
             _keys[i]=((Integer)list.get(i)).intValue();
     }
 
-    protected PartitionKeys() {
-        // for deserialisation...
-    }
-
     public boolean equals(Object obj) {
         if (obj==this)
             return true;

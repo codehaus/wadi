@@ -37,10 +37,6 @@ public class PartitionTransferRequest implements OldMessage, Serializable {
 		_partitions=partitions;
 	}
 
-	protected PartitionTransferRequest() {
-		// for deserialisation
-	}
-
 	public long getTimeStamp() {
 		return _timeStamp;
 	}

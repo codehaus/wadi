@@ -32,10 +32,6 @@ public class MoveSMToIM implements Serializable {
 		_motable=motable;
 	}
 
-	protected MoveSMToIM() {
-		// for deserialisation...
-	}
-
 	public Motable getMotable() {
 		return _motable;
 	}

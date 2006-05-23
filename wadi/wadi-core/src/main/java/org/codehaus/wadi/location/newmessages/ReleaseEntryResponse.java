@@ -29,29 +29,25 @@ import org.codehaus.wadi.OldMessage;
  * @version $Revision$
  */
 public class ReleaseEntryResponse implements OldMessage, Serializable {
-	
+
 	protected String _name;
 	protected Location _location;
-	
+
 	public ReleaseEntryResponse(String name, Location location) {
 		_name=name;
 		_location=location;
 	}
-	
-	protected ReleaseEntryResponse() {
-		// for deserialisation ...
-	}
-	
+
 	public String getId() {
 		return _name;
 	}
-	
+
 	public Location getLocation() {
 		return _location;
 	}
-	
+
 	public String toString() {
 		return "<ReleaseEntryResponse: "+_name+">";
 	}
-	
+
 }

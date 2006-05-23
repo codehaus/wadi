@@ -38,10 +38,6 @@ public class MoveIMToPM extends AbstractDIndexRequest implements OldMessage, Ser
         _shuttingDown=shuttingDown;
     }
 
-    protected MoveIMToPM() {
-        // used when deserialising
-    }
-
     public String getNodeName() {
     	return _nodeName;
     }

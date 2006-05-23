@@ -30,10 +30,6 @@ public class MoveIMToSM implements Serializable {
 		_success=success;
 	}
 
-	public MoveIMToSM() {
-		this(true);
-	}
-
 	public boolean getSuccess() {
 		return _success;
 	}

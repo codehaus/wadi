@@ -36,10 +36,6 @@ public class PartitionTransfer implements Serializable {
         _amount=amount;
     }
 
-    protected PartitionTransfer() {
-        // for deserialisation...
-    }
-
     public Address getAddress() {
         return _address;
     }
