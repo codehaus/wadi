@@ -45,8 +45,6 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.gridstate.PartitionManager;
-import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AbstractReplicableSession;
@@ -149,8 +147,7 @@ public abstract class AbstractTestReplication extends TestCase {
 		ReplicaterFactory replicaterfactory=new MemoryReplicaterFactory(numPartitions);
 		ProxiedLocation location = new WebProxiedLocation(new InetSocketAddress("localhost", 8080));
 		InvocationProxy proxy=new StandardHttpProxy("jsessionid");
-		PartitionManager partitionManager=new DummyPartitionManager(numPartitions);
-		ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy, dispatcher, partitionManager, collapser);
+		ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy, dispatcher, 24, collapser);
 //		manager.setSessionListeners(new HttpSessionListener[]{});
 		//manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
 		manager.init(new DummyManagerConfig());

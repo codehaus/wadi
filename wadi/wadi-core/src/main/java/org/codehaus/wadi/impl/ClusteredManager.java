@@ -33,6 +33,7 @@ import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.ProxiedLocation;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Router;
@@ -45,8 +46,6 @@ import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.dindex.PartitionManagerConfig;
 import org.codehaus.wadi.dindex.impl.DIndex;
-import org.codehaus.wadi.gridstate.PartitionManager;
-import org.codehaus.wadi.gridstate.PartitionMapper;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
@@ -61,16 +60,16 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, DispatcherConfig, PartitionManagerConfig {
 
 	protected final Dispatcher _dispatcher;
-	protected final PartitionManager _partitionManager;
 	protected final Map _distributedState;
 	protected final Collapser _collapser;
-
-	public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, ProxiedLocation location, InvocationProxy proxy, Dispatcher dispatcher, PartitionManager partitionManager, Collapser collapser) {
+	protected final int _numPartitions;
+    
+	public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, ProxiedLocation location, InvocationProxy proxy, Dispatcher dispatcher, int numPartitions, Collapser collapser) {
 		super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, errorIfSessionNotAcquired, streamer, accessOnLoad, replicaterFactory);
 		_location=location;
 		_proxy=proxy;
 		_dispatcher=dispatcher;
-		_partitionManager=partitionManager;
+        _numPartitions=numPartitions;
 		_distributedState=new HashMap(); // TODO - make this a SynchronisedMap
 		_collapser=collapser;
 	}
@@ -88,11 +87,10 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		try {
 			_dispatcher.init(this);
 			String nodeName=_dispatcher.getPeerName();
-			int numPartitions=_partitionManager.getNumPartitions();
 			_distributedState.put("name", nodeName);
 			_distributedState.put("http", _location);
-			PartitionMapper mapper=new SimplePartitionMapper(numPartitions); // integrate with Session ID generator
-			_dindex=new DIndex(nodeName, numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState, mapper);
+			PartitionMapper mapper=new SimplePartitionMapper(_numPartitions); // integrate with Session ID generator
+			_dindex=new DIndex(nodeName, _numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState, mapper);
 			_dindex.init(this);
 		} catch (Exception e) {
 			_log.error("problem starting Cluster", e);

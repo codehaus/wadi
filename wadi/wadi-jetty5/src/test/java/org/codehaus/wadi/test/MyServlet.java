@@ -45,8 +45,6 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.gridstate.PartitionManager;
-import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.ClusterContextualiser;
 import org.codehaus.wadi.impl.ClusteredManager;
@@ -125,8 +123,7 @@ public class MyServlet implements Servlet {
 		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamer(), contextPool, new MyDummyHttpServletRequestWrapperPool());
 		_proxiedLocation=new WebProxiedLocation(httpAddress);
 		_httpProxy=httpProxy;
-		PartitionManager partitionManager=new DummyPartitionManager(24);
-		_manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _proxiedLocation, _httpProxy, dispatcher, partitionManager, _collapser);
+		_manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _proxiedLocation, _httpProxy, dispatcher, 24, _collapser);
 	}
 
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}

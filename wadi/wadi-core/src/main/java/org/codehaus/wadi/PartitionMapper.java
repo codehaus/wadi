@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate;
+package org.codehaus.wadi;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

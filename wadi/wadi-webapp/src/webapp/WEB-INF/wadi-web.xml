@@ -422,13 +422,6 @@
     <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
   </bean>
 
-  <bean
-    id="PartitionManager"
-    class="org.codehaus.wadi.gridstate.impl.DummyPartitionManager"
-    >
-    <constructor-arg><ref bean="NumPartitions"/></constructor-arg>
-  </bean>
-
 <!--
   <bean
     id="Dispatcher"
@@ -474,7 +467,7 @@
     <constructor-arg><ref bean="ProxiedLocation"/></constructor-arg>
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
     <constructor-arg><ref bean="Dispatcher"/></constructor-arg>
-    <constructor-arg><ref bean="PartitionManager"/></constructor-arg>
+    <constructor-arg><ref bean="NumPartitions"/></constructor-arg>
     <constructor-arg><ref bean="Collapser"/></constructor-arg>
   </bean>
 

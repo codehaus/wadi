@@ -52,7 +52,6 @@ import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.activecluster.RestartableClusterFactory;
-import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.ClusterContextualiser;
@@ -136,7 +135,7 @@ public abstract class AbstractTestCluster extends TestCase {
 			_relocater=new DummyRelocater();
 			_middle=new ClusterContextualiser(_bottom, _collapser, _relocater);
 			_top=new MemoryContextualiser(_middle, _evicter, _mmap, _streamer, _distributableContextPool, new DummyStatefulHttpServletRequestWrapperPool());
-			_manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), proxiedLocation, proxy, _dispatcher, new DummyPartitionManager(24), _collapser);
+			_manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _top, _mmap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), proxiedLocation, proxy, _dispatcher, 24, _collapser);
 		}
 
 		protected boolean _running;

@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.gridstate.PartitionMapper;
+import org.codehaus.wadi.PartitionMapper;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

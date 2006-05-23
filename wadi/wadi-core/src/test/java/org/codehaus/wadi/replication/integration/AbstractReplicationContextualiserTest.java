@@ -31,7 +31,6 @@ import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.RWLockListener;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.AlwaysEvicter;
 import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
@@ -188,7 +187,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
                 new WebProxiedLocation(new InetSocketAddress("localhost", 8080)),
                 new StandardHttpProxy("jsessionid"),
                 dispatcher,
-                new DummyPartitionManager(72),
+                72,
                 collapser);
 
         sessionRehydrater.setManager(manager);
