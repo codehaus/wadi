@@ -39,29 +39,9 @@ public class DummyPartitionManager implements PartitionManager {
 		// empty
 	}
 
-	public void start() {
-		// empty
-	}
-
-	public void stop() {
-		// empty
-	}
-
-	public PartitionFacade[] getPartitions() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public int getNumPartitions() {
 		return _numPartitions;
 	}
-
-	public PartitionFacade getPartition(Object key) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	// PartitionConfig
 
 	public Dispatcher getDispatcher() {
 		return null;
@@ -69,11 +49,6 @@ public class DummyPartitionManager implements PartitionManager {
 
 	public Address getLocalAddress() {
 		return null;
-	}
-
-	public void evacuate() {
-		// TODO Auto-generated method stub
-
 	}
 
 }
