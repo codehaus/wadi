@@ -28,6 +28,11 @@ import org.codehaus.wadi.group.Message;
  * @version $Revision: 1603 $
  */
 public class SerializeMessageTransformer implements MessageTransformer {
+    private final VMCluster cluster;
+    
+    public SerializeMessageTransformer(VMCluster cluster) {
+        this.cluster = cluster;
+    }
 
     public Message transform(Message message) {
         Serializable payload = message.getPayload();
@@ -42,7 +47,7 @@ public class SerializeMessageTransformer implements MessageTransformer {
             out.close();
             
             ByteArrayInputStream memIn = new ByteArrayInputStream(memOut.toByteArray());
-            ObjectInputStream in = new ObjectInputStream(memIn);
+            ObjectInputStream in = new VMClusterObjectInputStream(cluster, memIn);
             payload = (Serializable) in.readObject();
             in.close();
         } catch (IOException e) {

@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2006 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,19 +13,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.jgroups;
+package org.codehaus.wadi.group.vm;
 
-import org.codehaus.wadi.group.AbstractTestGroup;
-import org.codehaus.wadi.group.Dispatcher;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 
-public class TestGroup extends AbstractTestGroup {
+/**
+ * 
+ * @version $Revision: 1603 $
+ */
+class VMClusterObjectInputStream extends ObjectInputStream {
+    private final VMCluster cluster;
     
-    public TestGroup(String name) {
-        super(name);
-    }
-    
-    public DispatcherFactory getDispatcherFactory() {
-        return new DispatcherFactory() {public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {return new JGroupsDispatcher(peerName, "TEST", 5000);}}; // TODO - clusterName ?
+    public VMClusterObjectInputStream(VMCluster cluster, InputStream in) throws IOException {
+        super(in);
+
+        this.cluster = cluster;
     }
 
+    public VMCluster getCluster() {
+        return cluster;
+    }
 }

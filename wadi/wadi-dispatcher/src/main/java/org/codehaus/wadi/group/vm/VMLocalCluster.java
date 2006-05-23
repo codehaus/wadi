@@ -56,6 +56,7 @@ public class VMLocalCluster implements Cluster {
     }
 
     void send(Address to, Message message) throws MessageExchangeException {
+        message.setAddress(to);
         delegate.send(to, message);
     }
 
@@ -84,7 +85,7 @@ public class VMLocalCluster implements Cluster {
     }
 
     public Map getRemotePeers() {
-        Map peers=delegate.getRemotePeers();
+        Map peers = delegate.getPeers();
         peers.remove(node.getName());
         return peers;
     }
@@ -102,7 +103,13 @@ public class VMLocalCluster implements Cluster {
     }
 
     public boolean waitOnMembershipCount(int membershipCount, long timeout) throws InterruptedException {
-        return delegate.waitOnMembershipCount(membershipCount, timeout);
+        long expired = 0;
+        membershipCount--; // remove ourselves from the equation...
+        while (getRemotePeers().size() != membershipCount && expired<timeout) {
+            Thread.sleep(1000);
+            expired += 1000;
+        }
+        return getRemotePeers().size() == membershipCount;
     }
     
     public LocalPeer getLocalPeer() {
