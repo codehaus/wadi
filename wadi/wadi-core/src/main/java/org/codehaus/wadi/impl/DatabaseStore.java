@@ -94,33 +94,55 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
   // Store
   
   public void init() throws SQLException {
-    Connection c=_dataSource.getConnection();
-    String bigInt=_hasBigInt?"bigint":"long"; // Axion release does not yet support BIGINT type...
-    Statement s=c.createStatement();
-    try {
-      // should now work for MySQL, Axion and Derby...
-      String statement="CREATE TABLE "+_table+"(Name varchar(50), CreationTime "+bigInt+", LastAccessedTime "+bigInt+", MaxInactiveInterval int, Body blob)"; // TODO - parameterise Name width
-      s.execute(statement);
-    } catch (SQLException e) {
-      // ignore - table may already exist...
-      _log.warn(e);
-    }
-    s.close();
-    c.close();
+      Connection c=_dataSource.getConnection();
+      String bigInt=_hasBigInt?"bigint":"long"; // Axion release does not yet support BIGINT type...
+      Statement s=c.createStatement();
+      try {
+          // should now work for MySQL, Axion and Derby...
+          String statement="CREATE TABLE "+_table+"(Name varchar(50), CreationTime "+bigInt+", LastAccessedTime "+bigInt+", MaxInactiveInterval int, Body blob)"; // TODO - parameterise Name width
+          s.execute(statement);
+      } catch (SQLException e) {
+          // ignore - table may already exist...
+          _log.warn(e);
+      } finally {
+          try {
+              if (s!=null)
+                  s.close();
+          } catch (SQLException e) {
+              _log.warn("problem closing database statement", e);
+          }
+          try {
+              if (c!=null)
+                  c.close();
+          } catch (SQLException e) {
+              _log.warn("problem closing database connection", e);
+          }
+      }
   }
   
   public void destroy() throws SQLException {
-    Connection c=_dataSource.getConnection();
-    Statement s=c.createStatement();
-    try {
-      s.execute("DROP TABLE "+_table);
-    } catch (SQLException e) {
-      // ignore - table may have already been deleted...
-      _log.warn(e);
-    }
-    //		s.execute("SHUTDOWN");
-    s.close();
-    c.close();
+      Connection c=_dataSource.getConnection();
+      Statement s=c.createStatement();
+      try {
+          s.execute("DROP TABLE "+_table);
+      } catch (SQLException e) {
+          // ignore - table may have already been deleted...
+          _log.warn(e);
+      } finally {
+          //		s.execute("SHUTDOWN");
+          try {
+              if (s!=null)
+                  s.close();
+          } catch (SQLException e) {
+              _log.warn("problem closing database statement", e);
+          }
+          try {
+              if (c!=null)
+                  c.close();
+          } catch (SQLException e) {
+              _log.warn("problem closing database connection", e);
+          }
+      }
   }
   
   public void clean() {
@@ -150,64 +172,75 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
   }
   
   public void load(Putter putter, boolean accessOnLoad) {
-    long time=System.currentTimeMillis();
-    Statement s=null;
-    int count=0;
-    Connection connection=null;
-    try {
-      connection=_dataSource.getConnection();
-      s=connection.createStatement();
-      ResultSet rs=s.executeQuery("SELECT Name, CreationTime, LastAccessedTime, MaxInactiveInterval FROM "+_table);
-      String name=null;
-      while (rs.next()) {
-        try {
-          int i=1;
-          DatabaseMotable motable=new DatabaseMotable();
-          name=(String)rs.getObject(i++);
-          long creationTime=rs.getLong(i++);
-          long lastAccessedTime=rs.getLong(i++);
-          lastAccessedTime=accessOnLoad?time:lastAccessedTime;
-          int maxInactiveInterval=rs.getInt(i++);
-          motable.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
-          motable.init(this);
-          if (motable.getTimedOut(time)) {
-            if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getName());
-            // we should expire it immediately, rather than promoting it...
-            // perhaps we could be even cleverer ?
-          }
-          putter.put(name, motable);
-          count++;
-        } catch (Exception e) {
-          if (_log.isErrorEnabled()) _log.error("load (shared database) failed: "+name, e);
-        }
-      }
-      if (_log.isInfoEnabled()) _log.info("loaded sessions: " + count);
-    } catch (SQLException e) {
-      _log.warn("list (shared database) failed", e);
-    } finally {
-      if (s!=null)
-        try {
-          s.close();
-        } catch (SQLException e) {
-          if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
-        }
-    }
-    
-    if (!_reusingStore) {
+      long time=System.currentTimeMillis();
+      Statement s=null;
+      int count=0;
+      Connection connection=null;
       try {
-        s=connection.createStatement();
-        s.executeUpdate("DELETE FROM "+_table);
-      } catch (SQLException e) {
-        _log.warn("removal (shared database) failed", e);
-      } finally {
-        if (s!=null)
+          connection=_dataSource.getConnection();
           try {
-            s.close();
+              s=connection.createStatement();
+              ResultSet rs=s.executeQuery("SELECT Name, CreationTime, LastAccessedTime, MaxInactiveInterval FROM "+_table);
+              String name=null;
+              while (rs.next()) {
+                  try {
+                      int i=1;
+                      DatabaseMotable motable=new DatabaseMotable();
+                      name=(String)rs.getObject(i++);
+                      long creationTime=rs.getLong(i++);
+                      long lastAccessedTime=rs.getLong(i++);
+                      lastAccessedTime=accessOnLoad?time:lastAccessedTime;
+                      int maxInactiveInterval=rs.getInt(i++);
+                      motable.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
+                      motable.init(this);
+                      if (motable.getTimedOut(time)) {
+                          if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getName());
+                          // we should expire it immediately, rather than promoting it...
+                          // perhaps we could be even cleverer ?
+                      }
+                      putter.put(name, motable);
+                      count++;
+                  } catch (Exception e) {
+                      if (_log.isErrorEnabled()) _log.error("load (shared database) failed: "+name, e);
+                  }
+              }
+              if (_log.isInfoEnabled()) _log.info("loaded sessions: " + count);
           } catch (SQLException e) {
-            if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
+              _log.warn("list (shared database) failed", e);
+          } finally {
+              if (s!=null)
+                  try {
+                      s.close();
+                  } catch (SQLException e) {
+                      if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
+                  }
+          }
+          
+          if (!_reusingStore) {
+              try {
+                  s=connection.createStatement();
+                  s.executeUpdate("DELETE FROM "+_table);
+              } catch (SQLException e) {
+                  _log.warn("removal (shared database) failed", e);
+              } finally {
+                  if (s!=null)
+                      try {
+                          s.close();
+                      } catch (SQLException e) {
+                          if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
+                      }
+              }
+          }
+      } catch (SQLException e) {
+          if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
+      } finally {
+          try {
+              if (connection!=null)
+                  connection.close();
+          } catch (SQLException e) {
+              _log.warn("problem closing database connection", e);
           }
       }
-    }
   }
   
   public void loadHeader(Connection connection, Motable motable) {
