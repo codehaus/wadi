@@ -24,7 +24,7 @@ import org.codehaus.wadi.group.ServiceEndpoint;
  * 
  * @version $Revision: 1603 $
  */
-abstract class AbstractMsgDispatcher implements ServiceEndpoint {
+public abstract class AbstractMsgDispatcher implements ServiceEndpoint {
     protected final Dispatcher _dispatcher;
     private final Class _type;
 
