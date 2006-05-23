@@ -19,9 +19,9 @@ package org.codehaus.wadi.activecluster;
 import org.codehaus.wadi.group.AbstractTestGroup;
 import org.codehaus.wadi.group.Dispatcher;
 
-public class TestGroup extends AbstractTestGroup {
+public class TestACGroup extends AbstractTestGroup {
     
-    public TestGroup(String name) {
+    public TestACGroup(String name) {
         super(name);
     }
 
