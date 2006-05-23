@@ -16,16 +16,13 @@
  */
 package org.codehaus.wadi.group;
 
+import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.group.Cluster;
-import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.impl.AbstractMsgDispatcher;
 import org.codehaus.wadi.group.impl.RendezVousMsgDispatcher;
 import org.codehaus.wadi.group.vm.VMDispatcher;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
-import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
-import junit.framework.TestCase;
 
 public class TestGroup extends TestCase {
 
