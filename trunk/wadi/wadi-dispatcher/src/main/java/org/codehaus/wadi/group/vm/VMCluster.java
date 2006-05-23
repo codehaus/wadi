@@ -34,17 +34,15 @@ import org.codehaus.wadi.group.Peer;
  * @version $Revision: 1603 $
  */
 public class VMCluster implements Cluster {
-    
-    protected static Map clusters=new HashMap();
+    protected static final Map clusters=new HashMap();
     
     public static VMCluster ensureCluster(String clusterName) {
-        synchronized (clusters) {
-            VMCluster cluster=(VMCluster)clusters.get(clusterName);
-            if (cluster==null) {
-                clusters.put(clusterName, cluster=new VMCluster(clusterName));
-            }
-            return cluster;
+        VMCluster cluster = (VMCluster) clusters.get(clusterName);
+        if (null == cluster) {
+            cluster = new VMCluster(clusterName);
+            clusters.put(clusterName, cluster);
         }
+        return cluster;
     }
     
     private final String name;
@@ -61,7 +59,7 @@ public class VMCluster implements Cluster {
 
         address = new VMClusterAddress(this);
         listenerSupport = new ClusterListenerSupport(this);
-        messageTransformer = new SerializeMessageTransformer();
+        messageTransformer = new SerializeMessageTransformer(this);
     }
 
     public VMCluster(String name, boolean serializeMessages) {
@@ -70,7 +68,7 @@ public class VMCluster implements Cluster {
         address = new VMClusterAddress(this);
         listenerSupport = new ClusterListenerSupport(this);
         if (serializeMessages) {
-            messageTransformer = new SerializeMessageTransformer();
+            messageTransformer = new SerializeMessageTransformer(this);
         } else {
             messageTransformer = new NoOpMessageTransformer();
         }
@@ -149,11 +147,7 @@ public class VMCluster implements Cluster {
         listenerSupport.notifyCoordinatorChanged(coordinator);
     }
 
-    public Address getAddress() {
-        return address;
-    }
-
-    public Map getRemotePeers() {
+    Map getPeers() {
         Map snapshotMap = snapshotDispatcherMap();
 
         for (Iterator iter = snapshotMap.entrySet().iterator(); iter.hasNext();) {
@@ -162,6 +156,14 @@ public class VMCluster implements Cluster {
             entry.setValue(dispatcher.getLocalPeer());  
         }
         return snapshotMap;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public Map getRemotePeers() {
+        throw new UnsupportedOperationException();
     }
 
     public void setElectionStrategy(ElectionStrategy electionStrategy) {
@@ -177,14 +179,7 @@ public class VMCluster implements Cluster {
     }
 
     public boolean waitOnMembershipCount(int membershipCount, long timeout) throws InterruptedException {
-        assert (membershipCount>0);
-        membershipCount--; // remove ourselves from the equation...
-        long expired=0;
-        while ((getRemotePeers().size())!=membershipCount && expired<timeout) {
-            Thread.sleep(1000);
-            expired+=1000;
-        }
-        return (getRemotePeers().size())==membershipCount;
+        throw new UnsupportedOperationException();
     }
 
     public LocalPeer getLocalPeer() {

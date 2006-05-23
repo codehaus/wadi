@@ -15,6 +15,10 @@
  */
 package org.codehaus.wadi.group.vm;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamException;
 import org.codehaus.wadi.group.Address;
 
 /**
@@ -44,4 +48,8 @@ public class VMAddress implements Address {
     public String toString() {
         return "Address [" + node.getName() + "]";
     }
+
+    public Object writeReplace() throws ObjectStreamException {
+        return new VMAddressInfo(node.getName());
+    };
 }

@@ -21,26 +21,21 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.impl.AbstractMsgDispatcher;
 import org.codehaus.wadi.group.impl.RendezVousMsgDispatcher;
-import org.codehaus.wadi.group.vm.VMDispatcher;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
-public class TestGroup extends TestCase {
+public abstract class AbstractTestGroup extends TestCase {
 
-    protected static Log _log = LogFactory.getLog(TestGroup.class);
+    protected static Log _log = LogFactory.getLog(AbstractTestGroup.class);
 
-    public TestGroup(String arg0) {
+    public AbstractTestGroup(String arg0) {
         super(arg0);
     }
 
     protected interface DispatcherFactory {
-
         Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception;
-
     }
 
-    public DispatcherFactory getDispatcherFactory() throws Exception {
-        return new DispatcherFactory() {public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {return new VMDispatcher(clusterName, peerName, inactiveTime);}};
-    }
+    public abstract DispatcherFactory getDispatcherFactory() throws Exception;
 
     protected DispatcherFactory _dispatcherFactory;
 
@@ -109,16 +104,16 @@ public class TestGroup extends TestCase {
         assertTrue(cluster0.waitOnMembershipCount(2, 10000));
         assertTrue(cluster1.waitOnMembershipCount(2, 10000));
 
-        assertTrue(listener0._numPeers==1);
-        assertTrue(cluster0.getRemotePeers().size()==1);
-        assertTrue(listener1._numPeers==1);
-        assertTrue(cluster1.getRemotePeers().size()==1);
+        assertEquals(1, listener0._numPeers);
+        assertEquals(1, cluster0.getRemotePeers().size());
+        assertEquals(1, listener1._numPeers);
+        assertEquals(1, cluster1.getRemotePeers().size());
 
         cluster1.stop();
         assertTrue(cluster0.waitOnMembershipCount(1, 10000));
 
-        assertTrue(listener0._numPeers==0);
-        assertTrue(cluster0.getRemotePeers().size()==0);
+        assertEquals(0, listener0._numPeers);
+        assertEquals(0, cluster0.getRemotePeers().size());
 
         cluster0.stop();
     }
@@ -137,9 +132,9 @@ public class TestGroup extends TestCase {
         public void dispatch(Message om) throws Exception {
             Address content=(Address)om.getPayload();
             Address target=(Address)om.getAddress();
-            assertTrue(_local==content);
-            assertTrue(_local==target);
-            assertTrue(content==target);
+            assertSame(_local, content);
+            assertSame(_local, target);
+            assertSame(content, target);
             _latch.release();
         }
         
@@ -157,9 +152,9 @@ public class TestGroup extends TestCase {
         public void dispatch(Message om) throws Exception {
             Address content=(Address)om.getPayload();
             Address target=(Address)om.getAddress();
-            assertTrue(_local==content);
-            assertTrue(_local==target);
-            assertTrue(content==target);
+            assertSame(_local, content);
+            assertSame(_local, target);
+            assertSame(content, target);
             
             // reply - round tripping payload...
             _dispatcher.reply(om, content);
