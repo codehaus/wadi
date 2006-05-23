@@ -24,13 +24,13 @@ import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Peer;
 
 
-public class JGroupsRemoteNode implements Peer {
+public class JGroupsRemotePeer implements Peer {
 
   protected final JGroupsClusterMessageListener _cluster;
   protected final JGroupsAddress _destination;
   protected Map _clusterState;
 
-  public JGroupsRemoteNode(JGroupsClusterMessageListener cluster, JGroupsAddress destination, Map state) {
+  public JGroupsRemotePeer(JGroupsClusterMessageListener cluster, JGroupsAddress destination, Map state) {
     super();
     _cluster=cluster;
     _destination=destination;
@@ -73,7 +73,7 @@ public class JGroupsRemoteNode implements Peer {
     }
   }
 
-  protected static final String _prefix="<"+Utils.basename(JGroupsRemoteNode.class)+": ";
+  protected static final String _prefix="<"+Utils.basename(JGroupsRemotePeer.class)+": ";
   protected static final String _suffix=">";
 
   public String toString() {

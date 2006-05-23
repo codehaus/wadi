@@ -25,7 +25,7 @@ import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.jgroups.messages.StateUpdate;
 
-public class JGroupsLocalNode implements LocalPeer {
+public class JGroupsLocalPeer implements LocalPeer {
 
   protected final Log _log=LogFactory.getLog(getClass());
   protected final JGroupsCluster _cluster;
@@ -33,7 +33,7 @@ public class JGroupsLocalNode implements LocalPeer {
   protected Map _clusterState;
   protected Map _localState;
 
-  public JGroupsLocalNode(JGroupsCluster cluster, Map state) {
+  public JGroupsLocalPeer(JGroupsCluster cluster, Map state) {
     super();
     _cluster=cluster;
     _clusterState=state;
@@ -98,7 +98,7 @@ public class JGroupsLocalNode implements LocalPeer {
     }
   }
 
-  protected static final String _prefix="<"+Utils.basename(JGroupsLocalNode.class)+": ";
+  protected static final String _prefix="<"+Utils.basename(JGroupsLocalPeer.class)+": ";
   protected static final String _suffix=">";
 
   public String toString() {

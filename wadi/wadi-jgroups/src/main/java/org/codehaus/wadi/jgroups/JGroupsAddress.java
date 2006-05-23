@@ -103,7 +103,7 @@ public class JGroupsAddress implements Address {
 			destination=(JGroupsAddress)cluster._addressToDestination.get(address);
 			if (destination==null) {
 				destination=new JGroupsAddress(address);
-				Peer node=new JGroupsRemoteNode(cluster, destination, cluster.getClusterState());
+				Peer node=new JGroupsRemotePeer(cluster, destination, cluster.getClusterState());
 				destination.init(node);
 				cluster._addressToDestination.put(address, destination);
 			}

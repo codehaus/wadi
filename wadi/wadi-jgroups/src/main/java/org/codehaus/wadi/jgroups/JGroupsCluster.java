@@ -66,7 +66,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
   protected final Map _destinationToNode=new HashMap(); // we don't need this, but i/f does - yeugh !
   protected final boolean _excludeSelf=true;
   protected final Map _clusterState=new HashMap(); // a Map (Cluster) of Maps (Nodes) associating a Key (Address) with a Value (State)
-  protected final JGroupsLocalNode _localPeer;
+  protected final JGroupsLocalPeer _localPeer;
   protected final Latch _latch=new Latch();
   protected final Latch _initLatch=new Latch();
   public final Map _addressToDestination=new ConcurrentHashMap();
@@ -82,7 +82,7 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
     _clusterName=clusterName;
     //_channel=new JChannel("state_transfer.xml"); // uses an xml stack config file from JGroups distro
     _channel=new JChannel("default.xml"); // uses an xml stack config file from JGroups distro
-    _localPeer=new JGroupsLocalNode(this, _clusterState);
+    _localPeer=new JGroupsLocalPeer(this, _clusterState);
     _cluster.set(this); // set ThreadLocal
   }
 
@@ -387,8 +387,8 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
     JGroupsAddress destination=(JGroupsAddress)message.getReplyTo();
     Peer node=destination.getNode();
     Map state=update.getState();
-    if (node instanceof JGroupsRemoteNode) {
-      ((JGroupsRemoteNode)node).setState(state);
+    if (node instanceof JGroupsRemotePeer) {
+      ((JGroupsRemotePeer)node).setState(state);
       if (_clusterListeners.size()>0) {
           ClusterEvent event=new ClusterEvent(this, node, ClusterEvent.PEER_UPDATED);
           for (int i=0; i<_clusterListeners.size(); i++)
