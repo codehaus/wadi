@@ -17,7 +17,7 @@ import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.test.TestInvocation;
+import org.codehaus.wadi.test.MockInvocation;
 import org.codehaus.wadi.test.MyHttpServletRequest;
 import org.codehaus.wadi.test.MyHttpServletResponse;
 import org.codehaus.wadi.test.MyStack;
@@ -78,7 +78,7 @@ public class AbstractTestRelocation extends TestCase {
 			}
 		};
 
-		Invocation invocation=new TestInvocation(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
+		Invocation invocation=new MockInvocation(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
 		_log.info("RELOCATING SESSION...");
 		boolean success=green.getManager().contextualise(invocation, id, null, null, false);
 		_log.info("...DONE");

@@ -100,7 +100,7 @@ public class TestLocation extends TestCase {
 			}
 			
 			try {
-				_location.proxy(new TestInvocation(null, null, null));
+				_location.proxy(new MockInvocation(null, null, null));
 			} catch (Exception e) {
 				_log.warn("proxy problem", e);
 			} finally {
