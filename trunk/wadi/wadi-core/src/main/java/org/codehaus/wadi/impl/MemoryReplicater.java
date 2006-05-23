@@ -18,10 +18,10 @@ package org.codehaus.wadi.impl;
 
 import java.util.Map;
 
-import org.apache.activecluster.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Replicater;
+import org.codehaus.wadi.group.Peer;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
@@ -82,7 +82,7 @@ public class MemoryReplicater implements Replicater {
 
 	// restore
 
-	public void nodeDied(Node node) {
+	public void peerDied(Peer peer) {
 		// the partitions owned by this node will be reconstructed and repopulated with session-key:location pairs
 		// we need to know which sessions this node was owner of when it died - partition owners will know
 		// these sessions may then be promoted to memory in our node and the partition owners will need to be updated as to their new location.

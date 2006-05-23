@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.gridstate.activecluster;
+package org.codehaus.wadi.test.activecluster;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;

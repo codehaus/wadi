@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 
 import org.apache.activecluster.ClusterFactory;
 import org.apache.activecluster.impl.DefaultClusterFactory;
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
@@ -50,7 +51,6 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.gridstate.activecluster.RestartableClusterFactory;
 import org.codehaus.wadi.gridstate.impl.DummyPartitionManager;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
@@ -77,6 +77,7 @@ import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.test.activecluster.RestartableClusterFactory;
 import org.codehaus.wadi.web.WebProxiedLocation;
 
 /**
@@ -100,9 +101,14 @@ public abstract class AbstractTestCluster extends TestCase {
 
 	protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
 	
-	class MyNode {
+	// TODO - AMQ Specific
+    public static String getClusterUri() {
+        return "peer://org.codehaus.wadi";
+    }
 
-		protected final String _clusterUri=Utils.getClusterUri();
+    class MyNode {
+
+		protected final String _clusterUri=getClusterUri();
 		protected final String _clusterName;
 		protected final String _nodeName;
 		protected final Dispatcher _dispatcher;
@@ -170,7 +176,12 @@ public abstract class AbstractTestCluster extends TestCase {
 		public MemoryContextualiser getMemoryContextualiser(){return _top;}
 	}
 
-	protected final ConnectionFactory _connectionFactory=Utils.getConnectionFactory();
+    public static ActiveMQConnectionFactory getConnectionFactory() {
+        ActiveMQConnectionFactory cf=new ActiveMQConnectionFactory("peer://org.codehaus.wadi");
+        return cf;
+    }
+
+	protected final ConnectionFactory _connectionFactory=getConnectionFactory();
 	protected final ClusterFactory _clusterFactory=new RestartableClusterFactory(new DefaultClusterFactory(_connectionFactory));
 	protected final String _clusterName="ORG.CODEHAUS.WADI.TEST.CLUSTER";
 	protected final DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");

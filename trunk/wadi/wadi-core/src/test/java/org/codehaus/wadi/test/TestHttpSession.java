@@ -74,8 +74,14 @@ import org.codehaus.wadi.impl.Utils;
  * @version $Revision$
  */
 public class TestHttpSession extends TestCase {
+
+    // TODO - AMQ specific
+    public static String getClusterUri() {
+        return "peer://org.codehaus.wadi";
+    }
+
     protected Log                     _log=LogFactory.getLog(TestHttpSession.class);
-    protected final String            _clusterUri=Utils.getClusterUri();
+    protected final String            _clusterUri=getClusterUri();
     protected final String            _clusterName="WADI.TEST";
     protected Listener                _listener;
     protected List                    _events=new ArrayList();

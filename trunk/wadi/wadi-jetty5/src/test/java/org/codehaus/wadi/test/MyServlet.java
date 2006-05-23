@@ -76,9 +76,15 @@ import org.codehaus.wadi.web.WebProxiedLocation;
  * @version $Revision$
  */
 public class MyServlet implements Servlet {
+
+    // TODO - AMQ specific
+    public static String getClusterUri() {
+        return "peer://org.codehaus.wadi";
+    }
+
 	protected ServletConfig _config;
 	protected final Log _log;
-	protected final String _clusterUri=Utils.getClusterUri();
+	protected final String _clusterUri=getClusterUri();
 	protected final String _clusterName;
 	protected final String _nodeName;
 	protected final Map _clusterMap;
