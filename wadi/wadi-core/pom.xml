@@ -147,13 +147,6 @@
   </dependencyManagement>
 
   <dependencies>
-    <dependency><!-- alter inherited scoping: review later -->
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
     <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-jms</artifactId>

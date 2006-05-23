@@ -61,7 +61,7 @@ import org.codehaus.wadi.replication.manager.basic.DistributableManagerRehydrate
 import org.codehaus.wadi.replication.manager.basic.SessionReplicationManager;
 import org.codehaus.wadi.replication.storage.basic.BasicReplicaStorageFactory;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
-import org.codehaus.wadi.test.TestInvocation;
+import org.codehaus.wadi.test.MockInvocation;
 import org.codehaus.wadi.web.WebProxiedLocation;
 
 /**
@@ -118,7 +118,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
 
     private void promoteNode(NodeInfo nodeInfo, String sessionId) throws InvocationException {
         nodeInfo.clusteredManager.contextualise(
-                new TestInvocation(null, null,
+                new MockInvocation(null, null,
                     new FilterChain() { 
                         public void doFilter(ServletRequest req, ServletResponse res){} 
                     }), 

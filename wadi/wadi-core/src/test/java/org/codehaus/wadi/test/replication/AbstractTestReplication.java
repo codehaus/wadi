@@ -77,7 +77,7 @@ import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.test.TestInvocation;
+import org.codehaus.wadi.test.MockInvocation;
 import org.codehaus.wadi.web.WebProxiedLocation;
 
 /**
@@ -169,7 +169,7 @@ public abstract class AbstractTestReplication extends TestCase {
 
 		_log.info("TOUCHING SESSION");
 		long lat=session.getLastAccessedTime();
-		memory.contextualise(new TestInvocation(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }), name, null, null, false);
+		memory.contextualise(new MockInvocation(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }), name, null, null, false);
 		assert(lat!=session.getLastAccessedTime());
 		session=(AbstractReplicableSession)mmap.get(name);
 		assertTrue(mmap.size()==1);
@@ -191,7 +191,7 @@ public abstract class AbstractTestReplication extends TestCase {
 //		assertTrue(dmap.size()==1);
 //
 		_log.info("PROMOTING SESSION to Memory");
-		memory.contextualise(new TestInvocation(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }), name, null, null, false);
+		memory.contextualise(new MockInvocation(null, null, new FilterChain() { public void doFilter(ServletRequest req, ServletResponse res){_log.info("running request");} }), name, null, null, false);
 		session=(AbstractReplicableSession)mmap.get(name);
 		assertTrue(session.getAttribute("foo")!=foo);
 		assertTrue(session.getAttribute("foo").equals(foo));
