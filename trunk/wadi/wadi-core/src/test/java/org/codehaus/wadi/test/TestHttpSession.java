@@ -65,7 +65,6 @@ import org.codehaus.wadi.impl.StandardSessionFactory;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.StandardValueFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
-import org.codehaus.wadi.impl.Utils;
 
 /**
  * Test WADI's HttpSession implementation
