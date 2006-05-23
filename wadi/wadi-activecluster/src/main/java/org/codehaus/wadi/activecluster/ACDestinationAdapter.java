@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.jms.Destination;
 import org.codehaus.wadi.group.Address;
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 /**
  * 
