@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -43,45 +42,12 @@ import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Message;
-import org.codehaus.wadi.group.Peer;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
-//this needs to be split into several parts...
-
-//(1) a request relocation strategy (proxy)
-//(2) a state relocation strategy (migrate) - used if (1) fails
-//a location cache - used by both the above when finding the locarion of state...
-
-//demotion :
-
-//if the last node in the cluster, pass demotions through to e.g. shared DB below us.
-//else, distribute them out to the cluster
-
-//on startup, e.g. db will read in complete complement of sessions and try to promote them
-//how do we promote them to disc, but not to memory ? - perhaps in the configuration as when the node shutdown ?
-//could we remember the ttl and set it up the same, so nothing times out whilst the cluster is down ?
-
 /**
- * A cache of Locations. If the Location of a Context is not known, the Cluster
- * may be queried for it. If it is forthcoming, we can proxy to it. After a
- * given number of successful proxies, the Context will be migrated to this
- * Contextualiser which should promote it so that future requests for it can be
- * run straight off the top of the stack.
- *
- * Node N1 sends LocationRequest to Cluster
- * Node N2 contextualises this request with a FilterChain that will send a LocationResponse and wait a specified handover period.
- * Node N1 receives the response, updates its cache and then proxies through the Location to the required resource.
- *
- * The promotion mutex is held correctly during the initial Location lookup, so that searches for the same Context are correctly collapsed.
- *
- * Proxy should be applied before Migration- if it succeeds, we don't migrate...
- *
- * This class is getting out of hand !
- *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
@@ -89,9 +55,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 	protected final static String _nodeNameKey="name";
 	protected final static String _shuttingDownKey="shuttingDown";
-	protected final static String _evacuatingKey="evacuating";
 
-	protected final SynchronizedInt _evacuationPartnerCount=new SynchronizedInt(0);
 	protected final Collapser _collapser;
 	protected final Relocater _relocater;
 	protected final Immoter _immoter;
@@ -114,7 +78,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 	protected SynchronizedBoolean _shuttingDown;
 	protected String _nodeName;
-	protected boolean _evacuating;
 	protected Dispatcher _dispatcher;
 	protected Cluster _cluster;
 	protected HttpProxyLocation _location;
@@ -151,103 +114,37 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
 
-	protected int getEvacuationPartnersCount() {
-		return _evacuationPartnerCount.get();
-	}
-
-	protected void refreshEvacuationPartnersCount() {
-		Peer localNode = _dispatcher.getLocalPeer();
-		Map nodes=_cluster.getRemotePeers();
-		int count=0;
-		synchronized (nodes) { // does James modify this Map or replace it ?
-			for (Iterator i=nodes.values().iterator(); i.hasNext();) {
-				Peer node=(Peer)i.next();
-				if (node!=localNode && !node.getState().containsKey(_shuttingDownKey))
-					count++;
-			}
-		}
-
-		_evacuationPartnerCount.set(count);
-	}
-
 	public Immoter getDemoter(String name, Motable motable) {
-		if (getEvacuationPartnersCount()>0) {
-			ensureEvacuationQueue();
-			return getImmoter();
-		} else {
-			return _next.getDemoter(name, motable);
-		}
+	    // how many partitions are we responsible for ?
+	    if (_dindex.getPartitionManager().getPartitionKeys().size()==0) { // TODO - involves an unecessary allocation
+	        // evacuate sessions to their respective partition masters...
+	        return getImmoter();
+	    } else {
+	        return _next.getDemoter(name, motable);
+	    }
 	}
-
+	
 	public Immoter getSharedDemoter() {
-		// how many partitions are we responsible for ?
-		if (_dindex.getPartitionManager().getPartitionKeys().size()==0) { // TODO - involves an unecessary allocation
-			// evacuate sessions to their respective partition masters...
-			ensureEvacuationQueue();
-			return getImmoter();
-		} else {
-			// we must be the last node, push the sessions downwards into shared store...
-			return _next.getSharedDemoter();
-		}
+	    // how many partitions are we responsible for ?
+	    if (_dindex.getPartitionManager().getPartitionKeys().size()==0) { // TODO - involves an unecessary allocation
+	        // evacuate sessions to their respective partition masters...
+	        return getImmoter();
+	    } else {
+	        // we must be the last node, push the sessions downwards into shared store...
+	        return _next.getSharedDemoter();
+	    }
 	}
 
 	public boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock) throws InvocationException {
 		return _relocater.relocate(invocation, id, immoter, motionLock);
 	}
 
-	protected void createEvacuationQueue() throws Exception {
-		_log.trace("creating evacuation queue");
-		ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)_config;
-		ccc.putDistributedState(_shuttingDownKey, Boolean.TRUE);
-		_evacuating=true;
-		ccc.putDistributedState(_evacuatingKey, Boolean.TRUE);
-		ccc.distributeState();
-
-		// whilst we are evacuating...
-		// 1) do not get involved in any other evacuations.
-		_log.info("ignoring further evacuation appeals");
-		// 2) withdraw from any other evacuation in which we may be involved
-
-		// give time for threads that are already processing asylum applications to finish - can we join them ? -
-		// TODO - use shutdownAfterProcessingCurrentlyQueuedTasks() and a separate ThreadPool...
-		Utils.safeSleep(2000);
-	}
-
-	protected void destroyEvacuationQueue() throws Exception {
-		ClusteredContextualiserConfig ccc=(ClusteredContextualiserConfig)_config;
-		// leave shuttingDown=true
-		_evacuating=false;
-		ccc.removeDistributedState(_evacuatingKey);
-		ccc.distributeState();
-		//Utils.safeSleep(5*1000*2); // TODO - should be hearbeat period...
-		// FIXME - can we destroy the queue ?
-		_log.trace("emigration queue destroyed");
-	}
-
-	protected synchronized void ensureEvacuationQueue() {
-		synchronized (_shuttingDown) {
-			try {
-				if (!_evacuating) {
-					createEvacuationQueue();
-				}
-			} catch (Exception e) {
-				_log.error("emmigration queue initialisation failed", e);
-				_evacuating=false;
-			}
-		}
-	}
-
 	public void stop() throws Exception {
-		synchronized (_shuttingDown) {
-			if (_evacuating) { // evacuation is synchronous, so we will not get to here until all sessions are gone...
-				destroyEvacuationQueue();
-			}
-		}
 		super.stop();
 	}
 
 	/**
-	 * Manage the immotion of a session into the cluster tier from another and its emigration thence to another node via the EvacuationQueue.
+	 * Manage the immotion of a session into the cluster tier from another and its emigration thence to another node.
 	 */
 	class EmigrationImmoter implements Immoter {
 		public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}
@@ -351,67 +248,33 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	// ClusterListener
 
 	public void onPeerAdded(ClusterEvent event) {
-		//_log.info("node joined: "+event.getNode().getState().get(_nodeNameKey));
-		refreshEvacuationPartnersCount();
-		onNodeStateChange(event);
+        Map state=event.getPeer().getState();
+        String nodeName=(String)state.get(_nodeNameKey);
+        if (_log.isTraceEnabled()) _log.trace("node joined: " + nodeName);
 	}
 
 	public void onPeerUpdated(ClusterEvent event) {
-		//_log.info("node updated: "+event.getNode().getState().get(_nodeNameKey));
-		refreshEvacuationPartnersCount();
-		onNodeStateChange(event);
-	}
-
-	public void onNodeStateChange(ClusterEvent event) {
-		Map state=event.getPeer().getState();
-        
-        // TODO - tmp hack to avoid NPE here, whilst I rethink this... (Jules)
-		String nodeName=(state==null)?"<unknown>":(String)state.get(_nodeNameKey);
-
-		if (nodeName.equals(_nodeName)) return; // we do not want to listen to our own state changes
-
-		//_log.info("node state changed: "+nodeName+" : "+state);
-        // TODO - tmp hack to avoid NPE here, whilst I rethink this... (Jules)
-		Boolean tmp=(state==null)?null:(Boolean)state.get(_evacuatingKey);
-		boolean evacuating=tmp==null?false:tmp.booleanValue();
-		if (!evacuating) {
-			ensureEvacuationLeft(nodeName);
-		} else {
-			// we must not ourselves be evacuating...
-			synchronized (_shuttingDown) {
-				if (!_shuttingDown.get()) {
-					ensureEvacuationJoined(nodeName);
-				}
-			}
-		}
-	}
-
-	protected void ensureEvacuationJoined(String nodeName) {
-		// TODO - all needs complete rethink
-	}
-
-	protected void ensureEvacuationLeft(String nodeName) {
-		// TODO - all needs complete rethink
+        Map state=event.getPeer().getState();
+        String nodeName=(String)state.get(_nodeNameKey);
+        if (_log.isTraceEnabled()) _log.trace("node updated: " + nodeName);
 	}
 
 	public void onPeerRemoved(ClusterEvent event) {
 		Map state=event.getPeer().getState();
 		String nodeName=(String)state.get(_nodeNameKey);
-		if (_log.isInfoEnabled()) _log.info("node left: " + nodeName);
-		refreshEvacuationPartnersCount();
-		ensureEvacuationLeft(nodeName);
+		if (_log.isTraceEnabled()) _log.trace("node left: " + nodeName);
 	}
 
 	public void onPeerFailed(ClusterEvent event)  {
 		Map state=event.getPeer().getState();
 		String nodeName=(String)state.get(_nodeNameKey);
-		if (_log.isInfoEnabled()) _log.info("node failed: " + nodeName);
-		refreshEvacuationPartnersCount();
-		ensureEvacuationLeft(nodeName);
+		if (_log.isTraceEnabled()) _log.trace("node failed: " + nodeName);
 	}
 
 	public void onCoordinatorChanged(ClusterEvent event) {
-		if (_log.isTraceEnabled()) _log.trace("coordinator changed: " + event.getPeer().getState().get(_nodeNameKey)); // we don't use this...
+        Map state=event.getPeer().getState();
+        String nodeName=(String)state.get(_nodeNameKey);
+		if (_log.isTraceEnabled()) _log.trace("coordinator changed: " + nodeName); // we don't use this...
 	}
 
 	protected int _locationMaxInactiveInterval=30;
