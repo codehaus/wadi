@@ -30,7 +30,7 @@ import javax.cache.CacheStatistics;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.gridstate.LockManager;
+import org.codehaus.wadi.LockManager;
 import org.codehaus.wadi.gridstate.PartitionConfig;
 import org.codehaus.wadi.gridstate.PartitionManager;
 import org.codehaus.wadi.gridstate.PartitionManagerConfig;
@@ -39,6 +39,7 @@ import org.codehaus.wadi.gridstate.StateManagerConfig;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
+import org.codehaus.wadi.impl.StupidLockManager;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 

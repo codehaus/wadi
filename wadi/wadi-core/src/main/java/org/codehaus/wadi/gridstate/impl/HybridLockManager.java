@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.gridstate.impl;
 
+import org.codehaus.wadi.impl.SmartLockManager;
 import org.codehaus.wadi.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;

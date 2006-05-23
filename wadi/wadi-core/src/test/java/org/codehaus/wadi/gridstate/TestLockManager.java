@@ -18,9 +18,9 @@ package org.codehaus.wadi.gridstate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.gridstate.LockManager;
-import org.codehaus.wadi.gridstate.impl.SmartLockManager;
-import org.codehaus.wadi.gridstate.impl.StupidLockManager;
+import org.codehaus.wadi.LockManager;
+import org.codehaus.wadi.impl.SmartLockManager;
+import org.codehaus.wadi.impl.StupidLockManager;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import junit.framework.TestCase;
