@@ -15,6 +15,8 @@
  */
 package org.codehaus.wadi.group.vm;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
@@ -87,7 +89,12 @@ public class VMLocalCluster implements Cluster {
     public Map getRemotePeers() {
         Map peers = delegate.getPeers();
         peers.remove(node.getName());
-        return peers;
+        Map remotePeers=new HashMap(peers.size());
+        for (Iterator i=peers.values().iterator(); i.hasNext();) {
+            VMLocalPeer peer=(VMLocalPeer)i.next();
+            remotePeers.put(peer.getAddress(), peer);
+        }
+        return remotePeers;
     }
 
     public void setElectionStrategy(ElectionStrategy electionStrategy) {
