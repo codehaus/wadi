@@ -58,6 +58,12 @@
       <artifactId>activemq</artifactId>
       <version>${activemq.version}</version>
     </dependency>
+    <dependency>
+      <groupId>mx4j</groupId>
+      <artifactId>mx4j-remote</artifactId>
+      <version>${mx4j.version}</version>
+      <scope>runtime</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -70,8 +76,8 @@
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude> <!-- stop surefire from trying to run nested classes -->
 	    <exclude implementation="java.lang.String">**/TestACReplicationManager.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestACReplicationContextualiser.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestGroup.java</exclude>
 	  </excludes>
+	  <forkMode>pertest</forkMode> <!-- We have to run these tests in their own JVM: See JIRA WADI 76 -->
 	</configuration>
       </plugin>
     </plugins>
