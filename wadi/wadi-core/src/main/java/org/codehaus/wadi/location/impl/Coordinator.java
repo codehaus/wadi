@@ -51,14 +51,14 @@ public class Coordinator implements Runnable {
 	protected final CoordinatorConfig _config;
 	protected final Cluster _cluster;
 	protected final Dispatcher _dispatcher;
-	protected final Peer _localNode;
+	protected final Peer _localPeer;
 	protected final int _numItems;
 	protected final long _inactiveTime;
 
 	public Coordinator(CoordinatorConfig config) {
 		_config=config;
 		_cluster=_config.getCluster();
-        _localNode=_cluster.getLocalPeer();
+        _localPeer=_cluster.getLocalPeer();
 		_dispatcher=_config.getDispatcher();
 		_numItems=_config.getNumPartitions();
 		_inactiveTime=_config.getInactiveTime();
@@ -113,7 +113,7 @@ public class Coordinator implements Runnable {
 
 			Collection stayingNodes=nodeMap.values();
 			synchronized (stayingNodes) {stayingNodes=new ArrayList(stayingNodes);} // snapshot
-			stayingNodes.add(_localNode);
+			stayingNodes.add(_localPeer);
 
 			Collection l=_config.getLeavers();
 			synchronized (l) {l=new ArrayList(l);} // snapshot
@@ -193,13 +193,13 @@ public class Coordinator implements Runnable {
 				if (!left.contains(node.getAddress())) {
 					PartitionEvacuationResponse response=new PartitionEvacuationResponse();
                     try {
-                        _dispatcher.reply(_localNode.getAddress(), 
+                        _dispatcher.reply(_localPeer.getAddress(), 
                                         node.getAddress(), 
                                         node.getName(), 
                                         response);
                     } catch (MessageExchangeException e) {
                         if (_log.isErrorEnabled()) {
-                            _log.error("problem sending EvacuationResponse to "+DIndex.getNodeName(node));
+                            _log.error("problem sending EvacuationResponse to "+DIndex.getPeerName(node));
                         }
                         failures++;
                     }
@@ -234,12 +234,12 @@ public class Coordinator implements Runnable {
 						break;
 					}
 					if (producer._deviation>=consumer._deviation) {
-						transfers.add(new PartitionTransfer(consumer._node.getAddress(), DIndex.getNodeName(consumer._node), consumer._deviation));
+						transfers.add(new PartitionTransfer(consumer._node.getAddress(), DIndex.getPeerName(consumer._node), consumer._deviation));
 						producer._deviation-=consumer._deviation;
 						consumer._deviation=0;
 						consumer=null;
 					} else {
-						transfers.add(new PartitionTransfer(consumer._node.getAddress(), DIndex.getNodeName(consumer._node), producer._deviation));
+						transfers.add(new PartitionTransfer(consumer._node.getAddress(), DIndex.getPeerName(consumer._node), producer._deviation));
 						consumer._deviation-=producer._deviation;
 						producer._deviation=0;
 					}
@@ -252,7 +252,7 @@ public class Coordinator implements Runnable {
                     _log.trace("sending plan to: "+_dispatcher.getPeerName(producer._node.getAddress()));
                 }
                 try {
-                    _dispatcher.send(_localNode.getAddress(), producer._node.getAddress(), correlationId, command);
+                    _dispatcher.send(_localPeer.getAddress(), producer._node.getAddress(), correlationId, command);
                 } catch (MessageExchangeException e) {
                     _log.error("problem sending transfer command", e);
                 }
@@ -278,22 +278,22 @@ public class Coordinator implements Runnable {
 		if (_log.isTraceEnabled()) _log.trace("TOTAL: " + total);
 	}
 
-	protected int printNode(Peer node) {
-		if (node!=_localNode)
-			node=(Peer)_cluster.getRemotePeers().get(node.getAddress());
-		if (node==null) {
-			if (_log.isTraceEnabled()) _log.trace(DIndex.getNodeName(node) + " : <unknown>");
+	protected int printNode(Peer peer) {
+		if (peer!=_localPeer)
+			peer=(Peer)_cluster.getRemotePeers().get(peer.getAddress());
+		if (peer==null) {
+			if (_log.isTraceEnabled()) _log.trace(DIndex.getPeerName(peer) + " : <unknown>");
 			return 0;
 		} else {
-			PartitionKeys keys=DIndex.getPartitionKeys(node);
+			PartitionKeys keys=DIndex.getPartitionKeys(peer);
 			int amount=keys.size();
-			if (_log.isTraceEnabled()) _log.trace(DIndex.getNodeName(node) + " : " + amount + " - " + keys);
+			if (_log.isTraceEnabled()) _log.trace(DIndex.getPeerName(peer) + " : " + amount + " - " + keys);
 			return amount;
 		}
 	}
 
 	protected Peer getPeer(Address address) {
-		Peer localPeer=_localNode;
+		Peer localPeer=_localPeer;
 		Address localAddress=localPeer.getAddress();
 		if (address.equals(localAddress))
 			return localPeer;

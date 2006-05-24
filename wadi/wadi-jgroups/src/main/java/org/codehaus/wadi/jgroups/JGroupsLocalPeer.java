@@ -16,11 +16,7 @@
  */
 package org.codehaus.wadi.jgroups;
 
-import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
@@ -28,27 +24,17 @@ import org.codehaus.wadi.jgroups.messages.StateUpdate;
 
 /**
  * A WADI LocalPeer mapped onto JGroups
- * 
+ *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class JGroupsLocalPeer implements LocalPeer, Comparable {
+public class JGroupsLocalPeer extends JGroupsPeer implements LocalPeer {
 
     protected static final String _prefix="<"+Utils.basename(JGroupsLocalPeer.class)+": ";
     protected static final String _suffix=">";
 
-    protected final Log _log=LogFactory.getLog(getClass());
-    protected final JGroupsAddress _address=new JGroupsAddress(this);
-    protected final JGroupsCluster _cluster;
-    protected final Map _clusterState;
-
-    protected Map _localState;
-
-    public JGroupsLocalPeer(JGroupsCluster cluster, Map clusterState) {
-        super();
-        _cluster=cluster;
-        _clusterState=clusterState;
-        _localState=new HashMap();
+    public JGroupsLocalPeer(JGroupsCluster cluster) {
+        super(cluster);
     }
 
     // 'java.lang.Object' API
@@ -57,62 +43,17 @@ public class JGroupsLocalPeer implements LocalPeer, Comparable {
         return _prefix+getName()+_suffix;
     }
 
-    public boolean equals(Object object) {
-        return (object instanceof JGroupsLocalPeer && ((JGroupsLocalPeer)object).getAddress()==_address);
-    }
-
-    // 'java.lang.Comparable' API
-
-    public int compareTo(Object object) {
-        return _address.compareTo(object); 
-    }
-
     // 'org.codehaus.wadi.group.Peer' API
-
-    public Map getState() {
-        if (_address==null) {
-            return _localState;
-        } else
-            synchronized (_clusterState) {
-                return (Map)_clusterState.get(_address.getAddress());
-            }
-    }
-
-    public Address getAddress() {
-        return _address;
-    }
-
-    public void init(org.jgroups.Address jgaddress) {
-        _address.init(jgaddress);
-        synchronized (_clusterState) {
-            _clusterState.put(jgaddress, _localState);
-        }
-    }
-
-    public String getName() {
-        Map state=getState();
-        return (state==null)?"<unknown>":(String)state.get("nodeName");
-    }
-
-    // 'org.codehaus.wadi.group.LocalPeer' API
-
+    
     public void setState(Map state) throws MessageExchangeException {
-        if (_address==null) {
-            // we have not yet been initialised...
-            _localState=state;
-        } else {
-            _localState=null;
-            Object tmp;
-            synchronized (_clusterState) {
-                tmp=_clusterState.put(_address.getAddress(), state);
-            }
-
-            if (tmp!=null) {
-                Message message=new JGroupsMessage();
-                message.setReplyTo(_address);
-                message.setPayload(new StateUpdate(state));
-                _cluster.send(_cluster.getAddress(), message);
-            }
+        super.setState(state);
+        
+        // notify the rest of the Cluster (if we are connected) of the change - TODO - do this more efficiently...
+        if (_jgAddress!=null) {
+            Message message=new JGroupsMessage();
+            message.setReplyTo(this);
+            message.setPayload(new StateUpdate(state));
+            _cluster.send(_cluster.getAddress(), message);
         }
     }
 

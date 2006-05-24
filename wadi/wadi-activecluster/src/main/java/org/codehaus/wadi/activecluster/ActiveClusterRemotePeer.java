@@ -13,23 +13,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.group;
-
-import java.util.Map;
+package org.codehaus.wadi.activecluster;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
-public interface Peer {
+class ActiveClusterRemotePeer extends ActiveClusterPeer {
     
-    public static final String _peerNameKey="peerName";
-    public static final String _birthTimeKey="birthTime";
+    protected static final String _prefix="<"+Utils.basename(ActiveClusterRemotePeer.class)+": ";
+    protected static final String _suffix=">";
+    
+    public ActiveClusterRemotePeer(ActiveClusterCluster cluster, javax.jms.Destination acDestination) {
+        super(cluster);
+        init(acDestination);
+    }
 
-    String getName();
+    // 'java.lang.Object' API
 
-    Map getState();
+    public String toString() {
+        return _prefix+getName()+_suffix;
+    }
 
-    Address getAddress();
+    public String getName() {
+        String name=super.getName();
+        return (name==null)?"<unknown>":name;
+    }
     
 }

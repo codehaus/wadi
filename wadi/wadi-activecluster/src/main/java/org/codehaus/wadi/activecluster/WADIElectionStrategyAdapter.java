@@ -35,20 +35,13 @@ class WADIElectionStrategyAdapter implements ElectionStrategy {
     }
 
     public Node doElection(org.apache.activecluster.Cluster acCluster) throws JMSException {
-        org.codehaus.wadi.group.Peer electedNode = adaptee.doElection(cluster);
+        org.codehaus.wadi.group.Peer peer = adaptee.doElection(cluster);
         
-        if (null == electedNode) {
+        if (null == peer) {
             return null;
-        } else if (electedNode instanceof ACNodeAdapter) {
-            return ((ACNodeAdapter) electedNode).getAdaptee();
-        } else if (electedNode instanceof ACLocalNodeAdapter) {
-            return ((ACLocalNodeAdapter) electedNode).getAdaptee();
+        } else {
+            return (Node)acCluster.getNodes().get(((ActiveClusterPeer)peer).getACDestination());
         }
-
-        throw new IllegalStateException("Elected node is not a " + 
-                ACNodeAdapter.class.getName() +
-                " or a " +
-                ACLocalNodeAdapter.class.getName() + ". Was:" +
-                electedNode.getClass().getName());            
     }
+    
 }

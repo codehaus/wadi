@@ -8,9 +8,9 @@
 ## I can't collapse these targets onto the same line as modules sites
 ## are then removed before main site is built...
 
-mvn clean:clean && mvn install site && \
-mvn -f pom.clover.xml clover:aggregate clover:clover && \
-mvn site:deploy
+mvn --offline -fn clean:clean && mvn -Dmaven.test.failure.ignore=true install site && \
+mvn --offline -fn -f pom.clover.xml clover:aggregate clover:clover && \
+mvn --offline -fn site:deploy
 status=$?
 ##mvn site:stage -DstagingDirectory=target/stage
 ##firefox file:///home/jules/scm/wadi/target/stage/index.html

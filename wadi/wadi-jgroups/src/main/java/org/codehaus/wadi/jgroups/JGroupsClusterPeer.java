@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2003-2006 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,31 +16,25 @@
  */
 package org.codehaus.wadi.jgroups;
 
-/**
- * A WADI Peer mapped onto JGroups
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
-public class JGroupsRemotePeer extends JGroupsPeer {
+public class JGroupsClusterPeer extends JGroupsPeer {
 
-    protected static final String _prefix="<"+Utils.basename(JGroupsRemotePeer.class)+": ";
+    protected static final String _prefix="<"+Utils.basename(JGroupsClusterPeer.class)+": ";
     protected static final String _suffix=">";
-
-    public JGroupsRemotePeer(JGroupsCluster cluster, org.jgroups.Address jgaddress) {
+    
+    public JGroupsClusterPeer(JGroupsCluster cluster) {
         super(cluster);
-        init(jgaddress);
     }
-
+    
     // 'java.lang.Object' API
-
+    
     public String toString() {
-        return _prefix+getName()+_suffix;
-    }
-
+        return _prefix+getName()+"/"+_jgAddress+_suffix;
+    }    
+    
+    // 'org.codehaus.wadi.group.Peer' API
+    
     public String getName() {
-        String name=super.getName();
-        return (name==null)?"<unknown>":name;
+        return _cluster.getName();
     }
 
 }

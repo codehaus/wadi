@@ -38,9 +38,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @version $Revision: 1595 $
  */
 public abstract class AbstractDispatcher implements Dispatcher {
-    protected final static String _nodeNameKey = "nodeName";
 	
-	protected final long _inactiveTime;
 	protected final ThreadPool _executor;
 	protected final Log _messageLog = LogFactory.getLog("org.codehaus.wadi.MESSAGES");
     protected Log _log = LogFactory.getLog(getClass());
@@ -49,15 +47,14 @@ public abstract class AbstractDispatcher implements Dispatcher {
 
     private final MessageDispatcherManager inboundMessageDispatcher; 
 
-    public AbstractDispatcher(long inactiveTime, ThreadPool executor) {
-        _inactiveTime=inactiveTime;
+    public AbstractDispatcher(ThreadPool executor) {
         _executor = executor;
         
         inboundMessageDispatcher = new BasicMessageDispatcherManager(this, _executor);
     }
 
 	public AbstractDispatcher(long inactiveTime) {
-        this(inactiveTime, new PooledExecutorAdapter(10));
+        this(new PooledExecutorAdapter(10));
 	}
 	
 	public void init(DispatcherConfig config) throws Exception {
@@ -137,7 +134,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
     }
 	
 	public Message exchangeSend(Address to, Serializable body, long timeout) throws MessageExchangeException {
-		return exchangeSend(getCluster().getLocalPeer().getAddress(), to, body, timeout, null);
+		return exchangeSend(to, body, timeout, null);
 	}
 	
 	public void reply(Message message, Serializable body) throws MessageExchangeException {
@@ -146,8 +143,8 @@ public abstract class AbstractDispatcher implements Dispatcher {
         msg.setReplyTo(from);
         Address to=message.getReplyTo();
         msg.setAddress(to);
-        String incomingCorrelationId=message.getOutgoingCorrelationId();
-        msg.setIncomingCorrelationId(incomingCorrelationId);
+        String incomingCorrelationId=message.getSourceCorrelationId();
+        msg.setTargetCorrelationId(incomingCorrelationId);
         msg.setPayload(body);
         if (_log.isTraceEnabled()) _log.trace("reply: " + getPeerName(from) + " -> " + getPeerName(to) + " {" + incomingCorrelationId + "} : " + body);
         send(to, msg);
@@ -156,6 +153,8 @@ public abstract class AbstractDispatcher implements Dispatcher {
     public void send(Address to, Serializable body) throws MessageExchangeException {
         try {
             Message om = createMessage();
+            om.setReplyTo(getCluster().getLocalPeer().getAddress());
+            om.setAddress(to);
             om.setPayload(body);
             send(to, om);
         } catch (Exception e) {
@@ -163,39 +162,40 @@ public abstract class AbstractDispatcher implements Dispatcher {
         }
     }
 	
-	public void send(Address from, Address to, String outgoingCorrelationId, Serializable body) throws MessageExchangeException {
+	public void send(Address source, Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException {
         Message om=createMessage();
-        om.setReplyTo(from);
-        om.setAddress(to);
-        om.setOutgoingCorrelationId(outgoingCorrelationId);
-        om.setPayload(body);
-        if (_log.isTraceEnabled()) _log.trace("send {" + outgoingCorrelationId + "}: " + getPeerName(from) + " -> " + getPeerName(to) + " : " + body);
-        send(to, om);
+        om.setReplyTo(source);
+        om.setAddress(target);
+        om.setSourceCorrelationId(sourceCorrelationId);
+        om.setPayload(pojo);
+        if (_log.isTraceEnabled()) _log.trace("send {" + sourceCorrelationId + "}: " + getPeerName(source) + " -> " + getPeerName(target) + " : " + pojo);
+        send(target, om);
 	}
 	
-	public Message exchangeSend(Address from, Address to, Serializable body, long timeout, String targetCorrelationId) throws MessageExchangeException {
+	public Message exchangeSend(Address target, Serializable body, long timeout, String targetCorrelationId) throws MessageExchangeException {
+        Address from=getCluster().getLocalPeer().getAddress();
         Message om=createMessage();
         om.setReplyTo(from);
-        om.setAddress(to);
+        om.setAddress(target);
         om.setPayload(body);
-        String correlationId=nextCorrelationId();
-        om.setOutgoingCorrelationId(correlationId);
+        String sourceCorrelationId=nextCorrelationId();
+        om.setSourceCorrelationId(sourceCorrelationId);
         if (targetCorrelationId!=null)
-            om.setIncomingCorrelationId(targetCorrelationId);
-        Quipu rv=setRendezVous(correlationId, 1);
-        if (_log.isTraceEnabled()) _log.trace("exchangeSend {" + correlationId + "}: " + getPeerName(from) + " -> " + getPeerName(to) + " : " + body);
-        send(to, om);
-        return attemptRendezVous(correlationId, rv, timeout);
+            om.setTargetCorrelationId(targetCorrelationId);
+        Quipu rv=setRendezVous(sourceCorrelationId, 1);
+        if (_log.isTraceEnabled()) _log.trace("exchangeSend {" + sourceCorrelationId + "}: " + getPeerName(from) + " -> " + getPeerName(target) + " : " + body);
+        send(target, om);
+        return attemptRendezVous(sourceCorrelationId, rv, timeout);
 	}
 	
-	public Message exchangeSend(Address from, Address to, String outgoingCorrelationId, Serializable body, long timeout) {
+	public Message exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) {
 		Quipu rv=null;
 		// set up a rendez-vous...
-		rv=setRendezVous(outgoingCorrelationId, 1);
+		rv=setRendezVous(sourceCorrelationId, 1);
 		// send the message...
         try {
-            send(from, to, outgoingCorrelationId, body);
-            return attemptRendezVous(outgoingCorrelationId, rv, timeout);
+            send(getCluster().getLocalPeer().getAddress(), target, sourceCorrelationId, pojo);
+            return attemptRendezVous(sourceCorrelationId, rv, timeout);
         } catch (MessageExchangeException e) {
             return null;
         }
@@ -205,7 +205,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
         Message om=createMessage();
         om.setReplyTo(from);
         om.setAddress(to);
-        om.setIncomingCorrelationId(incomingCorrelationId);
+        om.setTargetCorrelationId(incomingCorrelationId);
         om.setPayload(body);
         if (_log.isTraceEnabled()) _log.trace("reply: " + getPeerName(from) + " -> " + getPeerName(to) + " {" + incomingCorrelationId + "} : " + body);
         send(to, om);
@@ -216,13 +216,10 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	}
 	
 	public void forward(Message message, Address destination, Serializable body) throws MessageExchangeException {
-        send(message.getReplyTo(), destination, message.getOutgoingCorrelationId(), body);
+        send(message.getReplyTo(), destination, message.getSourceCorrelationId(), body);
 	}
 
-	public long getInactiveTime() {
-		return _inactiveTime;
-	}
-	
 	protected void hook() {
+        AbstractCluster._cluster.set(getCluster());
 	}
 }

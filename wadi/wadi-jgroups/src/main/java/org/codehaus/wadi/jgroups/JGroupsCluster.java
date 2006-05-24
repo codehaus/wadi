@@ -16,30 +16,23 @@
  */
 package org.codehaus.wadi.jgroups;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.group.Cluster;
-import org.codehaus.wadi.group.ClusterEvent;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.ClusterException;
-import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.ElectionStrategy;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.impl.AbstractCluster;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.jgroups.messages.StateRequest;
 import org.codehaus.wadi.jgroups.messages.StateResponse;
 import org.codehaus.wadi.jgroups.messages.StateUpdate;
-import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.ChannelException;
 import org.jgroups.JChannel;
@@ -47,7 +40,6 @@ import org.jgroups.MembershipListener;
 import org.jgroups.MergeView;
 import org.jgroups.MessageListener;
 import org.jgroups.View;
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
@@ -55,97 +47,49 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
 /**
  * A WADI Cluster mapped onto a JGroups Channel
- * 
+ *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class JGroupsCluster implements Cluster, MembershipListener, MessageListener, JGroupsClusterMessageListener {
 
-    protected static final String _prefix="<"+JGroupsCluster.class.getPackage().getName()+": ";
+// TODO
+// pass testsuite
+// more work on Cluster & Dispatcher
+// lose getRemotePeers()
+
+public class JGroupsCluster extends AbstractCluster implements MembershipListener, MessageListener, JGroupsClusterMessageListener {
+
+    protected static final String _prefix="<"+Utils.basename(JGroupsCluster.class)+": ";
     protected static final String _suffix=">";
-    protected static final String _nodeNameKey = "nodeName";
-    protected static final String _birthTimeKey="birthTime";
-    protected static final ThreadLocal _cluster=new ThreadLocal();
 
-    // initialised now
-    protected final Log _messageLog = LogFactory.getLog("org.codehaus.wadi.MESSAGES");
-    protected final Log _log=LogFactory.getLog(getClass());
-    protected final List _clusterListeners=new ArrayList();
-    protected final Map _jgaddressToPeer=new HashMap(); // we don't need this, but i/f does - yeugh !
     protected final boolean _excludeSelf=true;
-    protected final Map _clusterState=new HashMap(); // a Map (Cluster) of Maps (Nodes) associating a Key (Address) with a Value (State)
-    protected final Map _jgAddressToAddress=new ConcurrentHashMap();
-    protected final JGroupsLocalPeer _localPeer=new JGroupsLocalPeer(this, _clusterState);
-    protected final JGroupsAddress _localAddress=(JGroupsAddress)_localPeer.getAddress();
     // should probably be initialised in start() and dumped in stop()
-    protected final Latch _latch=new Latch();
-    protected final Latch _initLatch=new Latch();
+    protected final Latch _viewLatch=new Latch();
     protected final ViewThread _viewThread=new ViewThread("WADI/JGroups View Thread");
-
-    // initialised in ctor
-    protected final String _clusterName;
-    protected final JGroupsTopic _clusterTopic;
     protected final Channel _channel;
-    protected final String _localPeerName;
-
     // initialised in init()
     protected JGroupsDispatcher _dispatcher;
-    protected Address _localJGAddress;
+    protected org.jgroups.Address _localJGAddress;
 
-    // mutable...
-    protected ElectionStrategy _electionStrategy; // should not be mutable - TODO
-    protected Peer _coordinator;
-
-    public JGroupsCluster(String clusterName, String localPeerName) throws ChannelException {
-        super();
-        _clusterName=clusterName;
-        _clusterTopic=new JGroupsTopic(_clusterName);
-        _localPeerName=localPeerName;
-        _channel=new JChannel("default.xml"); // uses an xml stack config file from JGroups distro - minimal
+    public JGroupsCluster(String clusterName, String localPeerName, String config) throws ChannelException {
+        super(clusterName, localPeerName);
+        _clusterPeer=new JGroupsClusterPeer(this);
+        _localPeer=new JGroupsLocalPeer(this);
+        ((JGroupsLocalPeer)_localPeer).setAttribute(Peer._peerNameKey, _localPeerName);
+        _channel=new JChannel(config);
         _cluster.set(this); // set ThreadLocal
     }
 
     // 'Object' API
 
     public String toString() {
-        return _prefix+_localPeerName+"@"+_clusterName+_suffix;
+        return _prefix+_localPeerName+"/"+_clusterName+_suffix;
     }
 
     // 'Cluster' API
 
-    public Map getRemotePeers() {
-        return Collections.unmodifiableMap(_jgaddressToPeer); // could we cache this ? - TODO
-    }
-
-    public void addClusterListener(ClusterListener listener) {
-        synchronized (_clusterListeners) {
-            _clusterListeners.add(listener);
-        }
-    }
-
-    public void removeClusterListener(ClusterListener listener) {
-        synchronized (_clusterListeners) {
-            _clusterListeners.remove(listener);
-        }
-    }
-
     public LocalPeer getLocalPeer() {
         return _localPeer;
-    }
-
-    public void setElectionStrategy(ElectionStrategy strategy) {
-        _electionStrategy=strategy;
-    }
-
-    public boolean waitOnMembershipCount(int membershipCount, long timeout) throws InterruptedException {
-        assert (membershipCount>0);
-        membershipCount--; // remove ourselves from the equation...
-        long expired=0;
-        while ((getRemotePeers().size())!=membershipCount && expired<timeout) {
-            Thread.sleep(1000);
-            expired+=1000;
-        }
-        return (getRemotePeers().size())==membershipCount;
     }
 
     public void start() throws ClusterException {
@@ -155,25 +99,26 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
             long joinTime=System.currentTimeMillis();
             _log.info(_localPeerName+" - "+"connected to channel");
             _localJGAddress=_channel.getLocalAddress();
-            _localPeer.init(_localJGAddress);
-            _clusterState.put(_localJGAddress, new HashMap()); // initialise our distributed state
+            ((JGroupsLocalPeer)_localPeer).init(_localJGAddress);
             Map localState=_localPeer.getState();
-            localState.put(_nodeNameKey, _localPeerName);
-            localState.put(_birthTimeKey, new Long(joinTime));
-            _jgAddressToAddress.put(_localJGAddress, _localAddress);
-            _log.trace(_localPeerName+" - "+"releasing latch...");
-            _latch.release(); // allow new view to be accepted
-            _log.trace(_localPeerName+" - "+"...released latch");
+            localState.put(Peer._peerNameKey, _localPeerName);
+            localState.put(Peer._birthTimeKey, new Long(joinTime));
+            _backendToPeer.put(_localJGAddress, _localPeer);
         } catch (Exception e) {
             _log.warn("unexpected JGroups problem", e);
             throw new ClusterException(e);
         }
 
-        // we don't really want anyone else running until we have initialised properly... - how ?
-        _log.trace(_localPeerName+" - "+"releasing initLatch...");
-        _initLatch.release();
-        _log.trace(_localPeerName+" - "+"...released initLatch");
+        // start accepting new views...
         _viewThread.start();
+        // wait for the first view to be accepted before continuing...
+        if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"acquiring viewLatch...");
+        try {
+            _viewLatch.acquire();
+        } catch (InterruptedException e) {
+            _log.warn("unexpected interruption", e);
+        }
+        if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"...acquired viewLatch");
     }
 
     public void stop() throws ClusterException {
@@ -186,7 +131,6 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
         //_clusterTopic=null;
         //_localDestination=null;
         //_localAddress=null;
-        _clusterState.clear();
     }
 
     // JGroups MembershipListener API
@@ -240,74 +184,49 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
         }
     }
 
-    public void nextView(Set newMembers) {        
-        // must not run until we are initialised...
-        _log.trace(_localPeerName+" - "+"acquiring initLatch (viewAccepted)...");
-        try {_initLatch.acquire();} catch (Exception e) {_log.error("problem syncing Cluster initialisation", e);}
-        _log.trace(_localPeerName+" - "+"...acquired initLatch (viewAccepted)");
-        // we don't want to overtake the thread that is initialising this object...
-        try {
-            _log.trace(_localPeerName+" - "+"acquiring latch (viewAccepted)...");
-            _latch.acquire();
-            _log.trace(_localPeerName+" - "+"...acquired latch (viewAccepted)");
-        } catch (InterruptedException e) {
-            // hmmm...
-        }
-
+    public void nextView(Set newMembers) {
         Set joiners=new TreeSet();
         Set leavers=new TreeSet();
 
-        synchronized (_jgaddressToPeer) {
+        newMembers.remove(_localJGAddress);
+        // this is being locked for quite a while - can we improve ? - TODO
+        synchronized (_addressToPeer) {
             // joiners :
 
             for (Iterator i=newMembers.iterator(); i.hasNext(); ) {
-                Address address=(Address)i.next();
-                JGroupsAddress jgaddress=JGroupsAddress.get(JGroupsCluster.this, address);
-                if (jgaddress!=_localAddress) {
-                    if (_clusterState.get(address)==null) {
-                        // fetch state - a quick round trip to fetch the distributed data for this node - yeugh !
-                        // may cause problems if dispatcher note yet initialised...
-                        try {
-                            long timeout=100000;
-                            JGroupsMessage tmp=(JGroupsMessage)_dispatcher.exchangeSend(jgaddress, new StateRequest(_localPeer.getState()), timeout);
-                            Map state=((StateResponse)tmp.getPayload()).getState();
-                            synchronized (_clusterState) {
-                                _clusterState.put(address, state);
-                            }
+                org.jgroups.Address jgaddress=(org.jgroups.Address)i.next();
+                JGroupsPeer peer=(JGroupsPeer)getPeer(jgaddress);
+                if (peer.getState().isEmpty()) {
+                    // fetch state - a quick round trip to fetch the distributed data for this node - yeugh !
+                    try {
+                        long timeout=100000; // TODO - parameterise...
+                        JGroupsMessage tmp=(JGroupsMessage)_dispatcher.exchangeSend(peer, new StateRequest(_localPeer.getState()), timeout);
+                        Map state=((StateResponse)tmp.getPayload()).getState();
+                        peer.setState(state);
 
-                            Peer peer=jgaddress.getPeer();
-                            // insert node
-                            synchronized (_jgaddressToPeer) {
-                                _jgaddressToPeer.put(jgaddress, peer);
-                            }
-
-                            joiners.add(peer);
-                        } catch (Exception e) {
-                            _log.warn("problem retrieving remote state for fresh joiner...", e);
-                            return;
-                        }
+                        // insert node
+                        synchronized (_addressToPeer) {_addressToPeer.put(peer, peer);}
+                        joiners.add(peer);
+                    } catch (Exception e) {
+                        _log.warn("problem retrieving remote state for fresh joiner...", e);
+                        return;
                     }
                 }
             }
 
             // leavers :
 
-            for (Iterator i=_jgaddressToPeer.entrySet().iterator(); i.hasNext(); ) {
+            for (Iterator i=_addressToPeer.entrySet().iterator(); i.hasNext(); ) {
                 Map.Entry entry=(Map.Entry)i.next();
-                JGroupsAddress jgaddress=(JGroupsAddress)entry.getKey();
+                JGroupsPeer address=(JGroupsPeer)entry.getKey();
                 Peer peer=(Peer)entry.getValue();
-                if (!newMembers.contains(jgaddress.getAddress())) {
+                if (!newMembers.contains(address.getJGAddress())) {
                     leavers.add(peer);
-                    i.remove(); // remove from _jgAddressToPeer
-                    // garbage collect this nodes share of cluster state...
-                    synchronized (_clusterState) {
-                        _clusterState.remove(jgaddress.getAddress());
-                    }
+                    i.remove(); // remove from _AddressToPeer
                     // remove peer
-                    _jgAddressToAddress.remove(jgaddress.getAddress());
+                    synchronized (_backendToPeer) {_backendToPeer.remove(address.getJGAddress());}
                 }
             }
-
         }
 
         // ensure that all joiners are entered into our model...
@@ -315,48 +234,31 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
         joiners=Collections.unmodifiableSet(joiners);
         leavers=Collections.unmodifiableSet(leavers);
 
+        // notify listeners of changed membership
+        notifyMembershipChanged(joiners, leavers);
+
         // elect coordinator - should be run before onMembershipChanged called, since the coordinator might have to take specific action...
         runCoordinatorElection();
 
-        // notify listeners of changed membership
-        if (_clusterListeners.size()>0) {
-            for (int j=0; j<_clusterListeners.size(); j++)
-                ((ClusterListener)_clusterListeners.get(j)).onMembershipChanged(this, joiners, leavers);
-        }
-    }
-
-
-    protected void runCoordinatorElection() {
-        if (_clusterListeners.size()>0 && _electionStrategy!=null) {
-            Peer coordinator=_localPeer;
-            if (_jgaddressToPeer.size()>0) {
-                coordinator=_electionStrategy.doElection(JGroupsCluster.this);
-            }
-            if (_coordinator==null || !_coordinator.equals(coordinator)) {
-                _coordinator=coordinator;
-                ClusterEvent event=new ClusterEvent(JGroupsCluster.this, coordinator, ClusterEvent.COORDINATOR_ELECTED);
-                for (int i=0; i<_clusterListeners.size(); i++)
-                    ((ClusterListener)_clusterListeners.get(i)).onCoordinatorChanged(event);
-            }
-        }
+        // release latch so that start() can complete
+        if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"releasing viewLatch (viewAccepted)...");
+        _viewLatch.release();
+        if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"...released viewLatch (viewAccepted)");
     }
 
     // JGroups 'MembershipListener' API
 
-    public void suspect(Address suspected_mbr) {
-        _log.trace(_localPeerName+" - "+"acquiring latch (suspect)...");
-        try {_initLatch.acquire();} catch (Exception e) {_log.error("problem syncing Cluster initialisation", e);}
-        _log.trace(_localPeerName+" - "+"...acquired latch (suspect)");
+    public void suspect(org.jgroups.Address suspected_mbr) {
         if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"handling suspect("+suspected_mbr+")...");
         if (_log.isWarnEnabled()) _log.warn("cluster suspects member may have been lost: " + suspected_mbr);
-        _log.trace(_localPeerName+" - "+"...suspect() handled");
+        if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"...suspect() handled");
     }
 
     // Block sending and receiving of messages until viewAccepted() is called
     public void block() {
-        _log.trace(_localPeerName+" - "+"handling block()...");
+        if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"handling block()...");
         // NYI
-        _log.trace(_localPeerName+" - "+"... block() handled");
+        if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"... block() handled");
 
     }
 
@@ -364,24 +266,20 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
 
     public void receive(org.jgroups.Message msg) {
         // TODO: this may be a little contentious - think of a better way...
-        _log.trace(_localPeerName+" - "+_localPeer+" - RECEIVED SOMETHING: "+msg);
-        _log.trace(_localPeerName+" - "+"acquiring initLatch (receive)...");
-        try {_initLatch.acquire();} catch (Exception e) {_log.error("problem syncing Cluster initialisation", e);}
-        _log.trace(_localPeerName+" - "+"...acquired initLatch (receive)");
+        if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+_localPeer+" - RECEIVED SOMETHING: "+msg);
         synchronized (_channel) {
-            Address src=msg.getSrc();
-            Address dest=msg.getDest();
+            org.jgroups.Address src=msg.getSrc();
+            org.jgroups.Address dest=msg.getDest();
             if (_excludeSelf && (dest==null || dest.isMulticastAddress()) && src==_localJGAddress) {
-                _log.debug(_localPeerName+" - "+"ignoring message from self: "+msg);
+                if (_log.isDebugEnabled()) _log.debug(_localPeerName+" - "+"ignoring message from self: "+msg);
             } else {
                 _cluster.set(this); // setup a ThreadLocal to be read during deserialisation...
                 Object o=msg.getObject();
 
                 JGroupsMessage message=(JGroupsMessage)o;
                 message.setCluster(this);
-                org.codehaus.wadi.group.Address replyTo=getAddress(src);
-                message.setReplyTo(replyTo);
-                message.setAddress(getAddress(dest));
+                message.setReplyTo((JGroupsPeer)getPeer(src));
+                message.setAddress((JGroupsPeer)getPeer(dest));
                 _dispatcher.onMessage(message);
             }
         }
@@ -395,36 +293,26 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
         throw new UnsupportedOperationException("we do not use JGroups' state exchange protocol");
     }
 
-    public org.codehaus.wadi.group.Address getAddress() {
-        return _clusterTopic;
+    // we should be able to pull this up into AbstractCluster...
+        public Address getAddress() {
+        return (JGroupsPeer)_clusterPeer;
     }
 
     // WADI 'JGroupsClusterMessageListener' API
 
-
     public void onMessage(Message message, StateUpdate update) throws Exception {
-        JGroupsAddress jgaddress=(JGroupsAddress)message.getReplyTo();
-        Peer node=jgaddress.getPeer();
-        Map state=update.getState();
-        if (node instanceof JGroupsRemotePeer) {
-            ((JGroupsRemotePeer)node).setState(state);
-            if (_clusterListeners.size()>0) {
-                ClusterEvent event=new ClusterEvent(this, node, ClusterEvent.PEER_UPDATED);
-                for (int i=0; i<_clusterListeners.size(); i++)
-                    ((ClusterListener)_clusterListeners.get(i)).onPeerUpdated(event);
-            }
-        } else {
-            _log.warn(_localPeerName+" - "+"state update from non-remote node: "+node);
-        }
+        // incorporate incoming state into our model
+        JGroupsRemotePeer peer=(JGroupsRemotePeer)message.getReplyTo();
+        peer.setState(update.getState());
+        notifyPeerUpdated(peer);
     }
 
     public void onMessage(Message message, StateRequest request) throws Exception {
-        Map remoteState=request.getState();
-        synchronized (_clusterState) {
-            _clusterState.put(((JGroupsAddress)message.getReplyTo()).getAddress(), remoteState);
-        }
-        Map localState=_localPeer.getState();
-        _dispatcher.reply(message, new StateResponse(localState));
+        // incorporate incoming state into our model
+        JGroupsRemotePeer peer=(JGroupsRemotePeer)message.getReplyTo();
+        peer.setState(request.getState());
+        // send our own state back in response
+        _dispatcher.reply(message, new StateResponse(_localPeer.getState()));
     }
 
     // 'JGroupsCluster' API
@@ -436,19 +324,15 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
         endpointBuilder.addCallback(_dispatcher, StateResponse.class);
     }
 
-    public Map getClusterState() {
-        return _clusterState;
-    }
-
-    public void send(org.codehaus.wadi.group.Address destination, Message message) throws MessageExchangeException {
+    public void send(Address target, Message message) throws MessageExchangeException {
         JGroupsMessage msg=(JGroupsMessage)message;
-        JGroupsAddress dest=(JGroupsAddress)destination;
+        JGroupsPeer tgt=(JGroupsPeer)target;
         try {
             msg.setCluster(this);
-            msg.setAddress(destination);
-            if (_messageLog.isTraceEnabled()) _messageLog.trace("outgoing: "+msg.getPayload()+" {"+_localAddress.getName()+"->"+dest.getName()+"} - "+msg.getIncomingCorrelationId()+"/"+msg.getOutgoingCorrelationId());
+            msg.setAddress(target);
+            if (_messageLog.isTraceEnabled()) _messageLog.trace("outgoing: "+msg.getPayload()+" {"+_localPeer.getName()+"->"+tgt.getName()+"} - "+msg.getTargetCorrelationId()+"/"+msg.getSourceCorrelationId());
             msg.setCluster(null);
-            _channel.send(dest.getAddress(), _localJGAddress, msg);
+            _channel.send(tgt.getJGAddress(), _localJGAddress, msg);
         } catch (Exception e) {
             _log.warn("unexpected JGroups problem", e);
             throw new MessageExchangeException(e);
@@ -459,33 +343,30 @@ public class JGroupsCluster implements Cluster, MembershipListener, MessageListe
         return _channel;
     }
 
-    public int getPeerCount() {
-        synchronized (_jgaddressToPeer) {
-            return _jgaddressToPeer.size()+1; // TODO - resolve - getNumNodes() returns N, but getNodes() returns N-1
+
+    
+    protected Peer create(Object backend) {
+        org.jgroups.Address jgAddress=(org.jgroups.Address)backend;
+        JGroupsPeer peer;
+        if (jgAddress.isMulticastAddress()) {
+            peer=(JGroupsPeer)_clusterPeer;
+            // I can't find a way to initialise the clusterAddress from the client side
+            // so I wait to receive a message, sent to the cluster, then use the address from that - clumsy
+            if (peer.getJGAddress()==null)
+                peer.init(jgAddress);
+        } else {
+            peer=new JGroupsRemotePeer(this, jgAddress);
+        }
+        return peer;
+    }
+    
+    protected void runCoordinatorElection() {
+        if (_clusterListeners.size()>0 && _electionStrategy!=null) {
+            Peer coordinator=getLocalPeer();
+            if (_addressToPeer.size()>0) {
+                coordinator=_electionStrategy.doElection(this);
+            }
+            notifyCoordinatorChanged(coordinator);
         }
     }
-
-    public Address getLocalAddress() {
-        return _localJGAddress;
-    }
-
-    public JGroupsAddress getLocalDestination() {
-        return _localAddress;
-    }
-
-    /**
-     * Translate a JGroups Address into an ActiveCluster Destination.
-     * @param address
-     * @return
-     */
-    public JGroupsAddress getAddress(Address address) {
-        JGroupsAddress jgaddress;
-        if (address==null || address.isMulticastAddress())
-            jgaddress=_clusterTopic;
-        else
-            jgaddress=JGroupsAddress.get(this, address);
-
-        return jgaddress;
-    }
-
 }

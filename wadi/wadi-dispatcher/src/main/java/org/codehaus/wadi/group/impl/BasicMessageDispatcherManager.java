@@ -85,9 +85,9 @@ class BasicMessageDispatcherManager implements MessageDispatcherManager {
                             " {"+ message.getReplyTo() +
                             "->"+ message.getAddress() + 
                             "} - " +
-                            message.getIncomingCorrelationId() + 
+                            message.getTargetCorrelationId() + 
                             "/" +
-                            message.getOutgoingCorrelationId());
+                            message.getSourceCorrelationId());
                     }
                     synchronized (dispatcher) {
                         dispatchAtLeastOnce = true;

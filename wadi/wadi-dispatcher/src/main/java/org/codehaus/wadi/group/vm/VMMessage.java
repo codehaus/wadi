@@ -41,19 +41,19 @@ public class VMMessage implements Message {
         this.outgoingCorrelationId = prototype.outgoingCorrelationId;
     }
     
-    public String getIncomingCorrelationId() {
+    public String getTargetCorrelationId() {
         return incomingCorrelationId;
     }
 
-    public void setIncomingCorrelationId(String correlationId) {
+    public void setTargetCorrelationId(String correlationId) {
         this.incomingCorrelationId = correlationId;
     }
 
-    public String getOutgoingCorrelationId() {
+    public String getSourceCorrelationId() {
         return outgoingCorrelationId;
     }
 
-    public void setOutgoingCorrelationId(String correlationId) {
+    public void setSourceCorrelationId(String correlationId) {
         this.outgoingCorrelationId = correlationId;
     }
 

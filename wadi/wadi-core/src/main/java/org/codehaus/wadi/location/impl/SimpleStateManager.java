@@ -148,7 +148,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 			MoveSMToIM request=new MoveSMToIM(immotable);
 			// send on state from StateMaster to InvocationMaster...
 			if (_log.isTraceEnabled()) _log.trace("exchanging MoveSMToIM between: "+_config.getPeerName(sm)+"->"+_config.getPeerName(im));
-			Message message2=dispatcher.exchangeSend(sm, im, request, timeout, _get.getIMCorrelationId());
+			Message message2=dispatcher.exchangeSend(im, request, timeout, _get.getIMCorrelationId());
 			// should receive response from IM confirming safe receipt...
 			if (message2==null) {
                 // TODO throw exception
@@ -274,7 +274,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 					Address sm=_dispatcher.getCluster().getLocalPeer().getAddress();
 					long timeout=_config.getInactiveTime();
 					_log.info("sending 0 bytes to : "+imName);
-					Message ignore=_dispatcher.exchangeSend(sm, im, req, timeout, request.getIMCorrelationId());
+					Message ignore=_dispatcher.exchangeSend(im, req, timeout, request.getIMCorrelationId());
 					_log.info("received: "+ignore);
 					// StateMaster replies to PartitionMaster indicating failure...
 					_log.info("reporting failure to PM");

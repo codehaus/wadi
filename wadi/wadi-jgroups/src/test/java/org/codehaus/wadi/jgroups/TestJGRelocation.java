@@ -13,7 +13,7 @@ public class TestJGRelocation extends AbstractTestRelocation {
 	public void testSessionRelocation() throws Exception {
 		String clusterName="TEST";
 		long timeout=5000;
-		testSessionRelocation(new JGroupsDispatcher("red", clusterName, timeout), new JGroupsDispatcher("green", clusterName, timeout));
+		testSessionRelocation(new JGroupsDispatcher("red", clusterName, timeout, "default.xml"), new JGroupsDispatcher("green", clusterName, timeout, "default.xml"));
 	}
 	
 }

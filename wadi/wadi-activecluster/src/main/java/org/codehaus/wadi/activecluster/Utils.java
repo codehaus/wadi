@@ -14,19 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.jgroups;
+package org.codehaus.wadi.activecluster;
 
-import org.codehaus.wadi.group.AbstractTestGroup;
-import org.codehaus.wadi.group.Dispatcher;
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision: 1647 $
+ */
+public class Utils {
 
-public class TestJGGroup extends AbstractTestGroup {
-    
-    public TestJGGroup(String name) {
-        super(name);
+    public static String basename(Class clazz) {
+        String name=clazz.getName();
+        int i=name.lastIndexOf('.');
+        return name.substring(i+1);
     }
     
-    public DispatcherFactory getDispatcherFactory() {
-        return new DispatcherFactory() {public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {return new JGroupsDispatcher(peerName, "TEST", 5000, "default.xml");}}; // TODO - clusterName ?
-    }
-
 }
