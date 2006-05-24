@@ -76,6 +76,7 @@
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude> <!-- stop surefire from trying to run nested classes -->
 	    <exclude implementation="java.lang.String">**/TestACReplicationManager.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestACReplicationContextualiser.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestACEvacuation.java</exclude>
 	  </excludes>
 	  <forkMode>pertest</forkMode> <!-- We have to run these tests in their own JVM: See JIRA WADI 76 -->
 	</configuration>
