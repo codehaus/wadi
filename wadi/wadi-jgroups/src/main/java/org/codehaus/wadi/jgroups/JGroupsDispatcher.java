@@ -44,9 +44,9 @@ public class JGroupsDispatcher extends AbstractDispatcher {
   protected Address _localAddress;
   protected MessageDispatcher _dispatcher;
 
-  public JGroupsDispatcher(String nodeName, String clusterName, long inactiveTime) throws ChannelException {
-    super(clusterName, nodeName, inactiveTime);
-    _cluster=new JGroupsCluster(clusterName);
+  public JGroupsDispatcher(String localPeerName, String clusterName, long inactiveTime) throws ChannelException {
+    super(inactiveTime);
+    _cluster=new JGroupsCluster(clusterName, localPeerName);
     
     // TODO - where is this method.
 //    register(_cluster, "onMessage", StateUpdate.class);
@@ -62,22 +62,22 @@ public class JGroupsDispatcher extends AbstractDispatcher {
   }
 
   public void start() throws MessageExchangeException {
-    try {
-        _cluster.start();
-    } catch (ClusterException e) {
-        throw new MessageExchangeException(e);
-    }
-    _localAddress=_cluster.getLocalAddress();
-    _dispatcher.start();
+      _dispatcher.start();
+      try {
+          _cluster.start();
+      } catch (ClusterException e) {
+          throw new MessageExchangeException(e);
+      }
+      _localAddress=_cluster.getLocalAddress();
   }
 
   public void stop() throws MessageExchangeException {
-    _dispatcher.stop();
-    try {
-        _cluster.stop();
-    } catch (ClusterException e) {
-        throw new MessageExchangeException(e);
-    }
+      try {
+          _cluster.stop();
+      } catch (ClusterException e) {
+          throw new MessageExchangeException(e);
+      }
+      _dispatcher.stop();
   }
 
   public int getNumNodes() {
@@ -93,14 +93,14 @@ public class JGroupsDispatcher extends AbstractDispatcher {
   }
 
   protected Peer getNode(Address address) {
-    return _cluster.getAddress(address).getNode();
+    return _cluster.getAddress(address).getPeer();
   }
 
   public String getPeerName(org.codehaus.wadi.group.Address address) {
 	JGroupsAddress d=(JGroupsAddress)address;
 	assert(d!=null);
 	assert(_cluster!=null);
-	if (d.getNode()==null && d!=_cluster.getAddress()) {
+	if (d.getPeer()==null && d!=_cluster.getAddress()) {
 		// the Destination may have come in over the wire and not have been initialised...
 		_log.warn("UNINITIALISED DESTINATION - from over wire");
 		d.init(getNode(d.getAddress()));
@@ -152,4 +152,5 @@ public class JGroupsDispatcher extends AbstractDispatcher {
     public LocalPeer getLocalPeer() {
         return _cluster.getLocalPeer();
     }
+    
 }

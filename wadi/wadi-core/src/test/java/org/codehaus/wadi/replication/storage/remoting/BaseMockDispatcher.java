@@ -27,7 +27,6 @@ import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Quipu;
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
 /**
  * 
@@ -143,7 +142,7 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public String getPeerName() {
+    public String getLocalPeerName() {
         throw new UnsupportedOperationException();
     }
 

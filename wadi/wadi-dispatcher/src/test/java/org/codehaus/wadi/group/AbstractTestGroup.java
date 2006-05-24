@@ -17,12 +17,15 @@
 package org.codehaus.wadi.group;
 
 import java.util.Map;
+import java.util.Set;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.impl.AbstractMsgDispatcher;
 import org.codehaus.wadi.group.impl.RendezVousMsgDispatcher;
+import org.codehaus.wadi.group.impl.SeniorityElectionStrategy;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
+import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
 
 public abstract class AbstractTestGroup extends TestCase {
 
@@ -53,33 +56,45 @@ public abstract class AbstractTestGroup extends TestCase {
 
         public int _numPeers=0;
         public int _numUpdates=0;
-        public int _numChanges=0;
-
-        public void onPeerAdded(ClusterEvent event) {
-            _numPeers++;
-            _log.info("onPeerAdded: "+_numPeers);
-        }
+        public WaitableInt _numChanges=new WaitableInt(0);
+        public Peer _lastCoordinator=null;
 
         public void onPeerUpdated(ClusterEvent event) {
             _numUpdates++;
         }
 
-        public void onPeerRemoved(ClusterEvent event) {
-            _numPeers--;
-            _log.info("onPeerAdded: "+_numPeers);
-        }
-
-        public void onPeerFailed(ClusterEvent event) {
-            _numPeers--;
-            _log.info("onPeerAdded: "+_numPeers);
-        }
-
         public void onCoordinatorChanged(ClusterEvent event) {
-            _numChanges++;
+            Cluster cluster=event.getCluster();
+            Peer coordinator=event.getPeer();
+            _lastCoordinator=coordinator;
+            _numChanges.increment();
+            _log.info(cluster.getLocalPeer().getName()+" - onCoordinatorChanged: "+coordinator);
+        }
+        
+        public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
+            _numPeers+=joiners.size();
+            _numPeers-=leavers.size();
+            _log.info(cluster.getLocalPeer().getName()+" - onMembershipChanged: joiners:"+joiners+", leavers:"+leavers);
         }
 
     }
 
+    public class CoordinatorAssertion implements Runnable {
+        
+        protected final Peer _peer;
+        protected final MyClusterListener _listener;
+        
+        public CoordinatorAssertion(Peer peer, MyClusterListener listener) {
+            _peer=peer;
+            _listener=listener;
+        }
+        
+        public void run() {
+            assertTrue(_listener._lastCoordinator.equals(_peer)); // later use ==
+        }
+        
+    }
+    
     public void testMembership() throws Exception {
         String clusterName="org.codehaus.wadi.cluster.TEST-"+System.currentTimeMillis();
 
@@ -90,20 +105,31 @@ public abstract class AbstractTestGroup extends TestCase {
         
         MyClusterListener listener0=new MyClusterListener();
         Cluster cluster0=dispatcher0.getCluster();
+        cluster0.setElectionStrategy(new SeniorityElectionStrategy());
         cluster0.addClusterListener(listener0);
+        
+        dispatcher0.start();
+        assertTrue(cluster0.waitOnMembershipCount(1, 10000));
+        listener0._numChanges.whenEqual(1, new CoordinatorAssertion(cluster0.getLocalPeer(), listener0));
         
         Dispatcher dispatcher1=_dispatcherFactory.create(clusterName, "green", 5000);
         dispatcher1.init(config);
         Cluster cluster1=dispatcher1.getCluster();
+        cluster1.setElectionStrategy(new SeniorityElectionStrategy());
         MyClusterListener listener1=new MyClusterListener();
         cluster1.addClusterListener(listener1);
-
-        dispatcher0.start();
-        assertTrue(cluster0.waitOnMembershipCount(1, 10000));
 
         dispatcher1.start();
         assertTrue(cluster0.waitOnMembershipCount(2, 10000));
         assertTrue(cluster1.waitOnMembershipCount(2, 10000));
+        assertTrue(listener0._numChanges.compareTo(1)==0);
+        assertTrue(listener0._lastCoordinator.equals(cluster0.getLocalPeer()));
+        // red has still only been notified once about coordinatorship - and still thinks that it is the coordinator...
+        listener0._numChanges.whenEqual(1, new CoordinatorAssertion(cluster0.getLocalPeer(), listener0));
+        // green has only been notified once about coordinatorship - and thinks that red is the coordinator...
+        listener1._numChanges.whenEqual(1, new CoordinatorAssertion((Peer)cluster1.getRemotePeers().values().iterator().next(), listener1));
+        assertTrue(listener0._numChanges.compareTo(1)==0);
+        assertTrue(listener0._lastCoordinator.equals(cluster0.getLocalPeer()));
 
         assertEquals(1, listener0._numPeers);
         assertEquals(1, cluster0.getRemotePeers().size());
@@ -119,6 +145,8 @@ public abstract class AbstractTestGroup extends TestCase {
         
         dispatcher1.stop();
         assertTrue(cluster0.waitOnMembershipCount(1, 10000));
+        assertTrue(listener0._numChanges.compareTo(1)==0);
+        assertTrue(listener0._lastCoordinator.equals(cluster0.getLocalPeer()));
 
         assertEquals(0, listener0._numPeers);
         assertEquals(0, cluster0.getRemotePeers().size());
@@ -206,7 +234,7 @@ public abstract class AbstractTestGroup extends TestCase {
         dispatcher1.register(sync);
         Peer peer2=(Peer)cluster0.getRemotePeers().values().iterator().next();
         Address target=peer2.getAddress();
-        Message reply=dispatcher0.exchangeSend(target, target, 500000); // red sends green its own address and green sends it back
+        Message reply=dispatcher0.exchangeSend(target, target, 5000); // red sends green its own address and green sends it back
         Address payload=(Address)reply.getPayload();
         assertTrue(target==payload);
         dispatcher1.unregister(sync, 10, 500); // what are these params for ?

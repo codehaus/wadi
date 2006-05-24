@@ -24,7 +24,7 @@ import java.util.Map;
  * @version $Revision: 1563 $
  */
 public interface Dispatcher extends MessageListener {
-
+    
     void init(DispatcherConfig config) throws Exception;
 
     void register(ServiceEndpoint internalDispatcher);
@@ -95,7 +95,7 @@ public interface Dispatcher extends MessageListener {
 
 	Message createMessage();
 
-	String getPeerName();
+	String getLocalPeerName();
 	
     long getInactiveTime();
 

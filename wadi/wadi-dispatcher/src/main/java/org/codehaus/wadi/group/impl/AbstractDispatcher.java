@@ -40,8 +40,6 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 public abstract class AbstractDispatcher implements Dispatcher {
     protected final static String _nodeNameKey = "nodeName";
 	
-	protected final String _nodeName;
-	protected final String _clusterName;
 	protected final long _inactiveTime;
 	protected final ThreadPool _executor;
 	protected final Log _messageLog = LogFactory.getLog("org.codehaus.wadi.MESSAGES");
@@ -51,17 +49,15 @@ public abstract class AbstractDispatcher implements Dispatcher {
 
     private final MessageDispatcherManager inboundMessageDispatcher; 
 
-    public AbstractDispatcher(String clusterName, String nodeName, long inactiveTime, ThreadPool executor) {
-        _nodeName=nodeName;
-        _clusterName=clusterName;
+    public AbstractDispatcher(long inactiveTime, ThreadPool executor) {
         _inactiveTime=inactiveTime;
         _executor = executor;
         
         inboundMessageDispatcher = new BasicMessageDispatcherManager(this, _executor);
     }
 
-	public AbstractDispatcher(String clusterName, String nodeName, long inactiveTime) {
-        this(clusterName, nodeName, inactiveTime, new PooledExecutorAdapter(10));
+	public AbstractDispatcher(long inactiveTime) {
+        this(inactiveTime, new PooledExecutorAdapter(10));
 	}
 	
 	public void init(DispatcherConfig config) throws Exception {
@@ -223,10 +219,6 @@ public abstract class AbstractDispatcher implements Dispatcher {
         send(message.getReplyTo(), destination, message.getOutgoingCorrelationId(), body);
 	}
 
-	public String getPeerName() {
-		return _nodeName;
-	}
-	
 	public long getInactiveTime() {
 		return _inactiveTime;
 	}

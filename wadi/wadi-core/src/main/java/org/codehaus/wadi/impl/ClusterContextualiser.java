@@ -16,7 +16,9 @@
  */
 package org.codehaus.wadi.impl;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,6 +42,7 @@ import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.StateManager;
 import org.codehaus.wadi.location.impl.DIndex;
 
@@ -247,28 +250,25 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 	// ClusterListener
 
-	public void onPeerAdded(ClusterEvent event) {
-        Map state=event.getPeer().getState();
-        String nodeName=(String)state.get(_nodeNameKey);
-        if (_log.isTraceEnabled()) _log.trace("node joined: " + nodeName);
-	}
+    public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
+        for (Iterator i=joiners.iterator(); i.hasNext() ;) {
+            Peer peer=(Peer)i.next();
+            Map state=peer.getState();
+            String nodeName=(String)state.get(_nodeNameKey);
+            if (_log.isTraceEnabled()) _log.trace("peer joined: " + nodeName);
+        }
+        for (Iterator i=leavers.iterator(); i.hasNext() ;) {
+            Peer peer=(Peer)i.next();
+            Map state=peer.getState();
+            String nodeName=(String)state.get(_nodeNameKey);
+            if (_log.isTraceEnabled()) _log.trace("peer left: " + nodeName);
+        }
+    }
 
 	public void onPeerUpdated(ClusterEvent event) {
         Map state=event.getPeer().getState();
         String nodeName=(String)state.get(_nodeNameKey);
         if (_log.isTraceEnabled()) _log.trace("node updated: " + nodeName);
-	}
-
-	public void onPeerRemoved(ClusterEvent event) {
-		Map state=event.getPeer().getState();
-		String nodeName=(String)state.get(_nodeNameKey);
-		if (_log.isTraceEnabled()) _log.trace("node left: " + nodeName);
-	}
-
-	public void onPeerFailed(ClusterEvent event)  {
-		Map state=event.getPeer().getState();
-		String nodeName=(String)state.get(_nodeNameKey);
-		if (_log.isTraceEnabled()) _log.trace("node failed: " + nodeName);
 	}
 
 	public void onCoordinatorChanged(ClusterEvent event) {

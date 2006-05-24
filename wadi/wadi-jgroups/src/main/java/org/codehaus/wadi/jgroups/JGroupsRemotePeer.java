@@ -27,25 +27,25 @@ import org.codehaus.wadi.group.Peer;
 public class JGroupsRemotePeer implements Peer {
 
   protected final JGroupsClusterMessageListener _cluster;
-  protected final JGroupsAddress _destination;
+  protected final JGroupsAddress _address;
   protected Map _clusterState;
 
-  public JGroupsRemotePeer(JGroupsClusterMessageListener cluster, JGroupsAddress destination, Map state) {
+  public JGroupsRemotePeer(JGroupsClusterMessageListener cluster, JGroupsAddress address, Map state) {
     super();
     _cluster=cluster;
-    _destination=destination;
+    _address=address;
     _clusterState=state;
   }
 
   // 'Node' api
 
   public Address getAddress() {
-    return _destination;
+    return _address;
   }
 
   public Map getState() {
     synchronized (_clusterState) {
-      return (Map)_clusterState.get(_destination.getAddress());
+      return (Map)_clusterState.get(_address.getAddress());
     }
   }
 
@@ -69,8 +69,12 @@ public class JGroupsRemotePeer implements Peer {
 
   public void setState(Map state) {
     synchronized (_clusterState) {
-      _clusterState.put(_destination.getAddress(), state);
+      _clusterState.put(_address.getAddress(), state);
     }
+  }
+
+  public boolean equals(Object object) {
+      return (object instanceof JGroupsRemotePeer && ((JGroupsRemotePeer)object).getAddress()==_address);
   }
 
   protected static final String _prefix="<"+Utils.basename(JGroupsRemotePeer.class)+": ";
@@ -79,5 +83,5 @@ public class JGroupsRemotePeer implements Peer {
   public String toString() {
     return _prefix+getName()+_suffix;
   }
-
+  
 }

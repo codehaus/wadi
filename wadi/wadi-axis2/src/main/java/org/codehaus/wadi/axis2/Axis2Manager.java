@@ -55,7 +55,7 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
             // we should probably acquire this through some backptr from the container...
             String path=System.getProperty("axis2.repo")+"/server/wadi-axis2.xml";
             InputStream descriptor=new FileInputStream(path);
-            _wadi=(Manager)SpringManagerFactory.create(descriptor, "SessionManager", new AtomicallyReplicableSessionFactory(), new Axis2SessionWrapperFactory());
+            _wadi=SpringManagerFactory.create(descriptor, "SessionManager", new AtomicallyReplicableSessionFactory(), new Axis2SessionWrapperFactory());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

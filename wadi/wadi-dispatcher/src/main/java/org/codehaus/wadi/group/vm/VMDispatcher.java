@@ -32,14 +32,14 @@ public class VMDispatcher extends AbstractDispatcher {
     private final VMLocalCluster cluster;
     
     public VMDispatcher(VMCluster cluster, String nodeName, long inactiveTime) {
-        super(cluster.getName(), nodeName, inactiveTime);
+        super(inactiveTime);
         
         localNode = new VMLocalPeer(nodeName);
         this.cluster = new VMLocalCluster(cluster, localNode);
     }
     
     public VMDispatcher(String clusterName, String peerName, long inactiveTime) {
-        super(clusterName, peerName, inactiveTime);
+        super(inactiveTime);
         localNode = new VMLocalPeer(peerName);
         cluster = new VMLocalCluster(VMCluster.ensureCluster(clusterName), localNode);
     }

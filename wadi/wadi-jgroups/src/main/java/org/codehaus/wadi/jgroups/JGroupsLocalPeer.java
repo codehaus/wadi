@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.jgroups;
 
+import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,38 +30,37 @@ public class JGroupsLocalPeer implements LocalPeer {
 
   protected final Log _log=LogFactory.getLog(getClass());
   protected final JGroupsCluster _cluster;
-  protected JGroupsAddress _destination;
+  protected JGroupsAddress _address;
   protected Map _clusterState;
-  protected Map _localState;
+  protected Map _localState=new HashMap();
 
-  public JGroupsLocalPeer(JGroupsCluster cluster, Map state) {
+  public JGroupsLocalPeer(JGroupsCluster cluster, Map clusterState) {
     super();
     _cluster=cluster;
-    _clusterState=state;
+    _clusterState=clusterState;
   }
 
   // 'Node' api
 
   public Map getState() {
-    if (_destination==null) {
+    if (_address==null) {
       return _localState;
     } else
       synchronized (_clusterState) {
-        return (Map)_clusterState.get(_destination.getAddress());
+        return (Map)_clusterState.get(_address.getAddress());
       }
   }
 
   public Address getAddress() {
-    return _destination;
+    return _address;
   }
 
-  public void setDestination(JGroupsAddress destination) {
-    _destination=destination;
+  public void init(JGroupsAddress address) {
+    _address=address;
     synchronized (_clusterState) {
-      _clusterState.put(_destination.getAddress(), _localState);
+      _clusterState.put(_address.getAddress(), _localState);
       _localState=null;
     }
-
   }
 
   public String getName() {
@@ -79,25 +79,29 @@ public class JGroupsLocalPeer implements LocalPeer {
   // 'JGroupsLocalNode' api
 
   public void setState(Map state) throws MessageExchangeException {
-    if (_destination==null) {
+    if (_address==null) {
       // we have not yet been initialised...
       _localState=state;
     } else {
       _localState=null;
       Object tmp;
       synchronized (_clusterState) {
-        tmp=_clusterState.put(_destination.getAddress(), state);
+        tmp=_clusterState.put(_address.getAddress(), state);
       }
 
       if (tmp!=null) {
         Message message=new JGroupsMessage();
-        message.setReplyTo(_destination);
+        message.setReplyTo(_address);
         message.setPayload(new StateUpdate(state));
         _cluster.send(_cluster.getAddress(), message);
       }
     }
   }
 
+  public boolean equals(Object object) {
+      return (object instanceof JGroupsLocalPeer && ((JGroupsLocalPeer)object).getAddress()==_address);
+  }
+  
   protected static final String _prefix="<"+Utils.basename(JGroupsLocalPeer.class)+": ";
   protected static final String _suffix=">";
 

@@ -79,7 +79,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
     
 	public SimplePartitionManager(Dispatcher dispatcher, int numPartitions, Map distributedState, Callback callback, PartitionMapper mapper) {
 		_dispatcher=dispatcher;
-		_nodeName=_dispatcher.getPeerName();
+		_nodeName=_dispatcher.getLocalPeerName();
 		_pmSyncs=new StupidLockManager(_nodeName);
 		_log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
 		_numPartitions=numPartitions;

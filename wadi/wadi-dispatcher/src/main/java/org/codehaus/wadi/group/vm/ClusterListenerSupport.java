@@ -120,4 +120,17 @@ class ClusterListenerSupport {
             listener.onCoordinatorChanged(new ClusterEvent(cluster, node, ClusterEvent.COORDINATOR_ELECTED));
         }
     }
+    
+    public void notifyMembershipChanged(Set joiners, Set leavers) {
+        Collection snapshotListeners;
+        synchronized (listeners) {
+            snapshotListeners = new ArrayList(listeners);
+        }
+        
+        for (Iterator iter = snapshotListeners.iterator(); iter.hasNext();) {
+            VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
+            listener.onMembershipChanged(cluster, joiners, leavers);
+        }
+    }
+    
 }

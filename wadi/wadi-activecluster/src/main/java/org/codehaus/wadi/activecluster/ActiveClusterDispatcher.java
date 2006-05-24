@@ -47,6 +47,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 	protected MessageConsumer _clusterConsumer;
 	protected MessageConsumer _nodeConsumer;
 
+    protected final String _clusterName;
 	protected final String _clusterUri;
     private final WADIMessageListener _messageListener;
 
@@ -54,9 +55,10 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
     protected org.codehaus.wadi.group.LocalPeer _localNode;
     
 	public ActiveClusterDispatcher(String clusterName, String nodeName, String clusterUri, long inactiveTime) {
-		super(clusterName, nodeName, inactiveTime);
+		super(inactiveTime);
+        _clusterName=clusterName;
 		_clusterUri=clusterUri;
-		_log=LogFactory.getLog(getClass()+"#"+_nodeName);
+		_log=LogFactory.getLog(getClass()+"#"+_cluster.getLocalNode().getName());
         
         _messageListener = new WADIMessageListener(this);
 	}
@@ -119,7 +121,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
             throw new MessageExchangeException(e);
         }
         Map distributedState = getDistributedState();
-        distributedState.put("nodeName", _nodeName);
+        distributedState.put("nodeName", _cluster.getLocalNode().getName());
         setDistributedState(distributedState);
 	}
 

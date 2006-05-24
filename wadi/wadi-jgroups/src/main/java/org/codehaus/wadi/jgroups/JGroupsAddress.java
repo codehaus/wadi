@@ -27,33 +27,33 @@ import org.codehaus.wadi.group.Peer;
 public class JGroupsAddress implements Address {
 	
 	protected org.jgroups.Address _address;
-	protected transient Peer _node; // backptr - initialsed later...
+	protected transient Peer _peer; // backptr - initialsed later...
 	
 	protected JGroupsAddress(org.jgroups.Address address) {
 		_address=address;
 	}
 	
-	public void init(Peer node) {
-		_node=node;
+	public void init(Peer peer) {
+		_peer=peer;
 	}
 	
 	public org.jgroups.Address getAddress() {
 		return _address;
 	}
 	
-	public Peer getNode() {
-		return _node;
+	public Peer getPeer() {
+		return _peer;
 	}
 	
 	public String getName() {
-		return _node==null?"unknown":_node.getName();
+		return _peer==null?"unknown":_peer.getName();
 	}
 	
 	protected static final String _prefix="<"+JGroupsAddress.class.getPackage().getName()+": ";
 	protected static final String _suffix=">";
 	
 	public String toString() {
-		String name=(_node==null?"cluster":_node.getName());
+		String name=(_peer==null?"cluster":_peer.getName());
 		return _prefix+name+_suffix;
 	}
 	
@@ -99,13 +99,13 @@ public class JGroupsAddress implements Address {
 		
 		// TODO - optimise locking here later
 		JGroupsAddress destination;
-		synchronized (cluster._addressToDestination) {
-			destination=(JGroupsAddress)cluster._addressToDestination.get(address);
+		synchronized (cluster._addressToJGAddress) {
+			destination=(JGroupsAddress)cluster._addressToJGAddress.get(address);
 			if (destination==null) {
 				destination=new JGroupsAddress(address);
 				Peer node=new JGroupsRemotePeer(cluster, destination, cluster.getClusterState());
 				destination.init(node);
-				cluster._addressToDestination.put(address, destination);
+				cluster._addressToJGAddress.put(address, destination);
 			}
 		}
 		return destination;
