@@ -17,19 +17,28 @@
 package org.codehaus.wadi.jgroups.messages;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import org.codehaus.wadi.jgroups.Utils;
 
 public class StateRequest implements Serializable {
   
-  protected static final String _string="<"+Utils.basename(StateRequest.class)+">";
+  protected Map _state;
   
-  public StateRequest() {
+  public StateRequest(Map state) {
     super();
+    _state=state;
   }
   
-  public String toString() {
-    return _string;
+  public Map getState() {
+      return _state;
   }
     
+  protected static final String _prefix="<"+Utils.basename(StateRequest.class)+":";
+  protected static final String _suffix=">";
+  
+  public String toString() {
+    return _prefix+_state+_suffix;
+  }
+  
 }

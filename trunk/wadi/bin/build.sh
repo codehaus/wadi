@@ -1,6 +1,6 @@
 #!/bin/sh
 
-##export OFFLINE='--offline'
+export OFFLINE='--offline'
 export TEST='-Dmaven.test.skip=true'
 export VERSION=2.0M2-SNAPSHOT
 mvn $OFFLINE $TEST clean:clean install && \

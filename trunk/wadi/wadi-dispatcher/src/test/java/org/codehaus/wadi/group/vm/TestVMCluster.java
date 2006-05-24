@@ -18,7 +18,9 @@ package org.codehaus.wadi.group.vm;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import junit.framework.TestCase;
+import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterListener;
 
@@ -108,22 +110,13 @@ public class TestVMCluster extends TestCase {
             events.clear();
         }
         
-        public void onPeerAdded(ClusterEvent event) {
+        public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
             events.add(event);   
         }
 
         public void onPeerUpdated(ClusterEvent event) {
             events.add(event);   
         }
-
-        public void onPeerRemoved(ClusterEvent event) {
-            events.add(event);   
-        }
-
-        public void onPeerFailed(ClusterEvent event) {
-            events.add(event);   
-        }
-
         public void onCoordinatorChanged(ClusterEvent event) {
             events.add(event);   
         }

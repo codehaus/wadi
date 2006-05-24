@@ -15,19 +15,19 @@
  */
 package org.codehaus.wadi.group;
 
+import java.util.Set;
+
 
 /**
  * 
  * @version $Revision: 1603 $
  */
 public interface ClusterListener {
-    void onPeerAdded(ClusterEvent event);
 
     void onPeerUpdated(ClusterEvent event);
 
-    void onPeerRemoved(ClusterEvent event);
-
-    void onPeerFailed(ClusterEvent event);
-
     void onCoordinatorChanged(ClusterEvent event);
+    
+    void onMembershipChanged(Cluster cluster, Set joiners, Set leavers);
+    
 }

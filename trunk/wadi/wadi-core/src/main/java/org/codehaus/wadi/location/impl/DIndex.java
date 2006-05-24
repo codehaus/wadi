@@ -38,6 +38,7 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
+import org.codehaus.wadi.group.impl.SeniorityElectionStrategy;
 import org.codehaus.wadi.impl.AbstractChainedEmoter;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.location.CoordinatorConfig;
@@ -58,7 +59,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartitionManager.Callback, StateManagerConfig {
 
@@ -251,8 +252,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	}
 
 	public void onCoordinatorChanged(ClusterEvent event) {
+        _log.info("COORDINATOR CHANGED: " + event.getPeer());
 		synchronized (_coordinatorLock) {
-			if (_log.isDebugEnabled()) _log.debug("coordinator elected: " + getNodeName(event.getPeer()));
+            if (_log.isDebugEnabled()) _log.debug("coordinator elected: " + getNodeName(event.getPeer()));
 			Peer newCoordinator=event.getPeer();
 			if (false == newCoordinator.equals(_coordinatorNode)) {
 				if (null != _coordinatorNode && _coordinatorNode.equals(_dispatcher.getLocalPeer())) {

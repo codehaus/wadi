@@ -15,8 +15,9 @@
  */
 package org.codehaus.wadi.group.vm;
 
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.Set;
+import java.util.TreeSet;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterListener;
@@ -29,34 +30,30 @@ import org.codehaus.wadi.group.Peer;
 public class VMLocalClusterListener implements ClusterListener {
     private final VMLocalCluster localCluster;
     private final ClusterListener delegate;
-    private final Peer node;
+    private final Peer peer;
 
-    public VMLocalClusterListener(VMLocalCluster localCluster, ClusterListener delegate, Peer node) {
+    public VMLocalClusterListener(VMLocalCluster localCluster, ClusterListener delegate, Peer peer) {
         this.localCluster = localCluster;
         this.delegate = delegate;
-        this.node = node;
+        this.peer = peer;
     }
 
     void notifyExistingPeersToPeer(Cluster cluster, Set existingPeers) {
-        notifyExistingPeersToPeer(node, cluster, existingPeers);
+        notifyExistingPeersToPeer(peer, cluster, existingPeers);
     }
 
-    void notifyExistingPeersToPeer(Peer peer, Cluster cluster, Set existingPeers) {
+    void notifyExistingPeersToPeer(Peer target, Cluster cluster, Set existingPeers) {
         if (false == localCluster.isRunning()) {
             return;
         }
         
-        if (false == peer.equals(node)) {
+        if (false == target.equals(peer)) {
             return;
         }
-        
-        for (Iterator iter = existingPeers.iterator(); iter.hasNext();) {
-            Peer existingPeer = (Peer) iter.next();
-            if (existingPeer.equals(node)) {
-                continue;
-            }
-            delegate.onPeerAdded(new ClusterEvent(cluster, existingPeer, ClusterEvent.PEER_ADDED));
-        }
+        Set joiners=new TreeSet(existingPeers);
+        joiners.remove(peer);
+        Set leavers=Collections.EMPTY_SET;
+        delegate.onMembershipChanged(cluster, joiners, leavers);
     }
     
     public void onCoordinatorChanged(ClusterEvent event) {
@@ -67,37 +64,28 @@ public class VMLocalClusterListener implements ClusterListener {
         delegate.onCoordinatorChanged(event);
     }
 
-    public void onPeerAdded(ClusterEvent event) {
+    public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
         if (false == localCluster.isRunning()) {
             return;
         }
 
-        if (event.getPeer().equals(node)) {
+        if (joiners.contains(peer)) {
+            joiners=new TreeSet(joiners);
+            joiners.remove(peer);
+            joiners=Collections.unmodifiableSet(joiners);
+        }
+        
+        if (leavers.contains(peer)) {
+            leavers=new TreeSet(leavers);
+            leavers.remove(peer);
+            leavers=Collections.unmodifiableSet(leavers);
+        }
+        
+        if (joiners.size()==0 && leavers.size()==0) {
             return;
         }
-        delegate.onPeerAdded(event);
-    }
-
-    public void onPeerFailed(ClusterEvent event) {
-        if (false == localCluster.isRunning()) {
-            return;
-        }
-
-        if (event.getPeer().equals(node)) {
-            return;
-        }
-        delegate.onPeerFailed(event);
-    }
-
-    public void onPeerRemoved(ClusterEvent event) {
-        if (false == localCluster.isRunning()) {
-            return;
-        }
-
-        if (event.getPeer().equals(node)) {
-            return;
-        }
-        delegate.onPeerRemoved(event);
+        
+        delegate.onMembershipChanged(cluster, joiners, leavers);
     }
 
     public void onPeerUpdated(ClusterEvent event) {
@@ -105,7 +93,7 @@ public class VMLocalClusterListener implements ClusterListener {
             return;
         }
 
-        if (event.getPeer().equals(node)) {
+        if (event.getPeer().equals(peer)) {
             return;
         }
         delegate.onPeerUpdated(event);
@@ -117,10 +105,10 @@ public class VMLocalClusterListener implements ClusterListener {
         }
         
         VMLocalClusterListener other = (VMLocalClusterListener) obj;
-        return node.equals(other.node) && delegate.equals(other.delegate);
+        return peer.equals(other.peer) && delegate.equals(other.delegate);
     }
     
     public int hashCode() {
-        return node.hashCode() * delegate.hashCode();
+        return peer.hashCode() * delegate.hashCode();
     }
 }

@@ -15,6 +15,7 @@
  */
 package org.codehaus.wadi.activecluster;
 
+import java.util.Collections;
 import org.apache.activecluster.ClusterListener;
 import org.apache.activecluster.LocalNode;
 import org.apache.activecluster.Node;
@@ -36,10 +37,7 @@ class WADIClusterListenerAdapter implements ClusterListener {
     }
 
     public void onNodeAdd(org.apache.activecluster.ClusterEvent event) {
-        adaptee.onPeerAdded(
-            new ClusterEvent(cluster, 
-                buildPeer(event.getNode()),
-                ClusterEvent.PEER_ADDED));
+        adaptee.onMembershipChanged(cluster, Collections.singleton(buildPeer(event.getNode())), Collections.EMPTY_SET);
     }
 
     public void onNodeUpdate(org.apache.activecluster.ClusterEvent event) {
@@ -50,17 +48,11 @@ class WADIClusterListenerAdapter implements ClusterListener {
     }
 
     public void onNodeRemoved(org.apache.activecluster.ClusterEvent event) {
-        adaptee.onPeerRemoved(
-            new ClusterEvent(cluster, 
-                buildPeer(event.getNode()),
-                ClusterEvent.PEER_REMOVED));
+        throw new UnsupportedOperationException("activecluster does not generate this event");
     }
 
     public void onNodeFailed(org.apache.activecluster.ClusterEvent event) {
-        adaptee.onPeerFailed(
-            new ClusterEvent(cluster, 
-                buildPeer(event.getNode()),
-                ClusterEvent.PEER_FAILED));
+        adaptee.onMembershipChanged(cluster, Collections.EMPTY_SET, Collections.singleton(buildPeer(event.getNode())));
     }
 
     public void onCoordinatorChanged(org.apache.activecluster.ClusterEvent event) {

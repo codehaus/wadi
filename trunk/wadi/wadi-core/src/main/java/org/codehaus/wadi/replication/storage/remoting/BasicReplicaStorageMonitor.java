@@ -20,10 +20,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.replication.common.ComponentEventType;
 import org.codehaus.wadi.replication.common.NodeInfo;
@@ -114,18 +116,12 @@ public class BasicReplicaStorageMonitor implements ReplicaStorageMonitor, Cluste
         }
     }
 
-    public void onPeerAdded(ClusterEvent event) {
-    }
-
     public void onPeerUpdated(ClusterEvent event) {
     }
 
-    public void onPeerRemoved(ClusterEvent event) {
-        fireLeaveEvent(event);
-    }
-
-    public void onPeerFailed(ClusterEvent event) {
-        fireLeaveEvent(event);
+    public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
+        for (Iterator i=leavers.iterator(); i.hasNext(); )
+            fireLeaveEvent(new ClusterEvent(cluster, (Peer)i.next(), ClusterEvent.PEER_FAILED));
     }
 
     public void onCoordinatorChanged(ClusterEvent event) {
