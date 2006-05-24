@@ -23,7 +23,6 @@ import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.ServiceEndpoint;
-import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Quipu;
@@ -86,19 +85,7 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public Address getLocalAddress() {
-        throw new UnsupportedOperationException();
-    }
-
-    public Address getClusterAddress() {
-        throw new UnsupportedOperationException();
-    }
-
     public Cluster getCluster() {
-        throw new UnsupportedOperationException();
-    }
-
-    public Map getDistributedState() {
         throw new UnsupportedOperationException();
     }
 
@@ -142,15 +129,7 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public String getLocalPeerName() {
-        throw new UnsupportedOperationException();
-    }
-
     public long getInactiveTime() {
-        throw new UnsupportedOperationException();
-    }
-
-    public int getNumNodes() {
         throw new UnsupportedOperationException();
     }
 
@@ -163,10 +142,6 @@ public class BaseMockDispatcher implements Dispatcher {
     }
 
     public void send(Address destination, Serializable request) throws MessageExchangeException {
-        throw new UnsupportedOperationException();
-    }
-
-    public LocalPeer getLocalPeer() {
         throw new UnsupportedOperationException();
     }
 

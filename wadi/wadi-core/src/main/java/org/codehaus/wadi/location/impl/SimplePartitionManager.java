@@ -67,6 +67,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	protected final int _numPartitions;
 	protected final PartitionFacade[] _partitions;
 	protected final Cluster _cluster;
+    protected final Peer _localPeer;
 	protected final Dispatcher _dispatcher;
 	protected final Map _distributedState;
 	protected final long _inactiveTime;
@@ -79,7 +80,9 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
     
 	public SimplePartitionManager(Dispatcher dispatcher, int numPartitions, Map distributedState, Callback callback, PartitionMapper mapper) {
 		_dispatcher=dispatcher;
-		_nodeName=_dispatcher.getLocalPeerName();
+        _cluster=_dispatcher.getCluster();
+        _localPeer=_cluster.getLocalPeer();
+		_nodeName=_localPeer.getName();
 		_pmSyncs=new StupidLockManager(_nodeName);
 		_log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
 		_numPartitions=numPartitions;
@@ -90,7 +93,6 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		for (int i=0; i<_numPartitions; i++)
 			_partitions[i]=new PartitionFacade(i, timeStamp, new UnknownPartition(i), queueing, this);
 
-		_cluster=_dispatcher.getCluster();
 		_distributedState=distributedState;
 		_inactiveTime=_dispatcher.getInactiveTime();
 		_callback=callback;
@@ -131,9 +133,9 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		_log.info("evacuating...");
 
 		PartitionEvacuationRequest request=new PartitionEvacuationRequest();
-		Peer localNode=_dispatcher.getLocalPeer();
+		Peer localNode=_localPeer;
 		Peer coordNode=_config.getCoordinator();
-		String correlationId=_dispatcher.getLocalPeer().getName();
+		String correlationId=_localPeer.getName();
 		if (_log.isTraceEnabled()) _log.trace("evacuating partitions...: "+_dispatcher.getPeerName(localNode.getAddress())+" -> "+coordNode.getState().get("nodeName"));
 		while (_dispatcher.exchangeSend(localNode.getAddress(), coordNode.getAddress(), correlationId, request, _inactiveTime)==null) {
 			if (_log.isWarnEnabled()) _log.warn("could not contact Coordinator - backing off for "+ _inactiveTime+" millis...");
@@ -158,7 +160,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	public void onPartitionEvacuationRequest(Message om, PartitionEvacuationRequest request) {
 		Peer from;
         Address address=om.getReplyTo();
-        Peer local=_dispatcher.getLocalPeer();
+        Peer local=_localPeer;
         if (address.equals(local.getAddress())) {
             from=local;
         } else {
@@ -245,7 +247,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			Address from=om.getReplyTo();
 			correlationIDMap.put(from, correlationID);
 			_dispatcher.setDistributedState(_distributedState);
-			if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _dispatcher.getDistributedState());
+			if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _localPeer.getState());
 			correlateStateUpdate(_distributedState); // onStateUpdate() does not get called locally
 			correlationIDMap.remove(from);
 			// FIXME - RACE - between update of distributed state and ack - they should be one and the same thing...
@@ -275,7 +277,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
 			if (_log.isTraceEnabled()) _log.trace("local state (after receiving): " + keys);
 			_dispatcher.setDistributedState(_distributedState);
-			if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _dispatcher.getDistributedState());
+			if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _localPeer.getState());
 		} catch (Exception e) {
 			_log.error("could not update distributed state", e);
 		}
@@ -372,10 +374,10 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			PartitionKeys newKeys=getPartitionKeys();
 			if (_log.isWarnEnabled()) _log.warn("REPOPULATING PARTITIONS...: " + missingPartitions);
 			String correlationId=_dispatcher.nextCorrelationId();
-			Quipu rv=_dispatcher.setRendezVous(correlationId, _dispatcher.getNumNodes()-1);
+			Quipu rv=_dispatcher.setRendezVous(correlationId, _dispatcher.getCluster().getPeerCount()-1);
             try {
-                _dispatcher.send(_dispatcher.getLocalAddress(), 
-                                _dispatcher.getClusterAddress(), 
+                _dispatcher.send(_localPeer.getAddress(), 
+                                _dispatcher.getCluster().getAddress(), 
                                 correlationId, 
                                 new PartitionRepopulateRequest(missingKeys));
             } catch (MessageExchangeException e) {
@@ -386,7 +388,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			// we are carrying ourselves...
 			Collection[] c=createResultSet(_numPartitions, missingKeys);
 			_config.findRelevantSessionNames(_numPartitions, c);
-			repopulate(_dispatcher.getLocalAddress(), c);
+			repopulate(_localPeer.getAddress(), c);
 
 			//boolean success=false;
 			try {
@@ -410,7 +412,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			_distributedState.put(_partitionKeysKey, newKeys);
 			try {
 				_dispatcher.setDistributedState(_distributedState);
-				if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _dispatcher.getDistributedState());
+				if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _localPeer.getState());
 			} catch (Exception e) {
 				_log.error("could not update distributed state", e);
 			}
@@ -450,7 +452,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	// TODO - duplicate code - see DIndex...
 	protected void correlateStateUpdate(Map state) {
 		Map correlationIDMap=(Map)state.get(_correlationIDMapKey);
-		Address local=_dispatcher.getLocalAddress();
+		Address local=_localPeer.getAddress();
 		String correlationID=(String)correlationIDMap.get(local);
 		if (correlationID!=null) {
 			Quipu rv=(Quipu)_dispatcher.getRendezVousMap().get(correlationID);

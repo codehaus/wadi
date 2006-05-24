@@ -31,126 +31,99 @@ import org.jgroups.ChannelException;
 import org.jgroups.blocks.MessageDispatcher;
 
 /**
- * A Dispatcher for JGroups
+ * A WADI Dispatcher mapped onto a number of JGroups listeners
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public class JGroupsDispatcher extends AbstractDispatcher {
 
-  protected final boolean _excludeSelf=true;
+    protected final boolean _excludeSelf=true;
 
-  protected JGroupsCluster _cluster;
-  protected Address _localAddress;
-  protected MessageDispatcher _dispatcher;
+    protected JGroupsCluster _cluster;
+    protected Address _localAddress;
+    protected MessageDispatcher _dispatcher;
 
-  public JGroupsDispatcher(String localPeerName, String clusterName, long inactiveTime) throws ChannelException {
-    super(inactiveTime);
-    _cluster=new JGroupsCluster(clusterName, localPeerName);
-    
-    // TODO - where is this method.
-//    register(_cluster, "onMessage", StateUpdate.class);
-  }
+    public JGroupsDispatcher(String localPeerName, String clusterName, long inactiveTime) throws ChannelException {
+        super(inactiveTime);
+        _cluster=new JGroupsCluster(clusterName, localPeerName);
 
-  //-----------------------------------------------------------------------------------------------
-  // WADI Dispatcher API
+        // TODO - where is this method.
+//      register(_cluster, "onMessage", StateUpdate.class);
+    }
 
-  public void init(DispatcherConfig config) throws Exception {
-    super.init(config);
-    _dispatcher=new MessageDispatcher(_cluster.getChannel(), _cluster, _cluster, null);
-    _cluster.init(this);
-  }
+    // org.codehaus.wadi.group.Dispatcher' API
 
-  public void start() throws MessageExchangeException {
-      _dispatcher.start();
-      try {
-          _cluster.start();
-      } catch (ClusterException e) {
-          throw new MessageExchangeException(e);
-      }
-      _localAddress=_cluster.getLocalAddress();
-  }
+    public void start() throws MessageExchangeException {
+        _dispatcher.start();
+        try {
+            _cluster.start();
+        } catch (ClusterException e) {
+            throw new MessageExchangeException(e);
+        }
+        _localAddress=_cluster.getLocalAddress();
+    }
 
-  public void stop() throws MessageExchangeException {
-      try {
-          _cluster.stop();
-      } catch (ClusterException e) {
-          throw new MessageExchangeException(e);
-      }
-      _dispatcher.stop();
-  }
+    public void stop() throws MessageExchangeException {
+        try {
+            _cluster.stop();
+        } catch (ClusterException e) {
+            throw new MessageExchangeException(e);
+        }
+        _dispatcher.stop();
+    }
 
-  public int getNumNodes() {
-    return _cluster.getNumNodes();
-  }
+    public Message createMessage() {
+        return new JGroupsMessage();
+    }
 
-  public Message createMessage() {
-    return new JGroupsMessage();
-  }
-
-  public void send(org.codehaus.wadi.group.Address to, Message message) throws MessageExchangeException {
-    _cluster.send(to, message);
-  }
-
-  protected Peer getNode(Address address) {
-    return _cluster.getAddress(address).getPeer();
-  }
-
-  public String getPeerName(org.codehaus.wadi.group.Address address) {
-	JGroupsAddress d=(JGroupsAddress)address;
-	assert(d!=null);
-	assert(_cluster!=null);
-	if (d.getPeer()==null && d!=_cluster.getAddress()) {
-		// the Destination may have come in over the wire and not have been initialised...
-		_log.warn("UNINITIALISED DESTINATION - from over wire");
-		d.init(getNode(d.getAddress()));
-	}
-    return d.getName();
-  }
-
-  public org.codehaus.wadi.group.Address getLocalAddress() {
-    return _cluster.getLocalDestination();
-  }
-
-  public org.codehaus.wadi.group.Address getClusterAddress() {
-    return _cluster.getAddress();
-  }
-
-  public Cluster getCluster() {
-    return _cluster;
-  }
-
-  public Map getDistributedState() {
-    return _cluster.getLocalPeer().getState();
-  }
-
-  public synchronized void setDistributedState(Map state) throws MessageExchangeException {
-    // this seems to be the only test that ActiveCluster does, so there is no point in us doing any more...
-    LocalPeer localNode=_cluster.getLocalPeer();
-    //if (localNode.getState()!=state) {
-      localNode.setState(state);
-   // }
-  }
-
-  public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
-    throw new UnsupportedOperationException("NYI");
-  }
-
-  public org.codehaus.wadi.group.Address getAddress(String name) {
-      throw new UnsupportedOperationException();
-  }
-
-  public String getLocalPeerName() {
-      throw new UnsupportedOperationException();
-  }
-
-  protected void hook() {
-	  JGroupsCluster._cluster.set(_cluster);
-	  super.hook();
-  }
-
-    public LocalPeer getLocalPeer() {
-        return _cluster.getLocalPeer();
+    public void send(org.codehaus.wadi.group.Address to, Message message) throws MessageExchangeException {
+        _cluster.send(to, message);
     }
     
+    public String getPeerName(org.codehaus.wadi.group.Address a) {
+        JGroupsAddress address=(JGroupsAddress)a;
+        assert(address!=null);
+        assert(_cluster!=null);
+        assert(address.getPeer()==null && address!=_cluster.getAddress()); //incorrectly initialised address
+        return address.getName();
+    }
+
+    public Cluster getCluster() {
+        return _cluster;
+    }
+
+    public synchronized void setDistributedState(Map state) throws MessageExchangeException {
+        // this seems to be the only test that ActiveCluster does, so there is no point in us doing any more...
+        LocalPeer localNode=_cluster.getLocalPeer();
+        //if (localNode.getState()!=state) {
+        localNode.setState(state);
+        // }
+    }
+
+    public org.codehaus.wadi.group.Address getAddress(String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void init(DispatcherConfig config) throws Exception {
+        super.init(config);
+        _dispatcher=new MessageDispatcher(_cluster.getChannel(), _cluster, _cluster, null);
+        _cluster.init(this);
+    }
+
+    protected void hook() {
+        JGroupsCluster._cluster.set(_cluster);
+        super.hook();
+    }
+    
+    // 'org.codehaus.wadi.jgroups.JGroupsDispatcher' API
+    
+    public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
+        throw new UnsupportedOperationException("NYI");
+    }
+
+    protected Peer getNode(Address address) {
+        return _cluster.getAddress(address).getPeer();
+    }
+
 }

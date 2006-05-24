@@ -23,5 +23,7 @@ import java.util.Map;
  * @version $Revision: 1603 $
  */
 public interface LocalPeer extends Peer {
+    
     void setState(Map state) throws MessageExchangeException;
+    
 }

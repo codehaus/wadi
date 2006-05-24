@@ -22,9 +22,11 @@ import java.util.Map;
  * @version $Revision: 1603 $
  */
 public interface Peer {
+    
     String getName();
 
     Map getState();
 
     Address getAddress();
+    
 }

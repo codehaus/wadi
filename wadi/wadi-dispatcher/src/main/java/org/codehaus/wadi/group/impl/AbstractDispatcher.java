@@ -137,12 +137,12 @@ public abstract class AbstractDispatcher implements Dispatcher {
     }
 	
 	public Message exchangeSend(Address to, Serializable body, long timeout) throws MessageExchangeException {
-		return exchangeSend(getLocalAddress(), to, body, timeout, null);
+		return exchangeSend(getCluster().getLocalPeer().getAddress(), to, body, timeout, null);
 	}
 	
 	public void reply(Message message, Serializable body) throws MessageExchangeException {
         Message msg=createMessage();
-        Address from=getLocalAddress();
+        Address from=getCluster().getLocalPeer().getAddress();
         msg.setReplyTo(from);
         Address to=message.getReplyTo();
         msg.setAddress(to);

@@ -65,6 +65,7 @@ public interface Dispatcher extends MessageListener {
 
 	void forward(Message message, Address destination) throws MessageExchangeException;
 
+    // can we lose this ?
 	void forward(Message message, Address destination, Serializable body) throws MessageExchangeException;
 
 	String nextCorrelationId();
@@ -75,31 +76,28 @@ public interface Dispatcher extends MessageListener {
 
 	Message attemptRendezVous(String correlationId, Quipu rv, long timeout);
 
-    LocalPeer getLocalPeer();
-
-    Address getLocalAddress();
-    
-    Cluster getCluster();
-
-    Address getClusterAddress();
-
-	Map getDistributedState();
-    
-	void setDistributedState(Map state) throws MessageExchangeException;
-
 	void start() throws MessageExchangeException;
 
     void stop() throws MessageExchangeException;
 
-	String getPeerName(Address address);
-
 	Message createMessage();
 
-	String getLocalPeerName();
-	
+    Cluster getCluster();
+    
+    // lose these - clients should use equiv method on Cluster
+    
+    //Peer getPeer(Address address); // should be Address.getPeer()
+    
+    // should be implemented as getPeer(Address address).getName() - but then we will need to introduce a ClusterPeer ?
+    String getPeerName(Address address);
+    
     long getInactiveTime();
 
-    int getNumNodes();
+    
+    // needed by VM impl - should be equiv to calling _localPeer.setState(map)
+    void setDistributedState(Map state) throws MessageExchangeException;
 
+    // needed by BasicReplicaStorage stuff - can we lose it ?
     Address getAddress(String name);
-}
+
+    }

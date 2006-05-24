@@ -80,7 +80,6 @@ class ACClusterAdapter implements Cluster {
         return localPeer;
     }
     
-
     public boolean waitOnMembershipCount(int membershipCount, long timeout) throws InterruptedException {
         assert (membershipCount>0);
         membershipCount--; // remove ourselves from the equation...
@@ -119,5 +118,9 @@ class ACClusterAdapter implements Cluster {
     
     public int hashCode() {
         return adaptee.hashCode();
+    }
+    
+    public int getPeerCount() {
+        return getRemotePeers().size()+1;
     }
 }

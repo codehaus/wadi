@@ -21,94 +21,95 @@ import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Peer;
 
 /**
+ * A WADI Address mapped onto a JGroups Address.
+ * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1647 $
  */
-public class JGroupsAddress implements Address {
-	
-	protected org.jgroups.Address _address;
-	protected transient Peer _peer; // backptr - initialsed later...
-	
-	protected JGroupsAddress(org.jgroups.Address address) {
-		_address=address;
-	}
-	
-	public void init(Peer peer) {
-		_peer=peer;
-	}
-	
-	public org.jgroups.Address getAddress() {
-		return _address;
-	}
-	
-	public Peer getPeer() {
-		return _peer;
-	}
-	
-	public String getName() {
-		return _peer==null?"unknown":_peer.getName();
-	}
-	
-	protected static final String _prefix="<"+JGroupsAddress.class.getPackage().getName()+": ";
-	protected static final String _suffix=">";
-	
-	public String toString() {
-		String name=(_peer==null?"cluster":_peer.getName());
-		return _prefix+name+_suffix;
-	}
-	
-	public int hashCode() {
-		return getAddress().hashCode();
-	}
-	
-	public boolean equals(Object o) {
-		if(this==o)
-			return true;
-		if(null==o || getClass()!=o.getClass())
-			return false;
-		
-		return getAddress().equals(((JGroupsAddress)o).getAddress()); 
-	}
-	
-	public int compareTo(Object o) {
-		if (getClass()==o.getClass())
-			return getAddress().compareTo(((JGroupsAddress)o).getAddress());
-		else
-			throw new IllegalArgumentException("expected object of type: "+getClass()+" but received Object of type: "+o.getClass());
-	}
-	
-	
-	protected Object readResolve() throws ObjectStreamException {
-		// somehow always return same instance...
-		Object tmp=get(_address);
-		return tmp;
-	}
-	
-	// temp hack until I figure out how best to do this...
-	
-	
-	public static JGroupsAddress get(org.jgroups.Address address) {
-		JGroupsCluster cluster=(JGroupsCluster)JGroupsCluster._cluster.get();
-		return get(cluster, address);
-	}
-	
-	public static JGroupsAddress get(JGroupsCluster cluster, org.jgroups.Address address) {
-		if (address==null) {
+public class JGroupsAddress implements Address, Comparable {
+
+    protected static final String _prefix="<"+JGroupsAddress.class.getPackage().getName()+": ";
+    protected static final String _suffix=">";
+
+    protected final transient Peer _peer;
+
+    protected org.jgroups.Address _address;
+
+    protected JGroupsAddress(Peer peer) {
+        _peer=peer;
+    }
+
+    // 'java.lang.Object' API
+
+    protected Object readResolve() throws ObjectStreamException {
+        // somehow always return same instance...
+        Object tmp=get(_address);
+        return tmp;
+    }
+
+    public String toString() {
+        String name=(_peer==null?"cluster":_peer.getName());
+        return _prefix+name+_suffix;
+    }
+
+    public int hashCode() {
+        return getAddress().hashCode();
+    }
+
+    public boolean equals(Object object) {
+        return (this==object);
+    }
+
+    // 'java.lang.Comparable' API
+
+    public int compareTo(Object o) {
+        if (getClass()==o.getClass())
+            return getAddress().compareTo(((JGroupsAddress)o).getAddress());
+        else
+            throw new IllegalArgumentException("expected object of type: "+getClass()+" but received Object of type: "+o.getClass());
+    }
+
+    // 'org.codehaus.wadi.jgroups.JGroupsAddress' API
+
+    public void init(org.jgroups.Address address) {
+        _address=address;
+    }
+
+    public Peer getPeer() {
+        return _peer;
+    }
+
+    public org.jgroups.Address getAddress() {
+        return _address;
+    }
+
+    public String getName() {
+        return _peer==null?"unknown":_peer.getName();
+    }
+
+    // temp hack until I figure out how best to do this...
+
+    public static JGroupsAddress get(org.jgroups.Address address) {
+        JGroupsCluster cluster=(JGroupsCluster)JGroupsCluster._cluster.get();
+        return get(cluster, address);
+    }
+
+    public static JGroupsAddress get(JGroupsCluster cluster, org.jgroups.Address jgaddress) {
+        if (jgaddress==null) {
             return (JGroupsAddress)cluster.getAddress();
         }
-		
-		// TODO - optimise locking here later
-		JGroupsAddress destination;
-		synchronized (cluster._addressToJGAddress) {
-			destination=(JGroupsAddress)cluster._addressToJGAddress.get(address);
-			if (destination==null) {
-				destination=new JGroupsAddress(address);
-				Peer node=new JGroupsRemotePeer(cluster, destination, cluster.getClusterState());
-				destination.init(node);
-				cluster._addressToJGAddress.put(address, destination);
-			}
-		}
-		return destination;
-	}
-	
+
+        // TODO - optimise locking here later
+        JGroupsAddress address;
+        synchronized (cluster._jgAddressToAddress) {
+            address=(JGroupsAddress)cluster._jgAddressToAddress.get(jgaddress);
+            if (address==null) {
+                Peer peer=new JGroupsRemotePeer(cluster, jgaddress, cluster.getClusterState());
+                address=(JGroupsAddress)peer.getAddress();
+                cluster._jgAddressToAddress.put(jgaddress, address);
+            }
+        }
+        return address;
+    }
+
 }

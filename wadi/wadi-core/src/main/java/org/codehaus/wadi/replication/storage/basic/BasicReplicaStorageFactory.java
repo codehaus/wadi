@@ -31,6 +31,6 @@ public class BasicReplicaStorageFactory implements ReplicaStorageFactory {
     public ReplicaStorage factory(Dispatcher dispatcher) {
         return new MemoryReplicaStorage(
                 new BasicReplicaStorageExporter(dispatcher),
-                new NodeInfo(dispatcher.getLocalPeerName()));
+                new NodeInfo(dispatcher.getCluster().getLocalPeer().getName()));
     }
 }

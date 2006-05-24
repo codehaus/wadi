@@ -47,13 +47,13 @@ public class TestVMCluster extends TestCase {
         
         assertEquals(1, listener1.events.size());
         ClusterEvent event = (ClusterEvent) listener1.events.get(0);
-        assertSame(dispatcher2.getLocalPeer(), event.getPeer());
+        assertSame(dispatcher2.getCluster().getLocalPeer(), event.getPeer());
         assertSame(ClusterEvent.PEER_ADDED, event.getType());
         listener1.clearEvents();
         
         assertEquals(1, listener2.events.size());
         event = (ClusterEvent) listener2.events.get(0);
-        assertSame(dispatcher1.getLocalPeer(), event.getPeer());
+        assertSame(dispatcher1.getCluster().getLocalPeer(), event.getPeer());
         assertSame(ClusterEvent.PEER_ADDED, event.getType());
         listener2.clearEvents();
     }
@@ -72,7 +72,7 @@ public class TestVMCluster extends TestCase {
         
         assertEquals(1, listener2.events.size());
         ClusterEvent event = (ClusterEvent) listener2.events.get(0);
-        assertSame(dispatcher1.getLocalPeer(), event.getPeer());
+        assertSame(dispatcher1.getCluster().getLocalPeer(), event.getPeer());
         assertSame(ClusterEvent.PEER_ADDED, event.getType());
     }
 
@@ -96,10 +96,10 @@ public class TestVMCluster extends TestCase {
         
         assertEquals(2, listener2.events.size());
         ClusterEvent event = (ClusterEvent) listener2.events.get(0);
-        assertSame(dispatcher1.getLocalPeer(), event.getPeer());
+        assertSame(dispatcher1.getCluster().getLocalPeer(), event.getPeer());
         assertSame(ClusterEvent.PEER_ADDED, event.getType());
         event = (ClusterEvent) listener2.events.get(1);
-        assertSame(dispatcher1.getLocalPeer(), event.getPeer());
+        assertSame(dispatcher1.getCluster().getLocalPeer(), event.getPeer());
         assertSame(ClusterEvent.PEER_UPDATED, event.getType());
     }
 
@@ -110,8 +110,13 @@ public class TestVMCluster extends TestCase {
             events.clear();
         }
         
+<<<<<<< .mine
+        public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
+            // events.add(event); - FIXME   
+=======
         public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
             events.add(event);   
+>>>>>>> .r1819
         }
 
         public void onPeerUpdated(ClusterEvent event) {

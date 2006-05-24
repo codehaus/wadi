@@ -143,12 +143,12 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 
 			Dispatcher dispatcher=_config.getDispatcher();
 			long timeout=_config.getInactiveTime();
-			Address sm=dispatcher.getLocalAddress();
-			Address im=(Address)_get.getIM();
+			Address sm=dispatcher.getCluster().getLocalPeer().getAddress();
+			Address im=_get.getIM();
 			MoveSMToIM request=new MoveSMToIM(immotable);
 			// send on state from StateMaster to InvocationMaster...
 			if (_log.isTraceEnabled()) _log.trace("exchanging MoveSMToIM between: "+_config.getPeerName(sm)+"->"+_config.getPeerName(im));
-			Message message2=(Message)dispatcher.exchangeSend(sm, im, request, timeout, _get.getIMCorrelationId());
+			Message message2=dispatcher.exchangeSend(sm, im, request, timeout, _get.getIMCorrelationId());
 			// should receive response from IM confirming safe receipt...
 			if (message2==null) {
                 // TODO throw exception
@@ -175,7 +175,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 	 * through the Immoter and we pass it back to the Request-ing node...
 	 *
 	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
-	 * @version $Revision$
+	 * @version $Revision:1815 $
 	 */
 	class RelocationImmoter implements Immoter {
 		protected final Log _log=LogFactory.getLog(getClass());
@@ -253,7 +253,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 			// Tricky - we need to call a Moter at this point and start removal of State to other node...
 
 			try {
-				Address im=(Address)request.getIM();
+				Address im=request.getIM();
 				String imName=_config.getPeerName(im);
 				RelocationImmoter promoter=new RelocationImmoter(imName, message1, request);
 				//boolean found=
@@ -271,10 +271,10 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 					_log.warn("state not found - perhaps it has just been destroyed: "+key);
 					MoveSMToIM req=new MoveSMToIM(null);
 					// send on null state from StateMaster to InvocationMaster...
-					Address sm=_dispatcher.getLocalAddress();
+					Address sm=_dispatcher.getCluster().getLocalPeer().getAddress();
 					long timeout=_config.getInactiveTime();
 					_log.info("sending 0 bytes to : "+imName);
-					Message ignore=(Message)_dispatcher.exchangeSend(sm, im, req, timeout, request.getIMCorrelationId());
+					Message ignore=_dispatcher.exchangeSend(sm, im, req, timeout, request.getIMCorrelationId());
 					_log.info("received: "+ignore);
 					// StateMaster replies to PartitionMaster indicating failure...
 					_log.info("reporting failure to PM");

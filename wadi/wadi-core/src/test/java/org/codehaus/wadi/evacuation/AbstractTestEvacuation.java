@@ -51,16 +51,16 @@ public class AbstractTestEvacuation extends TestCase {
 		_log.info("...GREEN STARTED");
 		
 		_log.info("WAITING FOR RED TO SEE GREEN...");
-		while (redD.getNumNodes()<2) {
+		while (redD.getCluster().getPeerCount()<2) {
 			Thread.sleep(500);
-			_log.info("waiting: "+redD.getNumNodes());
+			_log.info("waiting: "+redD.getCluster().getPeerCount());
 		}
 		_log.info("...DONE");
 		
 		_log.info("WAITING FOR GREEN TO SEE RED...");
-		while (greenD.getNumNodes()<2) {
+		while (greenD.getCluster().getPeerCount()<2) {
 			Thread.sleep(500);
-			_log.info("waiting: "+greenD.getNumNodes());
+			_log.info("waiting: "+greenD.getCluster().getPeerCount());
 		}
 		_log.info("...DONE");
 		
@@ -90,9 +90,9 @@ public class AbstractTestEvacuation extends TestCase {
 		assertTrue(success);
 
 		_log.info("WAITING FOR GREEN TO UNSEE RED...");
-		while (greenD.getNumNodes()>1) {
+		while (greenD.getCluster().getPeerCount()>1) {
 			Thread.sleep(500);
-			_log.info("waiting: "+greenD.getNumNodes());
+			_log.info("waiting: "+greenD.getCluster().getPeerCount());
 		}
 		_log.info("...DONE");
 		

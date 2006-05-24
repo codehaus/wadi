@@ -31,7 +31,7 @@ import org.codehaus.wadi.location.newmessages.MoveIMToPM;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public class RemotePartition extends AbstractPartition {
 

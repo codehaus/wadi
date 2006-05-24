@@ -126,14 +126,14 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
 
     private void waitForStableCluster() throws InterruptedException {
         int nbLoop = 0;
-        while (nodeInfo1.clusteredManager.getDispatcher().getNumNodes() < 2) {
+        while (nodeInfo1.clusteredManager.getDispatcher().getCluster().getPeerCount() < 2) {
             Thread.sleep(500);
             nbLoop++;
             if (nbLoop == MAX_LOOP) {
                 fail();
             }
         }
-        while (nodeInfo2.clusteredManager.getDispatcher().getNumNodes() < 2) {
+        while (nodeInfo2.clusteredManager.getDispatcher().getCluster().getPeerCount() < 2) {
             Thread.sleep(500);
             nbLoop++;
             if (nbLoop == MAX_LOOP) {

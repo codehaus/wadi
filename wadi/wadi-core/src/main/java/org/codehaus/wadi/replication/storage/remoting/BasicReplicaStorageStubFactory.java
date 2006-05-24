@@ -56,7 +56,7 @@ public class BasicReplicaStorageStubFactory implements ReplicaStorageStubFactory
 
     public ReplicaStorage buildStub() {
         Address destinations[] =
-            new Address[] {dispatcher.getClusterAddress()};
+            new Address[] {dispatcher.getCluster().getAddress()};
         return newStub(destinations);
     }
     

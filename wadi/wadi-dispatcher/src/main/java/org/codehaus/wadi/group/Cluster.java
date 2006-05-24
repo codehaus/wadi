@@ -26,6 +26,8 @@ public interface Cluster {
     void setElectionStrategy(ElectionStrategy strategy);
 
     Map getRemotePeers();
+    
+    int getPeerCount();
 
     LocalPeer getLocalPeer();
     

@@ -21,47 +21,47 @@ import org.codehaus.wadi.group.Message;
 import org.jgroups.Address;
 
 /**
+ * A WADI Message mapped onto JGroups
+ * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1647 $
  */
 public class JGroupsMessage implements Message, Serializable {
 
-	protected transient Address _replyTo;
-	protected transient Address _address;
-	protected String _outgoingCorrelationId;
-	protected String _incomingCorrelationId;
-	protected Serializable _letter;
+    protected static String _prefix="<"+Utils.basename(JGroupsMessage.class)+": ";
+    protected static String _suffix=">";
 
-  protected transient JGroupsCluster _cluster;
+    protected transient Address _replyTo;
+    protected transient Address _address;
+    protected transient JGroupsCluster _cluster;
 
-  // JGroupObjectMessage API
+    protected String _outgoingCorrelationId;
+    protected String _incomingCorrelationId;
+    protected Serializable _letter;
 
-  public String getIncomingCorrelationId() {
-    return _incomingCorrelationId;
-  }
+    // 'java.lang.Object' API
 
-  public void setIncomingCorrelationId(String correlationId) {
-    _incomingCorrelationId=correlationId;
-  }
+    public String toString() {
+        return _prefix+_letter+_suffix;
+    }
 
-  public String getOutgoingCorrelationId() {
-    return _outgoingCorrelationId;
-  }
+    // 'org.codehaus.wadi.group.Message' API
 
-  public void setOutgoingCorrelationId(String correlationId) {
-    _outgoingCorrelationId=correlationId;
-  }
-  
-  public void setCluster(JGroupsCluster cluster) {
-    _cluster=cluster;
-  }
+    public String getIncomingCorrelationId() {
+        return _incomingCorrelationId;
+    }
 
-  protected static String _prefix="<"+Utils.basename(JGroupsMessage.class)+": ";
-  protected static String _suffix=">";
+    public void setIncomingCorrelationId(String correlationId) {
+        _incomingCorrelationId=correlationId;
+    }
 
-  public String toString() {
-    return _prefix+_letter+_suffix;
-  }
+    public String getOutgoingCorrelationId() {
+        return _outgoingCorrelationId;
+    }
+
+    public void setOutgoingCorrelationId(String correlationId) {
+        _outgoingCorrelationId=correlationId;
+    }
 
     public org.codehaus.wadi.group.Address getReplyTo() {
         return _cluster.getAddress(_replyTo);
@@ -76,14 +76,21 @@ public class JGroupsMessage implements Message, Serializable {
     }
 
     public void setAddress(org.codehaus.wadi.group.Address address) {
-        _address = ((JGroupsAddress)address).getAddress();
+        _address=((JGroupsAddress)address).getAddress();
     }
-    
+
     public void setPayload(Serializable payload) {
-        _letter = payload;
+        _letter=payload;
     }
 
     public Serializable getPayload() {
         return _letter;
     }
+
+    // 'org.wadi.codehaus.jgroups.JGroupsMessage' API
+
+    public void setCluster(JGroupsCluster cluster) {
+        _cluster=cluster;
+    }
+
 }

@@ -124,9 +124,6 @@ public class BasicReplicaStorageStubTest extends TestCase {
         final Serializable[] requests = new Serializable[1];
         baseMockDispatcher = new BaseMockDispatcher() {
             int idx = 0;
-            public Address getLocalAddress() {
-                return destination1;
-            }
             public void register(ServiceEndpoint internalDispatcher) {
             }
             public Message exchangeSend(Address to, Serializable request, long timeout) {

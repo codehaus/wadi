@@ -54,48 +54,6 @@ class ClusterListenerSupport {
         }
     }
 
-    public void notifyAdded(Peer peer) {
-        Collection snapshotListeners;
-        Set snapshotExistingPeers;
-        synchronized (listeners) {
-            snapshotListeners = new ArrayList(listeners);
-            snapshotExistingPeers = new HashSet(nodes);
-            nodes.add(peer);
-        }
-        
-        for (Iterator iter = snapshotListeners.iterator(); iter.hasNext();) {
-            VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
-            listener.onPeerAdded(new ClusterEvent(cluster, peer, ClusterEvent.PEER_ADDED));
-            listener.notifyExistingPeersToPeer(peer, cluster, snapshotExistingPeers);
-        }
-    }
-
-    public void notifyFailed(Peer node) {
-        Collection snapshotListeners;
-        synchronized (listeners) {
-            snapshotListeners = new ArrayList(listeners);
-            nodes.remove(node);
-        }
-        
-        for (Iterator iter = snapshotListeners.iterator(); iter.hasNext();) {
-            VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
-            listener.onPeerFailed(new ClusterEvent(cluster, node, ClusterEvent.PEER_FAILED));
-        }
-    }
-
-    public void notifyRemoved(Peer node) {
-        Collection snapshotListeners;
-        synchronized (listeners) {
-            snapshotListeners = new ArrayList(listeners);
-            nodes.remove(node);
-        }
-        
-        for (Iterator iter = snapshotListeners.iterator(); iter.hasNext();) {
-            VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
-            listener.onPeerRemoved(new ClusterEvent(cluster, node, ClusterEvent.PEER_REMOVED));
-        }
-    }
-
     public void notifyUpdated(Peer node) {
         Collection snapshotListeners;
         synchronized (listeners) {

@@ -27,22 +27,23 @@ import org.codehaus.wadi.jgroups.Utils;
  */
 public class StateUpdate implements Serializable {
 
-  protected static final String _prefix="<"+Utils.basename(StateUpdate.class)+": ";
-  protected static final String _suffix=">";
-  
-	protected final Map _state;
+    protected static final String _prefix="<"+Utils.basename(StateUpdate.class)+": ";
+    protected static final String _suffix=">";
 
-	public StateUpdate(Map state) {
-		_state=state;
-	}
+    protected final Map _state;
 
-	public Map getState() {
-		return _state;
-	}
+    public StateUpdate(Map state) {
+        _state=state;
+    }
 
-	// TODO - custom serialiser
-  
-  public String toString() {
-    return _prefix+_state+_suffix; 
-  }
+    public Map getState() {
+        return _state;
+    }
+
+    // TODO - custom serialiser
+
+    public String toString() {
+        return _prefix+_state+_suffix; 
+    }
+
 }
