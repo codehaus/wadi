@@ -23,13 +23,13 @@ import java.io.Serializable;
  * @version $Revision: 1603 $
  */
 public interface Message {
-    String getIncomingCorrelationId();
+    String getTargetCorrelationId();
 
-    void setIncomingCorrelationId(String correlationId);
+    void setTargetCorrelationId(String correlationId);
 
-    String getOutgoingCorrelationId();
+    String getSourceCorrelationId();
 
-    void setOutgoingCorrelationId(String correlationId);
+    void setSourceCorrelationId(String correlationId);
 
     Address getReplyTo();
 

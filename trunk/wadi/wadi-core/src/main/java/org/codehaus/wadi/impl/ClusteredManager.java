@@ -86,11 +86,11 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		// must be done before super.init() so that ContextualiserConfig contains a Cluster
 		try {
 			_dispatcher.init(this);
-			String nodeName=_dispatcher.getCluster().getLocalPeer().getName();
-			_distributedState.put("name", nodeName);
+			String peerName=_dispatcher.getCluster().getLocalPeer().getName();
+			_distributedState.put(Peer._peerNameKey, peerName);
 			_distributedState.put("http", _location);
 			PartitionMapper mapper=new SimplePartitionMapper(_numPartitions); // integrate with Session ID generator
-			_dindex=new DIndex(nodeName, _numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState, mapper);
+			_dindex=new DIndex(_numPartitions, _dispatcher, _distributedState, mapper);
 			_dindex.init(this);
 		} catch (Exception e) {
 			_log.error("problem starting Cluster", e);
@@ -193,7 +193,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	}
 
 	public long getInactiveTime() {
-		return _dispatcher.getInactiveTime();
+		return _dispatcher.getCluster().getInactiveTime();
 	}
 
 	public int getNumPartitions() {

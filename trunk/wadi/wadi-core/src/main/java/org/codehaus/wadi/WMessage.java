@@ -14,28 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.jgroups;
-
-import java.io.ObjectStreamException;
+package org.codehaus.wadi;
 
 /**
- * A WADI Address that can be used to broadcast to a JGroups Channel
- * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1497 $
  */
-public class JGroupsTopic extends JGroupsAddress {
-
-    protected final String _name;
-
-    public JGroupsTopic(String name) {
-        super(null); // null Peer
-        _name=name;
-    }
-
-    protected Object readResolve() throws ObjectStreamException {
-        JGroupsCluster cluster=(JGroupsCluster)JGroupsCluster._cluster.get();
-        return cluster.getAddress();
-    }
+public interface WMessage {
 
 }

@@ -36,6 +36,7 @@ import org.codehaus.wadi.group.Peer;
  */
 public class VMCluster implements Cluster {
     protected static final Map clusters=new HashMap();
+    protected final long inactiveTime=5000; // TODO - parameterise
     
     public static VMCluster ensureCluster(String clusterName) {
         VMCluster cluster = (VMCluster) clusters.get(clusterName);
@@ -253,5 +254,9 @@ public class VMCluster implements Cluster {
             Dispatcher dispatcher = (Dispatcher) entry.getValue();
             dispatcher.onMessage(message);
         }
+    }
+    
+    public long getInactiveTime() {
+        return inactiveTime;
     }
 }

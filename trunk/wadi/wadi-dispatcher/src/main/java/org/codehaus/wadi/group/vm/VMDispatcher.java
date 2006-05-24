@@ -76,8 +76,8 @@ public class VMDispatcher extends AbstractDispatcher {
             ". Was:" + address.getClass().getName());
     }
 
-    public void send(Address to, Message message) throws MessageExchangeException {
-        cluster.send(to, message);
+    public void send(Address target, Message message) throws MessageExchangeException {
+        cluster.send(target, message);
     }
 
     public Message createMessage() {

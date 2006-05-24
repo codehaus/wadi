@@ -22,106 +22,101 @@ import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
-import org.apache.activecluster.ClusterFactory;
 import org.apache.activecluster.LocalNode;
 import org.apache.activecluster.Node;
-import org.apache.activecluster.impl.DefaultClusterFactory;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
+import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.DispatcherConfig;
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.impl.AbstractCluster;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
 
 /**
  * A Dispatcher for ActiveCluster
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1788 $
  */
 public class ActiveClusterDispatcher extends AbstractDispatcher {
-	protected org.apache.activecluster.Cluster _cluster;
+    
+    protected static final String _prefix="<"+Utils.basename(ActiveClusterDispatcher.class)+": ";
+    protected static final String _suffix=">";
+    
+    
+	protected org.apache.activecluster.Cluster _acCluster;
 	protected MessageConsumer _clusterConsumer;
 	protected MessageConsumer _nodeConsumer;
 
     protected final String _clusterName;
 	protected final String _clusterUri;
+    protected final String _localPeerName;
+    protected final long _inactiveTime;
     private final WADIMessageListener _messageListener;
 
-    private Cluster _wadiCluster;
-    protected org.codehaus.wadi.group.LocalPeer _localPeer;
+    private ActiveClusterCluster _cluster;
+    protected LocalPeer _localPeer;
     
-	public ActiveClusterDispatcher(String clusterName, String localPeerName, String clusterUri, long inactiveTime) {
+	public ActiveClusterDispatcher(String clusterName, String localPeerName, String clusterUri, long inactiveTime) throws Exception {
 		super(inactiveTime);
         _clusterName=clusterName;
+        _localPeerName=localPeerName;
 		_clusterUri=clusterUri;
 		_log=LogFactory.getLog(getClass()+"#"+localPeerName);
-        
-        _messageListener = new WADIMessageListener(this);
+        _inactiveTime=inactiveTime;
+        _cluster = new ActiveClusterCluster(_clusterName, _localPeerName, _clusterUri);
+        _messageListener = new WADIMessageListener(_cluster, this);
+        _localPeer = _cluster.getLocalPeer();
 	}
 
-	// 5 calls
+    // 'java.lang.Object' API
+    
+    public String toString() {
+        return _prefix+_cluster+_suffix;
+    }
+    
+    // 5 calls
 	public Cluster getCluster() {
-		return _wadiCluster;
-	}
-
-	// soon to be obsolete...
-
-	public MessageConsumer addDestination(Destination destination) throws JMSException {
-		boolean excludeSelf=true;
-		MessageConsumer consumer=_cluster.createConsumer(destination, null, excludeSelf);
-		consumer.setMessageListener(_messageListener);
-		return consumer;
-	}
-
-	public void removeDestination(MessageConsumer consumer) throws JMSException {
-		consumer.close();
+		return _cluster;
 	}
 
 	//-----------------------------------------------------------------------------------------------
 	// AbstractDispatcher overrides
 
-	protected ActiveMQConnectionFactory _connectionFactory;
-	public ClusterFactory _clusterFactory;
-
 	public void init(DispatcherConfig config) throws Exception {
 		super.init(config);
-		try {
-			_connectionFactory=new ActiveMQConnectionFactory(_clusterUri);
-			DefaultClusterFactory tmp=new DefaultClusterFactory(_connectionFactory);
-			tmp.setInactiveTime(_inactiveTime);
-			_clusterFactory=tmp;
-			_cluster=_clusterFactory.createCluster(_clusterName);
-		} catch (Exception e) {
-			_log.error("problem starting Cluster", e);
-		}
 
-		boolean excludeSelf;
-		excludeSelf=false;
-		_clusterConsumer=_cluster.createConsumer(_cluster.getDestination(), null, excludeSelf);
-		_clusterConsumer.setMessageListener(_messageListener);
-		excludeSelf=false;
-		_nodeConsumer=_cluster.createConsumer(_cluster.getLocalNode().getDestination(), null, excludeSelf);
-		_nodeConsumer.setMessageListener(_messageListener);
-
-        _wadiCluster = new ACClusterAdapter(_cluster);
-        _localPeer = new ACLocalNodeAdapter(_cluster.getLocalNode());
 	}
 
 	//-----------------------------------------------------------------------------------------------
 	// Dispatcher API
 
 	public void start() throws MessageExchangeException {
-		try {
-            _cluster.start();
-        } catch (JMSException e) {
-            throw new MessageExchangeException(e);
-        }
+	    try {
+	        _cluster.start();
+	    } catch (ClusterException e) {
+	        throw new MessageExchangeException(e);
+	    }
+	    try {
+	        boolean excludeSelf;
+	        excludeSelf=false;
+	        _acCluster =_cluster.getACCluster();
+	        _clusterConsumer=_acCluster.createConsumer(_acCluster.getDestination(), null, excludeSelf);
+	        _clusterConsumer.setMessageListener(_messageListener);
+	        excludeSelf=false;
+	        _nodeConsumer=_acCluster.createConsumer(_acCluster.getLocalNode().getDestination(), null, excludeSelf);
+	        _nodeConsumer.setMessageListener(_messageListener);
+	    } catch (JMSException e) {
+	        _log.warn("unexpected ActiveCluster problem", e);
+	    }
+
         Map distributedState = _localPeer.getState();
-        distributedState.put("nodeName", _cluster.getLocalNode().getName());
+        distributedState.put(Peer._peerNameKey, _cluster.getLocalPeer().getName());
         setDistributedState(distributedState);
 	}
 
@@ -141,7 +136,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 		try {
             _cluster.stop();
             Thread.sleep(5*1000);
-        } catch (JMSException e) {
+        } catch (ClusterException e) {
             throw new MessageExchangeException(e);
         } catch (InterruptedException e) {
             throw new MessageExchangeException(e);
@@ -150,43 +145,39 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 
 	public Message createMessage() {
 		try {
-            return new ACObjectMessageAdapter(_cluster.createObjectMessage());
+            return new ActiveClusterMessage(_acCluster.createObjectMessage());
         } catch (JMSException e) {
             throw new RuntimeJMSException(e);
         }
 	}
 
-	public void send(Address to, Message message) throws MessageExchangeException {
+	public void send(Address target, Message message) throws MessageExchangeException {
 		if (_messageLog.isTraceEnabled()) {
-            _messageLog.trace("outgoing: "+message.getPayload()+" {"+getInternalPeerName(message.getReplyTo())+"->"+getInternalPeerName(message.getAddress())+"} - "+message.getIncomingCorrelationId()+"/"+message.getOutgoingCorrelationId()+" on "+Thread.currentThread().getName());
+            _messageLog.trace("outgoing: "+message.getPayload()+" {"+getInternalPeerName(message.getReplyTo())+"->"+getInternalPeerName(message.getAddress())+"} - "+message.getTargetCorrelationId()+"/"+message.getSourceCorrelationId()+" on "+Thread.currentThread().getName());
 		}
 		try {
-            _cluster.send(ACDestinationAdapter.unwrap(to), ACObjectMessageAdapter.unwrap(message));
+            _acCluster.send(((ActiveClusterPeer)target).getACDestination(), ActiveClusterMessage.unwrap(message));
         } catch (JMSException e) {
             throw new MessageExchangeException(e);
         }
 	}
 
 	public void setDistributedState(Map state) throws MessageExchangeException {
-		try {
-            _cluster.getLocalNode().setState(state);
-        } catch (JMSException e) {
-            throw new MessageExchangeException(e);
-        }
+	    _cluster.getLocalPeer().setState(state);
 	}
 
     public Address getAddress(String nodeName) {
-        if (_wadiCluster.getLocalPeer().getName().equals(nodeName)) {
+        if (_cluster.getLocalPeer().getName().equals(nodeName)) {
             return _localPeer.getAddress();
         }
 
-        Map destToNode = _cluster.getNodes();
+        Map destToNode = _acCluster.getNodes();
         for (Iterator iter = destToNode.entrySet().iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
             Destination destination = (Destination) entry.getKey();
             String name = getInternalPeerName(destination);
             if (name.equals(nodeName)) {
-                return ACDestinationAdapter.wrap(destination);
+                return (ActiveClusterPeer)AbstractCluster.get(destination);
             }
         }
 
@@ -194,16 +185,16 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
     }
 
     public String getPeerName(Address address) {
-        return getInternalPeerName(ACDestinationAdapter.unwrap(address));
+        return getInternalPeerName(((ActiveClusterPeer)address).getACDestination());
     }
 
     private String getInternalPeerName(Address address) {
-        Destination destination = ACDestinationAdapter.unwrap(address);
+        Destination destination = ((ActiveClusterPeer)address).getACDestination();
         return getInternalPeerName(destination);
     }
     
 	private String getInternalPeerName(Destination destination) {
-		LocalNode localNode = _cluster.getLocalNode();
+		LocalNode localNode = _acCluster.getLocalNode();
 		Destination localDestination=localNode.getDestination();
 
 		if (destination==null) {
@@ -213,12 +204,12 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 		if (destination.equals(localDestination))
 			return getNodeName(localNode);
 
-		Destination clusterDestination=_cluster.getDestination();
+		Destination clusterDestination=_acCluster.getDestination();
 		if (destination.equals(clusterDestination))
 			return "cluster";
 
 		Node node=null;
-		if ((node=(Node)_cluster.getNodes().get(destination))!=null)
+		if ((node=(Node)_acCluster.getNodes().get(destination))!=null)
 			return getNodeName(node);
 
 		return "<unknown>";
@@ -229,10 +220,10 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 	}
 
 	public void setClusterListener(ClusterListener listener) {
-		_cluster.addClusterListener(new WADIClusterListenerAdapter(listener, _wadiCluster));
+		_cluster.addClusterListener(listener);
 	}
 
     private String getNodeName(Node node) {
-        return node==null?"<unknown>":(String)node.getState().get(_nodeNameKey);
+        return node==null?"<unknown>":(String)node.getState().get(Peer._peerNameKey);
     }
 }

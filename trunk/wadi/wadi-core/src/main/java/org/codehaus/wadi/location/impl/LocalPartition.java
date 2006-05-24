@@ -192,7 +192,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
           } else {
             // session does exist - we need to ask SM to move it to IM
             Address pm=dispatcher.getCluster().getLocalPeer().getAddress();
-            String imCorrelationId=message.getOutgoingCorrelationId();
+            String imCorrelationId=message.getSourceCorrelationId();
             MovePMToSM request2=new MovePMToSM(key, im, pm, imCorrelationId);
             Message tmp=dispatcher.exchangeSend(sm, request2, _config.getInactiveTime());
 

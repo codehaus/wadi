@@ -18,15 +18,15 @@ package org.codehaus.wadi.jgroups;
 
 import java.util.Collection;
 import java.util.Map;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.impl.AbstractCluster;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
-import org.jgroups.Address;
 import org.jgroups.ChannelException;
 import org.jgroups.blocks.MessageDispatcher;
 
@@ -38,18 +38,28 @@ import org.jgroups.blocks.MessageDispatcher;
  */
 public class JGroupsDispatcher extends AbstractDispatcher {
 
+    protected static final String _prefix="<"+Utils.basename(JGroupsDispatcher.class)+": ";
+    protected static final String _suffix=">";
+    
     protected final boolean _excludeSelf=true;
 
-    protected JGroupsCluster _cluster;
-    protected Address _localAddress;
+    protected final JGroupsCluster _cluster;
+    protected final org.jgroups.Address _localJGAddress;
     protected MessageDispatcher _dispatcher;
 
-    public JGroupsDispatcher(String localPeerName, String clusterName, long inactiveTime) throws ChannelException {
+    public JGroupsDispatcher(String localPeerName, String clusterName, long inactiveTime, String config) throws ChannelException {
         super(inactiveTime);
-        _cluster=new JGroupsCluster(clusterName, localPeerName);
+        _cluster=new JGroupsCluster(clusterName, localPeerName, config);
+        _localJGAddress=((JGroupsPeer)_cluster.getLocalPeer()).getJGAddress();
 
         // TODO - where is this method.
-//      register(_cluster, "onMessage", StateUpdate.class);
+        //      register(_cluster, "onMessage", StateUpdate.class);
+    }
+    
+    // 'java.lang.Object' API
+    
+    public String toString() {
+        return _prefix+_cluster+_suffix;
     }
 
     // org.codehaus.wadi.group.Dispatcher' API
@@ -61,7 +71,6 @@ public class JGroupsDispatcher extends AbstractDispatcher {
         } catch (ClusterException e) {
             throw new MessageExchangeException(e);
         }
-        _localAddress=_cluster.getLocalAddress();
     }
 
     public void stop() throws MessageExchangeException {
@@ -77,16 +86,15 @@ public class JGroupsDispatcher extends AbstractDispatcher {
         return new JGroupsMessage();
     }
 
-    public void send(org.codehaus.wadi.group.Address to, Message message) throws MessageExchangeException {
-        _cluster.send(to, message);
+    public void send(Address target, Message message) throws MessageExchangeException {
+        _cluster.send(target, message);
     }
-    
-    public String getPeerName(org.codehaus.wadi.group.Address a) {
-        JGroupsAddress address=(JGroupsAddress)a;
-        assert(address!=null);
+
+    public String getPeerName(Address address) {
+        JGroupsPeer peer=(JGroupsPeer)address;
+        assert(peer!=null);
         assert(_cluster!=null);
-        assert(address.getPeer()==null && address!=_cluster.getAddress()); //incorrectly initialised address
-        return address.getName();
+        return peer.getName();
     }
 
     public Cluster getCluster() {
@@ -101,7 +109,7 @@ public class JGroupsDispatcher extends AbstractDispatcher {
         // }
     }
 
-    public org.codehaus.wadi.group.Address getAddress(String name) {
+    public Address getAddress(String name) {
         throw new UnsupportedOperationException();
     }
 
@@ -112,18 +120,14 @@ public class JGroupsDispatcher extends AbstractDispatcher {
     }
 
     protected void hook() {
-        JGroupsCluster._cluster.set(_cluster);
+        AbstractCluster._cluster.set(_cluster);
         super.hook();
     }
-    
+
     // 'org.codehaus.wadi.jgroups.JGroupsDispatcher' API
-    
+
     public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
         throw new UnsupportedOperationException("NYI");
-    }
-
-    protected Peer getNode(Address address) {
-        return _cluster.getAddress(address).getPeer();
     }
 
 }

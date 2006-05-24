@@ -17,12 +17,12 @@ package org.codehaus.wadi.group;
 
 import java.util.Map;
 
-
 /**
  * 
  * @version $Revision: 1603 $
  */
 public interface Cluster {
+
     void setElectionStrategy(ElectionStrategy strategy);
 
     Map getRemotePeers();
@@ -48,4 +48,10 @@ public interface Cluster {
      * @throws InterruptedException
      */
     boolean waitOnMembershipCount(int membershipCount, long timeout) throws InterruptedException;
+    
+    /**
+     * @return - the number of millis that a Peer may remain silent before being declared suspect/dead..
+     */
+    long getInactiveTime();
+    
 }

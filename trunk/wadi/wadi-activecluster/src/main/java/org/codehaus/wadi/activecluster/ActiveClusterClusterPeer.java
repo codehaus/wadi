@@ -1,6 +1,6 @@
-/**
+ /**
  *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2003-2006 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,33 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.jgroups;
+package org.codehaus.wadi.activecluster;
 
-/**
- * A WADI Peer mapped onto JGroups
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
- */
-public class JGroupsRemotePeer extends JGroupsPeer {
+public class ActiveClusterClusterPeer extends ActiveClusterPeer {
 
-    protected static final String _prefix="<"+Utils.basename(JGroupsRemotePeer.class)+": ";
+    protected static final String _prefix="<"+Utils.basename(ActiveClusterClusterPeer.class)+": ";
     protected static final String _suffix=">";
-
-    public JGroupsRemotePeer(JGroupsCluster cluster, org.jgroups.Address jgaddress) {
+    
+    public ActiveClusterClusterPeer(ActiveClusterCluster cluster) {
         super(cluster);
-        init(jgaddress);
     }
-
+    
     // 'java.lang.Object' API
-
+    
     public String toString() {
-        return _prefix+getName()+_suffix;
-    }
-
+        return _prefix+getName()+"/"+_acDestination+_suffix;
+    }    
+    
+    // 'org.codehaus.wadi.group.Peer' API
+    
     public String getName() {
-        String name=super.getName();
-        return (name==null)?"<unknown>":name;
+        return _cluster.getName();
     }
 
 }

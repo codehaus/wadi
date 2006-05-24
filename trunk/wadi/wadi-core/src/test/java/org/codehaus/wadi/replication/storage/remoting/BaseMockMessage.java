@@ -25,19 +25,19 @@ import org.codehaus.wadi.group.Message;
  */
 public class BaseMockMessage implements Message {
 
-    public String getIncomingCorrelationId() {
+    public String getTargetCorrelationId() {
         throw new UnsupportedOperationException();
     }
 
-    public void setIncomingCorrelationId(String correlationId) {
+    public void setTargetCorrelationId(String correlationId) {
         throw new UnsupportedOperationException();
     }
 
-    public String getOutgoingCorrelationId() {
+    public String getSourceCorrelationId() {
         throw new UnsupportedOperationException();
     }
 
-    public void setOutgoingCorrelationId(String correlationId) {
+    public void setSourceCorrelationId(String correlationId) {
         throw new UnsupportedOperationException();
     }
 

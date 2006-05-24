@@ -110,13 +110,8 @@ public class TestVMCluster extends TestCase {
             events.clear();
         }
         
-<<<<<<< .mine
         public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
             // events.add(event); - FIXME   
-=======
-        public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
-            events.add(event);   
->>>>>>> .r1819
         }
 
         public void onPeerUpdated(ClusterEvent event) {

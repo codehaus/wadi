@@ -94,7 +94,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 
 	public void start() throws Exception {
 		_dispatcher.init(this);
-		_dindex=new DIndex(_nodeName, _numPartitions, _dispatcher.getInactiveTime(), _dispatcher, _distributedState, _mapper);
+		_dindex=new DIndex(_numPartitions, _dispatcher, _distributedState, _mapper);
 		_dindex.init(this);
 		_log.info("starting Cluster...");
 		_dispatcher.setDistributedState(_distributedState);

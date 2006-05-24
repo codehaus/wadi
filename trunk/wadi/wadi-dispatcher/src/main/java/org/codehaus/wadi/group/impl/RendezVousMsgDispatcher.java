@@ -34,7 +34,7 @@ public class RendezVousMsgDispatcher extends AbstractMsgDispatcher {
     }
 
     public void dispatch(Message om) throws Exception {
-        String correlationId = om.getIncomingCorrelationId();
+        String correlationId = om.getTargetCorrelationId();
         Map rendezVousMap = _dispatcher.getRendezVousMap();
         synchronized (rendezVousMap) {
             Quipu rv= (Quipu) rendezVousMap.get(correlationId);

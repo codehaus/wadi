@@ -136,4 +136,8 @@ public class VMLocalCluster implements Cluster {
     boolean isRunning() {
         return running;
     }
+    
+    public long getInactiveTime() {
+        return delegate.getInactiveTime();
+    }
 }

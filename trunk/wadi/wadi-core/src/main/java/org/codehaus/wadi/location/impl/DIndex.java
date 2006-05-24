@@ -65,10 +65,8 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartitionManager.Callback, StateManagerConfig {
 
-	protected final static String _nodeNameKey="nodeName";
 	protected final static String _partitionKeysKey="partitionKeys";
 	protected final static String _timeStampKey="timeStamp";
-	protected final static String _birthTimeKey="birthTime";
 	protected final static String _correlationIDMapKey="correlationIDMap";
 
 	protected final Map _distributedState;
@@ -77,20 +75,20 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	protected final Dispatcher _dispatcher;
 	protected final Cluster _cluster;
     protected final Peer _localPeer;
-	protected final String _nodeName;
+	protected final String _localPeerName;
 	protected final Log _log;
 	protected final long _inactiveTime;
 	protected final PartitionManager _partitionManager;
 	protected final StateManager _stateManager;
 	protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 
-	public DIndex(String nodeName, int numPartitions, long inactiveTime, Dispatcher dispatcher, Map distributedState, PartitionMapper mapper) {
-		_nodeName=nodeName;
-		_log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
-		_inactiveTime=inactiveTime;
-		_dispatcher=dispatcher;
-		_cluster=_dispatcher.getCluster();
+	public DIndex(int numPartitions, Dispatcher dispatcher, Map distributedState, PartitionMapper mapper) {
+        _dispatcher=dispatcher;
+        _cluster=_dispatcher.getCluster();
+        _inactiveTime=_cluster.getInactiveTime();
         _localPeer=_cluster.getLocalPeer();
+        _localPeerName=_localPeer.getName();
+		_log=LogFactory.getLog(getClass().getName()+"#"+_localPeerName);
 		_distributedState=distributedState;
 		_partitionManager=new SimplePartitionManager(_dispatcher, numPartitions, _distributedState, this, mapper);
 		_stateManager= new SimpleStateManager(_dispatcher, _inactiveTime);
@@ -105,9 +103,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		_config=config;
 		_cluster.setElectionStrategy(new SeniorityElectionStrategy());
         _cluster.addClusterListener(this);
-		_distributedState.put(_nodeNameKey, _nodeName);
+		_distributedState.put(Peer._peerNameKey, _localPeerName);
 		_distributedState.put(_correlationIDMapKey, new HashMap());
-		_distributedState.put(_birthTimeKey, new Long(_config.getBirthTime()));
+		_distributedState.put(Peer._birthTimeKey, new Long(_config.getBirthTime()));
 		PartitionKeys keys=_partitionManager.getPartitionKeys();
 		_distributedState.put(_partitionKeysKey, keys);
 		_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
@@ -184,7 +182,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	public void onPeerUpdated(ClusterEvent event) {
 		Peer node=event.getPeer();
-		if (_log.isTraceEnabled()) _log.trace("onNodeUpdate: " + getNodeName(node) + ": " + node.getState());
+		if (_log.isTraceEnabled()) _log.trace("onNodeUpdate: " + getPeerName(node) + ": " + node.getState());
 
 		_partitionManager.update(node);
 
@@ -221,15 +219,15 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	    //leavers
 	    for (Iterator i=leavers.iterator(); i.hasNext(); ) {
 	        Peer node=(Peer)i.next();
-	        if (_log.isDebugEnabled()) _log.info("node failed: "+getNodeName(node));
+	        if (_log.isDebugEnabled()) _log.info("node failed: "+getPeerName(node));
 	        if (_leavers.remove(node.getAddress())) {
 	            // we have already been explicitly informed of this node's wish to leave...
 	            _left.remove(node);
-	            if (_log.isTraceEnabled()) _log.trace("onNodeFailed:" + getNodeName(node) + "- already evacuated - ignoring");
+	            if (_log.isTraceEnabled()) _log.trace("onNodeFailed:" + getPeerName(node) + "- already evacuated - ignoring");
 	        } else {
-	            if (_log.isErrorEnabled()) _log.error("onNodeFailed: " + getNodeName(node));
+	            if (_log.isErrorEnabled()) _log.error("onNodeFailed: " + getPeerName(node));
 	            if (amCoordinator()) {
-	                if (_log.isErrorEnabled()) _log.error("CATASTROPHIC FAILURE on: " + getNodeName(node));
+	                if (_log.isErrorEnabled()) _log.error("CATASTROPHIC FAILURE on: " + getPeerName(node));
 	                if (_coordinator!=null)
 	                    _coordinator.queueRebalancing();
 	                else
@@ -241,7 +239,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
     public void onPeerRemoved(ClusterEvent event) {
 		Peer node=event.getPeer();
-		if (_log.isDebugEnabled()) _log.debug("node leaving: "+getNodeName(node));
+		if (_log.isDebugEnabled()) _log.debug("node leaving: "+getPeerName(node));
 		_leavers.add(node.getAddress());
 		if (_coordinator!=null)
 			_coordinator.queueRebalancing();
@@ -259,7 +257,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	public void onCoordinatorChanged(ClusterEvent event) {
         _log.info("COORDINATOR CHANGED: " + event.getPeer());
 		synchronized (_coordinatorLock) {
-            if (_log.isDebugEnabled()) _log.debug("coordinator elected: " + getNodeName(event.getPeer()));
+            if (_log.isDebugEnabled()) _log.debug("coordinator elected: " + getPeerName(event.getPeer()));
 			Peer newCoordinator=event.getPeer();
 			if (false == newCoordinator.equals(_coordinatorNode)) {
 				if (null != _coordinatorNode && _coordinatorNode.equals(_localPeer)) {
@@ -303,8 +301,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	}
 
 
-	public static String getNodeName(Peer node) {
-		return node==null?"<unknown>":(String)node.getState().get(_nodeNameKey);
+	public static String getPeerName(Peer node) {
+		return node==null?"<unknown>":(String)node.getState().get(Peer._peerNameKey);
 	}
 
 	public boolean isCoordinator() {
@@ -350,12 +348,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		if (node!=_localPeer)
 			node=(Peer)_cluster.getRemotePeers().get(node.getAddress());
 		if (node==null) {
-			if (_log.isInfoEnabled()) _log.info(DIndex.getNodeName(node) + " : <unknown> - {?...}");
+			if (_log.isInfoEnabled()) _log.info(DIndex.getPeerName(node) + " : <unknown> - {?...}");
 			return 0;
 		} else {
 			PartitionKeys keys=DIndex.getPartitionKeys(node);
 			int amount=keys.size();
-			if (_log.isInfoEnabled()) _log.info(DIndex.getNodeName(node) + " : " + amount + " - " + keys);
+			if (_log.isInfoEnabled()) _log.info(DIndex.getPeerName(node) + " : " + amount + " - " + keys);
 			return amount;
 		}
 	}
@@ -492,7 +490,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	public String getPeerName(Address address) {
 		Peer local=_localPeer;
 		Peer node=address.equals(local.getAddress())?local:(Peer)_cluster.getRemotePeers().get(address);
-		return getNodeName(node);
+		return getPeerName(node);
 	}
 
 	public long getInactiveTime() {
@@ -527,7 +525,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	// StateManagerConfig API
 
 	public String getLocalPeerName() {
-		return _nodeName;
+		return _localPeerName;
 	}
 
 	public 	boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {

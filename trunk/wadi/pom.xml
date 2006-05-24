@@ -226,7 +226,8 @@
     <site>
       <id>wadi-website-dir</id>
       <name>WADI Website</name>
-      <url>scpexe://codehaus.org/home/projects/wadi/public_html/stage</url>
+<!--      <url>scpexe://codehaus.org/home/projects/wadi/public_html/stage</url> -->
+      <url>scpexe://localhost/tmp/wadi</url>
     </site>
     <repository>
       <id>wadi-release-repository</id>
@@ -316,12 +317,12 @@
 	<artifactId>wadi-dispatcher</artifactId>
 	<version>${project.version}</version>
       </dependency>
-      <dependency>
-	<groupId>org.codehaus.wadi</groupId>
-	<artifactId>wadi-dispatcher</artifactId>
-	<version>${project.version}</version>
-	<type>test-jar</type>
-      </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-dispatcher</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+    </dependency>
       <dependency>
 	<groupId>geronimo-spec</groupId>
 	<artifactId>geronimo-spec-servlet</artifactId>
@@ -498,10 +499,9 @@
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- stop surefire from trying to run nested classes... -->
 	  </excludes>
 	  <!--
-	  <baseDir>.</baseDir>
 	  <childDelegation>false</childDelegation>
-	  <forkMode>pertest</forkMode>
 	  -->
+	  <forkMode>pertest</forkMode> <!-- we have to fork in order to pass an argLine -->
 	  <argLine>-enableassertions -Xmx1024m</argLine>
 	  <systemProperties>
 	    <property>
@@ -593,20 +593,20 @@
       <!-- these are broken -->
       <!--
       <plugin>
-      <groupId>org.codehaus.mojo</groupId>
-      <artifactId>javancss-maven-plugin</artifactId>
-      <version>2.0-alpha1-SNAPSHOT</version>
-    </plugin>
+	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>javancss-maven-plugin</artifactId>
+	<version>2.0-alpha1-SNAPSHOT</version>
+      </plugin>
       <plugin>
-      <groupId>org.codehaus.mojo</groupId>
-      <artifactId>findbugs-maven-plugin</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </plugin>
+	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>findbugs-maven-plugin</artifactId>
+	<version>1.0-SNAPSHOT</version>
+      </plugin>
       <plugin>
-      <groupId>org.codehaus.mojo</groupId>
-      <artifactId>cobertura-maven-plugin</artifactId>
-      <version>2.0-SNAPSHOT</version>
-    </plugin>
+	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>cobertura-maven-plugin</artifactId>
+	<version>2.0-SNAPSHOT</version>
+      </plugin>
       -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

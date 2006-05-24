@@ -21,32 +21,33 @@ import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.impl.AbstractCluster;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
-class ACObjectMessageAdapter implements Message {
+class ActiveClusterMessage implements Message {
     private static final String INCOMING_COR_ID_KEY = "INCOMING_COR_ID_KEY";
     private static final String OUTGOING_COR_ID_KEY = "OUTGOING_COR_ID_KEY";
 
     static ObjectMessage unwrap(Message message) {
-        if (false == message instanceof ACObjectMessageAdapter) {
+        if (false == message instanceof ActiveClusterMessage) {
             throw new IllegalArgumentException("Expected " + 
-                            ACObjectMessageAdapter.class.getName() +
+                            ActiveClusterMessage.class.getName() +
                             ". Was:" + message.getClass().getName());
         }
         
-        return ((ACObjectMessageAdapter) message).adaptee;
+        return ((ActiveClusterMessage) message).adaptee;
     }
     
     private final ObjectMessage adaptee;
     
-    public ACObjectMessageAdapter(ObjectMessage adaptee) {
+    public ActiveClusterMessage(ObjectMessage adaptee) {
         this.adaptee = adaptee;
     }
 
-    public ACObjectMessageAdapter(javax.jms.Message message) {
+    public ActiveClusterMessage(javax.jms.Message message) {
         if (false == message instanceof ObjectMessage) {
             throw new IllegalArgumentException("Expected " +
                             ObjectMessage.class.getName() + 
@@ -56,7 +57,7 @@ class ACObjectMessageAdapter implements Message {
         this.adaptee = (ObjectMessage) message;
     }
 
-    public String getIncomingCorrelationId() {
+    public String getTargetCorrelationId() {
         try {
             return adaptee.getStringProperty(INCOMING_COR_ID_KEY);
         } catch (JMSException e) {
@@ -64,7 +65,7 @@ class ACObjectMessageAdapter implements Message {
         }
     }
 
-    public void setIncomingCorrelationId(String correlationId) {
+    public void setTargetCorrelationId(String correlationId) {
         try {
             adaptee.setStringProperty(INCOMING_COR_ID_KEY, correlationId);
         } catch (JMSException e) {
@@ -72,7 +73,7 @@ class ACObjectMessageAdapter implements Message {
         }        
     }
 
-    public String getOutgoingCorrelationId() {
+    public String getSourceCorrelationId() {
         try {
             return adaptee.getStringProperty(OUTGOING_COR_ID_KEY);
         } catch (JMSException e) {
@@ -80,7 +81,7 @@ class ACObjectMessageAdapter implements Message {
         }
     }
 
-    public void setOutgoingCorrelationId(String correlationId) {
+    public void setSourceCorrelationId(String correlationId) {
         try {
             adaptee.setStringProperty(OUTGOING_COR_ID_KEY, correlationId);
         } catch (JMSException e) {
@@ -95,7 +96,7 @@ class ACObjectMessageAdapter implements Message {
                 return null;
             }
             
-            return ACDestinationAdapter.wrap(replyTo);
+            return (ActiveClusterPeer)AbstractCluster.get(replyTo);
         } catch (JMSException e) {
             throw new RuntimeJMSException(e);
         }
@@ -103,7 +104,7 @@ class ACObjectMessageAdapter implements Message {
 
     public void setReplyTo(Address replyTo) {
         try {
-            adaptee.setJMSReplyTo(ACDestinationAdapter.unwrap(replyTo));
+            adaptee.setJMSReplyTo(((ActiveClusterPeer)replyTo).getACDestination());
         } catch (JMSException e) {
             throw new RuntimeJMSException(e);
         }
@@ -111,7 +112,7 @@ class ACObjectMessageAdapter implements Message {
 
     public Address getAddress() {
         try {
-            return ACDestinationAdapter.wrap(adaptee.getJMSDestination());
+            return (ActiveClusterPeer)AbstractCluster.get(adaptee.getJMSDestination());
         } catch (JMSException e) {
             throw new RuntimeJMSException(e);
         }
@@ -119,7 +120,7 @@ class ACObjectMessageAdapter implements Message {
 
     public void setAddress(Address address) {
         try {
-            adaptee.setJMSDestination(ACDestinationAdapter.unwrap(address));
+            adaptee.setJMSDestination(((ActiveClusterPeer)address).getACDestination());
         } catch (JMSException e) {
             throw new RuntimeJMSException(e);
         }

@@ -94,7 +94,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			_partitions[i]=new PartitionFacade(i, timeStamp, new UnknownPartition(i), queueing, this);
 
 		_distributedState=distributedState;
-		_inactiveTime=_dispatcher.getInactiveTime();
+		_inactiveTime=_cluster.getInactiveTime();
 		_callback=callback;
 		_mapper=mapper;
         
@@ -133,11 +133,11 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		_log.info("evacuating...");
 
 		PartitionEvacuationRequest request=new PartitionEvacuationRequest();
-		Peer localNode=_localPeer;
-		Peer coordNode=_config.getCoordinator();
+		Peer localPeer=_localPeer;
+		Peer coordPeer=_config.getCoordinator();
 		String correlationId=_localPeer.getName();
-		if (_log.isTraceEnabled()) _log.trace("evacuating partitions...: "+_dispatcher.getPeerName(localNode.getAddress())+" -> "+coordNode.getState().get("nodeName"));
-		while (_dispatcher.exchangeSend(localNode.getAddress(), coordNode.getAddress(), correlationId, request, _inactiveTime)==null) {
+		if (_log.isTraceEnabled()) _log.trace("evacuating partitions...: "+_dispatcher.getPeerName(localPeer.getAddress())+" -> "+coordPeer.getState().get(Peer._peerNameKey));
+		while (_dispatcher.exchangeSend(coordPeer.getAddress(), correlationId, request, _inactiveTime)==null) {
 			if (_log.isWarnEnabled()) _log.warn("could not contact Coordinator - backing off for "+ _inactiveTime+" millis...");
 			Thread.sleep(_config.getInactiveTime());
 		}
@@ -241,7 +241,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			_distributedState.put(_partitionKeysKey, keys);
 			_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
 			if (_log.isTraceEnabled()) _log.trace("local state (after giving): " + keys);
-			String correlationID=om.getOutgoingCorrelationId();
+			String correlationID=om.getSourceCorrelationId();
 			if (_log.isTraceEnabled()) _log.trace("CORRELATIONID: " + correlationID);
 			Map correlationIDMap=(Map)_distributedState.get(_correlationIDMapKey);
 			Address from=om.getReplyTo();

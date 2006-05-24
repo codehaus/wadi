@@ -22,6 +22,7 @@ import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.location.DIndexRequest;
 import org.codehaus.wadi.location.PartitionConfig;
 import org.codehaus.wadi.location.newmessages.DeleteIMToPM;
@@ -35,7 +36,10 @@ import org.codehaus.wadi.location.newmessages.MoveIMToPM;
  */
 public class RemotePartition extends AbstractPartition {
 
-	protected transient Log _log;
+    protected static final String _prefix="<"+Utils.basename(RemotePartition.class)+": ";
+    protected static final String _suffix=">";
+
+    protected transient Log _log;
 
 	protected final PartitionConfig _config;
 
@@ -76,7 +80,7 @@ public class RemotePartition extends AbstractPartition {
 	}
 
 	public String toString() {
-		return "<"+getClass()+":"+_key+"@"+_config.getLocalPeerName()+"->"+_config.getPeerName(_location)+">";
+		return _prefix+_key+"@"+_config.getLocalPeerName()+"->"+_config.getPeerName(_location)+_suffix;
 	}
 
 	public void onMessage(Message message, InsertIMToPM request) {

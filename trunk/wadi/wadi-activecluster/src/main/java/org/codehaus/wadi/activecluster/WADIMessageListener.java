@@ -17,6 +17,7 @@ package org.codehaus.wadi.activecluster;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import org.codehaus.wadi.group.Cluster;
 
 /**
  * 
@@ -24,12 +25,15 @@ import javax.jms.MessageListener;
  */
 class WADIMessageListener implements MessageListener {
     private final org.codehaus.wadi.group.MessageListener adaptee;
+    private final ActiveClusterCluster cluster;
     
-    public WADIMessageListener(org.codehaus.wadi.group.MessageListener adaptee) {
+    public WADIMessageListener(ActiveClusterCluster cluster, org.codehaus.wadi.group.MessageListener adaptee) {
+        this.cluster = cluster;
         this.adaptee = adaptee;
     }
 
     public void onMessage(Message message) {
-        adaptee.onMessage(new ACObjectMessageAdapter(message));
+        ActiveClusterCluster._cluster.set(cluster); // attach cluster to a ThreadLocal for future use...
+        adaptee.onMessage(new ActiveClusterMessage(message));
     }
 }

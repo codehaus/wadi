@@ -37,7 +37,7 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public void send(Address from, Address to, String outgoingCorrelationId, Serializable body) {
+    public void send(Address source, Address target, String sourceCorrelationId, Serializable pojo) {
         throw new UnsupportedOperationException();
     }
 
@@ -45,11 +45,11 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public Message exchangeSend(Address from, Address to, Serializable body, long timeout, String targetCorrelationId) {
+    public Message exchangeSend(Address target, Serializable body, long timeout, String targetCorrelationId) {
         throw new UnsupportedOperationException();
     }
 
-    public Message exchangeSend(Address from, Address to, String outgoingCorrelationId, Serializable body, long timeout) {
+    public Message exchangeSend(Address target, String targetCorrelationId, Serializable pojo, long timeout) {
         throw new UnsupportedOperationException();
     }
 
@@ -121,15 +121,11 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public void send(Address to, Message message) throws MessageExchangeException {
+    public void send(Address target, Message message) throws MessageExchangeException {
         throw new UnsupportedOperationException();
     }
 
     public Message createMessage() {
-        throw new UnsupportedOperationException();
-    }
-
-    public long getInactiveTime() {
         throw new UnsupportedOperationException();
     }
 
