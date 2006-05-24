@@ -42,7 +42,7 @@ import org.codehaus.wadi.location.newmessages.MoveSMToPM;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public class LocalPartition extends AbstractPartition implements Serializable {
 
@@ -162,7 +162,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
     // Partition may only be migrated when exclusive lock has been taken, this may only happen when all shared locks are released - this implies that no PM session locks will be in place...
 
     String key=request.getKey();
-    Dispatcher _dispatcher=_config.getDispatcher();
+    Dispatcher dispatcher=_config.getDispatcher();
     try {
 
       Locus locus=null;
@@ -172,7 +172,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 
       if (locus==null) {
         // session does not exist - tell IM
-        _dispatcher.reply(message,new MovePMToIM());
+        dispatcher.reply(message,new MovePMToIM());
         return;
       } else {
         synchronized (locus) { // ensures that no-one else tries to relocate session whilst we are doing so...
@@ -191,10 +191,10 @@ public class LocalPartition extends AbstractPartition implements Serializable {
             // MoveIMToPM2 - IM acquires local state-lock and then acks to PM so that it can release distributed lock in partition
           } else {
             // session does exist - we need to ask SM to move it to IM
-            Address pm=_dispatcher.getLocalAddress();
+            Address pm=dispatcher.getCluster().getLocalPeer().getAddress();
             String imCorrelationId=message.getOutgoingCorrelationId();
             MovePMToSM request2=new MovePMToSM(key, im, pm, imCorrelationId);
-            Message tmp=_dispatcher.exchangeSend(sm, request2, _config.getInactiveTime());
+            Message tmp=dispatcher.exchangeSend(sm, request2, _config.getInactiveTime());
 
             if (tmp==null) {
               _log.error("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"}");
@@ -255,7 +255,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
   public Message exchange(DIndexRequest request, long timeout) throws Exception {
     if (_log.isTraceEnabled()) _log.trace("local dispatch - needs optimisation");
     Dispatcher dispatcher=_config.getDispatcher();
-    Address target=dispatcher.getLocalAddress();
+    Address target=dispatcher.getCluster().getLocalPeer().getAddress();
     return dispatcher.exchangeSend(target, request, timeout);
   }
 

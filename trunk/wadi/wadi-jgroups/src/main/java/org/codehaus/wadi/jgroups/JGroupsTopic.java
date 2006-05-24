@@ -17,23 +17,25 @@
 package org.codehaus.wadi.jgroups;
 
 import java.io.ObjectStreamException;
-import org.codehaus.wadi.group.Peer;
-import org.jgroups.Address;
 
+/**
+ * A WADI Address that can be used to broadcast to a JGroups Channel
+ * 
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class JGroupsTopic extends JGroupsAddress {
 
-  protected final String _name;
+    protected final String _name;
 
-  public JGroupsTopic(String name, Address address) {
-    super(address); // null Node
-    _name=name;
-  }
+    public JGroupsTopic(String name) {
+        super(null); // null Peer
+        _name=name;
+    }
 
-  public void init(Peer node) {
-  }
+    protected Object readResolve() throws ObjectStreamException {
+        JGroupsCluster cluster=(JGroupsCluster)JGroupsCluster._cluster.get();
+        return cluster.getAddress();
+    }
 
-	protected Object readResolve() throws ObjectStreamException {
-		JGroupsCluster cluster=(JGroupsCluster)JGroupsCluster._cluster.get();
-		return cluster.getAddress();
-	}
 }

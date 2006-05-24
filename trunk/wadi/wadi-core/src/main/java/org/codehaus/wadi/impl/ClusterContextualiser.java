@@ -96,7 +96,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		_dispatcher=ccc.getDispatcher();
 		_cluster=_dispatcher.getCluster();
 		_proxiedLocation = ccc.getProxiedLocation();
-		_location=new HttpProxyLocation(_dispatcher.getLocalAddress(), _proxiedLocation, ccc.getInvocationProxy());
+		_location=new HttpProxyLocation(_cluster.getLocalPeer().getAddress(), _proxiedLocation, ccc.getInvocationProxy());
 		_dindex=ccc.getDIndex();
 		_cluster.addClusterListener(this);
 		_dindex.getStateManager().setImmigrationListener(this);

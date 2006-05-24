@@ -167,7 +167,7 @@ public abstract class AbstractTestGroup extends TestCase {
         
         public void dispatch(Message om) throws Exception {
             Address content=(Address)om.getPayload();
-            Address target=(Address)om.getAddress();
+            Address target=om.getAddress();
             assertSame(_local, content);
             assertSame(_local, target);
             assertSame(content, target);
@@ -187,7 +187,7 @@ public abstract class AbstractTestGroup extends TestCase {
         
         public void dispatch(Message om) throws Exception {
             Address content=(Address)om.getPayload();
-            Address target=(Address)om.getAddress();
+            Address target=om.getAddress();
             assertSame(_local, content);
             assertSame(_local, target);
             assertSame(content, target);

@@ -26,87 +26,94 @@ import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.jgroups.messages.StateUpdate;
 
-public class JGroupsLocalPeer implements LocalPeer {
+/**
+ * A WADI LocalPeer mapped onto JGroups
+ * 
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public class JGroupsLocalPeer implements LocalPeer, Comparable {
 
-  protected final Log _log=LogFactory.getLog(getClass());
-  protected final JGroupsCluster _cluster;
-  protected JGroupsAddress _address;
-  protected Map _clusterState;
-  protected Map _localState=new HashMap();
+    protected static final String _prefix="<"+Utils.basename(JGroupsLocalPeer.class)+": ";
+    protected static final String _suffix=">";
 
-  public JGroupsLocalPeer(JGroupsCluster cluster, Map clusterState) {
-    super();
-    _cluster=cluster;
-    _clusterState=clusterState;
-  }
+    protected final Log _log=LogFactory.getLog(getClass());
+    protected final JGroupsAddress _address=new JGroupsAddress(this);
+    protected final JGroupsCluster _cluster;
+    protected final Map _clusterState;
 
-  // 'Node' api
+    protected Map _localState;
 
-  public Map getState() {
-    if (_address==null) {
-      return _localState;
-    } else
-      synchronized (_clusterState) {
-        return (Map)_clusterState.get(_address.getAddress());
-      }
-  }
-
-  public Address getAddress() {
-    return _address;
-  }
-
-  public void init(JGroupsAddress address) {
-    _address=address;
-    synchronized (_clusterState) {
-      _clusterState.put(_address.getAddress(), _localState);
-      _localState=null;
+    public JGroupsLocalPeer(JGroupsCluster cluster, Map clusterState) {
+        super();
+        _cluster=cluster;
+        _clusterState=clusterState;
+        _localState=new HashMap();
     }
-  }
 
-  public String getName() {
-      Map state=getState();
-      return (state==null)?"<unknown>":(String)state.get("nodeName");
-  }
+    // 'java.lang.Object' API
 
-  public boolean isCoordinator() {
-    throw new UnsupportedOperationException("NYI");
-  }
-
-  public Object getZone() {
-    throw new UnsupportedOperationException("NYI");
-  }
-
-  // 'JGroupsLocalNode' api
-
-  public void setState(Map state) throws MessageExchangeException {
-    if (_address==null) {
-      // we have not yet been initialised...
-      _localState=state;
-    } else {
-      _localState=null;
-      Object tmp;
-      synchronized (_clusterState) {
-        tmp=_clusterState.put(_address.getAddress(), state);
-      }
-
-      if (tmp!=null) {
-        Message message=new JGroupsMessage();
-        message.setReplyTo(_address);
-        message.setPayload(new StateUpdate(state));
-        _cluster.send(_cluster.getAddress(), message);
-      }
+    public String toString() {
+        return _prefix+getName()+_suffix;
     }
-  }
 
-  public boolean equals(Object object) {
-      return (object instanceof JGroupsLocalPeer && ((JGroupsLocalPeer)object).getAddress()==_address);
-  }
-  
-  protected static final String _prefix="<"+Utils.basename(JGroupsLocalPeer.class)+": ";
-  protected static final String _suffix=">";
+    public boolean equals(Object object) {
+        return (object instanceof JGroupsLocalPeer && ((JGroupsLocalPeer)object).getAddress()==_address);
+    }
 
-  public String toString() {
-    return _prefix+getName()+_suffix;
-  }
+    // 'java.lang.Comparable' API
+
+    public int compareTo(Object object) {
+        return _address.compareTo(object); 
+    }
+
+    // 'org.codehaus.wadi.group.Peer' API
+
+    public Map getState() {
+        if (_address==null) {
+            return _localState;
+        } else
+            synchronized (_clusterState) {
+                return (Map)_clusterState.get(_address.getAddress());
+            }
+    }
+
+    public Address getAddress() {
+        return _address;
+    }
+
+    public void init(org.jgroups.Address jgaddress) {
+        _address.init(jgaddress);
+        synchronized (_clusterState) {
+            _clusterState.put(jgaddress, _localState);
+        }
+    }
+
+    public String getName() {
+        Map state=getState();
+        return (state==null)?"<unknown>":(String)state.get("nodeName");
+    }
+
+    // 'org.codehaus.wadi.group.LocalPeer' API
+
+    public void setState(Map state) throws MessageExchangeException {
+        if (_address==null) {
+            // we have not yet been initialised...
+            _localState=state;
+        } else {
+            _localState=null;
+            Object tmp;
+            synchronized (_clusterState) {
+                tmp=_clusterState.put(_address.getAddress(), state);
+            }
+
+            if (tmp!=null) {
+                Message message=new JGroupsMessage();
+                message.setReplyTo(_address);
+                message.setPayload(new StateUpdate(state));
+                _cluster.send(_cluster.getAddress(), message);
+            }
+        }
+    }
 
 }

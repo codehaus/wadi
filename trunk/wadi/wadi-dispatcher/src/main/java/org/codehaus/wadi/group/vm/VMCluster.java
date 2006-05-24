@@ -15,6 +15,7 @@
  */
 package org.codehaus.wadi.group.vm;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -79,17 +80,17 @@ public class VMCluster implements Cluster {
     }
 
     void registerDispatcher(VMDispatcher dispatcher) {
-        String nodeName = dispatcher.getLocalPeer().getName();
+        String nodeName = dispatcher.getCluster().getLocalPeer().getName();
         synchronized (nodeNameToDispatcher) {
             nodeNameToDispatcher.put(nodeName, dispatcher);
         }
         
-        listenerSupport.notifyAdded(dispatcher.getLocalPeer());
+        listenerSupport.notifyMembershipChanged(Collections.singleton(dispatcher.getCluster().getLocalPeer()), Collections.EMPTY_SET);
         doElection(dispatcher.getCluster());
     }
 
     void unregisterDispatcher(VMDispatcher dispatcher) {
-        String nodeName = dispatcher.getLocalPeer().getName();
+        String nodeName = dispatcher.getCluster().getLocalPeer().getName();
         Object object;
         synchronized (nodeNameToDispatcher) {
             object = nodeNameToDispatcher.remove(nodeName);
@@ -98,8 +99,9 @@ public class VMCluster implements Cluster {
             throw new IllegalArgumentException("unknown dispatcher");
         }
 
-        listenerSupport.notifyRemoved(dispatcher.getLocalPeer());
+        // N.B. - this probably should not do anything now... - FIXME
         doElection(dispatcher.getCluster());
+        listenerSupport.notifyMembershipChanged(Collections.singleton(dispatcher.getCluster().getLocalPeer()), Collections.EMPTY_SET);
     }
 
     void send(Address to, Message message) throws MessageExchangeException {
@@ -116,7 +118,7 @@ public class VMCluster implements Cluster {
         }
     }
 
-    int getNumNodes() {
+    public int getPeerCount() {
         synchronized (nodeNameToDispatcher) {
             return nodeNameToDispatcher.size();
         }
@@ -129,7 +131,7 @@ public class VMCluster implements Cluster {
             Map.Entry entry = (Map.Entry) iter.next();
             if (entry.getKey().equals(name)) {
                 Dispatcher dispatcher = (Dispatcher) entry.getValue();
-                return dispatcher.getLocalAddress();
+                return dispatcher.getCluster().getLocalPeer().getAddress();
             }
         }
 
@@ -153,7 +155,7 @@ public class VMCluster implements Cluster {
         for (Iterator iter = snapshotMap.entrySet().iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
             Dispatcher dispatcher = (Dispatcher) entry.getValue();
-            entry.setValue(dispatcher.getLocalPeer());  
+            entry.setValue(dispatcher.getCluster().getLocalPeer());  
         }
         return snapshotMap;
     }
@@ -204,8 +206,8 @@ public class VMCluster implements Cluster {
             throw new IllegalArgumentException("Node " + nodeName + " is unknown.");  
         }
         
-        listenerSupport.notifyFailed(dispatcher.getLocalPeer());
         doElection(dispatcher.getCluster());
+        listenerSupport.notifyMembershipChanged(Collections.EMPTY_SET, Collections.singleton(getLocalPeer()));
     }
 
     public void setMessageRecorder(MessageRecorder messageRecorder) {
@@ -235,7 +237,7 @@ public class VMCluster implements Cluster {
         for (Iterator iter = snapshotMap.entrySet().iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
             Dispatcher dispatcher = (Dispatcher) entry.getValue();
-            if (dispatcher.getLocalAddress().equals(to)) {
+            if (dispatcher.getCluster().getLocalPeer().getAddress().equals(to)) {
                 dispatcher.onMessage(message);
                 return;
             }

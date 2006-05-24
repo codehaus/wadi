@@ -21,24 +21,32 @@ import java.util.Map;
 
 import org.codehaus.wadi.jgroups.Utils;
 
+/**
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
 public class StateRequest implements Serializable {
-  
-  protected Map _state;
-  
-  public StateRequest(Map state) {
-    super();
-    _state=state;
-  }
-  
-  public Map getState() {
-      return _state;
-  }
-    
-  protected static final String _prefix="<"+Utils.basename(StateRequest.class)+":";
-  protected static final String _suffix=">";
-  
-  public String toString() {
-    return _prefix+_state+_suffix;
-  }
-  
+
+    protected static final String _prefix="<"+Utils.basename(StateRequest.class)+":";
+    protected static final String _suffix=">";
+
+    protected final Map _state;
+
+    public StateRequest(Map state) {
+        super();
+        _state=state;
+    }
+
+    // 'org.codehaus.wadi.jgroups.messages.StateResponse' API
+
+    public Map getState() {
+        return _state;
+    }
+
+    // 'java.lang.Object' API
+
+    public String toString() {
+        return _prefix+_state+_suffix;
+    }
+
 }

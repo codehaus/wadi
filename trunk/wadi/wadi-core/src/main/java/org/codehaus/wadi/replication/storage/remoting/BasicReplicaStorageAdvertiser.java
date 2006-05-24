@@ -48,7 +48,7 @@ class BasicReplicaStorageAdvertiser implements ReplicaStorageAdvertiser {
     }
 
     private void sendToCluster(ComponentEventType type, ReplicaStorage storage) {
-        sendToDestination(type, storage.getHostingNode(), dispatcher.getClusterAddress());
+        sendToDestination(type, storage.getHostingNode(), dispatcher.getCluster().getAddress());
     }
 
     private void sendToDestination(ComponentEventType type, NodeInfo nodeInfo, Address target) {

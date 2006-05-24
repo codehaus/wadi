@@ -23,65 +23,72 @@ import java.util.Map;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Peer;
 
+/**
+ * A WADI Peer mapped onto JGroups
+ * 
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public class JGroupsRemotePeer implements Peer, Comparable {
 
-public class JGroupsRemotePeer implements Peer {
+    protected static final String _prefix="<"+Utils.basename(JGroupsRemotePeer.class)+": ";
+    protected static final String _suffix=">";
 
-  protected final JGroupsClusterMessageListener _cluster;
-  protected final JGroupsAddress _address;
-  protected Map _clusterState;
+    protected final JGroupsCluster _cluster;
+    protected final JGroupsAddress _address;
+    protected final Map _clusterState;
 
-  public JGroupsRemotePeer(JGroupsClusterMessageListener cluster, JGroupsAddress address, Map state) {
-    super();
-    _cluster=cluster;
-    _address=address;
-    _clusterState=state;
-  }
-
-  // 'Node' api
-
-  public Address getAddress() {
-    return _address;
-  }
-
-  public Map getState() {
-    synchronized (_clusterState) {
-      return (Map)_clusterState.get(_address.getAddress());
+    public JGroupsRemotePeer(JGroupsCluster cluster, org.jgroups.Address jgaddress, Map clusterState) {
+        super();
+        _cluster=cluster;
+        _address=new JGroupsAddress(this);
+        _clusterState=clusterState;
+        // init() collapsed into ctor...
+        _address.init(jgaddress);
     }
-  }
 
-  public String getName() {
-    Map state=getState();
-    state=(state==null?Collections.EMPTY_MAP:state);
-    String name=(String)state.get("nodeName");
-    name=(name==null?"<unknown>":name);
-    return name; // FIXME - duplicates code in Dispatcher...
-  }
+    // 'java.lang.Object' API
 
-  public boolean isCoordinator() {
-    throw new UnsupportedOperationException("NYI");
-  }
-
-  public Object getZone() {
-    throw new UnsupportedOperationException("NYI");
-  }
-
-  // 'JGroupsRemoteNode' api
-
-  public void setState(Map state) {
-    synchronized (_clusterState) {
-      _clusterState.put(_address.getAddress(), state);
+    public String toString() {
+        return _prefix+getName()+_suffix;
     }
-  }
 
-  public boolean equals(Object object) {
-      return (object instanceof JGroupsRemotePeer && ((JGroupsRemotePeer)object).getAddress()==_address);
-  }
+    public boolean equals(Object object) {
+        return (object instanceof JGroupsRemotePeer && ((JGroupsRemotePeer)object).getAddress()==_address);
+    }
 
-  protected static final String _prefix="<"+Utils.basename(JGroupsRemotePeer.class)+": ";
-  protected static final String _suffix=">";
+    // 'java.lang.Comparable' API
 
-  public String toString() {
-    return _prefix+getName()+_suffix;
-  }
-  
+    public int compareTo(Object object) {
+        return _address.compareTo(object); 
+    }
+
+    // 'org.codehaus.wadi.group.Peer' API
+
+    public Address getAddress() {
+        return _address;
+    }
+
+    public Map getState() {
+        synchronized (_clusterState) {
+            return (Map)_clusterState.get(_address.getAddress());
+        }
+    }
+
+    public String getName() {
+        Map state=getState();
+        state=(state==null?Collections.EMPTY_MAP:state);
+        String name=(String)state.get("nodeName");
+        name=(name==null?"<unknown>":name);
+        return name; // FIXME - duplicates code in Dispatcher...
+    }
+
+    // 'org.codehaus.wadi.jgroups.JGroupsRemotePeer' API
+
+    public void setState(Map state) {
+        synchronized (_clusterState) {
+            _clusterState.put(_address.getAddress(), state);
+        }
+    }
+
 }

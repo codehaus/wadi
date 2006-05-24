@@ -24,4 +24,7 @@ import java.io.Serializable;
  * @version $Revision: 1603 $
  */
 public interface Address extends Serializable {
+    
+    // Peer getPeer(); // NYI
+    
 }

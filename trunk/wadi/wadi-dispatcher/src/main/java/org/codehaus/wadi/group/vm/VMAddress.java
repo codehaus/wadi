@@ -17,20 +17,21 @@ package org.codehaus.wadi.group.vm;
 
 import java.io.ObjectStreamException;
 import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.Peer;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
 public class VMAddress implements Address {
-    private final VMPeer node;
+    private final VMPeer peer;
 
     public VMAddress(VMPeer node) {
-        this.node = node;
+        this.peer = node;
     }
 
     public String getNodeName() {
-        return node.getName();
+        return peer.getName();
     }
 
     public boolean equals(Object obj) {
@@ -39,14 +40,19 @@ public class VMAddress implements Address {
         }
         
         VMAddress other = (VMAddress) obj;
-        return node.equals(other.node);
+        return peer.equals(other.peer);
     }
     
     public String toString() {
-        return "Address [" + node.getName() + "]";
+        return "Address [" + peer.getName() + "]";
     }
 
     public Object writeReplace() throws ObjectStreamException {
-        return new VMAddressInfo(node.getName());
+        return new VMAddressInfo(peer.getName());
     };
+    
+    public Peer getPeer() {
+        return peer;
+    }
+    
 }

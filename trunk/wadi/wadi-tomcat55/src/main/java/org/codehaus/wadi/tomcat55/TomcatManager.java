@@ -79,7 +79,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, org.apache.catal
     for (int i=0; i<sessionListeners.length; i++) {
       Object listener=sessionListeners[i];
       if (listener instanceof HttpSessionListener)
-	sll.add((HttpSessionListener)listener);
+	sll.add(listener);
     }
     ((StandardManager)manager).setSessionListeners((HttpSessionListener[])sll.toArray(new HttpSessionListener[sll.size()]));
 
@@ -88,7 +88,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, org.apache.catal
     for (int i=0; i<attributeListeners.length; i++) {
       Object listener=attributeListeners[i];
       if (listener instanceof HttpSessionAttributeListener)
-	all.add((HttpSessionAttributeListener)listener);
+	all.add(listener);
     }
     ((StandardManager)manager).setAttributelisteners((HttpSessionAttributeListener[])all.toArray(new HttpSessionAttributeListener[all.size()]));
   }
@@ -113,7 +113,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, org.apache.catal
   public void start() throws LifecycleException {
 	  try {
 		  InputStream is=getServletContext().getResourceAsStream("/WEB-INF/wadi-web.xml");
-		  _wadi=(StandardManager)SpringManagerFactory.create(is, "SessionManager", new TomcatSessionFactory(), new StandardSessionWrapperFactory());
+		  _wadi=SpringManagerFactory.create(is, "SessionManager", new TomcatSessionFactory(), new StandardSessionWrapperFactory());
 	  } catch (Exception e) {
 		  throw new RuntimeException("Required resource: '/WEB-INF/wadi-web.xml' not found - please check the web app.", e);
 	  }

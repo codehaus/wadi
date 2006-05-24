@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Emoter;
@@ -74,6 +76,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	protected final Object _coordinatorLock=new Object();
 	protected final Dispatcher _dispatcher;
 	protected final Cluster _cluster;
+    protected final Peer _localPeer;
 	protected final String _nodeName;
 	protected final Log _log;
 	protected final long _inactiveTime;
@@ -87,6 +90,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		_inactiveTime=inactiveTime;
 		_dispatcher=dispatcher;
 		_cluster=_dispatcher.getCluster();
+        _localPeer=_cluster.getLocalPeer();
 		_distributedState=distributedState;
 		_partitionManager=new SimplePartitionManager(_dispatcher, numPartitions, _distributedState, this, mapper);
 		_stateManager= new SimpleStateManager(_dispatcher, _inactiveTime);
@@ -129,8 +133,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 			_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
 			if (_log.isInfoEnabled()) _log.info("local state: " + k);
 			_dispatcher.setDistributedState(_distributedState);
-			if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _dispatcher.getDistributedState());
-			onCoordinatorChanged(new ClusterEvent(_cluster, _dispatcher.getLocalPeer(), ClusterEvent.COORDINATOR_ELECTED));
+			if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _localPeer.getState());
+			onCoordinatorChanged(new ClusterEvent(_cluster, _localPeer, ClusterEvent.COORDINATOR_ELECTED));
 			_coordinator.queueRebalancing();
 		}
 
@@ -190,7 +194,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	protected void correlateStateUpdate(Map state) {
 		Map correlationIDMap=(Map)state.get(_correlationIDMapKey);
-		Address local=_dispatcher.getLocalAddress();
+		Address local=_localPeer.getAddress();
 		String correlationID=(String)correlationIDMap.get(local);
 		if (correlationID!=null) {
 			Quipu rv=(Quipu)_dispatcher.getRendezVousMap().get(correlationID);
@@ -203,19 +207,39 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		}
 	}
 
-	public void onPeerAdded(ClusterEvent event) {
-		Peer node=event.getPeer();
+	public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
+	    if (_log.isDebugEnabled()) _log.debug("membership changed - joiners:"+joiners+" leavers:"+leavers);
 
-		if (_log.isDebugEnabled()) _log.debug("node joined: "+getNodeName(node));
+	    if (_localPeer.equals(_coordinatorNode)) {
+	        _coordinator.queueRebalancing();
+	    }
 
-		if (_dispatcher.getLocalPeer().equals(_coordinatorNode)) {
-			_coordinator.queueRebalancing();
-		}
+	    // joiners...
+	    for (Iterator i=joiners.iterator(); i.hasNext();)
+	        _partitionManager.update((Peer)i.next());
 
-		_partitionManager.update(node);
+	    //leavers
+	    for (Iterator i=leavers.iterator(); i.hasNext(); ) {
+	        Peer node=(Peer)i.next();
+	        if (_log.isDebugEnabled()) _log.info("node failed: "+getNodeName(node));
+	        if (_leavers.remove(node.getAddress())) {
+	            // we have already been explicitly informed of this node's wish to leave...
+	            _left.remove(node);
+	            if (_log.isTraceEnabled()) _log.trace("onNodeFailed:" + getNodeName(node) + "- already evacuated - ignoring");
+	        } else {
+	            if (_log.isErrorEnabled()) _log.error("onNodeFailed: " + getNodeName(node));
+	            if (amCoordinator()) {
+	                if (_log.isErrorEnabled()) _log.error("CATASTROPHIC FAILURE on: " + getNodeName(node));
+	                if (_coordinator!=null)
+	                    _coordinator.queueRebalancing();
+	                else
+	                    _log.warn("coordinator thread not running");
+	            }
+	        }
+	    }
 	}
 
-	public void onPeerRemoved(ClusterEvent event) {
+    public void onPeerRemoved(ClusterEvent event) {
 		Peer node=event.getPeer();
 		if (_log.isDebugEnabled()) _log.debug("node leaving: "+getNodeName(node));
 		_leavers.add(node.getAddress());
@@ -229,26 +253,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
             return false;
         }
         
-		return _coordinatorNode.getAddress().equals(_dispatcher.getLocalAddress());
-	}
-
-	public void onPeerFailed(ClusterEvent event) {
-		Peer node=event.getPeer();
-		if (_log.isDebugEnabled()) _log.info("node failed: "+getNodeName(node));
-		if (_leavers.remove(node.getAddress())) {
-			// we have already been explicitly informed of this node's wish to leave...
-			_left.remove(node);
-			if (_log.isTraceEnabled()) _log.trace("onNodeFailed:" + getNodeName(node) + "- already evacuated - ignoring");
-		} else {
-			if (_log.isErrorEnabled()) _log.error("onNodeFailed: " + getNodeName(node));
-			if (amCoordinator()) {
-				if (_log.isErrorEnabled()) _log.error("CATASTROPHIC FAILURE on: " + getNodeName(node));
-				if (_coordinator!=null)
-					_coordinator.queueRebalancing();
-				else
-					_log.warn("coordinator thread not running");
-			}
-		}
+		return _coordinatorNode.getAddress().equals(_localPeer.getAddress());
 	}
 
 	public void onCoordinatorChanged(ClusterEvent event) {
@@ -257,11 +262,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
             if (_log.isDebugEnabled()) _log.debug("coordinator elected: " + getNodeName(event.getPeer()));
 			Peer newCoordinator=event.getPeer();
 			if (false == newCoordinator.equals(_coordinatorNode)) {
-				if (null != _coordinatorNode && _coordinatorNode.equals(_dispatcher.getLocalPeer())) {
+				if (null != _coordinatorNode && _coordinatorNode.equals(_localPeer)) {
                     onDismissal(event);
                 }
 				_coordinatorNode = newCoordinator;
-				if (_coordinatorNode.equals(_dispatcher.getLocalPeer())) {
+				if (_coordinatorNode.equals(_localPeer)) {
                     onElection(event);
                 }
 			}
@@ -304,7 +309,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	public boolean isCoordinator() {
 		synchronized (_coordinatorLock) {
-			return _dispatcher.getLocalPeer()==_coordinatorNode;
+			return _localPeer==_coordinatorNode;
 		}
 	}
 
@@ -319,7 +324,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	}
 
 	public Peer getLocalNode() {
-		return _dispatcher.getLocalPeer();
+		return _localPeer;
 	}
 
 	public Collection getRemoteNodes() {
@@ -342,7 +347,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	}
 
 	protected int printNode(Peer node) {
-		if (node!=_dispatcher.getLocalPeer())
+		if (node!=_localPeer)
 			node=(Peer)_cluster.getRemotePeers().get(node.getAddress());
 		if (node==null) {
 			if (_log.isInfoEnabled()) _log.info(DIndex.getNodeName(node) + " : <unknown> - {?...}");
@@ -449,7 +454,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 			return null;
 		}
 
-        Serializable dm=(Serializable)message.getPayload();
+        Serializable dm=message.getPayload();
         // the possibilities...
         if (dm instanceof MoveSMToIM) {
             MoveSMToIM req=(MoveSMToIM)dm;
@@ -485,7 +490,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	}
 
 	public String getPeerName(Address address) {
-		Peer local=_dispatcher.getLocalPeer();
+		Peer local=_localPeer;
 		Peer node=address.equals(local.getAddress())?local:(Peer)_cluster.getRemotePeers().get(address);
 		return getNodeName(node);
 	}

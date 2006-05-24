@@ -40,7 +40,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public class Coordinator implements Runnable {
 
@@ -58,8 +58,8 @@ public class Coordinator implements Runnable {
 	public Coordinator(CoordinatorConfig config) {
 		_config=config;
 		_cluster=_config.getCluster();
+        _localNode=_cluster.getLocalPeer();
 		_dispatcher=_config.getDispatcher();
-		_localNode=_dispatcher.getLocalPeer();
 		_numItems=_config.getNumPartitions();
 		_inactiveTime=_config.getInactiveTime();
 	}
@@ -113,7 +113,7 @@ public class Coordinator implements Runnable {
 
 			Collection stayingNodes=nodeMap.values();
 			synchronized (stayingNodes) {stayingNodes=new ArrayList(stayingNodes);} // snapshot
-			stayingNodes.add(_dispatcher.getLocalPeer());
+			stayingNodes.add(_localNode);
 
 			Collection l=_config.getLeavers();
 			synchronized (l) {l=new ArrayList(l);} // snapshot
@@ -193,7 +193,7 @@ public class Coordinator implements Runnable {
 				if (!left.contains(node.getAddress())) {
 					PartitionEvacuationResponse response=new PartitionEvacuationResponse();
                     try {
-                        _dispatcher.reply(_dispatcher.getLocalPeer().getAddress(), 
+                        _dispatcher.reply(_localNode.getAddress(), 
                                         node.getAddress(), 
                                         node.getName(), 
                                         response);
@@ -252,7 +252,7 @@ public class Coordinator implements Runnable {
                     _log.trace("sending plan to: "+_dispatcher.getPeerName(producer._node.getAddress()));
                 }
                 try {
-                    _dispatcher.send(_dispatcher.getLocalPeer().getAddress(), producer._node.getAddress(), correlationId, command);
+                    _dispatcher.send(_localNode.getAddress(), producer._node.getAddress(), correlationId, command);
                 } catch (MessageExchangeException e) {
                     _log.error("problem sending transfer command", e);
                 }
@@ -279,7 +279,7 @@ public class Coordinator implements Runnable {
 	}
 
 	protected int printNode(Peer node) {
-		if (node!=_dispatcher.getLocalPeer())
+		if (node!=_localNode)
 			node=(Peer)_cluster.getRemotePeers().get(node.getAddress());
 		if (node==null) {
 			if (_log.isTraceEnabled()) _log.trace(DIndex.getNodeName(node) + " : <unknown>");
@@ -293,7 +293,7 @@ public class Coordinator implements Runnable {
 	}
 
 	protected Peer getPeer(Address address) {
-		Peer localPeer=_dispatcher.getLocalPeer();
+		Peer localPeer=_localNode;
 		Address localAddress=localPeer.getAddress();
 		if (address.equals(localAddress))
 			return localPeer;

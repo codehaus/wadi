@@ -54,11 +54,11 @@ public class BasicReplicaStorageMonitor implements ReplicaStorageMonitor, Cluste
         endpointBuilder.addSEI(dispatcher, BasicReplicaStorageMonitorMessageListener.class, this);
         dispatcher.getCluster().addClusterListener(this);
 
-        String localNodeName = dispatcher.getLocalPeer().getName();
+        String localNodeName = dispatcher.getCluster().getLocalPeer().getName();
         NodeInfo localNode = new NodeInfo(localNodeName);
         ReplicaStorageMonitorEvent event = new ReplicaStorageMonitorEvent(ComponentEventType.JOIN, localNode);
         try {
-            dispatcher.send(dispatcher.getClusterAddress(), event);
+            dispatcher.send(dispatcher.getCluster().getAddress(), event);
         } catch (Exception e) {
             // TODO
             throw new RuntimeException(e);

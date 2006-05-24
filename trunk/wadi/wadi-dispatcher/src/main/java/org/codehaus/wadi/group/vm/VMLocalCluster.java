@@ -62,8 +62,8 @@ public class VMLocalCluster implements Cluster {
         delegate.send(to, message);
     }
 
-    int getNumNodes() {
-        return delegate.getNumNodes();
+    public int getPeerCount() {
+        return delegate.getPeerCount();
     }
 
     Address getAddress(String name) {

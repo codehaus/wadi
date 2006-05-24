@@ -52,13 +52,13 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
     private final WADIMessageListener _messageListener;
 
     private Cluster _wadiCluster;
-    protected org.codehaus.wadi.group.LocalPeer _localNode;
+    protected org.codehaus.wadi.group.LocalPeer _localPeer;
     
-	public ActiveClusterDispatcher(String clusterName, String nodeName, String clusterUri, long inactiveTime) {
+	public ActiveClusterDispatcher(String clusterName, String localPeerName, String clusterUri, long inactiveTime) {
 		super(inactiveTime);
         _clusterName=clusterName;
 		_clusterUri=clusterUri;
-		_log=LogFactory.getLog(getClass()+"#"+_cluster.getLocalNode().getName());
+		_log=LogFactory.getLog(getClass()+"#"+localPeerName);
         
         _messageListener = new WADIMessageListener(this);
 	}
@@ -108,7 +108,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 		_nodeConsumer.setMessageListener(_messageListener);
 
         _wadiCluster = new ACClusterAdapter(_cluster);
-        _localNode = new ACLocalNodeAdapter(_cluster.getLocalNode());
+        _localPeer = new ACLocalNodeAdapter(_cluster.getLocalNode());
 	}
 
 	//-----------------------------------------------------------------------------------------------
@@ -120,7 +120,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
         } catch (JMSException e) {
             throw new MessageExchangeException(e);
         }
-        Map distributedState = getDistributedState();
+        Map distributedState = _localPeer.getState();
         distributedState.put("nodeName", _cluster.getLocalNode().getName());
         setDistributedState(distributedState);
 	}
@@ -148,10 +148,6 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
         }
 	}
 
-	public int getNumNodes() {
-		return _cluster.getNodes().size()+1; // TODO - really inefficient... - allocates a Map
-	}
-
 	public Message createMessage() {
 		try {
             return new ACObjectMessageAdapter(_cluster.createObjectMessage());
@@ -171,18 +167,6 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
         }
 	}
 
-	public Address getLocalAddress() {
-		return _localNode.getAddress();
-	}
-
-	public Address getClusterAddress() {
-		return _wadiCluster.getAddress();
-	}
-
-	public Map getDistributedState() {
-		return _cluster.getLocalNode().getState();
-	}
-
 	public void setDistributedState(Map state) throws MessageExchangeException {
 		try {
             _cluster.getLocalNode().setState(state);
@@ -192,8 +176,8 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 	}
 
     public Address getAddress(String nodeName) {
-        if (getLocalPeer().getName().equals(nodeName)) {
-            return _localNode.getAddress();
+        if (_wadiCluster.getLocalPeer().getName().equals(nodeName)) {
+            return _localPeer.getAddress();
         }
 
         Map destToNode = _cluster.getNodes();
@@ -248,10 +232,6 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 		_cluster.addClusterListener(new WADIClusterListenerAdapter(listener, _wadiCluster));
 	}
 
-    public org.codehaus.wadi.group.LocalPeer getLocalPeer() {
-        return _localNode;
-    }
-    
     private String getNodeName(Node node) {
         return node==null?"<unknown>":(String)node.getState().get(_nodeNameKey);
     }

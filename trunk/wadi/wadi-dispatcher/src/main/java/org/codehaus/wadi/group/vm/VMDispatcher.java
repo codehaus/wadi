@@ -18,7 +18,6 @@ package org.codehaus.wadi.group.vm;
 import java.util.Map;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
-import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
@@ -44,20 +43,8 @@ public class VMDispatcher extends AbstractDispatcher {
         cluster = new VMLocalCluster(VMCluster.ensureCluster(clusterName), localNode);
     }
     
-    public Address getLocalAddress() {
-        return localNode.getAddress();
-    }
-
-    public Address getClusterAddress() {
-        return cluster.getAddress();
-    }
-
     public Cluster getCluster() {
         return cluster;
-    }
-
-    public Map getDistributedState() {
-        return localNode.getState();
     }
 
     public void setDistributedState(Map state) throws MessageExchangeException {
@@ -97,15 +84,8 @@ public class VMDispatcher extends AbstractDispatcher {
         return new VMMessage();
     }
 
-    public int getNumNodes() {
-        return cluster.getNumNodes();
-    }
-
     public Address getAddress(String name) {
         return cluster.getAddress(name);
     }
-
-    public LocalPeer getLocalPeer() {
-        return localNode;
-    }
+    
 }
