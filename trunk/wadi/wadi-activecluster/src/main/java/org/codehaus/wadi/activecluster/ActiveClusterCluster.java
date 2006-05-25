@@ -27,7 +27,6 @@ import org.apache.activecluster.Node;
 import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.LocalPeer;
@@ -96,7 +95,9 @@ class ActiveClusterCluster extends AbstractCluster {
             _addressToPeer.put(peer,  peer);
             Set joiners=Collections.unmodifiableSet(Collections.singleton(peer));
             Set leavers=Collections.EMPTY_SET;
-            notifyMembershipChanged(joiners, leavers); 
+            _coordinator=findCoordinator();
+            notifyMembershipChanged(joiners, leavers, _coordinator); 
+            _startLatch.release();
         }
 
         public void onNodeUpdate(org.apache.activecluster.ClusterEvent event) {
@@ -127,14 +128,14 @@ class ActiveClusterCluster extends AbstractCluster {
             }
             Set joiners=Collections.EMPTY_SET;
             Set leavers=Collections.unmodifiableSet(Collections.singleton(peer));
-            notifyMembershipChanged(joiners, leavers);
+            
+            _coordinator=findCoordinator();
+            notifyMembershipChanged(joiners, leavers, _coordinator);
         }
 
-        // called AFTER nodeAdd/Fail
         public void onCoordinatorChanged(org.apache.activecluster.ClusterEvent event) {
-            _cluster.set(ActiveClusterCluster.this);
-            notifyCoordinatorChanged(get(event.getNode().getDestination()));
-            _startLatch.release();
+            // ignore - we are doing our coordinator management
+            _log.trace("backend coordinator election notification ignored: "+event.getNode());
         }
 
     };
@@ -142,9 +143,8 @@ class ActiveClusterCluster extends AbstractCluster {
     public void start() throws ClusterException {
         _startLatch=new Latch();
         try {
-            _acCluster=_clusterFactory.createCluster(_clusterName);
+            _acCluster=_clusterFactory.createCluster(_clusterName); // StateServiceImpl and state race started...
             _acCluster.addClusterListener(new ACListener()); // attach our own listener, to keep us up to date...
-            _acCluster.setElectionStrategy(new WADIElectionStrategyAdapter(_electionStrategy, this));
             _acCluster.getLocalNode().setState(_localPeer.getState());
             _acCluster.start();
         } catch (JMSException e) {
@@ -173,8 +173,7 @@ class ActiveClusterCluster extends AbstractCluster {
             // we must be the only member of the Cluster...
             for (Iterator i=_clusterListeners.iterator(); i.hasNext(); ) {
                 ClusterListener listener=(ClusterListener)i.next();
-                listener.onMembershipChanged(this, Collections.EMPTY_SET, Collections.EMPTY_SET);
-                listener.onCoordinatorChanged(new ClusterEvent(this, _localPeer, ClusterEvent.COORDINATOR_ELECTED));
+                listener.onMembershipChanged(this, Collections.EMPTY_SET, Collections.EMPTY_SET, _localPeer);
             }
         }
     }

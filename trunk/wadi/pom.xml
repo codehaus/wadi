@@ -560,7 +560,7 @@
 	    <!-- activecluster: not online -->
 	    <link>http://www.jgroups.org/javagroupsnew/docs/javadoc</link>
 	    <!-- axis2: not online -->
-	    <link>http://www.openejb.org/apidocs</link>
+	    <!-- <link>http://www.openejb.org/apidocs</link> -->
 	    <link>http://wadi.codehaus.org/wadi-dispatcher/apidocs</link>
 	    <link>http://wadi.codehaus.org/wadi-core/apidocs</link>
 	  </links>

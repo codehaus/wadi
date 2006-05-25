@@ -93,8 +93,10 @@ public class ActiveClusterPeer implements Peer, Address, Comparable {
 
    public void setState(Map state) throws MessageExchangeException {
        synchronized (_state) {
-           _state.clear();
-           _state.putAll(state);
+           if (_state!=state) {
+               _state.clear();
+               _state.putAll(state);
+           }
        }
    }
 
