@@ -62,22 +62,20 @@ public class VMLocalClusterListener implements ClusterListener {
         }
 
         if (joiners.contains(peer)) {
-            joiners=new TreeSet(joiners);
-            joiners.remove(peer);
-            joiners=Collections.unmodifiableSet(joiners);
+            Set newJoiners=new TreeSet();
+            newJoiners.addAll(joiners);
+            newJoiners.remove(peer);
+            joiners=Collections.unmodifiableSet(newJoiners);
         }
         
         if (leavers.contains(peer)) {
-            leavers=new TreeSet(leavers);
-            leavers.remove(peer);
-            leavers=Collections.unmodifiableSet(leavers);
+            Set newLeavers=new TreeSet();
+            newLeavers.addAll(leavers);
+            newLeavers.remove(peer);
+            leavers=Collections.unmodifiableSet(newLeavers);
         }
         
-        if (joiners.size()==0 && leavers.size()==0) {
-            return;
-        }
-        
-        delegate.onMembershipChanged(cluster, joiners, leavers, coordinator);
+        delegate.onMembershipChanged(localCluster, joiners, leavers, coordinator);
     }
 
     public void onPeerUpdated(ClusterEvent event) {
