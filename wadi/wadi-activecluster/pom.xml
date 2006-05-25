@@ -66,24 +66,4 @@
     </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-surefire-plugin</artifactId>
-	<configuration>
-	  <excludes>
-	    <exclude implementation="java.lang.String">**/*$*.java</exclude> <!-- stop surefire from trying to run nested classes -->
-	    <exclude implementation="java.lang.String">**/TestACReplicationManager.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestACReplicationContextualiser.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestACEvacuation.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestACReplication.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestACRelocation.java</exclude>
-	  </excludes>
-	  <forkMode>pertest</forkMode> <!-- We have to run these tests in their own JVM: See JIRA WADI 76 -->
-	</configuration>
-      </plugin>
-    </plugins>
-  </build>
-
 </project>

@@ -19,7 +19,6 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
-import org.apache.activecluster.LocalNode;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 

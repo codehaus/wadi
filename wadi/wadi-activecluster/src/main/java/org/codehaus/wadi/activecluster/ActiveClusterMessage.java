@@ -42,6 +42,9 @@ class ActiveClusterMessage implements Message {
     }
     
     private final ObjectMessage adaptee;
+
+    private Address _address;
+    private Address _replyTo;
     
     public ActiveClusterMessage(ObjectMessage adaptee) {
         this.adaptee = adaptee;
@@ -90,6 +93,9 @@ class ActiveClusterMessage implements Message {
     }
 
     public Address getReplyTo() {
+        if (_replyTo!=null)
+            return _replyTo;
+        
         try {
             Destination replyTo = adaptee.getJMSReplyTo();
             if (null == replyTo) {
@@ -103,6 +109,7 @@ class ActiveClusterMessage implements Message {
     }
 
     public void setReplyTo(Address replyTo) {
+        _replyTo=replyTo;
         try {
             adaptee.setJMSReplyTo(((ActiveClusterPeer)replyTo).getACDestination());
         } catch (JMSException e) {
@@ -111,6 +118,9 @@ class ActiveClusterMessage implements Message {
     }
 
     public Address getAddress() {
+        if (_address!=null)
+            return _address;
+        
         try {
             return (ActiveClusterPeer)AbstractCluster.get(adaptee.getJMSDestination());
         } catch (JMSException e) {
@@ -119,6 +129,7 @@ class ActiveClusterMessage implements Message {
     }
 
     public void setAddress(Address address) {
+        _address=address;
         try {
             adaptee.setJMSDestination(((ActiveClusterPeer)address).getACDestination());
         } catch (JMSException e) {

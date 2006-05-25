@@ -17,7 +17,6 @@ package org.codehaus.wadi.activecluster;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
-import org.codehaus.wadi.group.Cluster;
 
 /**
  * 
