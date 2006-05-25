@@ -205,8 +205,25 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		}
 	}
 
-	public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
-	    if (_log.isDebugEnabled()) _log.debug("membership changed - joiners:"+joiners+" leavers:"+leavers);
+	public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
+
+        _log.info("COORDINATOR CHANGED: " + coordinator);
+        synchronized (_coordinatorLock) {
+            if (_log.isDebugEnabled()) _log.debug("coordinator elected: " + getPeerName(coordinator));
+            if (false == coordinator.equals(_coordinatorNode)) {
+                if (null != _coordinatorNode && _coordinatorNode.equals(_localPeer)) {
+                    onDismissal(coordinator);
+                }
+                _coordinatorNode = coordinator;
+                if (_coordinatorNode.equals(_localPeer)) {
+                    onElection(coordinator);
+                }
+            }
+
+            _coordinatorLatch.release(); // we are still waiting in start() to find out if we are the Coordinator...
+        }
+        
+        if (_log.isDebugEnabled()) _log.debug("membership changed - joiners:"+joiners+" leavers:"+leavers);
 
 	    if (_localPeer.equals(_coordinatorNode)) {
 	        _coordinator.queueRebalancing();
@@ -255,22 +272,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	}
 
 	public void onCoordinatorChanged(ClusterEvent event) {
-        _log.info("COORDINATOR CHANGED: " + event.getPeer());
-		synchronized (_coordinatorLock) {
-            if (_log.isDebugEnabled()) _log.debug("coordinator elected: " + getPeerName(event.getPeer()));
-			Peer newCoordinator=event.getPeer();
-			if (false == newCoordinator.equals(_coordinatorNode)) {
-				if (null != _coordinatorNode && _coordinatorNode.equals(_localPeer)) {
-                    onDismissal(event);
-                }
-				_coordinatorNode = newCoordinator;
-				if (_coordinatorNode.equals(_localPeer)) {
-                    onElection(event);
-                }
-			}
 
-			_coordinatorLatch.release(); // we are still waiting in start() to find out if we are the Coordinator...
-		}
 	}
 
 	public Collection[] createResultSet(int numPartitions, int[] keys) {
@@ -280,7 +282,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		return c;
 	}
 
-	public void onElection(ClusterEvent event) {
+	public void onElection(Peer coordinator) {
 		_log.info("accepting coordinatorship");
 		try {
 			(_coordinator=new Coordinator(this)).start();
@@ -290,7 +292,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		}
 	}
 
-	public void onDismissal(ClusterEvent event) {
+	public void onDismissal(Peer coordinator) {
 		_log.info("resigning coordinatorship"); // never happens - coordinatorship is for life..
 		try {
 			_coordinator.stop();

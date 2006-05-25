@@ -56,45 +56,23 @@ public abstract class AbstractTestGroup extends TestCase {
 
         public int _numPeers=0;
         public int _numUpdates=0;
-        public WaitableInt _numChanges=new WaitableInt(0);
+        public WaitableInt _numCoordinators=new WaitableInt(0);
         public Peer _lastCoordinator=null;
 
         public void onPeerUpdated(ClusterEvent event) {
             _numUpdates++;
         }
 
-        public void onCoordinatorChanged(ClusterEvent event) {
-            Cluster cluster=event.getCluster();
-            Peer coordinator=event.getPeer();
+        public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
             _lastCoordinator=coordinator;
-            _numChanges.increment();
-            _log.info(cluster.getLocalPeer().getName()+" - onCoordinatorChanged: "+coordinator);
-        }
-        
-        public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
+            _numCoordinators.increment();
             _numPeers+=joiners.size();
             _numPeers-=leavers.size();
-            _log.info(cluster.getLocalPeer().getName()+" - onMembershipChanged: joiners:"+joiners+", leavers:"+leavers);
+            _log.info(cluster.getLocalPeer().getName()+" - onMembershipChanged - joiners:"+joiners+", leavers:"+leavers+", coordinator:"+coordinator);
         }
 
     }
 
-    public class CoordinatorAssertion implements Runnable {
-        
-        protected final Peer _peer;
-        protected final MyClusterListener _listener;
-        
-        public CoordinatorAssertion(Peer peer, MyClusterListener listener) {
-            _peer=peer;
-            _listener=listener;
-        }
-        
-        public void run() {
-            assertTrue(_listener._lastCoordinator.equals(_peer)); // later use ==
-        }
-        
-    }
-    
     public void testMembership() throws Exception {
         String clusterName="org.codehaus.wadi.cluster.TEST-"+System.currentTimeMillis();
 
@@ -109,7 +87,7 @@ public abstract class AbstractTestGroup extends TestCase {
         cluster0.addClusterListener(listener0);
         
         dispatcher0.start();
-        assertTrue(listener0._numChanges.get()>=1); // we have received at least one MembershipChanged notification by the time start has finished
+        assertTrue(listener0._numCoordinators.get()>=1); // we have received at least one MembershipChanged notification by the time start has finished
         assertTrue(listener0._lastCoordinator.equals(cluster0.getLocalPeer()));
         assertTrue(cluster0.waitOnMembershipCount(1, 10000));
         _log.info(cluster0);
@@ -124,7 +102,7 @@ public abstract class AbstractTestGroup extends TestCase {
 
         dispatcher1.start();
         assertTrue(listener1._lastCoordinator.equals(cluster1.getRemotePeers().values().iterator().next())); // green knows red is coord
-        assertTrue(listener1._numChanges.get()>=1);
+        assertTrue(listener1._numCoordinators.get()>=1);
         assertTrue(cluster0.waitOnMembershipCount(2, 10000));
         assertTrue(cluster1.waitOnMembershipCount(2, 10000));
         // do not apply these tests until membership and coord are assigned in same notification...

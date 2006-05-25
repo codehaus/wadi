@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.ClusterException;
-import org.codehaus.wadi.group.ElectionStrategy;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
@@ -234,11 +233,11 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         joiners=Collections.unmodifiableSet(joiners);
         leavers=Collections.unmodifiableSet(leavers);
 
-        // notify listeners of changed membership
-        notifyMembershipChanged(joiners, leavers);
-
         // elect coordinator - should be run before onMembershipChanged called, since the coordinator might have to take specific action...
-        runCoordinatorElection();
+        Peer coordinator=findCoordinator();
+
+        // notify listeners of changed membership
+        notifyMembershipChanged(joiners, leavers, coordinator);
 
         // release latch so that start() can complete
         if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"releasing viewLatch (viewAccepted)...");
@@ -360,13 +359,4 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         return peer;
     }
     
-    protected void runCoordinatorElection() {
-        if (_clusterListeners.size()>0 && _electionStrategy!=null) {
-            Peer coordinator=getLocalPeer();
-            if (_addressToPeer.size()>0) {
-                coordinator=_electionStrategy.doElection(this);
-            }
-            notifyCoordinatorChanged(coordinator);
-        }
-    }
 }

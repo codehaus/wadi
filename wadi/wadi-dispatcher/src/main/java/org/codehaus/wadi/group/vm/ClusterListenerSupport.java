@@ -38,14 +38,14 @@ class ClusterListenerSupport {
         this.cluster = cluster;
     }
 
-    public void addClusterListener(VMLocalClusterListener listener) {
+    public void addClusterListener(VMLocalClusterListener listener, Peer coordinator) {
         Set snapshotExistingPeers;
         synchronized (listeners) {
             listeners.add(listener);
             snapshotExistingPeers = new HashSet(nodes);
         }
         
-        listener.notifyExistingPeersToPeer(cluster, snapshotExistingPeers);
+        listener.notifyExistingPeersToPeer(cluster, snapshotExistingPeers, coordinator);
     }
 
     public void removeClusterListener(VMLocalClusterListener listener) {
@@ -67,7 +67,7 @@ class ClusterListenerSupport {
         }
     }
 
-    public void notifyCoordinatorChanged(Peer node) {
+    public void notifyMembershipChanged(Set joiners, Set leavers, Peer coordinator) {
         Collection snapshotListeners;
         synchronized (listeners) {
             snapshotListeners = new ArrayList(listeners);
@@ -75,19 +75,7 @@ class ClusterListenerSupport {
         
         for (Iterator iter = snapshotListeners.iterator(); iter.hasNext();) {
             VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
-            listener.onCoordinatorChanged(new ClusterEvent(cluster, node, ClusterEvent.COORDINATOR_ELECTED));
-        }
-    }
-    
-    public void notifyMembershipChanged(Set joiners, Set leavers) {
-        Collection snapshotListeners;
-        synchronized (listeners) {
-            snapshotListeners = new ArrayList(listeners);
-        }
-        
-        for (Iterator iter = snapshotListeners.iterator(); iter.hasNext();) {
-            VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
-            listener.onMembershipChanged(cluster, joiners, leavers);
+            listener.onMembershipChanged(cluster, joiners, leavers, coordinator);
         }
     }
     

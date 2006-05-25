@@ -86,8 +86,8 @@ public class VMCluster implements Cluster {
             nodeNameToDispatcher.put(nodeName, dispatcher);
         }
         
-        listenerSupport.notifyMembershipChanged(Collections.singleton(dispatcher.getCluster().getLocalPeer()), Collections.EMPTY_SET);
-        doElection(dispatcher.getCluster());
+        coordinator=(electionStrategy==null?null:electionStrategy.doElection(dispatcher.getCluster()));
+        listenerSupport.notifyMembershipChanged(Collections.singleton(dispatcher.getCluster().getLocalPeer()), Collections.EMPTY_SET, coordinator);
     }
 
     void unregisterDispatcher(VMDispatcher dispatcher) {
@@ -100,9 +100,8 @@ public class VMCluster implements Cluster {
             throw new IllegalArgumentException("unknown dispatcher");
         }
 
-        // N.B. - this probably should not do anything now... - FIXME
-        doElection(dispatcher.getCluster());
-        listenerSupport.notifyMembershipChanged(Collections.singleton(dispatcher.getCluster().getLocalPeer()), Collections.EMPTY_SET);
+        coordinator=(electionStrategy==null?null:electionStrategy.doElection(dispatcher.getCluster()));
+        listenerSupport.notifyMembershipChanged(Collections.singleton(dispatcher.getCluster().getLocalPeer()), Collections.EMPTY_SET, coordinator);
     }
 
     void send(Address to, Message message) throws MessageExchangeException {
@@ -147,7 +146,6 @@ public class VMCluster implements Cluster {
 
     void setCoordinator(Peer coordinator) {
         this.coordinator = coordinator;
-        listenerSupport.notifyCoordinatorChanged(coordinator);
     }
 
     Map getPeers() {
@@ -174,7 +172,7 @@ public class VMCluster implements Cluster {
     }
 
     public void addClusterListener(ClusterListener listener) {
-        listenerSupport.addClusterListener((VMLocalClusterListener) listener);
+        listenerSupport.addClusterListener((VMLocalClusterListener) listener, coordinator);
     }
 
     public void removeClusterListener(ClusterListener listener) {
@@ -207,23 +205,13 @@ public class VMCluster implements Cluster {
             throw new IllegalArgumentException("Node " + nodeName + " is unknown.");  
         }
         
-        doElection(dispatcher.getCluster());
-        listenerSupport.notifyMembershipChanged(Collections.EMPTY_SET, Collections.singleton(getLocalPeer()));
+        coordinator=electionStrategy==null?null:electionStrategy.doElection(this);
+        listenerSupport.notifyMembershipChanged(Collections.EMPTY_SET, Collections.singleton(getLocalPeer()), coordinator);
     }
 
     public void setMessageRecorder(MessageRecorder messageRecorder) {
         messageRecorder.setVMCluster(this);
         this.messageRecorder = messageRecorder;
-    }
-    
-    private void doElection(Cluster cluster) {
-        if (null != electionStrategy) {
-            Peer newElected = electionStrategy.doElection(cluster);
-            if (null != newElected && !newElected.equals(coordinator)) {
-                coordinator = newElected;
-                listenerSupport.notifyCoordinatorChanged(newElected);
-            }
-        }
     }
 
     private Map snapshotDispatcherMap() {
