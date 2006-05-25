@@ -29,7 +29,7 @@ import org.codehaus.wadi.group.Peer;
 public class VMPeer implements Peer, Serializable {
     protected final Map state = new HashMap();
     protected final String name;
-    private final Address address;
+    protected final Address address;
 
     public VMPeer(String name) {
         this.name = name;

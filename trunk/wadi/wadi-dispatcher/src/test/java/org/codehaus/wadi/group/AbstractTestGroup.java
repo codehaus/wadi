@@ -105,9 +105,8 @@ public abstract class AbstractTestGroup extends TestCase {
         assertTrue(listener1._numCoordinators.get()>=1);
         assertTrue(cluster0.waitOnMembershipCount(2, 10000));
         assertTrue(cluster1.waitOnMembershipCount(2, 10000));
-        // do not apply these tests until membership and coord are assigned in same notification...
-//        assertTrue(listener0._numChanges.get()>=2); // red has now held at least 2 coord elections
-//        assertTrue(listener0._lastCoordinator.equals(cluster0.getLocalPeer())); // red knowns red is coord
+        assertTrue(listener0._numCoordinators.get()>=2); // red has now held at least 2 coord elections
+        assertTrue(listener0._lastCoordinator.equals(cluster0.getLocalPeer())); // red knowns red is coord
         _log.info(cluster1);
         _log.info(dispatcher1);
 

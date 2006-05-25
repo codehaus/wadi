@@ -25,16 +25,20 @@ import org.codehaus.wadi.group.MessageExchangeException;
  * 
  * @version $Revision: 1603 $
  */
-public class VMLocalPeer extends VMPeer implements LocalPeer, Serializable {
+public class VMLocalPeer extends VMPeer implements LocalPeer, Serializable, Comparable {
 
     public VMLocalPeer(String name) {
         super(name);
+        state.put(_peerNameKey, name);
+        state.put(_birthTimeKey, new Long(System.currentTimeMillis()));
     }
     
     public void setState(Map newState) throws MessageExchangeException {
-        synchronized (state) {
-            state.clear();
-            state.putAll(newState);
+        if (newState!=state) {
+            synchronized (state) {
+                state.clear();
+                state.putAll(newState);
+            }
         }
     }
     
@@ -43,6 +47,12 @@ public class VMLocalPeer extends VMPeer implements LocalPeer, Serializable {
     }
     
     public String toString() {
-        return "Local Node :" + name;
+        return "Local Peer :" + name;
     }
+    
+    // should compare addresses - but I am going to collapse VM Address and Peer shortly...
+    public int compareTo(Object object) {
+            return System.identityHashCode(this)-System.identityHashCode(object);
+    }
+    
 }

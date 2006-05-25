@@ -29,6 +29,7 @@ import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.impl.SeniorityElectionStrategy;
 
 /**
  * 
@@ -51,7 +52,7 @@ public class VMCluster implements Cluster {
     private final Address address;
     private final Map nodeNameToDispatcher = new HashMap();
     private final ClusterListenerSupport listenerSupport;
-    private ElectionStrategy electionStrategy;
+    private ElectionStrategy electionStrategy=new SeniorityElectionStrategy();
     private MessageRecorder messageRecorder;
     private MessageTransformer messageTransformer;
     private Peer coordinator;
