@@ -38,11 +38,11 @@ public class VMLocalClusterListener implements ClusterListener {
         this.peer = peer;
     }
 
-    void notifyExistingPeersToPeer(Cluster cluster, Set existingPeers) {
-        notifyExistingPeersToPeer(peer, cluster, existingPeers);
+    void notifyExistingPeersToPeer(Cluster cluster, Set existingPeers, Peer coordinator) {
+        notifyExistingPeersToPeer(peer, cluster, existingPeers, coordinator);
     }
 
-    void notifyExistingPeersToPeer(Peer target, Cluster cluster, Set existingPeers) {
+    void notifyExistingPeersToPeer(Peer target, Cluster cluster, Set existingPeers, Peer coordinator) {
         if (false == localCluster.isRunning()) {
             return;
         }
@@ -53,18 +53,10 @@ public class VMLocalClusterListener implements ClusterListener {
         Set joiners=new TreeSet(existingPeers);
         joiners.remove(peer);
         Set leavers=Collections.EMPTY_SET;
-        delegate.onMembershipChanged(cluster, joiners, leavers);
-    }
-    
-    public void onCoordinatorChanged(ClusterEvent event) {
-        if (false == localCluster.isRunning()) {
-            return;
-        }
-
-        delegate.onCoordinatorChanged(event);
+        delegate.onMembershipChanged(cluster, joiners, leavers, coordinator);
     }
 
-    public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
+    public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
         if (false == localCluster.isRunning()) {
             return;
         }
@@ -85,7 +77,7 @@ public class VMLocalClusterListener implements ClusterListener {
             return;
         }
         
-        delegate.onMembershipChanged(cluster, joiners, leavers);
+        delegate.onMembershipChanged(cluster, joiners, leavers, coordinator);
     }
 
     public void onPeerUpdated(ClusterEvent event) {

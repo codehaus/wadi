@@ -99,10 +99,10 @@ public abstract class AbstractCluster implements Cluster {
         }
     }
     
-    protected void notifyMembershipChanged(Set joiners, Set leavers) {
+    protected void notifyMembershipChanged(Set joiners, Set leavers, Peer coordinator) {
         int n=_clusterListeners.size();
         for (int i=0; i<n; i++) {
-            ((ClusterListener)_clusterListeners.get(i)).onMembershipChanged(this, joiners, leavers);
+            ((ClusterListener)_clusterListeners.get(i)).onMembershipChanged(this, joiners, leavers, coordinator);
         }
     }
 
@@ -112,19 +112,6 @@ public abstract class AbstractCluster implements Cluster {
             ClusterEvent event=new ClusterEvent(this, peer, ClusterEvent.PEER_UPDATED);
             for (int i=0; i<n; i++) {
                 ((ClusterListener)_clusterListeners.get(i)).onPeerUpdated(event);
-            }
-        }
-    }
-
-    public void notifyCoordinatorChanged(Peer peer) {
-        if (_coordinator==null || !_coordinator.equals(peer)) {
-            _coordinator=peer;
-            int n=_clusterListeners.size();
-            if (n>0) {
-                ClusterEvent event=new ClusterEvent(this, peer ,ClusterEvent.COORDINATOR_ELECTED);
-                for (int i=0; i<n; i++) {
-                    ((ClusterListener)_clusterListeners.get(i)).onCoordinatorChanged(event);
-                }
             }
         }
     }
@@ -165,6 +152,17 @@ public abstract class AbstractCluster implements Cluster {
     
     public void setElectionStrategy(ElectionStrategy strategy) {
         _electionStrategy=strategy;
+    }
+
+    protected Peer findCoordinator() {
+        Peer coordinator=null;
+        if (_clusterListeners.size()>0 && _electionStrategy!=null) {
+            coordinator=getLocalPeer();
+            if (_addressToPeer.size()>0) {
+                coordinator=_electionStrategy.doElection(this);
+            }
+        }
+        return coordinator;
     }
 
 }

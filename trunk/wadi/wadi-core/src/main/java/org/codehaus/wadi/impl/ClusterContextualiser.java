@@ -250,7 +250,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 	// ClusterListener
 
-    public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
+    public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
         for (Iterator i=joiners.iterator(); i.hasNext() ;) {
             Peer peer=(Peer)i.next();
             Map state=peer.getState();
@@ -269,12 +269,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
         Map state=event.getPeer().getState();
         String nodeName=(String)state.get(_nodeNameKey);
         if (_log.isTraceEnabled()) _log.trace("node updated: " + nodeName);
-	}
-
-	public void onCoordinatorChanged(ClusterEvent event) {
-        Map state=event.getPeer().getState();
-        String nodeName=(String)state.get(_nodeNameKey);
-		if (_log.isTraceEnabled()) _log.trace("coordinator changed: " + nodeName); // we don't use this...
 	}
 
 	protected int _locationMaxInactiveInterval=30;

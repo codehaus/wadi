@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterListener;
+import org.codehaus.wadi.group.Peer;
 
 /**
  * 
@@ -110,14 +111,11 @@ public class TestVMCluster extends TestCase {
             events.clear();
         }
         
-        public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
+        public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
             // events.add(event); - FIXME   
         }
 
         public void onPeerUpdated(ClusterEvent event) {
-            events.add(event);   
-        }
-        public void onCoordinatorChanged(ClusterEvent event) {
             events.add(event);   
         }
     }

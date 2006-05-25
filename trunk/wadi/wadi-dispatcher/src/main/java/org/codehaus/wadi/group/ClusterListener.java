@@ -26,8 +26,6 @@ public interface ClusterListener {
 
     void onPeerUpdated(ClusterEvent event);
 
-    void onCoordinatorChanged(ClusterEvent event);
-    
-    void onMembershipChanged(Cluster cluster, Set joiners, Set leavers);
+    void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator);
     
 }
