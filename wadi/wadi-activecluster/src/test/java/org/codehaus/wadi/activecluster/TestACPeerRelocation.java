@@ -22,20 +22,18 @@ import org.codehaus.wadi.relocation.AbstractTestRelocation;
  * 
  * @version $Revision: 1603 $
  */
-public class TestACRelocation extends AbstractTestRelocation {
+public class TestACPeerRelocation extends AbstractTestRelocation {
 
-	public TestACRelocation(String arg0) {
-		super(arg0);
-	}
-	
-	public void testSessionRelocation() throws Exception {
+    public TestACPeerRelocation(String arg0) {
+        super(arg0);
+    }
+    
+    public void testSessionRelocation() throws Exception {
         String clusterName="org.codehaus.wadi.TEST-"+Math.random();
         long timeout=5000;
-		String clusterUri;
-		clusterUri="vm://localhost";
-		testSessionRelocation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout), new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
-		clusterUri="peer://org.codehaus.wadi";
-		testSessionRelocation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout), new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
-	}
-	
+        String clusterUri;
+        clusterUri="peer://org.codehaus.wadi."+Math.random();
+        testSessionRelocation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout), new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
+    }
+    
 }

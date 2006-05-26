@@ -19,7 +19,7 @@ import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.replication.integration.AbstractReplicationManagerTest;
 
-public class TestACReplicationManager extends AbstractReplicationManagerTest {
+public class TestACInVMReplicationManager extends AbstractReplicationManagerTest {
 
     protected Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {
         return new ActiveClusterDispatcher(clusterName, nodeName, "vm://localhost", timeout);
