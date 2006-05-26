@@ -21,12 +21,12 @@ import org.codehaus.wadi.jgroups.JGroupsDispatcher;
 
 public class TestJGEvacuation extends AbstractTestEvacuation {
 
-  public TestJGEvacuation(String arg0) {
-    super(arg0);
+  public TestJGEvacuation(String name) {
+    super(name);
   }
 
   public void testEvacuation() throws Exception {
-	  String clusterName="TEST";
+      String clusterName="org.codehaus.wadi.TEST-"+Math.random();
 	  long timeout=5000;
 	  testEvacuation(new JGroupsDispatcher("red", clusterName, timeout, "default.xml"), new JGroupsDispatcher("green", clusterName, timeout, "default-minimalthreads.xml"));
   }

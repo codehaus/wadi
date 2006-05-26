@@ -20,13 +20,15 @@ import org.codehaus.wadi.group.AbstractTestGroup;
 import org.codehaus.wadi.group.Dispatcher;
 
 public class TestJGGroup extends AbstractTestGroup {
-    
+
     public TestJGGroup(String name) {
         super(name);
     }
-    
+
     public DispatcherFactory getDispatcherFactory() {
-        return new DispatcherFactory() {public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {return new JGroupsDispatcher(peerName, "TEST", 5000, "default-minimalthreads.xml");}}; // TODO - clusterName ?
+        return new DispatcherFactory() {
+            public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {return new JGroupsDispatcher(peerName, clusterName, inactiveTime, "default-minimalthreads.xml");}
+        };
     }
 
 }

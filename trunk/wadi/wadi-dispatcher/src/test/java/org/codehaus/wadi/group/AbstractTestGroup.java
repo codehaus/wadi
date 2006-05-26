@@ -31,8 +31,8 @@ public abstract class AbstractTestGroup extends TestCase {
 
     protected static Log _log = LogFactory.getLog(AbstractTestGroup.class);
 
-    public AbstractTestGroup(String arg0) {
-        super(arg0);
+    public AbstractTestGroup(String name) {
+        super(name);
     }
 
     protected interface DispatcherFactory {
@@ -74,7 +74,7 @@ public abstract class AbstractTestGroup extends TestCase {
     }
 
     public void testMembership() throws Exception {
-        String clusterName="org.codehaus.wadi.cluster.TEST-"+System.currentTimeMillis();
+        String clusterName="org.codehaus.wadi.cluster.TEST-"+Math.random();
 
         DispatcherConfig config=new DummyDispatcherConfig();
         
