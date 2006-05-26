@@ -15,17 +15,24 @@
  */
 package org.codehaus.wadi.activecluster;
 
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
- * 
+ *
  * @version $Revision: 1603 $
  */
 class WADIMessageListener implements MessageListener {
+
+    protected static final Log _log = LogFactory.getLog(WADIMessageListener.class);
+
     private final org.codehaus.wadi.group.MessageListener adaptee;
     private final ActiveClusterCluster cluster;
-    
+
     public WADIMessageListener(ActiveClusterCluster cluster, org.codehaus.wadi.group.MessageListener adaptee) {
         this.cluster = cluster;
         this.adaptee = adaptee;
@@ -33,6 +40,10 @@ class WADIMessageListener implements MessageListener {
 
     public void onMessage(Message message) {
         ActiveClusterCluster._cluster.set(cluster); // attach cluster to a ThreadLocal for future use...
-        adaptee.onMessage(new ActiveClusterMessage(message));
+        try {
+            adaptee.onMessage(new ActiveClusterMessage(cluster, (ObjectMessage)message));
+        } catch (JMSException e) {
+            _log.error("ActiveCluster issue: could not demarshall incoming message", e);
+        }
     }
 }
