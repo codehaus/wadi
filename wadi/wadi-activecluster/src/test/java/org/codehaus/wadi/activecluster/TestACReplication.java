@@ -27,12 +27,12 @@ public class TestACReplication extends AbstractTestReplication {
   }
 
   public void testReplication() throws Exception {
-    String clusterName="TEST";
-    String nodeName="test.1";
+    String clusterName="org.codehaus.wadi.TEST-"+Math.random();
+    String nodeName="test."+Math.random();
     long timeout=5000;
 
     testReplication(new ActiveClusterDispatcher(clusterName, nodeName, "vm://localhost", timeout));
-    //testReplication(new ActiveClusterDispatcher(clusterName, nodeName, "peer://org.codehaus.wadi", timeout)); // TODO - stop() seems to run asynchronously - resolve
+    testReplication(new ActiveClusterDispatcher(clusterName, nodeName, "peer://org.codehaus.wadi", timeout)); // TODO - stop() seems to run asynchronously - resolve
   }
 
 }
