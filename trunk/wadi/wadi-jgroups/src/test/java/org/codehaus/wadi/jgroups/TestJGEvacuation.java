@@ -28,7 +28,7 @@ public class TestJGEvacuation extends AbstractTestEvacuation {
   public void testEvacuation() throws Exception {
 	  String clusterName="TEST";
 	  long timeout=5000;
-	  testEvacuation(new JGroupsDispatcher("red", clusterName, timeout, "default.xml"), new JGroupsDispatcher("green", clusterName, timeout, "default.xml"));
+	  testEvacuation(new JGroupsDispatcher("red", clusterName, timeout, "default.xml"), new JGroupsDispatcher("green", clusterName, timeout, "default-minimalthreads.xml"));
   }
   
 }
