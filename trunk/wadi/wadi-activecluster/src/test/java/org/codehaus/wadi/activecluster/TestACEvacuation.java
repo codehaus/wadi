@@ -22,18 +22,18 @@ import org.codehaus.wadi.evacuation.AbstractTestEvacuation;
 
 public class TestACEvacuation extends AbstractTestEvacuation {
 	
-	public TestACEvacuation(String arg0) {
-		super(arg0);
+	public TestACEvacuation(String name) {
+		super(name);
 	}
 	
 	public void testEvacuation() throws Exception {
-		String clusterName="TEST";
+        String clusterName="org.codehaus.wadi.TEST-"+Math.random();
 		long timeout=5000;
 		String clusterUri;
 		clusterUri="vm://localhost";
 		testEvacuation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout), new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
-//		clusterUri="peer://org.codehaus.wadi";
-//		testEvacuation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout), new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
+		clusterUri="peer://org.codehaus.wadi";
+		//testEvacuation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout), new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
 	}
 	
 }
