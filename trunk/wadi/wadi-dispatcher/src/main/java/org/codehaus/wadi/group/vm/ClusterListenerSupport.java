@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterEvent;
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 
 /**
@@ -67,15 +68,20 @@ class ClusterListenerSupport {
         }
     }
 
-    public void notifyMembershipChanged(Set joiners, Set leavers, Peer coordinator) {
+    public void notifyMembershipChanged(LocalPeer peer, boolean joining, Peer coordinator) {
         Collection snapshotListeners;
         synchronized (listeners) {
             snapshotListeners = new ArrayList(listeners);
         }
         
+        Set snapshotExistingPeers;
+        synchronized (listeners) {
+            snapshotExistingPeers = new HashSet(nodes);
+        }
+        
         for (Iterator iter = snapshotListeners.iterator(); iter.hasNext();) {
             VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
-            listener.onMembershipChanged(cluster, joiners, leavers, coordinator);
+            listener.notifyExistingPeersToPeer(cluster, snapshotExistingPeers, coordinator);
         }
     }
     

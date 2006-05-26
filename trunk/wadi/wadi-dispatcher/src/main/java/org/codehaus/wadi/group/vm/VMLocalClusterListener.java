@@ -39,21 +39,41 @@ public class VMLocalClusterListener implements ClusterListener {
     }
 
     void notifyExistingPeersToPeer(Cluster cluster, Set existingPeers, Peer coordinator) {
-        notifyExistingPeersToPeer(peer, cluster, existingPeers, coordinator);
-    }
-
-    void notifyExistingPeersToPeer(Peer target, Cluster cluster, Set existingPeers, Peer coordinator) {
+        
+        // Gianny...
+        
+        // I may have misunderstood what is going on... but I figure that this method needs to :
+        
+        // call the joining node's onMembershipChanged(), notifying it of existing peers
+        // call each existing peer's onMembershipChanged(), notifying it of the joining peer
+        
+        // trouble is, I never seem to have exactly what I need, where I need it :-) and I keep getting 
+        // confused between VM... and VMLocal....
+        
+        // maybe you can figure it out - TestInVMGroup is failing because I am not making membership notifications correctly.
+        // It is working for JG and AC.
+        // I hope to bring Tribes online soon as well.
+        // JG and AC are now beginning to share code - see wadi-dispatcher/src/main/java/org/codehaus/wadi/group/impl/AbstractCluster.java
+        
+        // many thanks,
+        
+        // Jules
+        
+        
         if (false == localCluster.isRunning()) {
             return;
         }
         
-        if (false == target.equals(peer)) {
+        Peer joiner=peer;
+        if (false == joiner.equals(peer)) {
             return;
         }
-        Set joiners=new TreeSet(existingPeers);
-        joiners.remove(peer);
-        Set leavers=Collections.EMPTY_SET;
-        delegate.onMembershipChanged(cluster, joiners, leavers, coordinator);
+        
+        if (peer.equals(joiner)) {
+            delegate.onMembershipChanged(localCluster, existingPeers, Collections.EMPTY_SET, coordinator);
+        } else {
+            delegate.onMembershipChanged(localCluster, Collections.singleton(joiner), Collections.EMPTY_SET, coordinator);
+        }
     }
 
     public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
