@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2006 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,17 +15,13 @@
  */
 package org.codehaus.wadi.activecluster;
 
-import org.codehaus.wadi.group.AbstractTestGroup;
+import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.replication.integration.AbstractReplicationManagerTest;
 
-public class TestACPeerGroup extends AbstractTestGroup {
+public class TestACPeerReplicationManager extends AbstractReplicationManagerTest {
 
-    public TestACPeerGroup(String name) {
-        super(name);
+    protected Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {
+        return new ActiveClusterDispatcher(clusterName, nodeName, "peer://org.codehaus.wadi."+Math.random(), timeout);
     }
-
-    public DispatcherFactory getDispatcherFactory() {
-        return new DispatcherFactory() {public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {return new ActiveClusterDispatcher(clusterName, peerName, "peer://org.codehaus.wadi."+Math.random() , inactiveTime);}};
-    }
-
 }

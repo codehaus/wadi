@@ -20,9 +20,9 @@ import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.evacuation.AbstractTestEvacuation;
 
 
-public class TestACEvacuation extends AbstractTestEvacuation {
+public class TestACInVMEvacuation extends AbstractTestEvacuation {
 	
-	public TestACEvacuation(String name) {
+	public TestACInVMEvacuation(String name) {
 		super(name);
 	}
 	

@@ -23,13 +23,10 @@ import org.codehaus.wadi.replication.integration.AbstractReplicationContextualis
  * 
  * @version $Revision: 1603 $
  */
-public class TestACReplicationContextualiser extends AbstractReplicationContextualiserTest {
+public class TestACPeerReplicationContextualiser extends AbstractReplicationContextualiserTest {
 
     protected Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {
-        return new ActiveClusterDispatcher(clusterName, 
-                nodeName, 
-                "vm://localhost", 
-                timeout);
+        return new ActiveClusterDispatcher(clusterName, nodeName, "peer://org.codehaus.wadi."+Math.random(), timeout);
     }
 
     protected void failNode(String arg0) {

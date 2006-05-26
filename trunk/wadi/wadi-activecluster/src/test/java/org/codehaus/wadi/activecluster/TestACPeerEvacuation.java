@@ -17,23 +17,21 @@
 package org.codehaus.wadi.activecluster;
 
 import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
-import org.codehaus.wadi.replication.AbstractTestReplication;
+import org.codehaus.wadi.evacuation.AbstractTestEvacuation;
 
 
-public class TestACReplication extends AbstractTestReplication {
-
-  public TestACReplication(String arg0) {
-    super(arg0);
-  }
-
-  public void testReplication() throws Exception {
-    String clusterName="org.codehaus.wadi.TEST-"+Math.random();
-    String nodeName="test."+Math.random();
-    long timeout=5000;
-
-    testReplication(new ActiveClusterDispatcher(clusterName, nodeName, "vm://localhost", timeout));
-    testReplication(new ActiveClusterDispatcher(clusterName, nodeName, "peer://org.codehaus.wadi", timeout)); // TODO - stop() seems to run asynchronously - resolve
-  }
-
+public class TestACPeerEvacuation extends AbstractTestEvacuation {
+    
+    public TestACPeerEvacuation(String name) {
+        super(name);
+    }
+    
+    public void testEvacuation() throws Exception {
+        String clusterName="org.codehaus.wadi.TEST-"+Math.random();
+        long timeout=5000;
+        String clusterUri;
+        clusterUri="peer://org.codehaus.wadi."+Math.random();
+        testEvacuation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout), new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
+    }
+    
 }
-
